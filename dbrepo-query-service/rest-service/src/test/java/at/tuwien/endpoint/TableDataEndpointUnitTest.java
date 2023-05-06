@@ -96,7 +96,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
             generic_import(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, TABLE_1_ID, TABLE_1, USER_2_USERNAME,
-                    DATABASE_1_RESEARCHER_READ_ACCESS, USER_2_PRINCIPAL);
+                    DATABASE_1_USER_1_READ_ACCESS, USER_2_PRINCIPAL);
         });
     }
 
@@ -107,7 +107,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
             generic_import(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, TABLE_1_ID, TABLE_1, USER_2_USERNAME,
-                    DATABASE_1_RESEARCHER_WRITE_OWN_ACCESS, USER_2_PRINCIPAL);
+                    DATABASE_1_USER_1_WRITE_OWN_ACCESS, USER_2_PRINCIPAL);
         });
     }
 
@@ -128,7 +128,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
             generic_import(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, TABLE_1_ID, TABLE_1, USER_2_USERNAME,
-                    DATABASE_2_RESEARCHER_READ_ACCESS, USER_2_PRINCIPAL);
+                    DATABASE_2_USER_1_READ_ACCESS, USER_2_PRINCIPAL);
         });
     }
 
@@ -139,7 +139,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
             generic_import(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, TABLE_1_ID, TABLE_1, USER_2_USERNAME,
-                    DATABASE_2_RESEARCHER_WRITE_OWN_ACCESS, USER_2_PRINCIPAL);
+                    DATABASE_2_USER_1_WRITE_OWN_ACCESS, USER_2_PRINCIPAL);
         });
     }
 
@@ -161,7 +161,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         generic_import(CONTAINER_3_ID, DATABASE_3_ID, DATABASE_3, TABLE_8_ID, TABLE_8, USER_1_USERNAME,
-                DATABASE_3_RESEARCHER_WRITE_ALL_ACCESS, USER_1_PRINCIPAL);
+                DATABASE_3_USER_1_WRITE_ALL_ACCESS, USER_1_PRINCIPAL);
     }
 
     @Test
@@ -172,7 +172,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         generic_import(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, TABLE_1_ID, TABLE_1, USER_1_USERNAME,
-                DATABASE_1_RESEARCHER_WRITE_ALL_ACCESS, USER_1_PRINCIPAL);
+                DATABASE_1_USER_1_WRITE_ALL_ACCESS, USER_1_PRINCIPAL);
     }
 
     @Test
@@ -193,7 +193,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
             generic_insert(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_2_USERNAME,
-                    DATABASE_1_RESEARCHER_READ_ACCESS, TABLE_1_CSV_DTO, USER_2_PRINCIPAL);
+                    DATABASE_1_USER_1_READ_ACCESS, TABLE_1_CSV_DTO, USER_2_PRINCIPAL);
         });
     }
 
@@ -204,7 +204,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
             generic_insert(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_2_USERNAME,
-                    DATABASE_1_RESEARCHER_WRITE_OWN_ACCESS, TABLE_1_CSV_DTO, USER_2_PRINCIPAL);
+                    DATABASE_1_USER_1_WRITE_OWN_ACCESS, TABLE_1_CSV_DTO, USER_2_PRINCIPAL);
         });
     }
 
@@ -226,7 +226,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
             generic_insert(CONTAINER_2_ID, DATABASE_2_ID, TABLE_1_ID, DATABASE_2, TABLE_1, USER_2_USERNAME,
-                    DATABASE_2_RESEARCHER_READ_ACCESS, TABLE_1_CSV_DTO, USER_2_PRINCIPAL);
+                    DATABASE_2_USER_1_READ_ACCESS, TABLE_1_CSV_DTO, USER_2_PRINCIPAL);
         });
     }
 
@@ -237,7 +237,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
             generic_insert(CONTAINER_2_ID, DATABASE_2_ID, TABLE_1_ID, DATABASE_2, TABLE_1, USER_2_USERNAME,
-                    DATABASE_2_RESEARCHER_WRITE_OWN_ACCESS, TABLE_1_CSV_DTO, USER_2_PRINCIPAL);
+                    DATABASE_2_USER_1_WRITE_OWN_ACCESS, TABLE_1_CSV_DTO, USER_2_PRINCIPAL);
         });
     }
 
@@ -249,7 +249,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         generic_insert(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8, USER_1_USERNAME,
-                DATABASE_3_RESEARCHER_WRITE_ALL_ACCESS, TABLE_8_CSV_DTO, USER_1_PRINCIPAL);
+                DATABASE_3_USER_1_WRITE_ALL_ACCESS, TABLE_8_CSV_DTO, USER_1_PRINCIPAL);
     }
 
     @Test
@@ -260,7 +260,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         generic_insert(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_1_USERNAME,
-                DATABASE_1_RESEARCHER_WRITE_ALL_ACCESS, TABLE_1_CSV_DTO, USER_1_PRINCIPAL);
+                DATABASE_1_USER_1_WRITE_ALL_ACCESS, TABLE_1_CSV_DTO, USER_1_PRINCIPAL);
     }
 
     @Test
@@ -271,7 +271,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         generic_insert(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_1_USERNAME,
-                DATABASE_1_RESEARCHER_WRITE_ALL_ACCESS, null, USER_1_PRINCIPAL);
+                DATABASE_1_USER_1_WRITE_ALL_ACCESS, null, USER_1_PRINCIPAL);
     }
 
     @Test
@@ -287,7 +287,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void getAll_publicAnonymousSizeNull_fails()  {
+    public void getAll_publicAnonymousSizeNull_fails() {
 
         /* test */
         assertThrows(PaginationException.class, () -> {
@@ -309,7 +309,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void getAll_publicAnonymousSizeNegative_fails()  {
+    public void getAll_publicAnonymousSizeNegative_fails() {
 
         /* test */
         assertThrows(PaginationException.class, () -> {
@@ -331,13 +331,32 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void getAll_privateAnonymous_fails() throws UserNotFoundException, TableNotFoundException,
-            QueryStoreException, SortException, TableMalformedException, NotAllowedException,
-            DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
-            PaginationException, ContainerNotFoundException {
+    public void getAll_privateAnonymous_fails() {
 
         /* test */
-        generic_getAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, null, null, null, null, null, null, null, null);
+        assertThrows(NotAllowedException.class, () -> {
+            generic_getAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, null, null, null, null, null, null, null, null);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_4_USERNAME, authorities = {})
+    public void getAll_privateNoRole_fails() {
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            generic_getAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_4_USERNAME, DATABASE_1_USER_1_READ_ACCESS, USER_4_PRINCIPAL, null, null, null, null, null);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_4_USERNAME, authorities = {})
+    public void getCount_privateNoRole_fails() {
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            generic_getCount(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_4_USERNAME, DATABASE_1_USER_1_READ_ACCESS, USER_4_PRINCIPAL, null);
+        });
     }
 
     public static Stream<Arguments> getAll_succeeds_parameters() {
@@ -347,22 +366,22 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
                         null, null, null, null, null),
                 Arguments.arguments("public read", CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8,
                         USER_1_USERNAME,
-                        DATABASE_3_RESEARCHER_READ_ACCESS, USER_1_PRINCIPAL, null, null, null, null, null),
+                        DATABASE_3_USER_1_READ_ACCESS, USER_1_PRINCIPAL, null, null, null, null, null),
                 Arguments.arguments("public write-own", CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3,
                         TABLE_8, USER_1_USERNAME,
-                        DATABASE_3_RESEARCHER_WRITE_OWN_ACCESS, USER_1_PRINCIPAL, null, null, null, null, null),
+                        DATABASE_3_USER_1_WRITE_OWN_ACCESS, USER_1_PRINCIPAL, null, null, null, null, null),
                 Arguments.arguments("public write-all", CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3,
                         TABLE_8, USER_1_USERNAME,
-                        DATABASE_3_RESEARCHER_WRITE_ALL_ACCESS, USER_1_PRINCIPAL, null, null, null, null, null),
+                        DATABASE_3_USER_1_WRITE_ALL_ACCESS, USER_1_PRINCIPAL, null, null, null, null, null),
                 Arguments.arguments("private read", CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1,
                         USER_1_USERNAME,
-                        DATABASE_1_RESEARCHER_READ_ACCESS, USER_1_PRINCIPAL, null, null, null, null, null),
+                        DATABASE_1_USER_1_READ_ACCESS, USER_1_PRINCIPAL, null, null, null, null, null),
                 Arguments.arguments("private write-own", CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1,
                         TABLE_1, USER_1_USERNAME,
-                        DATABASE_1_RESEARCHER_WRITE_OWN_ACCESS, USER_1_PRINCIPAL, null, null, null, null, null),
+                        DATABASE_1_USER_1_WRITE_OWN_ACCESS, USER_1_PRINCIPAL, null, null, null, null, null),
                 Arguments.arguments("private write-all", CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1,
                         TABLE_1, USER_1_USERNAME,
-                        DATABASE_1_RESEARCHER_WRITE_ALL_ACCESS, USER_1_PRINCIPAL, null, null, null, null, null)
+                        DATABASE_1_USER_1_WRITE_ALL_ACCESS, USER_1_PRINCIPAL, null, null, null, null, null)
         );
     }
 
@@ -384,22 +403,22 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
                         TABLE_8, null, null, null, null),
                 Arguments.arguments("public read", CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8,
                         USER_1_USERNAME,
-                        DATABASE_3_RESEARCHER_READ_ACCESS, USER_1_PRINCIPAL, null),
+                        DATABASE_3_USER_1_READ_ACCESS, USER_1_PRINCIPAL, null),
                 Arguments.arguments("public write-own", CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3,
                         TABLE_8, USER_1_USERNAME,
-                        DATABASE_3_RESEARCHER_WRITE_OWN_ACCESS, USER_1_PRINCIPAL, null),
+                        DATABASE_3_USER_1_WRITE_OWN_ACCESS, USER_1_PRINCIPAL, null),
                 Arguments.arguments("public write-all", CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3,
                         TABLE_8, USER_1_USERNAME,
-                        DATABASE_3_RESEARCHER_WRITE_ALL_ACCESS, USER_1_PRINCIPAL, null),
+                        DATABASE_3_USER_1_WRITE_ALL_ACCESS, USER_1_PRINCIPAL, null),
                 Arguments.arguments("private read", CONTAINER_1_ID, DATABASE_2_ID, TABLE_8_ID, DATABASE_2, TABLE_8,
                         USER_1_USERNAME,
-                        DATABASE_2_RESEARCHER_READ_ACCESS, USER_1_PRINCIPAL, null),
+                        DATABASE_2_USER_1_READ_ACCESS, USER_1_PRINCIPAL, null),
                 Arguments.arguments("private write-own", CONTAINER_1_ID, DATABASE_2_ID, TABLE_8_ID, DATABASE_2,
                         TABLE_8, USER_2_USERNAME,
-                        DATABASE_2_RESEARCHER_WRITE_OWN_ACCESS, USER_2_PRINCIPAL, null),
+                        DATABASE_2_USER_1_WRITE_OWN_ACCESS, USER_2_PRINCIPAL, null),
                 Arguments.arguments("private write-all", CONTAINER_1_ID, DATABASE_2_ID, TABLE_8_ID, DATABASE_2,
                         TABLE_8, USER_2_USERNAME,
-                        DATABASE_2_RESEARCHER_WRITE_ALL_ACCESS, USER_2_PRINCIPAL, null)
+                        DATABASE_2_USER_1_WRITE_ALL_ACCESS, USER_2_PRINCIPAL, null)
         );
     }
 

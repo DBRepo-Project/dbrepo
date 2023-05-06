@@ -71,11 +71,6 @@ public class User {
 
     @Column(nullable = false)
     @ToString.Exclude
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "user")
-    private List<Role> roles;
-
-    @Column(nullable = false)
-    @ToString.Exclude
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "user")
     private List<UserAttribute> attributes;
 
@@ -98,6 +93,17 @@ public class User {
     @ToString.Exclude
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "creator")
     private List<Identifier> identifiers;
+
+    @ToString.Exclude
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "user_role_mapping",
+            joinColumns = {
+                    @JoinColumn(name = "USER_ID", nullable = false, columnDefinition = "VARCHAR(36)", updatable = false),
+            },
+            inverseJoinColumns = {
+                    @JoinColumn(name = "ROLE_ID", nullable = false, columnDefinition = "VARCHAR(36)", updatable = false),
+            })
+    private List<Role> roles;
 
     @Transient
     @ToString.Exclude

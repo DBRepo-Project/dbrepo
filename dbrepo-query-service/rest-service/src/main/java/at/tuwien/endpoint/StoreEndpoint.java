@@ -43,18 +43,20 @@ public class StoreEndpoint {
     private final QueryMapper queryMapper;
     private final UserService userService;
     private final StoreService storeService;
+    private final AccessService accessService;
     private final IdentifierMapper identifierMapper;
     private final EndpointValidator endpointValidator;
     private final IdentifierService identifierService;
 
     @Autowired
     public StoreEndpoint(UserMapper userMapper, QueryMapper queryMapper, UserService userService,
-                         StoreService storeService, IdentifierMapper identifierMapper,
+                         StoreService storeService, AccessService accessService, IdentifierMapper identifierMapper,
                          EndpointValidator endpointValidator, IdentifierService identifierService) {
         this.userMapper = userMapper;
         this.queryMapper = queryMapper;
         this.userService = userService;
         this.storeService = storeService;
+        this.accessService = accessService;
         this.identifierMapper = identifierMapper;
         this.endpointValidator = endpointValidator;
         this.identifierService = identifierService;
@@ -109,7 +111,7 @@ public class StoreEndpoint {
             DatabaseConnectionException, TableMalformedException, UserNotFoundException, NotAllowedException {
         log.debug("endpoint list queries, containerId={}, databaseId={}, persisted={}, principal={}", containerId,
                 databaseId, persisted, principal);
-        endpointValidator.validateOnlyAccess(containerId, databaseId, principal);
+        endpointValidator.validateOnlyAccessOrPublic(containerId, databaseId, principal);
         final List<Query> queries = storeService.findAll(containerId, databaseId, persisted, principal);
         final List<Identifier> identifiers = identifierService.findAll();
         final List<User> users = userService.findAll();
@@ -176,7 +178,9 @@ public class StoreEndpoint {
             DatabaseConnectionException {
         log.debug("endpoint find query, containerId={}, databaseId={}, queryId={}, principal={}", containerId, databaseId,
                 queryId, principal);
-        endpointValidator.validateOnlyAccess(containerId, databaseId, principal);
+        /* check */
+        endpointValidator.validateOnlyAccessOrPublic(containerId, databaseId, principal);
+        /* find */
         final Query query = storeService.findOne(containerId, databaseId, queryId, principal);
         final QueryDto dto = queryMapper.queryToQueryDto(query);
         final User creator = userService.findByUsername(query.getCreatedBy());
@@ -237,7 +241,8 @@ public class StoreEndpoint {
             QueryAlreadyPersistedException, NotAllowedException {
         log.debug("endpoint persist query, container, containerId={}, databaseId={}, queryId={}, principal={}",
                 containerId, databaseId, queryId, principal);
-        endpointValidator.validateOnlyAccess(containerId, databaseId, principal);
+        /* check */
+        endpointValidator.validateOnlyAccessOrPublic(containerId, databaseId, principal);
         final Query check = storeService.findOne(containerId, databaseId, queryId, principal);
         if (!check.getCreatedBy().equals(principal.getName())) {
             log.error("Cannot persist foreign query: created by {}", check.getCreatedBy());
@@ -247,6 +252,9 @@ public class StoreEndpoint {
             log.error("Failed to persist, is already persisted");
             throw new QueryAlreadyPersistedException("Failed to persist");
         }
+        /* has access */
+        accessService.find(databaseId, principal.getName());
+        /* persist */
         final Query query = storeService.persist(containerId, databaseId, queryId, principal);
         final QueryDto dto = queryMapper.queryToQueryDto(query);
         final User creator = userService.findByUsername(query.getCreatedBy());

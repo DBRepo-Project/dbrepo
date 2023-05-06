@@ -100,7 +100,7 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_1_USERNAME)
+    @WithMockUser(username = USER_4_USERNAME)
     public void list_noRole_succeeds() {
 
         /* mock */
@@ -171,12 +171,12 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_1_USERNAME)
+    @WithMockUser(username = USER_4_USERNAME)
     public void create_noRole_fails() {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            identifierEndpoint.create(IDENTIFIER_2_DTO_REQUEST, "ABC", USER_1_PRINCIPAL);
+            identifierEndpoint.create(IDENTIFIER_2_DTO_REQUEST, "ABC", USER_4_PRINCIPAL);
         });
     }
 

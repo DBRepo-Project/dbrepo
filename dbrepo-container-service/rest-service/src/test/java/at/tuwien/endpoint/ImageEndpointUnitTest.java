@@ -75,15 +75,15 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_3_USERNAME)
+    @WithMockUser(username = USER_4_USERNAME)
     public void findAll_noRole_succeeds() {
 
         /* mock */
-        when(userRepository.findByUsername(USER_3_USERNAME))
-                .thenReturn(Optional.of(USER_3));
+        when(userRepository.findByUsername(USER_4_USERNAME))
+                .thenReturn(Optional.of(USER_4));
 
         /* test */
-        findAll_generic(USER_3_PRINCIPAL);
+        findAll_generic(USER_4_PRINCIPAL);
     }
 
     @Test
@@ -127,7 +127,7 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_3_USERNAME)
+    @WithMockUser(username = USER_4_USERNAME)
     public void create_noRole_fails() {
         final ImageCreateDto request = ImageCreateDto.builder()
                 .repository(IMAGE_1_REPOSITORY)
@@ -139,12 +139,12 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
                 .build();
 
         /* mock */
-        when(userRepository.findByUsername(USER_3_USERNAME))
-                .thenReturn(Optional.of(USER_3));
+        when(userRepository.findByUsername(USER_4_USERNAME))
+                .thenReturn(Optional.of(USER_4));
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            create_generic(request, USER_3_PRINCIPAL);
+            create_generic(request, USER_4_PRINCIPAL);
         });
     }
 
@@ -244,7 +244,7 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_1_USERNAME)
+    @WithMockUser(username = USER_4_USERNAME)
     public void modify_noRole_fails() {
         final ImageChangeDto request = ImageChangeDto.builder()
                 .defaultPort(IMAGE_1_PORT)
@@ -255,12 +255,12 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
                 .build();
 
         /* mock */
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
+        when(userRepository.findByUsername(USER_4_USERNAME))
+                .thenReturn(Optional.of(USER_4));
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            modify_generic(IMAGE_1_ID, IMAGE_1, request, USER_1_PRINCIPAL);
+            modify_generic(IMAGE_1_ID, IMAGE_1, request, USER_4_PRINCIPAL);
         });
     }
 

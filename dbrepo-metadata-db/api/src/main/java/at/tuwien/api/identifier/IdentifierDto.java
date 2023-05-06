@@ -80,6 +80,10 @@ public class IdentifierDto {
     @Schema(example = "1")
     private Long resultNumber;
 
+    @NotNull
+    @Schema(example = "everyone")
+    private VisibilityTypeDto visibility;
+
     @Schema(example = "10.1038/nphys1170")
     private String doi;
 

@@ -534,7 +534,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_1_USERNAME, authorities = {})
+    @WithMockUser(username = USER_4_USERNAME, authorities = {})
     public void update_noRole_fails() {
 
         /* test */
@@ -545,17 +545,11 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_3_USERNAME, authorities = {"modify-identifier-metadata"})
-    public void update_hasRoleNoAccess_succeeds() throws at.tuwien.exception.AccessDeniedException {
-
-        /* mock */
-        doThrow(at.tuwien.exception.AccessDeniedException.class)
-                .when(accessService)
-                .find(IDENTIFIER_3_DATABASE_ID, USER_3_ID);
+    public void update_hasRoleNoAccess_succeeds() throws UserNotFoundException, IdentifierUpdateBadFormException,
+            NotAllowedException, IdentifierNotFoundException, IdentifierRequestException {
 
         /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            generic_update(IDENTIFIER_3_ID, IDENTIFIER_3, IDENTIFIER_3_DTO_UPDATE_REQUEST, USER_3_USERNAME, USER_3, USER_3_PRINCIPAL);
-        });
+        generic_update(IDENTIFIER_3_ID, IDENTIFIER_3, IDENTIFIER_3_DTO_UPDATE_REQUEST, USER_3_USERNAME, USER_3, USER_3_PRINCIPAL);
     }
 
     @Test
@@ -565,7 +559,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
 
         /* mock */
         when(accessService.find(IDENTIFIER_3_DATABASE_ID, USER_3_ID))
-                .thenReturn(DATABASE_3_DATA_STEWARD_READ_ACCESS);
+                .thenReturn(DATABASE_3_USER_3_READ_ACCESS);
 
         /* test */
         generic_update(IDENTIFIER_3_ID, IDENTIFIER_3, IDENTIFIER_3_DTO_UPDATE_REQUEST, USER_3_USERNAME, USER_3, USER_3_PRINCIPAL);
@@ -580,7 +574,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
 
         /* mock */
         when(accessService.find(IDENTIFIER_1_DATABASE_ID, USER_1_ID))
-                .thenReturn(DATABASE_1_DATA_STEWARD_READ_ACCESS);
+                .thenReturn(DATABASE_1_USER_3_READ_ACCESS);
 
         /* test */
         assertThrows(IdentifierRequestException.class, () -> {

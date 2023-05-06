@@ -31,6 +31,7 @@ import at.tuwien.entities.database.table.constraints.foreignKey.ForeignKeyRefere
 import at.tuwien.entities.database.table.constraints.unique.Unique;
 import at.tuwien.entities.identifier.*;
 import at.tuwien.entities.user.Realm;
+import at.tuwien.entities.user.Role;
 import at.tuwien.entities.user.User;
 import at.tuwien.entities.user.UserAttribute;
 import at.tuwien.querystore.Query;
@@ -134,14 +135,20 @@ public abstract class BaseTest {
     public final static String[] DEFAULT_USER_HANDLING = new String[]{"default-user-handling", "modify-user-theme",
             "modify-user-information"};
 
+    public final static String[] ESCALATED_USER_HANDLING = new String[]{"escalated-user-handling", "find-user"};
+
     public final static String[] DEFAULT_RESEARCHER_ROLES = ArrayUtil.merge(List.of(new String[]{"default-researcher-roles"},
             DEFAULT_CONTAINER_HANDLING, DEFAULT_DATABASE_HANDLING, DEFAULT_IDENTIFIER_HANDLING, DEFAULT_QUERY_HANDLING,
             DEFAULT_TABLE_HANDLING, DEFAULT_USER_HANDLING));
 
     public final static String[] DEFAULT_DEVELOPER_ROLES = ArrayUtil.merge(List.of(new String[]{"default-developer-roles"},
             DEFAULT_CONTAINER_HANDLING, DEFAULT_DATABASE_HANDLING, DEFAULT_IDENTIFIER_HANDLING, DEFAULT_QUERY_HANDLING,
-            DEFAULT_TABLE_HANDLING, DEFAULT_USER_HANDLING, ESCALATED_CONTAINER_HANDLING, ESCALATED_DATABASE_HANDLING,
-            ESCALATED_IDENTIFIER_HANDLING, ESCALATED_QUERY_HANDLING, ESCALATED_TABLE_HANDLING));
+            DEFAULT_TABLE_HANDLING, DEFAULT_USER_HANDLING, ESCALATED_USER_HANDLING, ESCALATED_CONTAINER_HANDLING,
+            ESCALATED_DATABASE_HANDLING, ESCALATED_IDENTIFIER_HANDLING, ESCALATED_QUERY_HANDLING,
+            ESCALATED_TABLE_HANDLING));
+
+    public final static String[] DEFAULT_DATA_STEWARD_ROLES = ArrayUtil.merge(List.of(new String[]{"default-data-steward-roles"},
+            ESCALATED_IDENTIFIER_HANDLING));
 
     public final static List<GrantedAuthorityDto> AUTHORITY_DEFAULT_RESEARCHER_ROLES = Arrays.stream(DEFAULT_RESEARCHER_ROLES)
             .map(GrantedAuthorityDto::new)
@@ -151,11 +158,19 @@ public abstract class BaseTest {
             .map(GrantedAuthorityDto::new)
             .collect(Collectors.toList());
 
+    public final static List<GrantedAuthorityDto> AUTHORITY_DEFAULT_DATA_STEWARD_ROLES = Arrays.stream(DEFAULT_DATA_STEWARD_ROLES)
+            .map(GrantedAuthorityDto::new)
+            .collect(Collectors.toList());
+
     public final static List<GrantedAuthority> AUTHORITY_DEFAULT_RESEARCHER_AUTHORITIES = AUTHORITY_DEFAULT_RESEARCHER_ROLES.stream()
             .map(a -> new SimpleGrantedAuthority(a.getAuthority()))
             .collect(Collectors.toList());
 
     public final static List<GrantedAuthority> AUTHORITY_DEFAULT_DEVELOPER_AUTHORITIES = AUTHORITY_DEFAULT_DEVELOPER_ROLES.stream()
+            .map(a -> new SimpleGrantedAuthority(a.getAuthority()))
+            .collect(Collectors.toList());
+
+    public final static List<GrantedAuthority> AUTHORITY_DEFAULT_DATA_STEWARD_AUTHORITIES = AUTHORITY_DEFAULT_DATA_STEWARD_ROLES.stream()
             .map(a -> new SimpleGrantedAuthority(a.getAuthority()))
             .collect(Collectors.toList());
 
@@ -175,6 +190,16 @@ public abstract class BaseTest {
             .id(REALM_DBREPO_ID)
             .name(REALM_DBREPO_NAME)
             .enabled(REALM_DBREPO_ENABLED)
+            .build();
+
+    public final static UUID ROLE_DEFAULT_RESEARCHER_ROLES_ID = UUID.fromString("c74cbbe7-3ab1-4472-9211-cc9045672682");
+    public final static String ROLE_DEFAULT_RESEARCHER_ROLES_NAME = "default-researcher-roles";
+    public final static UUID ROLE_DEFAULT_RESEARCHER_ROLES_REALM_ID = REALM_DBREPO_ID;
+
+    public final static Role ROLE_DEFAULT_RESEARCHER_ROLES = Role.builder()
+            .id(ROLE_DEFAULT_RESEARCHER_ROLES_ID)
+            .name(ROLE_DEFAULT_RESEARCHER_ROLES_NAME)
+            .realmId(ROLE_DEFAULT_RESEARCHER_ROLES_REALM_ID)
             .build();
 
     public final static String USER_BROKER_USERNAME = "guest";
@@ -512,7 +537,7 @@ public abstract class BaseTest {
             .username(USER_3_USERNAME)
             .email(USER_3_EMAIL)
             .password(USER_3_PASSWORD)
-            .authorities(List.of())
+            .authorities(AUTHORITY_DEFAULT_DATA_STEWARD_AUTHORITIES)
             .build();
 
     public final static Principal USER_3_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_3_DETAILS,
@@ -561,7 +586,7 @@ public abstract class BaseTest {
             .username(USER_4_USERNAME)
             .email(USER_4_EMAIL)
             .password(USER_4_PASSWORD)
-            .authorities(AUTHORITY_DEFAULT_RESEARCHER_AUTHORITIES)
+            .authorities(List.of())
             .build();
 
     public final static Principal USER_4_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_4_DETAILS,
@@ -1068,55 +1093,55 @@ public abstract class BaseTest {
             .views(List.of())
             .build();
 
-    public final static DatabaseAccess DATABASE_1_RESEARCHER_READ_ACCESS = DatabaseAccess.builder()
+    public final static DatabaseAccess DATABASE_1_USER_1_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_1_ID)
             .huserid(USER_1_ID)
             .build();
 
-    public final static DatabaseAccess DATABASE_1_RESEARCHER_WRITE_OWN_ACCESS = DatabaseAccess.builder()
+    public final static DatabaseAccess DATABASE_1_USER_1_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_1_ID)
             .huserid(USER_1_ID)
             .build();
 
-    public final static DatabaseAccess DATABASE_1_RESEARCHER_WRITE_ALL_ACCESS = DatabaseAccess.builder()
+    public final static DatabaseAccess DATABASE_1_USER_1_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_1_ID)
             .huserid(USER_1_ID)
             .build();
 
-    public final static DatabaseAccess DATABASE_1_DEVELOPER_READ_ACCESS = DatabaseAccess.builder()
+    public final static DatabaseAccess DATABASE_1_USER_2_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_1_ID)
             .huserid(USER_2_ID)
             .build();
 
-    public final static DatabaseAccess DATABASE_1_DEVELOPER_WRITE_OWN_ACCESS = DatabaseAccess.builder()
+    public final static DatabaseAccess DATABASE_1_USER_2_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_1_ID)
             .huserid(USER_2_ID)
             .build();
 
-    public final static DatabaseAccess DATABASE_1_DEVELOPER_WRITE_ALL_ACCESS = DatabaseAccess.builder()
+    public final static DatabaseAccess DATABASE_1_USER_2_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_1_ID)
             .huserid(USER_2_ID)
             .build();
 
-    public final static DatabaseAccess DATABASE_1_DATA_STEWARD_READ_ACCESS = DatabaseAccess.builder()
+    public final static DatabaseAccess DATABASE_1_USER_3_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_1_ID)
             .huserid(USER_3_ID)
             .build();
 
-    public final static DatabaseAccess DATABASE_1_DATA_STEWARD_WRITE_OWN_ACCESS = DatabaseAccess.builder()
+    public final static DatabaseAccess DATABASE_1_USER_3_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_1_ID)
             .huserid(USER_3_ID)
             .build();
 
-    public final static DatabaseAccess DATABASE_1_DATA_STEWARD_WRITE_ALL_ACCESS = DatabaseAccess.builder()
+    public final static DatabaseAccess DATABASE_1_USER_3_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_1_ID)
             .huserid(USER_3_ID)
@@ -1193,19 +1218,19 @@ public abstract class BaseTest {
             .views(List.of())
             .build();
 
-    public final static DatabaseAccess DATABASE_2_RESEARCHER_READ_ACCESS = DatabaseAccess.builder()
+    public final static DatabaseAccess DATABASE_2_USER_1_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_2_ID)
             .huserid(USER_1_ID)
             .build();
 
-    public final static DatabaseAccess DATABASE_2_RESEARCHER_WRITE_OWN_ACCESS = DatabaseAccess.builder()
+    public final static DatabaseAccess DATABASE_2_USER_1_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_2_ID)
             .huserid(USER_1_ID)
             .build();
 
-    public final static DatabaseAccess DATABASE_2_RESEARCHER_WRITE_ALL_ACCESS = DatabaseAccess.builder()
+    public final static DatabaseAccess DATABASE_2_USER_1_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_2_ID)
             .huserid(USER_1_ID)
@@ -1217,37 +1242,37 @@ public abstract class BaseTest {
             .huserid(USER_2_ID)
             .build();
 
-    public final static DatabaseAccess DATABASE_2_DEVELOPER_READ_ACCESS = DatabaseAccess.builder()
+    public final static DatabaseAccess DATABASE_2_USER_2_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_2_ID)
             .huserid(USER_2_ID)
             .build();
 
-    public final static DatabaseAccess DATABASE_2_DEVELOPER_WRITE_OWN_ACCESS = DatabaseAccess.builder()
+    public final static DatabaseAccess DATABASE_2_USER_2_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_2_ID)
             .huserid(USER_2_ID)
             .build();
 
-    public final static DatabaseAccess DATABASE_2_DEVELOPER_WRITE_ALL_ACCESS = DatabaseAccess.builder()
+    public final static DatabaseAccess DATABASE_2_USER_2_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_2_ID)
             .huserid(USER_2_ID)
             .build();
 
-    public final static DatabaseAccess DATABASE_2_DATA_STEWARD_READ_ACCESS = DatabaseAccess.builder()
+    public final static DatabaseAccess DATABASE_2_USER_3_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_2_ID)
             .huserid(USER_3_ID)
             .build();
 
-    public final static DatabaseAccess DATABASE_2_DATA_STEWARD_WRITE_OWN_ACCESS = DatabaseAccess.builder()
+    public final static DatabaseAccess DATABASE_2_USER_3_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_2_ID)
             .huserid(USER_3_ID)
             .build();
 
-    public final static DatabaseAccess DATABASE_2_DATA_STEWARD_WRITE_ALL_ACCESS = DatabaseAccess.builder()
+    public final static DatabaseAccess DATABASE_2_USER_3_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_2_ID)
             .huserid(USER_3_ID)
@@ -1324,55 +1349,55 @@ public abstract class BaseTest {
             .views(List.of())
             .build();
 
-    public final static DatabaseAccess DATABASE_3_RESEARCHER_READ_ACCESS = DatabaseAccess.builder()
+    public final static DatabaseAccess DATABASE_3_USER_1_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_3_ID)
             .huserid(USER_1_ID)
             .build();
 
-    public final static DatabaseAccess DATABASE_3_RESEARCHER_WRITE_OWN_ACCESS = DatabaseAccess.builder()
+    public final static DatabaseAccess DATABASE_3_USER_1_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_3_ID)
             .huserid(USER_1_ID)
             .build();
 
-    public final static DatabaseAccess DATABASE_3_RESEARCHER_WRITE_ALL_ACCESS = DatabaseAccess.builder()
+    public final static DatabaseAccess DATABASE_3_USER_1_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_3_ID)
             .huserid(USER_1_ID)
             .build();
 
-    public final static DatabaseAccess DATABASE_3_DEVELOPER_READ_ACCESS = DatabaseAccess.builder()
+    public final static DatabaseAccess DATABASE_3_USER_2_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_3_ID)
             .huserid(USER_2_ID)
             .build();
 
-    public final static DatabaseAccess DATABASE_3_DEVELOPER_WRITE_OWN_ACCESS = DatabaseAccess.builder()
+    public final static DatabaseAccess DATABASE_3_USER_2_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_3_ID)
             .huserid(USER_2_ID)
             .build();
 
-    public final static DatabaseAccess DATABASE_3_DEVELOPER_WRITE_ALL_ACCESS = DatabaseAccess.builder()
+    public final static DatabaseAccess DATABASE_3_USER_2_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_3_ID)
             .huserid(USER_2_ID)
             .build();
 
-    public final static DatabaseAccess DATABASE_3_DATA_STEWARD_READ_ACCESS = DatabaseAccess.builder()
+    public final static DatabaseAccess DATABASE_3_USER_3_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_3_ID)
             .huserid(USER_3_ID)
             .build();
 
-    public final static DatabaseAccess DATABASE_3_DATA_STEWARD_WRITE_OWN_ACCESS = DatabaseAccess.builder()
+    public final static DatabaseAccess DATABASE_3_USER_3_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_3_ID)
             .huserid(USER_3_ID)
             .build();
 
-    public final static DatabaseAccess DATABASE_3_DATA_STEWARD_WRITE_ALL_ACCESS = DatabaseAccess.builder()
+    public final static DatabaseAccess DATABASE_3_USER_3_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_3_ID)
             .huserid(USER_3_ID)
@@ -1436,55 +1461,55 @@ public abstract class BaseTest {
             .views(List.of() /* for jpa */)
             .build();
 
-    public final static DatabaseAccess DATABASE_4_RESEARCHER_READ_ACCESS = DatabaseAccess.builder()
+    public final static DatabaseAccess DATABASE_4_USER_1_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_4_ID)
             .huserid(USER_1_ID)
             .build();
 
-    public final static DatabaseAccess DATABASE_4_RESEARCHER_WRITE_OWN_ACCESS = DatabaseAccess.builder()
+    public final static DatabaseAccess DATABASE_4_USER_1_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_4_ID)
             .huserid(USER_1_ID)
             .build();
 
-    public final static DatabaseAccess DATABASE_4_RESEARCHER_WRITE_ALL_ACCESS = DatabaseAccess.builder()
+    public final static DatabaseAccess DATABASE_4_USER_1_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_4_ID)
             .huserid(USER_1_ID)
             .build();
 
-    public final static DatabaseAccess DATABASE_4_DEVELOPER_READ_ACCESS = DatabaseAccess.builder()
+    public final static DatabaseAccess DATABASE_4_USER_2_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_4_ID)
             .huserid(USER_2_ID)
             .build();
 
-    public final static DatabaseAccess DATABASE_4_DEVELOPER_WRITE_OWN_ACCESS = DatabaseAccess.builder()
+    public final static DatabaseAccess DATABASE_4_USER_2_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_4_ID)
             .huserid(USER_2_ID)
             .build();
 
-    public final static DatabaseAccess DATABASE_4_DEVELOPER_WRITE_ALL_ACCESS = DatabaseAccess.builder()
+    public final static DatabaseAccess DATABASE_4_USER_2_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_4_ID)
             .huserid(USER_2_ID)
             .build();
 
-    public final static DatabaseAccess DATABASE_4_DATA_STEWARD_READ_ACCESS = DatabaseAccess.builder()
+    public final static DatabaseAccess DATABASE_4_USER_3_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_4_ID)
             .huserid(USER_3_ID)
             .build();
 
-    public final static DatabaseAccess DATABASE_4_DATA_STEWARD_WRITE_OWN_ACCESS = DatabaseAccess.builder()
+    public final static DatabaseAccess DATABASE_4_USER_3_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_4_ID)
             .huserid(USER_3_ID)
             .build();
 
-    public final static DatabaseAccess DATABASE_4_DATA_STEWARD_WRITE_ALL_ACCESS = DatabaseAccess.builder()
+    public final static DatabaseAccess DATABASE_4_USER_3_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_4_ID)
             .huserid(USER_3_ID)
@@ -2645,6 +2670,7 @@ public abstract class BaseTest {
             .columns(TABLE_1_COLUMNS)
             .constraints(null) /* TABLE_1_CONSTRAINTS */
             .creator(USER_1)
+            .owner(USER_1)
             .created(TABLE_1_CREATED)
             .lastModified(TABLE_1_LAST_MODIFIED)
             .build();
@@ -2663,6 +2689,7 @@ public abstract class BaseTest {
             .columns(List.of() /* for jpa */)
             .constraints(null /* for jpa */) /* TABLE_1_CONSTRAINTS */
             .creator(null /* for jpa */)
+            .owner(null /* for jpa */)
             .created(TABLE_1_CREATED)
             .lastModified(TABLE_1_LAST_MODIFIED)
             .build();
@@ -2726,6 +2753,7 @@ public abstract class BaseTest {
             .routingKey(TABLE_2_ROUTING_KEY)
             .columns(TABLE_2_COLUMNS)
             .creator(USER_1)
+            .owner(USER_1)
             .created(TABLE_2_CREATED)
             .lastModified(TABLE_2_LAST_MODIFIED)
             .build();
@@ -2743,6 +2771,7 @@ public abstract class BaseTest {
             .routingKey(TABLE_2_ROUTING_KEY)
             .columns(List.of() /* for jpa */)
             .creator(null /* for jpa */)
+            .owner(null /* for jpa */)
             .created(TABLE_2_CREATED)
             .lastModified(TABLE_2_LAST_MODIFIED)
             .build();
@@ -3271,6 +3300,7 @@ public abstract class BaseTest {
             .columns(TABLE_3_COLUMNS)
             .constraints(TABLE_3_CONSTRAINTS)
             .creator(USER_1)
+            .owner(USER_1)
             .created(TABLE_3_CREATED)
             .lastModified(TABLE_3_LAST_MODIFIED)
             .build();
@@ -3289,6 +3319,7 @@ public abstract class BaseTest {
             .columns(List.of() /* for jpa */)
             .constraints(TABLE_3_CONSTRAINTS)
             .creator(null /* for jpa */)
+            .owner(null /* for jpa */)
             .created(TABLE_3_CREATED)
             .lastModified(TABLE_3_LAST_MODIFIED)
             .build();
@@ -3626,6 +3657,23 @@ public abstract class BaseTest {
             .columns(TABLE_4_COLUMNS)
             .constraints(TABLE_4_CONSTRAINTS)
             .creator(USER_1)
+            .owner(USER_1)
+            .build();
+
+    public final static Table TABLE_4_SIMPLE = Table.builder()
+            .id(TABLE_4_ID)
+            .created(Instant.now())
+            .internalName(TABLE_4_INTERNALNAME)
+            .description(TABLE_4_DESCRIPTION)
+            .name(TABLE_4_NAME)
+            .lastModified(TABLE_4_LAST_MODIFIED)
+            .tdbid(DATABASE_2_ID)
+            .queueName(TABLE_4_QUEUE_NAME)
+            .routingKey(TABLE_4_ROUTING_KEY)
+            .columns(List.of() /* for jpa */)
+            .constraints(TABLE_4_CONSTRAINTS)
+            .creator(null /* for jpa */)
+            .owner(null  /* for jpa */)
             .build();
 
     public final static List<ForeignKeyCreateDto> TABLE_4_FOREIGN_KEYS_INVALID_CREATE = List.of(ForeignKeyCreateDto.builder()
@@ -3741,6 +3789,25 @@ public abstract class BaseTest {
             .columns(TABLE_5_COLUMNS)
             .constraints(TABLE_5_CONSTRAINTS)
             .creator(USER_1)
+            .owner(USER_1)
+            .created(TABLE_5_CREATED)
+            .lastModified(TABLE_5_LAST_MODIFIED)
+            .build();
+
+    public final static Table TABLE_5_SIMPLE = Table.builder()
+            .id(TABLE_5_ID)
+            .created(Instant.now())
+            .internalName(TABLE_5_INTERNALNAME)
+            .description(TABLE_5_DESCRIPTION)
+            .name(TABLE_5_NAME)
+            .lastModified(TABLE_5_LAST_MODIFIED)
+            .tdbid(DATABASE_2_ID)
+            .queueName(TABLE_5_QUEUE_NAME)
+            .routingKey(TABLE_5_ROUTING_KEY)
+            .columns(List.of() /* for jpa */)
+            .constraints(TABLE_5_CONSTRAINTS)
+            .creator(null /* for jpa */)
+            .owner(null /* for jpa */)
             .created(TABLE_5_CREATED)
             .lastModified(TABLE_5_LAST_MODIFIED)
             .build();
@@ -3874,22 +3941,26 @@ public abstract class BaseTest {
             .routingKey(TABLE_6_ROUTING_KEY)
             .columns(TABLE_6_COLUMNS)
             .creator(USER_1)
+            .owner(USER_1)
             .created(TABLE_6_CREATED)
             .lastModified(TABLE_6_LAST_MODIFIED)
             .build();
 
-    public final static Table TABLE_7_NOCOLS = Table.builder()
-            .id(TABLE_7_ID)
+    public final static Table TABLE_6_SIMPLE = Table.builder()
+            .id(TABLE_6_ID)
             .created(Instant.now())
-            .internalName(TABLE_7_INTERNAL_NAME)
-            .description(TABLE_7_DESCRIPTION)
-            .name(TABLE_7_NAME)
-            .lastModified(TABLE_7_LAST_MODIFIED)
-            .tdbid(DATABASE_1_ID)
-            .queueName(TABLE_7_QUEUE_NAME)
-            .routingKey(TABLE_7_ROUTING_KEY)
-            .columns(List.of())
-            .creator(USER_1)
+            .internalName(TABLE_6_INTERNAL_NAME)
+            .description(TABLE_6_DESCRIPTION)
+            .name(TABLE_6_NAME)
+            .lastModified(TABLE_6_LAST_MODIFIED)
+            .tdbid(DATABASE_2_ID)
+            .queueName(TABLE_6_QUEUE_NAME)
+            .routingKey(TABLE_6_ROUTING_KEY)
+            .columns(List.of() /* for jpa */)
+            .creator(null /* for jpa */)
+            .owner(null /* for jpa */)
+            .created(TABLE_6_CREATED)
+            .lastModified(TABLE_6_LAST_MODIFIED)
             .build();
 
     public final static Long VIEW_1_ID = 1L;
@@ -4138,6 +4209,8 @@ public abstract class BaseTest {
     public final static IdentifierTypeDto IDENTIFIER_1_TYPE_DTO = IdentifierTypeDto.DATABASE;
     public final static UUID IDENTIFIER_1_CREATED_BY = USER_1_ID;
     public final static User IDENTIFIER_1_CREATOR = USER_1;
+    public final static VisibilityType IDENTIFIER_1_VISIBILITY = VisibilityType.EVERYONE;
+    public final static VisibilityTypeDto IDENTIFIER_1_VISIBILITY_DTO = VisibilityTypeDto.EVERYONE;
 
     public final static Creator IDENTIFIER_1_CREATOR_1 = Creator.builder()
             .id(CREATOR_1_ID)
@@ -4179,6 +4252,7 @@ public abstract class BaseTest {
             .type(IDENTIFIER_1_TYPE)
             .creator(USER_1)
             .creators(List.of(IDENTIFIER_1_CREATOR_1))
+            .visibility(IDENTIFIER_1_VISIBILITY)
             .build();
 
     public final static Identifier IDENTIFIER_1_SIMPLE = Identifier.builder()
@@ -4203,6 +4277,7 @@ public abstract class BaseTest {
             .type(IDENTIFIER_1_TYPE)
             .creator(null /* for jpa */)
             .creators(List.of() /* for jpa */)
+            .visibility(IDENTIFIER_1_VISIBILITY)
             .build();
 
     public final static Identifier IDENTIFIER_1_WITH_DOI = Identifier.builder()
@@ -4227,6 +4302,7 @@ public abstract class BaseTest {
             .type(IDENTIFIER_1_TYPE)
             .creator(USER_1)
             .creators(List.of(IDENTIFIER_1_CREATOR_1))
+            .visibility(IDENTIFIER_1_VISIBILITY)
             .build();
 
     public final static IdentifierDto IDENTIFIER_1_DTO = IdentifierDto.builder()
@@ -4251,6 +4327,7 @@ public abstract class BaseTest {
             .type(IDENTIFIER_1_TYPE_DTO)
             .creator(USER_1_DTO)
             .creators(List.of(IDENTIFIER_1_CREATOR_1_DTO))
+            .visibility(IDENTIFIER_1_VISIBILITY_DTO)
             .build();
 
     public final static IdentifierDto IDENTIFIER_1_WITH_DOI_DTO = IdentifierDto.builder()
@@ -4275,6 +4352,7 @@ public abstract class BaseTest {
             .type(IDENTIFIER_1_TYPE_DTO)
             .creator(USER_1_DTO)
             .creators(List.of(IDENTIFIER_1_CREATOR_1_DTO))
+            .visibility(IDENTIFIER_1_VISIBILITY_DTO)
             .build();
 
     public final static Long IDENTIFIER_2_ID = 2L;
@@ -4300,6 +4378,8 @@ public abstract class BaseTest {
     public final static IdentifierTypeDto IDENTIFIER_2_TYPE_DTO = IdentifierTypeDto.SUBSET;
     public final static UUID IDENTIFIER_2_CREATED_BY = USER_2_ID;
     public final static User IDENTIFIER_2_CREATOR = USER_2;
+    public final static VisibilityType IDENTIFIER_2_VISIBILITY = VisibilityType.SELF;
+    public final static VisibilityTypeDto IDENTIFIER_2_VISIBILITY_DTO = VisibilityTypeDto.SELF;
 
     public final static Long IDENTIFIER_2_CREATOR_1_ID = 2L;
 
@@ -4364,6 +4444,7 @@ public abstract class BaseTest {
             .type(IDENTIFIER_2_TYPE)
             .creator(USER_2)
             .creators(List.of(IDENTIFIER_2_CREATOR_1, IDENTIFIER_2_CREATOR_2))
+            .visibility(IDENTIFIER_2_VISIBILITY)
             .build();
 
     public final static Identifier IDENTIFIER_2_SIMPLE = Identifier.builder()
@@ -4389,6 +4470,7 @@ public abstract class BaseTest {
             .type(IDENTIFIER_2_TYPE)
             .creator(null /* for jpa */)
             .creators(List.of() /* for jpa */)
+            .visibility(IDENTIFIER_2_VISIBILITY)
             .build();
 
     public final static IdentifierDto IDENTIFIER_2_DTO = IdentifierDto.builder()
@@ -4414,6 +4496,7 @@ public abstract class BaseTest {
             .type(IDENTIFIER_2_TYPE_DTO)
             .creator(USER_2_DTO)
             .creators(List.of(IDENTIFIER_2_CREATOR_1_DTO, IDENTIFIER_2_CREATOR_2_DTO))
+            .visibility(IDENTIFIER_2_VISIBILITY_DTO)
             .build();
 
     public final static Creator CREATOR_1 = Creator.builder()
@@ -4497,6 +4580,7 @@ public abstract class BaseTest {
             .created(IDENTIFIER_1_CREATED)
             .lastModified(IDENTIFIER_1_MODIFIED)
             .creators(List.of(CREATOR_1_DTO))
+            .visibility(IDENTIFIER_2_VISIBILITY_DTO)
             .build();
 
     public final static IdentifierCreateDto IDENTIFIER_1_DTO_REQUEST = IdentifierCreateDto.builder()
@@ -4510,6 +4594,7 @@ public abstract class BaseTest {
             .creators(List.of(CREATOR_1_CREATE_DTO))
             .publisher(IDENTIFIER_1_PUBLISHER)
             .type(IDENTIFIER_1_TYPE_DTO)
+            .visibility(IDENTIFIER_1_VISIBILITY_DTO)
             .build();
 
     public final static IdentifierUpdateDto IDENTIFIER_1_DTO_UPDATE_REQUEST = IdentifierUpdateDto.builder()
@@ -4524,6 +4609,7 @@ public abstract class BaseTest {
             .creators(List.of(CREATOR_1_DTO))
             .publisher(IDENTIFIER_1_PUBLISHER)
             .type(IDENTIFIER_1_TYPE_DTO)
+            .visibility(IDENTIFIER_1_VISIBILITY_DTO)
             .build();
 
     public final static Long RELATED_IDENTIFIER_2_ID = 1L;
@@ -4562,6 +4648,7 @@ public abstract class BaseTest {
             .creators(List.of(CREATOR_1_CREATE_DTO, CREATOR_2_CREATE_DTO))
             .publisher(IDENTIFIER_2_PUBLISHER)
             .type(IDENTIFIER_2_TYPE_DTO)
+            .visibility(IDENTIFIER_2_VISIBILITY_DTO)
             .build();
 
     public final static IdentifierUpdateDto IDENTIFIER_2_DTO_UPDATE_REQUEST = IdentifierUpdateDto.builder()
@@ -4579,6 +4666,7 @@ public abstract class BaseTest {
             .creators(List.of(CREATOR_1_DTO, CREATOR_2_DTO))
             .publisher(IDENTIFIER_2_PUBLISHER)
             .type(IDENTIFIER_2_TYPE_DTO)
+            .visibility(IDENTIFIER_2_VISIBILITY_DTO)
             .build();
 
     public final static Long IDENTIFIER_3_ID = 3L;
@@ -4604,6 +4692,8 @@ public abstract class BaseTest {
     public final static IdentifierTypeDto IDENTIFIER_3_TYPE_DTO = IdentifierTypeDto.SUBSET;
     public final static UUID IDENTIFIER_3_CREATOR_ID = USER_3_ID;
     public final static User IDENTIFIER_3_CREATOR = USER_3;
+    public final static VisibilityType IDENTIFIER_3_VISIBILITY = VisibilityType.EVERYONE;
+    public final static VisibilityTypeDto IDENTIFIER_3_VISIBILITY_DTO = VisibilityTypeDto.EVERYONE;
 
     private final static Long IDENTIFIER_3_CREATOR_1_ID = 4L;
 
@@ -4688,6 +4778,7 @@ public abstract class BaseTest {
             .type(IDENTIFIER_3_TYPE)
             .creator(IDENTIFIER_3_CREATOR)
             .creators(List.of(IDENTIFIER_3_CREATOR_1, IDENTIFIER_3_CREATOR_2, IDENTIFIER_3_CREATOR_3))
+            .visibility(IDENTIFIER_3_VISIBILITY)
             .build();
 
     public final static Identifier IDENTIFIER_3_SIMPLE = Identifier.builder()
@@ -4713,6 +4804,7 @@ public abstract class BaseTest {
             .type(IDENTIFIER_3_TYPE)
             .creator(null /* for jpa */)
             .creators(List.of() /* for jpa */)
+            .visibility(IDENTIFIER_3_VISIBILITY)
             .build();
 
     public final static IdentifierDto IDENTIFIER_3_DTO = IdentifierDto.builder()
@@ -4738,6 +4830,7 @@ public abstract class BaseTest {
             .type(IDENTIFIER_3_TYPE_DTO)
             .creator(USER_3_DTO)
             .creators(List.of(IDENTIFIER_3_CREATOR_1_DTO, IDENTIFIER_3_CREATOR_2_DTO, IDENTIFIER_3_CREATOR_3_DTO))
+            .visibility(IDENTIFIER_3_VISIBILITY_DTO)
             .build();
 
     public final static IdentifierCreateDto IDENTIFIER_3_DTO_REQUEST = IdentifierCreateDto.builder()
@@ -4752,6 +4845,7 @@ public abstract class BaseTest {
             .creators(List.of(CREATOR_1_CREATE_DTO))
             .publisher(IDENTIFIER_3_PUBLISHER)
             .type(IDENTIFIER_3_TYPE_DTO)
+            .visibility(IDENTIFIER_3_VISIBILITY_DTO)
             .build();
 
     public final static IdentifierUpdateDto IDENTIFIER_3_DTO_UPDATE_REQUEST = IdentifierUpdateDto.builder()
@@ -4767,6 +4861,7 @@ public abstract class BaseTest {
             .creators(List.of(CREATOR_1_DTO))
             .publisher(IDENTIFIER_3_PUBLISHER)
             .type(IDENTIFIER_3_TYPE_DTO)
+            .visibility(IDENTIFIER_3_VISIBILITY_DTO)
             .build();
 
     public final static Long IDENTIFIER_4_ID = 4L;
@@ -4790,6 +4885,8 @@ public abstract class BaseTest {
     public final static IdentifierType IDENTIFIER_4_TYPE = IdentifierType.DATABASE;
     public final static UUID IDENTIFIER_4_CREATOR_ID = USER_4_ID;
     public final static User IDENTIFIER_4_CREATOR = USER_4;
+    public final static VisibilityType IDENTIFIER_4_VISIBILITY = VisibilityType.EVERYONE;
+    public final static VisibilityTypeDto IDENTIFIER_4_VISIBILITY_DTO = VisibilityTypeDto.EVERYONE;
 
     public final static Identifier IDENTIFIER_4 = Identifier.builder()
             .id(IDENTIFIER_4_ID)
@@ -4813,6 +4910,7 @@ public abstract class BaseTest {
             .type(IDENTIFIER_4_TYPE)
             .creator(USER_3)
             .creators(List.of())
+            .visibility(IDENTIFIER_4_VISIBILITY)
             .build();
 
     public final static Identifier IDENTIFIER_4_SIMPLE = Identifier.builder()
@@ -4837,6 +4935,7 @@ public abstract class BaseTest {
             .type(IDENTIFIER_4_TYPE)
             .creator(null /* for jpa */)
             .creators(List.of() /* for jpa */)
+            .visibility(IDENTIFIER_4_VISIBILITY)
             .build();
 
     public final static String VIRTUAL_HOST_NAME = "fda";

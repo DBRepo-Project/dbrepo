@@ -1,16 +1,11 @@
 package at.tuwien.endpoint;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.api.database.table.TableBriefDto;
-import at.tuwien.api.database.table.TableCreateDto;
-import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.endpoints.TableColumnEndpoint;
-import at.tuwien.endpoints.TableEndpoint;
-import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.database.table.Table;
@@ -19,12 +14,10 @@ import at.tuwien.exception.*;
 import at.tuwien.repository.elastic.TableColumnIdxRepository;
 import at.tuwien.repository.elastic.TableIdxRepository;
 import at.tuwien.service.AccessService;
-import at.tuwien.service.ContainerService;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.TableService;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +25,6 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.test.context.support.WithAnonymousUser;
@@ -40,7 +32,6 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.security.Principal;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -104,7 +95,7 @@ public class TableColumnEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            generic_update(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, COLUMN_1_1_ID, DATABASE_3, TABLE_8, null, COLUMN_8_2_SEMANTICS_UPDATE_DTO, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_3_RESEARCHER_READ_ACCESS);
+            generic_update(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, COLUMN_1_1_ID, DATABASE_3, TABLE_8, null, COLUMN_8_2_SEMANTICS_UPDATE_DTO, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_3_USER_1_READ_ACCESS);
         });
     }
 
@@ -113,7 +104,7 @@ public class TableColumnEndpointUnitTest extends BaseUnitTest {
     public void update_publicHasRoleHasOwnWriteAccess_succeeds() throws TableNotFoundException, NotAllowedException, TableMalformedException, UnitNotFoundException, DatabaseNotFoundException, ConceptNotFoundException, ContainerNotFoundException {
 
         /* test */
-        generic_update(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, COLUMN_1_1_ID, DATABASE_3, TABLE_8, COLUMN_8_2_WITH_SEMANTICS, COLUMN_8_2_SEMANTICS_UPDATE_DTO, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_3_RESEARCHER_WRITE_OWN_ACCESS);
+        generic_update(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, COLUMN_1_1_ID, DATABASE_3, TABLE_8, COLUMN_8_2_WITH_SEMANTICS, COLUMN_8_2_SEMANTICS_UPDATE_DTO, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_3_USER_1_WRITE_OWN_ACCESS);
     }
 
     @Test
@@ -122,7 +113,7 @@ public class TableColumnEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            generic_update(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, COLUMN_1_1_ID, DATABASE_3, TABLE_8, null, COLUMN_8_2_SEMANTICS_UPDATE_DTO, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_3_DEVELOPER_WRITE_OWN_ACCESS);
+            generic_update(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, COLUMN_1_1_ID, DATABASE_3, TABLE_8, null, COLUMN_8_2_SEMANTICS_UPDATE_DTO, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_3_USER_2_WRITE_OWN_ACCESS);
         });
     }
 
@@ -132,7 +123,7 @@ public class TableColumnEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
-            generic_update(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, COLUMN_1_1_ID, null, TABLE_8, null, COLUMN_8_2_SEMANTICS_UPDATE_DTO, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_3_RESEARCHER_WRITE_OWN_ACCESS);
+            generic_update(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, COLUMN_1_1_ID, null, TABLE_8, null, COLUMN_8_2_SEMANTICS_UPDATE_DTO, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_3_USER_1_WRITE_OWN_ACCESS);
         });
     }
 
@@ -142,7 +133,7 @@ public class TableColumnEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
-            generic_update(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, COLUMN_1_1_ID, DATABASE_3, null, null, COLUMN_8_2_SEMANTICS_UPDATE_DTO, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_3_RESEARCHER_WRITE_OWN_ACCESS);
+            generic_update(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, COLUMN_1_1_ID, DATABASE_3, null, null, COLUMN_8_2_SEMANTICS_UPDATE_DTO, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_3_USER_1_WRITE_OWN_ACCESS);
         });
     }
 
@@ -153,7 +144,7 @@ public class TableColumnEndpointUnitTest extends BaseUnitTest {
             ConceptNotFoundException, ContainerNotFoundException {
 
         /* test */
-        generic_update(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, COLUMN_1_1_ID, DATABASE_3, TABLE_8, COLUMN_8_2_WITH_SEMANTICS, COLUMN_8_2_SEMANTICS_UPDATE_DTO, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_3_DEVELOPER_WRITE_ALL_ACCESS);
+        generic_update(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, COLUMN_1_1_ID, DATABASE_3, TABLE_8, COLUMN_8_2_WITH_SEMANTICS, COLUMN_8_2_SEMANTICS_UPDATE_DTO, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_3_USER_2_WRITE_ALL_ACCESS);
     }
 
     /* ################################################################################################### */
@@ -186,7 +177,7 @@ public class TableColumnEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            generic_update(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, COLUMN_1_1_ID, DATABASE_1, TABLE_1, null, COLUMN_1_4_SEMANTICS_UPDATE_DTO, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_1_RESEARCHER_READ_ACCESS);
+            generic_update(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, COLUMN_1_1_ID, DATABASE_1, TABLE_1, null, COLUMN_1_4_SEMANTICS_UPDATE_DTO, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_1_USER_1_READ_ACCESS);
         });
     }
 
@@ -195,7 +186,7 @@ public class TableColumnEndpointUnitTest extends BaseUnitTest {
     public void update_privateHasRoleHasOwnWriteAccess_succeeds() throws TableNotFoundException, NotAllowedException, TableMalformedException, UnitNotFoundException, DatabaseNotFoundException, ConceptNotFoundException, ContainerNotFoundException {
 
         /* test */
-        generic_update(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, COLUMN_1_1_ID, DATABASE_1, TABLE_1, COLUMN_1_4_WITH_SEMANTICS, COLUMN_1_4_SEMANTICS_UPDATE_DTO, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_1_RESEARCHER_WRITE_OWN_ACCESS);
+        generic_update(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, COLUMN_1_1_ID, DATABASE_1, TABLE_1, COLUMN_1_4_WITH_SEMANTICS, COLUMN_1_4_SEMANTICS_UPDATE_DTO, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_1_USER_1_WRITE_OWN_ACCESS);
     }
 
     @Test
@@ -204,7 +195,7 @@ public class TableColumnEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            generic_update(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, COLUMN_1_1_ID, DATABASE_1, TABLE_1, null, COLUMN_1_4_SEMANTICS_UPDATE_DTO, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_DEVELOPER_WRITE_OWN_ACCESS);
+            generic_update(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, COLUMN_1_1_ID, DATABASE_1, TABLE_1, null, COLUMN_1_4_SEMANTICS_UPDATE_DTO, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_USER_2_WRITE_OWN_ACCESS);
         });
     }
 
@@ -214,7 +205,7 @@ public class TableColumnEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
-            generic_update(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, COLUMN_1_1_ID, null, TABLE_1, null, COLUMN_1_4_SEMANTICS_UPDATE_DTO, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_1_RESEARCHER_WRITE_OWN_ACCESS);
+            generic_update(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, COLUMN_1_1_ID, null, TABLE_1, null, COLUMN_1_4_SEMANTICS_UPDATE_DTO, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_1_USER_1_WRITE_OWN_ACCESS);
         });
     }
 
@@ -224,7 +215,7 @@ public class TableColumnEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
-            generic_update(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, COLUMN_1_1_ID, DATABASE_1, null, null, COLUMN_1_4_SEMANTICS_UPDATE_DTO, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_1_RESEARCHER_WRITE_OWN_ACCESS);
+            generic_update(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, COLUMN_1_1_ID, DATABASE_1, null, null, COLUMN_1_4_SEMANTICS_UPDATE_DTO, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_1_USER_1_WRITE_OWN_ACCESS);
         });
     }
 
@@ -235,7 +226,7 @@ public class TableColumnEndpointUnitTest extends BaseUnitTest {
             ConceptNotFoundException, ContainerNotFoundException {
 
         /* test */
-        generic_update(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, COLUMN_1_1_ID, DATABASE_1, TABLE_1, COLUMN_1_4_WITH_SEMANTICS, COLUMN_1_4_SEMANTICS_UPDATE_DTO, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_DEVELOPER_WRITE_ALL_ACCESS);
+        generic_update(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, COLUMN_1_1_ID, DATABASE_1, TABLE_1, COLUMN_1_4_WITH_SEMANTICS, COLUMN_1_4_SEMANTICS_UPDATE_DTO, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_USER_2_WRITE_ALL_ACCESS);
     }
 
     /* ################################################################################################### */

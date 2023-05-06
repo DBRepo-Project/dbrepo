@@ -25,10 +25,10 @@
                 <v-skeleton-loader v-if="!table" type="text" class="skeleton-medium" />
               </v-list-item-content>
               <v-list-item-title class="mt-2">
-                Table Creator
+                Table Owner
               </v-list-item-title>
               <v-list-item-content>
-                <span v-if="table && table.creator">{{ formatCreator(table.creator) }} <span v-if="is_owner(table)" style="flex:none;">&nbsp;(you)</span></span>
+                <span v-if="table && table.creator">{{ formatCreator(table.owner) }} <span v-if="is_owner(table)" style="flex:none;">&nbsp;(you)</span></span>
                 <v-skeleton-loader v-if="!table" type="text" class="skeleton-medium" />
               </v-list-item-content>
               <v-list-item-title v-if="table && table.created" class="mt-2">
@@ -210,7 +210,7 @@ export default {
       if (!this.user) {
         return false
       }
-      return table.creator.username === this.user.username
+      return table.owner.username === this.user.username
     },
     consumerDetails () {
       if (!this.table) {

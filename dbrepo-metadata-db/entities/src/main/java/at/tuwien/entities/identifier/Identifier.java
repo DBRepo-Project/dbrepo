@@ -101,6 +101,10 @@ public class Identifier implements Serializable {
     @Column
     private Integer publicationDay;
 
+    @Column(nullable = false, columnDefinition = "enum('EVERYONE', 'SELF')")
+    @Enumerated(EnumType.STRING)
+    private VisibilityType visibility;
+
     @OneToOne(fetch = FetchType.LAZY, cascade = {})
     @JoinColumns({
             @JoinColumn(name = "dbid", referencedColumnName = "id", insertable = false, updatable = false)

@@ -168,7 +168,7 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
                 .build();
 
         /* mock */
-        databaseAccessRepository.save(DATABASE_1_DEVELOPER_READ_ACCESS);
+        databaseAccessRepository.save(DATABASE_1_USER_2_READ_ACCESS);
 
         /* test */
         assertThrows(expectedException, () -> {
@@ -210,7 +210,7 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
                 .build();
 
         /* mock */
-        databaseAccessRepository.save(DATABASE_1_DEVELOPER_READ_ACCESS);
+        databaseAccessRepository.save(DATABASE_1_USER_2_READ_ACCESS);
         DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1_SIMPLE, CONTAINER_1_ENV);
         DockerConfig.startContainer(CONTAINER_1_SIMPLE);
 

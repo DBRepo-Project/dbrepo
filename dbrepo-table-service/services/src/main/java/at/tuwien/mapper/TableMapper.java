@@ -226,7 +226,8 @@ public interface TableMapper {
         final Pattern WHITESPACE = Pattern.compile("[\\s]");
         String nowhitespace = WHITESPACE.matcher(data).replaceAll("_");
         String normalized = Normalizer.normalize(nowhitespace, Normalizer.Form.NFD);
-        String slug = NONLATIN.matcher(normalized).replaceAll("");
+        String slug = NONLATIN.matcher(normalized).replaceAll("_")
+                .replaceAll("-", "_");
         final String name = slug.toLowerCase(Locale.ENGLISH);
         log.trace("mapped name {} to internal name {}", data, name);
         return name;

@@ -1,6 +1,5 @@
 package at.tuwien.api.user;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
@@ -11,13 +10,6 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserUpdateDto {
-
-    @JsonProperty("titles_before")
-    @Schema(example = "Prof.")
-    private String titlesBefore;
-
-    @JsonProperty("titles_after")
-    private String titlesAfter;
 
     @Schema(example = "Josiah")
     private String firstname;

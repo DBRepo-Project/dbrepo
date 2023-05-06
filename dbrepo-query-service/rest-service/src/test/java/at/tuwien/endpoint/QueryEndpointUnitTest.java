@@ -104,7 +104,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(QueryMalformedException.class, () -> {
-            generic_execute(CONTAINER_3_ID, DATABASE_3_ID, statement, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_3, DATABASE_3_DEVELOPER_READ_ACCESS);
+            generic_execute(CONTAINER_3_ID, DATABASE_3_ID, statement, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_3, DATABASE_3_USER_2_READ_ACCESS);
         });
     }
 
@@ -115,7 +115,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(QueryMalformedException.class, () -> {
-            generic_execute(CONTAINER_3_ID, DATABASE_3_ID, statement, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_3, DATABASE_3_DEVELOPER_READ_ACCESS);
+            generic_execute(CONTAINER_3_ID, DATABASE_3_ID, statement, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_3, DATABASE_3_USER_2_READ_ACCESS);
         });
     }
 
@@ -148,7 +148,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
             PaginationException {
 
         /* test */
-        generic_execute(CONTAINER_3_ID, DATABASE_3_ID, QUERY_4_STATEMENT, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_3, DATABASE_3_DEVELOPER_WRITE_ALL_ACCESS);
+        generic_execute(CONTAINER_3_ID, DATABASE_3_ID, QUERY_4_STATEMENT, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_3, DATABASE_3_USER_2_WRITE_ALL_ACCESS);
     }
 
     @Test
@@ -159,7 +159,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
             PaginationException {
 
         /* test */
-        generic_execute(CONTAINER_3_ID, DATABASE_3_ID, QUERY_4_STATEMENT, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_3, DATABASE_3_DEVELOPER_WRITE_ALL_ACCESS);
+        generic_execute(CONTAINER_3_ID, DATABASE_3_ID, QUERY_4_STATEMENT, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_3, DATABASE_3_USER_2_WRITE_ALL_ACCESS);
     }
 
     @Test
@@ -170,7 +170,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
             PaginationException {
 
         /* test */
-        generic_execute(CONTAINER_3_ID, DATABASE_3_ID, QUERY_4_STATEMENT, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_3, DATABASE_3_DEVELOPER_WRITE_ALL_ACCESS);
+        generic_execute(CONTAINER_3_ID, DATABASE_3_ID, QUERY_4_STATEMENT, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_3, DATABASE_3_USER_2_WRITE_ALL_ACCESS);
     }
 
     @Test
@@ -181,7 +181,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
             PaginationException {
 
         /* test */
-        generic_execute(CONTAINER_3_ID, DATABASE_3_ID, QUERY_4_STATEMENT, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_3, DATABASE_3_DEVELOPER_WRITE_ALL_ACCESS);
+        generic_execute(CONTAINER_3_ID, DATABASE_3_ID, QUERY_4_STATEMENT, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_3, DATABASE_3_USER_2_WRITE_ALL_ACCESS);
     }
 
     @Test
@@ -205,7 +205,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         generic_reExecute(CONTAINER_3_ID, DATABASE_3_ID, QUERY_4_ID, QUERY_4, QUERY_4_RESULT_ID, QUERY_4_RESULT_DTO,
-                USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_3, DATABASE_3_RESEARCHER_READ_ACCESS);
+                USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_3, DATABASE_3_USER_1_READ_ACCESS);
     }
 
     @Test
@@ -217,7 +217,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         generic_reExecute(CONTAINER_3_ID, DATABASE_3_ID, QUERY_4_ID, QUERY_4, QUERY_4_RESULT_ID, QUERY_4_RESULT_DTO,
-                USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_3, DATABASE_3_RESEARCHER_WRITE_OWN_ACCESS);
+                USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_3, DATABASE_3_USER_1_WRITE_OWN_ACCESS);
     }
 
     @Test
@@ -247,7 +247,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
             ContainerNotFoundException, IOException, NotAllowedException {
 
         /* test */
-        export_generic(CONTAINER_3_ID, DATABASE_3_ID, QUERY_3_ID, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_3, DATABASE_3_RESEARCHER_READ_ACCESS, null, HttpStatus.OK);
+        export_generic(CONTAINER_3_ID, DATABASE_3_ID, QUERY_3_ID, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_3, DATABASE_3_USER_1_READ_ACCESS, null, HttpStatus.OK);
     }
 
     @Test
@@ -258,7 +258,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
             ContainerNotFoundException, IOException, NotAllowedException {
 
         /* test */
-        export_generic(CONTAINER_3_ID, DATABASE_3_ID, QUERY_4_ID, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_3, DATABASE_3_RESEARCHER_WRITE_OWN_ACCESS, null, HttpStatus.OK);
+        export_generic(CONTAINER_3_ID, DATABASE_3_ID, QUERY_4_ID, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_3, DATABASE_3_USER_1_WRITE_OWN_ACCESS, null, HttpStatus.OK);
     }
 
     @Test
@@ -269,7 +269,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
             ContainerNotFoundException, IOException, NotAllowedException {
 
         /* test */
-        export_generic(CONTAINER_3_ID, DATABASE_3_ID, QUERY_4_ID, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_3, DATABASE_3_RESEARCHER_WRITE_ALL_ACCESS, null, HttpStatus.OK);
+        export_generic(CONTAINER_3_ID, DATABASE_3_ID, QUERY_4_ID, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_3, DATABASE_3_USER_1_WRITE_ALL_ACCESS, null, HttpStatus.OK);
     }
 
     /* ################################################################################################### */
@@ -295,7 +295,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
             PaginationException {
 
         /* test */
-        generic_execute(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_STATEMENT, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_RESEARCHER_READ_ACCESS);
+        generic_execute(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_STATEMENT, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_USER_1_READ_ACCESS);
     }
 
     @Test
@@ -306,7 +306,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
             PaginationException {
 
         /* test */
-        generic_execute(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_STATEMENT, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_RESEARCHER_WRITE_OWN_ACCESS);
+        generic_execute(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_STATEMENT, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_USER_1_WRITE_OWN_ACCESS);
     }
 
     @Test
@@ -317,7 +317,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
             PaginationException {
 
         /* test */
-        generic_execute(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_STATEMENT, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_RESEARCHER_WRITE_ALL_ACCESS);
+        generic_execute(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_STATEMENT, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_USER_1_WRITE_ALL_ACCESS);
     }
 
     @Test
@@ -328,7 +328,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
             PaginationException {
 
         /* test */
-        generic_execute(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_STATEMENT, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_2, DATABASE_2_RESEARCHER_WRITE_ALL_ACCESS);
+        generic_execute(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_STATEMENT, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_2, DATABASE_2_USER_1_WRITE_ALL_ACCESS);
     }
 
     @Test
@@ -351,7 +351,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         generic_reExecute(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_ID, QUERY_1, QUERY_1_RESULT_ID, QUERY_1_RESULT_DTO,
-                USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_RESEARCHER_READ_ACCESS);
+                USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_USER_1_READ_ACCESS);
     }
 
     @Test
@@ -363,7 +363,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         generic_reExecute(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_ID, QUERY_1, QUERY_1_RESULT_ID, QUERY_1_RESULT_DTO,
-                USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_RESEARCHER_WRITE_OWN_ACCESS);
+                USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_USER_1_WRITE_OWN_ACCESS);
     }
 
     @Test
@@ -375,7 +375,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         generic_reExecute(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_ID, QUERY_1, QUERY_1_RESULT_ID, QUERY_1_RESULT_DTO,
-                USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_RESEARCHER_WRITE_ALL_ACCESS);
+                USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_USER_1_WRITE_ALL_ACCESS);
     }
 
     @Test
@@ -393,7 +393,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
     public void export_privateInvalidFormat_fails() throws UserNotFoundException, QueryStoreException, DatabaseConnectionException, TableMalformedException, NotAllowedException, QueryMalformedException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException, IOException, FileStorageException, ContainerNotFoundException {
 
         /* test */
-        export_generic(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_ID, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_DEVELOPER_READ_ACCESS, "application/json", HttpStatus.NOT_IMPLEMENTED);
+        export_generic(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_ID, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_USER_2_READ_ACCESS, "application/json", HttpStatus.NOT_IMPLEMENTED);
     }
 
     @Test
@@ -404,7 +404,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
             ContainerNotFoundException, IOException {
 
         /* test */
-        export_generic(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_ID, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_RESEARCHER_READ_ACCESS, null, HttpStatus.OK);
+        export_generic(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_ID, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_USER_1_READ_ACCESS, null, HttpStatus.OK);
     }
 
     @Test
@@ -415,7 +415,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
             ContainerNotFoundException, IOException {
 
         /* test */
-        export_generic(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_ID, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_RESEARCHER_WRITE_OWN_ACCESS, null, HttpStatus.OK);
+        export_generic(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_ID, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_USER_1_WRITE_OWN_ACCESS, null, HttpStatus.OK);
     }
 
     @Test
@@ -426,7 +426,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
             ContainerNotFoundException, IOException {
 
         /* test */
-        export_generic(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_ID, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_RESEARCHER_WRITE_ALL_ACCESS, null, HttpStatus.OK);
+        export_generic(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_ID, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_USER_1_WRITE_ALL_ACCESS, null, HttpStatus.OK);
     }
 
     /* ################################################################################################### */

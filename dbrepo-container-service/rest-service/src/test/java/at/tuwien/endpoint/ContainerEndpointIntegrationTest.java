@@ -68,13 +68,13 @@ public class ContainerEndpointIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_3_USERNAME)
+    @WithMockUser(username = USER_4_USERNAME)
     public void findById_noRole_succeeds() throws DockerClientException, ContainerNotFoundException,
             ContainerNotRunningException {
 
         /* mock */
-        when(userRepository.findByUsername(USER_3_USERNAME))
-                .thenReturn(Optional.of(USER_3));
+        when(userRepository.findByUsername(USER_4_USERNAME))
+                .thenReturn(Optional.of(USER_4));
 
         /* test */
         findById_generic(CONTAINER_1_ID, CONTAINER_1);
@@ -95,12 +95,12 @@ public class ContainerEndpointIntegrationTest extends BaseUnitTest {
     public void delete_noRole_fails() {
 
         /* mock */
-        when(userRepository.findByUsername(USER_3_USERNAME))
-                .thenReturn(Optional.of(USER_3));
+        when(userRepository.findByUsername(USER_4_USERNAME))
+                .thenReturn(Optional.of(USER_4));
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            delete_generic(CONTAINER_1_ID, CONTAINER_1, USER_3_PRINCIPAL);
+            delete_generic(CONTAINER_1_ID, CONTAINER_1, USER_4_PRINCIPAL);
         });
     }
 
@@ -138,15 +138,15 @@ public class ContainerEndpointIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_3_USERNAME)
+    @WithMockUser(username = USER_4_USERNAME)
     public void findAll_noRole_succeeds() {
 
         /* mock */
-        when(userRepository.findByUsername(USER_3_USERNAME))
-                .thenReturn(Optional.of(USER_3));
+        when(userRepository.findByUsername(USER_4_USERNAME))
+                .thenReturn(Optional.of(USER_4));
 
         /* test */
-        findAll_generic(USER_3_PRINCIPAL, null);
+        findAll_generic(USER_4_PRINCIPAL, null);
     }
 
     @Test
@@ -183,7 +183,7 @@ public class ContainerEndpointIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_3_USERNAME)
+    @WithMockUser(username = USER_4_USERNAME)
     public void create_noRole_fails() {
         final ContainerCreateRequestDto request = ContainerCreateRequestDto.builder()
                 .name(CONTAINER_1_NAME)
@@ -192,12 +192,12 @@ public class ContainerEndpointIntegrationTest extends BaseUnitTest {
                 .build();
 
         /* mock */
-        when(userRepository.findByUsername(USER_3_USERNAME))
-                .thenReturn(Optional.of(USER_3));
+        when(userRepository.findByUsername(USER_4_USERNAME))
+                .thenReturn(Optional.of(USER_4));
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            create_generic(request, USER_3_PRINCIPAL);
+            create_generic(request, USER_4_PRINCIPAL);
         });
     }
 
@@ -226,16 +226,16 @@ public class ContainerEndpointIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_3_USERNAME)
+    @WithMockUser(username = USER_4_USERNAME)
     public void modify_noRole_fails() {
 
         /* mock */
-        when(userRepository.findByUsername(USER_3_USERNAME))
-                .thenReturn(Optional.of(USER_3));
+        when(userRepository.findByUsername(USER_4_USERNAME))
+                .thenReturn(Optional.of(USER_4));
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            modify_generic(ContainerActionTypeDto.START, CONTAINER_1_ID, CONTAINER_1, USER_3_PRINCIPAL);
+            modify_generic(ContainerActionTypeDto.START, CONTAINER_1_ID, CONTAINER_1, USER_4_PRINCIPAL);
         });
     }
 
@@ -253,30 +253,16 @@ public class ContainerEndpointIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_1_USERNAME, authorities = {"modify-container-state"})
-    public void modify_notRoleForeign_fails() {
-
-        /* mock */
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
-
-        /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            modify_generic(ContainerActionTypeDto.START, CONTAINER_2_ID, CONTAINER_2, USER_1_PRINCIPAL);
-        });
-    }
-
-    @Test
-    @WithMockUser(username = USER_3_USERNAME)
+    @WithMockUser(username = USER_4_USERNAME)
     public void modify_noRoleForeign_fails() {
 
         /* mock */
-        when(userRepository.findByUsername(USER_3_USERNAME))
-                .thenReturn(Optional.of(USER_3));
+        when(userRepository.findByUsername(USER_4_USERNAME))
+                .thenReturn(Optional.of(USER_4));
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            modify_generic(ContainerActionTypeDto.STOP, CONTAINER_1_ID, CONTAINER_1, USER_3_PRINCIPAL);
+            modify_generic(ContainerActionTypeDto.STOP, CONTAINER_1_ID, CONTAINER_1, USER_4_PRINCIPAL);
         });
     }
 

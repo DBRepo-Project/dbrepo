@@ -63,9 +63,9 @@ class UserService {
           const { code, message, response } = error
           const { status } = response
           if (status === 417) {
-            Vue.$toast.error(`[${code}] This e-mail address is taken: ${message}`)
+            Vue.$toast.error('This e-mail address is already taken')
           } else if (status === 409) {
-            Vue.$toast.error(`[${code}] This username is taken: ${message}`)
+            Vue.$toast.error('This username is already taken')
           } else if (status === 428) {
             Vue.$toast.warning(`[${code}] Account was created: ${message}`)
           } else {

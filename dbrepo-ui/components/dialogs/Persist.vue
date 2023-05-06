@@ -4,10 +4,10 @@
       <v-card-title v-text="title" />
       <v-card-text>
         <v-alert
-          v-if="isSubset"
+          v-if="identifier.visibility === 'self'"
           border="left"
           color="info">
-          Choose an expressive subset title and describe what it produces.
+          Private datasets significantly impact the reusability of your research.
         </v-alert>
         <v-form v-model="formValid" autocomplete="off">
           <v-row dense>
@@ -20,12 +20,30 @@
                 :label="`${prefix} title *`"
                 :rules="[v => !!v || $t('Required')]"
                 required />
+            </v-col>
+          </v-row>
+          <v-row dense>
+            <v-col>
               <v-textarea
                 id="description"
                 v-model="identifier.description"
                 name="description"
                 rows="2"
                 :label="`${prefix} description *`" />
+            </v-col>
+          </v-row>
+          <v-row v-if="isSubset" dense>
+            <v-col>
+              <v-select
+                v-model="identifier.visibility"
+                :items="visibilities"
+                item-text="name"
+                item-value="value"
+                label="Visibility *"
+                :hint="visibilityHint"
+                persistent-hint
+                :rules="[ v => !!v || $t('Required') ]"
+                required />
             </v-col>
           </v-row>
           <v-row dense>
@@ -215,12 +233,17 @@ export default {
       loading: false,
       error: false, // XXX: `error` is never changed
       licenses: [],
+      visibilities: [
+        { name: 'Public', value: 'everyone' },
+        { name: 'Private', value: 'self' }
+      ],
       identifier: {
         cid: parseInt(this.$route.params.container_id),
         dbid: parseInt(this.$route.params.database_id),
         qid: parseInt(this.$route.params.query_id),
         title: null,
         description: null,
+        visibility: 'everyone',
         publisher: this.$config.defaultPublisher,
         publication_year: formatYearUTC(Date.now()),
         publication_month: formatMonthUTC(Date.now()),
@@ -325,6 +348,12 @@ export default {
         title += 'database'
       }
       return (title + ' identifier')
+    },
+    visibilityHint () {
+      if (this.identifier.visibility === 'public') {
+        return 'The result set will be open access (world-readable)'
+      }
+      return 'The result set will be visible only to you'
     },
     prefix () {
       if (this.isSubset) {

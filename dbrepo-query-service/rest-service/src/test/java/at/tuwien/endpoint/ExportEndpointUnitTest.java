@@ -105,7 +105,7 @@ public class ExportEndpointUnitTest extends BaseUnitTest {
             UserNotFoundException, IOException {
 
         /* test */
-        export_generic(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, null, USER_1_PRINCIPAL, USER_1_USERNAME, DATABASE_1_RESEARCHER_READ_ACCESS);
+        export_generic(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, null, USER_1_PRINCIPAL, USER_1_USERNAME, DATABASE_1_USER_1_READ_ACCESS);
     }
 
     @Test
@@ -162,7 +162,7 @@ public class ExportEndpointUnitTest extends BaseUnitTest {
             UserNotFoundException, IOException {
 
         /* test */
-        export_generic(CONTAINER_2_ID, DATABASE_2_ID, TABLE_1_ID, DATABASE_2, null, USER_2_PRINCIPAL, USER_2_USERNAME, DATABASE_2_RESEARCHER_WRITE_OWN_ACCESS);
+        export_generic(CONTAINER_2_ID, DATABASE_2_ID, TABLE_1_ID, DATABASE_2, null, USER_2_PRINCIPAL, USER_2_USERNAME, DATABASE_2_USER_1_WRITE_OWN_ACCESS);
     }
 
     @Test
@@ -174,7 +174,7 @@ public class ExportEndpointUnitTest extends BaseUnitTest {
         final Instant timestamp = Instant.now();
 
         /* test */
-        export_generic(CONTAINER_2_ID, DATABASE_2_ID, TABLE_1_ID, DATABASE_2, timestamp, USER_2_PRINCIPAL, USER_2_USERNAME, DATABASE_2_RESEARCHER_READ_ACCESS);
+        export_generic(CONTAINER_2_ID, DATABASE_2_ID, TABLE_1_ID, DATABASE_2, timestamp, USER_2_PRINCIPAL, USER_2_USERNAME, DATABASE_2_USER_1_READ_ACCESS);
     }
 
     @Test
@@ -186,7 +186,7 @@ public class ExportEndpointUnitTest extends BaseUnitTest {
         final Instant timestamp = Instant.now().plus(10, ChronoUnit.DAYS);
 
         /* test */
-        export_generic(CONTAINER_2_ID, DATABASE_2_ID, TABLE_1_ID, DATABASE_2, timestamp, USER_2_PRINCIPAL, USER_2_USERNAME, DATABASE_2_RESEARCHER_READ_ACCESS);
+        export_generic(CONTAINER_2_ID, DATABASE_2_ID, TABLE_1_ID, DATABASE_2, timestamp, USER_2_PRINCIPAL, USER_2_USERNAME, DATABASE_2_USER_1_READ_ACCESS);
     }
 
     /* ################################################################################################### */

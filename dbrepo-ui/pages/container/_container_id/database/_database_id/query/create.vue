@@ -6,6 +6,8 @@
 </template>
 
 <script>
+import UserUtils from '@/api/user.utils'
+
 export default {
   data () {
     return {
@@ -31,11 +33,14 @@ export default {
     roles () {
       return this.$store.state.roles
     },
+    access () {
+      return this.$store.state.access
+    },
     canExecuteQuery () {
-      if (!this.roles) {
+      if (!this.roles || !this.access) {
         return false
       }
-      return this.roles.includes('execute-query')
+      return UserUtils.hasReadAccess(this.access) && this.roles.includes('execute-query')
     }
   }
 }

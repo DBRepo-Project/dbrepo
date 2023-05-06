@@ -45,6 +45,12 @@ public class Table {
     })
     private User creator;
 
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @JoinColumns({
+            @JoinColumn(name = "ownedBy", referencedColumnName = "ID", nullable = false, columnDefinition = "VARCHAR(36)", updatable = false)
+    })
+    private User owner;
+
     @Column(nullable = false, name = "tname")
     private String name;
 
