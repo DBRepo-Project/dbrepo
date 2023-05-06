@@ -2670,6 +2670,7 @@ public abstract class BaseTest {
             .columns(TABLE_1_COLUMNS)
             .constraints(null) /* TABLE_1_CONSTRAINTS */
             .creator(USER_1)
+            .owner(USER_1)
             .created(TABLE_1_CREATED)
             .lastModified(TABLE_1_LAST_MODIFIED)
             .build();
@@ -2688,6 +2689,7 @@ public abstract class BaseTest {
             .columns(List.of() /* for jpa */)
             .constraints(null /* for jpa */) /* TABLE_1_CONSTRAINTS */
             .creator(null /* for jpa */)
+            .owner(null /* for jpa */)
             .created(TABLE_1_CREATED)
             .lastModified(TABLE_1_LAST_MODIFIED)
             .build();
@@ -2751,6 +2753,7 @@ public abstract class BaseTest {
             .routingKey(TABLE_2_ROUTING_KEY)
             .columns(TABLE_2_COLUMNS)
             .creator(USER_1)
+            .owner(USER_1)
             .created(TABLE_2_CREATED)
             .lastModified(TABLE_2_LAST_MODIFIED)
             .build();
@@ -2768,6 +2771,7 @@ public abstract class BaseTest {
             .routingKey(TABLE_2_ROUTING_KEY)
             .columns(List.of() /* for jpa */)
             .creator(null /* for jpa */)
+            .owner(null /* for jpa */)
             .created(TABLE_2_CREATED)
             .lastModified(TABLE_2_LAST_MODIFIED)
             .build();
@@ -3296,6 +3300,7 @@ public abstract class BaseTest {
             .columns(TABLE_3_COLUMNS)
             .constraints(TABLE_3_CONSTRAINTS)
             .creator(USER_1)
+            .owner(USER_1)
             .created(TABLE_3_CREATED)
             .lastModified(TABLE_3_LAST_MODIFIED)
             .build();
@@ -3314,6 +3319,7 @@ public abstract class BaseTest {
             .columns(List.of() /* for jpa */)
             .constraints(TABLE_3_CONSTRAINTS)
             .creator(null /* for jpa */)
+            .owner(null /* for jpa */)
             .created(TABLE_3_CREATED)
             .lastModified(TABLE_3_LAST_MODIFIED)
             .build();
@@ -3651,6 +3657,23 @@ public abstract class BaseTest {
             .columns(TABLE_4_COLUMNS)
             .constraints(TABLE_4_CONSTRAINTS)
             .creator(USER_1)
+            .owner(USER_1)
+            .build();
+
+    public final static Table TABLE_4_SIMPLE = Table.builder()
+            .id(TABLE_4_ID)
+            .created(Instant.now())
+            .internalName(TABLE_4_INTERNALNAME)
+            .description(TABLE_4_DESCRIPTION)
+            .name(TABLE_4_NAME)
+            .lastModified(TABLE_4_LAST_MODIFIED)
+            .tdbid(DATABASE_2_ID)
+            .queueName(TABLE_4_QUEUE_NAME)
+            .routingKey(TABLE_4_ROUTING_KEY)
+            .columns(List.of() /* for jpa */)
+            .constraints(TABLE_4_CONSTRAINTS)
+            .creator(null /* for jpa */)
+            .owner(null  /* for jpa */)
             .build();
 
     public final static List<ForeignKeyCreateDto> TABLE_4_FOREIGN_KEYS_INVALID_CREATE = List.of(ForeignKeyCreateDto.builder()
@@ -3766,6 +3789,25 @@ public abstract class BaseTest {
             .columns(TABLE_5_COLUMNS)
             .constraints(TABLE_5_CONSTRAINTS)
             .creator(USER_1)
+            .owner(USER_1)
+            .created(TABLE_5_CREATED)
+            .lastModified(TABLE_5_LAST_MODIFIED)
+            .build();
+
+    public final static Table TABLE_5_SIMPLE = Table.builder()
+            .id(TABLE_5_ID)
+            .created(Instant.now())
+            .internalName(TABLE_5_INTERNALNAME)
+            .description(TABLE_5_DESCRIPTION)
+            .name(TABLE_5_NAME)
+            .lastModified(TABLE_5_LAST_MODIFIED)
+            .tdbid(DATABASE_2_ID)
+            .queueName(TABLE_5_QUEUE_NAME)
+            .routingKey(TABLE_5_ROUTING_KEY)
+            .columns(List.of() /* for jpa */)
+            .constraints(TABLE_5_CONSTRAINTS)
+            .creator(null /* for jpa */)
+            .owner(null /* for jpa */)
             .created(TABLE_5_CREATED)
             .lastModified(TABLE_5_LAST_MODIFIED)
             .build();
@@ -3899,22 +3941,26 @@ public abstract class BaseTest {
             .routingKey(TABLE_6_ROUTING_KEY)
             .columns(TABLE_6_COLUMNS)
             .creator(USER_1)
+            .owner(USER_1)
             .created(TABLE_6_CREATED)
             .lastModified(TABLE_6_LAST_MODIFIED)
             .build();
 
-    public final static Table TABLE_7_NOCOLS = Table.builder()
-            .id(TABLE_7_ID)
+    public final static Table TABLE_6_SIMPLE = Table.builder()
+            .id(TABLE_6_ID)
             .created(Instant.now())
-            .internalName(TABLE_7_INTERNAL_NAME)
-            .description(TABLE_7_DESCRIPTION)
-            .name(TABLE_7_NAME)
-            .lastModified(TABLE_7_LAST_MODIFIED)
-            .tdbid(DATABASE_1_ID)
-            .queueName(TABLE_7_QUEUE_NAME)
-            .routingKey(TABLE_7_ROUTING_KEY)
-            .columns(List.of())
-            .creator(USER_1)
+            .internalName(TABLE_6_INTERNAL_NAME)
+            .description(TABLE_6_DESCRIPTION)
+            .name(TABLE_6_NAME)
+            .lastModified(TABLE_6_LAST_MODIFIED)
+            .tdbid(DATABASE_2_ID)
+            .queueName(TABLE_6_QUEUE_NAME)
+            .routingKey(TABLE_6_ROUTING_KEY)
+            .columns(List.of() /* for jpa */)
+            .creator(null /* for jpa */)
+            .owner(null /* for jpa */)
+            .created(TABLE_6_CREATED)
+            .lastModified(TABLE_6_LAST_MODIFIED)
             .build();
 
     public final static Long VIEW_1_ID = 1L;
