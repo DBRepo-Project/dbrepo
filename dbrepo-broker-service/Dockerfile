@@ -16,11 +16,8 @@ COPY ./rabbitmq.conf /etc/rabbitmq/rabbitmq.conf
 WORKDIR /app
 
 COPY ./init.sh ./init.sh
-COPY ./service-register.sh ./service-register.sh
 COPY ./service_ready /usr/bin/service_ready
 COPY ./docker-entrypoint.sh ./docker-entrypoint.sh
-
-RUN chmod +x ./service-register.sh
 
 HEALTHCHECK --interval=10s --timeout=5s --retries=12 CMD service_ready
 

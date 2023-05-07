@@ -29,7 +29,7 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <spring-cloud.version>Hoxton.SR8</spring-cloud.version>
         <mapstruct.version>1.4.2.Final</mapstruct.version>
-        <docker.version>3.2.7</docker.version>
+        <docker.version>3.3.0</docker.version>
         <testcontainers.version>1.15.2</testcontainers.version>
         <swagger.version>2.1.7</swagger.version>
         <springfox.version>3.0.0</springfox.version>
@@ -46,17 +46,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
-            <version>3.0.1</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>javax.ws.rs</groupId>
-                    <artifactId>jsr311-api</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -82,6 +71,12 @@
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>${commons.version}</version>
+        </dependency>
+        <!-- Utils -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>31.1-jre</version>
         </dependency>
         <!-- SQL Parser -->
         <dependency>

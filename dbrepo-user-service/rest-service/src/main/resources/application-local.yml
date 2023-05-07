@@ -35,18 +35,13 @@ logging:
     root: warn
     at.tuwien.: trace
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
-eureka:
-  instance:
-    hostname: user-service
-    non-secure-port: 9098
-  client.serviceUrl.defaultZone: http://localhost:9090/eureka/
 fda:
   elastic:
     endpoint: localhost:9200
     username: elastic
     password: elastic
   ready.path: ./ready
-  gateway.endpoint: http://localhost:9095
+  gateway.endpoint: http://localhost
   default_role: default-researcher-roles
   jwt:
     issuer: https://localhost:8443/realms/dbrepo

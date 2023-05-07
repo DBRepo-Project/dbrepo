@@ -1,11 +1,9 @@
-import os
 from _csv import Error
 
 from flask import Flask, request, Response
 from determine_dt import determine_datatypes
 from determine_pk import determine_pk
 import logging
-import py_eureka_client.eureka_client as eureka_client
 from flasgger import Swagger
 from flasgger.utils import swag_from
 from flasgger import LazyJSONEncoder
@@ -148,11 +146,6 @@ def determinepk():
 
 
 rest_server_port = 5000
-eureka_client.init(eureka_server=os.getenv('EUREKA_SERVER', 'http://localhost:9090/eureka/'),
-                   app_name=os.getenv('HOSTNAME', 'analyse-service'),
-                   instance_ip=os.getenv('HOSTNAME', 'analyse-service'),
-                   instance_host=os.getenv('HOSTNAME', 'analyse-service'),
-                   instance_port=rest_server_port)
 
 if __name__ == '__main__':
     http_server = WSGIServer(('', 5000), app)

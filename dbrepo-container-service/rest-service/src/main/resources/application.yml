@@ -36,11 +36,6 @@ logging:
     root: warn
     at.tuwien.: "${LOG_LEVEL}"
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
-eureka:
-  instance:
-    hostname: container-service
-    non-secure-port: 9091
-  client.serviceUrl.defaultZone: http://discovery-service:9090/eureka/
 fda:
   network: "${USER_NETWORK}"
   mount.path: "${SHARED_FILESYSTEM}"
@@ -50,4 +45,4 @@ fda:
     public_key: "${JWT_PUBKEY}"
   client_secret: "${DBREPO_CLIENT_SECRET}"
   client_id: "${CLIENT_ID}"
-  gateway.endpoint: http://gateway-service:9095
+  gateway.endpoint: http://gateway-service

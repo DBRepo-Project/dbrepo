@@ -25,7 +25,7 @@ FROM openjdk:11-jre-slim as runtime
 ENV METADATA_DB=fda
 ENV METADATA_USERNAME=root
 ENV METADATA_PASSWORD=dbrepo
-ENV GATEWAY_ENDPOINT=http://gateway-service:9095
+ENV GATEWAY_ENDPOINT=http://gateway-service
 ENV WEBSITE=http://localhost
 ENV LOG_LEVEL=debug
 ENV DBREPO_CLIENT_SECRET=client-secret

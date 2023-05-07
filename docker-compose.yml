@@ -49,40 +49,6 @@ services:
     logging:
       driver: json-file
 
-  dbrepo-discovery-service:
-    restart: "no"
-    container_name: dbrepo-discovery-service
-    hostname: discovery-service
-    build: ./dbrepo-discovery-service
-    image: dbrepo-discovery-service
-    networks:
-      core:
-    ports:
-      - "9090:9090"
-    env_file:
-      - .env
-    logging:
-      driver: json-file
-
-  dbrepo-gateway-service:
-    restart: "no"
-    container_name: dbrepo-gateway-service
-    hostname: gateway-service
-    build: ./dbrepo-gateway-service
-    image: dbrepo-gateway-service
-    networks:
-      core:
-      public:
-    ports:
-      - "9095:9095"
-    env_file:
-      - .env
-    depends_on:
-      dbrepo-discovery-service:
-        condition: service_healthy
-    logging:
-      driver: json-file
-
   dbrepo-database-service:
     restart: "no"
     container_name: dbrepo-database-service
@@ -144,8 +110,6 @@ services:
     volumes:
       - authentication-service-data:/opt/keycloak/data/
     depends_on:
-      dbrepo-discovery-service:
-        condition: service_healthy
       dbrepo-metadata-db:
         condition: service_healthy
     logging:
@@ -260,9 +224,6 @@ services:
     volumes:
       - "/tmp:/tmp"
       - /var/run/docker.sock:/var/run/docker.sock
-    depends_on:
-      dbrepo-discovery-service:
-        condition: service_healthy
     logging:
       driver: json-file
 
@@ -302,8 +263,6 @@ services:
       - "/tmp:/tmp"
       - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
-      dbrepo-discovery-service:
-        condition: service_healthy
       dbrepo-metadata-db:
         condition: service_healthy
       dbrepo-authentication-service:
@@ -325,8 +284,6 @@ services:
     env_file:
       - .env
     depends_on:
-      dbrepo-discovery-service:
-        condition: service_healthy
       dbrepo-authentication-service:
         condition: service_healthy
     volumes:
@@ -342,9 +299,6 @@ services:
     image: dbrepo-search-service
     networks:
       core:
-    depends_on:
-      dbrepo-discovery-service:
-        condition: service_healthy
     ports:
       - 9200:9200
       - 9600:9600
@@ -376,12 +330,12 @@ services:
     logging:
       driver: json-file
 
-  dbrepo-proxy:
+  dbrepo-gateway-service:
     restart: "no"
-    container_name: dbrepo-proxy
-    hostname: proxy
-    build: ./dbrepo-proxy
-    image: dbrepo-proxy
+    container_name: dbrepo-gateway-service
+    hostname: gateway-service
+    build: ./dbrepo-gateway-service
+    image: dbrepo-gateway-service
     networks:
       core:
       public:
@@ -393,11 +347,31 @@ services:
     env_file:
       - .env
     depends_on:
+      dbrepo-analyse-service:
+        condition: service_healthy
+      dbrepo-authentication-service:
+        condition: service_healthy
+      dbrepo-broker-service:
+        condition: service_healthy
+      dbrepo-container-service:
+        condition: service_healthy
+      dbrepo-database-service:
+        condition: service_healthy
+      dbrepo-identifier-service:
+        condition: service_healthy
+      dbrepo-metadata-service:
+        condition: service_healthy
+      dbrepo-query-service:
+        condition: service_healthy
       dbrepo-search-service:
         condition: service_started
-      dbrepo-gateway-service:
+      dbrepo-semantics-service:
+        condition: service_healthy
+      dbrepo-table-service:
         condition: service_healthy
       dbrepo-ui:
         condition: service_started
+      dbrepo-user-service:
+        condition: service_healthy
     logging:
       driver: json-file

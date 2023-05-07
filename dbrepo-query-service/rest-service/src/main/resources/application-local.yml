@@ -39,13 +39,8 @@ logging:
     root: warn
     at.tuwien.: trace
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
-eureka:
-  instance:
-    hostname: query-service
-    non-secure-port: 9093
-  client.serviceUrl.defaultZone: http://discovery-service:9090/eureka/
 fda:
-  gateway.endpoint: http://localhost:9095
+  gateway.endpoint: http://localhost
   ready.path: ./ready
   jwt:
     issuer: https://localhost:8443/realms/dbrepo
