@@ -226,8 +226,9 @@
                         <exclude>at/tuwien/utils/**/*</exclude>
                         <exclude>at/tuwien/handlers/**/*</exclude>
                         <exclude>at/tuwien/seeder/**/*</exclude>
+                        <exclude>at/tuwien/auth/**/*</exclude>
                         <exclude>**/HibernateConnector.class</exclude>
-                        <exclude>**/FdaDatabaseManagingApplication.class</exclude>
+                        <exclude>**/DbrepoDatabaseManagingApplication.class</exclude>
                     </excludes>
                 </configuration>
                 <executions>

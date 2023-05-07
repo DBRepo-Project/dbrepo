@@ -38,7 +38,7 @@ public class Container {
     @Type(type = "uuid-char")
     private UUID createdBy;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumns({
             @JoinColumn(name = "createdBy", referencedColumnName = "ID", insertable = false, updatable = false)
     })
@@ -49,7 +49,7 @@ public class Container {
     @Type(type = "uuid-char")
     private UUID ownedBy;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumns({
             @JoinColumn(name = "ownedBy", referencedColumnName = "ID", insertable = false, updatable = false)
     })
@@ -72,7 +72,7 @@ public class Container {
 
     @ToString.Exclude
     @org.springframework.data.annotation.Transient
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumns({
             @JoinColumn(name = "id", referencedColumnName = "id", insertable = false, updatable = false)
     })

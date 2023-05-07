@@ -4204,7 +4204,7 @@ public abstract class BaseTest {
     public final static String IDENTIFIER_1_NORMALIZED = QUERY_1_STATEMENT;
     public final static Long IDENTIFIER_1_RESULT_NUMBER = QUERY_1_RESULT_NUMBER;
     public final static String IDENTIFIER_1_PUBLISHER = "Austrian Government";
-    public final static IdentifierType IDENTIFIER_1_TYPE = IdentifierType.SUBSET;
+    public final static IdentifierType IDENTIFIER_1_TYPE = IdentifierType.DATABASE;
     public final static IdentifierTypeDto IDENTIFIER_1_TYPE_DTO = IdentifierTypeDto.DATABASE;
     public final static UUID IDENTIFIER_1_CREATED_BY = USER_1_ID;
     public final static User IDENTIFIER_1_CREATOR = USER_1;

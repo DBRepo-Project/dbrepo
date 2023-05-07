@@ -65,8 +65,8 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
             database = databaseRepository.findPublicOrMine(containerId, databaseId, principal.getName());
         }
         if (database.isEmpty()) {
-            log.error("Failed to find database");
-            throw new DatabaseNotFoundException("Failed to find database");
+            log.error("Failed to find database with id {}", databaseId);
+            throw new DatabaseNotFoundException("Failed to find database with id "+ databaseId);
         }
         return database.get();
     }
@@ -77,7 +77,7 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         final Optional<Database> database = databaseRepository.findById(databaseId);
         if (database.isEmpty()) {
             log.error("Failed to find database with id {}", databaseId);
-            throw new DatabaseNotFoundException("could not find database with this id");
+            throw new DatabaseNotFoundException("could not find database with id " + databaseId);
         }
         return database.get();
     }
@@ -180,6 +180,7 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
     }
 
     @Override
+    @Transactional
     public Database transfer(Long containerId, Long databaseId, DatabaseTransferDto transferDto)
             throws DatabaseNotFoundException, UserNotFoundException {
         /* check */
