@@ -2338,7 +2338,6 @@ public abstract class BaseTest {
             .createdBy(USER_1_USERNAME)
             .isPersisted(QUERY_1_PERSISTED)
             .executed(QUERY_1_EXECUTION)
-            .created(QUERY_1_CREATED)
             .build();
 
     public final static QueryDto QUERY_1_DTO = QueryDto.builder()
@@ -2349,9 +2348,9 @@ public abstract class BaseTest {
             .queryHash(QUERY_1_QUERY_HASH)
             .resultHash(QUERY_1_RESULT_HASH)
             .created(QUERY_1_CREATED)
+            .creator(USER_1_DTO)
             .execution(QUERY_1_EXECUTION)
             .createdBy(USER_1_ID)
-            .creator(USER_1_DTO)
             .build();
 
     public final static QueryBriefDto QUERY_1_BRIEF_DTO = QueryBriefDto.builder()
