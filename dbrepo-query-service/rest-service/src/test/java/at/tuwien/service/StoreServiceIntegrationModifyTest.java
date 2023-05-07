@@ -40,7 +40,7 @@ import static org.mockito.Mockito.when;
 
 @Log4j2
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-@EnableAutoConfiguration(exclude= RabbitAutoConfiguration.class)
+@EnableAutoConfiguration(exclude = RabbitAutoConfiguration.class)
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 public class StoreServiceIntegrationModifyTest extends BaseUnitTest {
@@ -112,8 +112,8 @@ public class StoreServiceIntegrationModifyTest extends BaseUnitTest {
     }
 
     @Test
-    public void insert_same_succeeds() throws UserNotFoundException, QueryStoreException,
-            DatabaseConnectionException, DatabaseNotFoundException, ImageNotSupportedException,
+    public void insert_same_succeeds() throws UserNotFoundException, QueryStoreException, DatabaseConnectionException,
+            DatabaseNotFoundException, ImageNotSupportedException,
             ContainerNotFoundException, SQLException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement(QUERY_2_STATEMENT)
@@ -309,8 +309,8 @@ public class StoreServiceIntegrationModifyTest extends BaseUnitTest {
     }
 
     @Test
-    public void findOne_succeeds() throws UserNotFoundException, QueryStoreException,
-            DatabaseConnectionException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException, SQLException {
+    public void findOne_succeeds() throws UserNotFoundException, QueryStoreException, DatabaseConnectionException,
+            QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException, SQLException {
 
         /* mock */
         when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
@@ -335,7 +335,7 @@ public class StoreServiceIntegrationModifyTest extends BaseUnitTest {
     }
 
     @Test
-    public void findOne_notFound_fails() throws SQLException {
+    public void findOne_notFound_fails() {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
@@ -350,10 +350,32 @@ public class StoreServiceIntegrationModifyTest extends BaseUnitTest {
 
     @Test
     public void deleteStaleQueries_succeeds() throws QueryStoreException, ImageNotSupportedException, SQLException {
+        final Query queryOk = Query.builder()
+                .id(QUERY_1_ID)
+                .query(QUERY_1_STATEMENT)
+                .queryHash(QUERY_1_QUERY_HASH)
+                .resultHash(QUERY_1_RESULT_HASH)
+                .resultNumber(QUERY_1_RESULT_NUMBER)
+                .created(Instant.now().minus(1, ChronoUnit.HOURS))
+                .createdBy(USER_1_USERNAME)
+                .isPersisted(QUERY_1_PERSISTED)
+                .executed(Instant.now().minus(1, ChronoUnit.HOURS))
+                .build();
+        final Query queryDelete = Query.builder()
+                .id(QUERY_2_ID)
+                .query(QUERY_2_STATEMENT)
+                .queryHash(QUERY_2_QUERY_HASH)
+                .resultHash(QUERY_2_RESULT_HASH)
+                .resultNumber(QUERY_2_RESULT_NUMBER)
+                .created(Instant.now().minus(25, ChronoUnit.HOURS))
+                .createdBy(USER_2_USERNAME)
+                .isPersisted(QUERY_2_PERSISTED)
+                .executed(Instant.now().minus(25, ChronoUnit.HOURS))
+                .build();
 
         /* mock */
-        MariaDbConfig.insertQueryStore(CONTAINER_1_INTERNALNAME, DATABASE_1_INTERNALNAME, QUERY_1, USER_1_USERNAME);
-        MariaDbConfig.insertQueryStore(CONTAINER_1_INTERNALNAME, DATABASE_1_INTERNALNAME, QUERY_2, USER_1_USERNAME);
+        MariaDbConfig.insertQueryStore(CONTAINER_1_INTERNALNAME, DATABASE_1_INTERNALNAME, queryOk, USER_1_USERNAME);
+        MariaDbConfig.insertQueryStore(CONTAINER_1_INTERNALNAME, DATABASE_1_INTERNALNAME, queryDelete, USER_1_USERNAME);
         when(databaseRepository.findAll())
                 .thenReturn(List.of(DATABASE_1));
 
