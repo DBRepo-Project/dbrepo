@@ -32,6 +32,9 @@ fda-ui/
 # Environment
 .env
 
+# X509
+root.crt
+
 # scanning
 .trivy/trivy-*.json
 
