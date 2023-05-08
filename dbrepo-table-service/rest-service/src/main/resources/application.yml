@@ -42,7 +42,7 @@ fda:
     public_key: "${JWT_PUBKEY}"
   client_secret: "${DBREPO_CLIENT_SECRET}"
   client_id: "${CLIENT_ID}"
-  gateway.endpoint: http://gateway-service
+  gateway.endpoint: https://gateway-service
   elastic:
     endpoint: search-service:9200
     username: elastic

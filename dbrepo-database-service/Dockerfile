@@ -33,7 +33,7 @@ ENV GATEWAY_ENDPOINT=http://gateway-service
 ENV LOG_LEVEL=debug
 ENV DBREPO_CLIENT_SECRET=client-secret
 ENV CLIENT_ID=dbrepo-client
-ENV JWT_ISSUER=http://localhost:8080/realms/dbrepo
+ENV JWT_ISSUER=https://localhost/realms/dbrepo
 ENV JWT_PUBKEY=public-key
 
 WORKDIR /app

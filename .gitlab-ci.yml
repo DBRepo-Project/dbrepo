@@ -55,13 +55,6 @@ build-database-service:
   script:
     - "make build-database-service"
 
-build-discovery-service:
-  stage: build-backend
-  needs:
-    - build-metadata-db
-  script:
-    - "make build-discovery-service"
-
 build-gateway-service:
   stage: build-backend
   needs:
@@ -177,23 +170,6 @@ test-database-service:
   coverage: '/Total.*?([0-9]{1,3})%/'
   timeout: 2 hour
 
-test-discovery-service:
-  stage: test-backend
-  needs:
-    - build-discovery-service
-  script:
-    - "make test-discovery-service"
-    - "cat ./dbrepo-discovery-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
-  artifacts:
-    when: always
-    paths:
-      - ./dbrepo-discovery-service/report/target/site/jacoco-aggregate/
-      - ./dbrepo-discovery-service/discovery/target/surefire-reports/
-    expire_in: 1 days
-    reports:
-      junit: ./dbrepo-discovery-service/discovery/target/surefire-reports/TEST-*.xml
-  coverage: '/Total.*?([0-9]{1,3})%/'
-
 test-query-service:
   stage: test-backend
   needs:
@@ -244,23 +220,6 @@ test-metadata-service:
     expire_in: 1 days
     reports:
       junit: ./dbrepo-metadata-service/rest-service/target/surefire-reports/TEST-*.xml
-  coverage: '/Total.*?([0-9]{1,3})%/'
-
-test-gateway-service:
-  stage: test-backend
-  needs:
-    - build-gateway-service
-  script:
-    - "make test-gateway-service"
-    - "echo 'Jacoco Coverage Total: 100%'"
-  artifacts:
-    when: always
-    paths:
-      - ./dbrepo-gateway-service/report/target/site/jacoco-aggregate/
-      - ./dbrepo-metadata-service/gateway/target/surefire-reports/
-    expire_in: 1 days
-    reports:
-      junit: ./dbrepo-gateway-service/gateway/target/surefire-reports/TEST-*.xml
   coverage: '/Total.*?([0-9]{1,3})%/'
 
 test-semantics-service:
@@ -320,7 +279,6 @@ build-docker:
     - build-identifier-service
     - build-container-service
     - build-database-service
-    - build-discovery-service
     - build-gateway-service
     - build-query-service
     - build-table-service
@@ -426,24 +384,6 @@ scan-database-service:
     expire_in: 1 days
     reports:
       container_scanning: ./.trivy/trivy-database-service-report.json
-
-scan-discovery-service:
-  stage: scan-docker
-  needs:
-    - build-docker
-  allow_failure: true
-  before_script:
-    - docker logout ghcr.io
-  script:
-    - make scan-discovery-service
-  cache:
-    paths:
-      - .trivycache/
-  artifacts:
-    when: always
-    expire_in: 1 days
-    reports:
-      container_scanning: ./.trivy/trivy-discovery-service-report.json
 
 scan-gateway-service:
   stage: scan-docker
@@ -651,7 +591,6 @@ release-latest:
     - scan-broker-service
     - scan-container-service
     - scan-database-service
-    - scan-discovery-service
     - scan-gateway-service
     - scan-identifier-service
     - scan-metadata-db
@@ -679,7 +618,6 @@ release-version:
     - scan-broker-service
     - scan-container-service
     - scan-database-service
-    - scan-discovery-service
     - scan-gateway-service
     - scan-identifier-service
     - scan-metadata-db

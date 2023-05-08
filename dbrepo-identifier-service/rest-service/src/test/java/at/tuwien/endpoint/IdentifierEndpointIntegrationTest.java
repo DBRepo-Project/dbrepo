@@ -162,7 +162,7 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
         identifierRepository.save(IDENTIFIER_1);
 
         /* test */
-        final List<IdentifierDto> response = this.generic_list(DATABASE_1_ID, QUERY_1_ID, IdentifierTypeDto.SUBSET);
+        final List<IdentifierDto> response = this.generic_list(DATABASE_1_ID, QUERY_1_ID, IdentifierTypeDto.DATABASE);
         assertEquals(1, response.size());
         final IdentifierDto identifier = response.get(0);
         assertEquals(IDENTIFIER_1_ID, identifier.getId());

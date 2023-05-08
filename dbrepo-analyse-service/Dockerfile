@@ -4,12 +4,12 @@ MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
 RUN apk update && apk --no-cache add build-base gcc python3-dev libpq-dev libffi-dev bash curl py3-pandas \
     py3-sqlalchemy py3-requests py3-gevent py3-psycopg2
 
-COPY ./requirements.txt ./requirements.txt
-COPY ./healthcheck.sh ./healthcheck.sh
+WORKDIR /app
 
+COPY ./requirements.txt ./requirements.txt
 RUN pip install -r requirements.txt > /dev/null
 
-WORKDIR /app
+COPY ./healthcheck.sh ./healthcheck.sh
 
 ENV FLASK_APP=app.py
 ENV FLASK_RUN_HOST=0.0.0.0

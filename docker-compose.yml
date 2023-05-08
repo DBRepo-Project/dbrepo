@@ -104,7 +104,7 @@ services:
       core:
     ports:
       - "8443:8443"
-      - "8081:8080"
+      - "8080:8080"
     env_file:
       - .env
     volumes:
@@ -341,8 +341,6 @@ services:
       public:
     ports:
       - "80:80"
-      - "8080:8080"
-      - "3000:3000"
       - "443:443"
     env_file:
       - .env

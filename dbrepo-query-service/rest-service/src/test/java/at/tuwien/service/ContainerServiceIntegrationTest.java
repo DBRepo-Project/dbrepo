@@ -52,6 +52,12 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     private ImageRepository imageRepository;
 
     @Autowired
+    private RealmRepository realmRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     private ContainerRepository containerRepository;
 
     @Autowired
@@ -59,6 +65,8 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
 
     @BeforeEach
     public void beforeEach() {
+        realmRepository.save(REALM_DBREPO);
+        userRepository.save(USER_1);
         imageRepository.save(IMAGE_1);
         containerRepository.save(CONTAINER_1);
     }

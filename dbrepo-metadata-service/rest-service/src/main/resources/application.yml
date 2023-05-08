@@ -36,7 +36,7 @@ logging:
     at.tuwien.: "${LOG_LEVEL}"
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 fda:
-  ready.path: ./ready
+  ready.path: /ready
   pid.base: "${PID_BASE}"
   gateway.endpoint: "${GATEWAY_ENDPOINT}"
 dbrepo:

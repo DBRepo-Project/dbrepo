@@ -37,11 +37,11 @@ logging:
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 fda:
   ready.path: ./ready
-  pid.base: http://example.com/pid/
-  gateway.endpoint: http://localhost
+  pid.base: https://example.com/pid/
+  gateway.endpoint: https://localhost
 dbrepo:
   repository-name: TU Wien Database Repository
-  base-url: http://dbrepo.ossdip.at/api/oai
+  base-url: https://dbrepo1.ec.tuwien.at/api/oai
   admin-email: noreply@example.com
   earliest-datestamp: 2022-09-17T16:09:00Z
   deleted-record: persistent
