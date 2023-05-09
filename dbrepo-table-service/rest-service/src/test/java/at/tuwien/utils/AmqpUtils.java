@@ -1,6 +1,5 @@
 package at.tuwien.utils;
 
-import at.tuwien.api.amqp.CreateExchangeDto;
 import at.tuwien.api.amqp.ExchangeDto;
 import at.tuwien.api.amqp.QueueDto;
 import at.tuwien.config.AmqpConfig;
@@ -32,22 +31,6 @@ public class AmqpUtils {
         this.amqpConfig = amqpConfig;
     }
 
-    public void createExchange(String exchange) {
-        exchange = exchange.replace("/", "%2F");
-        final URI uri = URI.create("http://" + amqpConfig.getAmpqHost() + ":15672/api/exchanges/dbrepo/" + exchange);
-        final CreateExchangeDto payload = CreateExchangeDto.builder()
-                .type("fanout")
-                .autoDelete(false)
-                .durable(true)
-                .internal(false)
-                .build();
-        final ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.PUT, new HttpEntity<>(payload), Void.class);
-        if (!response.getStatusCode().equals(HttpStatus.CREATED)) {
-            log.error("Failed to create exchange, code is {}", response.getStatusCode());
-            throw new RuntimeException("Failed to create exchange");
-        }
-    }
-
     public boolean exchangeExists(String exchange) {
         final ResponseEntity<ExchangeDto[]> response = restTemplate.exchange("/api/exchanges", HttpMethod.GET, null, ExchangeDto[].class);
         if (!response.getStatusCode().equals(HttpStatus.OK)) {
@@ -67,7 +50,7 @@ public class AmqpUtils {
     }
 
     public boolean queueExists(String queue) {
-        final URI uri = URI.create("http://" + amqpConfig.getAmpqHost() + ":15672/api/queues/dbrepo/");
+        final URI uri = URI.create("http://" + amqpConfig.getAmpqHost() + ":15672/api/queues/%2F/");
         final ResponseEntity<QueueDto[]> response = restTemplate.exchange(uri, HttpMethod.GET, new HttpEntity<>(null), QueueDto[].class);
         if (!response.getStatusCode().equals(HttpStatus.OK)) {
             log.error("Failed to find queue, code is {}", response.getStatusCode());
