@@ -22,6 +22,7 @@ spring:
     name: query-service
   rabbitmq:
     host: broker-service
+    virtual-host: dbrepo
     username: "${BROKER_USERNAME}"
     password: "${BROKER_PASSWORD}"
   cloud:

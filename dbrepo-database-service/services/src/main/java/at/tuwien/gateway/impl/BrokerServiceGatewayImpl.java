@@ -45,7 +45,7 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
     @Override
     public void grantPermission(String username, ExchangeUpdatePermissionsDto data)
             throws BrokerVirtualHostGrantException {
-        final URI grantUri = URI.create(gatewayConfig.getGatewayEndpoint() + "/api/broker/topic-permissions/%2F/" + username);
+        final URI grantUri = URI.create(gatewayConfig.getGatewayEndpoint() + "/api/broker/topic-permissions/dbrepo/" + username);
         final ResponseEntity<Void> response = restTemplate.exchange(grantUri, HttpMethod.PUT,
                 new HttpEntity<>(data), Void.class);
         if (!response.getStatusCode().equals(HttpStatus.CREATED) && !response.getStatusCode().equals(HttpStatus.NO_CONTENT)) {
@@ -73,7 +73,7 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
     @Override
     public void grantPermission(String username, GrantVirtualHostPermissionsDto data)
             throws BrokerVirtualHostGrantException {
-        final URI grantUri = URI.create(gatewayConfig.getGatewayEndpoint() + "/api/broker/permissions/%2F/" + username);
+        final URI grantUri = URI.create(gatewayConfig.getGatewayEndpoint() + "/api/broker/permissions/dbrepo/" + username);
         final ResponseEntity<Void> response = restTemplate.exchange(grantUri, HttpMethod.PUT,
                 new HttpEntity<>(data), Void.class);
         if (!response.getStatusCode().equals(HttpStatus.CREATED) && !response.getStatusCode().equals(HttpStatus.NO_CONTENT)) {

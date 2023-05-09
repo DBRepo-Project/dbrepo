@@ -15,7 +15,7 @@ import javax.validation.constraints.NotNull;
 public class QueueBriefDto {
 
     @NotNull
-    @Schema(example = "%2F")
+    @Schema(example = "dbrepo")
     private String vhost;
 
     @NotNull

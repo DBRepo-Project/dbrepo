@@ -5,15 +5,16 @@ MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
 ###### SECOND STAGE ######
 FROM rabbitmq:3-management-alpine as runtime
 
-ENV PYTHONUNBUFFERED=1
-ENV JWT_PUBKEY=public-key
-ENV JWT_CERT=cert
+ENV RABBITMQ_DEFAULT_VHOST=dbrepo
 
 RUN apk --no-cache add curl
 
 COPY ./rabbitmq.conf /etc/rabbitmq/rabbitmq.conf
 
 WORKDIR /app
+
+ENV JWT_PUBKEY=public-key
+ENV JWT_CERT=cert
 
 COPY ./init.sh ./init.sh
 COPY ./service_ready /usr/bin/service_ready

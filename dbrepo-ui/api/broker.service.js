@@ -6,7 +6,7 @@ class BrokerService {
   findConsumers () {
     return new Promise((resolve, reject) => {
       const basic = btoa(`${brokerUsername}:${brokerPassword}`)
-      axios.get('/api/broker/consumers/%2F', { headers: { Authorization: 'Basic ' + basic } })
+      axios.get('/api/broker/consumers/dbrepo', { headers: { Authorization: 'Basic ' + basic } })
         .then((response) => {
           const consumers = response.data
           console.debug('response consumers', consumers)

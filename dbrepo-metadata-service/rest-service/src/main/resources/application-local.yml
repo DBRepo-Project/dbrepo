@@ -22,6 +22,7 @@ spring:
     name: metadata-service
   rabbitmq:
     host: localhost
+    virtual-host: dbrepo
     username: fda
     password: fda
   cloud:

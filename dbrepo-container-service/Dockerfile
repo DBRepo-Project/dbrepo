@@ -41,8 +41,9 @@ RUN chmod +x /usr/bin/service_ready
 
 HEALTHCHECK --interval=10s --timeout=5s --retries=12 CMD service_ready
 
+COPY ./server.keystore ./server.keystore
 COPY --from=build ./rest-service/target/rest-service-*.jar ./container-service.jar
 
 EXPOSE 9091
 
-ENTRYPOINT ["java", "-Dlog4j2.formatMsgNoLookups=true", "-jar", "./container-service.jar"]
+ENTRYPOINT ["java", "-Dlog4j2.formatMsgNoLookups=true", "-Djavax.net.ssl.trustStore=/app/server.keystore", "-Djavax.net.ssl.trustStorePassword=password", "-jar", "./container-service.jar"]

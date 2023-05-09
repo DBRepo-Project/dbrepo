@@ -344,6 +344,10 @@ services:
       - "443:443"
     env_file:
       - .env
+    volumes:
+      - ./dbrepo-gateway-service/dbrepo.conf:/etc/nginx/conf.d/default.conf
+      - ./dbrepo-gateway-service/server.key:/server.key
+      - ./dbrepo-gateway-service/server.pem:/server.pem
     depends_on:
       dbrepo-analyse-service:
         condition: service_healthy

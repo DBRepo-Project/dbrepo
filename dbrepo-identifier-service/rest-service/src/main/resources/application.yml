@@ -24,6 +24,7 @@ spring:
     loadbalancer.ribbon.enabled: false
   rabbitmq:
     host: broker-service
+    virtual-host: dbrepo
     username: "${BROKER_USERNAME}"
     password: "${BROKER_PASSWORD}"
 management.endpoints.web.exposure.include: health,info,prometheus

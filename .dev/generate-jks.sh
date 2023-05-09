@@ -6,13 +6,13 @@ STORE_PASS=password
 KEY_PASS=password
 
 declare -A services
+services[443]=gateway
+services[8443]=authentication
 services[9091]=container
 services[9092]=database
 services[9093]=query
 services[9094]=table
-services[9095]=gateway
 services[9096]=identifier
-services[9097]=authentication
 services[9098]=user
 services[9099]=metadata
 
@@ -43,7 +43,14 @@ function sign () {
 
 function crt () {
   echo "... export $1 certificate"
-  keytool -exportcert -alias "$1" -rfc -storepass ${STORE_PASS} -keystore "$2" > "./$1.crt"
+  keytool -exportcert -alias "$1" -rfc -storepass ${STORE_PASS} -keystore "$2" > "$3"
+}
+
+function key () {
+  echo "... export $1 key"
+  rm -f ./tmp.12 && keytool -importkeystore -srckeystore "$2" -destkeystore ./tmp.p12 -deststoretype PKCS12 \
+    -srcalias "$1" -srcstorepass ${STORE_PASS} -deststorepass ${STORE_PASS} -destkeypass ${STORE_PASS}
+  openssl pkcs12 -in ./tmp.p12 -nodes -nocerts -out server.key -password pass:${STORE_PASS}
 }
 
 function move () {
@@ -85,13 +92,11 @@ echo "Generating the certificate key pairs"
 for key in "${!services[@]}"; do
   generate "${services[$key]}" "service"
 done
-generate "ui"
 
 echo "Sign the certificates with intermediate certificate"
 for key in "${!services[@]}"; do
   sign "${services[$key]}" "service"
 done
-sign "ui"
 
 echo "Export the trusted keystore"
 keytool -export -alias intermediate -storepass ${STORE_PASS} | keytool -import -alias intermediate \
@@ -100,14 +105,20 @@ keytool -export -alias root -storepass ${STORE_PASS} | keytool -import -alias ro
   -storepass ${STORE_PASS} -trustcacerts -noprompt
 
 echo "Export CRTs"
-crt root ./chain.jks
-crt intermediate ./chain.jks
+crt root ./chain.jks ./root.crt
+crt intermediate ./chain.jks ./intermediate.crt
+crt gateway-service ./server.keystore ./gateway-service.crt
+cp ./gateway-service.crt ../dbrepo-gateway-service/server.crt
+cat ./root.crt ./intermediate.crt ./gateway-service.crt > ../dbrepo-gateway-service/fullchain.crt
+
+echo "Export private key"
+key gateway-service ./server.keystore
+cp ./server.key ../dbrepo-gateway-service/server.key
 
 echo "Copy the JKS(s)"
 for key in "${!services[@]}"; do
   move "${services[$key]}" "service"
 done
-move "ui"
 
 echo "Create the authentication service JKS"
 echo "... import private key into the key store"

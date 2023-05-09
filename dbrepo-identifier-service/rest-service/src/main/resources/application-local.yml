@@ -24,6 +24,7 @@ spring:
     loadbalancer.ribbon.enabled: false
   rabbitmq:
     host: localhost
+    virtual-host: dbrepo
     username: fda
     password: fda
 management.endpoints.web.exposure.include: health,info,prometheus

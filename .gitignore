@@ -34,6 +34,7 @@ fda-ui/
 
 # X509
 root.crt
+intermediate.crt
 
 # scanning
 .trivy/trivy-*.json

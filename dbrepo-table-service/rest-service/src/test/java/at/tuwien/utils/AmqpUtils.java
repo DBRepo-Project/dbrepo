@@ -34,7 +34,7 @@ public class AmqpUtils {
 
     public void createExchange(String exchange) {
         exchange = exchange.replace("/", "%2F");
-        final URI uri = URI.create("http://" + amqpConfig.getAmpqHost() + ":15672/api/exchanges/%2F/" + exchange);
+        final URI uri = URI.create("http://" + amqpConfig.getAmpqHost() + ":15672/api/exchanges/dbrepo/" + exchange);
         final CreateExchangeDto payload = CreateExchangeDto.builder()
                 .type("fanout")
                 .autoDelete(false)
@@ -67,7 +67,7 @@ public class AmqpUtils {
     }
 
     public boolean queueExists(String queue) {
-        final URI uri = URI.create("http://" + amqpConfig.getAmpqHost() + ":15672/api/queues/%2F/");
+        final URI uri = URI.create("http://" + amqpConfig.getAmpqHost() + ":15672/api/queues/dbrepo/");
         final ResponseEntity<QueueDto[]> response = restTemplate.exchange(uri, HttpMethod.GET, new HttpEntity<>(null), QueueDto[].class);
         if (!response.getStatusCode().equals(HttpStatus.OK)) {
             log.error("Failed to find queue, code is {}", response.getStatusCode());

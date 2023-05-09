@@ -55,13 +55,6 @@ build-database-service:
   script:
     - "make build-database-service"
 
-build-gateway-service:
-  stage: build-backend
-  needs:
-    - build-metadata-db
-  script:
-    - "make build-gateway-service"
-
 build-query-service:
   stage: build-backend
   needs:
@@ -279,7 +272,6 @@ build-docker:
     - build-identifier-service
     - build-container-service
     - build-database-service
-    - build-gateway-service
     - build-query-service
     - build-table-service
     - build-metadata-service
