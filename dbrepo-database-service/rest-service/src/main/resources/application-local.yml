@@ -27,6 +27,10 @@ spring:
     virtual-host: dbrepo
     username: fda
     password: fda
+  elasticsearch:
+    password: elastic
+    username: elastic
+    uris: http://localhost:9200
 management.endpoints.web.exposure.include: health,info,prometheus
 server:
   port: 9092
@@ -37,10 +41,6 @@ logging:
     at.tuwien.: info
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 fda:
-  elastic:
-    endpoint: localhost:9200
-    username: elastic
-    password: elastic
   ready.path: ./ready
   jwt:
     issuer: https://localhost/realms/dbrepo

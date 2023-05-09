@@ -5,7 +5,7 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.*;
+import jakarta.persistence.*;;
 import java.util.UUID;
 
 @Data
@@ -22,14 +22,12 @@ public class Credential {
     @Id
     @EqualsAndHashCode.Include
     @Column(name = "ID", nullable = false, columnDefinition = "VARCHAR(36)")
-    @Type(type = "uuid-char")
     private UUID id;
 
     @Column(nullable = false)
     private String type;
 
     @Column(name = "user_id", nullable = false, columnDefinition = "VARCHAR(36)")
-    @Type(type = "uuid-char")
     private UUID userId;
 
     @Column(nullable = false)

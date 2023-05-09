@@ -3,15 +3,13 @@ package at.tuwien.entities.container;
 import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.user.User;
-import com.github.dockerjava.api.model.HealthCheck;
+import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Type;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.*;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -35,7 +33,6 @@ public class Container {
 
     @ToString.Exclude
     @Column(name = "createdBy", nullable = false, columnDefinition = "VARCHAR(36)")
-    @Type(type = "uuid-char")
     private UUID createdBy;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
@@ -46,7 +43,6 @@ public class Container {
 
     @ToString.Exclude
     @Column(name = "ownedBy", nullable = false, columnDefinition = "VARCHAR(36)")
-    @Type(type = "uuid-char")
     private UUID ownedBy;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)

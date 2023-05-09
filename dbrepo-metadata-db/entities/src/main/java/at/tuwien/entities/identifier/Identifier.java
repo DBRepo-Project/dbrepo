@@ -10,8 +10,8 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
+import jakarta.persistence.*;;
+import jakarta.validation.constraints.NotBlank;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.List;
@@ -23,7 +23,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-@javax.persistence.Table(name = "mdb_identifiers", uniqueConstraints = {
+@jakarta.persistence.Table(name = "mdb_identifiers", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"qid", "cid", "dbid"})
 })
 public class Identifier implements Serializable {

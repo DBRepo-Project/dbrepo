@@ -2,7 +2,7 @@ package at.tuwien.api.datacite.doi;
 
 import lombok.*;
 
-import javax.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotBlank;
 import java.io.Serializable;
 import java.util.List;
 

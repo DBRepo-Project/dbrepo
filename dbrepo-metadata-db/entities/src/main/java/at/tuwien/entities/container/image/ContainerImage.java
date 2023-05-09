@@ -1,13 +1,13 @@
 package at.tuwien.entities.container.image;
 
 import at.tuwien.entities.container.Container;
+import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.*;
 import java.time.Instant;
 import java.util.List;
 

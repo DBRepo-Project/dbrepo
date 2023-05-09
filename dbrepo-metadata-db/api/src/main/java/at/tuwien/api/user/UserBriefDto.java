@@ -1,14 +1,10 @@
 package at.tuwien.api.user;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
-import org.springframework.security.core.userdetails.UserDetails;
 
-import javax.validation.constraints.NotNull;
-import java.util.List;
+import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 
 @Getter

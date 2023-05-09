@@ -4,7 +4,7 @@ import at.tuwien.entities.database.table.constraints.foreignKey.ForeignKey;
 import at.tuwien.entities.database.table.constraints.unique.Unique;
 import lombok.*;
 
-import javax.persistence.*;
+import jakarta.persistence.*;;
 import java.util.List;
 import java.util.Set;
 

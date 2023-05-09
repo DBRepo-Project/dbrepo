@@ -11,7 +11,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.*;
+import jakarta.persistence.*;;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -24,7 +24,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @IdClass(TableColumnKey.class)
 @EntityListeners(AuditingEntityListener.class)
-@javax.persistence.Table(name = "mdb_columns", uniqueConstraints = {
+@jakarta.persistence.Table(name = "mdb_columns", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"tid", "internalName"})
 })
 public class TableColumn implements Comparable<TableColumn> {

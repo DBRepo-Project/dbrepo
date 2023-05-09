@@ -6,7 +6,7 @@ import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.*;
+import jakarta.persistence.*;;
 import java.util.List;
 import java.util.Set;
 
@@ -18,7 +18,7 @@ import java.util.Set;
 @ToString
 @EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@javax.persistence.Table(name = "mdb_constraints_unique")
+@jakarta.persistence.Table(name = "mdb_constraints_unique")
 public class Unique {
 
     @Id

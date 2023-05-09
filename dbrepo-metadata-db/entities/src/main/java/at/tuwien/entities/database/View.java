@@ -5,13 +5,11 @@ import at.tuwien.entities.user.User;
 import lombok.*;
 import net.sf.jsqlparser.statement.select.FromItem;
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Type;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.*;
+import jakarta.persistence.*;;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -24,7 +22,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @IdClass(ViewKey.class)
 @EntityListeners(AuditingEntityListener.class)
-@javax.persistence.Table(name = "mdb_view")
+@jakarta.persistence.Table(name = "mdb_view")
 public class View {
 
     @Id
@@ -44,7 +42,6 @@ public class View {
 
     @ToString.Exclude
     @Column(name = "createdBy", nullable = false, columnDefinition = "VARCHAR(36)")
-    @Type(type = "uuid-char")
     private UUID createdBy;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
