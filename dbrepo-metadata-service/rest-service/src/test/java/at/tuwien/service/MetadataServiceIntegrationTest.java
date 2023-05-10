@@ -1,14 +1,13 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.OaiErrorType;
-import at.tuwien.OaiListIdentifiersParameters;
-import at.tuwien.OaiRecordParameters;
+import at.tuwien.oaipmh.OaiErrorType;
+import at.tuwien.oaipmh.OaiListIdentifiersParameters;
+import at.tuwien.oaipmh.OaiRecordParameters;
 import at.tuwien.config.H2Utils;
 import at.tuwien.exception.IdentifierNotFoundException;
 import at.tuwien.repository.jpa.*;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,10 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.Charset;
 
 import static org.junit.jupiter.api.Assertions.*;
 

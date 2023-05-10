@@ -1,8 +1,8 @@
 package at.tuwien.service.impl;
 
-import at.tuwien.OaiErrorType;
-import at.tuwien.OaiListIdentifiersParameters;
-import at.tuwien.OaiRecordParameters;
+import at.tuwien.oaipmh.OaiErrorType;
+import at.tuwien.oaipmh.OaiListIdentifiersParameters;
+import at.tuwien.oaipmh.OaiRecordParameters;
 import at.tuwien.config.MetadataConfig;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.exception.IdentifierNotFoundException;

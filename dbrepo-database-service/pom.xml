@@ -29,14 +29,11 @@
         <swagger.version>2.2.9</swagger.version>
         <jacoco.version>0.8.10</jacoco.version>
         <jwt.version>4.3.0</jwt.version>
-        <hibernate-c3po.version>5.6.3.Final</hibernate-c3po.version>
+        <c3p0.version>0.9.5.5</c3p0.version>
+        <c3p0-hibernate.version>6.2.2.Final</c3p0-hibernate.version>
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-webflux</artifactId>
-        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -94,6 +91,16 @@
         </dependency>
         <!-- Data Source -->
         <dependency>
+            <groupId>com.mchange</groupId>
+            <artifactId>c3p0</artifactId>
+            <version>${c3p0.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-c3p0</artifactId>
+            <version>${c3p0-hibernate.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
@@ -120,11 +127,6 @@
             <artifactId>dbrepo-metadata-db-querystore</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-c3p0</artifactId>
-            <version>${hibernate-c3po.version}</version>
         </dependency>
         <!-- Testing -->
         <dependency>

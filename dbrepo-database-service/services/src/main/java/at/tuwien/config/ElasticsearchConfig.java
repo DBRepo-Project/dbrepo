@@ -22,10 +22,10 @@ public class ElasticsearchConfig {
     @Value("${spring.elasticsearch.uris}")
     private String elasticEndpoint;
 
-    @Value("${fda.elastic.username}")
+    @Value("${spring.elasticsearch.username}")
     private String elasticUsername;
 
-    @Value("${fda.elastic.password}")
+    @Value("${spring.elasticsearch.password}")
     private String elasticPassword;
 
     @Bean

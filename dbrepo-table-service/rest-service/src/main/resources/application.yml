@@ -25,6 +25,10 @@ spring:
     virtual-host: dbrepo
     username: "${BROKER_USERNAME}"
     password: "${BROKER_PASSWORD}"
+  elasticsearch:
+    password: "${ELASTIC_PASSWORD}"
+    username: elastic
+    uris: http://search-service:9200
   cloud:
     loadbalancer.ribbon.enabled: false
 management.endpoints.web.exposure.include: health,info,prometheus
@@ -44,7 +48,3 @@ fda:
   client_secret: "${DBREPO_CLIENT_SECRET}"
   client_id: "${CLIENT_ID}"
   gateway.endpoint: https://gateway-service
-  elastic:
-    endpoint: search-service:9200
-    username: elastic
-    password: "${ELASTIC_PASSWORD}"

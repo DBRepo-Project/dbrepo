@@ -21,7 +21,6 @@ public class JacksonConfig {
     @Primary
     public ObjectMapper objectMapper() throws JsonProcessingException {
         final ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.findAndRegisterModules();
         objectMapper.registerModule(new Jdk8Module());
         objectMapper.registerModule(new JavaTimeModule());
         objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);

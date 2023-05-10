@@ -2,13 +2,12 @@ package at.tuwien.service;
 
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.AmqpException;
-import org.springframework.transaction.annotation.Transactional;
-
-import javax.annotation.PostConstruct;
-import java.io.IOException;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 
 public interface MessageQueueService {
 
+    @EventListener(ApplicationReadyEvent.class)
     void init() throws AmqpException;
 
     /**

@@ -23,6 +23,8 @@ RUN mvn -q clean package -DskipTests
 FROM openjdk:17-alpine as runtime
 MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
 
+RUN apk --no-cache add bash
+
 ENV METADATA_DB=fda
 ENV METADATA_USERNAME=root
 ENV METADATA_PASSWORD=dbrepo

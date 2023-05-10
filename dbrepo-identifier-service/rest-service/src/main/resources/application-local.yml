@@ -27,6 +27,10 @@ spring:
     virtual-host: dbrepo
     username: fda
     password: fda
+  elasticsearch:
+    password: elastic
+    username: elastic
+    uris: http://localhost:9200
 management.endpoints.web.exposure.include: health,info,prometheus
 server:
   port: 9096
@@ -46,7 +50,3 @@ fda:
   client_id: dbrepo-client
   gateway.endpoint: https://localhost
   website: https://localhost
-  elastic:
-    endpoint: localhost:9200
-    username: elastic
-    password: elastic

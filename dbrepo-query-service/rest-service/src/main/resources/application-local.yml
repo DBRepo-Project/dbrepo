@@ -25,12 +25,12 @@ spring:
     virtual-host: dbrepo
     username: fda
     password: fda
+  elasticsearch:
+    password: elastic
+    username: elastic
+    uris: http://localhost:9200
   cloud:
     loadbalancer.ribbon.enabled: false
-    gateway:
-      httpclient:
-        ssl:
-          useInsecureTrustManager: true
 management.endpoints.web.exposure.include: health,info,prometheus
 server:
   port: 9093
@@ -50,7 +50,3 @@ fda:
   client_id: dbrepo-client
   consumers: 2
   unsupported: \*,AVG,BIT_AND,BIT_OR,BIT_XOR,COUNT,COUNTDISTINCT,GROUP_CONCAT,JSON_ARRAYAGG,JSON_OBJECTAGG,MAX,MIN,STD,STDDEV,STDDEV_POP,STDDEV_SAMP,SUM,VARIANCE,VAR_POP,VAR_SAMP,--
-  elastic:
-    endpoint: localhost:9200
-    username: elastic
-    password: elastic

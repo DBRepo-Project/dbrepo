@@ -12,23 +12,13 @@ import java.util.Optional;
 @Repository
 public interface ViewRepository extends JpaRepository<View, Long> {
 
-    @Query("select v from View v where v.database.id = :databaseId")
-    List<View> findAllByDatabaseId(@Param("databaseId") Long databaseId);
+    List<View> findAllPublicByDatabaseId(Long databaseId);
 
-    @Query("select v from View v where v.database.id = :databaseId and v.isPublic is true")
-    List<View> findAllPublicByDatabaseId(@Param("databaseId") Long databaseId);
+    List<View> findAllPublicOrMineByDatabaseId(Long databaseId, String username);
 
-    @Query("select v from View v where v.database.id = :databaseId and (v.isPublic is true or v.creator.username = :username)")
-    List<View> findAllPublicOrMineByDatabaseId(@Param("databaseId") Long databaseId, @Param("username") String username);
+    Optional<View> findPublicByDatabaseIdAndId(Long databaseId, Long id);
 
-    @Query("select v from View v where v.database.id = :databaseId and v.id = :id")
-    Optional<View> findByDatabaseIdAndId(@Param("databaseId") Long databaseId, @Param("id") Long id);
-
-    @Query("select v from View v where v.database.id = :databaseId and v.id = :id and v.isPublic is true")
-    Optional<View> findPublicByDatabaseIdAndId(@Param("databaseId") Long databaseId, @Param("id") Long id);
-
-    @Query("select v from View v where v.database.id = :databaseId and v.id = :id and (v.isPublic is true or v.creator.username = :username)")
-    Optional<View> findPublicOrMineByDatabaseIdAndId(@Param("databaseId") Long databaseId, @Param("id") Long id, @Param("username") String username);
+    Optional<View> findPublicOrMineByDatabaseIdAndId(Long databaseId, Long id, String username);
 
 }
 

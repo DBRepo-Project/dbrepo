@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.3.10.RELEASE</version>
+        <version>3.0.6</version>
     </parent>
 
     <groupId>at.tuwien</groupId>
@@ -40,25 +40,20 @@
     </modules>
 
     <properties>
-        <java.version>11</java.version>
-        <spring-cloud.version>3.0.1</spring-cloud.version>
-        <mapstruct.version>1.4.2.Final</mapstruct.version>
-        <docker.version>3.2.7</docker.version>
-        <testcontainers.version>1.15.2</testcontainers.version>
-        <swagger.version>2.1.7</swagger.version>
-        <springfox.version>3.0.0</springfox.version>
-        <jacoco.version>0.8.7</jacoco.version>
-        <opencsv.version>5.4</opencsv.version>
-        <hibernate-c3po.version>5.6.3.Final</hibernate-c3po.version>
-        <maven-report.version>3.0.0</maven-report.version>
+        <java.version>17</java.version>
+        <spring-cloud.version>4.0.2</spring-cloud.version>
+        <mapstruct.version>1.5.5.Final</mapstruct.version>
+        <docker.version>3.3.0</docker.version>
+        <swagger.version>2.2.9</swagger.version>
+        <jacoco.version>0.8.10</jacoco.version>
         <jwt.version>4.3.0</jwt.version>
+        <opencsv.version>5.7.1</opencsv.version>
+        <jsql.version>4.6</jsql.version>
+        <c3p0.version>0.9.5.5</c3p0.version>
+        <c3p0-hibernate.version>6.2.2.Final</c3p0-hibernate.version>
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-webflux</artifactId>
-        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -91,7 +86,6 @@
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-test</artifactId>
-            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -111,6 +105,16 @@
             <scope>runtime</scope>
         </dependency>
         <!-- Data Source -->
+        <dependency>
+            <groupId>com.mchange</groupId>
+            <artifactId>c3p0</artifactId>
+            <version>${c3p0.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-c3p0</artifactId>
+            <version>${c3p0-hibernate.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.mariadb.jdbc</groupId>
             <artifactId>mariadb-java-client</artifactId>
@@ -148,12 +152,6 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
         </dependency>
-        <!-- TODO: do we really need this? -->
-        <dependency>
-            <groupId>org.apache.tomcat</groupId>
-            <artifactId>tomcat-dbcp</artifactId>
-            <version>9.0.33</version>
-        </dependency>
         <!-- Entity, API, QueryStore -->
         <dependency>
             <groupId>at.tuwien</groupId>
@@ -173,11 +171,6 @@
             <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-c3p0</artifactId>
-            <version>${hibernate-c3po.version}</version>
-        </dependency>
         <!-- Testing -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -189,11 +182,6 @@
                     <artifactId>junit-vintage-engine</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-test</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.h2database</groupId>
@@ -234,18 +222,7 @@
         <dependency>
             <groupId>com.github.jsqlparser</groupId>
             <artifactId>jsqlparser</artifactId>
-            <version>3.1</version>
-        </dependency>
-        <!-- Gateway -->
-        <dependency>
-            <groupId>org.projectreactor</groupId>
-            <artifactId>reactor-spring</artifactId>
-            <version>1.0.1.RELEASE</version>
-        </dependency>
-        <dependency>
-            <groupId>javax.ws.rs</groupId>
-            <artifactId>javax.ws.rs-api</artifactId>
-            <version>2.1.1</version>
+            <version>${jsql.version}</version>
         </dependency>
     </dependencies>
 

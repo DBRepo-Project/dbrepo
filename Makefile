@@ -5,7 +5,7 @@ TRIVY_VERSION ?= v0.41.0
 
 all:
 
-build-backend: build-metadata-db build-database-service build-query-service build-table-service build-identifier-service build-container-service build-discovery-service build-gateway-service build-metadata-service build-analyse-service build-user-service
+build-backend: build-metadata-db build-database-service build-query-service build-table-service build-identifier-service build-container-service build-metadata-service build-analyse-service build-user-service
 
 build-metadata-db:
 	mvn -f ./dbrepo-metadata-db/pom.xml clean install
@@ -21,12 +21,6 @@ build-container-service: build-metadata-db
 
 build-database-service: build-metadata-db
 	mvn -f ./dbrepo-database-service/pom.xml clean package -DskipTests
-
-build-discovery-service: build-metadata-db
-	mvn -f ./dbrepo-discovery-service/pom.xml clean package -DskipTests
-
-build-gateway-service: build-metadata-db
-	mvn -f ./dbrepo-gateway-service/pom.xml clean package -DskipTests
 
 build-query-service: build-metadata-db
 	mvn -f ./dbrepo-query-service/pom.xml clean package -DskipTests

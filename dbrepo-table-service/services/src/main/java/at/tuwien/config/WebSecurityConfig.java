@@ -9,14 +9,14 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 @Configuration
 @EnableWebSecurity
@@ -27,15 +27,15 @@ import javax.servlet.http.HttpServletResponse;
         bearerFormat = "JWT",
         scheme = "bearer"
 )
-public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+public class WebSecurityConfig {
 
     @Bean
     public AuthTokenFilter authTokenFilter() {
         return new AuthTokenFilter();
     }
 
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         /* enable CORS and disable CSRF */
         http = http.cors().and().csrf().disable();
         /* set session management to stateless */
@@ -56,10 +56,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         /* set permissions on endpoints */
         http.authorizeRequests()
                 /* our internal endpoints */
-                .antMatchers(HttpMethod.GET, "/actuator/prometheus/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/actuator/prometheus/**").permitAll()
                 /* our public endpoints */
-                .antMatchers(HttpMethod.GET, "/api/container/**/database/**/table/**").permitAll()
-                .antMatchers("/v3/api-docs.yaml",
+                .requestMatchers(HttpMethod.GET, "/api/container/**/database/**/table/**").permitAll()
+                .requestMatchers("/v3/api-docs.yaml",
                         "/v3/api-docs/**",
                         "/swagger-ui/**",
                         "/swagger-ui.html").permitAll()
@@ -69,6 +69,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http.addFilterBefore(authTokenFilter(),
                 UsernamePasswordAuthenticationFilter.class
         );
+        return http.build();
     }
 
     @Bean

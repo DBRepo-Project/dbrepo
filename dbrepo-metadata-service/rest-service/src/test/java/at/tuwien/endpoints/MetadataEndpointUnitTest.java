@@ -1,13 +1,10 @@
 package at.tuwien.endpoints;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.OaiListIdentifiersParameters;
-import at.tuwien.OaiRecordParameters;
+import at.tuwien.oaipmh.OaiListIdentifiersParameters;
+import at.tuwien.oaipmh.OaiRecordParameters;
 import at.tuwien.config.H2Utils;
-import at.tuwien.entities.identifier.Identifier;
-import at.tuwien.exception.IdentifierNotFoundException;
 import at.tuwien.repository.jpa.*;
-import at.tuwien.service.IdentifierService;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,7 +15,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.test.context.support.WithAnonymousUser;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.List;

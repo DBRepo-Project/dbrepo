@@ -25,6 +25,10 @@ spring:
     virtual-host: dbrepo
     username: fda
     password: fda
+  elasticsearch:
+    password: elastic
+    username: elastic
+    uris: http://localhost:9200
   cloud:
     loadbalancer.ribbon.enabled: false
 management.endpoints.web.exposure.include: health,info,prometheus
@@ -44,7 +48,3 @@ fda:
   client_secret: client-secret
   client_id: dbrepo-client
   gateway.endpoint: https://localhost
-  elastic:
-    endpoint: localhost:9200
-    username: elastic
-    password: elastic

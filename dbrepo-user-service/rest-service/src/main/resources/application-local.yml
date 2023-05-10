@@ -25,6 +25,10 @@ spring:
     virtual-host: dbrepo
     username: fda
     password: fda
+  elasticsearch:
+    password: elastic
+    username: elastic
+    uris: http://localhost:9200
   cloud:
     loadbalancer.ribbon.enabled: false
 management.endpoints.web.exposure.include: health,info,prometheus
@@ -37,10 +41,6 @@ logging:
     at.tuwien.: trace
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 fda:
-  elastic:
-    endpoint: localhost:9200
-    username: elastic
-    password: elastic
   ready.path: ./ready
   gateway.endpoint: https://localhost
   default_role: default-researcher-roles

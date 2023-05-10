@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.3.10.RELEASE</version>
+        <version>3.0.6</version>
     </parent>
 
     <groupId>at.tuwien</groupId>
@@ -36,17 +36,19 @@
     </modules>
 
     <properties>
-        <java.version>11</java.version>
-        <spring-cloud.version>3.0.1</spring-cloud.version>
-        <mapstruct.version>1.4.2.Final</mapstruct.version>
-        <swagger.version>2.1.7</swagger.version>
-        <springfox.version>3.0.0</springfox.version>
-        <jacoco.version>0.8.7</jacoco.version>
-        <javax-ws-rs.version>2.1.1</javax-ws-rs.version>
-        <spring-saml.version>1.0.10.RELEASE</spring-saml.version>
-        <javax-rs.version>2.1.1</javax-rs.version>
-        <javax-mail.version>1.4.7</javax-mail.version>
-        <jwt.version>3.18.3</jwt.version>
+        <java.version>17</java.version>
+        <spring-cloud.version>4.0.2</spring-cloud.version>
+        <mapstruct.version>1.5.5.Final</mapstruct.version>
+        <docker.version>3.3.0</docker.version>
+        <swagger.version>2.2.9</swagger.version>
+        <jacoco.version>0.8.10</jacoco.version>
+        <jwt.version>4.3.0</jwt.version>
+        <hibernate-c3po.version>5.6.3.Final</hibernate-c3po.version>
+        <opencsv.version>5.7.1</opencsv.version>
+        <super-csv.version>2.4.0</super-csv.version>
+        <jsql.version>4.6</jsql.version>
+        <keycloak.version>21.0.2</keycloak.version>
+        <hibernate.version>6.2.2.Final</hibernate.version>
     </properties>
 
     <dependencies>
@@ -122,7 +124,7 @@
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct-processor</artifactId>
             <version>${mapstruct.version}</version>
-            <optional>true</optional><!-- IntelliJ -->
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.mapstruct</groupId>
@@ -130,11 +132,6 @@
             <version>${mapstruct.version}</version>
         </dependency>
         <!-- Testing -->
-        <dependency>
-            <groupId>javax.ws.rs</groupId>
-            <artifactId>javax.ws.rs-api</artifactId>
-            <version>${javax-ws-rs.version}</version>
-        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>

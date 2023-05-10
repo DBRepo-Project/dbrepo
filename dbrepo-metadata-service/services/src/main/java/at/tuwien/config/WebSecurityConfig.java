@@ -6,21 +6,21 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
-public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+public class WebSecurityConfig {
 
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         /* enable CORS and disable CSRF */
         http = http.cors().and().csrf().disable();
         /* set session management to stateless */
@@ -41,15 +41,16 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         /* set permissions on endpoints */
         http.authorizeRequests()
                 /* our internal endpoints */
-                .antMatchers(HttpMethod.GET, "/actuator/prometheus/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/actuator/prometheus/**").permitAll()
                 /* our public endpoints */
-                .antMatchers(HttpMethod.GET, "/api/oai/**").permitAll()
-                .antMatchers("/v3/api-docs.yaml",
+                .requestMatchers(HttpMethod.GET, "/api/oai/**").permitAll()
+                .requestMatchers("/v3/api-docs.yaml",
                         "/v3/api-docs/**",
                         "/swagger-ui/**",
                         "/swagger-ui.html").permitAll()
                 /* our private endpoints */
                 .anyRequest().authenticated();
+        return http.build();
     }
 
     @Bean

@@ -2,12 +2,9 @@ package at.tuwien.endpoints;
 
 import at.tuwien.api.database.table.*;
 import at.tuwien.api.error.ApiErrorDto;
-import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
-import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.TableMapper;
-import at.tuwien.service.DatabaseService;
 import at.tuwien.service.MessageQueueService;
 import at.tuwien.service.TableService;
 import at.tuwien.validation.EndpointValidator;
@@ -26,8 +23,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;
