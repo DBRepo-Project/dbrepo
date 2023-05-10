@@ -29,6 +29,11 @@ fda-ui/
 # demo
 .demo
 
+# crt
+*.crt
+*.key
+*.p12
+
 # Environment
 .env
 
