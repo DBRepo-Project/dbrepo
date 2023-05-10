@@ -18,7 +18,7 @@ public interface StoreMapper {
 
     org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(StoreMapper.class);
 
-    DateTimeFormatter mariaDbFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S[SS]")
+    DateTimeFormatter mariaDbFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.SSS]")
             .withZone(ZoneId.of("UTC"));
 
     default CallableStatement queryStoreRawInsertQuery(Connection connection, User user, ExecuteStatementDto data)

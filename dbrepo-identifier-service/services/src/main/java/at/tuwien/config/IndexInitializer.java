@@ -11,6 +11,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,6 +35,7 @@ public class IndexInitializer {
         this.elasticsearchOperations = elasticsearchOperations;
     }
 
+    @Transactional
     @EventListener(ApplicationReadyEvent.class)
     public void initIndex() {
         log.debug("creating identifierindex");

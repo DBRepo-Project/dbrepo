@@ -321,6 +321,7 @@ export default {
     },
     createView () {
       this.loadingQuery = true
+      this.view.query = this.sql
       DatabaseService.createView(this.$route.params.container_id, this.$route.params.database_id, this.view)
         .then(async (view) => {
           this.resultId = view.id

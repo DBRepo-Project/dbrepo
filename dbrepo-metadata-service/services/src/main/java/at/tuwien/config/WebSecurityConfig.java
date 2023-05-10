@@ -8,6 +8,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
@@ -21,6 +23,16 @@ public class WebSecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        final OrRequestMatcher internalEndpoints = new OrRequestMatcher(
+                new AntPathRequestMatcher("/actuator/prometheus/**", "GET")
+        );
+        final OrRequestMatcher publicEndpoints = new OrRequestMatcher(
+                new AntPathRequestMatcher("/api/oai/**", "GET"),
+                new AntPathRequestMatcher("/v3/api-docs.yaml"),
+                new AntPathRequestMatcher("/v3/api-docs/**"),
+                new AntPathRequestMatcher("/swagger-ui/**"),
+                new AntPathRequestMatcher("/swagger-ui.html")
+        );
         /* enable CORS and disable CSRF */
         http = http.cors().and().csrf().disable();
         /* set session management to stateless */
@@ -39,15 +51,11 @@ public class WebSecurityConfig {
                         }
                 ).and();
         /* set permissions on endpoints */
-        http.authorizeRequests()
+        http.authorizeHttpRequests()
                 /* our internal endpoints */
-                .requestMatchers(HttpMethod.GET, "/actuator/prometheus/**").permitAll()
+                .requestMatchers(internalEndpoints).permitAll()
                 /* our public endpoints */
-                .requestMatchers(HttpMethod.GET, "/api/oai/**").permitAll()
-                .requestMatchers("/v3/api-docs.yaml",
-                        "/v3/api-docs/**",
-                        "/swagger-ui/**",
-                        "/swagger-ui.html").permitAll()
+                .requestMatchers(publicEndpoints).permitAll()
                 /* our private endpoints */
                 .anyRequest().authenticated();
         return http.build();
@@ -58,7 +66,7 @@ public class WebSecurityConfig {
         final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         final CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
-        config.addAllowedOrigin("*");
+        config.addAllowedOriginPattern("*");
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
         source.registerCorsConfiguration("/**", config);

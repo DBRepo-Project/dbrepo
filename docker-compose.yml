@@ -295,15 +295,20 @@ services:
     restart: always
     container_name: dbrepo-search-service
     hostname: search-service
-    build: ./dbrepo-search-service
-    image: dbrepo-search-service
+    image: elasticsearch:8.7.1
     networks:
       core:
     ports:
       - 9200:9200
-      - 9600:9600
     env_file:
       - .env
+    environment:
+      discovery.type: "single-node"
+      ES_JAVA_OPTS: "-Xms2g -Xmx2g"
+      logger.level: "WARN"
+      bootstrap.memory_lock: "true"
+      xpack.security.enabled: "true"
+      ELASTIC_PASSWORD: "elastic"
     volumes:
       - search-service-data:/usr/share/elasticsearch/data
     logging:
@@ -344,10 +349,6 @@ services:
       - "443:443"
     env_file:
       - .env
-    volumes:
-      - ./dbrepo-gateway-service/dbrepo.conf:/etc/nginx/conf.d/default.conf
-      - ./dbrepo-gateway-service/server.key:/server.key
-      - ./dbrepo-gateway-service/server.pem:/server.pem
     depends_on:
       dbrepo-analyse-service:
         condition: service_healthy

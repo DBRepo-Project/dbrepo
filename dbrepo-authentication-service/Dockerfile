@@ -12,8 +12,6 @@ ENV KC_DB=mariadb
 
 WORKDIR /opt/keycloak
 
-COPY ./auth.keystore ./conf/server.keystore
-
 RUN /opt/keycloak/bin/kc.sh build
 
 ###### SECOND STAGE ######

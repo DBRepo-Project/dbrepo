@@ -47,4 +47,4 @@ fda:
     public_key: "${JWT_PUBKEY}"
   client_secret: "${DBREPO_CLIENT_SECRET}"
   client_id: "${CLIENT_ID}"
-  gateway.endpoint: https://gateway-service
+  gateway.endpoint: http://gateway-service

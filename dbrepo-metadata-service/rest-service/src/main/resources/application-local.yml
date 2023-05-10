@@ -39,7 +39,7 @@ logging:
 fda:
   ready.path: ./ready
   pid.base: https://example.com/pid/
-  gateway.endpoint: https://localhost
+  gateway.endpoint: http://localhost
 dbrepo:
   repository-name: TU Wien Database Repository
   base-url: https://dbrepo1.ec.tuwien.at/api/oai

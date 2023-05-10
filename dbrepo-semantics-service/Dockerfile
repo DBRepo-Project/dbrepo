@@ -18,7 +18,7 @@ ENV LOG_LEVEL=debug
 ENV METADATA_DB=fda
 ENV METADATA_USERNAME=root
 ENV METADATA_PASSWORD=dbrepo
-ENV JWT_ISSUER=https://localhost/realms/dbrepo
+ENV JWT_ISSUER=http://localhost/realms/dbrepo
 ENV JWT_PUBKEY=public-key
 
 COPY ./requirements.txt ./requirements.txt
