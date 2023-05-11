@@ -19,18 +19,6 @@ public class GatewayConfig {
     @Value("${spring.rabbitmq.password}")
     private String brokerPassword;
 
-    @Value("${fda.datacite.url}")
-    private String dataCiteUrl;
-
-    @Value("${fda.datacite.prefix}")
-    private String dataCitePrefix;
-
-    @Value("${fda.datacite.username}")
-    private String dataCiteUsername;
-
-    @Value("${fda.datacite.password}")
-    private String dataCitePassword;
-
     @Bean("restTemplate")
     public RestTemplate restTemplate() {
         final RestTemplate restTemplate =  new RestTemplate();
@@ -44,15 +32,6 @@ public class GatewayConfig {
         restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(gatewayEndpoint));
         restTemplate.getInterceptors()
                 .add(new BasicAuthenticationInterceptor(brokerUsername, brokerPassword));
-        return restTemplate;
-    }
-
-    @Bean("dataCiteRestTemplate")
-    public RestTemplate dataciteRestTemplate() {
-        final RestTemplate restTemplate = new RestTemplate();
-        restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(dataCiteUrl));
-        restTemplate.getInterceptors()
-                .add(new BasicAuthenticationInterceptor(dataCiteUsername, dataCitePassword));
         return restTemplate;
     }
 
