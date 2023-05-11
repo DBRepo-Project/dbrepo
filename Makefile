@@ -148,7 +148,7 @@ release-search: tag-search
 release-metadata: tag-metadata
 	docker push "dbrepo/metadata-service:${TAG}"
 
-test-backend: test-container-service test-database-service test-discovery-service test-gateway-service test-query-service test-table-service test-identifier-service test-metadata-service test-semantics-service test-analyse-service test-user-service
+test-backend: test-container-service test-database-service test-query-service test-table-service test-identifier-service test-metadata-service test-semantics-service test-analyse-service test-user-service
 
 test-identifier-service: clean build-metadata-db build-identifier-service
 	mvn -f ./dbrepo-identifier-service/pom.xml clean test verify
@@ -157,14 +157,8 @@ test-container-service: clean build-metadata-db build-container-service
 	mvn -f ./dbrepo-container-service/pom.xml clean test verify
 
 test-database-service: clean build-metadata-db build-database-service
-	docker pull rabbitmq:3-management-alpine
+	docker pull rabbitmq:3-management-alpine elasticsearch:8.7.1
 	mvn -f ./dbrepo-database-service/pom.xml clean test verify
-
-test-discovery-service: clean build-metadata-db build-discovery-service
-	mvn -f ./dbrepo-discovery-service/pom.xml clean test verify
-
-test-gateway-service: clean build-metadata-db build-gateway-service
-	mvn -f ./dbrepo-gateway-service/pom.xml clean test verify
 
 test-query-service: clean build-metadata-db build-query-service
 	mvn -f ./dbrepo-query-service/pom.xml clean test verify
