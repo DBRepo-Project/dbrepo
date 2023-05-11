@@ -34,15 +34,6 @@ public class MetadataEndpointUnitTest extends BaseUnitTest {
     @Autowired
     private MetadataEndpoint metadataEndpoint;
 
-    @Autowired
-    private H2Utils h2Utils;
-
-    @BeforeEach
-    public void beforeEach() {
-        /* schema */
-        h2Utils.runScript("schema.sql");
-    }
-
     @Test
     @WithAnonymousUser
     public void identify_succeeds() {

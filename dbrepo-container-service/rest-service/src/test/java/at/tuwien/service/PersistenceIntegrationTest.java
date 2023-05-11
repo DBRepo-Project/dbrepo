@@ -2,6 +2,7 @@ package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.config.ReadyConfig;
+import at.tuwien.exception.ImageNotFoundException;
 import at.tuwien.repository.jpa.ImageRepository;
 import at.tuwien.repository.jpa.UserRepository;
 import at.tuwien.service.impl.ImageServiceImpl;
@@ -46,8 +47,8 @@ public class PersistenceIntegrationTest extends BaseUnitTest {
     public void delete_notExists_fails() {
 
         /* test */
-        assertThrows(UnexpectedRollbackException.class, () -> {
-            imageService.delete(IMAGE_2_ID);
+        assertThrows(ImageNotFoundException.class, () -> {
+            imageService.delete(9999L);
         });
     }
 

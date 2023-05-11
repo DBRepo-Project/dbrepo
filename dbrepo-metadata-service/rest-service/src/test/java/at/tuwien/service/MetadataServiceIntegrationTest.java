@@ -45,13 +45,8 @@ public class MetadataServiceIntegrationTest extends BaseUnitTest {
     @Autowired
     private MetadataService metadataService;
 
-    @Autowired
-    private H2Utils h2Utils;
-
     @BeforeEach
     public void beforeEach() {
-        /* schema */
-        h2Utils.runScript("schema.sql");
         /* metadata database */
         imageRepository.save(IMAGE_1_SIMPLE);
         realmRepository.save(REALM_DBREPO);

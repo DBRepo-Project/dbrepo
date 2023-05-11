@@ -75,7 +75,6 @@ public class TableEndpointIntegrationTest extends BaseUnitTest {
         /* create network */
         DockerConfig.createAllNetworks();
         /* metadata database */
-        h2Utils.runScript("schema.sql");
         imageRepository.save(IMAGE_1);
         realmRepository.save(REALM_DBREPO);
         userRepository.save(USER_1_SIMPLE);

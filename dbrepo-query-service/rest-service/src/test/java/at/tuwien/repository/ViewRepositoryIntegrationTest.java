@@ -71,7 +71,6 @@ public class ViewRepositoryIntegrationTest extends BaseUnitTest {
 
     @BeforeEach
     public void beforeEach() {
-        h2Utils.runScript("schema.sql");
         userRepository.save(USER_1);
         imageRepository.save(IMAGE_1);
         containerRepository.save(CONTAINER_1);

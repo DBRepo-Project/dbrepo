@@ -78,8 +78,6 @@ public class DatabaseServiceComponentTest extends BaseUnitTest {
     @BeforeEach
     public void beforeEach() {
         afterEach();
-        /* metadata database */
-        h2Utils.runScript("schema.sql");
     }
 
     @AfterEach

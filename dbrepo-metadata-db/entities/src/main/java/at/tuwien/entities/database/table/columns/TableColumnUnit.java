@@ -1,10 +1,13 @@
 package at.tuwien.entities.database.table.columns;
 
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import jakarta.persistence.*;;
+import java.net.URI;
+import java.sql.Types;
 import java.time.Instant;
 import java.util.List;
 
@@ -26,18 +29,6 @@ public class TableColumnUnit {
 
     @Column(name = "name", nullable = false)
     private String name;
-
-    @org.springframework.data.annotation.Transient
-    @ToString.Exclude
-    @OneToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "mdb_columns_units",
-            joinColumns = @JoinColumn(name = "uri", referencedColumnName = "uri", insertable = false, updatable = false),
-            inverseJoinColumns = {
-                    @JoinColumn(name = "cid", referencedColumnName = "id", insertable = false, updatable = false),
-                    @JoinColumn(name = "tid", referencedColumnName = "tid", insertable = false, updatable = false),
-                    @JoinColumn(name = "cdbid", referencedColumnName = "cdbid", insertable = false, updatable = false)
-            })
-    private List<TableColumn> columns;
 
     @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP")
     @CreatedDate

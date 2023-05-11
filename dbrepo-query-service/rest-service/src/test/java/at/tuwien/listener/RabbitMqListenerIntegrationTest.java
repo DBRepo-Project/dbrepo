@@ -90,7 +90,6 @@ public class RabbitMqListenerIntegrationTest extends BaseUnitTest {
     @BeforeEach
     public void beforeEach() {
         /* metadata database */
-        h2Utils.runScript("schema.sql");
         imageRepository.save(IMAGE_1_SIMPLE);
         realmRepository.save(REALM_DBREPO);
         userRepository.save(USER_1_SIMPLE);

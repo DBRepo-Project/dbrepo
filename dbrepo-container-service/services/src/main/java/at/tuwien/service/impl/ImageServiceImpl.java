@@ -126,6 +126,9 @@ public class ImageServiceImpl implements ImageService {
     @Override
     @Transactional
     public void delete(Long imageId) throws ImageNotFoundException {
+        if (!imageRepository.existsById(imageId)) {
+            throw new ImageNotFoundException("Image with id " + imageId + " not found");
+        }
         try {
             imageRepository.deleteById(imageId);
             log.info("Deleted image {}", imageId);
