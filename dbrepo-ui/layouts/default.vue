@@ -125,7 +125,6 @@
 import AuthenticationService from '@/api/authentication.service'
 import DatabaseService from '@/api/database.service'
 import TableService from '@/api/table.service'
-import IdentifierService from '@/api/identifier.service'
 
 export default {
   data () {
@@ -262,7 +261,7 @@ export default {
           this.loading = false
           this.loadTable()
         })
-        .catch(() => {
+        .finally(() => {
           this.loading = false
         })
     },
@@ -293,20 +292,6 @@ export default {
           this.loading = false
         })
         .catch(() => {
-          this.loading = false
-        })
-    },
-    loadIdentifier () {
-      if (!this.database || 'identifier' in this.database) {
-        return
-      }
-      this.loading = true
-      IdentifierService.find(this.database.identifier.id)
-        .then((identifier) => {
-          this.database.identifier = identifier
-          this.$store.commit('SET_DATABASE', this.database)
-        })
-        .finally(() => {
           this.loading = false
         })
     },

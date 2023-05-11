@@ -180,8 +180,8 @@ public class TableEndpoint {
             throws TableNotFoundException, DatabaseNotFoundException, ContainerNotFoundException, NotAllowedException {
         log.debug("endpoint find table, containerId={}, databaseId={}, tableId={}, principal={}", containerId,
                 databaseId, tableId, principal);
-        endpointValidator.validateOnlyPrivateAccess(containerId, databaseId, principal);
-        endpointValidator.validateOnlyPrivateHasRole(containerId, databaseId, principal, "find-table");
+//        endpointValidator.validateOnlyPrivateAccess(containerId, databaseId, principal);
+//        endpointValidator.validateOnlyPrivateHasRole(containerId, databaseId, principal, "find-table");
         final Table table = tableService.findById(containerId, databaseId, tableId);
         final TableDto dto = tableMapper.tableToTableDto(table);
         log.trace("find table resulted in table {}", dto);

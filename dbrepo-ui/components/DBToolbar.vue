@@ -55,7 +55,7 @@
           <v-tab :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table`">
             {{ $t('databases.toolbar.tables', { name: 'vue-i18n' }) }}
           </v-tab>
-          <v-tab :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/query`">
+          <v-tab v-if="hasReadAccess" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/query`">
             {{ $t('databases.toolbar.subsets', { name: 'vue-i18n' }) }}
           </v-tab>
           <v-tab :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/view`">
