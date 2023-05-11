@@ -339,16 +339,15 @@ services:
     restart: "no"
     container_name: dbrepo-gateway-service
     hostname: gateway-service
-    build: ./dbrepo-gateway-service
-    image: dbrepo-gateway-service
+    image: nginx:alpine
     networks:
       core:
       public:
     ports:
       - "80:80"
       - "443:443"
-    env_file:
-      - .env
+    volumes:
+      - ./dbrepo.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       dbrepo-analyse-service:
         condition: service_healthy

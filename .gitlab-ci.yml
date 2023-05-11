@@ -292,6 +292,10 @@ scan-analyse-service:
   stage: scan-docker
   needs:
     - build-docker
+  only:
+    refs:
+      - dev
+      - master
   allow_failure: true
   before_script:
     - docker logout ghcr.io
@@ -310,6 +314,10 @@ scan-authentication-service:
   stage: scan-docker
   needs:
     - build-docker
+  only:
+    refs:
+      - dev
+      - master
   allow_failure: true
   before_script:
     - docker logout ghcr.io
@@ -328,6 +336,10 @@ scan-broker-service:
   stage: scan-docker
   needs:
     - build-docker
+  only:
+    refs:
+      - dev
+      - master
   allow_failure: true
   before_script:
     - docker logout ghcr.io
@@ -346,6 +358,10 @@ scan-container-service:
   stage: scan-docker
   needs:
     - build-docker
+  only:
+    refs:
+      - dev
+      - master
   allow_failure: true
   before_script:
     - docker logout ghcr.io
@@ -364,6 +380,10 @@ scan-database-service:
   stage: scan-docker
   needs:
     - build-docker
+  only:
+    refs:
+      - dev
+      - master
   allow_failure: true
   before_script:
     - docker logout ghcr.io
@@ -382,6 +402,10 @@ scan-gateway-service:
   stage: scan-docker
   needs:
     - build-docker
+  only:
+    refs:
+      - dev
+      - master
   allow_failure: true
   before_script:
     - docker logout ghcr.io
@@ -400,6 +424,10 @@ scan-identifier-service:
   stage: scan-docker
   needs:
     - build-docker
+  only:
+    refs:
+      - dev
+      - master
   allow_failure: true
   before_script:
     - docker logout ghcr.io
@@ -418,6 +446,10 @@ scan-metadata-db:
   stage: scan-docker
   needs:
     - build-docker
+  only:
+    refs:
+      - dev
+      - master
   allow_failure: true
   before_script:
     - docker logout ghcr.io
@@ -436,6 +468,10 @@ scan-metadata-service:
   stage: scan-docker
   needs:
     - build-docker
+  only:
+    refs:
+      - dev
+      - master
   allow_failure: true
   before_script:
     - docker logout ghcr.io
@@ -454,6 +490,10 @@ scan-proxy:
   stage: scan-docker
   needs:
     - build-docker
+  only:
+    refs:
+      - dev
+      - master
   allow_failure: true
   before_script:
     - docker logout ghcr.io
@@ -472,6 +512,10 @@ scan-query-service:
   stage: scan-docker
   needs:
     - build-docker
+  only:
+    refs:
+      - dev
+      - master
   allow_failure: true
   before_script:
     - docker logout ghcr.io
@@ -490,6 +534,10 @@ scan-search-service:
   stage: scan-docker
   needs:
     - build-docker
+  only:
+    refs:
+      - dev
+      - master
   allow_failure: true
   before_script:
     - docker logout ghcr.io
@@ -508,6 +556,10 @@ scan-semantics-service:
   stage: scan-docker
   needs:
     - build-docker
+  only:
+    refs:
+      - dev
+      - master
   allow_failure: true
   before_script:
     - docker logout ghcr.io
@@ -526,6 +578,10 @@ scan-table-service:
   stage: scan-docker
   needs:
     - build-docker
+  only:
+    refs:
+      - dev
+      - master
   allow_failure: true
   before_script:
     - docker logout ghcr.io
@@ -544,6 +600,10 @@ scan-ui:
   stage: scan-docker
   needs:
     - build-docker
+  only:
+    refs:
+      - dev
+      - master
   allow_failure: true
   before_script:
     - docker logout ghcr.io
@@ -562,6 +622,10 @@ scan-user-service:
   stage: scan-docker
   needs:
     - build-docker
+  only:
+    refs:
+      - dev
+      - master
   allow_failure: true
   before_script:
     - docker logout ghcr.io
