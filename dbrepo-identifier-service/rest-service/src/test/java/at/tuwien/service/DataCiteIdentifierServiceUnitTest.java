@@ -43,8 +43,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-@SpringBootTest
-@ActiveProfiles("doi")
+@SpringBootTest(properties = "spring.profiles.active:local,doi")
 public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
 
     @MockBean
@@ -187,7 +186,7 @@ public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void update_invalidMetadata_fails() throws IdentifierUpdateBadFormException, IdentifierNotFoundException {
+    public void update_invalidMetadata_fails() throws IdentifierNotFoundException {
 
         /* mock */
         when(identifierService.update(eq(IDENTIFIER_1_ID), any(IdentifierUpdateDto.class)))
@@ -205,7 +204,7 @@ public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void update_restClientException_fails() throws IdentifierUpdateBadFormException, IdentifierNotFoundException {
+    public void update_restClientException_fails() throws IdentifierNotFoundException {
 
         /* mock */
         when(identifierService.update(eq(IDENTIFIER_1_ID), any(IdentifierUpdateDto.class)))

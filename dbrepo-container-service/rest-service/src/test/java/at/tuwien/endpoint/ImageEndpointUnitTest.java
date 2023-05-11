@@ -217,6 +217,8 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
     public void delete_hasRole_succeeds() throws ImageNotFoundException {
 
         /* mock */
+        when(imageRepository.existsById(IMAGE_1_ID))
+                .thenReturn(true);
         when(userRepository.findByUsername(USER_2_USERNAME))
                 .thenReturn(Optional.of(USER_2));
 

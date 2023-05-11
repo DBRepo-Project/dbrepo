@@ -812,7 +812,7 @@ public abstract class BaseTest {
 
     public final static Long IMAGE_ELASTIC_ID = 3L;
     public final static String IMAGE_ELASTIC_REPOSITORY = "elasticsearch";
-    public final static String IMAGE_ELASTIC_TAG = "7.13.4";
+    public final static String IMAGE_ELASTIC_TAG = "8.7.1";
 
     public final static ContainerImage IMAGE_ELASTIC = ContainerImage.builder()
             .id(IMAGE_ELASTIC_ID)

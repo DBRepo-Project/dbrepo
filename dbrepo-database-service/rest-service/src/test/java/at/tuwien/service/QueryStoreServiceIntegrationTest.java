@@ -13,10 +13,7 @@ import at.tuwien.service.impl.QueryStoreServiceImpl;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -24,6 +21,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -63,17 +61,14 @@ public class QueryStoreServiceIntegrationTest extends BaseUnitTest {
     @Autowired
     private DatabaseMapper databaseMapper;
 
-    @BeforeAll
-    public static void beforeAll() throws InterruptedException {
-        /* create network */
-        DockerConfig.createAllNetworks();
-        /* create container */
-        DockerConfig.createContainer(null, CONTAINER_1, CONTAINER_1_ENV);
-        DockerConfig.startContainer(CONTAINER_1);
-    }
+    private final static String BIND_WEATHER = new File("../../dbrepo-metadata-db/test/src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
 
     @BeforeEach
     public void beforeEach() {
+        afterEach();
+        /* create network */
+        DockerConfig.createAllNetworks();
+        /* metadata database */
         realmRepository.save(REALM_DBREPO);
         userRepository.save(USER_1);
         imageRepository.save(IMAGE_1);
@@ -81,29 +76,37 @@ public class QueryStoreServiceIntegrationTest extends BaseUnitTest {
         databaseRepository.save(DATABASE_1_SIMPLE);
     }
 
-    @AfterAll
-    public static void afterAll() {
+    @AfterEach
+    public void afterEach() {
         DockerConfig.removeAllContainers();
         DockerConfig.removeAllNetworks();
     }
 
     @Test
     public void create_succeeds() throws UserNotFoundException, QueryStoreException, DatabaseConnectionException,
-            DatabaseNotFoundException, DatabaseMalformedException {
+            DatabaseNotFoundException, DatabaseMalformedException, InterruptedException {
+
+        /* mock */
+        DockerConfig.createContainer(null, CONTAINER_1, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1);
 
         /* test */
         queryStoreService.create(CONTAINER_1_ID, DATABASE_1_ID, USER_1_PRINCIPAL);
     }
 
     @Test
-    public void executeQuery_succeeds() throws SQLException {
+    public void executeQuery_succeeds() throws SQLException, InterruptedException {
         final User root = databaseMapper.containerToPrivilegedUser(CONTAINER_1);
         final ComboPooledDataSource dataSource = HibernateConnector.getDataSource(CONTAINER_1_IMAGE, CONTAINER_1, DATABASE_1, root);
+
+        /* mock */
+        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1);
 
         /* test */
         try {
             final Connection connection = dataSource.getConnection();
-            queryStoreService.executeQuery(connection, "SELECT 1");
+            queryStoreService.executeQuery(connection, "UPDATE weather_location SET lat=48.2049358, lng=16.3769348 WHERE location = ?", "Vienna");
         } finally {
             dataSource.close();
         }

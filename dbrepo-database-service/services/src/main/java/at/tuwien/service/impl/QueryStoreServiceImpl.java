@@ -58,10 +58,19 @@ public class QueryStoreServiceImpl extends HibernateConnector implements QuerySt
         log.trace("created query store in database {}", database);
     }
 
-    public void executeQuery(Connection connection, String statement) throws SQLException {
+    public void executeQuery(Connection connection, String statement, String... data) throws SQLException {
         log.debug("execute query, statement={}", statement);
         final PreparedStatement pstmt = connection.prepareStatement(statement);
+        if (data.length > 0) {
+            for (int i = 0; i < data.length; i++) {
+                pstmt.setString(i + 1, data[i]);
+            }
+        }
         pstmt.executeUpdate();
+    }
+
+    private void executeQuery(Connection connection, String statement) throws SQLException {
+        executeQuery(connection, statement, new String[]{});
     }
 
 }

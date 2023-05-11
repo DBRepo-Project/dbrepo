@@ -158,6 +158,8 @@ public class ImageServiceUnitTest extends BaseUnitTest {
     public void delete_succeeds() throws ImageNotFoundException {
 
         /* mock */
+        when(imageRepository.existsById(IMAGE_1_ID))
+                .thenReturn(true);
         doNothing()
                 .when(imageRepository)
                 .deleteById(IMAGE_1_ID);
@@ -170,6 +172,8 @@ public class ImageServiceUnitTest extends BaseUnitTest {
     public void delete_notFound_fails() {
 
         /* mock */
+        when(imageRepository.existsById(IMAGE_1_ID))
+                .thenReturn(false);
         doThrow(EntityNotFoundException.class)
                 .when(imageRepository)
                 .deleteById(IMAGE_1_ID);
