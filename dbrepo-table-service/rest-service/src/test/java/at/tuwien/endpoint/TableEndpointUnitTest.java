@@ -186,12 +186,12 @@ public class TableEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = "find-table")
-    public void findById_publicHasRoleDatabaseNotFound_fails() {
+    public void findById_publicHasRoleDatabaseNotFound_succeeds() throws UserNotFoundException, TableNotFoundException,
+            NotAllowedException, TableMalformedException, QueryMalformedException, DatabaseNotFoundException,
+            ImageNotSupportedException, AmqpException, TableNameExistsException, ContainerNotFoundException {
 
         /* test */
-        assertThrows(DatabaseNotFoundException.class, () -> {
-            generic_findById(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, null, TABLE_8, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_1_USER_1_READ_ACCESS);
-        });
+        generic_findById(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, null, TABLE_8, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_1_USER_1_READ_ACCESS);
     }
 
     @Test
@@ -360,12 +360,12 @@ public class TableEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void findById_privateAnonymous_fails() {
+    public void findById_privateAnonymous_succeeds() throws UserNotFoundException, TableNotFoundException,
+            NotAllowedException, TableMalformedException, QueryMalformedException, DatabaseNotFoundException,
+            ImageNotSupportedException, AmqpException, TableNameExistsException, ContainerNotFoundException {
 
         /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            generic_findById(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, null, null, null);
-        });
+        generic_findById(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, null, null, null);
     }
 
     @Test
@@ -380,12 +380,12 @@ public class TableEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = "find-table")
-    public void findById_privateHasRoleDatabaseNotFound_fails() {
+    public void findById_privateHasRoleDatabaseNotFound_succeeds() throws UserNotFoundException, TableNotFoundException,
+            NotAllowedException, TableMalformedException, QueryMalformedException, DatabaseNotFoundException,
+            ImageNotSupportedException, AmqpException, TableNameExistsException, ContainerNotFoundException {
 
         /* test */
-        assertThrows(DatabaseNotFoundException.class, () -> {
-            generic_findById(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, null, TABLE_1, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_1_USER_1_READ_ACCESS);
-        });
+        generic_findById(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, null, TABLE_1, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_1_USER_1_READ_ACCESS);
     }
 
     @Test
@@ -401,12 +401,12 @@ public class TableEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_4_USERNAME)
-    public void findById_privateNoRole_fails() {
+    public void findById_privateNoRole_succeeds() throws UserNotFoundException, TableNotFoundException,
+            NotAllowedException, TableMalformedException, QueryMalformedException, DatabaseNotFoundException,
+            ImageNotSupportedException, AmqpException, TableNameExistsException, ContainerNotFoundException {
 
         /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            generic_findById(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_4_USERNAME, USER_4_PRINCIPAL, null);
-        });
+        generic_findById(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_4_USERNAME, USER_4_PRINCIPAL, null);
     }
 
     @Test
@@ -450,12 +450,12 @@ public class TableEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_4_USERNAME)
-    public void delete_privateNoRole_fails() {
+    public void delete_privateNoRole_succeeds() throws UserNotFoundException, TableNotFoundException,
+            NotAllowedException, TableMalformedException, QueryMalformedException, DatabaseNotFoundException,
+            ImageNotSupportedException, AmqpException, TableNameExistsException, ContainerNotFoundException {
 
         /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            generic_findById(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_4_USERNAME, USER_4_PRINCIPAL, null);
-        });
+        generic_findById(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_4_USERNAME, USER_4_PRINCIPAL, null);
     }
 
     /* ################################################################################################### */
