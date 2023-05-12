@@ -2,14 +2,18 @@ package at.tuwien.api.datacite.doi;
 
 import lombok.*;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
+import lombok.extern.jackson.Jacksonized;
+
 import java.io.Serializable;
 
-@Data
 @Getter
+@Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@Jacksonized
+@ToString
 public class DataCiteDoiTypes implements Serializable {
 
     public static final DataCiteDoiTypes DATASET = DataCiteDoiTypes.builder().resourceTypeGeneral("Dataset").build();

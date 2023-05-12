@@ -17,7 +17,7 @@ COPY ./package.json ./
 COPY ./yarn.lock ./
 
 # Install yarn dependencies
-RUN yarn install --frozen-lockfile > /dev/null 2>&1
+RUN yarn install --frozen-lockfile
 
 COPY ./nuxt.config.js ./
 COPY ./ava.config.cjs ./
@@ -36,7 +36,7 @@ COPY ./static ./static
 COPY ./store ./store
 COPY ./utils ./utils
 
-RUN yarn build > /dev/null
+RUN yarn build
 
 FROM node:14-alpine as runtime
 MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>

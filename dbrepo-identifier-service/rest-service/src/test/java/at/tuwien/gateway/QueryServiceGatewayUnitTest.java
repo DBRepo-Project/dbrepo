@@ -67,7 +67,7 @@ public class QueryServiceGatewayUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void find_notFound_fails() throws QueryNotFoundException, RemoteUnavailableException {
+    public void find_notFound_fails() {
         final ResponseEntity<QueryDto> mock = ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .build();
 

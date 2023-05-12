@@ -71,9 +71,6 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
     @Autowired
     private RealmRepository realmRepository;
 
-    @Autowired
-    private H2Utils h2Utils;
-
     private final static String BIND_WEATHER = new File("../../dbrepo-metadata-db/test/src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
 
     @BeforeAll
@@ -93,7 +90,6 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
         afterEach();
         DockerConfig.createAllNetworks();
         /* metadata database */
-        h2Utils.runScript("schema.sql");
         realmRepository.save(REALM_DBREPO);
         imageRepository.save(IMAGE_1);
         userRepository.save(USER_1_SIMPLE);

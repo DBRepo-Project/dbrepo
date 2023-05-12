@@ -212,14 +212,14 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns_cat`
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_constraints_foreign_key`
 (
-    fkid      BIGINT NOT NULL AUTO_INCREMENT,
-    tid       BIGINT NOT NULL,
-    tdbid     BIGINT NOT NULL,
-    rtid      BIGINT NOT NULL,
-    rtdbid    BIGINT NOT NULL,
-    on_update INT    NULL,
-    on_delete INT    NULL,
-    position  INT    NULL,
+    fkid      BIGINT      NOT NULL AUTO_INCREMENT,
+    tid       BIGINT      NOT NULL,
+    tdbid     BIGINT      NOT NULL,
+    rtid      BIGINT      NOT NULL,
+    rtdbid    BIGINT      NOT NULL,
+    on_update VARCHAR(50) NULL,
+    on_delete VARCHAR(50) NULL,
+    position  INT         NULL,
     PRIMARY KEY (fkid),
     FOREIGN KEY (tid, tdbid) REFERENCES mdb_tables (id, tdbid),
     FOREIGN KEY (rtid, rtdbid) REFERENCES mdb_tables (id, tdbid)

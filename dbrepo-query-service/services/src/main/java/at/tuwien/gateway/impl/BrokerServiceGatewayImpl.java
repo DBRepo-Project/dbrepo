@@ -31,7 +31,7 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
     private final GatewayConfig gatewayConfig;
     private final Environment environment;
 
-    private final static String VIRTUAL_SERVER = "%2F";
+    private final static String VIRTUAL_SERVER = "dbrepo";
 
     @Autowired
     public BrokerServiceGatewayImpl(AmqpConfig amqpConfig, RestTemplate restTemplate, GatewayConfig gatewayConfig,

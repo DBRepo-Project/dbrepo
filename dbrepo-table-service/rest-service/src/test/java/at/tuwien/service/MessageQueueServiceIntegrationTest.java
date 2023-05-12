@@ -10,6 +10,8 @@ import at.tuwien.repository.elastic.TableColumnIdxRepository;
 import at.tuwien.repository.elastic.TableIdxRepository;
 import at.tuwien.repository.jpa.TableRepository;
 import at.tuwien.utils.AmqpUtils;
+import com.rabbitmq.client.BuiltinExchangeType;
+import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -20,6 +22,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.io.IOException;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -49,6 +52,9 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
     private AmqpUtils amqpUtils;
 
     @Autowired
+    private Channel channel;
+
+    @Autowired
     private MessageQueueService messageQueueService;
 
     @BeforeAll
@@ -69,12 +75,12 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void init_succeeds() throws AmqpException {
+    public void init_succeeds() throws AmqpException, IOException {
 
         /* mock */
+        channel.exchangeDeclare(DATABASE_1_EXCHANGE, BuiltinExchangeType.FANOUT, true, false, null);
         when(tableRepository.findAll())
                 .thenReturn(List.of(TABLE_1, TABLE_2));
-        amqpUtils.createExchange(DATABASE_1_EXCHANGE);
 
         /* test */
         assertTrue(amqpUtils.exchangeExists(DATABASE_1_EXCHANGE));

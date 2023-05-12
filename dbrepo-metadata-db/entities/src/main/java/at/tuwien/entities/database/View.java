@@ -5,13 +5,12 @@ import at.tuwien.entities.user.User;
 import lombok.*;
 import net.sf.jsqlparser.statement.select.FromItem;
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Type;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.*;
+import jakarta.persistence.*;;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -22,9 +21,15 @@ import java.util.UUID;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-@IdClass(ViewKey.class)
+@IdClass(at.tuwien.entities.database.ViewKey.class)
 @EntityListeners(AuditingEntityListener.class)
-@javax.persistence.Table(name = "mdb_view")
+@jakarta.persistence.Table(name = "mdb_view")
+@NamedQueries({
+        @NamedQuery(name = "View.findAllPublicByDatabaseId", query = "select v from View v where v.database.id = ?1 and v.isPublic = true"),
+        @NamedQuery(name = "View.findAllPublicOrMineByDatabaseId", query = "select v from View v where v.database.id = ?1 and (v.isPublic = true or v.creator.username = ?2)"),
+        @NamedQuery(name = "View.findPublicByDatabaseIdAndId", query = "select v from View v where v.database.id = ?1 and v.id = ?2 and v.isPublic = true"),
+        @NamedQuery(name = "View.findPublicOrMineByDatabaseIdAndId", query = "select v from View v where v.database.id = ?1 and v.id = ?2 and (v.isPublic = true or v.creator.username = ?3)")
+})
 public class View {
 
     @Id
@@ -43,8 +48,8 @@ public class View {
     private Long vdbid;
 
     @ToString.Exclude
+    @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column(name = "createdBy", nullable = false, columnDefinition = "VARCHAR(36)")
-    @Type(type = "uuid-char")
     private UUID createdBy;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
@@ -56,7 +61,7 @@ public class View {
     @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumn(name = "vdbid", insertable = false, updatable = false)
-    private Database database;
+    private at.tuwien.entities.database.Database database;
 
     @Column(name = "vname", nullable = false)
     private String name;
@@ -106,12 +111,12 @@ public class View {
     @OrderColumn(name = "position")
     private List<TableColumn> columns;
 
-    @Column(nullable = false, updatable = false)
     @CreatedDate
+    @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP")
     private Instant created;
 
-    @Column
     @LastModifiedDate
+    @Column(columnDefinition = "TIMESTAMP")
     private Instant lastModified;
 
 }

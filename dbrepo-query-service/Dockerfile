@@ -3,7 +3,8 @@ FROM dbrepo-metadata-db:latest as dependency
 MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
 
 ###### SECOND STAGE ######
-FROM maven:slim as build
+FROM maven:3-openjdk-17 as build
+MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
 
 COPY ./pom.xml ./
 
@@ -20,20 +21,23 @@ COPY ./api ./api
 RUN mvn -q clean package -DskipTests
 
 ###### THIRD STAGE ######
-FROM openjdk:11-jre-slim as runtime
+FROM openjdk:17-alpine as runtime
+MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
+
+RUN apk --no-cache add bash
 
 ENV METADATA_DB=fda
 ENV METADATA_USERNAME=root
 ENV METADATA_PASSWORD=dbrepo
 ENV BROKER_USERNAME=fda
 ENV BROKER_PASSWORD=fda
-ENV GATEWAY_ENDPOINT=http://gateway-service:9095
+ENV GATEWAY_ENDPOINT=http://gateway-service
 ENV SHARED_FILESYSTEM=/tmp
 ENV BROKER_CONSUMERS=2
 ENV LOG_LEVEL=debug
 ENV DBREPO_CLIENT_SECRET=client-secret
 ENV CLIENT_ID=dbrepo-client
-ENV JWT_ISSUER=http://localhost:8080/realms/dbrepo
+ENV JWT_ISSUER=http://localhost/realms/dbrepo
 ENV JWT_PUBKEY=public-key
 ENV NOT_SUPPORTED_KEYWORDS=\\*,AVG,BIT_AND,BIT_OR,BIT_XOR,COUNT,COUNTDISTINCT,GROUP_CONCAT,JSON_ARRAYAGG,JSON_OBJECTAGG,MAX,MIN,STD,STDDEV,STDDEV_POP,STDDEV_SAMP,SUM,VARIANCE,VAR_POP,VAR_SAMP,--
 
@@ -48,4 +52,4 @@ COPY --from=build ./rest-service/target/rest-service-*.jar ./query-service.jar
 
 EXPOSE 9093
 
-ENTRYPOINT ["java", "-Dlog4j2.formatMsgNoLookups=true", "-jar", "./query-service.jar"]
+ENTRYPOINT ["java", "-Dlog4j2.formatMsgNoLookups=true",  "-jar", "./query-service.jar"]

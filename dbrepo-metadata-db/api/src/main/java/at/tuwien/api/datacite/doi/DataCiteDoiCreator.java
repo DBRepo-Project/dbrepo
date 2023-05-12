@@ -2,15 +2,19 @@ package at.tuwien.api.datacite.doi;
 
 import lombok.*;
 
-import javax.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotBlank;
+import lombok.extern.jackson.Jacksonized;
+
 import java.io.Serializable;
 import java.util.List;
 
-@Data
 @Getter
+@Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@Jacksonized
+@ToString
 public class DataCiteDoiCreator implements Serializable {
 
     @NotBlank

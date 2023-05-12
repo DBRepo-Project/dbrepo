@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-progress-linear v-if="loadingContainers || loadingDatabases" :color="loadingColor" :indeterminate="!error" />
+    <v-progress-linear v-if="loadingContainers || loadingDatabases" :indeterminate="!error" />
     <v-card
       v-for="(container, idx) in containers"
       :key="idx"
@@ -17,9 +17,13 @@
         <div class="db-tags">
           <v-chip v-if="hasDatabase(container) && container.database.is_public" small color="green" outlined>Public</v-chip>
           <v-chip v-if="hasDatabase(container) && !container.database.is_public" small color="red" outlined>Private</v-chip>
-          <v-chip v-if="hasIdentifier(container)" small outlined>PID</v-chip>
           <v-chip
-            v-if="identifierCreated(container)"
+            v-if="identifierYear(container)"
+            small
+            outlined
+            v-text="identifierYear(container)" />
+          <v-chip
+            v-if="hasIdentifier(container)"
             small
             outlined
             v-text="container.database.identifier.publisher" />
@@ -58,7 +62,6 @@
 </template>
 
 <script>
-import { formatYearUTC, isResearcher } from '@/utils'
 import DatabaseService from '@/api/database.service'
 import ContainerService from '@/api/container.service'
 import ContainerMapper from '@/api/container.mapper'
@@ -81,25 +84,11 @@ export default {
     }
   },
   computed: {
-    loadingColor () {
-      return this.error ? 'red lighten-2' : 'primary'
-    },
     token () {
       return this.$store.state.token
     },
     user () {
       return this.$store.state.user
-    },
-    isResearcher () {
-      return isResearcher(this.user)
-    },
-    config () {
-      if (this.token === null) {
-        return {}
-      }
-      return {
-        headers: { Authorization: `Bearer ${this.token}` }
-      }
     }
   },
   mounted () {
@@ -133,11 +122,11 @@ export default {
     hasIdentifier (container) {
       return container.database && container.database.identifier
     },
-    identifierCreated (container) {
-      if (!container || !container.database || !container.database.identifier) {
+    identifierYear (container) {
+      if (!container || !container.database || !container.database.identifier || !container.database.identifier.publication_year) {
         return null
       }
-      return formatYearUTC(container.database.identifier.created)
+      return container.database.identifier.publication_year
     },
     identifierDescription (container) {
       if (!container || !container.database || !container.database.identifier) {

@@ -1,7 +1,9 @@
 package at.tuwien.api.identifier;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Getter;
 
+@Getter
 public enum BibliographyTypeDto {
 
     @JsonProperty("apa")

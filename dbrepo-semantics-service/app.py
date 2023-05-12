@@ -3,7 +3,6 @@ import logging
 import re
 from flask import Flask, request, jsonify
 from logging.config import dictConfig
-import py_eureka_client.eureka_client as eureka_client
 from flasgger import Swagger
 from flasgger.utils import swag_from
 from flasgger import LazyJSONEncoder
@@ -263,11 +262,6 @@ def get_ontologies(name):
 
 rest_server_port = int(os.getenv('PORT_APP', 5010))
 rest_server_host = os.getenv('FLASK_RUN_HOST', '0.0.0.0')
-eureka_client.init(eureka_server=os.getenv('EUREKA_SERVER', 'http://localhost:9090/eureka/'),
-                   app_name=os.getenv('HOSTNAME', 'fda-units-service'),
-                   instance_ip=os.getenv('HOSTNAME', 'fda-units-service'),
-                   instance_host=os.getenv('HOSTNAME', 'fda-units-service'),
-                   instance_port=rest_server_port)
 
 if __name__ == '__main__':
     http_server = WSGIServer((rest_server_host, rest_server_port), app)

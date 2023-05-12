@@ -12,11 +12,11 @@ import org.springframework.stereotype.Service;
 @Service
 public abstract class HibernateConnector {
 
-    protected static ComboPooledDataSource getDataSource(ContainerImage image, Container container, User user) {
+    public static ComboPooledDataSource getDataSource(ContainerImage image, Container container, User user) {
         return getDataSource(image, container, null, user);
     }
 
-    protected static ComboPooledDataSource getDataSource(ContainerImage image, Container container, Database database,
+    public static ComboPooledDataSource getDataSource(ContainerImage image, Container container, Database database,
                                                          User user) {
         final ComboPooledDataSource dataSource = new ComboPooledDataSource();
         dataSource.setJdbcUrl(url(image, container, database));

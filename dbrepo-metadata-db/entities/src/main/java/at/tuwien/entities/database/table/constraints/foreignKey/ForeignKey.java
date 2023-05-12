@@ -5,7 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.*;
+import jakarta.persistence.*;;
 import java.util.List;
 
 @Data
@@ -16,7 +16,7 @@ import java.util.List;
 @ToString
 @EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@javax.persistence.Table(name = "mdb_constraints_foreign_key")
+@jakarta.persistence.Table(name = "mdb_constraints_foreign_key")
 public class ForeignKey {
 
     @Id
@@ -59,9 +59,11 @@ public class ForeignKey {
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE, mappedBy = "foreignKey")
     private List<ForeignKeyReference> references = new java.util.ArrayList<>();
 
-    @Column
+    @Column(columnDefinition = "VARCHAR(50)")
+    @Enumerated(EnumType.STRING)
     private ReferenceType onUpdate;
 
-    @Column
+    @Column(columnDefinition = "VARCHAR(50)")
+    @Enumerated(EnumType.STRING)
     private ReferenceType onDelete;
 }

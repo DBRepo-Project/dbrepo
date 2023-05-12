@@ -3,15 +3,14 @@ package at.tuwien.entities.container;
 import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.user.User;
-import com.github.dockerjava.api.model.HealthCheck;
+import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Type;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.*;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -34,22 +33,22 @@ public class Container {
     private Long id;
 
     @ToString.Exclude
+    @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column(name = "createdBy", nullable = false, columnDefinition = "VARCHAR(36)")
-    @Type(type = "uuid-char")
     private UUID createdBy;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumns({
             @JoinColumn(name = "createdBy", referencedColumnName = "ID", insertable = false, updatable = false)
     })
     private User creator;
 
     @ToString.Exclude
+    @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column(name = "ownedBy", nullable = false, columnDefinition = "VARCHAR(36)")
-    @Type(type = "uuid-char")
     private UUID ownedBy;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumns({
             @JoinColumn(name = "ownedBy", referencedColumnName = "ID", insertable = false, updatable = false)
     })
@@ -72,7 +71,7 @@ public class Container {
 
     @ToString.Exclude
     @org.springframework.data.annotation.Transient
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumns({
             @JoinColumn(name = "id", referencedColumnName = "id", insertable = false, updatable = false)
     })
@@ -89,11 +88,11 @@ public class Container {
     private String ipAddress;
 
     @CreatedDate
-    @Column(nullable = false, updatable = false)
+    @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP")
     private Instant created;
 
-    @Column
     @LastModifiedDate
+    @Column(columnDefinition = "TIMESTAMP")
     private Instant lastModified;
 
 }

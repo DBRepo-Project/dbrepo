@@ -1,9 +1,9 @@
 package at.tuwien.endpoints;
 
-import at.tuwien.OaiErrorType;
-import at.tuwien.OaiListIdentifiersParameters;
-import at.tuwien.OaiRecordParameters;
 import at.tuwien.exception.IdentifierNotFoundException;
+import at.tuwien.oaipmh.OaiErrorType;
+import at.tuwien.oaipmh.OaiListIdentifiersParameters;
+import at.tuwien.oaipmh.OaiRecordParameters;
 import at.tuwien.service.MetadataService;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;

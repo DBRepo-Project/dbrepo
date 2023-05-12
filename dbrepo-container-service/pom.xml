@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.3.10.RELEASE</version>
+        <version>3.0.6</version>
     </parent>
 
     <groupId>at.tuwien</groupId>
@@ -22,21 +22,16 @@
     </modules>
 
     <properties>
-        <java.version>11</java.version>
-        <spring-cloud.version>3.0.1</spring-cloud.version>
-        <mapstruct.version>1.4.2.Final</mapstruct.version>
-        <docker.version>3.2.7</docker.version>
-        <swagger.version>2.2.2</swagger.version>
-        <jacoco.version>0.8.7</jacoco.version>
-        <sqlserver.version>9.2.1.jre11</sqlserver.version>
+        <java.version>17</java.version>
+        <spring-cloud.version>4.0.2</spring-cloud.version>
+        <mapstruct.version>1.5.5.Final</mapstruct.version>
+        <docker.version>3.3.0</docker.version>
+        <swagger.version>2.2.9</swagger.version>
+        <jacoco.version>0.8.10</jacoco.version>
         <jwt.version>4.3.0</jwt.version>
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-webflux</artifactId>
-        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -79,7 +74,7 @@
         <dependency>
             <groupId>io.swagger.core.v3</groupId>
             <artifactId>swagger-core</artifactId>
-            <version>2.2.2</version>
+            <version>${swagger.version}</version>
         </dependency>
         <!-- Data Source -->
         <dependency>
@@ -108,16 +103,6 @@
             <groupId>org.mariadb.jdbc</groupId>
             <artifactId>mariadb-java-client</artifactId>
             <version>${mariadb.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <version>${mysql.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.microsoft.sqlserver</groupId>
-            <artifactId>mssql-jdbc</artifactId>
-            <version>${sqlserver.version}</version>
         </dependency>
         <!-- Testing -->
         <dependency>

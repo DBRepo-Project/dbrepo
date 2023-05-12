@@ -44,7 +44,7 @@ See https://nuxtjs.org/
 Configure the `.env` file for the IP and port running or run through terminal:
 
 ```bash
-API=http://fda-gateway-service:9095 npm --prefix ./fda-ui run dev
+API=http://fda-gateway-service npm --prefix ./fda-ui run dev
 ```
 
 Of course you need to add `fda-gateway-service` to your `/etc/hosts` file for Docker "DNS" to your containers:

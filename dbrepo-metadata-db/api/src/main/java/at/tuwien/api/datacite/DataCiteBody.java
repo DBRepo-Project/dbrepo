@@ -1,14 +1,17 @@
 package at.tuwien.api.datacite;
 
 import lombok.*;
+import lombok.extern.jackson.Jacksonized;
 
 import java.io.Serializable;
 
-@Data
 @Getter
+@Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@Jacksonized
+@ToString
 public class DataCiteBody<T> implements Serializable {
 
     private DataCiteData<T> data;

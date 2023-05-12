@@ -3,7 +3,8 @@ FROM dbrepo-metadata-db:latest as dependency
 MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
 
 ###### SECOND STAGE ######
-FROM maven:slim as build
+FROM maven:3-openjdk-17 as build
+MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
 
 COPY ./pom.xml ./
 
@@ -19,12 +20,15 @@ COPY ./report ./report
 RUN mvn -q clean package -DskipTests
 
 ###### THIRD STAGE ######
-FROM openjdk:11-jre-slim as runtime
+FROM openjdk:17-alpine as runtime
+MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
+
+RUN apk --no-cache add bash
 
 ENV METADATA_DB=fda
 ENV METADATA_USERNAME=root
 ENV METADATA_PASSWORD=dbrepo
-ENV GATEWAY_ENDPOINT=http://gateway-service:9095
+ENV GATEWAY_ENDPOINT=http://gateway-service
 ENV PID_BASE="http://example.com/pid/"
 ENV REPOSITORY_NAME="Example Repository"
 ENV BASE_URL="http://example.com"
@@ -45,4 +49,4 @@ COPY --from=build ./rest-service/target/rest-service-*.jar ./metadata-service.ja
 
 EXPOSE 9090
 
-ENTRYPOINT ["java", "-Dlog4j2.formatMsgNoLookups=true", "-jar", "./metadata-service.jar"]
+ENTRYPOINT ["java", "-Dlog4j2.formatMsgNoLookups=true",  "-jar", "./metadata-service.jar"]

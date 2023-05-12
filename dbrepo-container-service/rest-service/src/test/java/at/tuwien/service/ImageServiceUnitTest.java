@@ -16,8 +16,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import javax.persistence.EntityNotFoundException;
-import javax.validation.ConstraintViolationException;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.ConstraintViolationException;
 import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
@@ -158,6 +158,8 @@ public class ImageServiceUnitTest extends BaseUnitTest {
     public void delete_succeeds() throws ImageNotFoundException {
 
         /* mock */
+        when(imageRepository.existsById(IMAGE_1_ID))
+                .thenReturn(true);
         doNothing()
                 .when(imageRepository)
                 .deleteById(IMAGE_1_ID);
@@ -170,6 +172,8 @@ public class ImageServiceUnitTest extends BaseUnitTest {
     public void delete_notFound_fails() {
 
         /* mock */
+        when(imageRepository.existsById(IMAGE_1_ID))
+                .thenReturn(false);
         doThrow(EntityNotFoundException.class)
                 .when(imageRepository)
                 .deleteById(IMAGE_1_ID);

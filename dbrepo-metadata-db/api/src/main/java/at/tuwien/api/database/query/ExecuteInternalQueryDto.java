@@ -2,13 +2,14 @@ package at.tuwien.api.database.query;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
+import lombok.extern.jackson.Jacksonized;
 
 @Getter
 @Setter
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
-@EqualsAndHashCode
+@AllArgsConstructor
+@Jacksonized
 @ToString
 public class ExecuteInternalQueryDto {
 

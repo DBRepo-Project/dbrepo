@@ -3,7 +3,7 @@ package at.tuwien.entities.database;
 import lombok.*;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.*;
+import jakarta.persistence.*;;
 
 @Data
 @Entity
@@ -12,7 +12,7 @@ import javax.persistence.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-@javax.persistence.Table(name = "mdb_licenses", uniqueConstraints = {
+@jakarta.persistence.Table(name = "mdb_licenses", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"uri"})
 })
 public class License {

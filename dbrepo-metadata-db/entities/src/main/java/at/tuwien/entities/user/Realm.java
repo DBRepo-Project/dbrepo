@@ -1,12 +1,10 @@
 package at.tuwien.entities.user;
 
 import lombok.*;
-import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Immutable;
-import org.hibernate.annotations.Type;
+import org.hibernate.annotations.JdbcTypeCode;
 
-import javax.persistence.*;
-import java.util.List;
+import jakarta.persistence.*;
 import java.util.UUID;
 
 @Data
@@ -25,8 +23,8 @@ public class Realm {
 
     @Id
     @EqualsAndHashCode.Include
+    @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column(name = "ID", nullable = false, columnDefinition = "VARCHAR(36)")
-    @Type(type = "uuid-char")
     private UUID id;
 
     @Column(nullable = false)

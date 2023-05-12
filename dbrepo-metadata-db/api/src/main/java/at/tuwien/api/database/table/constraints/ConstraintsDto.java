@@ -4,15 +4,17 @@ import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.constraints.foreignKey.ForeignKeyDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
+import lombok.extern.jackson.Jacksonized;
 
 import java.util.List;
 
 @Getter
 @Setter
-@ToString
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
+@Jacksonized
+@ToString
 public class ConstraintsDto {
 
     List<List<ColumnDto>> uniques;

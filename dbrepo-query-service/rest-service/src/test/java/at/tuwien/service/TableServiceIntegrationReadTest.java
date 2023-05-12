@@ -101,8 +101,6 @@ public class TableServiceIntegrationReadTest extends BaseUnitTest {
     @BeforeEach
     public void beforeEach() {
         /* metadata db */
-        h2Utils.runScript("schema.sql");
-        /* metadata db */
         imageRepository.save(IMAGE_1);
         realmRepository.save(REALM_DBREPO);
         userRepository.save(USER_1_SIMPLE);

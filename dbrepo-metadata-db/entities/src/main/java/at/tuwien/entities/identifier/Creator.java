@@ -3,14 +3,12 @@ package at.tuwien.entities.identifier;
 import at.tuwien.entities.user.User;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Type;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.*;
+import jakarta.persistence.*;;
 import java.time.Instant;
-import java.util.UUID;
 
 @Data
 @Entity
@@ -52,8 +50,8 @@ public class Creator {
     @JoinColumn(name = "pid", referencedColumnName = "id", insertable = false, updatable = false)
     private Identifier identifier;
 
-    @Column(nullable = false, updatable = false)
     @CreatedDate
+    @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP")
     private Instant created;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
@@ -62,8 +60,8 @@ public class Creator {
     })
     private User creator;
 
-    @Column
     @LastModifiedDate
+    @Column(columnDefinition = "TIMESTAMP")
     private Instant lastModified;
 
 }

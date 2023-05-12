@@ -10,9 +10,9 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.*;
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
+import jakarta.persistence.*;;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.List;
@@ -25,7 +25,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-@javax.persistence.Table(name = "mdb_databases", uniqueConstraints = {
+@jakarta.persistence.Table(name = "mdb_databases", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"id", "internalName"})
 })
 public class Database implements Serializable {
@@ -36,23 +36,22 @@ public class Database implements Serializable {
     private Long id;
 
     @ToString.Exclude
+    @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column(name = "created_by", nullable = false, columnDefinition = "VARCHAR(36)")
-    @Type(type = "uuid-char")
     private UUID createdBy;
 
-    @Type(type = "uuid-char")
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumns({
             @JoinColumn(name = "created_by", referencedColumnName = "ID", insertable = false, updatable = false)
     })
     private User creator;
 
     @ToString.Exclude
+    @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column(name = "owned_by", nullable = false, columnDefinition = "VARCHAR(36)")
-    @Type(type = "uuid-char")
     private UUID ownedBy;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumns({
             @JoinColumn(name = "owned_by", referencedColumnName = "ID", insertable = false, updatable = false)
     })
@@ -60,7 +59,7 @@ public class Database implements Serializable {
 
     @ToString.Exclude
     @org.springframework.data.annotation.Transient
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumns({
             @JoinColumn(name = "id", referencedColumnName = "id", insertable = false, updatable = false)
     })
@@ -79,18 +78,17 @@ public class Database implements Serializable {
     private String description;
 
     @ToString.Exclude
+    @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column(name = "contact_person", nullable = false, columnDefinition = "VARCHAR(36)")
-    @Type(type = "uuid-char")
     private UUID contactPerson;
 
-    @Type(type = "uuid-char")
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
     @JoinColumns({
             @JoinColumn(name = "contact_person", referencedColumnName = "ID", updatable = false, insertable = false)
     })
     private User contact;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumnsOrFormulas({
             @JoinColumnOrFormula(formula = @JoinFormula(value = "'DATABASE'", referencedColumnName = "identifier_type")),
             @JoinColumnOrFormula(column = @JoinColumn(name = "id", referencedColumnName = "dbid", insertable = false, updatable = false)),
@@ -99,7 +97,7 @@ public class Database implements Serializable {
 
     @ToString.Exclude
     @org.springframework.data.annotation.Transient
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumns({
             @JoinColumn(name = "tdbid", referencedColumnName = "id", insertable = false, updatable = false)
     })
@@ -107,7 +105,7 @@ public class Database implements Serializable {
 
     @ToString.Exclude
     @org.springframework.data.annotation.Transient
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumns({
             @JoinColumn(name = "vdbid", referencedColumnName = "id", insertable = false, updatable = false)
     })
@@ -116,12 +114,12 @@ public class Database implements Serializable {
     @Column(nullable = false)
     private Boolean isPublic;
 
-    @Column(nullable = false, updatable = false)
     @CreatedDate
+    @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP")
     private Instant created;
 
-    @Column
     @LastModifiedDate
+    @Column(columnDefinition = "TIMESTAMP")
     private Instant lastModified;
 
 }

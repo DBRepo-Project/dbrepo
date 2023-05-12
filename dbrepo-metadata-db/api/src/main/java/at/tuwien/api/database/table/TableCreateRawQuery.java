@@ -1,15 +1,17 @@
 package at.tuwien.api.database.table;
 
 import lombok.*;
+import lombok.extern.jackson.Jacksonized;
 
 import java.sql.PreparedStatement;
 
 @Getter
 @Setter
-@ToString
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
+@Jacksonized
+@ToString
 public class TableCreateRawQuery {
 
     private PreparedStatement preparedStatement;

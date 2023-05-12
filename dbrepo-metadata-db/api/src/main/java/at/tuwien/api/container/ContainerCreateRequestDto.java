@@ -3,13 +3,15 @@ package at.tuwien.api.container;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
-import javax.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotBlank;
+import lombok.extern.jackson.Jacksonized;
 
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Jacksonized
 @ToString
 public class ContainerCreateRequestDto {
 

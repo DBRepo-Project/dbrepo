@@ -9,14 +9,16 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 @Configuration
 @EnableWebSecurity
@@ -27,15 +29,32 @@ import javax.servlet.http.HttpServletResponse;
         bearerFormat = "JWT",
         scheme = "bearer"
 )
-public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+public class WebSecurityConfig {
 
     @Bean
     public AuthTokenFilter authTokenFilter() {
         return new AuthTokenFilter();
     }
 
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        final OrRequestMatcher internalEndpoints = new OrRequestMatcher(
+                new AntPathRequestMatcher("/actuator/prometheus/**", "GET")
+        );
+        final OrRequestMatcher publicEndpoints = new OrRequestMatcher(
+                new AntPathRequestMatcher("/api/container/**/database/data/**", "GET"),
+                new AntPathRequestMatcher("/api/container/**/database/**/table/**/data/**", "GET"),
+                new AntPathRequestMatcher("/api/container/**/database/**/view/**", "GET"),
+                new AntPathRequestMatcher("/api/container/**/database/**/table/**/history/**", "GET"),
+                new AntPathRequestMatcher("/api/container/**/database/**/table/**/export/**", "GET"),
+                new AntPathRequestMatcher("/api/container/**/database/**/query/**", "GET"),
+                new AntPathRequestMatcher("/api/container/**/database/**/query/**/export", "GET"),
+                new AntPathRequestMatcher("/api/container/**/database/**/query/**", "PUT"),
+                new AntPathRequestMatcher("/v3/api-docs.yaml"),
+                new AntPathRequestMatcher("/v3/api-docs/**"),
+                new AntPathRequestMatcher("/swagger-ui/**"),
+                new AntPathRequestMatcher("/swagger-ui.html")
+        );
         /* enable CORS and disable CSRF */
         http = http.cors().and().csrf().disable();
         /* set session management to stateless */
@@ -54,28 +73,18 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                         }
                 ).and();
         /* set permissions on endpoints */
-        http.authorizeRequests()
+        http.authorizeHttpRequests()
                 /* our internal endpoints */
-                .antMatchers(HttpMethod.GET, "/actuator/prometheus/**").permitAll()
+                .requestMatchers(internalEndpoints).permitAll()
                 /* our public endpoints */
-                .antMatchers(HttpMethod.GET, "/api/container/**/database/data/**").permitAll()
-                .antMatchers(HttpMethod.GET, "/api/container/**/database/**/table/**/data/**").permitAll()
-                .antMatchers(HttpMethod.GET, "/api/container/**/database/**/view/**").permitAll()
-                .antMatchers(HttpMethod.GET, "/api/container/**/database/**/table/**/history/**").permitAll()
-                .antMatchers(HttpMethod.GET, "/api/container/**/database/**/table/**/export/**").permitAll()
-                .antMatchers(HttpMethod.GET, "/api/container/**/database/**/query/**").permitAll()
-                .antMatchers(HttpMethod.GET, "/api/container/**/database/**/query/**/export").permitAll()
-                .antMatchers(HttpMethod.PUT, "/api/container/**/database/**/query/**").permitAll()
-                .antMatchers("/v3/api-docs.yaml",
-                        "/v3/api-docs/**",
-                        "/swagger-ui/**",
-                        "/swagger-ui.html").permitAll()
+                .requestMatchers(publicEndpoints).permitAll()
                 /* our private endpoints */
                 .anyRequest().authenticated();
         /* add JWT token filter */
         http.addFilterBefore(authTokenFilter(),
                 UsernamePasswordAuthenticationFilter.class
         );
+        return http.build();
     }
 
     @Bean
@@ -83,7 +92,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         final CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
-        config.addAllowedOrigin("*");
+        config.addAllowedOriginPattern("*");
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
         source.registerCorsConfiguration("/**", config);

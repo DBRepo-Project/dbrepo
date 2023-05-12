@@ -11,10 +11,7 @@ import at.tuwien.config.EndpointConfig;
 import at.tuwien.config.IndexInitializer;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.exception.*;
-import at.tuwien.repository.jpa.ContainerRepository;
-import at.tuwien.repository.jpa.DatabaseRepository;
-import at.tuwien.repository.jpa.IdentifierRepository;
-import at.tuwien.repository.jpa.ImageRepository;
+import at.tuwien.repository.jpa.*;
 import at.tuwien.service.impl.IdentifierServiceImpl;
 import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,8 +43,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-@SpringBootTest
-@ActiveProfiles("doi")
+@SpringBootTest(properties = "spring.profiles.active:local,doi")
 public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
 
     @MockBean
@@ -71,6 +67,12 @@ public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
     @Autowired
     private IdentifierRepository identifierRepository;
 
+    @Autowired
+    private RealmRepository realmRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
     @MockBean
     @Qualifier("restTemplate")
     private RestTemplate restTemplate;
@@ -86,8 +88,10 @@ public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
 
     @BeforeEach
     public void beforeEach() {
+        realmRepository.save(REALM_DBREPO);
+        userRepository.save(USER_1);
         imageRepository.save(IMAGE_1);
-        containerRepository.save(CONTAINER_1);
+        containerRepository.save(CONTAINER_1_SIMPLE);
         databaseRepository.save(DATABASE_1);
     }
 
@@ -182,7 +186,7 @@ public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void update_invalidMetadata_fails() throws IdentifierUpdateBadFormException, IdentifierNotFoundException {
+    public void update_invalidMetadata_fails() throws IdentifierNotFoundException {
 
         /* mock */
         when(identifierService.update(eq(IDENTIFIER_1_ID), any(IdentifierUpdateDto.class)))
@@ -200,7 +204,7 @@ public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void update_restClientException_fails() throws IdentifierUpdateBadFormException, IdentifierNotFoundException {
+    public void update_restClientException_fails() throws IdentifierNotFoundException {
 
         /* mock */
         when(identifierService.update(eq(IDENTIFIER_1_ID), any(IdentifierUpdateDto.class)))

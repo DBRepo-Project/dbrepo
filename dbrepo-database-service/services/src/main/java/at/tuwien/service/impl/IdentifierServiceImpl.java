@@ -28,13 +28,4 @@ public class IdentifierServiceImpl implements IdentifierService {
         return identifierRepository.findByDatabaseId(databaseId);
     }
 
-    @Override
-    public Identifier find(Long databaseId, IdentifierType type) throws IdentifierNotFoundException {
-        final Optional<Identifier> optional = identifierRepository.findByDatabaseIdAndType(databaseId, type);
-        if (optional.isEmpty()) {
-            throw new IdentifierNotFoundException("Failed to find identifier");
-        }
-        return optional.get();
-    }
-
 }

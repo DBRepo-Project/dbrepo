@@ -3,14 +3,16 @@ package at.tuwien.api.user;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
-import javax.validation.constraints.Email;
+import jakarta.validation.constraints.Email;
+import lombok.extern.jackson.Jacksonized;
 
 @Getter
 @Setter
-@ToString
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
+@Jacksonized
+@ToString
 public class UserForgotDto {
 
     @Schema(example = "jcarberry")

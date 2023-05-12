@@ -31,12 +31,12 @@ public class StoreMapperTest extends BaseUnitTest {
     @MockBean
     private RabbitMqListenerImpl rabbitMqListener;
 
-    private final DateTimeFormatter mariaDbFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.S[SS]")
+    private final DateTimeFormatter mariaDbFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.SSS]")
             .withZone(ZoneId.of("UTC"));
 
     @Test
     public void mapMariaDbInstant_succeeds() {
-        final String timestamp = "2023-01-08 08:49:29.0";
+        final String timestamp = "2023-01-08 08:49:29";
         final Instant compare = Instant.ofEpochSecond(1673167769);
 
         /* test */

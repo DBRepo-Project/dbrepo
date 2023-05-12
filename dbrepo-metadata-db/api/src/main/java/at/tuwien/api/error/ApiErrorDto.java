@@ -2,16 +2,18 @@ package at.tuwien.api.error;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
+import lombok.extern.jackson.Jacksonized;
 import org.springframework.http.HttpStatus;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 @Getter
 @Setter
-@ToString
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
+@Jacksonized
+@ToString
 public class ApiErrorDto {
 
     @NotNull(message = "http status is required")

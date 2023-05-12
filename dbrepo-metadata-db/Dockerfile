@@ -1,7 +1,6 @@
 ###### FIRST STAGE ######
-FROM maven:slim as build
-MAINTAINER Cornelia Michlits <cornelia.michlits@tuwien.ac.at>
-LABEL db=metadata
+FROM maven:3-openjdk-17 as build
+MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
 
 COPY ./pom.xml ./
 

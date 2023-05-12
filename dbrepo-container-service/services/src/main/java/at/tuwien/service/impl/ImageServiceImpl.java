@@ -2,7 +2,6 @@ package at.tuwien.service.impl;
 
 import at.tuwien.api.container.image.ImageChangeDto;
 import at.tuwien.api.container.image.ImageCreateDto;
-import at.tuwien.api.container.image.ImageEnvItemDto;
 import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.entities.container.image.ContainerImageEnvironmentItem;
 import at.tuwien.exception.*;
@@ -21,11 +20,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.UnexpectedRollbackException;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityNotFoundException;
-import javax.validation.ConstraintViolationException;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.ConstraintViolationException;
 import java.security.Principal;
 import java.time.Duration;
 import java.time.Instant;
@@ -128,6 +126,9 @@ public class ImageServiceImpl implements ImageService {
     @Override
     @Transactional
     public void delete(Long imageId) throws ImageNotFoundException {
+        if (!imageRepository.existsById(imageId)) {
+            throw new ImageNotFoundException("Image with id " + imageId + " not found");
+        }
         try {
             imageRepository.deleteById(imageId);
             log.info("Deleted image {}", imageId);

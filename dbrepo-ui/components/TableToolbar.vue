@@ -2,7 +2,7 @@
   <div v-if="table">
     <v-toolbar flat>
       <v-toolbar-title>
-        <v-btn id="back-btn" class="mr-2" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table`">
+        <v-btn id="back-btn" plain class="mr-2" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table`">
           <v-icon left>mdi-arrow-left</v-icon>
         </v-btn>
       </v-toolbar-title>

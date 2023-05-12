@@ -812,7 +812,7 @@ public abstract class BaseTest {
 
     public final static Long IMAGE_ELASTIC_ID = 3L;
     public final static String IMAGE_ELASTIC_REPOSITORY = "elasticsearch";
-    public final static String IMAGE_ELASTIC_TAG = "7.13.4";
+    public final static String IMAGE_ELASTIC_TAG = "8.7.1";
 
     public final static ContainerImage IMAGE_ELASTIC = ContainerImage.builder()
             .id(IMAGE_ELASTIC_ID)
@@ -2338,7 +2338,6 @@ public abstract class BaseTest {
             .createdBy(USER_1_USERNAME)
             .isPersisted(QUERY_1_PERSISTED)
             .executed(QUERY_1_EXECUTION)
-            .created(QUERY_1_CREATED)
             .build();
 
     public final static QueryDto QUERY_1_DTO = QueryDto.builder()
@@ -2349,9 +2348,9 @@ public abstract class BaseTest {
             .queryHash(QUERY_1_QUERY_HASH)
             .resultHash(QUERY_1_RESULT_HASH)
             .created(QUERY_1_CREATED)
+            .creator(USER_1_DTO)
             .execution(QUERY_1_EXECUTION)
             .createdBy(USER_1_ID)
-            .creator(USER_1_DTO)
             .build();
 
     public final static QueryBriefDto QUERY_1_BRIEF_DTO = QueryBriefDto.builder()
@@ -4205,7 +4204,7 @@ public abstract class BaseTest {
     public final static String IDENTIFIER_1_NORMALIZED = QUERY_1_STATEMENT;
     public final static Long IDENTIFIER_1_RESULT_NUMBER = QUERY_1_RESULT_NUMBER;
     public final static String IDENTIFIER_1_PUBLISHER = "Austrian Government";
-    public final static IdentifierType IDENTIFIER_1_TYPE = IdentifierType.SUBSET;
+    public final static IdentifierType IDENTIFIER_1_TYPE = IdentifierType.DATABASE;
     public final static IdentifierTypeDto IDENTIFIER_1_TYPE_DTO = IdentifierTypeDto.DATABASE;
     public final static UUID IDENTIFIER_1_CREATED_BY = USER_1_ID;
     public final static User IDENTIFIER_1_CREATOR = USER_1;
