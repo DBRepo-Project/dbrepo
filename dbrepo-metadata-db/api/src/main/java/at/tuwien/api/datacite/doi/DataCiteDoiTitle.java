@@ -3,14 +3,18 @@ package at.tuwien.api.datacite.doi;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
-import javax.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotBlank;
+import lombok.extern.jackson.Jacksonized;
+
 import java.io.Serializable;
 
-@Data
 @Getter
+@Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@Jacksonized
+@ToString
 public class DataCiteDoiTitle implements Serializable {
 
     @NotBlank

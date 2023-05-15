@@ -5,7 +5,7 @@ TRIVY_VERSION ?= v0.41.0
 
 all:
 
-build-backend: build-metadata-db build-database-service build-query-service build-table-service build-identifier-service build-container-service build-discovery-service build-gateway-service build-metadata-service build-analyse-service build-user-service
+build-backend: build-metadata-db build-database-service build-query-service build-table-service build-identifier-service build-container-service build-metadata-service build-analyse-service build-user-service
 
 build-metadata-db:
 	mvn -f ./dbrepo-metadata-db/pom.xml clean install
@@ -21,12 +21,6 @@ build-container-service: build-metadata-db
 
 build-database-service: build-metadata-db
 	mvn -f ./dbrepo-database-service/pom.xml clean package -DskipTests
-
-build-discovery-service: build-metadata-db
-	mvn -f ./dbrepo-discovery-service/pom.xml clean package -DskipTests
-
-build-gateway-service: build-metadata-db
-	mvn -f ./dbrepo-gateway-service/pom.xml clean package -DskipTests
 
 build-query-service: build-metadata-db
 	mvn -f ./dbrepo-query-service/pom.xml clean package -DskipTests
@@ -154,7 +148,7 @@ release-search: tag-search
 release-metadata: tag-metadata
 	docker push "dbrepo/metadata-service:${TAG}"
 
-test-backend: test-container-service test-database-service test-discovery-service test-gateway-service test-query-service test-table-service test-identifier-service test-metadata-service test-semantics-service test-analyse-service test-user-service
+test-backend: test-container-service test-database-service test-query-service test-table-service test-identifier-service test-metadata-service test-semantics-service test-analyse-service test-user-service
 
 test-identifier-service: clean build-metadata-db build-identifier-service
 	mvn -f ./dbrepo-identifier-service/pom.xml clean test verify
@@ -164,13 +158,8 @@ test-container-service: clean build-metadata-db build-container-service
 
 test-database-service: clean build-metadata-db build-database-service
 	docker pull rabbitmq:3-management-alpine
+	docker pull elasticsearch:8.7.1
 	mvn -f ./dbrepo-database-service/pom.xml clean test verify
-
-test-discovery-service: clean build-metadata-db build-discovery-service
-	mvn -f ./dbrepo-discovery-service/pom.xml clean test verify
-
-test-gateway-service: clean build-metadata-db build-gateway-service
-	mvn -f ./dbrepo-gateway-service/pom.xml clean test verify
 
 test-query-service: clean build-metadata-db build-query-service
 	mvn -f ./dbrepo-query-service/pom.xml clean test verify

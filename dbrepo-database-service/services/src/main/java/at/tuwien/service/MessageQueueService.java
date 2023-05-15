@@ -4,7 +4,7 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.security.Principal;
 
 public interface MessageQueueService {

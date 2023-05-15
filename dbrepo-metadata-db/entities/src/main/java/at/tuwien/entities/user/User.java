@@ -4,12 +4,11 @@ import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.identifier.Identifier;
 import lombok.*;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Type;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.core.Authentication;
 
-import javax.persistence.*;
+import jakarta.persistence.*;;
 import java.security.Principal;
 import java.util.List;
 import java.util.UUID;
@@ -35,8 +34,8 @@ public class User {
 
     @Id
     @EqualsAndHashCode.Include
+    @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column(name = "ID", nullable = false, columnDefinition = "VARCHAR(36)")
-    @Type(type = "uuid-char")
     private UUID id;
 
     @Column(nullable = false)
@@ -48,8 +47,8 @@ public class User {
     @Column(name = "LAST_NAME")
     private String lastname;
 
+    @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column(name = "REALM_ID", columnDefinition = "VARCHAR(36)")
-    @Type(type = "uuid-char")
     private UUID realmId;
 
     @Column(nullable = false)

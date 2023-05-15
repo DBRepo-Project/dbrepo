@@ -1,19 +1,21 @@
 package at.tuwien.api.user;
 
 import lombok.*;
+import lombok.extern.jackson.Jacksonized;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 
 @Getter
 @Setter
-@ToString
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
+@Jacksonized
+@ToString
 public class UserDetailsDto implements UserDetails {
 
     private String id;

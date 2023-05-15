@@ -25,7 +25,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.util.SocketUtils;
 
 import org.springframework.transaction.annotation.Transactional;
 
@@ -71,10 +70,8 @@ public class ContainerServiceImpl implements ContainerService {
             throw new ImageNotFoundException("image was not found in metadata database.");
         }
         /* entity */
-        final Integer availableTcpPort = SocketUtils.findAvailableTcpPort(10000);
         Container container = new Container();
         container.setImageId(image.get().getId());
-        container.setPort(availableTcpPort);
         container.setName(createDto.getName());
         container.setInternalName(containerMapper.containerToInternalContainerName(container));
         /* check duplicate */
@@ -92,11 +89,10 @@ public class ContainerServiceImpl implements ContainerService {
         /* create host mapping */
         final HostConfig hostConfig = this.hostConfig
                 .withNetworkMode(dockerDaemonConfig.getUserNetwork())
-                .withBinds(Bind.parse(dockerDaemonConfig.getMountPath() + ":/tmp"), Bind.parse(response.getName() + ":/var/lib/mysql"))
-                .withPortBindings(PortBinding.parse(availableTcpPort + ":" + image.get().getDefaultPort()));
-        log.debug("container has network {}, volume bind {}, volume bind {} and port bind {}",
+                .withBinds(Bind.parse(dockerDaemonConfig.getMountPath() + ":/tmp"), Bind.parse(response.getName() + ":/var/lib/mysql"));
+        log.debug("container has network {}, volume bind {}, volume bind {}",
                 dockerDaemonConfig.getUserNetwork(), dockerDaemonConfig.getMountPath() + ":/tmp",
-                response.getName() + ":/var/lib/mysql", availableTcpPort + ":" + image.get().getDefaultPort());
+                response.getName() + ":/var/lib/mysql");
         log.trace("host config {}", hostConfig);
         final User user = userService.findByUsername(principal.getName());
         container.setCreatedBy(user.getId());

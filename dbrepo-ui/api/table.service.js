@@ -145,6 +145,7 @@ class TableService {
 
   create (id, databaseId, data) {
     return new Promise((resolve, reject) => {
+      console.debug('====>', data)
       api.post(`/api/container/${id}/database/${databaseId}/table`, data, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const table = response.data

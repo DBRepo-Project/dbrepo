@@ -1,7 +1,9 @@
 package at.tuwien.api.user;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Getter;
 
+@Getter
 public enum RoleTypeDto {
 
     @JsonProperty("researcher")

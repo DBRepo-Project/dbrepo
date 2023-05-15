@@ -103,6 +103,21 @@ public class BrokerServiceGatewayTest extends BaseUnitTest {
     }
 
     @Test
+    public void grantPermission_invalidResponseCode_fails() {
+        final ResponseEntity<Void> mock = ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .build();
+
+        /* mock */
+        when(restTemplate.exchange(any(URI.class), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class)))
+                .thenReturn(mock);
+
+        /* test */
+        assertThrows(BrokerVirtualHostGrantException.class, () -> {
+            brokerServiceGateway.grantPermission(USER_1_USERNAME, VIRTUAL_HOST_EXCHANGE_UPDATE_DTO);
+        });
+    }
+
+    @Test
     public void grantPermission_virtualHostNoRightsBefore_succeeds() throws BrokerVirtualHostGrantException {
         final ResponseEntity<Void> mock = ResponseEntity.status(HttpStatus.CREATED)
                 .build();
@@ -126,6 +141,49 @@ public class BrokerServiceGatewayTest extends BaseUnitTest {
 
         /* test */
         brokerServiceGateway.grantPermission(USER_1_USERNAME, VIRTUAL_HOST_GRANT_DTO);
+    }
+
+    @Test
+    public void grantPermission_invalidResponseCode2_fails() {
+        final ResponseEntity<Void> mock = ResponseEntity.status(HttpStatus.ACCEPTED)
+                .build();
+
+        /* mock */
+        when(restTemplate.exchange(any(URI.class), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class)))
+                .thenReturn(mock);
+
+        /* test */
+        assertThrows(BrokerVirtualHostGrantException.class, () -> {
+            brokerServiceGateway.grantPermission(USER_1_USERNAME, VIRTUAL_HOST_GRANT_DTO);
+        });
+    }
+
+    @Test
+    public void createUser_succeeds() throws BrokerVirtualHostCreationException {
+        final ResponseEntity<Void> mock = ResponseEntity.status(HttpStatus.NO_CONTENT)
+                .build();
+
+        /* mock */
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class)))
+                .thenReturn(mock);
+
+        /* test */
+        brokerServiceGateway.createUser(USER_1_USERNAME);
+    }
+
+    @Test
+    public void createUser_invalidResponseCode_fails() {
+        final ResponseEntity<Void> mock = ResponseEntity.status(HttpStatus.ACCEPTED)
+                .build();
+
+        /* mock */
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class)))
+                .thenReturn(mock);
+
+        /* test */
+        assertThrows(BrokerVirtualHostCreationException.class, () -> {
+            brokerServiceGateway.createUser(USER_1_USERNAME);
+        });
     }
 
 }

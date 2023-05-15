@@ -3,7 +3,8 @@ FROM dbrepo-metadata-db:latest as dependency
 MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
 
 ###### SECOND STAGE ######
-FROM maven:slim as build
+FROM maven:3-openjdk-17 as build
+MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
 
 COPY ./pom.xml ./
 
@@ -19,7 +20,10 @@ COPY ./report ./report
 RUN mvn -q clean package -DskipTests
 
 ###### THIRD STAGE ######
-FROM openjdk:11-jre-slim as runtime
+FROM openjdk:17-alpine as runtime
+MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
+
+RUN apk --no-cache add bash
 
 ENV METADATA_DB=fda
 ENV METADATA_USERNAME=root
@@ -29,11 +33,11 @@ ENV BROKER_PASSWORD=fda
 ENV SEARCH_ENDPOINT=search-service
 ENV SEARCH_USERNAME=elastic
 ENV SEARCH_PASSWORD=elastic
-ENV GATEWAY_ENDPOINT=http://gateway-service:9095
+ENV GATEWAY_ENDPOINT=http://gateway-service
 ENV LOG_LEVEL=debug
 ENV DBREPO_CLIENT_SECRET=client-secret
 ENV CLIENT_ID=dbrepo-client
-ENV JWT_ISSUER=http://localhost:8080/realms/dbrepo
+ENV JWT_ISSUER=http://localhost/realms/dbrepo
 ENV JWT_PUBKEY=public-key
 
 WORKDIR /app
@@ -47,4 +51,4 @@ COPY --from=build ./rest-service/target/rest-service-*.jar ./database-service.ja
 
 EXPOSE 9092
 
-ENTRYPOINT ["java", "-Dlog4j2.formatMsgNoLookups=true", "-jar", "./database-service.jar"]
+ENTRYPOINT ["java", "-Dlog4j2.formatMsgNoLookups=true",    "-jar", "./database-service.jar"]

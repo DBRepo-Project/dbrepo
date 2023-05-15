@@ -2,15 +2,18 @@ package at.tuwien.api.database.table;
 
 import lombok.*;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
+import lombok.extern.jackson.Jacksonized;
+
 import java.util.Map;
 
 @Getter
 @Setter
-@ToString
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
+@Jacksonized
+@ToString
 public class TableCsvUpdateDto {
 
     @NotNull(message = "data is required")

@@ -9,7 +9,12 @@ import java.util.List;
 
 @Service
 public interface IdentifierService {
-    List<Identifier> findAll(Long databaseId);
 
-    Identifier find(Long databaseId, IdentifierType type) throws IdentifierNotFoundException;
+    /**
+     * Finds all identifiers in the metadata database for a database with given id.
+     *
+     * @param databaseId The database id.
+     * @return The list of identifiers.
+     */
+    List<Identifier> findAll(Long databaseId);
 }

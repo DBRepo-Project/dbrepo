@@ -3,16 +3,12 @@ package at.tuwien.entities.identifier;
 import at.tuwien.entities.user.User;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.Where;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.*;
+import jakarta.persistence.*;;
 import java.time.Instant;
-import java.util.UUID;
 
 @Data
 @Entity
@@ -56,12 +52,12 @@ public class RelatedIdentifier {
     })
     private User creator;
 
-    @Column(nullable = false, updatable = false)
     @CreatedDate
+    @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP")
     private Instant created;
 
-    @Column
     @LastModifiedDate
+    @Column(columnDefinition = "TIMESTAMP")
     private Instant lastModified;
 
 }

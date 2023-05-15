@@ -22,8 +22,13 @@ spring:
     name: user-service
   rabbitmq:
     host: broker-service
+    virtual-host: dbrepo
     username: "${BROKER_USERNAME}"
     password: "${BROKER_PASSWORD}"
+  elasticsearch:
+    password: "${ELASTIC_PASSWORD}"
+    username: elastic
+    uris: http://search-service:9200
   cloud:
     loadbalancer.ribbon.enabled: false
 management.endpoints.web.exposure.include: health,info,prometheus
@@ -35,16 +40,7 @@ logging:
     root: warn
     at.tuwien.: "${LOG_LEVEL}"
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
-eureka:
-  instance:
-    hostname: user-service
-    non-secure-port: 9098
-  client.serviceUrl.defaultZone: http://discovery-service:9090/eureka/
 fda:
-  elastic:
-    endpoint: search-service:9200
-    username: elastic
-    password: "${ELASTIC_PASSWORD}"
   ready.path: /ready
   gateway.endpoint: "${GATEWAY_ENDPOINT}"
   default_role: "${DEFAULT_ROLE}"

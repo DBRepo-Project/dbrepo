@@ -11,7 +11,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.*;
+import jakarta.persistence.*;;
 import java.time.Instant;
 import java.util.List;
 
@@ -23,7 +23,7 @@ import java.util.List;
 @NoArgsConstructor
 @IdClass(TableColumnKey.class)
 @EntityListeners(AuditingEntityListener.class)
-@javax.persistence.Table(name = "mdb_columns", uniqueConstraints = {
+@jakarta.persistence.Table(name = "mdb_columns", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"tid", "internalName"})
 })
 public class TableColumn implements Comparable<TableColumn> {
@@ -107,11 +107,11 @@ public class TableColumn implements Comparable<TableColumn> {
     @Column(nullable = false)
     private Integer ordinalPosition;
 
-    @Column(nullable = false, updatable = false)
+    @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP")
     @CreatedDate
     private Instant created;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinTable(name = "mdb_columns_concepts",
             joinColumns = {
                     @JoinColumn(name = "cid", referencedColumnName = "id", insertable = false, updatable = false),
@@ -121,7 +121,7 @@ public class TableColumn implements Comparable<TableColumn> {
             inverseJoinColumns = @JoinColumn(name = "uri", referencedColumnName = "uri"))
     private TableColumnConcept concept;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinTable(name = "mdb_columns_units",
             joinColumns = {
                     @JoinColumn(name = "cid", referencedColumnName = "id", insertable = false, updatable = false),
@@ -131,8 +131,8 @@ public class TableColumn implements Comparable<TableColumn> {
             inverseJoinColumns = @JoinColumn(name = "uri", referencedColumnName = "uri"))
     private TableColumnUnit unit;
 
-    @Column
     @LastModifiedDate
+    @Column(columnDefinition = "TIMESTAMP")
     private Instant lastModified;
 
     @Override

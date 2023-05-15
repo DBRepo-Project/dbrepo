@@ -8,7 +8,6 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.repository.elastic.DatabaseIdxRepository;
 import at.tuwien.repository.jpa.ContainerRepository;
 import at.tuwien.repository.jpa.DatabaseRepository;
-import at.tuwien.repository.jpa.ImageRepository;
 import at.tuwien.repository.jpa.UserRepository;
 import at.tuwien.service.impl.MariaDbServiceImpl;
 import com.rabbitmq.client.Channel;
@@ -58,9 +57,6 @@ public class DatabaseServiceComponentTest extends BaseUnitTest {
     @Autowired
     private MariaDbServiceImpl databaseService;
 
-    @Autowired
-    private H2Utils h2Utils;
-
     private final static String BIND_MUSICOLOGY = new File("../../dbrepo-metadata-db/test/src/test/resources/musicology").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
 
     @BeforeAll
@@ -78,8 +74,6 @@ public class DatabaseServiceComponentTest extends BaseUnitTest {
     @BeforeEach
     public void beforeEach() {
         afterEach();
-        /* metadata database */
-        h2Utils.runScript("schema.sql");
     }
 
     @AfterEach

@@ -5,10 +5,12 @@ import at.tuwien.api.database.DatabaseModifyVisibilityDto;
 import at.tuwien.api.database.DatabaseTransferDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
+import org.springframework.stereotype.Service;
 
 import java.security.Principal;
 import java.util.List;
 
+@Service
 public interface DatabaseService {
 
     /**

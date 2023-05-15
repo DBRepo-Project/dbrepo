@@ -2,13 +2,15 @@ package at.tuwien.api.database.table.columns.concepts;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
+import lombok.extern.jackson.Jacksonized;
 
 @Getter
 @Setter
-@ToString
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
+@Jacksonized
+@ToString
 public class ColumnSemanticsUpdateDto {
 
     @JsonProperty("concept_uri")

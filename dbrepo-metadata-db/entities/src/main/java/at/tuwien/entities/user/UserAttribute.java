@@ -1,11 +1,10 @@
 package at.tuwien.entities.user;
 
 import lombok.*;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Type;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.*;
+import jakarta.persistence.*;;
 import java.util.UUID;
 
 @Data
@@ -21,13 +20,13 @@ public class UserAttribute {
 
     @Id
     @EqualsAndHashCode.Include
+    @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column(name = "ID", nullable = false, columnDefinition = "VARCHAR(36)")
-    @Type(type = "uuid-char")
     private UUID id;
 
     @ToString.Exclude
+    @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column(name = "USER_ID", nullable = false, columnDefinition = "VARCHAR(36)")
-    @Type(type = "uuid-char")
     private UUID userId;
 
     @Column(name = "NAME", nullable = false)

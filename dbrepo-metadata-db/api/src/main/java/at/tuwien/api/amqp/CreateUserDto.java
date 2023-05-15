@@ -3,13 +3,15 @@ package at.tuwien.api.amqp;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
+import lombok.extern.jackson.Jacksonized;
 
 @Getter
 @Setter
-@ToString
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
+@Jacksonized
+@ToString
 public class CreateUserDto {
 
     @JsonProperty("password_hash")

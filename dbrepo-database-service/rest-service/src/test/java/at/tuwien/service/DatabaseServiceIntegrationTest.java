@@ -3,13 +3,15 @@ package at.tuwien.service;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.DatabaseCreateDto;
 import at.tuwien.api.database.DatabaseDto;
+import at.tuwien.api.database.DatabaseModifyVisibilityDto;
+import at.tuwien.api.database.DatabaseTransferDto;
 import at.tuwien.config.DockerConfig;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.user.User;
-import at.tuwien.exception.QueryMalformedException;
+import at.tuwien.exception.*;
 import at.tuwien.repository.elastic.DatabaseIdxRepository;
 import at.tuwien.repository.jpa.*;
 import at.tuwien.service.impl.MariaDbServiceImpl;
@@ -73,8 +75,8 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     @Autowired
     private MariaDbConfig mariaDbConfig;
 
+    private final static String BIND_WEATHER = new File("../../dbrepo-metadata-db/test/src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
     private final static String BIND_ZOO = new File("../../dbrepo-metadata-db/test/src/test/resources/zoo").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
-
     private final static String BIND_MUSICOLOGY = new File("../../dbrepo-metadata-db/test/src/test/resources/musicology").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
 
     @BeforeAll
@@ -96,9 +98,9 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         /* metadata database */
         imageRepository.save(IMAGE_1);
         realmRepository.save(REALM_DBREPO);
-        userRepository.save(USER_1_SIMPLE);
-        userRepository.save(USER_2_SIMPLE);
-        userRepository.save(USER_3_SIMPLE);
+        userRepository.save(USER_1);
+        userRepository.save(USER_2);
+        userRepository.save(USER_3);
     }
 
     @AfterEach
@@ -255,6 +257,51 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
 
         /* test */
         generic_user_insert("junit1", "junit1");
+    }
+
+    @Test
+    public void delete_succeeds() throws InterruptedException, QueryMalformedException, UserNotFoundException,
+            DatabaseConnectionException, DatabaseNotFoundException, ImageNotSupportedException,
+            ContainerNotFoundException, DatabaseMalformedException {
+
+        /* mock */
+        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1_SIMPLE, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1_SIMPLE);
+        containerRepository.save(CONTAINER_1);
+        databaseRepository.save(DATABASE_1);
+
+        /* test */
+        databaseService.delete(CONTAINER_1_ID, DATABASE_1_ID, USER_1_PRINCIPAL);
+    }
+
+    @Test
+    public void visibility_succeeds() throws DatabaseNotFoundException {
+        final DatabaseModifyVisibilityDto request = DatabaseModifyVisibilityDto.builder()
+                .isPublic(true)
+                .build();
+
+        /* mock */
+        containerRepository.save(CONTAINER_1_SIMPLE);
+        databaseRepository.save(DATABASE_1);
+
+        /* test */
+        final Database response = databaseService.visibility(CONTAINER_1_ID, DATABASE_1_ID, request);
+        assertTrue(response.getIsPublic());
+    }
+
+    @Test
+    public void transfer_succeeds() throws DatabaseNotFoundException, UserNotFoundException {
+        final DatabaseTransferDto request = DatabaseTransferDto.builder()
+                .username(USER_2_USERNAME)
+                .build();
+
+        /* mock */
+        containerRepository.save(CONTAINER_1_SIMPLE);
+        databaseRepository.save(DATABASE_1);
+
+        /* test */
+        final Database response = databaseService.transfer(CONTAINER_1_ID, DATABASE_1_ID, request);
+        assertEquals(USER_2_ID, response.getOwnedBy());
     }
 
     /* ################################################################################################### */

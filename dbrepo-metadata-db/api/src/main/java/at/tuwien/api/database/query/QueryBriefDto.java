@@ -1,17 +1,17 @@
 package at.tuwien.api.database.query;
 
 import at.tuwien.api.identifier.IdentifierBriefDto;
-import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.user.UserDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.extern.jackson.Jacksonized;
+
 import java.time.Instant;
 import java.util.UUID;
 
@@ -19,9 +19,9 @@ import java.util.UUID;
 @Getter
 @Setter
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
-@EqualsAndHashCode
+@AllArgsConstructor
+@Jacksonized
 @ToString
 public class QueryBriefDto {
 

@@ -1,10 +1,13 @@
 package at.tuwien.entities.database.table.columns;
 
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.*;
+import jakarta.persistence.*;;
+import java.net.URI;
+import java.sql.Types;
 import java.time.Instant;
 import java.util.List;
 
@@ -16,7 +19,7 @@ import java.util.List;
 @ToString
 @EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@javax.persistence.Table(name = "mdb_concepts")
+@jakarta.persistence.Table(name = "mdb_concepts")
 public class TableColumnConcept {
 
     @Id
@@ -29,7 +32,7 @@ public class TableColumnConcept {
 
     @org.springframework.data.annotation.Transient
     @ToString.Exclude
-    @OneToMany(fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinTable(name = "mdb_columns_concepts",
             joinColumns = @JoinColumn(name = "uri", referencedColumnName = "uri", insertable = false, updatable = false),
             inverseJoinColumns = {
@@ -39,7 +42,7 @@ public class TableColumnConcept {
             })
     private List<TableColumn> columns;
 
-    @Column(nullable = false, updatable = false)
+    @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP")
     @CreatedDate
     private Instant created;
 }

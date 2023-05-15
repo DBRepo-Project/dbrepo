@@ -92,7 +92,6 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
         DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
         DockerConfig.startContainer(CONTAINER_1);
         /* metadata database */
-        h2Utils.runScript("schema.sql");
         imageRepository.save(IMAGE_1);
         realmRepository.save(REALM_DBREPO);
         userRepository.save(USER_1_SIMPLE);

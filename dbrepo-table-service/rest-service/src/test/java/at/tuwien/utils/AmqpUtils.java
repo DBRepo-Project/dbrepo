@@ -1,6 +1,5 @@
 package at.tuwien.utils;
 
-import at.tuwien.api.amqp.CreateExchangeDto;
 import at.tuwien.api.amqp.ExchangeDto;
 import at.tuwien.api.amqp.QueueDto;
 import at.tuwien.config.AmqpConfig;
@@ -30,22 +29,6 @@ public class AmqpUtils {
     public AmqpUtils(@Qualifier("brokerRestTemplate") RestTemplate restTemplate, AmqpConfig amqpConfig) {
         this.restTemplate = restTemplate;
         this.amqpConfig = amqpConfig;
-    }
-
-    public void createExchange(String exchange) {
-        exchange = exchange.replace("/", "%2F");
-        final URI uri = URI.create("http://" + amqpConfig.getAmpqHost() + ":15672/api/exchanges/%2F/" + exchange);
-        final CreateExchangeDto payload = CreateExchangeDto.builder()
-                .type("fanout")
-                .autoDelete(false)
-                .durable(true)
-                .internal(false)
-                .build();
-        final ResponseEntity<Void> response = restTemplate.exchange(uri, HttpMethod.PUT, new HttpEntity<>(payload), Void.class);
-        if (!response.getStatusCode().equals(HttpStatus.CREATED)) {
-            log.error("Failed to create exchange, code is {}", response.getStatusCode());
-            throw new RuntimeException("Failed to create exchange");
-        }
     }
 
     public boolean exchangeExists(String exchange) {

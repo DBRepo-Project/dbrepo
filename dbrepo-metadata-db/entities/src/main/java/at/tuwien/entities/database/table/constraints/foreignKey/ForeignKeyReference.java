@@ -5,7 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.*;
+import jakarta.persistence.*;;
 
 @Data
 @Entity
@@ -15,7 +15,7 @@ import javax.persistence.*;
 @ToString
 @EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@javax.persistence.Table(name = "mdb_constraints_foreign_key_reference")
+@jakarta.persistence.Table(name = "mdb_constraints_foreign_key_reference")
 public class ForeignKeyReference {
 
     @Id

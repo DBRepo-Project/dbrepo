@@ -2,11 +2,11 @@ package at.tuwien.entities.database;
 
 import at.tuwien.entities.user.User;
 import lombok.*;
-import org.hibernate.annotations.Type;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.*;
+import jakarta.persistence.*;;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -18,12 +18,12 @@ import java.util.UUID;
 @NoArgsConstructor
 @IdClass(DatabaseAccessKey.class)
 @EntityListeners(AuditingEntityListener.class)
-@javax.persistence.Table(name = "mdb_have_access")
+@jakarta.persistence.Table(name = "mdb_have_access")
 public class DatabaseAccess {
 
     @Id
-    @Type(type = "uuid-char")
     @EqualsAndHashCode.Include
+    @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column(name = "user_id", updatable = false, columnDefinition = "VARCHAR(36)")
     private UUID huserid;
 
@@ -43,7 +43,7 @@ public class DatabaseAccess {
     @Enumerated(EnumType.STRING)
     private AccessType type;
 
-    @Column(nullable = false, updatable = false)
+    @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP")
     @CreatedDate
     private Instant created;
 

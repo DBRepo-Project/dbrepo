@@ -11,6 +11,7 @@ import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.security.Principal;
@@ -32,6 +33,7 @@ public class QueryStoreServiceImpl extends HibernateConnector implements QuerySt
     }
 
     @Override
+    @Transactional(rollbackFor = DatabaseMalformedException.class)
     public void create(Long containerId, Long databaseId, Principal principal) throws DatabaseNotFoundException,
             DatabaseConnectionException, DatabaseMalformedException, UserNotFoundException, QueryStoreException {
         final Database database = databaseService.findById(containerId, databaseId);
@@ -56,12 +58,12 @@ public class QueryStoreServiceImpl extends HibernateConnector implements QuerySt
         log.trace("created query store in database {}", database);
     }
 
-    private void executeQuery(Connection connection, String statement, String... data) throws SQLException {
+    public void executeQuery(Connection connection, String statement, String... data) throws SQLException {
         log.debug("execute query, statement={}", statement);
         final PreparedStatement pstmt = connection.prepareStatement(statement);
         if (data.length > 0) {
             for (int i = 0; i < data.length; i++) {
-                pstmt.setString(i, data[i]);
+                pstmt.setString(i + 1, data[i]);
             }
         }
         pstmt.executeUpdate();

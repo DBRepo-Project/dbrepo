@@ -13,7 +13,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.*;
+import jakarta.persistence.*;;
 import java.time.Instant;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -28,7 +28,7 @@ import java.util.regex.Pattern;
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 @IdClass(TableKey.class)
-@javax.persistence.Table(name = "mdb_tables", uniqueConstraints = {
+@jakarta.persistence.Table(name = "mdb_tables", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"tdbid", "internalName"})
 })
 public class Table {
@@ -83,12 +83,12 @@ public class Table {
     @Embedded
     private Constraints constraints;
 
-    @Column(nullable = false, updatable = false)
     @CreatedDate
+    @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP")
     private Instant created;
 
-    @Column
     @LastModifiedDate
+    @Column(columnDefinition = "TIMESTAMP")
     private Instant lastModified;
 
     @PreRemove

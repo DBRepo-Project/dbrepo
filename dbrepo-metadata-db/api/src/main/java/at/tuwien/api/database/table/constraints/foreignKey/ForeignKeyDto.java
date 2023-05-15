@@ -1,21 +1,20 @@
 package at.tuwien.api.database.table.constraints.foreignKey;
 
 import at.tuwien.api.database.table.TableBriefDto;
-import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
+import lombok.extern.jackson.Jacksonized;
 
-import javax.persistence.Entity;
-import javax.persistence.Transient;
 import java.util.List;
 
 @Getter
 @Setter
-@ToString
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
+@Jacksonized
+@ToString
 public class ForeignKeyDto {
 
     private List<ColumnDto> columns;

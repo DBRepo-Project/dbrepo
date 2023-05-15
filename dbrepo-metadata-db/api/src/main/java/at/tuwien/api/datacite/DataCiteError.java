@@ -1,15 +1,17 @@
 package at.tuwien.api.datacite;
 
 import lombok.*;
+import lombok.extern.jackson.Jacksonized;
 
 import java.util.Map;
 
 @Getter
 @Setter
-@ToString
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
+@Jacksonized
+@ToString
 public class DataCiteError {
 
     private String message;

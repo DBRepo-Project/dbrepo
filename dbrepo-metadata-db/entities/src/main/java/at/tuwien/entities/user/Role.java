@@ -2,10 +2,10 @@ package at.tuwien.entities.user;
 
 import lombok.*;
 import org.hibernate.annotations.Immutable;
-import org.hibernate.annotations.Type;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.*;
+import jakarta.persistence.*;;
 import java.util.List;
 import java.util.UUID;
 
@@ -23,15 +23,15 @@ public class Role {
 
     @Id
     @EqualsAndHashCode.Include
+    @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column(name = "ID", nullable = false, columnDefinition = "VARCHAR(36)")
-    @Type(type = "uuid-char")
     private UUID id;
 
     @Column(name = "NAME", nullable = false)
     private String name;
 
+    @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column(name = "REALM_ID", nullable = false, columnDefinition = "VARCHAR(36)")
-    @Type(type = "uuid-char")
     private UUID realmId;
 
     @ToString.Exclude

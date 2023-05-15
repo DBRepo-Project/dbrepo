@@ -3,15 +3,18 @@ package at.tuwien.api.auth;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
+import lombok.extern.jackson.Jacksonized;
+
 import java.util.List;
 
 @Getter
 @Setter
-@ToString
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
+@Jacksonized
+@ToString
 public class JwtResponseDto {
 
     @NotNull

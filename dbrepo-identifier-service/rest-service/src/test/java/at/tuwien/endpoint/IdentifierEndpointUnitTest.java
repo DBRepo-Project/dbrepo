@@ -150,7 +150,7 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
         assertEquals(HttpStatus.MOVED_PERMANENTLY, response.getStatusCode());
         assertNotNull(response.getHeaders().get("Location"));
         assertEquals(endpointConfig.getWebsiteUrl() + "/container/" + IDENTIFIER_1_CONTAINER_ID + "/database/"
-                + IDENTIFIER_1_DATABASE_ID + "/query/" + IDENTIFIER_1_QUERY_ID, response.getHeaders().getFirst("Location"));
+                + IDENTIFIER_1_DATABASE_ID, response.getHeaders().getFirst("Location"));
     }
 
     @Test

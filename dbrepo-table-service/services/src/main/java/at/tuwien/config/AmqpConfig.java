@@ -20,6 +20,9 @@ public class AmqpConfig {
     @Value("${spring.rabbitmq.host}")
     private String ampqHost;
 
+    @Value("${spring.rabbitmq.virtual-host}")
+    private String virtualHost;
+
     @Value("${spring.rabbitmq.username}")
     private String amqpUsername;
 
@@ -30,6 +33,7 @@ public class AmqpConfig {
     public Channel getChannel() throws IOException, TimeoutException {
         final ConnectionFactory factory = new ConnectionFactory();
         factory.setHost(ampqHost);
+        factory.setVirtualHost(virtualHost);
         factory.setUsername(amqpUsername);
         factory.setPassword(amqpPassword);
         final Connection connection = factory.newConnection();

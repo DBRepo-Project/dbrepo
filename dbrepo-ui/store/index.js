@@ -61,6 +61,12 @@ const store = new Store({
           commit('SET_USER', user)
         })
     },
+    reloadAccess ({ state, commit }) {
+      DatabaseService.checkAccess(state.container.id, state.database.id)
+        .then((access) => {
+          commit('SET_ACCESS', access)
+        })
+    },
     reloadDatabase ({ state, commit }) {
       DatabaseService.findOne(state.database.container.id, state.database.id)
         .then((database) => {

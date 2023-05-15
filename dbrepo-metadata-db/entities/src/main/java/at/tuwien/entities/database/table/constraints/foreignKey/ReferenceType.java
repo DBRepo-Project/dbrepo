@@ -1,6 +1,5 @@
 package at.tuwien.entities.database.table.constraints.foreignKey;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.ToString;
 
