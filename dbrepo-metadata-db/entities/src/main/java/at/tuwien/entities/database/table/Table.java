@@ -5,7 +5,9 @@ import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.database.table.constraints.Constraints;
 import at.tuwien.entities.user.User;
 import lombok.*;
+import lombok.extern.log4j.Log4j2;
 import net.sf.jsqlparser.statement.select.FromItem;
+import net.sf.jsqlparser.statement.select.SelectItem;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -14,10 +16,13 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import javax.persistence.*;
 import java.time.Instant;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Data
 @Entity
 @Builder
+@Log4j2
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
@@ -100,14 +105,11 @@ public class Table {
      * @return True if tables are equal, false otherwise
      */
     public boolean equals(FromItem other) {
-        final String name = other.toString()
-                .replace("`", "");
-        if (other.getAlias() != null) {
-            final int idx = name.indexOf(' ');
-            return this.getInternalName()
-                    .equals(name.substring(0, idx));
+        if (other == null) {
+            return false;
         }
-        return this.getInternalName().equals(name);
+        final net.sf.jsqlparser.schema.Table table = (net.sf.jsqlparser.schema.Table) other;
+        return this.internalName.equals(table.getName().replace("`", ""));
     }
 
 }

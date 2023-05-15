@@ -47,7 +47,7 @@ import static org.mockito.Mockito.when;
 
 @Log4j2
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-@EnableAutoConfiguration(exclude= RabbitAutoConfiguration.class)
+@EnableAutoConfiguration(exclude = RabbitAutoConfiguration.class)
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 public class QueryServiceIntegrationTest extends BaseUnitTest {
@@ -539,9 +539,90 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                 0L, 100L, null, null);
         assertEquals(1L, response.getResultNumber());
         assertNotNull(response.getResult());
+    }
+
+    @Test
+    public void execute_aliases_succeeds() throws DatabaseConnectionException, TableMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException, QueryMalformedException,
+            UserNotFoundException, QueryStoreException, ColumnParseException, InterruptedException {
+        final ExecuteStatementDto request = ExecuteStatementDto.builder()
+                .statement("SELECT aus.location as a, loc.location from weather_aus aus, weather_location loc")
+                .build();
+
+        /* mock */
+        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1);
+        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
+                .thenReturn(Optional.of(DATABASE_1));
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
+
+        /* test */
+        final QueryResultDto response = queryService.execute(CONTAINER_1_ID, DATABASE_1_ID, request, USER_1_PRINCIPAL,
+                0L, 100L, null, null);
+        assertEquals(9L, response.getResultNumber());
+        assertNotNull(response.getResult());
         final List<Map<String, Object>> result = response.getResult();
-        assertNull(result.get(0).get("lat"));
-        assertNull(result.get(0).get("lng"));
+        assertEquals("Albury", result.get(0).get("a"));
+        assertEquals("Albury", result.get(0).get("location"));
+        assertEquals("Albury", result.get(1).get("a"));
+        assertEquals("Albury", result.get(1).get("location"));
+        assertEquals("Albury", result.get(2).get("a"));
+        assertEquals("Albury", result.get(2).get("location"));
+        assertEquals("Albury", result.get(3).get("a"));
+        assertEquals("Sydney", result.get(3).get("location"));
+        assertEquals("Albury", result.get(4).get("a"));
+        assertEquals("Sydney", result.get(4).get("location"));
+        assertEquals("Albury", result.get(5).get("a"));
+        assertEquals("Sydney", result.get(5).get("location"));
+        assertEquals("Albury", result.get(6).get("a"));
+        assertEquals("Vienna", result.get(6).get("location"));
+        assertEquals("Albury", result.get(7).get("a"));
+        assertEquals("Vienna", result.get(7).get("location"));
+        assertEquals("Albury", result.get(8).get("a"));
+        assertEquals("Vienna", result.get(8).get("location"));
+    }
+
+    @Test
+    public void execute_aliasesWithDatabaseName_succeeds() throws DatabaseConnectionException, TableMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException, QueryMalformedException,
+            UserNotFoundException, QueryStoreException, ColumnParseException, InterruptedException {
+        final ExecuteStatementDto request = ExecuteStatementDto.builder()
+                .statement("SELECT aus.location as a, loc.location from weather.weather_aus aus, weather.weather_location loc")
+                .build();
+
+        /* mock */
+        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
+        DockerConfig.startContainer(CONTAINER_1);
+        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
+                .thenReturn(Optional.of(DATABASE_1));
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
+
+        /* test */
+        final QueryResultDto response = queryService.execute(CONTAINER_1_ID, DATABASE_1_ID, request, USER_1_PRINCIPAL,
+                0L, 100L, null, null);
+        assertEquals(9L, response.getResultNumber());
+        assertNotNull(response.getResult());
+        final List<Map<String, Object>> result = response.getResult();
+        assertEquals("Albury", result.get(0).get("a"));
+        assertEquals("Albury", result.get(0).get("location"));
+        assertEquals("Albury", result.get(1).get("a"));
+        assertEquals("Albury", result.get(1).get("location"));
+        assertEquals("Albury", result.get(2).get("a"));
+        assertEquals("Albury", result.get(2).get("location"));
+        assertEquals("Albury", result.get(3).get("a"));
+        assertEquals("Sydney", result.get(3).get("location"));
+        assertEquals("Albury", result.get(4).get("a"));
+        assertEquals("Sydney", result.get(4).get("location"));
+        assertEquals("Albury", result.get(5).get("a"));
+        assertEquals("Sydney", result.get(5).get("location"));
+        assertEquals("Albury", result.get(6).get("a"));
+        assertEquals("Vienna", result.get(6).get("location"));
+        assertEquals("Albury", result.get(7).get("a"));
+        assertEquals("Vienna", result.get(7).get("location"));
+        assertEquals("Albury", result.get(8).get("a"));
+        assertEquals("Vienna", result.get(8).get("location"));
     }
 
     @Test

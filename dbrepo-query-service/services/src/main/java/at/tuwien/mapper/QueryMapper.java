@@ -76,12 +76,13 @@ public interface QueryMapper {
             /* map the result set to the columns through the stored metadata in the metadata database */
             int[] idx = new int[]{1};
             final Map<String, Object> map = new HashMap<>();
-            for (int i = 0; i < columns.size(); i++) {
-                final Object object = dataColumnToObject(result.getObject(idx[0]++), columns.get(i));
+            for (final TableColumn column : columns) {
+                final Object object = dataColumnToObject(result.getObject(idx[0]++), column);
                 if (object == null) {
-                    log.warn("result set for column {} is empty (=null)", columns.get(0).getInternalName());
+                    log.warn("result set for column {} is empty (=null)", column.getInternalName());
                 }
-                map.put(columns.get(i).getInternalName(), object);
+                final String columnOrAlias = column.getAlias() != null ? column.getAlias() : column.getInternalName();
+                map.put(columnOrAlias, object);
             }
             resultList.add(map);
         }
@@ -604,7 +605,7 @@ public interface QueryMapper {
         final StringBuilder statement = new StringBuilder("SELECT COUNT(*) FROM `")
                 .append(nameToInternalName(tableName))
                 .append("`");
-        if(timestamp != null) {
+        if (timestamp != null) {
             statement.append(" FOR SYSTEM_TIME AS OF TIMESTAMP '")
                     .append(LocalDateTime.ofInstant(timestamp, ZoneId.of("UTC")))
                     .append("'");
@@ -633,58 +634,35 @@ public interface QueryMapper {
             query = query.substring(0, query.length() - 1);
         }
         /* query check (this is enforced by the db also) */
-        final String query_ = query;
-        if (Stream.of("count").anyMatch(query_::contains)) {
+        if (Stream.of("count").anyMatch(query::contains)) {
             log.error("Query contains unsupported operation, one of {}", List.of("COUNT"));
         }
-        if (Stream.of("delete", "update", "truncate", "create", "drop").anyMatch(query_::contains)) {
+        if (Stream.of("delete", "update", "truncate", "create", "drop").anyMatch(query::contains)) {
             log.error("Query attempts to modify the database");
             throw new QueryMalformedException("Query attempts to modify the database");
         }
-        /* insert the FOR SYSTEM_TIME ... part after the FROM in the query */
-        final StringBuilder versionPart = new StringBuilder(" FOR SYSTEM_TIME AS OF TIMESTAMP'")
-                .append(mariaDbFormatter.format(timestamp))
-                .append("' ");
-        final Pattern pattern = Pattern.compile("from `?[a-z0-9-_]+`?(,? *`?[a-z0-9-_]+`)*", Pattern.CASE_INSENSITIVE) /* https://mariadb.com/kb/en/columnstore-naming-conventions/ */;
-        final Matcher matcher = pattern.matcher(query_);
-        if (!matcher.find()) {
-            log.error("Failed to find 'from' clause in query");
-            throw new QueryMalformedException("Failed to find from clause");
-        }
-        log.trace("found group from {} to {} in '{}'", matcher.start(), matcher.end(), query_);
         final StringBuilder sb = new StringBuilder();
-        if (!selection) {
-            /* is count query */
+        if (selection) {
+            /* is not a count query */
+            sb.append("SELECT * FROM (");
+        } else {
             sb.append("SELECT COUNT(*) FROM (");
         }
-        sb.append(query_, 0, matcher.end());
-        if (!query.contains("join")) {
-            sb.append(versionPart);
-        }
-        sb.append(query, matcher.end(), query.length());
-        if (!query.contains("limit") && !query.contains("offset") && size != null && page != null) {
-            log.trace("pagination size/limit of {}", size);
-            sb.append(" LIMIT ")
-                    .append(size);
-            log.trace("pagination page/offset of {}", page);
-            sb.append(" OFFSET ")
-                    .append(page * size);
-        }
-        if (!selection) {
-            /* is count query */
-            sb.append(") as tbl");
-        }
-        String statement = sb.append(";")
-                .toString();
-        if (query.contains("join")) {
-            statement = statement.replaceFirst("from ([`a-z0-9-_]+) ", "from $1 FOR SYSTEM_TIME AS OF TIMESTAMP '"
-                    + LocalDateTime.ofInstant(timestamp, ZoneId.of("UTC"))
-                    + "' ");
-            statement = statement.replaceAll("join ([`a-z0-9-_]+) ", "join $1 FOR SYSTEM_TIME AS OF TIMESTAMP '"
-                    + LocalDateTime.ofInstant(timestamp, ZoneId.of("UTC"))
-                    + "' ");
-        }
-        return statement.toString();
+        /* insert statement */
+        sb.append(query);
+        /* system time */
+        sb.append(") FOR SYSTEM_TIME AS OF TIMESTAMP '")
+                .append(LocalDateTime.ofInstant(timestamp, ZoneId.of("UTC")))
+                .append("' as tbl");
+        /* pagination */
+        log.trace("pagination size/limit of {}", size);
+        sb.append(" LIMIT ")
+                .append(size);
+        log.trace("pagination page/offset of {}", page);
+        sb.append(" OFFSET ")
+                .append(page * size);
+        sb.append(";");
+        return sb.toString();
     }
 
     default String tableToRawFindAllQuery(Table table, Instant timestamp, Long size, Long page)
@@ -720,9 +698,9 @@ public interface QueryMapper {
         final int[] idx = new int[]{0};
         final StringBuilder statement = new StringBuilder("SELECT ");
         columns.forEach(column -> statement.append(idx[0]++ > 0 ? "," : "")
-                        .append("`")
-                        .append(column.getInternalName())
-                        .append("`"));
+                .append("`")
+                .append(column.getInternalName())
+                .append("`"));
         statement.append(" FROM `")
                 .append(nameToInternalName(tableName))
                 .append("`");

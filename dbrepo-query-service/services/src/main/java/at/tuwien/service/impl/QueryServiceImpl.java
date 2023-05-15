@@ -22,6 +22,7 @@ import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.log4j.Log4j2;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
+import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.*;
 import org.apache.commons.io.FileUtils;
@@ -43,6 +44,8 @@ import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Log4j2
@@ -91,10 +94,6 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
         }
-        final User root = databaseMapper.containerToPrivilegedUser(database.getContainer());
-        /* run query */
-        final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(),
-                database.getContainer(), database, root);
         /* map the result to the tables (with respective columns) from the statement metadata */
         final List<TableColumn> columns;
         try {
@@ -105,7 +104,6 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         }
         final String statement = queryMapper.queryToRawTimestampedQuery(query.getQuery(), database, query.getCreated(), true, page, size);
         final QueryResultDto dto = executeNonPersistent(containerId, databaseId, statement, columns);
-
         dto.setId(query.getId());
         dto.setResultNumber(query.getResultNumber());
         return dto;
@@ -134,9 +132,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
 
     private PreparedStatement prepareStatement(Connection connection, String statement) throws QueryMalformedException {
         try {
-            final PreparedStatement pstmt = connection.prepareStatement(statement);
-            log.trace("mapped timestamped query {} to prepared statement {}", statement, pstmt);
-            return pstmt;
+            return connection.prepareStatement(statement);
         } catch (SQLException e) {
             log.error("Failed to prepare statement {}m reason: {}", statement, e.getMessage());
             throw new QueryMalformedException("Failed to prepare statement", e);
@@ -468,65 +464,87 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         final List<SelectItem> clauses = ps.getSelectItems();
         log.trace("columns referenced in the from-clause: {}", clauses);
         /* Parse all tables */
-        final List<FromItem> tables = new ArrayList<>();
-        tables.add(ps.getFromItem());
+        final List<FromItem> tablesOrViews = new ArrayList<>();
+        tablesOrViews.add(ps.getFromItem());
         if (ps.getJoins() != null && ps.getJoins().size() > 0) {
             log.trace("query contains join items: {}", ps.getJoins());
             for (Join j : ps.getJoins()) {
                 if (j.getRightItem() != null) {
-                    tables.add(j.getRightItem());
+                    tablesOrViews.add(j.getRightItem());
                 }
             }
         }
         log.trace("columns referenced in the from-clause and join-clause(s): {}", clauses);
         /* Checking if all tables or views exist */
         final List<TableColumn> allColumns = new ArrayList<>();
-        for (FromItem fromItem : tables) {
-            boolean foundTable = false;
-            boolean foundView = false;
-            for (Table table : database.getTables()) {
-                allColumns.addAll(table.getColumns());
-                if (table.equals(fromItem)) {
-                    log.trace("table {} equals from item {}", table.getInternalName(), fromItem);
-                    foundTable = true;
-                    break;
-                }
-                log.trace("table {} did not equal from item {}", table.getInternalName(), fromItem);
-            }
-            for (View view : database.getViews()) {
-                if (view.equals(fromItem)) {
-                    log.trace("view {} equals from item {}", view.getInternalName(), fromItem);
-                    foundView = true;
-                    break;
-                }
-                log.trace("view {} did not equal from item {}", view.getInternalName(), fromItem);
-            }
-            if (!foundView && !foundTable) {
-                final String tableName = queryMapper.stringToEscapedString(fromItem.toString());
-                log.error("Table or view {} does not exist in tables {} or views {}", tableName,
-                        database.getTables().stream().map(Table::getInternalName).collect(Collectors.toList()),
-                        database.getViews().stream().map(View::getInternalName).collect(Collectors.toList()));
-                throw new JSQLParserException("Table or view does not exist");
-            }
+        for (FromItem fromItem : tablesOrViews) {
+            database.getTables()
+                    .stream()
+                    .filter(table -> table.equals(fromItem))
+                    .forEach(table -> {
+                        table.getColumns()
+                                .forEach(column -> {
+                                    column.setTable(table);
+                                });
+                        allColumns.addAll(table.getColumns());
+                    });
+            database.getViews()
+                    .stream()
+                    .filter(view -> view.equals(fromItem))
+                    .forEach(view -> {
+                        view.getColumns()
+                                .forEach(column -> {
+                                    column.setView(view);
+                                });
+                        allColumns.addAll(view.getColumns());
+                    });
         }
+        log.trace("table(s) or view(s) referenced in the statement: {}", tablesOrViews.stream().map(t -> ((net.sf.jsqlparser.schema.Table) t).getName()).collect(Collectors.toList()));
+        log.trace("column(s) referenced in the statement: {}", allColumns.stream().map(c -> (c.getTable() == null ? c.getView().getInternalName() : c.getTable().getInternalName()) + "." + c.getInternalName()).collect(Collectors.toList()));
         /* Checking if all columns exist */
-        for (SelectItem item : clauses) {
-            if (item.toString().trim().equals("*")) {
-                log.error("Do not use * in queries");
-                continue;
+        for (SelectItem clause : clauses) {
+            final SelectExpressionItem item = (SelectExpressionItem) clause;
+            final Column column = (Column) item.getExpression();
+            final Optional<net.sf.jsqlparser.schema.Table> optionalTableOrView = tablesOrViews.stream()
+                    .map(t -> (net.sf.jsqlparser.schema.Table) t)
+                    .filter(t -> {
+                        if (column.getTable() == null) {
+                            /* column does not reference a specific table, so there is only one table */
+                            final String tableName = ((net.sf.jsqlparser.schema.Table) tablesOrViews.get(0)).getName().replace("`", "");
+                            if (t.getAlias() == null) {
+                                /* table is non-aliased */
+                                return t.getName().replace("`", "").equals(tableName);
+                            }
+                            /* has alias */
+                            return t.getAlias().getName().equals(tableName);
+                        }
+                        final String tableName = column.getTable().getName().replace("`", "");
+                        if (t.getAlias() == null) {
+                            /* table is non-aliased */
+                            return t.getName().replace("`", "").equals(tableName);
+                        }
+                        /* has alias */
+                        return t.getAlias().getName().equals(tableName);
+                    })
+                    .findFirst();
+            if (optionalTableOrView.isEmpty()) {
+                log.error("Failed to find table or view with alias '{}'", column.getTable().getAlias());
+                throw new JSQLParserException("Failed to find table or view with alias " + column.getTable().getAlias());
             }
-            boolean foundColumn = false;
-            for (TableColumn column : allColumns) {
-                if (column.equals(item)) {
-                    columns.add(column);
-                    foundColumn = true;
-                    break;
-                }
+            final String tableOrViewName = optionalTableOrView.get().getName().replace("`", "");
+            final Optional<TableColumn> optionalColumn = allColumns.stream()
+                    .filter(c -> c.getTable() == null ? c.getView().getInternalName().equals(tableOrViewName) : c.getTable().getInternalName().equals(tableOrViewName))
+                    .filter(c -> c.getInternalName().equals(column.getColumnName().replace("`", "")))
+                    .findFirst();
+            if (optionalColumn.isEmpty()) {
+                throw new JSQLParserException("Failed to find column with name " + column.getColumnName());
             }
-            if (!foundColumn) {
-                log.error("Column {} does not exist in columns {}", item, allColumns.stream().map(TableColumn::getInternalName).collect(Collectors.toList()));
-                throw new JSQLParserException("Column does not exist");
+            final TableColumn aliasColumn = optionalColumn.get();
+            if (item.getAlias() != null) {
+                aliasColumn.setAlias(item.getAlias().getName());
             }
+            log.trace("found column with internal name {} and alias {}", aliasColumn.getInternalName(), aliasColumn.getAlias());
+            columns.add(aliasColumn);
         }
         return columns;
     }
