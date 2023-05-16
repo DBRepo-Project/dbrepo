@@ -44,7 +44,6 @@ import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -477,30 +476,29 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         log.trace("columns referenced in the from-clause and join-clause(s): {}", clauses);
         /* Checking if all tables or views exist */
         final List<TableColumn> allColumns = new ArrayList<>();
-        for (FromItem fromItem : tablesOrViews) {
-            database.getTables()
-                    .stream()
-                    .filter(table -> table.equals(fromItem))
-                    .forEach(table -> {
-                        table.getColumns()
-                                .forEach(column -> {
-                                    column.setTable(table);
-                                });
-                        allColumns.addAll(table.getColumns());
-                    });
-            database.getViews()
-                    .stream()
-                    .filter(view -> view.equals(fromItem))
-                    .forEach(view -> {
-                        view.getColumns()
-                                .forEach(column -> {
-                                    column.setView(view);
-                                });
-                        allColumns.addAll(view.getColumns());
-                    });
-        }
+        database.getTables()
+                .forEach(table -> {
+                    table.getColumns()
+                            .forEach(column -> {
+                                final TableColumn tmp = column.toBuilder() /* copy constructor */
+                                        .table(table)
+                                        .build();
+                                allColumns.add(tmp);
+                            });
+                });
+        database.getViews()
+                .forEach(view -> {
+                    view.getColumns()
+                            .forEach(column -> {
+                                final TableColumn tmp = column.toBuilder() /* copy constructor */
+                                        .view(view)
+                                        .build();
+                                allColumns.add(tmp);
+                            });
+                });
+        final List<TableColumn> col = allColumns.stream().filter(c -> c.getInternalName().equals("date")).toList();
+        log.trace("");
         log.trace("table(s) or view(s) referenced in the statement: {}", tablesOrViews.stream().map(t -> ((net.sf.jsqlparser.schema.Table) t).getName()).collect(Collectors.toList()));
-        log.trace("column(s) referenced in the statement: {}", allColumns.stream().map(c -> (c.getTable() == null ? c.getView().getInternalName() : c.getTable().getInternalName()) + "." + c.getInternalName()).collect(Collectors.toList()));
         /* Checking if all columns exist */
         for (SelectItem clause : clauses) {
             final SelectExpressionItem item = (SelectExpressionItem) clause;

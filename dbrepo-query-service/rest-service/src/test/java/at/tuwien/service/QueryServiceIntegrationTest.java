@@ -10,7 +10,6 @@ import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.BrokerServiceGateway;
-import at.tuwien.listener.MessageQueueListener;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.querystore.Query;
 import at.tuwien.repository.jpa.*;
@@ -86,19 +85,6 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
     private final static String BIND_ZOO = new File("../../dbrepo-metadata-db/test/src/test/resources/zoo").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
 
-    @BeforeAll
-    public static void beforeAll() {
-        afterAll();
-        /* create network */
-        DockerConfig.createAllNetworks();
-    }
-
-    @AfterAll
-    public static void afterAll() {
-        DockerConfig.removeAllContainers();
-        DockerConfig.removeAllNetworks();
-    }
-
     @BeforeEach
     public void beforeEach() {
         afterEach();
@@ -106,17 +92,9 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         DockerConfig.createAllNetworks();
         /* metadata database */
         DATABASE_1.setTables(List.of(TABLE_1, TABLE_2, TABLE_3, TABLE_7));
-        TABLE_1.setDatabase(DATABASE_1);
-        TABLE_1.setColumns(TABLE_1_COLUMNS);
-        TABLE_2.setDatabase(DATABASE_1);
-        TABLE_3.setDatabase(DATABASE_1);
-        TABLE_7.setDatabase(DATABASE_1);
+        DATABASE_1.setViews(List.of(VIEW_2, VIEW_3));
         DATABASE_2.setTables(List.of(TABLE_4, TABLE_5, TABLE_6));
         DATABASE_2.setViews(List.of(VIEW_4));
-        TABLE_4.setDatabase(DATABASE_2);
-        TABLE_5.setDatabase(DATABASE_2);
-        TABLE_6.setDatabase(DATABASE_2);
-        VIEW_4.setDatabase(DATABASE_2);
     }
 
     @AfterEach

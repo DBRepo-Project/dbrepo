@@ -54,6 +54,7 @@ public class View {
     @Column(name = "createdBy", nullable = false, columnDefinition = "VARCHAR(36)")
     private UUID createdBy;
 
+    @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumns({
             @JoinColumn(name = "createdBy", referencedColumnName = "ID", insertable = false, updatable = false)

@@ -129,22 +129,20 @@ public class ViewServiceIntegrationTest extends BaseUnitTest {
         assertEquals(VIEW_3_INTERNAL_NAME, response.getInternalName());
         assertEquals(VIEW_3_QUERY, response.getQuery());
         final List<Map<String, String>> resultSet = MariaDbConfig.selectQuery(CONTAINER_1_INTERNALNAME, DATABASE_1_INTERNALNAME,
-                "SELECT j.* FROM `debug` j", "mintemp", "rainfall", "location", "lat", "lng");
+                "SELECT j.* FROM `debug` j", "mintemp", "rainfall", "date", "location");
         assertEquals("13.4", resultSet.get(0).get("mintemp"));
         assertEquals("0.6", resultSet.get(0).get("rainfall"));
         assertEquals("Albury", resultSet.get(0).get("location"));
-        assertEquals("-36.0653583", resultSet.get(0).get("lat"));
-        assertEquals("146.9112214", resultSet.get(0).get("lng"));
+        assertEquals("2008-12-01", resultSet.get(0).get("date"));
         assertEquals("7.4", resultSet.get(1).get("mintemp"));
         assertEquals("0", resultSet.get(1).get("rainfall"));
         assertEquals("Albury", resultSet.get(1).get("location"));
-        assertEquals("-36.0653583", resultSet.get(1).get("lat"));
-        assertEquals("146.9112214", resultSet.get(1).get("lng"));
+        assertEquals("2008-12-01", resultSet.get(1).get("date"));
         assertEquals("12.9", resultSet.get(2).get("mintemp"));
         assertEquals("0", resultSet.get(2).get("rainfall"));
         assertEquals("Albury", resultSet.get(2).get("location"));
-        assertEquals("-36.0653583", resultSet.get(2).get("lat"));
-        assertEquals("146.9112214", resultSet.get(2).get("lng"));
+        assertEquals("2008-12-01", resultSet.get(2).get("date"));
+        /* more result checks omitted */
     }
 
     @Test

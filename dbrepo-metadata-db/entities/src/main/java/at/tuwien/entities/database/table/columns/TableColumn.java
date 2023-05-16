@@ -5,7 +5,6 @@ import at.tuwien.entities.database.View;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.user.User;
 import lombok.*;
-import lombok.extern.log4j.Log4j2;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -17,7 +16,7 @@ import java.util.List;
 
 @Data
 @Entity
-@Builder
+@Builder(toBuilder=true)
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
@@ -148,10 +147,13 @@ public class TableColumn implements Comparable<TableColumn> {
      * @return True if columns are equal, false otherwise
      */
     public boolean equals(Object object) {
-        if (!(object instanceof TableColumn)) {
+        if (object == null) {
             return false;
         }
-        final TableColumn other = (TableColumn) object;
-        return this.getId().equals(other.getId()) && this.getTid().equals(other.getTid()) && this.getCdbid().equals(other.getCdbid());
+        if (!(object instanceof final TableColumn other)) {
+            return false;
+        }
+        return this.getId().equals(other.getId()) && this.getTid().equals(other.getTid())
+                && this.getCdbid().equals(other.getCdbid());
     }
 }
