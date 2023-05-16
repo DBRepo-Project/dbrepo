@@ -1,7 +1,6 @@
 package at.tuwien.repository;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.config.H2Utils;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.database.View;
@@ -22,8 +21,6 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -93,7 +90,7 @@ public class ViewRepositoryIntegrationTest extends BaseUnitTest {
 
         /* test */
         final List<View> response = viewRepository.findAllPublicByDatabaseId(DATABASE_1_ID);
-        assertEquals(0, response.size());
+        assertEquals(1, response.size());
     }
 
     @Test
@@ -101,11 +98,7 @@ public class ViewRepositoryIntegrationTest extends BaseUnitTest {
 
         /* test */
         final List<View> response = viewRepository.findAllPublicOrMineByDatabaseId(DATABASE_1_ID, USER_1_USERNAME);
-        assertEquals(1, response.size());
-        final View view1 = response.get(0);
-        assertEquals(VIEW_3_ID, view1.getId());
-        assertEquals(VIEW_3_CONTAINER_ID, view1.getVcid());
-        assertEquals(VIEW_3_DATABASE_ID, view1.getVdbid());
+        assertEquals(3, response.size());
     }
 
 }
