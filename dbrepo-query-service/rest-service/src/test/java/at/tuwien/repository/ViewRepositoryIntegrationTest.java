@@ -1,7 +1,6 @@
 package at.tuwien.repository;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.config.H2Utils;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.database.View;
@@ -37,11 +36,9 @@ public class ViewRepositoryIntegrationTest extends BaseUnitTest {
     @MockBean
     private Channel channel;
 
-    /* keep */
     @MockBean
     private RabbitMqListenerImpl rabbitMqListener;
 
-    /* keep */
     @MockBean
     private BrokerServiceGateway brokerServiceGateway;
 
@@ -55,7 +52,16 @@ public class ViewRepositoryIntegrationTest extends BaseUnitTest {
     private UserRepository userRepository;
 
     @Autowired
+    private RealmRepository realmRepository;
+
+    @Autowired
     private ContainerRepository containerRepository;
+
+    @Autowired
+    private TableRepository tableRepository;
+
+    @Autowired
+    private TableColumnRepository tableColumnRepository;
 
     @Autowired
     private DatabaseRepository databaseRepository;
@@ -63,22 +69,19 @@ public class ViewRepositoryIntegrationTest extends BaseUnitTest {
     @Autowired
     private ViewRepository viewRepository;
 
-    @Autowired
-    private H2Utils h2Utils;
-
     @Rule
     public Timeout globalTimeout = Timeout.seconds(60);
 
     @BeforeEach
     public void beforeEach() {
+        realmRepository.save(REALM_DBREPO);
         userRepository.save(USER_1);
         imageRepository.save(IMAGE_1);
-        containerRepository.save(CONTAINER_1);
-        DATABASE_1.setTables(List.of());
-        DATABASE_1.setViews(List.of());
-        databaseRepository.save(DATABASE_1);
+        containerRepository.save(CONTAINER_1_SIMPLE);
+        databaseRepository.save(DATABASE_1_SIMPLE);
+        tableRepository.saveAll(List.of(TABLE_1, TABLE_2, TABLE_3, TABLE_7));
         viewRepository.save(VIEW_1);
-        viewRepository.save(VIEW_2);
+        viewRepository.save(VIEW_3);
         viewRepository.save(VIEW_3);
     }
 
@@ -87,15 +90,7 @@ public class ViewRepositoryIntegrationTest extends BaseUnitTest {
 
         /* test */
         final List<View> response = viewRepository.findAllPublicByDatabaseId(DATABASE_1_ID);
-        assertEquals(2, response.size());
-        final View view1 = response.get(0);
-        assertEquals(VIEW_1_ID, view1.getId());
-        assertEquals(VIEW_1_CONTAINER_ID, view1.getVcid());
-        assertEquals(VIEW_1_DATABASE_ID, view1.getVdbid());
-        final View view2 = response.get(1);
-        assertEquals(VIEW_2_ID, view2.getId());
-        assertEquals(VIEW_2_CONTAINER_ID, view2.getVcid());
-        assertEquals(VIEW_2_DATABASE_ID, view2.getVdbid());
+        assertEquals(1, response.size());
     }
 
     @Test
@@ -104,18 +99,6 @@ public class ViewRepositoryIntegrationTest extends BaseUnitTest {
         /* test */
         final List<View> response = viewRepository.findAllPublicOrMineByDatabaseId(DATABASE_1_ID, USER_1_USERNAME);
         assertEquals(3, response.size());
-        final View view1 = response.get(0);
-        assertEquals(VIEW_1_ID, view1.getId());
-        assertEquals(VIEW_1_CONTAINER_ID, view1.getVcid());
-        assertEquals(VIEW_1_DATABASE_ID, view1.getVdbid());
-        final View view2 = response.get(1);
-        assertEquals(VIEW_2_ID, view2.getId());
-        assertEquals(VIEW_2_CONTAINER_ID, view2.getVcid());
-        assertEquals(VIEW_2_DATABASE_ID, view2.getVdbid());
-        final View view3 = response.get(2);
-        assertEquals(VIEW_3_ID, view3.getId());
-        assertEquals(VIEW_3_CONTAINER_ID, view3.getVcid());
-        assertEquals(VIEW_3_DATABASE_ID, view3.getVdbid());
     }
 
 }

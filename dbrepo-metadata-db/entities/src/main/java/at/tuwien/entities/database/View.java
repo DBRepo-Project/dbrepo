@@ -14,6 +14,8 @@ import jakarta.persistence.*;;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Data
 @Entity
@@ -52,6 +54,7 @@ public class View {
     @Column(name = "createdBy", nullable = false, columnDefinition = "VARCHAR(36)")
     private UUID createdBy;
 
+    @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumns({
             @JoinColumn(name = "createdBy", referencedColumnName = "ID", insertable = false, updatable = false)
@@ -86,14 +89,11 @@ public class View {
      * @return True if views are equal, false otherwise
      */
     public boolean equals(FromItem other) {
-        final String name = other.toString()
-                .replace("`", "");
-        if (other.getAlias() != null) {
-            final int idx = name.indexOf(' ');
-            return this.getInternalName()
-                    .equals(name.substring(0, idx));
+        if (other == null) {
+            return false;
         }
-        return this.getInternalName().equals(name);
+        final net.sf.jsqlparser.schema.Table table = (net.sf.jsqlparser.schema.Table) other;
+        return this.internalName.equals(table.getName().replace("`", ""));
     }
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)

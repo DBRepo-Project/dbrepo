@@ -1,10 +1,10 @@
 package at.tuwien.entities.database.table.columns;
 
 import at.tuwien.entities.container.image.ContainerImageDate;
+import at.tuwien.entities.database.View;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.user.User;
 import lombok.*;
-import net.sf.jsqlparser.statement.select.SelectItem;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -16,7 +16,7 @@ import java.util.List;
 
 @Data
 @Entity
-@Builder
+@Builder(toBuilder=true)
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
@@ -58,6 +58,10 @@ public class TableColumn implements Comparable<TableColumn> {
     })
     private Table table;
 
+    @ToString.Exclude
+    private transient View view;
+
+    @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumns({
             @JoinColumn(name = "createdBy", referencedColumnName = "ID", nullable = false, columnDefinition = "VARCHAR(36)", updatable = false)
@@ -78,6 +82,8 @@ public class TableColumn implements Comparable<TableColumn> {
 
     @Column
     private Integer indexLength;
+
+    private transient String alias;
 
     @Column(name = "datatype", nullable = false)
     @Enumerated(EnumType.STRING)
@@ -137,32 +143,17 @@ public class TableColumn implements Comparable<TableColumn> {
      * KEEP THIS FUNCTION HERE! IT WILL BREAK CODE!
      * Custom equality function implementation.
      *
-     * @param other The other column.
-     * @return True if columns are equal, false otherwise
-     */
-    public boolean equals(SelectItem other) {
-        final String name = other.toString()
-                .replace("`", "");
-        final int idx = name.indexOf('.');
-        if (idx == -1) {
-            return name.equals(this.internalName);
-        }
-        return name.substring(idx + 1)
-                .equals(this.internalName);
-    }
-
-    /**
-     * KEEP THIS FUNCTION HERE! IT WILL BREAK CODE!
-     * Custom equality function implementation.
-     *
      * @param object The other column.
      * @return True if columns are equal, false otherwise
      */
     public boolean equals(Object object) {
-        if (!(object instanceof TableColumn)) {
+        if (object == null) {
             return false;
         }
-        final TableColumn other = (TableColumn) object;
-        return this.getId().equals(other.getId()) && this.getTid().equals(other.getTid()) && this.getCdbid().equals(other.getCdbid());
+        if (!(object instanceof final TableColumn other)) {
+            return false;
+        }
+        return this.getId().equals(other.getId()) && this.getTid().equals(other.getTid())
+                && this.getCdbid().equals(other.getCdbid());
     }
 }

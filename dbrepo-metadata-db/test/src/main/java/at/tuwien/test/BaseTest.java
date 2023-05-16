@@ -65,6 +65,7 @@ import static java.time.temporal.ChronoUnit.*;
  * <li>Table 3</li>
  * <li>Table 7</li>
  * <li>Query 1</li>
+ * <li>View 2</li>
  * <li>View 3</li>
  * </ul>
  * <p>
@@ -1057,7 +1058,7 @@ public abstract class BaseTest {
             .creator(DATABASE_1_CREATOR)
             .owner(DATABASE_1_OWNER)
             .tables(List.of()) /* TABLE_1, TABLE_2, TABLE_3, TABLE_7 */
-            .views(List.of())
+            .views(List.of()) /* VIEW_2, VIEW_3 */
             .build();
 
     public final static Database DATABASE_1_SIMPLE = Database.builder()
@@ -1607,7 +1608,7 @@ public abstract class BaseTest {
     public final static Instant TABLE_6_CREATED = Instant.ofEpochSecond(1677400147) /* 2023-02-26 08:29:07 (UTC) */;
     public final static Instant TABLE_6_LAST_MODIFIED = Instant.ofEpochSecond(1677400147) /* 2023-02-26 08:29:07 (UTC) */;
 
-    public final static Long TABLE_7_ID = 7L;
+    public final static Long TABLE_7_ID = 4L;
     public final static String TABLE_7_NAME = "Sensor";
     public final static String TABLE_7_INTERNAL_NAME = "sensor";
     public final static String TABLE_7_DESCRIPTION = "Hello sensor";
@@ -1617,7 +1618,7 @@ public abstract class BaseTest {
     public final static Instant TABLE_7_LAST_MODIFIED = Instant.ofEpochSecond(1677400175) /* 2023-02-26 08:29:35 (UTC) */;
 
     public final static List<TableColumn> TABLE_7_COLUMNS = List.of(TableColumn.builder()
-                    .id(1L)
+                    .id(44L)
                     .ordinalPosition(0)
                     .cdbid(DATABASE_1_ID)
                     .tid(TABLE_7_ID)
@@ -1631,7 +1632,7 @@ public abstract class BaseTest {
                     .creator(USER_1)
                     .build(),
             TableColumn.builder()
-                    .id(2L)
+                    .id(45L)
                     .ordinalPosition(1)
                     .cdbid(DATABASE_1_ID)
                     .tid(TABLE_7_ID)
@@ -1650,12 +1651,14 @@ public abstract class BaseTest {
             .created(Instant.now())
             .internalName(TABLE_7_INTERNAL_NAME)
             .description(TABLE_7_DESCRIPTION)
+            .database(DATABASE_1)
             .name(TABLE_7_NAME)
             .tdbid(DATABASE_1_ID)
             .queueName(TABLE_7_QUEUE_NAME)
             .routingKey(TABLE_7_ROUTING_KEY)
             .columns(TABLE_7_COLUMNS)
             .creator(USER_1)
+            .owner(USER_1)
             .created(TABLE_7_CREATED)
             .lastModified(TABLE_7_LAST_MODIFIED)
             .build();
@@ -1665,12 +1668,14 @@ public abstract class BaseTest {
             .created(Instant.now())
             .internalName(TABLE_7_INTERNAL_NAME)
             .description(TABLE_7_DESCRIPTION)
+            .database(DATABASE_1_SIMPLE)
             .name(TABLE_7_NAME)
             .tdbid(DATABASE_1_ID)
             .queueName(TABLE_7_QUEUE_NAME)
             .routingKey(TABLE_7_ROUTING_KEY)
             .columns(List.of() /* for jpa */)
-            .creator(null /* for jpa */)
+            .creator(USER_1)
+            .owner(USER_1)
             .created(TABLE_7_CREATED)
             .lastModified(TABLE_7_LAST_MODIFIED)
             .build();
@@ -1844,7 +1849,7 @@ public abstract class BaseTest {
     public final static String COLUMN_2_3_CHECK = null;
     public final static List<String> COLUMN_2_3_ENUM_VALUES = null;
 
-    public final static Long COLUMN_4_1_ID = 9L;
+    public final static Long COLUMN_4_1_ID = 44L;
     public final static Integer COLUMN_4_1_ORDINALPOS = 0;
     public final static Boolean COLUMN_4_1_PRIMARY = true;
     public final static String COLUMN_4_1_NAME = "id";
@@ -1860,7 +1865,7 @@ public abstract class BaseTest {
     public final static ColumnTypeDto COLUMN_4_1_TYPE_DTO = ColumnTypeDto.NUMBER;
     public final static String[] COLUMN_4_1_ENUM_VALUES_ARRAY = null;
 
-    public final static Long COLUMN_4_2_ID = 10L;
+    public final static Long COLUMN_4_2_ID = 45L;
     public final static Integer COLUMN_4_2_ORDINALPOS = 1;
     public final static Boolean COLUMN_4_2_PRIMARY = false;
     public final static String COLUMN_4_2_NAME = "Animal Name";
@@ -1876,7 +1881,7 @@ public abstract class BaseTest {
     public final static ColumnTypeDto COLUMN_4_2_TYPE_DTO = ColumnTypeDto.STRING;
     public final static String[] COLUMN_4_2_ENUM_VALUES_ARRAY = null;
 
-    public final static Long COLUMN_4_3_ID = 11L;
+    public final static Long COLUMN_4_3_ID = 46L;
     public final static Integer COLUMN_4_3_ORDINALPOS = 2;
     public final static Boolean COLUMN_4_3_PRIMARY = false;
     public final static String COLUMN_4_3_NAME = "Hair";
@@ -1890,7 +1895,7 @@ public abstract class BaseTest {
     public final static String COLUMN_4_3_CHECK = null;
     public final static List<String> COLUMN_4_3_ENUM_VALUES = null;
 
-    public final static Long COLUMN_4_4_ID = 12L;
+    public final static Long COLUMN_4_4_ID = 47L;
     public final static Integer COLUMN_4_4_ORDINALPOS = 3;
     public final static Boolean COLUMN_4_4_PRIMARY = false;
     public final static String COLUMN_4_4_NAME = "Feathers";
@@ -1904,7 +1909,7 @@ public abstract class BaseTest {
     public final static String COLUMN_4_4_CHECK = null;
     public final static List<String> COLUMN_4_4_ENUM_VALUES = null;
 
-    public final static Long COLUMN_4_5_ID = 13L;
+    public final static Long COLUMN_4_5_ID = 48L;
     public final static Integer COLUMN_4_5_ORDINALPOS = 4;
     public final static Boolean COLUMN_4_5_PRIMARY = false;
     public final static String COLUMN_4_5_NAME = "Bread";
@@ -1918,7 +1923,7 @@ public abstract class BaseTest {
     public final static String COLUMN_4_5_CHECK = null;
     public final static List<String> COLUMN_4_5_ENUM_VALUES = null;
 
-    public final static Long COLUMN_4_6_ID = 14L;
+    public final static Long COLUMN_4_6_ID = 49L;
     public final static Integer COLUMN_4_6_ORDINALPOS = 5;
     public final static Boolean COLUMN_4_6_PRIMARY = false;
     public final static String COLUMN_4_6_NAME = "Eggs";
@@ -1932,7 +1937,7 @@ public abstract class BaseTest {
     public final static String COLUMN_4_6_CHECK = null;
     public final static List<String> COLUMN_4_6_ENUM_VALUES = null;
 
-    public final static Long COLUMN_4_7_ID = 15L;
+    public final static Long COLUMN_4_7_ID = 50L;
     public final static Integer COLUMN_4_7_ORDINALPOS = 6;
     public final static Boolean COLUMN_4_7_PRIMARY = false;
     public final static String COLUMN_4_7_NAME = "Milk";
@@ -1946,7 +1951,7 @@ public abstract class BaseTest {
     public final static String COLUMN_4_7_CHECK = null;
     public final static List<String> COLUMN_4_7_ENUM_VALUES = null;
 
-    public final static Long COLUMN_4_8_ID = 16L;
+    public final static Long COLUMN_4_8_ID = 51L;
     public final static Integer COLUMN_4_8_ORDINALPOS = 7;
     public final static Boolean COLUMN_4_8_PRIMARY = false;
     public final static String COLUMN_4_8_NAME = "Water";
@@ -1960,7 +1965,7 @@ public abstract class BaseTest {
     public final static String COLUMN_4_8_CHECK = null;
     public final static List<String> COLUMN_4_8_ENUM_VALUES = null;
 
-    public final static Long COLUMN_4_9_ID = 17L;
+    public final static Long COLUMN_4_9_ID = 52L;
     public final static Integer COLUMN_4_9_ORDINALPOS = 8;
     public final static Boolean COLUMN_4_9_PRIMARY = false;
     public final static String COLUMN_4_9_NAME = "Airborne";
@@ -1974,7 +1979,7 @@ public abstract class BaseTest {
     public final static String COLUMN_4_9_CHECK = null;
     public final static List<String> COLUMN_4_9_ENUM_VALUES = null;
 
-    public final static Long COLUMN_4_10_ID = 18L;
+    public final static Long COLUMN_4_10_ID = 53L;
     public final static Integer COLUMN_4_10_ORDINALPOS = 9;
     public final static Boolean COLUMN_4_10_PRIMARY = false;
     public final static String COLUMN_4_10_NAME = "Waterborne";
@@ -1988,7 +1993,7 @@ public abstract class BaseTest {
     public final static String COLUMN_4_10_CHECK = null;
     public final static List<String> COLUMN_4_10_ENUM_VALUES = null;
 
-    public final static Long COLUMN_4_11_ID = 19L;
+    public final static Long COLUMN_4_11_ID = 54L;
     public final static Integer COLUMN_4_11_ORDINALPOS = 10;
     public final static Boolean COLUMN_4_11_PRIMARY = false;
     public final static String COLUMN_4_11_NAME = "Aquantic";
@@ -2002,7 +2007,7 @@ public abstract class BaseTest {
     public final static String COLUMN_4_11_CHECK = null;
     public final static List<String> COLUMN_4_11_ENUM_VALUES = null;
 
-    public final static Long COLUMN_4_12_ID = 20L;
+    public final static Long COLUMN_4_12_ID = 55L;
     public final static Integer COLUMN_4_12_ORDINALPOS = 11;
     public final static Boolean COLUMN_4_12_PRIMARY = false;
     public final static String COLUMN_4_12_NAME = "Predator";
@@ -2016,7 +2021,7 @@ public abstract class BaseTest {
     public final static String COLUMN_4_12_CHECK = null;
     public final static List<String> COLUMN_4_12_ENUM_VALUES = null;
 
-    public final static Long COLUMN_4_13_ID = 21L;
+    public final static Long COLUMN_4_13_ID = 56L;
     public final static Integer COLUMN_4_13_ORDINALPOS = 12;
     public final static Boolean COLUMN_4_13_PRIMARY = false;
     public final static String COLUMN_4_13_NAME = "Backbone";
@@ -2030,7 +2035,7 @@ public abstract class BaseTest {
     public final static String COLUMN_4_13_CHECK = null;
     public final static List<String> COLUMN_4_13_ENUM_VALUES = null;
 
-    public final static Long COLUMN_4_14_ID = 22L;
+    public final static Long COLUMN_4_14_ID = 57L;
     public final static Integer COLUMN_4_14_ORDINALPOS = 13;
     public final static Boolean COLUMN_4_14_PRIMARY = false;
     public final static String COLUMN_4_14_NAME = "Breathes";
@@ -2044,7 +2049,7 @@ public abstract class BaseTest {
     public final static String COLUMN_4_14_CHECK = null;
     public final static List<String> COLUMN_4_14_ENUM_VALUES = null;
 
-    public final static Long COLUMN_4_15_ID = 23L;
+    public final static Long COLUMN_4_15_ID = 58L;
     public final static Integer COLUMN_4_15_ORDINALPOS = 14;
     public final static Boolean COLUMN_4_15_PRIMARY = false;
     public final static String COLUMN_4_15_NAME = "Venomous";
@@ -2058,7 +2063,7 @@ public abstract class BaseTest {
     public final static String COLUMN_4_15_CHECK = null;
     public final static List<String> COLUMN_4_15_ENUM_VALUES = null;
 
-    public final static Long COLUMN_4_16_ID = 24L;
+    public final static Long COLUMN_4_16_ID = 59L;
     public final static Integer COLUMN_4_16_ORDINALPOS = 15;
     public final static Boolean COLUMN_4_16_PRIMARY = false;
     public final static String COLUMN_4_16_NAME = "Fin";
@@ -2072,7 +2077,7 @@ public abstract class BaseTest {
     public final static String COLUMN_4_16_CHECK = null;
     public final static List<String> COLUMN_4_16_ENUM_VALUES = null;
 
-    public final static Long COLUMN_4_17_ID = 25L;
+    public final static Long COLUMN_4_17_ID = 60L;
     public final static Integer COLUMN_4_17_ORDINALPOS = 16;
     public final static Boolean COLUMN_4_17_PRIMARY = false;
     public final static String COLUMN_4_17_NAME = "Legs";
@@ -2086,7 +2091,7 @@ public abstract class BaseTest {
     public final static String COLUMN_4_17_CHECK = null;
     public final static List<String> COLUMN_4_17_ENUM_VALUES = null;
 
-    public final static Long COLUMN_4_18_ID = 26L;
+    public final static Long COLUMN_4_18_ID = 61L;
     public final static Integer COLUMN_4_18_ORDINALPOS = 17;
     public final static Boolean COLUMN_4_18_PRIMARY = false;
     public final static String COLUMN_4_18_NAME = "Tail";
@@ -2100,7 +2105,7 @@ public abstract class BaseTest {
     public final static String COLUMN_4_18_CHECK = null;
     public final static List<String> COLUMN_4_18_ENUM_VALUES = null;
 
-    public final static Long COLUMN_4_19_ID = 27L;
+    public final static Long COLUMN_4_19_ID = 62L;
     public final static Integer COLUMN_4_19_ORDINALPOS = 18;
     public final static Boolean COLUMN_4_19_PRIMARY = false;
     public final static String COLUMN_4_19_NAME = "Domestic";
@@ -2114,7 +2119,7 @@ public abstract class BaseTest {
     public final static String COLUMN_4_19_CHECK = null;
     public final static List<String> COLUMN_4_19_ENUM_VALUES = null;
 
-    public final static Long COLUMN_4_20_ID = 28L;
+    public final static Long COLUMN_4_20_ID = 63L;
     public final static Integer COLUMN_4_20_ORDINALPOS = 19;
     public final static Boolean COLUMN_4_20_PRIMARY = false;
     public final static String COLUMN_4_20_NAME = "Cat Size";
@@ -2128,7 +2133,7 @@ public abstract class BaseTest {
     public final static String COLUMN_4_20_CHECK = null;
     public final static List<String> COLUMN_4_20_ENUM_VALUES = null;
 
-    public final static Long COLUMN_4_21_ID = 29L;
+    public final static Long COLUMN_4_21_ID = 64L;
     public final static Integer COLUMN_4_21_ORDINALPOS = 20;
     public final static Boolean COLUMN_4_21_PRIMARY = false;
     public final static String COLUMN_4_21_NAME = "Class Type";
@@ -2142,7 +2147,7 @@ public abstract class BaseTest {
     public final static String COLUMN_4_21_CHECK = null;
     public final static List<String> COLUMN_4_21_ENUM_VALUES = null;
 
-    public final static Long COLUMN_5_1_ID = 23L;
+    public final static Long COLUMN_5_1_ID = 65L;
     public final static Integer COLUMN_5_1_ORDINALPOS = 0;
     public final static Boolean COLUMN_5_1_PRIMARY = true;
     public final static String COLUMN_5_1_NAME = "id";
@@ -2157,7 +2162,7 @@ public abstract class BaseTest {
     public final static String COLUMN_5_1_CHECK = null;
     public final static List<String> COLUMN_5_1_ENUM_VALUES = null;
 
-    public final static Long COLUMN_5_2_ID = 24L;
+    public final static Long COLUMN_5_2_ID = 66L;
     public final static Integer COLUMN_5_2_ORDINALPOS = 1;
     public final static Boolean COLUMN_5_2_PRIMARY = false;
     public final static String COLUMN_5_2_NAME = "firstname";
@@ -2173,7 +2178,7 @@ public abstract class BaseTest {
     public final static String COLUMN_5_2_CHECK = null;
     public final static List<String> COLUMN_5_2_ENUM_VALUES = null;
 
-    public final static Long COLUMN_5_3_ID = 25L;
+    public final static Long COLUMN_5_3_ID = 67L;
     public final static Integer COLUMN_5_3_ORDINALPOS = 2;
     public final static Boolean COLUMN_5_3_PRIMARY = false;
     public final static String COLUMN_5_3_NAME = "lastname";
@@ -2189,7 +2194,7 @@ public abstract class BaseTest {
     public final static String COLUMN_5_3_CHECK = null;
     public final static List<String> COLUMN_5_3_ENUM_VALUES = null;
 
-    public final static Long COLUMN_5_4_ID = 25L;
+    public final static Long COLUMN_5_4_ID = 68L;
     public final static Integer COLUMN_5_4_ORDINALPOS = 2;
     public final static Boolean COLUMN_5_4_PRIMARY = false;
     public final static String COLUMN_5_4_NAME = "ref_id";
@@ -2204,7 +2209,7 @@ public abstract class BaseTest {
     public final static String COLUMN_5_4_CHECK = null;
     public final static List<String> COLUMN_5_4_ENUM_VALUES = null;
 
-    public final static Long COLUMN_8_1_ID = 26L;
+    public final static Long COLUMN_8_1_ID = 69L;
     public final static Integer COLUMN_8_1_ORDINALPOS = 0;
     public final static Boolean COLUMN_8_1_PRIMARY = true;
     public final static String COLUMN_8_1_NAME = "ID";
@@ -2219,7 +2224,7 @@ public abstract class BaseTest {
     public final static String COLUMN_8_1_CHECK = null;
     public final static List<String> COLUMN_8_1_ENUM_VALUES = null;
 
-    public final static Long COLUMN_8_2_ID = 27L;
+    public final static Long COLUMN_8_2_ID = 70L;
     public final static Integer COLUMN_8_2_ORDINALPOS = 1;
     public final static Boolean COLUMN_8_2_PRIMARY = true;
     public final static String COLUMN_8_2_NAME = "Value";
@@ -2687,8 +2692,8 @@ public abstract class BaseTest {
             .routingKey(TABLE_1_ROUTING_KEY)
             .columns(List.of() /* for jpa */)
             .constraints(null /* for jpa */) /* TABLE_1_CONSTRAINTS */
-            .creator(null /* for jpa */)
-            .owner(null /* for jpa */)
+            .creator(USER_1)
+            .owner(USER_1)
             .created(TABLE_1_CREATED)
             .lastModified(TABLE_1_LAST_MODIFIED)
             .build();
@@ -2769,8 +2774,8 @@ public abstract class BaseTest {
             .queueName(TABLE_2_QUEUE_NAME)
             .routingKey(TABLE_2_ROUTING_KEY)
             .columns(List.of() /* for jpa */)
-            .creator(null /* for jpa */)
-            .owner(null /* for jpa */)
+            .creator(USER_1)
+            .owner(USER_1)
             .created(TABLE_2_CREATED)
             .lastModified(TABLE_2_LAST_MODIFIED)
             .build();
@@ -2791,6 +2796,7 @@ public abstract class BaseTest {
             .build();
 
     public final static List<TableColumn> TABLE_3_COLUMNS = List.of(TableColumn.builder()
+                    .id(9L)
                     .tid(TABLE_3_ID)
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(0)
@@ -2805,6 +2811,7 @@ public abstract class BaseTest {
                     .creator(USER_1)
                     .build(),
             TableColumn.builder()
+                    .id(10L)
                     .tid(TABLE_3_ID)
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(1)
@@ -2819,6 +2826,7 @@ public abstract class BaseTest {
                     .creator(USER_1)
                     .build(),
             TableColumn.builder()
+                    .id(11L)
                     .tid(TABLE_3_ID)
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(2)
@@ -2833,6 +2841,7 @@ public abstract class BaseTest {
                     .creator(USER_1)
                     .build(),
             TableColumn.builder()
+                    .id(12L)
                     .tid(TABLE_3_ID)
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(3)
@@ -2847,6 +2856,7 @@ public abstract class BaseTest {
                     .creator(USER_1)
                     .build(),
             TableColumn.builder()
+                    .id(13L)
                     .tid(TABLE_3_ID)
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(4)
@@ -2861,6 +2871,7 @@ public abstract class BaseTest {
                     .creator(USER_1)
                     .build(),
             TableColumn.builder()
+                    .id(14L)
                     .tid(TABLE_3_ID)
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(5)
@@ -2875,6 +2886,7 @@ public abstract class BaseTest {
                     .creator(USER_1)
                     .build(),
             TableColumn.builder()
+                    .id(15L)
                     .tid(TABLE_3_ID)
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(6)
@@ -2889,6 +2901,7 @@ public abstract class BaseTest {
                     .creator(USER_1)
                     .build(),
             TableColumn.builder()
+                    .id(16L)
                     .tid(TABLE_3_ID)
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(7)
@@ -2903,6 +2916,7 @@ public abstract class BaseTest {
                     .creator(USER_1)
                     .build(),
             TableColumn.builder()
+                    .id(17L)
                     .tid(TABLE_3_ID)
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(8)
@@ -2917,6 +2931,7 @@ public abstract class BaseTest {
                     .creator(USER_1)
                     .build(),
             TableColumn.builder()
+                    .id(18L)
                     .tid(TABLE_3_ID)
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(9)
@@ -2931,6 +2946,7 @@ public abstract class BaseTest {
                     .creator(USER_1)
                     .build(),
             TableColumn.builder()
+                    .id(19L)
                     .tid(TABLE_3_ID)
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(10)
@@ -2945,6 +2961,7 @@ public abstract class BaseTest {
                     .creator(USER_1)
                     .build(),
             TableColumn.builder()
+                    .id(20L)
                     .tid(TABLE_3_ID)
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(11)
@@ -2959,6 +2976,7 @@ public abstract class BaseTest {
                     .creator(USER_1)
                     .build(),
             TableColumn.builder()
+                    .id(21L)
                     .tid(TABLE_3_ID)
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(12)
@@ -2973,6 +2991,7 @@ public abstract class BaseTest {
                     .creator(USER_1)
                     .build(),
             TableColumn.builder()
+                    .id(22L)
                     .tid(TABLE_3_ID)
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(13)
@@ -2987,6 +3006,7 @@ public abstract class BaseTest {
                     .creator(USER_1)
                     .build(),
             TableColumn.builder()
+                    .id(23L)
                     .tid(TABLE_3_ID)
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(14)
@@ -3001,6 +3021,7 @@ public abstract class BaseTest {
                     .creator(USER_1)
                     .build(),
             TableColumn.builder()
+                    .id(24L)
                     .tid(TABLE_3_ID)
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(15)
@@ -3015,6 +3036,7 @@ public abstract class BaseTest {
                     .creator(USER_1)
                     .build(),
             TableColumn.builder()
+                    .id(25L)
                     .tid(TABLE_3_ID)
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(16)
@@ -3029,6 +3051,7 @@ public abstract class BaseTest {
                     .creator(USER_1)
                     .build(),
             TableColumn.builder()
+                    .id(26L)
                     .tid(TABLE_3_ID)
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(17)
@@ -3043,6 +3066,7 @@ public abstract class BaseTest {
                     .creator(USER_1)
                     .build(),
             TableColumn.builder()
+                    .id(27L)
                     .tid(TABLE_3_ID)
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(18)
@@ -3057,6 +3081,7 @@ public abstract class BaseTest {
                     .creator(USER_1)
                     .build(),
             TableColumn.builder()
+                    .id(28L)
                     .tid(TABLE_3_ID)
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(19)
@@ -3071,6 +3096,7 @@ public abstract class BaseTest {
                     .creator(USER_1)
                     .build(),
             TableColumn.builder()
+                    .id(29L)
                     .tid(TABLE_3_ID)
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(20)
@@ -3085,6 +3111,7 @@ public abstract class BaseTest {
                     .creator(USER_1)
                     .build(),
             TableColumn.builder()
+                    .id(30L)
                     .tid(TABLE_3_ID)
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(21)
@@ -3099,6 +3126,7 @@ public abstract class BaseTest {
                     .creator(USER_1)
                     .build(),
             TableColumn.builder()
+                    .id(31L)
                     .tid(TABLE_3_ID)
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(22)
@@ -3113,6 +3141,7 @@ public abstract class BaseTest {
                     .creator(USER_1)
                     .build(),
             TableColumn.builder()
+                    .id(32L)
                     .tid(TABLE_3_ID)
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(23)
@@ -3127,6 +3156,7 @@ public abstract class BaseTest {
                     .creator(USER_1)
                     .build(),
             TableColumn.builder()
+                    .id(33L)
                     .tid(TABLE_3_ID)
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(24)
@@ -3141,6 +3171,7 @@ public abstract class BaseTest {
                     .creator(USER_1)
                     .build(),
             TableColumn.builder()
+                    .id(34L)
                     .tid(TABLE_3_ID)
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(25)
@@ -3155,6 +3186,7 @@ public abstract class BaseTest {
                     .creator(USER_1)
                     .build(),
             TableColumn.builder()
+                    .id(35L)
                     .tid(TABLE_3_ID)
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(26)
@@ -3169,6 +3201,7 @@ public abstract class BaseTest {
                     .creator(USER_1)
                     .build(),
             TableColumn.builder()
+                    .id(36L)
                     .tid(TABLE_3_ID)
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(27)
@@ -3183,6 +3216,7 @@ public abstract class BaseTest {
                     .creator(USER_1)
                     .build(),
             TableColumn.builder()
+                    .id(37L)
                     .tid(TABLE_3_ID)
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(28)
@@ -3197,6 +3231,7 @@ public abstract class BaseTest {
                     .creator(USER_1)
                     .build(),
             TableColumn.builder()
+                    .id(38L)
                     .tid(TABLE_3_ID)
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(29)
@@ -3211,6 +3246,7 @@ public abstract class BaseTest {
                     .creator(USER_1)
                     .build(),
             TableColumn.builder()
+                    .id(39L)
                     .tid(TABLE_3_ID)
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(30)
@@ -3225,6 +3261,7 @@ public abstract class BaseTest {
                     .creator(USER_1)
                     .build(),
             TableColumn.builder()
+                    .id(40L)
                     .tid(TABLE_3_ID)
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(31)
@@ -3239,6 +3276,7 @@ public abstract class BaseTest {
                     .creator(USER_1)
                     .build(),
             TableColumn.builder()
+                    .id(41L)
                     .tid(TABLE_3_ID)
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(32)
@@ -3253,6 +3291,7 @@ public abstract class BaseTest {
                     .creator(USER_1)
                     .build(),
             TableColumn.builder()
+                    .id(42L)
                     .tid(TABLE_3_ID)
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(33)
@@ -3267,6 +3306,7 @@ public abstract class BaseTest {
                     .creator(USER_1)
                     .build(),
             TableColumn.builder()
+                    .id(43L)
                     .tid(TABLE_3_ID)
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(34)
@@ -3317,8 +3357,8 @@ public abstract class BaseTest {
             .routingKey(TABLE_3_ROUTING_KEY)
             .columns(List.of() /* for jpa */)
             .constraints(TABLE_3_CONSTRAINTS)
-            .creator(null /* for jpa */)
-            .owner(null /* for jpa */)
+            .creator(USER_1)
+            .owner(USER_1)
             .created(TABLE_3_CREATED)
             .lastModified(TABLE_3_LAST_MODIFIED)
             .build();
@@ -3971,6 +4011,52 @@ public abstract class BaseTest {
     public final static Boolean VIEW_1_PUBLIC = true;
     public final static String VIEW_1_QUERY = "select `location`, `lat`, `lng` from `weather_location`";
 
+    public final static List<TableColumn> VIEW_1_COLUMNS = List.of(TableColumn.builder()
+                    .id(COLUMN_2_1_ID)
+                    .ordinalPosition(COLUMN_2_1_ORDINALPOS)
+                    .cdbid(DATABASE_1_ID)
+                    .tid(TABLE_2_ID)
+                    .name(COLUMN_2_1_NAME)
+                    .internalName(COLUMN_2_1_INTERNAL_NAME)
+                    .columnType(COLUMN_2_1_TYPE)
+                    .dfid(COLUMN_2_1_DATE_FORMAT)
+                    .isNullAllowed(COLUMN_2_1_NULL)
+                    .autoGenerated(COLUMN_2_1_AUTO_GENERATED)
+                    .isPrimaryKey(COLUMN_2_1_PRIMARY)
+                    .enumValues(COLUMN_2_1_ENUM_VALUES)
+                    .creator(USER_1)
+                    .build(),
+            TableColumn.builder()
+                    .id(COLUMN_2_2_ID)
+                    .ordinalPosition(COLUMN_2_2_ORDINALPOS)
+                    .cdbid(DATABASE_1_ID)
+                    .tid(TABLE_2_ID)
+                    .name(COLUMN_2_2_NAME)
+                    .internalName(COLUMN_2_2_INTERNAL_NAME)
+                    .columnType(COLUMN_2_2_TYPE)
+                    .dfid(COLUMN_2_2_DATE_FORMAT)
+                    .isNullAllowed(COLUMN_2_2_NULL)
+                    .autoGenerated(COLUMN_2_2_AUTO_GENERATED)
+                    .isPrimaryKey(COLUMN_2_2_PRIMARY)
+                    .enumValues(COLUMN_2_2_ENUM_VALUES)
+                    .creator(USER_1)
+                    .build(),
+            TableColumn.builder()
+                    .id(COLUMN_2_3_ID)
+                    .ordinalPosition(COLUMN_2_3_ORDINALPOS)
+                    .cdbid(DATABASE_1_ID)
+                    .tid(TABLE_2_ID)
+                    .name(COLUMN_2_3_NAME)
+                    .internalName(COLUMN_2_3_INTERNAL_NAME)
+                    .columnType(COLUMN_2_3_TYPE)
+                    .dfid(COLUMN_2_3_DATE_FORMAT)
+                    .isNullAllowed(COLUMN_2_3_NULL)
+                    .autoGenerated(COLUMN_2_3_AUTO_GENERATED)
+                    .isPrimaryKey(COLUMN_2_3_PRIMARY)
+                    .enumValues(COLUMN_2_3_ENUM_VALUES)
+                    .creator(USER_1)
+                    .build());
+
     public final static View VIEW_1 = View.builder()
             .id(VIEW_1_ID)
             .isInitialView(VIEW_1_INITIAL_VIEW)
@@ -3982,6 +4068,7 @@ public abstract class BaseTest {
             .query(VIEW_1_QUERY)
             .createdBy(USER_1_ID)
             .creator(USER_1)
+            .columns(VIEW_1_COLUMNS)
             .build();
 
     public final static ViewDto VIEW_1_DTO = ViewDto.builder()
@@ -4004,6 +4091,82 @@ public abstract class BaseTest {
     public final static Boolean VIEW_2_PUBLIC = true;
     public final static String VIEW_2_QUERY = "select `date`, `location`, `mintemp`, `rainfall` from `weather_aus` where `location` = 'Albury'";
 
+    public final static List<TableColumn> VIEW_2_COLUMNS = List.of(TableColumn.builder()
+                    .id(COLUMN_1_1_ID)
+                    .ordinalPosition(COLUMN_1_1_ORDINALPOS)
+                    .cdbid(DATABASE_1_ID)
+                    .tid(TABLE_1_ID)
+                    .name(COLUMN_1_1_NAME)
+                    .internalName(COLUMN_1_1_INTERNAL_NAME)
+                    .columnType(COLUMN_1_1_TYPE)
+                    .dfid(COLUMN_1_1_DATE_FORMAT)
+                    .isNullAllowed(COLUMN_1_1_NULL)
+                    .autoGenerated(COLUMN_1_1_AUTO_GENERATED)
+                    .isPrimaryKey(COLUMN_1_1_PRIMARY)
+                    .enumValues(COLUMN_1_1_ENUM_VALUES)
+                    .creator(USER_1)
+                    .build(),
+            TableColumn.builder()
+                    .id(COLUMN_1_2_ID)
+                    .ordinalPosition(COLUMN_1_2_ORDINALPOS)
+                    .cdbid(DATABASE_1_ID)
+                    .tid(TABLE_1_ID)
+                    .name(COLUMN_1_2_NAME)
+                    .internalName(COLUMN_1_2_INTERNAL_NAME)
+                    .columnType(COLUMN_1_2_TYPE)
+                    .dfid(COLUMN_1_2_DATE_FORMAT)
+                    .isNullAllowed(COLUMN_1_2_NULL)
+                    .autoGenerated(COLUMN_1_2_AUTO_GENERATED)
+                    .isPrimaryKey(COLUMN_1_2_PRIMARY)
+                    .enumValues(COLUMN_1_2_ENUM_VALUES)
+                    .creator(USER_1)
+                    .build(),
+            TableColumn.builder()
+                    .id(COLUMN_1_3_ID)
+                    .ordinalPosition(COLUMN_1_3_ORDINALPOS)
+                    .cdbid(DATABASE_1_ID)
+                    .tid(TABLE_1_ID)
+                    .name(COLUMN_1_3_NAME)
+                    .internalName(COLUMN_1_3_INTERNAL_NAME)
+                    .columnType(COLUMN_1_3_TYPE)
+                    .dfid(COLUMN_1_3_DATE_FORMAT)
+                    .isNullAllowed(COLUMN_1_3_NULL)
+                    .autoGenerated(COLUMN_1_3_AUTO_GENERATED)
+                    .isPrimaryKey(COLUMN_1_3_PRIMARY)
+                    .enumValues(COLUMN_1_3_ENUM_VALUES)
+                    .creator(USER_1)
+                    .build(),
+            TableColumn.builder()
+                    .id(COLUMN_1_4_ID)
+                    .ordinalPosition(COLUMN_1_4_ORDINALPOS)
+                    .cdbid(DATABASE_1_ID)
+                    .tid(TABLE_1_ID)
+                    .name(COLUMN_1_4_NAME)
+                    .internalName(COLUMN_1_4_INTERNAL_NAME)
+                    .columnType(COLUMN_1_4_TYPE)
+                    .dfid(COLUMN_1_4_DATE_FORMAT)
+                    .isNullAllowed(COLUMN_1_4_NULL)
+                    .autoGenerated(COLUMN_1_4_AUTO_GENERATED)
+                    .isPrimaryKey(COLUMN_1_4_PRIMARY)
+                    .enumValues(COLUMN_1_4_ENUM_VALUES)
+                    .creator(USER_1)
+                    .build(),
+            TableColumn.builder()
+                    .id(COLUMN_1_5_ID)
+                    .ordinalPosition(COLUMN_1_5_ORDINALPOS)
+                    .cdbid(DATABASE_1_ID)
+                    .tid(TABLE_1_ID)
+                    .name(COLUMN_1_5_NAME)
+                    .internalName(COLUMN_1_5_INTERNAL_NAME)
+                    .columnType(COLUMN_1_5_TYPE)
+                    .dfid(COLUMN_1_5_DATE_FORMAT)
+                    .isNullAllowed(COLUMN_1_5_NULL)
+                    .autoGenerated(COLUMN_1_5_AUTO_GENERATED)
+                    .isPrimaryKey(COLUMN_1_5_PRIMARY)
+                    .enumValues(COLUMN_1_5_ENUM_VALUES)
+                    .creator(USER_1)
+                    .build());
+
     public final static View VIEW_2 = View.builder()
             .id(VIEW_2_ID)
             .isInitialView(VIEW_2_INITIAL_VIEW)
@@ -4012,6 +4175,7 @@ public abstract class BaseTest {
             .vcid(VIEW_2_CONTAINER_ID)
             .vdbid(VIEW_2_DATABASE_ID)
             .isPublic(VIEW_2_PUBLIC)
+            .columns(VIEW_2_COLUMNS)
             .query(VIEW_2_QUERY)
             .creator(USER_1)
             .createdBy(USER_1_ID)
@@ -4035,7 +4199,68 @@ public abstract class BaseTest {
     public final static Long VIEW_3_CONTAINER_ID = CONTAINER_1_ID;
     public final static Long VIEW_3_DATABASE_ID = DATABASE_1_ID;
     public final static Boolean VIEW_3_PUBLIC = false;
-    public final static String VIEW_3_QUERY = "select w.`mintemp`, w.`rainfall`, w.`location`, m.`lat`, m.`lng` from `weather_aus` w join `junit2` m on m.`location` = w.`location`";
+    public final static String VIEW_3_QUERY = "select w.`mintemp`, w.`rainfall`, w.`location`, m.`date` from `weather_aus` w join `junit2` m on m.`location` = w.`location`";
+
+    public final static List<TableColumn> VIEW_3_COLUMNS = List.of(TableColumn.builder()
+                    .id(COLUMN_1_4_ID)
+                    .ordinalPosition(COLUMN_1_4_ORDINALPOS)
+                    .cdbid(DATABASE_1_ID)
+                    .tid(TABLE_1_ID)
+                    .name(COLUMN_1_4_NAME)
+                    .internalName(COLUMN_1_4_INTERNAL_NAME)
+                    .columnType(COLUMN_1_4_TYPE)
+                    .dfid(COLUMN_1_4_DATE_FORMAT)
+                    .isNullAllowed(COLUMN_1_4_NULL)
+                    .autoGenerated(COLUMN_1_4_AUTO_GENERATED)
+                    .isPrimaryKey(COLUMN_1_4_PRIMARY)
+                    .enumValues(COLUMN_1_4_ENUM_VALUES)
+                    .creator(USER_1)
+                    .build(),
+            TableColumn.builder()
+                    .id(COLUMN_1_5_ID)
+                    .ordinalPosition(COLUMN_1_5_ORDINALPOS)
+                    .cdbid(DATABASE_1_ID)
+                    .tid(TABLE_1_ID)
+                    .name(COLUMN_1_5_NAME)
+                    .internalName(COLUMN_1_5_INTERNAL_NAME)
+                    .columnType(COLUMN_1_5_TYPE)
+                    .dfid(COLUMN_1_5_DATE_FORMAT)
+                    .isNullAllowed(COLUMN_1_5_NULL)
+                    .autoGenerated(COLUMN_1_5_AUTO_GENERATED)
+                    .isPrimaryKey(COLUMN_1_5_PRIMARY)
+                    .enumValues(COLUMN_1_5_ENUM_VALUES)
+                    .creator(USER_1)
+                    .build(),
+            TableColumn.builder()
+                    .id(COLUMN_1_3_ID)
+                    .ordinalPosition(COLUMN_1_3_ORDINALPOS)
+                    .cdbid(DATABASE_1_ID)
+                    .tid(TABLE_1_ID)
+                    .name(COLUMN_1_3_NAME)
+                    .internalName(COLUMN_1_3_INTERNAL_NAME)
+                    .columnType(COLUMN_1_3_TYPE)
+                    .dfid(COLUMN_1_3_DATE_FORMAT)
+                    .isNullAllowed(COLUMN_1_3_NULL)
+                    .autoGenerated(COLUMN_1_3_AUTO_GENERATED)
+                    .isPrimaryKey(COLUMN_1_3_PRIMARY)
+                    .enumValues(COLUMN_1_3_ENUM_VALUES)
+                    .creator(USER_1)
+                    .build(),
+            TableColumn.builder()
+                    .id(COLUMN_1_2_ID)
+                    .ordinalPosition(COLUMN_1_2_ORDINALPOS)
+                    .cdbid(DATABASE_1_ID)
+                    .tid(TABLE_1_ID)
+                    .name(COLUMN_1_2_NAME)
+                    .internalName(COLUMN_1_2_INTERNAL_NAME)
+                    .columnType(COLUMN_1_2_TYPE)
+                    .dfid(COLUMN_1_2_DATE_FORMAT)
+                    .isNullAllowed(COLUMN_1_2_NULL)
+                    .autoGenerated(COLUMN_1_2_AUTO_GENERATED)
+                    .isPrimaryKey(COLUMN_1_2_PRIMARY)
+                    .enumValues(COLUMN_1_2_ENUM_VALUES)
+                    .creator(USER_1)
+                    .build());
 
     public final static View VIEW_3 = View.builder()
             .id(VIEW_3_ID)
@@ -4045,6 +4270,7 @@ public abstract class BaseTest {
             .vcid(VIEW_3_CONTAINER_ID)
             .vdbid(VIEW_3_DATABASE_ID)
             .isPublic(VIEW_3_PUBLIC)
+            .columns(VIEW_3_COLUMNS)
             .query(VIEW_3_QUERY)
             .creator(USER_1)
             .createdBy(USER_1_ID)
@@ -4067,8 +4293,262 @@ public abstract class BaseTest {
     public final static String VIEW_4_INTERNAL_NAME = "mock_view";
     public final static Long VIEW_4_CONTAINER_ID = CONTAINER_2_ID;
     public final static Long VIEW_4_DATABASE_ID = DATABASE_2_ID;
+    public final static Long VIEW_4_TABLE_ID = TABLE_4_ID;
     public final static Boolean VIEW_4_PUBLIC = true;
-    public final static String VIEW_4_QUERY = "SELECT `animal_name`, `hair`, `feathers`, `eggs`, `milk`, `airborne`, `aquatic`, `predator`, `toothed`, `backbone`, `breathes`, `venomous`, `fins`, `legs`, `tail`, `domestic`, `catsize`, `class_type`FROM `zoo`WHERE `class_type` = 1";
+    public final static String VIEW_4_QUERY = "SELECT `animal_name`, `hair`, `feathers`, `eggs`, `milk`, `airborne`, `aquatic`, `predator`, `toothed`, `backbone`, `breathes`, `venomous`, `fins`, `legs`, `tail`, `domestic`, `catsize`, `class_type` FROM `zoo` WHERE `class_type` = 1";
+
+    public final static List<TableColumn> VIEW_4_COLUMNS = List.of(TableColumn.builder()
+                    .ordinalPosition(0)
+                    .cdbid(VIEW_4_DATABASE_ID)
+                    .tid(VIEW_4_TABLE_ID)
+                    .name("animal_name")
+                    .internalName("animal_name")
+                    .columnType(TableColumnType.STRING)
+                    .dfid(null)
+                    .isNullAllowed(null)
+                    .autoGenerated(false)
+                    .isPrimaryKey(false)
+                    .enumValues(null)
+                    .creator(USER_1)
+                    .build(),
+            TableColumn.builder()
+                    .ordinalPosition(1)
+                    .cdbid(VIEW_4_DATABASE_ID)
+                    .tid(VIEW_4_TABLE_ID)
+                    .name("hair")
+                    .internalName("hair")
+                    .columnType(TableColumnType.BOOLEAN)
+                    .dfid(null)
+                    .isNullAllowed(null)
+                    .autoGenerated(false)
+                    .isPrimaryKey(false)
+                    .enumValues(null)
+                    .creator(USER_1)
+                    .build(),
+            TableColumn.builder()
+                    .ordinalPosition(2)
+                    .cdbid(VIEW_4_DATABASE_ID)
+                    .tid(VIEW_4_TABLE_ID)
+                    .name("feathers")
+                    .internalName("feathers")
+                    .columnType(TableColumnType.BOOLEAN)
+                    .dfid(null)
+                    .isNullAllowed(null)
+                    .autoGenerated(false)
+                    .isPrimaryKey(false)
+                    .enumValues(null)
+                    .creator(USER_1)
+                    .build(),
+            TableColumn.builder()
+                    .ordinalPosition(3)
+                    .cdbid(VIEW_4_DATABASE_ID)
+                    .tid(VIEW_4_TABLE_ID)
+                    .name("eggs")
+                    .internalName("eggs")
+                    .columnType(TableColumnType.BOOLEAN)
+                    .dfid(null)
+                    .isNullAllowed(null)
+                    .autoGenerated(false)
+                    .isPrimaryKey(false)
+                    .enumValues(null)
+                    .creator(USER_1)
+                    .build(),
+            TableColumn.builder()
+                    .ordinalPosition(4)
+                    .cdbid(VIEW_4_DATABASE_ID)
+                    .tid(VIEW_4_TABLE_ID)
+                    .name("milk")
+                    .internalName("milk")
+                    .columnType(TableColumnType.BOOLEAN)
+                    .dfid(null)
+                    .isNullAllowed(null)
+                    .autoGenerated(false)
+                    .isPrimaryKey(false)
+                    .enumValues(null)
+                    .creator(USER_1)
+                    .build(),
+            TableColumn.builder()
+                    .ordinalPosition(5)
+                    .cdbid(VIEW_4_DATABASE_ID)
+                    .tid(VIEW_4_TABLE_ID)
+                    .name("airborne")
+                    .internalName("airborne")
+                    .columnType(TableColumnType.BOOLEAN)
+                    .dfid(null)
+                    .isNullAllowed(null)
+                    .autoGenerated(false)
+                    .isPrimaryKey(false)
+                    .enumValues(null)
+                    .creator(USER_1)
+                    .build(),
+            TableColumn.builder()
+                    .ordinalPosition(6)
+                    .cdbid(VIEW_4_DATABASE_ID)
+                    .tid(VIEW_4_TABLE_ID)
+                    .name("aquatic")
+                    .internalName("aquatic")
+                    .columnType(TableColumnType.BOOLEAN)
+                    .dfid(null)
+                    .isNullAllowed(null)
+                    .autoGenerated(false)
+                    .isPrimaryKey(false)
+                    .enumValues(null)
+                    .creator(USER_1)
+                    .build(),
+            TableColumn.builder()
+                    .ordinalPosition(7)
+                    .cdbid(VIEW_4_DATABASE_ID)
+                    .tid(VIEW_4_TABLE_ID)
+                    .name("predator")
+                    .internalName("predator")
+                    .columnType(TableColumnType.BOOLEAN)
+                    .dfid(null)
+                    .isNullAllowed(null)
+                    .autoGenerated(false)
+                    .isPrimaryKey(false)
+                    .enumValues(null)
+                    .creator(USER_1)
+                    .build(),
+            TableColumn.builder()
+                    .ordinalPosition(8)
+                    .cdbid(VIEW_4_DATABASE_ID)
+                    .tid(VIEW_4_TABLE_ID)
+                    .name("toothed")
+                    .internalName("toothed")
+                    .columnType(TableColumnType.BOOLEAN)
+                    .dfid(null)
+                    .isNullAllowed(null)
+                    .autoGenerated(false)
+                    .isPrimaryKey(false)
+                    .enumValues(null)
+                    .creator(USER_1)
+                    .build(),
+            TableColumn.builder()
+                    .ordinalPosition(9)
+                    .cdbid(VIEW_4_DATABASE_ID)
+                    .tid(VIEW_4_TABLE_ID)
+                    .name("backbone")
+                    .internalName("backbone")
+                    .columnType(TableColumnType.BOOLEAN)
+                    .dfid(null)
+                    .isNullAllowed(null)
+                    .autoGenerated(false)
+                    .isPrimaryKey(false)
+                    .enumValues(null)
+                    .creator(USER_1)
+                    .build(),
+            TableColumn.builder()
+                    .ordinalPosition(10)
+                    .cdbid(VIEW_4_DATABASE_ID)
+                    .tid(VIEW_4_TABLE_ID)
+                    .name("breathes")
+                    .internalName("breathes")
+                    .columnType(TableColumnType.BOOLEAN)
+                    .dfid(null)
+                    .isNullAllowed(null)
+                    .autoGenerated(false)
+                    .isPrimaryKey(false)
+                    .enumValues(null)
+                    .creator(USER_1)
+                    .build(),
+            TableColumn.builder()
+                    .ordinalPosition(11)
+                    .cdbid(VIEW_4_DATABASE_ID)
+                    .tid(VIEW_4_TABLE_ID)
+                    .name("venomous")
+                    .internalName("venomous")
+                    .columnType(TableColumnType.BOOLEAN)
+                    .dfid(null)
+                    .isNullAllowed(null)
+                    .autoGenerated(false)
+                    .isPrimaryKey(false)
+                    .enumValues(null)
+                    .creator(USER_1)
+                    .build(),
+            TableColumn.builder()
+                    .ordinalPosition(12)
+                    .cdbid(VIEW_4_DATABASE_ID)
+                    .tid(VIEW_4_TABLE_ID)
+                    .name("fins")
+                    .internalName("fins")
+                    .columnType(TableColumnType.BOOLEAN)
+                    .dfid(null)
+                    .isNullAllowed(null)
+                    .autoGenerated(false)
+                    .isPrimaryKey(false)
+                    .enumValues(null)
+                    .creator(USER_1)
+                    .build(),
+            TableColumn.builder()
+                    .ordinalPosition(13)
+                    .cdbid(VIEW_4_DATABASE_ID)
+                    .tid(VIEW_4_TABLE_ID)
+                    .name("legs")
+                    .internalName("legs")
+                    .columnType(TableColumnType.NUMBER)
+                    .dfid(null)
+                    .isNullAllowed(null)
+                    .autoGenerated(false)
+                    .isPrimaryKey(false)
+                    .enumValues(null)
+                    .creator(USER_1)
+                    .build(),
+            TableColumn.builder()
+                    .ordinalPosition(14)
+                    .cdbid(VIEW_4_DATABASE_ID)
+                    .tid(VIEW_4_TABLE_ID)
+                    .name("tail")
+                    .internalName("tail")
+                    .columnType(TableColumnType.BOOLEAN)
+                    .dfid(null)
+                    .isNullAllowed(null)
+                    .autoGenerated(false)
+                    .isPrimaryKey(false)
+                    .enumValues(null)
+                    .creator(USER_1)
+                    .build(),
+            TableColumn.builder()
+                    .ordinalPosition(15)
+                    .cdbid(VIEW_4_DATABASE_ID)
+                    .tid(VIEW_4_TABLE_ID)
+                    .name("domestic")
+                    .internalName("domestic")
+                    .columnType(TableColumnType.BOOLEAN)
+                    .dfid(null)
+                    .isNullAllowed(null)
+                    .autoGenerated(false)
+                    .isPrimaryKey(false)
+                    .enumValues(null)
+                    .creator(USER_1)
+                    .build(),
+            TableColumn.builder()
+                    .ordinalPosition(16)
+                    .cdbid(VIEW_4_DATABASE_ID)
+                    .tid(VIEW_4_TABLE_ID)
+                    .name("catsize")
+                    .internalName("catsize")
+                    .columnType(TableColumnType.BOOLEAN)
+                    .dfid(null)
+                    .isNullAllowed(null)
+                    .autoGenerated(false)
+                    .isPrimaryKey(false)
+                    .enumValues(null)
+                    .creator(USER_1)
+                    .build(),
+            TableColumn.builder()
+                    .ordinalPosition(17)
+                    .cdbid(VIEW_4_DATABASE_ID)
+                    .tid(VIEW_4_TABLE_ID)
+                    .name("class_type")
+                    .internalName("class_type")
+                    .columnType(TableColumnType.NUMBER)
+                    .dfid(null)
+                    .isNullAllowed(null)
+                    .autoGenerated(false)
+                    .isPrimaryKey(false)
+                    .enumValues(null)
+                    .creator(USER_1)
+                    .build());
 
     public final static View VIEW_4 = View.builder()
             .id(VIEW_4_ID)
@@ -4081,6 +4561,7 @@ public abstract class BaseTest {
             .query(VIEW_4_QUERY)
             .createdBy(USER_1_ID)
             .creator(USER_1)
+            .columns(VIEW_4_COLUMNS)
             .build();
 
     public final static Long VIEW_5_ID = 5L;

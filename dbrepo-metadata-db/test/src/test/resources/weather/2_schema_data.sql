@@ -48,9 +48,9 @@ VALUES ('2022-12-24 17:00:00', 10.0),
 
 CREATE VIEW junit2 AS
 (
-SELECT `location`, `lat`, `lng`
-FROM `weather_location`
-WHERE `location` = 'Albury');
+select `date`, `location`, `mintemp`, `rainfall`
+from `weather_aus`
+where `location` = 'Albury');
 
 CREATE VIEW `hs_weather_aus` AS
 SELECT *
