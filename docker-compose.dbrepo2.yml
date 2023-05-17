@@ -97,6 +97,7 @@ services:
       core:
     ports:
       - "8443:8443"
+      - "8080:8080"
     env_file:
       - .env
     volumes:
@@ -313,8 +314,14 @@ services:
     networks:
       core:
       public:
+    ports:
+      - "80:80"
+      - "443:443"
     volumes:
-      - ./dbrepo.conf:/etc/nginx/conf.d/default.conf
+      - /etc/letsencrypt/live/dbrepo2.ec.tuwien.ac.at/fullchain.pem:/etc/nginx/fullchain.pem:ro
+      - /etc/letsencrypt/live/dbrepo2.ec.tuwien.ac.at/privkey.pem:/etc/nginx/privkey.pem:ro
+      - /home/demo/dbrepo-tuw/proxy/dbrepo.conf:/etc/nginx/conf.d/default.conf
+      - /home/demo/dbrepo-tuw/proxy/ssl_passwords.txt:/etc/nginx/ssl_passwords.txt
     depends_on:
       dbrepo-analyse-service:
         condition: service_healthy
