@@ -627,6 +627,14 @@ public interface QueryMapper {
             log.error("Timestamp is null");
             throw new IllegalArgumentException("Please provide a timestamp before");
         }
+        if (page == null) {
+            log.warn("page is null, default to 0");
+            page = 0L;
+        }
+        if (size == null) {
+            log.warn("size is null, default to 100");
+            size = 100L;
+        }
         query = query.toLowerCase(Locale.ROOT)
                 .trim();
         if (query.matches(";$")) {
@@ -760,10 +768,11 @@ public interface QueryMapper {
             return null;
         }
         switch (column.getColumnType()) {
-            case BLOB:
+            case BLOB -> {
                 log.trace("mapping {} to blob", data);
                 return new MariaDbBlob((byte[]) data);
-            case DATE:
+            }
+            case DATE -> {
                 if (column.getDateFormat() == null) {
                     log.error("Missing date format for column {} of table {}", column.getId(),
                             column.getTable().getId());
@@ -777,7 +786,8 @@ public interface QueryMapper {
                 final LocalDate date = LocalDate.parse(String.valueOf(data), formatter);
                 return date.atStartOfDay(ZoneId.of("UTC"))
                         .toInstant();
-            case TIMESTAMP:
+            }
+            case TIMESTAMP -> {
                 if (column.getDateFormat() == null) {
                     log.error("Missing date format for column {} of table {}", column.getId(),
                             column.getTable().getId());
@@ -786,23 +796,27 @@ public interface QueryMapper {
                 log.trace("mapping {} to timestamp with format '{}'", data, column.getDateFormat());
                 return Timestamp.valueOf(data.toString())
                         .toInstant();
-            case ENUM:
-            case TEXT:
-            case STRING:
+            }
+            case ENUM, TEXT, STRING -> {
                 log.trace("mapping {} to character array", data);
                 return String.valueOf(data);
-            case NUMBER:
+            }
+            case NUMBER -> {
                 log.trace("mapping {} to non-decimal number", data);
                 return new BigInteger(String.valueOf(data));
-            case DECIMAL:
+            }
+            case DECIMAL -> {
                 log.trace("mapping {} to decimal number", data);
                 return Double.valueOf(String.valueOf(data));
-            case BOOLEAN:
+            }
+            case BOOLEAN -> {
                 log.trace("mapping {} to boolean", data);
                 return Boolean.valueOf(String.valueOf(data));
-            default:
+            }
+            default -> {
                 log.warn("column type {} is not known", column.getColumnType());
                 throw new IllegalArgumentException("Column type not known");
+            }
         }
     }
 

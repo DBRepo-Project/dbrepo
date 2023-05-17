@@ -313,9 +313,6 @@ services:
     networks:
       core:
       public:
-    ports:
-      - "80:80"
-      - "443:443"
     volumes:
       - ./dbrepo.conf:/etc/nginx/conf.d/default.conf
     depends_on:
