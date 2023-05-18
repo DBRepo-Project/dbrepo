@@ -110,11 +110,10 @@ export default {
           primary: colors.blue.darken2,
           accent: colors.amber.darken3,
           secondary: colors.blueGrey.base,
-          info: colors.amber.lighten1,
+          info: colors.blue.lighten2,
           code: colors.grey.lighten4,
           warning: colors.orange.lighten2,
           error: colors.red.base /* is used by forms */,
-          banner: colors.red.lighten2,
           success: colors.teal.base
         },
         dark: {

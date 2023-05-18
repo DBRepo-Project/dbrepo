@@ -83,10 +83,6 @@
               </v-list-item-title>
               <v-list-item-content v-if="canWriteQueues" class="amqp-consumer">
                 <span v-text="`${consumersUp}/${consumersTotal}`" />
-                <v-badge
-                  class="ml-1"
-                  :color="consumersState.color"
-                  :content="consumersState.text" />
               </v-list-item-content>
             </v-list-item-content>
           </v-list-item>
@@ -153,15 +149,6 @@ export default {
     },
     access () {
       return this.$store.state.access
-    },
-    consumersState () {
-      if (this.consumersTotal === 0 || this.consumersTotal - this.consumersUp > 0 || this.loadingConsumers) {
-        return { color: 'warning', text: 'pending' }
-      }
-      if (this.consumersTotal === 0) {
-        return { color: 'error', text: 'down' }
-      }
-      return { color: 'success', text: 'up' }
     },
     consumersTotal () {
       return this.consumers.length

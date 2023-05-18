@@ -23,8 +23,14 @@
       </v-toolbar-title>
     </v-toolbar>
     <v-card tile>
-      <v-progress-linear v-if="loadingData > 0 || error" :value="loadProgress" :color="error ? 'error' : 'primary'" />
+      <v-progress-linear v-if="loadingData > 0 || error" :indeterminate="!error" :color="loadingColor" />
+      <v-card v-if="error" flat tile>
+        <v-card-text>
+          Failed to load table data: database is not reachable
+        </v-card-text>
+      </v-card>
       <v-data-table
+        v-if="!error"
         :headers="headers"
         :items="rows"
         :options.sync="options"
@@ -53,7 +59,6 @@ export default {
     return {
       loading: true,
       loadingData: 0,
-      loadProgress: 0,
       editTupleDialog: false,
       total: -1,
       footerProps: {
@@ -67,7 +72,8 @@ export default {
       version: null,
       lastReload: new Date(),
       tab: null,
-      error: false, // XXX: `error` is never changed
+      edit: false,
+      error: false,
       options: {
         page: 1,
         itemsPerPage: 10
@@ -85,7 +91,7 @@ export default {
   },
   computed: {
     loadingColor () {
-      return this.error ? 'red lighten-2' : 'primary'
+      return this.error ? 'error' : 'primary'
     },
     token () {
       return this.$store.state.token
@@ -168,7 +174,6 @@ export default {
   },
   mounted () {
     this.reload()
-    this.simulateProgress()
     this.loadProperties()
   },
   methods: {
@@ -277,6 +282,9 @@ export default {
             return row
           })
         })
+        .catch(() => {
+          this.error = true
+        })
         .finally(() => {
           this.loadingData--
         })
@@ -290,20 +298,6 @@ export default {
         .finally(() => {
           this.loadingData--
         })
-    },
-    simulateProgress () {
-      if (this.loadProgress !== 0) {
-        return
-      }
-      const timeout = 30 * 1000 /* ms */
-      const ticks = 100 /* ms */
-      let i = 0
-      setInterval(() => {
-        if (i++ >= timeout && !this.error) {
-          return
-        }
-        this.loadProgress = ((i * 100) / timeout) * 100
-      }, ticks)
     }
   }
 }

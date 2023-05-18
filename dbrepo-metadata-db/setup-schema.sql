@@ -332,6 +332,18 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_view`
     FOREIGN KEY (vdbid) REFERENCES mdb_databases (id)
 ) WITH SYSTEM VERSIONING;
 
+CREATE TABLE IF NOT EXISTS `fda`.`mdb_banner_messages`
+(
+    id            bigint                            NOT NULL AUTO_INCREMENT,
+    type          ENUM ('ERROR', 'WARNING', 'INFO') NOT NULL default 'INFO',
+    message       TEXT                              NOT NULL,
+    link          TEXT                              NULL,
+    link_text     VARCHAR(255)                      NULL,
+    display_start timestamp                         NULL,
+    display_end   timestamp                         NULL,
+    PRIMARY KEY (id)
+) WITH SYSTEM VERSIONING;
+
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_view_columns`
 (
     id       BIGINT  NOT NULL AUTO_INCREMENT,

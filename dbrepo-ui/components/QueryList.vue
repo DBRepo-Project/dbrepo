@@ -1,9 +1,14 @@
 <template>
   <div>
-    <v-progress-linear v-if="loadingIdentifiers || loadingQueries || error" :color="loadingColor" :value="loadProgress" />
-    <v-card v-if="!(loadingIdentifiers || loadingQueries) && queries && queries.length === 0" flat>
+    <v-progress-linear v-if="loadingIdentifiers || loadingQueries || error" :color="loadingColor" :indeterminate="!error" />
+    <v-card v-if="!error && !(loadingIdentifiers || loadingQueries) && queries && queries.length === 0" flat tile>
       <v-card-text>
         (no subsets)
+      </v-card-text>
+    </v-card>
+    <v-card v-if="error" flat tile>
+      <v-card-text>
+        Failed to load queries: database is not reachable
       </v-card-text>
     </v-card>
     <v-tabs-items>
@@ -77,7 +82,6 @@ export default {
     return {
       loadingQueries: false,
       loadingIdentifiers: false,
-      loadProgress: 0,
       error: false,
       queries: [],
       identifiers: []
@@ -129,7 +133,6 @@ export default {
   mounted () {
     this.loadQueries()
     this.loadIdentifiers()
-    this.simulateProgress()
   },
   methods: {
     loadIdentifiers () {
@@ -147,6 +150,9 @@ export default {
       QueryService.findAll(this.$route.params.container_id, this.$route.params.database_id, true)
         .then((queries) => {
           this.queries = queries
+        })
+        .catch(() => {
+          this.error = true
         })
         .finally(() => {
           this.loadingQueries = false
@@ -181,20 +187,6 @@ export default {
         return 'primary--text'
       }
       return null
-    },
-    simulateProgress () {
-      if (this.loadProgress !== 0) {
-        return
-      }
-      const timeout = 30 * 1000 /* ms */
-      const ticks = 100 /* ms */
-      let i = 0
-      setInterval(() => {
-        if (i++ >= timeout && !this.error) {
-          return
-        }
-        this.loadProgress = ((i * 100) / timeout) * 100
-      }, ticks)
     }
   }
 }

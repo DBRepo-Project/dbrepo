@@ -39,6 +39,19 @@
           </v-list-item-content>
         </v-list-item>
       </v-list>
+      <div id="messages">
+        <v-alert
+          v-for="(message, idx) in messages"
+          :key="idx"
+          class="banner"
+          border="left"
+          tile
+          :type="message.type">
+          {{ message.message }}
+          <span v-if="message.link">&dash;</span>
+          <a v-if="message.link" :href="message.link">{{ message.link_text ? message.link_text : message.link }}</a>
+        </v-alert>
+      </div>
     </v-navigation-drawer>
     <v-form ref="form" @submit.prevent="submit">
       <v-app-bar fixed app>
@@ -70,8 +83,8 @@
             {{ $t('layout.signup', { name: 'vue-i18n' }) }}
           </v-btn>
         </div>
-        <div>
-          <v-btn v-if="user" to="/user" plain>
+        <div v-if="user">
+          <v-btn to="/user" plain>
             {{ user.username }}
           </v-btn>
           <v-menu bottom offset-y left>
@@ -105,19 +118,6 @@
         <nuxt />
       </v-container>
     </v-main>
-    <v-footer
-      v-if="sandbox"
-      padless>
-      <v-card
-        flat
-        tile
-        width="100%"
-        class="banner text-center">
-        <v-card-text class="black--text">
-          This is a <strong>TEST</strong> environment, do not use production/confidential data! — <a href="//github.com/fair-data-austria/dbrepo/issues/new" class="black--text">Report a bug</a>
-        </v-card-text>
-      </v-card>
-    </v-footer>
   </v-app>
 </template>
 
@@ -159,6 +159,9 @@ export default {
     },
     locale () {
       return this.$store.state.locale
+    },
+    messages () {
+      return this.$store.state.messages
     },
     table () {
       return this.$store.state.table
@@ -215,9 +218,7 @@ export default {
     }
   },
   mounted () {
-    if (this.refreshToken) {
-      AuthenticationService.authenticateToken(this.refreshToken)
-    }
+    this.$store.dispatch('reloadMessages')
     if (this.locale) {
       this.$i18n.locale = this.locale
     }
@@ -302,6 +303,16 @@ export default {
 }
 </script>
 <style>
+#messages {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+.banner {
+  width: 100%;
+  margin: 8px 0 0 0;
+}
 .search-result-title,
 .search-result-subtitle {
   overflow: hidden;

@@ -40,7 +40,6 @@
                   </v-btn>
                 </v-col>
               </v-row>
-              <pre>{{ $refs.form3 }}</pre>
             </v-form>
           </v-card-text>
         </v-card>

@@ -108,12 +108,18 @@ export default {
       return UserUtils.hasWriteAccess(this.access) && this.roles.includes('insert-table-data')
     },
     canEditTuple () {
+      if (this.selection === null || this.selection.length !== 1) {
+        return false
+      }
       if (!this.roles || !this.isDataTab) {
         return false
       }
       return UserUtils.hasWriteAccess(this.access) && this.roles.includes('insert-table-data')
     },
     canDeleteTuple () {
+      if (this.selection === null || this.selection.length < 1) {
+        return false
+      }
       if (!this.roles || !this.isDataTab) {
         return false
       }
@@ -199,7 +205,7 @@ export default {
           })
         TableService.deleteTuple(this.$route.params.container_id, this.$route.params.database_id, this.$route.params.table_id, { keys: constraints })
           .then(() => {
-            this.$toast.success(`Deleted ${this.selection.length} rows(s)`)
+            this.$toast.success(`Deleted ${this.selection.length} row${this.selection.length !== 1 ? 's' : ''}`)
             this.$emit('modified', { success: true, action: 'delete' })
           })
       }

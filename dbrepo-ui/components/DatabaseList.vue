@@ -1,13 +1,16 @@
 <template>
   <div>
     <v-progress-linear v-if="loadingContainers || loadingDatabases" :indeterminate="!error" />
+    <v-card v-if="!$vuetify.theme.dark && containers.list > 0" flat tile>
+      <v-divider class="mx-4" />
+    </v-card>
     <v-card
       v-for="(container, idx) in containers"
       :key="idx"
       :to="link(container)"
       flat
       tile>
-      <v-divider v-if="!$vuetify.theme.dark" class="mx-4" />
+      <v-divider v-if="idx !== 0" class="mx-4" />
       <v-card-title v-if="!hasDatabase(container)" v-text="container.name" />
       <v-card-title v-if="hasDatabase(container)">
         <a :href="`/container/${container.id}/database/${container.database.id}`">{{ container.name }}</a>

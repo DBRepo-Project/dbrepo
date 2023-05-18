@@ -5,12 +5,13 @@ MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
 # Enable health and metrics support
 ENV KC_HEALTH_ENABLED=true
 ENV KC_METRICS_ENABLED=true
-ENV KC_FEATURES=update-email
 
 # Configure a database vendor
 ENV KC_DB=mariadb
 
 WORKDIR /opt/keycloak
+
+COPY ./server.keystore ./conf/server.keystore
 
 RUN /opt/keycloak/bin/kc.sh build
 

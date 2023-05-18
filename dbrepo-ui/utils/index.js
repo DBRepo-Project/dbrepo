@@ -99,6 +99,25 @@ function isOrcid (orcid) {
   return orcid.charAt(orcid.length - 1) === checksum
 }
 
+function isActiveMessage (message) {
+  if (!message) {
+    return false
+  }
+  if (message.display_start === null || message.display_end === null) {
+    return true
+  }
+  if (message.display_start === null || new Date(message.display_end) >= new Date()) {
+    return true
+  }
+  if (new Date(message.display_start) <= new Date() || new Date(message.display_end) >= new Date()) {
+    return true
+  }
+  if (new Date(message.display_start) <= new Date() || message.display_end === null) {
+    return true
+  }
+  return false
+}
+
 module.exports = {
   notEmpty,
   formatTimestamp,
@@ -109,5 +128,6 @@ module.exports = {
   formatYearUTC,
   formatMonthUTC,
   formatDayUTC,
-  isOrcid
+  isOrcid,
+  isActiveMessage
 }
