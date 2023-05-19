@@ -319,7 +319,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
         containerRepository.save(CONTAINER_1_SIMPLE);
 
         /* test */
-        final ContainerDto response = containerService.inspect(CONTAINER_1_HASH);
+        final ContainerDto response = containerService.inspect(CONTAINER_1_ID);
         assertEquals(CONTAINER_1_ID, response.getId());
         assertEquals(CONTAINER_1_NAME, response.getName());
         assertEquals(CONTAINER_1_INTERNALNAME, response.getInternalName());
@@ -331,7 +331,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
 
         /* test */
         assertThrows(ContainerNotFoundException.class, () -> {
-            containerService.inspect(CONTAINER_2_HASH);
+            containerService.inspect(CONTAINER_2_ID);
         });
     }
 
@@ -344,7 +344,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
 
         /* test */
         assertThrows(ContainerNotRunningException.class, () -> {
-            containerService.inspect(CONTAINER_1_HASH);
+            containerService.inspect(CONTAINER_1_ID);
         });
     }
 }

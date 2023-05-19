@@ -4,6 +4,7 @@ import at.tuwien.api.amqp.CreateVirtualHostDto;
 import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.container.ContainerDto;
+import at.tuwien.api.container.ContainerStateDto;
 import at.tuwien.api.container.image.*;
 import at.tuwien.api.database.DatabaseCreateDto;
 import at.tuwien.api.database.DatabaseDto;
@@ -885,6 +886,8 @@ public abstract class BaseTest {
     public final static HealthCheck CONTAINER_1_HEALTHCHECK = new HealthCheck()
             .withTest(List.of("CMD", "mysqladmin", "ping", "--host=127.0.0.1", "--password=mariadb"));
     public final static String[] CONTAINER_1_ENV = new String[]{"MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_DATABASE=weather"};
+    public final static ContainerStateDto CONTAINER_1_STATE = ContainerStateDto.RUNNING;
+    public final static Boolean CONTAINER_1_RUNNING = true;
 
     public final static Container CONTAINER_1 = Container.builder()
             .id(CONTAINER_1_ID)
@@ -925,6 +928,8 @@ public abstract class BaseTest {
             .created(CONTAINER_1_CREATED)
             .ipAddress(CONTAINER_1_IP)
             .owner(USER_1_BRIEF_DTO)
+            .state(CONTAINER_1_STATE)
+            .running(CONTAINER_1_RUNNING)
             .build();
 
     public final static Long CONTAINER_2_ID = 2L;

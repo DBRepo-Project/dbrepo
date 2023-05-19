@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+
 import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
@@ -152,14 +153,14 @@ public class ContainerEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<ContainerDto> findById(@NotNull @PathVariable("id") Long containerId) throws DockerClientException,
-            ContainerNotFoundException {
+    public ResponseEntity<ContainerDto> findById(@NotNull @PathVariable("id") Long containerId)
+            throws DockerClientException, ContainerNotFoundException {
         log.debug("endpoint find container, id={}", containerId);
         final Container container = containerService.find(containerId);
         final ContainerDto dto = containerMapper.containerToContainerDto(container);
         final ContainerDto inspect;
         try {
-            inspect = containerService.inspect(container.getHash());
+            inspect = containerService.inspect(containerId);
             dto.setIpAddress(inspect.getIpAddress());
             dto.setRunning(inspect.getRunning());
             dto.setState(inspect.getState());

@@ -48,12 +48,12 @@ public interface ContainerService {
     Container find(Long id) throws ContainerNotFoundException;
 
     /**
-     * @param hash
+     * @param id
      * @return
      * @throws DockerClientException
      * @throws ContainerNotRunningException
      */
-    ContainerDto inspect(String hash) throws DockerClientException, ContainerNotRunningException;
+    ContainerDto inspect(Long id) throws DockerClientException, ContainerNotRunningException, ContainerNotFoundException;
 
     /**
      * Retrieve a list of all containers from the metadata database

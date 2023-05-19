@@ -186,10 +186,11 @@ public class ContainerServiceImpl implements ContainerService {
 
     @Override
     @Transactional
-    public ContainerDto inspect(String hash) throws DockerClientException, ContainerNotRunningException {
+    public ContainerDto inspect(Long id) throws DockerClientException, ContainerNotRunningException, ContainerNotFoundException {
+        final Container container = find(id);
         final InspectContainerResponse response;
         try {
-            response = dockerClient.inspectContainerCmd(hash)
+            response = dockerClient.inspectContainerCmd(container.getHash())
                     .withSize(true)
                     .exec();
         } catch (NotFoundException e) {
@@ -207,8 +208,8 @@ public class ContainerServiceImpl implements ContainerService {
             log.error("Failed to inspect container state: container is not running");
             throw new ContainerNotRunningException("Failed to inspect container state");
         }
-        final ContainerDto container = ContainerDto.builder()
-                .hash(hash)
+        final ContainerDto entity = ContainerDto.builder()
+                .hash(container.getHash())
                 .running(response.getState().getRunning())
                 .state(containerMapper.containerStateToContainerStateDto(response.getState()))
                 .build();
@@ -219,8 +220,8 @@ public class ContainerServiceImpl implements ContainerService {
                     log.trace("key {} network {}", key, network);
                     container.setIpAddress(network.getIpAddress());
                 });
-        log.info("Inspected container with hash {}", hash);
-        return container;
+        log.info("Inspected container with hash {}", container.getHash());
+        return entity;
     }
 
     @Override

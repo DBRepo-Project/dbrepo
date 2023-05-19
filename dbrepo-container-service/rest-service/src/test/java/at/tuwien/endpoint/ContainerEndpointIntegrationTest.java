@@ -107,7 +107,7 @@ public class ContainerEndpointIntegrationTest extends BaseUnitTest {
     @Test
     @WithMockUser(username = USER_2_USERNAME, authorities = {"delete-container"})
     public void delete_hasRole_succeeds() throws ContainerStillRunningException, ContainerAlreadyRemovedException,
-            ContainerNotFoundException, DockerClientException {
+            ContainerNotFoundException {
 
         /* mock */
         when(userRepository.findByUsername(USER_2_USERNAME))
@@ -214,8 +214,7 @@ public class ContainerEndpointIntegrationTest extends BaseUnitTest {
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"modify-container-state"})
     public void modify_hasRole_succeeds() throws ContainerAlreadyRunningException,
-            ContainerAlreadyStoppedException, ContainerNotFoundException, UserNotFoundException, NotAllowedException,
-            DockerClientException {
+            ContainerAlreadyStoppedException, ContainerNotFoundException, UserNotFoundException, NotAllowedException {
 
         /* mock */
         when(userRepository.findByUsername(USER_1_USERNAME))
@@ -242,7 +241,7 @@ public class ContainerEndpointIntegrationTest extends BaseUnitTest {
     @Test
     @WithMockUser(username = USER_2_USERNAME, authorities = {"modify-foreign-container-state"})
     public void modify_hasRoleForeign_succeeds() throws UserNotFoundException, ContainerAlreadyRunningException,
-            NotAllowedException, ContainerAlreadyStoppedException, ContainerNotFoundException, DockerClientException {
+            NotAllowedException, ContainerAlreadyStoppedException, ContainerNotFoundException {
 
         /* mock */
         when(userRepository.findByUsername(USER_2_USERNAME))
@@ -276,7 +275,7 @@ public class ContainerEndpointIntegrationTest extends BaseUnitTest {
         /* mock */
         when(containerService.find(containerId))
                 .thenReturn(container);
-        when(containerService.inspect(containerHash))
+        when(containerService.inspect(containerId))
                 .thenReturn(containerDto);
 
         /* test */
