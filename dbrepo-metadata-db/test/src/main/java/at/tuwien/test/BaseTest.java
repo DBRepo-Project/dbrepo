@@ -3,8 +3,8 @@ package at.tuwien.test;
 import at.tuwien.api.amqp.CreateVirtualHostDto;
 import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
 import at.tuwien.api.auth.SignupRequestDto;
-import at.tuwien.api.container.image.ImageEnvItemDto;
-import at.tuwien.api.container.image.ImageEnvItemTypeDto;
+import at.tuwien.api.container.ContainerDto;
+import at.tuwien.api.container.image.*;
 import at.tuwien.api.database.DatabaseCreateDto;
 import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.LicenseDto;
@@ -302,6 +302,14 @@ public abstract class BaseTest {
             .lastname(USER_1_LASTNAME)
             .emailVerified(USER_1_VERIFIED)
             .attributes(USER_1_ATTRIBUTES_DTO)
+            .build();
+
+    public final static UserBriefDto USER_1_BRIEF_DTO = UserBriefDto.builder()
+            .id(USER_1_ID)
+            .username(USER_1_USERNAME)
+            .firstname(USER_1_FIRSTNAME)
+            .lastname(USER_1_LASTNAME)
+            .emailVerified(USER_1_VERIFIED)
             .build();
 
     public final static UserDetails USER_1_DETAILS = UserDetailsDto.builder()
@@ -701,6 +709,14 @@ public abstract class BaseTest {
             .hasTime(IMAGE_DATE_1_HAS_TIME)
             .build();
 
+    public final static ImageDateDto IMAGE_DATE_1_DTO = ImageDateDto.builder()
+            .id(IMAGE_DATE_1_ID)
+            .unixFormat(IMAGE_DATE_1_UNIX_FORMAT)
+            .databaseFormat(IMAGE_DATE_1_DATABASE_FORMAT)
+            .example(IMAGE_DATE_1_EXAMPLE)
+            .hasTime(IMAGE_DATE_1_HAS_TIME)
+            .build();
+
     public final static Long IMAGE_DATE_2_ID = 2L;
     public final static Long IMAGE_DATE_2_IMAGE_ID = IMAGE_1_ID;
     public final static String IMAGE_DATE_2_UNIX_FORMAT = "dd.MM.yy";
@@ -717,6 +733,14 @@ public abstract class BaseTest {
             .hasTime(IMAGE_DATE_2_HAS_TIME)
             .build();
 
+    public final static ImageDateDto IMAGE_DATE_2_DTO = ImageDateDto.builder()
+            .id(IMAGE_DATE_2_ID)
+            .unixFormat(IMAGE_DATE_2_UNIX_FORMAT)
+            .databaseFormat(IMAGE_DATE_2_DATABASE_FORMAT)
+            .example(IMAGE_DATE_2_EXAMPLE)
+            .hasTime(IMAGE_DATE_2_HAS_TIME)
+            .build();
+
     public final static Long IMAGE_DATE_3_ID = 3L;
     public final static Long IMAGE_DATE_3_IMAGE_ID = IMAGE_1_ID;
     public final static String IMAGE_DATE_3_UNIX_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS";
@@ -727,6 +751,14 @@ public abstract class BaseTest {
     public final static ContainerImageDate IMAGE_DATE_3 = ContainerImageDate.builder()
             .id(IMAGE_DATE_3_ID)
             .iid(IMAGE_DATE_3_IMAGE_ID)
+            .unixFormat(IMAGE_DATE_3_UNIX_FORMAT)
+            .databaseFormat(IMAGE_DATE_3_DATABASE_FORMAT)
+            .example(IMAGE_DATE_3_EXAMPLE)
+            .hasTime(IMAGE_DATE_3_HAS_TIME)
+            .build();
+
+    public final static ImageDateDto IMAGE_DATE_3_DTO = ImageDateDto.builder()
+            .id(IMAGE_DATE_3_ID)
             .unixFormat(IMAGE_DATE_3_UNIX_FORMAT)
             .databaseFormat(IMAGE_DATE_3_DATABASE_FORMAT)
             .example(IMAGE_DATE_3_EXAMPLE)
@@ -761,6 +793,27 @@ public abstract class BaseTest {
             .environment(List.of() /* for jpa */)
             .defaultPort(IMAGE_1_PORT)
             .environment(List.of() /* for jpa */)
+            .build();
+
+    public final static ImageDto IMAGE_1_DTO = ImageDto.builder()
+            .id(IMAGE_1_ID)
+            .repository(IMAGE_1_REPOSITORY)
+            .tag(IMAGE_1_TAG)
+            .hash(IMAGE_1_HASH)
+            .compiled(IMAGE_1_BUILT)
+            .dialect(IMAGE_1_DIALECT)
+            .jdbcMethod(IMAGE_1_JDBC)
+            .driverClass(IMAGE_1_DRIVER)
+            .size(BigInteger.valueOf(IMAGE_1_SIZE))
+            .environment(IMAGE_1_ENV_DTO)
+            .defaultPort(IMAGE_1_PORT)
+            .dateFormats(List.of(IMAGE_DATE_1_DTO, IMAGE_DATE_2_DTO, IMAGE_DATE_3_DTO))
+            .build();
+
+    public final static ImageBriefDto IMAGE_1_BRIEF_DTO = ImageBriefDto.builder()
+            .id(IMAGE_1_ID)
+            .repository(IMAGE_1_REPOSITORY)
+            .tag(IMAGE_1_TAG)
             .build();
 
     public final static Long IMAGE_2_ID = 2L;
@@ -824,6 +877,7 @@ public abstract class BaseTest {
     public final static Long CONTAINER_1_ID = 1L;
     public final static String CONTAINER_1_HASH = "deadbeef";
     public final static ContainerImage CONTAINER_1_IMAGE = IMAGE_1;
+    public final static ImageBriefDto CONTAINER_1_IMAGE_BRIEF_DTO = IMAGE_1_BRIEF_DTO;
     public final static String CONTAINER_1_NAME = "u01";
     public final static String CONTAINER_1_INTERNALNAME = "dbrepo-userdb-u01";
     public final static String CONTAINER_1_IP = "172.30.0.5";
@@ -860,6 +914,17 @@ public abstract class BaseTest {
             .ownedBy(USER_1_ID)
             .creator(null /* for jpa */)
             .owner(null /* for jpa */)
+            .build();
+
+    public final static ContainerDto CONTAINER_1_DTO = ContainerDto.builder()
+            .id(CONTAINER_1_ID)
+            .name(CONTAINER_1_NAME)
+            .internalName(CONTAINER_1_INTERNALNAME)
+            .image(CONTAINER_1_IMAGE_BRIEF_DTO)
+            .hash(CONTAINER_1_HASH)
+            .created(CONTAINER_1_CREATED)
+            .ipAddress(CONTAINER_1_IP)
+            .owner(USER_1_BRIEF_DTO)
             .build();
 
     public final static Long CONTAINER_2_ID = 2L;

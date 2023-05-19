@@ -118,6 +118,13 @@ function isActiveMessage (message) {
   return false
 }
 
+function timestampToTimeZonedTimestamp (str) {
+  if (str === null) {
+    return null
+  }
+  return format(new Date(str), 'yyyy-MM-dd\'T\'HH:mm:ss.SSS\'Z\'')
+}
+
 module.exports = {
   notEmpty,
   formatTimestamp,
@@ -129,5 +136,6 @@ module.exports = {
   formatMonthUTC,
   formatDayUTC,
   isOrcid,
-  isActiveMessage
+  isActiveMessage,
+  timestampToTimeZonedTimestamp
 }

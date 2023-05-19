@@ -1,6 +1,8 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.api.container.ContainerCreateRequestDto;
+import at.tuwien.api.container.ContainerDto;
+import at.tuwien.api.container.ContainerStateDto;
 import at.tuwien.config.DockerDaemonConfig;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.container.image.ContainerImage;
@@ -184,12 +186,10 @@ public class ContainerServiceImpl implements ContainerService {
 
     @Override
     @Transactional
-    public Container inspect(Long id) throws ContainerNotFoundException, DockerClientException,
-            ContainerNotRunningException {
-        final Container container = find(id);
+    public ContainerDto inspect(String hash) throws DockerClientException, ContainerNotRunningException {
         final InspectContainerResponse response;
         try {
-            response = dockerClient.inspectContainerCmd(container.getHash())
+            response = dockerClient.inspectContainerCmd(hash)
                     .withSize(true)
                     .exec();
         } catch (NotFoundException e) {
@@ -207,6 +207,11 @@ public class ContainerServiceImpl implements ContainerService {
             log.error("Failed to inspect container state: container is not running");
             throw new ContainerNotRunningException("Failed to inspect container state");
         }
+        final ContainerDto container = ContainerDto.builder()
+                .hash(hash)
+                .running(response.getState().getRunning())
+                .state(containerMapper.containerStateToContainerStateDto(response.getState()))
+                .build();
         /* now we only support one network */
         response.getNetworkSettings()
                 .getNetworks()
@@ -214,7 +219,7 @@ public class ContainerServiceImpl implements ContainerService {
                     log.trace("key {} network {}", key, network);
                     container.setIpAddress(network.getIpAddress());
                 });
-        log.info("Inspect container with id {}", id);
+        log.info("Inspected container with hash {}", hash);
         return container;
     }
 

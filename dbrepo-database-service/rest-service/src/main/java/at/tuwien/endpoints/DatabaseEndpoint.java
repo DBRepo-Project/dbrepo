@@ -1,5 +1,6 @@
 package at.tuwien.endpoints;
 
+import at.tuwien.api.container.ContainerDto;
 import at.tuwien.api.database.*;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.entities.container.Container;
@@ -257,7 +258,7 @@ public class DatabaseEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseDto.class))}),
             @ApiResponse(responseCode = "404",
-                    description = "Database could not be found",
+                    description = "Database or container could not be found",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -270,7 +271,7 @@ public class DatabaseEndpoint {
     public ResponseEntity<DatabaseDto> findById(@NotNull @PathVariable("id") Long containerId,
                                                 @NotNull @PathVariable Long databaseId,
                                                 Principal principal)
-            throws DatabaseNotFoundException, AccessDeniedException {
+            throws DatabaseNotFoundException, AccessDeniedException, ContainerNotFoundException {
         log.debug("endpoint find database, containerId={}, databaseId={}", containerId, databaseId);
         final Database database = databaseService.findById(containerId, databaseId);
         final DatabaseDto dto = databaseMapper.databaseToDatabaseDto(database);
@@ -281,7 +282,9 @@ public class DatabaseEndpoint {
                     .map(databaseMapper::databaseAccessToDatabaseAccessDto)
                     .collect(Collectors.toList()));
         }
-        log.trace("find database resulted in database {}", database);
+        final ContainerDto containerDto = containerService.inspect(containerId);
+        dto.setContainer(containerDto);
+        log.trace("find database resulted in dto {}", dto);
         return ResponseEntity.ok(dto);
     }
 

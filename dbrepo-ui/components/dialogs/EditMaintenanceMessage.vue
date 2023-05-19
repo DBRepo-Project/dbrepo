@@ -2,7 +2,6 @@
   <div>
     <v-form ref="form" v-model="valid" autocomplete="off" @submit.prevent="submit">
       <v-card>
-        <v-progress-linear v-if="loading" :color="loadingColor" :indeterminate="!error" />
         <v-card-title v-text="title" />
         <v-card-text>
           <v-row dense>
@@ -31,29 +30,15 @@
               <v-text-field
                 v-model="localMessage.display_start"
                 clearable
+                hint="YYYY-MM-dd HH:mm:ss"
                 label="Start timestamp" />
             </v-col>
             <v-col cols="6">
               <v-text-field
                 v-model="localMessage.display_end"
                 clearable
+                hint="YYYY-MM-dd HH:mm:ss"
                 label="End timestamp" />
-            </v-col>
-          </v-row>
-          <v-row dense>
-            <v-col>
-              <v-text-field
-                v-model="localMessage.link"
-                clearable
-                label="Link" />
-            </v-col>
-          </v-row>
-          <v-row dense>
-            <v-col>
-              <v-text-field
-                v-model="localMessage.link_text"
-                clearable
-                label="Link Text" />
             </v-col>
           </v-row>
         </v-card-text>
@@ -89,6 +74,7 @@
 
 <script>
 import MetadataService from '@/api/metadata.service'
+import { timestampToTimeZonedTimestamp, formatTimestampUTC } from '@/utils'
 
 export default {
   props: {
@@ -113,9 +99,7 @@ export default {
         type: null,
         message: null,
         display_start: null,
-        display_end: null,
-        link: null,
-        link_text: null
+        display_end: null
       },
       modify: {
         username: null,
@@ -124,9 +108,6 @@ export default {
     }
   },
   computed: {
-    loadingColor () {
-      return this.error ? 'red lighten-2' : 'primary'
-    },
     database () {
       return this.$store.state.database
     },
@@ -167,9 +148,7 @@ export default {
           type: null,
           message: null,
           display_start: null,
-          display_end: null,
-          link: null,
-          link_text: null
+          display_end: null
         }
       } else {
         this.loadMessage(this.id)
@@ -178,6 +157,8 @@ export default {
     loadMessage (id) {
       MetadataService.findMessage(id)
         .then((message) => {
+          message.display_start = formatTimestampUTC(message.display_start)
+          message.display_end = formatTimestampUTC(message.display_end)
           this.localMessage = message
         })
     },
@@ -190,7 +171,14 @@ export default {
     },
     createMessage () {
       this.loading = true
-      MetadataService.createMessage(this.localMessage)
+      const payload = Object.assign({}, this.localMessage)
+      if (payload.display_start) {
+        payload.display_start = timestampToTimeZonedTimestamp(payload.display_start)
+      }
+      if (payload.display_end) {
+        payload.display_end = timestampToTimeZonedTimestamp(payload.display_end)
+      }
+      MetadataService.createMessage(payload)
         .then(() => {
           this.$emit('close-dialog', { success: true })
           this.$emit('reload-messages', { success: true })
@@ -203,6 +191,12 @@ export default {
       this.loading = true
       const payload = Object.assign({}, this.localMessage)
       delete payload.id
+      if (payload.display_start) {
+        payload.display_start = timestampToTimeZonedTimestamp(payload.display_start)
+      }
+      if (payload.display_end) {
+        payload.display_end = timestampToTimeZonedTimestamp(payload.display_end)
+      }
       MetadataService.updateMessage(this.localMessage.id, payload)
         .then(() => {
           this.$emit('close-dialog', { success: true })

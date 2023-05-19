@@ -46,11 +46,8 @@
           class="banner"
           border="left"
           tile
-          :type="message.type">
-          {{ message.message }}
-          <span v-if="message.link">&dash;</span>
-          <a v-if="message.link" :href="message.link">{{ message.link_text ? message.link_text : message.link }}</a>
-        </v-alert>
+          :type="message.type"
+          v-text="message.messages" />
       </div>
     </v-navigation-drawer>
     <v-form ref="form" @submit.prevent="submit">

@@ -51,7 +51,7 @@ public class ContainerEndpointIntegrationTest extends BaseUnitTest {
             ContainerNotRunningException {
 
         /* test */
-        findById_generic(CONTAINER_1_ID, CONTAINER_1);
+        findById_generic(CONTAINER_1_ID, CONTAINER_1_HASH, CONTAINER_1, CONTAINER_1_DTO);
     }
 
     @Test
@@ -64,7 +64,7 @@ public class ContainerEndpointIntegrationTest extends BaseUnitTest {
                 .thenReturn(Optional.of(USER_1));
 
         /* test */
-        findById_generic(CONTAINER_1_ID, CONTAINER_1);
+        findById_generic(CONTAINER_1_ID, CONTAINER_1_HASH, CONTAINER_1, CONTAINER_1_DTO);
     }
 
     @Test
@@ -77,7 +77,7 @@ public class ContainerEndpointIntegrationTest extends BaseUnitTest {
                 .thenReturn(Optional.of(USER_4));
 
         /* test */
-        findById_generic(CONTAINER_1_ID, CONTAINER_1);
+        findById_generic(CONTAINER_1_ID, CONTAINER_1_HASH, CONTAINER_1, CONTAINER_1_DTO);
     }
 
     @Test
@@ -270,14 +270,14 @@ public class ContainerEndpointIntegrationTest extends BaseUnitTest {
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
 
-    public void findById_generic(Long containerId, Container container) throws DockerClientException,
-            ContainerNotFoundException, ContainerNotRunningException {
+    public void findById_generic(Long containerId, String containerHash, Container container, ContainerDto containerDto)
+            throws DockerClientException, ContainerNotFoundException, ContainerNotRunningException {
 
         /* mock */
         when(containerService.find(containerId))
                 .thenReturn(container);
-        when(containerService.inspect(containerId))
-                .thenReturn(container);
+        when(containerService.inspect(containerHash))
+                .thenReturn(containerDto);
 
         /* test */
         final ResponseEntity<ContainerDto> response = containerEndpoint.findById(containerId);
@@ -288,7 +288,7 @@ public class ContainerEndpointIntegrationTest extends BaseUnitTest {
     }
 
     public void delete_generic(Long containerId, Container container, Principal principal) throws ContainerNotFoundException,
-            ContainerStillRunningException, ContainerAlreadyRemovedException, DockerClientException {
+            ContainerStillRunningException, ContainerAlreadyRemovedException {
 
         /* mock */
         when(containerService.find(containerId))
@@ -340,7 +340,7 @@ public class ContainerEndpointIntegrationTest extends BaseUnitTest {
 
     public void modify_generic(ContainerActionTypeDto data, Long containerId, Container container, Principal principal)
             throws ContainerAlreadyRunningException, ContainerNotFoundException, ContainerAlreadyStoppedException,
-            UserNotFoundException, NotAllowedException, DockerClientException {
+            UserNotFoundException, NotAllowedException {
         final ContainerChangeDto request = ContainerChangeDto.builder()
                 .action(data)
                 .build();

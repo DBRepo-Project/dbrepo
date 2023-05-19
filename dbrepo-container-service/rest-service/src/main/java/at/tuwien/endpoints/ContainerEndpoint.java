@@ -153,11 +153,21 @@ public class ContainerEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<ContainerDto> findById(@NotNull @PathVariable("id") Long containerId) throws DockerClientException,
-            ContainerNotFoundException, ContainerNotRunningException {
+            ContainerNotFoundException {
         log.debug("endpoint find container, id={}", containerId);
-        final Container container = containerService.inspect(containerId);
+        final Container container = containerService.find(containerId);
         final ContainerDto dto = containerMapper.containerToContainerDto(container);
-        dto.setState(ContainerStateDto.RUNNING);
+        final ContainerDto inspect;
+        try {
+            inspect = containerService.inspect(container.getHash());
+            dto.setIpAddress(inspect.getIpAddress());
+            dto.setRunning(inspect.getRunning());
+            dto.setState(inspect.getState());
+        } catch (ContainerNotRunningException e) {
+            /* ignore */
+            dto.setRunning(false);
+            dto.setState(ContainerStateDto.EXITED);
+        }
         log.trace("find container resulted in container {}", dto);
         return ResponseEntity.ok()
                 .body(dto);

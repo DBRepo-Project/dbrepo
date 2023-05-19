@@ -1,8 +1,10 @@
 package at.tuwien.service;
 
 import at.tuwien.api.container.ContainerCreateRequestDto;
+import at.tuwien.api.container.ContainerDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.exception.*;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
 import java.util.List;
@@ -46,13 +48,12 @@ public interface ContainerService {
     Container find(Long id) throws ContainerNotFoundException;
 
     /**
-     * @param id
+     * @param hash
      * @return
-     * @throws ContainerNotFoundException
      * @throws DockerClientException
      * @throws ContainerNotRunningException
      */
-    Container inspect(Long id) throws ContainerNotFoundException, DockerClientException, ContainerNotRunningException;
+    ContainerDto inspect(String hash) throws DockerClientException, ContainerNotRunningException;
 
     /**
      * Retrieve a list of all containers from the metadata database
