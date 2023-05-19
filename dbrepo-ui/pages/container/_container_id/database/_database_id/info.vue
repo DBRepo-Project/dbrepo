@@ -232,13 +232,22 @@
             </v-list>
             <v-card-actions>
               <v-btn
-                v-if="needsStart"
+                v-if="canStartContainer && needsStart"
                 small
                 secondary
                 color="secondary"
                 :loading="loadingStart"
                 @click.stop="startContainer">
-                Start
+                Start Container
+              </v-btn>
+              <v-btn
+                v-if="canStopContainer && !needsStart"
+                small
+                secondary
+                color="error"
+                :loading="loadingStop"
+                @click.stop="stopContainer">
+                Stop Container
               </v-btn>
             </v-card-actions>
           </v-card-text>
@@ -286,6 +295,7 @@ export default {
       loading: false,
       loadingDelete: false,
       loadingStart: false,
+      loadingStop: false,
       editDialog: false,
       deleteDialog: false,
       persistDialog: false,
@@ -381,6 +391,21 @@ export default {
       }
       return this.roles.includes('create-identifier') && this.isOwner
     },
+    canStartContainer () {
+      if (!this.roles) {
+        return false
+      }
+      if (this.roles.includes('modify-foreign-container-state')) {
+        return true
+      }
+      return this.roles.includes('modify-container-state') && this.isOwner
+    },
+    canStopContainer () {
+      if (!this.roles) {
+        return false
+      }
+      return this.roles.includes('modify-foreign-container-state')
+    },
     canEditIdentifier () {
       if (!this.roles || !this.hasIdentifier) {
         return false
@@ -445,12 +470,6 @@ export default {
       return this.database.owner.username === this.user.username
     },
     needsStart () {
-      if (!this.user) {
-        return false
-      }
-      if (this.database.container.owner.username !== this.user.username) {
-        return false
-      }
       return !this.database.container.running
     }
   },
@@ -477,6 +496,18 @@ export default {
           })
           .finally(() => {
             this.loadingStart = false
+          })
+      })
+    },
+    stopContainer () {
+      this.loadingStop = true
+      return new Promise(() => {
+        ContainerService.modify(this.database.container.id, 'stop')
+          .then(() => {
+            this.$store.dispatch('reloadDatabase')
+          })
+          .finally(() => {
+            this.loadingStop = false
           })
       })
     }
