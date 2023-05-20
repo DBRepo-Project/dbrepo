@@ -104,9 +104,9 @@ public class MaintenanceEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = BannerMessageBriefDto.class))}),
     })
-    public ResponseEntity<BannerMessageBriefDto> create(@Valid @RequestBody BannerMessageCreateDto data) {
+    public ResponseEntity<BannerMessageDto> create(@Valid @RequestBody BannerMessageCreateDto data) {
         log.debug("endpoint create maintenance message, data={}", data);
-        final BannerMessageBriefDto dto = bannerMessageMapper.bannerMessageToBannerMessageBriefDto(bannerMessageService.create(data));
+        final BannerMessageDto dto = bannerMessageMapper.bannerMessageToBannerMessageDto(bannerMessageService.create(data));
         log.trace("create maintenance message results in dto {}", dto);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(dto);
@@ -127,11 +127,11 @@ public class MaintenanceEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = BannerMessageNotFoundException.class))}),
     })
-    public ResponseEntity<BannerMessageBriefDto> update(@NotNull @PathVariable("id") Long messageId,
+    public ResponseEntity<BannerMessageDto> update(@NotNull @PathVariable("id") Long messageId,
                                                         @Valid @RequestBody BannerMessageUpdateDto data)
             throws BannerMessageNotFoundException {
         log.debug("endpoint update maintenance message, messageId={}, data={}", messageId, data);
-        final BannerMessageBriefDto dto = bannerMessageMapper.bannerMessageToBannerMessageBriefDto(bannerMessageService.update(messageId, data));
+        final BannerMessageDto dto = bannerMessageMapper.bannerMessageToBannerMessageDto(bannerMessageService.update(messageId, data));
         log.trace("update maintenance message results in dto {}", dto);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(dto);
@@ -150,7 +150,7 @@ public class MaintenanceEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = BannerMessageNotFoundException.class))}),
     })
-    public ResponseEntity<BannerMessageBriefDto> delete(@NotNull @PathVariable("id") Long messageId)
+    public ResponseEntity<?> delete(@NotNull @PathVariable("id") Long messageId)
             throws BannerMessageNotFoundException {
         log.debug("endpoint delete maintenance message, messageId={}", messageId);
         bannerMessageService.delete(messageId);

@@ -21,6 +21,9 @@ import at.tuwien.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
 import at.tuwien.api.database.table.constraints.ConstraintsCreateDto;
 import at.tuwien.api.database.table.constraints.foreignKey.ForeignKeyCreateDto;
 import at.tuwien.api.identifier.*;
+import at.tuwien.api.maintenance.BannerMessageCreateDto;
+import at.tuwien.api.maintenance.BannerMessageTypeDto;
+import at.tuwien.api.maintenance.BannerMessageUpdateDto;
 import at.tuwien.api.user.*;
 import at.tuwien.entities.container.image.ContainerImageDate;
 import at.tuwien.entities.database.*;
@@ -31,6 +34,8 @@ import at.tuwien.entities.database.table.constraints.foreignKey.ForeignKey;
 import at.tuwien.entities.database.table.constraints.foreignKey.ForeignKeyReference;
 import at.tuwien.entities.database.table.constraints.unique.Unique;
 import at.tuwien.entities.identifier.*;
+import at.tuwien.entities.maintenance.BannerMessage;
+import at.tuwien.entities.maintenance.BannerMessageType;
 import at.tuwien.entities.user.Realm;
 import at.tuwien.entities.user.Role;
 import at.tuwien.entities.user.User;
@@ -97,7 +102,7 @@ import static java.time.temporal.ChronoUnit.*;
  * <br />
  * User 2 (authorities=default developer)
  * <br />
- * User 3 (authorities=empty)
+ * User 3 (authorities=default data-steward)
  */
 public abstract class BaseTest {
 
@@ -716,6 +721,16 @@ public abstract class BaseTest {
             .databaseFormat(IMAGE_DATE_1_DATABASE_FORMAT)
             .example(IMAGE_DATE_1_EXAMPLE)
             .hasTime(IMAGE_DATE_1_HAS_TIME)
+            .build();
+
+    public final static ImageCreateDto IMAGE_1_CREATE_DTO = ImageCreateDto.builder()
+            .repository(IMAGE_1_REPOSITORY)
+            .tag(IMAGE_1_TAG)
+            .dialect(IMAGE_1_DIALECT)
+            .jdbcMethod(IMAGE_1_JDBC)
+            .driverClass(IMAGE_1_DRIVER)
+            .defaultPort(IMAGE_1_PORT)
+            .environment(IMAGE_1_ENV_DTO)
             .build();
 
     public final static Long IMAGE_DATE_2_ID = 2L;
@@ -5508,6 +5523,57 @@ public abstract class BaseTest {
             .read(".*")
             .write(".*")
             .configure(".*")
+            .build();
+
+    public final static Long BANNER_MESSAGE_1_ID = 1L;
+    public final static String BANNER_MESSAGE_1_MESSAGE = "Next maintenance in 7 days!";
+    public final static BannerMessageType BANNER_MESSAGE_1_TYPE = BannerMessageType.INFO;
+    public final static BannerMessageTypeDto BANNER_MESSAGE_1_TYPE_DTO = BannerMessageTypeDto.INFO;
+    public final static Instant BANNER_MESSAGE_1_START = Instant.ofEpochSecond(1684577786);
+    public final static Instant BANNER_MESSAGE_1_END = null;
+
+    public final static BannerMessage BANNER_MESSAGE_1 = BannerMessage.builder()
+            .id(BANNER_MESSAGE_1_ID)
+            .message(BANNER_MESSAGE_1_MESSAGE)
+            .type(BANNER_MESSAGE_1_TYPE)
+            .displayStart(BANNER_MESSAGE_1_START)
+            .displayEnd(BANNER_MESSAGE_1_END)
+            .build();
+    
+    public final static BannerMessageCreateDto BANNER_MESSAGE_1_CREATE_DTO = BannerMessageCreateDto.builder()
+            .message(BANNER_MESSAGE_1_MESSAGE)
+            .type(BANNER_MESSAGE_1_TYPE_DTO)
+            .displayStart(BANNER_MESSAGE_1_START)
+            .displayEnd(BANNER_MESSAGE_1_END)
+            .build();
+
+    public final static BannerMessageUpdateDto BANNER_MESSAGE_1_UPDATE_DTO = BannerMessageUpdateDto.builder()
+            .message(BANNER_MESSAGE_1_MESSAGE)
+            .type(BannerMessageTypeDto.WARNING)
+            .displayStart(BANNER_MESSAGE_1_START)
+            .displayEnd(BANNER_MESSAGE_1_END)
+            .build();
+
+    public final static Long BANNER_MESSAGE_2_ID = 2L;
+    public final static String BANNER_MESSAGE_2_MESSAGE = "No operation on Christmas 2022!";
+    public final static BannerMessageType BANNER_MESSAGE_2_TYPE = BannerMessageType.ERROR;
+    public final static BannerMessageTypeDto BANNER_MESSAGE_2_TYPE_DTO = BannerMessageTypeDto.ERROR;
+    public final static Instant BANNER_MESSAGE_2_START = Instant.ofEpochSecond(1671836400);
+    public final static Instant BANNER_MESSAGE_2_END = Instant.ofEpochSecond(1672009200);
+
+    public final static BannerMessage BANNER_MESSAGE_2 = BannerMessage.builder()
+            .id(BANNER_MESSAGE_2_ID)
+            .message(BANNER_MESSAGE_2_MESSAGE)
+            .type(BANNER_MESSAGE_2_TYPE)
+            .displayStart(BANNER_MESSAGE_2_START)
+            .displayEnd(BANNER_MESSAGE_2_END)
+            .build();
+
+    public final static BannerMessageCreateDto BANNER_MESSAGE_2_CREATE_DTO = BannerMessageCreateDto.builder()
+            .message(BANNER_MESSAGE_2_MESSAGE)
+            .type(BANNER_MESSAGE_2_TYPE_DTO)
+            .displayStart(BANNER_MESSAGE_2_START)
+            .displayEnd(BANNER_MESSAGE_2_END)
             .build();
 
 }

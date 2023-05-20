@@ -347,4 +347,19 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
             containerService.inspect(CONTAINER_1_ID);
         });
     }
+
+    @Test
+    public void list_notRunning_succeeds() throws InterruptedException {
+
+        /* mock */
+        DockerConfig.createContainer(null, CONTAINER_1_SIMPLE, CONTAINER_1_ENV);
+        DockerConfig.createContainer(null, CONTAINER_2_SIMPLE, CONTAINER_2_ENV);
+        DockerConfig.startContainer(CONTAINER_2_SIMPLE);
+        containerRepository.save(CONTAINER_1_SIMPLE);
+        containerRepository.save(CONTAINER_2_SIMPLE);
+
+        /* test */
+        final List<com.github.dockerjava.api.model.Container> response = containerService.list();
+        assertEquals(2, response.size());
+    }
 }
