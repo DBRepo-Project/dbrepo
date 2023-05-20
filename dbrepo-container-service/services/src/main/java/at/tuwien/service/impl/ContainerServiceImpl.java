@@ -208,20 +208,19 @@ public class ContainerServiceImpl implements ContainerService {
             log.error("Failed to inspect container state: container is not running");
             throw new ContainerNotRunningException("Failed to inspect container state");
         }
-        final ContainerDto entity = ContainerDto.builder()
-                .hash(container.getHash())
-                .running(response.getState().getRunning())
-                .state(containerMapper.containerStateToContainerStateDto(response.getState()))
-                .build();
+        final ContainerDto dto = containerMapper.containerToContainerDto(container);
+        dto.setHash(container.getHash());
+        dto.setRunning(response.getState().getRunning());
+        dto.setState(containerMapper.containerStateToContainerStateDto(response.getState()));
         /* now we only support one network */
         response.getNetworkSettings()
                 .getNetworks()
                 .forEach((key, network) -> {
                     log.trace("key {} network {}", key, network);
-                    container.setIpAddress(network.getIpAddress());
+                    dto.setIpAddress(network.getIpAddress());
                 });
         log.info("Inspected container with hash {}", container.getHash());
-        return entity;
+        return dto;
     }
 
     @Override
