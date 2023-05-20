@@ -12,6 +12,9 @@
       <v-tab to="/user/authentication">
         Authentication
       </v-tab>
+      <v-tab v-if="canHandleMessages" to="/user/developer">
+        Developer
+      </v-tab>
     </v-tabs>
   </div>
 </template>
@@ -22,6 +25,29 @@ export default {
   data () {
     return {
       tab: null
+    }
+  },
+  computed: {
+    user () {
+      return this.$store.state.user
+    },
+    roles () {
+      return this.$store.state.roles
+    },
+    canCreateMessage () {
+      if (!this.roles) {
+        return false
+      }
+      return this.roles.includes('create-maintenance-message')
+    },
+    canModifyMessage () {
+      if (!this.roles) {
+        return false
+      }
+      return this.roles.includes('modify-maintenance-message')
+    },
+    canHandleMessages () {
+      return this.canCreateMessage || this.canModifyMessage
     }
   }
 }

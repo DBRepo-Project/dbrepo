@@ -3,6 +3,7 @@ import Vuex, { Store } from 'vuex'
 import UserService from '@/api/user.service'
 import DatabaseService from '@/api/database.service'
 import TableService from '@/api/table.service'
+import MetadataService from '@/api/metadata.service'
 
 Vue.use(Vuex)
 
@@ -16,7 +17,8 @@ const store = new Store({
     database: null,
     table: null,
     access: null,
-    locale: null
+    locale: null,
+    messages: []
   },
   getters: {
     getToken: state => state.token,
@@ -26,7 +28,8 @@ const store = new Store({
     getDatabase: state => state.database,
     getTable: state => state.table,
     getAccess: state => state.access,
-    getLocale: state => state.locale
+    getLocale: state => state.locale,
+    getMessages: state => state.messages
   },
   mutations: {
     SET_TOKEN (state, token) {
@@ -52,6 +55,9 @@ const store = new Store({
     },
     SET_LOCALE (state, locale) {
       state.locale = locale
+    },
+    SET_MESSAGES (state, messages) {
+      state.messages = messages
     }
   },
   actions: {
@@ -77,6 +83,12 @@ const store = new Store({
       TableService.findOne(state.database.container.id, state.database.id, state.table.id)
         .then((table) => {
           commit('SET_TABLE', table)
+        })
+    },
+    reloadMessages ({ state, commit }) {
+      MetadataService.findActiveMessages()
+        .then((messages) => {
+          commit('SET_MESSAGES', messages)
         })
     }
   }

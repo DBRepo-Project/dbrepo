@@ -1,6 +1,8 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.api.container.ContainerCreateRequestDto;
+import at.tuwien.api.container.ContainerDto;
+import at.tuwien.api.container.ContainerStateDto;
 import at.tuwien.config.DockerDaemonConfig;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.container.image.ContainerImage;
@@ -184,8 +186,7 @@ public class ContainerServiceImpl implements ContainerService {
 
     @Override
     @Transactional
-    public Container inspect(Long id) throws ContainerNotFoundException, DockerClientException,
-            ContainerNotRunningException {
+    public ContainerDto inspect(Long id) throws DockerClientException, ContainerNotRunningException, ContainerNotFoundException {
         final Container container = find(id);
         final InspectContainerResponse response;
         try {
@@ -207,15 +208,19 @@ public class ContainerServiceImpl implements ContainerService {
             log.error("Failed to inspect container state: container is not running");
             throw new ContainerNotRunningException("Failed to inspect container state");
         }
+        final ContainerDto dto = containerMapper.containerToContainerDto(container);
+        dto.setHash(container.getHash());
+        dto.setRunning(response.getState().getRunning());
+        dto.setState(containerMapper.containerStateToContainerStateDto(response.getState()));
         /* now we only support one network */
         response.getNetworkSettings()
                 .getNetworks()
                 .forEach((key, network) -> {
                     log.trace("key {} network {}", key, network);
-                    container.setIpAddress(network.getIpAddress());
+                    dto.setIpAddress(network.getIpAddress());
                 });
-        log.info("Inspect container with id {}", id);
-        return container;
+        log.info("Inspected container with hash {}", container.getHash());
+        return dto;
     }
 
     @Override

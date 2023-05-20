@@ -213,9 +213,43 @@
                     <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
                     <span v-if="!loading" v-text="container_internal_name" />
                   </v-list-item-content>
+                  <v-list-item-title class="mt-2">
+                    Container IP
+                  </v-list-item-title>
+                  <v-list-item-content>
+                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
+                    <span v-if="!loading" v-text="container_ip" />
+                  </v-list-item-content>
+                  <v-list-item-title class="mt-2">
+                    Container State
+                  </v-list-item-title>
+                  <v-list-item-content>
+                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
+                    <span v-if="!loading" v-text="container_state" />
+                  </v-list-item-content>
                 </v-list-item-content>
               </v-list-item>
             </v-list>
+            <v-card-actions>
+              <v-btn
+                v-if="canStartContainer && needsStart"
+                small
+                secondary
+                color="secondary"
+                :loading="loadingStart"
+                @click.stop="startContainer">
+                Start Container
+              </v-btn>
+              <v-btn
+                v-if="canStopContainer && !needsStart"
+                small
+                secondary
+                color="error"
+                :loading="loadingStop"
+                @click.stop="stopContainer">
+                Stop Container
+              </v-btn>
+            </v-card-actions>
           </v-card-text>
         </v-card>
       </v-tab-item>
@@ -245,6 +279,7 @@ import { formatTimestampUTCLabel } from '@/utils'
 import Banner from '@/components/identifier/Banner'
 import DatabaseMapper from '@/api/database.mapper'
 import DeleteIdentifier from '@/components/dialogs/DeleteIdentifier.vue'
+import ContainerService from '@/api/container.service'
 
 export default {
   components: {
@@ -259,6 +294,8 @@ export default {
     return {
       loading: false,
       loadingDelete: false,
+      loadingStart: false,
+      loadingStop: false,
       editDialog: false,
       deleteDialog: false,
       persistDialog: false,
@@ -330,6 +367,12 @@ export default {
     container_internal_name () {
       return this.database.container.internal_name
     },
+    container_state () {
+      return this.database.container.state
+    },
+    container_ip () {
+      return this.database.container.ip_address
+    },
     showIdentifierCard () {
       if (this.hasIdentifier) {
         return true
@@ -347,6 +390,21 @@ export default {
         return true
       }
       return this.roles.includes('create-identifier') && this.isOwner
+    },
+    canStartContainer () {
+      if (!this.roles) {
+        return false
+      }
+      if (this.roles.includes('modify-foreign-container-state')) {
+        return true
+      }
+      return this.roles.includes('modify-container-state') && this.isOwner
+    },
+    canStopContainer () {
+      if (!this.roles) {
+        return false
+      }
+      return this.roles.includes('modify-foreign-container-state')
     },
     canEditIdentifier () {
       if (!this.roles || !this.hasIdentifier) {
@@ -410,6 +468,9 @@ export default {
         return false
       }
       return this.database.owner.username === this.user.username
+    },
+    needsStart () {
+      return !this.database.container.running
     }
   },
   methods: {
@@ -425,6 +486,30 @@ export default {
         await this.$store.dispatch('reloadDatabase')
       }
       this.deleteDialog = false
+    },
+    startContainer () {
+      this.loadingStart = true
+      return new Promise(() => {
+        ContainerService.modify(this.database.container.id, 'start')
+          .then(() => {
+            this.$store.dispatch('reloadDatabase')
+          })
+          .finally(() => {
+            this.loadingStart = false
+          })
+      })
+    },
+    stopContainer () {
+      this.loadingStop = true
+      return new Promise(() => {
+        ContainerService.modify(this.database.container.id, 'stop')
+          .then(() => {
+            this.$store.dispatch('reloadDatabase')
+          })
+          .finally(() => {
+            this.loadingStop = false
+          })
+      })
     }
   }
 }

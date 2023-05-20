@@ -2,6 +2,7 @@ package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.container.ContainerCreateRequestDto;
+import at.tuwien.api.container.ContainerDto;
 import at.tuwien.config.DockerConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.container.Container;
@@ -318,7 +319,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
         containerRepository.save(CONTAINER_1_SIMPLE);
 
         /* test */
-        final Container response = containerService.inspect(CONTAINER_1_ID);
+        final ContainerDto response = containerService.inspect(CONTAINER_1_ID);
         assertEquals(CONTAINER_1_ID, response.getId());
         assertEquals(CONTAINER_1_NAME, response.getName());
         assertEquals(CONTAINER_1_INTERNALNAME, response.getInternalName());
@@ -345,5 +346,20 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
         assertThrows(ContainerNotRunningException.class, () -> {
             containerService.inspect(CONTAINER_1_ID);
         });
+    }
+
+    @Test
+    public void list_notRunning_succeeds() throws InterruptedException {
+
+        /* mock */
+        DockerConfig.createContainer(null, CONTAINER_1_SIMPLE, CONTAINER_1_ENV);
+        DockerConfig.createContainer(null, CONTAINER_2_SIMPLE, CONTAINER_2_ENV);
+        DockerConfig.startContainer(CONTAINER_2_SIMPLE);
+        containerRepository.save(CONTAINER_1_SIMPLE);
+        containerRepository.save(CONTAINER_2_SIMPLE);
+
+        /* test */
+        final List<com.github.dockerjava.api.model.Container> response = containerService.list();
+        assertEquals(2, response.size());
     }
 }

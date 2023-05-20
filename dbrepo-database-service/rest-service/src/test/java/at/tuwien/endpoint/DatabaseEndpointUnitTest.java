@@ -350,7 +350,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void findById_anonymous_succeeds() throws AccessDeniedException, DatabaseNotFoundException {
+    public void findById_anonymous_succeeds() throws AccessDeniedException, DatabaseNotFoundException, ContainerNotFoundException {
 
         /* test */
         findById_generic(CONTAINER_1_ID, CONTAINER_1, DATABASE_1_ID, DATABASE_1, null);
@@ -368,7 +368,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"find-database"})
-    public void findById_hasRole_succeeds() throws AccessDeniedException, DatabaseNotFoundException {
+    public void findById_hasRole_succeeds() throws AccessDeniedException, DatabaseNotFoundException, ContainerNotFoundException {
 
         /* pre-condition */
         assertTrue(DATABASE_3_PUBLIC);
@@ -380,7 +380,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"find-database"})
     public void findById_hasRoleForeign_succeeds() throws AccessDeniedException,
-            DatabaseNotFoundException {
+            DatabaseNotFoundException, ContainerNotFoundException {
 
         /* pre-condition */
         assertTrue(DATABASE_3_PUBLIC);
@@ -392,7 +392,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"find-database"})
     public void findById_ownerSeesAccessRights_succeeds() throws AccessDeniedException,
-            DatabaseNotFoundException {
+            DatabaseNotFoundException, ContainerNotFoundException {
 
         /* mock */
         when(accessService.list(DATABASE_1_ID))
@@ -506,7 +506,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
     }
 
     public DatabaseDto findById_generic(Long containerId, Container container, Long databaseId, Database database,
-                                        Principal principal) throws DatabaseNotFoundException, AccessDeniedException {
+                                        Principal principal) throws DatabaseNotFoundException, AccessDeniedException, ContainerNotFoundException {
 
         /* mock */
         if (database != null) {

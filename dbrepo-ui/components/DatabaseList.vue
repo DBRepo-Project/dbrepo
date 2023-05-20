@@ -1,13 +1,16 @@
 <template>
   <div>
     <v-progress-linear v-if="loadingContainers || loadingDatabases" :indeterminate="!error" />
+    <v-card v-if="!$vuetify.theme.dark && containers.length> 0" flat tile>
+      <v-divider class="mx-4" />
+    </v-card>
     <v-card
       v-for="(container, idx) in containers"
       :key="idx"
       :to="link(container)"
       flat
       tile>
-      <v-divider v-if="!$vuetify.theme.dark" class="mx-4" />
+      <v-divider v-if="idx !== 0" class="mx-4" />
       <v-card-title v-if="!hasDatabase(container)" v-text="container.name" />
       <v-card-title v-if="hasDatabase(container)">
         <a :href="`/container/${container.id}/database/${container.database.id}`">{{ container.name }}</a>
@@ -29,18 +32,8 @@
             v-text="container.database.identifier.publisher" />
         </div>
         <div v-text="identifierDescription(container)" />
-      </v-card-text>
-      <v-card-text v-if="needsStart(container) || needsDatabase(container)" class="db-buttons">
         <v-btn
-          v-if="needsStart(container)"
-          small
-          secondary
-          :loading="container?.loading"
-          @click.stop="startContainer(container).then(() => createDatabase(container))">
-          Start
-        </v-btn>
-        <v-btn
-          v-else-if="needsDatabase(container)"
+          v-if="needsDatabase(container)"
           small
           secondary
           :loading="container?.loading"
@@ -98,15 +91,6 @@ export default {
     formatCreators (container) {
       return ContainerMapper.containerToCreator(container)
     },
-    needsStart (container) {
-      if (!this.user) {
-        return false
-      }
-      if (container.creator.username !== this.user.username) {
-        return false
-      }
-      return container.running === false
-    },
     needsDatabase (container) {
       if (!this.user) {
         return false
@@ -143,16 +127,6 @@ export default {
           console.info('Found', this.containers.length, 'container(s)')
         })
       this.loadingContainers = false
-    },
-    startContainer (container) {
-      container.loading = true
-      return new Promise((resolve, reject) => {
-        ContainerService.modify(container.id, 'start')
-          .then(() => resolve())
-          .finally(() => {
-            container.loading = false
-          })
-      })
     },
     createDatabase (container) {
       container.loading = true

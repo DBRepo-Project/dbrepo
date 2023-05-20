@@ -3,8 +3,9 @@ package at.tuwien.test;
 import at.tuwien.api.amqp.CreateVirtualHostDto;
 import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
 import at.tuwien.api.auth.SignupRequestDto;
-import at.tuwien.api.container.image.ImageEnvItemDto;
-import at.tuwien.api.container.image.ImageEnvItemTypeDto;
+import at.tuwien.api.container.ContainerDto;
+import at.tuwien.api.container.ContainerStateDto;
+import at.tuwien.api.container.image.*;
 import at.tuwien.api.database.DatabaseCreateDto;
 import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.LicenseDto;
@@ -20,6 +21,9 @@ import at.tuwien.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
 import at.tuwien.api.database.table.constraints.ConstraintsCreateDto;
 import at.tuwien.api.database.table.constraints.foreignKey.ForeignKeyCreateDto;
 import at.tuwien.api.identifier.*;
+import at.tuwien.api.maintenance.BannerMessageCreateDto;
+import at.tuwien.api.maintenance.BannerMessageTypeDto;
+import at.tuwien.api.maintenance.BannerMessageUpdateDto;
 import at.tuwien.api.user.*;
 import at.tuwien.entities.container.image.ContainerImageDate;
 import at.tuwien.entities.database.*;
@@ -30,6 +34,8 @@ import at.tuwien.entities.database.table.constraints.foreignKey.ForeignKey;
 import at.tuwien.entities.database.table.constraints.foreignKey.ForeignKeyReference;
 import at.tuwien.entities.database.table.constraints.unique.Unique;
 import at.tuwien.entities.identifier.*;
+import at.tuwien.entities.maintenance.BannerMessage;
+import at.tuwien.entities.maintenance.BannerMessageType;
 import at.tuwien.entities.user.Realm;
 import at.tuwien.entities.user.Role;
 import at.tuwien.entities.user.User;
@@ -96,7 +102,7 @@ import static java.time.temporal.ChronoUnit.*;
  * <br />
  * User 2 (authorities=default developer)
  * <br />
- * User 3 (authorities=empty)
+ * User 3 (authorities=default data-steward)
  */
 public abstract class BaseTest {
 
@@ -302,6 +308,14 @@ public abstract class BaseTest {
             .lastname(USER_1_LASTNAME)
             .emailVerified(USER_1_VERIFIED)
             .attributes(USER_1_ATTRIBUTES_DTO)
+            .build();
+
+    public final static UserBriefDto USER_1_BRIEF_DTO = UserBriefDto.builder()
+            .id(USER_1_ID)
+            .username(USER_1_USERNAME)
+            .firstname(USER_1_FIRSTNAME)
+            .lastname(USER_1_LASTNAME)
+            .emailVerified(USER_1_VERIFIED)
             .build();
 
     public final static UserDetails USER_1_DETAILS = UserDetailsDto.builder()
@@ -701,6 +715,24 @@ public abstract class BaseTest {
             .hasTime(IMAGE_DATE_1_HAS_TIME)
             .build();
 
+    public final static ImageDateDto IMAGE_DATE_1_DTO = ImageDateDto.builder()
+            .id(IMAGE_DATE_1_ID)
+            .unixFormat(IMAGE_DATE_1_UNIX_FORMAT)
+            .databaseFormat(IMAGE_DATE_1_DATABASE_FORMAT)
+            .example(IMAGE_DATE_1_EXAMPLE)
+            .hasTime(IMAGE_DATE_1_HAS_TIME)
+            .build();
+
+    public final static ImageCreateDto IMAGE_1_CREATE_DTO = ImageCreateDto.builder()
+            .repository(IMAGE_1_REPOSITORY)
+            .tag(IMAGE_1_TAG)
+            .dialect(IMAGE_1_DIALECT)
+            .jdbcMethod(IMAGE_1_JDBC)
+            .driverClass(IMAGE_1_DRIVER)
+            .defaultPort(IMAGE_1_PORT)
+            .environment(IMAGE_1_ENV_DTO)
+            .build();
+
     public final static Long IMAGE_DATE_2_ID = 2L;
     public final static Long IMAGE_DATE_2_IMAGE_ID = IMAGE_1_ID;
     public final static String IMAGE_DATE_2_UNIX_FORMAT = "dd.MM.yy";
@@ -717,6 +749,14 @@ public abstract class BaseTest {
             .hasTime(IMAGE_DATE_2_HAS_TIME)
             .build();
 
+    public final static ImageDateDto IMAGE_DATE_2_DTO = ImageDateDto.builder()
+            .id(IMAGE_DATE_2_ID)
+            .unixFormat(IMAGE_DATE_2_UNIX_FORMAT)
+            .databaseFormat(IMAGE_DATE_2_DATABASE_FORMAT)
+            .example(IMAGE_DATE_2_EXAMPLE)
+            .hasTime(IMAGE_DATE_2_HAS_TIME)
+            .build();
+
     public final static Long IMAGE_DATE_3_ID = 3L;
     public final static Long IMAGE_DATE_3_IMAGE_ID = IMAGE_1_ID;
     public final static String IMAGE_DATE_3_UNIX_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSSSS";
@@ -727,6 +767,14 @@ public abstract class BaseTest {
     public final static ContainerImageDate IMAGE_DATE_3 = ContainerImageDate.builder()
             .id(IMAGE_DATE_3_ID)
             .iid(IMAGE_DATE_3_IMAGE_ID)
+            .unixFormat(IMAGE_DATE_3_UNIX_FORMAT)
+            .databaseFormat(IMAGE_DATE_3_DATABASE_FORMAT)
+            .example(IMAGE_DATE_3_EXAMPLE)
+            .hasTime(IMAGE_DATE_3_HAS_TIME)
+            .build();
+
+    public final static ImageDateDto IMAGE_DATE_3_DTO = ImageDateDto.builder()
+            .id(IMAGE_DATE_3_ID)
             .unixFormat(IMAGE_DATE_3_UNIX_FORMAT)
             .databaseFormat(IMAGE_DATE_3_DATABASE_FORMAT)
             .example(IMAGE_DATE_3_EXAMPLE)
@@ -761,6 +809,27 @@ public abstract class BaseTest {
             .environment(List.of() /* for jpa */)
             .defaultPort(IMAGE_1_PORT)
             .environment(List.of() /* for jpa */)
+            .build();
+
+    public final static ImageDto IMAGE_1_DTO = ImageDto.builder()
+            .id(IMAGE_1_ID)
+            .repository(IMAGE_1_REPOSITORY)
+            .tag(IMAGE_1_TAG)
+            .hash(IMAGE_1_HASH)
+            .compiled(IMAGE_1_BUILT)
+            .dialect(IMAGE_1_DIALECT)
+            .jdbcMethod(IMAGE_1_JDBC)
+            .driverClass(IMAGE_1_DRIVER)
+            .size(BigInteger.valueOf(IMAGE_1_SIZE))
+            .environment(IMAGE_1_ENV_DTO)
+            .defaultPort(IMAGE_1_PORT)
+            .dateFormats(List.of(IMAGE_DATE_1_DTO, IMAGE_DATE_2_DTO, IMAGE_DATE_3_DTO))
+            .build();
+
+    public final static ImageBriefDto IMAGE_1_BRIEF_DTO = ImageBriefDto.builder()
+            .id(IMAGE_1_ID)
+            .repository(IMAGE_1_REPOSITORY)
+            .tag(IMAGE_1_TAG)
             .build();
 
     public final static Long IMAGE_2_ID = 2L;
@@ -824,6 +893,7 @@ public abstract class BaseTest {
     public final static Long CONTAINER_1_ID = 1L;
     public final static String CONTAINER_1_HASH = "deadbeef";
     public final static ContainerImage CONTAINER_1_IMAGE = IMAGE_1;
+    public final static ImageBriefDto CONTAINER_1_IMAGE_BRIEF_DTO = IMAGE_1_BRIEF_DTO;
     public final static String CONTAINER_1_NAME = "u01";
     public final static String CONTAINER_1_INTERNALNAME = "dbrepo-userdb-u01";
     public final static String CONTAINER_1_IP = "172.30.0.5";
@@ -831,6 +901,8 @@ public abstract class BaseTest {
     public final static HealthCheck CONTAINER_1_HEALTHCHECK = new HealthCheck()
             .withTest(List.of("CMD", "mysqladmin", "ping", "--host=127.0.0.1", "--password=mariadb"));
     public final static String[] CONTAINER_1_ENV = new String[]{"MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_DATABASE=weather"};
+    public final static ContainerStateDto CONTAINER_1_STATE = ContainerStateDto.RUNNING;
+    public final static Boolean CONTAINER_1_RUNNING = true;
 
     public final static Container CONTAINER_1 = Container.builder()
             .id(CONTAINER_1_ID)
@@ -860,6 +932,19 @@ public abstract class BaseTest {
             .ownedBy(USER_1_ID)
             .creator(null /* for jpa */)
             .owner(null /* for jpa */)
+            .build();
+
+    public final static ContainerDto CONTAINER_1_DTO = ContainerDto.builder()
+            .id(CONTAINER_1_ID)
+            .name(CONTAINER_1_NAME)
+            .internalName(CONTAINER_1_INTERNALNAME)
+            .image(CONTAINER_1_IMAGE_BRIEF_DTO)
+            .hash(CONTAINER_1_HASH)
+            .created(CONTAINER_1_CREATED)
+            .ipAddress(CONTAINER_1_IP)
+            .owner(USER_1_BRIEF_DTO)
+            .state(CONTAINER_1_STATE)
+            .running(CONTAINER_1_RUNNING)
             .build();
 
     public final static Long CONTAINER_2_ID = 2L;
@@ -5438,6 +5523,57 @@ public abstract class BaseTest {
             .read(".*")
             .write(".*")
             .configure(".*")
+            .build();
+
+    public final static Long BANNER_MESSAGE_1_ID = 1L;
+    public final static String BANNER_MESSAGE_1_MESSAGE = "Next maintenance in 7 days!";
+    public final static BannerMessageType BANNER_MESSAGE_1_TYPE = BannerMessageType.INFO;
+    public final static BannerMessageTypeDto BANNER_MESSAGE_1_TYPE_DTO = BannerMessageTypeDto.INFO;
+    public final static Instant BANNER_MESSAGE_1_START = Instant.ofEpochSecond(1684577786);
+    public final static Instant BANNER_MESSAGE_1_END = null;
+
+    public final static BannerMessage BANNER_MESSAGE_1 = BannerMessage.builder()
+            .id(BANNER_MESSAGE_1_ID)
+            .message(BANNER_MESSAGE_1_MESSAGE)
+            .type(BANNER_MESSAGE_1_TYPE)
+            .displayStart(BANNER_MESSAGE_1_START)
+            .displayEnd(BANNER_MESSAGE_1_END)
+            .build();
+    
+    public final static BannerMessageCreateDto BANNER_MESSAGE_1_CREATE_DTO = BannerMessageCreateDto.builder()
+            .message(BANNER_MESSAGE_1_MESSAGE)
+            .type(BANNER_MESSAGE_1_TYPE_DTO)
+            .displayStart(BANNER_MESSAGE_1_START)
+            .displayEnd(BANNER_MESSAGE_1_END)
+            .build();
+
+    public final static BannerMessageUpdateDto BANNER_MESSAGE_1_UPDATE_DTO = BannerMessageUpdateDto.builder()
+            .message(BANNER_MESSAGE_1_MESSAGE)
+            .type(BannerMessageTypeDto.WARNING)
+            .displayStart(BANNER_MESSAGE_1_START)
+            .displayEnd(BANNER_MESSAGE_1_END)
+            .build();
+
+    public final static Long BANNER_MESSAGE_2_ID = 2L;
+    public final static String BANNER_MESSAGE_2_MESSAGE = "No operation on Christmas 2022!";
+    public final static BannerMessageType BANNER_MESSAGE_2_TYPE = BannerMessageType.ERROR;
+    public final static BannerMessageTypeDto BANNER_MESSAGE_2_TYPE_DTO = BannerMessageTypeDto.ERROR;
+    public final static Instant BANNER_MESSAGE_2_START = Instant.ofEpochSecond(1671836400);
+    public final static Instant BANNER_MESSAGE_2_END = Instant.ofEpochSecond(1672009200);
+
+    public final static BannerMessage BANNER_MESSAGE_2 = BannerMessage.builder()
+            .id(BANNER_MESSAGE_2_ID)
+            .message(BANNER_MESSAGE_2_MESSAGE)
+            .type(BANNER_MESSAGE_2_TYPE)
+            .displayStart(BANNER_MESSAGE_2_START)
+            .displayEnd(BANNER_MESSAGE_2_END)
+            .build();
+
+    public final static BannerMessageCreateDto BANNER_MESSAGE_2_CREATE_DTO = BannerMessageCreateDto.builder()
+            .message(BANNER_MESSAGE_2_MESSAGE)
+            .type(BANNER_MESSAGE_2_TYPE_DTO)
+            .displayStart(BANNER_MESSAGE_2_START)
+            .displayEnd(BANNER_MESSAGE_2_END)
             .build();
 
 }

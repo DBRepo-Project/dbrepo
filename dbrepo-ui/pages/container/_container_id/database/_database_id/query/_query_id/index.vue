@@ -25,7 +25,7 @@
         </DownloadButton>
       </v-toolbar-title>
     </v-toolbar>
-    <v-card v-if="query && query.identifier" flat tile>
+    <v-card v-if="query.identifier" flat tile>
       <v-card-title>Identifier</v-card-title>
       <v-card-text>
         <v-list dense>
@@ -38,7 +38,7 @@
                 Persistent Identifier
               </v-list-item-title>
               <v-list-item-content>
-                <Banner :identifier="query.identifier" />
+                <Banner v-if="canPersistQuery" :identifier="query.identifier" />
               </v-list-item-content>
               <v-list-item-title class="mt-2">
                 Title
@@ -306,7 +306,7 @@ export default {
       return this.query.result_hash
     },
     canPersistQuery () {
-      if (!this.query || this.query.is_persisted) {
+      if (this.loadingQuery || !this.query || this.query.is_persisted) {
         return false
       }
       return UserUtils.hasReadAccess(this.access)
