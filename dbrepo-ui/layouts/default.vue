@@ -47,7 +47,7 @@
           border="left"
           tile
           :type="message.type"
-          v-text="message.messages" />
+          v-text="message.message" />
       </div>
     </v-navigation-drawer>
     <v-form ref="form" @submit.prevent="submit">
