@@ -38,7 +38,7 @@
                 Persistent Identifier
               </v-list-item-title>
               <v-list-item-content>
-                <Banner v-if="canPersistQuery" :identifier="query.identifier" />
+                <Banner :identifier="query.identifier" />
               </v-list-item-content>
               <v-list-item-title class="mt-2">
                 Title
