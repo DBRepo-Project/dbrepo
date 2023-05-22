@@ -344,6 +344,17 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_banner_messages`
     PRIMARY KEY (id)
 ) WITH SYSTEM VERSIONING;
 
+CREATE TABLE IF NOT EXISTS `fda`.`mdb_ontologies`
+(
+    id              bigint                 NOT NULL AUTO_INCREMENT,
+    uri             TEXT                   NOT NULL,
+    sparql_endpoint TEXT                   NULL,
+    last_modified   timestamp,
+    created         timestamp              NOT NULL DEFAULT NOW(),
+    created_by      character varying(255) NOT NULL,
+    PRIMARY KEY (id)
+) WITH SYSTEM VERSIONING;
+
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_view_columns`
 (
     id       BIGINT  NOT NULL AUTO_INCREMENT,
