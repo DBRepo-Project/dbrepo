@@ -4,8 +4,11 @@
       <v-card-title>Assign Semantic Information</v-card-title>
       <v-card-subtitle>We recommend the following ontologies</v-card-subtitle>
       <v-card-text>
-        <div v-for="(ontology,idx) in ontologies" :key="idx">
-          <strong>{{ ontology.prefix }}</strong>: <a :href="ontology.uri" target="_blank">{{ ontology.uri }}</a>
+        <v-skeleton-loader v-if="loadingOntologies" type="list-item-three-line" />
+        <div v-else>
+          <div v-for="(ontology,idx) in ontologies" :key="idx">
+            <strong>{{ ontology.prefix }}</strong>: <a :href="ontology.uri" target="_blank">{{ ontology.uri }}</a>
+          </div>
         </div>
       </v-card-text>
       <v-card-text>
@@ -20,7 +23,6 @@
               clearable
               single-line
               hide-details
-              :rules="[v => !!v || $t('Required')]"
               placeholder="http://www.wikidata.org/entity/Q468777"
               @click:clear="uri = null" />
           </v-toolbar>
@@ -84,6 +86,17 @@ export default {
   computed: {
   },
   watch: {
+    column () {
+      if (this.column.unit && this.mode === 'unit') {
+        this.uri = this.column.unit.uri
+        return
+      }
+      if (this.column.concept && this.mode === 'concept') {
+        this.uri = this.column.concept.uri
+        return
+      }
+      this.uri = null
+    }
   },
   mounted () {
     this.loadOntologies()
@@ -107,11 +120,8 @@ export default {
             action: 'assign'
           })
         })
-        .catch(() => {
-          this.loadingSave = true
-        })
         .finally(() => {
-          this.loadingSave = true
+          this.loadingSave = false
         })
     },
     loadOntologies () {
@@ -121,7 +131,7 @@ export default {
           this.ontologies = ontologies
         })
         .finally(() => {
-          this.loadingOntologies = true
+          this.loadingOntologies = false
         })
     },
     submit () {

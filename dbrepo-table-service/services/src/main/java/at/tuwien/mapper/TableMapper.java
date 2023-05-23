@@ -87,12 +87,12 @@ public interface TableMapper {
     @Mappings({
             @Mapping(source = "conceptUri", target = "uri")
     })
-    ConceptSaveDto columnSemanticsUpdateDtoToConceptSaveDto(ColumnSemanticsUpdateDto data);
+    TableColumnConcept columnSemanticsUpdateDtoToTableColumnConcept(ColumnSemanticsUpdateDto data);
 
     @Mappings({
             @Mapping(source = "unitUri", target = "uri")
     })
-    UnitSaveDto columnSemanticsUpdateDtoToUnitSaveDto(ColumnSemanticsUpdateDto data);
+    TableColumnUnit columnSemanticsUpdateDtoToTableColumnUnit(ColumnSemanticsUpdateDto data);
 
     default TableColumn columnNameToTableColumn(Table table, String name) throws TableMalformedException {
         String internalName = nameToInternalName(name);

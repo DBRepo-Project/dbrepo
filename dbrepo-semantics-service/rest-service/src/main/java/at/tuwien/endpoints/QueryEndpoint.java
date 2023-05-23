@@ -20,7 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -44,7 +43,6 @@ public class QueryEndpoint {
     }
 
     @PostMapping("/ontology/{id}/query")
-    @Transactional
     @PreAuthorize("hasAuthority('execute-semantic-query')")
     @Timed(value = "semantics.sparql.execute", description = "Time needed to execute a sparql query")
     @Operation(summary = "Register a new ontology", security = @SecurityRequirement(name = "bearerAuth"))

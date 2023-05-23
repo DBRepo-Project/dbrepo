@@ -11,7 +11,6 @@ import at.tuwien.service.SemanticService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Log4j2
 @Service
@@ -30,7 +29,6 @@ public class SemanticServiceImpl implements SemanticService {
     }
 
     @Override
-    @Transactional
     public TableColumnConcept saveConcept(ConceptSaveDto data) {
         final TableColumnConcept entity = ontologyMapper.conceptSaveDtoToTableColumnConcept(data);
         final TableColumnConcept concept = tableColumnConceptRepository.save(entity);
@@ -39,7 +37,6 @@ public class SemanticServiceImpl implements SemanticService {
     }
 
     @Override
-    @Transactional
     public TableColumnUnit saveUnit(UnitSaveDto data) {
         final TableColumnUnit entity = ontologyMapper.unitSaveDtoToTableColumnUnit(data);
         final TableColumnUnit unit = tableColumnUnitRepository.save(entity);

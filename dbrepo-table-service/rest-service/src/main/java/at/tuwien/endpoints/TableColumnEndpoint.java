@@ -4,6 +4,7 @@ import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.entities.database.table.columns.TableColumn;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.TableMapper;
 import at.tuwien.service.TableService;
@@ -46,7 +47,7 @@ public class TableColumnEndpoint {
 
     @PutMapping
     @Transactional
-    @PreAuthorize("hasAuthority('modify-table-column-semantics')")
+    @PreAuthorize("hasAuthority('modify-table-column-semantics') or hasAuthority('modify-foreign-table-column-semantics')")
     @Timed(value = "semantics.column_update", description = "Time needed to update a table column semantic mapping")
     @Operation(summary = "Update a table column semantic mapping", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
@@ -88,8 +89,10 @@ public class TableColumnEndpoint {
             SemanticEntityPersistException {
         log.debug("endpoint update table, containerId={}, databaseId={}, tableId={}, principal={}", containerId,
                 databaseId, tableId, principal);
-        endpointValidator.validateOnlyAccess(containerId, databaseId, principal, true);
-        endpointValidator.validateOnlyOwnerOrWriteAll(containerId, databaseId, tableId, principal);
+        if (!User.hasRole(principal, "modify-foreign-table-column-semantics")) {
+            endpointValidator.validateOnlyAccess(containerId, databaseId, principal, true);
+            endpointValidator.validateOnlyOwnerOrWriteAll(containerId, databaseId, tableId, principal);
+        }
         final TableColumn column = tableService.update(containerId, databaseId, tableId, columnId, updateDto, authorization);
         log.info("Updated table semantics of table with id {} and database with id {}", tableId, databaseId);
         final ColumnDto dto = tableMapper.tableColumnToColumnDto(column);

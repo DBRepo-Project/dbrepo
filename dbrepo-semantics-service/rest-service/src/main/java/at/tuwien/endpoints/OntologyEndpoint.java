@@ -18,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
@@ -43,7 +42,6 @@ public class OntologyEndpoint {
     }
 
     @GetMapping
-    @Transactional(readOnly = true)
     @Timed(value = "semantics.ontology.list", description = "Time needed to list ontologies")
     @Operation(summary = "List all ontologies")
     @ApiResponses(value = {
@@ -64,7 +62,6 @@ public class OntologyEndpoint {
     }
 
     @GetMapping("/{id}")
-    @Transactional(readOnly = true)
     @Timed(value = "semantics.ontology.find", description = "Time needed to find a specific ontology")
     @Operation(summary = "Find one ontology")
     @ApiResponses(value = {
@@ -82,7 +79,6 @@ public class OntologyEndpoint {
     }
 
     @PostMapping
-    @Transactional
     @PreAuthorize("hasAuthority('create-ontology')")
     @Timed(value = "semantics.ontology.create", description = "Time needed to register a new ontology")
     @Operation(summary = "Register a new ontology", security = @SecurityRequirement(name = "bearerAuth"))
@@ -103,7 +99,6 @@ public class OntologyEndpoint {
     }
 
     @DeleteMapping("/{id}")
-    @Transactional
     @PreAuthorize("hasAuthority('delete-ontology')")
     @Timed(value = "semantics.ontology.delete", description = "Time needed to delete an ontology")
     @Operation(summary = "Delete an ontology", security = @SecurityRequirement(name = "bearerAuth"))

@@ -18,7 +18,6 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 @Log4j2
@@ -37,7 +36,6 @@ public class SemanticsEndpoint {
     }
 
     @PostMapping("/concept")
-    @Transactional
     @PreAuthorize("hasAuthority('create-semantic-concept')")
     @Timed(value = "semantics.concept.save", description = "Time needed to create or update a semantic concept")
     @Operation(summary = "Create or update a semantic concept")
@@ -57,7 +55,6 @@ public class SemanticsEndpoint {
     }
 
     @PostMapping("/unit")
-    @Transactional
     @PreAuthorize("hasAuthority('create-semantic-unit')")
     @Timed(value = "semantics.unit.save", description = "Time needed to create or update a semantic unit")
     @Operation(summary = "Create or update a semantic unit")
