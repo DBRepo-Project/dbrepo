@@ -41,7 +41,7 @@ public class WebSecurityConfig {
                 new AntPathRequestMatcher("/actuator/**", "GET")
         );
         final OrRequestMatcher publicEndpoints = new OrRequestMatcher(
-                new AntPathRequestMatcher("/api/semantics/ontology/**", "GET"),
+                new AntPathRequestMatcher("/api/semantic/ontology/**", "GET"),
                 new AntPathRequestMatcher("/v3/api-docs.yaml"),
                 new AntPathRequestMatcher("/v3/api-docs/**"),
                 new AntPathRequestMatcher("/swagger-ui/**"),

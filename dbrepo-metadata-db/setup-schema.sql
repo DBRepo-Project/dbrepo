@@ -275,18 +275,18 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_constraints_checks`
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_concepts`
 (
-    uri        text      not null,
-    name       VARCHAR(255),
-    created    timestamp NOT NULL DEFAULT NOW(),
+    uri        text         not null,
+    name       VARCHAR(255) null,
+    created    timestamp    NOT NULL DEFAULT NOW(),
     created_by character varying(255),
     PRIMARY KEY (uri(200))
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_units`
 (
-    uri        text      not null,
-    name       VARCHAR(255),
-    created    timestamp NOT NULL DEFAULT NOW(),
+    uri        text         not null,
+    name       VARCHAR(255) null,
+    created    timestamp    NOT NULL DEFAULT NOW(),
     created_by character varying(255),
     PRIMARY KEY (uri(200))
 ) WITH SYSTEM VERSIONING;
@@ -347,11 +347,13 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_banner_messages`
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_ontologies`
 (
     id              bigint                 NOT NULL AUTO_INCREMENT,
+    prefix          VARCHAR(8)             NOT NULL,
+    local           VARCHAR(255)           NULL,
     uri             TEXT                   NOT NULL,
     sparql_endpoint TEXT                   NULL,
     last_modified   timestamp,
     created         timestamp              NOT NULL DEFAULT NOW(),
-    created_by      character varying(255) NOT NULL,
+    created_by      character varying(255) NULL,
     PRIMARY KEY (id)
 ) WITH SYSTEM VERSIONING;
 
@@ -496,4 +498,13 @@ VALUES (1, '%Y-%c-%d %H:%i:%S.%f', 'yyyy-MM-dd HH:mm:ss.SSSSSS', '2022-01-30 13:
        (1, '%Y-%c-%d %H:%i:%S', 'yyyy-MM-dd HH:mm:ss', '2022-01-30 13:44:25', true),
        (1, '%Y-%c-%d', 'yyyy-MM-dd', '2022-01-30', false);
 
+INSERT INTO `fda`.`mdb_ontologies` (uri, prefix, sparql_endpoint, local)
+VALUES ('http://www.ontology-of-units-of-measure.org/resource/om-2/', 'om2', null, 'om-2.0.rdf'),
+       ('https://www.wikidata.org/', 'wd', 'https://query.wikidata.org/sparql', null),
+       ('http://purl.org/ontology/mo/', 'mo', null, 'mo.rdf'),
+       ('http://purl.org/dc/elements/1.1/', 'dc', null, 'dc.rdf'),
+       ('http://www.w3.org/2001/XMLSchema#', 'xsd', null, 'xsd.rdf'),
+       ('http://purl.org/NET/c4dm/timeline.owl#', 'tl', null, 'tl.rdf'),
+       ('http://xmlns.com/foaf/0.1/', 'foaf', null, 'foaf.rdf'),
+       ('http://dbpedia.org', 'db', 'http://dbpedia.org/sparql', null);
 COMMIT;

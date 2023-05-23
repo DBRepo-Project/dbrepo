@@ -1,6 +1,5 @@
-package at.tuwien.api.semantics;
+package at.tuwien.api.database.table.columns.concepts;
 
-import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
@@ -12,14 +11,9 @@ import lombok.extern.jackson.Jacksonized;
 @AllArgsConstructor
 @Jacksonized
 @ToString
-public class OntologyBriefDto {
+public class UnitSaveDto {
 
     @NotBlank
-    @Schema(example = "Ontology URI")
     private String uri;
-
-    @NotBlank
-    @Schema(example = "Ontology prefix")
-    private String prefix;
 
 }

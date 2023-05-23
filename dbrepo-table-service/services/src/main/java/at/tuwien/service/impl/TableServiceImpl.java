@@ -11,6 +11,7 @@ import at.tuwien.entities.database.table.columns.TableColumnConcept;
 import at.tuwien.entities.database.table.columns.TableColumnUnit;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
+import at.tuwien.gateway.SemanticsServiceGateway;
 import at.tuwien.mapper.TableMapper;
 import at.tuwien.repository.elastic.TableColumnIdxRepository;
 import at.tuwien.repository.elastic.TableIdxRepository;
@@ -48,6 +49,7 @@ public class TableServiceImpl extends HibernateConnector implements TableService
     private final ConceptRepository conceptRepository;
     private final TableIdxRepository tableIdxRepository;
     private final TableColumnRepository tableColumnRepository;
+    private final SemanticsServiceGateway semanticsServiceGateway;
     private final TableColumnIdxRepository tableColumnIdxRepository;
 
     @Autowired
@@ -55,7 +57,7 @@ public class TableServiceImpl extends HibernateConnector implements TableService
                             TableRepository tableRepository, DatabaseService databaseService,
                             ContainerService containerService, ConceptRepository conceptRepository,
                             TableIdxRepository tableIdxRepository, TableColumnRepository tableColumnRepository,
-                            TableColumnIdxRepository tableColumnIdxRepository) {
+                            SemanticsServiceGateway semanticsServiceGateway, TableColumnIdxRepository tableColumnIdxRepository) {
         this.tableMapper = tableMapper;
         this.userService = userService;
         this.unitRepository = unitRepository;
@@ -65,6 +67,7 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         this.conceptRepository = conceptRepository;
         this.tableIdxRepository = tableIdxRepository;
         this.tableColumnRepository = tableColumnRepository;
+        this.semanticsServiceGateway = semanticsServiceGateway;
         this.tableColumnIdxRepository = tableColumnIdxRepository;
     }
 
@@ -212,12 +215,14 @@ public class TableServiceImpl extends HibernateConnector implements TableService
     @Override
     @Transactional
     public TableColumn update(Long containerId, Long databaseId, Long tableId, Long columnId,
-                              ColumnSemanticsUpdateDto updateDto, Principal principal) throws TableNotFoundException,
-            DatabaseNotFoundException, ContainerNotFoundException, TableMalformedException, UnitNotFoundException, ConceptNotFoundException {
+                              ColumnSemanticsUpdateDto updateDto, String authorization)
+            throws TableNotFoundException, DatabaseNotFoundException, ContainerNotFoundException,
+            TableMalformedException, UnitNotFoundException, ConceptNotFoundException, SemanticEntityPersistException {
         final Table table = findById(containerId, databaseId, tableId);
         final TableColumn column = findColumn(table, columnId);
         /* assign */
         if (updateDto.getUnitUri() != null) {
+            semanticsServiceGateway.saveUnit(tableMapper.columnSemanticsUpdateDtoToUnitSaveDto(updateDto), authorization);
             final TableColumnUnit unit = findUnit(updateDto.getUnitUri());
             column.setUnit(unit);
             log.debug("update unit of column, unit={}, column={}", unit, column);
@@ -226,6 +231,7 @@ public class TableServiceImpl extends HibernateConnector implements TableService
             log.debug("remove unit of column, column={}", column);
         }
         if (updateDto.getConceptUri() != null) {
+            semanticsServiceGateway.saveConcept(tableMapper.columnSemanticsUpdateDtoToConceptSaveDto(updateDto), authorization);
             final TableColumnConcept concept = findConcept(updateDto.getConceptUri());
             column.setConcept(concept);
             log.debug("update ColumnConcept of column, concept={}, column={}", concept, column);
@@ -259,7 +265,7 @@ public class TableServiceImpl extends HibernateConnector implements TableService
                 .findFirst();
         if (optional.isEmpty()) {
             log.error("Failed to find column with id {}", columnId);
-            throw new TableMalformedException("Failed to find column");
+            throw new TableMalformedException("Failed to find column with id " + columnId);
         }
         return optional.get();
     }
@@ -274,8 +280,8 @@ public class TableServiceImpl extends HibernateConnector implements TableService
     protected TableColumnConcept findConcept(String uri) throws ConceptNotFoundException {
         final Optional<TableColumnConcept> optional = conceptRepository.findById(uri);
         if (optional.isEmpty()) {
-            log.error("Failed to find ColumnConcept with uri {}", uri);
-            throw new ConceptNotFoundException("Failed to find concept");
+            log.error("Failed to find column concept with uri {}", uri);
+            throw new ConceptNotFoundException("Failed to find concept with uri " + uri);
         }
         return optional.get();
     }

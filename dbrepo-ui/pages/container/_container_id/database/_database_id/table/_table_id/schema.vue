@@ -35,10 +35,12 @@
           color="secondary"
           small
           @click="pick(item, 'concept')">
-          {{ item.concept.name }}
+          <span v-if="item.concept.name" v-text="item.concept.name" />
+          <span v-else v-text="item.concept.uri" />
         </v-btn>
         <a v-if="!canModify && hasConcept(item)" :href="item.concept.uri" target="_blank">
-          {{ item.concept.name }}
+          <span v-if="item.concept.name" v-text="item.concept.name" />
+          <span v-else v-text="item.concept.uri" />
         </a>
       </template>
       <template v-slot:item.column_unit="{ item }">
@@ -49,10 +51,12 @@
           color="secondary"
           small
           @click="pick(item, 'unit')">
-          {{ item.unit.name }}
+          <span v-if="item.unit.name" v-text="item.unit.name" />
+          <span v-else v-text="item.unit.uri" />
         </v-btn>
         <a v-if="!canModify && hasUnit(item)" :href="item.unit.uri" target="_blank">
-          {{ item.unit.name }}
+          <span v-if="item.unit.name" v-text="item.unit.name" />
+          <span v-else v-text="item.unit.uri" />
         </a>
       </template>
     </v-data-table>
@@ -63,6 +67,7 @@
       max-width="640">
       <DialogsSemantics
         :column="column"
+        :mode="mode"
         :table-id="table.id"
         :database="database"
         @close="closed" />
@@ -82,6 +87,7 @@ export default {
     return {
       selection: [],
       column: null,
+      mode: null,
       dialogSemantic: false,
       items: [
         { text: 'Databases', to: '/container', activeClass: '' },
@@ -192,8 +198,9 @@ export default {
     hasConcept (item) {
       return item.concept && 'uri' in item.concept
     },
-    pick (item) {
+    pick (item, mode) {
       this.column = item
+      this.mode = mode
       this.dialogSemantic = true
     },
     closed (event) {

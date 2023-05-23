@@ -12,14 +12,14 @@ import lombok.extern.jackson.Jacksonized;
 @AllArgsConstructor
 @Jacksonized
 @ToString
-public class OntologyBriefDto {
+public class EntityDto {
 
     @NotBlank
-    @Schema(example = "Ontology URI")
+    @Schema(example = "https://www.wikidata.org/entity/Q1686799")
     private String uri;
 
     @NotBlank
-    @Schema(example = "Ontology prefix")
-    private String prefix;
+    @Schema(example = "Apache Jena")
+    private String label;
 
 }

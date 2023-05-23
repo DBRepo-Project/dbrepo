@@ -20,6 +20,9 @@ import java.util.List;
 @EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @jakarta.persistence.Table(name = "mdb_units")
+@NamedQueries({
+        @NamedQuery(name = "TableColumnUnit.findById", query = "select u from TableColumnUnit u where u.uri = ?1")
+})
 public class TableColumnUnit {
 
     @Id
@@ -27,7 +30,7 @@ public class TableColumnUnit {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String uri;
 
-    @Column(name = "name", nullable = false)
+    @Column(name = "name")
     private String name;
 
     @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP")

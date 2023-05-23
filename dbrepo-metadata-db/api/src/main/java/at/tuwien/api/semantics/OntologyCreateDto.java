@@ -19,6 +19,12 @@ public class OntologyCreateDto {
     @Schema(example = "Ontology URI")
     private String uri;
 
+    @NotBlank
+    @Schema(example = "Ontology prefix")
+    private String prefix;
+
+    private String local;
+
     @JsonProperty("sparql_endpoint")
     @Schema(example = "Ontology SPARQL endpoint")
     private String sparqlEndpoint;

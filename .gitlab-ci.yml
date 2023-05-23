@@ -222,15 +222,16 @@ test-semantics-service:
     - build-semantics-service
   script:
     - "make test-semantics-service"
-    - "cat ./dbrepo-semantics-service/coverage.txt | grep -o 'TOTAL[^%]*%'"
+    - "cat ./dbrepo-semantics-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
   artifacts:
     when: always
     paths:
-      - ./dbrepo-semantics-service/report.xml
+      - ./dbrepo-semantics-service/report/target/site/jacoco-aggregate/
+      - ./dbrepo-semantics-service/rest-service/target/surefire-reports/
     expire_in: 1 days
     reports:
-      junit: ./dbrepo-semantics-service/report.xml
-  coverage: '/TOTAL.*?([0-9]{1,3})%/'
+      junit: ./dbrepo-semantics-service/rest-service/target/surefire-reports/TEST-*.xml
+  coverage: '/Total.*?([0-9]{1,3})%/'
 
 test-analyse-service:
   stage: test-backend

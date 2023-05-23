@@ -2,6 +2,7 @@ package at.tuwien.service.impl;
 
 import at.tuwien.api.semantics.OntologyCreateDto;
 import at.tuwien.entities.semantics.Ontology;
+import at.tuwien.exception.OntologyNotFoundException;
 import at.tuwien.mapper.OntologyMapper;
 import at.tuwien.repository.jpa.OntologyRepository;
 import at.tuwien.service.OntologyService;
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Log4j2
 @Service
@@ -30,9 +32,25 @@ public class OntologyServiceImpl implements OntologyService {
     }
 
     @Override
+    public Ontology find(Long id) throws OntologyNotFoundException {
+        final Optional<Ontology> optional = ontologyRepository.findById(id);
+        if (optional.isEmpty()) {
+            log.error("Failed to find ontology with id {}", id);
+            throw new OntologyNotFoundException("Failed to find ontology with id " + id);
+        }
+        return optional.get();
+    }
+
+    @Override
     public Ontology create(OntologyCreateDto data) {
         final Ontology ontology = ontologyRepository.save(ontologyMapper.ontologyCreateDtoToOntology(data));
         log.info("Created ontology with id {}", ontology.getId());
         return ontology;
+    }
+
+    @Override
+    public void delete(Long id) {
+        ontologyRepository.deleteById(id);
+        log.info("Deleted ontology with id {}", id);
     }
 }

@@ -32,8 +32,14 @@ public class Ontology {
     @Column(nullable = false)
     private String uri;
 
+    @Column(nullable = false, columnDefinition = "VARCHAR(8)")
+    private String prefix;
+
     @Column
     private String sparqlEndpoint;
+
+    @Column(columnDefinition = "VARCHAR(255)")
+    private String local;
 
     @ToString.Exclude
     @JdbcTypeCode(java.sql.Types.VARCHAR)

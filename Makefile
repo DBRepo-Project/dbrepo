@@ -31,8 +31,8 @@ build-metadata-service: build-metadata-db
 build-user-service: build-metadata-db
 	mvn -f ./dbrepo-user-service/pom.xml clean package -DskipTests
 
-build-semantics-service:
-	bash ./dbrepo-semantics-service/build.sh
+build-semantics-service: build-metadata-db
+	mvn -f ./dbrepo-semantics-service/pom.xml clean package -DskipTests
 
 build-analyse-service:
 	bash ./dbrepo-analyse-service/build.sh
@@ -173,8 +173,8 @@ test-metadata-service: clean build-metadata-db build-metadata-service
 test-user-service: clean build-metadata-db build-user-service
 	mvn -f ./dbrepo-user-service/pom.xml clean test verify
 
-test-semantics-service: build-semantics-service
-	bash ./dbrepo-semantics-service/test.sh
+test-semantics-service: clean build-metadata-db build-semantics-service
+	mvn -f ./dbrepo-semantics-service/pom.xml clean test verify
 
 test-analyse-service: build-analyse-service
 	bash ./dbrepo-analyse-service/test.sh

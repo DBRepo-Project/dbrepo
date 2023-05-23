@@ -7,6 +7,9 @@ import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.columns.ColumnCreateDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.columns.ColumnTypeDto;
+import at.tuwien.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
+import at.tuwien.api.database.table.columns.concepts.ConceptSaveDto;
+import at.tuwien.api.database.table.columns.concepts.UnitSaveDto;
 import at.tuwien.api.database.table.constraints.ConstraintsCreateDto;
 import at.tuwien.api.database.table.constraints.foreignKey.ForeignKeyCreateDto;
 import at.tuwien.api.database.table.constraints.foreignKey.ForeignKeyDto;
@@ -14,7 +17,9 @@ import at.tuwien.api.database.table.constraints.foreignKey.ReferenceTypeDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
+import at.tuwien.entities.database.table.columns.TableColumnConcept;
 import at.tuwien.entities.database.table.columns.TableColumnType;
+import at.tuwien.entities.database.table.columns.TableColumnUnit;
 import at.tuwien.entities.database.table.constraints.Constraints;
 import at.tuwien.entities.database.table.constraints.foreignKey.ForeignKey;
 import at.tuwien.entities.database.table.constraints.foreignKey.ForeignKeyReference;
@@ -78,6 +83,16 @@ public interface TableMapper {
             @Mapping(target = "constraints", ignore = true)
     })
     Table tableCreateDtoToTable(TableCreateDto data);
+
+    @Mappings({
+            @Mapping(source = "conceptUri", target = "uri")
+    })
+    ConceptSaveDto columnSemanticsUpdateDtoToConceptSaveDto(ColumnSemanticsUpdateDto data);
+
+    @Mappings({
+            @Mapping(source = "unitUri", target = "uri")
+    })
+    UnitSaveDto columnSemanticsUpdateDtoToUnitSaveDto(ColumnSemanticsUpdateDto data);
 
     default TableColumn columnNameToTableColumn(Table table, String name) throws TableMalformedException {
         String internalName = nameToInternalName(name);
