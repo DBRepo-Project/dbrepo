@@ -1,7 +1,6 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.api.semantics.EntityDto;
-import at.tuwien.api.semantics.EntitySearchDto;
 import at.tuwien.entities.semantics.Ontology;
 import at.tuwien.exception.QueryMalformedException;
 import at.tuwien.repository.jpa.OntologyRepository;
@@ -53,18 +52,18 @@ public class SparqlServiceImpl implements QueryService {
     }
 
     @Override
-    public List<EntityDto> find(Ontology ontology, EntitySearchDto query) throws QueryMalformedException {
-        return find(ontology, query, 10);
+    public List<EntityDto> findByLabel(Ontology ontology, String label) throws QueryMalformedException {
+        return findByLabel(ontology, label, 10);
     }
 
     @Override
-    public List<EntityDto> find(Ontology ontology, EntitySearchDto query, Integer limit) throws QueryMalformedException {
+    public List<EntityDto> findByLabel(Ontology ontology, String label, Integer limit) throws QueryMalformedException {
         final String statement = String.join("\n",
                 "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
                 "SELECT * {",
                 "  SERVICE <" + ontology.getSparqlEndpoint() + "> {",
                 "    SELECT ?o ?label {",
-                "      ?o rdfs:label \"" + query.getLabel().replace("\"", "") + "\"@en .",
+                "      ?o rdfs:label \"" + label.replace("\"", "") + "\"@en .",
                 "      ?o rdfs:label ?label .",
                 "      FILTER (langMatches(lang(?label), \"EN\" ) )",
                 "     } LIMIT " + limit,
@@ -87,6 +86,37 @@ public class SparqlServiceImpl implements QueryService {
             throw new QueryMalformedException("Failed to parse query: " + e.getMessage(), e);
         }
         return results;
+    }
+
+    @Override
+    public EntityDto findByUri(Ontology ontology, String uri) throws QueryMalformedException {
+        final String statement = String.join("\n",
+                "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
+                "SELECT * {",
+                "  SERVICE <" + ontology.getSparqlEndpoint() + "> {",
+                "    SELECT ?label {",
+                "      <" + uri + "> rdfs:label ?label .",
+                "      FILTER (langMatches(lang(?label), \"EN\" ) )",
+                "     } LIMIT 1",
+                "  }",
+                "}");
+        log.trace("compiled remote query {}", statement);
+        try (QueryExecution execution = QueryExecutionFactory.create(statement, this.dataset.getDefaultModel())) {
+            final Iterator<QuerySolution> resultSet = execution.execSelect();
+            while (resultSet.hasNext()) {
+                final QuerySolution solution = resultSet.next();
+                final EntityDto entity = EntityDto.builder()
+                        .uri(solution.get("o").toString())
+                        .label(solution.get("label").asLiteral().getLexicalForm())
+                        .build();
+                return entity;
+            }
+        } catch (QueryParseException | IllegalArgumentException | RiotException e) {
+            log.error("Failed to parse query: {}", e.getMessage());
+            throw new QueryMalformedException("Failed to parse query: " + e.getMessage(), e);
+        }
+        log.error("Failed to find label: did not produce a result for uri {}", uri);
+        throw new QueryMalformedException("Failed to find uri: did not produce a result for uri " + uri);
     }
 
 }

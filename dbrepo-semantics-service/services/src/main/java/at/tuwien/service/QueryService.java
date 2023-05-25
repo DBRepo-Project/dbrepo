@@ -9,7 +9,9 @@ import java.util.List;
 
 public interface QueryService {
 
-    List<EntityDto> find(Ontology ontology, EntitySearchDto query) throws QueryMalformedException;
+    List<EntityDto> findByLabel(Ontology ontology, String label) throws QueryMalformedException;
 
-    List<EntityDto> find(Ontology ontology, EntitySearchDto query, Integer limit) throws QueryMalformedException;
+    List<EntityDto> findByLabel(Ontology ontology, String label, Integer limit) throws QueryMalformedException;
+
+    EntityDto findByUri(Ontology ontology, String uri) throws QueryMalformedException;
 }

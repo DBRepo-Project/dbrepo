@@ -54,12 +54,9 @@ public class TableServiceImpl implements TableService {
         final Table table = find(databaseId, tableId);
         final List<TableColumnEntityDto> suggestions = new LinkedList<>();
         for (TableColumn column : table.getColumns()) {
-            final EntitySearchDto search = EntitySearchDto.builder()
-                    .label(column.getName())
-                    .build();
             for (Ontology ontology : ontologyService.findAll()) {
                 final QueryService service = ontology.getSparqlEndpoint() != null ? sparqlService : rdfService;
-                suggestions.addAll(service.find(ontology, search, 3)
+                suggestions.addAll(service.findByLabel(ontology, column.getName(), 3)
                         .stream()
                         .map(e -> TableColumnEntityDto.builder()
                                 .databaseId(databaseId)
