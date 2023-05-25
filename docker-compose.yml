@@ -160,7 +160,7 @@ services:
     depends_on:
       dbrepo-authentication-service:
         condition: service_healthy
-      dbrepo-search-service:
+      dbrepo-search-db:
         condition: service_started
       dbrepo-broker-service:
         condition: service_healthy
@@ -311,7 +311,7 @@ services:
       xpack.security.enabled: "true"
       ELASTIC_PASSWORD: "elastic"
     volumes:
-      - search-service-data:/usr/share/elasticsearch/data
+      - search-db-data:/usr/share/elasticsearch/data
     logging:
       driver: json-file
 
@@ -366,7 +366,7 @@ services:
         condition: service_healthy
       dbrepo-query-service:
         condition: service_healthy
-      dbrepo-search-service:
+      dbrepo-search-db:
         condition: service_started
       dbrepo-semantics-service:
         condition: service_healthy
