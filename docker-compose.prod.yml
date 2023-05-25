@@ -263,10 +263,10 @@ services:
     logging:
       driver: json-file
 
-  dbrepo-search-service:
+  dbrepo-search-db:
     restart: always
-    container_name: dbrepo-search-service
-    hostname: search-service
+    container_name: dbrepo-search-db
+    hostname: search-db
     image: elasticsearch:8.7.1
     networks:
       core:

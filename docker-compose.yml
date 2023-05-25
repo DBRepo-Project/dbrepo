@@ -6,7 +6,7 @@ version: "3.6"
 
 volumes:
   metadata-db-data:
-  search-service-data:
+  search-db-data:
   broker-service-data:
   authentication-service-data:
 
@@ -31,6 +31,7 @@ networks:
         - subnet: 172.32.0.0/16
 
 services:
+
   dbrepo-metadata-db:
     restart: "no"
     container_name: dbrepo-metadata-db
@@ -291,10 +292,10 @@ services:
     logging:
       driver: json-file
 
-  dbrepo-search-service:
+  dbrepo-search-db:
     restart: always
-    container_name: dbrepo-search-service
-    hostname: search-service
+    container_name: dbrepo-search-db
+    hostname: search-db
     image: elasticsearch:8.7.1
     networks:
       core:
