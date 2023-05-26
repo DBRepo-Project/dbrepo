@@ -4,17 +4,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(code = HttpStatus.NOT_FOUND)
-public class SemanticConceptNotFoundException extends Exception {
+public class TableColumnNotFoundException extends Exception {
 
-    public SemanticConceptNotFoundException(String msg) {
+    public TableColumnNotFoundException(String msg) {
         super(msg);
     }
 
-    public SemanticConceptNotFoundException(String msg, Throwable thr) {
+    public TableColumnNotFoundException(String msg, Throwable thr) {
         super(msg, thr);
     }
 
-    public SemanticConceptNotFoundException(Throwable thr) {
+    public TableColumnNotFoundException(Throwable thr) {
         super(thr);
     }
 

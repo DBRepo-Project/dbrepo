@@ -1,6 +1,7 @@
 package at.tuwien.service;
 
 import at.tuwien.api.semantics.OntologyCreateDto;
+import at.tuwien.api.semantics.OntologyModifyDto;
 import at.tuwien.entities.semantics.Ontology;
 import at.tuwien.exception.OntologyNotFoundException;
 
@@ -13,5 +14,7 @@ public interface OntologyService {
 
     Ontology create(OntologyCreateDto data);
 
-    void delete(Long id);
+    Ontology update(Long id, OntologyModifyDto data) throws OntologyNotFoundException;
+
+    void delete(Long id) throws OntologyNotFoundException;
 }

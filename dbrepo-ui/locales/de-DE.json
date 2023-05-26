@@ -2,6 +2,8 @@
   "layout": {
     "information": "Information",
     "databases": "Datenbanken",
+    "semantics": "Semantik",
+    "ontologies": "Ontologien",
     "search": "Suchen ...",
     "login": "Anmelden",
     "logout": "Abmelden",

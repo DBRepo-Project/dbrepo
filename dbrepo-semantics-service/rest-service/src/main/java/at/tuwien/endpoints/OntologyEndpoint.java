@@ -1,8 +1,10 @@
 package at.tuwien.endpoints;
 
+import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.api.semantics.OntologyBriefDto;
 import at.tuwien.api.semantics.OntologyCreateDto;
 import at.tuwien.api.semantics.OntologyDto;
+import at.tuwien.api.semantics.OntologyModifyDto;
 import at.tuwien.exception.OntologyNotFoundException;
 import at.tuwien.mapper.OntologyMapper;
 import at.tuwien.service.OntologyService;
@@ -70,6 +72,11 @@ public class OntologyEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = OntologyDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Could not find ontology",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<OntologyDto> find(@NotNull @PathVariable("id") Long id) throws OntologyNotFoundException {
         log.debug("endpoint find all ontologies, id={}", id);
@@ -98,6 +105,32 @@ public class OntologyEndpoint {
                 .body(dto);
     }
 
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('update-ontology')")
+    @Timed(value = "semantics.ontology.update", description = "Time needed to update a new ontology")
+    @Operation(summary = "Update an ontology", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202",
+                    description = "Updated ontology successfully",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = OntologyDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Could not find ontology",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
+    public ResponseEntity<OntologyDto> update(@NotNull @PathVariable("id") Long id,
+                                              @NotNull @Valid @RequestBody OntologyModifyDto data,
+                                              @NotNull Principal principal) throws OntologyNotFoundException {
+        log.debug("endpoint update ontology, data={}, principal={}", data, principal);
+        final OntologyDto dto = ontologyMapper.ontologyToOntologyDto(ontologyService.update(id, data));
+        log.trace("update ontology resulted in dto {}", dto);
+        return ResponseEntity.accepted()
+                .body(dto);
+    }
+
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('delete-ontology')")
     @Timed(value = "semantics.ontology.delete", description = "Time needed to delete an ontology")
@@ -107,8 +140,13 @@ public class OntologyEndpoint {
                     description = "Deleted ontology successfully",
                     content = {@Content(
                             mediaType = "application/json")}),
+            @ApiResponse(responseCode = "404",
+                    description = "Could not find ontology",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<?> delete(@NotNull @PathVariable("id") Long id) {
+    public ResponseEntity<?> delete(@NotNull @PathVariable("id") Long id) throws OntologyNotFoundException {
         log.debug("endpoint delete ontology, id={}", id);
         ontologyService.delete(id);
         return ResponseEntity.accepted()

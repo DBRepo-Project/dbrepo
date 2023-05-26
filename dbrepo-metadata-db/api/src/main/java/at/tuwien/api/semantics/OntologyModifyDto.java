@@ -13,7 +13,7 @@ import lombok.extern.jackson.Jacksonized;
 @AllArgsConstructor
 @Jacksonized
 @ToString
-public class OntologyCreateDto {
+public class OntologyModifyDto {
 
     @NotBlank
     @Schema(example = "Ontology URI")

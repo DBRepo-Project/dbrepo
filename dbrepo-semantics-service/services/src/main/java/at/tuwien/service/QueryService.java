@@ -1,7 +1,6 @@
 package at.tuwien.service;
 
 import at.tuwien.api.semantics.EntityDto;
-import at.tuwien.api.semantics.EntitySearchDto;
 import at.tuwien.entities.semantics.Ontology;
 import at.tuwien.exception.QueryMalformedException;
 
@@ -13,5 +12,5 @@ public interface QueryService {
 
     List<EntityDto> findByLabel(Ontology ontology, String label, Integer limit) throws QueryMalformedException;
 
-    EntityDto findByUri(Ontology ontology, String uri) throws QueryMalformedException;
+    List<EntityDto> findByUri(Ontology ontology, String uri) throws QueryMalformedException;
 }

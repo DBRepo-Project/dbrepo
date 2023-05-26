@@ -1,6 +1,7 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.api.semantics.OntologyCreateDto;
+import at.tuwien.api.semantics.OntologyModifyDto;
 import at.tuwien.entities.semantics.Ontology;
 import at.tuwien.exception.OntologyNotFoundException;
 import at.tuwien.mapper.OntologyMapper;
@@ -49,7 +50,22 @@ public class OntologyServiceImpl implements OntologyService {
     }
 
     @Override
-    public void delete(Long id) {
+    public Ontology update(Long id, OntologyModifyDto data) throws OntologyNotFoundException {
+        final Ontology entity = find(id);
+        entity.setPrefix(data.getPrefix());
+        entity.setUri(data.getUri());
+        entity.setSparqlEndpoint(data.getSparqlEndpoint());
+        final Ontology ontology = ontologyRepository.save(entity);
+        log.info("Update ontology with id {}", ontology.getId());
+        return ontology;
+    }
+
+    @Override
+    public void delete(Long id) throws OntologyNotFoundException {
+        if (!ontologyRepository.existsById(id)) {
+            log.error("Failed to delete ontology: ontology with id {} does not exist", id);
+            throw new OntologyNotFoundException("Failed to delete ontology: ontology with id " + id + " does not exist");
+        }
         ontologyRepository.deleteById(id);
         log.info("Deleted ontology with id {}", id);
     }

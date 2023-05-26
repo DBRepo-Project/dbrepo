@@ -2,30 +2,47 @@
   <div>
     <v-card>
       <v-card-title>Assign Semantic Information</v-card-title>
-      <v-card-subtitle>We recommend the following ontologies</v-card-subtitle>
-      <v-card-text>
-        <v-skeleton-loader v-if="loadingOntologies" type="list-item-three-line" />
-        <div v-else>
-          <div v-for="(ontology,idx) in ontologies" :key="idx">
-            <strong>{{ ontology.prefix }}</strong>: <a :href="ontology.uri" target="_blank">{{ ontology.uri }}</a>
-          </div>
-        </div>
-      </v-card-text>
+      <v-card-subtitle v-if="!loadingSemantics">
+        Recommend <strong v-text="recommendations.length" /> {{ recommendations.length === 1 ? 'entity' : 'entities' }} that matches the column name
+      </v-card-subtitle>
       <v-card-text>
         <v-form ref="form" v-model="valid" autocomplete="off" @submit.prevent="submit">
-          <v-toolbar rounded outlined flat dense>
-            <v-text-field
-              v-model="uri"
-              :loading="loading"
-              solo
-              flat
-              dense
-              clearable
-              single-line
-              hide-details
-              placeholder="http://www.wikidata.org/entity/Q468777"
-              @click:clear="uri = null" />
-          </v-toolbar>
+          <v-row>
+            <v-col>
+              <v-progress-linear
+                v-if="loadingSemantics"
+                color="secondary"
+                indeterminate />
+              <v-list-item-group v-if="!loadingSemantics" v-model="recommendation">
+                <v-list-item v-for="(item,idx) in recommendations" :key="idx" three-line>
+                  <template v-slot:default="{ active, }">
+                    <v-list-item-action>
+                      <v-checkbox
+                        :input-value="active"
+                        color="primary" />
+                    </v-list-item-action>
+                    <v-list-item-content>
+                      <v-list-item-title v-text="item.label" />
+                      <v-list-item-subtitle v-text="item.uri" />
+                      <v-list-item-subtitle class="mt-1" v-text="item.comment" />
+                    </v-list-item-content>
+                  </template>
+                </v-list-item>
+              </v-list-item-group>
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col>
+              <v-text-field
+                v-model="uri"
+                :loading="loading"
+                clearable
+                label="URI"
+                :rules="[v => isUri(v) || $t('Must start with http:// or https://')]"
+                hint="e.g. http://www.wikidata.org/entity/Q468777"
+                @click:clear="uri = null" />
+            </v-col>
+          </v-row>
         </v-form>
       </v-card-text>
       <v-card-actions>
@@ -73,6 +90,8 @@ export default {
   },
   data () {
     return {
+      recommendation: null,
+      recommendations: [],
       dialog: false,
       saved: false,
       loadingSave: false,
@@ -80,6 +99,7 @@ export default {
       valid: false,
       loading: false,
       loadingOntologies: false,
+      loadingSemantics: false,
       ontologies: []
     }
   },
@@ -87,6 +107,7 @@ export default {
   },
   watch: {
     column () {
+      this.loadSemantics()
       if (this.column.unit && this.mode === 'unit') {
         this.uri = this.column.unit.uri
         return
@@ -96,10 +117,18 @@ export default {
         return
       }
       this.uri = null
+    },
+    recommendation (index) {
+      if (!this.recommendations[index] || !('uri' in this.recommendations[index])) {
+        this.uri = null
+        return
+      }
+      this.uri = this.recommendations[index].uri
     }
   },
   mounted () {
     this.loadOntologies()
+    this.loadSemantics()
   },
   methods: {
     cancel () {
@@ -133,6 +162,22 @@ export default {
         .finally(() => {
           this.loadingOntologies = false
         })
+    },
+    loadSemantics () {
+      this.loadingSemantics = true
+      SemanticService.suggestTableColumn(this.database.id, this.tableId, this.column.id)
+        .then((recommendations) => {
+          this.recommendations = recommendations
+        })
+        .finally(() => {
+          this.loadingSemantics = false
+        })
+    },
+    isUri (str) {
+      if (!str) {
+        return true
+      }
+      return str.match(/https?:\/\//g)
     },
     submit () {
       this.$refs.form.validate()

@@ -2,6 +2,8 @@
   "layout": {
     "information": "Information",
     "databases": "Databases",
+    "semantics": "Semantics",
+    "ontologies": "Ontologies",
     "search": "Search ...",
     "login": "Login",
     "logout": "Logout",

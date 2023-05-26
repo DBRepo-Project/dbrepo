@@ -31,6 +31,14 @@ public class OntologyDto {
     @Schema(example = "Ontology prefix")
     private String prefix;
 
+    @NotNull
+    @Schema(example = "true")
+    private Boolean sparql;
+
+    @NotNull
+    @Schema(example = "true")
+    private Boolean rdf;
+
     @JsonProperty("sparql_endpoint")
     @Schema(example = "Ontology SPARQL endpoint")
     private String sparqlEndpoint;

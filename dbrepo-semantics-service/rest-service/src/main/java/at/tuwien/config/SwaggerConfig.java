@@ -23,7 +23,7 @@ public class SwaggerConfig {
     public OpenAPI springShopOpenAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("Database Repository Table Service API")
+                        .title("Database Repository Semantic Service API")
                         .contact(new Contact()
                                 .name("Prof. Andreas Rauber")
                                 .email("andreas.rauber@tuwien.ac.at"))
@@ -37,7 +37,7 @@ public class SwaggerConfig {
                         .url("https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services"))
                 .servers(List.of(new Server()
                                 .description("Generated server url")
-                                .url("http://localhost:9094"),
+                                .url("http://localhost:9097"),
                         new Server()
                                 .description("Sandbox")
                                 .url("https://dbrepo2.tuwien.ac.at")));

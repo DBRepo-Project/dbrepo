@@ -1,9 +1,7 @@
 package at.tuwien.handlers;
 
 import at.tuwien.api.error.ApiErrorDto;
-import at.tuwien.exception.OntologyNotFoundException;
-import at.tuwien.exception.QueryMalformedException;
-import at.tuwien.exception.TableNotFoundException;
+import at.tuwien.exception.*;
 import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -18,6 +16,18 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
     @Hidden
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler({FilterBadRequestException.class})
+    public ResponseEntity<ApiErrorDto> handle(FilterBadRequestException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.BAD_REQUEST)
+                .message(e.getLocalizedMessage())
+                .code("error.semantic.filter")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
+    @Hidden
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler({OntologyNotFoundException.class})
     public ResponseEntity<ApiErrorDto> handle(OntologyNotFoundException e, WebRequest request) {
@@ -25,6 +35,18 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
                 .status(HttpStatus.NOT_FOUND)
                 .message(e.getLocalizedMessage())
                 .code("error.ontology.notfound")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
+    @Hidden
+    @ResponseStatus(HttpStatus.EXPECTATION_FAILED)
+    @ExceptionHandler({QueryMalformedException.class})
+    public ResponseEntity<ApiErrorDto> handle(QueryMalformedException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.EXPECTATION_FAILED)
+                .message(e.getLocalizedMessage())
+                .code("error.semantic.querymalformed")
                 .build();
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
@@ -43,12 +65,12 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
     @Hidden
     @ResponseStatus(HttpStatus.EXPECTATION_FAILED)
-    @ExceptionHandler({QueryMalformedException.class})
-    public ResponseEntity<ApiErrorDto> handle(QueryMalformedException e, WebRequest request) {
+    @ExceptionHandler({UriMalformedException.class})
+    public ResponseEntity<ApiErrorDto> handle(UriMalformedException e, WebRequest request) {
         final ApiErrorDto response = ApiErrorDto.builder()
-                .status(HttpStatus.NOT_FOUND)
+                .status(HttpStatus.EXPECTATION_FAILED)
                 .message(e.getLocalizedMessage())
-                .code("error.semantic.querymalformed")
+                .code("error.semantic.urimalformed")
                 .build();
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }

@@ -256,7 +256,7 @@ services:
     networks:
       core:
     ports:
-      - "5010:5010"
+      - "9097:9097"
     env_file:
       - .env
     volumes:

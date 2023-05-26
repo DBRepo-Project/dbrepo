@@ -38,6 +38,17 @@
             <v-list-item-title>{{ $t('layout.databases', { name: 'vue-i18n' }) }}</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
+        <v-list-item
+          v-if="canListOntologies"
+          to="/semantic"
+          router>
+          <v-list-item-action>
+            <v-icon>mdi-share-variant</v-icon>
+          </v-list-item-action>
+          <v-list-item-content>
+            <v-list-item-title>{{ $t('layout.semantics', { name: 'vue-i18n' }) }}</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
       </v-list>
       <div id="messages">
         <v-alert
@@ -166,8 +177,17 @@ export default {
     database () {
       return this.$store.state.database
     },
+    roles () {
+      return this.$store.state.roles
+    },
     version () {
       return this.$config.version
+    },
+    canListOntologies () {
+      if (!this.roles) {
+        return false
+      }
+      return this.roles.includes('list-ontologies')
     },
     sandbox () {
       if (this.$config.sandbox === undefined) {
@@ -216,6 +236,7 @@ export default {
   },
   mounted () {
     this.$store.dispatch('reloadMessages')
+    this.$store.dispatch('reloadOntologies')
     if (this.locale) {
       this.$i18n.locale = this.locale
     }

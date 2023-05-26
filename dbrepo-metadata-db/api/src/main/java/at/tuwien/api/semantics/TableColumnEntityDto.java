@@ -31,8 +31,10 @@ public class TableColumnEntityDto {
     @Schema(example = "https://www.wikidata.org/entity/Q1686799")
     private String uri;
 
-    @NotBlank
     @Schema(example = "Apache Jena")
     private String label;
+
+    @Schema(example = "open source semantic web framework for Java")
+    private String comment;
 
 }
