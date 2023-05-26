@@ -45,7 +45,9 @@ public class WebSecurityConfig {
                 new AntPathRequestMatcher("/swagger-ui.html")
         );
         final OrRequestMatcher publicEndpoints = new OrRequestMatcher(
-                new AntPathRequestMatcher("/api/semantic/ontology/**", "GET")
+                new AntPathRequestMatcher("/api/semantic/ontology/**", "GET"),
+                new AntPathRequestMatcher("/api/semantic/concept", "GET"),
+                new AntPathRequestMatcher("/api/semantic/unit", "GET")
         );
         /* enable CORS and disable CSRF */
         http = http.cors().and().csrf().disable();

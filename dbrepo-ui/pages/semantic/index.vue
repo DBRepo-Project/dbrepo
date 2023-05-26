@@ -5,19 +5,76 @@
       <v-spacer />
       <v-toolbar-title>
         <v-btn v-if="canListOntologies" to="/semantic/ontology" color="secondary">
-          Ontologies
+          {{ ontologies.length }} Ontologies
         </v-btn>
       </v-toolbar-title>
     </v-toolbar>
+    <v-tabs v-model="tab">
+      <v-tab>Concepts</v-tab>
+      <v-tab>Units</v-tab>
+    </v-tabs>
+    <v-card flat>
+      <v-card-text>
+        <v-data-table
+          :headers="headers"
+          :items="rows"
+          :options.sync="options"
+          :server-items-length="total"
+          :footer-props="footerProps">
+          <template v-slot:item.uri="{ item }">
+            <a :href="item.uri" target="_blank" v-text="item.uri" />
+          </template>
+          <template v-slot:item.action="{ item }">
+            <v-btn small @click="edit(item)">
+              Edit
+            </v-btn>
+          </template>
+        </v-data-table>
+      </v-card-text>
+    </v-card>
+    <v-dialog
+      v-model="editSemanticDialog"
+      persistent
+      max-width="640">
+      <EditSemantics :entity="entity" @close="close" />
+    </v-dialog>
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
   </div>
 </template>
 <script>
+import SemanticService from '@/api/semantic.service'
+import EditSemantics from '@/components/dialogs/EditSemantics.vue'
+
 export default {
   components: {
+    EditSemantics
   },
   data () {
     return {
+      loadingConcepts: false,
+      loadingUnits: false,
+      entity: null,
+      editSemanticDialog: false,
+      headers: [
+        { text: 'Name', value: 'name' },
+        { text: 'URI', value: 'uri' },
+        { text: 'Usages', value: 'usages' },
+        { text: null, value: 'action' }
+      ],
+      options: {
+        page: 1,
+        itemsPerPage: 10
+      },
+      total: -1,
+      footerProps: {
+        'items-per-page-options': [10, 20, 30, 40, 50]
+      },
+      tab: 0,
+      tabs: [
+        'concepts', 'units'
+      ],
+      concepts: [],
+      units: [],
       createOntologyDialog: false,
       items: [
         { text: `${this.$t('layout.semantics', { name: 'vue-i18n' })}`, to: '/semantic', activeClass: '' }
@@ -34,6 +91,12 @@ export default {
     roles () {
       return this.$store.state.roles
     },
+    ontologies () {
+      return this.$store.state.ontologies
+    },
+    rows () {
+      return this.tab === 0 ? this.concepts : this.units
+    },
     canListOntologies () {
       if (!this.roles) {
         return false
@@ -41,7 +104,46 @@ export default {
       return this.roles.includes('list-ontologies')
     }
   },
+  mounted () {
+    this.loadUnits()
+    this.loadConcepts()
+  },
   methods: {
+    loadConcepts () {
+      this.loadingConcepts = true
+      SemanticService.findAllConcepts()
+        .then((concepts) => {
+          concepts = concepts.map((column) => {
+            column.usages = column.columns.length
+            return column
+          })
+          this.concepts = concepts
+        })
+        .finally(() => {
+          this.loadingConcepts = false
+        })
+    },
+    loadUnits () {
+      this.loadingUnits = true
+      SemanticService.findAllUnits()
+        .then((units) => {
+          units = units.map((unit) => {
+            unit.usages = unit.columns.length
+            return unit
+          })
+          this.units = units
+        })
+        .finally(() => {
+          this.loadingUnits = false
+        })
+    },
+    edit (entity) {
+      this.entity = entity
+      this.editSemanticDialog = true
+    },
+    close (event) {
+      this.editSemanticDialog = false
+    }
   }
 }
 </script>

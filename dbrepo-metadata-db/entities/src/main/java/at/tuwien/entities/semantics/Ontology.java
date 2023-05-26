@@ -29,10 +29,10 @@ public class Ontology {
     @Column(updatable = false, nullable = false)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String uri;
 
-    @Column(nullable = false, columnDefinition = "VARCHAR(8)")
+    @Column(nullable = false, unique = true, columnDefinition = "VARCHAR(8)")
     private String prefix;
 
     @Column

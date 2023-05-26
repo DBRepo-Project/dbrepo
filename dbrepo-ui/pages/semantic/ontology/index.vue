@@ -1,7 +1,7 @@
 <template>
   <div v-if="canListOntologies">
     <v-toolbar flat>
-      <v-toolbar-title>{{ $t('layout.ontologies', { name: 'vue-i18n' }) }}</v-toolbar-title>
+      <v-toolbar-title>{{ ontologies.length }} {{ $t('layout.ontologies', { name: 'vue-i18n' }) }}</v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
         <v-btn v-if="canCreateOntology" color="primary" name="create-ontology" @click.stop="createOntologyDialog = true">
@@ -46,6 +46,9 @@ export default {
     },
     roles () {
       return this.$store.state.roles
+    },
+    ontologies () {
+      return this.$store.state.ontologies
     },
     canListOntologies () {
       if (!this.roles) {

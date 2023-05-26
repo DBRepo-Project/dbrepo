@@ -19,6 +19,40 @@ class SemanticService {
     })
   }
 
+  findAllConcepts () {
+    return new Promise((resolve, reject) => {
+      api.get('/api/semantic/concept', { headers: { Accept: 'application/json' } })
+        .then((response) => {
+          const concepts = response.data
+          console.debug('response concepts', concepts)
+          resolve(concepts)
+        })
+        .catch((error) => {
+          const { code, message } = error
+          console.error('Failed to load concepts', error)
+          Vue.$toast.error(`[${code}] Failed to load concepts: ${message}`)
+          reject(error)
+        })
+    })
+  }
+
+  findAllUnits () {
+    return new Promise((resolve, reject) => {
+      api.get('/api/semantic/unit', { headers: { Accept: 'application/json' } })
+        .then((response) => {
+          const units = response.data
+          console.debug('response units', units)
+          resolve(units)
+        })
+        .catch((error) => {
+          const { code, message } = error
+          console.error('Failed to load units', error)
+          Vue.$toast.error(`[${code}] Failed to load units: ${message}`)
+          reject(error)
+        })
+    })
+  }
+
   findOntology (id) {
     return new Promise((resolve, reject) => {
       api.get(`/api/semantic/ontology/${id}`, { headers: { Accept: 'application/json' } })

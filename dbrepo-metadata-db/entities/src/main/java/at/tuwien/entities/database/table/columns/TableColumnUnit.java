@@ -36,4 +36,15 @@ public class TableColumnUnit {
     @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP")
     @CreatedDate
     private Instant created;
+
+    @ToString.Exclude
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "mdb_columns_concepts",
+            inverseJoinColumns = {
+                    @JoinColumn(name = "cid", referencedColumnName = "id", insertable = false, updatable = false),
+                    @JoinColumn(name = "tid", referencedColumnName = "tid", insertable = false, updatable = false),
+                    @JoinColumn(name = "cdbid", referencedColumnName = "cdbid", insertable = false, updatable = false)
+            },
+            joinColumns = @JoinColumn(name = "uri", referencedColumnName = "uri"))
+    private List<TableColumn> columns;
 }

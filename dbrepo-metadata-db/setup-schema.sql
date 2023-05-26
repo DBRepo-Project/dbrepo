@@ -353,6 +353,8 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_ontologies`
     last_modified   timestamp,
     created         timestamp              NOT NULL DEFAULT NOW(),
     created_by      character varying(255) NULL,
+    UNIQUE (prefix),
+    UNIQUE (uri),
     PRIMARY KEY (id)
 ) WITH SYSTEM VERSIONING;
 
