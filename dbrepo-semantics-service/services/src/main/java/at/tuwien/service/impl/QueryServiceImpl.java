@@ -30,10 +30,13 @@ public class QueryServiceImpl implements QueryService {
 
     private final Dataset dataset;
     private final OntologyMapper ontologyMapper;
+    private final OntologyRepository ontologyRepository;
 
     @Autowired
-    public QueryServiceImpl(OntologyRepository ontologyRepository, OntologyMapper ontologyMapper) {
+    public QueryServiceImpl(OntologyRepository ontologyRepository, OntologyMapper ontologyMapper,
+                            OntologyRepository ontologyRepository1) {
         this.ontologyMapper = ontologyMapper;
+        this.ontologyRepository = ontologyRepository1;
         final Context context = ARQ.getContext().copy();
         this.dataset = DatasetFactory.create();
         /* registry */
@@ -62,17 +65,19 @@ public class QueryServiceImpl implements QueryService {
 
     @Override
     public List<EntityDto> findByLabel(Ontology ontology, String label, Integer limit) throws QueryMalformedException {
-        final String statement = ontologyMapper.ontologyToFindByLabelQuery(ontology, label, limit);
+        final List<Ontology> ontologies = ontologyRepository.findAll();
+        final String statement = ontologyMapper.ontologyToFindByLabelQuery(ontologies, ontology, label, limit);
+        log.trace("execute sparql query:\n{}", statement);
         final List<EntityDto> results = new LinkedList<>();
         try (QueryExecution execution = QueryExecutionFactory.create(statement, this.dataset.getDefaultModel())) {
             final Iterator<QuerySolution> resultSet = execution.execSelect();
             while (resultSet.hasNext()) {
                 final QuerySolution solution = resultSet.next();
-                final RDFNode comment = solution.get("comment");
+                final RDFNode description = solution.get("description");
                 final EntityDto entity = EntityDto.builder()
                         .uri(solution.get("o").toString())
                         .label(label)
-                        .comment(comment != null ? comment.asLiteral().getLexicalForm() : null)
+                        .description(description != null ? description.asLiteral().getLexicalForm() : null)
                         .build();
                 results.add(entity);
             }
@@ -85,18 +90,20 @@ public class QueryServiceImpl implements QueryService {
 
     @Override
     public List<EntityDto> findByUri(Ontology ontology, String uri) throws QueryMalformedException {
-        final String statement = ontologyMapper.ontologyToFindByUriQuery(ontology, uri);
+        final List<Ontology> ontologies = ontologyRepository.findAll();
+        final String statement = ontologyMapper.ontologyToFindByUriQuery(ontologies, ontology, uri);
+        log.trace("execute sparql query:\n{}", statement);
         try (QueryExecution execution = QueryExecutionFactory.create(statement, this.dataset.getDefaultModel())) {
             final Iterator<QuerySolution> resultSet = execution.execSelect();
             final List<EntityDto> results = new LinkedList<>();
             while (resultSet.hasNext()) {
                 final QuerySolution solution = resultSet.next();
                 final RDFNode label = solution.get("label");
-                final RDFNode comment = solution.get("comment");
+                final RDFNode description = solution.get("description");
                 final EntityDto entity = EntityDto.builder()
                         .uri(uri)
                         .label(label != null ? label.asLiteral().getLexicalForm() : null)
-                        .comment(comment != null ? comment.asLiteral().getLexicalForm() : null)
+                        .description(description != null ? description.asLiteral().getLexicalForm() : null)
                         .build();
                 results.add(entity);
             }

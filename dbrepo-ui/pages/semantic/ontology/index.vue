@@ -1,6 +1,11 @@
 <template>
   <div v-if="canListOntologies">
     <v-toolbar flat>
+      <v-toolbar-title>
+        <v-btn id="back-btn" plain class="mr-2" to="/semantic">
+          <v-icon left>mdi-arrow-left</v-icon>
+        </v-btn>
+      </v-toolbar-title>
       <v-toolbar-title>{{ ontologies.length }} {{ $t('layout.ontologies', { name: 'vue-i18n' }) }}</v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>

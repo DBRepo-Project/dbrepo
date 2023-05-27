@@ -25,39 +25,39 @@
             <a :href="item.uri" target="_blank" v-text="item.uri" />
           </template>
           <template v-slot:item.action="{ item }">
-            <v-btn small @click="edit(item)">
-              Edit
+            <v-btn small :disabled="disabled(item)" @click="view(item)">
+              Usages
             </v-btn>
           </template>
         </v-data-table>
       </v-card-text>
     </v-card>
     <v-dialog
-      v-model="editSemanticDialog"
-      persistent
+      v-model="viewSemanticEntityDialog"
       max-width="640">
-      <EditSemantics :entity="entity" @close="close" />
+      <ViewSemanticEntity :mode="mode" :entity="entity" @close="close" />
     </v-dialog>
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
   </div>
 </template>
 <script>
 import SemanticService from '@/api/semantic.service'
-import EditSemantics from '@/components/dialogs/EditSemantics.vue'
+import ViewSemanticEntity from '@/components/dialogs/ViewSemanticEntity.vue'
 
 export default {
   components: {
-    EditSemantics
+    ViewSemanticEntity
   },
   data () {
     return {
       loadingConcepts: false,
       loadingUnits: false,
       entity: null,
-      editSemanticDialog: false,
+      viewSemanticEntityDialog: false,
       headers: [
-        { text: 'Name', value: 'name' },
         { text: 'URI', value: 'uri' },
+        { text: 'Name', value: 'name' },
+        { text: 'Description', value: 'description' },
         { text: 'Usages', value: 'usages' },
         { text: null, value: 'action' }
       ],
@@ -96,6 +96,9 @@ export default {
     },
     rows () {
       return this.tab === 0 ? this.concepts : this.units
+    },
+    mode () {
+      return this.tab === 0 ? 'concept' : 'unit'
     },
     canListOntologies () {
       if (!this.roles) {
@@ -137,12 +140,20 @@ export default {
           this.loadingUnits = false
         })
     },
-    edit (entity) {
+    disabled (item) {
+      return !item.usages || this.usages === 0
+    },
+    view (entity) {
       this.entity = entity
-      this.editSemanticDialog = true
+      this.viewSemanticEntityDialog = true
     },
     close (event) {
-      this.editSemanticDialog = false
+      if (this.mode === 'unit') {
+        this.loadUnits()
+      } else if (this.mode === 'concept') {
+        this.loadConcepts()
+      }
+      this.viewSemanticEntityDialog = false
     }
   }
 }

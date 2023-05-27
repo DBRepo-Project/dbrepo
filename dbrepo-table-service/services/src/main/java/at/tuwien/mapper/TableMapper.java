@@ -14,6 +14,7 @@ import at.tuwien.api.database.table.constraints.ConstraintsCreateDto;
 import at.tuwien.api.database.table.constraints.foreignKey.ForeignKeyCreateDto;
 import at.tuwien.api.database.table.constraints.foreignKey.ForeignKeyDto;
 import at.tuwien.api.database.table.constraints.foreignKey.ReferenceTypeDto;
+import at.tuwien.api.semantics.EntityDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
@@ -85,14 +86,14 @@ public interface TableMapper {
     Table tableCreateDtoToTable(TableCreateDto data);
 
     @Mappings({
-            @Mapping(source = "conceptUri", target = "uri")
+            @Mapping(source = "label", target = "name")
     })
-    TableColumnConcept columnSemanticsUpdateDtoToTableColumnConcept(ColumnSemanticsUpdateDto data);
+    TableColumnConcept entityDtoToTableColumnConcept(EntityDto data);
 
     @Mappings({
-            @Mapping(source = "unitUri", target = "uri")
+            @Mapping(source = "label", target = "name")
     })
-    TableColumnUnit columnSemanticsUpdateDtoToTableColumnUnit(ColumnSemanticsUpdateDto data);
+    TableColumnUnit entityDtoToTableColumnUnit(EntityDto data);
 
     default TableColumn columnNameToTableColumn(Table table, String name) throws TableMalformedException {
         String internalName = nameToInternalName(name);

@@ -78,16 +78,14 @@ public interface TableService {
      * @param tableId     The table id.
      * @param columnId    The column id.
      * @param updateDto   The update data containing unit and concept uris.
-     * @return The updated table column.
-     * @throws TableNotFoundException
+     * @return The updated table column, if successful.
+     * @throws TableNotFoundException     The table was not found in the metadata database.
      * @throws DatabaseNotFoundException  The database was not found in the metadata database.
      * @throws ContainerNotFoundException The container was not found.
      * @throws TableMalformedException    The table seems malformed by the mapper.
-     * @throws UnitNotFoundException
-     * @throws ConceptNotFoundException
      */
     TableColumn update(Long containerId, Long databaseId, Long tableId, Long columnId,
                        ColumnSemanticsUpdateDto updateDto, String authorization)
             throws TableNotFoundException, DatabaseNotFoundException, ContainerNotFoundException,
-            TableMalformedException, UnitNotFoundException, ConceptNotFoundException, SemanticEntityPersistException;
+            TableMalformedException, SemanticEntityPersistException, SemanticEntityNotFoundException;
 }

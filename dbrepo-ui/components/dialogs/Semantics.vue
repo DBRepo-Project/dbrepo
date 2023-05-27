@@ -1,37 +1,61 @@
 <template>
   <div>
     <v-card>
-      <v-card-title>Assign Semantic Information</v-card-title>
-      <v-card-subtitle v-if="!loadingSemantics">
-        Recommend <strong v-text="recommendations.length" /> {{ recommendations.length === 1 ? 'entity' : 'entities' }} that matches the column name
-      </v-card-subtitle>
+      <v-progress-linear
+        v-if="loadingSemantics"
+        color="primary"
+        indeterminate />
+      <v-card-title v-text="column.name" />
+      <v-card-subtitle v-if="loadingSemantics && !semanticEntity">Loading semantic recommendations ...</v-card-subtitle>
+      <v-card-text>
+        <v-alert
+          v-if="!entity"
+          border="left"
+          color="info"
+          dark
+          icon="mdi-share-variant"
+          class="pl-6">
+          <p>
+            The following ontologies automatically will query the fields <code>rdfs:label</code> and
+            <code>schema:description</code> and store it for this column. You can still use other URIs that are not
+            matching these ontologies, the URI will be displayed instead.
+          </p>
+          <div v-for="(item,idx) in ontologies" :key="idx">
+            <a :href="item.uri" target="_blank" v-text="item.uri" />
+          </div>
+        </v-alert>
+        <v-alert
+          v-if="entity"
+          border="left"
+          color="primary"
+          dark
+          icon="mdi-share-variant"
+          class="pl-6">
+          <div>
+            <a :href="entity.uri" class="white--text" target="_blank" v-text="entity.name ? entity.name : entity.uri" />
+          </div>
+          <div v-text="entity.description" />
+        </v-alert>
+      </v-card-text>
       <v-card-text>
         <v-form ref="form" v-model="valid" autocomplete="off" @submit.prevent="submit">
-          <v-row>
-            <v-col>
-              <v-progress-linear
-                v-if="loadingSemantics"
-                color="secondary"
-                indeterminate />
-              <v-list-item-group v-if="!loadingSemantics" v-model="recommendation">
-                <v-list-item v-for="(item,idx) in recommendations" :key="idx" three-line>
-                  <template v-slot:default="{ active, }">
-                    <v-list-item-action>
-                      <v-checkbox
-                        :input-value="active"
-                        color="primary" />
-                    </v-list-item-action>
-                    <v-list-item-content>
-                      <v-list-item-title v-text="item.label" />
-                      <v-list-item-subtitle v-text="item.uri" />
-                      <v-list-item-subtitle class="mt-1" v-text="item.comment" />
-                    </v-list-item-content>
-                  </template>
-                </v-list-item>
-              </v-list-item-group>
-            </v-col>
-          </v-row>
-          <v-row>
+          <v-list-item-group v-if="!loadingSemantics" v-model="recommendation">
+            <v-list-item v-for="(item,idx) in recommendations" :key="idx" three-line>
+              <template v-slot:default="{ active, }">
+                <v-list-item-action>
+                  <v-checkbox
+                    :input-value="active"
+                    color="primary" />
+                </v-list-item-action>
+                <v-list-item-content>
+                  <v-list-item-title v-text="item.label" />
+                  <v-list-item-subtitle v-text="item.uri" />
+                  <v-list-item-subtitle class="mt-1" v-text="item.description" />
+                </v-list-item-content>
+              </template>
+            </v-list-item>
+          </v-list-item-group>
+          <v-row dense>
             <v-col>
               <v-text-field
                 v-model="uri"
@@ -99,24 +123,26 @@ export default {
       valid: false,
       loading: false,
       loadingOntologies: false,
-      loadingSemantics: false,
-      ontologies: []
+      loadingSemantics: false
     }
   },
   computed: {
+    ontologies () {
+      return this.$store.state.ontologies
+    },
+    entity () {
+      if (!this.column[this.mode]) {
+        return null
+      }
+      return this.column[this.mode]
+    }
   },
   watch: {
     column () {
-      this.loadSemantics()
-      if (this.column.unit && this.mode === 'unit') {
-        this.uri = this.column.unit.uri
-        return
+      if (!this.column[this.mode]) {
+        this.recommendSemantics()
       }
-      if (this.column.concept && this.mode === 'concept') {
-        this.uri = this.column.concept.uri
-        return
-      }
-      this.uri = null
+      this.init()
     },
     recommendation (index) {
       if (!this.recommendations[index] || !('uri' in this.recommendations[index])) {
@@ -127,8 +153,10 @@ export default {
     }
   },
   mounted () {
-    this.loadOntologies()
-    this.loadSemantics()
+    this.init()
+    if (!this.column[this.mode]) {
+      this.recommendSemantics()
+    }
   },
   methods: {
     cancel () {
@@ -153,17 +181,7 @@ export default {
           this.loadingSave = false
         })
     },
-    loadOntologies () {
-      this.loadingOntologies = true
-      SemanticService.findAllOntologies()
-        .then((ontologies) => {
-          this.ontologies = ontologies
-        })
-        .finally(() => {
-          this.loadingOntologies = false
-        })
-    },
-    loadSemantics () {
+    recommendSemantics () {
       this.loadingSemantics = true
       SemanticService.suggestTableColumn(this.database.id, this.tableId, this.column.id)
         .then((recommendations) => {
@@ -178,6 +196,17 @@ export default {
         return true
       }
       return str.match(/https?:\/\//g)
+    },
+    init () {
+      if (this.column.unit && this.mode === 'unit') {
+        this.uri = this.column.unit.uri
+        return
+      }
+      if (this.column.concept && this.mode === 'concept') {
+        this.uri = this.column.concept.uri
+        return
+      }
+      this.uri = null
     },
     submit () {
       this.$refs.form.validate()

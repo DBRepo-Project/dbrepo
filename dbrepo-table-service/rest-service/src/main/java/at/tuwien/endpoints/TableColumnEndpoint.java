@@ -85,8 +85,8 @@ public class TableColumnEndpoint {
                                             @NotNull Principal principal,
                                             @NotNull @RequestHeader("Authorization") String authorization)
             throws TableNotFoundException, TableMalformedException, DatabaseNotFoundException,
-            ContainerNotFoundException, UnitNotFoundException, ConceptNotFoundException, NotAllowedException,
-            SemanticEntityPersistException {
+            ContainerNotFoundException, NotAllowedException, SemanticEntityPersistException,
+            SemanticEntityNotFoundException {
         log.debug("endpoint update table, containerId={}, databaseId={}, tableId={}, principal={}", containerId,
                 databaseId, tableId, principal);
         if (!User.hasRole(principal, "modify-foreign-table-column-semantics")) {

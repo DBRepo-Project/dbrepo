@@ -1,9 +1,6 @@
 package at.tuwien.endpoints;
 
-import at.tuwien.api.database.table.columns.concepts.ConceptDto;
-import at.tuwien.api.database.table.columns.concepts.ConceptSaveDto;
-import at.tuwien.api.database.table.columns.concepts.UnitDto;
-import at.tuwien.api.database.table.columns.concepts.UnitSaveDto;
+import at.tuwien.api.database.table.columns.concepts.*;
 import at.tuwien.mapper.OntologyMapper;
 import at.tuwien.mapper.SemanticMapper;
 import at.tuwien.service.SemanticService;
@@ -67,39 +64,19 @@ public class SemanticsEndpoint {
     @PostMapping("/concept")
     @Transactional
     @PreAuthorize("hasAuthority('create-semantic-concept')")
-    @Timed(value = "semantics.concept.save", description = "Time needed to create or update a semantic concept")
+    @Timed(value = "semantics.concept.save", description = "Time needed to save a semantic concept")
     @Operation(summary = "Create or update a semantic concept", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
-                    description = "Created or updated a semantic concept",
+                    description = "Saved a semantic concept",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ConceptDto.class))}),
     })
     public ResponseEntity<ConceptDto> saveConcept(@NotNull @Valid @RequestBody ConceptSaveDto data) {
-        log.debug("endpoint save or update concept, data={}", data);
+        log.debug("endpoint save concept, data={}", data);
         final ConceptDto dto = ontologyMapper.tableColumnConceptToConceptDto(semanticService.saveConcept(data));
-        log.trace("save or update concept resulted in dto {}", dto);
-        return ResponseEntity.ok()
-                .body(dto);
-    }
-
-    @PutMapping("/concept")
-    @Transactional
-    @PreAuthorize("hasAuthority('create-semantic-concept')")
-    @Timed(value = "semantics.concept.save", description = "Time needed to create or update a semantic concept")
-    @Operation(summary = "Create or update a semantic concept", security = @SecurityRequirement(name = "bearerAuth"))
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "202",
-                    description = "Created or updated a semantic concept",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ConceptDto.class))}),
-    })
-    public ResponseEntity<ConceptDto> saveConcept(@NotNull @Valid @RequestBody ConceptSaveDto data) {
-        log.debug("endpoint save or update concept, data={}", data);
-        final ConceptDto dto = ontologyMapper.tableColumnConceptToConceptDto(semanticService.saveConcept(data));
-        log.trace("save or update concept resulted in dto {}", dto);
+        log.trace("save concept resulted in dto {}", dto);
         return ResponseEntity.ok()
                 .body(dto);
     }
@@ -129,11 +106,11 @@ public class SemanticsEndpoint {
     @PostMapping("/unit")
     @Transactional
     @PreAuthorize("hasAuthority('create-semantic-unit')")
-    @Timed(value = "semantics.unit.save", description = "Time needed to create or update a semantic unit")
-    @Operation(summary = "Create or update a semantic unit", security = @SecurityRequirement(name = "bearerAuth"))
+    @Timed(value = "semantics.unit.save", description = "Time needed to save a semantic unit")
+    @Operation(summary = "Save a semantic unit", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
-                    description = "Created or updated a semantic unit",
+                    description = "Saved a semantic unit",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = UnitDto.class))}),
@@ -141,7 +118,7 @@ public class SemanticsEndpoint {
     public ResponseEntity<UnitDto> saveConcept(@NotNull @Valid @RequestBody UnitSaveDto data) {
         log.debug("endpoint save or update unit, data={}", data);
         final UnitDto dto = ontologyMapper.tableColumnUnitToUnitDto(semanticService.saveUnit(data));
-        log.trace("save or update unit resulted in dto {}", dto);
+        log.trace("save unit resulted in dto {}", dto);
         return ResponseEntity.accepted()
                 .body(dto);
     }

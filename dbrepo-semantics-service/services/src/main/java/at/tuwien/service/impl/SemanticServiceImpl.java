@@ -34,15 +34,13 @@ public class SemanticServiceImpl implements SemanticService {
     @Override
     @Transactional(readOnly = true)
     public List<TableColumnConcept> findAllConcepts() {
-        final List<TableColumnConcept> concepts = tableColumnConceptRepository.findAll();
-        return concepts;
+        return tableColumnConceptRepository.findAll();
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<TableColumnUnit> findAllUnits() {
-        final List<TableColumnUnit> units = tableColumnUnitRepository.findAll();
-        return units;
+        return tableColumnUnitRepository.findAll();
     }
 
     @Override

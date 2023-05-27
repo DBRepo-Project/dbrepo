@@ -23,8 +23,9 @@ public class UnitDto {
     @NotBlank
     private String uri;
 
-    @NotBlank
     private String name;
+
+    private String description;
 
     @NotNull
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")

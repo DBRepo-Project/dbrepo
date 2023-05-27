@@ -1,0 +1,72 @@
+<template>
+  <div>
+    <v-card>
+      <v-card-title v-text="entity.name" />
+      <v-card-subtitle>
+        <a :href="entity.uri" target="_blank" v-text="entity.uri" />
+      </v-card-subtitle>
+      <v-card-text>
+        <p v-text="description" />
+      </v-card-text>
+      <div v-for="(item,idx) in entity.columns" :key="idx">
+        <v-list-item-group>
+          <v-list-item two-line :to="link(item)">
+            <v-list-item-content>
+              <v-list-item-title v-text="item.name" />
+              <v-list-item-subtitle class="mt-2" v-text="link(item)" />
+            </v-list-item-content>
+          </v-list-item>
+        </v-list-item-group>
+      </div>
+      <v-card-actions class="mt-2">
+        <v-spacer />
+        <v-btn
+          class="mb-2"
+          @click="cancel">
+          Cancel
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </div>
+</template>
+
+<script>
+export default {
+  props: {
+    mode: {
+      type: String,
+      default () {
+        return 'unit'
+      }
+    },
+    entity: {
+      type: Object,
+      default () {
+        return {}
+      }
+    }
+  },
+  data () {
+    return {
+    }
+  },
+  computed: {
+    description () {
+      if (!this.entity.description) {
+        return '(no description)'
+      }
+      return this.entity.description
+    }
+  },
+  methods: {
+    cancel () {
+      this.$emit('close', { success: false, action: 'cancel' })
+    },
+    link (item) {
+      return `/container/${item.database_id}/database/${item.database_id}/table/${item.table_id}/schema`
+    }
+  }
+}
+</script>
+<style scoped>
+</style>

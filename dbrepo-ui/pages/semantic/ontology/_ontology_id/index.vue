@@ -2,8 +2,15 @@
   <div v-if="canListOntologies">
     <v-toolbar flat>
       <v-toolbar-title>
+        <v-btn id="back-btn" plain class="mr-2" to="/semantic/ontology">
+          <v-icon left>mdi-arrow-left</v-icon>
+        </v-btn>
+      </v-toolbar-title>
+      <v-toolbar-title>
         <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
-        <span v-if="!loading" v-text="title" />
+        <span v-if="!loading">
+          Ontology <a v-if="ontology" :href="ontology.uri" target="_blank" v-text="ontology.uri" />
+        </span>
       </v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
@@ -117,12 +124,6 @@ export default {
     ontologies () {
       return this.$store.state.ontologies
     },
-    title () {
-      if (!this.ontology) {
-        return 'Ontology'
-      }
-      return `Ontology ${this.ontology.prefix}`
-    },
     canListOntologies () {
       if (!this.roles) {
         return false
@@ -156,7 +157,7 @@ export default {
       SemanticService.unregisterOntology(this.$route.params.ontology_id)
         .then(async () => {
           await this.$store.dispatch('reloadOntologies')
-          await this.$router.push('/ontology')
+          await this.$router.push('/semantic/ontology')
         })
         .finally(() => {
           this.loadingDelete = false

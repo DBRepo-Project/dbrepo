@@ -95,7 +95,7 @@ public class TableEndpoint {
                                                                          @NotNull @PathVariable("tableId") Long tableId,
                                                                          @NotNull @PathVariable("columnId") Long columnId)
             throws QueryMalformedException, TableColumnNotFoundException {
-        log.debug("endpoint analyse table semantics, databaseId={}, tableId={}, columnId={}", databaseId, tableId, columnId);
+        log.debug("endpoint analyse table column semantics, databaseId={}, tableId={}, columnId={}", databaseId, tableId, columnId);
         final List<TableColumnEntityDto> dtos = tableService.suggestTableColumnSemantics(databaseId, tableId, columnId);
         log.trace("analyse table semantics resulted in dtos {}", dtos);
         return ResponseEntity.ok()

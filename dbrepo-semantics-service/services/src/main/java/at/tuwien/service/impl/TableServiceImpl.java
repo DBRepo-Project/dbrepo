@@ -88,7 +88,7 @@ public class TableServiceImpl implements TableService {
                             .columnId(optional.get().getId())
                             .label(e.getLabel())
                             .uri(e.getUri())
-                            .comment(e.getComment())
+                            .description(e.getDescription())
                             .build())
                     .toList());
         }

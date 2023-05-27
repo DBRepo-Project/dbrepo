@@ -16,4 +16,10 @@ public class ConceptSaveDto {
     @NotBlank
     private String uri;
 
+    @NotBlank
+    private String name;
+
+    @NotBlank
+    private String description;
+
 }

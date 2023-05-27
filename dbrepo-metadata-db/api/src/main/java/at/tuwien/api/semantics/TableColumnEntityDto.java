@@ -35,6 +35,6 @@ public class TableColumnEntityDto {
     private String label;
 
     @Schema(example = "open source semantic web framework for Java")
-    private String comment;
+    private String description;
 
 }

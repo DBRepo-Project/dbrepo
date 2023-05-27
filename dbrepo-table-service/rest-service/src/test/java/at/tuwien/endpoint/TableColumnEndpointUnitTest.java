@@ -101,7 +101,9 @@ public class TableColumnEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"modify-table-column-semantics"})
-    public void update_publicHasRoleHasOwnWriteAccess_succeeds() throws TableNotFoundException, NotAllowedException, TableMalformedException, UnitNotFoundException, DatabaseNotFoundException, ConceptNotFoundException, ContainerNotFoundException, SemanticEntityPersistException {
+    public void update_publicHasRoleHasOwnWriteAccess_succeeds() throws TableNotFoundException, NotAllowedException,
+            TableMalformedException, DatabaseNotFoundException, ContainerNotFoundException,
+            SemanticEntityPersistException, SemanticEntityNotFoundException {
 
         /* test */
         generic_update(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, COLUMN_1_1_ID, DATABASE_3, TABLE_8, COLUMN_8_2_WITH_SEMANTICS, COLUMN_8_2_SEMANTICS_UPDATE_DTO, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_3_USER_1_WRITE_OWN_ACCESS);
@@ -140,8 +142,8 @@ public class TableColumnEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithMockUser(username = USER_2_USERNAME, authorities = {"modify-table-column-semantics"})
     public void update_publicHasRoleForeignHasAllWriteAccess_succeeds() throws TableNotFoundException,
-            NotAllowedException, TableMalformedException, UnitNotFoundException, DatabaseNotFoundException,
-            ConceptNotFoundException, ContainerNotFoundException, SemanticEntityPersistException {
+            NotAllowedException, TableMalformedException, DatabaseNotFoundException,
+            ContainerNotFoundException, SemanticEntityPersistException, SemanticEntityNotFoundException {
 
         /* test */
         generic_update(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, COLUMN_1_1_ID, DATABASE_3, TABLE_8, COLUMN_8_2_WITH_SEMANTICS, COLUMN_8_2_SEMANTICS_UPDATE_DTO, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_3_USER_2_WRITE_ALL_ACCESS);
@@ -183,7 +185,9 @@ public class TableColumnEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"modify-table-column-semantics"})
-    public void update_privateHasRoleHasOwnWriteAccess_succeeds() throws TableNotFoundException, NotAllowedException, TableMalformedException, UnitNotFoundException, DatabaseNotFoundException, ConceptNotFoundException, ContainerNotFoundException, SemanticEntityPersistException {
+    public void update_privateHasRoleHasOwnWriteAccess_succeeds() throws TableNotFoundException, NotAllowedException,
+            TableMalformedException, DatabaseNotFoundException, ContainerNotFoundException,
+            SemanticEntityPersistException, SemanticEntityNotFoundException {
 
         /* test */
         generic_update(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, COLUMN_1_1_ID, DATABASE_1, TABLE_1, COLUMN_1_4_WITH_SEMANTICS, COLUMN_1_4_SEMANTICS_UPDATE_DTO, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_1_USER_1_WRITE_OWN_ACCESS);
@@ -222,8 +226,8 @@ public class TableColumnEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithMockUser(username = USER_2_USERNAME, authorities = {"modify-table-column-semantics"})
     public void update_privateHasRoleForeignHasAllWriteAccess_succeeds() throws TableNotFoundException,
-            NotAllowedException, TableMalformedException, UnitNotFoundException, DatabaseNotFoundException,
-            ConceptNotFoundException, ContainerNotFoundException, SemanticEntityPersistException {
+            NotAllowedException, TableMalformedException, DatabaseNotFoundException,
+            ContainerNotFoundException, SemanticEntityPersistException, SemanticEntityNotFoundException {
 
         /* test */
         generic_update(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, COLUMN_1_1_ID, DATABASE_1, TABLE_1, COLUMN_1_4_WITH_SEMANTICS, COLUMN_1_4_SEMANTICS_UPDATE_DTO, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_USER_2_WRITE_ALL_ACCESS);
@@ -238,7 +242,7 @@ public class TableColumnEndpointUnitTest extends BaseUnitTest {
                                                        ColumnSemanticsUpdateDto data, String username,
                                                        Principal principal, DatabaseAccess access)
             throws DatabaseNotFoundException, NotAllowedException, TableNotFoundException, TableMalformedException,
-            UnitNotFoundException, ConceptNotFoundException, ContainerNotFoundException, SemanticEntityPersistException {
+            ContainerNotFoundException, SemanticEntityPersistException, SemanticEntityNotFoundException {
 
         /* mock */
         if (database != null) {

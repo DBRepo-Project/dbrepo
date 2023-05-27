@@ -1,9 +1,6 @@
 package at.tuwien.mapper;
 
-import at.tuwien.api.database.table.columns.concepts.ConceptDto;
-import at.tuwien.api.database.table.columns.concepts.ConceptSaveDto;
-import at.tuwien.api.database.table.columns.concepts.UnitDto;
-import at.tuwien.api.database.table.columns.concepts.UnitSaveDto;
+import at.tuwien.api.database.table.columns.concepts.*;
 import at.tuwien.api.semantics.OntologyBriefDto;
 import at.tuwien.api.semantics.OntologyCreateDto;
 import at.tuwien.api.semantics.OntologyDto;
@@ -13,6 +10,8 @@ import at.tuwien.entities.semantics.Ontology;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
+
+import java.util.List;
 
 
 @Mapper(componentModel = "spring")
@@ -42,57 +41,79 @@ public interface OntologyMapper {
 
     TableColumnConcept conceptSaveDtoToTableColumnConcept(ConceptSaveDto data);
 
-    default String ontologyToFindByLabelQuery(Ontology ontology, String label, Integer limit) {
+    default String defaultNamespaces(List<Ontology> data) {
+        return String.join("\n",
+                data.stream()
+                        .map(o -> "PREFIX " + o.getPrefix() + ": <" + o.getUri() + ">")
+                        .toList());
+    }
+
+    default String ontologyToFindByLabelQuery(List<Ontology> ontologies, Ontology ontology, String label, Integer limit) {
         if (ontology.getSparqlEndpoint() != null) {
             /* prefer SPARQL endpoint over rdf */
             return String.join("\n",
-                    "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
+                    defaultNamespaces(ontologies),
                     "SELECT * {",
                     "  SERVICE <" + ontology.getSparqlEndpoint() + "> {",
-                    "    SELECT ?o ?label ?comment {",
-                    "      ?o rdfs:label \"" + label.replace("\"", "") + "\"@en .",
-                    "      ?o rdfs:label ?label .",
-                    "      OPTIONAL {?o rdfs:comment ?comment} .",
-                    "      FILTER (langMatches(lang(?label), \"EN\" ) )",
-                    "      FILTER (langMatches(lang(?comment), \"EN\" ) )",
-                    "     } LIMIT " + limit,
+                    "    SELECT ?o ?label ?description {",
+                    "      OPTIONAL {",
+                    "        ?o rdfs:label ?label",
+                    "        FILTER (LANG(?label) = 'en')",
+                    "      }",
+                    "      OPTIONAL {",
+                    "        ?o schema:description ?description",
+                    "        FILTER (LANG(?description) = 'en')",
+                    "      }",
+                    "    } LIMIT " + limit,
                     "  }",
                     "}");
         }
         return String.join("\n",
-                "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
+                defaultNamespaces(ontologies),
                 "SELECT ?o ?label ?comment {",
                 "  ?o rdfs:label \"" + label.replace("\"", "") + "\"@en .",
-                "  ?o rdfs:label ?label .",
-                "  OPTIONAL {?o rdfs:comment ?comment} .",
-                "  FILTER (langMatches(lang(?label), \"EN\" ) )",
-                "  FILTER (langMatches(lang(?comment), \"EN\" ) )",
+                "  OPTIONAL {",
+                "    ?o rdfs:label ?label",
+                "    FILTER (LANG(?label) = 'en')",
+                "  }",
+                "  OPTIONAL {",
+                "    ?o schema:description ?description",
+                "    FILTER (LANG(?description) = 'en')",
+                "  }",
                 "} LIMIT " + limit);
     }
 
-    default String ontologyToFindByUriQuery(Ontology ontology, String uri) {
+    default String ontologyToFindByUriQuery(List<Ontology> ontologies, Ontology ontology, String uri) {
         if (ontology.getSparqlEndpoint() != null) {
             /* prefer SPARQL endpoint over rdf */
             return String.join("\n",
-                    "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
+                    defaultNamespaces(ontologies),
                     "SELECT * {",
                     "  SERVICE <" + ontology.getSparqlEndpoint() + "> {",
-                    "    SELECT ?label ?comment {",
-                    "      <" + uri + "> rdfs:label ?label .",
-                    "      OPTIONAL {<" + uri + "> rdfs:comment ?comment} .",
-                    "      FILTER (langMatches(lang(?label), \"EN\" ) )",
-                    "      FILTER (langMatches(lang(?comment), \"EN\" ) )",
+                    "    SELECT ?label ?description {",
+                    "      OPTIONAL {",
+                    "        <" + uri + "> rdfs:label ?label",
+                    "        FILTER (LANG(?label) = 'en')",
+                    "      }",
+                    "      OPTIONAL {",
+                    "        <" + uri + "> schema:description ?description",
+                    "        FILTER (LANG(?description) = 'en')",
+                    "      }",
                     "     } LIMIT 1",
                     "  }",
                     "}");
         }
         return String.join("\n",
-                "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
-                "SELECT ?label ?comment {",
-                "  <" + uri + "> rdfs:label ?label .",
-                "  OPTIONAL {<" + uri + "> rdfs:comment ?comment} .",
-                "  FILTER (langMatches(lang(?label), \"EN\" ) )",
-                "  FILTER (langMatches(lang(?comment), \"EN\" ) )",
+                defaultNamespaces(ontologies),
+                "SELECT ?label ?description {",
+                "  OPTIONAL {",
+                "    <" + uri + "> rdfs:label ?label",
+                "    FILTER (LANG(?label) = 'en')",
+                "  }",
+                "  OPTIONAL {",
+                "    <" + uri + "> schema:description ?description",
+                "    FILTER (LANG(?description) = 'en')",
+                "  }",
                 "} LIMIT 1");
     }
 

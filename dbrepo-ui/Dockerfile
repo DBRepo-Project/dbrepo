@@ -57,6 +57,7 @@ ENV VERSION="${TAG}"
 ENV TITLE="Database Repository"
 ENV ICON="/favicon.ico"
 ENV DBREPO_CLIENT_SECRET="client-secret"
+ENV GIT_HASH="deadbeef"
 
 WORKDIR /app
 

@@ -22,8 +22,7 @@ public class EntityDto {
     @Schema(example = "Apache Jena")
     private String label;
 
-    @NotBlank
     @Schema(example = "open source semantic web framework for Java")
-    private String comment;
+    private String description;
 
 }

@@ -36,6 +36,23 @@ class SemanticService {
     })
   }
 
+  updateConcept (data) {
+    return new Promise((resolve, reject) => {
+      api.put('/api/semantic/concept', data, { headers: { Accept: 'application/json' } })
+        .then((response) => {
+          const concept = response.data
+          console.debug('response concept', concept)
+          resolve(concept)
+        })
+        .catch((error) => {
+          const { code, message } = error
+          console.error('Failed to update concept', error)
+          Vue.$toast.error(`[${code}] Failed to update concept: ${message}`)
+          reject(error)
+        })
+    })
+  }
+
   findAllUnits () {
     return new Promise((resolve, reject) => {
       api.get('/api/semantic/unit', { headers: { Accept: 'application/json' } })
@@ -48,6 +65,23 @@ class SemanticService {
           const { code, message } = error
           console.error('Failed to load units', error)
           Vue.$toast.error(`[${code}] Failed to load units: ${message}`)
+          reject(error)
+        })
+    })
+  }
+
+  updateUnit (data) {
+    return new Promise((resolve, reject) => {
+      api.put('/api/semantic/unit', data, { headers: { Accept: 'application/json' } })
+        .then((response) => {
+          const unit = response.data
+          console.debug('response unit', unit)
+          resolve(unit)
+        })
+        .catch((error) => {
+          const { code, message } = error
+          console.error('Failed to update unit', error)
+          Vue.$toast.error(`[${code}] Failed to update unit: ${message}`)
           reject(error)
         })
     })

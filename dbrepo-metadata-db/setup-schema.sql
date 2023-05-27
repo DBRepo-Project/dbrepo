@@ -275,19 +275,21 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_constraints_checks`
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_concepts`
 (
-    uri        text         not null,
-    name       VARCHAR(255) null,
-    created    timestamp    NOT NULL DEFAULT NOW(),
-    created_by character varying(255),
+    uri         text         not null,
+    name        VARCHAR(255) null,
+    description TEXT         null,
+    created     timestamp    NOT NULL DEFAULT NOW(),
+    created_by  character varying(255),
     PRIMARY KEY (uri(200))
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_units`
 (
-    uri        text         not null,
-    name       VARCHAR(255) null,
-    created    timestamp    NOT NULL DEFAULT NOW(),
-    created_by character varying(255),
+    uri         text         not null,
+    name        VARCHAR(255) null,
+    description TEXT         null,
+    created     timestamp    NOT NULL DEFAULT NOW(),
+    created_by  character varying(255),
     PRIMARY KEY (uri(200))
 ) WITH SYSTEM VERSIONING;
 
@@ -499,13 +501,18 @@ VALUES (1, '%Y-%c-%d %H:%i:%S.%f', 'yyyy-MM-dd HH:mm:ss.SSSSSS', '2022-01-30 13:
        (1, '%Y-%c-%d %H:%i:%S', 'yyyy-MM-dd HH:mm:ss', '2022-01-30 13:44:25', true),
        (1, '%Y-%c-%d', 'yyyy-MM-dd', '2022-01-30', false);
 
-INSERT INTO `fda`.`mdb_ontologies` (uri, prefix, sparql_endpoint)
-VALUES ('http://www.ontology-of-units-of-measure.org/resource/om-2/', 'om2', null),
-       ('http://www.wikidata.org/', 'wd', 'https://query.wikidata.org/sparql'),
-       ('http://purl.org/ontology/mo/', 'mo', null),
-       ('http://purl.org/dc/elements/1.1/', 'dc', null),
-       ('http://www.w3.org/2001/XMLSchema#', 'xsd', null),
-       ('http://purl.org/NET/c4dm/timeline.owl#', 'tl', null),
-       ('http://xmlns.com/foaf/0.1/', 'foaf', null),
-       ('http://dbpedia.org', 'db', 'http://dbpedia.org/sparql');
+INSERT INTO `fda`.`mdb_ontologies` (prefix, uri, sparql_endpoint)
+VALUES ('om2', 'http://www.ontology-of-units-of-measure.org/resource/om-2/', null),
+       ('wd', 'http://www.wikidata.org/', 'https://query.wikidata.org/sparql'),
+       ('mo', 'http://purl.org/ontology/mo/', null),
+       ('dc', 'http://purl.org/dc/elements/1.1/', null),
+       ('xsd', 'http://www.w3.org/2001/XMLSchema#', null),
+       ('tl', 'http://purl.org/NET/c4dm/timeline.owl#', null),
+       ('foaf', 'http://xmlns.com/foaf/0.1/', null),
+       ('schema', 'http://schema.org/', null),
+       ('rdf', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#', null),
+       ('rdfs', 'http://www.w3.org/2000/01/rdf-schema#', null),
+       ('owl', 'http://www.w3.org/2002/07/owl#', null),
+       ('prov', 'http://www.w3.org/ns/prov#', null),
+       ('db', 'http://dbpedia.org', 'http://dbpedia.org/sparql');
 COMMIT;

@@ -10,7 +10,7 @@
       <v-list-item class="mt-2">
         <v-list-item-content>
           <v-list-item-subtitle>
-            {{ version }}
+            {{ version }} ({{ gitHash }})
           </v-list-item-subtitle>
           <v-list-item-title class="text-h6">
             Database Repository
@@ -182,6 +182,9 @@ export default {
     },
     version () {
       return this.$config.version
+    },
+    gitHash () {
+      return this.$config.gitHash
     },
     canListOntologies () {
       if (!this.roles) {
