@@ -30,10 +30,10 @@ public class TableColumnUnit {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String uri;
 
-    @Column(name = "name")
+    @Column(columnDefinition = "VARCHAR(255)")
     private String name;
 
-    @Column(name = "description")
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP")

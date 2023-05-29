@@ -1,5 +1,6 @@
 package at.tuwien.endpoints;
 
+import at.tuwien.api.container.ContainerBriefDto;
 import at.tuwien.api.container.ContainerDto;
 import at.tuwien.api.database.*;
 import at.tuwien.api.error.ApiErrorDto;
@@ -14,6 +15,7 @@ import at.tuwien.service.*;
 import at.tuwien.service.impl.MariaDbServiceImpl;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -72,7 +74,7 @@ public class DatabaseEndpoint {
                     description = "List of databases",
                     content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = DatabaseBriefDto[].class))}),
+                            array = @ArraySchema(schema = @Schema(implementation = DatabaseBriefDto.class)))}),
     })
     public ResponseEntity<List<DatabaseBriefDto>> list(@NotNull @PathVariable("id") Long containerId,
                                                        @NotNull Principal principal) {

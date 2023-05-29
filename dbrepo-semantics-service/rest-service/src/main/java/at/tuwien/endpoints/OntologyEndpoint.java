@@ -1,15 +1,13 @@
 package at.tuwien.endpoints;
 
 import at.tuwien.api.error.ApiErrorDto;
-import at.tuwien.api.semantics.OntologyBriefDto;
-import at.tuwien.api.semantics.OntologyCreateDto;
-import at.tuwien.api.semantics.OntologyDto;
-import at.tuwien.api.semantics.OntologyModifyDto;
+import at.tuwien.api.semantics.*;
 import at.tuwien.exception.OntologyNotFoundException;
 import at.tuwien.mapper.OntologyMapper;
 import at.tuwien.service.OntologyService;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -51,7 +49,7 @@ public class OntologyEndpoint {
                     description = "List all ontologies",
                     content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = OntologyDto[].class))}),
+                            array = @ArraySchema(schema = @Schema(implementation = OntologyDto.class)))}),
     })
     public ResponseEntity<List<OntologyBriefDto>> findAll() {
         log.debug("endpoint find all ontologies");

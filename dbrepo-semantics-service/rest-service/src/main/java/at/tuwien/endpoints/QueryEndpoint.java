@@ -11,6 +11,7 @@ import at.tuwien.service.OntologyService;
 import at.tuwien.service.QueryService;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -49,7 +50,7 @@ public class QueryEndpoint {
                     description = "Found entities",
                     content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = EntityDto[].class))}),
+                            array = @ArraySchema(schema = @Schema(implementation = EntityDto.class)))}),
             @ApiResponse(responseCode = "400",
                     description = "Filter params are invalid",
                     content = {@Content(

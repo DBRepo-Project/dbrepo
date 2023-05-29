@@ -1,5 +1,6 @@
 package at.tuwien.endpoints;
 
+import at.tuwien.api.container.ContainerBriefDto;
 import at.tuwien.api.database.DatabaseBriefDto;
 import at.tuwien.api.database.LicenseDto;
 import at.tuwien.api.error.ApiErrorDto;
@@ -7,6 +8,7 @@ import at.tuwien.mapper.LicenseMapper;
 import at.tuwien.service.LicenseService;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -47,7 +49,7 @@ public class LicenseEndpoint {
                     description = "List of licenses",
                     content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = DatabaseBriefDto.class))}),
+                            array = @ArraySchema(schema = @Schema(implementation = LicenseDto.class)))}),
     })
     public ResponseEntity<List<LicenseDto>> list(@NotBlank @PathVariable("id") Long containerId) {
         log.debug("endpoint list licenses, containerId={}", containerId);

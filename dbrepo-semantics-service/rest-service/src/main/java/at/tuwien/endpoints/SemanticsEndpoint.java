@@ -6,6 +6,7 @@ import at.tuwien.mapper.SemanticMapper;
 import at.tuwien.service.SemanticService;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -15,6 +16,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,7 +50,7 @@ public class SemanticsEndpoint {
                     description = "Find all semantic concepts",
                     content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ConceptDto[].class))}),
+                            array = @ArraySchema(schema = @Schema(implementation = ConceptDto.class)))}),
     })
     public ResponseEntity<List<ConceptDto>> findAllConcepts() {
         log.debug("endpoint list concepts");
@@ -73,11 +75,11 @@ public class SemanticsEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ConceptDto.class))}),
     })
-    public ResponseEntity<ConceptDto> saveConcept(@NotNull @Valid @RequestBody ConceptSaveDto data) {
+    public ResponseEntity<ConceptDto> saveUnit(@NotNull @Valid @RequestBody ConceptSaveDto data) {
         log.debug("endpoint save concept, data={}", data);
         final ConceptDto dto = ontologyMapper.tableColumnConceptToConceptDto(semanticService.saveConcept(data));
         log.trace("save concept resulted in dto {}", dto);
-        return ResponseEntity.ok()
+        return ResponseEntity.accepted()
                 .body(dto);
     }
 
@@ -90,7 +92,7 @@ public class SemanticsEndpoint {
                     description = "Find all semantic units",
                     content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = UnitDto[].class))}),
+                            array = @ArraySchema(schema = @Schema(implementation = UnitDto.class)))}),
     })
     public ResponseEntity<List<UnitDto>> findAllUnits() {
         log.debug("endpoint list units");
@@ -115,7 +117,7 @@ public class SemanticsEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = UnitDto.class))}),
     })
-    public ResponseEntity<UnitDto> saveConcept(@NotNull @Valid @RequestBody UnitSaveDto data) {
+    public ResponseEntity<UnitDto> saveUnit(@NotNull @Valid @RequestBody UnitSaveDto data) {
         log.debug("endpoint save or update unit, data={}", data);
         final UnitDto dto = ontologyMapper.tableColumnUnitToUnitDto(semanticService.saveUnit(data));
         log.trace("save unit resulted in dto {}", dto);

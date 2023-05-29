@@ -19,16 +19,16 @@ import java.util.List;
 @Service
 public class SemanticServiceImpl implements SemanticService {
 
-    private final TableColumnConceptRepository tableColumnConceptRepository;
-    private final TableColumnUnitRepository tableColumnUnitRepository;
     private final OntologyMapper ontologyMapper;
+    private final TableColumnUnitRepository tableColumnUnitRepository;
+    private final TableColumnConceptRepository tableColumnConceptRepository;
 
     @Autowired
     public SemanticServiceImpl(TableColumnConceptRepository tableColumnConceptRepository,
                                TableColumnUnitRepository tableColumnUnitRepository, OntologyMapper ontologyMapper) {
-        this.tableColumnConceptRepository = tableColumnConceptRepository;
-        this.tableColumnUnitRepository = tableColumnUnitRepository;
         this.ontologyMapper = ontologyMapper;
+        this.tableColumnUnitRepository = tableColumnUnitRepository;
+        this.tableColumnConceptRepository = tableColumnConceptRepository;
     }
 
     @Override

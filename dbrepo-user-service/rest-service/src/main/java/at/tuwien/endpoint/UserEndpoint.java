@@ -1,6 +1,7 @@
 package at.tuwien.endpoint;
 
 import at.tuwien.api.auth.SignupRequestDto;
+import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.api.user.*;
 import at.tuwien.config.AuthenticationConfig;
@@ -14,6 +15,7 @@ import at.tuwien.service.RoleService;
 import at.tuwien.service.UserService;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -65,7 +67,7 @@ public class UserEndpoint {
                     description = "List users",
                     content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = UserBriefDto[].class))}),
+                            array = @ArraySchema(schema = @Schema(implementation = UserBriefDto.class)))}),
     })
     public ResponseEntity<List<UserBriefDto>> findAll() {
         log.debug("endpoint find all users");
