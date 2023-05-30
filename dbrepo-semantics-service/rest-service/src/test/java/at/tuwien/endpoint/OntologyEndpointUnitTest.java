@@ -8,8 +8,11 @@ import at.tuwien.api.semantics.OntologyDto;
 import at.tuwien.api.semantics.OntologyModifyDto;
 import at.tuwien.endpoints.OntologyEndpoint;
 import at.tuwien.entities.semantics.Ontology;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.OntologyNotFoundException;
+import at.tuwien.exception.UserNotFoundException;
 import at.tuwien.service.OntologyService;
+import at.tuwien.service.UserService;
 import lombok.extern.log4j.Log4j2;
 import org.apache.jena.sys.JenaSystem;
 import org.hibernate.HibernateException;
@@ -42,6 +45,9 @@ public class OntologyEndpointUnitTest extends BaseUnitTest {
 
     @MockBean
     private OntologyService ontologyService;
+
+    @MockBean
+    private UserService userService;
 
     @BeforeAll
     public static void beforeAll() {
@@ -96,7 +102,7 @@ public class OntologyEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            create_generic(ONTOLOGY_1_CREATE_DTO, null, ONTOLOGY_1);
+            create_generic(ONTOLOGY_1_CREATE_DTO, null, null, null, ONTOLOGY_1);
         });
     }
 
@@ -106,16 +112,16 @@ public class OntologyEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            create_generic(ONTOLOGY_1_CREATE_DTO, USER_4_PRINCIPAL, ONTOLOGY_1);
+            create_generic(ONTOLOGY_1_CREATE_DTO, USER_4_PRINCIPAL, USER_4_USERNAME, USER_4, ONTOLOGY_1);
         });
     }
 
     @Test
     @WithMockUser(username = USER_3_USERNAME, authorities = {"create-ontology"})
-    public void create_hasRole_succeeds() {
+    public void create_hasRole_succeeds() throws UserNotFoundException {
 
         /* test */
-        create_generic(ONTOLOGY_1_CREATE_DTO, USER_3_PRINCIPAL, ONTOLOGY_1);
+        create_generic(ONTOLOGY_1_CREATE_DTO, USER_3_PRINCIPAL, USER_3_USERNAME, USER_3, ONTOLOGY_1);
     }
 
     @Test
@@ -231,16 +237,25 @@ public class OntologyEndpointUnitTest extends BaseUnitTest {
         assertNotNull(body);
     }
 
-    public void create_generic(OntologyCreateDto createDto, Principal principal, Ontology ontology) {
+    public void create_generic(OntologyCreateDto createDto, Principal principal, String username, User user, Ontology ontology)
+            throws UserNotFoundException {
 
         /* mock */
         if (ontology != null) {
-            when(ontologyService.create(createDto))
+            when(ontologyService.create(createDto, principal))
                     .thenReturn(ontology);
         } else {
             doThrow(HibernateException.class)
                     .when(ontologyService)
-                    .create(createDto);
+                    .create(createDto, principal);
+        }
+        if (user != null) {
+            when(userService.findByUsername(username))
+                    .thenReturn(user);
+        } else {
+            doThrow(UserNotFoundException.class)
+                    .when(userService)
+                    .findByUsername(username);
         }
 
         /* test */

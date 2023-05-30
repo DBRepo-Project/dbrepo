@@ -129,13 +129,11 @@ public class SemanticsEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_3_USERNAME, authorities = {"create-semantic-concept"})
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"create-semantic-unit"})
     public void saveUnit_hasRole_succeeds() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
-            saveUnit_generic(COLUMN_UNIT_DEGREES_CELSIUS_SAVE_DTO, COLUMN_UNIT_DEGREES_CELSIUS);
-        });
+        saveUnit_generic(COLUMN_UNIT_DEGREES_CELSIUS_SAVE_DTO, COLUMN_UNIT_DEGREES_CELSIUS);
     }
 
     /* ################################################################################################### */

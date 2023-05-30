@@ -4,7 +4,9 @@ import at.tuwien.api.semantics.OntologyCreateDto;
 import at.tuwien.api.semantics.OntologyModifyDto;
 import at.tuwien.entities.semantics.Ontology;
 import at.tuwien.exception.OntologyNotFoundException;
+import at.tuwien.exception.UserNotFoundException;
 
+import java.security.Principal;
 import java.util.List;
 
 public interface OntologyService {
@@ -12,7 +14,7 @@ public interface OntologyService {
 
     Ontology find(Long id) throws OntologyNotFoundException;
 
-    Ontology create(OntologyCreateDto data);
+    Ontology create(OntologyCreateDto data, Principal principal) throws UserNotFoundException;
 
     Ontology update(Long id, OntologyModifyDto data) throws OntologyNotFoundException;
 

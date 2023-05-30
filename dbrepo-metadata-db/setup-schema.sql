@@ -502,7 +502,7 @@ VALUES (1, '%Y-%c-%d %H:%i:%S.%f', 'yyyy-MM-dd HH:mm:ss.SSSSSS', '2022-01-30 13:
        (1, '%Y-%c-%d', 'yyyy-MM-dd', '2022-01-30', false);
 
 INSERT INTO `fda`.`mdb_ontologies` (prefix, uri, sparql_endpoint)
-VALUES ('om2', 'http://www.ontology-of-units-of-measure.org/resource/om-2/', null),
+VALUES ('om', 'http://www.ontology-of-units-of-measure.org/resource/om-2/', null),
        ('wd', 'http://www.wikidata.org/', 'https://query.wikidata.org/sparql'),
        ('mo', 'http://purl.org/ontology/mo/', null),
        ('dc', 'http://purl.org/dc/elements/1.1/', null),

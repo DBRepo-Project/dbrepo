@@ -7,22 +7,15 @@ import at.tuwien.mapper.OntologyMapper;
 import at.tuwien.repository.jpa.OntologyRepository;
 import at.tuwien.service.QueryService;
 import lombok.extern.log4j.Log4j2;
-import org.apache.jena.graph.Node;
-import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.riot.RiotException;
-import org.apache.jena.sparql.algebra.op.OpService;
-import org.apache.jena.sparql.service.ServiceExecutorRegistry;
-import org.apache.jena.sparql.service.single.ChainingServiceExecutor;
-import org.apache.jena.sparql.util.Context;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
 
 @Log4j2
 @Service
@@ -33,29 +26,10 @@ public class QueryServiceImpl implements QueryService {
     private final OntologyRepository ontologyRepository;
 
     @Autowired
-    public QueryServiceImpl(OntologyRepository ontologyRepository, OntologyMapper ontologyMapper,
-                            OntologyRepository ontologyRepository1) {
+    public QueryServiceImpl(OntologyRepository ontologyRepository, OntologyMapper ontologyMapper) {
         this.ontologyMapper = ontologyMapper;
-        this.ontologyRepository = ontologyRepository1;
-        final Context context = ARQ.getContext().copy();
+        this.ontologyRepository = ontologyRepository;
         this.dataset = DatasetFactory.create();
-        /* registry */
-        final ServiceExecutorRegistry registry = ServiceExecutorRegistry.get(context).copy();
-        ontologyRepository.findAll()
-                .stream()
-                .filter(o -> Objects.nonNull(o.getSparqlEndpoint()))
-                .forEach(ontology -> {
-                    final Node node = NodeFactory.createURI(ontology.getSparqlEndpoint());
-                    ChainingServiceExecutor relaySef = (opExecute, original, binding, execCxt, chain) -> {
-                        if (opExecute.getService().equals(node)) {
-                            opExecute = new OpService(node, opExecute.getSubOp(), opExecute.getSilent());
-                        }
-                        return chain.createExecution(opExecute, original, binding, execCxt);
-                    };
-                    log.debug("add sparql endpoint {}", ontology.getSparqlEndpoint());
-                    registry.addSingleLink(relaySef);
-                });
-        ServiceExecutorRegistry.set(context, registry);
     }
 
     @Override

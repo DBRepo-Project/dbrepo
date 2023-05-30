@@ -82,6 +82,10 @@ public class QueryEndpoint {
             log.error("Failed to find entities: uri {} does not start with expected ontology uri {}", uri, ontology.getUri());
             throw new UriMalformedException("Failed to find entity: uri " + uri + " does not start with expected ontology uri " + ontology.getUri());
         }
+        if (ontology.getSparqlEndpoint() == null) {
+            log.error("Failed to find SPARQL endpoint for ontology with id {}", ontology.getId());
+            throw new OntologyNotFoundException("Failed to find SPARQL endpoint for ontology with id " + ontology.getId());
+        }
         /* get */
         final List<EntityDto> dtos;
         if (uri != null) {

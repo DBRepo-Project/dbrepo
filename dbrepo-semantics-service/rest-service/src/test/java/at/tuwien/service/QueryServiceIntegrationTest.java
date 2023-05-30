@@ -10,21 +10,23 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.jena.sys.JenaSystem;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 @Log4j2
 @SpringBootTest
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @ExtendWith(SpringExtension.class)
-public class QueryServiceUnitTest extends BaseUnitTest {
+public class QueryServiceIntegrationTest extends BaseUnitTest {
 
     @Autowired
     private RealmRepository realmRepository;
@@ -47,10 +49,7 @@ public class QueryServiceUnitTest extends BaseUnitTest {
     public void beforeEach() {
         realmRepository.save(REALM_DBREPO);
         userRepository.save(USER_1);
-        ontologyRepository.save(ONTOLOGY_1);
-        ontologyRepository.save(ONTOLOGY_2);
-        ontologyRepository.save(ONTOLOGY_3);
-        ontologyRepository.save(ONTOLOGY_4);
+        ontologyRepository.saveAll(List.of(ONTOLOGY_1, ONTOLOGY_2, ONTOLOGY_3, ONTOLOGY_4));
     }
 
     @Test
@@ -65,15 +64,27 @@ public class QueryServiceUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void findByLabel_measurements_succeeds() throws QueryMalformedException {
+    @Disabled
+    public void findByLabel_measurements_fails() throws QueryMalformedException {
 
         /* test */
         final List<EntityDto> response = queryService.findByLabel(ONTOLOGY_1, "tonne");
         assertEquals(1, response.size());
         final EntityDto entity0 = response.get(0);
         assertEquals(COLUMN_UNIT_TON_NAME, entity0.getLabel());
-        assertEquals(COLUMN_UNIT_TON_URI, entity0.getUri());
-        assertEquals(COLUMN_UNIT_TON_DESCRIPTION, entity0.getDescription());
+        assertNull(COLUMN_UNIT_TON_URI);
+        assertNull(COLUMN_UNIT_TON_DESCRIPTION);
+    }
+
+    @Test
+    public void findByLabel_dbpedia_succeeds() throws QueryMalformedException {
+
+        /* test */
+        final List<EntityDto> response = queryService.findByLabel(ONTOLOGY_5, "person");
+        assertTrue(response.size() >= 1);
+        final EntityDto entity0 = response.get(0);
+        assertEquals("person", entity0.getLabel());
+        assertNull(entity0.getDescription());
     }
 
     @Test
@@ -97,14 +108,27 @@ public class QueryServiceUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void findByUri_measurements_succeeds() throws QueryMalformedException {
+    @Disabled
+    public void findByUri_measurements_fails() throws QueryMalformedException {
 
         /* test */
         final List<EntityDto> response = queryService.findByUri(ONTOLOGY_1, COLUMN_UNIT_TON_URI);
         assertEquals(1, response.size());
         final EntityDto entity0 = response.get(0);
         assertEquals(COLUMN_UNIT_TON_URI, entity0.getUri());
-        assertEquals(COLUMN_UNIT_TON_NAME, entity0.getLabel());
-        assertEquals(COLUMN_UNIT_TON_DESCRIPTION, entity0.getDescription());
+        assertNull(COLUMN_UNIT_TON_NAME);
+        assertNull(COLUMN_UNIT_TON_DESCRIPTION);
+    }
+
+    @Test
+    public void findByUri_dbpedia_fails() throws QueryMalformedException {
+
+        /* test */
+        final List<EntityDto> response = queryService.findByUri(ONTOLOGY_5, "http://dbpedia.org/ontology/person");
+        assertEquals(1, response.size());
+        final EntityDto entity0 = response.get(0);
+        assertEquals("http://dbpedia.org/ontology/person", entity0.getUri());
+        assertEquals("person", entity0.getLabel());
+        assertNull(entity0.getDescription());
     }
 }

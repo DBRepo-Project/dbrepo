@@ -1879,6 +1879,26 @@ public abstract class BaseTest {
             .sparqlEndpoint(ONTOLOGY_4_SPARQL_ENDPOINT)
             .build();
 
+    public final static Long ONTOLOGY_5_ID = 5L;
+    public final static String ONTOLOGY_5_PREFIX = "db";
+    public final static String ONTOLOGY_5_URI = "http://dbpedia.org";
+    public final static String ONTOLOGY_5_SPARQL_ENDPOINT = "http://dbpedia.org/sparql";
+    public final static UUID ONTOLOGY_5_CREATED_BY = USER_1_ID;
+
+    public final static Ontology ONTOLOGY_5 = Ontology.builder()
+            .id(ONTOLOGY_5_ID)
+            .prefix(ONTOLOGY_5_PREFIX)
+            .uri(ONTOLOGY_5_URI)
+            .sparqlEndpoint(ONTOLOGY_5_SPARQL_ENDPOINT)
+            .createdBy(ONTOLOGY_5_CREATED_BY)
+            .build();
+
+    public final static OntologyCreateDto ONTOLOGY_5_CREATE_DTO = OntologyCreateDto.builder()
+            .prefix(ONTOLOGY_5_PREFIX)
+            .uri(ONTOLOGY_5_URI)
+            .sparqlEndpoint(ONTOLOGY_5_SPARQL_ENDPOINT)
+            .build();
+
     public final static String COLUMN_CONCEPT_TEMPERATURE_NAME = "temperature";
     public final static String COLUMN_CONCEPT_TEMPERATURE_URI = "http://www.wikidata.org/entity/Q11466";
     public final static String COLUMN_CONCEPT_TEMPERATURE_DESCRIPTION = "physical property of matter that quantitatively expresses the common notions of hot and cold";

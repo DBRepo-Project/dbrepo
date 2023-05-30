@@ -239,7 +239,6 @@ export default {
   },
   mounted () {
     this.$store.dispatch('reloadMessages')
-    this.$store.dispatch('reloadOntologies')
     if (this.locale) {
       this.$i18n.locale = this.locale
     }

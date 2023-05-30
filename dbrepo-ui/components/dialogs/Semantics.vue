@@ -16,13 +16,15 @@
           icon="mdi-share-variant"
           class="pl-6">
           <p>
-            The following ontologies automatically will query the fields <code>rdfs:label</code> and
-            <code>schema:description</code> and store it for this column. You can still use other URIs that are not
-            matching these ontologies, the URI will be displayed instead.
+            The following ontologies automatically will query the fields <code>rdfs:label</code> and store it for this
+            column. You can still use other URIs that are not matching these ontologies, the URI will be displayed
+            instead.
           </p>
-          <div v-for="(item,idx) in ontologies" :key="idx">
-            <a :href="item.uri" target="_blank" v-text="item.uri" />
-          </div>
+          <ul>
+            <li v-for="(item,idx) in ontologies" :key="idx">
+              <a :href="item.uri" target="_blank" v-text="item.uri" />
+            </li>
+          </ul>
         </v-alert>
         <v-alert
           v-if="entity"
@@ -60,10 +62,12 @@
               <v-text-field
                 v-model="uri"
                 :loading="loading"
+                :success="canAutomaticResolve"
+                :hint="canAutomaticResolve ? 'This URI can be automatically resolved!' : 'e.g. http://www.wikidata.org/entity/Q468777'"
+                :persistent-hint="canAutomaticResolve"
                 clearable
                 label="URI"
                 :rules="[v => isUri(v) || $t('Must start with http:// or https://')]"
-                hint="e.g. http://www.wikidata.org/entity/Q468777"
                 @click:clear="uri = null" />
             </v-col>
           </v-row>
@@ -128,7 +132,23 @@ export default {
   },
   computed: {
     ontologies () {
-      return this.$store.state.ontologies
+      const ontologies = this.$store.state.ontologies
+      if (!ontologies) {
+        return []
+      }
+      return ontologies.filter(o => o.sparql)
+    },
+    canAutomaticResolve () {
+      if (!this.uri) {
+        return false
+      }
+      let found = false
+      this.ontologies.forEach((o) => {
+        if (this.uri.startsWith(o.uri)) {
+          found = true
+        }
+      })
+      return found
     },
     entity () {
       if (!this.column[this.mode]) {

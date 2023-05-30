@@ -3,14 +3,18 @@ package at.tuwien.service.impl;
 import at.tuwien.api.semantics.OntologyCreateDto;
 import at.tuwien.api.semantics.OntologyModifyDto;
 import at.tuwien.entities.semantics.Ontology;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.OntologyNotFoundException;
+import at.tuwien.exception.UserNotFoundException;
 import at.tuwien.mapper.OntologyMapper;
 import at.tuwien.repository.jpa.OntologyRepository;
 import at.tuwien.service.OntologyService;
+import at.tuwien.service.UserService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,11 +22,14 @@ import java.util.Optional;
 @Service
 public class OntologyServiceImpl implements OntologyService {
 
+    private final UserService userService;
     private final OntologyMapper ontologyMapper;
     private final OntologyRepository ontologyRepository;
 
     @Autowired
-    public OntologyServiceImpl(OntologyMapper ontologyMapper, OntologyRepository ontologyRepository) {
+    public OntologyServiceImpl(UserService userService, OntologyMapper ontologyMapper,
+                               OntologyRepository ontologyRepository) {
+        this.userService = userService;
         this.ontologyMapper = ontologyMapper;
         this.ontologyRepository = ontologyRepository;
     }
@@ -43,8 +50,11 @@ public class OntologyServiceImpl implements OntologyService {
     }
 
     @Override
-    public Ontology create(OntologyCreateDto data) {
-        final Ontology ontology = ontologyRepository.save(ontologyMapper.ontologyCreateDtoToOntology(data));
+    public Ontology create(OntologyCreateDto data, Principal principal) throws UserNotFoundException {
+        final User user = userService.findByUsername(principal.getName());
+        final Ontology entity = ontologyMapper.ontologyCreateDtoToOntology(data);
+        entity.setCreatedBy(user.getId());
+        final Ontology ontology = ontologyRepository.save(entity);
         log.info("Created ontology with id {}", ontology.getId());
         return ontology;
     }

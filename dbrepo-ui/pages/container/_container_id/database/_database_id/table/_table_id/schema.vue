@@ -168,6 +168,7 @@ export default {
     }
   },
   mounted () {
+    this.$store.dispatch('reloadOntologies')
   },
   methods: {
     isUnique (column) {
