@@ -30,7 +30,7 @@ stages:
   - test-frontend
   - build-docker
   - scan-docker
-  - release
+  - release-docker
 
 build-metadata-db:
   stage: build-backend
@@ -612,7 +612,7 @@ scan-user-service:
       container_scanning: ./.trivy/trivy-user-service-report.json
 
 release-latest:
-  stage: release
+  stage: release-docker
   needs:
     - scan-analyse-service
     - scan-authentication-service
@@ -639,7 +639,7 @@ release-latest:
     - TAG=latest make release
 
 release-version:
-  stage: release
+  stage: release-docker
   needs:
     - scan-analyse-service
     - scan-authentication-service
