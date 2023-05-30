@@ -3,6 +3,7 @@ BEGIN;
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_images`
 (
     id            bigint                 NOT NULL AUTO_INCREMENT,
+    registry      text                   NOT NULL DEFAULT 'docker.io/library',
     repository    character varying(255) NOT NULL,
     tag           character varying(255) NOT NULL,
     default_port  integer                NOT NULL,

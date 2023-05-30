@@ -29,7 +29,7 @@ spring:
     password: "${BROKER_PASSWORD}"
   elasticsearch:
     password: "${ELASTIC_PASSWORD}"
-    username: elastic
+    username: "${ELASTIC_USERNAME}"
     uris: http://search-service:9200
 management.endpoints.web.exposure.include: health,info,prometheus
 server:

@@ -31,6 +31,7 @@ networks:
         - subnet: 172.32.0.0/16
 
 services:
+
   dbrepo-metadata-db:
     restart: "no"
     container_name: dbrepo-metadata-db
@@ -154,7 +155,7 @@ services:
     env_file:
       - .env
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      - "/var/run/docker.sock:/var/run/docker.sock"
       - "/tmp:/tmp"
     depends_on:
       dbrepo-authentication-service:
@@ -261,7 +262,7 @@ services:
       - .env
     volumes:
       - "/tmp:/tmp"
-      - /var/run/docker.sock:/var/run/docker.sock
+      - "/var/run/docker.sock:/var/run/docker.sock"
     depends_on:
       dbrepo-metadata-db:
         condition: service_healthy

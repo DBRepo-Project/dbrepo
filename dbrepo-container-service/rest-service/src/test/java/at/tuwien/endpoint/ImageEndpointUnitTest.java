@@ -268,6 +268,7 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
     @WithMockUser(username = USER_2_USERNAME, authorities = {"modify-image"})
     public void modify_hasRole_succeeds() throws ImageNotFoundException {
         final ImageChangeDto request = ImageChangeDto.builder()
+                .registry(IMAGE_1_REGISTRY)
                 .defaultPort(IMAGE_1_PORT)
                 .dialect(IMAGE_1_DIALECT)
                 .jdbcMethod(IMAGE_1_JDBC)

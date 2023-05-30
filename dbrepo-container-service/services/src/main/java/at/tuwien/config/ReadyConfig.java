@@ -18,6 +18,7 @@ import java.io.IOException;
 public class ReadyConfig {
 
     private final ImageService imageService;
+    private final static String registry = "docker.io/library";
     private final static String imageRepository = "mariadb";
     private final static String imageTag = "10.5";
 
@@ -32,12 +33,12 @@ public class ReadyConfig {
     @EventListener(ApplicationReadyEvent.class)
     public void init() throws IOException, ImageNotFoundException {
         if (!imageService.exists(imageRepository, imageTag)) {
-            log.debug("image {}:{} is not present on the host", imageRepository, imageTag);
-            log.debug("pulling image {}:{}", imageRepository, imageTag);
-            imageService.pull(imageRepository, imageTag);
+            log.debug("image {}/{}:{} is not present on the host", registry, imageRepository, imageTag);
+            log.debug("pulling image {}/{}:{}", registry, imageRepository, imageTag);
+            imageService.pull(registry, imageRepository, imageTag);
         } else {
-            log.debug("image {}:{} is present on the host", imageRepository, imageTag);
-            log.trace("skip pulling image {}:{}", imageRepository, imageTag);
+            log.debug("image {}/{}:{} is present on the host", registry, imageRepository, imageTag);
+            log.trace("skip pulling image {}/{}:{}", registry, imageRepository, imageTag);
         }
         Files.touch(new File(readyPath));
         log.info("Service is ready");

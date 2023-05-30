@@ -29,10 +29,10 @@ ENV METADATA_DB=fda
 ENV METADATA_USERNAME=root
 ENV METADATA_PASSWORD=dbrepo
 ENV GATEWAY_ENDPOINT=http://gateway-service
-ENV JWT_ISSUER=http://localhost/realms/dbrepo
-ENV JWT_PUBKEY=public-key
+ENV JWT_ISSUER="http://localhost/realms/dbrepo"
+ENV JWT_PUBKEY="MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB"
 ENV LOG_LEVEL=debug
-ENV DEFAULT_ROLE=default-researcher-roles
+ENV DEFAULT_ROLE="default-researcher-roles"
 ENV ELASTIC_PASSWORD=elastic
 
 WORKDIR /app
@@ -44,6 +44,6 @@ HEALTHCHECK --interval=10s --timeout=5s --retries=12 CMD service_ready
 
 COPY --from=build ./rest-service/target/rest-service-*.jar ./user-service.jar
 
-EXPOSE 9093
+EXPOSE 9098
 
 ENTRYPOINT ["java", "-Dlog4j2.formatMsgNoLookups=true", "-jar", "./user-service.jar"]

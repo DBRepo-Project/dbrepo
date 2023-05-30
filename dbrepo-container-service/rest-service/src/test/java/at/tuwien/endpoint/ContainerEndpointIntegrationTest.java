@@ -65,10 +65,10 @@ public class ContainerEndpointIntegrationTest extends BaseUnitTest {
         DockerConfig.createAllNetworks();
         /* metadata database */
         realmRepository.save(REALM_DBREPO);
-        userRepository.save(USER_1_SIMPLE);
-        userRepository.save(USER_2_SIMPLE);
-        userRepository.save(USER_3_SIMPLE);
         imageRepository.save(IMAGE_1);
+        userRepository.save(USER_1);
+        userRepository.save(USER_2);
+        userRepository.save(USER_3);
     }
 
     @AfterEach

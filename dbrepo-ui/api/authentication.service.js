@@ -3,7 +3,7 @@ import store from '@/store'
 import qs from 'qs'
 import UserMapper from '@/api/user.mapper'
 import axios from 'axios'
-import { baseURL, clientSecret } from '../config'
+import { baseURL, clientSecret, clientId } from '../config'
 
 /**
  * Service class for interaction with Authentication Service in the back end.
@@ -20,7 +20,7 @@ class AuthenticationService {
    */
   authenticatePlain (username, password) {
     const payload = {
-      client_id: 'dbrepo-client',
+      client_id: clientId,
       username,
       password,
       grant_type: 'password',
@@ -50,7 +50,7 @@ class AuthenticationService {
 
   authenticateToken (refreshToken) {
     const payload = {
-      client_id: 'dbrepo-client',
+      client_id: clientId,
       grant_type: 'refresh_token',
       client_secret: clientSecret,
       refresh_token: refreshToken

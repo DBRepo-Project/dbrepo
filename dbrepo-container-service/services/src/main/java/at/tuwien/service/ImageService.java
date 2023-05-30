@@ -71,11 +71,12 @@ public interface ImageService {
     boolean exists(String repository, String tag);
 
     /**
-     * Pulls a container image by given repository and tag.
+     * Pulls a container image by given registry, repository and tag.
      *
+     * @param registry   The registry.
      * @param repository The repository.
      * @param tag        The tag.
      * @throws ImageNotFoundException The image was not found.
      */
-    void pull(String repository, String tag) throws ImageNotFoundException;
+    void pull(String registry, String repository, String tag) throws ImageNotFoundException;
 }

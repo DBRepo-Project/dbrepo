@@ -50,13 +50,13 @@ ENV SANDBOX=false
 ENV SEARCH="http://search-service:9200"
 ENV SHARED_FILESYSTEM="/tmp"
 ENV LOGO="/logo.png"
-ENV MAIL_VERIFY=false
 ENV ELASTIC_USERNAME="elastic"
 ENV ELASTIC_PASSWORD="elastic"
-ENV VERSION="${TAG}"
+ENV VERSION="${TAG:-latest}"
 ENV TITLE="Database Repository"
 ENV ICON="/favicon.ico"
-ENV DBREPO_CLIENT_SECRET="client-secret"
+ENV DBREPO_CLIENT_ID="dbrepo-client"
+ENV DBREPO_CLIENT_SECRET="MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG"
 ENV GIT_HASH="deadbeef"
 
 WORKDIR /app

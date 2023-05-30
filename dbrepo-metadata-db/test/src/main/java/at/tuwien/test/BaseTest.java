@@ -662,6 +662,7 @@ public abstract class BaseTest {
             USER_5_PASSWORD, USER_5_DETAILS.getAuthorities());
 
     public final static Long IMAGE_1_ID = 1L;
+    public final static String IMAGE_1_REGISTRY = "docker.io/library";
     public final static String IMAGE_1_REPOSITORY = "mariadb";
     public final static String IMAGE_1_TAG = "10.5";
     public final static String IMAGE_1_HASH = "d6a5e003eae42397f7ee4589e9f21e231d3721ac131970d2286bd616e7f55bb4";
@@ -736,6 +737,7 @@ public abstract class BaseTest {
             .build();
 
     public final static ImageCreateDto IMAGE_1_CREATE_DTO = ImageCreateDto.builder()
+            .registry(IMAGE_1_REGISTRY)
             .repository(IMAGE_1_REPOSITORY)
             .tag(IMAGE_1_TAG)
             .dialect(IMAGE_1_DIALECT)
@@ -795,6 +797,7 @@ public abstract class BaseTest {
 
     public final static ContainerImage IMAGE_1 = ContainerImage.builder()
             .id(IMAGE_1_ID)
+            .registry(IMAGE_1_REGISTRY)
             .repository(IMAGE_1_REPOSITORY)
             .tag(IMAGE_1_TAG)
             .hash(IMAGE_1_HASH)
@@ -810,6 +813,7 @@ public abstract class BaseTest {
 
     public final static ContainerImage IMAGE_1_SIMPLE = ContainerImage.builder()
             .id(IMAGE_1_ID)
+            .registry(IMAGE_1_REGISTRY)
             .repository(IMAGE_1_REPOSITORY)
             .tag(IMAGE_1_TAG)
             .hash(IMAGE_1_HASH)
@@ -825,6 +829,7 @@ public abstract class BaseTest {
 
     public final static ImageDto IMAGE_1_DTO = ImageDto.builder()
             .id(IMAGE_1_ID)
+            .registry(IMAGE_1_REGISTRY)
             .repository(IMAGE_1_REPOSITORY)
             .tag(IMAGE_1_TAG)
             .hash(IMAGE_1_HASH)
@@ -840,11 +845,13 @@ public abstract class BaseTest {
 
     public final static ImageBriefDto IMAGE_1_BRIEF_DTO = ImageBriefDto.builder()
             .id(IMAGE_1_ID)
+            .registry(IMAGE_1_REGISTRY)
             .repository(IMAGE_1_REPOSITORY)
             .tag(IMAGE_1_TAG)
             .build();
 
     public final static Long IMAGE_2_ID = 2L;
+    public final static String IMAGE_2_REGISTRY = "docker.io/library";
     public final static String IMAGE_2_REPOSITORY = "mysql";
     public final static String IMAGE_2_TAG = "8.0";
     public final static String IMAGE_2_HASH = "83b40f2726e5";

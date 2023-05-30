@@ -1,6 +1,6 @@
 # Container Service
 
-## Actuator
+## Actuator Endpoints
 
 - Actuator Info: http://localhost:9091/actuator/info
 - Actuator Health: http://localhost:9091/actuator/health

@@ -102,6 +102,7 @@ public class ImageServiceUnitTest extends BaseUnitTest {
     @Test
     public void update_succeeds() throws ImageNotFoundException {
         final ImageChangeDto request = ImageChangeDto.builder()
+                .registry(IMAGE_1_REGISTRY)
                 .environment(IMAGE_1_ENV_DTO)
                 .defaultPort(IMAGE_1_PORT)
                 .build();
@@ -121,6 +122,7 @@ public class ImageServiceUnitTest extends BaseUnitTest {
     @Test
     public void update_port_succeeds() throws ImageNotFoundException {
         final ImageChangeDto request = ImageChangeDto.builder()
+                .registry(IMAGE_1_REGISTRY)
                 .environment(IMAGE_1_ENV_DTO)
                 .defaultPort(9999)
                 .build();

@@ -3,6 +3,8 @@ package at.tuwien.api.container.image;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.*;
 
 import jakarta.validation.constraints.NotBlank;
@@ -19,6 +21,10 @@ import java.util.List;
 @Jacksonized
 @ToString
 public class ImageCreateDto {
+
+    @NotBlank
+    @Schema(example = "docker.io/library")
+    private String registry;
 
     @NotBlank
     @Schema(example = "mariadb")
@@ -44,6 +50,8 @@ public class ImageCreateDto {
 
     @NotNull
     @JsonProperty("default_port")
+    @Min(value = 1024, message = "only user ports are allowed 1024-65535")
+    @Max(value = 65535, message = "only user ports are allowed 1024-65535")
     @Parameter(required = true, example = "3006")
     private Integer defaultPort;
 
