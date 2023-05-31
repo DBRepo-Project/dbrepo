@@ -38,7 +38,11 @@ public class WebSecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         final OrRequestMatcher internalEndpoints = new OrRequestMatcher(
-                new AntPathRequestMatcher("/actuator/prometheus/**", "GET")
+                new AntPathRequestMatcher("/actuator/**", "GET"),
+                new AntPathRequestMatcher("/v3/api-docs.yaml"),
+                new AntPathRequestMatcher("/v3/api-docs/**"),
+                new AntPathRequestMatcher("/swagger-ui/**"),
+                new AntPathRequestMatcher("/swagger-ui.html")
         );
         final OrRequestMatcher publicEndpoints = new OrRequestMatcher(
                 new AntPathRequestMatcher("/api/container/**/database/data/**", "GET"),
@@ -48,11 +52,7 @@ public class WebSecurityConfig {
                 new AntPathRequestMatcher("/api/container/**/database/**/table/**/export/**", "GET"),
                 new AntPathRequestMatcher("/api/container/**/database/**/query/**", "GET"),
                 new AntPathRequestMatcher("/api/container/**/database/**/query/**/export", "GET"),
-                new AntPathRequestMatcher("/api/container/**/database/**/query/**", "PUT"),
-                new AntPathRequestMatcher("/v3/api-docs.yaml"),
-                new AntPathRequestMatcher("/v3/api-docs/**"),
-                new AntPathRequestMatcher("/swagger-ui/**"),
-                new AntPathRequestMatcher("/swagger-ui.html")
+                new AntPathRequestMatcher("/api/container/**/database/**/query/**", "PUT")
         );
         /* enable CORS and disable CSRF */
         http = http.cors().and().csrf().disable();

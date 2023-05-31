@@ -155,7 +155,7 @@ services:
     env_file:
       - .env
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      - "/var/run/docker.sock:/var/run/docker.sock"
       - "/tmp:/tmp"
     depends_on:
       dbrepo-authentication-service:
@@ -257,12 +257,12 @@ services:
     networks:
       core:
     ports:
-      - "5010:5010"
+      - "9097:9097"
     env_file:
       - .env
     volumes:
       - "/tmp:/tmp"
-      - /var/run/docker.sock:/var/run/docker.sock
+      - "/var/run/docker.sock:/var/run/docker.sock"
     depends_on:
       dbrepo-metadata-db:
         condition: service_healthy
@@ -340,7 +340,7 @@ services:
     restart: "no"
     container_name: dbrepo-gateway-service
     hostname: gateway-service
-    image: nginx:alpine
+    image: nginx:1.25.0-alpine-slim
     networks:
       core:
       public:

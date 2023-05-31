@@ -27,6 +27,10 @@ public class ImageDto {
     private Long id;
 
     @NotBlank
+    @Schema(example = "docker.io/library")
+    private String registry;
+
+    @NotBlank
     @Schema(example = "mariadb")
     private String repository;
 

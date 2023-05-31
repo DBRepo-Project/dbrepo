@@ -126,7 +126,9 @@ export default {
           this.containers = containers
           console.info('Found', this.containers.length, 'container(s)')
         })
-      this.loadingContainers = false
+        .finally(() => {
+          this.loadingContainers = false
+        })
     },
     createDatabase (container) {
       container.loading = true

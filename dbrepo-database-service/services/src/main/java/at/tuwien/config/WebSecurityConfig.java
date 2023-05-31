@@ -39,14 +39,14 @@ public class WebSecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         final OrRequestMatcher internalEndpoints = new OrRequestMatcher(
-                new AntPathRequestMatcher("/actuator/prometheus/**", "GET")
-        );
-        final OrRequestMatcher publicEndpoints = new OrRequestMatcher(
-                new AntPathRequestMatcher("/api/container/**/database/**", "GET"),
+                new AntPathRequestMatcher("/actuator/**", "GET"),
                 new AntPathRequestMatcher("/v3/api-docs.yaml"),
                 new AntPathRequestMatcher("/v3/api-docs/**"),
                 new AntPathRequestMatcher("/swagger-ui/**"),
                 new AntPathRequestMatcher("/swagger-ui.html")
+        );
+        final OrRequestMatcher publicEndpoints = new OrRequestMatcher(
+                new AntPathRequestMatcher("/api/container/**/database/**", "GET")
         );
         /* enable CORS and disable CSRF */
         http = http.cors().and().csrf().disable();

@@ -1,5 +1,6 @@
 package at.tuwien.api.database.table.columns;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
@@ -19,6 +20,14 @@ public class ColumnBriefDto {
 
     @NotNull(message = "id is required")
     private Long id;
+
+    @JsonProperty("database_id")
+    @NotNull(message = "database id is required")
+    private Long databaseId;
+
+    @JsonProperty("table_id")
+    @NotNull(message = "table id is required")
+    private Long tableId;
 
     @NotBlank(message = "name is required")
     @Schema(example = "date")

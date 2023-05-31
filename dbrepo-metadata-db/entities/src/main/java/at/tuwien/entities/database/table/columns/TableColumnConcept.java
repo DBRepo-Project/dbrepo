@@ -20,6 +20,9 @@ import java.util.List;
 @EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @jakarta.persistence.Table(name = "mdb_concepts")
+@NamedQueries({
+        @NamedQuery(name = "TableColumnConcept.findById", query = "select c from TableColumnConcept c where c.uri = ?1")
+})
 public class TableColumnConcept {
 
     @Id
@@ -27,22 +30,24 @@ public class TableColumnConcept {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String uri;
 
-    @Column(name = "name", nullable = false)
+    @Column(columnDefinition = "VARCHAR(255)")
     private String name;
 
-    @org.springframework.data.annotation.Transient
-    @ToString.Exclude
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
-    @JoinTable(name = "mdb_columns_concepts",
-            joinColumns = @JoinColumn(name = "uri", referencedColumnName = "uri", insertable = false, updatable = false),
-            inverseJoinColumns = {
-                    @JoinColumn(name = "cid", referencedColumnName = "id", insertable = false, updatable = false),
-                    @JoinColumn(name = "tid", referencedColumnName = "tid", insertable = false, updatable = false),
-                    @JoinColumn(name = "cdbid", referencedColumnName = "cdbid", insertable = false, updatable = false)
-            })
-    private List<TableColumn> columns;
+    @Column(columnDefinition = "TEXT")
+    private String description;
 
     @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP")
     @CreatedDate
     private Instant created;
+
+    @ToString.Exclude
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "mdb_columns_concepts",
+            inverseJoinColumns = {
+                    @JoinColumn(name = "cid", referencedColumnName = "id", insertable = false, updatable = false),
+                    @JoinColumn(name = "tid", referencedColumnName = "tid", insertable = false, updatable = false),
+                    @JoinColumn(name = "cdbid", referencedColumnName = "cdbid", insertable = false, updatable = false)
+            },
+            joinColumns = @JoinColumn(name = "uri", referencedColumnName = "uri"))
+    private List<TableColumn> columns;
 }

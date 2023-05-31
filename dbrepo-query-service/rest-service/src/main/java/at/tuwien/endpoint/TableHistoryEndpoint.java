@@ -1,11 +1,13 @@
 package at.tuwien.endpoint;
 
+import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.TableHistoryDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.exception.*;
 import at.tuwien.service.*;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -43,7 +45,7 @@ public class TableHistoryEndpoint {
                     description = "Find table history successfully",
                     content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = TableHistoryDto[].class))}),
+                            array = @ArraySchema(schema = @Schema(implementation = TableHistoryDto.class)))}),
             @ApiResponse(responseCode = "400",
                     description = "Table history query is malformed",
                     content = {@Content(

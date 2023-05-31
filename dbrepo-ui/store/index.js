@@ -4,6 +4,7 @@ import UserService from '@/api/user.service'
 import DatabaseService from '@/api/database.service'
 import TableService from '@/api/table.service'
 import MetadataService from '@/api/metadata.service'
+import SemanticService from '@/api/semantic.service'
 
 Vue.use(Vuex)
 
@@ -18,7 +19,8 @@ const store = new Store({
     table: null,
     access: null,
     locale: null,
-    messages: []
+    messages: [],
+    ontologies: []
   },
   getters: {
     getToken: state => state.token,
@@ -29,7 +31,8 @@ const store = new Store({
     getTable: state => state.table,
     getAccess: state => state.access,
     getLocale: state => state.locale,
-    getMessages: state => state.messages
+    getMessages: state => state.messages,
+    getOntologies: state => state.ontologies
   },
   mutations: {
     SET_TOKEN (state, token) {
@@ -58,6 +61,9 @@ const store = new Store({
     },
     SET_MESSAGES (state, messages) {
       state.messages = messages
+    },
+    SET_ONTOLOGIES (state, ontologies) {
+      state.ontologies = ontologies
     }
   },
   actions: {
@@ -89,6 +95,12 @@ const store = new Store({
       MetadataService.findActiveMessages()
         .then((messages) => {
           commit('SET_MESSAGES', messages)
+        })
+    },
+    reloadOntologies ({ state, commit }) {
+      SemanticService.findAllOntologies()
+        .then((ontologies) => {
+          commit('SET_ONTOLOGIES', ontologies)
         })
     }
   }

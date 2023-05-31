@@ -69,6 +69,7 @@ public interface TableService {
             throws ImageNotSupportedException, DatabaseNotFoundException, TableMalformedException,
             TableNameExistsException, ContainerNotFoundException, UserNotFoundException, QueryMalformedException;
 
+
     /**
      * Updates a table column
      *
@@ -77,15 +78,14 @@ public interface TableService {
      * @param tableId     The table id.
      * @param columnId    The column id.
      * @param updateDto   The update data containing unit and concept uris.
-     * @param principal   The principal.
-     * @return The updated table column.
-     * @throws TableNotFoundException
-     * @throws DatabaseNotFoundException
-     * @throws ContainerNotFoundException
-     * @throws TableMalformedException
-     * @throws UnitNotFoundException
-     * @throws ConceptNotFoundException
+     * @return The updated table column, if successful.
+     * @throws TableNotFoundException     The table was not found in the metadata database.
+     * @throws DatabaseNotFoundException  The database was not found in the metadata database.
+     * @throws ContainerNotFoundException The container was not found.
+     * @throws TableMalformedException    The table seems malformed by the mapper.
      */
     TableColumn update(Long containerId, Long databaseId, Long tableId, Long columnId,
-                       ColumnSemanticsUpdateDto updateDto, Principal principal) throws TableNotFoundException, DatabaseNotFoundException, ContainerNotFoundException, TableMalformedException, UnitNotFoundException, ConceptNotFoundException;
+                       ColumnSemanticsUpdateDto updateDto, String authorization)
+            throws TableNotFoundException, DatabaseNotFoundException, ContainerNotFoundException,
+            TableMalformedException, SemanticEntityPersistException, SemanticEntityNotFoundException;
 }

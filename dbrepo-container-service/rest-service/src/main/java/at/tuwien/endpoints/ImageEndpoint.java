@@ -1,5 +1,6 @@
 package at.tuwien.endpoints;
 
+import at.tuwien.api.container.ContainerBriefDto;
 import at.tuwien.api.container.image.ImageBriefDto;
 import at.tuwien.api.container.image.ImageChangeDto;
 import at.tuwien.api.container.image.ImageCreateDto;
@@ -11,6 +12,7 @@ import at.tuwien.mapper.ImageMapper;
 import at.tuwien.service.impl.ImageServiceImpl;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -55,7 +57,7 @@ public class ImageEndpoint {
                     description = "List images",
                     content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ContainerImage[].class))}),
+                            array = @ArraySchema(schema = @Schema(implementation = ContainerImage.class)))}),
     })
     public ResponseEntity<List<ImageBriefDto>> findAll(@NotNull Principal principal) {
         log.debug("endpoint find all images, principal={}", principal);
@@ -182,7 +184,7 @@ public class ImageEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<?> delete(@NotNull @PathVariable Long imageId,
+    public ResponseEntity<?> delete(@NotNull @PathVariable("id") Long imageId,
                                     @NotNull Principal principal) throws ImageNotFoundException {
         log.debug("endpoint delete image, id={}, principal={}", imageId, principal);
         imageService.find(imageId);

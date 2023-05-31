@@ -10,7 +10,7 @@
       <v-list-item class="mt-2">
         <v-list-item-content>
           <v-list-item-subtitle>
-            {{ version }}
+            {{ version }} ({{ gitHash }})
           </v-list-item-subtitle>
           <v-list-item-title class="text-h6">
             Database Repository
@@ -36,6 +36,17 @@
           </v-list-item-action>
           <v-list-item-content>
             <v-list-item-title>{{ $t('layout.databases', { name: 'vue-i18n' }) }}</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item
+          v-if="canListOntologies"
+          to="/semantic"
+          router>
+          <v-list-item-action>
+            <v-icon>mdi-share-variant</v-icon>
+          </v-list-item-action>
+          <v-list-item-content>
+            <v-list-item-title>{{ $t('layout.semantics', { name: 'vue-i18n' }) }}</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
       </v-list>
@@ -166,8 +177,20 @@ export default {
     database () {
       return this.$store.state.database
     },
+    roles () {
+      return this.$store.state.roles
+    },
     version () {
       return this.$config.version
+    },
+    gitHash () {
+      return this.$config.gitHash
+    },
+    canListOntologies () {
+      if (!this.roles) {
+        return false
+      }
+      return this.roles.includes('list-ontologies')
     },
     sandbox () {
       if (this.$config.sandbox === undefined) {

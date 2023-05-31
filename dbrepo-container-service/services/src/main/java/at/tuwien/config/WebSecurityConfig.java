@@ -5,7 +5,6 @@ import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -39,15 +38,15 @@ public class WebSecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         final OrRequestMatcher internalEndpoints = new OrRequestMatcher(
-                new AntPathRequestMatcher("/actuator/prometheus/**", "GET")
-        );
-        final OrRequestMatcher publicEndpoints = new OrRequestMatcher(
-                new AntPathRequestMatcher("/api/container/**", "GET"),
-                new AntPathRequestMatcher("/api/image/**", "GET"),
+                new AntPathRequestMatcher("/actuator/**", "GET"),
                 new AntPathRequestMatcher("/v3/api-docs.yaml"),
                 new AntPathRequestMatcher("/v3/api-docs/**"),
                 new AntPathRequestMatcher("/swagger-ui/**"),
                 new AntPathRequestMatcher("/swagger-ui.html")
+        );
+        final OrRequestMatcher publicEndpoints = new OrRequestMatcher(
+                new AntPathRequestMatcher("/api/container/**", "GET"),
+                new AntPathRequestMatcher("/api/image/**", "GET")
         );
         /* enable CORS and disable CSRF */
         http = http.cors().and().csrf().disable();

@@ -2,6 +2,7 @@ package at.tuwien.endpoints;
 
 import at.tuwien.api.container.*;
 import at.tuwien.api.error.ApiErrorDto;
+import at.tuwien.api.semantics.OntologyDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
@@ -10,6 +11,7 @@ import at.tuwien.service.UserService;
 import at.tuwien.service.impl.ContainerServiceImpl;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -60,7 +62,7 @@ public class ContainerEndpoint {
                     description = "List containers",
                     content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ContainerBriefDto[].class))}),
+                            array = @ArraySchema(schema = @Schema(implementation = ContainerBriefDto.class)))}),
     })
     public ResponseEntity<List<ContainerBriefDto>> findAll(Principal principal,
                                                            @RequestParam(required = false) Integer limit) {

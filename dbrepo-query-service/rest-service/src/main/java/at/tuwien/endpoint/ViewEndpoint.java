@@ -4,6 +4,7 @@ import at.tuwien.api.database.ViewBriefDto;
 import at.tuwien.api.database.ViewCreateDto;
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.query.QueryResultDto;
+import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.View;
@@ -14,6 +15,7 @@ import at.tuwien.service.*;
 import at.tuwien.validation.EndpointValidator;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -64,7 +66,7 @@ public class ViewEndpoint {
                     description = "Find views successfully",
                     content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ViewBriefDto[].class))}),
+                            array = @ArraySchema(schema = @Schema(implementation = ViewBriefDto.class)))}),
             @ApiResponse(responseCode = "404",
                     description = "Database or user could not be found",
                     content = {@Content(

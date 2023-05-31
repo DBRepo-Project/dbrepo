@@ -10,8 +10,8 @@ import at.tuwien.config.ReadyConfig;
 import at.tuwien.endpoints.ImageEndpoint;
 import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.exception.*;
-import at.tuwien.repository.jpa.ImageRepository;
 import at.tuwien.repository.jpa.UserRepository;
+import at.tuwien.service.impl.ImageServiceImpl;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,7 +41,7 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
     private ReadyConfig readyConfig;
 
     @MockBean
-    private ImageRepository imageRepository;
+    private ImageServiceImpl imageService;
 
     @MockBean
     private UserRepository userRepository;
@@ -176,11 +176,12 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void findById_anonymousNotFound_succeeds() {
+    public void findById_anonymousNotFound_succeeds() throws ImageNotFoundException {
 
         /* mock */
-        when(imageRepository.findById(CONTAINER_1_ID))
-                .thenReturn(Optional.empty());
+        doThrow(ImageNotFoundException.class)
+                .when(imageService)
+                .find(CONTAINER_1_ID);
 
         /* test */
         assertThrows(ImageNotFoundException.class, () -> {
@@ -214,11 +215,12 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_2_USERNAME, authorities = {"delete-image"})
-    public void delete_hasRole_succeeds() throws ImageNotFoundException {
+    public void delete_hasRole_succeeds() throws ImageNotFoundException, PersistenceException {
 
         /* mock */
-        when(imageRepository.existsById(IMAGE_1_ID))
-                .thenReturn(true);
+        doNothing()
+                .when(imageService)
+                .delete(IMAGE_1_ID);
         when(userRepository.findByUsername(USER_2_USERNAME))
                 .thenReturn(Optional.of(USER_2));
 
@@ -266,8 +268,9 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_2_USERNAME, authorities = {"modify-image"})
-    public void modify_hasRole_succeeds() throws ImageNotFoundException {
+    public void modify_hasRole_succeeds() throws ImageNotFoundException, DockerClientException {
         final ImageChangeDto request = ImageChangeDto.builder()
+                .registry(IMAGE_1_REGISTRY)
                 .defaultPort(IMAGE_1_PORT)
                 .dialect(IMAGE_1_DIALECT)
                 .jdbcMethod(IMAGE_1_JDBC)
@@ -290,7 +293,7 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
     public void findAll_generic(Principal principal) {
 
         /* mock */
-        when(imageRepository.findAll())
+        when(imageService.getAll())
                 .thenReturn(List.of(IMAGE_1));
 
         /* test */
@@ -305,7 +308,7 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
             ImageAlreadyExistsException, DockerClientException, ImageNotFoundException, ImageInvalidException {
 
         /* mock */
-        when(imageRepository.save(any(ContainerImage.class)))
+        when(imageService.create(data, principal))
                 .thenReturn(IMAGE_1);
 
         /* test */
@@ -317,8 +320,8 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
     public void findById_generic(Long imageId, ContainerImage image) throws ImageNotFoundException {
 
         /* mock */
-        when(imageRepository.findById(imageId))
-                .thenReturn(Optional.of(image));
+        when(imageService.find(imageId))
+                .thenReturn(image);
 
         /* test */
         final ResponseEntity<ImageDto> response = imageEndpoint.findById(imageId);
@@ -329,8 +332,8 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
     public void delete_generic(Long imageId, ContainerImage image, Principal principal) throws ImageNotFoundException {
 
         /* mock */
-        when(imageRepository.findById(imageId))
-                .thenReturn(Optional.of(image));
+        when(imageService.find(imageId))
+                .thenReturn(image);
 
         /* test */
         final ResponseEntity<?> response = imageEndpoint.delete(imageId, principal);
@@ -339,12 +342,12 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
     }
 
     public void modify_generic(Long imageId, ContainerImage image, ImageChangeDto data, Principal principal)
-            throws ImageNotFoundException {
+            throws ImageNotFoundException, DockerClientException {
 
         /* mock */
-        when(imageRepository.findById(imageId))
-                .thenReturn(Optional.of(image));
-        when(imageRepository.save(any(ContainerImage.class)))
+        when(imageService.find(imageId))
+                .thenReturn(image);
+        when(imageService.update(imageId, data))
                 .thenReturn(image);
 
         /* test */

@@ -1,5 +1,6 @@
 package at.tuwien.endpoint;
 
+import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.maintenance.BannerMessageBriefDto;
 import at.tuwien.api.maintenance.BannerMessageCreateDto;
 import at.tuwien.api.maintenance.BannerMessageDto;
@@ -9,6 +10,7 @@ import at.tuwien.exception.BannerMessageNotFoundException;
 import at.tuwien.mapper.BannerMessageMapper;
 import at.tuwien.service.BannerMessageService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -46,7 +48,7 @@ public class MaintenanceEndpoint {
                     description = "List messages",
                     content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = BannerMessageDto[].class))}),
+                            array = @ArraySchema(schema = @Schema(implementation = BannerMessageDto.class)))}),
     })
     public ResponseEntity<List<BannerMessageDto>> list() {
         log.debug("endpoint list active maintenance messages");
@@ -82,7 +84,7 @@ public class MaintenanceEndpoint {
                     description = "List messages",
                     content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = BannerMessageBriefDto[].class))}),
+                            array = @ArraySchema(schema = @Schema(implementation = BannerMessageBriefDto.class)))}),
     })
     public ResponseEntity<List<BannerMessageBriefDto>> active() {
         log.debug("endpoint list active maintenance messages");
