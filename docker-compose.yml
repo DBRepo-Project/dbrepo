@@ -11,14 +11,14 @@ volumes:
   authentication-service-data:
 
 networks:
-  userdb:
-    name: userdb
+  public:
+    name: public
     driver: bridge
     ipam:
       config:
         - subnet: 172.30.0.0/16
-  public:
-    name: public
+  userdb:
+    name: userdb
     driver: bridge
     ipam:
       config:
