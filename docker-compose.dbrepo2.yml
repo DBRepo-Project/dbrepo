@@ -46,33 +46,6 @@ services:
       - "9100:9100"
     env_file:
       - .env
-    environment:
-      MARIADB_REPLICATION_MODE: master
-      MARIADB_REPLICATION_USER: "${METADATA_REPLICATION_USER}"
-      MARIADB_REPLICATION_PASSWORD: "${METADATA_REPLICATION_PASSWORD}"
-    logging:
-      driver: json-file
-
-  dbrepo-metadata-db-slave:
-    restart: "no"
-    hostname: metadata-db-slave
-    image: bitnami/mariadb:10.5
-    networks:
-      core:
-    env_file:
-      - .env
-    environment:
-      MARIADB_REPLICATION_MODE: slave
-      MARIADB_REPLICATION_USER: "${METADATA_REPLICATION_USER}"
-      MARIADB_REPLICATION_PASSWORD: "${METADATA_REPLICATION_PASSWORD}"
-      MARIADB_MASTER_HOST: metadata-db
-      MARIADB_MASTER_PORT_NUMBER: 3306
-      MARIADB_MASTER_ROOT_PASSWORD: "${METADATA_PASSWORD}"
-    depends_on:
-      - dbrepo-metadata-db
-    deploy:
-      mode: replicated
-      replicas: 3
     logging:
       driver: json-file
 
