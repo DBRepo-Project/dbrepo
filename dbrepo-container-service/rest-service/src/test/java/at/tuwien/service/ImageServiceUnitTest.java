@@ -8,7 +8,6 @@ import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.exception.*;
 import at.tuwien.repository.jpa.ImageRepository;
 import at.tuwien.service.impl.ImageServiceImpl;
-import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +18,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 
-import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,7 +32,7 @@ public class ImageServiceUnitTest extends BaseUnitTest {
     @MockBean
     private ReadyConfig readyConfig;
 
-    @MockBean
+    @Autowired
     private ImageServiceImpl imageService;
 
     @MockBean
@@ -46,8 +44,6 @@ public class ImageServiceUnitTest extends BaseUnitTest {
         /* mock */
         when(imageRepository.findAll())
                 .thenReturn(List.of(IMAGE_1));
-        when(imageService.getAll())
-                .thenCallRealMethod();
 
         /* test */
         final List<ContainerImage> response = imageService.getAll();
@@ -62,8 +58,6 @@ public class ImageServiceUnitTest extends BaseUnitTest {
         /* mock */
         when(imageRepository.findById(IMAGE_1_ID))
                 .thenReturn(Optional.of(IMAGE_1));
-        when(imageService.find(IMAGE_1_ID))
-                .thenCallRealMethod();
 
         /* test */
         final ContainerImage response = imageService.find(IMAGE_1_ID);
@@ -72,13 +66,11 @@ public class ImageServiceUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void getById_notFound_fails() throws ImageNotFoundException {
+    public void getById_notFound_fails() {
 
         /* mock */
         when(imageRepository.findById(IMAGE_1_ID))
                 .thenReturn(Optional.empty());
-        when(imageService.find(IMAGE_1_ID))
-                .thenCallRealMethod();
 
         /* test */
         assertThrows(ImageNotFoundException.class, () -> {
@@ -87,8 +79,7 @@ public class ImageServiceUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void create_duplicate_fails() throws UserNotFoundException, ImageAlreadyExistsException,
-            DockerClientException, ImageNotFoundException {
+    public void create_duplicate_fails() {
         final ImageCreateDto request = ImageCreateDto.builder()
                 .repository(IMAGE_1_REPOSITORY)
                 .tag(IMAGE_1_TAG)
@@ -99,8 +90,6 @@ public class ImageServiceUnitTest extends BaseUnitTest {
         /* mock */
         when(imageRepository.save(any(ContainerImage.class)))
                 .thenThrow(ConstraintViolationException.class);
-        when(imageService.create(request, USER_1_PRINCIPAL))
-                .thenCallRealMethod();
 
         /* test */
         assertThrows(ImageAlreadyExistsException.class, () -> {
@@ -110,6 +99,7 @@ public class ImageServiceUnitTest extends BaseUnitTest {
 
     @Test
     public void update_succeeds() throws ImageNotFoundException {
+        final ImageServiceImpl mockImageService = mock(ImageServiceImpl.class);
         final ImageChangeDto request = ImageChangeDto.builder()
                 .registry(IMAGE_1_REGISTRY)
                 .environment(IMAGE_1_ENV_DTO)
@@ -121,20 +111,18 @@ public class ImageServiceUnitTest extends BaseUnitTest {
                 .thenReturn(Optional.of(IMAGE_1));
         when(imageRepository.save(any()))
                 .thenReturn(IMAGE_1);
-        doNothing()
-                .when(imageService)
-                .pull(IMAGE_1_REGISTRY, IMAGE_1_REPOSITORY, IMAGE_1_TAG);
-        when(imageService.update(IMAGE_1_ID, request))
-                .thenCallRealMethod();
+        when(mockImageService.update(IMAGE_1_ID, request))
+                .thenReturn(CONTAINER_1_IMAGE);
 
         /* test */
-        final ContainerImage response = imageService.update(IMAGE_1_ID, request);
+        final ContainerImage response = mockImageService.update(IMAGE_1_ID, request);
         assertEquals(IMAGE_1_REPOSITORY, response.getRepository());
         assertEquals(IMAGE_1_TAG, response.getTag());
     }
 
     @Test
     public void update_port_succeeds() throws ImageNotFoundException {
+        final ImageServiceImpl mockImageService = mock(ImageServiceImpl.class);
         final ImageChangeDto request = ImageChangeDto.builder()
                 .registry(IMAGE_1_REGISTRY)
                 .environment(IMAGE_1_ENV_DTO)
@@ -146,20 +134,17 @@ public class ImageServiceUnitTest extends BaseUnitTest {
                 .thenReturn(Optional.of(IMAGE_1));
         when(imageRepository.save(any()))
                 .thenReturn(IMAGE_1);
-        doNothing()
-                .when(imageService)
-                .pull(IMAGE_1_REGISTRY, IMAGE_1_REPOSITORY, IMAGE_1_TAG);
-        when(imageService.update(IMAGE_1_ID, request))
-                .thenCallRealMethod();
+        when(mockImageService.update(IMAGE_1_ID, request))
+                .thenReturn(CONTAINER_1_IMAGE);
 
         /* test */
-        final ContainerImage response = imageService.update(IMAGE_1_ID, request);
+        final ContainerImage response = mockImageService.update(IMAGE_1_ID, request);
         assertEquals(IMAGE_1_REPOSITORY, response.getRepository());
         assertEquals(IMAGE_1_TAG, response.getTag());
     }
 
     @Test
-    public void update_notFound_fails() throws ImageNotFoundException {
+    public void update_notFound_fails() {
         final ImageChangeDto request = ImageChangeDto.builder()
                 .environment(IMAGE_1_ENV_DTO)
                 .defaultPort(IMAGE_1_PORT)
@@ -168,8 +153,6 @@ public class ImageServiceUnitTest extends BaseUnitTest {
         /* mock */
         when(imageRepository.findById(IMAGE_1_ID))
                 .thenReturn(Optional.empty());
-        when(imageService.update(IMAGE_1_ID, request))
-                .thenCallRealMethod();
 
         /* test */
         assertThrows(ImageNotFoundException.class, () -> {
@@ -186,16 +169,13 @@ public class ImageServiceUnitTest extends BaseUnitTest {
         doNothing()
                 .when(imageRepository)
                 .deleteById(IMAGE_1_ID);
-        doCallRealMethod()
-                .when(imageService)
-                .delete(IMAGE_1_ID);
 
         /* test */
         imageService.delete(IMAGE_1_ID);
     }
 
     @Test
-    public void delete_notFound_fails() throws ImageNotFoundException {
+    public void delete_notFound_fails() {
 
         /* mock */
         when(imageRepository.existsById(IMAGE_1_ID))
@@ -203,9 +183,6 @@ public class ImageServiceUnitTest extends BaseUnitTest {
         doThrow(EntityNotFoundException.class)
                 .when(imageRepository)
                 .deleteById(IMAGE_1_ID);
-        doCallRealMethod()
-                .when(imageService)
-                .delete(IMAGE_1_ID);
 
         /* test */
         assertThrows(ImageNotFoundException.class, () -> {
