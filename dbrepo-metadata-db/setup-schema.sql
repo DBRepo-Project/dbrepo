@@ -489,7 +489,8 @@ VALUES ('MIT', 'https://opensource.org/licenses/MIT'),
        ('CC-BY-4.0', 'https://creativecommons.org/licenses/by/4.0/legalcode');
 
 INSERT INTO `fda`.`mdb_images` (repository, tag, default_port, dialect, driver_class, jdbc_method)
-VALUES ('mariadb', '10.5', 3306, 'org.hibernate.dialect.MariaDBDialect', 'org.mariadb.jdbc.Driver', 'mariadb');
+VALUES ('mariadb', '10.5', 3306, 'org.hibernate.dialect.MariaDBDialect', 'org.mariadb.jdbc.Driver', 'mariadb'),
+       ('bitnami/mariadb', '10.5', 3306, 'org.hibernate.dialect.MariaDBDialect', 'org.mariadb.jdbc.Driver', 'mariadb');
 
 INSERT INTO `fda`.`mdb_images_environment_item` (`key`, value, etype, iid)
 VALUES ('ROOT', 'root', 'PRIVILEGED_USERNAME', 1),
