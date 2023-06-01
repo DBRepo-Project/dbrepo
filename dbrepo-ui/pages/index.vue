@@ -6,7 +6,7 @@
         <div class="text--primary">
           <ul>
             <li>
-              <a href="https://dbrepo-docs.ossdip.at/" target="_blank">Online Documentation</a>
+              <a href="https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/" target="_blank">Online Documentation</a>
             </li>
             <li>
               <a href="https://doi.org/10.2218/ijdc.v17i1.825" target="_blank">System Description</a>
@@ -37,10 +37,26 @@
       <v-card-text>
         <div>Release Notes</div>
         <p class="text-h4 text--primary">
+          1.3
+        </p>
+        <p>
+          <a href="">Detailed
+            Changelog</a>
+        </p>
+        <div class="text--primary">
+          This release fixes bugs related to versioning, increases tasks for developers and data stewards. It enables
+          organizations to federate identities with thei own OAuth2 identitiy provider with Keycloak.
+        </div>
+      </v-card-text>
+      <v-divider class="mx-4"/>
+      <v-card-text>
+        <div>Release Notes</div>
+        <p class="text-h4 text--primary">
           1.2
         </p>
         <p>
-          <a href="https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/blob/master/CHANGELOG.md">Detailed
+          <a
+            href="https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/blob/ac45842d27fcce47a99683330dc8ea1b8321c3be/CHANGELOG.md">Detailed
             Changelog</a>
         </p>
         <div class="text--primary">
@@ -48,14 +64,15 @@
           model for giving users access to databases, improved the query store handling.
         </div>
       </v-card-text>
-      <v-divider class="mx-4" />
+      <v-divider class="mx-4"/>
       <v-card-text>
         <div>Release Notes</div>
         <p class="text-h4 text--primary">
           1.1
         </p>
         <p>
-          <a href="https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/blob/master/CHANGELOG.md">Detailed
+          <a
+            href="https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/blob/70b4d1e6398934d88e0080cb89f8cf87c68bf6eb/CHANGELOG">Detailed
             Changelog</a>
         </p>
         <div class="text--primary">

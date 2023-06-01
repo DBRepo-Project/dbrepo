@@ -66,26 +66,6 @@
                 label="Repeat Password *" />
             </v-col>
           </v-row>
-          <v-row v-if="sandbox" dense>
-            <v-col sm="6">
-              <v-checkbox
-                v-model="consent"
-                required
-                name="consent"
-                :rules="[v => !!v || $t('Required')]"
-                label="I understand the warning and do not use production data" />
-            </v-col>
-          </v-row>
-          <v-row v-if="sandbox" dense>
-            <v-col sm="6">
-              <v-checkbox
-                v-model="privacy"
-                required
-                name="privacy"
-                :rules="[v => !!v || $t('Required')]"
-                label="I have read and accept the privacy statement" />
-            </v-col>
-          </v-row>
         </v-card-text>
         <v-card-text>
           <v-btn
@@ -127,9 +107,6 @@ export default {
   computed: {
     loadingColor () {
       return this.error ? 'red lighten-2' : 'primary'
-    },
-    sandbox () {
-      return this.$config.sandbox
     },
     mailVerify () {
       return this.$config.mailVerify

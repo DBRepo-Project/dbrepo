@@ -10,7 +10,7 @@
 
     <groupId>at.tuwien</groupId>
     <artifactId>dbrepo-query-service</artifactId>
-    <version>1.2.0</version>
+    <version>1.3.0</version>
     <name>dbrepo-query-service</name>
     <description>
         The query service provides an interface to insert data into the tables created by the table service. It

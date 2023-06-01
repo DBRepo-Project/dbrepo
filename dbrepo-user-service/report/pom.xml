@@ -6,11 +6,11 @@
     <parent>
         <artifactId>dbrepo-user-service</artifactId>
         <groupId>at.tuwien</groupId>
-        <version>1.2.0</version>
+        <version>1.3.0</version>
     </parent>
 
     <artifactId>report</artifactId>
-    <version>1.2.0</version>
+    <version>1.3.0</version>
     <name>dbrepo-user-service-report</name>
     <description>
         This module is only intended for the pipeline coverage report. See the detailed report in the

@@ -6,11 +6,11 @@
     <parent>
         <artifactId>dbrepo-semantics-service</artifactId>
         <groupId>at.tuwien</groupId>
-        <version>1.2.0</version>
+        <version>1.3.0</version>
     </parent>
 
     <artifactId>services</artifactId>
-    <version>1.2.0</version>
+    <version>1.3.0</version>
     <name>dbrepo-semantics-service-services</name>
 
     <build>

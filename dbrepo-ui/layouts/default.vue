@@ -192,14 +192,6 @@ export default {
       }
       return this.roles.includes('list-ontologies')
     },
-    sandbox () {
-      if (this.$config.sandbox === undefined) {
-        console.debug('env sandbox not found, default to', false)
-        return false
-      }
-      console.debug('env sandbox found', this.$config.sandbox)
-      return this.$config.sandbox
-    },
     logo () {
       return this.$config.logo
     }
