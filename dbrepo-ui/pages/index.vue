@@ -40,7 +40,7 @@
           1.3
         </p>
         <p>
-          <a href="">Detailed
+          <a href="https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/blob/e4c6fdc36b3ceaa9f912cf284052459963d96076/CHANGELOG.md">Detailed
             Changelog</a>
         </p>
         <div class="text--primary">
