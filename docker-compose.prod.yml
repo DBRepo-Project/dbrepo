@@ -309,7 +309,7 @@ services:
     restart: "no"
     container_name: dbrepo-gateway-service
     hostname: gateway-service
-    image: nginx:alpine
+    image: nginx:1.25-alpine-slim
     networks:
       core:
       public:
