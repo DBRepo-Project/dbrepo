@@ -1,0 +1,26 @@
+{
+  "layout": {
+    "information": "Information",
+    "databases": "Datenbanken",
+    "semantics": "Semantik",
+    "ontologies": "Ontologien",
+    "search": "Suchen ...",
+    "login": "Anmelden",
+    "logout": "Abmelden",
+    "signup": "Registrieren"
+  },
+  "databases": {
+    "recent": "Neue Datenbanken",
+    "tooltip": {
+      "private": "Privat",
+      "public": "Öffentlich"
+    },
+    "toolbar": {
+      "info": "Info",
+      "tables": "Tabellen",
+      "subsets": "Subsets",
+      "views": "Views",
+      "settings": "Einstellungen"
+    }
+  }
+}

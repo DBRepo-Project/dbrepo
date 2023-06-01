@@ -1,13 +1,14 @@
 # INFO: This compose file deploys the official Docker images from a stable, tested master branch
-# MODIFIED: 2022-10-19
+# MODIFIED: 2023-06-01
 # MAINTAINER: Martin Weise <martin.weise@tuwien.ac.at>
 
 version: "3.6"
 
 volumes:
   metadata-db-data:
-  search-service-data:
+  search-db-data:
   broker-service-data:
+  authentication-service-data:
 
 networks:
   public:
@@ -32,7 +33,7 @@ networks:
 services:
 
   dbrepo-metadata-db:
-    restart: on-failure
+    restart: "no"
     container_name: dbrepo-metadata-db
     hostname: metadata-db
     image: dbrepo/metadata-db:1.2
@@ -48,37 +49,8 @@ services:
     logging:
       driver: json-file
 
-  dbrepo-discovery-service:
-    restart: on-failure
-    container_name: dbrepo-discovery-service
-    hostname: discovery-service
-    image: dbrepo/discovery-service:1.2
-    networks:
-      core:
-    env_file:
-      - .env
-    logging:
-      driver: json-file
-
-  dbrepo-gateway-service:
-    restart: on-failure
-    container_name: dbrepo-gateway-service
-    hostname: gateway-service
-    image: dbrepo/gateway-service:1.2
-    networks:
-      core:
-    ports:
-      - "9095:9095"
-    env_file:
-      - .env
-    depends_on:
-      dbrepo-discovery-service:
-        condition: service_healthy
-    logging:
-      driver: json-file
-
   dbrepo-database-service:
-    restart: on-failure
+    restart: "no"
     container_name: dbrepo-database-service
     hostname: database-service
     image: dbrepo/database-service:1.2
@@ -100,7 +72,7 @@ services:
       driver: json-file
 
   dbrepo-container-service:
-    restart: on-failure
+    restart: "no"
     container_name: dbrepo-container-service
     hostname: container-service
     image: dbrepo/container-service:1.2
@@ -117,26 +89,27 @@ services:
       driver: json-file
 
   dbrepo-authentication-service:
-    restart: on-failure
+    restart: "no"
     container_name: dbrepo-authentication-service
     hostname: authentication-service
     image: dbrepo/authentication-service:1.2
     networks:
       core:
+    ports:
+      - "8443:8443"
+      - "8080:8080"
     env_file:
       - .env
+    volumes:
+      - authentication-service-data:/opt/keycloak/data/
     depends_on:
-      dbrepo-discovery-service:
-        condition: service_healthy
-      dbrepo-broker-service:
-        condition: service_started
       dbrepo-metadata-db:
         condition: service_healthy
     logging:
       driver: json-file
 
   dbrepo-query-service:
-    restart: on-failure
+    restart: "no"
     container_name: dbrepo-query-service
     hostname: query-service
     image: dbrepo/query-service:1.2
@@ -148,6 +121,8 @@ services:
     volumes:
       - ${SHARED_FILESYSTEM}:/tmp
     depends_on:
+      dbrepo-broker-service:
+        condition: service_healthy
       dbrepo-table-service:
         condition: service_healthy
       dbrepo-authentication-service:
@@ -171,15 +146,15 @@ services:
     depends_on:
       dbrepo-authentication-service:
         condition: service_healthy
-      dbrepo-search-service:
+      dbrepo-search-db:
         condition: service_started
       dbrepo-broker-service:
-        condition: service_started
+        condition: service_healthy
     logging:
       driver: json-file
 
   dbrepo-identifier-service:
-    restart: on-failure
+    restart: "no"
     container_name: dbrepo-identifier-service
     hostname: identifier-service
     image: dbrepo/identifier-service:1.2
@@ -198,7 +173,7 @@ services:
       driver: json-file
 
   dbrepo-metadata-service:
-    restart: on-failure
+    restart: "no"
     container_name: dbrepo-metadata-service
     hostname: metadata-service
     image: dbrepo/metadata-service:1.2
@@ -207,13 +182,15 @@ services:
     env_file:
       - .env
     depends_on:
+      dbrepo-authentication-service:
+        condition: service_healthy
       dbrepo-metadata-db:
-        condition: service_started
+        condition: service_healthy
     logging:
       driver: json-file
 
   dbrepo-analyse-service:
-    restart: on-failure
+    restart: "no"
     container_name: dbrepo-analyse-service
     hostname: analyse-service
     image: dbrepo/analyse-service:1.2
@@ -225,14 +202,30 @@ services:
     volumes:
       - ${SHARED_FILESYSTEM}:/tmp
       - /var/run/docker.sock:/var/run/docker.sock
+    logging:
+      driver: json-file
+
+  dbrepo-user-service:
+    restart: "no"
+    container_name: dbrepo-user-service
+    hostname: user-service
+    image: dbrepo/user-service:1.2
+    networks:
+      core:
+    ports:
+      - "9098:9098"
+    env_file:
+      - .env
     depends_on:
-      dbrepo-discovery-service:
+      dbrepo-metadata-db:
+        condition: service_healthy
+      dbrepo-authentication-service:
         condition: service_healthy
     logging:
       driver: json-file
 
   dbrepo-semantics-service:
-    restart: on-failure
+    restart: "no"
     container_name: dbrepo-semantics-service
     hostname: semantics-service
     image: dbrepo/semantics-service:1.2
@@ -244,15 +237,15 @@ services:
       - ${SHARED_FILESYSTEM}:/tmp
       - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
-      dbrepo-discovery-service:
-        condition: service_healthy
       dbrepo-metadata-db:
+        condition: service_healthy
+      dbrepo-authentication-service:
         condition: service_healthy
     logging:
       driver: json-file
 
   dbrepo-broker-service:
-    restart: on-failure
+    restart: "no"
     container_name: dbrepo-broker-service
     hostname: broker-service
     image: dbrepo/broker-service:1.2
@@ -263,32 +256,35 @@ services:
     env_file:
       - .env
     depends_on:
-      dbrepo-discovery-service:
+      dbrepo-authentication-service:
         condition: service_healthy
     volumes:
       - broker-service-data:/var/lib/rabbitmq/
     logging:
       driver: json-file
 
-  dbrepo-search-service:
+  dbrepo-search-db:
     restart: always
-    container_name: dbrepo-search-service
-    hostname: search-service
-    image: dbrepo/search-service:1.2
+    container_name: dbrepo-search-db
+    hostname: search-db
+    image: elasticsearch:8.7.1
     networks:
       core:
-    depends_on:
-      dbrepo-discovery-service:
-        condition: service_healthy
     env_file:
       - .env
+    environment:
+      discovery.type: "single-node"
+      ES_JAVA_OPTS: "-Xms2g -Xmx2g"
+      logger.level: "WARN"
+      bootstrap.memory_lock: "true"
+      xpack.security.enabled: "true"
     volumes:
-      - search-service-data:/usr/share/elasticsearch/data
+      - search-db-data:/usr/share/elasticsearch/data
     logging:
       driver: json-file
 
   dbrepo-ui:
-    restart: on-failure
+    restart: "no"
     container_name: dbrepo-ui
     hostname: ui
     image: dbrepo/ui:1.2
@@ -305,6 +301,49 @@ services:
       dbrepo-identifier-service:
         condition: service_healthy
       dbrepo-database-service:
+        condition: service_healthy
+    logging:
+      driver: json-file
+
+  dbrepo-gateway-service:
+    restart: "no"
+    container_name: dbrepo-gateway-service
+    hostname: gateway-service
+    image: nginx:1.25-alpine-slim
+    networks:
+      core:
+      public:
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./dbrepo.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      dbrepo-analyse-service:
+        condition: service_healthy
+      dbrepo-authentication-service:
+        condition: service_healthy
+      dbrepo-broker-service:
+        condition: service_healthy
+      dbrepo-container-service:
+        condition: service_healthy
+      dbrepo-database-service:
+        condition: service_healthy
+      dbrepo-identifier-service:
+        condition: service_healthy
+      dbrepo-metadata-service:
+        condition: service_healthy
+      dbrepo-query-service:
+        condition: service_healthy
+      dbrepo-search-db:
+        condition: service_started
+      dbrepo-semantics-service:
+        condition: service_healthy
+      dbrepo-table-service:
+        condition: service_healthy
+      dbrepo-ui:
+        condition: service_started
+      dbrepo-user-service:
         condition: service_healthy
     logging:
       driver: json-file

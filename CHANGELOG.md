@@ -5,7 +5,40 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [[1.2]()] - 2022-01-11
+## [[1.3]()] - 2023-06-01
+
+### Added
+
+- Added automatic vulnerability scanner `trivy` in the CI/CD pipeline for detecting critical vulnerabilities faster
+- Added DataCite DOI system
+- Semantic service contains multiple ontologies and improved SPARQL queries to get label and description
+- The data steward can now actually curate databases (e.g. assigning semantic information to table schema)
+- The metadata of identifiers can now be downloaded with button
+- Documented all endpoint codes in the backend
+- Multi-column foreign key relationships
+
+### Changed
+
+- Replaced the custom authentication service with a production-grade Keycloak system
+- Queries issued via HTTP no longer count the result, there is a separate endpoint for that to decrease response time
+
+### Fixed
+
+- Fixed ~60% vulnerabilities coming from insecure Docker base images by changing to more secure ones
+- Actuator and swagger endpoints to be reachable, added MVC tests to ensure their correct responses in the future
+- Fixed issues around date formats
+- Query aliases and query versioning issues including views and tables, cross-product and joins
+- Bugs related to data insert in the frontend
+- Bugs related to data viewing in the frontend
+- Bugs related to primary key tuple modifications
+- Various frontend bugfixes for new role management
+- Refactored the constraint DTO for table schema creation
+
+### Removed
+
+- The discovery service image will no longer be maintained, it has been replaced with the reverse proxy
+
+## [[1.2](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/commit/125db74af6d2e96345b92bb96f115422f7194f65)] - 2022-11-01
 
 ### Added
 
@@ -43,7 +76,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - The name Unit Service will no longer be maintained, the Docker image is discontinued and is replaced by the Semantics Service
 
-## [[1.1.1-alpha]](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/commit/2a1f1bd53e3445aafa881e1209703dfa7de9c918) - 2022-08-11
+## [[1.1]](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/commit/2a1f1bd53e3445aafa881e1209703dfa7de9c918) - 2022-08-11
 
 ### Added
 

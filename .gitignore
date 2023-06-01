@@ -3,17 +3,46 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
-dbrepo-*
+
 # Notebooks
 .jupyter/
 .pytest_cache/
 __pycache__/
 
+# Previous directories
+fda-analyse-service/
+fda-authentication-service/
+fda-broker-service/
+fda-container-service/
+fda-database-service/
+fda-discovery-service/
+fda-gateway-service/
+fda-identifier-service/
+fda-metadata-db/
+fda-metadata-service/
+fda-query-service/
+fda-search-db/
+fda-semantics-service/
+fda-table-service/
+fda-ui/
+
 # demo
 .demo
 
+# crt
+*.crt
+*.key
+*.p12
+
 # Environment
 .env
+
+# X509
+root.crt
+intermediate.crt
+
+# scanning
+.trivy/trivy-*.json
 
 # Debug
 debug.txt
