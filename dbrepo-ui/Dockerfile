@@ -47,7 +47,7 @@ EXPOSE 9100
 ENV BROKER_USERNAME="fda"
 ENV BROKER_PASSWORD="fda"
 ENV SANDBOX=false
-ENV SEARCH="http://search-service:9200"
+ENV SEARCH="http://search-db:9200"
 ENV SHARED_FILESYSTEM="/tmp"
 ENV LOGO="/logo.png"
 ENV ELASTIC_USERNAME="elastic"

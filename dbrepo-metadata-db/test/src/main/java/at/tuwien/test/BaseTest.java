@@ -1112,8 +1112,8 @@ public abstract class BaseTest {
             .build();
 
     public final static Long CONTAINER_ELASTIC_ID = 6L;
-    public final static String CONTAINER_ELASTIC_NAME = "dbrepo-search-service";
-    public final static String CONTAINER_ELASTIC_INTERNAL_NAME = "dbrepo-search-service";
+    public final static String CONTAINER_ELASTIC_NAME = "dbrepo-search-db";
+    public final static String CONTAINER_ELASTIC_INTERNAL_NAME = "dbrepo-search-db";
     public final static String CONTAINER_ELASTIC_IP = "172.31.0.3";
     public final static String CONTAINER_ELASTIC_HASH = "deadbeef";
     public final static Instant CONTAINER_ELASTIC_CREATED = Instant.ofEpochSecond(1677399721) /* 2023-02-26 08:22:01 (UTC) */;

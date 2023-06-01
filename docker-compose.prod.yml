@@ -6,7 +6,7 @@ version: "3.6"
 
 volumes:
   metadata-db-data:
-  search-service-data:
+  search-db-data:
   broker-service-data:
   authentication-service-data:
 
@@ -146,7 +146,7 @@ services:
     depends_on:
       dbrepo-authentication-service:
         condition: service_healthy
-      dbrepo-search-service:
+      dbrepo-search-db:
         condition: service_started
       dbrepo-broker-service:
         condition: service_healthy
@@ -279,7 +279,7 @@ services:
       bootstrap.memory_lock: "true"
       xpack.security.enabled: "true"
     volumes:
-      - search-service-data:/usr/share/elasticsearch/data
+      - search-db-data:/usr/share/elasticsearch/data
     logging:
       driver: json-file
 
@@ -335,7 +335,7 @@ services:
         condition: service_healthy
       dbrepo-query-service:
         condition: service_healthy
-      dbrepo-search-service:
+      dbrepo-search-db:
         condition: service_started
       dbrepo-semantics-service:
         condition: service_healthy

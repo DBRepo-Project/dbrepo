@@ -30,7 +30,7 @@ spring:
   elasticsearch:
     password: "${ELASTIC_PASSWORD}"
     username: "${ELASTIC_USERNAME}"
-    uris: http://search-service:9200
+    uris: http://search-db:9200
 management.endpoints.web.exposure.include: health,info,prometheus
 springdoc.swagger-ui.enabled: true
 server:

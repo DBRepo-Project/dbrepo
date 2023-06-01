@@ -21,7 +21,7 @@ fda-identifier-service/
 fda-metadata-db/
 fda-metadata-service/
 fda-query-service/
-fda-search-service/
+fda-search-db/
 fda-semantics-service/
 fda-table-service/
 fda-ui/

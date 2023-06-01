@@ -511,7 +511,7 @@ scan-query-service:
     reports:
       container_scanning: ./.trivy/trivy-query-service-report.json
 
-scan-search-service:
+scan-search-db:
   stage: scan-docker
   needs:
     - build-docker
@@ -521,7 +521,7 @@ scan-search-service:
       - master
   allow_failure: true
   script:
-    - make scan-search-service
+    - make scan-search-db
   cache:
     paths:
       - .trivycache/
@@ -529,7 +529,7 @@ scan-search-service:
     when: always
     expire_in: 1 days
     reports:
-      container_scanning: ./.trivy/trivy-search-service-report.json
+      container_scanning: ./.trivy/trivy-search-db-report.json
 
 scan-semantics-service:
   stage: scan-docker
@@ -625,7 +625,7 @@ release-latest:
     - scan-metadata-service
     - scan-proxy
     - scan-query-service
-    - scan-search-service
+    - scan-search-db
     - scan-semantics-service
     - scan-table-service
     - scan-ui
@@ -652,7 +652,7 @@ release-version:
     - scan-metadata-service
     - scan-proxy
     - scan-query-service
-    - scan-search-service
+    - scan-search-db
     - scan-semantics-service
     - scan-table-service
     - scan-ui

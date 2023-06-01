@@ -92,7 +92,7 @@ tag-broker:
 	docker tag dbrepo-broker-service:latest "dbrepo/broker-service:${TAG}"
 
 tag-search:
-	docker tag dbrepo-search-service:latest "dbrepo/search-service:${TAG}"
+	docker tag dbrepo-search-db:latest "dbrepo/search-db:${TAG}"
 
 release: build-docker tag release-identifier release-container release-database release-query release-table release-analyse release-authentication release-metadata-db release-ui release-semantics release-broker release-metadata release-user
 
@@ -221,7 +221,7 @@ scan-query-service:
 
 scan-search-db:
 	docker pull "elasticsearch:${ELASTIC_VERSION}"
-	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-service-report.json "elasticsearch:${ELASTIC_VERSION}"
+	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-db-report.json "elasticsearch:${ELASTIC_VERSION}"
 	trivy image --insecure --exit-code 0 "elasticsearch:${ELASTIC_VERSION}"
 	trivy image --insecure --exit-code 1 --severity CRITICAL "elasticsearch:${ELASTIC_VERSION}"
 
