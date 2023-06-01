@@ -44,13 +44,13 @@
         <spring-cloud.version>4.0.2</spring-cloud.version>
         <mapstruct.version>1.5.5.Final</mapstruct.version>
         <docker.version>3.3.0</docker.version>
-        <swagger.version>2.2.9</swagger.version>
         <jacoco.version>0.8.10</jacoco.version>
         <jwt.version>4.3.0</jwt.version>
         <opencsv.version>5.7.1</opencsv.version>
         <jsql.version>4.6</jsql.version>
         <c3p0.version>0.9.5.5</c3p0.version>
         <c3p0-hibernate.version>6.2.2.Final</c3p0-hibernate.version>
+        <springdoc-openapi.version>2.1.0</springdoc-openapi.version>
     </properties>
 
     <dependencies>
@@ -129,6 +129,18 @@
             <groupId>com.rabbitmq</groupId>
             <artifactId>amqp-client</artifactId>
             <version>${rabbit-amqp-client.version}</version>
+        </dependency>
+        <!-- Swagger -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>${springdoc-openapi.version}</version>
+        </dependency>
+        <!-- Open API -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-api</artifactId>
+            <version>${springdoc-openapi.version}</version>
         </dependency>
         <!-- Docker -->
         <dependency>

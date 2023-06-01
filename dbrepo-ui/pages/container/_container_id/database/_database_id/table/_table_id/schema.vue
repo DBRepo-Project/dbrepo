@@ -28,31 +28,35 @@
         <span v-if="item.auto_generated">●</span> {{ item.auto_generated }}
       </template>
       <template v-slot:item.column_concept="{ item }">
-        <v-btn v-if="canModify && !hasConcept(item)" small @click="pick(item, 'concept')">Assign</v-btn>
+        <v-btn v-if="canAssignSemanticInformation && !hasConcept(item)" small @click="pick(item, 'concept')">Assign</v-btn>
         <v-btn
-          v-if="canModify && hasConcept(item)"
+          v-if="canAssignSemanticInformation && hasConcept(item)"
           :title="item.concept.uri"
           color="secondary"
           small
           @click="pick(item, 'concept')">
-          {{ item.concept.name }}
+          <span v-if="item.concept.name" v-text="item.concept.name" />
+          <span v-else v-text="item.concept.uri" />
         </v-btn>
-        <a v-if="!canModify && hasConcept(item)" :href="item.concept.uri" target="_blank">
-          {{ item.concept.name }}
+        <a v-if="!canAssignSemanticInformation && hasConcept(item)" :href="item.concept.uri" target="_blank">
+          <span v-if="item.concept.name" v-text="item.concept.name" />
+          <span v-else v-text="item.concept.uri" />
         </a>
       </template>
       <template v-slot:item.column_unit="{ item }">
-        <v-btn v-if="canModify && !hasUnit(item)" small @click="pick(item, 'unit')">Assign</v-btn>
+        <v-btn v-if="canAssignSemanticInformation && !hasUnit(item)" small @click="pick(item, 'unit')">Assign</v-btn>
         <v-btn
-          v-if="canModify && hasUnit(item)"
+          v-if="canAssignSemanticInformation && hasUnit(item)"
           :title="item.unit.uri"
           color="secondary"
           small
           @click="pick(item, 'unit')">
-          {{ item.unit.name }}
+          <span v-if="item.unit.name" v-text="item.unit.name" />
+          <span v-else v-text="item.unit.uri" />
         </v-btn>
-        <a v-if="!canModify && hasUnit(item)" :href="item.unit.uri" target="_blank">
-          {{ item.unit.name }}
+        <a v-if="!canAssignSemanticInformation && hasUnit(item)" :href="item.unit.uri" target="_blank">
+          <span v-if="item.unit.name" v-text="item.unit.name" />
+          <span v-else v-text="item.unit.uri" />
         </a>
       </template>
     </v-data-table>
@@ -63,6 +67,7 @@
       max-width="640">
       <DialogsSemantics
         :column="column"
+        :mode="mode"
         :table-id="table.id"
         :database="database"
         @close="closed" />
@@ -82,6 +87,7 @@ export default {
     return {
       selection: [],
       column: null,
+      mode: null,
       dialogSemantic: false,
       items: [
         { text: 'Databases', to: '/container', activeClass: '' },
@@ -115,20 +121,6 @@ export default {
     }
   },
   computed: {
-    token () {
-      return this.$store.state.token
-    },
-    config () {
-      if (this.token === null) {
-        return {
-          headers: {},
-          progress: false
-        }
-      }
-      return {
-        headers: { Authorization: `Bearer ${this.token}` }
-      }
-    },
     user () {
       return this.$store.state.user
     },
@@ -141,12 +133,20 @@ export default {
     access () {
       return this.$store.state.access
     },
-    canModify () {
-      if (!this.token || !this.user.username) {
-        /* not yet loaded */
+    roles () {
+      return this.$store.state.roles
+    },
+    canAssignSemanticInformation () {
+      if (!this.user) {
         return false
       }
-      return this.table.creator.username === this.user.username
+      if (this.roles.includes('modify-foreign-table-column-semantics')) {
+        return true
+      }
+      if (!this.access) {
+        return false
+      }
+      return this.roles.includes('modify-table-column-semantics') && (this.access.type === 'write_all' || this.table.owner.username === this.user.username)
     },
     versionColor () {
       if (this.version === null) {
@@ -168,6 +168,7 @@ export default {
     }
   },
   mounted () {
+    this.$store.dispatch('reloadOntologies')
   },
   methods: {
     isUnique (column) {
@@ -192,8 +193,9 @@ export default {
     hasConcept (item) {
       return item.concept && 'uri' in item.concept
     },
-    pick (item) {
+    pick (item, mode) {
       this.column = item
+      this.mode = mode
       this.dialogSemantic = true
     },
     closed (event) {

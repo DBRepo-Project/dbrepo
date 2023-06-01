@@ -1,7 +1,15 @@
-# FDA Container Service
+# Container Service
 
-## Documentation
+## Actuator Endpoints
 
-- OpenAPI v3: http://localhost:9091/swagger-ui/index.html
-- OpenAPI v3 endpoint: http://localhost:9091/v3/api-docs/
-- OpenAPI v3 YAML: http://localhost:9091/v3/api-docs.yaml
+- Actuator Info: http://localhost:9091/actuator/info
+- Actuator Health: http://localhost:9091/actuator/health
+- Actuator Prometheus: http://localhost:9091/actuator/prometheus
+
+## Swagger UI Endpoints
+
+- Swagger UI: http://localhost:9091/swagger-ui/index.html
+
+## OpenAPI Endpoints
+
+- OpenAPI v3 as .yaml: http://localhost:9091/v3/api-docs.yaml

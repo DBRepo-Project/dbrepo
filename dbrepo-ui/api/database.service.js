@@ -107,7 +107,7 @@ class DatabaseService {
         .catch((error) => {
           const { code, message, response } = error
           const { status } = response
-          if (status !== 403 && status !== 405) { /* ignore no access errors */
+          if (status !== 401 && status !== 403 && status !== 405) { /* ignore no access errors */
             console.error('Failed to check database access', error)
             Vue.$toast.error(`[${code}] Failed to check database access: ${message}`)
             reject(error)

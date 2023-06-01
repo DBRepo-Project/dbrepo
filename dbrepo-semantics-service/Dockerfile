@@ -1,37 +1,46 @@
-FROM python:3.9-alpine
+###### FIRST STAGE ######
+FROM dbrepo-metadata-db:latest as dependency
 MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
 
-RUN apk update && apk --no-cache add build-base gcc python3-dev libpq-dev libffi-dev mariadb-dev mariadb-connector-c \
-    mariadb-connector-c-dev curl bash py3-pandas py3-sqlalchemy py3-requests py3-gevent py3-psycopg2
+###### SECOND STAGE ######
+FROM maven:3-openjdk-17 as build
+MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
 
-COPY ./requirements.txt ./requirements.txt
-RUN pip install -r ./requirements.txt
+COPY ./pom.xml ./
 
-WORKDIR /app
+RUN mvn -fn -B dependency:go-offline > /dev/null
 
-ENV FLASK_APP=app.py
-ENV FLASK_RUN_HOST=0.0.0.0
-ENV PORT_APP=5010
-ENV FLASK_DEBUG=0
-ENV HOSTNAME=semantics-service
-ENV LOG_LEVEL=debug
+COPY --from=dependency /root/.m2/repository/at/tuwien /root/.m2/repository/at/tuwien
+
+COPY ./rest-service ./rest-service
+COPY ./services ./services
+COPY ./report ./report
+
+# Make sure it compiles
+RUN mvn -q clean package -DskipTests
+
+###### THIRD STAGE ######
+FROM openjdk:17-alpine as runtime
+MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
+
+RUN apk --no-cache add bash
+
 ENV METADATA_DB=fda
 ENV METADATA_USERNAME=root
 ENV METADATA_PASSWORD=dbrepo
-ENV JWT_ISSUER=http://localhost/realms/dbrepo
-ENV JWT_PUBKEY=public-key
+ENV LOG_LEVEL=debug
+ENV JWT_ISSUER="http://localhost/realms/dbrepo"
+ENV JWT_PUBKEY="MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB"
 
-COPY ./requirements.txt ./requirements.txt
-COPY ./healthcheck.sh ./healthcheck.sh
+WORKDIR /app
 
-RUN pip install -r requirements.txt > /dev/null
+COPY ./service_ready /usr/bin
+RUN chmod +x /usr/bin/service_ready
 
-HEALTHCHECK --interval=10s --timeout=5s --retries=12 CMD ["bash", "/app/healthcheck.sh"]
+HEALTHCHECK --interval=10s --timeout=5s --retries=12 CMD service_ready
 
-EXPOSE $PORT_APP
+COPY --from=build ./rest-service/target/rest-service-*.jar ./semantics-service.jar
 
-COPY ./us-yml ./us-yml
-COPY ./ontologies ./ontologies
-COPY ./*.py ./
+EXPOSE 9091
 
-ENTRYPOINT [ "python", "-u", "./pywsgi.py" ]
+ENTRYPOINT ["java", "-Dlog4j2.formatMsgNoLookups=true",  "-jar", "./semantics-service.jar"]

@@ -1,9 +1,15 @@
 package at.tuwien.entities.database.table.columns;
 
-import lombok.EqualsAndHashCode;
+import lombok.*;
 
 import java.io.Serializable;
 
+@Getter
+@Setter
+@Builder
+@ToString
+@NoArgsConstructor
+@AllArgsConstructor
 @EqualsAndHashCode
 public class TableColumnKey implements Serializable {
 

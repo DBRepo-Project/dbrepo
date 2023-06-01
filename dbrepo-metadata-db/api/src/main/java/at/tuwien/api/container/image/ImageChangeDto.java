@@ -20,6 +20,10 @@ import java.util.List;
 @ToString
 public class ImageChangeDto {
 
+    @NotBlank
+    @Schema(example = "docker.io/library")
+    private String registry;
+
     @Min(value = 1024, message = "only user ports are allowed 1024-65535")
     @Max(value = 65535, message = "only user ports are allowed 1024-65535")
     @Schema(example = "5432")

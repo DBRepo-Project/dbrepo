@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
+
 import java.security.Principal;
 import java.time.Duration;
 import java.time.Instant;
@@ -73,8 +74,9 @@ public class ImageServiceImpl implements ImageService {
         if (imageRepository.findByRepositoryAndTag(createDto.getRepository(), createDto.getTag()).isPresent()) {
             log.error("Failed to create image {}:{}, it already exists in the metadata database",
                     createDto.getRepository(), createDto.getTag());
-            throw new ImageAlreadyExistsException("Failed to create image");
+            throw new ImageAlreadyExistsException("Failed to create image " + createDto.getRepository() + ":" + createDto.getTag());
         }
+        image.setRegistry(createDto.getRegistry());
         image.setEnvironment(imageMapper.imageEnvironmentItemDtoToEnvironmentItemList(createDto.getEnvironment()));
         image.setDefaultPort(createDto.getDefaultPort());
         image.setDialect(createDto.getDialect());
@@ -96,8 +98,6 @@ public class ImageServiceImpl implements ImageService {
     @Transactional
     public ContainerImage update(Long imageId, ImageChangeDto changeDto) throws ImageNotFoundException {
         final ContainerImage image = find(imageId);
-        /* pull changes */
-        pull(image.getRepository(), image.getTag());
         /* get new infos */
         final ContainerImage dockerImage = inspect(image.getRepository(), image.getTag());
         if (!changeDto.getDefaultPort().equals(image.getDefaultPort())) {
@@ -111,12 +111,15 @@ public class ImageServiceImpl implements ImageService {
             log.debug("environment changed for image with id {}", imageId);
             log.trace("environment changed from {} to {} for image with id {}", env, image.getEnvironment(), imageId);
         }
+        image.setRegistry(changeDto.getRegistry());
         image.setCompiled(dockerImage.getCompiled());
         image.setHash(dockerImage.getHash());
         image.setSize(dockerImage.getSize());
         image.setDialect(changeDto.getDialect());
         image.setDriverClass(changeDto.getDriverClass());
         image.setJdbcMethod(changeDto.getJdbcMethod());
+        /* pull changes */
+        pull(image.getRegistry(), image.getRepository(), image.getTag());
         /* update metadata db */
         final ContainerImage out = imageRepository.save(image);
         log.info("Updated image with id {}", out.getId());
@@ -171,21 +174,21 @@ public class ImageServiceImpl implements ImageService {
     }
 
     @Override
-    public void pull(String repository, String tag) throws ImageNotFoundException {
-        log.debug("pulling image {}:{}", repository, tag);
+    public void pull(String registry, String repository, String tag) throws ImageNotFoundException {
+        log.debug("pulling image {}/{}:{}", registry, repository, tag);
         final ResultCallback.Adapter<PullResponseItem> response;
         try {
             response = dockerClient.pullImageCmd(repository)
+                    .withRegistry(registry)
                     .withTag(tag)
                     .start();
-            log.trace("pulled image {}", response);
             final Instant now = Instant.now();
             response.awaitCompletion();
-            log.info("Pulled image {}:{}", repository, tag);
-            log.debug("pulled image {}:{} in {} seconds", repository, tag, Duration.between(now, Instant.now()).getSeconds());
+            log.info("Pulled image {}/{}:{}", registry, repository, tag);
+            log.debug("pulled image {}/{}:{} in {} seconds", registry, repository, tag, Duration.between(now, Instant.now()).getSeconds());
         } catch (NotFoundException | InternalServerErrorException | InterruptedException e) {
-            log.warn("Failed to pull image {}:{}, reason: {}", repository, tag, e.getMessage());
-            throw new ImageNotFoundException("Failed to pull image", e);
+            log.warn("Failed to pull image {}/{}:{}, reason: {}", registry, repository, tag, e.getMessage());
+            throw new ImageNotFoundException("Failed to pull image " + registry + "/" + repository + ":" + tag, e);
         }
     }
 

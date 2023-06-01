@@ -1,5 +1,5 @@
 # INFO: This compose file builds the local branch and deploys them as a small, local test instance
-# MODIFIED: 2022-10-19
+# MODIFIED: 2023-06-01
 # MAINTAINER: Martin Weise <martin.weise@tuwien.ac.at>
 
 version: "3.6"
@@ -155,7 +155,7 @@ services:
     env_file:
       - .env
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      - "/var/run/docker.sock:/var/run/docker.sock"
       - "/tmp:/tmp"
     depends_on:
       dbrepo-authentication-service:
@@ -257,12 +257,12 @@ services:
     networks:
       core:
     ports:
-      - "5010:5010"
+      - "9097:9097"
     env_file:
       - .env
     volumes:
       - "/tmp:/tmp"
-      - /var/run/docker.sock:/var/run/docker.sock
+      - "/var/run/docker.sock:/var/run/docker.sock"
     depends_on:
       dbrepo-metadata-db:
         condition: service_healthy

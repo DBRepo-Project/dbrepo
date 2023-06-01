@@ -9,7 +9,9 @@ import at.tuwien.repository.jpa.ImageRepository;
 import at.tuwien.repository.jpa.UserRepository;
 import at.tuwien.service.impl.ImageServiceImpl;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.RandomUtils;
 import org.apache.http.auth.BasicUserPrincipal;
+import org.apache.tomcat.util.buf.HexUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -54,6 +56,7 @@ public class ImageServiceIntegrationTest extends BaseUnitTest {
     public void create_succeeds()
             throws ImageAlreadyExistsException, DockerClientException, ImageNotFoundException, UserNotFoundException {
         final ImageCreateDto request = ImageCreateDto.builder()
+                .registry(IMAGE_2_REGISTRY)
                 .repository(IMAGE_2_REPOSITORY)
                 .tag(IMAGE_2_TAG)
                 .jdbcMethod(IMAGE_2_JDBC)
@@ -134,10 +137,12 @@ public class ImageServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void pull_fails() {
+        final String repository = HexUtils.toHexString(RandomUtils.nextBytes(16));
+        final String tag = HexUtils.toHexString(RandomUtils.nextBytes(16));
 
         /* test */
         assertThrows(ImageNotFoundException.class, () -> {
-            imageService.pull("un1c0rn", "v420.420");
+            imageService.pull("docker.io/library", repository, tag);
         });
     }
 

@@ -5,6 +5,9 @@ before_script:
   - "mvn --version"
   - "python3 --version"
   - "df / -h"
+  - "docker logout"
+  - "docker logout ghcr.io"
+  - "docker logout registry.hub.docker.com"
 
 variables:
   HOSTALIASES: ./hosts
@@ -27,7 +30,7 @@ stages:
   - test-frontend
   - build-docker
   - scan-docker
-  - release
+  - release-docker
 
 build-metadata-db:
   stage: build-backend
@@ -221,15 +224,16 @@ test-semantics-service:
     - build-semantics-service
   script:
     - "make test-semantics-service"
-    - "cat ./dbrepo-semantics-service/coverage.txt | grep -o 'TOTAL[^%]*%'"
+    - "cat ./dbrepo-semantics-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
   artifacts:
     when: always
     paths:
-      - ./dbrepo-semantics-service/report.xml
+      - ./dbrepo-semantics-service/report/target/site/jacoco-aggregate/
+      - ./dbrepo-semantics-service/rest-service/target/surefire-reports/
     expire_in: 1 days
     reports:
-      junit: ./dbrepo-semantics-service/report.xml
-  coverage: '/TOTAL.*?([0-9]{1,3})%/'
+      junit: ./dbrepo-semantics-service/rest-service/target/surefire-reports/TEST-*.xml
+  coverage: '/Total.*?([0-9]{1,3})%/'
 
 test-analyse-service:
   stage: test-backend
@@ -296,8 +300,6 @@ scan-analyse-service:
       - dev
       - master
   allow_failure: true
-  before_script:
-    - docker logout ghcr.io
   script:
     - make scan-analyse-service
   cache:
@@ -318,8 +320,6 @@ scan-authentication-service:
       - dev
       - master
   allow_failure: true
-  before_script:
-    - docker logout ghcr.io
   script:
     - make scan-authentication-service
   cache:
@@ -340,8 +340,6 @@ scan-broker-service:
       - dev
       - master
   allow_failure: true
-  before_script:
-    - docker logout ghcr.io
   script:
     - make scan-broker-service
   cache:
@@ -362,8 +360,6 @@ scan-container-service:
       - dev
       - master
   allow_failure: true
-  before_script:
-    - docker logout ghcr.io
   script:
     - make scan-container-service
   cache:
@@ -384,8 +380,6 @@ scan-database-service:
       - dev
       - master
   allow_failure: true
-  before_script:
-    - docker logout ghcr.io
   script:
     - make scan-database-service
   cache:
@@ -406,8 +400,6 @@ scan-gateway-service:
       - dev
       - master
   allow_failure: true
-  before_script:
-    - docker logout ghcr.io
   script:
     - make scan-gateway-service
   cache:
@@ -428,8 +420,6 @@ scan-identifier-service:
       - dev
       - master
   allow_failure: true
-  before_script:
-    - docker logout ghcr.io
   script:
     - make scan-identifier-service
   cache:
@@ -450,8 +440,6 @@ scan-metadata-db:
       - dev
       - master
   allow_failure: true
-  before_script:
-    - docker logout ghcr.io
   script:
     - make scan-metadata-db
   cache:
@@ -472,8 +460,6 @@ scan-metadata-service:
       - dev
       - master
   allow_failure: true
-  before_script:
-    - docker logout ghcr.io
   script:
     - make scan-metadata-service
   cache:
@@ -494,8 +480,6 @@ scan-proxy:
       - dev
       - master
   allow_failure: true
-  before_script:
-    - docker logout ghcr.io
   script:
     - make scan-proxy
   cache:
@@ -516,8 +500,6 @@ scan-query-service:
       - dev
       - master
   allow_failure: true
-  before_script:
-    - docker logout ghcr.io
   script:
     - make scan-query-service
   cache:
@@ -538,8 +520,6 @@ scan-search-service:
       - dev
       - master
   allow_failure: true
-  before_script:
-    - docker logout ghcr.io
   script:
     - make scan-search-service
   cache:
@@ -560,8 +540,6 @@ scan-semantics-service:
       - dev
       - master
   allow_failure: true
-  before_script:
-    - docker logout ghcr.io
   script:
     - make scan-semantics-service
   cache:
@@ -582,8 +560,6 @@ scan-table-service:
       - dev
       - master
   allow_failure: true
-  before_script:
-    - docker logout ghcr.io
   script:
     - make scan-table-service
   cache:
@@ -604,8 +580,6 @@ scan-ui:
       - dev
       - master
   allow_failure: true
-  before_script:
-    - docker logout ghcr.io
   script:
     - make scan-ui
   cache:
@@ -626,8 +600,6 @@ scan-user-service:
       - dev
       - master
   allow_failure: true
-  before_script:
-    - docker logout ghcr.io
   script:
     - make scan-user-service
   cache:
@@ -640,7 +612,7 @@ scan-user-service:
       container_scanning: ./.trivy/trivy-user-service-report.json
 
 release-latest:
-  stage: release
+  stage: release-docker
   needs:
     - scan-analyse-service
     - scan-authentication-service
@@ -667,7 +639,7 @@ release-latest:
     - TAG=latest make release
 
 release-version:
-  stage: release
+  stage: release-docker
   needs:
     - scan-analyse-service
     - scan-authentication-service

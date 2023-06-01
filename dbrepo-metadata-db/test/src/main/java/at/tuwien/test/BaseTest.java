@@ -18,12 +18,16 @@ import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.api.database.table.columns.ColumnCreateDto;
 import at.tuwien.api.database.table.columns.ColumnTypeDto;
 import at.tuwien.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
+import at.tuwien.api.database.table.columns.concepts.ConceptSaveDto;
+import at.tuwien.api.database.table.columns.concepts.UnitSaveDto;
 import at.tuwien.api.database.table.constraints.ConstraintsCreateDto;
 import at.tuwien.api.database.table.constraints.foreignKey.ForeignKeyCreateDto;
 import at.tuwien.api.identifier.*;
 import at.tuwien.api.maintenance.BannerMessageCreateDto;
 import at.tuwien.api.maintenance.BannerMessageTypeDto;
 import at.tuwien.api.maintenance.BannerMessageUpdateDto;
+import at.tuwien.api.semantics.OntologyCreateDto;
+import at.tuwien.api.semantics.OntologyModifyDto;
 import at.tuwien.api.user.*;
 import at.tuwien.entities.container.image.ContainerImageDate;
 import at.tuwien.entities.database.*;
@@ -36,6 +40,7 @@ import at.tuwien.entities.database.table.constraints.unique.Unique;
 import at.tuwien.entities.identifier.*;
 import at.tuwien.entities.maintenance.BannerMessage;
 import at.tuwien.entities.maintenance.BannerMessageType;
+import at.tuwien.entities.semantics.Ontology;
 import at.tuwien.entities.user.Realm;
 import at.tuwien.entities.user.Role;
 import at.tuwien.entities.user.User;
@@ -106,6 +111,13 @@ import static java.time.temporal.ChronoUnit.*;
  */
 public abstract class BaseTest {
 
+    public final static String[] DEFAULT_SEMANTICS_HANDLING = new String[]{"default-semantics-handling",
+            "create-semantic-unit", "execute-semantic-query", "table-semantic-analyse", "create-semantic-concept"};
+
+    public final static String[] ESCALATED_SEMANTICS_HANDLING = new String[]{"escalated-semantics-handling",
+            "update-semantic-concept", "modify-foreign-table-column-semantics", "delete-ontology", "list-ontologies",
+            "update-semantic-unit", "create-ontology", "update-ontology"};
+
     public final static String[] DEFAULT_CONTAINER_HANDLING = new String[]{"default-container-handling",
             "create-container", "list-containers", "modify-container-state", "find-container"};
 
@@ -146,7 +158,7 @@ public abstract class BaseTest {
 
     public final static String[] DEFAULT_RESEARCHER_ROLES = ArrayUtil.merge(List.of(new String[]{"default-researcher-roles"},
             DEFAULT_CONTAINER_HANDLING, DEFAULT_DATABASE_HANDLING, DEFAULT_IDENTIFIER_HANDLING, DEFAULT_QUERY_HANDLING,
-            DEFAULT_TABLE_HANDLING, DEFAULT_USER_HANDLING));
+            DEFAULT_TABLE_HANDLING, DEFAULT_USER_HANDLING, DEFAULT_SEMANTICS_HANDLING));
 
     public final static String[] DEFAULT_DEVELOPER_ROLES = ArrayUtil.merge(List.of(new String[]{"default-developer-roles"},
             DEFAULT_CONTAINER_HANDLING, DEFAULT_DATABASE_HANDLING, DEFAULT_IDENTIFIER_HANDLING, DEFAULT_QUERY_HANDLING,
@@ -155,7 +167,7 @@ public abstract class BaseTest {
             ESCALATED_TABLE_HANDLING));
 
     public final static String[] DEFAULT_DATA_STEWARD_ROLES = ArrayUtil.merge(List.of(new String[]{"default-data-steward-roles"},
-            ESCALATED_IDENTIFIER_HANDLING));
+            ESCALATED_IDENTIFIER_HANDLING, DEFAULT_SEMANTICS_HANDLING, ESCALATED_SEMANTICS_HANDLING));
 
     public final static List<GrantedAuthorityDto> AUTHORITY_DEFAULT_RESEARCHER_ROLES = Arrays.stream(DEFAULT_RESEARCHER_ROLES)
             .map(GrantedAuthorityDto::new)
@@ -650,6 +662,7 @@ public abstract class BaseTest {
             USER_5_PASSWORD, USER_5_DETAILS.getAuthorities());
 
     public final static Long IMAGE_1_ID = 1L;
+    public final static String IMAGE_1_REGISTRY = "docker.io/library";
     public final static String IMAGE_1_REPOSITORY = "mariadb";
     public final static String IMAGE_1_TAG = "10.5";
     public final static String IMAGE_1_HASH = "d6a5e003eae42397f7ee4589e9f21e231d3721ac131970d2286bd616e7f55bb4";
@@ -724,6 +737,7 @@ public abstract class BaseTest {
             .build();
 
     public final static ImageCreateDto IMAGE_1_CREATE_DTO = ImageCreateDto.builder()
+            .registry(IMAGE_1_REGISTRY)
             .repository(IMAGE_1_REPOSITORY)
             .tag(IMAGE_1_TAG)
             .dialect(IMAGE_1_DIALECT)
@@ -783,6 +797,7 @@ public abstract class BaseTest {
 
     public final static ContainerImage IMAGE_1 = ContainerImage.builder()
             .id(IMAGE_1_ID)
+            .registry(IMAGE_1_REGISTRY)
             .repository(IMAGE_1_REPOSITORY)
             .tag(IMAGE_1_TAG)
             .hash(IMAGE_1_HASH)
@@ -798,6 +813,7 @@ public abstract class BaseTest {
 
     public final static ContainerImage IMAGE_1_SIMPLE = ContainerImage.builder()
             .id(IMAGE_1_ID)
+            .registry(IMAGE_1_REGISTRY)
             .repository(IMAGE_1_REPOSITORY)
             .tag(IMAGE_1_TAG)
             .hash(IMAGE_1_HASH)
@@ -813,6 +829,7 @@ public abstract class BaseTest {
 
     public final static ImageDto IMAGE_1_DTO = ImageDto.builder()
             .id(IMAGE_1_ID)
+            .registry(IMAGE_1_REGISTRY)
             .repository(IMAGE_1_REPOSITORY)
             .tag(IMAGE_1_TAG)
             .hash(IMAGE_1_HASH)
@@ -828,11 +845,13 @@ public abstract class BaseTest {
 
     public final static ImageBriefDto IMAGE_1_BRIEF_DTO = ImageBriefDto.builder()
             .id(IMAGE_1_ID)
+            .registry(IMAGE_1_REGISTRY)
             .repository(IMAGE_1_REPOSITORY)
             .tag(IMAGE_1_TAG)
             .build();
 
     public final static Long IMAGE_2_ID = 2L;
+    public final static String IMAGE_2_REGISTRY = "docker.io/library";
     public final static String IMAGE_2_REPOSITORY = "mysql";
     public final static String IMAGE_2_TAG = "8.0";
     public final static String IMAGE_2_HASH = "83b40f2726e5";
@@ -1780,24 +1799,183 @@ public abstract class BaseTest {
             }})
             .build();
 
+    public final static Long ONTOLOGY_1_ID = 1L;
+    public final static String ONTOLOGY_1_PREFIX = "om2";
+    public final static String ONTOLOGY_1_NEW_PREFIX = "om-2";
+    public final static String ONTOLOGY_1_URI = "http://www.ontology-of-units-of-measure.org/resource/om-2/";
+    public final static String ONTOLOGY_1_SPARQL_ENDPOINT = null;
+    public final static UUID ONTOLOGY_1_CREATED_BY = USER_1_ID;
+
+    public final static Ontology ONTOLOGY_1 = Ontology.builder()
+            .id(ONTOLOGY_1_ID)
+            .prefix(ONTOLOGY_1_PREFIX)
+            .uri(ONTOLOGY_1_URI)
+            .sparqlEndpoint(ONTOLOGY_1_SPARQL_ENDPOINT)
+            .createdBy(ONTOLOGY_1_CREATED_BY)
+            .build();
+
+    public final static OntologyCreateDto ONTOLOGY_1_CREATE_DTO = OntologyCreateDto.builder()
+            .prefix(ONTOLOGY_1_PREFIX)
+            .uri(ONTOLOGY_1_URI)
+            .sparqlEndpoint(ONTOLOGY_1_SPARQL_ENDPOINT)
+            .build();
+
+    public final static OntologyModifyDto ONTOLOGY_1_MODIFY_DTO = OntologyModifyDto.builder()
+            .prefix(ONTOLOGY_1_NEW_PREFIX)
+            .uri(ONTOLOGY_1_URI)
+            .sparqlEndpoint(ONTOLOGY_1_SPARQL_ENDPOINT)
+            .build();
+
+    public final static Long ONTOLOGY_2_ID = 2L;
+    public final static String ONTOLOGY_2_PREFIX = "wd";
+    public final static String ONTOLOGY_2_URI = "http://www.wikidata.org/";
+    public final static String ONTOLOGY_2_SPARQL_ENDPOINT = "https://query.wikidata.org/sparql";
+    public final static UUID ONTOLOGY_2_CREATED_BY = USER_1_ID;
+
+    public final static Ontology ONTOLOGY_2 = Ontology.builder()
+            .id(ONTOLOGY_2_ID)
+            .prefix(ONTOLOGY_2_PREFIX)
+            .uri(ONTOLOGY_2_URI)
+            .sparqlEndpoint(ONTOLOGY_2_SPARQL_ENDPOINT)
+            .createdBy(ONTOLOGY_2_CREATED_BY)
+            .build();
+
+    public final static OntologyCreateDto ONTOLOGY_2_CREATE_DTO = OntologyCreateDto.builder()
+            .prefix(ONTOLOGY_2_PREFIX)
+            .uri(ONTOLOGY_2_URI)
+            .sparqlEndpoint(ONTOLOGY_2_SPARQL_ENDPOINT)
+            .build();
+
+    public final static Long ONTOLOGY_3_ID = 3L;
+    public final static String ONTOLOGY_3_PREFIX = "rdfs";
+    public final static String ONTOLOGY_3_URI = "http://www.w3.org/2000/01/rdf-schema#";
+    public final static String ONTOLOGY_3_SPARQL_ENDPOINT = null;
+    public final static UUID ONTOLOGY_3_CREATED_BY = USER_1_ID;
+
+    public final static Ontology ONTOLOGY_3 = Ontology.builder()
+            .id(ONTOLOGY_3_ID)
+            .prefix(ONTOLOGY_3_PREFIX)
+            .uri(ONTOLOGY_3_URI)
+            .sparqlEndpoint(ONTOLOGY_3_SPARQL_ENDPOINT)
+            .createdBy(ONTOLOGY_3_CREATED_BY)
+            .build();
+
+    public final static OntologyCreateDto ONTOLOGY_3_CREATE_DTO = OntologyCreateDto.builder()
+            .prefix(ONTOLOGY_3_PREFIX)
+            .uri(ONTOLOGY_3_URI)
+            .sparqlEndpoint(ONTOLOGY_3_SPARQL_ENDPOINT)
+            .build();
+
+    public final static Long ONTOLOGY_4_ID = 4L;
+    public final static String ONTOLOGY_4_PREFIX = "schema";
+    public final static String ONTOLOGY_4_URI = "http://schema.org/";
+    public final static String ONTOLOGY_4_SPARQL_ENDPOINT = null;
+    public final static UUID ONTOLOGY_4_CREATED_BY = USER_1_ID;
+
+    public final static Ontology ONTOLOGY_4 = Ontology.builder()
+            .id(ONTOLOGY_4_ID)
+            .prefix(ONTOLOGY_4_PREFIX)
+            .uri(ONTOLOGY_4_URI)
+            .sparqlEndpoint(ONTOLOGY_4_SPARQL_ENDPOINT)
+            .createdBy(ONTOLOGY_4_CREATED_BY)
+            .build();
+
+    public final static OntologyCreateDto ONTOLOGY_4_CREATE_DTO = OntologyCreateDto.builder()
+            .prefix(ONTOLOGY_4_PREFIX)
+            .uri(ONTOLOGY_4_URI)
+            .sparqlEndpoint(ONTOLOGY_4_SPARQL_ENDPOINT)
+            .build();
+
+    public final static Long ONTOLOGY_5_ID = 5L;
+    public final static String ONTOLOGY_5_PREFIX = "db";
+    public final static String ONTOLOGY_5_URI = "http://dbpedia.org";
+    public final static String ONTOLOGY_5_SPARQL_ENDPOINT = "http://dbpedia.org/sparql";
+    public final static UUID ONTOLOGY_5_CREATED_BY = USER_1_ID;
+
+    public final static Ontology ONTOLOGY_5 = Ontology.builder()
+            .id(ONTOLOGY_5_ID)
+            .prefix(ONTOLOGY_5_PREFIX)
+            .uri(ONTOLOGY_5_URI)
+            .sparqlEndpoint(ONTOLOGY_5_SPARQL_ENDPOINT)
+            .createdBy(ONTOLOGY_5_CREATED_BY)
+            .build();
+
+    public final static OntologyCreateDto ONTOLOGY_5_CREATE_DTO = OntologyCreateDto.builder()
+            .prefix(ONTOLOGY_5_PREFIX)
+            .uri(ONTOLOGY_5_URI)
+            .sparqlEndpoint(ONTOLOGY_5_SPARQL_ENDPOINT)
+            .build();
+
     public final static String COLUMN_CONCEPT_TEMPERATURE_NAME = "temperature";
-    public final static String COLUMN_CONCEPT_TEMPERATURE_URI = "https://www.wikidata.org/entity/Q11466";
+    public final static String COLUMN_CONCEPT_TEMPERATURE_URI = "http://www.wikidata.org/entity/Q11466";
+    public final static String COLUMN_CONCEPT_TEMPERATURE_DESCRIPTION = "physical property of matter that quantitatively expresses the common notions of hot and cold";
     public final static Instant COLUMN_CONCEPT_TEMPERATURE_CREATED = Instant.now();
 
-    public final static TableColumnConcept COLUMN_CONCEPT_TEMPERATURE = TableColumnConcept.builder()
-            .name(COLUMN_CONCEPT_TEMPERATURE_NAME)
+    public final static ConceptSaveDto COLUMN_CONCEPT_TEMPERATURE_SAVE_DTO = ConceptSaveDto.builder()
             .uri(COLUMN_CONCEPT_TEMPERATURE_URI)
+            .name(COLUMN_CONCEPT_TEMPERATURE_NAME)
+            .description(COLUMN_CONCEPT_TEMPERATURE_DESCRIPTION)
+            .build();
+
+    public final static TableColumnConcept COLUMN_CONCEPT_TEMPERATURE = TableColumnConcept.builder()
+            .uri(COLUMN_CONCEPT_TEMPERATURE_URI)
+            .name(COLUMN_CONCEPT_TEMPERATURE_NAME)
+            .description(COLUMN_CONCEPT_TEMPERATURE_DESCRIPTION)
             .created(COLUMN_CONCEPT_TEMPERATURE_CREATED)
+            .build();
+
+    public final static String COLUMN_CONCEPT_FAIR_DATA_NAME = "FAIR data";
+    public final static String COLUMN_CONCEPT_FAIR_DATA_URI = "http://www.wikidata.org/entity/Q29032648";
+    public final static String COLUMN_CONCEPT_FAIR_DATA_DESCRIPTION = "data compliant with the terms of the FAIR Data Principles";
+    public final static Instant COLUMN_CONCEPT_FAIR_DATA_CREATED = Instant.now();
+
+    public final static ConceptSaveDto COLUMN_CONCEPT_FAIR_DATA_SAVE_DTO = ConceptSaveDto.builder()
+            .uri(COLUMN_CONCEPT_FAIR_DATA_URI)
+            .name(COLUMN_CONCEPT_FAIR_DATA_NAME)
+            .description(COLUMN_CONCEPT_FAIR_DATA_DESCRIPTION)
+            .build();
+
+    public final static TableColumnConcept COLUMN_CONCEPT_FAIR_DATA = TableColumnConcept.builder()
+            .uri(COLUMN_CONCEPT_FAIR_DATA_URI)
+            .name(COLUMN_CONCEPT_FAIR_DATA_NAME)
+            .description(COLUMN_CONCEPT_FAIR_DATA_DESCRIPTION)
+            .created(COLUMN_CONCEPT_FAIR_DATA_CREATED)
             .build();
 
     public final static String COLUMN_UNIT_DEGREES_CELSIUS_NAME = "Degrees Celsius";
     public final static String COLUMN_UNIT_DEGREES_CELSIUS_URI = "http://www.ontology-of-units-of-measure.org/resource/om-2/degreeCelsius";
+    public final static String COLUMN_UNIT_DEGREES_CELSIUS_DESCRIPTION = "The degree Celsius is a unit of temperature defined as 1 kelvin.";
     public final static Instant COLUMN_UNIT_DEGREES_CELSIUS_CREATED = Instant.now();
 
-    public final static TableColumnUnit COLUMN_UNIT_DEGREES_CELSIUS = TableColumnUnit.builder()
-            .name(COLUMN_UNIT_DEGREES_CELSIUS_NAME)
+    public final static UnitSaveDto COLUMN_UNIT_DEGREES_CELSIUS_SAVE_DTO = UnitSaveDto.builder()
             .uri(COLUMN_UNIT_DEGREES_CELSIUS_URI)
+            .name(COLUMN_UNIT_DEGREES_CELSIUS_NAME)
+            .description(COLUMN_UNIT_DEGREES_CELSIUS_DESCRIPTION)
+            .build();
+
+    public final static TableColumnUnit COLUMN_UNIT_DEGREES_CELSIUS = TableColumnUnit.builder()
+            .uri(COLUMN_UNIT_DEGREES_CELSIUS_URI)
+            .name(COLUMN_UNIT_DEGREES_CELSIUS_NAME)
+            .description(COLUMN_UNIT_DEGREES_CELSIUS_DESCRIPTION)
             .created(COLUMN_CONCEPT_TEMPERATURE_CREATED)
+            .build();
+
+    public final static String COLUMN_UNIT_TON_NAME = "tonne";
+    public final static String COLUMN_UNIT_TON_URI = "http://www.ontology-of-units-of-measure.org/resource/om-2/tonne";
+    public final static String COLUMN_UNIT_TON_DESCRIPTION = "The tonne is a unit of mass defined as 1000 kilogram.";
+    public final static Instant COLUMN_UNIT_TON_CREATED = Instant.now();
+
+    public final static UnitSaveDto COLUMN_UNIT_TON_SAVE_DTO = UnitSaveDto.builder()
+            .uri(COLUMN_UNIT_TON_URI)
+            .name(COLUMN_UNIT_TON_NAME)
+            .description(COLUMN_UNIT_TON_DESCRIPTION)
+            .build();
+
+    public final static TableColumnUnit COLUMN_UNIT_TON = TableColumnUnit.builder()
+            .uri(COLUMN_UNIT_TON_URI)
+            .name(COLUMN_UNIT_TON_NAME)
+            .description(COLUMN_UNIT_TON_DESCRIPTION)
+            .created(COLUMN_UNIT_TON_CREATED)
             .build();
 
     public final static Long COLUMN_1_1_ID = 1L;
@@ -5539,7 +5717,7 @@ public abstract class BaseTest {
             .displayStart(BANNER_MESSAGE_1_START)
             .displayEnd(BANNER_MESSAGE_1_END)
             .build();
-    
+
     public final static BannerMessageCreateDto BANNER_MESSAGE_1_CREATE_DTO = BannerMessageCreateDto.builder()
             .message(BANNER_MESSAGE_1_MESSAGE)
             .type(BANNER_MESSAGE_1_TYPE_DTO)

@@ -20,6 +20,9 @@ import java.util.List;
 @EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @jakarta.persistence.Table(name = "mdb_units")
+@NamedQueries({
+        @NamedQuery(name = "TableColumnUnit.findById", query = "select u from TableColumnUnit u where u.uri = ?1")
+})
 public class TableColumnUnit {
 
     @Id
@@ -27,10 +30,24 @@ public class TableColumnUnit {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String uri;
 
-    @Column(name = "name", nullable = false)
+    @Column(columnDefinition = "VARCHAR(255)")
     private String name;
+
+    @Column(columnDefinition = "TEXT")
+    private String description;
 
     @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP")
     @CreatedDate
     private Instant created;
+
+    @ToString.Exclude
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "mdb_columns_concepts",
+            inverseJoinColumns = {
+                    @JoinColumn(name = "cid", referencedColumnName = "id", insertable = false, updatable = false),
+                    @JoinColumn(name = "tid", referencedColumnName = "tid", insertable = false, updatable = false),
+                    @JoinColumn(name = "cdbid", referencedColumnName = "cdbid", insertable = false, updatable = false)
+            },
+            joinColumns = @JoinColumn(name = "uri", referencedColumnName = "uri"))
+    private List<TableColumn> columns;
 }

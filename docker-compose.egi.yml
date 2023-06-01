@@ -1,5 +1,5 @@
 # INFO: This compose file deploys the official Docker images from a staging, tested dev branch
-# MODIFIED: 2023-05-30
+# MODIFIED: 2023-06-01
 # MAINTAINER: Martin Weise <martin.weise@tuwien.ac.at>
 
 version: "3.6"

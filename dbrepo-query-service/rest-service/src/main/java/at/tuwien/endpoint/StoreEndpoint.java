@@ -2,6 +2,7 @@ package at.tuwien.endpoint;
 
 import at.tuwien.api.database.query.QueryBriefDto;
 import at.tuwien.api.database.query.QueryDto;
+import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.identifier.IdentifierType;
@@ -15,6 +16,7 @@ import at.tuwien.service.*;
 import at.tuwien.validation.EndpointValidator;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -71,7 +73,7 @@ public class StoreEndpoint {
                     description = "List queries",
                     content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = QueryBriefDto[].class))}),
+                            array = @ArraySchema(schema = @Schema(implementation = QueryBriefDto.class)))}),
             @ApiResponse(responseCode = "404",
                     description = "Database, container or user could not be found",
                     content = {@Content(

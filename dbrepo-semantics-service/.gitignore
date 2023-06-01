@@ -1,40 +1,36 @@
-## Cache
-__pycache__
-.pytest_cache/
+HELP.md
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
 
-# OS
-.DS_Store
+### Generated ###
+ready
 
-# Environment
-.env
-.flaskenv
-*.pyc
-*.pyo
-env/
-venv/
-.venv/
-env*
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
 
-# Test
-report.xml
-coverage.html
-coverage.txt
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
 
-# Build
-dist/
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
 build/
-*.egg
-*.egg-info/
-.tox/
+!**/src/main/**/build/
+!**/src/test/**/build/
 
-# IDE
-.cache/
-.idea/
-docs/_build/
-.vscode
-
-# Coverage reports
-htmlcov/
-.coverage
-.coverage.*
-*,cover
+### VS Code ###
+.vscode/

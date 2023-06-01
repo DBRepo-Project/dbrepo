@@ -32,6 +32,9 @@ public class ContainerImage {
     @Column(nullable = false)
     private String repository;
 
+    @Column(nullable = false, columnDefinition = "TEXT default 'docker.io/library'")
+    private String registry;
+
     @Column(nullable = false)
     private String tag;
 

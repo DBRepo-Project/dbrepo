@@ -50,7 +50,7 @@ public class QueryEndpoint {
     @PostMapping
     @Transactional(readOnly = true)
     @Timed(value = "query.execute", description = "Time needed to execute a query")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAuthority('execute-query')")
     @Operation(summary = "Execute query", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<QueryResultDto> execute(@NotNull @PathVariable("id") Long containerId,
                                                   @NotNull @PathVariable("databaseId") Long databaseId,
@@ -179,7 +179,7 @@ public class QueryEndpoint {
             }
         }
         final Query query = storeService.findOne(containerId, databaseId, queryId, principal);
-        log.trace("querystore returned query {}", query);
+        log.trace("query store returned query {}", query);
         final ExportResource resource = queryService.findOne(containerId, databaseId, queryId, principal);
         if (accept == null || accept.equals("text/csv")) {
             final HttpHeaders headers = new HttpHeaders();

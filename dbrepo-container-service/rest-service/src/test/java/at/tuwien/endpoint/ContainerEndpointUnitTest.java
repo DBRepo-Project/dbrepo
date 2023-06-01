@@ -2,6 +2,7 @@ package at.tuwien.endpoint;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.container.*;
+import at.tuwien.config.DockerConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.endpoints.ContainerEndpoint;
 import at.tuwien.entities.container.Container;
@@ -262,6 +263,28 @@ public class ContainerEndpointUnitTest extends BaseUnitTest {
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
             modify_generic(ContainerActionTypeDto.STOP, CONTAINER_1_ID, CONTAINER_1, USER_4_PRINCIPAL);
+        });
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void findAll_anonymousNoLimit_succeeds() {
+
+        /* test */
+        findAll_generic(null, null);
+    }
+
+    @Test
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"modify-container-state"})
+    public void modify_foreign_fails() {
+
+        /* when */
+        when(userRepository.findByUsername(USER_3_USERNAME))
+                .thenReturn(Optional.of(USER_3));
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            modify_generic(ContainerActionTypeDto.STOP, CONTAINER_1_ID, CONTAINER_1, USER_3_PRINCIPAL);
         });
     }
 
