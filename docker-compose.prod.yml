@@ -1,4 +1,4 @@
-# INFO: This compose file deploys the official Docker images from a stable, tested master branch
+  # INFO: This compose file deploys the official Docker images from a stable, tested master branch
 # MODIFIED: 2023-06-01
 # MAINTAINER: Martin Weise <martin.weise@tuwien.ac.at>
 
@@ -11,24 +11,24 @@ volumes:
   authentication-service-data:
 
 networks:
-  public:
-    name: public
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 172.29.0.0/16
   userdb:
     name: userdb
     driver: bridge
     ipam:
       config:
-        - subnet: 172.28.0.0/16
+        - subnet: 172.30.0.0/16
+  public:
+    name: public
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.31.0.0/16
   core:
     name: core
     driver: bridge
     ipam:
       config:
-        - subnet: 172.27.0.0/16
+        - subnet: 172.32.0.0/16
 
 services:
 
@@ -36,7 +36,7 @@ services:
     restart: "no"
     container_name: dbrepo-metadata-db
     hostname: metadata-db
-    image: dbrepo/metadata-db:1.2
+    image: dbrepo/metadata-db:1.3
     networks:
       core:
     volumes:
@@ -53,10 +53,12 @@ services:
     restart: "no"
     container_name: dbrepo-database-service
     hostname: database-service
-    image: dbrepo/database-service:1.2
+    image: dbrepo/database-service:1.3
     networks:
       userdb:
       core:
+    ports:
+      - "9092:9092"
     env_file:
       - .env
     volumes:
@@ -75,9 +77,11 @@ services:
     restart: "no"
     container_name: dbrepo-container-service
     hostname: container-service
-    image: dbrepo/container-service:1.2
+    image: dbrepo/container-service:1.3
     networks:
       core:
+    ports:
+      - "9091:9091"
     env_file:
       - .env
     volumes:
@@ -92,7 +96,7 @@ services:
     restart: "no"
     container_name: dbrepo-authentication-service
     hostname: authentication-service
-    image: dbrepo/authentication-service:1.2
+    image: dbrepo/authentication-service:1.3
     networks:
       core:
     ports:
@@ -112,7 +116,7 @@ services:
     restart: "no"
     container_name: dbrepo-query-service
     hostname: query-service
-    image: dbrepo/query-service:1.2
+    image: dbrepo/query-service:1.3
     networks:
       core:
       userdb:
@@ -131,13 +135,15 @@ services:
       driver: json-file
 
   dbrepo-table-service:
-    restart: on-failure
+    restart: "no"
     container_name: dbrepo-table-service
     hostname: table-service
-    image: dbrepo/table-service:1.2
+    image: dbrepo/table-service:1.3
     networks:
       core:
       userdb:
+    ports:
+      - "9094:9094"
     env_file:
       - .env
     volumes:
@@ -157,9 +163,11 @@ services:
     restart: "no"
     container_name: dbrepo-identifier-service
     hostname: identifier-service
-    image: dbrepo/identifier-service:1.2
+    image: dbrepo/identifier-service:1.3
     networks:
       core:
+    ports:
+      - "9096:9096"
     env_file:
       - .env
     depends_on:
@@ -176,11 +184,13 @@ services:
     restart: "no"
     container_name: dbrepo-metadata-service
     hostname: metadata-service
-    image: dbrepo/metadata-service:1.2
+    image: dbrepo/metadata-service:1.3
     networks:
       core:
     env_file:
       - .env
+    ports:
+      - "9099:9099"
     depends_on:
       dbrepo-authentication-service:
         condition: service_healthy
@@ -193,7 +203,7 @@ services:
     restart: "no"
     container_name: dbrepo-analyse-service
     hostname: analyse-service
-    image: dbrepo/analyse-service:1.2
+    image: dbrepo/analyse-service:1.3
     networks:
       core:
       userdb:
@@ -209,7 +219,7 @@ services:
     restart: "no"
     container_name: dbrepo-user-service
     hostname: user-service
-    image: dbrepo/user-service:1.2
+    image: dbrepo/user-service:1.3
     networks:
       core:
     ports:
@@ -228,9 +238,11 @@ services:
     restart: "no"
     container_name: dbrepo-semantics-service
     hostname: semantics-service
-    image: dbrepo/semantics-service:1.2
+    image: dbrepo/semantics-service:1.3
     networks:
       core:
+    ports:
+      - "9097:9097"
     env_file:
       - .env
     volumes:
@@ -248,11 +260,12 @@ services:
     restart: "no"
     container_name: dbrepo-broker-service
     hostname: broker-service
-    image: dbrepo/broker-service:1.2
+    image: dbrepo/broker-service:1.3
     networks:
       core:
     ports:
       - "5672:5672"
+      - "15672:15672"
     env_file:
       - .env
     depends_on:
@@ -270,6 +283,8 @@ services:
     image: elasticsearch:8.7.1
     networks:
       core:
+    ports:
+      - 9200:9200
     env_file:
       - .env
     environment:
@@ -287,12 +302,10 @@ services:
     restart: "no"
     container_name: dbrepo-ui
     hostname: ui
-    image: dbrepo/ui:1.2
+    image: dbrepo/ui:1.3
     networks:
       core:
       public:
-    ports:
-      - "3000:3000"
     env_file:
       - .env
     volumes:

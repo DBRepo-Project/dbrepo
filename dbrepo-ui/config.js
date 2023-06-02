@@ -17,6 +17,5 @@ config.clientId = process.env.DBREPO_CLIENT_ID || 'dbrepo-client'
 config.clientSecret = process.env.DBREPO_CLIENT_SECRET || 'MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG'
 config.defaultPublisher = process.env.DEFAULT_PID_PUBLISHER || 'Example University'
 config.doiUrl = process.env.DOI_URL || 'https://doi.org'
-config.gitHash = process.env.GIT_HASH || 'deadbeef'
 
 module.exports = config
