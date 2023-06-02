@@ -4,7 +4,8 @@ MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
 RUN apk --no-cache add curl
 RUN cd /tmp && curl -LO https://github.com/prometheus/node_exporter/releases/download/v0.18.1/node_exporter-0.18.1.linux-amd64.tar.gz && tar -xvf node_exporter-0.18.1.linux-amd64.tar.gz && mv node_exporter-0.18.1.linux-amd64/node_exporter /usr/local/bin/
 
-ARG TAG=1.2
+ARG TAG=latest
+ARG GIT_HASH_SHORT=git_hash
 
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
@@ -51,12 +52,12 @@ ENV SHARED_FILESYSTEM="/tmp"
 ENV LOGO="/logo.png"
 ENV ELASTIC_USERNAME="elastic"
 ENV ELASTIC_PASSWORD="elastic"
-ENV VERSION="${TAG:-latest}"
+ENV VERSION="${TAG}"
 ENV TITLE="Database Repository"
 ENV ICON="/favicon.ico"
 ENV DBREPO_CLIENT_ID="dbrepo-client"
 ENV DBREPO_CLIENT_SECRET="MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG"
-ENV GIT_HASH="deadbeef"
+ENV GIT_HASH="${GIT_HASH_SHORT}"
 
 WORKDIR /app
 
