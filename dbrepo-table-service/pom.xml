@@ -34,6 +34,7 @@
         <c3p0.version>0.9.5.5</c3p0.version>
         <c3p0-hibernate.version>6.2.2.Final</c3p0-hibernate.version>
         <springdoc-openapi.version>2.1.0</springdoc-openapi.version>
+        <opensearch.version>1.1.0</opensearch.version>
     </properties>
 
     <dependencies>
@@ -120,8 +121,9 @@
             <version>${c3p0-hibernate.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.springframework.data</groupId>
-            <artifactId>spring-data-elasticsearch</artifactId>
+            <groupId>org.opensearch.client</groupId>
+            <artifactId>spring-data-opensearch-starter</artifactId>
+            <version>${opensearch.version}</version>
         </dependency>
         <dependency>
             <groupId>org.mariadb.jdbc</groupId>

@@ -31,6 +31,7 @@
         <c3p0.version>0.9.5.5</c3p0.version>
         <c3p0-hibernate.version>6.2.2.Final</c3p0-hibernate.version>
         <springdoc-openapi.version>2.1.0</springdoc-openapi.version>
+        <opensearch.version>1.1.0</opensearch.version>
     </properties>
 
     <dependencies>
@@ -69,9 +70,9 @@
         </dependency>
         <!-- elasticsearch -->
         <dependency>
-            <groupId>co.elastic.clients</groupId>
-            <artifactId>elasticsearch-java</artifactId>
-            <version>${elasticsearch-client.version}</version>
+            <groupId>org.opensearch.client</groupId>
+            <artifactId>spring-data-opensearch-starter</artifactId>
+            <version>${opensearch.version}</version>
         </dependency>
         <!-- AMQP -->
         <dependency>

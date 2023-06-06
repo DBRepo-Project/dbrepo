@@ -1,7 +1,7 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.config.IndexInitializer;
+import at.tuwien.config.IndexConfig;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.repository.jpa.UserRepository;
@@ -23,7 +23,7 @@ import static org.mockito.Mockito.when;
 public class UserServiceUnitTest extends BaseUnitTest {
 
     @MockBean
-    private IndexInitializer indexInitializer;
+    private IndexConfig indexInitializer;
 
     @MockBean
     private UserRepository userRepository;

@@ -1,7 +1,7 @@
 package at.tuwien.endpoint;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.config.IndexInitializer;
+import at.tuwien.config.IndexConfig;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,7 +26,7 @@ public class SwaggerComponentTest extends BaseUnitTest {
     private MockMvc mockMvc;
 
     @MockBean
-    private IndexInitializer indexConfig;
+    private IndexConfig indexConfig;
 
     @Test
     public void swaggerUi_succeeds() throws Exception {

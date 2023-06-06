@@ -3,7 +3,7 @@ package at.tuwien.service;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.identifier.IdentifierDto;
-import at.tuwien.config.IndexInitializer;
+import at.tuwien.config.IndexConfig;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.identifier.RelatedIdentifier;
 import at.tuwien.exception.*;
@@ -39,7 +39,7 @@ import static org.mockito.Mockito.when;
 public class IdentifierServiceIntegrationTest extends BaseUnitTest {
 
     @MockBean
-    private IndexInitializer indexInitializer;
+    private IndexConfig indexInitializer;
 
     @MockBean
     private IdentifierIdxRepository identifierIdxRepository;

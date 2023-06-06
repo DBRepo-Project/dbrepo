@@ -3,7 +3,7 @@ package at.tuwien.endpoint;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.identifier.IdentifierTypeDto;
-import at.tuwien.config.IndexInitializer;
+import at.tuwien.config.IndexConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.endpoints.IdentifierEndpoint;
 import at.tuwien.exception.NotAllowedException;
@@ -34,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
 
     @MockBean
-    private IndexInitializer indexInitializer;
+    private IndexConfig indexInitializer;
 
     @MockBean
     private ReadyConfig readyConfig;

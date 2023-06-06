@@ -14,7 +14,7 @@
     <name>dbrepo-metadata-service</name>
     <description>Service that manages the metadata</description>
 
-    <url>https://dbrepo-docs.ossdip.at</url>
+    <url>https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/</url>
     <developers>
         <developer>
             <name>Martin Weise</name>

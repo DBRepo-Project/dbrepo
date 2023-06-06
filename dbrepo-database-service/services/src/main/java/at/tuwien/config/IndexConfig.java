@@ -21,38 +21,33 @@ import java.util.stream.Collectors;
 @Component
 public class IndexConfig {
 
-    private final Environment environment;
     private final DatabaseMapper databaseMapper;
     private final DatabaseRepository databaseRepository;
     private final DatabaseIdxRepository databaseIdxRepository;
     private final ElasticsearchOperations elasticsearchOperations;
-    private final ApplicationEventPublisher applicationEventPublisher;
 
-    public IndexConfig(Environment environment, DatabaseMapper databaseMapper, DatabaseRepository databaseRepository,
-                       DatabaseIdxRepository databaseIdxRepository, ElasticsearchOperations elasticsearchOperations,
-                       ApplicationEventPublisher applicationEventPublisher) {
-        this.environment = environment;
+    public IndexConfig(DatabaseMapper databaseMapper, DatabaseRepository databaseRepository,
+                       DatabaseIdxRepository databaseIdxRepository, ElasticsearchOperations elasticsearchOperations) {
         this.databaseMapper = databaseMapper;
         this.databaseRepository = databaseRepository;
         this.databaseIdxRepository = databaseIdxRepository;
         this.elasticsearchOperations = elasticsearchOperations;
-        this.applicationEventPublisher = applicationEventPublisher;
     }
 
     @Transactional
     @EventListener(ApplicationReadyEvent.class)
     public void initIndex() {
-        log.debug("creating databaseindex");
-        final IndexCoordinates databaseIndex = IndexCoordinates.of("databaseindex");
+        final IndexCoordinates databaseIndex = IndexCoordinates.of("database");
         if (!elasticsearchOperations.indexOps(databaseIndex).exists()) {
             elasticsearchOperations.indexOps(databaseIndex).create();
             elasticsearchOperations.indexOps(databaseIndex).createMapping(DatabaseDto.class);
+            log.info("Created identifier index");
         }
         final List<DatabaseDto> databases = databaseRepository.findAll()
                 .stream()
                 .map(databaseMapper::databaseToDatabaseDto)
                 .collect(Collectors.toList());
-        log.debug("add {} databases to elastic search index", databases.size());
+        log.info("Added {} databases to OpenSearch index", databases.size());
         databaseIdxRepository.saveAll(databases);
     }
 

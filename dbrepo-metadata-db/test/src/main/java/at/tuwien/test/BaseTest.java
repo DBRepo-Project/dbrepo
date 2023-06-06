@@ -1118,7 +1118,7 @@ public abstract class BaseTest {
     public final static String CONTAINER_ELASTIC_HASH = "deadbeef";
     public final static Instant CONTAINER_ELASTIC_CREATED = Instant.ofEpochSecond(1677399721) /* 2023-02-26 08:22:01 (UTC) */;
     public final static String[] CONTAINER_ELASTIC_ENV = new String[]{"discovery.type=single-node", "ES_JAVA_OPTS=-Xms2g -Xmx2g",
-            "logger.level=WARN", "bootstrap.memory_lock=true", "xpack.security.enabled=true", "ELASTIC_PASSWORD=elastic"};
+            "logger.level=WARN", "bootstrap.memory_lock=true", "xpack.security.enabled=true", "SEARCH_PASSWORD=admin"};
 
     public final static Container CONTAINER_ELASTIC = Container.builder()
             .id(CONTAINER_ELASTIC_ID)

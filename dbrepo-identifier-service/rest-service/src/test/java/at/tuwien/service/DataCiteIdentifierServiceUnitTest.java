@@ -8,7 +8,7 @@ import at.tuwien.api.identifier.IdentifierCreateDto;
 import at.tuwien.api.identifier.IdentifierUpdateDto;
 import at.tuwien.config.DataCiteConfig;
 import at.tuwien.config.EndpointConfig;
-import at.tuwien.config.IndexInitializer;
+import at.tuwien.config.IndexConfig;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.exception.*;
 import at.tuwien.repository.jpa.*;
@@ -29,7 +29,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
@@ -47,7 +46,7 @@ import static org.mockito.Mockito.when;
 public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
 
     @MockBean
-    private IndexInitializer indexInitializer;
+    private IndexConfig indexInitializer;
 
     @MockBean(answer = Answers.RETURNS_MOCKS)
     private DataCiteConfig dataCiteConfig;

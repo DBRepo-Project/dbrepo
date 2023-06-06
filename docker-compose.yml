@@ -296,7 +296,7 @@ services:
     restart: always
     container_name: dbrepo-search-db
     hostname: search-db
-    image: elasticsearch:8.7.1
+    image: opensearchproject/opensearch:2
     networks:
       core:
     ports:
@@ -305,10 +305,14 @@ services:
       - .env
     environment:
       discovery.type: "single-node"
-      ES_JAVA_OPTS: "-Xms2g -Xmx2g"
+      ES_JAVA_OPTS: "-Xms4g -Xmx4g"
       logger.level: "WARN"
+      plugins.security.disabled: "true"
       bootstrap.memory_lock: "true"
-      xpack.security.enabled: "true"
+    deploy:
+      resources:
+        limits:
+          memory: 4G
     volumes:
       - search-db-data:/usr/share/elasticsearch/data
     logging:

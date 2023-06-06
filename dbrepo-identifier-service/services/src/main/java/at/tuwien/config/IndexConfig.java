@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 
 @Component
 @Log4j2
-public class IndexInitializer {
+public class IndexConfig {
 
     private final IdentifierMapper identifierMapper;
     private final IdentifierRepository identifierRepository;
@@ -26,9 +26,9 @@ public class IndexInitializer {
     private final ElasticsearchOperations elasticsearchOperations;
 
     @Autowired
-    public IndexInitializer(IdentifierMapper identifierMapper, IdentifierRepository identifierRepository,
-                            IdentifierIdxRepository identifierIdxRepository,
-                            ElasticsearchOperations elasticsearchOperations) {
+    public IndexConfig(IdentifierMapper identifierMapper, IdentifierRepository identifierRepository,
+                       IdentifierIdxRepository identifierIdxRepository,
+                       ElasticsearchOperations elasticsearchOperations) {
         this.identifierMapper = identifierMapper;
         this.identifierRepository = identifierRepository;
         this.identifierIdxRepository = identifierIdxRepository;
@@ -38,17 +38,17 @@ public class IndexInitializer {
     @Transactional
     @EventListener(ApplicationReadyEvent.class)
     public void initIndex() {
-        log.debug("creating identifierindex");
-        final IndexCoordinates identifierIndex = IndexCoordinates.of("identifierindex");
+        final IndexCoordinates identifierIndex = IndexCoordinates.of("identifier");
         if (!elasticsearchOperations.indexOps(identifierIndex).exists()) {
             elasticsearchOperations.indexOps(identifierIndex).create();
             elasticsearchOperations.indexOps(identifierIndex).createMapping(IdentifierDto.class);
+            log.info("Created identifier index");
         }
         final List<IdentifierDto> identifiers = identifierRepository.findAll()
                 .stream()
                 .map(identifierMapper::identifierToIdentifierDto)
                 .collect(Collectors.toList());
-        log.debug("add {} identifiers to elastic search index", identifiers.size());
+        log.info("Add {} identifiers to OpenSearch index", identifiers.size());
         identifierIdxRepository.saveAll(identifiers);
     }
 }

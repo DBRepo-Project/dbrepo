@@ -17,7 +17,7 @@
         also allows for view-only (possibly paginated and versioned) query execution to the raw data and consumes
         messages in the message queue from the Broker Service.
     </description>
-    <url>https://dbrepo-docs.ossdip.at</url>
+    <url>https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/</url>
     <developers>
         <developer>
             <name>Martin Weise</name>
@@ -52,6 +52,7 @@
         <keycloak.version>21.0.2</keycloak.version>
         <hibernate.version>6.2.2.Final</hibernate.version>
         <springdoc-openapi.version>2.1.0</springdoc-openapi.version>
+        <opensearch.version>1.1.0</opensearch.version>
     </properties>
 
     <dependencies>
@@ -116,8 +117,9 @@
             <version>${mariadb.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.springframework.data</groupId>
-            <artifactId>spring-data-elasticsearch</artifactId>
+            <groupId>org.opensearch.client</groupId>
+            <artifactId>spring-data-opensearch-starter</artifactId>
+            <version>${opensearch.version}</version>
         </dependency>
         <!-- Swagger -->
         <dependency>
