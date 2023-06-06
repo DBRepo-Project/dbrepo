@@ -7,7 +7,7 @@ import at.tuwien.config.IndexConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.endpoints.IdentifierEndpoint;
 import at.tuwien.exception.NotAllowedException;
-import at.tuwien.repository.jpa.*;
+import at.tuwien.repository.mdb.*;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

@@ -32,7 +32,7 @@ spring:
   opensearch:
     username: "${SEARCH_USERNAME}"
     password: "${SEARCH_PASSWORD}"
-    uris: http://search-db:9200
+    uris: search-db:9200
 management.endpoints.web.exposure.include: health,info,prometheus
 springdoc.swagger-ui.enabled: true
 server:

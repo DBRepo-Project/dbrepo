@@ -6,7 +6,7 @@ import at.tuwien.api.container.image.ImageCreateDto;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.exception.*;
-import at.tuwien.repository.jpa.ImageRepository;
+import at.tuwien.repository.mdb.ImageRepository;
 import at.tuwien.service.impl.ImageServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

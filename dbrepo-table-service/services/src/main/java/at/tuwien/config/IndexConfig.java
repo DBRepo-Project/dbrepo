@@ -38,18 +38,17 @@ public class IndexConfig {
     @Transactional
     @EventListener(ApplicationReadyEvent.class)
     public void initIndex() {
-        /* pre-fill */
         final List<TableDto> tables = tableRepository.findAll()
                 .stream()
                 .map(tableMapper::tableToTableDto)
                 .collect(Collectors.toList());
-        log.debug("add {} tables to elastic search index", tables.size());
         tableIdxRepository.saveAll(tables);
+        log.info("Added {} tables to open search index", tables.size());
         final List<ColumnDto> columns = tableColumnRepository.findAll()
                 .stream()
                 .map(tableMapper::tableColumnToColumnDto)
                 .collect(Collectors.toList());
-        log.debug("add {} columns to elastic search index", columns.size());
         tableColumnIdxRepository.saveAll(columns);
+        log.info("Added {} columns to open search index", columns.size());
     }
 }

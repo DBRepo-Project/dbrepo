@@ -68,12 +68,6 @@
             <artifactId>dbrepo-metadata-db-entites</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <!-- elasticsearch -->
-        <dependency>
-            <groupId>org.opensearch.client</groupId>
-            <artifactId>spring-data-opensearch-starter</artifactId>
-            <version>${opensearch-client.version}</version>
-        </dependency>
         <!-- AMQP -->
         <dependency>
             <groupId>org.springframework.amqp</groupId>
@@ -119,6 +113,11 @@
         <dependency>
             <groupId>org.opensearch.client</groupId>
             <artifactId>spring-data-opensearch</artifactId>
+            <version>${opensearch-client.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.opensearch.client</groupId>
+            <artifactId>spring-data-opensearch-starter</artifactId>
             <version>${opensearch-client.version}</version>
         </dependency>
         <!-- Entity, API, QueryStore -->

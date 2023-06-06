@@ -16,7 +16,7 @@ import at.tuwien.entities.identifier.RelatedIdentifier;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.QueryServiceGateway;
-import at.tuwien.repository.jpa.*;
+import at.tuwien.repository.mdb.*;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.IdentifierService;
 import org.apache.commons.io.FileUtils;

@@ -10,7 +10,7 @@ import at.tuwien.config.ReadyConfig;
 import at.tuwien.endpoints.ImageEndpoint;
 import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.exception.*;
-import at.tuwien.repository.jpa.UserRepository;
+import at.tuwien.repository.mdb.UserRepository;
 import at.tuwien.service.impl.ImageServiceImpl;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;

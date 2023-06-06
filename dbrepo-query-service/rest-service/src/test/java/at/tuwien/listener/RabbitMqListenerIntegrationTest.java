@@ -3,7 +3,7 @@ package at.tuwien.listener;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.amqp.ConsumerDto;
 import at.tuwien.config.*;
-import at.tuwien.repository.jpa.*;
+import at.tuwien.repository.mdb.*;
 import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;

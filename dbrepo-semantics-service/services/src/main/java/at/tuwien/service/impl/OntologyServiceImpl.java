@@ -7,7 +7,7 @@ import at.tuwien.entities.user.User;
 import at.tuwien.exception.OntologyNotFoundException;
 import at.tuwien.exception.UserNotFoundException;
 import at.tuwien.mapper.OntologyMapper;
-import at.tuwien.repository.jpa.OntologyRepository;
+import at.tuwien.repository.mdb.OntologyRepository;
 import at.tuwien.service.OntologyService;
 import at.tuwien.service.UserService;
 import lombok.extern.log4j.Log4j2;

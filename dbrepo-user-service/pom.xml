@@ -121,6 +121,11 @@
             <artifactId>spring-data-opensearch</artifactId>
             <version>${opensearch-client.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.opensearch.client</groupId>
+            <artifactId>spring-data-opensearch-starter</artifactId>
+            <version>${opensearch-client.version}</version>
+        </dependency>
         <!-- Swagger -->
         <dependency>
             <groupId>org.springdoc</groupId>

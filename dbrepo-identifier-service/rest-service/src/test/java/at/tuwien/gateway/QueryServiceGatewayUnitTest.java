@@ -6,7 +6,7 @@ import at.tuwien.config.IndexConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.exception.QueryNotFoundException;
 import at.tuwien.exception.RemoteUnavailableException;
-import at.tuwien.repository.jpa.UserRepository;
+import at.tuwien.repository.mdb.UserRepository;
 import com.google.common.io.Files;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;

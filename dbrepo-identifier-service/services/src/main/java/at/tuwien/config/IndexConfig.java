@@ -2,8 +2,8 @@ package at.tuwien.config;
 
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.mapper.IdentifierMapper;
-import at.tuwien.repository.elastic.IdentifierIdxRepository;
-import at.tuwien.repository.jpa.IdentifierRepository;
+import at.tuwien.repository.sdb.IdentifierIdxRepository;
+import at.tuwien.repository.mdb.IdentifierRepository;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -23,32 +23,23 @@ public class IndexConfig {
     private final IdentifierMapper identifierMapper;
     private final IdentifierRepository identifierRepository;
     private final IdentifierIdxRepository identifierIdxRepository;
-    private final ElasticsearchOperations elasticsearchOperations;
 
     @Autowired
     public IndexConfig(IdentifierMapper identifierMapper, IdentifierRepository identifierRepository,
-                       IdentifierIdxRepository identifierIdxRepository,
-                       ElasticsearchOperations elasticsearchOperations) {
+                       IdentifierIdxRepository identifierIdxRepository) {
         this.identifierMapper = identifierMapper;
         this.identifierRepository = identifierRepository;
         this.identifierIdxRepository = identifierIdxRepository;
-        this.elasticsearchOperations = elasticsearchOperations;
     }
 
     @Transactional
     @EventListener(ApplicationReadyEvent.class)
     public void initIndex() {
-        final IndexCoordinates identifierIndex = IndexCoordinates.of("identifier");
-        if (!elasticsearchOperations.indexOps(identifierIndex).exists()) {
-            elasticsearchOperations.indexOps(identifierIndex).create();
-            elasticsearchOperations.indexOps(identifierIndex).createMapping(IdentifierDto.class);
-            log.info("Created identifier index");
-        }
         final List<IdentifierDto> identifiers = identifierRepository.findAll()
                 .stream()
                 .map(identifierMapper::identifierToIdentifierDto)
                 .collect(Collectors.toList());
-        log.info("Add {} identifiers to OpenSearch index", identifiers.size());
         identifierIdxRepository.saveAll(identifiers);
+        log.info("Added {} identifiers to open search index", identifiers.size());
     }
 }

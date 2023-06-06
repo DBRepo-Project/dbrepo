@@ -3,7 +3,7 @@ package at.tuwien.service;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.TableNotFoundException;
-import at.tuwien.repository.jpa.TableRepository;
+import at.tuwien.repository.mdb.TableRepository;
 import lombok.extern.log4j.Log4j2;
 import org.apache.jena.sys.JenaSystem;
 import org.junit.jupiter.api.BeforeAll;

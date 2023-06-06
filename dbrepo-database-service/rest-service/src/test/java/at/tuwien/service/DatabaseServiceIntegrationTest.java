@@ -10,14 +10,12 @@ import at.tuwien.config.IndexConfig;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.database.Database;
-import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
-import at.tuwien.repository.elastic.DatabaseIdxRepository;
-import at.tuwien.repository.jpa.*;
+import at.tuwien.repository.sdb.DatabaseIdxRepository;
+import at.tuwien.repository.mdb.*;
 import at.tuwien.service.impl.MariaDbServiceImpl;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
-import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,10 +25,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.io.File;
-import java.security.Principal;
 import java.sql.SQLException;
-import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;

@@ -6,7 +6,7 @@ import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.entities.container.image.ContainerImageEnvironmentItem;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.ImageMapper;
-import at.tuwien.repository.jpa.ImageRepository;
+import at.tuwien.repository.mdb.ImageRepository;
 import at.tuwien.service.ImageService;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.async.ResultCallback;

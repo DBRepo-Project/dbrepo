@@ -3,7 +3,7 @@ package at.tuwien.service;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.entities.user.Realm;
 import at.tuwien.exception.RealmNotFoundException;
-import at.tuwien.repository.jpa.RealmRepository;
+import at.tuwien.repository.mdb.RealmRepository;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

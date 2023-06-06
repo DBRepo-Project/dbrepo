@@ -13,8 +13,8 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableJpaAuditing
 @EnableTransactionManagement
 @EntityScan(basePackages = {"at.tuwien.entities"})
-@EnableElasticsearchRepositories
-@EnableJpaRepositories(basePackages = {"at.tuwien.repository.mdb", "at.tuwien.repository.sdb"})
+@EnableElasticsearchRepositories(basePackages = {"at.tuwien.repository.sdb"})
+@EnableJpaRepositories(basePackages = {"at.tuwien.repository.mdb"})
 @SpringBootApplication(exclude = {ElasticsearchDataAutoConfiguration.class})
 public class DbrepoTableServiceApplication {
 

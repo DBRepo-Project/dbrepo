@@ -5,7 +5,7 @@ import at.tuwien.api.maintenance.BannerMessageUpdateDto;
 import at.tuwien.entities.maintenance.BannerMessage;
 import at.tuwien.exception.BannerMessageNotFoundException;
 import at.tuwien.mapper.BannerMessageMapper;
-import at.tuwien.repository.jpa.BannerMessageRepository;
+import at.tuwien.repository.mdb.BannerMessageRepository;
 import at.tuwien.service.BannerMessageService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;

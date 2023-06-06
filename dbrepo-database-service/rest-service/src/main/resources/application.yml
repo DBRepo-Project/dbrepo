@@ -1,8 +1,6 @@
 app.version: '@project.version@'
 spring:
   main.banner-mode: off
-  autoconfigure:
-    exclude: org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchRestClientAutoConfiguration, org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration
   datasource:
     url: "jdbc:mariadb://metadata-db:3306/${METADATA_DB}"
     driver-class-name: org.mariadb.jdbc.Driver
@@ -32,7 +30,7 @@ spring:
   opensearch:
     password: "${SEARCH_PASSWORD}"
     username: "${SEARCH_USERNAME}"
-    uris: http://search-db:9200
+    uris: search-db:9200
 management.endpoints.web.exposure.include: health,info,prometheus
 server:
   port: 9092

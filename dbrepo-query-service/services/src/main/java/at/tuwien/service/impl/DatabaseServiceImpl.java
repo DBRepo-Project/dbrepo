@@ -2,7 +2,7 @@ package at.tuwien.service.impl;
 
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.DatabaseNotFoundException;
-import at.tuwien.repository.jpa.DatabaseRepository;
+import at.tuwien.repository.mdb.DatabaseRepository;
 import at.tuwien.service.DatabaseService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;

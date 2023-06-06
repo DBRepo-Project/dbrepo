@@ -10,7 +10,7 @@ import at.tuwien.exception.*;
 import at.tuwien.gateway.BrokerServiceGateway;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.querystore.Query;
-import at.tuwien.repository.jpa.*;
+import at.tuwien.repository.mdb.*;
 import com.rabbitmq.client.Channel;
 import at.tuwien.config.DockerConfig;
 import lombok.extern.log4j.Log4j2;

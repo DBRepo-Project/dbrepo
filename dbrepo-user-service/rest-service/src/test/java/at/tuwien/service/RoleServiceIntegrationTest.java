@@ -1,13 +1,10 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.entities.user.Realm;
 import at.tuwien.entities.user.Role;
-import at.tuwien.exception.RealmNotFoundException;
 import at.tuwien.exception.RoleNotFoundException;
-import at.tuwien.repository.jpa.RealmRepository;
-import at.tuwien.repository.jpa.RoleRepository;
-import at.tuwien.repository.jpa.UserRepository;
+import at.tuwien.repository.mdb.RoleRepository;
+import at.tuwien.repository.mdb.UserRepository;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

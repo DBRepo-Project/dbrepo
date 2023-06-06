@@ -3,13 +3,10 @@ package at.tuwien.service;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.config.ReadyConfig;
-import at.tuwien.entities.database.License;
 import at.tuwien.entities.user.User;
-import at.tuwien.exception.LicenseNotFoundException;
 import at.tuwien.exception.UserNotFoundException;
-import at.tuwien.repository.jpa.LicenseRepository;
-import at.tuwien.repository.jpa.RealmRepository;
-import at.tuwien.repository.jpa.UserRepository;
+import at.tuwien.repository.mdb.RealmRepository;
+import at.tuwien.repository.mdb.UserRepository;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,7 +17,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

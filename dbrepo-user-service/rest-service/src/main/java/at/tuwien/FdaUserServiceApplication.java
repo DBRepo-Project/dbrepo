@@ -11,12 +11,12 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @EnableJpaAuditing
-@SpringBootApplication
 @EnableTransactionManagement
 @EnableScheduling
-@EntityScan(basePackages = "at.tuwien.entities")
-@EnableElasticsearchRepositories(basePackages = {"at.tuwien.repository.elastic"})
-@EnableJpaRepositories(basePackages = {"at.tuwien.repository.jpa"})
+@EntityScan(basePackages = {"at.tuwien.entities"})
+@EnableElasticsearchRepositories(basePackages = {"at.tuwien.repository.sdb"})
+@EnableJpaRepositories(basePackages = {"at.tuwien.repository.mdb"})
+@SpringBootApplication(exclude = {ElasticsearchDataAutoConfiguration.class})
 public class FdaUserServiceApplication {
 
     public static void main(String[] args) {

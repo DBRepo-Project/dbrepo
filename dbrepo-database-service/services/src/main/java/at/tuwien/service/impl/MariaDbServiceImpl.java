@@ -1,7 +1,6 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.api.database.DatabaseCreateDto;
-import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.DatabaseModifyVisibilityDto;
 import at.tuwien.api.database.DatabaseTransferDto;
 import at.tuwien.entities.container.Container;
@@ -9,8 +8,8 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.DatabaseMapper;
-import at.tuwien.repository.elastic.DatabaseIdxRepository;
-import at.tuwien.repository.jpa.DatabaseRepository;
+import at.tuwien.repository.sdb.DatabaseIdxRepository;
+import at.tuwien.repository.mdb.DatabaseRepository;
 import at.tuwien.service.ContainerService;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.UserService;

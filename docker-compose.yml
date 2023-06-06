@@ -72,6 +72,8 @@ services:
         condition: service_started
       dbrepo-authentication-service:
         condition: service_healthy
+      dbrepo-search-db:
+        condition: service_healthy
     logging:
       driver: json-file
 
@@ -91,6 +93,8 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
       dbrepo-authentication-service:
+        condition: service_healthy
+      dbrepo-search-db:
         condition: service_healthy
     logging:
       driver: json-file
@@ -138,6 +142,8 @@ services:
         condition: service_healthy
       dbrepo-authentication-service:
         condition: service_healthy
+      dbrepo-search-db:
+        condition: service_healthy
     logging:
       driver: json-file
 
@@ -160,9 +166,9 @@ services:
     depends_on:
       dbrepo-authentication-service:
         condition: service_healthy
-      dbrepo-search-db:
-        condition: service_started
       dbrepo-broker-service:
+        condition: service_healthy
+      dbrepo-search-db:
         condition: service_healthy
     logging:
       driver: json-file
@@ -183,6 +189,8 @@ services:
       dbrepo-query-service:
         condition: service_healthy
       dbrepo-authentication-service:
+        condition: service_healthy
+      dbrepo-search-db:
         condition: service_healthy
     volumes:
       - /tmp:/tmp
@@ -205,6 +213,8 @@ services:
       dbrepo-authentication-service:
         condition: service_healthy
       dbrepo-metadata-db:
+        condition: service_healthy
+      dbrepo-search-db:
         condition: service_healthy
     logging:
       driver: json-file
@@ -245,6 +255,8 @@ services:
         condition: service_healthy
       dbrepo-authentication-service:
         condition: service_healthy
+      dbrepo-search-db:
+        condition: service_healthy
     logging:
       driver: json-file
 
@@ -267,6 +279,8 @@ services:
       dbrepo-metadata-db:
         condition: service_healthy
       dbrepo-authentication-service:
+        condition: service_healthy
+      dbrepo-search-db:
         condition: service_healthy
     logging:
       driver: json-file
@@ -303,6 +317,8 @@ services:
       - 9200:9200
     env_file:
       - .env
+    healthcheck:
+      test: curl -s http://search-db:9200 >/dev/null || exit 1
     environment:
       discovery.type: "single-node"
       ES_JAVA_OPTS: "-Xms4g -Xmx4g"
@@ -331,11 +347,6 @@ services:
       - .env
     volumes:
       - "/tmp:/tmp"
-    depends_on:
-      dbrepo-identifier-service:
-        condition: service_healthy
-      dbrepo-database-service:
-        condition: service_healthy
     logging:
       driver: json-file
 
@@ -367,10 +378,8 @@ services:
         condition: service_healthy
       dbrepo-metadata-service:
         condition: service_healthy
-      dbrepo-query-service:
-        condition: service_healthy
       dbrepo-search-db:
-        condition: service_started
+        condition: service_healthy
       dbrepo-semantics-service:
         condition: service_healthy
       dbrepo-table-service:

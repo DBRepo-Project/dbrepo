@@ -4,7 +4,7 @@ import at.tuwien.api.semantics.EntityDto;
 import at.tuwien.entities.semantics.Ontology;
 import at.tuwien.exception.QueryMalformedException;
 import at.tuwien.mapper.OntologyMapper;
-import at.tuwien.repository.jpa.OntologyRepository;
+import at.tuwien.repository.mdb.OntologyRepository;
 import at.tuwien.service.QueryService;
 import lombok.extern.log4j.Log4j2;
 import org.apache.jena.query.*;

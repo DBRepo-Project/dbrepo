@@ -9,7 +9,7 @@ import at.tuwien.exception.BrokerVirtualHostCreationException;
 import at.tuwien.exception.BrokerVirtualHostGrantException;
 import at.tuwien.gateway.BrokerServiceGateway;
 import at.tuwien.mapper.AmqpMapper;
-import at.tuwien.repository.jpa.DatabaseRepository;
+import at.tuwien.repository.mdb.DatabaseRepository;
 import at.tuwien.service.MessageQueueService;
 import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;

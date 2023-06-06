@@ -13,8 +13,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @EnableJpaAuditing
 @SpringBootApplication
 @EntityScan(basePackages = {"at.tuwien.entities"})
-@EnableElasticsearchRepositories(basePackages = {"at.tuwien.repository.elastic"})
-@EnableJpaRepositories(basePackages = {"at.tuwien.repository.jpa"})
+@EnableElasticsearchRepositories(basePackages = {"at.tuwien.repository.sdb"})
+@EnableJpaRepositories(basePackages = {"at.tuwien.repository.mdb"})
 public class DbrepoSemanticsServiceApplication {
 
     public static void main(String[] args) {

@@ -11,7 +11,7 @@ import at.tuwien.config.EndpointConfig;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.exception.*;
-import at.tuwien.repository.jpa.*;
+import at.tuwien.repository.mdb.*;
 import at.tuwien.service.impl.IdentifierServiceImpl;
 import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.BeforeEach;

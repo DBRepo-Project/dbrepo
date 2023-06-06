@@ -24,7 +24,7 @@ import java.util.List;
 @AllArgsConstructor
 @Jacksonized
 @ToString
-@Document(indexName = "identifier", createIndex = false)
+@Document(indexName = "identifier")
 public class IdentifierDto {
 
     private Long id;

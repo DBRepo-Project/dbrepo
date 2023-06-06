@@ -12,7 +12,7 @@ import at.tuwien.config.EndpointConfig;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.DataCiteMapper;
-import at.tuwien.repository.jpa.IdentifierRepository;
+import at.tuwien.repository.mdb.IdentifierRepository;
 import at.tuwien.service.IdentifierService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.web.client.RestTemplateBuilder;

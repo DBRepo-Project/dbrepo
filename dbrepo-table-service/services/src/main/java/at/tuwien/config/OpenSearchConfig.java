@@ -25,7 +25,7 @@ public class OpenSearchConfig extends AbstractOpenSearchConfiguration {
     @Bean
     @Override
     public RestHighLevelClient opensearchClient() {
-        log.debug("openSearch endpoint={}", openSearchEndpoint);
+        log.debug("open search endpoint: {}", openSearchEndpoint);
         final ClientConfiguration clientConfiguration = ClientConfiguration.builder()
                 .connectedTo(openSearchEndpoint)
                 .withBasicAuth(openSearchUsername, openSearchPassword)

@@ -2,7 +2,7 @@ package at.tuwien.service.impl;
 
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.exception.AccessDeniedException;
-import at.tuwien.repository.jpa.AccessRepository;
+import at.tuwien.repository.mdb.AccessRepository;
 import at.tuwien.service.AccessService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
