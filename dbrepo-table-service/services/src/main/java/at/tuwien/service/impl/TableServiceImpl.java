@@ -10,10 +10,10 @@ import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.TableMapper;
-import at.tuwien.repository.elastic.TableColumnIdxRepository;
-import at.tuwien.repository.elastic.TableIdxRepository;
-import at.tuwien.repository.jpa.TableColumnRepository;
-import at.tuwien.repository.jpa.TableRepository;
+import at.tuwien.repository.mdb.TableColumnRepository;
+import at.tuwien.repository.mdb.TableRepository;
+import at.tuwien.repository.sdb.TableColumnIdxRepository;
+import at.tuwien.repository.sdb.TableIdxRepository;
 import at.tuwien.service.*;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.log4j.Log4j2;
@@ -46,7 +46,7 @@ public class TableServiceImpl extends HibernateConnector implements TableService
     public TableServiceImpl(TableMapper tableMapper, UserService userService, SemanticService semanticService,
                             TableRepository tableRepository, DatabaseService databaseService,
                             ContainerService containerService, TableIdxRepository tableIdxRepository,
-                            TableColumnRepository tableColumnRepository,
+                            at.tuwien.repository.mdb.TableColumnRepository tableColumnRepository,
                             TableColumnIdxRepository tableColumnIdxRepository) {
         this.tableMapper = tableMapper;
         this.userService = userService;

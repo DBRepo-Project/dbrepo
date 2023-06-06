@@ -3,16 +3,15 @@ package at.tuwien.api.database.table.columns;
 import at.tuwien.api.container.image.ImageDateDto;
 import at.tuwien.api.database.table.columns.concepts.ConceptDto;
 import at.tuwien.api.database.table.columns.concepts.UnitDto;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
-import org.springframework.data.elasticsearch.annotations.Document;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import org.springframework.data.elasticsearch.annotations.Document;
 
 @Getter
 @Setter
@@ -21,16 +20,19 @@ import jakarta.validation.constraints.NotNull;
 @AllArgsConstructor
 @Jacksonized
 @ToString
-@Document(indexName = "columnindex", createIndex = false)
+@Document(indexName = "column")
 public class ColumnDto {
 
-    @JsonIgnore
+    @NotNull
+    @JsonProperty("container_id")
     private Long containerId;
 
-    @JsonIgnore
+    @NotNull
+    @JsonProperty("database_id")
     private Long databaseId;
 
-    @JsonIgnore
+    @NotNull
+    @JsonProperty("table_id")
     private Long tableId;
 
     @NotNull

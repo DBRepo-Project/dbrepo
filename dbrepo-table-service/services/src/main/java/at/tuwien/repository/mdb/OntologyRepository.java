@@ -1,4 +1,4 @@
-package at.tuwien.repository.jpa;
+package at.tuwien.repository.mdb;
 
 import at.tuwien.entities.semantics.Ontology;
 import org.springframework.data.jpa.repository.JpaRepository;

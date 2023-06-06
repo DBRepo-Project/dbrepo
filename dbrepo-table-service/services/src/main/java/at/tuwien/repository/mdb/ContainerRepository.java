@@ -1,4 +1,4 @@
-package at.tuwien.repository.jpa;
+package at.tuwien.repository.mdb;
 
 import at.tuwien.entities.container.Container;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -36,7 +36,7 @@
         <c3p0-hibernate.version>6.2.2.Final</c3p0-hibernate.version>
         <apache-jena.version>4.8.0</apache-jena.version>
         <springdoc-openapi.version>2.1.0</springdoc-openapi.version>
-        <opensearch.version>1.1.0</opensearch.version>
+        <opensearch-client.version>1.1.0</opensearch-client.version>
     </properties>
 
     <dependencies>
@@ -95,8 +95,8 @@
         </dependency>
         <dependency>
             <groupId>org.opensearch.client</groupId>
-            <artifactId>spring-data-opensearch-starter</artifactId>
-            <version>${opensearch.version}</version>
+            <artifactId>spring-data-opensearch</artifactId>
+            <version>${opensearch-client.version}</version>
         </dependency>
         <!-- Testing -->
         <dependency>

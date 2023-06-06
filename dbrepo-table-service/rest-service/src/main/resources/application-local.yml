@@ -28,7 +28,7 @@ spring:
   opensearch:
     username: admin
     password: admin
-    uris: http://localhost:9200
+    uris: localhost:9200
   cloud:
     loadbalancer.ribbon.enabled: false
 management.endpoints.web.exposure.include: health,info,prometheus

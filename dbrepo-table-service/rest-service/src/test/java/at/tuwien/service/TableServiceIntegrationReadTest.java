@@ -7,9 +7,9 @@ import at.tuwien.config.IndexConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.*;
-import at.tuwien.repository.elastic.TableColumnIdxRepository;
-import at.tuwien.repository.elastic.TableIdxRepository;
-import at.tuwien.repository.jpa.*;
+import at.tuwien.repository.sdb.TableColumnIdxRepository;
+import at.tuwien.repository.sdb.TableIdxRepository;
+import at.tuwien.repository.mdb.*;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.*;
@@ -66,7 +66,7 @@ public class TableServiceIntegrationReadTest extends BaseUnitTest {
     private DatabaseRepository databaseRepository;
 
     @Autowired
-    private TableRepository tableRepository;
+    private at.tuwien.repository.mdb.TableRepository tableRepository;
 
     @Autowired
     private TableService tableService;

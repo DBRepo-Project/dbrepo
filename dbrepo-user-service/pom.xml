@@ -52,7 +52,7 @@
         <keycloak.version>21.0.2</keycloak.version>
         <hibernate.version>6.2.2.Final</hibernate.version>
         <springdoc-openapi.version>2.1.0</springdoc-openapi.version>
-        <opensearch.version>1.1.0</opensearch.version>
+        <opensearch-client.version>1.1.0</opensearch-client.version>
     </properties>
 
     <dependencies>
@@ -118,8 +118,8 @@
         </dependency>
         <dependency>
             <groupId>org.opensearch.client</groupId>
-            <artifactId>spring-data-opensearch-starter</artifactId>
-            <version>${opensearch.version}</version>
+            <artifactId>spring-data-opensearch</artifactId>
+            <version>${opensearch-client.version}</version>
         </dependency>
         <!-- Swagger -->
         <dependency>

@@ -27,6 +27,10 @@ spring:
     virtual-host: dbrepo
     username: fda
     password: fda
+  opensearch:
+    username: admin
+    password: admin
+    uris: http://localhost:9200
 management.endpoints.web.exposure.include: health,info,prometheus
 springdoc.swagger-ui.enabled: true
 server:
@@ -47,7 +51,3 @@ fda:
   client_secret: client-secret
   client_id: dbrepo-client
   gateway.endpoint: http://localhost
-  opensearch:
-    username: admin
-    password: admin
-    uris: http://localhost:9200

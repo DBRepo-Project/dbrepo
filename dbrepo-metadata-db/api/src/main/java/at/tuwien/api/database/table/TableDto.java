@@ -4,15 +4,15 @@ import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.constraints.ConstraintsDto;
 import at.tuwien.api.user.UserBriefDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
-import org.springframework.data.elasticsearch.annotations.Document;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import org.springframework.data.elasticsearch.annotations.Document;
+
 import java.time.Instant;
 import java.util.List;
 
@@ -23,13 +23,15 @@ import java.util.List;
 @AllArgsConstructor
 @Jacksonized
 @ToString
-@Document(indexName = "tableindex", createIndex = false)
+@Document(indexName = "table")
 public class TableDto {
 
-    @JsonIgnore
+    @NotNull
+    @JsonProperty("container_id")
     private Long containerId;
 
-    @JsonIgnore
+    @NotNull
+    @JsonProperty("database_id")
     private Long databaseId;
 
     @NotNull
