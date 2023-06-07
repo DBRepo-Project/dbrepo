@@ -17,6 +17,7 @@ import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.QueryServiceGateway;
 import at.tuwien.repository.mdb.*;
+import at.tuwien.repository.sdb.IdentifierIdxRepository;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.IdentifierService;
 import org.apache.commons.io.FileUtils;
@@ -53,7 +54,7 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
     private ReadyConfig readyConfig;
 
     @MockBean
-    private IndexConfig indexInitializer;
+    private IndexConfig indexConfig;
 
     @MockBean
     private IdentifierService identifierService;
@@ -78,6 +79,9 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
 
     @MockBean
     private QueryServiceGateway queryServiceGateway;
+
+    @MockBean
+    private IdentifierIdxRepository identifierIdxRepository;
 
     @Autowired
     private IdentifierEndpoint identifierEndpoint;

@@ -7,6 +7,7 @@ import at.tuwien.config.ReadyConfig;
 import at.tuwien.exception.QueryNotFoundException;
 import at.tuwien.exception.RemoteUnavailableException;
 import at.tuwien.repository.mdb.UserRepository;
+import at.tuwien.repository.sdb.IdentifierIdxRepository;
 import com.google.common.io.Files;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
@@ -36,10 +37,13 @@ import static org.mockito.Mockito.*;
 public class QueryServiceGatewayUnitTest extends BaseUnitTest {
 
     @MockBean
-    private IndexConfig indexInitializer;
+    private IndexConfig indexConfig;
 
     @MockBean
     private ReadyConfig readyConfig;
+
+    @MockBean
+    private IdentifierIdxRepository identifierIdxRepository;
 
     @MockBean
     @Qualifier("restTemplate")

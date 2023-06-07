@@ -900,8 +900,8 @@ public abstract class BaseTest {
             .build();
 
     public final static Long IMAGE_ELASTIC_ID = 3L;
-    public final static String IMAGE_ELASTIC_REPOSITORY = "elasticsearch";
-    public final static String IMAGE_ELASTIC_TAG = "8.7.1";
+    public final static String IMAGE_ELASTIC_REPOSITORY = "opensearchproject/opensearch";
+    public final static String IMAGE_ELASTIC_TAG = "2";
 
     public final static ContainerImage IMAGE_ELASTIC = ContainerImage.builder()
             .id(IMAGE_ELASTIC_ID)

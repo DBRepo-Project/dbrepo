@@ -2,6 +2,7 @@ package at.tuwien.endpoint;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.config.IndexConfig;
+import at.tuwien.repository.sdb.IdentifierIdxRepository;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,6 +28,9 @@ public class SwaggerComponentTest extends BaseUnitTest {
 
     @MockBean
     private IndexConfig indexConfig;
+
+    @MockBean
+    private IdentifierIdxRepository identifierIdxRepository;
 
     @Test
     public void swaggerUi_succeeds() throws Exception {

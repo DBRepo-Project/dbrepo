@@ -7,6 +7,7 @@ import at.tuwien.entities.database.View;
 import at.tuwien.gateway.BrokerServiceGateway;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.repository.mdb.*;
+import at.tuwien.repository.sdb.ViewIdxRepository;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.junit.Rule;
@@ -44,6 +45,9 @@ public class ViewRepositoryIntegrationTest extends BaseUnitTest {
 
     @MockBean
     private IndexConfig indexConfig;
+
+    @MockBean
+    private ViewIdxRepository viewIdxRepository;
 
     @Autowired
     private ImageRepository imageRepository;

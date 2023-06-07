@@ -11,6 +11,7 @@ import at.tuwien.gateway.BrokerServiceGateway;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.repository.mdb.DatabaseAccessRepository;
 import at.tuwien.repository.mdb.TableRepository;
+import at.tuwien.repository.sdb.ViewIdxRepository;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.QueryService;
 import com.rabbitmq.client.Channel;
@@ -50,7 +51,10 @@ public class ExportEndpointUnitTest extends BaseUnitTest {
     private Channel channel;
 
     @MockBean
-    private IndexConfig indexInitializer;
+    private IndexConfig indexConfig;
+
+    @MockBean
+    private ViewIdxRepository viewIdxRepository;
 
     @MockBean
     private RabbitMqListenerImpl rabbitMqListener;

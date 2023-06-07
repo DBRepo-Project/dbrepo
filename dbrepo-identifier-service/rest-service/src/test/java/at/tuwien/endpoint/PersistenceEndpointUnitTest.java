@@ -11,6 +11,7 @@ import at.tuwien.endpoints.PersistenceEndpoint;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
+import at.tuwien.repository.sdb.IdentifierIdxRepository;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.IdentifierService;
 import at.tuwien.service.UserService;
@@ -54,7 +55,10 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     private ReadyConfig readyConfig;
 
     @MockBean
-    private IndexConfig indexInitializer;
+    private IndexConfig indexConfig;
+
+    @MockBean
+    private IdentifierIdxRepository identifierIdxRepository;
 
     @MockBean
     private AccessService accessService;

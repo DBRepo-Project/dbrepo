@@ -5,9 +5,11 @@ import at.tuwien.api.maintenance.BannerMessageBriefDto;
 import at.tuwien.api.maintenance.BannerMessageCreateDto;
 import at.tuwien.api.maintenance.BannerMessageDto;
 import at.tuwien.api.maintenance.BannerMessageUpdateDto;
+import at.tuwien.config.IndexConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.maintenance.BannerMessage;
 import at.tuwien.exception.*;
+import at.tuwien.repository.sdb.UserIdxRepository;
 import at.tuwien.service.BannerMessageService;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
@@ -34,6 +36,12 @@ import static org.mockito.Mockito.*;
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 public class MaintenanceEndpointUnitTest extends BaseUnitTest {
+
+    @MockBean
+    private IndexConfig indexConfig;
+
+    @MockBean
+    private UserIdxRepository userIdxRepository;
 
     @MockBean
     private ReadyConfig readyConfig;

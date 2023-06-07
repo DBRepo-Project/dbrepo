@@ -48,11 +48,9 @@ public class ViewIdxRepositoryIntegrationTest extends BaseUnitTest {
     @MockBean
     private Channel channel;
 
-    /* keep */
     @MockBean
     private RabbitMqListenerImpl rabbitMqListener;
 
-    /* keep */
     @MockBean
     private BrokerServiceGateway brokerServiceGateway;
 

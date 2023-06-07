@@ -5,6 +5,7 @@ import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.user.UserPasswordDto;
 import at.tuwien.api.user.UserThemeSetDto;
 import at.tuwien.api.user.UserUpdateDto;
+import at.tuwien.config.IndexConfig;
 import at.tuwien.entities.user.Role;
 import at.tuwien.entities.user.User;
 import at.tuwien.entities.user.UserAttribute;
@@ -12,6 +13,7 @@ import at.tuwien.exception.*;
 import at.tuwien.repository.mdb.RealmRepository;
 import at.tuwien.repository.mdb.RoleRepository;
 import at.tuwien.repository.mdb.UserRepository;
+import at.tuwien.repository.sdb.UserIdxRepository;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -36,6 +39,12 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 public class UserServiceIntegrationTest extends BaseUnitTest {
+
+    @MockBean
+    private IndexConfig indexConfig;
+
+    @MockBean
+    private UserIdxRepository userIdxRepository;
 
     @Autowired
     private UserRepository userRepository;

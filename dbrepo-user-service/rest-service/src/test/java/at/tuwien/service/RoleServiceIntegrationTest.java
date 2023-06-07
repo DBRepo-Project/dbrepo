@@ -1,10 +1,12 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
+import at.tuwien.config.IndexConfig;
 import at.tuwien.entities.user.Role;
 import at.tuwien.exception.RoleNotFoundException;
 import at.tuwien.repository.mdb.RoleRepository;
 import at.tuwien.repository.mdb.UserRepository;
+import at.tuwien.repository.sdb.UserIdxRepository;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -24,6 +27,12 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 public class RoleServiceIntegrationTest extends BaseUnitTest {
+
+    @MockBean
+    private IndexConfig indexConfig;
+
+    @MockBean
+    private UserIdxRepository userIdxRepository;
 
     @Autowired
     private UserRepository userRepository;

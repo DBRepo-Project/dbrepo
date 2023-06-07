@@ -12,6 +12,7 @@ import at.tuwien.config.IndexConfig;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.exception.*;
 import at.tuwien.repository.mdb.*;
+import at.tuwien.repository.sdb.IdentifierIdxRepository;
 import at.tuwien.service.impl.IdentifierServiceImpl;
 import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,13 +47,16 @@ import static org.mockito.Mockito.when;
 public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
 
     @MockBean
-    private IndexConfig indexInitializer;
+    private IndexConfig indexConfig;
 
     @MockBean(answer = Answers.RETURNS_MOCKS)
     private DataCiteConfig dataCiteConfig;
 
     @MockBean(answer = Answers.RETURNS_MOCKS)
     private EndpointConfig endpointConfig;
+
+    @MockBean
+    private IdentifierIdxRepository identifierIdxRepository;
 
     @Autowired
     private ImageRepository imageRepository;

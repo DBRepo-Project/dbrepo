@@ -10,6 +10,7 @@ import at.tuwien.gateway.BrokerServiceGateway;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.repository.mdb.DatabaseRepository;
 import at.tuwien.repository.mdb.TableRepository;
+import at.tuwien.repository.sdb.ViewIdxRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.*;
 import lombok.extern.log4j.Log4j2;
@@ -49,7 +50,10 @@ public class QueueServiceIntegrationTest extends BaseUnitTest {
     private TableRepository tableRepository;
 
     @MockBean
-    private IndexConfig indexInitializer;
+    private ViewIdxRepository viewIdxRepository;
+
+    @MockBean
+    private IndexConfig indexConfig;
 
     @MockBean
     private RabbitMqConsumer rabbitMqConsumer;

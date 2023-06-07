@@ -9,6 +9,7 @@ import at.tuwien.exception.*;
 import at.tuwien.gateway.BrokerServiceGateway;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.repository.mdb.*;
+import at.tuwien.repository.sdb.ViewIdxRepository;
 import com.rabbitmq.client.Channel;
 import at.tuwien.config.DockerConfig;
 import lombok.extern.log4j.Log4j2;
@@ -48,11 +49,12 @@ public class TableServiceIntegrationReadTest extends BaseUnitTest {
     @MockBean
     private Channel channel;
 
-    /* keep */
+    @MockBean
+    private ViewIdxRepository viewIdxRepository;
+
     @MockBean
     private RabbitMqListenerImpl rabbitMqListener;
 
-    /* keep */
     @MockBean
     private BrokerServiceGateway brokerServiceGateway;
 

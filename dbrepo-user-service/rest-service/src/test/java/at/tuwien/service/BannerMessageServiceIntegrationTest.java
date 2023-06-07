@@ -4,10 +4,12 @@ import at.tuwien.BaseUnitTest;
 import at.tuwien.api.maintenance.BannerMessageCreateDto;
 import at.tuwien.api.maintenance.BannerMessageTypeDto;
 import at.tuwien.api.maintenance.BannerMessageUpdateDto;
+import at.tuwien.config.IndexConfig;
 import at.tuwien.entities.maintenance.BannerMessage;
 import at.tuwien.entities.maintenance.BannerMessageType;
 import at.tuwien.exception.BannerMessageNotFoundException;
 import at.tuwien.repository.mdb.BannerMessageRepository;
+import at.tuwien.repository.sdb.UserIdxRepository;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -29,6 +32,12 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 public class BannerMessageServiceIntegrationTest extends BaseUnitTest {
+
+    @MockBean
+    private IndexConfig indexConfig;
+
+    @MockBean
+    private UserIdxRepository userIdxRepository;
 
     @Autowired
     private BannerMessageRepository bannerMessageRepository;

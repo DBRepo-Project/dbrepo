@@ -4,6 +4,7 @@ import at.tuwien.BaseUnitTest;
 import at.tuwien.api.amqp.ConsumerDto;
 import at.tuwien.config.*;
 import at.tuwien.repository.mdb.*;
+import at.tuwien.repository.sdb.ViewIdxRepository;
 import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
@@ -37,6 +38,9 @@ public class RabbitMqListenerIntegrationTest extends BaseUnitTest {
 
     @MockBean
     private IndexConfig indexConfig;
+
+    @MockBean
+    private ViewIdxRepository viewIdxRepository;
 
     @Autowired
     private Channel channel;

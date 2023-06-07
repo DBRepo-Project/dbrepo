@@ -13,6 +13,7 @@ import at.tuwien.gateway.BrokerServiceGateway;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.querystore.Query;
 import at.tuwien.repository.mdb.UserRepository;
+import at.tuwien.repository.sdb.ViewIdxRepository;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.impl.StoreServiceImpl;
@@ -48,7 +49,10 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
     private Channel channel;
 
     @MockBean
-    private IndexConfig indexInitializer;
+    private IndexConfig indexConfig;
+
+    @MockBean
+    private ViewIdxRepository viewIdxRepository;
 
     @MockBean
     private RabbitMqListenerImpl rabbitMqListener;

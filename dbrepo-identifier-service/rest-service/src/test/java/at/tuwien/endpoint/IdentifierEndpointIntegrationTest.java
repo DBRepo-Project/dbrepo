@@ -8,6 +8,7 @@ import at.tuwien.config.ReadyConfig;
 import at.tuwien.endpoints.IdentifierEndpoint;
 import at.tuwien.exception.NotAllowedException;
 import at.tuwien.repository.mdb.*;
+import at.tuwien.repository.sdb.IdentifierIdxRepository;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,6 +39,9 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
 
     @MockBean
     private ReadyConfig readyConfig;
+
+    @MockBean
+    private IdentifierIdxRepository identifierIdxRepository;
 
     @Autowired
     private IdentifierRepository identifierRepository;
