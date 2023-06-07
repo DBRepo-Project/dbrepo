@@ -1,12 +1,15 @@
 package at.tuwien.endpoint;
 
 import at.tuwien.BaseUnitTest;
+import at.tuwien.repository.sdb.*;
+import at.tuwien.repository.sdb.TableColumnIdxRepository;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -22,6 +25,18 @@ public class SwaggerComponentTest extends BaseUnitTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @MockBean
+    private UnitIdxRepository unitIdxRepository;
+
+    @MockBean
+    private ConceptIdxRepository conceptIdxRepository;
+
+    @MockBean
+    private TableIdxRepository tableIdxRepository;
+
+    @MockBean
+    private TableColumnIdxRepository tableColumnIdxRepository;
 
     @Test
     public void swaggerUi_succeeds() throws Exception {

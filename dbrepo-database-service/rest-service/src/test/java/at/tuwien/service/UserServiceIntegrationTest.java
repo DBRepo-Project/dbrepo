@@ -35,10 +35,10 @@ public class UserServiceIntegrationTest extends BaseUnitTest {
     private IndexConfig indexConfig;
 
     @MockBean
-    private Channel channel;
+    private DatabaseIdxRepository databaseIdxRepository;
 
     @MockBean
-    private DatabaseIdxRepository databaseIdxRepository;
+    private Channel channel;
 
     @Autowired
     private RealmRepository realmRepository;

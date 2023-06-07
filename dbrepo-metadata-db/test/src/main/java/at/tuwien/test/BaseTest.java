@@ -17,9 +17,7 @@ import at.tuwien.api.database.table.TableCreateDto;
 import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.api.database.table.columns.ColumnCreateDto;
 import at.tuwien.api.database.table.columns.ColumnTypeDto;
-import at.tuwien.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
-import at.tuwien.api.database.table.columns.concepts.ConceptSaveDto;
-import at.tuwien.api.database.table.columns.concepts.UnitSaveDto;
+import at.tuwien.api.database.table.columns.concepts.*;
 import at.tuwien.api.database.table.constraints.ConstraintsCreateDto;
 import at.tuwien.api.database.table.constraints.foreignKey.ForeignKeyCreateDto;
 import at.tuwien.api.identifier.*;
@@ -1117,8 +1115,8 @@ public abstract class BaseTest {
     public final static String CONTAINER_ELASTIC_IP = "172.31.0.3";
     public final static String CONTAINER_ELASTIC_HASH = "deadbeef";
     public final static Instant CONTAINER_ELASTIC_CREATED = Instant.ofEpochSecond(1677399721) /* 2023-02-26 08:22:01 (UTC) */;
-    public final static String[] CONTAINER_ELASTIC_ENV = new String[]{"discovery.type=single-node", "ES_JAVA_OPTS=-Xms2g -Xmx2g",
-            "logger.level=WARN", "bootstrap.memory_lock=true", "xpack.security.enabled=true", "SEARCH_PASSWORD=admin"};
+    public final static String[] CONTAINER_ELASTIC_ENV = new String[]{"discovery.type=single-node", "ES_JAVA_OPTS=-Xms4g -Xmx4g",
+            "logger.level=WARN", "bootstrap.memory_lock=true", "plugins.security.disabled=true"};
 
     public final static Container CONTAINER_ELASTIC = Container.builder()
             .id(CONTAINER_ELASTIC_ID)
@@ -1917,6 +1915,12 @@ public abstract class BaseTest {
             .description(COLUMN_CONCEPT_TEMPERATURE_DESCRIPTION)
             .build();
 
+    public final static ConceptDto COLUMN_CONCEPT_TEMPERATURE_DTO = ConceptDto.builder()
+            .uri(COLUMN_CONCEPT_TEMPERATURE_URI)
+            .name(COLUMN_CONCEPT_TEMPERATURE_NAME)
+            .description(COLUMN_CONCEPT_TEMPERATURE_DESCRIPTION)
+            .build();
+
     public final static TableColumnConcept COLUMN_CONCEPT_TEMPERATURE = TableColumnConcept.builder()
             .uri(COLUMN_CONCEPT_TEMPERATURE_URI)
             .name(COLUMN_CONCEPT_TEMPERATURE_NAME)
@@ -1930,6 +1934,12 @@ public abstract class BaseTest {
     public final static Instant COLUMN_CONCEPT_FAIR_DATA_CREATED = Instant.now();
 
     public final static ConceptSaveDto COLUMN_CONCEPT_FAIR_DATA_SAVE_DTO = ConceptSaveDto.builder()
+            .uri(COLUMN_CONCEPT_FAIR_DATA_URI)
+            .name(COLUMN_CONCEPT_FAIR_DATA_NAME)
+            .description(COLUMN_CONCEPT_FAIR_DATA_DESCRIPTION)
+            .build();
+
+    public final static ConceptDto COLUMN_CONCEPT_FAIR_DATA_DTO = ConceptDto.builder()
             .uri(COLUMN_CONCEPT_FAIR_DATA_URI)
             .name(COLUMN_CONCEPT_FAIR_DATA_NAME)
             .description(COLUMN_CONCEPT_FAIR_DATA_DESCRIPTION)
@@ -1953,6 +1963,12 @@ public abstract class BaseTest {
             .description(COLUMN_UNIT_DEGREES_CELSIUS_DESCRIPTION)
             .build();
 
+    public final static UnitDto COLUMN_UNIT_DEGREES_CELSIUS_DTO = UnitDto.builder()
+            .uri(COLUMN_UNIT_DEGREES_CELSIUS_URI)
+            .name(COLUMN_UNIT_DEGREES_CELSIUS_NAME)
+            .description(COLUMN_UNIT_DEGREES_CELSIUS_DESCRIPTION)
+            .build();
+
     public final static TableColumnUnit COLUMN_UNIT_DEGREES_CELSIUS = TableColumnUnit.builder()
             .uri(COLUMN_UNIT_DEGREES_CELSIUS_URI)
             .name(COLUMN_UNIT_DEGREES_CELSIUS_NAME)
@@ -1966,6 +1982,12 @@ public abstract class BaseTest {
     public final static Instant COLUMN_UNIT_TON_CREATED = Instant.now();
 
     public final static UnitSaveDto COLUMN_UNIT_TON_SAVE_DTO = UnitSaveDto.builder()
+            .uri(COLUMN_UNIT_TON_URI)
+            .name(COLUMN_UNIT_TON_NAME)
+            .description(COLUMN_UNIT_TON_DESCRIPTION)
+            .build();
+
+    public final static UnitDto COLUMN_UNIT_TON_DTO = UnitDto.builder()
             .uri(COLUMN_UNIT_TON_URI)
             .name(COLUMN_UNIT_TON_NAME)
             .description(COLUMN_UNIT_TON_DESCRIPTION)

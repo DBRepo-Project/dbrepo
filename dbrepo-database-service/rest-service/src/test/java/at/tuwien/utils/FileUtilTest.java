@@ -3,6 +3,7 @@ package at.tuwien.utils;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.config.ReadyConfig;
+import at.tuwien.repository.sdb.DatabaseIdxRepository;
 import at.tuwien.test.BaseTest;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
@@ -27,7 +28,10 @@ public class FileUtilTest extends BaseUnitTest {
     private ReadyConfig readyConfig;
 
     @MockBean
-    private IndexConfig indexInitializer;
+    private IndexConfig indexConfig;
+
+    @MockBean
+    private DatabaseIdxRepository databaseIdxRepository;
 
     @MockBean
     private Channel channel;

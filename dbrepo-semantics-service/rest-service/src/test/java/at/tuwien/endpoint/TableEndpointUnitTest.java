@@ -10,6 +10,8 @@ import at.tuwien.exception.OntologyNotFoundException;
 import at.tuwien.exception.QueryMalformedException;
 import at.tuwien.exception.TableColumnNotFoundException;
 import at.tuwien.exception.TableNotFoundException;
+import at.tuwien.repository.sdb.*;
+import at.tuwien.repository.sdb.TableColumnIdxRepository;
 import at.tuwien.service.OntologyService;
 import at.tuwien.service.TableService;
 import lombok.extern.log4j.Log4j2;
@@ -39,11 +41,23 @@ import static org.mockito.Mockito.*;
 @ExtendWith(SpringExtension.class)
 public class TableEndpointUnitTest extends BaseUnitTest {
 
-    @Autowired
-    private TableEndpoint tableEndpoint;
-
     @MockBean
     private TableService tableService;
+
+    @MockBean
+    private UnitIdxRepository unitIdxRepository;
+
+    @MockBean
+    private ConceptIdxRepository conceptIdxRepository;
+
+    @MockBean
+    private TableIdxRepository tableIdxRepository;
+
+    @MockBean
+    private TableColumnIdxRepository tableColumnIdxRepository;
+
+    @Autowired
+    private TableEndpoint tableEndpoint;
 
     @BeforeAll
     public static void beforeAll() {
