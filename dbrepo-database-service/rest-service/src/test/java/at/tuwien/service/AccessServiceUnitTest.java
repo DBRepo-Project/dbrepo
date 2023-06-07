@@ -10,6 +10,7 @@ import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.exception.AccessDeniedException;
 import at.tuwien.exception.NotAllowedException;
 import at.tuwien.repository.mdb.*;
+import at.tuwien.repository.sdb.DatabaseIdxRepository;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
@@ -39,6 +40,9 @@ public class AccessServiceUnitTest extends BaseUnitTest {
 
     @MockBean
     private Channel channel;
+
+    @MockBean
+    private DatabaseIdxRepository databaseIdxRepository;
 
     @MockBean
     private DatabaseRepository databaseRepository;

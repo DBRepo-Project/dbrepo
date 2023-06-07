@@ -9,6 +9,7 @@ import at.tuwien.exception.BrokerVirtualHostCreationException;
 import at.tuwien.exception.BrokerVirtualHostGrantException;
 import at.tuwien.gateway.BrokerServiceGateway;
 import at.tuwien.repository.mdb.DatabaseRepository;
+import at.tuwien.repository.sdb.DatabaseIdxRepository;
 import at.tuwien.service.impl.RabbitMqServiceImpl;
 import at.tuwien.utils.AmqpUtils;
 import com.rabbitmq.client.Channel;
@@ -37,6 +38,9 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
 
     @MockBean
     private IndexConfig indexConfig;
+
+    @MockBean
+    private DatabaseIdxRepository databaseIdxRepository;
 
     @MockBean
     private DatabaseRepository databaseRepository;

@@ -10,6 +10,7 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
 import at.tuwien.repository.mdb.ContainerRepository;
 import at.tuwien.repository.mdb.DatabaseRepository;
+import at.tuwien.repository.sdb.DatabaseIdxRepository;
 import at.tuwien.service.impl.MariaDbServiceImpl;
 import at.tuwien.service.impl.RabbitMqServiceImpl;
 import com.rabbitmq.client.Channel;
@@ -40,6 +41,9 @@ public class DatabaseServiceUnitTest extends BaseUnitTest {
 
     @MockBean
     private Channel channel;
+
+    @MockBean
+    private DatabaseIdxRepository databaseIdxRepository;
 
     @MockBean
     private RabbitMqServiceImpl rabbitMqService;

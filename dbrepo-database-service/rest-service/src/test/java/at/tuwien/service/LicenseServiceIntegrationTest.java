@@ -6,6 +6,7 @@ import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.database.License;
 import at.tuwien.exception.LicenseNotFoundException;
 import at.tuwien.repository.mdb.*;
+import at.tuwien.repository.sdb.DatabaseIdxRepository;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,6 +35,9 @@ public class LicenseServiceIntegrationTest extends BaseUnitTest {
 
     @MockBean
     private Channel channel;
+
+    @MockBean
+    private DatabaseIdxRepository databaseIdxRepository;
 
     @Autowired
     private LicenseRepository licenseRepository;

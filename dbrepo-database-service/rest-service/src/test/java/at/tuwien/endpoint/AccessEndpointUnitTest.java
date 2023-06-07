@@ -14,6 +14,7 @@ import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.AccessMapper;
 import at.tuwien.repository.mdb.*;
+import at.tuwien.repository.sdb.DatabaseIdxRepository;
 import at.tuwien.service.AccessService;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
@@ -46,6 +47,9 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
 
     @MockBean
     private IndexConfig indexInitializer;
+
+    @MockBean
+    private DatabaseIdxRepository databaseIdxRepository;
 
     @MockBean
     private Channel channel;
