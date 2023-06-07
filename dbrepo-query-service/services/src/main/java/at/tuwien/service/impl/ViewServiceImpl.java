@@ -105,10 +105,9 @@ public class ViewServiceImpl extends HibernateConnector implements ViewService {
         }
         /* delete in metadata database */
         viewRepository.delete(view);
-        log.info("Deleted view with id {}", view.getId());
-        log.trace("deleted view {}", view);
+        log.info("Deleted view with id {} in metadata database", id);
         viewIdxRepository.deleteById(id);
-        log.info("Deleted view with id {} in elastic search", id);
+        log.info("Deleted view with id {} in open search database", id);
     }
 
     @Override
@@ -154,10 +153,9 @@ public class ViewServiceImpl extends HibernateConnector implements ViewService {
                 .columns(columns)
                 .build();
         final View view = viewRepository.save(entity);
-        log.info("Created view with id {}", view.getId());
-        log.trace("created view {}", view);
+        log.info("Created view with id {} in metadata database", view.getId());
         viewIdxRepository.save(viewMapper.viewToViewDto(view));
-        log.info("Created view with id {} in elastic search", view.getId());
+        log.info("Created view with id {} in open search database", view.getId());
         return view;
     }
 

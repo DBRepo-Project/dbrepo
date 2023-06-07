@@ -1,6 +1,7 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.api.database.DatabaseCreateDto;
+import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.DatabaseModifyVisibilityDto;
 import at.tuwien.api.database.DatabaseTransferDto;
 import at.tuwien.entities.container.Container;
@@ -107,11 +108,10 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         }
         /* save in metadata database */
         databaseRepository.deleteById(databaseId);
-        log.info("Deleted database with id {}", databaseId);
-        log.trace("deleted database {}", database);
+        log.info("Deleted database with id {} in metadata database", databaseId);
         // delete in database_index - elastic search
         databaseIdxRepository.deleteById(databaseId);
-        log.info("Deleted database in elastic search with id {}", databaseId);
+        log.info("Deleted database with id {} in open search database", databaseId);
     }
 
     @Override
@@ -154,10 +154,11 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         log.info("Created user {} on database with owner access", user.getUsername());
         /* save in metadata database */
         final Database entity = databaseRepository.save(database);
-        log.info("Created database with id {}", entity.getId());
+        log.info("Created database with id {} in metadata database", entity.getId());
         /* save in database_index - elastic search */
-        databaseIdxRepository.save(databaseMapper.databaseToDatabaseDto(entity));
-        log.info("Saved database in elastic search with id {}", entity.getId());
+        final DatabaseDto databaseDto = databaseMapper.databaseToDatabaseDto(entity);
+        databaseIdxRepository.save(databaseDto);
+        log.info("Created database with id {} in open search database", entity.getId());
         return entity;
     }
 

@@ -8,6 +8,7 @@ import lombok.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.jackson.Jacksonized;
 import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
 
 import java.util.List;
 import java.util.UUID;
@@ -66,6 +67,7 @@ public class UserDto {
     private String email;
 
     @NotNull
+    @Field(name = "email_verified")
     @JsonProperty("email_verified")
     @Schema(example = "true")
     @org.springframework.data.annotation.Transient

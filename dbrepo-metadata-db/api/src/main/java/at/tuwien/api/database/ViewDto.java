@@ -11,6 +11,7 @@ import lombok.extern.jackson.Jacksonized;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -29,6 +30,8 @@ public class ViewDto {
     private Long id;
 
     @NotNull
+    @Field(name = "database_id")
+    @JsonProperty("database_id")
     private Long vdbid;
 
     @NotNull
@@ -40,13 +43,16 @@ public class ViewDto {
     private String name;
 
     @NotBlank
+    @Field(name = "air_quality")
     @Schema(example = "air_quality")
     private String internalName;
 
+    @Field(name = "is_public")
     @JsonProperty("is_public")
     @Schema(example = "true")
     private Boolean isPublic;
 
+    @Field(name = "initial_view")
     @JsonProperty("initial_view")
     @Schema(example = "true", description = "True if it is the default view for the database")
     private Boolean isInitialView;
@@ -66,6 +72,7 @@ public class ViewDto {
     @NotNull
     private UserDto creator;
 
+    @Field(name = "last_modified")
     @JsonProperty("last_modified")
     @Schema(example = "2020-08-04 11:12:00")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")

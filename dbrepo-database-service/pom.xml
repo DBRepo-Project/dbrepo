@@ -120,6 +120,11 @@
             <artifactId>spring-data-opensearch-starter</artifactId>
             <version>${opensearch-client.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.opensearch.client</groupId>
+            <artifactId>opensearch-java</artifactId>
+            <version>2.5.0</version>
+        </dependency>
         <!-- Entity, API, QueryStore -->
         <dependency>
             <groupId>at.tuwien</groupId>

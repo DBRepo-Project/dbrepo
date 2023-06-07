@@ -91,7 +91,7 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         tableRepository.delete(table);
         log.info("Deleted table with id {} in metadata database", table.getId());
         tableIdxRepository.delete(tableMapper.tableToTableDto(table));
-        log.info("Deleted table with id {} in search service", table.getId());
+        log.info("Deleted table with id {} in open search database", table.getId());
     }
 
     @Override
@@ -190,13 +190,13 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         }
         /* save in metadata database */
         final Table table = tableRepository.save(entity);
-        log.info("Created table with id {}", table.getId());
-        log.trace("created table {}", table);
+        log.info("Created table with id {} in metadata database", table.getId());
         /* save in database_index - elastic search */
         tableIdxRepository.save(tableMapper.tableToTableDto(table));
+        log.info("Created table with id {} in open search database", table.getId());
         /* save in column_index - elastic search */
         tableColumnIdxRepository.saveAll(tableMapper.tableToTableDto(table).getColumns());
-        log.info("Saved table with id {} in elastic search", table.getId());
+        log.info("Saved table columns with table id {} in open search database", table.getId());
         return table;
     }
 
