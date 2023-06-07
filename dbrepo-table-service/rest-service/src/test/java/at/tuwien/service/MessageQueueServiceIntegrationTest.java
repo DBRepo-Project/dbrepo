@@ -6,9 +6,8 @@ import at.tuwien.config.IndexConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.config.DockerConfig;
 import at.tuwien.exception.*;
-import at.tuwien.repository.elastic.TableColumnIdxRepository;
-import at.tuwien.repository.elastic.TableIdxRepository;
-import at.tuwien.repository.jpa.TableRepository;
+import at.tuwien.repository.sdb.TableColumnIdxRepository;
+import at.tuwien.repository.sdb.TableIdxRepository;
 import at.tuwien.utils.AmqpUtils;
 import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;
@@ -46,7 +45,7 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
     private TableColumnIdxRepository tableColumnidxRepository;
 
     @MockBean
-    private TableRepository tableRepository;
+    private at.tuwien.repository.mdb.TableRepository tableRepository;
 
     @Autowired
     private AmqpUtils amqpUtils;

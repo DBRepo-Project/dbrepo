@@ -3,11 +3,12 @@ package at.tuwien.endpoint;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.identifier.IdentifierTypeDto;
-import at.tuwien.config.IndexInitializer;
+import at.tuwien.config.IndexConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.endpoints.IdentifierEndpoint;
 import at.tuwien.exception.NotAllowedException;
-import at.tuwien.repository.jpa.*;
+import at.tuwien.repository.mdb.*;
+import at.tuwien.repository.sdb.IdentifierIdxRepository;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,10 +35,13 @@ import static org.junit.jupiter.api.Assertions.*;
 public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
 
     @MockBean
-    private IndexInitializer indexInitializer;
+    private IndexConfig indexInitializer;
 
     @MockBean
     private ReadyConfig readyConfig;
+
+    @MockBean
+    private IdentifierIdxRepository identifierIdxRepository;
 
     @Autowired
     private IdentifierRepository identifierRepository;

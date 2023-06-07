@@ -25,6 +25,10 @@ spring:
     virtual-host: dbrepo
     username: fda
     password: fda
+  opensearch:
+    username: admin
+    password: admin
+    uris: localhost:9200
   cloud:
     loadbalancer.ribbon.enabled: false
 management.endpoints.web.exposure.include: health,info,prometheus

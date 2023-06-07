@@ -2,7 +2,7 @@ package at.tuwien.service.impl;
 
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.*;
-import at.tuwien.repository.jpa.TableRepository;
+import at.tuwien.repository.mdb.TableRepository;
 import at.tuwien.service.MessageQueueService;
 import com.rabbitmq.client.*;
 import lombok.extern.log4j.Log4j2;

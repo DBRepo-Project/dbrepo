@@ -4,9 +4,11 @@ import at.tuwien.BaseUnitTest;
 import at.tuwien.entities.semantics.Ontology;
 import at.tuwien.exception.OntologyNotFoundException;
 import at.tuwien.exception.UserNotFoundException;
-import at.tuwien.repository.jpa.OntologyRepository;
-import at.tuwien.repository.jpa.RealmRepository;
-import at.tuwien.repository.jpa.UserRepository;
+import at.tuwien.repository.mdb.OntologyRepository;
+import at.tuwien.repository.mdb.RealmRepository;
+import at.tuwien.repository.mdb.UserRepository;
+import at.tuwien.repository.sdb.*;
+import at.tuwien.repository.sdb.TableColumnIdxRepository;
 import lombok.extern.log4j.Log4j2;
 import org.apache.jena.sys.JenaSystem;
 import org.junit.jupiter.api.BeforeAll;
@@ -15,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -28,6 +31,18 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @ExtendWith(SpringExtension.class)
 public class OntologyServiceIntegrationTest extends BaseUnitTest {
+
+    @MockBean
+    private UnitIdxRepository unitIdxRepository;
+
+    @MockBean
+    private ConceptIdxRepository conceptIdxRepository;
+
+    @MockBean
+    private TableIdxRepository tableIdxRepository;
+
+    @MockBean
+    private TableColumnIdxRepository tableColumnIdxRepository;
 
     @Autowired
     private OntologyService ontologyService;

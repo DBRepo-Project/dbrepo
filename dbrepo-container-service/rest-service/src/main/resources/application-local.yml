@@ -27,10 +27,10 @@ spring:
     virtual-host: dbrepo
     username: fda
     password: fda
-  elasticsearch:
-    password: elastic
-    username: elastic
-    uris: http://localhost:9200
+  opensearch:
+    username: admin
+    password: admin
+    uris: localhost:9200
 management.endpoints.web.exposure.include: health,info,prometheus
 springdoc.swagger-ui.enabled: true
 server:

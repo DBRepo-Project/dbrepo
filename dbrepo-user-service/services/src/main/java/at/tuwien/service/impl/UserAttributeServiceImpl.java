@@ -2,13 +2,12 @@ package at.tuwien.service.impl;
 
 import at.tuwien.entities.user.UserAttribute;
 import at.tuwien.exception.UserAttributeNotFoundException;
-import at.tuwien.repository.jpa.UserAttributeRepository;
+import at.tuwien.repository.mdb.UserAttributeRepository;
 import at.tuwien.service.UserAttributeService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 

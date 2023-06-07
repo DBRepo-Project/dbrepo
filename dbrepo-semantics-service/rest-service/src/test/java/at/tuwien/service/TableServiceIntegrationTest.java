@@ -7,9 +7,11 @@ import at.tuwien.entities.database.table.columns.TableColumnKey;
 import at.tuwien.exception.QueryMalformedException;
 import at.tuwien.exception.TableColumnNotFoundException;
 import at.tuwien.exception.TableNotFoundException;
-import at.tuwien.repository.jpa.OntologyRepository;
-import at.tuwien.repository.jpa.TableColumnRepository;
-import at.tuwien.repository.jpa.TableRepository;
+import at.tuwien.repository.mdb.OntologyRepository;
+import at.tuwien.repository.mdb.TableColumnRepository;
+import at.tuwien.repository.mdb.TableRepository;
+import at.tuwien.repository.sdb.*;
+import at.tuwien.repository.sdb.TableColumnIdxRepository;
 import lombok.extern.log4j.Log4j2;
 import org.apache.jena.sys.JenaSystem;
 import org.junit.jupiter.api.BeforeAll;
@@ -32,8 +34,17 @@ import static org.mockito.Mockito.when;
 @ExtendWith(SpringExtension.class)
 public class TableServiceIntegrationTest extends BaseUnitTest {
 
-    @Autowired
-    private TableService tableService;
+    @MockBean
+    private UnitIdxRepository unitIdxRepository;
+
+    @MockBean
+    private ConceptIdxRepository conceptIdxRepository;
+
+    @MockBean
+    private TableIdxRepository tableIdxRepository;
+
+    @MockBean
+    private TableColumnIdxRepository tableColumnIdxRepository;
 
     @MockBean
     private TableRepository tableRepository;
@@ -43,6 +54,9 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
 
     @MockBean
     private TableColumnRepository tableColumnRepository;
+
+    @Autowired
+    private TableService tableService;
 
     @BeforeAll
     public static void beforeAll() {

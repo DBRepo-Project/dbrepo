@@ -3,8 +3,8 @@ package at.tuwien.service;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.exception.ImageNotFoundException;
-import at.tuwien.repository.jpa.ImageRepository;
-import at.tuwien.repository.jpa.UserRepository;
+import at.tuwien.repository.mdb.ImageRepository;
+import at.tuwien.repository.mdb.UserRepository;
 import at.tuwien.service.impl.ImageServiceImpl;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,7 +15,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.transaction.UnexpectedRollbackException;
 
 import static org.junit.jupiter.api.Assertions.*;
 

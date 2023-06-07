@@ -8,7 +8,7 @@ import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.DatabaseMapper;
-import at.tuwien.repository.jpa.DatabaseAccessRepository;
+import at.tuwien.repository.mdb.DatabaseAccessRepository;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.UserService;

@@ -10,10 +10,10 @@ import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.TableMapper;
-import at.tuwien.repository.elastic.TableColumnIdxRepository;
-import at.tuwien.repository.elastic.TableIdxRepository;
-import at.tuwien.repository.jpa.TableColumnRepository;
-import at.tuwien.repository.jpa.TableRepository;
+import at.tuwien.repository.mdb.TableColumnRepository;
+import at.tuwien.repository.mdb.TableRepository;
+import at.tuwien.repository.sdb.TableColumnIdxRepository;
+import at.tuwien.repository.sdb.TableIdxRepository;
 import at.tuwien.service.*;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.log4j.Log4j2;
@@ -46,7 +46,7 @@ public class TableServiceImpl extends HibernateConnector implements TableService
     public TableServiceImpl(TableMapper tableMapper, UserService userService, SemanticService semanticService,
                             TableRepository tableRepository, DatabaseService databaseService,
                             ContainerService containerService, TableIdxRepository tableIdxRepository,
-                            TableColumnRepository tableColumnRepository,
+                            at.tuwien.repository.mdb.TableColumnRepository tableColumnRepository,
                             TableColumnIdxRepository tableColumnIdxRepository) {
         this.tableMapper = tableMapper;
         this.userService = userService;
@@ -91,7 +91,7 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         tableRepository.delete(table);
         log.info("Deleted table with id {} in metadata database", table.getId());
         tableIdxRepository.delete(tableMapper.tableToTableDto(table));
-        log.info("Deleted table with id {} in search service", table.getId());
+        log.info("Deleted table with id {} in open search database", table.getId());
     }
 
     @Override
@@ -190,13 +190,13 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         }
         /* save in metadata database */
         final Table table = tableRepository.save(entity);
-        log.info("Created table with id {}", table.getId());
-        log.trace("created table {}", table);
+        log.info("Created table with id {} in metadata database", table.getId());
         /* save in database_index - elastic search */
         tableIdxRepository.save(tableMapper.tableToTableDto(table));
+        log.info("Created table with id {} in open search database", table.getId());
         /* save in column_index - elastic search */
         tableColumnIdxRepository.saveAll(tableMapper.tableToTableDto(table).getColumns());
-        log.info("Saved table with id {} in elastic search", table.getId());
+        log.info("Saved table columns with table id {} in open search database", table.getId());
         return table;
     }
 

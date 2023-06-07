@@ -5,8 +5,8 @@ import at.tuwien.api.database.*;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.endpoints.LicenseEndpoint;
-import at.tuwien.repository.jpa.LicenseRepository;
-import at.tuwien.test.BaseTest;
+import at.tuwien.repository.mdb.LicenseRepository;
+import at.tuwien.repository.sdb.DatabaseIdxRepository;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
@@ -16,7 +16,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.List;
@@ -37,6 +36,9 @@ public class LicenseEndpointUnitTest extends BaseUnitTest {
 
     @MockBean
     private Channel channel;
+
+    @MockBean
+    private DatabaseIdxRepository databaseIdxRepository;
 
     @MockBean
     private LicenseRepository licenseRepository;

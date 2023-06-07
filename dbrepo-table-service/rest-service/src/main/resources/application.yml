@@ -25,10 +25,10 @@ spring:
     virtual-host: dbrepo
     username: "${BROKER_USERNAME}"
     password: "${BROKER_PASSWORD}"
-  elasticsearch:
-    password: "${ELASTIC_PASSWORD}"
-    username: elastic
-    uris: http://search-db:9200
+  opensearch:
+    username: "${SEARCH_USERNAME}"
+    password: "${SEARCH_PASSWORD}"
+    uris: search-db:9200
   cloud:
     loadbalancer.ribbon.enabled: false
 management.endpoints.web.exposure.include: health,info,prometheus

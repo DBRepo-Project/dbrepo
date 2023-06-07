@@ -2,11 +2,12 @@ package at.tuwien.gateway;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.query.QueryDto;
-import at.tuwien.config.IndexInitializer;
+import at.tuwien.config.IndexConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.exception.QueryNotFoundException;
 import at.tuwien.exception.RemoteUnavailableException;
-import at.tuwien.repository.jpa.UserRepository;
+import at.tuwien.repository.mdb.UserRepository;
+import at.tuwien.repository.sdb.IdentifierIdxRepository;
 import com.google.common.io.Files;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
@@ -36,10 +37,13 @@ import static org.mockito.Mockito.*;
 public class QueryServiceGatewayUnitTest extends BaseUnitTest {
 
     @MockBean
-    private IndexInitializer indexInitializer;
+    private IndexConfig indexConfig;
 
     @MockBean
     private ReadyConfig readyConfig;
+
+    @MockBean
+    private IdentifierIdxRepository identifierIdxRepository;
 
     @MockBean
     @Qualifier("restTemplate")

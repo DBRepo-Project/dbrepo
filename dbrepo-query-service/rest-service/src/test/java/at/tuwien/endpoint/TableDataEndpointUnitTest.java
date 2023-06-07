@@ -14,6 +14,7 @@ import at.tuwien.exception.*;
 import at.tuwien.gateway.BrokerServiceGateway;
 import at.tuwien.listener.MessageQueueListener;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
+import at.tuwien.repository.sdb.ViewIdxRepository;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.TableService;
@@ -53,11 +54,12 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     @MockBean
     private Channel channel;
 
-    /* keep */
+    @MockBean
+    private ViewIdxRepository viewIdxRepository;
+
     @MockBean
     private RabbitMqListenerImpl rabbitMqListener;
 
-    /* keep */
     @MockBean
     private BrokerServiceGateway brokerServiceGateway;
 

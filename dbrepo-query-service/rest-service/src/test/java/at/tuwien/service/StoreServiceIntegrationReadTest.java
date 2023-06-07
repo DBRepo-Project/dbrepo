@@ -7,9 +7,10 @@ import at.tuwien.config.ReadyConfig;
 import at.tuwien.exception.*;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.querystore.Query;
-import at.tuwien.repository.jpa.DatabaseRepository;
-import at.tuwien.repository.jpa.TableRepository;
-import at.tuwien.repository.jpa.UserRepository;
+import at.tuwien.repository.mdb.DatabaseRepository;
+import at.tuwien.repository.mdb.TableRepository;
+import at.tuwien.repository.mdb.UserRepository;
+import at.tuwien.repository.sdb.ViewIdxRepository;
 import com.rabbitmq.client.Channel;
 import at.tuwien.config.DockerConfig;
 import lombok.extern.log4j.Log4j2;
@@ -47,6 +48,9 @@ public class StoreServiceIntegrationReadTest extends BaseUnitTest {
 
     @MockBean
     private Channel channel;
+
+    @MockBean
+    private ViewIdxRepository viewIdxRepository;
 
     @MockBean
     private RabbitMqListenerImpl rabbitMqListener;

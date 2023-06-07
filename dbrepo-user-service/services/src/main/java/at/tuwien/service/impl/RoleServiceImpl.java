@@ -2,7 +2,7 @@ package at.tuwien.service.impl;
 
 import at.tuwien.entities.user.Role;
 import at.tuwien.exception.RoleNotFoundException;
-import at.tuwien.repository.jpa.RoleRepository;
+import at.tuwien.repository.mdb.RoleRepository;
 import at.tuwien.service.RoleService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -8,12 +8,12 @@ import at.tuwien.exception.AmqpException;
 import at.tuwien.exception.BrokerVirtualHostCreationException;
 import at.tuwien.exception.BrokerVirtualHostGrantException;
 import at.tuwien.gateway.BrokerServiceGateway;
-import at.tuwien.repository.jpa.DatabaseRepository;
+import at.tuwien.repository.mdb.DatabaseRepository;
+import at.tuwien.repository.sdb.DatabaseIdxRepository;
 import at.tuwien.service.impl.RabbitMqServiceImpl;
 import at.tuwien.utils.AmqpUtils;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
-import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -23,7 +23,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.security.Principal;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -39,6 +38,9 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
 
     @MockBean
     private IndexConfig indexConfig;
+
+    @MockBean
+    private DatabaseIdxRepository databaseIdxRepository;
 
     @MockBean
     private DatabaseRepository databaseRepository;

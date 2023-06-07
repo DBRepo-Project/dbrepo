@@ -34,6 +34,7 @@
         <c3p0.version>0.9.5.5</c3p0.version>
         <c3p0-hibernate.version>6.2.2.Final</c3p0-hibernate.version>
         <springdoc-openapi.version>2.1.0</springdoc-openapi.version>
+        <opensearch-client.version>1.1.0</opensearch-client.version>
     </properties>
 
     <dependencies>
@@ -120,13 +121,19 @@
             <version>${c3p0-hibernate.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.springframework.data</groupId>
-            <artifactId>spring-data-elasticsearch</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.mariadb.jdbc</groupId>
             <artifactId>mariadb-java-client</artifactId>
             <version>${mariadb.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.opensearch.client</groupId>
+            <artifactId>spring-data-opensearch</artifactId>
+            <version>${opensearch-client.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.opensearch.client</groupId>
+            <artifactId>spring-data-opensearch-starter</artifactId>
+            <version>${opensearch-client.version}</version>
         </dependency>
         <!-- SQL Parser -->
         <dependency>
@@ -148,6 +155,12 @@
             <version>${rabbit-amqp-client.version}</version>
         </dependency>
         <!-- Testing -->
+        <dependency>
+            <groupId>org.opensearch.client</groupId>
+            <artifactId>spring-data-opensearch-test-autoconfigure</artifactId>
+            <version>${opensearch-client.version}</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>

@@ -13,11 +13,11 @@ import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.AccessMapper;
-import at.tuwien.repository.jpa.*;
+import at.tuwien.repository.mdb.*;
+import at.tuwien.repository.sdb.DatabaseIdxRepository;
 import at.tuwien.service.AccessService;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +27,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.security.Principal;
@@ -48,6 +47,9 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
 
     @MockBean
     private IndexConfig indexInitializer;
+
+    @MockBean
+    private DatabaseIdxRepository databaseIdxRepository;
 
     @MockBean
     private Channel channel;

@@ -1,15 +1,16 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.api.auth.SignupRequestDto;
+import at.tuwien.api.user.UserDto;
 import at.tuwien.api.user.UserPasswordDto;
 import at.tuwien.api.user.UserThemeSetDto;
 import at.tuwien.api.user.UserUpdateDto;
 import at.tuwien.entities.user.*;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.UserMapper;
-import at.tuwien.repository.jpa.CredentialRepository;
-import at.tuwien.repository.jpa.RoleMappingRepository;
-import at.tuwien.repository.jpa.UserRepository;
+import at.tuwien.repository.mdb.CredentialRepository;
+import at.tuwien.repository.mdb.UserRepository;
+import at.tuwien.repository.sdb.UserIdxRepository;
 import at.tuwien.service.UserAttributeService;
 import at.tuwien.service.UserService;
 import lombok.extern.log4j.Log4j2;
@@ -43,19 +44,18 @@ public class UserServiceImpl implements UserService {
 
     private final UserMapper userMapper;
     private final UserRepository userRepository;
+    private final UserIdxRepository userIdxRepository;
     private final UserAttributeService userAttributeService;
     private final CredentialRepository credentialRepository;
-    private final RoleMappingRepository roleMappingRepository;
 
     @Autowired
-    public UserServiceImpl(UserMapper userMapper, UserRepository userRepository,
-                           UserAttributeService userAttributeService, CredentialRepository credentialRepository,
-                           RoleMappingRepository roleMappingRepository) {
+    public UserServiceImpl(UserMapper userMapper, UserRepository userRepository, UserIdxRepository userIdxRepository,
+                           UserAttributeService userAttributeService, CredentialRepository credentialRepository) {
         this.userMapper = userMapper;
         this.userRepository = userRepository;
+        this.userIdxRepository = userIdxRepository;
         this.userAttributeService = userAttributeService;
         this.credentialRepository = credentialRepository;
-        this.roleMappingRepository = roleMappingRepository;
     }
 
     @Override
@@ -97,11 +97,16 @@ public class UserServiceImpl implements UserService {
         final UserAttribute userAttribute3 = userAttributeService.create(userMapper.tripleToUserAttribute(user.getId(),
                 "affiliation", ""));
         credential.setUserId(user.getId());
+        /* save in metadata database */
         credential = credentialRepository.save(credential);
         user.setCredentials(List.of(credential));
         user.setAttributes(List.of(userAttribute1, userAttribute2, userAttribute3));
         user.setRoles(List.of(role));
-        log.info("Created user with id {}", user.getId());
+        log.info("Created user with id {} in metadata database", user.getId());
+        /* save in open search database */
+        final UserDto userDto = userMapper.userToUserDto(user);
+        userIdxRepository.save(userDto);
+        log.info("Created user with id {} in open search database", user.getId());
         return user;
     }
 

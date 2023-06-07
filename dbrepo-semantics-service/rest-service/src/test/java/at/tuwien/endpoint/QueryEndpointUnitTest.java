@@ -10,6 +10,8 @@ import at.tuwien.exception.FilterBadRequestException;
 import at.tuwien.exception.OntologyNotFoundException;
 import at.tuwien.exception.QueryMalformedException;
 import at.tuwien.exception.UriMalformedException;
+import at.tuwien.repository.sdb.*;
+import at.tuwien.repository.sdb.TableColumnIdxRepository;
 import at.tuwien.service.OntologyService;
 import at.tuwien.service.QueryService;
 import lombok.extern.log4j.Log4j2;
@@ -40,14 +42,26 @@ import static org.mockito.Mockito.*;
 @ExtendWith(SpringExtension.class)
 public class QueryEndpointUnitTest extends BaseUnitTest {
 
-    @Autowired
-    private QueryEndpoint queryEndpoint;
-
     @MockBean
     private QueryService queryService;
 
     @MockBean
     private OntologyService ontologyService;
+
+    @MockBean
+    private UnitIdxRepository unitIdxRepository;
+
+    @MockBean
+    private ConceptIdxRepository conceptIdxRepository;
+
+    @MockBean
+    private TableIdxRepository tableIdxRepository;
+
+    @MockBean
+    private TableColumnIdxRepository tableColumnIdxRepository;
+
+    @Autowired
+    private QueryEndpoint queryEndpoint;
 
     @BeforeAll
     public static void beforeAll() {

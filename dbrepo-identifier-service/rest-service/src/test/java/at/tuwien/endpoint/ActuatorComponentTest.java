@@ -1,7 +1,8 @@
 package at.tuwien.endpoint;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.config.IndexInitializer;
+import at.tuwien.config.IndexConfig;
+import at.tuwien.repository.sdb.IdentifierIdxRepository;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,11 +23,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 public class ActuatorComponentTest extends BaseUnitTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+    @MockBean
+    private IndexConfig indexConfig;
 
     @MockBean
-    private IndexInitializer indexConfig;
+    private IdentifierIdxRepository identifierIdxRepository;
+
+    @Autowired
+    private MockMvc mockMvc;
 
     @Test
     public void actuatorInfo_succeeds() throws Exception {

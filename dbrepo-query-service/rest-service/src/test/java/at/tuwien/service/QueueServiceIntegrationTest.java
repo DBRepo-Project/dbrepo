@@ -7,10 +7,10 @@ import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.config.*;
 import at.tuwien.exception.AmqpException;
 import at.tuwien.gateway.BrokerServiceGateway;
-import at.tuwien.listener.MessageQueueListener;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
-import at.tuwien.repository.jpa.DatabaseRepository;
-import at.tuwien.repository.jpa.TableRepository;
+import at.tuwien.repository.mdb.DatabaseRepository;
+import at.tuwien.repository.mdb.TableRepository;
+import at.tuwien.repository.sdb.ViewIdxRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.*;
 import lombok.extern.log4j.Log4j2;
@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeoutException;
-import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -51,7 +50,10 @@ public class QueueServiceIntegrationTest extends BaseUnitTest {
     private TableRepository tableRepository;
 
     @MockBean
-    private IndexConfig indexInitializer;
+    private ViewIdxRepository viewIdxRepository;
+
+    @MockBean
+    private IndexConfig indexConfig;
 
     @MockBean
     private RabbitMqConsumer rabbitMqConsumer;

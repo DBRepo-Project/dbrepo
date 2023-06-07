@@ -1,5 +1,7 @@
 app.version: '@project.version@'
 spring:
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchRestClientAutoConfiguration, org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration
   main.banner-mode: off
   datasource:
     url: "jdbc:mariadb://metadata-db:3306/${METADATA_DB}"
@@ -27,10 +29,10 @@ spring:
     virtual-host: dbrepo
     username: "${BROKER_USERNAME}"
     password: "${BROKER_PASSWORD}"
-  elasticsearch:
-    password: "${ELASTIC_PASSWORD}"
-    username: "${ELASTIC_USERNAME}"
-    uris: http://search-db:9200
+  opensearch:
+    username: "${SEARCH_USERNAME}"
+    password: "${SEARCH_PASSWORD}"
+    uris: search-db:9200
 management.endpoints.web.exposure.include: health,info,prometheus
 springdoc.swagger-ui.enabled: true
 server:

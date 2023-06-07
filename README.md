@@ -40,7 +40,7 @@ $ docker-compose build --parallel
 
 A more detailed description on how
 to get started is available at our documentation
-website: [https://dbrepo-docs.ossdip.at/getting-started/](https://dbrepo-docs.ossdip.at/getting-started/)
+website: [https://www.ifs.tuwien.ac.at/infrastructures/dbrepo//getting-started/](https://www.ifs.tuwien.ac.at/infrastructures/dbrepo//getting-started/)
 
 ### Run
 

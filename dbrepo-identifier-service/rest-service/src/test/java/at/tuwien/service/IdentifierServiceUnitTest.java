@@ -3,13 +3,12 @@ package at.tuwien.service;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.identifier.IdentifierDto;
-import at.tuwien.api.identifier.IdentifierUpdateDto;
-import at.tuwien.config.IndexInitializer;
+import at.tuwien.config.IndexConfig;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.identifier.IdentifierType;
 import at.tuwien.exception.*;
-import at.tuwien.repository.elastic.IdentifierIdxRepository;
-import at.tuwien.repository.jpa.IdentifierRepository;
+import at.tuwien.repository.sdb.IdentifierIdxRepository;
+import at.tuwien.repository.mdb.IdentifierRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +38,7 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
     private IdentifierRepository identifierRepository;
 
     @MockBean
-    private IndexInitializer indexInitializer;
+    private IndexConfig indexInitializer;
 
     @MockBean
     private IdentifierIdxRepository identifierIdxRepository;

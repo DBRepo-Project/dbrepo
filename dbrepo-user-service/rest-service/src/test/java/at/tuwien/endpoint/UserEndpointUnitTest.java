@@ -4,10 +4,12 @@ import at.tuwien.BaseUnitTest;
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.user.*;
 import at.tuwien.config.AuthenticationConfig;
+import at.tuwien.config.IndexConfig;
 import at.tuwien.entities.user.Realm;
 import at.tuwien.entities.user.Role;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
+import at.tuwien.repository.sdb.UserIdxRepository;
 import at.tuwien.service.RealmService;
 import at.tuwien.service.RoleService;
 import at.tuwien.service.UserService;
@@ -39,6 +41,12 @@ import static org.mockito.Mockito.*;
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 public class UserEndpointUnitTest extends BaseUnitTest {
+
+    @MockBean
+    private IndexConfig indexConfig;
+
+    @MockBean
+    private UserIdxRepository userIdxRepository;
 
     @MockBean
     private UserService userService;

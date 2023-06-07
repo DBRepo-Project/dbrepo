@@ -7,7 +7,8 @@ import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.DatabaseMapper;
-import at.tuwien.repository.jpa.*;
+import at.tuwien.repository.mdb.*;
+import at.tuwien.repository.sdb.DatabaseIdxRepository;
 import at.tuwien.service.impl.HibernateConnector;
 import at.tuwien.service.impl.QueryStoreServiceImpl;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
@@ -36,6 +37,9 @@ public class QueryStoreServiceIntegrationTest extends BaseUnitTest {
 
     @MockBean
     private IndexConfig indexConfig;
+
+    @MockBean
+    private DatabaseIdxRepository databaseIdxRepository;
 
     @MockBean
     private Channel channel;

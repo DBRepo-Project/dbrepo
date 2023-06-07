@@ -1,15 +1,12 @@
 package at.tuwien.mapper;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.api.database.AccessTypeDto;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.config.ReadyConfig;
-import at.tuwien.exception.NotAllowedException;
-import at.tuwien.repository.elastic.TableColumnIdxRepository;
-import at.tuwien.repository.elastic.TableIdxRepository;
+import at.tuwien.repository.sdb.TableColumnIdxRepository;
+import at.tuwien.repository.sdb.TableIdxRepository;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;

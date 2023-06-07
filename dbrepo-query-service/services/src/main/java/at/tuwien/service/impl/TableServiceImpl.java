@@ -7,7 +7,7 @@ import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.DatabaseMapper;
 import at.tuwien.mapper.QueryMapper;
-import at.tuwien.repository.jpa.TableRepository;
+import at.tuwien.repository.mdb.TableRepository;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.TableService;
 import com.mchange.v2.c3p0.ComboPooledDataSource;

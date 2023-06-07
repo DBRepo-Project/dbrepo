@@ -1,10 +1,9 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.config.H2Utils;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.exception.IdentifierNotFoundException;
-import at.tuwien.repository.jpa.*;
+import at.tuwien.repository.mdb.*;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

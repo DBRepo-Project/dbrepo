@@ -5,12 +5,13 @@ import at.tuwien.api.identifier.BibliographyTypeDto;
 import at.tuwien.api.identifier.CreatorDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.identifier.IdentifierUpdateDto;
-import at.tuwien.config.IndexInitializer;
+import at.tuwien.config.IndexConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.endpoints.PersistenceEndpoint;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
+import at.tuwien.repository.sdb.IdentifierIdxRepository;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.IdentifierService;
 import at.tuwien.service.UserService;
@@ -54,7 +55,10 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     private ReadyConfig readyConfig;
 
     @MockBean
-    private IndexInitializer indexInitializer;
+    private IndexConfig indexConfig;
+
+    @MockBean
+    private IdentifierIdxRepository identifierIdxRepository;
 
     @MockBean
     private AccessService accessService;

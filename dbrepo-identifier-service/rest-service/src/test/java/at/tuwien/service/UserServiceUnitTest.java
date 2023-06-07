@@ -1,10 +1,11 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.config.IndexInitializer;
+import at.tuwien.config.IndexConfig;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
-import at.tuwien.repository.jpa.UserRepository;
+import at.tuwien.repository.mdb.UserRepository;
+import at.tuwien.repository.sdb.IdentifierIdxRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +24,10 @@ import static org.mockito.Mockito.when;
 public class UserServiceUnitTest extends BaseUnitTest {
 
     @MockBean
-    private IndexInitializer indexInitializer;
+    private IndexConfig indexConfig;
+
+    @MockBean
+    private IdentifierIdxRepository identifierIdxRepository;
 
     @MockBean
     private UserRepository userRepository;

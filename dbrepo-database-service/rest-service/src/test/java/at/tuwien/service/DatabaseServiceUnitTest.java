@@ -8,11 +8,11 @@ import at.tuwien.entities.container.Container;
 import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
-import at.tuwien.repository.jpa.ContainerRepository;
-import at.tuwien.repository.jpa.DatabaseRepository;
+import at.tuwien.repository.mdb.ContainerRepository;
+import at.tuwien.repository.mdb.DatabaseRepository;
+import at.tuwien.repository.sdb.DatabaseIdxRepository;
 import at.tuwien.service.impl.MariaDbServiceImpl;
 import at.tuwien.service.impl.RabbitMqServiceImpl;
-import at.tuwien.test.BaseTest;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
@@ -41,6 +41,9 @@ public class DatabaseServiceUnitTest extends BaseUnitTest {
 
     @MockBean
     private Channel channel;
+
+    @MockBean
+    private DatabaseIdxRepository databaseIdxRepository;
 
     @MockBean
     private RabbitMqServiceImpl rabbitMqService;

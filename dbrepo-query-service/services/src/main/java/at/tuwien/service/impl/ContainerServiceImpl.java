@@ -2,7 +2,7 @@ package at.tuwien.service.impl;
 
 import at.tuwien.entities.container.Container;
 import at.tuwien.exception.ContainerNotFoundException;
-import at.tuwien.repository.jpa.ContainerRepository;
+import at.tuwien.repository.mdb.ContainerRepository;
 import at.tuwien.service.ContainerService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;

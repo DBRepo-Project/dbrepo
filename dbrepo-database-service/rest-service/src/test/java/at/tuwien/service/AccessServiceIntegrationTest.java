@@ -5,15 +5,13 @@ import at.tuwien.api.database.AccessTypeDto;
 import at.tuwien.api.database.DatabaseGiveAccessDto;
 import at.tuwien.api.database.DatabaseModifyAccessDto;
 import at.tuwien.config.DockerConfig;
-import at.tuwien.config.H2Utils;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.database.AccessType;
-import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
-import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
-import at.tuwien.repository.jpa.*;
+import at.tuwien.repository.mdb.*;
+import at.tuwien.repository.sdb.DatabaseIdxRepository;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.*;
@@ -49,6 +47,9 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
 
     @MockBean
     private Channel channel;
+
+    @MockBean
+    private DatabaseIdxRepository databaseIdxRepository;
 
     @Autowired
     private ImageRepository imageRepository;

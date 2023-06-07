@@ -8,10 +8,10 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.BrokerServiceGateway;
-import at.tuwien.listener.MessageQueueListener;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
-import at.tuwien.repository.jpa.DatabaseAccessRepository;
-import at.tuwien.repository.jpa.TableRepository;
+import at.tuwien.repository.mdb.DatabaseAccessRepository;
+import at.tuwien.repository.mdb.TableRepository;
+import at.tuwien.repository.sdb.ViewIdxRepository;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.QueryService;
 import com.rabbitmq.client.Channel;
@@ -20,7 +20,6 @@ import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.InputStreamResource;
@@ -29,7 +28,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
 import java.io.IOException;
@@ -53,7 +51,10 @@ public class ExportEndpointUnitTest extends BaseUnitTest {
     private Channel channel;
 
     @MockBean
-    private IndexConfig indexInitializer;
+    private IndexConfig indexConfig;
+
+    @MockBean
+    private ViewIdxRepository viewIdxRepository;
 
     @MockBean
     private RabbitMqListenerImpl rabbitMqListener;
