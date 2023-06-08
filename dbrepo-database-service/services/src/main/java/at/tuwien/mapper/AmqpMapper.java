@@ -1,6 +1,5 @@
 package at.tuwien.mapper;
 
-import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
 import at.tuwien.entities.database.Database;
 import org.mapstruct.Mapper;
 
@@ -12,7 +11,7 @@ public interface AmqpMapper {
 
     org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(AmqpMapper.class);
 
-    default GrantVirtualHostPermissionsDto databasesToGrantVirtualHostPermissionsDto(List<Database> databases) {
+    default String databaseListToPermissionString(List<Database> databases) {
         final String permissions;
         if (databases.size() == 0) {
             permissions = "";
@@ -21,12 +20,8 @@ public interface AmqpMapper {
                     .map(Database::getExchangeName)
                     .collect(Collectors.joining("|")) + ")$";
         }
-        log.trace("mapped database count {} to permissions '{}'", databases.size(), permissions);
-        return GrantVirtualHostPermissionsDto.builder()
-                .configure("")
-                .write(permissions)
-                .read(permissions)
-                .build();
+        log.trace("mapped databases {} to permissions '{}'", databases.stream().map(Database::getId).toList(), permissions);
+        return permissions;
     }
 
 }

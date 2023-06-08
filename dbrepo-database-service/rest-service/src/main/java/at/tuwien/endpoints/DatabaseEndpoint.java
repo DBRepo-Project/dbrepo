@@ -157,7 +157,7 @@ public class DatabaseEndpoint {
         final Database database = databaseService.create(containerId, createDto, principal);
         messageQueueService.createUser(user);
         messageQueueService.createExchange(database, principal);
-        messageQueueService.updatePermissions(principal);
+        messageQueueService.updatePermissions(principal.getName());
         queryStoreService.create(containerId, database.getId(), principal);
         databaseAccessRepository.save(databaseMapper.defaultCreatorAccess(database, user));
         final DatabaseBriefDto dto = databaseMapper.databaseToDatabaseBriefDto(database);
@@ -347,7 +347,7 @@ public class DatabaseEndpoint {
         final Database database = databaseService.findById(containerId, databaseId);
         messageQueueService.deleteExchange(database);
         databaseService.delete(containerId, databaseId, principal);
-        messageQueueService.updatePermissions(principal);
+        messageQueueService.updatePermissions(principal.getName());
         return ResponseEntity.accepted()
                 .build();
     }

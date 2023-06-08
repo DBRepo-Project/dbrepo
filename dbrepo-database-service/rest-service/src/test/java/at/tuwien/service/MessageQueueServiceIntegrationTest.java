@@ -1,6 +1,7 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
+import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
 import at.tuwien.config.DockerConfig;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.config.ReadyConfig;
@@ -8,7 +9,7 @@ import at.tuwien.exception.AmqpException;
 import at.tuwien.exception.BrokerVirtualHostCreationException;
 import at.tuwien.exception.BrokerVirtualHostGrantException;
 import at.tuwien.gateway.BrokerServiceGateway;
-import at.tuwien.repository.mdb.DatabaseRepository;
+import at.tuwien.repository.mdb.*;
 import at.tuwien.repository.sdb.DatabaseIdxRepository;
 import at.tuwien.service.impl.RabbitMqServiceImpl;
 import at.tuwien.utils.AmqpUtils;
@@ -44,6 +45,9 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
 
     @MockBean
     private DatabaseRepository databaseRepository;
+
+    @MockBean
+    private DatabaseAccessRepository databaseAccessRepository;
 
     @MockBean
     private BrokerServiceGateway brokerServiceGateway;
@@ -98,12 +102,27 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
     @Test
     public void updatePermissions_succeeds() throws BrokerVirtualHostGrantException {
 
+        /* mock */
+        when(databaseRepository.findConfigureAccess(USER_1_USERNAME))
+                .thenReturn(List.of(DATABASE_1));
+        when(databaseRepository.findWriteAccess(USER_1_USERNAME))
+                .thenReturn(List.of(DATABASE_1, DATABASE_2));
+        when(databaseRepository.findReadAccess(USER_1_USERNAME))
+                .thenReturn(List.of(DATABASE_1, DATABASE_2, DATABASE_3));
+
         /* test */
-        messageQueueService.updatePermissions(USER_1_PRINCIPAL);
+        final GrantVirtualHostPermissionsDto response = messageQueueService.updatePermissions(USER_1_USERNAME);
+        assertTrue(response.getConfigure().contains(DATABASE_1_EXCHANGE));
+        assertTrue(response.getWrite().contains(DATABASE_1_EXCHANGE));
+        assertTrue(response.getWrite().contains(DATABASE_2_EXCHANGE));
+        assertTrue(response.getRead().contains(DATABASE_1_EXCHANGE));
+        assertTrue(response.getRead().contains(DATABASE_2_EXCHANGE));
+        assertTrue(response.getRead().contains(DATABASE_3_EXCHANGE));
     }
 
     @Test
-    public void init_succeeds() throws AmqpException {
+    public void init_succeeds() throws AmqpException, BrokerVirtualHostGrantException,
+            BrokerVirtualHostCreationException {
 
         /* mock */
         when(databaseRepository.findAll())

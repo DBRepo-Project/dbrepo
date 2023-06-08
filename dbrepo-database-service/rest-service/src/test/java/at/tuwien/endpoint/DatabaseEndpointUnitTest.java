@@ -88,7 +88,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            create_generic(CONTAINER_1_ID, CONTAINER_1, DATABASE_1_ID, null, request, null);
+            create_generic(CONTAINER_1_ID, DATABASE_1_ID, null, request, null,  null);
         });
     }
 
@@ -106,7 +106,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            create_generic(CONTAINER_3_ID, CONTAINER_3, DATABASE_3_ID, null, request, USER_4_PRINCIPAL);
+            create_generic(CONTAINER_3_ID, DATABASE_3_ID, null, request, USER_4_USERNAME, USER_4_PRINCIPAL);
         });
     }
 
@@ -126,7 +126,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            create_generic(CONTAINER_1_ID, CONTAINER_1, DATABASE_1_ID, null, request, USER_2_PRINCIPAL);
+            create_generic(CONTAINER_1_ID, DATABASE_1_ID, null, request, USER_2_USERNAME, USER_2_PRINCIPAL);
         });
     }
 
@@ -156,7 +156,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
                 .createExchange(DATABASE_1, USER_1_PRINCIPAL);
         doNothing()
                 .when(messageQueueService)
-                .updatePermissions(USER_1_PRINCIPAL);
+                .updatePermissions(USER_1_USERNAME);
         doNothing()
                 .when(queryStoreService)
                 .create(CONTAINER_1_ID, DATABASE_1_ID, USER_1_PRINCIPAL);
@@ -164,7 +164,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(DATABASE_1_USER_1_WRITE_ALL_ACCESS);
 
         /* test */
-        create_generic(CONTAINER_1_ID, CONTAINER_1, DATABASE_1_ID, null, request, USER_1_PRINCIPAL);
+        create_generic(CONTAINER_1_ID, DATABASE_1_ID, null, request, USER_1_USERNAME, USER_1_PRINCIPAL);
     }
 
     @Test
@@ -451,8 +451,8 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
         assertEquals(databases.size(), body.size());
     }
 
-    public void create_generic(Long containerId, Container container, Long databaseId, Database database,
-                               DatabaseCreateDto data, Principal principal) throws UserNotFoundException,
+    public void create_generic(Long containerId, Long databaseId, Database database, DatabaseCreateDto data,
+                               String username, Principal principal) throws UserNotFoundException,
             DatabaseNameExistsException, NotAllowedException, ContainerConnectionException, DatabaseMalformedException,
             QueryStoreException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException,
             ImageNotSupportedException, AmqpException, BrokerVirtualHostCreationException, ContainerNotFoundException, BrokerVirtualHostGrantException {
@@ -466,7 +466,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
                 .create(containerId, databaseId, principal);
         doNothing()
                 .when(messageQueueService)
-                .updatePermissions(principal);
+                .updatePermissions(username);
         when(databaseAccessRepository.save(any(DatabaseAccess.class)))
                 .thenReturn(DATABASE_1_USER_1_WRITE_ALL_ACCESS);
 

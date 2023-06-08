@@ -8,23 +8,22 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 public interface DatabaseRepository extends JpaRepository<Database, Long> {
 
-    @Query("select d from Database d where d.owner.username = :username")
-    List<Database> findAllByUsername(@Param("username") String username);
+    List<Database> findReadAccess(String username);
+
+    List<Database> findWriteAccess(String username);
+
+    List<Database> findConfigureAccess(String username);
 
     @Query("select d from Database d where d.container.id = :containerId")
     List<Database> findAll(@Param("containerId") Long containerId);
 
-    @Query("select d from Database d where d.container.id = :containerId and d.id = :databaseId and (d.isPublic = " +
-            "true or d.owner.username = " +
-            ":username)")
-    Optional<Database> findPublicOrMine(@Param("containerId") Long containerId, @Param("databaseId") Long databaseId,
-                                        @Param("username") String username);
+    Optional<Database> findPublicOrMine(Long containerId, Long databaseId, String username);
 
-    @Query("select d from Database d where d.container.id = :containerId and d.isPublic = true and d.id = :databaseId")
-    Optional<Database> findPublic(@Param("containerId") Long containerId, @Param("databaseId") Long databaseId);
+    Optional<Database> findPublic(Long containerId, Long databaseId);
 
 }

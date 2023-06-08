@@ -4,6 +4,8 @@ import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.user.User;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
 import lombok.*;
 import org.hibernate.annotations.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -27,6 +29,13 @@ import java.util.UUID;
 @EntityListeners(AuditingEntityListener.class)
 @jakarta.persistence.Table(name = "mdb_databases", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"id", "internalName"})
+})
+@NamedQueries({
+        @NamedQuery(name = "Database.findReadAccess", query = "select d from Database  d join DatabaseAccess a on a.hdbid = d.id where d.owner.username = ?1"),
+        @NamedQuery(name = "Database.findWriteAccess", query = "select d from Database  d join DatabaseAccess a on a.hdbid = d.id where d.owner.username = ?1 and (a.type = 'WRITE_OWN' or a.type = 'WRITE_ALL')"),
+        @NamedQuery(name = "Database.findConfigureAccess", query = "select d from Database  d where d.owner.username = ?1"),
+        @NamedQuery(name = "Database.findPublicOrMine", query = "select d from Database d where d.container.id = ?1 and d.id = ?2 and (d.isPublic = true or d.owner.username = ?3)"),
+        @NamedQuery(name = "Database.findPublic", query = "select d from Database d where d.container.id = ?1 and d.isPublic = true and d.id = ?2"),
 })
 public class Database implements Serializable {
 
