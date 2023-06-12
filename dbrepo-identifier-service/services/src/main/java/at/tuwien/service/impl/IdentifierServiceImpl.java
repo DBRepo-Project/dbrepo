@@ -1,7 +1,10 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.api.database.query.QueryDto;
-import at.tuwien.api.identifier.*;
+import at.tuwien.api.identifier.BibliographyTypeDto;
+import at.tuwien.api.identifier.IdentifierCreateDto;
+import at.tuwien.api.identifier.IdentifierTypeDto;
+import at.tuwien.api.identifier.IdentifierUpdateDto;
 import at.tuwien.config.EndpointConfig;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.identifier.Creator;
@@ -117,7 +120,7 @@ public class IdentifierServiceImpl implements IdentifierService {
         tmp.setCreators(List.of());
         if (data.getType().equals(IdentifierTypeDto.SUBSET)) {
             log.debug("identifier describes a subset");
-            final QueryDto query = queryServiceGateway.find(data.getCid(), data.getDbid(), data, authorization);
+            final QueryDto query = queryServiceGateway.find(data.getDbid(), data, authorization);
             tmp.setQuery(query.getQuery());
             tmp.setQueryId(query.getId());
             tmp.setQueryNormalized(query.getQueryNormalized());
@@ -241,8 +244,7 @@ public class IdentifierServiceImpl implements IdentifierService {
             throw new IdentifierRequestException("Failed to find identifier");
         }
         /* subset */
-        final byte[] file = queryServiceGateway.export(identifier.getContainerId(),
-                identifier.getDatabaseId(), identifier.getQueryId());
+        final byte[] file = queryServiceGateway.export(identifier.getDatabaseId(), identifier.getQueryId());
         final InputStreamResource resource = new InputStreamResource(new ByteArrayInputStream(file));
         log.trace("found resource {}", resource);
         return resource;

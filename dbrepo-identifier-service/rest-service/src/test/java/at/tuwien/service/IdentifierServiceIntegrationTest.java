@@ -95,7 +95,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
         /* mock */
         when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(QueryDto.class)))
                 .thenReturn(ResponseEntity.ok(QUERY_2_DTO));
-        when(queryServiceGateway.find(CONTAINER_2_ID, DATABASE_2_ID, IDENTIFIER_2_DTO_REQUEST, bearer))
+        when(queryServiceGateway.find(DATABASE_2_ID, IDENTIFIER_2_DTO_REQUEST, bearer))
                 .thenReturn(QUERY_2_DTO);
         when(identifierIdxRepository.save(any(IdentifierDto.class)))
                 .thenReturn(IDENTIFIER_2_DTO);
@@ -107,7 +107,6 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
         assertEquals(IDENTIFIER_2_DESCRIPTION, response.getDescription());
         assertEquals(IDENTIFIER_2_DOI, response.getDoi());
         assertEquals(IDENTIFIER_2_PUBLISHER, response.getPublisher());
-        assertEquals(IDENTIFIER_2_CONTAINER_ID, response.getContainerId());
         assertEquals(IDENTIFIER_2_DATABASE_ID, response.getDatabaseId());
         assertNull(response.getLanguage());
         assertEquals(IDENTIFIER_2_PUBLICATION_YEAR, response.getPublicationYear());

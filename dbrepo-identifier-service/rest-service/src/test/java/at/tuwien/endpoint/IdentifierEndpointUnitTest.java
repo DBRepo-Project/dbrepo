@@ -152,7 +152,7 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
         final ResponseEntity<?> response = generic_find(null, null);
         assertEquals(HttpStatus.MOVED_PERMANENTLY, response.getStatusCode());
         assertNotNull(response.getHeaders().get("Location"));
-        assertEquals(endpointConfig.getWebsiteUrl() + "/container/" + IDENTIFIER_1_CONTAINER_ID + "/database/"
+        assertEquals(endpointConfig.getWebsiteUrl() + "/database/"
                 + IDENTIFIER_1_DATABASE_ID, response.getHeaders().getFirst("Location"));
     }
 
@@ -162,7 +162,7 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            generic_create(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, null, IDENTIFIER_1_DTO_REQUEST, null, null, null, null, null);
+            generic_create(DATABASE_1_ID, DATABASE_1, null, IDENTIFIER_1_DTO_REQUEST, null, null, null, null, null);
         });
     }
 
@@ -177,7 +177,7 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(Optional.of(DATABASE_1_USER_1_READ_ACCESS));
 
         /* test */
-        generic_create(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, DATABASE_1_USER_1_READ_ACCESS, IDENTIFIER_1_DTO_REQUEST, IDENTIFIER_1, USER_1_PRINCIPAL, USER_1_ID, USER_1_USERNAME, USER_1);
+        generic_create(DATABASE_1_ID, DATABASE_1, DATABASE_1_USER_1_READ_ACCESS, IDENTIFIER_1_DTO_REQUEST, IDENTIFIER_1, USER_1_PRINCIPAL, USER_1_ID, USER_1_USERNAME, USER_1);
     }
 
     @Test
@@ -186,7 +186,7 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            generic_create(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, null, IDENTIFIER_1_DTO_REQUEST, IDENTIFIER_1, USER_1_PRINCIPAL, USER_1_ID, USER_1_USERNAME, USER_1);
+            generic_create(DATABASE_1_ID, DATABASE_1, null, IDENTIFIER_1_DTO_REQUEST, IDENTIFIER_1, USER_1_PRINCIPAL, USER_1_ID, USER_1_USERNAME, USER_1);
         });
     }
 
@@ -196,7 +196,7 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            generic_create(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, null, IDENTIFIER_2_DTO_REQUEST, IDENTIFIER_2, null, null, null, null);
+            generic_create(DATABASE_2_ID, DATABASE_2, null, IDENTIFIER_2_DTO_REQUEST, IDENTIFIER_2, null, null, null, null);
         });
     }
 
@@ -208,7 +208,7 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
             at.tuwien.exception.AccessDeniedException {
 
         /* test */
-        generic_create(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, DATABASE_2_USER_1_READ_ACCESS, IDENTIFIER_2_DTO_REQUEST, IDENTIFIER_2, USER_2_PRINCIPAL, USER_2_ID, USER_2_USERNAME, USER_2);
+        generic_create(DATABASE_2_ID, DATABASE_2, DATABASE_2_USER_1_READ_ACCESS, IDENTIFIER_2_DTO_REQUEST, IDENTIFIER_2, USER_2_PRINCIPAL, USER_2_ID, USER_2_USERNAME, USER_2);
     }
 
     @Test
@@ -216,7 +216,6 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
     public void create_invalidSubset_fails() {
         final IdentifierCreateDto request = IdentifierCreateDto.builder()
                 .qid(null)  // <--
-                .cid(IDENTIFIER_1_CONTAINER_ID)
                 .dbid(IDENTIFIER_1_DATABASE_ID)
                 .description(IDENTIFIER_1_DESCRIPTION)
                 .title(IDENTIFIER_1_TITLE)
@@ -230,7 +229,7 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(IdentifierRequestException.class, () -> {
-            generic_create(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, DATABASE_1_USER_1_READ_ACCESS, request, null, USER_1_PRINCIPAL, USER_1_ID, USER_1_USERNAME, USER_1);
+            generic_create(DATABASE_1_ID, DATABASE_1, DATABASE_1_USER_1_READ_ACCESS, request, null, USER_1_PRINCIPAL, USER_1_ID, USER_1_USERNAME, USER_1);
         });
     }
 
@@ -239,7 +238,6 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
     public void create_invalidDatabase_fails() {
         final IdentifierCreateDto request = IdentifierCreateDto.builder()
                 .qid(IDENTIFIER_1_QUERY_ID) // <--
-                .cid(IDENTIFIER_1_CONTAINER_ID)
                 .dbid(IDENTIFIER_1_DATABASE_ID)
                 .description(IDENTIFIER_1_DESCRIPTION)
                 .title(IDENTIFIER_1_TITLE)
@@ -254,7 +252,7 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(IdentifierRequestException.class, () -> {
-            generic_create(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, DATABASE_1_USER_1_READ_ACCESS, request, null, USER_1_PRINCIPAL, USER_1_ID, USER_1_USERNAME, USER_1);
+            generic_create(DATABASE_1_ID, DATABASE_1, DATABASE_1_USER_1_READ_ACCESS, request, null, USER_1_PRINCIPAL, USER_1_ID, USER_1_USERNAME, USER_1);
         });
     }
 
@@ -264,7 +262,7 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            generic_create(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, null, IDENTIFIER_2_DTO_REQUEST, IDENTIFIER_2, USER_1_PRINCIPAL, USER_1_ID, USER_1_USERNAME, USER_1);
+            generic_create(DATABASE_2_ID, DATABASE_2, null, IDENTIFIER_2_DTO_REQUEST, IDENTIFIER_2, USER_1_PRINCIPAL, USER_1_ID, USER_1_USERNAME, USER_1);
         });
     }
 
@@ -272,7 +270,7 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
 
-    protected void generic_create(Long containerId, Long databaseId, Database database, DatabaseAccess access,
+    protected void generic_create(Long databaseId, Database database, DatabaseAccess access,
                                   IdentifierCreateDto data, Identifier identifier, Principal principal, UUID userId,
                                   String username, User user) throws QueryNotFoundException, RemoteUnavailableException,
             IdentifierAlreadyExistsException, UserNotFoundException, DatabaseNotFoundException,
@@ -297,7 +295,7 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
                     .when(accessService)
                     .find(databaseId, userId);
         }
-        when(queryServiceGateway.find(containerId, databaseId, data, "ABC"))
+        when(queryServiceGateway.find(databaseId, data, "ABC"))
                 .thenReturn(QUERY_1_DTO);
         when(identifierService.create(data, principal, "ABC"))
                 .thenReturn(identifier);

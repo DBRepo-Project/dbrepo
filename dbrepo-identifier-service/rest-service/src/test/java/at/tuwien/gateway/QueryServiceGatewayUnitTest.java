@@ -65,7 +65,7 @@ public class QueryServiceGatewayUnitTest extends BaseUnitTest {
                 .thenReturn(mock);
 
         /* test */
-        final QueryDto response = queryServiceGateway.find(CONTAINER_1_ID, DATABASE_1_ID, IDENTIFIER_1_DTO_REQUEST, null);
+        final QueryDto response = queryServiceGateway.find(DATABASE_1_ID, IDENTIFIER_1_DTO_REQUEST, null);
         assertNotNull(response);
         assertEquals(QUERY_1_ID, response.getId());
     }
@@ -81,7 +81,7 @@ public class QueryServiceGatewayUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(QueryNotFoundException.class, () -> {
-            queryServiceGateway.find(CONTAINER_1_ID, DATABASE_1_ID, IDENTIFIER_1_DTO_REQUEST, null);
+            queryServiceGateway.find(DATABASE_1_ID, IDENTIFIER_1_DTO_REQUEST, null);
         });
     }
 
@@ -97,7 +97,7 @@ public class QueryServiceGatewayUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(RemoteUnavailableException.class, () -> {
-            queryServiceGateway.find(CONTAINER_1_ID, DATABASE_1_ID, IDENTIFIER_1_DTO_REQUEST, null);
+            queryServiceGateway.find(DATABASE_1_ID, IDENTIFIER_1_DTO_REQUEST, null);
         });
     }
 
@@ -112,7 +112,7 @@ public class QueryServiceGatewayUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(RemoteUnavailableException.class, () -> {
-            queryServiceGateway.find(CONTAINER_1_ID, DATABASE_1_ID, IDENTIFIER_1_DTO_REQUEST, null);
+            queryServiceGateway.find(DATABASE_1_ID, IDENTIFIER_1_DTO_REQUEST, null);
         });
     }
 
@@ -127,7 +127,7 @@ public class QueryServiceGatewayUnitTest extends BaseUnitTest {
                 .thenReturn(mock);
 
         /* test */
-        final byte[] response = queryServiceGateway.export(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID);
+        final byte[] response = queryServiceGateway.export(DATABASE_1_ID, QUERY_1_ID);
         assertNotNull(response);
         assertEquals(bytes, response);
     }
@@ -143,7 +143,7 @@ public class QueryServiceGatewayUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(QueryNotFoundException.class, () -> {
-            queryServiceGateway.export(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID);
+            queryServiceGateway.export(DATABASE_1_ID, QUERY_1_ID);
         });
     }
 
@@ -158,7 +158,7 @@ public class QueryServiceGatewayUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(RemoteUnavailableException.class, () -> {
-            queryServiceGateway.export(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID);
+            queryServiceGateway.export(DATABASE_1_ID, QUERY_1_ID);
         });
     }
 
@@ -172,7 +172,7 @@ public class QueryServiceGatewayUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(RemoteUnavailableException.class, () -> {
-            queryServiceGateway.export(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID);
+            queryServiceGateway.export(DATABASE_1_ID, QUERY_1_ID);
         });
     }
 
