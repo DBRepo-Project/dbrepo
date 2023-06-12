@@ -4,8 +4,10 @@ import at.tuwien.api.amqp.CreateVirtualHostDto;
 import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.container.ContainerDto;
-import at.tuwien.api.container.ContainerStateDto;
-import at.tuwien.api.container.image.*;
+import at.tuwien.api.container.image.ImageBriefDto;
+import at.tuwien.api.container.image.ImageCreateDto;
+import at.tuwien.api.container.image.ImageDateDto;
+import at.tuwien.api.container.image.ImageDto;
 import at.tuwien.api.database.DatabaseCreateDto;
 import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.LicenseDto;
@@ -27,9 +29,14 @@ import at.tuwien.api.maintenance.BannerMessageUpdateDto;
 import at.tuwien.api.semantics.OntologyCreateDto;
 import at.tuwien.api.semantics.OntologyModifyDto;
 import at.tuwien.api.user.*;
+import at.tuwien.entities.container.Container;
+import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.entities.container.image.ContainerImageDate;
 import at.tuwien.entities.database.*;
+import at.tuwien.entities.database.table.Table;
+import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.database.table.columns.TableColumnConcept;
+import at.tuwien.entities.database.table.columns.TableColumnType;
 import at.tuwien.entities.database.table.columns.TableColumnUnit;
 import at.tuwien.entities.database.table.constraints.Constraints;
 import at.tuwien.entities.database.table.constraints.foreignKey.ForeignKey;
@@ -44,19 +51,11 @@ import at.tuwien.entities.user.Role;
 import at.tuwien.entities.user.User;
 import at.tuwien.entities.user.UserAttribute;
 import at.tuwien.querystore.Query;
-import at.tuwien.entities.container.Container;
-import at.tuwien.entities.container.image.ContainerImage;
-import at.tuwien.entities.container.image.ContainerImageEnvironmentItem;
-import at.tuwien.entities.container.image.ContainerImageEnvironmentItemType;
-import at.tuwien.entities.database.table.Table;
-import at.tuwien.entities.database.table.columns.TableColumn;
-import at.tuwien.entities.database.table.columns.TableColumnType;
 import at.tuwien.utils.ArrayUtil;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import com.github.dockerjava.api.model.HealthCheck;
 
 import java.math.BigInteger;
 import java.security.Principal;
@@ -64,7 +63,8 @@ import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static java.time.temporal.ChronoUnit.*;
+import static java.time.temporal.ChronoUnit.HOURS;
+import static java.time.temporal.ChronoUnit.MINUTES;
 
 /**
  * Database 1 (Private, User 1)
@@ -661,54 +661,12 @@ public abstract class BaseTest {
 
     public final static Long IMAGE_1_ID = 1L;
     public final static String IMAGE_1_REGISTRY = "docker.io/library";
-    public final static String IMAGE_1_REPOSITORY = "mariadb";
-    public final static String IMAGE_1_TAG = "10.5";
-    public final static String IMAGE_1_HASH = "d6a5e003eae42397f7ee4589e9f21e231d3721ac131970d2286bd616e7f55bb4";
+    public final static String IMAGE_1_NAME = "mariadb";
+    public final static String IMAGE_1_VERSION = "10.5";
     public final static String IMAGE_1_DIALECT = "org.hibernate.dialect.MariaDBDialect";
     public final static String IMAGE_1_DRIVER = "org.mariadb.jdbc.Driver";
     public final static String IMAGE_1_JDBC = "mariadb";
     public final static Integer IMAGE_1_PORT = 3306;
-    public final static Long IMAGE_1_SIZE = 12000L;
-    public final static Instant IMAGE_1_BUILT = Instant.now().minus(40, HOURS);
-
-    public final static List<ContainerImageEnvironmentItem> IMAGE_1_ENV = List.of(
-            ContainerImageEnvironmentItem.builder()
-                    .iid(IMAGE_1_ID)
-                    .key("UZERNAME")
-                    .value("root")
-                    .type(ContainerImageEnvironmentItemType.PRIVILEGED_USERNAME)
-                    .build(),
-            ContainerImageEnvironmentItem.builder()
-                    .iid(IMAGE_1_ID)
-                    .key("MARIADB_ROOT_PASSWORD")
-                    .value("mariadb")
-                    .type(ContainerImageEnvironmentItemType.PRIVILEGED_PASSWORD)
-                    .build(),
-            ContainerImageEnvironmentItem.builder()
-                    .iid(IMAGE_1_ID)
-                    .key("MARIADB_USER")
-                    .value("mariadb")
-                    .type(ContainerImageEnvironmentItemType.USERNAME)
-                    .build(),
-            ContainerImageEnvironmentItem.builder()
-                    .iid(IMAGE_1_ID)
-                    .key("MARIADB_PASSWORD")
-                    .value("mariadb")
-                    .type(ContainerImageEnvironmentItemType.PASSWORD)
-                    .build());
-
-    public final static List<ImageEnvItemDto> IMAGE_1_ENV_DTO = List.of(ImageEnvItemDto.builder()
-                    .iid(IMAGE_1_ID)
-                    .key("MARIADB_USER")
-                    .value("mariadb")
-                    .type(ImageEnvItemTypeDto.USERNAME)
-                    .build(),
-            ImageEnvItemDto.builder()
-                    .iid(IMAGE_1_ID)
-                    .key("MARIADB_PASSWORD")
-                    .value("mariadb")
-                    .type(ImageEnvItemTypeDto.PASSWORD)
-                    .build());
 
     public final static Long IMAGE_DATE_1_ID = 1L;
     public final static Long IMAGE_DATE_1_IMAGE_ID = IMAGE_1_ID;
@@ -736,13 +694,12 @@ public abstract class BaseTest {
 
     public final static ImageCreateDto IMAGE_1_CREATE_DTO = ImageCreateDto.builder()
             .registry(IMAGE_1_REGISTRY)
-            .repository(IMAGE_1_REPOSITORY)
-            .tag(IMAGE_1_TAG)
+            .name(IMAGE_1_NAME)
+            .version(IMAGE_1_VERSION)
             .dialect(IMAGE_1_DIALECT)
             .jdbcMethod(IMAGE_1_JDBC)
             .driverClass(IMAGE_1_DRIVER)
             .defaultPort(IMAGE_1_PORT)
-            .environment(IMAGE_1_ENV_DTO)
             .build();
 
     public final static Long IMAGE_DATE_2_ID = 2L;
@@ -795,64 +752,46 @@ public abstract class BaseTest {
 
     public final static ContainerImage IMAGE_1 = ContainerImage.builder()
             .id(IMAGE_1_ID)
-            .registry(IMAGE_1_REGISTRY)
-            .repository(IMAGE_1_REPOSITORY)
-            .tag(IMAGE_1_TAG)
-            .hash(IMAGE_1_HASH)
-            .compiled(IMAGE_1_BUILT)
+            .name(IMAGE_1_NAME)
+            .version(IMAGE_1_VERSION)
             .dialect(IMAGE_1_DIALECT)
             .jdbcMethod(IMAGE_1_JDBC)
             .driverClass(IMAGE_1_DRIVER)
-            .size(IMAGE_1_SIZE)
-            .environment(IMAGE_1_ENV)
             .defaultPort(IMAGE_1_PORT)
             .dateFormats(List.of(IMAGE_DATE_1, IMAGE_DATE_2, IMAGE_DATE_3))
             .build();
 
     public final static ContainerImage IMAGE_1_SIMPLE = ContainerImage.builder()
             .id(IMAGE_1_ID)
-            .registry(IMAGE_1_REGISTRY)
-            .repository(IMAGE_1_REPOSITORY)
-            .tag(IMAGE_1_TAG)
-            .hash(IMAGE_1_HASH)
-            .compiled(IMAGE_1_BUILT)
+            .name(IMAGE_1_NAME)
+            .version(IMAGE_1_VERSION)
             .dialect(IMAGE_1_DIALECT)
             .jdbcMethod(IMAGE_1_JDBC)
             .driverClass(IMAGE_1_DRIVER)
-            .size(IMAGE_1_SIZE)
-            .environment(List.of() /* for jpa */)
             .defaultPort(IMAGE_1_PORT)
-            .environment(List.of() /* for jpa */)
             .build();
 
     public final static ImageDto IMAGE_1_DTO = ImageDto.builder()
             .id(IMAGE_1_ID)
             .registry(IMAGE_1_REGISTRY)
-            .repository(IMAGE_1_REPOSITORY)
-            .tag(IMAGE_1_TAG)
-            .hash(IMAGE_1_HASH)
-            .compiled(IMAGE_1_BUILT)
+            .name(IMAGE_1_NAME)
+            .version(IMAGE_1_VERSION)
             .dialect(IMAGE_1_DIALECT)
             .jdbcMethod(IMAGE_1_JDBC)
             .driverClass(IMAGE_1_DRIVER)
-            .size(BigInteger.valueOf(IMAGE_1_SIZE))
-            .environment(IMAGE_1_ENV_DTO)
             .defaultPort(IMAGE_1_PORT)
             .dateFormats(List.of(IMAGE_DATE_1_DTO, IMAGE_DATE_2_DTO, IMAGE_DATE_3_DTO))
             .build();
 
     public final static ImageBriefDto IMAGE_1_BRIEF_DTO = ImageBriefDto.builder()
             .id(IMAGE_1_ID)
-            .registry(IMAGE_1_REGISTRY)
-            .repository(IMAGE_1_REPOSITORY)
-            .tag(IMAGE_1_TAG)
+            .name(IMAGE_1_NAME)
+            .version(IMAGE_1_VERSION)
             .build();
 
     public final static Long IMAGE_2_ID = 2L;
-    public final static String IMAGE_2_REGISTRY = "docker.io/library";
-    public final static String IMAGE_2_REPOSITORY = "mysql";
-    public final static String IMAGE_2_TAG = "8.0";
-    public final static String IMAGE_2_HASH = "83b40f2726e5";
+    public final static String IMAGE_2_NAME = "mariadb";
+    public final static String IMAGE_2_VERSION = "8.0";
     public final static Integer IMAGE_2_PORT = 3306;
     public final static String IMAGE_2_DIALECT = "org.hibernate.dialect.MySQLDialect";
     public final static String IMAGE_2_DRIVER = "com.mysql.jdbc.Driver";
@@ -860,66 +799,17 @@ public abstract class BaseTest {
     public final static Long IMAGE_2_SIZE = 12000L;
     public final static Instant IMAGE_2_BUILT = Instant.now().minus(38, HOURS);
 
-    public final static List<ImageEnvItemDto> IMAGE_2_ENV_DTO = List.of(ImageEnvItemDto.builder()
-                    .iid(IMAGE_2_ID)
-                    .key("MYSQL_USER")
-                    .value("mysql")
-                    .type(ImageEnvItemTypeDto.USERNAME)
-                    .build(),
-            ImageEnvItemDto.builder()
-                    .iid(IMAGE_2_ID)
-                    .key("MYSQL_PASSWORD")
-                    .value("mysql")
-                    .type(ImageEnvItemTypeDto.PASSWORD)
-                    .build());
-
-    public final static Long IMAGE_BROKER_ID = 2L;
-    public final static String IMAGE_BROKER_REPOSITORY = "rabbitmq";
-    public final static String IMAGE_BROKER_TAG = "3-management-alpine";
-    public final static String IMAGE_BROKER_HASH = "d6a5e003eae42397f7ee4589e9f21e231d3721ac131970d2286bd616e7f55bb4\n";
-    public final static String IMAGE_BROKER_DIALECT = "org.hibernate.dialect.MariaDBDialect";
-    public final static String IMAGE_BROKER_DRIVER = "org.mariadb.jdbc.Driver";
-    public final static String IMAGE_BROKER_JDBC = "mariadb";
-    public final static Integer IMAGE_BROKER_PORT = 15672;
-    public final static Long IMAGE_BROKER_SIZE = 12000L;
-    public final static Instant IMAGE_BROKER_BUILT = Instant.now().minus(40, HOURS);
-
-    public final static ContainerImage IMAGE_BROKER = ContainerImage.builder()
-            .id(IMAGE_BROKER_ID)
-            .repository(IMAGE_BROKER_REPOSITORY)
-            .tag(IMAGE_BROKER_TAG)
-            .hash(IMAGE_BROKER_HASH)
-            .compiled(IMAGE_BROKER_BUILT)
-            .dialect(IMAGE_BROKER_DIALECT)
-            .jdbcMethod(IMAGE_BROKER_JDBC)
-            .driverClass(IMAGE_BROKER_DRIVER)
-            .size(IMAGE_BROKER_SIZE)
-            .defaultPort(IMAGE_BROKER_PORT)
-            .build();
-
-    public final static Long IMAGE_ELASTIC_ID = 3L;
-    public final static String IMAGE_ELASTIC_REPOSITORY = "opensearchproject/opensearch";
-    public final static String IMAGE_ELASTIC_TAG = "2";
-
-    public final static ContainerImage IMAGE_ELASTIC = ContainerImage.builder()
-            .id(IMAGE_ELASTIC_ID)
-            .repository(IMAGE_ELASTIC_REPOSITORY)
-            .tag(IMAGE_ELASTIC_TAG)
-            .build();
 
     public final static Long CONTAINER_1_ID = 1L;
-    public final static String CONTAINER_1_HASH = "deadbeef";
     public final static ContainerImage CONTAINER_1_IMAGE = IMAGE_1;
     public final static ImageBriefDto CONTAINER_1_IMAGE_BRIEF_DTO = IMAGE_1_BRIEF_DTO;
     public final static String CONTAINER_1_NAME = "u01";
     public final static String CONTAINER_1_INTERNALNAME = "dbrepo-userdb-u01";
-    public final static String CONTAINER_1_IP = "172.30.0.5";
+    public final static String CONTAINER_1_IP = "127.0.0.1";
+    public final static Integer CONTAINER_1_PORT = 3308;
+    public final static String CONTAINER_1_PRIVILEGED_USERNAME = "root";
+    public final static String CONTAINER_1_PRIVILEGED_PASSWORD = "dbrepo";
     public final static Instant CONTAINER_1_CREATED = Instant.ofEpochSecond(1677399629) /* 2023-02-26 08:20:29 (UTC) */;
-    public final static HealthCheck CONTAINER_1_HEALTHCHECK = new HealthCheck()
-            .withTest(List.of("CMD", "mysqladmin", "ping", "--host=127.0.0.1", "--password=mariadb"));
-    public final static String[] CONTAINER_1_ENV = new String[]{"MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_DATABASE=weather"};
-    public final static ContainerStateDto CONTAINER_1_STATE = ContainerStateDto.RUNNING;
-    public final static Boolean CONTAINER_1_RUNNING = true;
 
     public final static Container CONTAINER_1 = Container.builder()
             .id(CONTAINER_1_ID)
@@ -927,13 +817,11 @@ public abstract class BaseTest {
             .internalName(CONTAINER_1_INTERNALNAME)
             .imageId(IMAGE_1_ID)
             .image(CONTAINER_1_IMAGE)
-            .hash(CONTAINER_1_HASH)
             .created(CONTAINER_1_CREATED)
-            .ipAddress(CONTAINER_1_IP)
-            .createdBy(USER_1_ID)
-            .ownedBy(USER_1_ID)
-            .creator(USER_1)
-            .owner(USER_1)
+            .host(CONTAINER_1_IP)
+            .port(CONTAINER_1_PORT)
+            .privilegedUsername(CONTAINER_1_PRIVILEGED_USERNAME)
+            .privilegedPassword(CONTAINER_1_PRIVILEGED_PASSWORD)
             .build();
 
     public final static Container CONTAINER_1_SIMPLE = Container.builder()
@@ -941,14 +829,12 @@ public abstract class BaseTest {
             .name(CONTAINER_1_NAME)
             .internalName(CONTAINER_1_INTERNALNAME)
             .imageId(IMAGE_1_ID)
-            .image(CONTAINER_1_IMAGE)
-            .hash(CONTAINER_1_HASH)
+            .image(null /* for jpa */)
             .created(CONTAINER_1_CREATED)
-            .ipAddress(CONTAINER_1_IP)
-            .createdBy(USER_1_ID)
-            .ownedBy(USER_1_ID)
-            .creator(null /* for jpa */)
-            .owner(null /* for jpa */)
+            .host(CONTAINER_1_IP)
+            .port(CONTAINER_1_PORT)
+            .privilegedUsername(CONTAINER_1_PRIVILEGED_USERNAME)
+            .privilegedPassword(CONTAINER_1_PRIVILEGED_PASSWORD)
             .build();
 
     public final static ContainerDto CONTAINER_1_DTO = ContainerDto.builder()
@@ -956,24 +842,17 @@ public abstract class BaseTest {
             .name(CONTAINER_1_NAME)
             .internalName(CONTAINER_1_INTERNALNAME)
             .image(CONTAINER_1_IMAGE_BRIEF_DTO)
-            .hash(CONTAINER_1_HASH)
             .created(CONTAINER_1_CREATED)
-            .ipAddress(CONTAINER_1_IP)
+            .host(CONTAINER_1_IP)
             .owner(USER_1_BRIEF_DTO)
-            .state(CONTAINER_1_STATE)
-            .running(CONTAINER_1_RUNNING)
             .build();
 
     public final static Long CONTAINER_2_ID = 2L;
-    public final static String CONTAINER_2_HASH = "deadbeef";
     public final static ContainerImage CONTAINER_2_IMAGE = IMAGE_1;
     public final static String CONTAINER_2_NAME = "u02";
     public final static String CONTAINER_2_INTERNALNAME = "dbrepo-userdb-u02";
     public final static String CONTAINER_2_IP = "172.30.0.6";
     public final static Instant CONTAINER_2_CREATED = Instant.ofEpochSecond(1677399655) /* 2023-02-26 08:20:55 (UTC) */;
-    public final static HealthCheck CONTAINER_2_HEALTHCHECK = new HealthCheck()
-            .withTest(List.of("CMD", "mysqladmin", "ping", "--host=127.0.0.1", "--password=mariadb"));
-    public final static String[] CONTAINER_2_ENV = new String[]{"MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_DATABASE=zoo"};
 
     public final static Container CONTAINER_2 = Container.builder()
             .id(CONTAINER_2_ID)
@@ -981,13 +860,8 @@ public abstract class BaseTest {
             .internalName(CONTAINER_2_INTERNALNAME)
             .imageId(IMAGE_1_ID)
             .image(CONTAINER_2_IMAGE)
-            .hash(CONTAINER_2_HASH)
             .created(CONTAINER_2_CREATED)
-            .ipAddress(CONTAINER_2_IP)
-            .createdBy(USER_2_ID)
-            .ownedBy(USER_2_ID)
-            .creator(USER_2)
-            .owner(USER_2)
+            .host(CONTAINER_2_IP)
             .build();
 
     public final static Container CONTAINER_2_SIMPLE = Container.builder()
@@ -996,25 +870,16 @@ public abstract class BaseTest {
             .internalName(CONTAINER_2_INTERNALNAME)
             .imageId(IMAGE_1_ID)
             .image(CONTAINER_2_IMAGE)
-            .hash(CONTAINER_2_HASH)
             .created(CONTAINER_2_CREATED)
-            .ipAddress(CONTAINER_2_IP)
-            .createdBy(USER_2_ID)
-            .ownedBy(USER_2_ID)
-            .creator(null /* for jpa */)
-            .owner(null /* for jpa */)
+            .host(CONTAINER_2_IP)
             .build();
 
     public final static Long CONTAINER_3_ID = 3L;
-    public final static String CONTAINER_3_HASH = "deadbeef";
     public final static ContainerImage CONTAINER_3_IMAGE = IMAGE_1;
     public final static String CONTAINER_3_NAME = "u03";
     public final static String CONTAINER_3_INTERNALNAME = "dbrepo-userdb-u03";
     public final static String CONTAINER_3_IP = "172.30.0.7";
     public final static Instant CONTAINER_3_CREATED = Instant.ofEpochSecond(1677399672) /* 2023-02-26 08:21:12 (UTC) */;
-    public final static HealthCheck CONTAINER_3_HEALTHCHECK = new HealthCheck()
-            .withTest(List.of("CMD", "mysqladmin", "ping", "--host=127.0.0.1", "--password=mariadb"));
-    public final static String[] CONTAINER_3_ENV = new String[]{"MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_DATABASE=musicology"};
 
     public final static Container CONTAINER_3 = Container.builder()
             .id(CONTAINER_3_ID)
@@ -1022,13 +887,8 @@ public abstract class BaseTest {
             .internalName(CONTAINER_3_INTERNALNAME)
             .imageId(IMAGE_1_ID)
             .image(CONTAINER_3_IMAGE)
-            .hash(CONTAINER_3_HASH)
             .created(CONTAINER_3_CREATED)
-            .ipAddress(CONTAINER_3_IP)
-            .createdBy(USER_3_ID)
-            .ownedBy(USER_3_ID)
-            .creator(USER_3)
-            .owner(USER_3)
+            .host(CONTAINER_3_IP)
             .build();
 
     public final static Container CONTAINER_3_SIMPLE = Container.builder()
@@ -1037,25 +897,16 @@ public abstract class BaseTest {
             .internalName(CONTAINER_3_INTERNALNAME)
             .imageId(IMAGE_1_ID)
             .image(CONTAINER_3_IMAGE)
-            .hash(CONTAINER_3_HASH)
             .created(CONTAINER_3_CREATED)
-            .ipAddress(CONTAINER_3_IP)
-            .createdBy(USER_3_ID)
-            .ownedBy(USER_3_ID)
-            .creator(null /* for jpa */)
-            .owner(null /* for jpa */)
+            .host(CONTAINER_3_IP)
             .build();
 
     public final static Long CONTAINER_4_ID = 4L;
-    public final static String CONTAINER_4_HASH = "deadbeef";
     public final static ContainerImage CONTAINER_4_IMAGE = IMAGE_1;
     public final static String CONTAINER_4_NAME = "u04";
     public final static String CONTAINER_4_INTERNALNAME = "dbrepo-userdb-u04";
     public final static String CONTAINER_4_IP = "172.30.0.8";
     public final static Instant CONTAINER_4_CREATED = Instant.ofEpochSecond(1677399688) /* 2023-02-26 08:21:28 (UTC) */;
-    public final static HealthCheck CONTAINER_4_HEALTHCHECK = new HealthCheck()
-            .withTest(List.of("CMD", "mysqladmin", "ping", "--host=127.0.0.1", "--password=mariadb"));
-    public final static String[] CONTAINER_4_ENV = new String[]{"MARIADB_ROOT_PASSWORD=mariadb", "MARIADB_DATABASE=sensor"};
 
     public final static Container CONTAINER_4 = Container.builder()
             .id(CONTAINER_4_ID)
@@ -1063,13 +914,8 @@ public abstract class BaseTest {
             .internalName(CONTAINER_4_INTERNALNAME)
             .imageId(IMAGE_1_ID)
             .image(CONTAINER_4_IMAGE)
-            .hash(CONTAINER_4_HASH)
             .created(CONTAINER_4_CREATED)
-            .ipAddress(CONTAINER_4_IP)
-            .createdBy(USER_4_ID)
-            .ownedBy(USER_4_ID)
-            .creator(USER_4)
-            .owner(USER_4)
+            .host(CONTAINER_4_IP)
             .build();
 
     public final static Container CONTAINER_4_SIMPLE = Container.builder()
@@ -1078,57 +924,12 @@ public abstract class BaseTest {
             .internalName(CONTAINER_4_INTERNALNAME)
             .imageId(IMAGE_1_ID)
             .image(CONTAINER_4_IMAGE)
-            .hash(CONTAINER_4_HASH)
             .created(CONTAINER_4_CREATED)
-            .ipAddress(CONTAINER_4_IP)
-            .createdBy(USER_4_ID)
-            .ownedBy(USER_4_ID)
-            .creator(null /* for jpa */)
-            .owner(null /* for jpa */)
+            .host(CONTAINER_4_IP)
             .build();
 
-    public final static Long CONTAINER_BROKER_ID = 5L;
-    public final static String CONTAINER_BROKER_NAME = "dbrepo-broker-service";
-    public final static String CONTAINER_BROKER_INTERNAL_NAME = "dbrepo-broker-service";
-    public final static String CONTAINER_BROKER_IP = "172.31.0.2";
-    public final static String CONTAINER_BROKER_HASH = "deadbeef";
-    public final static Instant CONTAINER_BROKER_CREATED = Instant.ofEpochSecond(1677399705) /* 2023-02-26 08:21:45 (UTC) */;
-    public final static HealthCheck CONTAINER_BROKER_HEALTHCHECK = new HealthCheck()
-            .withTest(List.of("CMD", "rabbitmq-diagnostics", "-q", "ping"));
-    public final static String[] CONTAINER_BROKER_ENV = new String[]{};
 
-    public final static Container CONTAINER_BROKER = Container.builder()
-            .id(CONTAINER_BROKER_ID)
-            .name(CONTAINER_BROKER_NAME)
-            .internalName(CONTAINER_BROKER_INTERNAL_NAME)
-            .imageId(IMAGE_BROKER_ID)
-            .image(IMAGE_BROKER)
-            .ipAddress(CONTAINER_BROKER_IP)
-            .hash(CONTAINER_BROKER_HASH)
-            .created(CONTAINER_BROKER_CREATED)
-            .creator(USER_1)
-            .build();
 
-    public final static Long CONTAINER_ELASTIC_ID = 6L;
-    public final static String CONTAINER_ELASTIC_NAME = "dbrepo-search-db";
-    public final static String CONTAINER_ELASTIC_INTERNAL_NAME = "dbrepo-search-db";
-    public final static String CONTAINER_ELASTIC_IP = "172.31.0.3";
-    public final static String CONTAINER_ELASTIC_HASH = "deadbeef";
-    public final static Instant CONTAINER_ELASTIC_CREATED = Instant.ofEpochSecond(1677399721) /* 2023-02-26 08:22:01 (UTC) */;
-    public final static String[] CONTAINER_ELASTIC_ENV = new String[]{"discovery.type=single-node", "ES_JAVA_OPTS=-Xms4g -Xmx4g",
-            "logger.level=WARN", "bootstrap.memory_lock=true", "plugins.security.disabled=true"};
-
-    public final static Container CONTAINER_ELASTIC = Container.builder()
-            .id(CONTAINER_ELASTIC_ID)
-            .name(CONTAINER_ELASTIC_NAME)
-            .internalName(CONTAINER_ELASTIC_INTERNAL_NAME)
-            .imageId(IMAGE_ELASTIC_ID)
-            .image(IMAGE_ELASTIC)
-            .hash(CONTAINER_ELASTIC_HASH)
-            .ipAddress(CONTAINER_ELASTIC_IP)
-            .created(CONTAINER_ELASTIC_CREATED)
-            .creator(USER_1)
-            .build();
 
     public final static Long DATABASE_1_ID = 1L;
     public final static String DATABASE_1_NAME = "Weather";
@@ -1148,6 +949,7 @@ public abstract class BaseTest {
             .isPublic(DATABASE_1_PUBLIC)
             .name(DATABASE_1_NAME)
             .description(DATABASE_1_DESCRIPTION)
+            .cid(CONTAINER_1_ID)
             .container(CONTAINER_1)
             .internalName(DATABASE_1_INTERNALNAME)
             .exchangeName(DATABASE_1_EXCHANGE)
@@ -1170,6 +972,7 @@ public abstract class BaseTest {
             .isPublic(DATABASE_1_PUBLIC)
             .name(DATABASE_1_NAME)
             .description(DATABASE_1_DESCRIPTION)
+            .cid(CONTAINER_1_ID)
             .container(null /* for jpa */)
             .internalName(DATABASE_1_INTERNALNAME)
             .exchangeName(DATABASE_1_EXCHANGE)
@@ -1253,6 +1056,7 @@ public abstract class BaseTest {
     public final static DatabaseCreateDto DATABASE_1_CREATE = DatabaseCreateDto.builder()
             .name(DATABASE_1_NAME)
             .isPublic(DATABASE_1_PUBLIC)
+            .cid(CONTAINER_1_ID)
             .build();
 
     public final static Long DATABASE_2_ID = 2L;
@@ -1273,7 +1077,8 @@ public abstract class BaseTest {
             .isPublic(DATABASE_2_PUBLIC)
             .name(DATABASE_2_NAME)
             .description(DATABASE_2_DESCRIPTION)
-            .container(CONTAINER_2)
+            .cid(CONTAINER_1_ID)
+            .container(CONTAINER_1)
             .internalName(DATABASE_2_INTERNALNAME)
             .exchangeName(DATABASE_2_EXCHANGE)
             .created(DATABASE_2_CREATED)
@@ -1295,6 +1100,7 @@ public abstract class BaseTest {
             .isPublic(DATABASE_2_PUBLIC)
             .name(DATABASE_2_NAME)
             .description(DATABASE_2_DESCRIPTION)
+            .cid(CONTAINER_1_ID)
             .container(null /* for jpa */)
             .internalName(DATABASE_2_INTERNALNAME)
             .exchangeName(DATABASE_2_EXCHANGE)
@@ -1384,6 +1190,7 @@ public abstract class BaseTest {
     public final static DatabaseCreateDto DATABASE_2_CREATE = DatabaseCreateDto.builder()
             .name(DATABASE_2_NAME)
             .isPublic(DATABASE_2_PUBLIC)
+            .cid(CONTAINER_1_ID)
             .build();
 
     public final static Long DATABASE_3_ID = 3L;
@@ -1404,7 +1211,8 @@ public abstract class BaseTest {
             .isPublic(DATABASE_3_PUBLIC)
             .name(DATABASE_3_NAME)
             .description(DATABASE_3_DESCRIPTION)
-            .container(CONTAINER_3)
+            .cid(CONTAINER_1_ID)
+            .container(CONTAINER_1)
             .internalName(DATABASE_3_INTERNALNAME)
             .exchangeName(DATABASE_3_EXCHANGE)
             .created(DATABASE_3_CREATED)
@@ -1426,6 +1234,7 @@ public abstract class BaseTest {
             .isPublic(DATABASE_3_PUBLIC)
             .name(DATABASE_3_NAME)
             .description(DATABASE_3_DESCRIPTION)
+            .cid(CONTAINER_1_ID)
             .container(null /* for jpa */)
             .internalName(DATABASE_3_INTERNALNAME)
             .exchangeName(DATABASE_3_EXCHANGE)
@@ -1509,6 +1318,7 @@ public abstract class BaseTest {
     public final static DatabaseCreateDto DATABASE_3_CREATE = DatabaseCreateDto.builder()
             .name(DATABASE_3_NAME)
             .isPublic(DATABASE_3_PUBLIC)
+            .cid(CONTAINER_1_ID)
             .build();
 
     public final static Long DATABASE_4_ID = 4L;
@@ -1527,6 +1337,7 @@ public abstract class BaseTest {
             .isPublic(DATABASE_4_PUBLIC)
             .name(DATABASE_4_NAME)
             .description(DATABASE_4_DESCRIPTION)
+            .cid(CONTAINER_4_ID)
             .container(CONTAINER_4)
             .internalName(DATABASE_4_INTERNALNAME)
             .exchangeName(DATABASE_4_EXCHANGE)
@@ -1549,6 +1360,7 @@ public abstract class BaseTest {
             .isPublic(DATABASE_4_PUBLIC)
             .name(DATABASE_4_NAME)
             .description(DATABASE_4_DESCRIPTION)
+            .cid(CONTAINER_4_ID)
             .container(CONTAINER_4)
             .internalName(DATABASE_4_INTERNALNAME)
             .exchangeName(DATABASE_4_EXCHANGE)
@@ -4291,7 +4103,6 @@ public abstract class BaseTest {
     public final static Boolean VIEW_1_INITIAL_VIEW = false;
     public final static String VIEW_1_NAME = "JUnit";
     public final static String VIEW_1_INTERNAL_NAME = "junit";
-    public final static Long VIEW_1_CONTAINER_ID = CONTAINER_1_ID;
     public final static Long VIEW_1_DATABASE_ID = DATABASE_1_ID;
     public final static Boolean VIEW_1_PUBLIC = true;
     public final static String VIEW_1_QUERY = "select `location`, `lat`, `lng` from `weather_location`";
@@ -4347,7 +4158,6 @@ public abstract class BaseTest {
             .isInitialView(VIEW_1_INITIAL_VIEW)
             .name(VIEW_1_NAME)
             .internalName(VIEW_1_INTERNAL_NAME)
-            .vcid(VIEW_1_CONTAINER_ID)
             .vdbid(VIEW_1_DATABASE_ID)
             .isPublic(VIEW_1_PUBLIC)
             .query(VIEW_1_QUERY)
@@ -4371,7 +4181,6 @@ public abstract class BaseTest {
     public final static Boolean VIEW_2_INITIAL_VIEW = false;
     public final static String VIEW_2_NAME = "JUnit2";
     public final static String VIEW_2_INTERNAL_NAME = "junit2";
-    public final static Long VIEW_2_CONTAINER_ID = CONTAINER_1_ID;
     public final static Long VIEW_2_DATABASE_ID = DATABASE_1_ID;
     public final static Boolean VIEW_2_PUBLIC = true;
     public final static String VIEW_2_QUERY = "select `date`, `location`, `mintemp`, `rainfall` from `weather_aus` where `location` = 'Albury'";
@@ -4457,7 +4266,6 @@ public abstract class BaseTest {
             .isInitialView(VIEW_2_INITIAL_VIEW)
             .name(VIEW_2_NAME)
             .internalName(VIEW_2_INTERNAL_NAME)
-            .vcid(VIEW_2_CONTAINER_ID)
             .vdbid(VIEW_2_DATABASE_ID)
             .isPublic(VIEW_2_PUBLIC)
             .columns(VIEW_2_COLUMNS)
@@ -4481,7 +4289,6 @@ public abstract class BaseTest {
     public final static Boolean VIEW_3_INITIAL_VIEW = false;
     public final static String VIEW_3_NAME = "JUnit3";
     public final static String VIEW_3_INTERNAL_NAME = "junit3";
-    public final static Long VIEW_3_CONTAINER_ID = CONTAINER_1_ID;
     public final static Long VIEW_3_DATABASE_ID = DATABASE_1_ID;
     public final static Boolean VIEW_3_PUBLIC = false;
     public final static String VIEW_3_QUERY = "select w.`mintemp`, w.`rainfall`, w.`location`, m.`date` from `weather_aus` w join `junit2` m on m.`location` = w.`location`";
@@ -4552,7 +4359,6 @@ public abstract class BaseTest {
             .isInitialView(VIEW_3_INITIAL_VIEW)
             .name(VIEW_3_NAME)
             .internalName(VIEW_3_INTERNAL_NAME)
-            .vcid(VIEW_3_CONTAINER_ID)
             .vdbid(VIEW_3_DATABASE_ID)
             .isPublic(VIEW_3_PUBLIC)
             .columns(VIEW_3_COLUMNS)
@@ -4576,7 +4382,6 @@ public abstract class BaseTest {
     public final static Boolean VIEW_4_INITIAL_VIEW = false;
     public final static String VIEW_4_NAME = "Mock View";
     public final static String VIEW_4_INTERNAL_NAME = "mock_view";
-    public final static Long VIEW_4_CONTAINER_ID = CONTAINER_2_ID;
     public final static Long VIEW_4_DATABASE_ID = DATABASE_2_ID;
     public final static Long VIEW_4_TABLE_ID = TABLE_4_ID;
     public final static Boolean VIEW_4_PUBLIC = true;
@@ -4840,7 +4645,6 @@ public abstract class BaseTest {
             .isInitialView(VIEW_4_INITIAL_VIEW)
             .name(VIEW_4_NAME)
             .internalName(VIEW_4_INTERNAL_NAME)
-            .vcid(VIEW_4_CONTAINER_ID)
             .vdbid(VIEW_4_DATABASE_ID)
             .isPublic(VIEW_4_PUBLIC)
             .query(VIEW_4_QUERY)
@@ -4853,7 +4657,6 @@ public abstract class BaseTest {
     public final static Boolean VIEW_5_INITIAL_VIEW = false;
     public final static String VIEW_5_NAME = "Mock View";
     public final static String VIEW_5_INTERNAL_NAME = "mock_view";
-    public final static Long VIEW_5_CONTAINER_ID = CONTAINER_2_ID;
     public final static Long VIEW_5_DATABASE_ID = DATABASE_2_ID;
     public final static Boolean VIEW_5_PUBLIC = true;
     public final static String VIEW_5_QUERY = "SELECT `location`, `lat`, `lng` FROM `weather_location` WHERE `location` = 'Albury'";
@@ -4863,7 +4666,6 @@ public abstract class BaseTest {
             .isInitialView(VIEW_5_INITIAL_VIEW)
             .name(VIEW_5_NAME)
             .internalName(VIEW_5_INTERNAL_NAME)
-            .vcid(VIEW_5_CONTAINER_ID)
             .vdbid(VIEW_5_DATABASE_ID)
             .isPublic(VIEW_5_PUBLIC)
             .query(VIEW_5_QUERY)
@@ -4950,7 +4752,6 @@ public abstract class BaseTest {
 
     public final static Long IDENTIFIER_1_ID = 1L;
     public final static Long IDENTIFIER_1_QUERY_ID = QUERY_1_ID;
-    public final static Long IDENTIFIER_1_CONTAINER_ID = CONTAINER_1_ID;
     public final static Long IDENTIFIER_1_DATABASE_ID = DATABASE_1_ID;
     public final static String IDENTIFIER_1_DESCRIPTION = "Selecting all from the weather Austrian table";
     public final static String IDENTIFIER_1_DESCRIPTION_MODIFY = "Selecting some from the weather Austrian table";
@@ -4997,7 +4798,6 @@ public abstract class BaseTest {
 
     public final static Identifier IDENTIFIER_1 = Identifier.builder()
             .id(IDENTIFIER_1_ID)
-            .containerId(IDENTIFIER_1_CONTAINER_ID)
             .databaseId(IDENTIFIER_1_DATABASE_ID)
             .queryId(IDENTIFIER_1_QUERY_ID)
             .description(IDENTIFIER_1_DESCRIPTION)
@@ -5022,7 +4822,6 @@ public abstract class BaseTest {
 
     public final static Identifier IDENTIFIER_1_SIMPLE = Identifier.builder()
             .id(IDENTIFIER_1_ID)
-            .containerId(IDENTIFIER_1_CONTAINER_ID)
             .databaseId(IDENTIFIER_1_DATABASE_ID)
             .queryId(IDENTIFIER_1_QUERY_ID)
             .description(IDENTIFIER_1_DESCRIPTION)
@@ -5047,7 +4846,6 @@ public abstract class BaseTest {
 
     public final static Identifier IDENTIFIER_1_WITH_DOI = Identifier.builder()
             .id(IDENTIFIER_1_ID)
-            .containerId(IDENTIFIER_1_CONTAINER_ID)
             .databaseId(IDENTIFIER_1_DATABASE_ID)
             .queryId(IDENTIFIER_1_QUERY_ID)
             .description(IDENTIFIER_1_DESCRIPTION)
@@ -5072,7 +4870,6 @@ public abstract class BaseTest {
 
     public final static IdentifierDto IDENTIFIER_1_DTO = IdentifierDto.builder()
             .id(IDENTIFIER_1_ID)
-            .containerId(IDENTIFIER_1_CONTAINER_ID)
             .databaseId(IDENTIFIER_1_DATABASE_ID)
             .queryId(IDENTIFIER_1_QUERY_ID)
             .description(IDENTIFIER_1_DESCRIPTION)
@@ -5097,7 +4894,6 @@ public abstract class BaseTest {
 
     public final static IdentifierDto IDENTIFIER_1_WITH_DOI_DTO = IdentifierDto.builder()
             .id(IDENTIFIER_1_ID)
-            .containerId(IDENTIFIER_1_CONTAINER_ID)
             .databaseId(IDENTIFIER_1_DATABASE_ID)
             .queryId(IDENTIFIER_1_QUERY_ID)
             .description(IDENTIFIER_1_DESCRIPTION)
@@ -5122,7 +4918,6 @@ public abstract class BaseTest {
 
     public final static Long IDENTIFIER_2_ID = 2L;
     public final static Long IDENTIFIER_2_QUERY_ID = QUERY_2_ID;
-    public final static Long IDENTIFIER_2_CONTAINER_ID = CONTAINER_2_ID;
     public final static Long IDENTIFIER_2_DATABASE_ID = DATABASE_2_ID;
     public final static String IDENTIFIER_2_DESCRIPTION = "Selecting all from the weather Austria table";
     public final static String IDENTIFIER_2_TITLE = "Australian weather data";
@@ -5188,7 +4983,6 @@ public abstract class BaseTest {
 
     public final static Identifier IDENTIFIER_2 = Identifier.builder()
             .id(IDENTIFIER_2_ID)
-            .containerId(IDENTIFIER_2_CONTAINER_ID)
             .databaseId(IDENTIFIER_2_DATABASE_ID)
             .queryId(IDENTIFIER_2_QUERY_ID)
             .description(IDENTIFIER_2_DESCRIPTION)
@@ -5214,7 +5008,6 @@ public abstract class BaseTest {
 
     public final static Identifier IDENTIFIER_2_SIMPLE = Identifier.builder()
             .id(IDENTIFIER_2_ID)
-            .containerId(IDENTIFIER_2_CONTAINER_ID)
             .databaseId(IDENTIFIER_2_DATABASE_ID)
             .queryId(IDENTIFIER_2_QUERY_ID)
             .description(IDENTIFIER_2_DESCRIPTION)
@@ -5240,7 +5033,6 @@ public abstract class BaseTest {
 
     public final static IdentifierDto IDENTIFIER_2_DTO = IdentifierDto.builder()
             .id(IDENTIFIER_2_ID)
-            .containerId(IDENTIFIER_2_CONTAINER_ID)
             .databaseId(IDENTIFIER_2_DATABASE_ID)
             .queryId(IDENTIFIER_2_QUERY_ID)
             .description(IDENTIFIER_2_DESCRIPTION)
@@ -5331,7 +5123,6 @@ public abstract class BaseTest {
 
     public final static IdentifierDto IDENTIFIER_1_MODIFY_DTO = IdentifierDto.builder()
             .id(IDENTIFIER_1_ID)
-            .containerId(CONTAINER_1_ID)
             .databaseId(DATABASE_1_ID)
             .queryId(IDENTIFIER_1_QUERY_ID)
             .databaseId(IDENTIFIER_1_DATABASE_ID)
@@ -5349,7 +5140,6 @@ public abstract class BaseTest {
             .build();
 
     public final static IdentifierCreateDto IDENTIFIER_1_DTO_REQUEST = IdentifierCreateDto.builder()
-            .cid(IDENTIFIER_1_CONTAINER_ID)
             .dbid(IDENTIFIER_1_DATABASE_ID)
             .description(IDENTIFIER_1_DESCRIPTION)
             .title(IDENTIFIER_1_TITLE)
@@ -5363,7 +5153,6 @@ public abstract class BaseTest {
             .build();
 
     public final static IdentifierUpdateDto IDENTIFIER_1_DTO_UPDATE_REQUEST = IdentifierUpdateDto.builder()
-            .cid(IDENTIFIER_1_CONTAINER_ID)
             .dbid(IDENTIFIER_1_DATABASE_ID)
             .description(IDENTIFIER_1_DESCRIPTION)
             .title(IDENTIFIER_1_TITLE_MODIFY)
@@ -5401,7 +5190,6 @@ public abstract class BaseTest {
 
     public final static IdentifierCreateDto IDENTIFIER_2_DTO_REQUEST = IdentifierCreateDto.builder()
             .qid(IDENTIFIER_2_QUERY_ID)
-            .cid(IDENTIFIER_2_CONTAINER_ID)
             .qid(IDENTIFIER_2_QUERY_ID)
             .dbid(IDENTIFIER_2_DATABASE_ID)
             .description(IDENTIFIER_2_DESCRIPTION)
@@ -5418,7 +5206,6 @@ public abstract class BaseTest {
 
     public final static IdentifierUpdateDto IDENTIFIER_2_DTO_UPDATE_REQUEST = IdentifierUpdateDto.builder()
             .qid(IDENTIFIER_2_QUERY_ID)
-            .cid(IDENTIFIER_2_CONTAINER_ID)
             .qid(IDENTIFIER_2_QUERY_ID)
             .dbid(IDENTIFIER_2_DATABASE_ID)
             .description(IDENTIFIER_2_DESCRIPTION)
@@ -5436,7 +5223,6 @@ public abstract class BaseTest {
 
     public final static Long IDENTIFIER_3_ID = 3L;
     public final static Long IDENTIFIER_3_QUERY_ID = QUERY_3_ID;
-    public final static Long IDENTIFIER_3_CONTAINER_ID = CONTAINER_3_ID;
     public final static Long IDENTIFIER_3_DATABASE_ID = DATABASE_3_ID;
     public final static String IDENTIFIER_3_DESCRIPTION = "Selecting all from the weather Norwegian table";
     public final static String IDENTIFIER_3_TITLE = "Norwegian weather data";
@@ -5522,7 +5308,6 @@ public abstract class BaseTest {
 
     public final static Identifier IDENTIFIER_3 = Identifier.builder()
             .id(IDENTIFIER_3_ID)
-            .containerId(IDENTIFIER_3_CONTAINER_ID)
             .databaseId(IDENTIFIER_3_DATABASE_ID)
             .queryId(IDENTIFIER_3_QUERY_ID)
             .description(IDENTIFIER_3_DESCRIPTION)
@@ -5548,7 +5333,6 @@ public abstract class BaseTest {
 
     public final static Identifier IDENTIFIER_3_SIMPLE = Identifier.builder()
             .id(IDENTIFIER_3_ID)
-            .containerId(IDENTIFIER_3_CONTAINER_ID)
             .databaseId(IDENTIFIER_3_DATABASE_ID)
             .queryId(IDENTIFIER_3_QUERY_ID)
             .description(IDENTIFIER_3_DESCRIPTION)
@@ -5574,7 +5358,6 @@ public abstract class BaseTest {
 
     public final static IdentifierDto IDENTIFIER_3_DTO = IdentifierDto.builder()
             .id(IDENTIFIER_3_ID)
-            .containerId(IDENTIFIER_3_CONTAINER_ID)
             .databaseId(IDENTIFIER_3_DATABASE_ID)
             .queryId(IDENTIFIER_3_QUERY_ID)
             .description(IDENTIFIER_3_DESCRIPTION)
@@ -5599,7 +5382,6 @@ public abstract class BaseTest {
             .build();
 
     public final static IdentifierCreateDto IDENTIFIER_3_DTO_REQUEST = IdentifierCreateDto.builder()
-            .cid(IDENTIFIER_3_CONTAINER_ID)
             .dbid(IDENTIFIER_3_DATABASE_ID)
             .qid(IDENTIFIER_3_QUERY_ID)
             .description(IDENTIFIER_3_DESCRIPTION)
@@ -5614,7 +5396,6 @@ public abstract class BaseTest {
             .build();
 
     public final static IdentifierUpdateDto IDENTIFIER_3_DTO_UPDATE_REQUEST = IdentifierUpdateDto.builder()
-            .cid(IDENTIFIER_3_CONTAINER_ID)
             .dbid(IDENTIFIER_3_DATABASE_ID)
             .qid(IDENTIFIER_3_QUERY_ID)
             .description(IDENTIFIER_3_DESCRIPTION)
@@ -5630,7 +5411,6 @@ public abstract class BaseTest {
             .build();
 
     public final static Long IDENTIFIER_4_ID = 4L;
-    public final static Long IDENTIFIER_4_CONTAINER_ID = CONTAINER_4_ID;
     public final static Long IDENTIFIER_4_DATABASE_ID = DATABASE_4_ID;
     public final static String IDENTIFIER_4_DESCRIPTION = "Selecting all from the weather Sweden table";
     public final static String IDENTIFIER_4_TITLE = "Sweden weather data";
@@ -5655,7 +5435,6 @@ public abstract class BaseTest {
 
     public final static Identifier IDENTIFIER_4 = Identifier.builder()
             .id(IDENTIFIER_4_ID)
-            .containerId(IDENTIFIER_4_CONTAINER_ID)
             .databaseId(IDENTIFIER_4_DATABASE_ID)
             .description(IDENTIFIER_4_DESCRIPTION)
             .title(IDENTIFIER_4_TITLE)
@@ -5680,7 +5459,6 @@ public abstract class BaseTest {
 
     public final static Identifier IDENTIFIER_4_SIMPLE = Identifier.builder()
             .id(IDENTIFIER_4_ID)
-            .containerId(IDENTIFIER_4_CONTAINER_ID)
             .databaseId(IDENTIFIER_4_DATABASE_ID)
             .description(IDENTIFIER_4_DESCRIPTION)
             .title(IDENTIFIER_4_TITLE)

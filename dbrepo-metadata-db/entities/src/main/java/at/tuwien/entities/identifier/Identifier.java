@@ -4,17 +4,19 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.LanguageType;
 import at.tuwien.entities.database.License;
 import at.tuwien.entities.user.User;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import jakarta.persistence.*;;
-import jakarta.validation.constraints.NotBlank;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.List;
+
+;
 
 @Data
 @Entity
@@ -24,7 +26,7 @@ import java.util.List;
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 @jakarta.persistence.Table(name = "mdb_identifiers", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"qid", "cid", "dbid"})
+        @UniqueConstraint(columnNames = {"qid", "dbid"})
 })
 public class Identifier implements Serializable {
 
@@ -34,9 +36,6 @@ public class Identifier implements Serializable {
     @GenericGenerator(name = "identifiers-sequence", strategy = "increment")
     @Column(updatable = false, nullable = false)
     private Long id;
-
-    @Column(name = "cid", nullable = false)
-    private Long containerId;
 
     @Column(name = "dbid", nullable = false)
     private Long databaseId;

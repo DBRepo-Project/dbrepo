@@ -4,19 +4,20 @@ import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.user.User;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import jakarta.persistence.*;;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+
+;
 
 @Data
 @Entity
@@ -26,12 +27,14 @@ import java.util.UUID;
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 @jakarta.persistence.Table(name = "mdb_databases", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"id", "internalName"})
+        @UniqueConstraint(columnNames = {"cid", "internalName"})
 })
 public class Database implements Serializable {
 
     @Id
     @EqualsAndHashCode.Include
+    @GeneratedValue(generator = "databases-sequence")
+    @GenericGenerator(name = "databases-sequence", strategy = "increment")
     @Column(updatable = false, nullable = false)
     private Long id;
 
@@ -57,11 +60,14 @@ public class Database implements Serializable {
     })
     private User owner;
 
+    @Column(nullable = false)
+    private Long cid;
+
     @ToString.Exclude
     @org.springframework.data.annotation.Transient
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumns({
-            @JoinColumn(name = "id", referencedColumnName = "id", insertable = false, updatable = false)
+            @JoinColumn(name = "cid", referencedColumnName = "id", insertable = false, updatable = false)
     })
     private Container container;
 

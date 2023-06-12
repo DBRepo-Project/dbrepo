@@ -1,10 +1,9 @@
 package at.tuwien.api.container.image;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
-
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
 @Getter
@@ -20,15 +19,11 @@ public class ImageBriefDto {
     private Long id;
 
     @NotBlank
-    @Schema(example = "docker.io/library")
-    private String registry;
-
-    @NotBlank
     @Schema(example = "mariadb")
-    private String repository;
+    private String name;
 
     @NotBlank
     @Schema(example = "10.5")
-    private String tag;
+    private String version;
 
 }

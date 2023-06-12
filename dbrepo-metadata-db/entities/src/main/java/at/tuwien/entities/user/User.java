@@ -1,17 +1,18 @@
 package at.tuwien.entities.user;
 
-import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.identifier.Identifier;
+import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.core.Authentication;
 
-import jakarta.persistence.*;;
 import java.security.Principal;
 import java.util.List;
 import java.util.UUID;
+
+;
 
 @Data
 @Entity
@@ -21,7 +22,7 @@ import java.util.UUID;
 @ToString
 @EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Table(name = "user_entity", uniqueConstraints = {
+@Table(name = "USER_ENTITY", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"REALM_ID", "EMAIL"}),
         @UniqueConstraint(columnNames = {"REALM_ID", "USERNAME"})
 })
@@ -77,11 +78,6 @@ public class User {
     @ToString.Exclude
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "user")
     private List<Credential> credentials;
-
-    @Transient
-    @ToString.Exclude
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "owner")
-    private List<Container> containers;
 
     @Transient
     @ToString.Exclude

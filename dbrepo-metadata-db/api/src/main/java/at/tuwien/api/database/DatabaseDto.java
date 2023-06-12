@@ -8,11 +8,10 @@ import at.tuwien.api.user.UserBriefDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
-import lombok.extern.jackson.Jacksonized;
-
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.*;
+import lombok.extern.jackson.Jacksonized;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 
@@ -65,7 +64,6 @@ public class DatabaseDto {
     @org.springframework.data.annotation.Transient
     private ImageDto image;
 
-    @org.springframework.data.annotation.Transient
     private ContainerDto container;
 
     private List<DatabaseAccessDto> accesses;
