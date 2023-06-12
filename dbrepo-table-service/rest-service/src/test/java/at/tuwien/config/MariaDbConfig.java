@@ -29,7 +29,8 @@ public class MariaDbConfig {
      * Inserts a query into a created database with given hostname and database name. The method uses the JDBC in-out
      * notation <a href="#{@link}">{@link https://learn.microsoft.com/en-us/sql/connect/jdbc/using-sql-escape-sequences?view=sql-server-ver16#stored-procedure-calls}</a>
      *
-     * @param database The database.
+     * @param hostname The hostname.
+     * @param database The database name.
      * @param query    The query.
      * @param username The connection username.
      * @param password The connection password.
@@ -186,7 +187,8 @@ public class MariaDbConfig {
      * Inserts a query into a created database with given hostname and database name. The method uses the JDBC in-out
      * notation <a href="#{@link}">{@link https://learn.microsoft.com/en-us/sql/connect/jdbc/using-sql-escape-sequences?view=sql-server-ver16#stored-procedure-calls}</a>
      *
-     * @param database The database.
+     * @param hostname The hostname.
+     * @param database The database name.
      * @param query    The query.
      * @param username The connection username.
      * @param password The connection password.
@@ -216,7 +218,8 @@ public class MariaDbConfig {
      * Inserts a query into a created database with given hostname and database name. The method uses the JDBC in-out
      * notation <a href="#{@link}">{@link https://learn.microsoft.com/en-us/sql/connect/jdbc/using-sql-escape-sequences?view=sql-server-ver16#stored-procedure-calls}</a>
      *
-     * @param database The database.
+     * @param hostname The hostname.
+     * @param database The database name.
      * @param query    The query.
      * @return The generated or retrieved query id.
      * @throws SQLException The procedure did not succeed.

@@ -75,7 +75,7 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            generic_create(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, null, USER_2_USERNAME, USER_2, null);
+            generic_create(DATABASE_1_ID, DATABASE_1, null, USER_2_USERNAME, USER_2, null);
         });
     }
 
@@ -85,7 +85,7 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            generic_create(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, null, USER_4_USERNAME, USER_4, USER_4_PRINCIPAL);
+            generic_create(DATABASE_1_ID, DATABASE_1, null, USER_4_USERNAME, USER_4, USER_4_PRINCIPAL);
         });
     }
 
@@ -97,10 +97,10 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
         /* mock */
         doNothing()
                 .when(accessService)
-                .create(eq(CONTAINER_1_ID), eq(DATABASE_1_ID), any(DatabaseGiveAccessDto.class));
+                .create(eq(DATABASE_1_ID), any(DatabaseGiveAccessDto.class));
 
         /* test */
-        generic_create(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, null, USER_2_USERNAME, USER_2, USER_1_PRINCIPAL);
+        generic_create(DATABASE_1_ID, DATABASE_1, null, USER_2_USERNAME, USER_2, USER_1_PRINCIPAL);
     }
 
     @Test
@@ -109,7 +109,7 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            generic_find(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, null, USER_1_USERNAME, null, null);
+            generic_find(DATABASE_1_ID, DATABASE_1, null, USER_1_USERNAME, null, null);
         });
     }
 
@@ -119,7 +119,7 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            generic_find(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, null, USER_2_USERNAME, USER_2_ID, USER_2_PRINCIPAL);
+            generic_find(DATABASE_1_ID, DATABASE_1, null, USER_2_USERNAME, USER_2_ID, USER_2_PRINCIPAL);
         });
     }
 
@@ -128,7 +128,7 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
     public void find_hasRoleHasAccess_succeeds() throws AccessDeniedException, NotAllowedException {
 
         /* test */
-        generic_find(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, DATABASE_1_USER_1_READ_ACCESS, USER_1_USERNAME, USER_1_ID, USER_1_PRINCIPAL);
+        generic_find(DATABASE_1_ID, DATABASE_1, DATABASE_1_USER_1_READ_ACCESS, USER_1_USERNAME, USER_1_ID, USER_1_PRINCIPAL);
     }
 
     @Test
@@ -141,7 +141,7 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            generic_update(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, null, USER_4_USERNAME, null);
+            generic_update(DATABASE_1_ID, DATABASE_1, null, USER_4_USERNAME, null);
         });
     }
 
@@ -155,7 +155,7 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            generic_update(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, null, USER_4_USERNAME, USER_1_PRINCIPAL);
+            generic_update(DATABASE_1_ID, DATABASE_1, null, USER_4_USERNAME, USER_1_PRINCIPAL);
         });
     }
 
@@ -169,7 +169,7 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            generic_update(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, null, USER_4_USERNAME, USER_4_PRINCIPAL);
+            generic_update(DATABASE_1_ID, DATABASE_1, null, USER_4_USERNAME, USER_4_PRINCIPAL);
         });
     }
 
@@ -183,10 +183,10 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(Optional.of(USER_1));
         doNothing()
                 .when(accessService)
-                .update(eq(CONTAINER_1_ID), eq(DATABASE_1_ID), eq(USER_2_USERNAME), any(DatabaseModifyAccessDto.class));
+                .update(eq(DATABASE_1_ID), eq(USER_2_USERNAME), any(DatabaseModifyAccessDto.class));
 
         /* test */
-        generic_update(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, DATABASE_1_USER_2_WRITE_OWN_ACCESS, USER_2_USERNAME, USER_1_PRINCIPAL);
+        generic_update(DATABASE_1_ID, DATABASE_1, DATABASE_1_USER_2_WRITE_OWN_ACCESS, USER_2_USERNAME, USER_1_PRINCIPAL);
     }
 
     @Test
@@ -195,7 +195,7 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            generic_revoke(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1_USER_1_WRITE_ALL_ACCESS, USER_2_USERNAME, USER_1_PRINCIPAL);
+            generic_revoke(DATABASE_1_ID, DATABASE_1_USER_1_WRITE_ALL_ACCESS, USER_2_USERNAME, USER_1_PRINCIPAL);
         });
     }
 
@@ -205,7 +205,7 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            generic_revoke(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1_USER_1_WRITE_ALL_ACCESS, USER_2_USERNAME, USER_4_PRINCIPAL);
+            generic_revoke(DATABASE_1_ID, DATABASE_1_USER_1_WRITE_ALL_ACCESS, USER_2_USERNAME, USER_4_PRINCIPAL);
         });
     }
 
@@ -217,17 +217,17 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
         /* mock */
         doNothing()
                 .when(accessService)
-                .delete(CONTAINER_1_ID, DATABASE_1_ID, USER_2_USERNAME);
+                .delete(DATABASE_1_ID, USER_2_USERNAME);
 
         /* test */
-        generic_revoke(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1_USER_1_WRITE_ALL_ACCESS, USER_2_USERNAME, USER_1_PRINCIPAL);
+        generic_revoke(DATABASE_1_ID, DATABASE_1_USER_1_WRITE_ALL_ACCESS, USER_2_USERNAME, USER_1_PRINCIPAL);
     }
 
     /* ################################################################################################### */
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
 
-    protected void generic_create(Long containerId, Long databaseId, Database database, DatabaseAccess access,
+    protected void generic_create(Long databaseId, Database database, DatabaseAccess access,
                                   String username, User user, Principal principal) throws UserNotFoundException,
             NotAllowedException, QueryMalformedException, DatabaseNotFoundException, DatabaseMalformedException,
             AccessDeniedException {
@@ -253,12 +253,12 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
         }
 
         /* test */
-        final ResponseEntity<?> response = accessEndpoint.create(containerId, databaseId, request, principal);
+        final ResponseEntity<?> response = accessEndpoint.create(databaseId, request, principal);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
         assertNull(response.getBody());
     }
 
-    protected void generic_find(Long containerId, Long databaseId, Database database, DatabaseAccess access,
+    protected void generic_find(Long databaseId, Database database, DatabaseAccess access,
                                 String username, UUID userId, Principal principal) throws AccessDeniedException,
             NotAllowedException {
 
@@ -277,7 +277,7 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
         }
 
         /* test */
-        final ResponseEntity<DatabaseAccessDto> response = accessEndpoint.find(containerId, databaseId, principal);
+        final ResponseEntity<DatabaseAccessDto> response = accessEndpoint.find(databaseId, principal);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         final DatabaseAccessDto dto = response.getBody();
@@ -286,7 +286,7 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
         assertEquals(accessMapper.accessType(access.getType()), dto.getType());
     }
 
-    protected void generic_update(Long containerId, Long databaseId, Database database, DatabaseAccess access,
+    protected void generic_update(Long databaseId, Database database, DatabaseAccess access,
                                   String username, Principal principal) throws AccessDeniedException,
             NotAllowedException, UserNotFoundException, QueryMalformedException, DatabaseNotFoundException, DatabaseMalformedException {
         final DatabaseModifyAccessDto request = DatabaseModifyAccessDto.builder()
@@ -308,12 +308,12 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
         }
 
         /* test */
-        final ResponseEntity<?> response = accessEndpoint.update(containerId, databaseId, username, request, principal);
+        final ResponseEntity<?> response = accessEndpoint.update(databaseId, username, request, principal);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
         assertNull(response.getBody());
     }
 
-    protected void generic_revoke(Long containerId, Long databaseId, DatabaseAccess access, String username,
+    protected void generic_revoke(Long databaseId, DatabaseAccess access, String username,
                                   Principal principal) throws AccessDeniedException, NotAllowedException,
             UserNotFoundException, QueryMalformedException, DatabaseNotFoundException, DatabaseMalformedException {
 
@@ -330,7 +330,7 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
         }
 
         /* test */
-        final ResponseEntity<?> response = accessEndpoint.revoke(containerId, databaseId, username, principal);
+        final ResponseEntity<?> response = accessEndpoint.revoke(databaseId, username, principal);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
         assertNull(response.getBody());
     }

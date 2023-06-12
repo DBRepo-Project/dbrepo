@@ -3,9 +3,9 @@ package at.tuwien.config;
 import at.tuwien.auth.AuthTokenFilter;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -17,8 +17,6 @@ import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
-
-import jakarta.servlet.http.HttpServletResponse;
 
 @Configuration
 @EnableWebSecurity
@@ -46,7 +44,7 @@ public class WebSecurityConfig {
                 new AntPathRequestMatcher("/swagger-ui.html")
         );
         final OrRequestMatcher publicEndpoints = new OrRequestMatcher(
-                new AntPathRequestMatcher("/api/container/**/database/**", "GET")
+                new AntPathRequestMatcher("/api/database/**", "GET")
         );
         /* enable CORS and disable CSRF */
         http = http.cors().and().csrf().disable();
