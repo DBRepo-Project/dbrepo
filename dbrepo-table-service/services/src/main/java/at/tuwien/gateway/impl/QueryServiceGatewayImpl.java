@@ -20,15 +20,14 @@ public class QueryServiceGatewayImpl implements QueryServiceGateway {
     }
 
     @Override
-    public void declareConsumer(Long containerId, Long databaseId, Long tableId, String authorization) throws AmqpException {
-        final String url = "/api/container/" + containerId + "/database/" + databaseId + "/table/" + tableId + "/consumer";
+    public void declareConsumer(Long databaseId, Long tableId, String authorization) throws AmqpException {
+        final String url = "/api/database/" + databaseId + "/table/" + tableId + "/consumer";
         final HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", authorization);
         final ResponseEntity<Void> response = restTemplate.exchange(url, HttpMethod.POST,
                 new HttpEntity<>(null, headers), Void.class);
         if (!response.getStatusCode().equals(HttpStatus.ACCEPTED)) {
-            log.error("Failed to declare consumer for container with id {} database with id {} table with id {}",
-                    containerId, databaseId, tableId);
+            log.error("Failed to declare consumer for database with id {} table with id {}", databaseId, tableId);
             throw new AmqpException("Failed to declare consumer");
         }
     }

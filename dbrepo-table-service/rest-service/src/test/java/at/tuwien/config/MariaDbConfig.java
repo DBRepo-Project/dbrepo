@@ -1,14 +1,8 @@
 package at.tuwien.config;
 
-import at.tuwien.api.database.AccessTypeDto;
-import at.tuwien.api.database.DatabaseGiveAccessDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
-import at.tuwien.entities.user.User;
-import at.tuwien.exception.QueryMalformedException;
-import at.tuwien.mapper.DatabaseMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
@@ -22,15 +16,11 @@ import java.util.List;
 @Configuration
 public class MariaDbConfig {
 
-    @Autowired
-    private DatabaseMapper databaseMapper;
-
     /**
      * Inserts a query into a created database with given hostname and database name. The method uses the JDBC in-out
      * notation <a href="#{@link}">{@link https://learn.microsoft.com/en-us/sql/connect/jdbc/using-sql-escape-sequences?view=sql-server-ver16#stored-procedure-calls}</a>
      *
-     * @param hostname The hostname.
-     * @param database The database name.
+     * @param database The database.
      * @param query    The query.
      * @param username The connection username.
      * @param password The connection password.
@@ -117,24 +107,6 @@ public class MariaDbConfig {
         }
     }
 
-    public void mockGrantUserPermissions(Container container, Database database, User user) throws SQLException,
-            QueryMalformedException {
-        final String jdbc = "jdbc:mariadb://" + container.getHost() + ":" + container.getPort() + "/" + database.getInternalName();
-        log.trace("connect to database {}", jdbc);
-        try (Connection connection = DriverManager.getConnection(jdbc, container.getPrivilegedUsername(), container.getPrivilegedPassword())) {
-            final DatabaseGiveAccessDto access = DatabaseGiveAccessDto.builder()
-                    .username(user.getUsername())
-                    .type(AccessTypeDto.WRITE_ALL)
-                    .build();
-            final PreparedStatement statement1 = databaseMapper.rawGrantUserAccessQuery(connection, access);
-            statement1.executeUpdate();
-            final PreparedStatement statement2 = databaseMapper.rawGrantUserProcedure(connection, user);
-            statement2.executeUpdate();
-            final PreparedStatement statement3 = databaseMapper.rawFlushPrivileges(connection);
-            statement3.executeUpdate();
-        }
-    }
-
     public static List<String> getUsernames(String hostname, String database, String username, String password)
             throws SQLException {
         final String jdbc = "jdbc:mariadb://" + hostname + "/" + database;
@@ -187,8 +159,7 @@ public class MariaDbConfig {
      * Inserts a query into a created database with given hostname and database name. The method uses the JDBC in-out
      * notation <a href="#{@link}">{@link https://learn.microsoft.com/en-us/sql/connect/jdbc/using-sql-escape-sequences?view=sql-server-ver16#stored-procedure-calls}</a>
      *
-     * @param hostname The hostname.
-     * @param database The database name.
+     * @param database The database.
      * @param query    The query.
      * @param username The connection username.
      * @param password The connection password.
@@ -218,8 +189,7 @@ public class MariaDbConfig {
      * Inserts a query into a created database with given hostname and database name. The method uses the JDBC in-out
      * notation <a href="#{@link}">{@link https://learn.microsoft.com/en-us/sql/connect/jdbc/using-sql-escape-sequences?view=sql-server-ver16#stored-procedure-calls}</a>
      *
-     * @param hostname The hostname.
-     * @param database The database name.
+     * @param database The database.
      * @param query    The query.
      * @return The generated or retrieved query id.
      * @throws SQLException The procedure did not succeed.

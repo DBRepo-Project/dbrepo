@@ -3,9 +3,8 @@ package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.table.TableDto;
-import at.tuwien.config.DockerConfig;
-import at.tuwien.config.H2Utils;
 import at.tuwien.config.IndexConfig;
+import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.exception.*;
 import at.tuwien.repository.sdb.TableColumnIdxRepository;
@@ -14,7 +13,8 @@ import at.tuwien.repository.mdb.*;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.apache.http.auth.BasicUserPrincipal;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -23,9 +23,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.testcontainers.containers.MariaDBContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.io.File;
 import java.security.Principal;
+import java.sql.SQLException;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -36,6 +39,7 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 @Log4j2
+@Testcontainers
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @EnableAutoConfiguration(exclude = RabbitAutoConfiguration.class)
 @SpringBootTest
@@ -78,19 +82,12 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
     @Autowired
     private RealmRepository realmRepository;
 
+    @Container
     @Autowired
-    private H2Utils h2Utils;
-
-    private static final String BIND_WEATHER = new File("../../dbrepo-metadata-db/test/src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
+    private MariaDBContainer<?> mariaDBContainer;
 
     @BeforeEach
-    public void beforeEach() throws InterruptedException {
-        afterEach();
-        /* create networks */
-        DockerConfig.createAllNetworks();
-        /* create user container */
-        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
-        DockerConfig.startContainer(CONTAINER_1);
+    public void beforeEach() throws SQLException {
         /* metadata database */
         imageRepository.save(IMAGE_1);
         realmRepository.save(REALM_DBREPO);
@@ -101,12 +98,8 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
         databaseRepository.save(DATABASE_1_SIMPLE);
         tableRepository.save(TABLE_1);
         tableRepository.save(TABLE_2);
-    }
-
-    @AfterEach
-    public void afterEach() {
-        DockerConfig.removeAllContainers();
-        DockerConfig.removeAllNetworks();
+        MariaDbConfig.dropAllDatabases(CONTAINER_1);
+        MariaDbConfig.createInitDatabase(CONTAINER_1, DATABASE_1);
     }
 
     @Test
@@ -121,7 +114,7 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
                 .thenReturn(List.of());
 
         /* test */
-        tableService.createTable(CONTAINER_1_ID, DATABASE_1_ID, TABLE_3_CREATE_DTO, USER_1_PRINCIPAL);
+        tableService.createTable(DATABASE_1_ID, TABLE_3_CREATE_DTO, USER_1_PRINCIPAL);
     }
 
     @Test
@@ -138,11 +131,11 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
 
         /* test */
         try {
-            tableService.createTable(CONTAINER_1_ID, DATABASE_1_ID, TABLE_3_INVALID_CREATE_DTO, principal);
+            tableService.createTable(DATABASE_1_ID, TABLE_3_INVALID_CREATE_DTO, principal);
         } catch (TableMalformedException e) {
             /* ignore */
         }
-        tableService.createTable(CONTAINER_1_ID, DATABASE_1_ID, TABLE_3_CREATE_DTO, principal);
+        tableService.createTable(DATABASE_1_ID, TABLE_3_CREATE_DTO, principal);
     }
 
     @Test
@@ -157,8 +150,8 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
                 .thenReturn(List.of());
 
         /* test */
-        tableService.createTable(CONTAINER_1_ID, DATABASE_1_ID, TABLE_4_CREATE_DTO, USER_1_PRINCIPAL); // table to reference
-        tableService.createTable(CONTAINER_1_ID, DATABASE_1_ID, TABLE_5_CREATE_DTO, USER_1_PRINCIPAL);
+        tableService.createTable(DATABASE_1_ID, TABLE_4_CREATE_DTO, USER_1_PRINCIPAL); // table to reference
+        tableService.createTable(DATABASE_1_ID, TABLE_5_CREATE_DTO, USER_1_PRINCIPAL);
     }
 
     @Test
@@ -166,7 +159,7 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
 
         /* test */
         assertThrows(TableMalformedException.class, () -> {
-            tableService.createTable(CONTAINER_1_ID, DATABASE_1_ID, TABLE_5_CREATE_DTO, USER_1_PRINCIPAL);
+            tableService.createTable(DATABASE_1_ID, TABLE_5_CREATE_DTO, USER_1_PRINCIPAL);
         });
     }
 
@@ -180,7 +173,7 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
                 .delete(any(TableDto.class));
 
         /* test */
-        tableService.deleteTable(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID);
+        tableService.deleteTable(DATABASE_1_ID, TABLE_1_ID);
         assertTrue(userRepository.findById(TABLE_1_CREATED_BY).isPresent());
         assertTrue(databaseRepository.findById(TABLE_1_DATABASE_ID).isPresent());
     }
@@ -195,7 +188,7 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
-            tableService.deleteTable(CONTAINER_1_ID, DATABASE_1_ID, 9999L);
+            tableService.deleteTable(DATABASE_1_ID, 9999L);
         });
     }
 
