@@ -3,20 +3,19 @@ package at.tuwien.service;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.container.image.ImageChangeDto;
 import at.tuwien.api.container.image.ImageCreateDto;
-import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.container.image.ContainerImage;
-import at.tuwien.exception.*;
+import at.tuwien.exception.ImageAlreadyExistsException;
+import at.tuwien.exception.ImageNotFoundException;
 import at.tuwien.repository.mdb.ImageRepository;
 import at.tuwien.service.impl.ImageServiceImpl;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.ConstraintViolationException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-
-import jakarta.persistence.EntityNotFoundException;
-import jakarta.validation.ConstraintViolationException;
 
 import java.util.List;
 import java.util.Optional;
@@ -28,9 +27,6 @@ import static org.mockito.Mockito.*;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 public class ImageServiceUnitTest extends BaseUnitTest {
-
-    @MockBean
-    private ReadyConfig readyConfig;
 
     @Autowired
     private ImageServiceImpl imageService;
@@ -48,8 +44,8 @@ public class ImageServiceUnitTest extends BaseUnitTest {
         /* test */
         final List<ContainerImage> response = imageService.getAll();
         assertEquals(1, response.size());
-        assertEquals(IMAGE_1_REPOSITORY, response.get(0).getRepository());
-        assertEquals(IMAGE_1_TAG, response.get(0).getTag());
+        assertEquals(IMAGE_1_NAME, response.get(0).getName());
+        assertEquals(IMAGE_1_VERSION, response.get(0).getVersion());
     }
 
     @Test
@@ -61,8 +57,8 @@ public class ImageServiceUnitTest extends BaseUnitTest {
 
         /* test */
         final ContainerImage response = imageService.find(IMAGE_1_ID);
-        assertEquals(IMAGE_1_REPOSITORY, response.getRepository());
-        assertEquals(IMAGE_1_TAG, response.getTag());
+        assertEquals(IMAGE_1_NAME, response.getName());
+        assertEquals(IMAGE_1_VERSION, response.getVersion());
     }
 
     @Test
@@ -81,10 +77,9 @@ public class ImageServiceUnitTest extends BaseUnitTest {
     @Test
     public void create_duplicate_fails() {
         final ImageCreateDto request = ImageCreateDto.builder()
-                .repository(IMAGE_1_REPOSITORY)
-                .tag(IMAGE_1_TAG)
+                .name(IMAGE_1_NAME)
+                .version(IMAGE_1_VERSION)
                 .defaultPort(IMAGE_1_PORT)
-                .environment(IMAGE_1_ENV_DTO)
                 .build();
 
         /* mock */
@@ -101,8 +96,6 @@ public class ImageServiceUnitTest extends BaseUnitTest {
     public void update_succeeds() throws ImageNotFoundException {
         final ImageServiceImpl mockImageService = mock(ImageServiceImpl.class);
         final ImageChangeDto request = ImageChangeDto.builder()
-                .registry(IMAGE_1_REGISTRY)
-                .environment(IMAGE_1_ENV_DTO)
                 .defaultPort(IMAGE_1_PORT)
                 .build();
 
@@ -116,16 +109,14 @@ public class ImageServiceUnitTest extends BaseUnitTest {
 
         /* test */
         final ContainerImage response = mockImageService.update(IMAGE_1_ID, request);
-        assertEquals(IMAGE_1_REPOSITORY, response.getRepository());
-        assertEquals(IMAGE_1_TAG, response.getTag());
+        assertEquals(IMAGE_1_NAME, response.getName());
+        assertEquals(IMAGE_1_VERSION, response.getVersion());
     }
 
     @Test
     public void update_port_succeeds() throws ImageNotFoundException {
         final ImageServiceImpl mockImageService = mock(ImageServiceImpl.class);
         final ImageChangeDto request = ImageChangeDto.builder()
-                .registry(IMAGE_1_REGISTRY)
-                .environment(IMAGE_1_ENV_DTO)
                 .defaultPort(9999)
                 .build();
 
@@ -139,14 +130,13 @@ public class ImageServiceUnitTest extends BaseUnitTest {
 
         /* test */
         final ContainerImage response = mockImageService.update(IMAGE_1_ID, request);
-        assertEquals(IMAGE_1_REPOSITORY, response.getRepository());
-        assertEquals(IMAGE_1_TAG, response.getTag());
+        assertEquals(IMAGE_1_NAME, response.getName());
+        assertEquals(IMAGE_1_VERSION, response.getVersion());
     }
 
     @Test
     public void update_notFound_fails() {
         final ImageChangeDto request = ImageChangeDto.builder()
-                .environment(IMAGE_1_ENV_DTO)
                 .defaultPort(IMAGE_1_PORT)
                 .build();
 

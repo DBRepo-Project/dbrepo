@@ -3,16 +3,14 @@ package at.tuwien.mapper;
 import at.tuwien.api.container.ContainerBriefDto;
 import at.tuwien.api.container.ContainerCreateRequestDto;
 import at.tuwien.api.container.ContainerDto;
-import at.tuwien.api.container.ContainerStateDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.container.image.ContainerImage;
-import at.tuwien.entities.user.User;
-import com.github.dockerjava.api.command.InspectContainerResponse;
-import org.mapstruct.*;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Mappings;
 
 import java.text.Normalizer;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.regex.Pattern;
 
 @Mapper(componentModel = "spring", uses = {ImageMapper.class, DatabaseMapper.class, UserMapper.class})
@@ -20,14 +18,7 @@ public interface ContainerMapper {
 
     org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ContainerMapper.class);
 
-    default String containerCreateRequestDtoToDockerImage(ContainerCreateRequestDto data) {
-        final String image = data.getRepository() + ":" + data.getTag();
-        log.trace("mapped container request {} to image {}", data, image);
-        final User user;
-        return image;
-    }
-
-    ContainerImage containerCreateRequestDtoToContainerImage(ContainerCreateRequestDto data);
+    Container containerCreateRequestDtoToContainer(ContainerCreateRequestDto data);
 
     ContainerDto containerToContainerDto(Container data);
 
@@ -35,21 +26,6 @@ public interface ContainerMapper {
             @Mapping(target = "id", source = "id")
     })
     ContainerBriefDto containerToDatabaseContainerBriefDto(Container data);
-
-    @Mappings({
-            @Mapping(source = "state", target = "state", qualifiedByName = "containerStateDto"),
-            @Mapping(source = "id", target = "hash"),
-            @Mapping(target = "id", ignore = true),
-            @Mapping(target = "database", ignore = true),
-    })
-    ContainerDto inspectContainerResponseToContainerDto(InspectContainerResponse data);
-
-    @Named("containerStateDto")
-    default ContainerStateDto containerStateToContainerStateDto(InspectContainerResponse.ContainerState data) {
-        final ContainerStateDto dto = ContainerStateDto.valueOf(Objects.requireNonNull(data.getStatus()).toUpperCase());
-        log.trace("mapped container state {} to state {}", data, dto);
-        return dto;
-    }
 
     // https://stackoverflow.com/questions/1657193/java-code-library-for-generating-slugs-for-use-in-pretty-urls#answer-1657250
     default String containerToInternalContainerName(Container data) {
