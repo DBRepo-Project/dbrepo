@@ -99,7 +99,7 @@
 </template>
 
 <script>
-import ContainerService from '@/api/container.service'
+import DatabaseService from '@/api/database.service'
 export default {
   props: {
     columns: {
@@ -134,11 +134,6 @@ export default {
       valid: true,
       finished: false,
       tableColumns: [],
-      container: {
-        image: {
-          id: null
-        }
-      },
       columnTypes: [
         // { value: 'ENUM', text: 'Enumeration' }, // Disabled for now, not implemented, #145
         { value: 'boolean', text: 'Boolean' },
@@ -165,7 +160,7 @@ export default {
   },
   mounted () {
     this.localLoading = this.loading
-    this.loadContainer()
+    this.loadDateFormats()
   },
   methods: {
     needsShift (column) {
@@ -174,19 +169,13 @@ export default {
       }
       return this.columns.filter(c => c.type === 'date' || c.type === 'timestamp').length > 0
     },
-    loadContainer () {
-      this.localLoading = true
-      ContainerService.findOne(this.$route.params.container_id)
-        .then((container) => {
-          this.container = container
-          ContainerService.findImage(container.image.id)
-            .then((image) => {
-              this.dateFormats = image.date_formats
-            })
-        })
-        .finally(() => {
-          this.localLoading = false
-        })
+    async loadDateFormats () {
+      try {
+        const database = await DatabaseService.findOne(this.$route.params.database_id)
+        this.dateFormats = database.container.image.date_formats
+      } finally {
+        this.localLoading = false
+      }
     },
     submit () {
       this.finished = true

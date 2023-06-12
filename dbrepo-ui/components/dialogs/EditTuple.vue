@@ -198,7 +198,7 @@ export default {
         data: this.localTuple,
         keys: constraints
       }
-      QueryService.updateTuple(this.$route.params.container_id, this.$route.params.database_id, this.$route.params.table_id, data)
+      QueryService.updateTuple(this.$route.params.database_id, this.$route.params.table_id, data)
         .then(() => {
           this.$toast.success('Successfully updated tuple!')
           this.$emit('close', { success: true })
@@ -216,7 +216,7 @@ export default {
           this.localTuple[column.internal_name] = null
         }
       })
-      QueryService.insertTuple(this.$route.params.container_id, this.$route.params.database_id, this.$route.params.table_id, { data: this.localTuple })
+      QueryService.insertTuple(this.$route.params.database_id, this.$route.params.table_id, { data: this.localTuple })
         .then(() => {
           this.$toast.success('Successfully added tuple!')
           this.$emit('close', { success: true })

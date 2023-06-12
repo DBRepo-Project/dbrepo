@@ -271,12 +271,12 @@
 </template>
 
 <script>
-import DBToolbar from '@/components/DBToolbar'
-import Persist from '@/components/dialogs/Persist'
-import OrcidIcon from '@/components/icons/OrcidIcon'
-import Citation from '@/components/identifier/Citation'
+import DBToolbar from '@/components/DBToolbar.vue'
+import Persist from '@/components/dialogs/Persist.vue'
+import OrcidIcon from '@/components/icons/OrcidIcon.vue'
+import Citation from '@/components/identifier/Citation.vue'
 import { formatTimestampUTCLabel } from '@/utils'
-import Banner from '@/components/identifier/Banner'
+import Banner from '@/components/identifier/Banner.vue'
 import DatabaseMapper from '@/api/database.mapper'
 import DeleteIdentifier from '@/components/dialogs/DeleteIdentifier.vue'
 import ContainerService from '@/api/container.service'
@@ -300,10 +300,10 @@ export default {
       deleteDialog: false,
       persistDialog: false,
       items: [
-        { text: 'Databases', to: '/container', activeClass: '' },
+        { text: 'Databases', to: '/database', activeClass: '' },
         {
           text: `${this.$route.params.database_id}`,
-          to: `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/info`,
+          to: `/database/${this.$route.params.database_id}/info`,
           activeClass: ''
         }
       ]

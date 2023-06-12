@@ -2,27 +2,27 @@
   <div>
     <DBToolbar />
     <v-tabs-items v-model="tab">
-      <ViewList />
+      <TableList />
     </v-tabs-items>
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
   </div>
 </template>
 <script>
-import DBToolbar from '@/components/DBToolbar'
-import ViewList from '@/components/ViewList'
+import TableList from '@/components/TableList.vue'
+import DBToolbar from '@/components/DBToolbar.vue'
 
 export default {
-  name: 'Views',
+  name: 'Tables',
   components: {
-    ViewList,
+    TableList,
     DBToolbar
   },
   data () {
     return {
       db: null,
       items: [
-        { text: 'Databases', to: '/container', activeClass: '' },
-        { text: `${this.$route.params.database_id}`, to: `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table`, activeClass: '' }
+        { text: 'Databases', to: '/database', activeClass: '' },
+        { text: `${this.$route.params.database_id}`, to: `/database/${this.$route.params.database_id}/table`, activeClass: '' }
       ]
     }
   },
@@ -39,4 +39,7 @@ export default {
 </script>
 
 <style scoped>
+a.table_from_csv {
+  font-size: 14pt;
+}
 </style>

@@ -2,7 +2,7 @@
   <div v-if="canInsertTableData">
     <v-toolbar flat>
       <v-toolbar-title>
-        <v-btn id="back-btn" class="mr-2" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table`">
+        <v-btn id="back-btn" class="mr-2" :to="`/database/${$route.params.database_id}/table`">
           <v-icon left>mdi-arrow-left</v-icon>
         </v-btn>
       </v-toolbar-title>
@@ -183,7 +183,7 @@
       </v-stepper-step>
       <v-stepper-content step="5">
         <div class="mt-2">
-          <v-btn class="mb-1" color="primary" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${newTableId}`">
+          <v-btn class="mb-1" color="primary" :to="`/database/${$route.params.database_id}/table/${newTableId}`">
             View Table
           </v-btn>
         </div>
@@ -194,11 +194,11 @@
 </template>
 <script>
 import { notEmpty, isNonNegativeInteger } from '@/utils'
-import TableSchema from '@/components/TableSchema'
-import ContainerService from '@/api/container.service'
+import TableSchema from '@/components/TableSchema.vue'
 import TableService from '@/api/table.service'
 import MiddlewareService from '@/api/middleware.service'
 import AnalyseService from '@/api/analyse.service'
+import DatabaseService from '@/api/database.service'
 
 export default {
   name: 'TableFromCSV',
@@ -228,13 +228,13 @@ export default {
         { key: 'Single \'', value: '\'' }
       ],
       items: [
-        { text: 'Databases', to: '/container', activeClass: '' },
+        { text: 'Databases', to: '/database', activeClass: '' },
         {
           text: `${this.$route.params.database_id}`,
-          to: `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/info`,
+          to: `/database/${this.$route.params.database_id}/info`,
           activeClass: ''
         },
-        { text: 'Tables', to: `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table`, activeClass: '' }
+        { text: 'Tables', to: `/database/${this.$route.params.database_id}/table`, activeClass: '' }
       ],
       rules: {
         required: value => !!value || 'Required'
@@ -358,7 +358,7 @@ export default {
     },
     listTables () {
       this.loading = true
-      TableService.findAll(this.$route.params.container_id, this.$route.params.database_id)
+      TableService.findAll(this.$route.params.database_id)
         .then((tables) => {
           this.tableNames = tables.map(t => t.internal_name)
         })
@@ -375,18 +375,14 @@ export default {
       this.validStep4 = true
       this.createTable()
     },
-    loadDateFormats () {
+    async loadDateFormats () {
       this.loadingImage = true
-      ContainerService.findOne(this.$route.params.container_id)
-        .then((container) => {
-          ContainerService.findImage(container.image.id)
-            .then((image) => {
-              this.dateFormats = image.date_formats
-            })
-        })
-        .finally(() => {
-          this.loadingImage = true
-        })
+      try {
+        const database = await DatabaseService.findOne(this.$route.params.database_id)
+        this.dateFormats = database.container.image.date_formats
+      } finally {
+        this.localLoading = false
+      }
     },
     createTable () {
       /* make enum values to array */
@@ -441,10 +437,10 @@ export default {
           checks: []
         }
       })
-      TableService.create(this.$route.params.container_id, this.$route.params.database_id, table)
+      TableService.create(this.$route.params.database_id, table)
         .then((table) => {
           this.newTableId = table.id
-          TableService.importCsv(this.$route.params.container_id, this.$route.params.database_id, table.id, this.tableImport)
+          TableService.importCsv(this.$route.params.database_id, table.id, this.tableImport)
             .then(async () => {
               this.$toast.success('Successfully created table from import!')
               await this.$store.dispatch('reloadDatabase')

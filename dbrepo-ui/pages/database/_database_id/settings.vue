@@ -94,8 +94,8 @@
 </template>
 
 <script>
-import DBToolbar from '@/components/DBToolbar'
-import EditAccess from '@/components/dialogs/EditAccess'
+import DBToolbar from '@/components/DBToolbar.vue'
+import EditAccess from '@/components/dialogs/EditAccess.vue'
 import DatabaseService from '@/api/database.service'
 import UserService from '@/api/user.service'
 
@@ -135,7 +135,7 @@ export default {
         { text: 'Databases', to: '/container', activeClass: '' },
         {
           text: `${this.$route.params.database_id}`,
-          to: `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/info`,
+          to: `/database/${this.$route.params.database_id}/info`,
           activeClass: ''
         }
       ]
@@ -226,7 +226,7 @@ export default {
     },
     updateDatabaseVisibility () {
       this.loading = true
-      DatabaseService.modifyVisibility(this.$route.params.container_id, this.$route.params.database_id, this.modifyVisibility.is_public)
+      DatabaseService.modifyVisibility(this.$route.params.database_id, this.modifyVisibility.is_public)
         .then(() => {
           this.$toast.success('Successfully updated the database visibility')
           location.reload()
@@ -237,7 +237,7 @@ export default {
     },
     updateDatabaseOwner () {
       this.loading = true
-      DatabaseService.modifyOwner(this.$route.params.container_id, this.$route.params.database_id, this.modifyOwner.username)
+      DatabaseService.modifyOwner(this.$route.params.database_id, this.modifyOwner.username)
         .then(() => {
           this.$toast.success('Successfully updated the database owner')
           location.reload()

@@ -1,45 +1,36 @@
 <template>
   <div>
-    <v-progress-linear v-if="loadingContainers || loadingDatabases" :indeterminate="!error" />
+    <v-progress-linear v-if="loadingDatabases" :indeterminate="!error" />
     <v-card v-if="!$vuetify.theme.dark && containers.length> 0" flat tile>
       <v-divider class="mx-4" />
     </v-card>
     <v-card
-      v-for="(container, idx) in containers"
+      v-for="(database, idx) in databases"
       :key="idx"
-      :to="link(container)"
+      :to="link(database)"
       flat
       tile>
       <v-divider v-if="idx !== 0" class="mx-4" />
-      <v-card-title v-if="!hasDatabase(container)" v-text="container.name" />
-      <v-card-title v-if="hasDatabase(container)">
-        <a :href="`/container/${container.id}/database/${container.database.id}`">{{ container.name }}</a>
+      <v-card-title>
+        <a :href="`/database/${database.id}`">{{ database.name }}</a>
       </v-card-title>
-      <v-card-subtitle class="db-subtitle" v-text="formatCreators(container)" />
-      <v-card-text v-if="hasDatabase(container)" class="db-description">
+      <v-card-subtitle class="db-subtitle" v-text="formatCreators(database)" />
+      <v-card-text class="db-description">
         <div class="db-tags">
-          <v-chip v-if="hasDatabase(container) && container.database.is_public" small color="green" outlined>Public</v-chip>
-          <v-chip v-if="hasDatabase(container) && !container.database.is_public" small color="red" outlined>Private</v-chip>
+          <v-chip v-if="database.is_public" small color="green" outlined>Public</v-chip>
+          <v-chip v-if="!database.is_public" small color="red" outlined>Private</v-chip>
           <v-chip
-            v-if="identifierYear(container)"
+            v-if="identifierYear(database)"
             small
             outlined
-            v-text="identifierYear(container)" />
+            v-text="identifierYear(database)" />
           <v-chip
-            v-if="hasIdentifier(container)"
+            v-if="hasIdentifier(database)"
             small
             outlined
-            v-text="container.database.identifier.publisher" />
+            v-text="database.identifier.publisher" />
         </div>
-        <div v-text="identifierDescription(container)" />
-        <v-btn
-          v-if="needsDatabase(container)"
-          small
-          secondary
-          :loading="container?.loading"
-          @click.stop="createDatabase(container)">
-          Create Database
-        </v-btn>
+        <div v-text="identifierDescription(database)" />
       </v-card-text>
     </v-card>
     <v-toolbar v-if="false" flat>
@@ -56,23 +47,20 @@
 
 <script>
 import DatabaseService from '@/api/database.service'
-import ContainerService from '@/api/container.service'
-import ContainerMapper from '@/api/container.mapper'
+import DatabaseMapper from '@/api/database.mapper'
 
 export default {
   data () {
     return {
-      loadingContainers: false,
+      loadingDatabases: false,
       loadingCreate: false,
       createDbDialog: false,
       databases: [],
-      containers: [],
       searchQuery: null,
       limit: 100,
       items: [
-        { text: 'Databases', to: '/container', activeClass: '' }
+        { text: 'Databases', to: '/database', activeClass: '' }
       ],
-      loadingDatabases: false,
       error: false
     }
   },
@@ -85,64 +73,42 @@ export default {
     }
   },
   mounted () {
-    this.loadContainers()
+    this.loadDatabases()
   },
   methods: {
-    formatCreators (container) {
-      return ContainerMapper.containerToCreator(container)
+    formatCreators (database) {
+      return DatabaseMapper.databaseToOwner(database)
     },
-    needsDatabase (container) {
-      if (!this.user) {
-        return false
-      }
-      if (container.creator.username !== this.user.username) {
-        return false
-      }
-      return !container.database
+    hasIdentifier (database) {
+      return database && database.identifier
     },
-    hasDatabase (container) {
-      return container.database
-    },
-    hasIdentifier (container) {
-      return container.database && container.database.identifier
-    },
-    identifierYear (container) {
-      if (!container || !container.database || !container.database.identifier || !container.database.identifier.publication_year) {
+    identifierYear (database) {
+      if (!database || !database.identifier || !database.identifier.publication_year) {
         return null
       }
-      return container.database.identifier.publication_year
+      return database.identifier.publication_year
     },
-    identifierDescription (container) {
-      if (!container || !container.database || !container.database.identifier) {
+    identifierDescription (database) {
+      if (!database || !database.identifier) {
         return null
       }
-      return container.database.identifier.description
+      return database.identifier.description
     },
-    loadContainers () {
+    loadDatabases () {
       this.createDbDialog = false
-      this.loadingContainers = true
-      ContainerService.findAll(this.limit)
-        .then((containers) => {
-          this.containers = containers
-          console.info('Found', this.containers.length, 'container(s)')
+      this.loadingDatabases = true
+      DatabaseService.findAll() // TODO: write a findAllDatabases method
+        .then((databases) => {
+          this.databases = databases
+          console.info('Found', this.databases.length, 'container(s)')
         })
-        .finally(() => {
-          this.loadingContainers = false
-        })
+      this.loadingDatabases = false
     },
-    createDatabase (container) {
-      container.loading = true
-      DatabaseService.create(container.id, { name: container.name, is_public: true })
-        .then((database) => {
-          container.loading = false
-          this.$router.push(`/container/${container.id}/database/${database.id}`)
-        })
-    },
-    link (container) {
-      if (!container.database || !container.database.id) {
+    link (database) {
+      if (!database || !database.container) {
         return null
       }
-      return `/container/${container.id}/database/${container.database.id}`
+      return `/database/${database.id}`
     }
   }
 }

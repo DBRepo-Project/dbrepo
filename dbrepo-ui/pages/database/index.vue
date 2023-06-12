@@ -23,8 +23,8 @@
 </template>
 <script>
 import { mdiDatabaseArrowRightOutline } from '@mdi/js'
-import CreateDB from '@/components/dialogs/CreateDB'
-import DatabaseList from '@/components/DatabaseList'
+import CreateDB from '@/components/dialogs/CreateDB.vue'
+import DatabaseList from '@/components/DatabaseList.vue'
 
 export default {
   components: {
@@ -41,7 +41,7 @@ export default {
         is_public: true
       },
       items: [
-        { text: 'Databases', to: '/container', activeClass: '' }
+        { text: 'Databases', to: '/database', activeClass: '' }
       ],
       loadingDatabases: false,
       error: false,
@@ -77,7 +77,7 @@ export default {
     closed (event) {
       this.createDbDialog = false
       if (event.success) {
-        this.$refs.databases.loadContainers()
+        this.$refs.databases.loadDatabases()
       }
     }
   }

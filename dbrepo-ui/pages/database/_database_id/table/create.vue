@@ -2,7 +2,7 @@
   <div v-if="canCreateTable">
     <v-toolbar flat>
       <v-toolbar-title>
-        <v-btn id="back-btn" class="mr-2" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table`">
+        <v-btn id="back-btn" class="mr-2" :to="`/database/${$route.params.database_id}/table`">
           <v-icon left>mdi-arrow-left</v-icon>
         </v-btn>
       </v-toolbar-title>
@@ -59,7 +59,7 @@
 </template>
 
 <script>
-import TableSchema from '@/components/TableSchema'
+import TableSchema from '@/components/TableSchema.vue'
 import { notEmpty } from '@/utils'
 import TableService from '@/api/table.service'
 
@@ -82,13 +82,13 @@ export default {
         columns: []
       },
       items: [
-        { text: 'Databases', to: '/container', activeClass: '' },
+        { text: 'Databases', to: '/database', activeClass: '' },
         {
           text: `${this.$route.params.database_id}`,
-          to: `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/info`,
+          to: `/database/${this.$route.params.database_id}/info`,
           activeClass: ''
         },
-        { text: 'Tables', to: `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table`, activeClass: '' }
+        { text: 'Tables', to: `/database/${this.$route.params.database_id}/table`, activeClass: '' }
       ]
     }
   },
@@ -186,11 +186,11 @@ export default {
           checks: []
         }
       })
-      TableService.create(this.$route.params.container_id, this.$route.params.database_id, table)
+      TableService.create(this.$route.params.database_id, table)
         .then(async (table) => {
           this.$toast.success('Table created')
           await this.$store.dispatch('reloadDatabase')
-          await this.$router.push(`/container/${this.$route.params.container_id}/database/${this.databaseId}/table/${table.id}`)
+          await this.$router.push(`/database/${this.databaseId}/table/${table.id}`)
         })
     },
     schemaClose (event) {

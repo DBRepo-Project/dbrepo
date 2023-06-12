@@ -37,7 +37,7 @@
 </template>
 
 <script>
-import DBToolbar from '@/components/DBToolbar'
+import DBToolbar from '@/components/DBToolbar.vue'
 import DatabaseService from '@/api/database.service'
 
 export default {
@@ -49,10 +49,10 @@ export default {
       dialogDelete: false,
       confirm: null,
       items: [
-        { text: 'Databases', to: '/container', activeClass: '' },
+        { text: 'Databases', to: '/database', activeClass: '' },
         {
           text: `${this.$route.params.database_id}`,
-          to: `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/info`,
+          to: `/database/${this.$route.params.database_id}/info`,
           activeClass: ''
         }
       ]
@@ -74,7 +74,7 @@ export default {
   },
   methods: {
     deleteDatabase () {
-      DatabaseService.delete(this.$route.params.container_id, this.$route.params.database_id)
+      DatabaseService.delete(this.$route.params.database_id)
         .then(async () => {
           this.$toast.success(`Database "${this.db.name}" deleted.`)
           await this.$router.push({ path: '/databases' })

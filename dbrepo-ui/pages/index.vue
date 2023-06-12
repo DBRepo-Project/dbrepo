@@ -28,7 +28,7 @@
         <v-btn
           class="ml-2 mb-2"
           color="primary"
-          to="/container">
+          to="/database">
           Get Started
         </v-btn>
       </v-card-actions>

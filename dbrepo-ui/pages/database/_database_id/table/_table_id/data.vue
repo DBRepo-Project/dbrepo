@@ -45,8 +45,8 @@
   </div>
 </template>
 <script>
-import TimeTravel from '@/components/dialogs/TimeTravel'
-import TableToolbar from '@/components/TableToolbar'
+import TimeTravel from '@/components/dialogs/TimeTravel.vue'
+import TableToolbar from '@/components/TableToolbar.vue'
 import TableService from '@/api/table.service'
 import { formatTimestampUTC, formatDateUTC, formatTimestamp } from '@/utils'
 
@@ -80,10 +80,10 @@ export default {
       },
       dateColumns: [],
       items: [
-        { text: 'Databases', to: '/container', activeClass: '' },
-        { text: `${this.$route.params.database_id}`, to: `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/info`, activeClass: '' },
-        { text: 'Tables', to: `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table`, activeClass: '' },
-        { text: `${this.$route.params.table_id}`, to: `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}`, activeClass: '' }
+        { text: 'Databases', to: '/database', activeClass: '' },
+        { text: `${this.$route.params.database_id}`, to: `/database/${this.$route.params.database_id}/info`, activeClass: '' },
+        { text: 'Tables', to: `/database/${this.$route.params.database_id}/table`, activeClass: '' },
+        { text: `${this.$route.params.table_id}`, to: `/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}`, activeClass: '' }
       ],
       headers: [],
       rows: []
@@ -180,7 +180,7 @@ export default {
     download () {
       this.downloadLoading = true
       if (!this.version) {
-        TableService.exportData(this.$route.params.container_id, this.$route.params.database_id, this.$route.params.table_id)
+        TableService.exportData(this.$route.params.database_id, this.$route.params.table_id)
           .then((data) => {
             const url = window.URL.createObjectURL(new Blob([data]))
             const link = document.createElement('a')
@@ -193,7 +193,7 @@ export default {
             this.downloadLoading = false
           })
       } else {
-        TableService.exportData(this.$route.params.container_id, this.$route.params.database_id, this.$route.params.table_id, this.versionISO)
+        TableService.exportData(this.$route.params.database_id, this.$route.params.table_id, this.versionISO)
           .then((data) => {
             const url = window.URL.createObjectURL(new Blob([data]))
             const link = document.createElement('a')
@@ -266,7 +266,7 @@ export default {
     },
     loadData () {
       this.loadingData++
-      TableService.data(this.$route.params.container_id, this.$route.params.database_id, this.$route.params.table_id, (this.options.page - 1), this.options.itemsPerPage, (this.versionISO || this.lastReload.toISOString()))
+      TableService.data(this.$route.params.database_id, this.$route.params.table_id, (this.options.page - 1), this.options.itemsPerPage, (this.versionISO || this.lastReload.toISOString()))
         .then((data) => {
           this.rows = data.result.map((row) => {
             for (const col in row) {
@@ -291,7 +291,7 @@ export default {
     },
     loadCount () {
       this.loadingData++
-      TableService.dataCount(this.$route.params.container_id, this.$route.params.database_id, this.$route.params.table_id, (this.versionISO || this.lastReload.toISOString()))
+      TableService.dataCount(this.$route.params.database_id, this.$route.params.table_id, (this.versionISO || this.lastReload.toISOString()))
         .then((count) => {
           this.total = count
         })

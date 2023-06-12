@@ -9,7 +9,7 @@
             <v-col>
               <v-text-field
                 id="database"
-                v-model="createContainerDto.name"
+                v-model="createDatabaseDto.name"
                 name="database"
                 label="Name *"
                 autofocus
@@ -25,7 +25,7 @@
                 name="engine"
                 label="Engine *"
                 :items="engines"
-                :item-text="item => `${item.repository}:${item.tag}`"
+                :item-text="item => `${item.name}`"
                 :rules="[v => !!v || $t('Required')]"
                 return-object
                 required />
@@ -70,18 +70,9 @@ export default {
         tag: null
       },
       engines: [],
-      createContainerDto: {
-        name: null,
-        repository: null,
-        tag: null
-      },
       createDatabaseDto: {
         name: null,
         is_public: true
-      },
-      container: {
-        id: null,
-        name: null
       },
       database: {
         id: null
@@ -108,9 +99,9 @@ export default {
     },
     getImages () {
       this.loading = true
-      ContainerService.findAllImages()
-        .then((images) => {
-          this.engines = images
+      ContainerService.findAll()
+        .then((containers) => {
+          this.engines = containers
           if (this.engines.length > 0) {
             this.engine = this.engines[0]
           }
@@ -120,45 +111,17 @@ export default {
         })
     },
     async create () {
-      await this.createContainer()
-        .then(() => this.startContainer(this.container)
-          .then(() => this.createDatabase(this.container)))
+      await this.createDatabase(this.engine)
     },
-    createContainer () {
-      this.createContainerDto.repository = this.engine.repository
-      this.createContainerDto.tag = this.engine.tag
+    async createDatabase (container) {
       this.loading = true
-      return new Promise((resolve, reject) => {
-        ContainerService.create(this.createContainerDto)
-          .then((container) => {
-            this.container = container
-            this.loading = false
-            resolve(container)
-          })
-          .catch(error => reject(error))
-      })
-    },
-    startContainer (container) {
-      this.loading = true
-      return new Promise((resolve, reject) => {
-        ContainerService.modify(container.id, 'start')
-          .then(() => {
-            this.loading = false
-            resolve()
-          })
-          .catch(error => reject(error))
-      })
-    },
-    createDatabase (container) {
-      this.loading = true
-      DatabaseService.create(container.id, { name: container.name, is_public: true })
-        .then((database) => {
-          container.database = database
-          this.$emit('close', { success: true })
-        })
-        .finally(() => {
-          this.loading = false
-        })
+      try {
+        this.database = await DatabaseService.create({ container_id: this.engine.id, name: this.createDatabaseDto.name, is_public: true })
+        this.$emit('close', { success: true })
+        return this.database
+      } finally {
+        this.loading = false
+      }
     },
     notEmpty
   }

@@ -219,10 +219,10 @@
   </div>
 </template>
 <script>
-import Persist from '@/components/dialogs/Persist'
-import Citation from '@/components/identifier/Citation'
-import Banner from '@/components/identifier/Banner'
-import DownloadButton from '@/components/identifier/DownloadButton'
+import Persist from '@/components/dialogs/Persist.vue'
+import Citation from '@/components/identifier/Citation.vue'
+import Banner from '@/components/identifier/Banner.vue'
+import DownloadButton from '@/components/identifier/DownloadButton.vue'
 import { formatTimestampUTCLabel, formatDateUTC } from '@/utils'
 import QueryService from '@/api/query.service'
 import UserUtils from '@/api/user.utils'
@@ -238,10 +238,10 @@ export default {
   data () {
     return {
       items: [
-        { text: 'Databases', to: '/container', activeClass: '' },
-        { text: `${this.$route.params.database_id}`, to: `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, activeClass: '' },
-        { text: 'Queries', to: `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query`, activeClass: '' },
-        { text: `${this.$route.params.query_id}`, to: `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query/${this.$route.params.query_id}`, activeClass: '' }
+        { text: 'Databases', to: '/database', activeClass: '' },
+        { text: `${this.$route.params.database_id}`, to: `/database/${this.$route.params.database_id}`, activeClass: '' },
+        { text: 'Queries', to: `/database/${this.$route.params.database_id}/query`, activeClass: '' },
+        { text: `${this.$route.params.query_id}`, to: `/database/${this.$route.params.database_id}/query/${this.$route.params.query_id}`, activeClass: '' }
       ],
       query: {
         id: parseInt(this.$route.params.query_id),
@@ -318,7 +318,7 @@ export default {
       return this.database.publisher
     },
     backTo () {
-      return `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query`
+      return `/database/${this.$route.params.database_id}/query`
     },
     result_visibility () {
       if (!this.database || this.database.is_public === null) {
@@ -365,7 +365,7 @@ export default {
     },
     downloadSubset () {
       this.downloadLoading = true
-      QueryService.exportSubset(this.$route.params.container_id, this.$route.params.database_id, this.$route.params.query_id)
+      QueryService.exportSubset(this.$route.params.database_id, this.$route.params.query_id)
         .then((data) => {
           const url = window.URL.createObjectURL(new Blob([data]))
           const link = document.createElement('a')
@@ -381,7 +381,7 @@ export default {
     loadQuery () {
       this.loadingQuery = true
       return new Promise((resolve, reject) => {
-        QueryService.findOne(this.$route.params.container_id, this.$route.params.database_id, this.$route.params.query_id)
+        QueryService.findOne(this.$route.params.database_id, this.$route.params.query_id)
           .then((query) => {
             this.query = query
             resolve(query)
@@ -394,7 +394,7 @@ export default {
     },
     save () {
       this.loadingSave = true
-      QueryService.persist(this.$route.params.container_id, this.$route.params.database_id, this.$route.params.query_id)
+      QueryService.persist(this.$route.params.database_id, this.$route.params.query_id)
         .then((query) => {
           this.query = query
         })

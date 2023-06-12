@@ -2,7 +2,7 @@
   <div>
     <v-toolbar flat>
       <v-toolbar-title>
-        <v-btn id="back-btn" class="mr-2" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/view`">
+        <v-btn id="back-btn" class="mr-2" :to="`/database/${$route.params.database_id}/view`">
           <v-icon left>mdi-arrow-left</v-icon>
         </v-btn>
       </v-toolbar-title>
@@ -111,10 +111,10 @@ export default {
   data () {
     return {
       items: [
-        { text: 'Databases', to: '/container', activeClass: '' },
-        { text: `${this.$route.params.database_id}`, to: `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}`, activeClass: '' },
-        { text: 'Views', to: `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/view`, activeClass: '' },
-        { text: `${this.$route.params.view_id}`, to: `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/view/${this.$route.params.view_id}`, activeClass: '' }
+        { text: 'Databases', to: '/database', activeClass: '' },
+        { text: `${this.$route.params.database_id}`, to: `/database/${this.$route.params.database_id}`, activeClass: '' },
+        { text: 'Views', to: `/database/${this.$route.params.database_id}/view`, activeClass: '' },
+        { text: `${this.$route.params.view_id}`, to: `/database/${this.$route.params.database_id}/view/${this.$route.params.view_id}`, activeClass: '' }
       ],
       view: {
         id: null /* only loaded if user has access to view */
@@ -175,7 +175,7 @@ export default {
   methods: {
     loadView () {
       this.loadingView = true
-      DatabaseService.findView(this.$route.params.container_id, this.$route.params.database_id, this.$route.params.view_id)
+      DatabaseService.findView(this.$route.params.database_id, this.$route.params.view_id)
         .then((view) => {
           this.view = view
         })

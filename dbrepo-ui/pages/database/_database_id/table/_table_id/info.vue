@@ -93,7 +93,7 @@
   </div>
 </template>
 <script>
-import TableToolbar from '@/components/TableToolbar'
+import TableToolbar from '@/components/TableToolbar.vue'
 import { formatTimestampUTCLabel } from '@/utils'
 import BrokerService from '@/api/broker.service'
 import UserMapper from '@/api/user.mapper'
@@ -107,10 +107,10 @@ export default {
       selection: [],
       consumers: [],
       items: [
-        { text: 'Databases', to: '/container', activeClass: '' },
-        { text: `${this.$route.params.database_id}`, to: `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/info`, activeClass: '' },
-        { text: 'Tables', to: `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table`, activeClass: '' },
-        { text: `${this.$route.params.table_id}`, to: `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}`, activeClass: '' }
+        { text: 'Databases', to: '/database', activeClass: '' },
+        { text: `${this.$route.params.database_id}`, to: `/database/${this.$route.params.database_id}/info`, activeClass: '' },
+        { text: 'Tables', to: `/database/${this.$route.params.database_id}/table`, activeClass: '' },
+        { text: `${this.$route.params.table_id}`, to: `/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}`, activeClass: '' }
       ],
       headers: [],
       dateColumns: []

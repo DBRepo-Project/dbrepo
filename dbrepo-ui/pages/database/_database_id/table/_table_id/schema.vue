@@ -76,7 +76,7 @@
   </div>
 </template>
 <script>
-import TableToolbar from '@/components/TableToolbar'
+import TableToolbar from '@/components/TableToolbar.vue'
 import TableService from '@/api/table.service'
 
 export default {
@@ -90,10 +90,10 @@ export default {
       mode: null,
       dialogSemantic: false,
       items: [
-        { text: 'Databases', to: '/container', activeClass: '' },
-        { text: `${this.$route.params.database_id}`, to: `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/info`, activeClass: '' },
-        { text: 'Tables', to: `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table`, activeClass: '' },
-        { text: `${this.$route.params.table_id}`, to: `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}`, activeClass: '' }
+        { text: 'Databases', to: '/database', activeClass: '' },
+        { text: `${this.$route.params.database_id}`, to: `/database/${this.$route.params.database_id}/info`, activeClass: '' },
+        { text: 'Tables', to: `/database/${this.$route.params.database_id}/table`, activeClass: '' },
+        { text: `${this.$route.params.table_id}`, to: `/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}`, activeClass: '' }
       ],
       headers: [
         { value: 'internal_name', text: 'Column Name' },
@@ -207,11 +207,11 @@ export default {
       this.dialogSemantic = false
     },
     loadTable () {
-      if (!this.$route.params.container_id || !this.$route.params.database_id || !this.$route.params.table_id) {
+      if (!this.$route.params.database_id || !this.$route.params.table_id) {
         return
       }
       this.loading = true
-      TableService.findOne(this.$route.params.container_id, this.$route.params.database_id, this.$route.params.table_id)
+      TableService.findOne(this.$route.params.database_id, this.$route.params.table_id)
         .then((table) => {
           this.$store.commit('SET_TABLE', table)
         })
