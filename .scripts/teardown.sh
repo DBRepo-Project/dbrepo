@@ -12,7 +12,6 @@ echo "=== [ Removing * ] ==="
 docker container rm $(docker container ls -aq -f name=.*-service) || true
 docker container rm ui ui-proxy metadata-db || true
 docker volume rm $(docker volume ls -q) || true
-docker network rm core public userdb || true
 echo "=== [ Stopping fda-* ] ==="
 docker container stop $(docker container ls -aq -f name=^/fda-.*) || true
 echo "=== [ Removing fda-* ] ==="
