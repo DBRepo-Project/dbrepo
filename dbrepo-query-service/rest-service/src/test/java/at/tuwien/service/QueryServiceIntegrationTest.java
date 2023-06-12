@@ -12,15 +12,15 @@ import at.tuwien.exception.*;
 import at.tuwien.gateway.BrokerServiceGateway;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.querystore.Query;
-import at.tuwien.repository.mdb.*;
+import at.tuwien.repository.mdb.DatabaseRepository;
+import at.tuwien.repository.mdb.TableRepository;
+import at.tuwien.repository.mdb.UserRepository;
 import at.tuwien.repository.sdb.ViewIdxRepository;
 import com.rabbitmq.client.Channel;
-import at.tuwien.config.DockerConfig;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
-import org.junit.Rule;
-import org.junit.rules.Timeout;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -29,8 +29,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.testcontainers.containers.MariaDBContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.io.File;
 import java.math.BigInteger;
 import java.sql.SQLException;
 import java.time.Instant;
@@ -46,6 +48,7 @@ import static org.mockito.Mockito.when;
 
 
 @Log4j2
+@Testcontainers
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @EnableAutoConfiguration(exclude = RabbitAutoConfiguration.class)
 @SpringBootTest
@@ -82,18 +85,15 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     @Autowired
     private QueryService queryService;
 
-    @Rule
-    public Timeout globalTimeout = Timeout.seconds(60);
-
-    private final static String BIND_WEATHER = new File("../../dbrepo-metadata-db/test/src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
-
-    private final static String BIND_ZOO = new File("../../dbrepo-metadata-db/test/src/test/resources/zoo").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
+    @Container
+    @Autowired
+    private MariaDBContainer<?> mariaDBContainer;
 
     @BeforeEach
-    public void beforeEach() {
-        afterEach();
-        /* create network */
-        DockerConfig.createAllNetworks();
+    public void beforeEach() throws SQLException {
+        MariaDbConfig.dropAllDatabases(CONTAINER_1);
+        MariaDbConfig.createInitDatabase(CONTAINER_1, DATABASE_2);
+        MariaDbConfig.createInitDatabase(CONTAINER_1, DATABASE_1);
         /* metadata database */
         DATABASE_1.setTables(List.of(TABLE_1, TABLE_2, TABLE_3, TABLE_7));
         DATABASE_1.setViews(List.of(VIEW_2, VIEW_3));
@@ -101,28 +101,19 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         DATABASE_2.setViews(List.of(VIEW_4));
     }
 
-    @AfterEach
-    public void afterEach() {
-        DockerConfig.removeAllContainers();
-        DockerConfig.removeAllNetworks();
-    }
-
     @Test
     public void findAll_succeeds() throws DatabaseNotFoundException, ImageNotSupportedException,
             TableMalformedException, TableNotFoundException, DatabaseConnectionException,
-            PaginationException, ContainerNotFoundException, QueryMalformedException, UserNotFoundException,
-            InterruptedException {
+            PaginationException, QueryMalformedException, UserNotFoundException {
 
         /* mock */
-        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
-        DockerConfig.startContainer(CONTAINER_1);
-        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
+        when(databaseRepository.findByDatabaseId(DATABASE_1_ID))
                 .thenReturn(Optional.of(DATABASE_1));
-        when(tableRepository.find(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID))
+        when(tableRepository.find(DATABASE_1_ID, TABLE_1_ID))
                 .thenReturn(Optional.of(TABLE_1));
 
         /* test */
-        final QueryResultDto result = queryService.tableFindAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, Instant.now(),
+        final QueryResultDto result = queryService.tableFindAll(DATABASE_1_ID, TABLE_1_ID, Instant.now(),
                 null, null, USER_1_PRINCIPAL);
         assertEquals(3, result.getResult().size());
         assertEquals(BigInteger.valueOf(1L), result.getResult().get(0).get(COLUMN_1_1_INTERNAL_NAME));
@@ -145,65 +136,58 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     @Test
     public void selectAll_succeeds() throws TableNotFoundException, DatabaseConnectionException,
             DatabaseNotFoundException, ImageNotSupportedException, TableMalformedException, PaginationException,
-            ContainerNotFoundException, QueryMalformedException, UserNotFoundException, InterruptedException {
+            QueryMalformedException, UserNotFoundException {
         final Long page = 0L;
         final Long size = 10L;
 
         /* mock */
-        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
-        DockerConfig.startContainer(CONTAINER_1);
-        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
+        when(databaseRepository.findByDatabaseId(DATABASE_1_ID))
                 .thenReturn(Optional.of(DATABASE_1));
-        when(tableRepository.find(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID))
+        when(tableRepository.find(DATABASE_1_ID, TABLE_1_ID))
                 .thenReturn(Optional.of(TABLE_1));
 
         /* test */
-        queryService.tableFindAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, Instant.now(), page, size, USER_1_PRINCIPAL);
+        queryService.tableFindAll(DATABASE_1_ID, TABLE_1_ID, Instant.now(), page, size, USER_1_PRINCIPAL);
     }
 
     @Test
-    public void selectAll_noTable_fails() throws InterruptedException {
+    public void selectAll_noTable_fails() {
         final Long page = 0L;
         final Long size = 10L;
 
         /* mock */
-        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
-        DockerConfig.startContainer(CONTAINER_1);
-        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
+        when(databaseRepository.findByDatabaseId(DATABASE_1_ID))
                 .thenReturn(Optional.of(DATABASE_1));
-        when(tableRepository.find(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID))
+        when(tableRepository.find(DATABASE_1_ID, TABLE_1_ID))
                 .thenReturn(Optional.empty());
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
-            queryService.tableFindAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, Instant.now(), page, size, USER_1_PRINCIPAL);
+            queryService.tableFindAll(DATABASE_1_ID, TABLE_1_ID, Instant.now(), page, size, USER_1_PRINCIPAL);
         });
     }
 
     @Test
-    public void insert_columns_fails() throws InterruptedException {
+    public void insert_columns_fails() {
         final TableCsvDto request = TableCsvDto.builder()
                 .data(Map.of("key", "some_value"))
                 .build();
 
         /* mock */
-        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
-        DockerConfig.startContainer(CONTAINER_1);
-        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
+        when(databaseRepository.findByDatabaseId(DATABASE_1_ID))
                 .thenReturn(Optional.of(DATABASE_1));
-        when(tableRepository.find(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID))
+        when(tableRepository.find(DATABASE_1_ID, TABLE_1_ID))
                 .thenReturn(Optional.of(TABLE_1));
 
         /* test */
         assertThrows(TableMalformedException.class, () -> {
-            queryService.insert(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, request, USER_1_PRINCIPAL);
+            queryService.insert(DATABASE_1_ID, TABLE_1_ID, request, USER_1_PRINCIPAL);
         });
     }
 
     @Test
-    public void insert_date_succeeds() throws InterruptedException, UserNotFoundException, TableNotFoundException,
-            TableMalformedException, DatabaseConnectionException, DatabaseNotFoundException, ImageNotSupportedException,
-            ContainerNotFoundException, SQLException {
+    public void insert_date_succeeds() throws UserNotFoundException, TableNotFoundException, TableMalformedException,
+            DatabaseConnectionException, DatabaseNotFoundException, ImageNotSupportedException, SQLException {
         final TableCsvDto request = TableCsvDto.builder()
                 .data(new HashMap<>() {{
                     put("id", 4L);
@@ -214,16 +198,14 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                 }}).build();
 
         /* mock */
-        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
-        DockerConfig.startContainer(CONTAINER_1);
-        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
+        when(databaseRepository.findByDatabaseId(DATABASE_1_ID))
                 .thenReturn(Optional.of(DATABASE_1));
-        when(tableRepository.find(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID))
+        when(tableRepository.find(DATABASE_1_ID, TABLE_1_ID))
                 .thenReturn(Optional.of(TABLE_1));
 
         /* test */
-        queryService.insert(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, request, USER_1_PRINCIPAL);
-        final List<Map<String, String>> response = MariaDbConfig.selectQuery(CONTAINER_1_INTERNALNAME, DATABASE_1_INTERNALNAME, "SELECT `id`, `date`, `location` FROM `weather_aus` WHERE `id` = 4", "id", "date", "location");
+        queryService.insert(DATABASE_1_ID, TABLE_1_ID, request, USER_1_PRINCIPAL);
+        final List<Map<String, String>> response = MariaDbConfig.selectQuery(DATABASE_1, "SELECT `id`, `date`, `location` FROM `weather_aus` WHERE `id` = 4", "id", "date", "location");
         final Map<String, String> row1 = response.get(0);
         assertEquals("4", row1.get("id"));
         assertEquals("2022-10-30", row1.get("date"));
@@ -232,8 +214,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void insert_timestamp_succeeds() throws UserNotFoundException, TableNotFoundException, TableMalformedException,
-            DatabaseConnectionException, DatabaseNotFoundException, ImageNotSupportedException,
-            ContainerNotFoundException, InterruptedException {
+            DatabaseConnectionException, DatabaseNotFoundException, ImageNotSupportedException {
         final TableCsvDto request = TableCsvDto.builder()
                 .data(new HashMap<>() {{
                     put("timestamp", "2023-02-10 12:15:20");
@@ -241,21 +222,18 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                 }}).build();
 
         /* mock */
-        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
-        DockerConfig.startContainer(CONTAINER_1);
-        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
+        when(databaseRepository.findByDatabaseId(DATABASE_1_ID))
                 .thenReturn(Optional.of(DATABASE_1));
-        when(tableRepository.find(CONTAINER_1_ID, DATABASE_1_ID, TABLE_7_ID))
+        when(tableRepository.find(DATABASE_1_ID, TABLE_7_ID))
                 .thenReturn(Optional.of(TABLE_7));
 
         /* test */
-        queryService.insert(CONTAINER_1_ID, DATABASE_1_ID, TABLE_7_ID, request, USER_1_PRINCIPAL);
+        queryService.insert(DATABASE_1_ID, TABLE_7_ID, request, USER_1_PRINCIPAL);
     }
 
     @Test
     public void insert_timestampMillis_succeeds() throws UserNotFoundException, TableNotFoundException, TableMalformedException,
-            DatabaseConnectionException, DatabaseNotFoundException, ImageNotSupportedException,
-            ContainerNotFoundException, InterruptedException {
+            DatabaseConnectionException, DatabaseNotFoundException, ImageNotSupportedException {
         final TableCsvDto request = TableCsvDto.builder()
                 .data(new HashMap<>() {{
                     put("timestamp", "2023-02-10 12:15:20.613405");
@@ -263,21 +241,18 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                 }}).build();
 
         /* mock */
-        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
-        DockerConfig.startContainer(CONTAINER_1);
-        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
+        when(databaseRepository.findByDatabaseId(DATABASE_1_ID))
                 .thenReturn(Optional.of(DATABASE_1));
-        when(tableRepository.find(CONTAINER_1_ID, DATABASE_1_ID, TABLE_7_ID))
+        when(tableRepository.find(DATABASE_1_ID, TABLE_7_ID))
                 .thenReturn(Optional.of(TABLE_7));
 
         /* test */
-        queryService.insert(CONTAINER_1_ID, DATABASE_1_ID, TABLE_7_ID, request, USER_1_PRINCIPAL);
+        queryService.insert(DATABASE_1_ID, TABLE_7_ID, request, USER_1_PRINCIPAL);
     }
 
     @Test
     public void insert_withConstraints_succeeds() throws UserNotFoundException, TableNotFoundException,
-            TableMalformedException, DatabaseConnectionException, DatabaseNotFoundException, ImageNotSupportedException,
-            ContainerNotFoundException, InterruptedException {
+            TableMalformedException, DatabaseConnectionException, DatabaseNotFoundException, ImageNotSupportedException {
         final TableCsvDto request = TableCsvDto.builder()
                 .data(Map.of("id", 4L,
                         "date", "2008-12-04",
@@ -287,19 +262,17 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                 .build();
 
         /* mock */
-        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
-        DockerConfig.startContainer(CONTAINER_1);
-        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
+        when(databaseRepository.findByDatabaseId(DATABASE_1_ID))
                 .thenReturn(Optional.of(DATABASE_1));
-        when(tableRepository.find(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID))
+        when(tableRepository.find(DATABASE_1_ID, TABLE_1_ID))
                 .thenReturn(Optional.of(TABLE_1));
 
         /* test */
-        queryService.insert(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, request, USER_1_PRINCIPAL);
+        queryService.insert(DATABASE_1_ID, TABLE_1_ID, request, USER_1_PRINCIPAL);
     }
 
     @Test
-    public void insert_violatingForeignKey_fails() throws InterruptedException {
+    public void insert_violatingForeignKey_fails() {
         final TableCsvDto request = TableCsvDto.builder()
                 .data(Map.of("id", 4L,
                         "date", "2008-12-04",
@@ -309,21 +282,19 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                 .build();
 
         /* mock */
-        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
-        DockerConfig.startContainer(CONTAINER_1);
-        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
+        when(databaseRepository.findByDatabaseId(DATABASE_1_ID))
                 .thenReturn(Optional.of(DATABASE_1));
-        when(tableRepository.find(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID))
+        when(tableRepository.find(DATABASE_1_ID, TABLE_1_ID))
                 .thenReturn(Optional.of(TABLE_1));
 
         /* test */
         assertThrows(TableMalformedException.class, () -> {
-            queryService.insert(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, request, USER_1_PRINCIPAL);
+            queryService.insert(DATABASE_1_ID, TABLE_1_ID, request, USER_1_PRINCIPAL);
         });
     }
 
     @Test
-    public void insert_violatingUnique_fails() throws InterruptedException {
+    public void insert_violatingUnique_fails() {
         final TableCsvDto request = TableCsvDto.builder()
                 .data(Map.of("id", 4L,
                         "date", "2008-12-03", // entry with date already exists
@@ -333,21 +304,19 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                 .build();
 
         /* mock */
-        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
-        DockerConfig.startContainer(CONTAINER_1);
-        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
+        when(databaseRepository.findByDatabaseId(DATABASE_1_ID))
                 .thenReturn(Optional.of(DATABASE_1));
-        when(tableRepository.find(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID))
+        when(tableRepository.find(DATABASE_1_ID, TABLE_1_ID))
                 .thenReturn(Optional.of(TABLE_1));
 
         /* test */
         assertThrows(TableMalformedException.class, () -> {
-            queryService.insert(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, request, USER_1_PRINCIPAL);
+            queryService.insert(DATABASE_1_ID, TABLE_1_ID, request, USER_1_PRINCIPAL);
         });
     }
 
     @Test
-    public void insert_violatingCheck_fails() throws InterruptedException {
+    public void insert_violatingCheck_fails() {
         final TableCsvDto request = TableCsvDto.builder()
                 .data(Map.of("id", 4L,
                         "date", "2008-12-04",
@@ -357,73 +326,66 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                 .build();
 
         /* mock */
-        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
-        DockerConfig.startContainer(CONTAINER_1);
-        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
+        when(databaseRepository.findByDatabaseId(DATABASE_1_ID))
                 .thenReturn(Optional.of(DATABASE_1));
-        when(tableRepository.find(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID))
+        when(tableRepository.find(DATABASE_1_ID, TABLE_1_ID))
                 .thenReturn(Optional.of(TABLE_1));
 
         /* test */
         assertThrows(TableMalformedException.class, () -> {
-            queryService.insert(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, request, USER_1_PRINCIPAL);
+            queryService.insert(DATABASE_1_ID, TABLE_1_ID, request, USER_1_PRINCIPAL);
         });
     }
 
     @Test
     public void findAll_timestampMissing_succeeds() throws TableNotFoundException, DatabaseConnectionException,
             TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, PaginationException,
-            ContainerNotFoundException, QueryMalformedException, UserNotFoundException, InterruptedException {
+            QueryMalformedException, UserNotFoundException {
 
         /* mock */
-        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
-        DockerConfig.startContainer(CONTAINER_1);
-        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
+        when(databaseRepository.findByDatabaseId(DATABASE_1_ID))
                 .thenReturn(Optional.of(DATABASE_1));
-        when(tableRepository.find(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID))
+        when(tableRepository.find(DATABASE_1_ID, TABLE_1_ID))
                 .thenReturn(Optional.of(TABLE_1));
 
         /* test */
-        queryService.tableFindAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, null, null, null, USER_1_PRINCIPAL);
+        queryService.tableFindAll(DATABASE_1_ID, TABLE_1_ID, null, null, null, USER_1_PRINCIPAL);
     }
 
     @Test
     public void findAll_timestampBeforeCreation_succeeds() throws TableNotFoundException, DatabaseConnectionException,
             TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, PaginationException,
-            ContainerNotFoundException, QueryMalformedException, UserNotFoundException, InterruptedException {
+            QueryMalformedException, UserNotFoundException {
         final Instant timestamp = DATABASE_1_CREATED.minus(1, ChronoUnit.SECONDS);
 
         /* mock */
-        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
-        DockerConfig.startContainer(CONTAINER_1);
-        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
+        when(databaseRepository.findByDatabaseId(DATABASE_1_ID))
                 .thenReturn(Optional.of(DATABASE_1));
-        when(tableRepository.find(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID))
+        when(tableRepository.find(DATABASE_1_ID, TABLE_1_ID))
                 .thenReturn(Optional.of(TABLE_1));
 
         /* test */
-        queryService.tableFindAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, timestamp, null, null, USER_1_PRINCIPAL);
-        queryService.tableFindAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, timestamp, null, null, USER_1_PRINCIPAL);
+        queryService.tableFindAll(DATABASE_1_ID, TABLE_1_ID, timestamp, null, null, USER_1_PRINCIPAL);
+        queryService.tableFindAll(DATABASE_1_ID, TABLE_1_ID, timestamp, null, null, USER_1_PRINCIPAL);
     }
 
     @Test
     public void execute_succeeds() throws DatabaseConnectionException, TableMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException, QueryMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException,
             UserNotFoundException, QueryStoreException, ColumnParseException, InterruptedException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement("SELECT n.`firstname`, n.`lastname`, z.`animal_name`, z.`legs` FROM `likes` l JOIN `names` n ON l.`name_id` = n.`id` JOIN `mock_view` z ON z.`id` = l.`zoo_id`")
                 .build();
 
         /* mock */
-        DockerConfig.createContainer(BIND_ZOO, CONTAINER_2, CONTAINER_2_ENV);
-        DockerConfig.startContainer(CONTAINER_2);
-        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_2_ID, DATABASE_2_ID))
+        Thread.sleep(2000); // wait for database creation
+        when(databaseRepository.findByDatabaseId(DATABASE_2_ID))
                 .thenReturn(Optional.of(DATABASE_2));
         when(userRepository.findByUsername(USER_1_USERNAME))
                 .thenReturn(Optional.of(USER_1));
 
         /* test */
-        final QueryResultDto response = queryService.execute(CONTAINER_2_ID, DATABASE_2_ID, request, USER_1_PRINCIPAL,
+        final QueryResultDto response = queryService.execute(DATABASE_2_ID, request, USER_1_PRINCIPAL,
                 0L, 100L, null, null);
         assertEquals(4L, response.getResultNumber());
         assertNotNull(response.getResult());
@@ -448,22 +410,21 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void execute_withoutNullField_succeeds() throws DatabaseConnectionException, TableMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException, QueryMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException,
             UserNotFoundException, QueryStoreException, ColumnParseException, InterruptedException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement("SELECT `location`, `lng` FROM `weather_location` WHERE `lat` IS NULL")
                 .build();
 
         /* mock */
-        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
-        DockerConfig.startContainer(CONTAINER_1);
-        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
+        Thread.sleep(1000); // wait for database creation
+        when(databaseRepository.findByDatabaseId(DATABASE_1_ID))
                 .thenReturn(Optional.of(DATABASE_1));
         when(userRepository.findByUsername(USER_1_USERNAME))
                 .thenReturn(Optional.of(USER_1));
 
         /* test */
-        final QueryResultDto response = queryService.execute(CONTAINER_1_ID, DATABASE_1_ID, request, USER_1_PRINCIPAL,
+        final QueryResultDto response = queryService.execute(DATABASE_1_ID, request, USER_1_PRINCIPAL,
                 0L, 100L, null, null);
         assertEquals(1L, response.getResultNumber());
         assertNotNull(response.getResult());
@@ -475,22 +436,21 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void execute_withoutNullField2_succeeds() throws DatabaseConnectionException, TableMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException, QueryMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException,
             UserNotFoundException, QueryStoreException, ColumnParseException, InterruptedException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement("SELECT `location` FROM `weather_location` WHERE `lat` IS NULL")
                 .build();
 
         /* mock */
-        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
-        DockerConfig.startContainer(CONTAINER_1);
-        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
+        Thread.sleep(1000); // wait for database creation
+        when(databaseRepository.findByDatabaseId(DATABASE_1_ID))
                 .thenReturn(Optional.of(DATABASE_1));
         when(userRepository.findByUsername(USER_1_USERNAME))
                 .thenReturn(Optional.of(USER_1));
 
         /* test */
-        final QueryResultDto response = queryService.execute(CONTAINER_1_ID, DATABASE_1_ID, request, USER_1_PRINCIPAL,
+        final QueryResultDto response = queryService.execute(DATABASE_1_ID, request, USER_1_PRINCIPAL,
                 0L, 100L, null, null);
         assertEquals(1L, response.getResultNumber());
         assertNotNull(response.getResult());
@@ -502,22 +462,21 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void execute_withNullField_succeeds() throws DatabaseConnectionException, TableMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException, QueryMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException,
             UserNotFoundException, QueryStoreException, ColumnParseException, InterruptedException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement("SELECT `lat`, `lng` FROM `weather_location` WHERE `lat` IS NULL")
                 .build();
 
         /* mock */
-        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
-        DockerConfig.startContainer(CONTAINER_1);
-        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
+        Thread.sleep(1000); // wait for database creation
+        when(databaseRepository.findByDatabaseId(DATABASE_1_ID))
                 .thenReturn(Optional.of(DATABASE_1));
         when(userRepository.findByUsername(USER_1_USERNAME))
                 .thenReturn(Optional.of(USER_1));
 
         /* test */
-        final QueryResultDto response = queryService.execute(CONTAINER_1_ID, DATABASE_1_ID, request, USER_1_PRINCIPAL,
+        final QueryResultDto response = queryService.execute(DATABASE_1_ID, request, USER_1_PRINCIPAL,
                 0L, 100L, null, null);
         assertEquals(1L, response.getResultNumber());
         assertNotNull(response.getResult());
@@ -525,22 +484,21 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void execute_aliases_succeeds() throws DatabaseConnectionException, TableMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException, QueryMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException,
             UserNotFoundException, QueryStoreException, ColumnParseException, InterruptedException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement("SELECT aus.location as a, loc.location from weather_aus aus, weather_location loc")
                 .build();
 
         /* mock */
-        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
-        DockerConfig.startContainer(CONTAINER_1);
-        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
+        Thread.sleep(1000); // wait for database creation
+        when(databaseRepository.findByDatabaseId(DATABASE_1_ID))
                 .thenReturn(Optional.of(DATABASE_1));
         when(userRepository.findByUsername(USER_1_USERNAME))
                 .thenReturn(Optional.of(USER_1));
 
         /* test */
-        final QueryResultDto response = queryService.execute(CONTAINER_1_ID, DATABASE_1_ID, request, USER_1_PRINCIPAL,
+        final QueryResultDto response = queryService.execute(DATABASE_1_ID, request, USER_1_PRINCIPAL,
                 0L, 100L, null, null);
         assertEquals(9L, response.getResultNumber());
         assertNotNull(response.getResult());
@@ -567,22 +525,21 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void execute_aliasesWithDatabaseName_succeeds() throws DatabaseConnectionException, TableMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException, QueryMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException,
             UserNotFoundException, QueryStoreException, ColumnParseException, InterruptedException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement("SELECT aus.location as a, loc.location from weather.weather_aus aus, weather.weather_location loc")
                 .build();
 
         /* mock */
-        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
-        DockerConfig.startContainer(CONTAINER_1);
-        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
+        Thread.sleep(1000); // wait for database creation
+        when(databaseRepository.findByDatabaseId(DATABASE_1_ID))
                 .thenReturn(Optional.of(DATABASE_1));
         when(userRepository.findByUsername(USER_1_USERNAME))
                 .thenReturn(Optional.of(USER_1));
 
         /* test */
-        final QueryResultDto response = queryService.execute(CONTAINER_1_ID, DATABASE_1_ID, request, USER_1_PRINCIPAL,
+        final QueryResultDto response = queryService.execute(DATABASE_1_ID, request, USER_1_PRINCIPAL,
                 0L, 100L, null, null);
         assertEquals(9L, response.getResultNumber());
         assertNotNull(response.getResult());
@@ -609,9 +566,8 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void count_emptySet_succeeds() throws DatabaseConnectionException, TableMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException, QueryMalformedException,
-            UserNotFoundException, QueryStoreException, InterruptedException, QueryNotFoundException,
-            FileStorageException, SQLException {
+            DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException, UserNotFoundException,
+            QueryStoreException, QueryNotFoundException, FileStorageException, SQLException {
         final Query query = Query.builder()
                 .id(QUERY_1_ID)
                 .query("SELECT `location`, `lat`, `lng` FROM `weather_location` WHERE `location` = \"Vienna\"")
@@ -626,16 +582,14 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
 
         /* mock */
-        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
-        DockerConfig.startContainer(CONTAINER_1);
-        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
+        when(databaseRepository.findByDatabaseId(DATABASE_1_ID))
                 .thenReturn(Optional.of(DATABASE_1));
         when(userRepository.findByUsername(USER_1_USERNAME))
                 .thenReturn(Optional.of(USER_1));
-        MariaDbConfig.insertQueryStore(CONTAINER_1_INTERNALNAME, DATABASE_1_INTERNALNAME, query, USER_1_USERNAME);
+        MariaDbConfig.insertQueryStore(DATABASE_1, query, USER_1_USERNAME);
 
         /* test */
-        final ExportResource response = queryService.findOne(CONTAINER_1_ID, DATABASE_1_ID, QUERY_1_ID, USER_1_PRINCIPAL);
+        final ExportResource response = queryService.findOne(DATABASE_1_ID, QUERY_1_ID, USER_1_PRINCIPAL);
         assertNotNull(response.getFilename());
         assertNotNull(response.getResource());
     }

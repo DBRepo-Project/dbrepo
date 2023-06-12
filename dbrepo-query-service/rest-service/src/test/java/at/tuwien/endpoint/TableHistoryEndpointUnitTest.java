@@ -32,7 +32,8 @@ import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.when;
 
 @Log4j2
@@ -79,7 +80,7 @@ public class TableHistoryEndpointUnitTest extends BaseUnitTest {
             DatabaseNotFoundException {
 
         /* test */
-        data_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, TABLE_1_ID, TABLE_1, null, null, null);
+        data_generic(DATABASE_1_ID, DATABASE_1, TABLE_1_ID, TABLE_1, null, null, null);
     }
 
     @Test
@@ -89,7 +90,7 @@ public class TableHistoryEndpointUnitTest extends BaseUnitTest {
             DatabaseNotFoundException {
 
         /* test */
-        data_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, TABLE_1_ID, TABLE_1, null, null, null);
+        data_generic(DATABASE_1_ID, DATABASE_1, TABLE_1_ID, TABLE_1, null, null, null);
     }
 
     @Test
@@ -99,7 +100,7 @@ public class TableHistoryEndpointUnitTest extends BaseUnitTest {
             DatabaseNotFoundException {
 
         /* test */
-        data_generic(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, TABLE_1_ID, TABLE_1, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_1_USER_1_READ_ACCESS);
+        data_generic(DATABASE_1_ID, DATABASE_1, TABLE_1_ID, TABLE_1, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_1_USER_1_READ_ACCESS);
     }
 
     @Test
@@ -109,22 +110,22 @@ public class TableHistoryEndpointUnitTest extends BaseUnitTest {
             DatabaseNotFoundException {
 
         /* test */
-        data_generic(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, TABLE_4_ID, TABLE_4, USER_1_USERNAME, USER_1_PRINCIPAL, null);
+        data_generic(DATABASE_2_ID, DATABASE_2, TABLE_4_ID, TABLE_4, USER_1_USERNAME, USER_1_PRINCIPAL, null);
     }
 
     /* ################################################################################################### */
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
 
-    protected void data_generic(Long containerId, Long databaseId, Database database, Long tableId, Table table,
+    protected void data_generic(Long databaseId, Database database, Long tableId, Table table,
                                 String username, Principal principal, DatabaseAccess access)
             throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException, DatabaseConnectionException,
             QueryMalformedException, QueryStoreException, TableNotFoundException {
 
         /* mock */
-        when(databaseService.find(containerId, databaseId))
+        when(databaseService.find(databaseId))
                 .thenReturn(database);
-        when(tableService.find(containerId, databaseId, tableId))
+        when(tableService.find(databaseId, tableId))
                 .thenReturn(table);
         if (access != null) {
             when(databaseAccessRepository.findByDatabaseIdAndUsername(databaseId, username))
@@ -135,7 +136,7 @@ public class TableHistoryEndpointUnitTest extends BaseUnitTest {
         }
 
         /* test */
-        final ResponseEntity<List<TableHistoryDto>> response = tableHistoryEndpoint.getAll(containerId, databaseId, tableId, principal);
+        final ResponseEntity<List<TableHistoryDto>> response = tableHistoryEndpoint.getAll(databaseId, tableId, principal);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
     }

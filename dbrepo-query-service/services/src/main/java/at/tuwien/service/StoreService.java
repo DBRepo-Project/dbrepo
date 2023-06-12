@@ -1,15 +1,11 @@
 package at.tuwien.service;
 
 import at.tuwien.api.database.query.ExecuteStatementDto;
-import at.tuwien.api.database.query.QueryResultDto;
-import at.tuwien.api.database.query.QueryTypeDto;
 import at.tuwien.exception.*;
 import at.tuwien.querystore.Query;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
-import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -26,7 +22,7 @@ public interface StoreService {
      * @throws DatabaseNotFoundException  The database was not found in the metadata database
      * @throws QueryStoreException        The query store produced an invalid result
      */
-    List<Query> findAll(Long containerId, Long databaseId, Boolean persisted, Principal principal) throws DatabaseNotFoundException,
+    List<Query> findAll(Long databaseId, Boolean persisted, Principal principal) throws DatabaseNotFoundException,
             ImageNotSupportedException, QueryStoreException, ContainerNotFoundException, DatabaseConnectionException,
             TableMalformedException, UserNotFoundException;
 
@@ -42,13 +38,12 @@ public interface StoreService {
      * @throws QueryStoreException        The query store produced an invalid result
      * @throws QueryNotFoundException     The query store did not return a query
      */
-    Query findOne(Long containerId, Long databaseId, Long queryId, Principal principal) throws DatabaseNotFoundException,
+    Query findOne(Long databaseId, Long queryId, Principal principal) throws DatabaseNotFoundException,
             ImageNotSupportedException, DatabaseConnectionException, QueryNotFoundException, QueryStoreException, UserNotFoundException;
 
     /**
      * Inserts a query and metadata to the query store of a given database id
      *
-     * @param containerId The container id.
      * @param databaseId  The database id.
      * @param metadata    The statement.
      * @param principal   The user principal.
@@ -56,18 +51,15 @@ public interface StoreService {
      * @throws QueryStoreException         The query store raised some error
      * @throws DatabaseNotFoundException   The database id was not found in the metadata database
      * @throws ImageNotSupportedException  The image is not supported
-     * @throws ContainerNotFoundException  The container was not found in the metadata database.
      * @throws UserNotFoundException       The user was not found in the metadata database.
      * @throws DatabaseConnectionException The database connection to the remote container failed.
      */
-    Query insert(Long containerId, Long databaseId, ExecuteStatementDto metadata, Principal principal) throws QueryStoreException,
-            DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException, UserNotFoundException,
-            DatabaseConnectionException;
+    Query insert(Long databaseId, ExecuteStatementDto metadata, Principal principal) throws QueryStoreException,
+            DatabaseNotFoundException, ImageNotSupportedException, UserNotFoundException, DatabaseConnectionException;
 
     /**
      * Persists a query to be displayed in the frontend
      *
-     * @param containerId The container id.
      * @param databaseId  The database id.
      * @param queryId     The query id.
      * @param principal   The user principal.
@@ -77,7 +69,7 @@ public interface StoreService {
      * @throws DatabaseConnectionException The database connection to the remote container failed.
      * @throws QueryStoreException         The query store raised some error.
      */
-    Query persist(Long containerId, Long databaseId, Long queryId, Principal principal) throws DatabaseNotFoundException,
+    Query persist(Long databaseId, Long queryId, Principal principal) throws DatabaseNotFoundException,
             ImageNotSupportedException, DatabaseConnectionException, QueryStoreException, UserNotFoundException;
 
     /**

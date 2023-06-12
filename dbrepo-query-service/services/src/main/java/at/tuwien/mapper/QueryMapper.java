@@ -1,20 +1,23 @@
 package at.tuwien.mapper;
 
-import at.tuwien.api.database.query.*;
+import at.tuwien.api.database.query.ImportDto;
+import at.tuwien.api.database.query.QueryBriefDto;
+import at.tuwien.api.database.query.QueryDto;
+import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.TableCsvDeleteDto;
 import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.api.database.table.TableCsvUpdateDto;
 import at.tuwien.api.database.table.TableHistoryDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.View;
+import at.tuwien.entities.database.table.Table;
+import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.database.table.columns.TableColumnType;
+import at.tuwien.exception.ImageNotSupportedException;
 import at.tuwien.exception.QueryMalformedException;
 import at.tuwien.exception.QueryStoreException;
 import at.tuwien.exception.TableMalformedException;
 import at.tuwien.querystore.Query;
-import at.tuwien.entities.database.table.Table;
-import at.tuwien.entities.database.table.columns.TableColumn;
-import at.tuwien.exception.ImageNotSupportedException;
 import net.sf.jsqlparser.statement.select.SelectItem;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -24,8 +27,8 @@ import org.mariadb.jdbc.MariaDbBlob;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigInteger;
-import java.sql.*;
 import java.sql.Date;
+import java.sql.*;
 import java.text.Normalizer;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
@@ -402,7 +405,7 @@ public interface QueryMapper {
             throw new TableMalformedException("Columns are not known");
         }
         /* check image */
-        if (!table.getDatabase().getContainer().getImage().getRepository().equals("mariadb")) {
+        if (!table.getDatabase().getContainer().getImage().getName().equals("mariadb")) {
             log.error("Currently only MariaDB is supported");
             throw new ImageNotSupportedException("Image not supported.");
         }
@@ -461,7 +464,7 @@ public interface QueryMapper {
             throw new TableMalformedException("Columns are not known");
         }
         /* check image */
-        if (!table.getDatabase().getContainer().getImage().getRepository().equals("mariadb")) {
+        if (!table.getDatabase().getContainer().getImage().getName().equals("mariadb")) {
             log.error("Currently only MariaDB is supported");
             throw new ImageNotSupportedException("Image not supported.");
         }
@@ -508,7 +511,7 @@ public interface QueryMapper {
             throw new TableMalformedException("Columns are not known");
         }
         /* check image */
-        if (!table.getDatabase().getContainer().getImage().getRepository().equals("mariadb")) {
+        if (!table.getDatabase().getContainer().getImage().getName().equals("mariadb")) {
             log.error("Currently only MariaDB is supported");
             throw new ImageNotSupportedException("Image not supported.");
         }
@@ -579,7 +582,7 @@ public interface QueryMapper {
             throws ImageNotSupportedException {
         log.trace("mapping table to raw count query, table={}, timestamp={}", table, timestamp);
         /* check image */
-        if (!table.getDatabase().getContainer().getImage().getRepository().equals("mariadb")) {
+        if (!table.getDatabase().getContainer().getImage().getName().equals("mariadb")) {
             log.error("Currently only MariaDB is supported");
             throw new ImageNotSupportedException("Image not supported.");
         }
@@ -594,7 +597,7 @@ public interface QueryMapper {
             throws ImageNotSupportedException {
         log.trace("mapping table to raw count query, view={}", view);
         /* check image */
-        if (!view.getDatabase().getContainer().getImage().getRepository().equals("mariadb")) {
+        if (!view.getDatabase().getContainer().getImage().getName().equals("mariadb")) {
             log.error("Currently only MariaDB is supported");
             throw new ImageNotSupportedException("Image not supported.");
         }
@@ -619,7 +622,7 @@ public interface QueryMapper {
         log.trace("mapping query to timestamped query, query={}, database={}, timestamp={}, selection={}, page={}, size={}",
                 query, database, timestamp, selection, page, size);
         /* param check */
-        if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
+        if (!database.getContainer().getImage().getName().equals("mariadb")) {
             log.error("Currently only MariaDB is supported");
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
         }
@@ -678,7 +681,7 @@ public interface QueryMapper {
         log.trace("mapping table to find all query, table={}, timestamp={}, size={}, page={}",
                 table, timestamp, size, page);
         /* param check */
-        if (!table.getDatabase().getContainer().getImage().getRepository().equals("mariadb")) {
+        if (!table.getDatabase().getContainer().getImage().getName().equals("mariadb")) {
             log.error("Currently only MariaDB is supported");
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
         }
@@ -695,7 +698,7 @@ public interface QueryMapper {
             throws ImageNotSupportedException {
         log.trace("mapping view to find all query, view={}, size={}, page={}", view, size, page);
         /* param check */
-        if (!view.getDatabase().getContainer().getImage().getRepository().equals("mariadb")) {
+        if (!view.getDatabase().getContainer().getImage().getName().equals("mariadb")) {
             log.error("Currently only MariaDB is supported");
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
         }
