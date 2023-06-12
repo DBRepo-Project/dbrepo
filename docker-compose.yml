@@ -6,17 +6,12 @@ version: "3.6"
 
 volumes:
   metadata-db-data:
+  user-db-data:
   search-db-data:
   broker-service-data:
   authentication-service-data:
 
 networks:
-  userdb:
-    name: userdb
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 172.30.0.0/16
   public:
     name: public
     driver: bridge
@@ -42,11 +37,37 @@ services:
       core:
     volumes:
       - metadata-db-data:/var/lib/mysql
+      - ./dbrepo-metadata-db/setup-schema_local.sql:/docker-entrypoint-initdb.d/setup-schema_local.sql
     ports:
       - "3306:3306"
       - "9100:9100"
     env_file:
       - .env
+    logging:
+      driver: json-file
+
+  dbrepo-user-db:
+    restart: "no"
+    container_name: dbrepo-user-db
+    hostname: user-db
+    image: mariadb:10.5
+    networks:
+      core:
+    volumes:
+      - user-db-data:/var/lib/mysql
+      - "/tmp:/tmp"
+    ports:
+      - "3307:3306"
+      - "9101:9100"
+    env_file:
+      - .env
+    environment:
+      - MARIADB_ROOT_PASSWORD=$USER_DB_PASSWORD
+    healthcheck:
+      test: mysqladmin ping --user="$USER_DB_USERNAME" --password="$USER_DB_PASSWORD" --silent
+      interval: 10s
+      timeout: 5s
+      retries: 12
     logging:
       driver: json-file
 
@@ -57,14 +78,11 @@ services:
     build: ./dbrepo-database-service
     image: dbrepo-database-service
     networks:
-      userdb:
       core:
     ports:
       - "9092:9092"
     env_file:
       - .env
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
       dbrepo-container-service:
         condition: service_healthy
@@ -89,8 +107,6 @@ services:
       - "9091:9091"
     env_file:
       - .env
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
       dbrepo-authentication-service:
         condition: service_healthy
@@ -128,7 +144,6 @@ services:
     image: dbrepo-query-service
     networks:
       core:
-      userdb:
     ports:
       - "9093:9093"
     env_file:
@@ -155,13 +170,11 @@ services:
     image: dbrepo-table-service
     networks:
       core:
-      userdb:
     ports:
       - "9094:9094"
     env_file:
       - .env
     volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock"
       - "/tmp:/tmp"
     depends_on:
       dbrepo-authentication-service:
@@ -227,14 +240,12 @@ services:
     image: dbrepo-analyse-service
     networks:
       core:
-      userdb:
     ports:
       - "5000:5000"
     env_file:
       - .env
     volumes:
       - "/tmp:/tmp"
-      - /var/run/docker.sock:/var/run/docker.sock
     logging:
       driver: json-file
 
@@ -274,7 +285,6 @@ services:
       - .env
     volumes:
       - "/tmp:/tmp"
-      - "/var/run/docker.sock:/var/run/docker.sock"
     depends_on:
       dbrepo-metadata-db:
         condition: service_healthy
