@@ -1,10 +1,8 @@
 package at.tuwien.repository.sdb;
 
-import at.tuwien.api.database.table.columns.ColumnDto;
-import at.tuwien.api.database.table.columns.ColumnKeyDto;
+import at.tuwien.entities.database.table.columns.TableColumn;
+import at.tuwien.entities.database.table.columns.TableColumnKey;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
-import org.springframework.stereotype.Repository;
 
-@Repository
-public interface TableColumnIdxRepository extends ElasticsearchRepository<ColumnDto, ColumnKeyDto> {
+public interface TableColumnIdxRepository extends ElasticsearchRepository<TableColumn, TableColumnKey> {
 }

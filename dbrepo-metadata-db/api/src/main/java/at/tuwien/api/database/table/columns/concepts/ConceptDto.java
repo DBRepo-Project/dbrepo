@@ -4,6 +4,7 @@ import at.tuwien.api.database.table.columns.ColumnBriefDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.Id;
 import lombok.*;
 
 import jakarta.validation.constraints.NotBlank;

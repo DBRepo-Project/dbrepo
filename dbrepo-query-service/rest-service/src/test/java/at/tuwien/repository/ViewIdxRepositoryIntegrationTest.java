@@ -118,9 +118,9 @@ public class ViewIdxRepositoryIntegrationTest extends BaseUnitTest {
 
         /* test */
         viewService.create(CONTAINER_1_ID, DATABASE_1_ID, request, USER_1_PRINCIPAL);
-        final Optional<ViewDto> response = viewIdxRepository.findById(VIEW_1_ID);
+        final Optional<View> response = viewIdxRepository.findById(VIEW_1_ID);
         assertTrue(response.isPresent());
-        final ViewDto view = response.get();
+        final View view = response.get();
         assertEquals(VIEW_1_ID, view.getId());
         assertEquals(VIEW_1_NAME, view.getName());
         assertEquals(VIEW_1_INTERNAL_NAME, view.getInternalName());

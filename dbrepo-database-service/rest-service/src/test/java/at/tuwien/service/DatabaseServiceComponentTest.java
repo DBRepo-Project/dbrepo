@@ -90,8 +90,8 @@ public class DatabaseServiceComponentTest extends BaseUnitTest {
         DockerConfig.createContainer(BIND_MUSICOLOGY, CONTAINER_3, CONTAINER_3_ENV);
         DockerConfig.startContainer(CONTAINER_3);
         MariaDbConfig.dropDatabase(CONTAINER_3_INTERNALNAME, DATABASE_3_INTERNALNAME, "root", "mariadb");
-        when(databaseIdxRepository.save(any(DatabaseDto.class)))
-                .thenReturn(DATABASE_3_DTO);
+        when(databaseIdxRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_3);
 
         /* test */
         generic_create(CONTAINER_3_ID, DATABASE_3_CREATE, DATABASE_3);

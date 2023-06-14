@@ -10,7 +10,6 @@ import at.tuwien.endpoints.SemanticsEndpoint;
 import at.tuwien.entities.database.table.columns.TableColumnConcept;
 import at.tuwien.entities.database.table.columns.TableColumnUnit;
 import at.tuwien.repository.sdb.*;
-import at.tuwien.repository.sdb.TableColumnIdxRepository;
 import at.tuwien.service.SemanticService;
 import lombok.extern.log4j.Log4j2;
 import org.apache.jena.sys.JenaSystem;
@@ -47,12 +46,6 @@ public class SemanticsEndpointUnitTest extends BaseUnitTest {
 
     @MockBean
     private ConceptIdxRepository conceptIdxRepository;
-
-    @MockBean
-    private TableIdxRepository tableIdxRepository;
-
-    @MockBean
-    private TableColumnIdxRepository tableColumnIdxRepository;
 
     @Autowired
     private SemanticsEndpoint semanticsEndpoint;

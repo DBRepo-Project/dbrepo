@@ -7,7 +7,6 @@ import at.tuwien.entities.user.User;
 import lombok.*;
 import lombok.extern.log4j.Log4j2;
 import net.sf.jsqlparser.statement.select.FromItem;
-import net.sf.jsqlparser.statement.select.SelectItem;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -16,8 +15,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import jakarta.persistence.*;;
 import java.time.Instant;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Data
 @Entity
@@ -56,7 +53,7 @@ public class Table {
     })
     private User owner;
 
-    @Column(nullable = false, name = "tname")
+    @Column(name = "tname", nullable = false)
     private String name;
 
     @Column(nullable = false)

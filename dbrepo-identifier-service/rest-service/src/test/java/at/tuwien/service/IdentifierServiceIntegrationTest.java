@@ -2,7 +2,6 @@ package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.query.QueryDto;
-import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.identifier.RelatedIdentifier;
@@ -97,8 +96,8 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
                 .thenReturn(ResponseEntity.ok(QUERY_2_DTO));
         when(queryServiceGateway.find(CONTAINER_2_ID, DATABASE_2_ID, IDENTIFIER_2_DTO_REQUEST, bearer))
                 .thenReturn(QUERY_2_DTO);
-        when(identifierIdxRepository.save(any(IdentifierDto.class)))
-                .thenReturn(IDENTIFIER_2_DTO);
+        when(identifierIdxRepository.save(any(Identifier.class)))
+                .thenReturn(IDENTIFIER_2);
 
         /* test */
         final Identifier response = identifierService.create(IDENTIFIER_2_DTO_REQUEST, USER_2_PRINCIPAL, bearer);
@@ -133,11 +132,11 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void update_succeeds()
-            throws IdentifierNotFoundException, IdentifierRequestException, IdentifierUpdateBadFormException {
+            throws IdentifierNotFoundException, IdentifierRequestException {
 
         /* mock */
-        when(identifierIdxRepository.save(any(IdentifierDto.class)))
-                .thenReturn(IDENTIFIER_1_DTO);
+        when(identifierIdxRepository.save(any(Identifier.class)))
+                .thenReturn(IDENTIFIER_1);
 
         /* test */
         final Identifier response = identifierService.update(IDENTIFIER_1_ID, IDENTIFIER_1_DTO_UPDATE_REQUEST);

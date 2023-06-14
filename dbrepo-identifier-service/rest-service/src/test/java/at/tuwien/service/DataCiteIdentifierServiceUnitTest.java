@@ -170,7 +170,7 @@ public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
 
     @Test
     public void update_existing_succeeds()
-            throws IdentifierRequestException, IdentifierNotFoundException, IdentifierUpdateBadFormException {
+            throws IdentifierRequestException, IdentifierNotFoundException {
         final DataCiteBody<DataCiteDoi> response =
                 new DataCiteBody<>(new DataCiteData<>(null, "dois", new DataCiteDoi(IDENTIFIER_1_DOI_NOT_NULL)));
 

@@ -111,8 +111,8 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         DockerConfig.createContainer(BIND_MUSICOLOGY, CONTAINER_3_SIMPLE, CONTAINER_3_ENV);
         DockerConfig.startContainer(CONTAINER_3_SIMPLE);
         MariaDbConfig.dropDatabase(CONTAINER_3_INTERNALNAME, DATABASE_3_INTERNALNAME, "root", "mariadb");
-        when(databaseIdxRepository.save(any(DatabaseDto.class)))
-                .thenReturn(DATABASE_3_DTO);
+        when(databaseIdxRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_3);
         containerRepository.save(CONTAINER_1_SIMPLE) /* increase id */;
         containerRepository.save(CONTAINER_2_SIMPLE) /* increase id */;
         containerRepository.save(CONTAINER_3_SIMPLE);
@@ -131,9 +131,9 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         DockerConfig.createContainer(BIND_MUSICOLOGY, CONTAINER_3_SIMPLE, CONTAINER_3_ENV);
         DockerConfig.startContainer(CONTAINER_3_SIMPLE);
         MariaDbConfig.dropDatabase(CONTAINER_3_INTERNALNAME, DATABASE_3_INTERNALNAME, "root", "mariadb");
-        when(databaseIdxRepository.save(any(DatabaseDto.class)))
-                .thenReturn(DATABASE_2_DTO)
-                .thenReturn(DATABASE_3_DTO);
+        when(databaseIdxRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_2)
+                .thenReturn(DATABASE_3);
         containerRepository.save(CONTAINER_1_SIMPLE) /* increase id */;
         containerRepository.save(CONTAINER_2_SIMPLE);
         containerRepository.save(CONTAINER_3_SIMPLE);
@@ -153,9 +153,9 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         DockerConfig.createContainer(BIND_MUSICOLOGY, CONTAINER_3_SIMPLE, CONTAINER_3_ENV);
         DockerConfig.startContainer(CONTAINER_3_SIMPLE);
         MariaDbConfig.dropDatabase(CONTAINER_3_INTERNALNAME, DATABASE_3_INTERNALNAME, "root", "mariadb");
-        when(databaseIdxRepository.save(any(DatabaseDto.class)))
-                .thenReturn(DATABASE_3_DTO)
-                .thenReturn(DATABASE_2_DTO);
+        when(databaseIdxRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_3)
+                .thenReturn(DATABASE_2);
         containerRepository.save(CONTAINER_1_SIMPLE) /* increase id */;
         containerRepository.save(CONTAINER_2_SIMPLE);
         containerRepository.save(CONTAINER_3_SIMPLE);

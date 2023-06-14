@@ -16,7 +16,7 @@ import java.util.List;
 
 @Data
 @Entity
-@Builder(toBuilder=true)
+@Builder(toBuilder = true)
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor

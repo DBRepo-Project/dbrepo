@@ -11,8 +11,6 @@ import lombok.extern.jackson.Jacksonized;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import org.springframework.data.elasticsearch.annotations.Document;
-import org.springframework.data.elasticsearch.annotations.Field;
 
 import java.time.Instant;
 import java.util.List;
@@ -24,16 +22,13 @@ import java.util.List;
 @AllArgsConstructor
 @Jacksonized
 @ToString
-@Document(indexName = "table")
 public class TableDto {
 
     @NotNull
-    @Field(name = "container_id")
     @JsonProperty("container_id")
     private Long containerId;
 
     @NotNull
-    @Field(name = "database_id")
     @JsonProperty("database_id")
     private Long databaseId;
 
@@ -45,7 +40,6 @@ public class TableDto {
     private String name;
 
     @NotBlank(message = "internalName is required")
-    @Field(name = "internal_name")
     @JsonProperty("internal_name")
     @Schema(example = "air_quality")
     private String internalName;
@@ -57,13 +51,11 @@ public class TableDto {
     private UserBriefDto owner;
 
     @NotBlank(message = "queueName is required")
-    @Field(name = "queue_name")
     @JsonProperty("queue_name")
     @Schema(example = "dbrepo/air_quality/air_quality")
     private String queueName;
 
     @NotBlank(message = "routingKey is required")
-    @Field(name = "routing_key")
     @JsonProperty("routing_key")
     @Schema(example = "dbrepo/air_quality/air_quality/1")
     private String routingKey;
@@ -73,7 +65,6 @@ public class TableDto {
     private String description;
 
     @NotNull(message = "isPublic is required")
-    @Field(name = "is_public")
     @JsonProperty("is_public")
     @Schema(example = "true")
     private Boolean isPublic;
