@@ -33,7 +33,6 @@ export default {
   },
   data () {
     return {
-      loadingContainers: false,
       loadingCreate: false,
       createDbDialog: false,
       createDatabaseDto: {
@@ -70,7 +69,7 @@ export default {
       if (!this.roles) {
         return false
       }
-      return this.roles.includes('create-container') && this.roles.includes('create-database')
+      return this.roles.includes('create-database')
     }
   },
   methods: {

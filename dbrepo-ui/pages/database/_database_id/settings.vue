@@ -132,7 +132,7 @@ export default {
       ],
       accesses: [],
       items: [
-        { text: 'Databases', to: '/container', activeClass: '' },
+        { text: 'Databases', to: '/database', activeClass: '' },
         {
           text: `${this.$route.params.database_id}`,
           to: `/database/${this.$route.params.database_id}/info`,

@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-progress-linear v-if="loadingDatabases" :indeterminate="!error" />
-    <v-card v-if="!$vuetify.theme.dark && containers.length> 0" flat tile>
+    <v-card v-if="!$vuetify.theme.dark && databases.length> 0" flat tile>
       <v-divider class="mx-4" />
     </v-card>
     <v-card
@@ -100,12 +100,12 @@ export default {
       DatabaseService.findAll() // TODO: write a findAllDatabases method
         .then((databases) => {
           this.databases = databases
-          console.info('Found', this.databases.length, 'container(s)')
+          console.info('Found', this.databases.length, 'database(s)')
         })
       this.loadingDatabases = false
     },
     link (database) {
-      if (!database || !database.container) {
+      if (!database) {
         return null
       }
       return `/database/${database.id}`

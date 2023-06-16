@@ -88,7 +88,7 @@ export default {
     }
   },
   mounted () {
-    this.getImages()
+    this.getEngines()
   },
   methods: {
     submit () {
@@ -97,7 +97,7 @@ export default {
     cancel () {
       this.$emit('close', { success: false })
     },
-    getImages () {
+    getEngines () {
       this.loading = true
       ContainerService.findAll()
         .then((containers) => {
@@ -111,9 +111,6 @@ export default {
         })
     },
     async create () {
-      await this.createDatabase(this.engine)
-    },
-    async createDatabase (container) {
       this.loading = true
       try {
         this.database = await DatabaseService.create({ container_id: this.engine.id, name: this.createDatabaseDto.name, is_public: true })
