@@ -94,7 +94,7 @@
         "composite": true,
         "composites": {
           "realm": [
-            "modify-foreign-container-state",
+            "create-container",
             "delete-container"
           ]
         },
@@ -525,15 +525,6 @@
         "attributes": {}
       },
       {
-        "id": "8582dae6-e64f-41a6-9dcc-7e18f54fcdde",
-        "name": "modify-container-state",
-        "description": "${modify-container-state}",
-        "composite": false,
-        "clientRole": false,
-        "containerId": "82c39861-d877-4667-a0f3-4daa2ee230e0",
-        "attributes": {}
-      },
-      {
         "id": "abd2d9ee-ebc4-4d0a-839e-6b588a6d442a",
         "name": "default-roles-dbrepo",
         "description": "${role_default-roles}",
@@ -628,8 +619,6 @@
         "composite": true,
         "composites": {
           "realm": [
-            "create-container",
-            "modify-container-state",
             "find-container",
             "list-containers"
           ]
@@ -765,15 +754,6 @@
         "id": "fd41c4c3-d2f8-4f49-84c7-dba84e9a5575",
         "name": "execute-query",
         "description": "${execute-query}",
-        "composite": false,
-        "clientRole": false,
-        "containerId": "82c39861-d877-4667-a0f3-4daa2ee230e0",
-        "attributes": {}
-      },
-      {
-        "id": "022605d2-2a40-4cfc-9864-28a56cf7d565",
-        "name": "modify-foreign-container-state",
-        "description": "${modify-foreign-container-state}",
         "composite": false,
         "clientRole": false,
         "containerId": "82c39861-d877-4667-a0f3-4daa2ee230e0",
@@ -3486,7 +3466,7 @@
     "clientSessionMaxLifespan": "0",
     "shortVerificationUri": ""
   },
-  "keycloakVersion": "21.0.1",
+  "keycloakVersion": "21.0.2",
   "userManagedAccessAllowed": false,
   "clientProfiles": {
     "profiles": []
