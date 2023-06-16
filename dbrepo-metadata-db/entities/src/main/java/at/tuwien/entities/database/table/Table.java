@@ -10,6 +10,7 @@ import net.sf.jsqlparser.statement.select.FromItem;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import jakarta.persistence.*;;
@@ -28,6 +29,7 @@ import java.util.List;
 @jakarta.persistence.Table(name = "mdb_tables", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"tdbid", "internalName"})
 })
+@Document(indexName = "table")
 public class Table {
 
     @Id
@@ -41,12 +43,16 @@ public class Table {
     @EqualsAndHashCode.Include
     private Long tdbid;
 
+    @ToString.Exclude
+    @org.springframework.data.annotation.Transient
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumns({
             @JoinColumn(name = "createdBy", referencedColumnName = "ID", nullable = false, columnDefinition = "VARCHAR(36)", updatable = false)
     })
     private User creator;
 
+    @ToString.Exclude
+    @org.springframework.data.annotation.Transient
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumns({
             @JoinColumn(name = "ownedBy", referencedColumnName = "ID", nullable = false, columnDefinition = "VARCHAR(36)", updatable = false)
@@ -69,7 +75,7 @@ public class Table {
     private String description;
 
     @ToString.Exclude
-    @ManyToOne(fetch = FetchType.LAZY, cascade = {})
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tdbid", insertable = false, updatable = false)
     private Database database;
 

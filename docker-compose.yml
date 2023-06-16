@@ -47,13 +47,8 @@ services:
       - "9100:9100"
     env_file:
       - .env
-    depends_on:
-      dbrepo-log-service:
-        condition: service_healthy
     logging:
-      driver: fluentd
-      options:
-        tag: "dbrepo-metadata-db"
+      driver: json-file
 
   dbrepo-database-service:
     restart: "no"
@@ -71,8 +66,6 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
-      dbrepo-log-service:
-        condition: service_healthy
       dbrepo-container-service:
         condition: service_healthy
       dbrepo-broker-service:
@@ -82,9 +75,7 @@ services:
       dbrepo-search-db:
         condition: service_healthy
     logging:
-      driver: fluentd
-      options:
-        tag: "dbrepo-database-service"
+      driver: json-file
 
   dbrepo-container-service:
     restart: "no"
@@ -101,16 +92,12 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
-      dbrepo-log-service:
-        condition: service_healthy
       dbrepo-authentication-service:
         condition: service_healthy
       dbrepo-search-db:
         condition: service_healthy
     logging:
-      driver: fluentd
-      options:
-        tag: "dbrepo-container-service"
+      driver: json-file
 
   dbrepo-authentication-service:
     restart: "no"
@@ -128,14 +115,10 @@ services:
     volumes:
       - authentication-service-data:/opt/keycloak/data/
     depends_on:
-      dbrepo-log-service:
-        condition: service_healthy
       dbrepo-metadata-db:
         condition: service_healthy
     logging:
-      driver: fluentd
-      options:
-        tag: "dbrepo-authentication-service"
+      driver: json-file
 
   dbrepo-query-service:
     restart: "no"
@@ -153,8 +136,6 @@ services:
     volumes:
       - "/tmp:/tmp"
     depends_on:
-      dbrepo-log-service:
-        condition: service_healthy
       dbrepo-broker-service:
         condition: service_healthy
       dbrepo-table-service:
@@ -164,9 +145,7 @@ services:
       dbrepo-search-db:
         condition: service_healthy
     logging:
-      driver: fluentd
-      options:
-        tag: "dbrepo-query-service"
+      driver: json-file
 
   dbrepo-table-service:
     restart: "no"
@@ -185,8 +164,6 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock"
       - "/tmp:/tmp"
     depends_on:
-      dbrepo-log-service:
-        condition: service_healthy
       dbrepo-authentication-service:
         condition: service_healthy
       dbrepo-search-db:
@@ -194,9 +171,7 @@ services:
       dbrepo-broker-service:
         condition: service_healthy
     logging:
-      driver: fluentd
-      options:
-        tag: "dbrepo-table-service"
+      driver: json-file
 
   dbrepo-identifier-service:
     restart: "no"
@@ -211,8 +186,6 @@ services:
     env_file:
       - .env
     depends_on:
-      dbrepo-log-service:
-        condition: service_healthy
       dbrepo-query-service:
         condition: service_healthy
       dbrepo-authentication-service:
@@ -222,9 +195,7 @@ services:
     volumes:
       - /tmp:/tmp
     logging:
-      driver: fluentd
-      options:
-        tag: "dbrepo-identifier-service"
+      driver: json-file
 
   dbrepo-metadata-service:
     restart: "no"
@@ -239,8 +210,6 @@ services:
     ports:
       - "9099:9099"
     depends_on:
-      dbrepo-log-service:
-        condition: service_healthy
       dbrepo-authentication-service:
         condition: service_healthy
       dbrepo-metadata-db:
@@ -248,9 +217,7 @@ services:
       dbrepo-search-db:
         condition: service_healthy
     logging:
-      driver: fluentd
-      options:
-        tag: "dbrepo-metadata-service"
+      driver: json-file
 
   dbrepo-analyse-service:
     restart: "no"
@@ -268,13 +235,8 @@ services:
     volumes:
       - "/tmp:/tmp"
       - /var/run/docker.sock:/var/run/docker.sock
-    depends_on:
-      dbrepo-log-service:
-        condition: service_healthy
     logging:
-      driver: fluentd
-      options:
-        tag: "dbrepo-analyse-service"
+      driver: json-file
 
   dbrepo-user-service:
     restart: "no"
@@ -289,8 +251,6 @@ services:
     env_file:
       - .env
     depends_on:
-      dbrepo-log-service:
-        condition: service_healthy
       dbrepo-metadata-db:
         condition: service_healthy
       dbrepo-authentication-service:
@@ -298,9 +258,7 @@ services:
       dbrepo-search-db:
         condition: service_healthy
     logging:
-      driver: fluentd
-      options:
-        tag: "dbrepo-analyse-service"
+      driver: json-file
 
   dbrepo-semantics-service:
     restart: "no"
@@ -318,8 +276,6 @@ services:
       - "/tmp:/tmp"
       - "/var/run/docker.sock:/var/run/docker.sock"
     depends_on:
-      dbrepo-log-service:
-        condition: service_healthy
       dbrepo-metadata-db:
         condition: service_healthy
       dbrepo-authentication-service:
@@ -327,9 +283,7 @@ services:
       dbrepo-search-db:
         condition: service_healthy
     logging:
-      driver: fluentd
-      options:
-        tag: "dbrepo-semantics-service"
+      driver: json-file
 
   dbrepo-broker-service:
     restart: "no"
@@ -345,16 +299,12 @@ services:
     env_file:
       - .env
     depends_on:
-      dbrepo-log-service:
-        condition: service_healthy
       dbrepo-authentication-service:
         condition: service_healthy
     volumes:
       - broker-service-data:/var/lib/rabbitmq/
     logging:
-      driver: fluentd
-      options:
-        tag: "dbrepo-semantics-service"
+      driver: json-file
 
   dbrepo-search-db:
     restart: "no"
@@ -364,7 +314,8 @@ services:
     networks:
       core:
     ports:
-      - 2020:2020
+      - "2020:2020"
+      - "9200:9200"
     env_file:
       - .env
     healthcheck:
@@ -384,68 +335,6 @@ services:
     logging:
       driver: json-file
 
-  dbrepo-log-service:
-    restart: "no"
-    container_name: dbrepo-log-service
-    hostname: log-service
-    image: fluent/fluent-bit:2.1.4-debug
-    networks:
-      core:
-    ports:
-      - 24224:24224
-    healthcheck:
-      test: curl -f http://localhost:2020 || exit 1
-    entrypoint: [ "/fluent-bit/bin/fluent-bit", "-c", "/fluent-bit.conf" ]
-    environment:
-      discovery.type: "single-node"
-      ES_JAVA_OPTS: "-Xms4g -Xmx4g"
-      logger.level: "WARN"
-      bootstrap.memory_lock: "true"
-    deploy:
-      resources:
-        limits:
-          memory: 4G
-    depends_on:
-      dbrepo-search-db:
-        condition: service_healthy
-    volumes:
-      - ./dbrepo-log-service/fluent-bit.conf:/fluent-bit.conf
-    logging:
-      driver: json-file
-
-#  dbrepo-metrics:
-#    restart: "no"
-#    container_name: dbrepo-metrics
-#    hostname: metrics
-#    image: opensearchproject/opensearch-dashboards:2.8.0
-#    networks:
-#      core:
-#    ports:
-#      - 5601:5601
-#    healthcheck:
-#      test: curl -s http://log-service:5601 > /dev/null || exit 1
-#    environment:
-#      discovery.type: "single-node"
-#      ES_JAVA_OPTS: "-Xms4g -Xmx4g"
-#      logger.level: "WARN"
-#      bootstrap.memory_lock: "true"
-#      OPENSEARCH_HOSTS: '["https://search-db:9200"]'
-#      OPENSEARCH_USERNAME: "${SEARCH_USERNAME}"
-#      OPENSEARCH_PASSWORD: "${SEARCH_PASSWORD}"
-#    deploy:
-#      resources:
-#        limits:
-#          memory: 4G
-#    depends_on:
-#      dbrepo-search-db:
-#        condition: service_healthy
-#      dbrepo-log-service:
-#        condition: service_healthy
-#    logging:
-#      driver: fluentd
-#      options:
-#        tag: metrics
-
   dbrepo-ui:
     restart: "no"
     container_name: dbrepo-ui
@@ -459,13 +348,8 @@ services:
       - .env
     volumes:
       - "/tmp:/tmp"
-    depends_on:
-      dbrepo-log-service:
-        condition: service_healthy
     logging:
-      driver: fluentd
-      options:
-        tag: "dbrepo-ui"
+      driver: json-file
 
   dbrepo-gateway-service:
     restart: "no"
@@ -481,8 +365,6 @@ services:
     volumes:
       - ./dbrepo.conf:/etc/nginx/conf.d/default.conf
     depends_on:
-      dbrepo-log-service:
-        condition: service_healthy
       dbrepo-analyse-service:
         condition: service_healthy
       dbrepo-authentication-service:
@@ -510,6 +392,4 @@ services:
       dbrepo-user-service:
         condition: service_healthy
     logging:
-      driver: fluentd
-      options:
-        tag: "dbrepo-gateway-service"
+      driver: json-file

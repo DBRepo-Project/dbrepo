@@ -1,7 +1,10 @@
 package at.tuwien.entities.database.table.columns;
 
 import lombok.*;
+import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import jakarta.persistence.*;;
@@ -17,12 +20,19 @@ import java.util.List;
 @EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @jakarta.persistence.Table(name = "mdb_units")
+@Document(indexName = "unit")
 @NamedQueries({
         @NamedQuery(name = "TableColumnUnit.findById", query = "select u from TableColumnUnit u where u.uri = ?1")
 })
 public class TableColumnUnit {
 
     @Id
+    @EqualsAndHashCode.Include
+    @GeneratedValue(generator = "units-sequence")
+    @GenericGenerator(name = "units-sequence", strategy = "increment")
+    @Column(updatable = false, nullable = false)
+    private Long id;
+
     @EqualsAndHashCode.Include
     @Column(nullable = false, columnDefinition = "TEXT")
     private String uri;

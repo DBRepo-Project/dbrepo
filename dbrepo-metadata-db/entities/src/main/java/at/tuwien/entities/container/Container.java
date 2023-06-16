@@ -37,6 +37,8 @@ public class Container {
     @Column(name = "createdBy", nullable = false, columnDefinition = "VARCHAR(36)")
     private UUID createdBy;
 
+    @ToString.Exclude
+    @org.springframework.data.annotation.Transient
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumns({
             @JoinColumn(name = "createdBy", referencedColumnName = "ID", insertable = false, updatable = false)
@@ -48,6 +50,8 @@ public class Container {
     @Column(name = "ownedBy", nullable = false, columnDefinition = "VARCHAR(36)")
     private UUID ownedBy;
 
+    @ToString.Exclude
+    @org.springframework.data.annotation.Transient
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumns({
             @JoinColumn(name = "ownedBy", referencedColumnName = "ID", insertable = false, updatable = false)
@@ -77,6 +81,7 @@ public class Container {
     })
     private Database database;
 
+    @ToString.Exclude
     @org.springframework.data.annotation.Transient
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({

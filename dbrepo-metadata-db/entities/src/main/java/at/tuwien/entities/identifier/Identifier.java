@@ -6,15 +6,19 @@ import at.tuwien.entities.database.License;
 import at.tuwien.entities.user.User;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import jakarta.persistence.*;;
 import jakarta.validation.constraints.NotBlank;
+
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @Entity
@@ -26,6 +30,7 @@ import java.util.List;
 @jakarta.persistence.Table(name = "mdb_identifiers", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"qid", "cid", "dbid"})
 })
+@Document(indexName = "identifier")
 public class Identifier implements Serializable {
 
     @Id
@@ -44,9 +49,16 @@ public class Identifier implements Serializable {
     @Column(name = "qid")
     private Long queryId;
 
+    @ToString.Exclude
+    @JdbcTypeCode(java.sql.Types.VARCHAR)
+    @Column(name = "created_by", nullable = false, columnDefinition = "VARCHAR(36)")
+    private UUID createdBy;
+
+    @ToString.Exclude
+    @org.springframework.data.annotation.Transient
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumns({
-            @JoinColumn(name = "createdBy", referencedColumnName = "ID", nullable = false, columnDefinition = "VARCHAR(36)", updatable = false)
+            @JoinColumn(name = "created_by", referencedColumnName = "ID", insertable = false, updatable = false)
     })
     private User creator;
 
@@ -105,7 +117,7 @@ public class Identifier implements Serializable {
     @Enumerated(EnumType.STRING)
     private VisibilityType visibility;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = {})
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumns({
             @JoinColumn(name = "dbid", referencedColumnName = "id", insertable = false, updatable = false)
     })

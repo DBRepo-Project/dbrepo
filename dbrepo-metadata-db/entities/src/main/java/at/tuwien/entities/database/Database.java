@@ -12,6 +12,7 @@ import org.hibernate.annotations.JoinColumnsOrFormulas;
 import org.hibernate.annotations.JoinFormula;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.io.Serializable;
@@ -29,6 +30,7 @@ import java.util.UUID;
 @jakarta.persistence.Table(name = "mdb_databases", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"id", "internalName"})
 })
+@Document(indexName = "database")
 public class Database implements Serializable {
 
     @Id
@@ -41,6 +43,8 @@ public class Database implements Serializable {
     @Column(name = "created_by", nullable = false, columnDefinition = "VARCHAR(36)")
     private UUID createdBy;
 
+    @ToString.Exclude
+    @org.springframework.data.annotation.Transient
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumns({
             @JoinColumn(name = "created_by", referencedColumnName = "ID", insertable = false, updatable = false)
@@ -52,6 +56,8 @@ public class Database implements Serializable {
     @Column(name = "owned_by", nullable = false, columnDefinition = "VARCHAR(36)")
     private UUID ownedBy;
 
+    @ToString.Exclude
+    @org.springframework.data.annotation.Transient
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumns({
             @JoinColumn(name = "owned_by", referencedColumnName = "ID", insertable = false, updatable = false)
@@ -83,12 +89,15 @@ public class Database implements Serializable {
     @Column(name = "contact_person", nullable = false, columnDefinition = "VARCHAR(36)")
     private UUID contactPerson;
 
+    @ToString.Exclude
+    @org.springframework.data.annotation.Transient
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
     @JoinColumns({
             @JoinColumn(name = "contact_person", referencedColumnName = "ID", updatable = false, insertable = false)
     })
     private User contact;
 
+    @org.springframework.data.annotation.Transient
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumnsOrFormulas({
             @JoinColumnOrFormula(formula = @JoinFormula(value = "'DATABASE'", referencedColumnName = "identifier_type")),

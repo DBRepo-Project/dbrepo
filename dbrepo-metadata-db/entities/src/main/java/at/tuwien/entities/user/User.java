@@ -5,10 +5,12 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.entities.identifier.Identifier;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.core.Authentication;
 
-import jakarta.persistence.*;;
+import jakarta.persistence.*;
+
 import java.security.Principal;
 import java.util.List;
 import java.util.UUID;
@@ -25,6 +27,7 @@ import java.util.UUID;
         @UniqueConstraint(columnNames = {"REALM_ID", "EMAIL"}),
         @UniqueConstraint(columnNames = {"REALM_ID", "USERNAME"})
 })
+@Document(indexName = "user")
 @NamedQueries({
         @NamedQuery(name = "User.findAll", query = "select u from User u join Realm r on r.name = 'dbrepo' and u.enabled = true"),
         @NamedQuery(name = "User.findById", query = "select u from User u join Realm r on r.name = 'dbrepo' and u.id = ?1 and u.enabled = true"),
@@ -68,12 +71,10 @@ public class User {
     @Column(nullable = false)
     private String databasePassword;
 
-    @Column(nullable = false)
     @ToString.Exclude
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "user")
     private List<UserAttribute> attributes;
 
-    @Column(nullable = false)
     @ToString.Exclude
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "user")
     private List<Credential> credentials;
