@@ -9,7 +9,9 @@ import at.tuwien.entities.database.AccessType;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.exception.AccessDeniedException;
 import at.tuwien.exception.NotAllowedException;
-import at.tuwien.repository.mdb.*;
+import at.tuwien.repository.mdb.DatabaseAccessRepository;
+import at.tuwien.repository.mdb.DatabaseRepository;
+import at.tuwien.repository.mdb.UserRepository;
 import at.tuwien.repository.sdb.DatabaseIdxRepository;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
@@ -119,7 +121,7 @@ public class AccessServiceUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            accessService.update(CONTAINER_1_ID, DATABASE_1_ID, USER_1_USERNAME, request);
+            accessService.update(DATABASE_1_ID, USER_1_USERNAME, request);
         });
     }
 

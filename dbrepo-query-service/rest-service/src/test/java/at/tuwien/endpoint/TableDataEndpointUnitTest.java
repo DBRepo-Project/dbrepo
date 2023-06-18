@@ -12,7 +12,6 @@ import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.BrokerServiceGateway;
-import at.tuwien.listener.MessageQueueListener;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.repository.sdb.ViewIdxRepository;
 import at.tuwien.service.AccessService;
@@ -41,7 +40,7 @@ import java.time.Instant;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
 @Log4j2
 @SpringBootTest
@@ -87,7 +86,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            generic_import(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, TABLE_1_ID, TABLE_1, null, null, null);
+            generic_import(DATABASE_1_ID, DATABASE_1, TABLE_1_ID, TABLE_1, null, null, null);
         });
     }
 
@@ -97,7 +96,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            generic_import(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, TABLE_1_ID, TABLE_1, USER_2_USERNAME,
+            generic_import(DATABASE_1_ID, DATABASE_1, TABLE_1_ID, TABLE_1, USER_2_USERNAME,
                     DATABASE_1_USER_1_READ_ACCESS, USER_2_PRINCIPAL);
         });
     }
@@ -108,7 +107,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            generic_import(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, TABLE_1_ID, TABLE_1, USER_2_USERNAME,
+            generic_import(DATABASE_1_ID, DATABASE_1, TABLE_1_ID, TABLE_1, USER_2_USERNAME,
                     DATABASE_1_USER_1_WRITE_OWN_ACCESS, USER_2_PRINCIPAL);
         });
     }
@@ -119,7 +118,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            generic_import(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, TABLE_1_ID, TABLE_1, null, null, null);
+            generic_import(DATABASE_2_ID, DATABASE_2, TABLE_1_ID, TABLE_1, null, null, null);
         });
     }
 
@@ -129,7 +128,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            generic_import(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, TABLE_1_ID, TABLE_1, USER_2_USERNAME,
+            generic_import(DATABASE_2_ID, DATABASE_2, TABLE_1_ID, TABLE_1, USER_2_USERNAME,
                     DATABASE_2_USER_1_READ_ACCESS, USER_2_PRINCIPAL);
         });
     }
@@ -140,7 +139,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            generic_import(CONTAINER_2_ID, DATABASE_2_ID, DATABASE_2, TABLE_1_ID, TABLE_1, USER_2_USERNAME,
+            generic_import(DATABASE_2_ID, DATABASE_2, TABLE_1_ID, TABLE_1, USER_2_USERNAME,
                     DATABASE_2_USER_1_WRITE_OWN_ACCESS, USER_2_PRINCIPAL);
         });
     }
@@ -151,7 +150,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            generic_import(CONTAINER_3_ID, DATABASE_3_ID, DATABASE_3, TABLE_8_ID, TABLE_8, null, null, null);
+            generic_import(DATABASE_3_ID, DATABASE_3, TABLE_8_ID, TABLE_8, null, null, null);
         });
     }
 
@@ -162,7 +161,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
             ImageNotSupportedException, ContainerNotFoundException {
 
         /* test */
-        generic_import(CONTAINER_3_ID, DATABASE_3_ID, DATABASE_3, TABLE_8_ID, TABLE_8, USER_1_USERNAME,
+        generic_import(DATABASE_3_ID, DATABASE_3, TABLE_8_ID, TABLE_8, USER_1_USERNAME,
                 DATABASE_3_USER_1_WRITE_ALL_ACCESS, USER_1_PRINCIPAL);
     }
 
@@ -173,7 +172,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
             ImageNotSupportedException, ContainerNotFoundException {
 
         /* test */
-        generic_import(CONTAINER_1_ID, DATABASE_1_ID, DATABASE_1, TABLE_1_ID, TABLE_1, USER_1_USERNAME,
+        generic_import(DATABASE_1_ID, DATABASE_1, TABLE_1_ID, TABLE_1, USER_1_USERNAME,
                 DATABASE_1_USER_1_WRITE_ALL_ACCESS, USER_1_PRINCIPAL);
     }
 
@@ -183,7 +182,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            generic_insert(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_2_USERNAME, null,
+            generic_insert(DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_2_USERNAME, null,
                     TABLE_1_CSV_DTO, null);
         });
     }
@@ -194,7 +193,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            generic_insert(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_2_USERNAME,
+            generic_insert(DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_2_USERNAME,
                     DATABASE_1_USER_1_READ_ACCESS, TABLE_1_CSV_DTO, USER_2_PRINCIPAL);
         });
     }
@@ -205,7 +204,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            generic_insert(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_2_USERNAME,
+            generic_insert(DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_2_USERNAME,
                     DATABASE_1_USER_1_WRITE_OWN_ACCESS, TABLE_1_CSV_DTO, USER_2_PRINCIPAL);
         });
     }
@@ -216,7 +215,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            generic_insert(CONTAINER_2_ID, DATABASE_2_ID, TABLE_1_ID, DATABASE_2, TABLE_1, USER_2_USERNAME, null,
+            generic_insert(DATABASE_2_ID, TABLE_1_ID, DATABASE_2, TABLE_1, USER_2_USERNAME, null,
                     TABLE_1_CSV_DTO, null);
         });
     }
@@ -227,7 +226,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            generic_insert(CONTAINER_2_ID, DATABASE_2_ID, TABLE_1_ID, DATABASE_2, TABLE_1, USER_2_USERNAME,
+            generic_insert(DATABASE_2_ID, TABLE_1_ID, DATABASE_2, TABLE_1, USER_2_USERNAME,
                     DATABASE_2_USER_1_READ_ACCESS, TABLE_1_CSV_DTO, USER_2_PRINCIPAL);
         });
     }
@@ -238,7 +237,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            generic_insert(CONTAINER_2_ID, DATABASE_2_ID, TABLE_1_ID, DATABASE_2, TABLE_1, USER_2_USERNAME,
+            generic_insert(DATABASE_2_ID, TABLE_1_ID, DATABASE_2, TABLE_1, USER_2_USERNAME,
                     DATABASE_2_USER_1_WRITE_OWN_ACCESS, TABLE_1_CSV_DTO, USER_2_PRINCIPAL);
         });
     }
@@ -250,7 +249,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
             ImageNotSupportedException, ContainerNotFoundException {
 
         /* test */
-        generic_insert(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8, USER_1_USERNAME,
+        generic_insert(DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8, USER_1_USERNAME,
                 DATABASE_3_USER_1_WRITE_ALL_ACCESS, TABLE_8_CSV_DTO, USER_1_PRINCIPAL);
     }
 
@@ -261,7 +260,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
             ImageNotSupportedException, ContainerNotFoundException {
 
         /* test */
-        generic_insert(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_1_USERNAME,
+        generic_insert(DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_1_USERNAME,
                 DATABASE_1_USER_1_WRITE_ALL_ACCESS, TABLE_1_CSV_DTO, USER_1_PRINCIPAL);
     }
 
@@ -272,7 +271,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
             ImageNotSupportedException, ContainerNotFoundException {
 
         /* test */
-        generic_insert(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_1_USERNAME,
+        generic_insert(DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_1_USERNAME,
                 DATABASE_1_USER_1_WRITE_ALL_ACCESS, null, USER_1_PRINCIPAL);
     }
 
@@ -282,7 +281,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(PaginationException.class, () -> {
-            generic_getAll(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8, null, null, null, null, null,
+            generic_getAll(DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8, null, null, null, null, null,
                     3L, null, null);
         });
     }
@@ -293,7 +292,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(PaginationException.class, () -> {
-            generic_getAll(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8, null, null, null, null, 3L,
+            generic_getAll(DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8, null, null, null, null, 3L,
                     null, null, null);
         });
     }
@@ -304,7 +303,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(PaginationException.class, () -> {
-            generic_getAll(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8, null, null, null, null, -3L,
+            generic_getAll(DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8, null, null, null, null, -3L,
                     3L, null, null);
         });
     }
@@ -315,7 +314,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(PaginationException.class, () -> {
-            generic_getAll(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8, null, null, null, null, 3L,
+            generic_getAll(DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8, null, null, null, null, 3L,
                     -3L, null, null);
         });
     }
@@ -326,7 +325,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(PaginationException.class, () -> {
-            generic_getAll(CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8, null, null, null, null, 0L,
+            generic_getAll(DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8, null, null, null, null, 0L,
                     0L, null, null);
         });
     }
@@ -337,7 +336,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            generic_getAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, null, null, null, null, null, null, null, null);
+            generic_getAll(DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, null, null, null, null, null, null, null, null);
         });
     }
 
@@ -347,7 +346,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            generic_getAll(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_4_USERNAME, DATABASE_1_USER_1_READ_ACCESS, USER_4_PRINCIPAL, null, null, null, null, null);
+            generic_getAll(DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_4_USERNAME, DATABASE_1_USER_1_READ_ACCESS, USER_4_PRINCIPAL, null, null, null, null, null);
         });
     }
 
@@ -357,31 +356,31 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            generic_getCount(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_4_USERNAME, DATABASE_1_USER_1_READ_ACCESS, USER_4_PRINCIPAL, null);
+            generic_getCount(DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_4_USERNAME, DATABASE_1_USER_1_READ_ACCESS, USER_4_PRINCIPAL, null);
         });
     }
 
     public static Stream<Arguments> getAll_succeeds_parameters() {
         return Stream.of(
-                Arguments.arguments("public anonymous", CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3,
+                Arguments.arguments("public anonymous", DATABASE_3_ID, TABLE_8_ID, DATABASE_3,
                         TABLE_8, null, null, null,
                         null, null, null, null, null),
-                Arguments.arguments("public read", CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8,
+                Arguments.arguments("public read", DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8,
                         USER_1_USERNAME,
                         DATABASE_3_USER_1_READ_ACCESS, USER_1_PRINCIPAL, null, null, null, null, null),
-                Arguments.arguments("public write-own", CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3,
+                Arguments.arguments("public write-own", DATABASE_3_ID, TABLE_8_ID, DATABASE_3,
                         TABLE_8, USER_1_USERNAME,
                         DATABASE_3_USER_1_WRITE_OWN_ACCESS, USER_1_PRINCIPAL, null, null, null, null, null),
-                Arguments.arguments("public write-all", CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3,
+                Arguments.arguments("public write-all", DATABASE_3_ID, TABLE_8_ID, DATABASE_3,
                         TABLE_8, USER_1_USERNAME,
                         DATABASE_3_USER_1_WRITE_ALL_ACCESS, USER_1_PRINCIPAL, null, null, null, null, null),
-                Arguments.arguments("private read", CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1,
+                Arguments.arguments("private read", DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1,
                         USER_1_USERNAME,
                         DATABASE_1_USER_1_READ_ACCESS, USER_1_PRINCIPAL, null, null, null, null, null),
-                Arguments.arguments("private write-own", CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1,
+                Arguments.arguments("private write-own", DATABASE_1_ID, TABLE_1_ID, DATABASE_1,
                         TABLE_1, USER_1_USERNAME,
                         DATABASE_1_USER_1_WRITE_OWN_ACCESS, USER_1_PRINCIPAL, null, null, null, null, null),
-                Arguments.arguments("private write-all", CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1,
+                Arguments.arguments("private write-all", DATABASE_1_ID, TABLE_1_ID, DATABASE_1,
                         TABLE_1, USER_1_USERNAME,
                         DATABASE_1_USER_1_WRITE_ALL_ACCESS, USER_1_PRINCIPAL, null, null, null, null, null)
         );
@@ -390,35 +389,35 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     @ParameterizedTest
     @WithMockUser(username = USER_1_USERNAME, authorities = {"insert-table-data"})
     @MethodSource("getAll_succeeds_parameters")
-    public void getAll_succeeds(String test, Long containerId, Long databaseId, Long tableId, Database database,
+    public void getAll_succeeds(String test, Long databaseId, Long tableId, Database database,
                                 Table table, String username, DatabaseAccess access, Principal principal,
                                 Instant timestamp, Long page, Long size, SortType sortDirection, String sortColumn) throws UserNotFoundException, TableNotFoundException, QueryStoreException, SortException, TableMalformedException, NotAllowedException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, PaginationException, ContainerNotFoundException {
 
         /* test */
-        generic_getAll(containerId, databaseId, tableId, database, table, username, access, principal, timestamp,
+        generic_getAll(databaseId, tableId, database, table, username, access, principal, timestamp,
                 page, size, sortDirection, sortColumn);
     }
 
     public static Stream<Arguments> getCount_succeeds_parameters() {
         return Stream.of(
-                Arguments.arguments("public anonymous", CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3,
+                Arguments.arguments("public anonymous", DATABASE_3_ID, TABLE_8_ID, DATABASE_3,
                         TABLE_8, null, null, null, null),
-                Arguments.arguments("public read", CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8,
+                Arguments.arguments("public read", DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8,
                         USER_1_USERNAME,
                         DATABASE_3_USER_1_READ_ACCESS, USER_1_PRINCIPAL, null),
-                Arguments.arguments("public write-own", CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3,
+                Arguments.arguments("public write-own", DATABASE_3_ID, TABLE_8_ID, DATABASE_3,
                         TABLE_8, USER_1_USERNAME,
                         DATABASE_3_USER_1_WRITE_OWN_ACCESS, USER_1_PRINCIPAL, null),
-                Arguments.arguments("public write-all", CONTAINER_3_ID, DATABASE_3_ID, TABLE_8_ID, DATABASE_3,
+                Arguments.arguments("public write-all", DATABASE_3_ID, TABLE_8_ID, DATABASE_3,
                         TABLE_8, USER_1_USERNAME,
                         DATABASE_3_USER_1_WRITE_ALL_ACCESS, USER_1_PRINCIPAL, null),
-                Arguments.arguments("private read", CONTAINER_1_ID, DATABASE_2_ID, TABLE_8_ID, DATABASE_2, TABLE_8,
+                Arguments.arguments("private read", DATABASE_2_ID, TABLE_8_ID, DATABASE_2, TABLE_8,
                         USER_1_USERNAME,
                         DATABASE_2_USER_1_READ_ACCESS, USER_1_PRINCIPAL, null),
-                Arguments.arguments("private write-own", CONTAINER_1_ID, DATABASE_2_ID, TABLE_8_ID, DATABASE_2,
+                Arguments.arguments("private write-own", DATABASE_2_ID, TABLE_8_ID, DATABASE_2,
                         TABLE_8, USER_2_USERNAME,
                         DATABASE_2_USER_1_WRITE_OWN_ACCESS, USER_2_PRINCIPAL, null),
-                Arguments.arguments("private write-all", CONTAINER_1_ID, DATABASE_2_ID, TABLE_8_ID, DATABASE_2,
+                Arguments.arguments("private write-all", DATABASE_2_ID, TABLE_8_ID, DATABASE_2,
                         TABLE_8, USER_2_USERNAME,
                         DATABASE_2_USER_1_WRITE_ALL_ACCESS, USER_2_PRINCIPAL, null)
         );
@@ -427,12 +426,12 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     @ParameterizedTest
     @WithMockUser(username = USER_1_USERNAME, authorities = {"insert-table-data"})
     @MethodSource("getAll_succeeds_parameters")
-    public void getCount_succeeds(String test, Long containerId, Long databaseId, Long tableId, Database database,
+    public void getCount_succeeds(String test, Long databaseId, Long tableId, Database database,
                                   Table table, String username, DatabaseAccess access, Principal principal,
                                   Instant timestamp) throws UserNotFoundException, TableNotFoundException, QueryStoreException, SortException, TableMalformedException, NotAllowedException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, PaginationException, ContainerNotFoundException {
 
         /* test */
-        generic_getCount(containerId, databaseId, tableId, database, table, username, access, principal, timestamp);
+        generic_getCount(databaseId, tableId, database, table, username, access, principal, timestamp);
     }
 
 
@@ -440,47 +439,47 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
 
-    public void generic_import(Long containerId, Long databaseId, Database database, Long tableId, Table table,
+    public void generic_import(Long databaseId, Database database, Long tableId, Table table,
                                String username, DatabaseAccess access, Principal principal) throws DatabaseNotFoundException, TableNotFoundException, NotAllowedException, UserNotFoundException, TableMalformedException, DatabaseConnectionException, QueryMalformedException, ImageNotSupportedException, ContainerNotFoundException {
         final ImportDto request = ImportDto.builder().location("test:csv/csv_01.csv").build();
 
         /* mock */
-        when(databaseService.find(containerId, databaseId)).thenReturn(database);
-        when(tableService.find(containerId, databaseId, tableId)).thenReturn(table);
+        when(databaseService.find(databaseId)).thenReturn(database);
+        when(tableService.find(databaseId, tableId)).thenReturn(table);
         when(accessService.find(databaseId, username)).thenReturn(access);
 
         /* test */
-        final ResponseEntity<?> response = dataEndpoint.importCsv(containerId, databaseId, tableId, request, principal);
+        final ResponseEntity<?> response = dataEndpoint.importCsv(databaseId, tableId, request, principal);
         assertNotNull(response);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
     }
 
-    public void generic_insert(Long containerId, Long databaseId, Long tableId, Database database, Table table,
+    public void generic_insert(Long databaseId, Long tableId, Database database, Table table,
                                String username, DatabaseAccess access, TableCsvDto data, Principal principal) throws DatabaseNotFoundException, TableNotFoundException, NotAllowedException, UserNotFoundException, TableMalformedException, DatabaseConnectionException, ImageNotSupportedException, ContainerNotFoundException {
 
         /* mock */
-        when(databaseService.find(containerId, databaseId)).thenReturn(database);
-        when(tableService.find(containerId, databaseId, tableId)).thenReturn(table);
+        when(databaseService.find(databaseId)).thenReturn(database);
+        when(tableService.find(databaseId, tableId)).thenReturn(table);
         when(accessService.find(databaseId, username)).thenReturn(access);
 
         /* test */
-        final ResponseEntity<?> response = dataEndpoint.insert(containerId, databaseId, tableId, data, principal);
+        final ResponseEntity<?> response = dataEndpoint.insert(databaseId, tableId, data, principal);
         assertNotNull(response);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
     }
 
-    public void generic_getAll(Long containerId, Long databaseId, Long tableId, Database database, Table table,
+    public void generic_getAll(Long databaseId, Long tableId, Database database, Table table,
                                String username, DatabaseAccess access, Principal principal, Instant timestamp,
                                Long page, Long size, SortType sortDirection, String sortColumn) throws UserNotFoundException, TableMalformedException, NotAllowedException, PaginationException, TableNotFoundException, QueryStoreException, SortException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException {
 
         /* mock */
-        when(databaseService.find(containerId, databaseId)).thenReturn(database);
-        when(tableService.find(containerId, databaseId, tableId)).thenReturn(table);
+        when(databaseService.find(databaseId)).thenReturn(database);
+        when(tableService.find(databaseId, tableId)).thenReturn(table);
         when(accessService.find(databaseId, username)).thenReturn(access);
-        when(queryService.tableFindAll(containerId, databaseId, tableId, timestamp, page, size, principal)).thenReturn(QUERY_1_RESULT_DTO);
+        when(queryService.tableFindAll(databaseId, tableId, timestamp, page, size, principal)).thenReturn(QUERY_1_RESULT_DTO);
 
         /* test */
-        final ResponseEntity<QueryResultDto> response = dataEndpoint.getAll(containerId, databaseId, tableId,
+        final ResponseEntity<QueryResultDto> response = dataEndpoint.getAll(databaseId, tableId,
                 principal, timestamp, page, size, sortDirection, sortColumn);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
@@ -489,17 +488,17 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
         assertEquals(QUERY_1_RESULT_RESULT, response.getBody().getResult());
     }
 
-    public void generic_getCount(Long containerId, Long databaseId, Long tableId, Database database, Table table,
+    public void generic_getCount(Long databaseId, Long tableId, Database database, Table table,
                                  String username, DatabaseAccess access, Principal principal, Instant timestamp) throws UserNotFoundException, TableMalformedException, NotAllowedException, PaginationException, TableNotFoundException, QueryStoreException, SortException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException {
 
         /* mock */
-        when(databaseService.find(containerId, databaseId)).thenReturn(database);
-        when(tableService.find(containerId, databaseId, tableId)).thenReturn(table);
+        when(databaseService.find(databaseId)).thenReturn(database);
+        when(tableService.find(databaseId, tableId)).thenReturn(table);
         when(accessService.find(databaseId, username)).thenReturn(access);
-        when(queryService.tableCount(containerId, databaseId, tableId, timestamp, principal)).thenReturn(QUERY_1_RESULT_NUMBER);
+        when(queryService.tableCount(databaseId, tableId, timestamp, principal)).thenReturn(QUERY_1_RESULT_NUMBER);
 
         /* test */
-        final ResponseEntity<Long> response = dataEndpoint.getCount(containerId, databaseId, tableId,
+        final ResponseEntity<Long> response = dataEndpoint.getCount(databaseId, tableId,
                 principal, timestamp);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());

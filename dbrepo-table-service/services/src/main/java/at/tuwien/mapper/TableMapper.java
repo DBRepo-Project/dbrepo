@@ -54,7 +54,6 @@ public interface TableMapper {
 
     @Mappings({
             @Mapping(source = "id", target = "id"),
-            @Mapping(source = "tdbid", target = "containerId"),
             @Mapping(source = "tdbid", target = "databaseId"),
             @Mapping(target = "name", expression = "java(data.getName())"),
             @Mapping(target = "internalName", expression = "java(data.getInternalName())"),
@@ -69,7 +68,6 @@ public interface TableMapper {
     /* keep */
     @Mappings({
             @Mapping(target = "tableId", source = "tid"),
-            @Mapping(target = "containerId", source = "cdbid"),
             @Mapping(target = "databaseId", source = "cdbid"),
             @Mapping(target = "isPublic", source = "table.database.isPublic"),
     })
@@ -298,7 +296,7 @@ public interface TableMapper {
      * @return The drop table query
      */
     default PreparedStatement tableToDropTableRawQuery(Connection connection, Table data) throws ImageNotSupportedException, QueryMalformedException {
-        if (!data.getDatabase().getContainer().getImage().getRepository().equals("mariadb")) {
+        if (!data.getDatabase().getContainer().getImage().getName().equals("mariadb")) {
             log.error("Currently only MariaDB is supported");
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
         }
@@ -325,7 +323,7 @@ public interface TableMapper {
      */
     default TableCreateRawQuery tableToCreateTableRawQuery(Connection connection, Database database, TableCreateDto data)
             throws ImageNotSupportedException, TableMalformedException, QueryMalformedException {
-        if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
+        if (!database.getContainer().getImage().getName().equals("mariadb")) {
             log.error("Currently only MariaDB is supported");
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
         }
@@ -443,7 +441,7 @@ public interface TableMapper {
 
     default PreparedStatement tableToCreateSequenceRawQuery(Connection connection, Database database, TableCreateDto data)
             throws ImageNotSupportedException, QueryMalformedException {
-        if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
+        if (!database.getContainer().getImage().getName().equals("mariadb")) {
             log.error("Currently only MariaDB is supported");
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
         }
@@ -462,7 +460,7 @@ public interface TableMapper {
 
     default PreparedStatement tableToDropSequenceRawQuery(Connection connection, Database database, TableCreateDto data)
             throws ImageNotSupportedException, QueryMalformedException {
-        if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
+        if (!database.getContainer().getImage().getName().equals("mariadb")) {
             log.error("Currently only MariaDB is supported");
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
         }

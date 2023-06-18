@@ -1,10 +1,9 @@
 package at.tuwien.endpoint;
 
-import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.TableHistoryDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.exception.*;
-import at.tuwien.service.*;
+import at.tuwien.service.TableService;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -13,20 +12,20 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.constraints.NotNull;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.constraints.NotNull;
 import java.security.Principal;
 import java.util.List;
 
 @Log4j2
 @CrossOrigin(origins = "*")
 @RestController
-@RequestMapping("/api/container/{id}/database/{databaseId}/table/{tableId}/history")
+@RequestMapping("/api/database/{databaseId}/table/{tableId}/history")
 public class TableHistoryEndpoint {
 
     private final TableService tableService;
@@ -72,15 +71,14 @@ public class TableHistoryEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<List<TableHistoryDto>> getAll(@NotNull @PathVariable("id") Long containerId,
-                                                        @NotNull @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<List<TableHistoryDto>> getAll(@NotNull @PathVariable("databaseId") Long databaseId,
                                                         @NotNull @PathVariable("tableId") Long tableId,
                                                         @NotNull Principal principal)
             throws TableNotFoundException, QueryMalformedException, DatabaseNotFoundException,
             QueryStoreException, DatabaseConnectionException, UserNotFoundException {
-        log.debug("endpoint find all history, containerId={}, databaseid={}, tableId={}, principal={}", containerId,
+        log.debug("endpoint find all history, databaseid={}, tableId={}, principal={}",
                 databaseId, tableId, principal);
-        final List<TableHistoryDto> history = tableService.findHistory(containerId, databaseId, tableId, principal);
+        final List<TableHistoryDto> history = tableService.findHistory(databaseId, tableId, principal);
         log.trace("find all history resulted in history {}", history);
         return ResponseEntity.ok(history);
     }

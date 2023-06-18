@@ -1,10 +1,7 @@
 package at.tuwien.config;
 
-import at.tuwien.exception.ImageNotFoundException;
-import at.tuwien.service.ImageService;
 import com.google.common.io.Files;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Configuration;
@@ -17,31 +14,12 @@ import java.io.IOException;
 @Configuration
 public class ReadyConfig {
 
-    private final ImageService imageService;
-    private final static String registry = "docker.io/library";
-    private final static String imageRepository = "mariadb";
-    private final static String imageTag = "10.5";
-
-    @Autowired
-    public ReadyConfig(ImageService imageService) {
-        this.imageService = imageService;
-    }
-
     @Value("${fda.ready.path}")
     private String readyPath;
 
     @EventListener(ApplicationReadyEvent.class)
-    public void init() throws IOException, ImageNotFoundException {
-        if (!imageService.exists(imageRepository, imageTag)) {
-            log.debug("image {}/{}:{} is not present on the host", registry, imageRepository, imageTag);
-            log.debug("pulling image {}/{}:{}", registry, imageRepository, imageTag);
-            imageService.pull(registry, imageRepository, imageTag);
-        } else {
-            log.debug("image {}/{}:{} is present on the host", registry, imageRepository, imageTag);
-            log.trace("skip pulling image {}/{}:{}", registry, imageRepository, imageTag);
-        }
+    public void init() throws IOException {
         Files.touch(new File(readyPath));
-        log.info("Service is ready");
     }
 
 }

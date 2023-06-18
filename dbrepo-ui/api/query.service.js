@@ -2,9 +2,9 @@ import Vue from 'vue'
 import api from '@/api'
 
 class QueryService {
-  findAll (id, databaseId, persisted) {
+  findAll (databaseId, persisted) {
     return new Promise((resolve, reject) => {
-      api.get(`/api/container/${id}/database/${databaseId}/query${persisted === null ? '' : `?persisted=${persisted}`}`, { headers: { Accept: 'application/json' } })
+      api.get(`/api/database/${databaseId}/query${persisted === null ? '' : `?persisted=${persisted}`}`, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const queries = response.data
           console.debug('response queries', queries)
@@ -19,9 +19,9 @@ class QueryService {
     })
   }
 
-  findOne (id, databaseId, queryId) {
+  findOne (databaseId, queryId) {
     return new Promise((resolve, reject) => {
-      api.get(`/api/container/${id}/database/${databaseId}/query/${queryId}`, { headers: { Accept: 'application/json' } })
+      api.get(`/api/database/${databaseId}/query/${queryId}`, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const query = response.data
           console.debug('response query', query)
@@ -35,9 +35,9 @@ class QueryService {
     })
   }
 
-  persist (id, databaseId, queryId) {
+  persist (databaseId, queryId) {
     return new Promise((resolve, reject) => {
-      api.put(`/api/container/${id}/database/${databaseId}/query/${queryId}`, {}, { headers: { Accept: 'application/json' } })
+      api.put(`/api/database/${databaseId}/query/${queryId}`, {}, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const query = response.data
           console.debug('response query', query)
@@ -52,9 +52,9 @@ class QueryService {
     })
   }
 
-  importCsv (id, databaseId, tableId, data) {
+  importCsv (databaseId, tableId, data) {
     return new Promise((resolve, reject) => {
-      api.post(`/api/container/${id}/database/${databaseId}/table/${tableId}/data/import`, data, { headers: { Accept: 'application/json' } })
+      api.post(`/api/database/${databaseId}/table/${tableId}/data/import`, data, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const table = response.data
           console.debug('response table', table)
@@ -69,9 +69,9 @@ class QueryService {
     })
   }
 
-  insertTuple (id, databaseId, tableId, data) {
+  insertTuple (databaseId, tableId, data) {
     return new Promise((resolve, reject) => {
-      api.post(`/api/container/${id}/database/${databaseId}/table/${tableId}/data`, data, { headers: { Accept: 'text/csv' } })
+      api.post(`/api/database/${databaseId}/table/${tableId}/data`, data, { headers: { Accept: 'text/csv' } })
         .then((response) => {
           const tuple = response.data
           console.debug('response insert tuple', tuple)
@@ -92,9 +92,9 @@ class QueryService {
     })
   }
 
-  updateTuple (id, databaseId, tableId, data) {
+  updateTuple (databaseId, tableId, data) {
     return new Promise((resolve, reject) => {
-      api.put(`/api/container/${id}/database/${databaseId}/table/${tableId}/data`, data, { headers: { Accept: 'text/csv' } })
+      api.put(`/api/database/${databaseId}/table/${tableId}/data`, data, { headers: { Accept: 'text/csv' } })
         .then((response) => {
           const tuple = response.data
           console.debug('response update tuple', tuple)
@@ -115,9 +115,9 @@ class QueryService {
     })
   }
 
-  exportSubset (id, databaseId, queryId) {
+  exportSubset (databaseId, queryId) {
     return new Promise((resolve, reject) => {
-      api.get(`/api/container/${id}/database/${databaseId}/query/${queryId}/export`, { headers: { Accept: 'text/csv' } })
+      api.get(`/api/database/${databaseId}/query/${queryId}/export`, { headers: { Accept: 'text/csv' } })
         .then((response) => {
           const subset = response.data
           console.debug('response subset', subset)
@@ -132,9 +132,9 @@ class QueryService {
     })
   }
 
-  exportMetadata (id, mime) {
+  exportMetadata (pid, mime) {
     return new Promise((resolve, reject) => {
-      api.get(`/api/pid/${id}`, { headers: { Accept: mime } })
+      api.get(`/api/pid/${pid}`, { headers: { Accept: mime } })
         .then((response) => {
           const metadata = response.data
           console.debug('response metadata', metadata)
@@ -149,9 +149,9 @@ class QueryService {
     })
   }
 
-  execute (id, databaseId, data, page, size) {
+  execute (databaseId, data, page, size) {
     return new Promise((resolve, reject) => {
-      api.post(`/api/container/${id}/database/${databaseId}/query?page=${page}&size=${size}`, data, { headers: { Accept: 'application/json' } })
+      api.post(`/api/database/${databaseId}/query?page=${page}&size=${size}`, data, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const result = response.data
           console.debug('response result', result)
@@ -166,9 +166,9 @@ class QueryService {
     })
   }
 
-  reExecuteQuery (id, databaseId, queryId, page, size) {
+  reExecuteQuery (databaseId, queryId, page, size) {
     return new Promise((resolve, reject) => {
-      api.get(`/api/container/${id}/database/${databaseId}/query/${queryId}/data?page=${page}&size=${size}`, { headers: { Accept: 'application/json' } })
+      api.get(`/api/database/${databaseId}/query/${queryId}/data?page=${page}&size=${size}`, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const result = response.data
           console.debug('response result', result)
@@ -183,9 +183,9 @@ class QueryService {
     })
   }
 
-  reExecuteQueryCount (id, databaseId, queryId) {
+  reExecuteQueryCount (databaseId, queryId) {
     return new Promise((resolve, reject) => {
-      api.get(`/api/container/${id}/database/${databaseId}/query/${queryId}/data/count`, { headers: { Accept: 'application/json' } })
+      api.get(`/api/database/${databaseId}/query/${queryId}/data/count`, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const count = response.data
           console.debug('response count', count)
@@ -200,9 +200,9 @@ class QueryService {
     })
   }
 
-  reExecuteView (id, databaseId, viewId, page, size) {
+  reExecuteView (databaseId, viewId, page, size) {
     return new Promise((resolve, reject) => {
-      api.get(`/api/container/${id}/database/${databaseId}/view/${viewId}/data?page=${page}&size=${size}`, { headers: { Accept: 'application/json' } })
+      api.get(`/api/database/${databaseId}/view/${viewId}/data?page=${page}&size=${size}`, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const result = response.data
           console.debug('response result', result)
@@ -217,9 +217,9 @@ class QueryService {
     })
   }
 
-  reExecuteViewCount (id, databaseId, viewId) {
+  reExecuteViewCount (databaseId, viewId) {
     return new Promise((resolve, reject) => {
-      api.get(`/api/container/${id}/database/${databaseId}/view/${viewId}/data/count`, { headers: { Accept: 'application/json' } })
+      api.get(`/api/database/${databaseId}/view/${viewId}/data/count`, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const count = response.data
           console.debug('response count', count)

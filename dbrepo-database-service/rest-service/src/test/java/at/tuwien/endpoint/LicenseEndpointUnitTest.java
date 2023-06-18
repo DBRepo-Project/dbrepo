@@ -1,7 +1,7 @@
 package at.tuwien.endpoint;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.api.database.*;
+import at.tuwien.api.database.LicenseDto;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.endpoints.LicenseEndpoint;
@@ -20,7 +20,8 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.when;
 
 @Log4j2
@@ -54,7 +55,7 @@ public class LicenseEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(List.of(LICENSE_1));
 
         /* test */
-        final ResponseEntity<List<LicenseDto>> response = licenseEndpoint.list(CONTAINER_1_ID);
+        final ResponseEntity<List<LicenseDto>> response = licenseEndpoint.list();
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         final List<LicenseDto> body = response.getBody();
@@ -72,7 +73,7 @@ public class LicenseEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(List.of());
 
         /* test */
-        final ResponseEntity<List<LicenseDto>> response = licenseEndpoint.list(CONTAINER_1_ID);
+        final ResponseEntity<List<LicenseDto>> response = licenseEndpoint.list();
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         final List<LicenseDto> body = response.getBody();

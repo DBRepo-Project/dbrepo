@@ -2,14 +2,19 @@ package at.tuwien.listener;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.amqp.ConsumerDto;
-import at.tuwien.config.*;
+import at.tuwien.config.AmqpConfig;
+import at.tuwien.config.IndexConfig;
+import at.tuwien.config.RabbitMqConfig;
+import at.tuwien.config.ReadyConfig;
 import at.tuwien.repository.mdb.*;
 import at.tuwien.repository.sdb.ViewIdxRepository;
 import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.junit.Rule;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.rules.Timeout;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,10 +22,15 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.testcontainers.containers.RabbitMQContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -28,6 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Log4j2
 @ActiveProfiles(profiles = "junit")
+@Testcontainers
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
@@ -64,9 +75,6 @@ public class RabbitMqListenerIntegrationTest extends BaseUnitTest {
     private TableRepository tableRepository;
 
     @Autowired
-    private H2Utils h2Utils;
-
-    @Autowired
     private RabbitMqConfig rabbitMqConfig;
 
     @Autowired
@@ -75,20 +83,17 @@ public class RabbitMqListenerIntegrationTest extends BaseUnitTest {
     @Rule
     public Timeout globalTimeout = Timeout.seconds(300);
 
-    @BeforeAll
-    public static void beforeAll() throws InterruptedException {
-        afterAll();
-        /* create networks */
-        DockerConfig.createAllNetworks();
-        /* create containers */
-        DockerConfig.createContainer(null, CONTAINER_BROKER, 15672, CONTAINER_BROKER_ENV);
-        DockerConfig.startContainer(CONTAINER_BROKER);
-    }
+    @Container
+    private static final RabbitMQContainer rabbitMQContainer = new RabbitMQContainer("rabbitmq:3-management-alpine")
+            .withVhost("/");
 
-    @AfterAll
-    public static void afterAll() {
-        DockerConfig.removeAllContainers();
-        DockerConfig.removeAllNetworks();
+    @DynamicPropertySource
+    static void rabbitMQProperties(DynamicPropertyRegistry registry) {
+        registry.add("fda.gateway.endpoint", () -> "http://" + rabbitMQContainer.getHost() + ":" + rabbitMQContainer.getHttpPort());
+        registry.add("spring.rabbitmq.host", rabbitMQContainer::getHost);
+        registry.add("spring.rabbitmq.port", rabbitMQContainer::getAmqpPort);
+        registry.add("spring.rabbitmq.username", rabbitMQContainer::getAdminUsername);
+        registry.add("spring.rabbitmq.password", rabbitMQContainer::getAdminPassword);
     }
 
     @BeforeEach

@@ -2,7 +2,7 @@
   <div v-if="table">
     <v-toolbar flat>
       <v-toolbar-title>
-        <v-btn id="back-btn" plain class="mr-2" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table`">
+        <v-btn id="back-btn" plain class="mr-2" :to="`/database/${$route.params.database_id}/table`">
           <v-icon left>mdi-arrow-left</v-icon>
         </v-btn>
       </v-toolbar-title>
@@ -20,25 +20,25 @@
         <v-btn v-if="canDeleteTuple" color="error" class="mr-2 mb-1" :loading="loadingDelete" @click="deleteItems">
           <v-icon left>mdi-delete</v-icon> Delete <span v-if="selection.length > 1">&nbsp;{{ selection.length }}</span>
         </v-btn>
-        <v-btn v-if="canExecuteQuery" class="mb-1" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/query/create?tid=${$route.params.table_id}`" color="secondary">
+        <v-btn v-if="canExecuteQuery" class="mb-1" :to="`/database/${$route.params.database_id}/query/create?tid=${$route.params.table_id}`" color="secondary">
           <v-icon left>mdi-wrench</v-icon> Create Subset
         </v-btn>
-        <v-btn v-if="canCreateView" class="ml-2 mb-1" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/view/create?tid=${$route.params.table_id}`" color="secondary">
+        <v-btn v-if="canCreateView" class="ml-2 mb-1" :to="`/database/${$route.params.database_id}/view/create?tid=${$route.params.table_id}`" color="secondary">
           <v-icon left>mdi-view-carousel</v-icon> Create View
         </v-btn>
-        <v-btn v-if="canImportCsv" class="ml-2 mb-1" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${$route.params.table_id}/import`">
+        <v-btn v-if="canImportCsv" class="ml-2 mb-1" :to="`/database/${$route.params.database_id}/table/${$route.params.table_id}/import`">
           <v-icon left>mdi-cloud-upload</v-icon> Import .csv
         </v-btn>
       </v-toolbar-title>
     </v-toolbar>
     <v-tabs v-model="tab" color="primary">
-      <v-tab :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${$route.params.table_id}/info`">
+      <v-tab :to="`/database/${$route.params.database_id}/table/${$route.params.table_id}/info`">
         Info
       </v-tab>
-      <v-tab v-if="canViewTableData" :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${$route.params.table_id}/data`">
+      <v-tab v-if="canViewTableData" :to="`/database/${$route.params.database_id}/table/${$route.params.table_id}/data`">
         Data
       </v-tab>
-      <v-tab :to="`/container/${$route.params.container_id}/database/${$route.params.database_id}/table/${$route.params.table_id}/schema`">
+      <v-tab :to="`/database/${$route.params.database_id}/table/${$route.params.table_id}/schema`">
         Schema
       </v-tab>
     </v-tabs>
@@ -203,7 +203,7 @@ export default {
           .forEach((c) => {
             constraints[c.internal_name] = select[c.internal_name]
           })
-        TableService.deleteTuple(this.$route.params.container_id, this.$route.params.database_id, this.$route.params.table_id, { keys: constraints })
+        TableService.deleteTuple(this.$route.params.database_id, this.$route.params.table_id, { keys: constraints })
           .then(() => {
             this.$toast.success(`Deleted ${this.selection.length} row${this.selection.length !== 1 ? 's' : ''}`)
             this.$emit('modified', { success: true, action: 'delete' })

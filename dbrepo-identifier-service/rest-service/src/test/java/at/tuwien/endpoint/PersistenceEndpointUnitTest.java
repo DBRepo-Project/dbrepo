@@ -105,7 +105,6 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
         assertEquals(compare.getId(), body.getId());
         assertEquals(compare.getTitle(), body.getTitle());
         assertEquals(compare.getDescription(), body.getDescription());
-        assertEquals(compare.getContainerId(), body.getContainerId());
         assertEquals(compare.getDatabaseId(), body.getDatabaseId());
         assertEquals(compare.getCreated(), body.getCreated());
         assertEquals(compare.getLastModified(), body.getLastModified());
@@ -137,7 +136,6 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
         assertEquals(compare.getId(), body.getId());
         assertEquals(compare.getTitle(), body.getTitle());
         assertEquals(compare.getDescription(), body.getDescription());
-        assertEquals(compare.getContainerId(), body.getContainerId());
         assertEquals(compare.getDatabaseId(), body.getDatabaseId());
         assertEquals(compare.getCreated(), body.getCreated());
         assertEquals(compare.getLastModified(), body.getLastModified());

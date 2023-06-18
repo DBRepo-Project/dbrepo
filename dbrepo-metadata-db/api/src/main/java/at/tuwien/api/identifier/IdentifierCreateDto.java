@@ -4,11 +4,10 @@ import at.tuwien.api.database.LanguageTypeDto;
 import at.tuwien.api.database.LicenseDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
-
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
 import java.util.List;
@@ -21,9 +20,6 @@ import java.util.List;
 @Jacksonized
 @ToString
 public class IdentifierCreateDto {
-
-    @NotNull
-    private Long cid;
 
     @NotNull
     private Long dbid;

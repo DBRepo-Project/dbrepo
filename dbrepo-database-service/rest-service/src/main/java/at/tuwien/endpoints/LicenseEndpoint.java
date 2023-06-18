@@ -1,9 +1,6 @@
 package at.tuwien.endpoints;
 
-import at.tuwien.api.container.ContainerBriefDto;
-import at.tuwien.api.database.DatabaseBriefDto;
 import at.tuwien.api.database.LicenseDto;
-import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.mapper.LicenseMapper;
 import at.tuwien.service.LicenseService;
 import io.micrometer.core.annotation.Timed;
@@ -17,18 +14,19 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import jakarta.validation.constraints.NotBlank;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Log4j2
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping("/api/container/{id}/database")
+@RequestMapping("/api/database")
 public class LicenseEndpoint {
 
     private final LicenseMapper licenseMapper;
@@ -51,8 +49,8 @@ public class LicenseEndpoint {
                             mediaType = "application/json",
                             array = @ArraySchema(schema = @Schema(implementation = LicenseDto.class)))}),
     })
-    public ResponseEntity<List<LicenseDto>> list(@NotBlank @PathVariable("id") Long containerId) {
-        log.debug("endpoint list licenses, containerId={}", containerId);
+    public ResponseEntity<List<LicenseDto>> list() {
+        log.debug("endpoint list licenses");
         final List<LicenseDto> licenses = licenseService.findAll()
                 .stream()
                 .map(licenseMapper::licenseToLicenseDto)

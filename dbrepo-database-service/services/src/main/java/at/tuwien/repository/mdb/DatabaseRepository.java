@@ -15,16 +15,14 @@ public interface DatabaseRepository extends JpaRepository<Database, Long> {
     @Query("select d from Database d where d.owner.username = :username")
     List<Database> findAllByUsername(@Param("username") String username);
 
-    @Query("select d from Database d where d.container.id = :containerId")
-    List<Database> findAll(@Param("containerId") Long containerId);
+    List<Database> findAll();
 
-    @Query("select d from Database d where d.container.id = :containerId and d.id = :databaseId and (d.isPublic = " +
+    @Query("select d from Database d where d.id = :databaseId and (d.isPublic = " +
             "true or d.owner.username = " +
             ":username)")
-    Optional<Database> findPublicOrMine(@Param("containerId") Long containerId, @Param("databaseId") Long databaseId,
-                                        @Param("username") String username);
+    Optional<Database> findPublicOrMine(@Param("databaseId") Long databaseId, @Param("username") String username);
 
-    @Query("select d from Database d where d.container.id = :containerId and d.isPublic = true and d.id = :databaseId")
-    Optional<Database> findPublic(@Param("containerId") Long containerId, @Param("databaseId") Long databaseId);
+    @Query("select d from Database d where d.isPublic = true and d.id = :databaseId")
+    Optional<Database> findPublic(@Param("databaseId") Long databaseId);
 
 }

@@ -16,6 +16,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -23,15 +25,12 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
-
 import java.security.Principal;
 
 @Log4j2
 @CrossOrigin(origins = "*")
 @RestController
-@RequestMapping("/api/container/{id}/database/{databaseId}/table/{tableId}/column/{columnId}")
+@RequestMapping("/api/database/{id}/table/{tableId}/column/{columnId}")
 public class TableColumnEndpoint {
 
     private final TableMapper tableMapper;
@@ -77,8 +76,7 @@ public class TableColumnEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ColumnDto.class))}),
     })
-    public ResponseEntity<ColumnDto> update(@NotNull @PathVariable("id") Long containerId,
-                                            @NotNull @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<ColumnDto> update(@NotNull @PathVariable("id") Long id,
                                             @NotNull @PathVariable("tableId") Long tableId,
                                             @NotNull @PathVariable("columnId") Long columnId,
                                             @NotNull @Valid @RequestBody ColumnSemanticsUpdateDto updateDto,
@@ -87,14 +85,13 @@ public class TableColumnEndpoint {
             throws TableNotFoundException, TableMalformedException, DatabaseNotFoundException,
             ContainerNotFoundException, NotAllowedException, SemanticEntityPersistException,
             SemanticEntityNotFoundException {
-        log.debug("endpoint update table, containerId={}, databaseId={}, tableId={}, principal={}", containerId,
-                databaseId, tableId, principal);
+        log.debug("endpoint update table, id={}, tableId={}, principal={}", id, tableId, principal);
         if (!User.hasRole(principal, "modify-foreign-table-column-semantics")) {
-            endpointValidator.validateOnlyAccess(containerId, databaseId, principal, true);
-            endpointValidator.validateOnlyOwnerOrWriteAll(containerId, databaseId, tableId, principal);
+            endpointValidator.validateOnlyAccess(id, principal, true);
+            endpointValidator.validateOnlyOwnerOrWriteAll(id, tableId, principal);
         }
-        final TableColumn column = tableService.update(containerId, databaseId, tableId, columnId, updateDto, authorization);
-        log.info("Updated table semantics of table with id {} and database with id {}", tableId, databaseId);
+        final TableColumn column = tableService.update(id, tableId, columnId, updateDto, authorization);
+        log.info("Updated table semantics of table with id {} and database with id {}", tableId, id);
         final ColumnDto dto = tableMapper.tableColumnToColumnDto(column);
         return ResponseEntity.accepted()
                 .body(dto);

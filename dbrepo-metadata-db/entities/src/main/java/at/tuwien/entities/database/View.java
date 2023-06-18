@@ -2,6 +2,7 @@ package at.tuwien.entities.database;
 
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.user.User;
+import jakarta.persistence.*;
 import lombok.*;
 import net.sf.jsqlparser.statement.select.FromItem;
 import org.hibernate.annotations.GenericGenerator;
@@ -10,12 +11,11 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import jakarta.persistence.*;;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
+;
 
 @Data
 @Entity
@@ -40,10 +40,6 @@ public class View {
     @GenericGenerator(name = "views-sequence", strategy = "increment")
     @Column(updatable = false, nullable = false)
     private Long id;
-
-    @Id
-    @EqualsAndHashCode.Include
-    private Long vcid;
 
     @Id
     @EqualsAndHashCode.Include
@@ -100,7 +96,6 @@ public class View {
     @JoinTable(name = "mdb_view_columns",
             joinColumns = {
                     @JoinColumn(name = "vid", referencedColumnName = "id", insertable = false, updatable = false),
-                    @JoinColumn(name = "vcid", referencedColumnName = "vcid", insertable = false, updatable = false),
                     @JoinColumn(name = "vdbid", referencedColumnName = "vdbid", insertable = false, updatable = false)
             },
             inverseJoinColumns = {

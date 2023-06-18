@@ -25,29 +25,29 @@ public class QueryServiceGatewayImpl implements QueryServiceGateway {
     }
 
     @Override
-    public QueryDto find(Long containerId, Long databaseId, IdentifierCreateDto identifier, String authorization) throws QueryNotFoundException,
+    public QueryDto find(Long databaseId, IdentifierCreateDto identifier, String authorization) throws QueryNotFoundException,
             RemoteUnavailableException {
         final HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", authorization);
         final String url =
-                "/api/container/" + containerId + "/database/" + databaseId + "/query/" + identifier.getQid();
+                "/api/database/" + databaseId + "/query/" + identifier.getQid();
         final ResponseEntity<QueryDto> response;
         try {
             log.trace("call gateway path {}", url);
             response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(null, headers), QueryDto.class);
         } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable e) {
-            log.error("Query service not available for container with id {} and database with id {} for query with id {}, reason {}",
-                    containerId, databaseId, identifier.getQid(), e.getMessage());
+            log.error("Query service not available for database with id {} for query with id {}, reason {}",
+                    databaseId, identifier.getQid(), e.getMessage());
             throw new RemoteUnavailableException("Query service not available", e);
         }
         if (response.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
-            log.error("Query not found for container with id {} and database with id {} for query with id {}",
-                    containerId, databaseId, identifier.getQid());
+            log.error("Query not found for and database with id {} for query with id {}",
+                    databaseId, identifier.getQid());
             throw new QueryNotFoundException("Query not found");
         }
         if (response.getStatusCode().equals(HttpStatus.UNAUTHORIZED)) {
-            log.error("Query not authorized for container with id {} and database with id {} for query with id {}",
-                    containerId, databaseId, identifier.getQid());
+            log.error("Query not authorized for and database with id {} for query with id {}",
+                    databaseId, identifier.getQid());
             throw new RemoteUnavailableException("Query not authorized");
         }
         log.debug("found query {}", response.getBody());
@@ -55,9 +55,9 @@ public class QueryServiceGatewayImpl implements QueryServiceGateway {
     }
 
     @Override
-    public byte[] export(Long containerId, Long databaseId, Long queryId)
+    public byte[] export(Long databaseId, Long queryId)
             throws RemoteUnavailableException, QueryNotFoundException {
-        final String url = "/api/container/" + containerId + "/database/" + databaseId + "/query/" + queryId + "/export";
+        final String url = "/database/" + databaseId + "/query/" + queryId + "/export";
         final HttpHeaders headers = new HttpHeaders();
         headers.add("Accept", "text/csv");
         final ResponseEntity<byte[]> response;
@@ -69,13 +69,13 @@ public class QueryServiceGatewayImpl implements QueryServiceGateway {
             throw new RemoteUnavailableException("Query service not available", e);
         }
         if (response.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
-            log.error("Query not found for container with id {} and database with id {} for query with id {}",
-                    containerId, databaseId, queryId);
+            log.error("Query not found for and database with id {} for query with id {}",
+                    databaseId, queryId);
             throw new QueryNotFoundException("Query not found");
         }
         if (response.getStatusCode().equals(HttpStatus.UNAUTHORIZED)) {
-            log.error("Query not authorized for container with id {} and database with id {} for query with id {}",
-                    containerId, databaseId, queryId);
+            log.error("Query not authorized for and database with id {} for query with id {}",
+                    databaseId, queryId);
             throw new RemoteUnavailableException("Query not authorized");
         }
         log.debug("found query {}", response.getBody());

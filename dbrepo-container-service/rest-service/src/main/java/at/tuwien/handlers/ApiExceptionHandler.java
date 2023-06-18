@@ -100,18 +100,6 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @Hidden
-    @ResponseStatus(HttpStatus.BAD_GATEWAY)
-    @ExceptionHandler(DockerClientException.class)
-    public ResponseEntity<ApiErrorDto> handle(DockerClientException e, WebRequest request) {
-        final ApiErrorDto response = ApiErrorDto.builder()
-                .status(HttpStatus.BAD_GATEWAY)
-                .message(e.getLocalizedMessage())
-                .code("error.container.dockerclient")
-                .build();
-        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
-    }
-
-    @Hidden
     @ResponseStatus(HttpStatus.CONFLICT)
     @ExceptionHandler(ImageAlreadyExistsException.class)
     public ResponseEntity<ApiErrorDto> handle(ImageAlreadyExistsException e, WebRequest request) {

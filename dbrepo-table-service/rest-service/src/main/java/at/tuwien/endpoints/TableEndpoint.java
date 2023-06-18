@@ -1,7 +1,8 @@
 package at.tuwien.endpoints;
 
-import at.tuwien.api.container.ContainerBriefDto;
-import at.tuwien.api.database.table.*;
+import at.tuwien.api.database.table.TableBriefDto;
+import at.tuwien.api.database.table.TableCreateDto;
+import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.*;
@@ -17,6 +18,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,8 +28,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,7 +35,7 @@ import java.util.stream.Collectors;
 @Log4j2
 @CrossOrigin(origins = "*")
 @RestController
-@RequestMapping("/api/container/{id}/database/{databaseId}/table")
+@RequestMapping("/api/database/{databaseId}/table")
 public class TableEndpoint {
 
     private final TableMapper tableMapper;
@@ -72,15 +73,13 @@ public class TableEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<List<TableBriefDto>> list(@NotNull @PathVariable("id") Long containerId,
-                                                    @NotNull @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<List<TableBriefDto>> list(@NotNull @PathVariable("databaseId") Long databaseId,
                                                     Principal principal)
             throws DatabaseNotFoundException, NotAllowedException {
-        log.debug("endpoint list tables, containerId={}, databaseId={}, principal={}", containerId, databaseId,
-                principal);
-        endpointValidator.validateOnlyPrivateAccess(containerId, databaseId, principal);
-        endpointValidator.validateOnlyPrivateHasRole(containerId, databaseId, principal, "list-tables");
-        final List<TableBriefDto> dto = tableService.findAll(containerId, databaseId)
+        log.debug("endpoint list tables, databaseId={}, principal={}", databaseId, principal);
+        endpointValidator.validateOnlyPrivateAccess(databaseId, principal);
+        endpointValidator.validateOnlyPrivateHasRole(databaseId, principal, "list-tables");
+        final List<TableBriefDto> dto = tableService.findAll(databaseId)
                 .stream()
                 .map(tableMapper::tableToTableBriefDto)
                 .collect(Collectors.toList());
@@ -130,17 +129,15 @@ public class TableEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<TableBriefDto> create(@NotNull @PathVariable("id") Long containerId,
-                                                @NotNull @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<TableBriefDto> create(@NotNull @PathVariable("databaseId") Long databaseId,
                                                 @NotNull @Valid @RequestBody TableCreateDto createDto,
                                                 @NotNull Principal principal)
             throws ImageNotSupportedException, DatabaseNotFoundException, TableMalformedException, AmqpException,
             TableNameExistsException, ContainerNotFoundException, UserNotFoundException, QueryMalformedException,
             NotAllowedException {
-        log.debug("endpoint create table, containerId={}, databaseId={}, createDto={}, principal={}", containerId,
-                databaseId, createDto, principal);
-        endpointValidator.validateOnlyAccess(containerId, databaseId, principal, true);
-        final Table table = tableService.createTable(containerId, databaseId, createDto, principal);
+        log.debug("endpoint create table, databaseId={}, createDto={}, principal={}", databaseId, createDto, principal);
+        endpointValidator.validateOnlyAccess(databaseId, principal, true);
+        final Table table = tableService.createTable(databaseId, createDto, principal);
         amqpService.create(table);
         final TableBriefDto dto = tableMapper.tableToTableBriefDto(table);
         log.trace("create table resulted in table {}", dto);
@@ -175,14 +172,12 @@ public class TableEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<TableDto> findById(@NotNull @PathVariable("id") Long containerId,
-                                             @NotNull @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<TableDto> findById(@NotNull @PathVariable("databaseId") Long databaseId,
                                              @NotNull @PathVariable("tableId") Long tableId,
                                              Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, ContainerNotFoundException {
-        log.debug("endpoint find table, containerId={}, databaseId={}, tableId={}, principal={}", containerId,
-                databaseId, tableId, principal);
-        final Table table = tableService.findById(containerId, databaseId, tableId);
+        log.debug("endpoint find table, databaseId={}, tableId={}, principal={}", databaseId, tableId, principal);
+        final Table table = tableService.findById(databaseId, tableId);
         final TableDto dto = tableMapper.tableToTableDto(table);
         log.trace("find table resulted in table {}", dto);
         return ResponseEntity.ok(dto);
@@ -230,15 +225,13 @@ public class TableEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<Void> delete(@NotNull @PathVariable("id") Long containerId,
-                                       @NotNull @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<Void> delete(@NotNull @PathVariable("databaseId") Long databaseId,
                                        @NotNull @PathVariable("tableId") Long tableId,
                                        @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
             DataProcessingException, ContainerNotFoundException, TableMalformedException, QueryMalformedException {
-        log.debug("endpoint delete table, containerId={}, databaseId={}, tableId={}, principal={}", containerId,
-                databaseId, tableId, principal);
-        tableService.deleteTable(containerId, databaseId, tableId);
+        log.debug("endpoint delete table, databaseId={}, tableId={}, principal={}", databaseId, tableId, principal);
+        tableService.deleteTable(databaseId, tableId);
         return ResponseEntity.accepted()
                 .build();
     }

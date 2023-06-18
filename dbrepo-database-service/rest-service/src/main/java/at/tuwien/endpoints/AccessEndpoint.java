@@ -14,6 +14,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -21,15 +24,12 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import java.security.Principal;
 
 @Log4j2
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping("/api/container/{id}/database/{databaseId}/access")
+@RequestMapping("/api/database/{id}/access")
 public class AccessEndpoint {
 
     private final AccessService accessService;
@@ -65,14 +65,12 @@ public class AccessEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<?> create(@NotBlank @PathVariable("id") Long containerId,
-                                    @NotBlank @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<?> create(@NotBlank @PathVariable("id") Long databaseId,
                                     @Valid @RequestBody DatabaseGiveAccessDto accessDto,
                                     @NotNull Principal principal)
             throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException, QueryMalformedException,
             DatabaseMalformedException {
-        log.debug("endpoint give access to database, containerId={}, databaseId={}, accessDto={}, principal={}",
-                containerId, databaseId, accessDto, principal);
+        log.debug("endpoint give access to database, databaseId={}, accessDto={}, principal={}", databaseId, accessDto, principal);
         try {
             accessService.find(databaseId, accessDto.getUsername());
             log.error("Failed to give access to user with username {}, already has access", accessDto.getUsername());
@@ -80,7 +78,7 @@ public class AccessEndpoint {
         } catch (AccessDeniedException e) {
             /* ignore */
         }
-        accessService.create(containerId, databaseId, accessDto);
+        accessService.create(databaseId, accessDto);
         return ResponseEntity.accepted()
                 .build();
     }
@@ -109,17 +107,15 @@ public class AccessEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<?> update(@NotBlank @PathVariable("id") Long containerId,
-                                    @NotBlank @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<?> update(@NotBlank @PathVariable("id") Long databaseId,
                                     @NotBlank @PathVariable("username") String username,
                                     @Valid @RequestBody DatabaseModifyAccessDto accessDto,
                                     @NotNull Principal principal)
             throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException, AccessDeniedException,
             QueryMalformedException, DatabaseMalformedException {
-        log.debug("endpoint modify access to database, containerId={}, databaseId={}, username={}, accessDto={}, principal={}",
-                containerId, databaseId, username, accessDto, principal);
+        log.debug("endpoint modify access to database, databaseId={}, username={}, accessDto={}, principal={}", databaseId, username, accessDto, principal);
         accessService.find(databaseId, username);
-        accessService.update(containerId, databaseId, username, accessDto);
+        accessService.update(databaseId, username, accessDto);
         return ResponseEntity.accepted()
                 .build();
     }
@@ -145,12 +141,10 @@ public class AccessEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<DatabaseAccessDto> find(@NotBlank @PathVariable("id") Long containerId,
-                                                  @NotBlank @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<DatabaseAccessDto> find(@NotBlank @PathVariable("id") Long databaseId,
                                                   @NotNull Principal principal) throws NotAllowedException,
             AccessDeniedException {
-        log.debug("endpoint check access to database, containerId={}, databaseId={}, principal={}",
-                containerId, databaseId, principal);
+        log.debug("endpoint check access to database, databaseId={}, principal={}", databaseId, principal);
         final DatabaseAccess access = accessService.find(databaseId, principal.getName());
         final DatabaseAccessDto dto = databaseMapper.databaseAccessToDatabaseAccessDto(access);
         log.trace("check access resulted in dto {}", dto);
@@ -186,16 +180,14 @@ public class AccessEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<?> revoke(@NotBlank @PathVariable("id") Long containerId,
-                                    @NotBlank @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<?> revoke(@NotBlank @PathVariable("id") Long databaseId,
                                     @NotBlank @PathVariable("username") String username,
                                     @NotNull Principal principal)
             throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException, AccessDeniedException,
             QueryMalformedException, DatabaseMalformedException {
-        log.debug("endpoint revoke access to database, containerId={}, databaseId={}, username={}, principal={}",
-                containerId, databaseId, username, principal);
+        log.debug("endpoint revoke access to database, databaseId={}, username={}, principal={}", databaseId, username, principal);
         accessService.find(databaseId, username);
-        accessService.delete(containerId, databaseId, username);
+        accessService.delete(databaseId, username);
         return ResponseEntity.accepted()
                 .build();
     }

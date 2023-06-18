@@ -147,7 +147,7 @@ export default {
     },
     loadQueries () {
       this.loadingQueries = true
-      QueryService.findAll(this.$route.params.container_id, this.$route.params.database_id, true)
+      QueryService.findAll(this.$route.params.database_id, true)
         .then((queries) => {
           this.queries = queries
         })
@@ -166,7 +166,7 @@ export default {
     },
     link (queryOrIdentifier) {
       if (queryOrIdentifier.identifier === null) {
-        return `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query/${queryOrIdentifier.id}`
+        return `/database/${this.$route.params.database_id}/query/${queryOrIdentifier.id}`
       }
       if ('query_id' in queryOrIdentifier) {
         return null

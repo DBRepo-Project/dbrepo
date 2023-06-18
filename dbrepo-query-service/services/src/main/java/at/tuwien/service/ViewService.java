@@ -34,7 +34,6 @@ public interface ViewService {
     /**
      * Delete view in the container with the given id and database with id and the given view id.
      *
-     * @param containerId The container id.
      * @param databaseId  The database id.
      * @param id          The view id.
      * @param principal   The authorization principal.
@@ -45,13 +44,12 @@ public interface ViewService {
      * @throws QueryMalformedException     The query to delete the view is malformed.
      * @throws ViewMalformedException      The view is malformed and could not be deleted.
      */
-    void delete(Long containerId, Long databaseId, Long id, Principal principal) throws ViewNotFoundException,
+    void delete(Long databaseId, Long id, Principal principal) throws ViewNotFoundException,
             UserNotFoundException, DatabaseNotFoundException, DatabaseConnectionException, QueryMalformedException, ViewMalformedException;
 
     /**
      * Creates a view in the container with given id and database with id with the given query.
      *
-     * @param containerId The container id.
      * @param databaseId  The database id.
      * @param data        The given query.
      * @param principal   The authorization principal.
@@ -62,6 +60,6 @@ public interface ViewService {
      * @throws ViewMalformedException      The view is malformed and could not be created.
      * @throws UserNotFoundException       The user with authorization principal was not found.
      */
-    View create(Long containerId, Long databaseId, ViewCreateDto data, Principal principal) throws DatabaseNotFoundException,
+    View create(Long databaseId, ViewCreateDto data, Principal principal) throws DatabaseNotFoundException,
             DatabaseConnectionException, QueryMalformedException, ViewMalformedException, UserNotFoundException;
 }

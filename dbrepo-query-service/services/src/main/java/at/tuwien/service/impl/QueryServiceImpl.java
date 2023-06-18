@@ -12,12 +12,13 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.View;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
-import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
-import at.tuwien.mapper.DatabaseMapper;
 import at.tuwien.mapper.QueryMapper;
 import at.tuwien.querystore.Query;
-import at.tuwien.service.*;
+import at.tuwien.service.DatabaseService;
+import at.tuwien.service.QueryService;
+import at.tuwien.service.StoreService;
+import at.tuwien.service.TableService;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.log4j.Log4j2;
 import net.sf.jsqlparser.JSQLParserException;
@@ -54,43 +55,41 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     private final QueryMapper queryMapper;
     private final TableService tableService;
     private final StoreService storeService;
-    private final DatabaseMapper databaseMapper;
     private final DatabaseService databaseService;
 
     @Autowired
     public QueryServiceImpl(QueryMapper queryMapper, TableService tableService,
-                            DatabaseService databaseService, StoreService storeService, DatabaseMapper databaseMapper) {
+                            DatabaseService databaseService, StoreService storeService) {
         this.queryMapper = queryMapper;
         this.tableService = tableService;
         this.storeService = storeService;
-        this.databaseMapper = databaseMapper;
         this.databaseService = databaseService;
     }
 
     @Override
     @Transactional(readOnly = true)
-    public QueryResultDto execute(Long containerId, Long databaseId, ExecuteStatementDto statement,
+    public QueryResultDto execute(Long databaseId, ExecuteStatementDto statement,
                                   Principal principal, Long page, Long size, SortType sortDirection, String sortColumn)
             throws DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException, QueryStoreException,
-            ContainerNotFoundException, ColumnParseException, UserNotFoundException, DatabaseConnectionException,
+            ColumnParseException, UserNotFoundException, DatabaseConnectionException,
             TableMalformedException {
         if (statement.getStatement().contains(";")) {
             log.error("Failed to execute query since it contains ';'");
             throw new QueryMalformedException("Failed to execute query since it contains ';'");
         }
-        final Query query = storeService.insert(containerId, databaseId, statement, principal);
-        return reExecute(containerId, databaseId, query, page, size, sortDirection, sortColumn, principal);
+        final Query query = storeService.insert(databaseId, statement, principal);
+        return reExecute(databaseId, query, page, size, sortDirection, sortColumn, principal);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public QueryResultDto reExecute(Long containerId, Long databaseId, Query query, Long page, Long size,
+    public QueryResultDto reExecute(Long databaseId, Query query, Long page, Long size,
                                     SortType sortDirection, String sortColumn, Principal principal)
             throws QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, ColumnParseException,
             TableMalformedException {
         /* find */
-        final Database database = databaseService.find(containerId, databaseId);
-        if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
+        final Database database = databaseService.find(databaseId);
+        if (!database.getContainer().getImage().getName().equals("mariadb")) {
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
         }
         /* map the result to the tables (with respective columns) from the statement metadata */
@@ -102,7 +101,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             throw new ColumnParseException("Failed to map/parse columns: " + e.getMessage(), e);
         }
         final String statement = queryMapper.queryToRawTimestampedQuery(query.getQuery(), database, query.getCreated(), true, page, size);
-        final QueryResultDto dto = executeNonPersistent(containerId, databaseId, statement, columns);
+        final QueryResultDto dto = executeNonPersistent(databaseId, statement, columns);
         dto.setId(query.getId());
         dto.setResultNumber(query.getResultNumber());
         return dto;
@@ -110,12 +109,12 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
 
     @Override
     @Transactional(readOnly = true)
-    public Long reExecuteCount(Long containerId, Long databaseId, Query query, Principal principal)
+    public Long reExecuteCount(Long databaseId, Query query, Principal principal)
             throws QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, ColumnParseException,
             TableMalformedException, QueryStoreException {
         /* find */
-        final Database database = databaseService.find(containerId, databaseId);
-        if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
+        final Database database = databaseService.find(databaseId);
+        if (!database.getContainer().getImage().getName().equals("mariadb")) {
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
         }
         /* run query */
@@ -126,7 +125,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             throw new ColumnParseException("Failed to map/parse columns: " + e.getMessage(), e);
         }
         final String statement = queryMapper.queryToRawTimestampedQuery(query.getQuery(), database, query.getCreated(), false, null, null);
-        return executeCountNonPersistent(containerId, databaseId, statement);
+        return executeCountNonPersistent(databaseId, statement);
     }
 
     private PreparedStatement prepareStatement(Connection connection, String statement) throws QueryMalformedException {
@@ -138,14 +137,13 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         }
     }
 
-    private QueryResultDto executeNonPersistent(Long containerId, Long databaseId, String statement, List<TableColumn> columns)
+    private QueryResultDto executeNonPersistent(Long databaseId, String statement, List<TableColumn> columns)
             throws QueryMalformedException, DatabaseNotFoundException, TableMalformedException {
         /* find */
-        final Database database = databaseService.find(containerId, databaseId);
-        final User root = databaseMapper.containerToPrivilegedUser(database.getContainer());
+        final Database database = databaseService.find(databaseId);
         /* run query */
-        final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(),
-                database.getContainer(), database, root);
+        final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(),
+                database.getContainer(), database);
         try {
             final Connection connection = dataSource.getConnection();
             final PreparedStatement preparedStatement = prepareStatement(connection, statement);
@@ -159,14 +157,13 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         }
     }
 
-    private Long executeCountNonPersistent(Long containerId, Long databaseId, String statement)
+    private Long executeCountNonPersistent(Long databaseId, String statement)
             throws QueryMalformedException, TableMalformedException, DatabaseNotFoundException, QueryStoreException {
         /* find */
-        final Database database = databaseService.find(containerId, databaseId);
-        final User root = databaseMapper.containerToPrivilegedUser(database.getContainer());
+        final Database database = databaseService.find(databaseId);
         /* run query */
-        final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(),
-                database.getContainer(), database, root);
+        final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(),
+                database.getContainer(), database);
         try {
             final Connection connection = dataSource.getConnection();
             final PreparedStatement preparedStatement = prepareStatement(connection, statement);
@@ -182,71 +179,70 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
 
     @Override
     @Transactional(readOnly = true)
-    public QueryResultDto tableFindAll(Long containerId, Long databaseId, Long tableId, Instant timestamp, Long page,
+    public QueryResultDto tableFindAll(Long databaseId, Long tableId, Instant timestamp, Long page,
                                        Long size, Principal principal) throws TableNotFoundException, DatabaseNotFoundException,
             ImageNotSupportedException, TableMalformedException, QueryMalformedException {
         /* find */
-        final Table table = tableService.find(containerId, databaseId, tableId);
+        final Table table = tableService.find(databaseId, tableId);
         /* run query */
         String statement = queryMapper.tableToRawFindAllQuery(table, timestamp, size, page);
-        return executeNonPersistent(containerId, databaseId, statement, table.getColumns());
+        return executeNonPersistent(databaseId, statement, table.getColumns());
     }
 
     @Override
     @Transactional(readOnly = true)
-    public QueryResultDto viewFindAll(Long containerId, Long databaseId, View view,
+    public QueryResultDto viewFindAll(Long databaseId, View view,
                                       Long page, Long size, Principal principal) throws DatabaseNotFoundException,
             ImageNotSupportedException, QueryMalformedException, TableMalformedException {
         /* find */
         /* run query */
         String statement = queryMapper.viewToRawFindAllQuery(view, size, page);
-        return executeNonPersistent(containerId, databaseId, statement, view.getColumns());
+        return executeNonPersistent(databaseId, statement, view.getColumns());
     }
 
     @Override
     @Transactional
-    public Long tableCount(Long containerId, Long databaseId, Long tableId, Instant timestamp, Principal principal)
+    public Long tableCount(Long databaseId, Long tableId, Instant timestamp, Principal principal)
             throws DatabaseNotFoundException, TableNotFoundException, ImageNotSupportedException,
             QueryMalformedException, QueryStoreException, TableMalformedException {
         /* find */
-        final Table table = tableService.find(containerId, databaseId, tableId);
+        final Table table = tableService.find(databaseId, tableId);
         final String statement = queryMapper.tableToRawCountAllQuery(table, timestamp);
-        return executeCountNonPersistent(containerId, databaseId, statement);
+        return executeCountNonPersistent(databaseId, statement);
     }
 
     @Override
     @Transactional
-    public Long viewCount(Long containerId, Long databaseId, View view, Principal principal)
+    public Long viewCount(Long databaseId, View view, Principal principal)
             throws DatabaseNotFoundException, ImageNotSupportedException,
             QueryMalformedException, QueryStoreException, TableMalformedException {
         /* find */
         final String statement = queryMapper.viewToRawCountAllQuery(view);
-        return executeCountNonPersistent(containerId, databaseId, statement);
+        return executeCountNonPersistent(databaseId, statement);
     }
 
     @Transactional(readOnly = true)
-    public QueryResultDto findAllView(Long containerId, Long databaseId, Long viewId, Instant timestamp, Long page,
+    public QueryResultDto findAllView(Long databaseId, Long viewId, Instant timestamp, Long page,
                                       Long size, Principal principal) throws TableNotFoundException, DatabaseNotFoundException,
             ImageNotSupportedException, TableMalformedException, QueryMalformedException {
         /* find */
-        final Table table = tableService.find(containerId, databaseId, viewId);
+        final Table table = tableService.find(databaseId, viewId);
         /* run query */
         String statement = queryMapper.tableToRawFindAllQuery(table, timestamp, size, page);
-        return executeNonPersistent(containerId, databaseId, statement, table.getColumns());
+        return executeNonPersistent(databaseId, statement, table.getColumns());
     }
 
     @Override
     @Transactional(readOnly = true)
-    public ExportResource tableFindAll(Long containerId, Long databaseId, Long tableId, Instant timestamp, Principal principal)
+    public ExportResource tableFindAll(Long databaseId, Long tableId, Instant timestamp, Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, FileStorageException, QueryMalformedException {
         final String filename = RandomStringUtils.randomAlphabetic(40) + ".csv";
         /* find */
-        final Database database = databaseService.find(containerId, databaseId);
-        final Table table = tableService.find(containerId, databaseId, tableId);
-        final User root = databaseMapper.containerToPrivilegedUser(database.getContainer());
+        final Database database = databaseService.find(databaseId);
+        final Table table = tableService.find(databaseId, tableId);
         /* run query */
-        final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(),
-                database.getContainer(), database, root);
+        final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(),
+                database.getContainer(), database);
         /* read file */
         final InputStreamResource resource;
         try {
@@ -270,17 +266,16 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
 
     @Override
     @Transactional(readOnly = true)
-    public ExportResource findOne(Long containerId, Long databaseId, Long queryId, Principal principal)
+    public ExportResource findOne(Long databaseId, Long queryId, Principal principal)
             throws DatabaseNotFoundException, ImageNotSupportedException, FileStorageException, QueryStoreException,
             QueryNotFoundException, QueryMalformedException, DatabaseConnectionException, UserNotFoundException {
         final String filename = RandomStringUtils.randomAlphabetic(40) + ".csv";
         /* find */
-        final Database database = databaseService.find(containerId, databaseId);
-        final Query query = storeService.findOne(containerId, databaseId, queryId, principal);
-        final User root = databaseMapper.containerToPrivilegedUser(database.getContainer());
+        final Database database = databaseService.find(databaseId);
+        final Query query = storeService.findOne(databaseId, queryId, principal);
         /* run query */
-        final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(),
-                database.getContainer(), database, root);
+        final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(),
+                database.getContainer(), database);
         /* read file */
         final InputStreamResource resource;
         try {
@@ -309,17 +304,16 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
 
     @Override
     @Transactional
-    public void update(Long containerId, Long databaseId, Long tableId, TableCsvUpdateDto data, Principal principal)
+    public void update(Long databaseId, Long tableId, TableCsvUpdateDto data, Principal principal)
             throws ImageNotSupportedException, TableMalformedException, DatabaseNotFoundException,
             TableNotFoundException, QueryMalformedException {
         /* find */
-        final Database database = databaseService.find(containerId, databaseId);
-        final Table table = tableService.find(containerId, databaseId, tableId);
-        final User root = databaseMapper.containerToPrivilegedUser(database.getContainer());
+        final Database database = databaseService.find(databaseId);
+        final Table table = tableService.find(databaseId, tableId);
         /* run query */
         if (data.getData().size() == 0 || data.getKeys().size() == 0) return;
-        final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(),
-                database.getContainer(), database, root);
+        final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(),
+                database.getContainer(), database);
         try {
             final Connection connection = dataSource.getConnection();
             final PreparedStatement preparedStatement = queryMapper.tableCsvDtoToRawUpdateQuery(connection, table, data);
@@ -334,17 +328,15 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
 
     @Override
     @Transactional
-    public void insert(Long containerId, Long databaseId, Long tableId, TableCsvDto data, Principal principal)
-            throws ImageNotSupportedException, TableMalformedException, DatabaseNotFoundException,
-            TableNotFoundException, ContainerNotFoundException, DatabaseConnectionException, UserNotFoundException {
+    public void insert(Long databaseId, Long tableId, TableCsvDto data, Principal principal)
+            throws TableMalformedException, DatabaseNotFoundException, TableNotFoundException {
         /* find */
-        final Database database = databaseService.find(containerId, databaseId);
-        final Table table = tableService.find(containerId, databaseId, tableId);
-        final User root = databaseMapper.containerToPrivilegedUser(database.getContainer());
+        final Database database = databaseService.find(databaseId);
+        final Table table = tableService.find(databaseId, tableId);
         log.trace("parsed insert data {}", data);
         /* run query */
-        final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(),
-                database.getContainer(), database, root);
+        final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(),
+                database.getContainer(), database);
         /* prepare the statement */
         try {
             final Connection connection = dataSource.getConnection();
@@ -366,17 +358,16 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
 
     @Override
     @Transactional
-    public void delete(Long containerId, Long databaseId, Long tableId, TableCsvDeleteDto data, Principal principal)
+    public void delete(Long databaseId, Long tableId, TableCsvDeleteDto data, Principal principal)
             throws ImageNotSupportedException, TableMalformedException, DatabaseNotFoundException,
             TableNotFoundException, DatabaseConnectionException, QueryMalformedException, UserNotFoundException {
         /* find */
-        final Database database = databaseService.find(containerId, databaseId);
-        final Table table = tableService.find(containerId, databaseId, tableId);
-        final User root = databaseMapper.containerToPrivilegedUser(database.getContainer());
+        final Database database = databaseService.find(databaseId);
+        final Table table = tableService.find(databaseId, tableId);
         /* run query */
         if (data.getKeys().size() == 0) return;
-        final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(),
-                database.getContainer(), database, root);
+        final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(),
+                database.getContainer(), database);
         /* prepare the statement */
         try {
             final Connection connection = dataSource.getConnection();
@@ -392,17 +383,14 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
 
     @Override
     @Transactional
-    public void insert(Long containerId, Long databaseId, Long tableId, ImportDto data, Principal principal)
-            throws ImageNotSupportedException, TableMalformedException, DatabaseNotFoundException,
-            TableNotFoundException, ContainerNotFoundException, DatabaseConnectionException, QueryMalformedException,
-            UserNotFoundException {
+    public void insert(Long databaseId, Long tableId, ImportDto data, Principal principal)
+            throws TableMalformedException, DatabaseNotFoundException, TableNotFoundException, QueryMalformedException {
         /* find */
-        final Database database = databaseService.find(containerId, databaseId);
-        final Table table = tableService.find(containerId, databaseId, tableId);
-        final User root = databaseMapper.containerToPrivilegedUser(database.getContainer());
+        final Database database = databaseService.find(databaseId);
+        final Table table = tableService.find(databaseId, tableId);
         /* preparing the statements */
-        final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(),
-                database.getContainer(), database, root);
+        final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(),
+                database.getContainer(), database);
         /* Create a temporary table, insert there, transfer with update on duplicate key and lastly drops the temporary table */
         try {
             final Connection connection = dataSource.getConnection();

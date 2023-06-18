@@ -4,13 +4,14 @@ import at.tuwien.amqp.RabbitMqConsumer;
 import at.tuwien.api.amqp.ConsumerDto;
 import at.tuwien.config.AmqpConfig;
 import at.tuwien.entities.database.table.Table;
-import at.tuwien.exception.*;
+import at.tuwien.exception.AmqpException;
 import at.tuwien.gateway.BrokerServiceGateway;
 import at.tuwien.service.MessageQueueService;
 import at.tuwien.service.QueryService;
 import at.tuwien.service.TableService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rabbitmq.client.*;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -42,7 +43,7 @@ public class RabbitMqServiceImpl implements MessageQueueService {
     }
 
     @Override
-    public void createConsumer(String queueName, Long containerId, Long databaseId, Long tableId) throws AmqpException {
+    public void createConsumer(String queueName, Long databaseId, Long tableId) throws AmqpException {
         try {
             if (!this.channel.isOpen()) {
                 log.warn("Channel with id {} is closed", this.channel.getChannelNumber());
@@ -50,8 +51,7 @@ public class RabbitMqServiceImpl implements MessageQueueService {
                 this.channel = tmp.createChannel();
                 log.info("Opened channel with id {}", this.channel.getChannelNumber());
             }
-            final String consumerTag = this.channel.basicConsume(queueName, true, new RabbitMqConsumer(containerId,
-                    databaseId, tableId, objectMapper, queryService));
+            final String consumerTag = this.channel.basicConsume(queueName, true, new RabbitMqConsumer(databaseId, tableId, objectMapper, queryService));
             log.debug("declared consumer for queue name {} with tag {}", queueName, consumerTag);
         } catch (IOException e) {
             log.error("Failed to create consumer for table with id {}, reason: {}", tableId, e.getMessage());
@@ -72,8 +72,7 @@ public class RabbitMqServiceImpl implements MessageQueueService {
                 continue;
             }
             for (long i = consumerCount; i < amqpConfig.getAmqpConsumers(); i++) {
-                createConsumer(table.getQueueName(), table.getDatabase().getContainer().getId(),
-                        table.getDatabase().getId(), table.getId());
+                createConsumer(table.getQueueName(), table.getDatabase().getId(), table.getId());
             }
         }
     }

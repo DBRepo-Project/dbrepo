@@ -83,7 +83,7 @@ export default {
   },
   mounted () {
     if (this.token) {
-      this.$router.push('/container')
+      this.$router.push('/database')
     }
   },
   methods: {
@@ -99,7 +99,7 @@ export default {
             .then(async (user) => {
               this.$store.commit('SET_USER', user)
               this.$vuetify.theme.dark = user.attributes.theme_dark
-              await this.$router.push('/container')
+              await this.$router.push('/database')
             })
         })
         .catch(() => {

@@ -1,13 +1,15 @@
 package at.tuwien.endpoints;
 
-import at.tuwien.api.container.ContainerBriefDto;
 import at.tuwien.api.container.image.ImageBriefDto;
 import at.tuwien.api.container.image.ImageChangeDto;
 import at.tuwien.api.container.image.ImageCreateDto;
 import at.tuwien.api.container.image.ImageDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.entities.container.image.ContainerImage;
-import at.tuwien.exception.*;
+import at.tuwien.exception.ImageAlreadyExistsException;
+import at.tuwien.exception.ImageInvalidException;
+import at.tuwien.exception.ImageNotFoundException;
+import at.tuwien.exception.UserNotFoundException;
 import at.tuwien.mapper.ImageMapper;
 import at.tuwien.service.impl.ImageServiceImpl;
 import io.micrometer.core.annotation.Timed;
@@ -18,6 +20,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,8 +30,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -90,7 +92,7 @@ public class ImageEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "502",
-                    description = "Docker client failed to connect",
+                    description = "Failed to connect",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -102,7 +104,7 @@ public class ImageEndpoint {
     })
     public ResponseEntity<ImageDto> create(@Valid @RequestBody ImageCreateDto data,
                                            @NotNull Principal principal) throws ImageNotFoundException,
-            ImageAlreadyExistsException, DockerClientException, UserNotFoundException, ImageInvalidException {
+            ImageAlreadyExistsException, UserNotFoundException, ImageInvalidException {
         log.debug("endpoint create image, data={}, principal={}", data, principal);
         if (data.getDefaultPort() == null) {
             log.error("Failed to create image, default port is null");
@@ -184,11 +186,11 @@ public class ImageEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<?> delete(@NotNull @PathVariable("id") Long imageId,
+    public ResponseEntity<?> delete(@NotNull @PathVariable("id") Long id,
                                     @NotNull Principal principal) throws ImageNotFoundException {
-        log.debug("endpoint delete image, id={}, principal={}", imageId, principal);
-        imageService.find(imageId);
-        imageService.delete(imageId);
+        log.debug("endpoint delete image, id={}, principal={}", id, principal);
+        imageService.find(id);
+        imageService.delete(id);
         return ResponseEntity.accepted()
                 .build();
     }

@@ -95,7 +95,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(QueryMalformedException.class, () -> {
-            generic_execute(CONTAINER_3_ID, DATABASE_3_ID, statement, null, USER_2_PRINCIPAL, DATABASE_3, null);
+            generic_execute(DATABASE_3_ID, statement, null, USER_2_PRINCIPAL, DATABASE_3, null);
         });
     }
 
@@ -106,7 +106,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(QueryMalformedException.class, () -> {
-            generic_execute(CONTAINER_3_ID, DATABASE_3_ID, statement, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_3, DATABASE_3_USER_2_READ_ACCESS);
+            generic_execute(DATABASE_3_ID, statement, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_3, DATABASE_3_USER_2_READ_ACCESS);
         });
     }
 
@@ -117,7 +117,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(QueryMalformedException.class, () -> {
-            generic_execute(CONTAINER_3_ID, DATABASE_3_ID, statement, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_3, DATABASE_3_USER_2_READ_ACCESS);
+            generic_execute(DATABASE_3_ID, statement, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_3, DATABASE_3_USER_2_READ_ACCESS);
         });
     }
 
@@ -128,7 +128,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(QueryMalformedException.class, () -> {
-            generic_execute(CONTAINER_3_ID, DATABASE_3_ID, statement, null, USER_2_PRINCIPAL, DATABASE_3, null);
+            generic_execute(DATABASE_3_ID, statement, null, USER_2_PRINCIPAL, DATABASE_3, null);
         });
     }
 
@@ -138,7 +138,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            generic_execute(CONTAINER_3_ID, DATABASE_3_ID, QUERY_4_STATEMENT, null, null, DATABASE_3, null);
+            generic_execute(DATABASE_3_ID, QUERY_4_STATEMENT, null, null, DATABASE_3, null);
         });
     }
 
@@ -150,7 +150,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
             PaginationException {
 
         /* test */
-        generic_execute(CONTAINER_3_ID, DATABASE_3_ID, QUERY_4_STATEMENT, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_3, DATABASE_3_USER_2_WRITE_ALL_ACCESS);
+        generic_execute(DATABASE_3_ID, QUERY_4_STATEMENT, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_3, DATABASE_3_USER_2_WRITE_ALL_ACCESS);
     }
 
     @Test
@@ -161,7 +161,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
             PaginationException {
 
         /* test */
-        generic_execute(CONTAINER_3_ID, DATABASE_3_ID, QUERY_4_STATEMENT, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_3, DATABASE_3_USER_2_WRITE_ALL_ACCESS);
+        generic_execute(DATABASE_3_ID, QUERY_4_STATEMENT, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_3, DATABASE_3_USER_2_WRITE_ALL_ACCESS);
     }
 
     @Test
@@ -172,7 +172,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
             PaginationException {
 
         /* test */
-        generic_execute(CONTAINER_3_ID, DATABASE_3_ID, QUERY_4_STATEMENT, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_3, DATABASE_3_USER_2_WRITE_ALL_ACCESS);
+        generic_execute(DATABASE_3_ID, QUERY_4_STATEMENT, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_3, DATABASE_3_USER_2_WRITE_ALL_ACCESS);
     }
 
     @Test
@@ -183,7 +183,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
             PaginationException {
 
         /* test */
-        generic_execute(CONTAINER_3_ID, DATABASE_3_ID, QUERY_4_STATEMENT, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_3, DATABASE_3_USER_2_WRITE_ALL_ACCESS);
+        generic_execute(DATABASE_3_ID, QUERY_4_STATEMENT, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_3, DATABASE_3_USER_2_WRITE_ALL_ACCESS);
     }
 
     @Test
@@ -194,7 +194,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
             PaginationException {
 
         /* test */
-        generic_reExecute(CONTAINER_3_ID, DATABASE_3_ID, QUERY_4_ID, QUERY_4, QUERY_4_RESULT_ID, QUERY_4_RESULT_DTO,
+        generic_reExecute(DATABASE_3_ID, QUERY_4_ID, QUERY_4, QUERY_4_RESULT_ID, QUERY_4_RESULT_DTO,
                 null, null, DATABASE_3, null);
     }
 
@@ -206,7 +206,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
             PaginationException, QueryNotFoundException {
 
         /* test */
-        generic_reExecute(CONTAINER_3_ID, DATABASE_3_ID, QUERY_4_ID, QUERY_4, QUERY_4_RESULT_ID, QUERY_4_RESULT_DTO,
+        generic_reExecute(DATABASE_3_ID, QUERY_4_ID, QUERY_4, QUERY_4_RESULT_ID, QUERY_4_RESULT_DTO,
                 USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_3, DATABASE_3_USER_1_READ_ACCESS);
     }
 
@@ -218,7 +218,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
             PaginationException, QueryNotFoundException {
 
         /* test */
-        generic_reExecute(CONTAINER_3_ID, DATABASE_3_ID, QUERY_4_ID, QUERY_4, QUERY_4_RESULT_ID, QUERY_4_RESULT_DTO,
+        generic_reExecute(DATABASE_3_ID, QUERY_4_ID, QUERY_4, QUERY_4_RESULT_ID, QUERY_4_RESULT_DTO,
                 USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_3, DATABASE_3_USER_1_WRITE_OWN_ACCESS);
     }
 
@@ -230,7 +230,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
             ContainerNotFoundException, IOException, NotAllowedException {
 
         /* test */
-        export_generic(CONTAINER_3_ID, DATABASE_3_ID, QUERY_3_ID, null, null, DATABASE_3, null, null, HttpStatus.OK);
+        export_generic(DATABASE_3_ID, QUERY_3_ID, null, null, DATABASE_3, null, null, HttpStatus.OK);
     }
 
     @Test
@@ -238,7 +238,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
     public void export_publicAnonymizedInvalidFormat_fails() throws UserNotFoundException, QueryStoreException, DatabaseConnectionException, TableMalformedException, NotAllowedException, QueryMalformedException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException, IOException, FileStorageException, ContainerNotFoundException {
 
         /* test */
-        export_generic(CONTAINER_3_ID, DATABASE_3_ID, QUERY_3_ID, null, null, DATABASE_3, null, "application/json", HttpStatus.NOT_IMPLEMENTED);
+        export_generic(DATABASE_3_ID, QUERY_3_ID, null, null, DATABASE_3, null, "application/json", HttpStatus.NOT_IMPLEMENTED);
     }
 
     @Test
@@ -249,7 +249,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
             ContainerNotFoundException, IOException, NotAllowedException {
 
         /* test */
-        export_generic(CONTAINER_3_ID, DATABASE_3_ID, QUERY_3_ID, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_3, DATABASE_3_USER_1_READ_ACCESS, null, HttpStatus.OK);
+        export_generic(DATABASE_3_ID, QUERY_3_ID, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_3, DATABASE_3_USER_1_READ_ACCESS, null, HttpStatus.OK);
     }
 
     @Test
@@ -260,7 +260,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
             ContainerNotFoundException, IOException, NotAllowedException {
 
         /* test */
-        export_generic(CONTAINER_3_ID, DATABASE_3_ID, QUERY_4_ID, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_3, DATABASE_3_USER_1_WRITE_OWN_ACCESS, null, HttpStatus.OK);
+        export_generic(DATABASE_3_ID, QUERY_4_ID, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_3, DATABASE_3_USER_1_WRITE_OWN_ACCESS, null, HttpStatus.OK);
     }
 
     @Test
@@ -271,7 +271,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
             ContainerNotFoundException, IOException, NotAllowedException {
 
         /* test */
-        export_generic(CONTAINER_3_ID, DATABASE_3_ID, QUERY_4_ID, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_3, DATABASE_3_USER_1_WRITE_ALL_ACCESS, null, HttpStatus.OK);
+        export_generic(DATABASE_3_ID, QUERY_4_ID, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_3, DATABASE_3_USER_1_WRITE_ALL_ACCESS, null, HttpStatus.OK);
     }
 
     /* ################################################################################################### */
@@ -285,7 +285,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            generic_execute(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_STATEMENT, null, principal, DATABASE_2, null);
+            generic_execute(DATABASE_2_ID, QUERY_1_STATEMENT, null, principal, DATABASE_2, null);
         });
     }
 
@@ -297,7 +297,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
             PaginationException {
 
         /* test */
-        generic_execute(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_STATEMENT, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_USER_1_READ_ACCESS);
+        generic_execute(DATABASE_2_ID, QUERY_1_STATEMENT, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_USER_1_READ_ACCESS);
     }
 
     @Test
@@ -308,7 +308,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
             PaginationException {
 
         /* test */
-        generic_execute(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_STATEMENT, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_USER_1_WRITE_OWN_ACCESS);
+        generic_execute(DATABASE_2_ID, QUERY_1_STATEMENT, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_USER_1_WRITE_OWN_ACCESS);
     }
 
     @Test
@@ -319,7 +319,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
             PaginationException {
 
         /* test */
-        generic_execute(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_STATEMENT, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_USER_1_WRITE_ALL_ACCESS);
+        generic_execute(DATABASE_2_ID, QUERY_1_STATEMENT, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_USER_1_WRITE_ALL_ACCESS);
     }
 
     @Test
@@ -330,7 +330,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
             PaginationException {
 
         /* test */
-        generic_execute(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_STATEMENT, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_2, DATABASE_2_USER_1_WRITE_ALL_ACCESS);
+        generic_execute(DATABASE_2_ID, QUERY_1_STATEMENT, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_2, DATABASE_2_USER_1_WRITE_ALL_ACCESS);
     }
 
     @Test
@@ -339,7 +339,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            generic_reExecute(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_ID, QUERY_1, QUERY_1_RESULT_ID, QUERY_1_RESULT_DTO,
+            generic_reExecute(DATABASE_2_ID, QUERY_1_ID, QUERY_1, QUERY_1_RESULT_ID, QUERY_1_RESULT_DTO,
                     null, null, DATABASE_2, null);
         });
     }
@@ -352,7 +352,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
             PaginationException, QueryNotFoundException {
 
         /* test */
-        generic_reExecute(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_ID, QUERY_1, QUERY_1_RESULT_ID, QUERY_1_RESULT_DTO,
+        generic_reExecute(DATABASE_2_ID, QUERY_1_ID, QUERY_1, QUERY_1_RESULT_ID, QUERY_1_RESULT_DTO,
                 USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_USER_1_READ_ACCESS);
     }
 
@@ -364,7 +364,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
             PaginationException, QueryNotFoundException {
 
         /* test */
-        generic_reExecute(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_ID, QUERY_1, QUERY_1_RESULT_ID, QUERY_1_RESULT_DTO,
+        generic_reExecute(DATABASE_2_ID, QUERY_1_ID, QUERY_1, QUERY_1_RESULT_ID, QUERY_1_RESULT_DTO,
                 USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_USER_1_WRITE_OWN_ACCESS);
     }
 
@@ -376,7 +376,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
             PaginationException, QueryNotFoundException {
 
         /* test */
-        generic_reExecute(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_ID, QUERY_1, QUERY_1_RESULT_ID, QUERY_1_RESULT_DTO,
+        generic_reExecute(DATABASE_2_ID, QUERY_1_ID, QUERY_1, QUERY_1_RESULT_ID, QUERY_1_RESULT_DTO,
                 USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_USER_1_WRITE_ALL_ACCESS);
     }
 
@@ -386,7 +386,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            export_generic(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_ID, null, null, DATABASE_2, null, null, HttpStatus.OK);
+            export_generic(DATABASE_2_ID, QUERY_1_ID, null, null, DATABASE_2, null, null, HttpStatus.OK);
         });
     }
 
@@ -395,7 +395,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
     public void export_privateInvalidFormat_fails() throws UserNotFoundException, QueryStoreException, DatabaseConnectionException, TableMalformedException, NotAllowedException, QueryMalformedException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException, IOException, FileStorageException, ContainerNotFoundException {
 
         /* test */
-        export_generic(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_ID, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_USER_2_READ_ACCESS, "application/json", HttpStatus.NOT_IMPLEMENTED);
+        export_generic(DATABASE_2_ID, QUERY_1_ID, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_USER_2_READ_ACCESS, "application/json", HttpStatus.NOT_IMPLEMENTED);
     }
 
     @Test
@@ -406,7 +406,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
             ContainerNotFoundException, IOException {
 
         /* test */
-        export_generic(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_ID, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_USER_1_READ_ACCESS, null, HttpStatus.OK);
+        export_generic(DATABASE_2_ID, QUERY_1_ID, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_USER_1_READ_ACCESS, null, HttpStatus.OK);
     }
 
     @Test
@@ -417,7 +417,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
             ContainerNotFoundException, IOException {
 
         /* test */
-        export_generic(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_ID, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_USER_1_WRITE_OWN_ACCESS, null, HttpStatus.OK);
+        export_generic(DATABASE_2_ID, QUERY_1_ID, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_USER_1_WRITE_OWN_ACCESS, null, HttpStatus.OK);
     }
 
     @Test
@@ -428,14 +428,14 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
             ContainerNotFoundException, IOException {
 
         /* test */
-        export_generic(CONTAINER_2_ID, DATABASE_2_ID, QUERY_1_ID, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_USER_1_WRITE_ALL_ACCESS, null, HttpStatus.OK);
+        export_generic(DATABASE_2_ID, QUERY_1_ID, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_USER_1_WRITE_ALL_ACCESS, null, HttpStatus.OK);
     }
 
     /* ################################################################################################### */
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
 
-    protected void generic_execute(Long containerId, Long databaseId, String statement, String username,
+    protected void generic_execute(Long databaseId, String statement, String username,
                                    Principal principal, Database database, DatabaseAccess access)
             throws UserNotFoundException, QueryStoreException, TableMalformedException, DatabaseConnectionException,
             QueryMalformedException, ColumnParseException, DatabaseNotFoundException, ImageNotSupportedException,
@@ -449,9 +449,9 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
         final String sortColumn = "location";
 
         /* mock */
-        when(databaseRepository.findByContainerIdAndDatabaseId(containerId, databaseId))
+        when(databaseRepository.findByDatabaseId(databaseId))
                 .thenReturn(Optional.of(database));
-        log.trace("mock database for container with id {} and database id {}", containerId, databaseId);
+        log.trace("mock database for container database id {}", databaseId);
         if (access == null) {
             when(databaseAccessRepository.findByDatabaseIdAndUsername(databaseId, username))
                     .thenReturn(Optional.empty());
@@ -461,12 +461,12 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
                     .thenReturn(Optional.of(access));
             log.trace("mock access {} for database with id {} and username {}", access.getType(), databaseId, username);
         }
-        when(queryService.execute(containerId, databaseId, request, principal, page, size, sortDirection, sortColumn))
+        when(queryService.execute(databaseId, request, principal, page, size, sortDirection, sortColumn))
                 .thenReturn(QUERY_1_RESULT_DTO);
-        log.trace("mock query service for container with id {} and database with id {}", containerId, databaseId);
+        log.trace("mock query service for container database with id {}", databaseId);
 
         /* test */
-        final ResponseEntity<QueryResultDto> response = queryEndpoint.execute(containerId, databaseId, request,
+        final ResponseEntity<QueryResultDto> response = queryEndpoint.execute(databaseId, request,
                 page, size, principal, sortDirection, sortColumn);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
         assertNotNull(response.getBody());
@@ -476,7 +476,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
         assertEquals(QUERY_1_RESULT_RESULT, response.getBody().getResult());
     }
 
-    protected void generic_reExecute(Long containerId, Long databaseId, Long queryId, Query query, Long resultId,
+    protected void generic_reExecute(Long databaseId, Long queryId, Query query, Long resultId,
                                      QueryResultDto result, String username, Principal principal, Database database,
                                      DatabaseAccess access)
             throws UserNotFoundException, QueryStoreException, DatabaseConnectionException, QueryNotFoundException,
@@ -488,9 +488,9 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
         final String sortColumn = "location";
 
         /* mock */
-        when(databaseRepository.findByContainerIdAndDatabaseId(containerId, databaseId))
+        when(databaseRepository.findByDatabaseId(databaseId))
                 .thenReturn(Optional.of(database));
-        when(storeService.findOne(containerId, databaseId, queryId, principal))
+        when(storeService.findOne(databaseId, queryId, principal))
                 .thenReturn(query);
         if (access == null) {
             when(databaseAccessRepository.findByDatabaseIdAndUsername(databaseId, username))
@@ -499,18 +499,18 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
             when(databaseAccessRepository.findByDatabaseIdAndUsername(databaseId, username))
                     .thenReturn(Optional.of(access));
         }
-        when(queryService.reExecute(containerId, databaseId, query, page, size, sortDirection, sortColumn, principal))
+        when(queryService.reExecute(databaseId, query, page, size, sortDirection, sortColumn, principal))
                 .thenReturn(result);
 
         /* test */
-        final ResponseEntity<QueryResultDto> response = queryEndpoint.reExecute(containerId, databaseId, queryId,
+        final ResponseEntity<QueryResultDto> response = queryEndpoint.reExecute(databaseId, queryId,
                 principal, page, size, sortDirection, sortColumn);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(resultId, response.getBody().getId());
     }
 
-    protected void export_generic(Long containerId, Long databaseId, Long queryId, String username, Principal principal,
+    protected void export_generic(Long databaseId, Long queryId, String username, Principal principal,
                                   Database database, DatabaseAccess access, String accept, HttpStatus status) throws IOException,
             UserNotFoundException, QueryStoreException, DatabaseConnectionException, QueryNotFoundException,
             DatabaseNotFoundException, ImageNotSupportedException, TableMalformedException, QueryMalformedException,
@@ -521,7 +521,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
                 .build();
 
         /* mock */
-        when(databaseRepository.findByContainerIdAndDatabaseId(containerId, databaseId))
+        when(databaseRepository.findByDatabaseId(databaseId))
                 .thenReturn(Optional.of(database));
         if (access == null) {
             when(databaseAccessRepository.findByDatabaseIdAndUsername(databaseId, username))
@@ -530,13 +530,13 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
             when(databaseAccessRepository.findByDatabaseIdAndUsername(databaseId, username))
                     .thenReturn(Optional.of(access));
         }
-        when(storeService.findOne(containerId, databaseId, queryId, principal))
+        when(storeService.findOne(databaseId, queryId, principal))
                 .thenReturn(QUERY_1);
-        when(queryService.findOne(containerId, databaseId, queryId, principal))
+        when(queryService.findOne(databaseId, queryId, principal))
                 .thenReturn(resource);
 
         /* test */
-        final ResponseEntity<?> response = queryEndpoint.export(containerId, databaseId, queryId, accept, principal);
+        final ResponseEntity<?> response = queryEndpoint.export(databaseId, queryId, accept, principal);
         assertEquals(status, response.getStatusCode());
         if (status.equals(HttpStatus.OK)) {
             assertNotNull(response.getBody());
