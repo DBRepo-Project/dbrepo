@@ -11,13 +11,13 @@ import java.util.Optional;
 @Repository
 public interface DatabaseRepository extends JpaRepository<Database, Long> {
 
-    @Query("select d from Database d where d.container.id = :containerId and d.id = :databaseId and (d.isPublic = true or d.creator.username = :username)")
-    Optional<Database> findPublicOrMine(@Param("containerId") Long containerId, @Param("databaseId") Long databaseId, @Param("username") String username);
+    @Query("select d from Database d where d.id = :databaseId and (d.isPublic = true or d.creator.username = :username)")
+    Optional<Database> findPublicOrMine(@Param("databaseId") Long databaseId, @Param("username") String username);
 
-    @Query("select d from Database d where d.container.id = :containerId and d.id = :databaseId and d.isPublic = true")
-    Optional<Database> findPublic(@Param("containerId") Long containerId, @Param("databaseId") Long databaseId);
+    @Query("select d from Database d where d.id = :databaseId and d.isPublic = true")
+    Optional<Database> findPublic(@Param("databaseId") Long databaseId);
 
-    @Query("select d from Database d where d.container.id = :containerId and d.id = :databaseId")
-    Optional<Database> findByContainerIdAndDatabaseId(@Param("containerId") Long containerId, @Param("databaseId") Long databaseId);
+    @Query("select d from Database d where d.id = :databaseId")
+    Optional<Database> findByContainerIdAndDatabaseId(@Param("databaseId") Long databaseId);
     
 }

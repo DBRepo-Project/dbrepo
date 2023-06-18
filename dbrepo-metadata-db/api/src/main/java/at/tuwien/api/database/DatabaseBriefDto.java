@@ -1,15 +1,15 @@
 package at.tuwien.api.database;
 
 import at.tuwien.api.container.ContainerBriefDto;
+import at.tuwien.api.container.image.ImageBriefDto;
 import at.tuwien.api.identifier.IdentifierBriefDto;
 import at.tuwien.api.user.UserBriefDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
-
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
 import java.time.Instant;
@@ -54,5 +54,8 @@ public class DatabaseBriefDto {
     @Schema(example = "2020-08-04 11:12:00")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant created;
+
+    @NotNull
+    private ImageBriefDto image;
 
 }

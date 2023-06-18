@@ -234,7 +234,7 @@ export default {
       return this.$store.state.database
     },
     viewLink () {
-      return `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}` + (this.isView ? '/view' : '/query') + `/${this.resultId}`
+      return `/database/${this.$route.params.database_id}` + (this.isView ? '/view' : '/query') + `/${this.resultId}`
     },
     token () {
       return this.$store.state.token
@@ -261,7 +261,7 @@ export default {
       return !(!this.sql || this.sql.length === 0)
     },
     backTo () {
-      return `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/` + (this.isView ? 'view' : 'query')
+      return `/database/${this.$route.params.database_id}/` + (this.isView ? 'view' : 'query')
     },
     isView () {
       return this.mode === 'view'
@@ -322,7 +322,7 @@ export default {
     createView () {
       this.loadingQuery = true
       this.view.query = this.sql
-      DatabaseService.createView(this.$route.params.container_id, this.$route.params.database_id, this.view)
+      DatabaseService.createView(this.$route.params.database_id, this.view)
         .then(async (view) => {
           this.resultId = view.id
           await this.$store.dispatch('reloadDatabase')

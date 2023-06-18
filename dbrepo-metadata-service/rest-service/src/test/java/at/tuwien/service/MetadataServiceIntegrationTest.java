@@ -50,7 +50,7 @@ public class MetadataServiceIntegrationTest extends BaseUnitTest {
         imageRepository.save(IMAGE_1_SIMPLE);
         realmRepository.save(REALM_DBREPO);
         userRepository.save(USER_1_SIMPLE);
-        containerRepository.save(CONTAINER_1_SIMPLE);
+        containerRepository.save(CONTAINER_1);
         databaseRepository.save(DATABASE_1_SIMPLE);
         identifierRepository.save(IDENTIFIER_1);
     }

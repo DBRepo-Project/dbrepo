@@ -19,11 +19,10 @@ public interface DatabaseRepository extends JpaRepository<Database, Long> {
 
     List<Database> findConfigureAccess(String username);
 
-    @Query("select d from Database d where d.container.id = :containerId")
-    List<Database> findAll(@Param("containerId") Long containerId);
+    List<Database> findAll();
 
-    Optional<Database> findPublicOrMine(Long containerId, Long databaseId, String username);
+    Optional<Database> findPublicOrMine(Long databaseId, String username);
 
-    Optional<Database> findPublic(Long containerId, Long databaseId);
+    Optional<Database> findPublic(Long databaseId);
 
 }

@@ -19,6 +19,4 @@ public class RealmAccessDto {
     @Schema(description = "list of roles associated to the user", example = "[\"create-container\",\"create-database\"]")
     private String[] roles;
 
-
-
 }

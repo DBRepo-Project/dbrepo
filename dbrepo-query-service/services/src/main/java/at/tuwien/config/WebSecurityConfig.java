@@ -3,6 +3,7 @@ package at.tuwien.config;
 import at.tuwien.auth.AuthTokenFilter;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -16,8 +17,6 @@ import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
-
-import jakarta.servlet.http.HttpServletResponse;
 
 @Configuration
 @EnableWebSecurity
@@ -45,14 +44,14 @@ public class WebSecurityConfig {
                 new AntPathRequestMatcher("/swagger-ui.html")
         );
         final OrRequestMatcher publicEndpoints = new OrRequestMatcher(
-                new AntPathRequestMatcher("/api/container/**/database/data/**", "GET"),
-                new AntPathRequestMatcher("/api/container/**/database/**/table/**/data/**", "GET"),
-                new AntPathRequestMatcher("/api/container/**/database/**/view/**", "GET"),
-                new AntPathRequestMatcher("/api/container/**/database/**/table/**/history/**", "GET"),
-                new AntPathRequestMatcher("/api/container/**/database/**/table/**/export/**", "GET"),
-                new AntPathRequestMatcher("/api/container/**/database/**/query/**", "GET"),
-                new AntPathRequestMatcher("/api/container/**/database/**/query/**/export", "GET"),
-                new AntPathRequestMatcher("/api/container/**/database/**/query/**", "PUT")
+                new AntPathRequestMatcher("/api/database/data/**", "GET"),
+                new AntPathRequestMatcher("/api/database/**/table/**/data/**", "GET"),
+                new AntPathRequestMatcher("/api/database/**/view/**", "GET"),
+                new AntPathRequestMatcher("/api/database/**/table/**/history/**", "GET"),
+                new AntPathRequestMatcher("/api/database/**/table/**/export/**", "GET"),
+                new AntPathRequestMatcher("/api/database/**/query/**", "GET"),
+                new AntPathRequestMatcher("/api/database/**/query/**/export", "GET"),
+                new AntPathRequestMatcher("/api/database/**/query/**", "PUT")
         );
         /* enable CORS and disable CSRF */
         http = http.cors().and().csrf().disable();

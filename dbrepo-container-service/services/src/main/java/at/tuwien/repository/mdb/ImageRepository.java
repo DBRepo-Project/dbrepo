@@ -9,6 +9,6 @@ import java.util.Optional;
 @Repository
 public interface ImageRepository extends JpaRepository<ContainerImage, Long> {
 
-    Optional<ContainerImage> findByRepositoryAndTag(String repository, String tag);
+    Optional<ContainerImage> findByNameAndVersion(String name, String version);
 
 }

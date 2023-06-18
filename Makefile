@@ -1,4 +1,4 @@
-.PHONY: clean all
+.PHONY: all
 
 TAG ?= latest
 TRIVY_VERSION ?= v0.41.0
@@ -137,30 +137,30 @@ release-metadata: tag-metadata
 
 test-backend: test-container-service test-database-service test-query-service test-table-service test-identifier-service test-metadata-service test-semantics-service test-analyse-service test-user-service
 
-test-identifier-service: clean build-metadata-db build-identifier-service
+test-identifier-service: build-metadata-db build-identifier-service
 	mvn -f ./dbrepo-identifier-service/pom.xml clean test verify
 
-test-container-service: clean build-metadata-db build-container-service
+test-container-service: build-metadata-db build-container-service
 	mvn -f ./dbrepo-container-service/pom.xml clean test verify
 
-test-database-service: clean build-metadata-db build-database-service
+test-database-service: build-metadata-db build-database-service
 	docker pull rabbitmq:3-management-alpine
 	docker pull elasticsearch:8.7.1
 	mvn -f ./dbrepo-database-service/pom.xml clean test verify
 
-test-query-service: clean build-metadata-db build-query-service
+test-query-service: build-metadata-db build-query-service
 	mvn -f ./dbrepo-query-service/pom.xml clean test verify
 
-test-table-service: clean build-metadata-db build-table-service
+test-table-service: build-metadata-db build-table-service
 	mvn -f ./dbrepo-table-service/pom.xml clean test verify
 
-test-metadata-service: clean build-metadata-db build-metadata-service
+test-metadata-service: build-metadata-db build-metadata-service
 	mvn -f ./dbrepo-metadata-service/pom.xml clean test verify
 
-test-user-service: clean build-metadata-db build-user-service
+test-user-service: build-metadata-db build-user-service
 	mvn -f ./dbrepo-user-service/pom.xml clean test verify
 
-test-semantics-service: clean build-metadata-db build-semantics-service
+test-semantics-service: build-metadata-db build-semantics-service
 	mvn -f ./dbrepo-semantics-service/pom.xml clean test verify
 
 test-analyse-service: build-analyse-service
@@ -248,13 +248,10 @@ scan-user-service:
 coverage-frontend: build-frontend
 	yarn --cwd ./dbrepo-ui run coverage || true
 
-test-frontend: clean build-frontend
+test-frontend: build-frontend
 	yarn --cwd ./dbrepo-ui install
 	yarn --cwd ./dbrepo-ui run test:unit || true
 	yarn --cwd ./dbrepo-ui run coverage || true
-
-clean:
-	docker system prune -f --volumes
 
 test-clients:
 	bash ./.gitlab/test.sh
@@ -262,4 +259,4 @@ test-clients:
 test: test-backend test-frontend
 
 teardown:
-	./.junit/teardown
+	./.scripts/teardown.sh

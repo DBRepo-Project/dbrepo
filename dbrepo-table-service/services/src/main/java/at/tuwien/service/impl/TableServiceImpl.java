@@ -3,7 +3,6 @@ package at.tuwien.service.impl;
 import at.tuwien.api.database.table.TableCreateDto;
 import at.tuwien.api.database.table.TableCreateRawQuery;
 import at.tuwien.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
-import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
@@ -25,7 +24,8 @@ import java.security.Principal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Log4j2
@@ -61,8 +61,8 @@ public class TableServiceImpl extends HibernateConnector implements TableService
 
     @Override
     @Transactional(readOnly = true)
-    public List<Table> findAll(Long containerId, Long databaseId) throws DatabaseNotFoundException {
-        final Database database = databaseService.find(containerId, databaseId);
+    public List<Table> findAll(Long databaseId) throws DatabaseNotFoundException {
+        final Database database = databaseService.find(databaseId);
         final List<Table> tables = tableRepository.findByDatabaseOrderByCreatedDesc(database);
         log.trace("found {} table(s) in database with id {}", tables.size(), databaseId);
         return tables;
@@ -70,14 +70,14 @@ public class TableServiceImpl extends HibernateConnector implements TableService
 
     @Override
     @Transactional
-    public void deleteTable(Long containerId, Long databaseId, Long tableId)
+    public void deleteTable(Long databaseId, Long tableId)
             throws TableNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
             TableMalformedException, QueryMalformedException, ContainerNotFoundException {
         /* find */
-        final Database database = databaseService.find(containerId, databaseId);
-        final Table table = findById(containerId, databaseId, tableId);
+        final Database database = databaseService.find(databaseId);
+        final Table table = findById(databaseId, tableId);
         /* run query */
-        final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
+        final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(), database.getContainer(), database);
         try {
             final Connection connection = dataSource.getConnection();
             final PreparedStatement preparedStatement = tableMapper.tableToDropTableRawQuery(connection, table);
@@ -96,10 +96,9 @@ public class TableServiceImpl extends HibernateConnector implements TableService
 
     @Override
     @Transactional(readOnly = true)
-    public Table findById(Long containerId, Long databaseId, Long tableId)
-            throws TableNotFoundException, DatabaseNotFoundException, ContainerNotFoundException {
-        final Container container = containerService.find(containerId);
-        final Database database = databaseService.find(containerId, databaseId);
+    public Table findById(Long databaseId, Long tableId)
+            throws TableNotFoundException, DatabaseNotFoundException {
+        final Database database = databaseService.find(databaseId);
         final Optional<Table> optional = tableRepository.findByDatabaseAndId(database, tableId);
         if (optional.isEmpty()) {
             log.error("Failed to find table with id {} in metadata database", tableId);
@@ -110,11 +109,11 @@ public class TableServiceImpl extends HibernateConnector implements TableService
 
     @Override
     @Transactional
-    public Table createTable(Long containerId, Long databaseId, TableCreateDto createDto, Principal principal)
+    public Table createTable(Long databaseId, TableCreateDto createDto, Principal principal)
             throws ImageNotSupportedException, DatabaseNotFoundException, TableMalformedException,
             TableNameExistsException, UserNotFoundException, QueryMalformedException {
         /* find */
-        final Database database = databaseService.find(containerId, databaseId);
+        final Database database = databaseService.find(databaseId);
         final Optional<Table> optional = tableRepository.findByDatabaseAndInternalName(database,
                 tableMapper.nameToInternalName(createDto.getName()));
         if (optional.isPresent()) {
@@ -122,7 +121,7 @@ public class TableServiceImpl extends HibernateConnector implements TableService
             throw new TableNameExistsException("Table exists in metadata database");
         }
         /* run query */
-        final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
+        final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(), database.getContainer(), database);
         final TableCreateRawQuery query;
         try {
             final Connection connection = dataSource.getConnection();
@@ -177,7 +176,7 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         /* set constraints */
         entity.setConstraints(tableMapper.constraintsCreateDtoToConstraints(tableRepository, entity, createDto.getConstraints()));
         /* create history view */
-        final ComboPooledDataSource dataSource1 = getDataSource(database.getContainer().getImage(), database.getContainer(), database);
+        final ComboPooledDataSource dataSource1 = getPrivilegedDataSource(database.getContainer().getImage(), database.getContainer(), database);
         try {
             final Connection connection = dataSource1.getConnection();
             final PreparedStatement preparedStatement = tableMapper.tableToCreateHistoryViewRawQuery(connection, entity);
@@ -202,11 +201,11 @@ public class TableServiceImpl extends HibernateConnector implements TableService
 
     @Override
     @Transactional
-    public TableColumn update(Long containerId, Long databaseId, Long tableId, Long columnId,
+    public TableColumn update(Long databaseId, Long tableId, Long columnId,
                               ColumnSemanticsUpdateDto updateDto, String authorization)
             throws TableNotFoundException, DatabaseNotFoundException, ContainerNotFoundException,
             TableMalformedException, SemanticEntityNotFoundException {
-        final Table table = findById(containerId, databaseId, tableId);
+        final Table table = findById(databaseId, tableId);
         final TableColumn column = findColumn(table, columnId);
         /* assign */
         if (updateDto.getUnitUri() != null) {

@@ -6,11 +6,10 @@ import at.tuwien.api.database.table.columns.concepts.UnitDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
-import lombok.extern.jackson.Jacksonized;
-
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.*;
+import lombok.extern.jackson.Jacksonized;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 
@@ -23,11 +22,6 @@ import org.springframework.data.elasticsearch.annotations.Field;
 @ToString
 @Document(indexName = "column")
 public class ColumnDto {
-
-    @NotNull
-    @Field(name = "container_id")
-    @JsonProperty("container_id")
-    private Long containerId;
 
     @NotNull
     @Field(name = "database_id")

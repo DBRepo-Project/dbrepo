@@ -1,14 +1,12 @@
 package at.tuwien.api.container;
 
-import at.tuwien.api.database.DatabaseBriefDto;
 import at.tuwien.api.user.UserBriefDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
-
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
 import java.time.Instant;
@@ -44,9 +42,6 @@ public class ContainerBriefDto {
     @NotNull
     @Schema(example = "true")
     private Boolean running;
-
-    @org.springframework.data.annotation.Transient
-    private DatabaseBriefDto database;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant created;

@@ -2,10 +2,7 @@ package at.tuwien.mapper;
 
 import at.tuwien.api.database.*;
 import at.tuwien.api.user.UserDetailsDto;
-import at.tuwien.entities.container.Container;
 import at.tuwien.entities.container.image.ContainerImage;
-import at.tuwien.entities.container.image.ContainerImageEnvironmentItem;
-import at.tuwien.entities.container.image.ContainerImageEnvironmentItemType;
 import at.tuwien.entities.database.AccessType;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
@@ -17,7 +14,6 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 import org.mapstruct.Named;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
 import java.sql.Connection;
@@ -26,7 +22,6 @@ import java.sql.SQLException;
 import java.text.Normalizer;
 import java.util.Locale;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring", uses = {ContainerMapper.class, UserMapper.class, ImageMapper.class})
 public interface DatabaseMapper {
@@ -56,29 +51,7 @@ public interface DatabaseMapper {
     /* keep */
     @Named("engineMapping")
     default String containerImageToEngine(ContainerImage data) {
-        return data.getRepository() + ":" + data.getTag();
-    }
-
-    @Transactional(readOnly = true)
-    default User containerToPrivilegedUser(Container container) {
-        final String username = container.getImage()
-                .getEnvironment()
-                .stream()
-                .filter(e -> e.getType().equals(ContainerImageEnvironmentItemType.PRIVILEGED_USERNAME))
-                .map(ContainerImageEnvironmentItem::getValue)
-                .collect(Collectors.toList())
-                .get(0);
-        final String password = container.getImage()
-                .getEnvironment()
-                .stream()
-                .filter(e -> e.getType().equals(ContainerImageEnvironmentItemType.PRIVILEGED_PASSWORD))
-                .map(ContainerImageEnvironmentItem::getValue)
-                .collect(Collectors.toList())
-                .get(0);
-        return User.builder()
-                .username(username)
-                .databasePassword(password)
-                .build();
+        return data.getName() + ":" + data.getVersion();
     }
 
     @Mappings({

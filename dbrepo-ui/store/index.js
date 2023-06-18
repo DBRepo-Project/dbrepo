@@ -74,19 +74,19 @@ const store = new Store({
         })
     },
     reloadAccess ({ state, commit }) {
-      DatabaseService.checkAccess(state.container.id, state.database.id)
+      DatabaseService.checkAccess(state.database.id)
         .then((access) => {
           commit('SET_ACCESS', access)
         })
     },
     reloadDatabase ({ state, commit }) {
-      DatabaseService.findOne(state.database.container.id, state.database.id)
+      DatabaseService.findOne(state.database.id)
         .then((database) => {
           commit('SET_DATABASE', database)
         })
     },
     reloadTable ({ state, commit }) {
-      TableService.findOne(state.database.container.id, state.database.id, state.table.id)
+      TableService.findOne(state.database.id, state.table.id)
         .then((table) => {
           commit('SET_TABLE', table)
         })

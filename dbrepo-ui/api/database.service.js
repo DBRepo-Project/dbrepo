@@ -2,9 +2,9 @@ import Vue from 'vue'
 import api from '@/api'
 
 class DatabaseService {
-  findAll (id) {
+  findAll () {
     return new Promise((resolve, reject) => {
-      api.get(`/api/container/${id}/database`, { headers: { Accept: 'application/json' } })
+      api.get('/api/database', { headers: { Accept: 'application/json' } })
         .then((response) => {
           const databases = response.data
           console.debug('response databases', databases)
@@ -19,9 +19,9 @@ class DatabaseService {
     })
   }
 
-  findOne (id, databaseId) {
+  findOne (databaseId) {
     return new Promise((resolve, reject) => {
-      api.get(`/api/container/${id}/database/${databaseId}`, { headers: { Accept: 'application/json' } })
+      api.get(`/api/database/${databaseId}`, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const database = response.data
           console.debug('response database', database)
@@ -35,9 +35,9 @@ class DatabaseService {
     })
   }
 
-  create (id, data) {
+  create (data) {
     return new Promise((resolve, reject) => {
-      api.post(`/api/container/${id}/database`, data, { headers: { Accept: 'application/json' } })
+      api.post('/api/database', data, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const database = response.data
           console.debug('response database', database)
@@ -51,9 +51,9 @@ class DatabaseService {
     })
   }
 
-  delete (id, databaseId) {
+  delete (databaseId) {
     return new Promise((resolve, reject) => {
-      api.delete(`/api/container/${id}/database/${databaseId}`, { headers: { Accept: 'application/json' } })
+      api.delete(`/api/database/${databaseId}`, { headers: { Accept: 'application/json' } })
         .then(() => resolve())
         .catch((error) => {
           const { code, message } = error
@@ -64,9 +64,9 @@ class DatabaseService {
     })
   }
 
-  modifyVisibility (id, databaseId, isPublic) {
+  modifyVisibility (databaseId, isPublic) {
     return new Promise((resolve, reject) => {
-      api.put(`/api/container/${id}/database/${databaseId}/visibility`, { is_public: isPublic }, { headers: { Accept: 'application/json' } })
+      api.put(`/api/database/${databaseId}/visibility`, { is_public: isPublic }, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const database = response.data
           console.debug('response database', database)
@@ -80,9 +80,9 @@ class DatabaseService {
     })
   }
 
-  modifyOwner (id, databaseId, username) {
+  modifyOwner (databaseId, username) {
     return new Promise((resolve, reject) => {
-      api.put(`/api/container/${id}/database/${databaseId}/transfer`, { username }, { headers: { Accept: 'application/json' } })
+      api.put(`/api/database/${databaseId}/transfer`, { username }, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const database = response.data
           console.debug('response database', database)
@@ -96,9 +96,9 @@ class DatabaseService {
     })
   }
 
-  checkAccess (id, databaseId) {
+  checkAccess (databaseId) {
     return new Promise((resolve, reject) => {
-      api.get(`/api/container/${id}/database/${databaseId}/access`, { headers: { Accept: 'application/json' } })
+      api.get(`/api/database/${databaseId}/access`, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const databases = response.data
           console.debug('response databases', databases)
@@ -116,9 +116,9 @@ class DatabaseService {
     })
   }
 
-  modifyAccess (id, databaseId, username, type) {
+  modifyAccess (databaseId, username, type) {
     return new Promise((resolve, reject) => {
-      api.put(`/api/container/${id}/database/${databaseId}/access/${username}`, { type }, { headers: { Accept: 'application/json' } })
+      api.put(`/api/database/${databaseId}/access/${username}`, { type }, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const database = response.data
           console.debug('response database', database)
@@ -133,9 +133,9 @@ class DatabaseService {
     })
   }
 
-  revokeAccess (id, databaseId, username) {
+  revokeAccess (databaseId, username) {
     return new Promise((resolve, reject) => {
-      api.delete(`/api/container/${id}/database/${databaseId}/access/${username}`, { headers: { Accept: 'application/json' } })
+      api.delete(`/api/database/${databaseId}/access/${username}`, { headers: { Accept: 'application/json' } })
         .then(() => resolve())
         .catch((error) => {
           const { code, message } = error
@@ -146,9 +146,9 @@ class DatabaseService {
     })
   }
 
-  giveAccess (id, databaseId, username, type) {
+  giveAccess (databaseId, username, type) {
     return new Promise((resolve, reject) => {
-      api.post(`/api/container/${id}/database/${databaseId}/access`, { username, type }, { headers: { Accept: 'application/json' } })
+      api.post(`/api/database/${databaseId}/access`, { username, type }, { headers: { Accept: 'application/json' } })
         .then(() => resolve())
         .catch((error) => {
           const { code, message } = error
@@ -159,9 +159,9 @@ class DatabaseService {
     })
   }
 
-  findAllLicenses (id) {
+  findAllLicenses () {
     return new Promise((resolve, reject) => {
-      api.get(`/api/container/${id}/database/license`, { headers: { Accept: 'application/json' } })
+      api.get('/api/database/license', { headers: { Accept: 'application/json' } })
         .then((response) => {
           const licenses = response.data
           console.debug('response licenses', licenses)
@@ -176,9 +176,9 @@ class DatabaseService {
     })
   }
 
-  findView (id, databaseId, viewId) {
+  findView (databaseId, viewId) {
     return new Promise((resolve, reject) => {
-      api.get(`/api/container/${id}/database/${databaseId}/view/${viewId}`, { headers: { Accept: 'application/json' } })
+      api.get(`/api/database/${databaseId}/view/${viewId}`, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const view = response.data
           console.debug('response view', view)
@@ -193,9 +193,9 @@ class DatabaseService {
     })
   }
 
-  createView (id, databaseId, data) {
+  createView (databaseId, data) {
     return new Promise((resolve, reject) => {
-      api.post(`/api/container/${id}/database/${databaseId}/view`, data, { headers: { Accept: 'application/json' } })
+      api.post(`/api/database/${databaseId}/view`, data, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const view = response.data
           console.debug('response view', view)
@@ -210,9 +210,9 @@ class DatabaseService {
     })
   }
 
-  deleteView (id, databaseId, viewId) {
+  deleteView (databaseId, viewId) {
     return new Promise((resolve, reject) => {
-      api.delete(`/api/container/${id}/database/${databaseId}/view/${viewId}`, { headers: { Accept: 'application/json' } })
+      api.delete(`/api/database/${databaseId}/view/${viewId}`, { headers: { Accept: 'application/json' } })
         .then(() => resolve())
         .catch((error) => {
           const { code, message } = error

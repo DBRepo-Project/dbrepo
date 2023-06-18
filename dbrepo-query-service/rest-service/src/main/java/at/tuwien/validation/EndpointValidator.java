@@ -89,9 +89,9 @@ public class EndpointValidator {
         throw new QueryMalformedException("Query contains forbidden keyword(s): " + Arrays.toString(words.toArray()));
     }
 
-    public void validateOnlyAccessOrPublic(Long containerId, Long databaseId, Principal principal)
+    public void validateOnlyAccessOrPublic(Long databaseId, Principal principal)
             throws DatabaseNotFoundException, NotAllowedException {
-        final Database database = databaseService.find(containerId, databaseId);
+        final Database database = databaseService.find(databaseId);
         if (database.getIsPublic()) {
             log.trace("database with id {} is public: no access needed", databaseId);
             return;
@@ -106,10 +106,10 @@ public class EndpointValidator {
         log.trace("found access {}", access);
     }
 
-    public void validateOnlyWriteOwnOrWriteAllAccess(Long containerId, Long databaseId, Long tableId,
+    public void validateOnlyWriteOwnOrWriteAllAccess(Long databaseId, Long tableId,
                                                      Principal principal)
             throws DatabaseNotFoundException, TableNotFoundException, NotAllowedException {
-        final Table table = tableService.find(containerId, databaseId, tableId);
+        final Table table = tableService.find(databaseId, tableId);
         if (principal == null) {
             log.error("Access not allowed: no authorization provided");
             throw new NotAllowedException("Access not allowed: no authorization provided");

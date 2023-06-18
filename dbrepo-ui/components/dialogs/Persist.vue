@@ -238,7 +238,6 @@ export default {
         { name: 'Private', value: 'self' }
       ],
       identifier: {
-        cid: parseInt(this.$route.params.container_id),
         dbid: parseInt(this.$route.params.database_id),
         qid: parseInt(this.$route.params.query_id),
         title: null,
@@ -420,7 +419,6 @@ export default {
     update () {
       this.loading = true
       const payload = {
-        cid: parseInt(this.$route.params.container_id),
         dbid: parseInt(this.$route.params.database_id),
         qid: parseInt(this.$route.params.query_id),
         title: this.identifier.title,
@@ -448,7 +446,7 @@ export default {
         return
       }
       this.loading = true
-      DatabaseService.findAllLicenses(this.$route.params.container_id)
+      DatabaseService.findAllLicenses()
         .then((licenses) => {
           this.licenses = licenses
         })

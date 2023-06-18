@@ -4,6 +4,8 @@ import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.user.User;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.*;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import lombok.*;
@@ -12,9 +14,6 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import jakarta.persistence.*;;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.List;
@@ -28,19 +27,21 @@ import java.util.UUID;
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 @jakarta.persistence.Table(name = "mdb_databases", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"id", "internalName"})
+        @UniqueConstraint(columnNames = {"cid", "internalName"})
 })
 @NamedQueries({
         @NamedQuery(name = "Database.findReadAccess", query = "select d from Database  d join DatabaseAccess a on a.hdbid = d.id where d.owner.username = ?1"),
         @NamedQuery(name = "Database.findWriteAccess", query = "select d from Database  d join DatabaseAccess a on a.hdbid = d.id where d.owner.username = ?1 and (a.type = 'WRITE_OWN' or a.type = 'WRITE_ALL')"),
         @NamedQuery(name = "Database.findConfigureAccess", query = "select d from Database  d where d.owner.username = ?1"),
-        @NamedQuery(name = "Database.findPublicOrMine", query = "select d from Database d where d.container.id = ?1 and d.id = ?2 and (d.isPublic = true or d.owner.username = ?3)"),
-        @NamedQuery(name = "Database.findPublic", query = "select d from Database d where d.container.id = ?1 and d.isPublic = true and d.id = ?2"),
+        @NamedQuery(name = "Database.findPublicOrMine", query = "select d from Database d where d.id = ?1 and (d.isPublic = true or d.owner.username = ?2)"),
+        @NamedQuery(name = "Database.findPublic", query = "select d from Database d where d.isPublic = true and d.id = ?1"),
 })
 public class Database implements Serializable {
 
     @Id
     @EqualsAndHashCode.Include
+    @GeneratedValue(generator = "databases-sequence")
+    @GenericGenerator(name = "databases-sequence", strategy = "increment")
     @Column(updatable = false, nullable = false)
     private Long id;
 
@@ -66,11 +67,14 @@ public class Database implements Serializable {
     })
     private User owner;
 
+    @Column(nullable = false)
+    private Long cid;
+
     @ToString.Exclude
     @org.springframework.data.annotation.Transient
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumns({
-            @JoinColumn(name = "id", referencedColumnName = "id", insertable = false, updatable = false)
+            @JoinColumn(name = "cid", referencedColumnName = "id", insertable = false, updatable = false)
     })
     private Container container;
 

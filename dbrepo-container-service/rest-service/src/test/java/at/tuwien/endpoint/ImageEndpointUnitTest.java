@@ -5,8 +5,6 @@ import at.tuwien.api.container.image.ImageBriefDto;
 import at.tuwien.api.container.image.ImageChangeDto;
 import at.tuwien.api.container.image.ImageCreateDto;
 import at.tuwien.api.container.image.ImageDto;
-import at.tuwien.config.DockerDaemonConfig;
-import at.tuwien.config.ReadyConfig;
 import at.tuwien.endpoints.ImageEndpoint;
 import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.exception.*;
@@ -38,9 +36,6 @@ import static org.mockito.Mockito.*;
 public class ImageEndpointUnitTest extends BaseUnitTest {
 
     @MockBean
-    private ReadyConfig readyConfig;
-
-    @MockBean
     private ImageServiceImpl imageService;
 
     @MockBean
@@ -48,9 +43,6 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
 
     @Autowired
     private ImageEndpoint imageEndpoint;
-
-    @Autowired
-    private DockerDaemonConfig dockerUtil;
 
     @Test
     @WithAnonymousUser
@@ -88,12 +80,11 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
     @WithAnonymousUser
     public void create_anonymous_fails() {
         final ImageCreateDto request = ImageCreateDto.builder()
-                .repository(IMAGE_1_REPOSITORY)
-                .tag(IMAGE_1_TAG)
+                .name(IMAGE_1_NAME)
+                .version(IMAGE_1_VERSION)
                 .defaultPort(IMAGE_1_PORT)
                 .dialect(IMAGE_1_DIALECT)
                 .jdbcMethod(IMAGE_1_JDBC)
-                .environment(IMAGE_1_ENV_DTO)
                 .build();
 
         /* test */
@@ -106,12 +97,11 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
     @WithMockUser(username = USER_1_USERNAME, roles = {"create-image"})
     public void create_hasRole_fails() {
         final ImageCreateDto request = ImageCreateDto.builder()
-                .repository(IMAGE_1_REPOSITORY)
-                .tag(IMAGE_1_TAG)
+                .name(IMAGE_1_NAME)
+                .version(IMAGE_1_VERSION)
                 .defaultPort(IMAGE_1_PORT)
                 .dialect(IMAGE_1_DIALECT)
                 .jdbcMethod(IMAGE_1_JDBC)
-                .environment(IMAGE_1_ENV_DTO)
                 .build();
 
         /* mock */
@@ -128,12 +118,11 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
     @WithMockUser(username = USER_4_USERNAME)
     public void create_noRole_fails() {
         final ImageCreateDto request = ImageCreateDto.builder()
-                .repository(IMAGE_1_REPOSITORY)
-                .tag(IMAGE_1_TAG)
+                .name(IMAGE_1_NAME)
+                .version(IMAGE_1_VERSION)
                 .defaultPort(IMAGE_1_PORT)
                 .dialect(IMAGE_1_DIALECT)
                 .jdbcMethod(IMAGE_1_JDBC)
-                .environment(IMAGE_1_ENV_DTO)
                 .build();
 
         /* mock */
@@ -150,12 +139,11 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
     @WithMockUser(username = USER_1_USERNAME, authorities = {"create-image"})
     public void create_missingEssentialInfo_fails() {
         final ImageCreateDto request = ImageCreateDto.builder()
-                .repository(IMAGE_1_REPOSITORY)
-                .tag(IMAGE_1_TAG)
+                .name(IMAGE_1_NAME)
+                .version(IMAGE_1_VERSION)
                 .defaultPort(null)
                 .dialect(IMAGE_1_DIALECT)
                 .jdbcMethod(IMAGE_1_JDBC)
-                .environment(IMAGE_1_ENV_DTO)
                 .build();
 
         /* mock */
@@ -236,7 +224,6 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
                 .dialect(IMAGE_1_DIALECT)
                 .jdbcMethod(IMAGE_1_JDBC)
                 .driverClass(IMAGE_1_DRIVER)
-                .environment(IMAGE_1_ENV_DTO)
                 .build();
 
         /* test */
@@ -253,7 +240,6 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
                 .dialect(IMAGE_1_DIALECT)
                 .jdbcMethod(IMAGE_1_JDBC)
                 .driverClass(IMAGE_1_DRIVER)
-                .environment(IMAGE_1_ENV_DTO)
                 .build();
 
         /* mock */
@@ -268,14 +254,13 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_2_USERNAME, authorities = {"modify-image"})
-    public void modify_hasRole_succeeds() throws ImageNotFoundException, DockerClientException {
+    public void modify_hasRole_succeeds() throws ImageNotFoundException {
         final ImageChangeDto request = ImageChangeDto.builder()
                 .registry(IMAGE_1_REGISTRY)
                 .defaultPort(IMAGE_1_PORT)
                 .dialect(IMAGE_1_DIALECT)
                 .jdbcMethod(IMAGE_1_JDBC)
                 .driverClass(IMAGE_1_DRIVER)
-                .environment(IMAGE_1_ENV_DTO)
                 .build();
 
         /* mock */
@@ -305,7 +290,7 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
     }
 
     public void create_generic(ImageCreateDto data, Principal principal) throws UserNotFoundException,
-            ImageAlreadyExistsException, DockerClientException, ImageNotFoundException, ImageInvalidException {
+            ImageAlreadyExistsException, ImageNotFoundException, ImageInvalidException {
 
         /* mock */
         when(imageService.create(data, principal))
@@ -342,7 +327,7 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
     }
 
     public void modify_generic(Long imageId, ContainerImage image, ImageChangeDto data, Principal principal)
-            throws ImageNotFoundException, DockerClientException {
+            throws ImageNotFoundException {
 
         /* mock */
         when(imageService.find(imageId))

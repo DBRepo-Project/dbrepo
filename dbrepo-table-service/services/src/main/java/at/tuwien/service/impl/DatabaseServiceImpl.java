@@ -22,8 +22,8 @@ public class DatabaseServiceImpl implements DatabaseService {
     }
 
     @Override
-    public Database find(Long containerId, Long databaseId) throws DatabaseNotFoundException {
-        final Optional<Database> database = databaseRepository.findByContainerIdAndDatabaseId(containerId, databaseId);
+    public Database find(Long databaseId) throws DatabaseNotFoundException {
+        final Optional<Database> database = databaseRepository.findByContainerIdAndDatabaseId(databaseId);
         if (database.isEmpty()) {
             log.error("Failed to find database with id {}", databaseId);
             throw new DatabaseNotFoundException("could not find database with this id");

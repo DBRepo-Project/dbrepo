@@ -7,9 +7,9 @@ import api from '@/api'
  * @author Martin Weise
  */
 class TableService {
-  findAll (id, databaseId) {
+  findAll (databaseId) {
     return new Promise((resolve, reject) => {
-      api.get(`/api/container/${id}/database/${databaseId}/table`, { headers: { Accept: 'application/json' } })
+      api.get(`/api/database/${databaseId}/table`, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const tables = response.data
           console.debug('response tables', tables)
@@ -24,9 +24,9 @@ class TableService {
     })
   }
 
-  findOne (id, databaseId, tableId) {
+  findOne (databaseId, tableId) {
     return new Promise((resolve, reject) => {
-      api.get(`/api/container/${id}/database/${databaseId}/table/${tableId}`, { headers: { Accept: 'application/json' } })
+      api.get(`/api/database/${databaseId}/table/${tableId}`, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const table = response.data
           console.debug('response table', table)
@@ -41,9 +41,9 @@ class TableService {
     })
   }
 
-  updateColumn (id, databaseId, tableId, columnId, data) {
+  updateColumn (databaseId, tableId, columnId, data) {
     return new Promise((resolve, reject) => {
-      api.put(`/api/container/${id}/database/${databaseId}/table/${tableId}/column/${columnId}`, data, { headers: { Accept: 'application/json' } })
+      api.put(`/api/database/${databaseId}/table/${tableId}/column/${columnId}`, data, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const column = response.data
           console.debug('response column', column)
@@ -58,9 +58,9 @@ class TableService {
     })
   }
 
-  importCsv (id, databaseId, tableId, data) {
+  importCsv (databaseId, tableId, data) {
     return new Promise((resolve, reject) => {
-      api.post(`/api/container/${id}/database/${databaseId}/table/${tableId}/data/import`, data, { headers: { Accept: 'application/json' } })
+      api.post(`/api/database/${databaseId}/table/${tableId}/data/import`, data, { headers: { Accept: 'application/json' } })
         .then(() => resolve())
         .catch((error) => {
           const { code, message } = error
@@ -71,9 +71,9 @@ class TableService {
     })
   }
 
-  data (id, databaseId, tableId, page, size, timestamp) {
+  data (databaseId, tableId, page, size, timestamp) {
     return new Promise((resolve, reject) => {
-      api.get(`/api/container/${id}/database/${databaseId}/table/${tableId}/data?page=${page}&size=${size}&timestamp=${timestamp}`, { headers: { Accept: 'application/json' } })
+      api.get(`/api/database/${databaseId}/table/${tableId}/data?page=${page}&size=${size}&timestamp=${timestamp}`, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const data = response.data
           console.debug('response data', data)
@@ -88,9 +88,9 @@ class TableService {
     })
   }
 
-  dataCount (id, databaseId, tableId, timestamp) {
+  dataCount (databaseId, tableId, timestamp) {
     return new Promise((resolve, reject) => {
-      api.get(`/api/container/${id}/database/${databaseId}/table/${tableId}/data/count?timestamp=${timestamp}`, { headers: { Accept: 'application/json' } })
+      api.get(`/api/database/${databaseId}/table/${tableId}/data/count?timestamp=${timestamp}`, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const count = response.data
           console.debug('response count', count)
@@ -105,9 +105,9 @@ class TableService {
     })
   }
 
-  findHistory (id, databaseId, tableId) {
+  findHistory (databaseId, tableId) {
     return new Promise((resolve, reject) => {
-      api.get(`/api/container/${id}/database/${databaseId}/table/${tableId}/history`, { headers: { Accept: 'application/json' } })
+      api.get(`/api/database/${databaseId}/table/${tableId}/history`, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const history = response.data
           console.debug('response history', history)
@@ -122,13 +122,13 @@ class TableService {
     })
   }
 
-  exportData (id, databaseId, tableId) {
-    return this.exportDataTimestamp(id, databaseId, tableId, null)
+  exportData (databaseId, tableId) {
+    return this.exportDataTimestamp(databaseId, tableId, null)
   }
 
-  exportDataTimestamp (id, databaseId, tableId, timestamp) {
+  exportDataTimestamp (databaseId, tableId, timestamp) {
     return new Promise((resolve, reject) => {
-      api.get(`/api/container/${id}/database/${databaseId}/table/${tableId}/export?timestamp=${timestamp}`, { responseType: 'text' })
+      api.get(`/api/database/${databaseId}/table/${tableId}/export?timestamp=${timestamp}`, { responseType: 'text' })
         .then((response) => {
           const data = response.data
           console.debug('response data', data)
@@ -143,10 +143,10 @@ class TableService {
     })
   }
 
-  create (id, databaseId, data) {
+  create (databaseId, data) {
     return new Promise((resolve, reject) => {
       console.debug('====>', data)
-      api.post(`/api/container/${id}/database/${databaseId}/table`, data, { headers: { Accept: 'application/json' } })
+      api.post(`/api/database/${databaseId}/table`, data, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const table = response.data
           console.debug('response table', table)
@@ -161,9 +161,9 @@ class TableService {
     })
   }
 
-  deleteTuple (id, databaseId, tableId, data) {
+  deleteTuple (databaseId, tableId, data) {
     return new Promise((resolve, reject) => {
-      api.delete(`/api/container/${id}/database/${databaseId}/table/${tableId}/data`, { headers: { Accept: 'application/json' }, data })
+      api.delete(`/api/database/${databaseId}/table/${tableId}/data`, { headers: { Accept: 'application/json' }, data })
         .then(() => resolve())
         .catch((error) => {
           const { code, message } = error

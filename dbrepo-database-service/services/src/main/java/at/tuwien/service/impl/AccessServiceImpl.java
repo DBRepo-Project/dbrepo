@@ -60,11 +60,11 @@ public class AccessServiceImpl extends HibernateConnector implements AccessServi
 
     @Override
     @Transactional
-    public void create(Long containerId, Long databaseId, DatabaseGiveAccessDto accessDto)
+    public void create(Long databaseId, DatabaseGiveAccessDto accessDto)
             throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException, QueryMalformedException,
             DatabaseMalformedException {
         /* check */
-        final Database database = databaseService.findById(containerId, databaseId);
+        final Database database = databaseService.findById(databaseId);
         final Container container = database.getContainer();
         final User user = userService.findByUsername(accessDto.getUsername());
         log.trace("give access to user with username {}", user.getUsername());
@@ -72,8 +72,7 @@ public class AccessServiceImpl extends HibernateConnector implements AccessServi
             log.error("Failed to give access to user with username {}, has already permission", accessDto.getUsername());
             throw new NotAllowedException("Failed to give access");
         }
-        final User root = databaseMapper.containerToPrivilegedUser(container);
-        final ComboPooledDataSource dataSource = getDataSource(container.getImage(), container, database, root);
+        final ComboPooledDataSource dataSource = getPrivilegedDataSource(container.getImage(), container, database);
         try {
             final Connection connection = dataSource.getConnection();
             /* create user if not exists */
@@ -100,11 +99,11 @@ public class AccessServiceImpl extends HibernateConnector implements AccessServi
 
     @Override
     @Transactional
-    public void update(Long containerId, Long databaseId, String username, DatabaseModifyAccessDto accessDto)
+    public void update(Long databaseId, String username, DatabaseModifyAccessDto accessDto)
             throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException, QueryMalformedException,
             DatabaseMalformedException, AccessDeniedException {
         /* check */
-        final Database database = databaseService.findById(containerId, databaseId);
+        final Database database = databaseService.findById(databaseId);
         final Container container = database.getContainer();
         final User user = userService.findByUsername(username);
         if (database.getOwner().getUsername().equals(username)) {
@@ -112,8 +111,7 @@ public class AccessServiceImpl extends HibernateConnector implements AccessServi
             throw new NotAllowedException("Failed modify access");
         }
         find(databaseId, username);
-        final User root = databaseMapper.containerToPrivilegedUser(container);
-        final ComboPooledDataSource dataSource = getDataSource(container.getImage(), container, database, root);
+        final ComboPooledDataSource dataSource = getPrivilegedDataSource(container.getImage(), container, database);
         final DatabaseGiveAccessDto giveAccess = databaseMapper.databaseModifyAccessToDatabaseGiveAccessDto(username, accessDto);
         try {
             final Connection connection = dataSource.getConnection();
@@ -140,19 +138,18 @@ public class AccessServiceImpl extends HibernateConnector implements AccessServi
 
     @Override
     @Transactional
-    public void delete(Long containerId, Long databaseId, String username)
+    public void delete(Long databaseId, String username)
             throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException, QueryMalformedException,
             DatabaseMalformedException {
         /* check */
-        final Database database = databaseService.findById(containerId, databaseId);
+        final Database database = databaseService.findById(databaseId);
         final Container container = database.getContainer();
         final User user = userService.findByUsername(username);
         if (database.getOwner().getUsername().equals(username)) {
             log.error("Failed to revoke access of user with username {}, because it is the owner", username);
             throw new NotAllowedException("Failed revoke access");
         }
-        final User root = databaseMapper.containerToPrivilegedUser(container);
-        final ComboPooledDataSource dataSource = getDataSource(container.getImage(), container, root);
+        final ComboPooledDataSource dataSource = getPrivilegedDataSource(container.getImage(), container);
         try {
             final Connection connection = dataSource.getConnection();
             /* create user */

@@ -33,25 +33,25 @@ public class EndpointValidator {
         this.tableService = tableService;
     }
 
-    public void validateOnlyPrivateAccess(Long containerId, Long databaseId, Principal principal, boolean writeAccessOnly) throws NotAllowedException, DatabaseNotFoundException {
-        final Database database = databaseService.find(containerId, databaseId);
+    public void validateOnlyPrivateAccess(Long databaseId, Principal principal, boolean writeAccessOnly) throws NotAllowedException, DatabaseNotFoundException {
+        final Database database = databaseService.find(databaseId);
         if (database.getIsPublic()) {
             log.trace("database with id {} is public: no access needed", databaseId);
             return;
         }
-        validateOnlyAccess(containerId, databaseId, principal, writeAccessOnly);
+        validateOnlyAccess(databaseId, principal, writeAccessOnly);
     }
 
-    public void validateOnlyPrivateAccess(Long containerId, Long databaseId, Principal principal) throws NotAllowedException, DatabaseNotFoundException {
-        validateOnlyPrivateAccess(containerId, databaseId, principal, false);
+    public void validateOnlyPrivateAccess(Long databaseId, Principal principal) throws NotAllowedException, DatabaseNotFoundException {
+        validateOnlyPrivateAccess(databaseId, principal, false);
     }
 
-    public void validateOnlyAccess(Long containerId, Long databaseId, Principal principal, boolean writeAccessOnly) throws NotAllowedException, DatabaseNotFoundException {
+    public void validateOnlyAccess(Long databaseId, Principal principal, boolean writeAccessOnly) throws NotAllowedException, DatabaseNotFoundException {
         if (principal == null) {
             log.error("Access not allowed: database with id {} is not public and no authorization provided", databaseId);
             throw new NotAllowedException("Access not allowed: database with id " + databaseId + " is not public and no authorization provided");
         }
-        databaseService.find(containerId, databaseId);
+        databaseService.find(databaseId);
         log.trace("principal: {}", principal.getName());
         final DatabaseAccess access = accessService.find(databaseId, principal.getName());
         log.trace("found access: {}", access);
@@ -61,13 +61,13 @@ public class EndpointValidator {
         }
     }
 
-    public void validateOnlyOwnerOrWriteAll(Long containerId, Long databaseId, Long tableId, Principal principal)
+    public void validateOnlyOwnerOrWriteAll(Long databaseId, Long tableId, Principal principal)
             throws DatabaseNotFoundException, NotAllowedException, TableNotFoundException, ContainerNotFoundException {
         if (principal == null) {
             log.error("Access not allowed: no authorization provided");
             throw new NotAllowedException("Access not allowed: no authorization provided");
         }
-        final Table table = tableService.findById(containerId, databaseId, tableId);
+        final Table table = tableService.findById(databaseId, tableId);
         log.trace("principal: {}", principal.getName());
         log.trace("table creator: {}", table.getCreator().getUsername());
         final DatabaseAccess access = accessService.find(databaseId, principal.getName());
@@ -88,9 +88,9 @@ public class EndpointValidator {
         throw new NotAllowedException("Access not allowed: insufficient access (neither creator nor write-all access)");
     }
 
-    public void validateOnlyPrivateHasRole(Long containerId, Long databaseId, Principal principal, String role)
+    public void validateOnlyPrivateHasRole(Long databaseId, Principal principal, String role)
             throws DatabaseNotFoundException, NotAllowedException {
-        final Database database = databaseService.find(containerId, databaseId);
+        final Database database = databaseService.find(databaseId);
         if (database.getIsPublic()) {
             log.trace("database with id {} is public: no access needed", databaseId);
             return;

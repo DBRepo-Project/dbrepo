@@ -4,14 +4,15 @@ import at.tuwien.api.database.ViewBriefDto;
 import at.tuwien.api.database.ViewCreateDto;
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.query.QueryResultDto;
-import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.View;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.ViewMapper;
-import at.tuwien.service.*;
+import at.tuwien.service.DatabaseService;
+import at.tuwien.service.QueryService;
+import at.tuwien.service.ViewService;
 import at.tuwien.validation.EndpointValidator;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
@@ -21,6 +22,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -29,8 +32,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -38,7 +39,7 @@ import java.util.stream.Collectors;
 @Log4j2
 @CrossOrigin(origins = "*")
 @RestController
-@RequestMapping("/api/container/{id}/database/{databaseId}/view")
+@RequestMapping("/api/database/{databaseId}/view")
 public class ViewEndpoint {
 
     private final ViewMapper viewMapper;
@@ -78,13 +79,12 @@ public class ViewEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<List<ViewBriefDto>> findAll(@NotNull @PathVariable("id") Long containerId,
-                                                      @NotNull @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<List<ViewBriefDto>> findAll(@NotNull @PathVariable("databaseId") Long databaseId,
                                                       Principal principal) throws DatabaseNotFoundException,
             UserNotFoundException {
-        log.debug("endpoint find all views, containerId={}, databaseId={}, principal={}", containerId,
+        log.debug("endpoint find all views, databaseId={}, principal={}",
                 databaseId, principal);
-        final Database database = databaseService.find(containerId, databaseId);
+        final Database database = databaseService.find(databaseId);
         log.trace("find all views for database {}", database);
         final List<ViewBriefDto> views = viewService.findAll(databaseId, principal)
                 .stream()
@@ -141,23 +141,22 @@ public class ViewEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<ViewBriefDto> create(@NotNull @PathVariable("id") Long containerId,
-                                               @NotNull @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<ViewBriefDto> create(@NotNull @PathVariable("databaseId") Long databaseId,
                                                @NotNull @Valid @RequestBody ViewCreateDto data,
                                                @NotNull Principal principal) throws DatabaseNotFoundException,
             NotAllowedException, DatabaseConnectionException, ViewMalformedException, QueryMalformedException,
             UserNotFoundException {
-        log.debug("endpoint create view, containerId={}, databaseId={}, data={}, principal={}", containerId,
+        log.debug("endpoint create view, databaseId={}, data={}, principal={}",
                 databaseId, data, principal);
         /* check */
-        final Database database = databaseService.find(containerId, databaseId);
+        final Database database = databaseService.find(databaseId);
         if (!database.getOwner().equalsPrincipal(principal)) {
             log.error("Failed to create view: not the database owner");
             throw new NotAllowedException("Failed to create view: not the database owner");
         }
         log.trace("create view for database {}", database);
         final View view;
-        view = viewService.create(containerId, databaseId, data, principal);
+        view = viewService.create(databaseId, data, principal);
         final ViewBriefDto dto = viewMapper.viewToViewBriefDto(view);
         log.trace("create view resulted in view {}", dto);
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -185,14 +184,13 @@ public class ViewEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<ViewDto> find(@NotNull @PathVariable("id") Long containerId,
-                                        @NotNull @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<ViewDto> find(@NotNull @PathVariable("databaseId") Long databaseId,
                                         @NotNull @PathVariable("viewId") Long viewId,
                                         Principal principal) throws DatabaseNotFoundException,
             NotAllowedException, ViewNotFoundException, UserNotFoundException {
-        log.debug("endpoint find view, containerId={}, databaseId={}, viewId={}, principal={}", containerId,
+        log.debug("endpoint find view, databaseId={}, viewId={}, principal={}",
                 databaseId, viewId, principal);
-        final Database database = databaseService.find(containerId, databaseId);
+        final Database database = databaseService.find(databaseId);
         log.trace("find view for database {}", database);
         final ViewDto view = viewMapper.viewToViewDto(viewService.findById(databaseId, viewId, principal));
         log.trace("find find resulted in view {}", view);
@@ -244,21 +242,20 @@ public class ViewEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<?> delete(@NotNull @PathVariable("id") Long containerId,
-                                    @NotNull @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<?> delete(@NotNull @PathVariable("databaseId") Long databaseId,
                                     @NotNull @PathVariable("viewId") Long viewId,
                                     @NotNull Principal principal) throws DatabaseNotFoundException,
             ViewNotFoundException, UserNotFoundException, DatabaseConnectionException,
             ViewMalformedException, QueryMalformedException, NotAllowedException {
-        log.debug("endpoint delete view, containerId={}, databaseId={}, viewId={}, principal={}", containerId,
+        log.debug("endpoint delete view, databaseId={}, viewId={}, principal={}",
                 databaseId, viewId, principal);
         /* check */
-        final Database database = databaseService.find(containerId, databaseId);
+        final Database database = databaseService.find(databaseId);
         if (!database.getOwner().equalsPrincipal(principal)) {
             log.error("Failed to delete view: not the database owner");
             throw new NotAllowedException("Failed to delete view: not the database owner");
         }
-        viewService.delete(containerId, databaseId, viewId, principal);
+        viewService.delete(databaseId, viewId, principal);
         return ResponseEntity.accepted()
                 .build();
     }
@@ -324,8 +321,7 @@ public class ViewEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<QueryResultDto> data(@NotNull @PathVariable("id") Long containerId,
-                                               @NotNull @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<QueryResultDto> data(@NotNull @PathVariable("databaseId") Long databaseId,
                                                @NotNull @PathVariable("viewId") Long viewId,
                                                Principal principal,
                                                @RequestParam(required = false) Long page,
@@ -333,11 +329,11 @@ public class ViewEndpoint {
             throws DatabaseNotFoundException, NotAllowedException, ViewNotFoundException, PaginationException,
             QueryStoreException, DatabaseConnectionException, TableMalformedException, QueryMalformedException,
             ImageNotSupportedException, ColumnParseException, UserNotFoundException, ContainerNotFoundException, ViewMalformedException {
-        log.debug("endpoint find view data, containerId={}, databaseId={}, viewId={}, principal={}, page={}, size={}",
-                containerId, databaseId, viewId, principal, page, size);
+        log.debug("endpoint find view data, databaseId={}, viewId={}, principal={}, page={}, size={}",
+                databaseId, viewId, principal, page, size);
         /* check */
         endpointValidator.validateDataParams(page, size);
-        final Database database = databaseService.find(containerId, databaseId);
+        final Database database = databaseService.find(databaseId);
         if (!database.getIsPublic()) {
             if (principal == null) {
                 log.error("Failed to view data of private view: principal is null");
@@ -351,7 +347,7 @@ public class ViewEndpoint {
         /* find */
         log.trace("find view data for database {}", database);
         final View view = viewService.findById(databaseId, viewId, principal);
-        final QueryResultDto result = queryService.viewFindAll(containerId, databaseId, view, page, size, principal);
+        final QueryResultDto result = queryService.viewFindAll(databaseId, view, page, size, principal);
         log.trace("execute view {}", view);
         log.trace("find view data resulted in result {}", result);
         return ResponseEntity.ok()
@@ -362,20 +358,19 @@ public class ViewEndpoint {
     @Transactional(readOnly = true)
     @Timed(value = "view.data.count", description = "Time needed to retrieve data count from a view")
     @Operation(summary = "Find view data count", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<Long> count(@NotNull @PathVariable("id") Long containerId,
-                                      @NotNull @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<Long> count(@NotNull @PathVariable("databaseId") Long databaseId,
                                       @NotNull @PathVariable("viewId") Long viewId,
                                       Principal principal)
             throws DatabaseNotFoundException, ViewNotFoundException, QueryStoreException, DatabaseConnectionException,
             TableMalformedException, QueryMalformedException, ImageNotSupportedException, UserNotFoundException,
             ContainerNotFoundException {
-        log.debug("endpoint find view data count, containerId={}, databaseId={}, viewId={}, principal={}",
-                containerId, databaseId, viewId, principal);
+        log.debug("endpoint find view data count, databaseId={}, viewId={}, principal={}",
+                databaseId, viewId, principal);
         /* find */
-        final Database database = databaseService.find(containerId, databaseId);
+        final Database database = databaseService.find(databaseId);
         log.trace("find view data for database {}", database);
         final View view = viewService.findById(databaseId, viewId, principal);
-        final Long result = queryService.viewCount(containerId, databaseId, view, principal);
+        final Long result = queryService.viewCount(databaseId, view, principal);
         log.trace("execute view {}", view);
         log.trace("find view data resulted in result {}", result);
         return ResponseEntity.ok()
