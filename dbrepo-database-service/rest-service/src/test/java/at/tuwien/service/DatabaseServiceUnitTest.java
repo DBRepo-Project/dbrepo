@@ -152,7 +152,7 @@ public class DatabaseServiceUnitTest extends BaseUnitTest {
         /* mock */
         when(containerRepository.findById(CONTAINER_1_ID))
                 .thenReturn(Optional.of(CONTAINER_1));
-        when(databaseRepository.findPublicOrMine(DATABASE_1_ID, USER_1_ID))
+        when(databaseRepository.findById(DATABASE_1_ID))
                 .thenReturn(Optional.of(database));
 
         /* test */

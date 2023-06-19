@@ -57,7 +57,7 @@ public class BrokerServiceGatewayTest extends BaseUnitTest {
                 .build();
 
         /* mock */
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(Void.class)))
+        when(restTemplate.exchange(any(URI.class), eq(HttpMethod.POST), any(HttpEntity.class), eq(Void.class)))
                 .thenReturn(mock);
 
         /* test */
@@ -70,7 +70,7 @@ public class BrokerServiceGatewayTest extends BaseUnitTest {
                 .build();
 
         /* mock */
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(Void.class)))
+        when(restTemplate.exchange(any(URI.class), eq(HttpMethod.POST), any(HttpEntity.class), eq(Void.class)))
                 .thenReturn(mock);
 
         /* test */
@@ -167,7 +167,7 @@ public class BrokerServiceGatewayTest extends BaseUnitTest {
                 .build();
 
         /* mock */
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class)))
+        when(restTemplate.exchange(any(URI.class), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class)))
                 .thenReturn(mock);
 
         /* test */
@@ -180,7 +180,7 @@ public class BrokerServiceGatewayTest extends BaseUnitTest {
                 .build();
 
         /* mock */
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class)))
+        when(restTemplate.exchange(any(URI.class), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class)))
                 .thenReturn(mock);
 
         /* test */

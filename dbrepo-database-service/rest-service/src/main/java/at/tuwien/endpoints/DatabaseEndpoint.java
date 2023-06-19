@@ -147,9 +147,9 @@ public class DatabaseEndpoint {
         final Database database = databaseService.create(createDto, principal);
         messageQueueService.createUser(user);
         messageQueueService.createExchange(database, principal);
-        messageQueueService.updatePermissions(user);
         queryStoreService.create(database.getId(), principal);
         databaseAccessRepository.save(databaseMapper.defaultCreatorAccess(database, user));
+        messageQueueService.updatePermissions(user);
         final DatabaseBriefDto dto = databaseMapper.databaseToDatabaseBriefDto(database);
         log.trace("create database resulted in database {}", dto);
         return ResponseEntity.status(HttpStatus.CREATED)

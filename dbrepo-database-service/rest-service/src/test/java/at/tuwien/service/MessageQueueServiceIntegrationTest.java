@@ -71,11 +71,15 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
 
     @DynamicPropertySource
     static void rabbitMQProperties(DynamicPropertyRegistry registry) {
-        registry.add("fda.gateway.endpoint", () -> "http://172.17.0.3:15672");
+        registry.add("fda.gateway.endpoint", () -> "http://" + ipAddress() + ":15672");
         registry.add("spring.rabbitmq.host", rabbitMQContainer::getHost);
         registry.add("spring.rabbitmq.port", rabbitMQContainer::getAmqpPort);
         registry.add("spring.rabbitmq.username", rabbitMQContainer::getAdminUsername);
         registry.add("spring.rabbitmq.password", rabbitMQContainer::getAdminPassword);
+    }
+
+    static String ipAddress() {
+        return rabbitMQContainer.getContainerInfo().getNetworkSettings().getNetworks().get("bridge").getIpAddress();
     }
 
     @Test
@@ -174,7 +178,7 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
 
         /* mock */
         amqpUtils.createUser(USER_1_USERNAME, USER_1_RABBITMQ_CREATE_DTO);
-        amqpUtils.setPermissions("http://172.17.0.3:15672", REALM_DBREPO_NAME, USER_1_USERNAME, USER_1_RABBITMQ_GRANT_DTO);
+        amqpUtils.setPermissions("http://" + ipAddress() + ":15672", REALM_DBREPO_NAME, USER_1_USERNAME, USER_1_RABBITMQ_GRANT_DTO);
 
         /* test */
         messageQueueService.updatePermissions(USER_1);

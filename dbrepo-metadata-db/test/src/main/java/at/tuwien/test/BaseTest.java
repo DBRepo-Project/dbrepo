@@ -1357,7 +1357,7 @@ public abstract class BaseTest {
     public final static String DATABASE_4_DESCRIPTION = "Weather data";
     public final static Boolean DATABASE_4_PUBLIC = true;
     public final static String DATABASE_4_INTERNALNAME = "weather_at";
-    public final static String DATABASE_4_EXCHANGE = DATABASE_4_INTERNALNAME;
+    public final static String DATABASE_4_EXCHANGE = "dbrepo." + DATABASE_4_INTERNALNAME;
     public final static Instant DATABASE_4_CREATED = Instant.ofEpochSecond(1677399813) /* 2023-02-26 08:23:33 (UTC) */;
     public final static Instant DATABASE_4_LAST_MODIFIED = Instant.ofEpochSecond(1677399813) /* 2023-02-26 08:23:33 (UTC) */;
 
