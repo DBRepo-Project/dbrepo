@@ -17,7 +17,7 @@ public interface MessageQueueService {
      * @throws AmqpException The exchange could not be created.
      */
     @PostConstruct
-    void init() throws AmqpException, BrokerVirtualHostGrantException, BrokerVirtualHostCreationException;
+    void init() throws AmqpException;
 
     /**
      * Creates an exchange for a database.
@@ -36,15 +36,14 @@ public interface MessageQueueService {
      */
     void createUser(User user) throws BrokerVirtualHostCreationException;
 
+
     /**
      * Updates the virtual host permissions in the Broker Service for a user with given principal.
      *
-     * @param username The username.
-     * @return The mapped permissions.
-     * @throws BrokerVirtualHostCreationException The Broker Service refused the update of the permissions.
-     * @throws BrokerVirtualHostGrantException    The Broker Service refused to grant the permissions.
+     * @param user The user.
+     * @throws BrokerVirtualHostGrantException The Broker Service refused to grant the permissions.
      */
-    GrantVirtualHostPermissionsDto updatePermissions(String username) throws BrokerVirtualHostCreationException, BrokerVirtualHostGrantException;
+    void updatePermissions(User user) throws BrokerVirtualHostGrantException;
 
     /**
      * Deletes an exchange for a database.

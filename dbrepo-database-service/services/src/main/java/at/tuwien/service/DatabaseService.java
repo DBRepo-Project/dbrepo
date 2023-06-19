@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public interface DatabaseService {
@@ -18,18 +19,17 @@ public interface DatabaseService {
     /**
      * Finds a specific database for a given id in the metadata database.
      *
-     * @param databaseId  The database id.
-     * @param principal   The principal.
+     * @param databaseId The database id.
+     * @param userId     The user id.
      * @return The database, if successful.
      * @throws DatabaseNotFoundException The database was not found in the metadata database.
      */
-    Database findPublicOrMineById(Long databaseId, Principal principal)
-            throws DatabaseNotFoundException;
+    Database findPublicOrMineById(Long databaseId, UUID userId) throws DatabaseNotFoundException;
 
     /**
      * Find a database by id, only used in the authentication service
      *
-     * @param databaseId  the database id.
+     * @param databaseId the database id.
      * @return The database, if successful.
      * @throws DatabaseNotFoundException The database was not found in the metadata database.
      */
@@ -40,6 +40,7 @@ public interface DatabaseService {
      * does not actually delete it.
      *
      * @param databaseId The database id.
+     * @param userId     The user id.
      * @throws DatabaseNotFoundException    The database was not found in the metadata database.
      * @throws ImageNotSupportedException   The image is not supported.
      * @throws DatabaseMalformedException   The query string is malformed.
@@ -49,7 +50,7 @@ public interface DatabaseService {
      * @throws QueryMalformedException      The mapped deletion query resulted in an invalid query statement and thus was rejected by the database engine.
      * @throws UserNotFoundException        The current user could not be loaded in the metadata database.
      */
-    void delete(Long databaseId, Principal principal)
+    void delete(Long databaseId, UUID userId)
             throws DatabaseNotFoundException, ImageNotSupportedException,
             DatabaseMalformedException, AmqpException, ContainerConnectionException,
             DatabaseConnectionException, QueryMalformedException, UserNotFoundException;
@@ -77,8 +78,8 @@ public interface DatabaseService {
     /**
      * Updates the visibility of the database.
      *
-     * @param databaseId  The database id.
-     * @param data        The visibility
+     * @param databaseId The database id.
+     * @param data       The visibility
      * @return The database, if successful.
      * @throws DatabaseNotFoundException The database was not found in the metadata database.
      */

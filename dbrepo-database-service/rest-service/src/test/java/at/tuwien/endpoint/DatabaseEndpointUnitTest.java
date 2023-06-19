@@ -8,6 +8,7 @@ import at.tuwien.endpoints.DatabaseEndpoint;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.repository.mdb.DatabaseAccessRepository;
 import at.tuwien.repository.mdb.IdentifierRepository;
@@ -114,7 +115,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            create_generic(DATABASE_3_ID, null, request, USER_4_USERNAME, USER_4_PRINCIPAL);
+            create_generic(DATABASE_3_ID, null, request, USER_4, USER_4_PRINCIPAL);
         });
     }
 
@@ -145,7 +146,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
                 .createExchange(DATABASE_1, USER_1_PRINCIPAL);
         doNothing()
                 .when(messageQueueService)
-                .updatePermissions(USER_1_USERNAME);
+                .updatePermissions(USER_1);
         doNothing()
                 .when(queryStoreService)
                 .create(DATABASE_1_ID, USER_1_PRINCIPAL);
@@ -153,7 +154,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(DATABASE_1_USER_1_WRITE_ALL_ACCESS);
 
         /* test */
-        create_generic(DATABASE_1_ID, null, request, USER_1_USERNAME, USER_1_PRINCIPAL);
+        create_generic(DATABASE_1_ID, null, request, USER_1, USER_1_PRINCIPAL);
     }
 
     @Test
@@ -395,7 +396,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            delete_generic(DATABASE_1_ID, DATABASE_1, null);
+            delete_generic(DATABASE_1_ID, DATABASE_1, null, null);
         });
     }
 
@@ -405,7 +406,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            delete_generic(DATABASE_1_ID, DATABASE_1, USER_1_PRINCIPAL);
+            delete_generic(DATABASE_1_ID, DATABASE_1, USER_1_USERNAME, USER_1_PRINCIPAL);
         });
     }
 
@@ -414,10 +415,10 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
     @WithMockUser(username = USER_2_USERNAME, authorities = {"delete-database"})
     public void delete_hasRole_succeeds() throws UserNotFoundException, BrokerVirtualHostGrantException,
             DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
-            AmqpException, BrokerVirtualHostCreationException, DatabaseMalformedException {
+            AmqpException, BrokerVirtualHostCreationException, ContainerNotFoundException, DatabaseMalformedException {
 
         /* test */
-        delete_generic(DATABASE_2_ID, DATABASE_2, USER_2_PRINCIPAL);
+        delete_generic(DATABASE_2_ID, DATABASE_2, USER_2_USERNAME, USER_2_PRINCIPAL);
     }
 
     /* ################################################################################################### */
@@ -433,18 +434,19 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(databases);
 
         /* test */
-        final ResponseEntity<List<DatabaseBriefDto>> response = databaseEndpoint.list(principal);
+        final ResponseEntity<List<DatabaseDto>> response = databaseEndpoint.list(principal);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
-        final List<DatabaseBriefDto> body = response.getBody();
+        final List<DatabaseDto> body = response.getBody();
         assertEquals(databases.size(), body.size());
     }
 
-    public void create_generic(Long databaseId, Database database, DatabaseCreateDto data, String username,
+    public void create_generic(Long databaseId, Database database, DatabaseCreateDto data, User user,
                                Principal principal) throws UserNotFoundException,
             DatabaseNameExistsException, NotAllowedException, ContainerConnectionException, DatabaseMalformedException,
             QueryStoreException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException,
-            ImageNotSupportedException, AmqpException, BrokerVirtualHostCreationException, ContainerNotFoundException, BrokerVirtualHostGrantException {
+            ImageNotSupportedException, AmqpException, BrokerVirtualHostCreationException, ContainerNotFoundException,
+            BrokerVirtualHostGrantException {
 
         /* mock */
         doNothing()
@@ -455,7 +457,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
                 .create(databaseId, principal);
         doNothing()
                 .when(messageQueueService)
-                .updatePermissions(username);
+                .updatePermissions(user);
         when(databaseAccessRepository.save(any(DatabaseAccess.class)))
                 .thenReturn(DATABASE_1_USER_1_WRITE_ALL_ACCESS);
 
@@ -510,9 +512,10 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
         return body;
     }
 
-    public void delete_generic(Long databaseId, Database database, Principal principal) throws DatabaseNotFoundException,
+    public void delete_generic(Long databaseId, Database database,
+                               String username, Principal principal) throws DatabaseNotFoundException,
             UserNotFoundException, DatabaseConnectionException, QueryMalformedException, ImageNotSupportedException,
-            AmqpException, BrokerVirtualHostCreationException, DatabaseMalformedException, BrokerVirtualHostGrantException {
+            AmqpException, BrokerVirtualHostCreationException, ContainerNotFoundException, DatabaseMalformedException, BrokerVirtualHostGrantException {
 
         /* mock */
         if (database != null) {

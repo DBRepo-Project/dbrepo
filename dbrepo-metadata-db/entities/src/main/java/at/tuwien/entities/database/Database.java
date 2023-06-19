@@ -30,10 +30,10 @@ import java.util.UUID;
         @UniqueConstraint(columnNames = {"cid", "internalName"})
 })
 @NamedQueries({
-        @NamedQuery(name = "Database.findReadAccess", query = "select d from Database  d join DatabaseAccess a on a.hdbid = d.id where d.owner.username = ?1"),
-        @NamedQuery(name = "Database.findWriteAccess", query = "select d from Database  d join DatabaseAccess a on a.hdbid = d.id where d.owner.username = ?1 and (a.type = 'WRITE_OWN' or a.type = 'WRITE_ALL')"),
-        @NamedQuery(name = "Database.findConfigureAccess", query = "select d from Database  d where d.owner.username = ?1"),
-        @NamedQuery(name = "Database.findPublicOrMine", query = "select d from Database d where d.id = ?1 and (d.isPublic = true or d.owner.username = ?2)"),
+        @NamedQuery(name = "Database.findReadAccess", query = "select d from Database d join DatabaseAccess a on a.hdbid = d.id where a.huserid = ?1"),
+        @NamedQuery(name = "Database.findWriteAccess", query = "select d from Database d join DatabaseAccess a on a.hdbid = d.id where a.huserid = ?1 and (a.type = 'WRITE_OWN' or a.type = 'WRITE_ALL')"),
+        @NamedQuery(name = "Database.findConfigureAccess", query = "select d from Database d where d.owner.id = ?1"),
+        @NamedQuery(name = "Database.findPublicOrMine", query = "select d from Database d where d.id = ?1 and (d.isPublic = true or d.owner.id = ?2)"),
         @NamedQuery(name = "Database.findPublic", query = "select d from Database d where d.isPublic = true and d.id = ?1"),
 })
 public class Database implements Serializable {

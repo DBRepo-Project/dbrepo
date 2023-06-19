@@ -26,6 +26,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Log4j2
 @Service
@@ -55,19 +56,18 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
 
     @Override
     @Transactional(readOnly = true)
-    public Database findPublicOrMineById(Long databaseId, Principal principal)
-            throws DatabaseNotFoundException {
+    public Database findPublicOrMineById(Long databaseId, UUID userId) throws DatabaseNotFoundException {
         final Optional<Database> database;
-        if (principal == null) {
-            log.trace("principal is null, find public database");
+        if (userId == null) {
+            log.trace("user id is null, find public database");
             database = databaseRepository.findPublic(databaseId);
         } else {
-            log.trace("principal is not null, find public or mine database");
-            database = databaseRepository.findPublicOrMine(databaseId, principal.getName());
+            log.trace("user id is not null, find public or mine database");
+            database = databaseRepository.findPublicOrMine(databaseId, userId);
         }
         if (database.isEmpty()) {
             log.error("Failed to find database with id {}", databaseId);
-            throw new DatabaseNotFoundException("Failed to find database with id "+ databaseId);
+            throw new DatabaseNotFoundException("Failed to find database with id " + databaseId);
         }
         return database.get();
     }
@@ -85,13 +85,17 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
 
     @Override
     @Transactional
-    public void delete(Long databaseId, Principal principal) throws DatabaseNotFoundException,
+    public void delete(Long databaseId, UUID userId) throws DatabaseNotFoundException,
             ImageNotSupportedException, DatabaseMalformedException, DatabaseConnectionException,
             QueryMalformedException, UserNotFoundException {
-        final Database database = findPublicOrMineById(databaseId, principal);
+        final Database database = findById(databaseId);
         if (!database.getContainer().getImage().getName().equals("mariadb")) {
             log.error("Currently only MariaDB is supported");
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
+        }
+        if (!database.getOwner().getId().equals(userId)) {
+            log.error("Failed to delete database: user is not owner");
+            throw new DatabaseMalformedException("Failed to delete database: user is not owner");
         }
         /* run query */
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(), database.getContainer(), database);
@@ -173,7 +177,8 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
 
     @Override
     @Transactional
-    public Database transfer(Long databaseId, DatabaseTransferDto transferDto) throws DatabaseNotFoundException, UserNotFoundException {
+    public Database transfer(Long databaseId, DatabaseTransferDto transferDto) throws DatabaseNotFoundException,
+            UserNotFoundException {
         /* check */
         final Database entity = findById(databaseId);
         final User user = userService.findByUsername(transferDto.getUsername());

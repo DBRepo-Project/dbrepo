@@ -71,11 +71,12 @@ public class DatabaseEndpoint {
                             mediaType = "application/json",
                             array = @ArraySchema(schema = @Schema(implementation = DatabaseBriefDto.class)))}),
     })
-    public ResponseEntity<List<DatabaseBriefDto>> list(@NotNull Principal principal) {
+    public ResponseEntity<List<DatabaseDto>> list(@NotNull Principal principal) {
         log.debug("endpoint list databases, principal={}", principal);
-        final List<DatabaseBriefDto> databases = databaseService.findAll()
+        List<DatabaseDto> databases;
+        databases = databaseService.findAll()
                 .stream()
-                .map(databaseMapper::databaseToDatabaseBriefDto)
+                .map(databaseMapper::databaseToDatabaseDto)
                 .collect(Collectors.toList());
         log.trace("list databases resulted in databases {}", databases);
         return ResponseEntity.ok(databases);
@@ -98,7 +99,7 @@ public class DatabaseEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "404",
-                    description = "User or database could not be found",
+                    description = "Container, user or database could not be found",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -146,7 +147,7 @@ public class DatabaseEndpoint {
         final Database database = databaseService.create(createDto, principal);
         messageQueueService.createUser(user);
         messageQueueService.createExchange(database, principal);
-        messageQueueService.updatePermissions(principal.getName());
+        messageQueueService.updatePermissions(user);
         queryStoreService.create(database.getId(), principal);
         databaseAccessRepository.save(databaseMapper.defaultCreatorAccess(database, user));
         final DatabaseBriefDto dto = databaseMapper.databaseToDatabaseBriefDto(database);
@@ -244,7 +245,7 @@ public class DatabaseEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseDto.class))}),
             @ApiResponse(responseCode = "404",
-                    description = "Database could not be found",
+                    description = "Database or container could not be found",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -254,9 +255,8 @@ public class DatabaseEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<DatabaseDto> findById(@NotNull @PathVariable Long id,
-                                                Principal principal)
-            throws DatabaseNotFoundException, AccessDeniedException, ContainerNotFoundException {
+    public ResponseEntity<DatabaseDto> findById(@NotNull @PathVariable Long id, Principal principal)
+            throws DatabaseNotFoundException, AccessDeniedException {
         log.debug("endpoint find database, id={}", id);
         final Database database = databaseService.findById(id);
         final DatabaseDto dto = databaseMapper.databaseToDatabaseDto(database);
@@ -288,7 +288,7 @@ public class DatabaseEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "404",
-                    description = "Database could not be found",
+                    description = "Container or database could not be found",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -318,17 +318,17 @@ public class DatabaseEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<?> delete(@NotNull @PathVariable Long id,
-                                    Principal principal) throws DatabaseNotFoundException,
-            ImageNotSupportedException, DatabaseMalformedException, AmqpException,
-            QueryMalformedException, BrokerVirtualHostCreationException, UserNotFoundException,
-            BrokerVirtualHostGrantException, DatabaseConnectionException {
+    public ResponseEntity<?> delete(@NotNull @PathVariable Long id, Principal principal)
+            throws DatabaseNotFoundException, ImageNotSupportedException, DatabaseMalformedException, AmqpException,
+            QueryMalformedException, UserNotFoundException, BrokerVirtualHostGrantException,
+            DatabaseConnectionException {
         log.debug("endpoint delete database, id={}, principal={}", id,
                 principal);
         final Database database = databaseService.findById(id);
+        final User user = userService.findByUsername(principal.getName());
         messageQueueService.deleteExchange(database);
-        databaseService.delete(id, principal);
-        messageQueueService.updatePermissions(principal.getName());
+        databaseService.delete(id, user.getId());
+        messageQueueService.updatePermissions(user);
         return ResponseEntity.accepted()
                 .build();
     }

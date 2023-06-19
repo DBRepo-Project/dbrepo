@@ -1,5 +1,6 @@
 package at.tuwien.test;
 
+import at.tuwien.api.amqp.CreateUserDto;
 import at.tuwien.api.amqp.CreateVirtualHostDto;
 import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
 import at.tuwien.api.auth.SignupRequestDto;
@@ -245,6 +246,17 @@ public abstract class BaseTest {
     public final static Instant USER_1_CREATED = Instant.ofEpochSecond(1677399441) /* 2023-02-26 08:17:21 (UTC) */;
     public final static Instant USER_1_LAST_MODIFIED = USER_1_CREATED;
     public final static UUID USER_1_REALM_ID = REALM_DBREPO_ID;
+
+    public final static CreateUserDto USER_1_RABBITMQ_CREATE_DTO = CreateUserDto.builder()
+            .passwordHash("")
+            .tags("")
+            .build();
+
+    public final static GrantVirtualHostPermissionsDto USER_1_RABBITMQ_GRANT_DTO = GrantVirtualHostPermissionsDto.builder()
+            .configure("")
+            .read("")
+            .write("")
+            .build();
 
     public final static List<UserAttribute> USER_1_ATTRIBUTES = List.of(UserAttribute.builder()
                     .id(UUID.fromString("c466a105-5bbd-4afc-87ae-751d5037d9ab"))
@@ -929,14 +941,12 @@ public abstract class BaseTest {
             .build();
 
 
-
-
     public final static Long DATABASE_1_ID = 1L;
     public final static String DATABASE_1_NAME = "Weather";
     public final static String DATABASE_1_DESCRIPTION = "Weather in Australia";
     public final static String DATABASE_1_INTERNALNAME = "weather";
     public final static Boolean DATABASE_1_PUBLIC = false;
-    public final static String DATABASE_1_EXCHANGE = "dbrepo." + CONTAINER_1_INTERNALNAME;
+    public final static String DATABASE_1_EXCHANGE = "dbrepo." + DATABASE_1_INTERNALNAME;
     public final static Instant DATABASE_1_CREATED = Instant.ofEpochSecond(1677399741) /* 2023-02-26 08:22:21 (UTC) */;
     public final static Instant DATABASE_1_LAST_MODIFIED = Instant.ofEpochSecond(1677399741) /* 2023-02-26 08:22:21 (UTC) */;
     public final static User DATABASE_1_OWNER = USER_1;
@@ -1003,54 +1013,63 @@ public abstract class BaseTest {
             .type(AccessType.READ)
             .hdbid(DATABASE_1_ID)
             .huserid(USER_1_ID)
+            .user(USER_1)
             .build();
 
     public final static DatabaseAccess DATABASE_1_USER_1_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_1_ID)
             .huserid(USER_1_ID)
+            .user(USER_1)
             .build();
 
     public final static DatabaseAccess DATABASE_1_USER_1_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_1_ID)
             .huserid(USER_1_ID)
+            .user(USER_1)
             .build();
 
     public final static DatabaseAccess DATABASE_1_USER_2_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_1_ID)
             .huserid(USER_2_ID)
+            .user(USER_2)
             .build();
 
     public final static DatabaseAccess DATABASE_1_USER_2_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_1_ID)
             .huserid(USER_2_ID)
+            .user(USER_2)
             .build();
 
     public final static DatabaseAccess DATABASE_1_USER_2_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_1_ID)
             .huserid(USER_2_ID)
+            .user(USER_2)
             .build();
 
     public final static DatabaseAccess DATABASE_1_USER_3_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_1_ID)
             .huserid(USER_3_ID)
+            .user(USER_3)
             .build();
 
     public final static DatabaseAccess DATABASE_1_USER_3_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_1_ID)
             .huserid(USER_3_ID)
+            .user(USER_3)
             .build();
 
     public final static DatabaseAccess DATABASE_1_USER_3_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_1_ID)
             .huserid(USER_3_ID)
+            .user(USER_3)
             .build();
 
     public final static DatabaseCreateDto DATABASE_1_CREATE = DatabaseCreateDto.builder()
@@ -1064,7 +1083,7 @@ public abstract class BaseTest {
     public final static String DATABASE_2_DESCRIPTION = "Zoo data";
     public final static String DATABASE_2_INTERNALNAME = "zoo";
     public final static Boolean DATABASE_2_PUBLIC = false;
-    public final static String DATABASE_2_EXCHANGE = "dbrepo." + CONTAINER_2_INTERNALNAME;
+    public final static String DATABASE_2_EXCHANGE = "dbrepo." + DATABASE_2_INTERNALNAME;
     public final static Instant DATABASE_2_CREATED = Instant.ofEpochSecond(1677399772) /* 2023-02-26 08:22:52 (UTC) */;
     public final static Instant DATABASE_2_LAST_MODIFIED = Instant.ofEpochSecond(1677399772) /* 2023-02-26 08:22:52 (UTC) */;
     public final static User DATABASE_2_OWNER = USER_2;
@@ -1131,60 +1150,63 @@ public abstract class BaseTest {
             .type(AccessType.READ)
             .hdbid(DATABASE_2_ID)
             .huserid(USER_1_ID)
+            .user(USER_1)
             .build();
 
     public final static DatabaseAccess DATABASE_2_USER_1_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_2_ID)
             .huserid(USER_1_ID)
+            .user(USER_1)
             .build();
 
     public final static DatabaseAccess DATABASE_2_USER_1_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_2_ID)
             .huserid(USER_1_ID)
-            .build();
-
-    public final static DatabaseAccess DATABASE_2_RESEARCHER2_WRITE_OWN_ACCESS = DatabaseAccess.builder()
-            .type(AccessType.WRITE_OWN)
-            .hdbid(DATABASE_2_ID)
-            .huserid(USER_2_ID)
+            .user(USER_1)
             .build();
 
     public final static DatabaseAccess DATABASE_2_USER_2_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_2_ID)
             .huserid(USER_2_ID)
+            .user(USER_2)
             .build();
 
     public final static DatabaseAccess DATABASE_2_USER_2_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_2_ID)
             .huserid(USER_2_ID)
+            .user(USER_2)
             .build();
 
     public final static DatabaseAccess DATABASE_2_USER_2_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_2_ID)
             .huserid(USER_2_ID)
+            .user(USER_2)
             .build();
 
     public final static DatabaseAccess DATABASE_2_USER_3_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_2_ID)
             .huserid(USER_3_ID)
+            .user(USER_3)
             .build();
 
     public final static DatabaseAccess DATABASE_2_USER_3_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_2_ID)
             .huserid(USER_3_ID)
+            .user(USER_3)
             .build();
 
     public final static DatabaseAccess DATABASE_2_USER_3_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_2_ID)
             .huserid(USER_3_ID)
+            .user(USER_3)
             .build();
 
     public final static DatabaseCreateDto DATABASE_2_CREATE = DatabaseCreateDto.builder()
@@ -1198,7 +1220,7 @@ public abstract class BaseTest {
     public final static String DATABASE_3_DESCRIPTION = "Musicology data";
     public final static String DATABASE_3_INTERNALNAME = "musicology";
     public final static Boolean DATABASE_3_PUBLIC = true;
-    public final static String DATABASE_3_EXCHANGE = "dbrepo." + CONTAINER_3_INTERNALNAME;
+    public final static String DATABASE_3_EXCHANGE = "dbrepo." + DATABASE_3_INTERNALNAME;
     public final static Instant DATABASE_3_CREATED = Instant.ofEpochSecond(1677399792) /* 2023-02-26 08:23:12 (UTC) */;
     public final static Instant DATABASE_3_LAST_MODIFIED = Instant.ofEpochSecond(1677399792) /* 2023-02-26 08:23:12 (UTC) */;
     public final static User DATABASE_3_OWNER = USER_3;
@@ -1265,54 +1287,63 @@ public abstract class BaseTest {
             .type(AccessType.READ)
             .hdbid(DATABASE_3_ID)
             .huserid(USER_1_ID)
+            .user(USER_1)
             .build();
 
     public final static DatabaseAccess DATABASE_3_USER_1_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_3_ID)
             .huserid(USER_1_ID)
+            .user(USER_1)
             .build();
 
     public final static DatabaseAccess DATABASE_3_USER_1_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_3_ID)
             .huserid(USER_1_ID)
+            .user(USER_1)
             .build();
 
     public final static DatabaseAccess DATABASE_3_USER_2_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_3_ID)
             .huserid(USER_2_ID)
+            .user(USER_2)
             .build();
 
     public final static DatabaseAccess DATABASE_3_USER_2_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_3_ID)
             .huserid(USER_2_ID)
+            .user(USER_2)
             .build();
 
     public final static DatabaseAccess DATABASE_3_USER_2_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_3_ID)
             .huserid(USER_2_ID)
+            .user(USER_2)
             .build();
 
     public final static DatabaseAccess DATABASE_3_USER_3_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_3_ID)
             .huserid(USER_3_ID)
+            .user(USER_3)
             .build();
 
     public final static DatabaseAccess DATABASE_3_USER_3_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_3_ID)
             .huserid(USER_3_ID)
+            .user(USER_3)
             .build();
 
     public final static DatabaseAccess DATABASE_3_USER_3_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_3_ID)
             .huserid(USER_3_ID)
+            .user(USER_3)
             .build();
 
     public final static DatabaseCreateDto DATABASE_3_CREATE = DatabaseCreateDto.builder()
@@ -1380,54 +1411,63 @@ public abstract class BaseTest {
             .type(AccessType.READ)
             .hdbid(DATABASE_4_ID)
             .huserid(USER_1_ID)
+            .user(USER_1)
             .build();
 
     public final static DatabaseAccess DATABASE_4_USER_1_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_4_ID)
             .huserid(USER_1_ID)
+            .user(USER_1)
             .build();
 
     public final static DatabaseAccess DATABASE_4_USER_1_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_4_ID)
             .huserid(USER_1_ID)
+            .user(USER_1)
             .build();
 
     public final static DatabaseAccess DATABASE_4_USER_2_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_4_ID)
             .huserid(USER_2_ID)
+            .user(USER_2)
             .build();
 
     public final static DatabaseAccess DATABASE_4_USER_2_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_4_ID)
             .huserid(USER_2_ID)
+            .user(USER_2)
             .build();
 
     public final static DatabaseAccess DATABASE_4_USER_2_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_4_ID)
             .huserid(USER_2_ID)
+            .user(USER_2)
             .build();
 
     public final static DatabaseAccess DATABASE_4_USER_3_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_4_ID)
             .huserid(USER_3_ID)
+            .user(USER_3)
             .build();
 
     public final static DatabaseAccess DATABASE_4_USER_3_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_4_ID)
             .huserid(USER_3_ID)
+            .user(USER_3)
             .build();
 
     public final static DatabaseAccess DATABASE_4_USER_3_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_4_ID)
             .huserid(USER_3_ID)
+            .user(USER_3)
             .build();
 
     public final static Long TABLE_1_ID = 1L;

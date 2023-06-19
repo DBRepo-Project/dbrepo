@@ -10,7 +10,6 @@ import at.tuwien.exception.BrokerVirtualHostGrantException;
 import at.tuwien.gateway.BrokerServiceGateway;
 import at.tuwien.mapper.AmqpMapper;
 import at.tuwien.repository.mdb.DatabaseRepository;
-import at.tuwien.repository.mdb.UserRepository;
 import at.tuwien.service.MessageQueueService;
 import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;
@@ -25,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
+import java.util.UUID;
 
 @Log4j2
 @Service
@@ -33,18 +33,15 @@ public class RabbitMqServiceImpl implements MessageQueueService {
     private final Channel channel;
     private final AmqpConfig amqpConfig;
     private final AmqpMapper amqpMapper;
-    private final UserRepository userRepository;
     private final DatabaseRepository databaseRepository;
     private final BrokerServiceGateway brokerServiceGateway;
 
     @Autowired
     public RabbitMqServiceImpl(Channel channel, AmqpConfig amqpConfig, AmqpMapper amqpMapper,
-                               UserRepository userRepository, DatabaseRepository databaseRepository,
-                               BrokerServiceGateway brokerServiceGateway) {
+                               DatabaseRepository databaseRepository, BrokerServiceGateway brokerServiceGateway) {
         this.channel = channel;
         this.amqpConfig = amqpConfig;
         this.amqpMapper = amqpMapper;
-        this.userRepository = userRepository;
         this.databaseRepository = databaseRepository;
         this.brokerServiceGateway = brokerServiceGateway;
     }
@@ -52,14 +49,11 @@ public class RabbitMqServiceImpl implements MessageQueueService {
     @Override
     @EventListener(ApplicationReadyEvent.class)
     @Transactional(readOnly = true)
-    public void init() throws AmqpException, BrokerVirtualHostGrantException, BrokerVirtualHostCreationException {
+    public void init() throws AmqpException {
         final List<Database> databases = databaseRepository.findAll();
-        final Principal principal = new BasicUserPrincipal(amqpConfig.getAmqpUsername());
+        final Principal principal = new BasicUserPrincipal(amqpConfig.getAmpqUsername());
         for (Database database : databases) {
             createExchange(database, principal);
-        }
-        for (User user : userRepository.findAll()) {
-            updatePermissions(user.getUsername());
         }
     }
 
@@ -80,15 +74,14 @@ public class RabbitMqServiceImpl implements MessageQueueService {
     }
 
     @Override
-    public GrantVirtualHostPermissionsDto updatePermissions(String username) throws BrokerVirtualHostGrantException {
+    public void updatePermissions(User user) throws BrokerVirtualHostGrantException {
         final GrantVirtualHostPermissionsDto permissions = GrantVirtualHostPermissionsDto.builder()
-                .configure(amqpMapper.databaseListToPermissionString(databaseRepository.findConfigureAccess(username)))
-                .write(amqpMapper.databaseListToPermissionString(databaseRepository.findWriteAccess(username)))
-                .read(amqpMapper.databaseListToPermissionString(databaseRepository.findReadAccess(username)))
+                .configure(amqpMapper.databaseListToPermissionString(databaseRepository.findConfigureAccess(user.getId())))
+                .write(amqpMapper.databaseListToPermissionString(databaseRepository.findWriteAccess(user.getId())))
+                .read(amqpMapper.databaseListToPermissionString(databaseRepository.findReadAccess(user.getId())))
                 .build();
         log.trace("mapped permissions {}", permissions);
-        brokerServiceGateway.grantPermission(username, permissions);
-        return permissions;
+        brokerServiceGateway.grantPermission(user.getUsername(), permissions);
     }
 
     @Override
