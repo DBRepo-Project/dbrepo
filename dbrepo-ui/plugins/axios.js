@@ -22,7 +22,12 @@ api.interceptors.request.use((config) => {
       console.warn('Refresh token expired')
     }
     AuthenticationService.authenticateToken(refreshToken)
-      .then(() => {
+      .then((authentication) => {
+        console.debug('interceptor inject authorization header for url', config.url)
+        config.headers.Authorization = `Bearer ${authentication.access_token}`
+        return config
+      })
+      .finally(() => {
         return config
       })
   }
