@@ -6,6 +6,8 @@ import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.user.User;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.*;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
 import lombok.*;
 import org.hibernate.annotations.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -17,8 +19,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-;
-
 @Data
 @Entity
 @Builder
@@ -28,6 +28,13 @@ import java.util.UUID;
 @EntityListeners(AuditingEntityListener.class)
 @jakarta.persistence.Table(name = "mdb_databases", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"cid", "internalName"})
+})
+@NamedQueries({
+        @NamedQuery(name = "Database.findReadAccess", query = "select distinct d from Database d join DatabaseAccess a on a.hdbid = d.id and a.huserid = ?1"),
+        @NamedQuery(name = "Database.findWriteAccess", query = "select distinct d from Database d join DatabaseAccess a on a.hdbid = d.id and a.huserid = ?1 where a.type = 'WRITE_OWN' or a.type = 'WRITE_ALL'"),
+        @NamedQuery(name = "Database.findConfigureAccess", query = "select distinct d from Database d where d.owner.id = ?1"),
+        @NamedQuery(name = "Database.findPublicOrMine", query = "select distinct d from Database d where d.id = ?1 and (d.isPublic = true or d.owner.id = ?2)"),
+        @NamedQuery(name = "Database.findPublic", query = "select distinct d from Database d where d.isPublic = true and d.id = ?1"),
 })
 public class Database implements Serializable {
 

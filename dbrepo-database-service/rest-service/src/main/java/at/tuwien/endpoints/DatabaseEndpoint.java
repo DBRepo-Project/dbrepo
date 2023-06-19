@@ -41,19 +41,17 @@ public class DatabaseEndpoint {
     private final UserService userService;
     private final AccessService accessService;
     private final DatabaseMapper databaseMapper;
-    private final ContainerService containerService;
     private final MariaDbServiceImpl databaseService;
     private final QueryStoreService queryStoreService;
     private final MessageQueueService messageQueueService;
     private final DatabaseAccessRepository databaseAccessRepository;
 
     @Autowired
-    public DatabaseEndpoint(DatabaseMapper databaseMapper, UserService userService, ContainerService containerService,
+    public DatabaseEndpoint(DatabaseMapper databaseMapper, UserService userService,
                             MariaDbServiceImpl databaseService, QueryStoreService queryStoreService,
                             MessageQueueService messageQueueService, AccessService accessService,
                             DatabaseAccessRepository databaseAccessRepository) {
         this.userService = userService;
-        this.containerService = containerService;
         this.accessService = accessService;
         this.databaseMapper = databaseMapper;
         this.databaseService = databaseService;
@@ -149,9 +147,9 @@ public class DatabaseEndpoint {
         final Database database = databaseService.create(createDto, principal);
         messageQueueService.createUser(user);
         messageQueueService.createExchange(database, principal);
-        messageQueueService.updatePermissions(principal);
         queryStoreService.create(database.getId(), principal);
         databaseAccessRepository.save(databaseMapper.defaultCreatorAccess(database, user));
+        messageQueueService.updatePermissions(user);
         final DatabaseBriefDto dto = databaseMapper.databaseToDatabaseBriefDto(database);
         log.trace("create database resulted in database {}", dto);
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -257,9 +255,8 @@ public class DatabaseEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<DatabaseDto> findById(@NotNull @PathVariable Long id,
-                                                Principal principal)
-            throws DatabaseNotFoundException, AccessDeniedException, ContainerNotFoundException {
+    public ResponseEntity<DatabaseDto> findById(@NotNull @PathVariable Long id, Principal principal)
+            throws DatabaseNotFoundException, AccessDeniedException {
         log.debug("endpoint find database, id={}", id);
         final Database database = databaseService.findById(id);
         final DatabaseDto dto = databaseMapper.databaseToDatabaseDto(database);
@@ -321,17 +318,17 @@ public class DatabaseEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<?> delete(@NotNull @PathVariable Long id,
-                                    Principal principal) throws DatabaseNotFoundException,
-            ImageNotSupportedException, DatabaseMalformedException, AmqpException, ContainerNotFoundException,
-            QueryMalformedException, BrokerVirtualHostCreationException, UserNotFoundException,
-            BrokerVirtualHostGrantException, DatabaseConnectionException {
+    public ResponseEntity<?> delete(@NotNull @PathVariable Long id, Principal principal)
+            throws DatabaseNotFoundException, ImageNotSupportedException, DatabaseMalformedException, AmqpException,
+            QueryMalformedException, UserNotFoundException, BrokerVirtualHostGrantException,
+            DatabaseConnectionException {
         log.debug("endpoint delete database, id={}, principal={}", id,
                 principal);
         final Database database = databaseService.findById(id);
+        final User user = userService.findByUsername(principal.getName());
         messageQueueService.deleteExchange(database);
-        databaseService.delete(id, principal);
-        messageQueueService.updatePermissions(principal);
+        databaseService.delete(id, user.getId());
+        messageQueueService.updatePermissions(user);
         return ResponseEntity.accepted()
                 .build();
     }

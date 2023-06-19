@@ -1,10 +1,12 @@
 package at.tuwien.service;
 
+import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 
 import jakarta.annotation.PostConstruct;
+
 import java.security.Principal;
 
 public interface MessageQueueService {
@@ -34,14 +36,14 @@ public interface MessageQueueService {
      */
     void createUser(User user) throws BrokerVirtualHostCreationException;
 
+
     /**
      * Updates the virtual host permissions in the Broker Service for a user with given principal.
      *
-     * @param principal The user principal.
-     * @throws BrokerVirtualHostCreationException The Broker Service refused the update of the permissions.
-     * @throws BrokerVirtualHostGrantException    The Broker Service refused to grant the permissions.
+     * @param user The user.
+     * @throws BrokerVirtualHostGrantException The Broker Service refused to grant the permissions.
      */
-    void updatePermissions(Principal principal) throws BrokerVirtualHostCreationException, BrokerVirtualHostGrantException;
+    void updatePermissions(User user) throws BrokerVirtualHostGrantException;
 
     /**
      * Deletes an exchange for a database.

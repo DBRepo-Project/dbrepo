@@ -114,7 +114,7 @@ public class DatabaseServiceUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
-            databaseService.delete(DATABASE_1_ID, USER_1_PRINCIPAL);
+            databaseService.delete(DATABASE_1_ID, USER_1_ID);
         });
     }
 
@@ -152,12 +152,12 @@ public class DatabaseServiceUnitTest extends BaseUnitTest {
         /* mock */
         when(containerRepository.findById(CONTAINER_1_ID))
                 .thenReturn(Optional.of(CONTAINER_1));
-        when(databaseRepository.findPublicOrMine(DATABASE_1_ID, USER_1_USERNAME))
+        when(databaseRepository.findById(DATABASE_1_ID))
                 .thenReturn(Optional.of(database));
 
         /* test */
         assertThrows(ImageNotSupportedException.class, () -> {
-            databaseService.delete(DATABASE_1_ID, USER_1_PRINCIPAL);
+            databaseService.delete(DATABASE_1_ID, USER_1_ID);
         });
     }
 

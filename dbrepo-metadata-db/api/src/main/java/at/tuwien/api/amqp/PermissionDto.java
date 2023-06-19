@@ -1,9 +1,8 @@
 package at.tuwien.api.amqp;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
-
 import jakarta.validation.constraints.NotNull;
+import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
 @Getter
@@ -13,7 +12,15 @@ import lombok.extern.jackson.Jacksonized;
 @AllArgsConstructor
 @Jacksonized
 @ToString
-public class GrantVirtualHostPermissionsDto {
+public class PermissionDto {
+
+    @NotNull
+    @Schema(example = "username")
+    private String user;
+
+    @NotNull
+    @Schema(example = "dbrepo")
+    private String vhost;
 
     @NotNull
     @Schema(example = ".*")

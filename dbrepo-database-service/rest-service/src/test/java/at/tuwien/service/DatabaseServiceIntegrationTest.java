@@ -196,16 +196,15 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void delete_succeeds() throws InterruptedException, QueryMalformedException, UserNotFoundException,
-            DatabaseConnectionException, DatabaseNotFoundException, ImageNotSupportedException,
-            ContainerNotFoundException, DatabaseMalformedException, SQLException {
+    public void delete_succeeds() throws QueryMalformedException, UserNotFoundException, DatabaseConnectionException,
+            DatabaseNotFoundException, ImageNotSupportedException, DatabaseMalformedException, SQLException {
 
         /* mock */
         databaseRepository.save(DATABASE_1);
         MariaDbConfig.createInitDatabase(CONTAINER_1, DATABASE_1);
 
         /* test */
-        databaseService.delete(DATABASE_1_ID, USER_1_PRINCIPAL);
+        databaseService.delete(DATABASE_1_ID, USER_1_ID);
     }
 
     @Test
