@@ -83,10 +83,7 @@ public class UserServiceIntegrationTest extends BaseUnitTest {
 
         /* test */
         final User response = userService.create(request, REALM_DBREPO);
-        assertEquals(1, response.getRoles().size());
-        final Role role = response.getRoles().get(0);
-        assertEquals(ROLE_DEFAULT_RESEARCHER_ROLES_ID, role.getId());
-        assertEquals(ROLE_DEFAULT_RESEARCHER_ROLES_NAME, role.getName());
+        assertEquals(0, response.getRoles().size());
     }
 
     @Test

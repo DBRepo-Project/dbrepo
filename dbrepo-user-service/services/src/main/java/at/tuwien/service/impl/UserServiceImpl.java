@@ -108,6 +108,8 @@ public class UserServiceImpl implements UserService {
             final Role defaultRole = optionalRole.get();
             log.debug("set default role: {}", defaultRole.getName());
             user.setRoles(List.of(defaultRole));
+        } else {
+            user.setRoles(List.of());
         }
         /* save in metadata database */
         credential = credentialRepository.save(credential);

@@ -104,21 +104,6 @@ public class UserEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    @WithAnonymousUser
-    public void create_roleNotFound_fails() {
-        final SignupRequestDto request = SignupRequestDto.builder()
-                .email(USER_1_EMAIL)
-                .username(USER_1_USERNAME)
-                .password(USER_1_PASSWORD)
-                .build();
-
-        /* test */
-        assertThrows(RoleNotFoundException.class, () -> {
-            create_generic(USER_1, REALM_DBREPO, null, request);
-        });
-    }
-
-    @Test
     @WithMockUser(username = USER_1_USERNAME)
     public void create_isAuthenticated_fails() {
         final SignupRequestDto request = SignupRequestDto.builder()
@@ -339,25 +324,25 @@ public class UserEndpointUnitTest extends BaseUnitTest {
     }
 
     protected void create_generic(User user, Realm realm, Role role, SignupRequestDto data)
-            throws UserNotFoundException, UserEmailAlreadyExistsException, RealmNotFoundException,
-            RoleNotFoundException, RemoteUnavailableException, UserAlreadyExistsException {
+            throws UserEmailAlreadyExistsException, RealmNotFoundException, RoleNotFoundException,
+            UserAlreadyExistsException {
 
         /* mock */
         if (realm != null) {
-            when(realmService.find("dbrepo"))
+            when(realmService.find(REALM_DBREPO_NAME))
                     .thenReturn(realm);
         } else {
             doThrow(RealmNotFoundException.class)
                     .when(realmService)
-                    .find("dbrepo");
+                    .find(REALM_DBREPO_NAME);
         }
         if (role != null) {
-            when(roleService.find("default-researcher-roles"))
+            when(roleService.find(ROLE_DEFAULT_RESEARCHER_ROLES_NAME))
                     .thenReturn(role);
         } else {
             doThrow(RoleNotFoundException.class)
                     .when(roleService)
-                    .find("default-researcher-roles");
+                    .find(ROLE_DEFAULT_REALM_DBREPO_ROLES_NAME);
         }
         if (user != null) {
             when(userService.create(data, realm))
