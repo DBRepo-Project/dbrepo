@@ -82,11 +82,8 @@ public class UserServiceIntegrationTest extends BaseUnitTest {
                 .build();
 
         /* test */
-        final User response = userService.create(request, REALM_DBREPO, ROLE_DEFAULT_RESEARCHER_ROLES);
-        assertEquals(1, response.getRoles().size());
-        final Role role = response.getRoles().get(0);
-        assertEquals(ROLE_DEFAULT_RESEARCHER_ROLES_ID, role.getId());
-        assertEquals(ROLE_DEFAULT_RESEARCHER_ROLES_NAME, role.getName());
+        final User response = userService.create(request, REALM_DBREPO);
+        assertEquals(0, response.getRoles().size());
     }
 
     @Test
@@ -99,7 +96,7 @@ public class UserServiceIntegrationTest extends BaseUnitTest {
 
         /* test */
         assertThrows(DataIntegrityViolationException.class, () -> {
-            userService.create(request, REALM_DBREPO, ROLE_DEFAULT_RESEARCHER_ROLES);
+            userService.create(request, REALM_DBREPO);
         });
     }
 
@@ -113,7 +110,7 @@ public class UserServiceIntegrationTest extends BaseUnitTest {
 
         /* test */
         assertThrows(DataIntegrityViolationException.class, () -> {
-            userService.create(request, REALM_DBREPO, ROLE_DEFAULT_RESEARCHER_ROLES);
+            userService.create(request, REALM_DBREPO);
         });
     }
 

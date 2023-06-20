@@ -3,7 +3,6 @@ package at.tuwien.endpoint;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.user.*;
-import at.tuwien.config.AuthenticationConfig;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.entities.user.Realm;
 import at.tuwien.entities.user.Role;
@@ -14,7 +13,6 @@ import at.tuwien.service.RealmService;
 import at.tuwien.service.RoleService;
 import at.tuwien.service.UserService;
 import lombok.extern.log4j.Log4j2;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,17 +55,8 @@ public class UserEndpointUnitTest extends BaseUnitTest {
     @MockBean
     private RoleService roleService;
 
-    @MockBean
-    private AuthenticationConfig authenticationConfig;
-
     @Autowired
     private UserEndpoint userEndpoint;
-
-    @BeforeEach
-    public void beforeEach() {
-        when(authenticationConfig.getDefaultRole())
-                .thenReturn("default-researcher-roles");
-    }
 
     @Test
     @WithAnonymousUser
@@ -111,21 +100,6 @@ public class UserEndpointUnitTest extends BaseUnitTest {
         /* test */
         assertThrows(RealmNotFoundException.class, () -> {
             create_generic(USER_1, null, ROLE_DEFAULT_RESEARCHER_ROLES, request);
-        });
-    }
-
-    @Test
-    @WithAnonymousUser
-    public void create_roleNotFound_fails() {
-        final SignupRequestDto request = SignupRequestDto.builder()
-                .email(USER_1_EMAIL)
-                .username(USER_1_USERNAME)
-                .password(USER_1_PASSWORD)
-                .build();
-
-        /* test */
-        assertThrows(RoleNotFoundException.class, () -> {
-            create_generic(USER_1, REALM_DBREPO, null, request);
         });
     }
 
@@ -350,33 +324,33 @@ public class UserEndpointUnitTest extends BaseUnitTest {
     }
 
     protected void create_generic(User user, Realm realm, Role role, SignupRequestDto data)
-            throws UserNotFoundException, UserEmailAlreadyExistsException, RealmNotFoundException,
-            RoleNotFoundException, RemoteUnavailableException, UserAlreadyExistsException {
+            throws UserEmailAlreadyExistsException, RealmNotFoundException, RoleNotFoundException,
+            UserAlreadyExistsException {
 
         /* mock */
         if (realm != null) {
-            when(realmService.find("dbrepo"))
+            when(realmService.find(REALM_DBREPO_NAME))
                     .thenReturn(realm);
         } else {
             doThrow(RealmNotFoundException.class)
                     .when(realmService)
-                    .find("dbrepo");
+                    .find(REALM_DBREPO_NAME);
         }
         if (role != null) {
-            when(roleService.find("default-researcher-roles"))
+            when(roleService.find(ROLE_DEFAULT_RESEARCHER_ROLES_NAME))
                     .thenReturn(role);
         } else {
             doThrow(RoleNotFoundException.class)
                     .when(roleService)
-                    .find("default-researcher-roles");
+                    .find(ROLE_DEFAULT_REALM_DBREPO_ROLES_NAME);
         }
         if (user != null) {
-            when(userService.create(data, realm, role))
+            when(userService.create(data, realm))
                     .thenReturn(user);
         } else {
             doThrow(UserNotFoundException.class)
                     .when(userService)
-                    .create(data, realm, role);
+                    .create(data, realm);
         }
 
         /* test */

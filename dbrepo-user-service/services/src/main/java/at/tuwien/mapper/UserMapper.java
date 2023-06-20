@@ -5,6 +5,8 @@ import at.tuwien.api.user.GrantedAuthorityDto;
 import at.tuwien.api.user.UserBriefDto;
 import at.tuwien.api.user.UserDetailsDto;
 import at.tuwien.api.user.UserDto;
+import at.tuwien.entities.user.Group;
+import at.tuwien.entities.user.GroupMembership;
 import at.tuwien.entities.user.User;
 import at.tuwien.entities.user.UserAttribute;
 import org.mapstruct.Mapper;
@@ -31,6 +33,13 @@ public interface UserMapper {
     UserBriefDto userToUserBriefDto(User data);
 
     User signupRequestDtoToUser(SignupRequestDto data);
+
+    default GroupMembership userGroupToGroupMembership(User user, Group group) {
+        return GroupMembership.builder()
+                .userId(user.getId())
+                .groupId(group.getId())
+                .build();
+    }
 
     default GrantedAuthority grantedAuthorityDtoToGrantedAuthority(GrantedAuthorityDto data) {
         final GrantedAuthority authority = new SimpleGrantedAuthority(data.getAuthority());
