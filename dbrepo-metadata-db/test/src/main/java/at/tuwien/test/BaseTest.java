@@ -204,10 +204,21 @@ public abstract class BaseTest {
     public final static String REALM_DBREPO_NAME = "dbrepo";
     public final static Boolean REALM_DBREPO_ENABLED = true;
 
+    public final static UUID ROLE_DEFAULT_REALM_DBREPO_ROLES_ID = UUID.fromString("c74cbbe7-3ab1-4472-9211-cc904567268");
+    public final static String ROLE_DEFAULT_REALM_DBREPO_ROLES_NAME = "default-dbrepo-roles";
+    public final static UUID ROLE_DEFAULT_REALM_DBREPO_ROLES_REALM_ID = REALM_DBREPO_ID;
+
+    public final static Role ROLE_DEFAULT_REALM_DBREPO_ROLES = Role.builder()
+            .id(ROLE_DEFAULT_REALM_DBREPO_ROLES_ID)
+            .name(ROLE_DEFAULT_REALM_DBREPO_ROLES_NAME)
+            .realmId(ROLE_DEFAULT_REALM_DBREPO_ROLES_REALM_ID)
+            .build();
+
     public final static Realm REALM_DBREPO = Realm.builder()
             .id(REALM_DBREPO_ID)
             .name(REALM_DBREPO_NAME)
             .enabled(REALM_DBREPO_ENABLED)
+            .defaultRole(ROLE_DEFAULT_REALM_DBREPO_ROLES_ID)
             .build();
 
     public final static UUID ROLE_DEFAULT_RESEARCHER_ROLES_ID = UUID.fromString("c74cbbe7-3ab1-4472-9211-cc9045672682");

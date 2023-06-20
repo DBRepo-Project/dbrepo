@@ -1,12 +1,11 @@
 package at.tuwien.entities.user;
 
+import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Immutable;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import jakarta.persistence.*;;
-import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -16,29 +15,20 @@ import java.util.UUID;
 @NoArgsConstructor
 @ToString
 @Immutable
+@IdClass(RealmDefaultGroupKey.class)
 @EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Table(name = "keycloak_role")
-@NamedQueries({
-        @NamedQuery(name = "Role.findDefault", query = "select r from Role r join Realm rr on rr.name = 'dbrepo' and rr.id = r.realmId and rr.defaultRole = r.id")
-})
-public class Role {
+@Table(name = "realm_default_groups")
+public class RealmDefaultGroup {
 
     @Id
-    @EqualsAndHashCode.Include
     @JdbcTypeCode(java.sql.Types.VARCHAR)
-    @Column(name = "ID", nullable = false, columnDefinition = "VARCHAR(36)")
-    private UUID id;
+    @Column(name = "GROUP_ID", nullable = false, columnDefinition = "VARCHAR(36)")
+    private UUID groupId;
 
-    @Column(name = "NAME", nullable = false)
-    private String name;
-
+    @Id
     @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column(name = "REALM_ID", nullable = false, columnDefinition = "VARCHAR(36)")
     private UUID realmId;
-
-    @ToString.Exclude
-    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "roles")
-    private List<User> users;
 
 }

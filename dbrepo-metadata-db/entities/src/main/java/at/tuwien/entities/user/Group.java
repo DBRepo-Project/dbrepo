@@ -1,11 +1,11 @@
 package at.tuwien.entities.user;
 
+import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Immutable;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import jakarta.persistence.*;;
 import java.util.List;
 import java.util.UUID;
 
@@ -18,11 +18,11 @@ import java.util.UUID;
 @Immutable
 @EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Table(name = "keycloak_role")
+@Table(name = "keycloak_group")
 @NamedQueries({
-        @NamedQuery(name = "Role.findDefault", query = "select r from Role r join Realm rr on rr.name = 'dbrepo' and rr.id = r.realmId and rr.defaultRole = r.id")
+        @NamedQuery(name = "Group.findDefault", query = "select g from Group g join Realm r on r.id = g.realmId and r.name = 'dbrepo' join RealmDefaultGroup d on d.realmId = r.id and d.groupId = g.id")
 })
-public class Role {
+public class Group {
 
     @Id
     @EqualsAndHashCode.Include
@@ -38,7 +38,7 @@ public class Role {
     private UUID realmId;
 
     @ToString.Exclude
-    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "roles")
+    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "groups")
     private List<User> users;
 
 }
