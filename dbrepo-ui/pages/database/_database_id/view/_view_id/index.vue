@@ -12,7 +12,7 @@
       <v-spacer />
       <v-toolbar-title>
         <v-btn v-if="canDeleteView" :loading="loadingDelete" color="error" class="mb-1" @click="deleteView">
-          Delete
+          <v-icon left>mdi-delete</v-icon> Delete
         </v-btn>
       </v-toolbar-title>
     </v-toolbar>
