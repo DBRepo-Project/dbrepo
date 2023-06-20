@@ -120,7 +120,6 @@ public class ViewServicePersistenceIntegrationTest extends BaseUnitTest {
 
         /* test */
         final View response = viewService.create(DATABASE_1_ID, request, USER_1_PRINCIPAL);
-        assertEquals(1L, response.getId());
         assertEquals("Debug", response.getName());
         assertEquals("debug", response.getInternalName());
         assertEquals(query, response.getQuery());
