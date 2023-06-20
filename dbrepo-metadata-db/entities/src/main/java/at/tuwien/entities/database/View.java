@@ -15,8 +15,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-;
-
 @Data
 @Entity
 @Builder
@@ -58,7 +56,7 @@ public class View {
     private User creator;
 
     @ToString.Exclude
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "vdbid", insertable = false, updatable = false)
     private at.tuwien.entities.database.Database database;
 
@@ -92,7 +90,7 @@ public class View {
         return this.internalName.equals(table.getName().replace("`", ""));
     }
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinTable(name = "mdb_view_columns",
             joinColumns = {
                     @JoinColumn(name = "vid", referencedColumnName = "id", insertable = false, updatable = false),

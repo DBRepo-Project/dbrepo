@@ -45,7 +45,7 @@ public interface ViewMapper {
     default PreparedStatement viewToRawDeleteViewQuery(Connection connection, View view)
             throws QueryMalformedException {
         log.debug("mapping delete view query, view={}", view);
-        final StringBuilder statement = new StringBuilder("DROP VIEW `v_")
+        final StringBuilder statement = new StringBuilder("DROP VIEW `")
                 .append(nameToInternalName(view.getName()))
                 .append("`;");
         try {

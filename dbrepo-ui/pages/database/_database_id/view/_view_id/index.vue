@@ -9,6 +9,12 @@
       <v-toolbar-title>
         <span v-if="cachedView.name">{{ cachedView.name }}</span>
       </v-toolbar-title>
+      <v-spacer />
+      <v-toolbar-title>
+        <v-btn v-if="canDeleteView" :loading="loadingDelete" color="error" class="mb-1" @click="deleteView">
+          Delete
+        </v-btn>
+      </v-toolbar-title>
     </v-toolbar>
     <v-card flat tile>
       <v-card-title>
@@ -98,6 +104,7 @@
       id="query-results"
       ref="queryResults"
       type="view"
+      :view="view"
       class="mt-0 mb-0" />
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
   </div>
@@ -120,6 +127,7 @@ export default {
         id: null /* only loaded if user has access to view */
       },
       loadingView: true,
+      loadingDelete: false,
       error: false
     }
   },
@@ -139,6 +147,9 @@ export default {
     user () {
       return this.$store.state.user
     },
+    roles () {
+      return this.$store.state.roles
+    },
     database () {
       return this.$store.state.database
     },
@@ -147,6 +158,12 @@ export default {
         return []
       }
       return this.$store.state.database.views
+    },
+    canDeleteView () {
+      if (!this.roles || !this.user || !this.view || !this.view.creator) {
+        return false
+      }
+      return this.roles.includes('delete-database-view') && this.view.creator.id === this.user.id
     },
     cachedView () {
       if (!this.database) {
@@ -179,8 +196,20 @@ export default {
         .then((view) => {
           this.view = view
         })
-        .then(() => {
+        .finally(() => {
           this.loadingView = false
+        })
+    },
+    deleteView () {
+      this.loadingDelete = true
+      DatabaseService.deleteView(this.$route.params.database_id, this.$route.params.view_id)
+        .then(async () => {
+          this.$toast.success('Successfully deleted view!')
+          await this.$store.dispatch('reloadDatabase')
+          await this.$router.push(`/database/${this.$route.params.database_id}/view`)
+        })
+        .finally(() => {
+          this.loadingDelete = false
         })
     },
     loadResult (viewId) {

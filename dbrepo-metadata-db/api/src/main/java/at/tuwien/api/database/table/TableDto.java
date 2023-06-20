@@ -76,7 +76,6 @@ public class TableDto {
     private Instant created;
 
     @NotNull(message = "columns are required")
-    @org.springframework.data.annotation.Transient
     private List<ColumnDto> columns;
 
     private ConstraintsDto constraints;
