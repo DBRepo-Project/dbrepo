@@ -29,7 +29,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 
-
 @Log4j2
 @RestController
 @RequestMapping("/api/database/{databaseId}/query")
@@ -102,17 +101,7 @@ public class QueryEndpoint {
         log.debug("endpoint re-execute query, databaseId={}, queryId={}, principal={}, page={}, size={}, sortDirection={}, sortColumn={}",
                 databaseId, queryId, principal, page, size, sortDirection, sortColumn);
         endpointValidator.validateDataParams(page, size, sortDirection, sortColumn);
-        final Database database = databaseService.find(databaseId);
-        if (!database.getIsPublic()) {
-            if (principal == null) {
-                log.error("Failed to re-execute private query: principal is null");
-                throw new NotAllowedException("Failed to re-execute private query: principal is null");
-            }
-            if (!User.hasRole(principal, "re-execute-query")) {
-                log.error("Failed to re-execute private query: role missing");
-                throw new NotAllowedException("Failed to re-execute private query: role missing");
-            }
-        }
+        endpointValidator.validateOnlyAccessOrPublic(databaseId, queryId, principal);
         /* execute */
         final Query query = storeService.findOne(databaseId, queryId, principal);
         final QueryResultDto result = queryService.reExecute(databaseId, query, page, size,
@@ -135,17 +124,7 @@ public class QueryEndpoint {
             DatabaseConnectionException, UserNotFoundException {
         log.debug("endpoint re-execute query count, databaseId={}, queryId={}, principal={}",
                 databaseId, queryId, principal);
-        final Database database = databaseService.find(databaseId);
-        if (!database.getIsPublic()) {
-            if (principal == null) {
-                log.error("Failed to re-execute private query: principal is null");
-                throw new NotAllowedException("Failed to re-execute private query: principal is null");
-            }
-            if (!User.hasRole(principal, "re-execute-query")) {
-                log.error("Failed to re-execute private query: role missing");
-                throw new NotAllowedException("Failed to re-execute private query: role missing");
-            }
-        }
+        endpointValidator.validateOnlyAccessOrPublic(databaseId, queryId, principal);
         /* execute */
         final Query query = storeService.findOne(databaseId, queryId, principal);
         final Long result = queryService.reExecuteCount(databaseId, query, principal);

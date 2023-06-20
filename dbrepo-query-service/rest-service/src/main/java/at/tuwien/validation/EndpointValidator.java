@@ -7,7 +7,10 @@ import at.tuwien.entities.database.AccessType;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.database.table.Table;
+import at.tuwien.entities.identifier.Identifier;
+import at.tuwien.entities.identifier.VisibilityType;
 import at.tuwien.exception.*;
+import at.tuwien.repository.mdb.IdentifierRepository;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.TableService;
@@ -19,6 +22,7 @@ import java.security.Principal;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,14 +34,16 @@ public class EndpointValidator {
     private final TableService tableService;
     private final AccessService accessService;
     private final DatabaseService databaseService;
+    private final IdentifierRepository identifierRepository;
 
     @Autowired
-    public EndpointValidator(QueryConfig queryConfig, TableService tableService,
-                             AccessService accessService, DatabaseService databaseService) {
+    public EndpointValidator(QueryConfig queryConfig, TableService tableService, AccessService accessService,
+                             DatabaseService databaseService, IdentifierRepository identifierRepository) {
         this.queryConfig = queryConfig;
         this.tableService = tableService;
         this.accessService = accessService;
         this.databaseService = databaseService;
+        this.identifierRepository = identifierRepository;
     }
 
     public void validateDataParams(Long page, Long size) throws PaginationException {
@@ -106,8 +112,30 @@ public class EndpointValidator {
         log.trace("found access {}", access);
     }
 
-    public void validateOnlyWriteOwnOrWriteAllAccess(Long databaseId, Long tableId,
-                                                     Principal principal)
+    public void validateOnlyAccessOrPublic(Long databaseId, Long queryId, Principal principal)
+            throws NotAllowedException, DatabaseNotFoundException {
+        final Optional<Identifier> optional = identifierRepository.findByDatabaseIdAndQueryId(databaseId, queryId);
+        if (optional.isPresent()) {
+            final Identifier identifier = optional.get();
+            log.trace("found identifier for query with id {}", queryId);
+            if (principal != null && identifier.getVisibility().equals(VisibilityType.SELF)) {
+                if (identifier.getCreator().getUsername().equals(principal.getName())) {
+                    return;
+                }
+                log.error("Access not allowed: visibility is 'self' and user is not the creator");
+                throw new NotAllowedException("Access not allowed: visibility is 'self' and you are not the creator");
+            }
+            if (!identifier.getVisibility().equals(VisibilityType.EVERYONE)) {
+                log.error("Access not allowed: visibility is not 'everyone'");
+                throw new NotAllowedException("Access not allowed: visibility is not 'everyone'");
+            }
+            log.trace("identifier is public, validation passed");
+            return;
+        }
+        validateOnlyAccessOrPublic(databaseId, principal);
+    }
+
+    public void validateOnlyWriteOwnOrWriteAllAccess(Long databaseId, Long tableId, Principal principal)
             throws DatabaseNotFoundException, TableNotFoundException, NotAllowedException {
         final Table table = tableService.find(databaseId, tableId);
         if (principal == null) {

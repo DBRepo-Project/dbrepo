@@ -11,9 +11,7 @@ class QueryService {
           resolve(queries)
         })
         .catch((error) => {
-          const { code, message } = error
           console.error('Failed to load queries', error)
-          Vue.$toast.error(`[${code}] Failed to load queries: ${message}`)
           reject(error)
         })
     })
@@ -27,9 +25,7 @@ class QueryService {
           console.debug('response query', query)
           resolve(query)
         }).catch((error) => {
-          const { code, message } = error
           console.error('Failed to load query', error)
-          Vue.$toast.error(`[${code}] Failed to load query: ${message}`)
           reject(error)
         })
     })
