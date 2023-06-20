@@ -23,15 +23,14 @@ public interface UserService {
     List<User> findAll();
 
     /**
-     * Creates a user in the metadata database managed by Keycloak in the given realm and with given role.
+     * Creates a user in the metadata database managed by Keycloak in the given realm.
      *
      * @param data  The user data.
      * @param realm The realm this user should be created.
-     * @param role  The role.
      * @return The user, if successful. False otherwise.
      * @throws UserAlreadyExistsException The user already exists in the metadata database.
      */
-    User create(SignupRequestDto data, Realm realm, Role role) throws UserAlreadyExistsException;
+    User create(SignupRequestDto data, Realm realm) throws UserAlreadyExistsException;
 
     /**
      * Updates the user information for a user with given id in the metadata database.

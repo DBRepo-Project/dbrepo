@@ -12,8 +12,6 @@ import java.security.Principal;
 import java.util.List;
 import java.util.UUID;
 
-;
-
 @Data
 @Entity
 @Builder
@@ -99,6 +97,17 @@ public class User {
                     @JoinColumn(name = "ROLE_ID", nullable = false, columnDefinition = "VARCHAR(36)", updatable = false),
             })
     private List<Role> roles;
+
+    @ToString.Exclude
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "user_group_membership",
+            joinColumns = {
+                    @JoinColumn(name = "USER_ID", nullable = false, columnDefinition = "VARCHAR(36)", updatable = false),
+            },
+            inverseJoinColumns = {
+                    @JoinColumn(name = "GROUP_ID", nullable = false, columnDefinition = "VARCHAR(36)", updatable = false),
+            })
+    private List<Group> groups;
 
     @Transient
     @ToString.Exclude

@@ -3,7 +3,6 @@ package at.tuwien.endpoint;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.user.*;
-import at.tuwien.config.AuthenticationConfig;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.entities.user.Realm;
 import at.tuwien.entities.user.Role;
@@ -14,7 +13,6 @@ import at.tuwien.service.RealmService;
 import at.tuwien.service.RoleService;
 import at.tuwien.service.UserService;
 import lombok.extern.log4j.Log4j2;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,17 +55,8 @@ public class UserEndpointUnitTest extends BaseUnitTest {
     @MockBean
     private RoleService roleService;
 
-    @MockBean
-    private AuthenticationConfig authenticationConfig;
-
     @Autowired
     private UserEndpoint userEndpoint;
-
-    @BeforeEach
-    public void beforeEach() {
-        when(authenticationConfig.getDefaultRole())
-                .thenReturn("default-researcher-roles");
-    }
 
     @Test
     @WithAnonymousUser
@@ -371,12 +360,12 @@ public class UserEndpointUnitTest extends BaseUnitTest {
                     .find("default-researcher-roles");
         }
         if (user != null) {
-            when(userService.create(data, realm, role))
+            when(userService.create(data, realm))
                     .thenReturn(user);
         } else {
             doThrow(UserNotFoundException.class)
                     .when(userService)
-                    .create(data, realm, role);
+                    .create(data, realm);
         }
 
         /* test */
