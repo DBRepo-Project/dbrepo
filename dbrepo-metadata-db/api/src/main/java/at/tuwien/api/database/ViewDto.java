@@ -1,5 +1,6 @@
 package at.tuwien.api.database;
 
+import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.user.UserDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -14,6 +15,7 @@ import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -45,6 +47,7 @@ public class ViewDto {
     @NotBlank
     @Field(name = "air_quality")
     @Schema(example = "air_quality")
+    @JsonProperty("internal_name")
     private String internalName;
 
     @Field(name = "is_public")
@@ -71,6 +74,9 @@ public class ViewDto {
 
     @NotNull
     private UserDto creator;
+
+    @NotNull(message = "columns are required")
+    private List<ColumnDto> columns;
 
     @Field(name = "last_modified")
     @JsonProperty("last_modified")

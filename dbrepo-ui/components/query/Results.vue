@@ -1,7 +1,7 @@
 <template>
   <v-data-table
     flat
-    :headers="result.headers"
+    :headers="headers"
     :items="result.rows"
     :loading="loading > 0"
     :options.sync="options"
@@ -15,6 +15,12 @@ export default {
     type: {
       type: String,
       default: () => 'query' /* query or view */
+    },
+    view: {
+      type: Object,
+      default: () => {
+        return {}
+      }
     }
   },
   data () {
@@ -31,6 +37,23 @@ export default {
         itemsPerPage: 10
       },
       total: -1
+    }
+  },
+  computed: {
+    headers () {
+      if (this.result.headers.length !== 0) {
+        return this.result.headers
+      }
+      if (this.type === 'view' && this.view && this.view.columns) {
+        return this.view.columns.map((c) => {
+          return {
+            text: c.internal_name,
+            value: c.internal_name,
+            sortable: false
+          }
+        })
+      }
+      return []
     }
   },
   watch: {
