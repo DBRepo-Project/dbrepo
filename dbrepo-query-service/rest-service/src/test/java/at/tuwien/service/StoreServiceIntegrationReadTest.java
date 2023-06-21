@@ -4,7 +4,6 @@ import at.tuwien.BaseUnitTest;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.MariaDbContainerConfig;
-import at.tuwien.config.ReadyConfig;
 import at.tuwien.exception.*;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.querystore.Query;
@@ -44,9 +43,6 @@ import static org.mockito.Mockito.when;
 @EnableAutoConfiguration(exclude= RabbitAutoConfiguration.class)
 @SpringBootTest
 public class StoreServiceIntegrationReadTest extends BaseUnitTest {
-
-    @MockBean
-    private ReadyConfig readyConfig;
 
     @MockBean
     private IndexConfig indexConfig;
