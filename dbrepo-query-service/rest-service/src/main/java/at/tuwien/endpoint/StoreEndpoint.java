@@ -181,7 +181,7 @@ public class StoreEndpoint {
         log.debug("endpoint find query, databaseId={}, queryId={}, principal={}", databaseId,
                 queryId, principal);
         /* check */
-        endpointValidator.validateOnlyAccessOrPublic(databaseId, principal);
+        endpointValidator.validateOnlyAccessOrPublic(databaseId, queryId, principal);
         /* find */
         final Query query = storeService.findOne(databaseId, queryId, principal);
         final QueryDto dto = queryMapper.queryToQueryDto(query);

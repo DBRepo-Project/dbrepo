@@ -109,6 +109,12 @@
           color="info">
           Query is not yet saved in the query store, <a @click="save">save</a> it to view it later.
         </v-alert>
+        <v-alert
+          v-if="isAuthorizationError"
+          border="left"
+          color="error">
+          You do not have permission to view this subset.
+        </v-alert>
         <v-list dense>
           <v-list-item>
             <v-list-item-icon>
@@ -267,6 +273,7 @@ export default {
       loadingIdentifier: false,
       loadingQuery: true,
       downloadLoading: false,
+      isAuthorizationError: false,
       error: false,
       promises: []
     }
@@ -386,7 +393,12 @@ export default {
             this.query = query
             resolve(query)
           })
-          .catch(error => reject(error))
+          .catch((error) => {
+            if (error.response.status === 405) {
+              this.isAuthorizationError = true
+            }
+            reject(error)
+          })
           .finally(() => {
             this.loadingQuery = false
           })

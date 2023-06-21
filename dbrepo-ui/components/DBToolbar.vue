@@ -55,7 +55,7 @@
           <v-tab :to="`/database/${$route.params.database_id}/table`">
             {{ $t('databases.toolbar.tables', { name: 'vue-i18n' }) }}
           </v-tab>
-          <v-tab v-if="canViewQueries" :to="`/database/${$route.params.database_id}/query`">
+          <v-tab :to="`/database/${$route.params.database_id}/query`">
             {{ $t('databases.toolbar.subsets', { name: 'vue-i18n' }) }}
           </v-tab>
           <v-tab :to="`/database/${$route.params.database_id}/view`">
@@ -120,9 +120,6 @@ export default {
         return false
       }
       return this.roles.includes('execute-query')
-    },
-    canViewQueries () {
-      return this.database.is_public || this.hasReadAccess
     },
     canCreateView () {
       if (!this.user || !this.isOwner) {

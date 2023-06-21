@@ -12,9 +12,7 @@ class IdentifierService {
           resolve(identifiers)
         })
         .catch((error) => {
-          const { code, message } = error
           console.error('Failed to load identifiers', error)
-          Vue.$toast.error(`[${code}] Failed to load identifiers: ${message}`)
           reject(error)
         })
     })
