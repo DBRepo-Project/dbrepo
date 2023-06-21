@@ -55,7 +55,6 @@ logging:
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 fda:
   gateway.endpoint: "${GATEWAY_ENDPOINT}"
-  ready.path: /ready
   jwt:
     issuer: "${JWT_ISSUER}"
     public_key: "${JWT_PUBKEY}"
