@@ -1,4 +1,4 @@
-package at.tuwien.endpoint;
+package at.tuwien.endpoints;
 
 import at.tuwien.BaseUnitTest;
 import lombok.extern.log4j.Log4j2;

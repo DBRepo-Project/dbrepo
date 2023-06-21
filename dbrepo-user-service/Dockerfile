@@ -23,8 +23,6 @@ RUN mvn -q clean package -DskipTests
 FROM openjdk:17-alpine as runtime
 MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
 
-RUN apk --no-cache add bash
-
 ENV METADATA_DB=fda
 ENV METADATA_USERNAME=root
 ENV METADATA_PASSWORD=dbrepo
@@ -35,11 +33,6 @@ ENV LOG_LEVEL=debug
 ENV SEARCH_PASSWORD=admin
 
 WORKDIR /app
-
-COPY ./service_ready /usr/bin
-RUN chmod +x /usr/bin/service_ready
-
-HEALTHCHECK --interval=10s --timeout=5s --retries=12 CMD service_ready
 
 COPY --from=build ./rest-service/target/rest-service-*.jar ./user-service.jar
 

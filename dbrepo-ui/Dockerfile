@@ -1,9 +1,6 @@
 FROM node:14-alpine as build
 MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
 
-RUN apk --no-cache add curl
-RUN cd /tmp && curl -LO https://github.com/prometheus/node_exporter/releases/download/v0.18.1/node_exporter-0.18.1.linux-amd64.tar.gz && tar -xvf node_exporter-0.18.1.linux-amd64.tar.gz && mv node_exporter-0.18.1.linux-amd64/node_exporter /usr/local/bin/
-
 ARG TAG=latest
 ARG GIT_HASH_SHORT=git_hash
 
@@ -61,12 +58,8 @@ ENV GIT_HASH="${GIT_HASH_SHORT}"
 
 WORKDIR /app
 
-COPY --from=build /usr/local/bin/node_exporter/ /usr/local/bin/node_exporter/
 COPY --from=build /app /app
 
 RUN ls -la
 
-COPY ./docker-entrypoint.sh /app/docker-entrypoint.sh
-RUN chmod +x /app/docker-entrypoint.sh
-
-ENTRYPOINT [ "sh", "/app/docker-entrypoint.sh" ]
+ENTRYPOINT [ "yarn", "start" ]

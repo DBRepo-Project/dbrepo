@@ -81,6 +81,11 @@ services:
       - "9092:9092"
     env_file:
       - .env
+    healthcheck:
+      test: wget -qO- localhost:9092/actuator/health/readiness | grep -q "UP" || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 12
     depends_on:
       dbrepo-container-service:
         condition: service_healthy
@@ -102,6 +107,11 @@ services:
       - "9091:9091"
     env_file:
       - .env
+    healthcheck:
+      test: wget -qO- localhost:9092/actuator/health/readiness | grep -q "UP" || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 12
     depends_on:
       dbrepo-authentication-service:
         condition: service_healthy
@@ -139,6 +149,11 @@ services:
       - .env
     volumes:
       - ${SHARED_FILESYSTEM}:/tmp
+    healthcheck:
+      test: wget -qO- localhost:9092/actuator/health/readiness | grep -q "UP" || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 12
     depends_on:
       dbrepo-broker-service:
         condition: service_healthy
@@ -162,6 +177,11 @@ services:
       - .env
     volumes:
       - ${SHARED_FILESYSTEM}:/tmp
+    healthcheck:
+      test: wget -qO- localhost:9092/actuator/health/readiness | grep -q "UP" || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 12
     depends_on:
       dbrepo-authentication-service:
         condition: service_healthy
@@ -183,6 +203,11 @@ services:
       - "9096:9096"
     env_file:
       - .env
+    healthcheck:
+      test: wget -qO- localhost:9092/actuator/health/readiness | grep -q "UP" || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 12
     depends_on:
       dbrepo-query-service:
         condition: service_healthy
@@ -204,6 +229,11 @@ services:
       - .env
     ports:
       - "9099:9099"
+    healthcheck:
+      test: wget -qO- localhost:9092/actuator/health/readiness | grep -q "UP" || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 12
     depends_on:
       dbrepo-authentication-service:
         condition: service_healthy
@@ -237,6 +267,11 @@ services:
       - "9098:9098"
     env_file:
       - .env
+    healthcheck:
+      test: wget -qO- localhost:9092/actuator/health/readiness | grep -q "UP" || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 12
     depends_on:
       dbrepo-metadata-db:
         condition: service_healthy
@@ -258,6 +293,11 @@ services:
       - .env
     volumes:
       - ${SHARED_FILESYSTEM}:/tmp
+    healthcheck:
+      test: wget -qO- localhost:9092/actuator/health/readiness | grep -q "UP" || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 12
     depends_on:
       dbrepo-metadata-db:
         condition: service_healthy
