@@ -1,16 +1,17 @@
 package at.tuwien.endpoints;
 
-import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.api.identifier.IdentifierCreateDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.identifier.IdentifierTypeDto;
+import at.tuwien.api.user.UserOrOrganisationIdentifierDto;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.IdentifierMapper;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.IdentifierService;
+import at.tuwien.service.MetadataService;
 import at.tuwien.service.UserService;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
@@ -30,6 +31,7 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+
 import java.security.Principal;
 import java.util.LinkedList;
 import java.util.List;
@@ -43,14 +45,16 @@ public class IdentifierEndpoint {
 
     private final UserService userService;
     private final AccessService accessService;
+    private final MetadataService metadataService;
     private final IdentifierMapper identifierMapper;
     private final IdentifierService identifierService;
 
     @Autowired
-    public IdentifierEndpoint(UserService userService, AccessService accessService, IdentifierMapper identifierMapper,
-                              IdentifierService identifierService) {
+    public IdentifierEndpoint(UserService userService, AccessService accessService, MetadataService metadataService,
+                              IdentifierMapper identifierMapper, IdentifierService identifierService) {
         this.userService = userService;
         this.accessService = accessService;
+        this.metadataService = metadataService;
         this.identifierMapper = identifierMapper;
         this.identifierService = identifierService;
     }
@@ -157,4 +161,21 @@ public class IdentifierEndpoint {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(identifierMapper.identifierToIdentifierDto(identifier));
     }
+
+    @PostMapping("/retrieve")
+    @Timed(value = "identifier.retrieve", description = "Retrieve person or organization metadata from identifier")
+    @Operation(summary = "Retrieve metadata from identifier", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Retrieved metadata from identifier",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = IdentifierDto.class))}),
+    })
+    public ResponseEntity<UserOrOrganisationIdentifierDto> create(
+            @NotNull @Valid @RequestBody UserOrOrganisationIdentifierDto data) throws OrcidNotFoundException {
+        return ResponseEntity.ok(metadataService.findById(data));
+    }
+
+
 }
