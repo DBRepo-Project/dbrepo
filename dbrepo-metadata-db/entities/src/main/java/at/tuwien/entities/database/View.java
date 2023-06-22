@@ -44,11 +44,6 @@ public class View {
 
     @Id
     @EqualsAndHashCode.Include
-    @Field(name = "container_id")
-    private Long vcid;
-
-    @Id
-    @EqualsAndHashCode.Include
     @Field(name = "database_id")
     private Long vdbid;
 

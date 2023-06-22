@@ -66,7 +66,6 @@ public class TableColumn implements Comparable<TableColumn> {
     private Table table;
 
     @ToString.Exclude
-    @org.springframework.data.annotation.Transient
     private transient View view;
 
     @ToString.Exclude

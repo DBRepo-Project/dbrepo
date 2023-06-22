@@ -66,6 +66,10 @@
             <artifactId>java-jwt</artifactId>
             <version>${jwt.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+        </dependency>
         <!-- Monitoring -->
         <dependency>
             <groupId>io.micrometer</groupId>
@@ -88,16 +92,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.opensearch.client</groupId>
-            <artifactId>spring-data-opensearch</artifactId>
-            <version>${opensearch-client.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.opensearch.client</groupId>
-            <artifactId>spring-data-opensearch-starter</artifactId>
-            <version>${opensearch-client.version}</version>
         </dependency>
         <!-- Entity and API -->
         <dependency>
@@ -157,6 +151,7 @@
             <groupId>at.tuwien</groupId>
             <artifactId>dbrepo-metadata-db-test</artifactId>
             <version>${project.version}</version>
+            <scope>test</scope>
             <exclusions>
                 <exclusion>
                     <groupId>org.opensearch.client</groupId>

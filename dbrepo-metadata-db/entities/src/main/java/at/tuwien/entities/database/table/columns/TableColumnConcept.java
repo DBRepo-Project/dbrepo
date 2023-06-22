@@ -19,7 +19,9 @@ import java.util.List;
 @ToString
 @EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@jakarta.persistence.Table(name = "mdb_concepts")
+@jakarta.persistence.Table(name = "mdb_concepts", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"uri"})
+})
 @NamedQueries({
         @NamedQuery(name = "TableColumnConcept.findById", query = "select c from TableColumnConcept c where c.uri = ?1")
 })
@@ -34,7 +36,7 @@ public class TableColumnConcept {
     private Long id;
 
     @EqualsAndHashCode.Include
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(nullable = false, unique = true, columnDefinition = "TEXT")
     private String uri;
 
     @Column(columnDefinition = "VARCHAR(255)")

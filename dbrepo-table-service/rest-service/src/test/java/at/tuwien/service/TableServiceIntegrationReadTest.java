@@ -9,8 +9,10 @@ import at.tuwien.exception.ContainerNotFoundException;
 import at.tuwien.exception.DatabaseNotFoundException;
 import at.tuwien.exception.TableNotFoundException;
 import at.tuwien.repository.mdb.*;
+import at.tuwien.repository.sdb.ConceptIdxRepository;
 import at.tuwien.repository.sdb.TableColumnIdxRepository;
 import at.tuwien.repository.sdb.TableIdxRepository;
+import at.tuwien.repository.sdb.UnitIdxRepository;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeAll;
@@ -50,6 +52,12 @@ public class TableServiceIntegrationReadTest extends BaseUnitTest {
 
     @MockBean
     private IndexConfig indexInitializer;
+
+    @MockBean
+    private UnitIdxRepository unitIdxRepository;
+
+    @MockBean
+    private ConceptIdxRepository conceptIdxRepository;
 
     @MockBean
     private TableIdxRepository tableidxRepository;

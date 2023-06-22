@@ -19,7 +19,9 @@ import java.util.List;
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@jakarta.persistence.Table(name = "mdb_units")
+@jakarta.persistence.Table(name = "mdb_units", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"uri"})
+})
 @NamedQueries({
         @NamedQuery(name = "TableColumnUnit.findById", query = "select u from TableColumnUnit u where u.uri = ?1")
 })
@@ -34,7 +36,7 @@ public class TableColumnUnit {
     private Long id;
 
     @EqualsAndHashCode.Include
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(nullable = false, unique = true, columnDefinition = "TEXT")
     private String uri;
 
     @Column(columnDefinition = "VARCHAR(255)")

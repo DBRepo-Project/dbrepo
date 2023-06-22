@@ -44,16 +44,9 @@ public class Identifier implements Serializable {
     @Column(name = "qid")
     private Long queryId;
 
-    @ToString.Exclude
-    @JdbcTypeCode(java.sql.Types.VARCHAR)
-    @Column(name = "created_by", nullable = false, columnDefinition = "VARCHAR(36)")
-    private UUID createdBy;
-
-    @ToString.Exclude
-    @org.springframework.data.annotation.Transient
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumns({
-            @JoinColumn(name = "created_by", referencedColumnName = "ID", insertable = false, updatable = false)
+            @JoinColumn(name = "created_by", referencedColumnName = "ID", nullable = false, columnDefinition = "VARCHAR(36)", updatable = false)
     })
     private User creator;
 
