@@ -7,8 +7,8 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface ConceptRepository extends JpaRepository<TableColumnConcept, String> {
+public interface ConceptRepository extends JpaRepository<TableColumnConcept, Long> {
 
-    Optional<TableColumnConcept> findById(String id);
+    Optional<TableColumnConcept> findByUri(String uri);
 
 }

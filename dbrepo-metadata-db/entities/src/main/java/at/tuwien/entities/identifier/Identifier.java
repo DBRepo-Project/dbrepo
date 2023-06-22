@@ -10,6 +10,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import jakarta.persistence.*;;
@@ -40,16 +41,20 @@ public class Identifier implements Serializable {
     @Column(updatable = false, nullable = false)
     private Long id;
 
+    @Field(name = "container_id")
     @Column(name = "cid", nullable = false)
     private Long containerId;
 
+    @Field(name = "database_id")
     @Column(name = "dbid", nullable = false)
     private Long databaseId;
 
+    @Field(name = "query_id")
     @Column(name = "qid")
     private Long queryId;
 
     @ToString.Exclude
+    @Field(name = "created_by")
     @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column(name = "created_by", nullable = false, columnDefinition = "VARCHAR(36)")
     private UUID createdBy;
@@ -89,27 +94,34 @@ public class Identifier implements Serializable {
     @Column(columnDefinition = "TEXT")
     private String query;
 
+    @Field(name = "query_normalized")
     @Column(columnDefinition = "TEXT")
     private String queryNormalized;
 
+    @Field(name = "query_hash")
     @Column
     private String queryHash;
 
+    @Field(name = "result_hash")
     @Column
     private String resultHash;
 
     @Column(updatable = false, columnDefinition = "TIMESTAMP")
     private Instant execution;
 
+    @Field(name = "result_number")
     @Column
     private Long resultNumber;
 
+    @Field(name = "publication_year")
     @Column(nullable = false)
     private Integer publicationYear;
 
+    @Field(name = "publication_month")
     @Column
     private Integer publicationMonth;
 
+    @Field(name = "publication_day")
     @Column
     private Integer publicationDay;
 
@@ -140,6 +152,7 @@ public class Identifier implements Serializable {
     private Instant created;
 
     @LastModifiedDate
+    @Field(name = "last_modified")
     @Column(columnDefinition = "TIMESTAMP")
     private Instant lastModified;
 

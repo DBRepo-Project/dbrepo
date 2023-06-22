@@ -13,6 +13,7 @@ import org.hibernate.annotations.JoinFormula;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.io.Serializable;
@@ -39,6 +40,7 @@ public class Database implements Serializable {
     private Long id;
 
     @ToString.Exclude
+    @Field(name = "created_by")
     @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column(name = "created_by", nullable = false, columnDefinition = "VARCHAR(36)")
     private UUID createdBy;
@@ -52,6 +54,7 @@ public class Database implements Serializable {
     private User creator;
 
     @ToString.Exclude
+    @Field(name = "owned_by")
     @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column(name = "owned_by", nullable = false, columnDefinition = "VARCHAR(36)")
     private UUID ownedBy;
@@ -75,9 +78,11 @@ public class Database implements Serializable {
     @Column(nullable = false)
     private String name;
 
+    @Field(name = "internal_name")
     @Column(nullable = false)
     private String internalName;
 
+    @Field(name = "exchange_name")
     @Column(name = "exchange_name", nullable = false, updatable = false)
     private String exchangeName;
 
@@ -85,6 +90,7 @@ public class Database implements Serializable {
     private String description;
 
     @ToString.Exclude
+    @Field(name = "contact_person")
     @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column(name = "contact_person", nullable = false, columnDefinition = "VARCHAR(36)")
     private UUID contactPerson;
@@ -121,6 +127,7 @@ public class Database implements Serializable {
     })
     private List<View> views;
 
+    @Field(name = "is_public")
     @Column(nullable = false)
     private Boolean isPublic;
 
@@ -129,6 +136,7 @@ public class Database implements Serializable {
     private Instant created;
 
     @LastModifiedDate
+    @Field(name = "last_modified")
     @Column(columnDefinition = "TIMESTAMP")
     private Instant lastModified;
 

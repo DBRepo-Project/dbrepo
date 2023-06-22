@@ -6,6 +6,7 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import jakarta.persistence.*;;
@@ -57,6 +58,7 @@ public class Creator {
     private Instant created;
 
     @ToString.Exclude
+    @Field(name = "created_by")
     @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column(name = "created_by", nullable = false, columnDefinition = "VARCHAR(36)")
     private UUID createdBy;
@@ -69,6 +71,7 @@ public class Creator {
     private User creator;
 
     @LastModifiedDate
+    @Field(name = "last_modified")
     @Column(columnDefinition = "TIMESTAMP")
     private Instant lastModified;
 

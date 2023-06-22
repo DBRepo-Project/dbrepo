@@ -11,6 +11,7 @@ import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import jakarta.persistence.*;;
@@ -41,6 +42,7 @@ public class Table {
 
     @Id
     @EqualsAndHashCode.Include
+    @Field(name = "database_id")
     private Long tdbid;
 
     @ToString.Exclude
@@ -62,12 +64,15 @@ public class Table {
     @Column(name = "tname", nullable = false)
     private String name;
 
+    @Field(name = "internal_name")
     @Column(nullable = false)
     private String internalName;
 
+    @Field(name = "queue_name")
     @Column(name = "queue_name", nullable = false, updatable = false)
     private String queueName;
 
+    @Field(name = "routing_key")
     @Column(name = "routing_key", nullable = false, updatable = false)
     private String routingKey;
 
@@ -91,6 +96,7 @@ public class Table {
     private Instant created;
 
     @LastModifiedDate
+    @Field(name = "last_modified")
     @Column(columnDefinition = "TIMESTAMP")
     private Instant lastModified;
 

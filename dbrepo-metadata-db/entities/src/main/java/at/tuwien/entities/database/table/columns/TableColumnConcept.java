@@ -20,10 +20,10 @@ import java.util.List;
 @EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @jakarta.persistence.Table(name = "mdb_concepts")
-@Document(indexName = "concept")
 @NamedQueries({
         @NamedQuery(name = "TableColumnConcept.findById", query = "select c from TableColumnConcept c where c.uri = ?1")
 })
+@Document(indexName = "concept")
 public class TableColumnConcept {
 
     @Id
@@ -49,6 +49,7 @@ public class TableColumnConcept {
 
     @ToString.Exclude
     @OneToMany(fetch = FetchType.LAZY)
+    @org.springframework.data.annotation.Transient
     @JoinTable(name = "mdb_columns_concepts",
             inverseJoinColumns = {
                     @JoinColumn(name = "cid", referencedColumnName = "id", insertable = false, updatable = false),

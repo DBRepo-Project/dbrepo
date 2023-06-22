@@ -9,6 +9,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import jakarta.persistence.*;;
@@ -43,14 +44,17 @@ public class View {
 
     @Id
     @EqualsAndHashCode.Include
+    @Field(name = "container_id")
     private Long vcid;
 
     @Id
     @EqualsAndHashCode.Include
+    @Field(name = "database_id")
     private Long vdbid;
 
     @ToString.Exclude
     @JdbcTypeCode(java.sql.Types.VARCHAR)
+    @Field(name = "created_by")
     @Column(name = "createdBy", nullable = false, columnDefinition = "VARCHAR(36)")
     private UUID createdBy;
 
@@ -70,12 +74,15 @@ public class View {
     @Column(name = "vname", nullable = false)
     private String name;
 
+    @Field(name = "internal_name")
     @Column(nullable = false)
     private String internalName;
 
+    @Field(name = "is_public")
     @Column(name = "public", nullable = false)
     private Boolean isPublic;
 
+    @Field(name = "is_initial_view")
     @Column(name = "initialview", nullable = false)
     private Boolean isInitialView;
 
@@ -117,6 +124,7 @@ public class View {
     private Instant created;
 
     @LastModifiedDate
+    @Field(name = "last_modified")
     @Column(columnDefinition = "TIMESTAMP")
     private Instant lastModified;
 

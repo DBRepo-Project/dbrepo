@@ -6,6 +6,7 @@ import at.tuwien.entities.identifier.Identifier;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.core.Authentication;
 
@@ -51,23 +52,27 @@ public class User {
     private String lastname;
 
     @JdbcTypeCode(java.sql.Types.VARCHAR)
+    @Field(name = "realm_id")
     @Column(name = "REALM_ID", columnDefinition = "VARCHAR(36)")
     private UUID realmId;
 
     @Column(nullable = false)
     private String email;
 
+    @Field(name = "email_verified")
     @Column(nullable = false)
     private Boolean emailVerified;
 
     @Column(nullable = false)
     private Boolean enabled;
 
+    @Field(name = "created_timestamp")
     @Column
     private Long createdTimestamp;
 
     @Transient
     @ToString.Exclude
+    @org.springframework.data.annotation.Transient
     @Column(nullable = false)
     private String databasePassword;
 
@@ -75,7 +80,9 @@ public class User {
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "user")
     private List<UserAttribute> attributes;
 
+    @Transient
     @ToString.Exclude
+    @org.springframework.data.annotation.Transient
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "user")
     private List<Credential> credentials;
 
