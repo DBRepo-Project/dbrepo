@@ -57,7 +57,7 @@ public class SemanticServiceImpl implements SemanticService {
         final TableColumnConcept concept = tableColumnConceptRepository.save(entity);
         log.info("Saved concept with uri {} in metadata database", concept.getUri());
         conceptIdxRepository.save(concept);
-        log.info("Saved concept with uri {} in open search database", concept.getUri());
+        log.info("Saved concept with uri {} in search database", concept.getUri());
         return concept;
     }
 
@@ -68,7 +68,7 @@ public class SemanticServiceImpl implements SemanticService {
         final TableColumnUnit unit = tableColumnUnitRepository.save(entity);
         log.info("Saved unit with uri {} in metadata database", unit.getUri());
         unitIdxRepository.save(unit);
-        log.info("Saved unit with uri {} in open search database", unit.getUri());
+        log.info("Saved unit with uri {} in search database", unit.getUri());
         return unit;
     }
 
