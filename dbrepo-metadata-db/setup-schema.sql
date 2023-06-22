@@ -3,20 +3,16 @@ BEGIN;
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_images`
 (
     id            bigint                 NOT NULL AUTO_INCREMENT,
-    registry      text                   NOT NULL DEFAULT 'docker.io/library',
-    repository    character varying(255) NOT NULL,
-    tag           character varying(255) NOT NULL,
+    name          character varying(255) NOT NULL,
+    version       character varying(255) NOT NULL,
     default_port  integer                NOT NULL,
     dialect       character varying(255) NOT NULL,
     driver_class  character varying(255) NOT NULL,
     jdbc_method   character varying(255) NOT NULL,
-    compiled      timestamp,
-    hash          character varying(255),
-    size          bigint,
     created       timestamp              NOT NULL DEFAULT NOW(),
     last_modified timestamp,
     PRIMARY KEY (id),
-    UNIQUE (repository, tag)
+    UNIQUE (name, version)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_images_date`
@@ -35,32 +31,18 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_images_date`
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_containers`
 (
-    id            bigint                 NOT NULL AUTO_INCREMENT,
-    HASH          character varying(255) NOT NULL,
-    INTERNAL_NAME character varying(255) NOT NULL,
-    NAME          character varying(255) NOT NULL,
-    PORT          integer,
-    image_id      bigint                 NOT NULL,
-    ip_address    character varying(255),
-    created       timestamp              NOT NULL DEFAULT NOW(),
-    created_by    character varying(255) NOT NULL,
-    owned_by      character varying(255) NOT NULL,
+    id            bigint                       NOT NULL AUTO_INCREMENT,
+    INTERNAL_NAME character varying(255)       NOT NULL,
+    NAME          character varying(255)       NOT NULL,
+    HOST          character varying(255)       NOT NULL,
+    PORT          integer                      NOT NULL,
+    image_id      bigint                       NOT NULL,
+    created       timestamp                    NOT NULL DEFAULT NOW(),
     LAST_MODIFIED timestamp,
+    privileged_username character varying(255) NOT NULL,
+    privileged_password character varying(255) NOT NULL,
     PRIMARY KEY (id),
     FOREIGN KEY (image_id) REFERENCES mdb_images (id)
-) WITH SYSTEM VERSIONING;
-
-CREATE TABLE IF NOT EXISTS `fda`.`mdb_images_environment_item`
-(
-    id            bigint                                                                      NOT NULL AUTO_INCREMENT,
-    `key`         character varying(255)                                                      NOT NULL,
-    value         character varying(255)                                                      NOT NULL,
-    etype         ENUM ('PRIVILEGED_USERNAME', 'PRIVILEGED_PASSWORD', 'USERNAME', 'PASSWORD') NOT NULL,
-    iid           bigint                                                                      NOT NULL,
-    created       timestamp                                                                   NOT NULL DEFAULT NOW(),
-    last_modified timestamp,
-    PRIMARY KEY (id, iid),
-    FOREIGN KEY (iid) REFERENCES mdb_images (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_data`
@@ -85,6 +67,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_licenses`
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_databases`
 (
     id             bigint                 NOT NULL AUTO_INCREMENT,
+    cid            bigint                 NOT NULL,
     name           character varying(255) NOT NULL,
     internal_name  character varying(255) NOT NULL,
     exchange_name  character varying(255) NOT NULL,
@@ -97,7 +80,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_databases`
     created        timestamp              NOT NULL DEFAULT NOW(),
     last_modified  timestamp,
     PRIMARY KEY (id),
-    FOREIGN KEY (id) REFERENCES mdb_containers (id) /* currently we only support one-to-one */
+    FOREIGN KEY (cid) REFERENCES mdb_containers (id) /* currently we only support one-to-one */
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_databases_subjects`
@@ -321,7 +304,6 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns_units`
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_view`
 (
     id            bigint                 NOT NULL AUTO_INCREMENT,
-    vcid          bigint                 NOT NULL,
     vdbid         bigint                 NOT NULL,
     vName         VARCHAR(255)           NOT NULL,
     internal_name VARCHAR(255)           NOT NULL,
@@ -333,7 +315,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_view`
     created       timestamp              NOT NULL DEFAULT NOW(),
     last_modified timestamp,
     created_by    character varying(255) NOT NULL,
-    PRIMARY KEY (id, vcid, vdbid),
+    PRIMARY KEY (id, vdbid),
     FOREIGN KEY (vdbid) REFERENCES mdb_databases (id)
 ) WITH SYSTEM VERSIONING;
 
@@ -370,18 +352,16 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_view_columns`
     ctid     BIGINT  NOT NULL,
     cdbid    BIGINT  NOT NULL,
     vid      BIGINT  NOT NULL,
-    vcid     BIGINT  NOT NULL,
     vdbid    BIGINT  NOT NULL,
     position INTEGER NULL,
     PRIMARY KEY (id),
-    FOREIGN KEY (vid, vcid, vdbid) REFERENCES mdb_view (id, vcid, vdbid),
+    FOREIGN KEY (vid, vdbid) REFERENCES mdb_view (id, vdbid),
     FOREIGN KEY (cid, cdbid, ctid) REFERENCES mdb_columns (ID, cDBID, tID)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifiers`
 (
     id                bigint                    NOT NULL AUTO_INCREMENT,
-    cid               bigint                    NOT NULL,
     dbid              bigint                    NOT NULL,
     qid               bigint,
     title             VARCHAR(255)              NOT NULL,
@@ -405,9 +385,8 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifiers`
     created_by        character varying(255)    NOT NULL,
     last_modified     timestamp,
     PRIMARY KEY (id), /* must be a single id from persistent identifier concept */
-    FOREIGN KEY (cid) REFERENCES mdb_containers (id),
     FOREIGN KEY (dbid) REFERENCES mdb_databases (id),
-    UNIQUE (cid, dbid, qid)
+    UNIQUE (dbid, qid)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_related_identifiers`
@@ -490,14 +469,8 @@ VALUES ('MIT', 'https://opensource.org/licenses/MIT'),
        ('CC0-1.0', 'https://creativecommons.org/publicdomain/zero/1.0/legalcode'),
        ('CC-BY-4.0', 'https://creativecommons.org/licenses/by/4.0/legalcode');
 
-INSERT INTO `fda`.`mdb_images` (repository, tag, default_port, dialect, driver_class, jdbc_method)
+INSERT INTO `fda`.`mdb_images` (name, version, default_port, dialect, driver_class, jdbc_method)
 VALUES ('mariadb', '10.5', 3306, 'org.hibernate.dialect.MariaDBDialect', 'org.mariadb.jdbc.Driver', 'mariadb');
-
-INSERT INTO `fda`.`mdb_images_environment_item` (`key`, value, etype, iid)
-VALUES ('ROOT', 'root', 'PRIVILEGED_USERNAME', 1),
-       ('MARIADB_ROOT_PASSWORD', 'mariadb', 'PRIVILEGED_PASSWORD', 1),
-       ('MARIADB_USER', 'mariadb', 'USERNAME', 1),
-       ('MARIADB_PASSWORD', 'mariadb', 'PASSWORD', 1);
 
 INSERT INTO `fda`.`mdb_images_date` (iid, database_format, unix_format, example, has_time)
 VALUES (1, '%Y-%c-%d %H:%i:%S.%f', 'yyyy-MM-dd HH:mm:ss.SSSSSS', '2022-01-30 13:44:25.499', true),

@@ -11,6 +11,7 @@ import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -24,7 +25,6 @@ import org.springframework.web.client.RestTemplate;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @Log4j2
@@ -49,6 +49,7 @@ public class QueryServiceGatewayUnitTest extends BaseUnitTest {
     private TableColumnIdxRepository tableColumnidxRepository;
 
     @MockBean
+    @Qualifier("restTemplate")
     private RestTemplate restTemplate;
 
     @Autowired
@@ -64,7 +65,7 @@ public class QueryServiceGatewayUnitTest extends BaseUnitTest {
                 .thenReturn(mock);
 
         /* test */
-        queryServiceGateway.declareConsumer(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, "abc");
+        queryServiceGateway.declareConsumer(DATABASE_1_ID, TABLE_1_ID, "abc");
     }
 
     @Test
@@ -78,7 +79,7 @@ public class QueryServiceGatewayUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(AmqpException.class, () -> {
-            queryServiceGateway.declareConsumer(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, "abc");
+            queryServiceGateway.declareConsumer(DATABASE_1_ID, TABLE_1_ID, "abc");
         });
     }
 

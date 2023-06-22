@@ -4,16 +4,14 @@ import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.user.User;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.*;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
 import lombok.*;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.annotations.JoinColumnOrFormula;
-import org.hibernate.annotations.JoinColumnsOrFormulas;
-import org.hibernate.annotations.JoinFormula;
+import org.hibernate.annotations.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.elasticsearch.annotations.Document;
-import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.io.Serializable;
@@ -29,24 +27,29 @@ import java.util.UUID;
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 @jakarta.persistence.Table(name = "mdb_databases", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"id", "internalName"})
+        @UniqueConstraint(columnNames = {"cid", "internalName"})
 })
-@Document(indexName = "database")
+@NamedQueries({
+        @NamedQuery(name = "Database.findReadAccess", query = "select distinct d from Database d join DatabaseAccess a on a.hdbid = d.id and a.huserid = ?1"),
+        @NamedQuery(name = "Database.findWriteAccess", query = "select distinct d from Database d join DatabaseAccess a on a.hdbid = d.id and a.huserid = ?1 where a.type = 'WRITE_OWN' or a.type = 'WRITE_ALL'"),
+        @NamedQuery(name = "Database.findConfigureAccess", query = "select distinct d from Database d where d.owner.id = ?1"),
+        @NamedQuery(name = "Database.findPublicOrMine", query = "select distinct d from Database d where d.id = ?1 and (d.isPublic = true or d.owner.id = ?2)"),
+        @NamedQuery(name = "Database.findPublic", query = "select distinct d from Database d where d.isPublic = true and d.id = ?1"),
+})
 public class Database implements Serializable {
 
     @Id
     @EqualsAndHashCode.Include
+    @GeneratedValue(generator = "databases-sequence")
+    @GenericGenerator(name = "databases-sequence", strategy = "increment")
     @Column(updatable = false, nullable = false)
     private Long id;
 
     @ToString.Exclude
-    @Field(name = "created_by")
     @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column(name = "created_by", nullable = false, columnDefinition = "VARCHAR(36)")
     private UUID createdBy;
 
-    @ToString.Exclude
-    @org.springframework.data.annotation.Transient
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumns({
             @JoinColumn(name = "created_by", referencedColumnName = "ID", insertable = false, updatable = false)
@@ -54,35 +57,33 @@ public class Database implements Serializable {
     private User creator;
 
     @ToString.Exclude
-    @Field(name = "owned_by")
     @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column(name = "owned_by", nullable = false, columnDefinition = "VARCHAR(36)")
     private UUID ownedBy;
 
-    @ToString.Exclude
-    @org.springframework.data.annotation.Transient
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumns({
             @JoinColumn(name = "owned_by", referencedColumnName = "ID", insertable = false, updatable = false)
     })
     private User owner;
 
+    @Column(nullable = false)
+    private Long cid;
+
     @ToString.Exclude
     @org.springframework.data.annotation.Transient
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumns({
-            @JoinColumn(name = "id", referencedColumnName = "id", insertable = false, updatable = false)
+            @JoinColumn(name = "cid", referencedColumnName = "id", insertable = false, updatable = false)
     })
     private Container container;
 
     @Column(nullable = false)
     private String name;
 
-    @Field(name = "internal_name")
     @Column(nullable = false)
     private String internalName;
 
-    @Field(name = "exchange_name")
     @Column(name = "exchange_name", nullable = false, updatable = false)
     private String exchangeName;
 
@@ -90,20 +91,16 @@ public class Database implements Serializable {
     private String description;
 
     @ToString.Exclude
-    @Field(name = "contact_person")
     @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column(name = "contact_person", nullable = false, columnDefinition = "VARCHAR(36)")
     private UUID contactPerson;
 
-    @ToString.Exclude
-    @org.springframework.data.annotation.Transient
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
     @JoinColumns({
             @JoinColumn(name = "contact_person", referencedColumnName = "ID", updatable = false, insertable = false)
     })
     private User contact;
 
-    @org.springframework.data.annotation.Transient
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumnsOrFormulas({
             @JoinColumnOrFormula(formula = @JoinFormula(value = "'DATABASE'", referencedColumnName = "identifier_type")),
@@ -127,7 +124,6 @@ public class Database implements Serializable {
     })
     private List<View> views;
 
-    @Field(name = "is_public")
     @Column(nullable = false)
     private Boolean isPublic;
 
@@ -136,7 +132,6 @@ public class Database implements Serializable {
     private Instant created;
 
     @LastModifiedDate
-    @Field(name = "last_modified")
     @Column(columnDefinition = "TIMESTAMP")
     private Instant lastModified;
 

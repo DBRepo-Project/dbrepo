@@ -19,7 +19,7 @@ import java.util.List;
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Table(name = "mdb_images", uniqueConstraints = @UniqueConstraint(columnNames = {"repository", "tag"}))
+@Table(name = "mdb_images", uniqueConstraints = @UniqueConstraint(columnNames = {"name", "version"}))
 public class ContainerImage {
 
     @Id
@@ -30,13 +30,10 @@ public class ContainerImage {
     public Long id;
 
     @Column(nullable = false)
-    private String repository;
-
-    @Column(nullable = false, columnDefinition = "TEXT default 'docker.io/library'")
-    private String registry;
+    private String name;
 
     @Column(nullable = false)
-    private String tag;
+    private String version;
 
     @Column(nullable = false)
     private String driverClass;
@@ -47,22 +44,8 @@ public class ContainerImage {
     @Column(nullable = false)
     private String jdbcMethod;
 
-    @Column
-    private String hash;
-
-    @Column(columnDefinition = "TIMESTAMP")
-    private Instant compiled;
-
-    @Column
-    private Long size;
-
     @Column(nullable = false)
     private Integer defaultPort;
-
-    @ToString.Exclude
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "iid", insertable = false, updatable = false)
-    private List<ContainerImageEnvironmentItem> environment;
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "image")
     private List<ContainerImageDate> dateFormats;

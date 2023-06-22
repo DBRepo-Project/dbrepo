@@ -1,18 +1,21 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.config.DockerConfig;
-import at.tuwien.config.H2Utils;
 import at.tuwien.config.IndexConfig;
+import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.database.table.Table;
-import at.tuwien.exception.*;
+import at.tuwien.exception.ContainerNotFoundException;
+import at.tuwien.exception.DatabaseNotFoundException;
+import at.tuwien.exception.TableNotFoundException;
+import at.tuwien.repository.mdb.*;
 import at.tuwien.repository.sdb.TableColumnIdxRepository;
 import at.tuwien.repository.sdb.TableIdxRepository;
-import at.tuwien.repository.mdb.*;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -21,14 +24,18 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.testcontainers.containers.MariaDBContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.io.File;
+import java.sql.SQLException;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @Log4j2
+@Testcontainers
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @EnableAutoConfiguration(exclude = RabbitAutoConfiguration.class)
 @SpringBootTest
@@ -71,27 +78,16 @@ public class TableServiceIntegrationReadTest extends BaseUnitTest {
     @Autowired
     private TableService tableService;
 
+    @Container
     @Autowired
-    private H2Utils h2Utils;
-
-    private static final String BIND_WEATHER = new File("../../dbrepo-metadata-db/test/src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
+    private MariaDBContainer<?> mariaDBContainer;
 
     @BeforeAll
     public static void beforeAll() throws InterruptedException {
-        afterAll();
-        DockerConfig.createAllNetworks();
-        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
-        DockerConfig.startContainer(CONTAINER_1);
-    }
-
-    @AfterAll
-    public static void afterAll() {
-        DockerConfig.removeAllContainers();
-        DockerConfig.removeAllNetworks();
     }
 
     @BeforeEach
-    public void beforeEach() {
+    public void beforeEach() throws SQLException {
         imageRepository.save(IMAGE_1);
         realmRepository.save(REALM_DBREPO);
         userRepository.save(USER_1_SIMPLE);
@@ -101,13 +97,15 @@ public class TableServiceIntegrationReadTest extends BaseUnitTest {
         databaseRepository.save(DATABASE_1_SIMPLE);
         tableRepository.save(TABLE_1);
         tableRepository.save(TABLE_2);
+        MariaDbConfig.dropAllDatabases(CONTAINER_1);
+        MariaDbConfig.createInitDatabase(CONTAINER_1, DATABASE_1);
     }
 
     @Test
     public void findAll_succeeds() throws DatabaseNotFoundException {
 
         /* test */
-        final List<Table> response = tableService.findAll(CONTAINER_1_ID, DATABASE_1_ID);
+        final List<Table> response = tableService.findAll(DATABASE_1_ID);
         assertEquals(2, response.size());
     }
 
@@ -116,7 +114,7 @@ public class TableServiceIntegrationReadTest extends BaseUnitTest {
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
-            tableService.findAll(CONTAINER_2_ID, DATABASE_2_ID);
+            tableService.findAll(DATABASE_2_ID);
         });
     }
 
@@ -125,7 +123,7 @@ public class TableServiceIntegrationReadTest extends BaseUnitTest {
             ContainerNotFoundException {
 
         /* test */
-        final Table response = tableService.findById(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID);
+        final Table response = tableService.findById(DATABASE_1_ID, TABLE_1_ID);
         assertEquals(TABLE_1_ID, response.getId());
         assertEquals(TABLE_1_NAME, response.getName());
         assertEquals(TABLE_1_INTERNALNAME, response.getInternalName());
@@ -136,7 +134,7 @@ public class TableServiceIntegrationReadTest extends BaseUnitTest {
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
-            tableService.findById(CONTAINER_1_ID, DATABASE_1_ID, 99999L);
+            tableService.findById(DATABASE_1_ID, 99999L);
         });
     }
 
@@ -145,16 +143,7 @@ public class TableServiceIntegrationReadTest extends BaseUnitTest {
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
-            tableService.findById(CONTAINER_2_ID, 99999L, TABLE_3_ID);
-        });
-    }
-
-    @Test
-    public void findById_containerNotFound_fails() {
-
-        /* test */
-        assertThrows(ContainerNotFoundException.class, () -> {
-            tableService.findById(99999L, DATABASE_3_ID, TABLE_3_ID);
+            tableService.findById(99999L, TABLE_3_ID);
         });
     }
 

@@ -1,17 +1,13 @@
 package at.tuwien.endpoint;
 
 import at.tuwien.api.auth.SignupRequestDto;
-import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.api.user.*;
-import at.tuwien.config.AuthenticationConfig;
 import at.tuwien.entities.user.Realm;
-import at.tuwien.entities.user.Role;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.UserMapper;
 import at.tuwien.service.RealmService;
-import at.tuwien.service.RoleService;
 import at.tuwien.service.UserService;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
@@ -31,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+
 import java.security.Principal;
 import java.util.List;
 import java.util.UUID;
@@ -43,19 +40,14 @@ import java.util.stream.Collectors;
 public class UserEndpoint {
 
     private final UserMapper userMapper;
-    private final RoleService roleService;
     private final UserService userService;
     private final RealmService realmService;
-    private final AuthenticationConfig authenticationConfig;
 
     @Autowired
-    public UserEndpoint(UserMapper userMapper, RoleService roleService, UserService userService,
-                        RealmService realmService, AuthenticationConfig authenticationConfig) {
+    public UserEndpoint(UserMapper userMapper, UserService userService, RealmService realmService) {
         this.userMapper = userMapper;
-        this.roleService = roleService;
         this.userService = userService;
         this.realmService = realmService;
-        this.authenticationConfig = authenticationConfig;
     }
 
     @GetMapping
@@ -107,16 +99,14 @@ public class UserEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<UserBriefDto> create(@NotNull @Valid @RequestBody SignupRequestDto data)
-            throws RealmNotFoundException, UserAlreadyExistsException, RoleNotFoundException,
-            UserEmailAlreadyExistsException {
+            throws RealmNotFoundException, UserAlreadyExistsException, UserEmailAlreadyExistsException {
         log.debug("endpoint create a user, data={}", data);
         /* check */
         final Realm realm = realmService.find("dbrepo");
-        final Role role = roleService.find(authenticationConfig.getDefaultRole());
         userService.validateUsernameNotExists(data.getUsername());
         userService.validateEmailNotExists(data.getEmail());
         /* create */
-        final User user = userService.create(data, realm, role);
+        final User user = userService.create(data, realm);
         final UserBriefDto dto = userMapper.userToUserBriefDto(user);
         log.trace("create user resulted in dto {}", dto);
         return ResponseEntity.status(HttpStatus.CREATED)

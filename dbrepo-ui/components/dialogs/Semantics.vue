@@ -190,7 +190,7 @@ export default {
         unit_uri: this.mode === 'unit' ? this.uri : unitUri
       }
       this.loadingSave = true
-      TableService.updateColumn(this.database.id, this.database.id, this.tableId, this.column.id, payload)
+      TableService.updateColumn(this.database.id, this.tableId, this.column.id, payload)
         .then(() => {
           this.$emit('close', {
             success: true,

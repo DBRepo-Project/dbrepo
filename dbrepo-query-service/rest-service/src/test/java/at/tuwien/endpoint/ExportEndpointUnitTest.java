@@ -37,7 +37,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
 @Log4j2
 @SpringBootTest
@@ -83,7 +83,7 @@ public class ExportEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            export_generic(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, null, null, null, null);
+            export_generic(DATABASE_1_ID, TABLE_1_ID, DATABASE_1, null, null, null, null);
         });
     }
 
@@ -95,7 +95,7 @@ public class ExportEndpointUnitTest extends BaseUnitTest {
             UserNotFoundException, IOException {
 
         /* test */
-        export_generic(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, null, USER_1_PRINCIPAL, USER_1_USERNAME, null);
+        export_generic(DATABASE_1_ID, TABLE_1_ID, DATABASE_1, null, USER_1_PRINCIPAL, USER_1_USERNAME, null);
     }
 
     @Test
@@ -106,7 +106,7 @@ public class ExportEndpointUnitTest extends BaseUnitTest {
             UserNotFoundException, IOException {
 
         /* test */
-        export_generic(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, null, USER_1_PRINCIPAL, USER_1_USERNAME, DATABASE_1_USER_1_READ_ACCESS);
+        export_generic(DATABASE_1_ID, TABLE_1_ID, DATABASE_1, null, USER_1_PRINCIPAL, USER_1_USERNAME, DATABASE_1_USER_1_READ_ACCESS);
     }
 
     @Test
@@ -116,7 +116,7 @@ public class ExportEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            export_generic(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, timestamp, null, null, null);
+            export_generic(DATABASE_1_ID, TABLE_1_ID, DATABASE_1, timestamp, null, null, null);
         });
     }
 
@@ -126,7 +126,7 @@ public class ExportEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            export_generic(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, DATABASE_1, timestamp, null, null, null);
+            export_generic(DATABASE_1_ID, TABLE_1_ID, DATABASE_1, timestamp, null, null, null);
         });
     }
 
@@ -140,7 +140,7 @@ public class ExportEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            export_generic(CONTAINER_2_ID, DATABASE_2_ID, TABLE_1_ID, DATABASE_2, null, null, null, null);
+            export_generic(DATABASE_2_ID, TABLE_1_ID, DATABASE_2, null, null, null, null);
         });
     }
 
@@ -152,7 +152,7 @@ public class ExportEndpointUnitTest extends BaseUnitTest {
             UserNotFoundException, IOException {
 
         /* test */
-        export_generic(CONTAINER_2_ID, DATABASE_2_ID, TABLE_1_ID, DATABASE_2, null, USER_2_PRINCIPAL, USER_2_USERNAME, null);
+        export_generic(DATABASE_2_ID, TABLE_1_ID, DATABASE_2, null, USER_2_PRINCIPAL, USER_2_USERNAME, null);
     }
 
     @Test
@@ -163,7 +163,7 @@ public class ExportEndpointUnitTest extends BaseUnitTest {
             UserNotFoundException, IOException {
 
         /* test */
-        export_generic(CONTAINER_2_ID, DATABASE_2_ID, TABLE_1_ID, DATABASE_2, null, USER_2_PRINCIPAL, USER_2_USERNAME, DATABASE_2_USER_1_WRITE_OWN_ACCESS);
+        export_generic(DATABASE_2_ID, TABLE_1_ID, DATABASE_2, null, USER_2_PRINCIPAL, USER_2_USERNAME, DATABASE_2_USER_1_WRITE_OWN_ACCESS);
     }
 
     @Test
@@ -175,7 +175,7 @@ public class ExportEndpointUnitTest extends BaseUnitTest {
         final Instant timestamp = Instant.now();
 
         /* test */
-        export_generic(CONTAINER_2_ID, DATABASE_2_ID, TABLE_1_ID, DATABASE_2, timestamp, USER_2_PRINCIPAL, USER_2_USERNAME, DATABASE_2_USER_1_READ_ACCESS);
+        export_generic(DATABASE_2_ID, TABLE_1_ID, DATABASE_2, timestamp, USER_2_PRINCIPAL, USER_2_USERNAME, DATABASE_2_USER_1_READ_ACCESS);
     }
 
     @Test
@@ -187,14 +187,14 @@ public class ExportEndpointUnitTest extends BaseUnitTest {
         final Instant timestamp = Instant.now().plus(10, ChronoUnit.DAYS);
 
         /* test */
-        export_generic(CONTAINER_2_ID, DATABASE_2_ID, TABLE_1_ID, DATABASE_2, timestamp, USER_2_PRINCIPAL, USER_2_USERNAME, DATABASE_2_USER_1_READ_ACCESS);
+        export_generic(DATABASE_2_ID, TABLE_1_ID, DATABASE_2, timestamp, USER_2_PRINCIPAL, USER_2_USERNAME, DATABASE_2_USER_1_READ_ACCESS);
     }
 
     /* ################################################################################################### */
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
 
-    protected void export_generic(Long containerId, Long databaseId, Long tableId, Database database, Instant timestamp,
+    protected void export_generic(Long databaseId, Long tableId, Database database, Instant timestamp,
                                   Principal principal, String username, DatabaseAccess access) throws IOException,
             DatabaseNotFoundException, UserNotFoundException, TableNotFoundException, DatabaseConnectionException,
             TableMalformedException, QueryMalformedException, ImageNotSupportedException, FileStorageException,
@@ -205,7 +205,7 @@ public class ExportEndpointUnitTest extends BaseUnitTest {
                 .build();
 
         /* mock */
-        when(databaseService.find(containerId, databaseId))
+        when(databaseService.find(databaseId))
                 .thenReturn(database);
         if (access == null) {
             when(databaseAccessRepository.findByDatabaseIdAndUsername(databaseId, username))
@@ -214,13 +214,13 @@ public class ExportEndpointUnitTest extends BaseUnitTest {
             when(databaseAccessRepository.findByDatabaseIdAndUsername(databaseId, username))
                     .thenReturn(Optional.of(access));
         }
-        when(tableRepository.find(containerId, databaseId, tableId))
+        when(tableRepository.find(databaseId, tableId))
                 .thenReturn(Optional.of(TABLE_1));
-        when(queryService.tableFindAll(containerId, databaseId, tableId, timestamp, principal))
+        when(queryService.tableFindAll(databaseId, tableId, timestamp, principal))
                 .thenReturn(resource);
 
         /* test */
-        final ResponseEntity<InputStreamResource> response = exportEndpoint.export(containerId, databaseId, tableId,
+        final ResponseEntity<InputStreamResource> response = exportEndpoint.export(databaseId, tableId,
                 timestamp, principal);
         assertNotNull(response);
         assertEquals(HttpStatus.OK, response.getStatusCode());

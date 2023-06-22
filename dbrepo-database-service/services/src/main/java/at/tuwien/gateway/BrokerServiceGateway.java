@@ -42,6 +42,5 @@ public interface BrokerServiceGateway {
      * @param data     The grant data.
      * @throws BrokerVirtualHostGrantException The queue service did not respond within the 3s timeout.
      */
-    void grantPermission(String username, GrantVirtualHostPermissionsDto data)
-            throws BrokerVirtualHostGrantException;
+    void grantPermission(String username, GrantVirtualHostPermissionsDto data) throws BrokerVirtualHostGrantException;
 }

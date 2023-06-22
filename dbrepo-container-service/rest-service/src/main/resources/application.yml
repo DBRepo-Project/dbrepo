@@ -33,7 +33,20 @@ spring:
     username: "${SEARCH_USERNAME}"
     password: "${SEARCH_PASSWORD}"
     uris: search-db:9200
-management.endpoints.web.exposure.include: health,info,prometheus
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  health:
+    readinessState:
+      enabled: true
+    livenessState:
+      enabled: true
 springdoc.swagger-ui.enabled: true
 server:
   port: 9091

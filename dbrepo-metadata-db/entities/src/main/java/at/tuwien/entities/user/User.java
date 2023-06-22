@@ -1,8 +1,8 @@
 package at.tuwien.entities.user;
 
-import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.identifier.Identifier;
+import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.springframework.data.elasticsearch.annotations.Document;
@@ -89,11 +89,6 @@ public class User {
     @Transient
     @ToString.Exclude
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "owner")
-    private List<Container> containers;
-
-    @Transient
-    @ToString.Exclude
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "owner")
     private List<Database> databases;
 
     @Transient
@@ -111,6 +106,17 @@ public class User {
                     @JoinColumn(name = "ROLE_ID", nullable = false, columnDefinition = "VARCHAR(36)", updatable = false),
             })
     private List<Role> roles;
+
+    @ToString.Exclude
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "user_group_membership",
+            joinColumns = {
+                    @JoinColumn(name = "USER_ID", nullable = false, columnDefinition = "VARCHAR(36)", updatable = false),
+            },
+            inverseJoinColumns = {
+                    @JoinColumn(name = "GROUP_ID", nullable = false, columnDefinition = "VARCHAR(36)", updatable = false),
+            })
+    private List<Group> groups;
 
     @Transient
     @ToString.Exclude

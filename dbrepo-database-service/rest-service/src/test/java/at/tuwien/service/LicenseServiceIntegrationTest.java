@@ -5,7 +5,7 @@ import at.tuwien.config.IndexConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.database.License;
 import at.tuwien.exception.LicenseNotFoundException;
-import at.tuwien.repository.mdb.*;
+import at.tuwien.repository.mdb.LicenseRepository;
 import at.tuwien.repository.sdb.DatabaseIdxRepository;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
@@ -16,6 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.testcontainers.containers.MariaDBContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.List;
 
@@ -23,6 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @Log4j2
+@Testcontainers
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 public class LicenseServiceIntegrationTest extends BaseUnitTest {
@@ -44,6 +48,10 @@ public class LicenseServiceIntegrationTest extends BaseUnitTest {
 
     @Autowired
     private LicenseService licenseService;
+
+    @Container
+    @Autowired
+    public MariaDBContainer<?> mariaDBContainer;
 
     @BeforeEach
     public void beforeEach() {

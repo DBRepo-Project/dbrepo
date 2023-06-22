@@ -7,11 +7,10 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
-import lombok.extern.jackson.Jacksonized;
-
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.*;
+import lombok.extern.jackson.Jacksonized;
 import org.springframework.data.elasticsearch.annotations.Document;
 
 import java.time.Instant;
@@ -28,11 +27,6 @@ import java.util.List;
 public class IdentifierDto {
 
     private Long id;
-
-    @NotNull
-    @JsonProperty("container_id")
-    @Schema(name = "container id", example = "1")
-    private Long containerId;
 
     @NotNull
     @JsonProperty("database_id")

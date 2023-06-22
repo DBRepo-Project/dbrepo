@@ -1,9 +1,8 @@
 package at.tuwien.api.container;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
-
 import jakarta.validation.constraints.NotBlank;
+import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
 @Getter
@@ -20,11 +19,21 @@ public class ContainerCreateRequestDto {
     private String name;
 
     @NotBlank
-    @Schema(example = "mariadb")
-    private String repository;
+    @Schema(description = "Image ID")
+    private Long imageId;
 
     @NotBlank
-    @Schema(example = "10.5")
-    private String tag;
+    @Schema(description = "Hostname of container")
+    private String host;
 
+    @Schema(description = "Port of container")
+    private Integer port;
+
+    @NotBlank
+    @Schema(description = "Username of privileged user", example = "root")
+    private String privilegedUsername;
+
+    @NotBlank
+    @Schema(description = "Password of privileged user")
+    private String privilegedPassword;
 }

@@ -2,6 +2,7 @@ package at.tuwien.entities.database;
 
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.user.User;
+import jakarta.persistence.*;
 import lombok.*;
 import net.sf.jsqlparser.statement.select.FromItem;
 import org.hibernate.annotations.GenericGenerator;
@@ -12,7 +13,6 @@ import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import jakarta.persistence.*;;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -67,9 +67,9 @@ public class View {
     private User creator;
 
     @ToString.Exclude
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "vdbid", insertable = false, updatable = false)
-    private at.tuwien.entities.database.Database database;
+    private Database database;
 
     @Column(name = "vname", nullable = false)
     private String name;
@@ -104,11 +104,10 @@ public class View {
         return this.internalName.equals(table.getName().replace("`", ""));
     }
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinTable(name = "mdb_view_columns",
             joinColumns = {
                     @JoinColumn(name = "vid", referencedColumnName = "id", insertable = false, updatable = false),
-                    @JoinColumn(name = "vcid", referencedColumnName = "vcid", insertable = false, updatable = false),
                     @JoinColumn(name = "vdbid", referencedColumnName = "vdbid", insertable = false, updatable = false)
             },
             inverseJoinColumns = {

@@ -3,15 +3,14 @@ package at.tuwien.service;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.container.image.ImageCreateDto;
 import at.tuwien.config.ReadyConfig;
-import at.tuwien.exception.*;
+import at.tuwien.exception.ImageAlreadyExistsException;
+import at.tuwien.exception.ImageNotFoundException;
 import at.tuwien.repository.mdb.ContainerRepository;
 import at.tuwien.repository.mdb.ImageRepository;
 import at.tuwien.repository.mdb.UserRepository;
 import at.tuwien.service.impl.ImageServiceImpl;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.RandomUtils;
 import org.apache.http.auth.BasicUserPrincipal;
-import org.apache.tomcat.util.buf.HexUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -53,16 +52,13 @@ public class ImageServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void create_succeeds()
-            throws ImageAlreadyExistsException, DockerClientException, ImageNotFoundException, UserNotFoundException {
+    public void create_succeeds() throws ImageAlreadyExistsException {
         final ImageCreateDto request = ImageCreateDto.builder()
-                .registry(IMAGE_2_REGISTRY)
-                .repository(IMAGE_2_REPOSITORY)
-                .tag(IMAGE_2_TAG)
+                .name(IMAGE_2_NAME)
+                .version(IMAGE_2_VERSION)
                 .jdbcMethod(IMAGE_2_JDBC)
                 .dialect(IMAGE_2_DIALECT)
                 .driverClass(IMAGE_2_DRIVER)
-                .environment(IMAGE_2_ENV_DTO)
                 .defaultPort(IMAGE_2_PORT)
                 .build();
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
@@ -72,43 +68,14 @@ public class ImageServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void inspect_notFound_fails() {
-
-        /* test */
-        assertThrows(ImageNotFoundException.class, () -> {
-            imageService.inspect("abcdefu", "999.999");
-        });
-    }
-
-    @Test
-    public void create_notFound_fails() {
-        final ImageCreateDto request = ImageCreateDto.builder()
-                .repository("s0m3th1ng_n0t3x1st1ng")
-                .tag("d3v_h3ll")
-                .dialect(IMAGE_1_DIALECT)
-                .driverClass(IMAGE_1_DRIVER)
-                .jdbcMethod(IMAGE_1_JDBC)
-                .defaultPort(IMAGE_1_PORT)
-                .environment(IMAGE_1_ENV_DTO)
-                .build();
-        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
-
-        /* test */
-        assertThrows(ImageNotFoundException.class, () -> {
-            imageService.create(request, principal);
-        });
-    }
-
-    @Test
     public void create_duplicate_fails() {
         final ImageCreateDto request = ImageCreateDto.builder()
-                .repository(IMAGE_1_REPOSITORY)
-                .tag(IMAGE_1_TAG)
+                .name(IMAGE_1_NAME)
+                .version(IMAGE_1_VERSION)
                 .defaultPort(IMAGE_1_PORT)
                 .driverClass(IMAGE_1_DRIVER)
                 .jdbcMethod(IMAGE_1_JDBC)
                 .dialect(IMAGE_1_DIALECT)
-                .environment(IMAGE_1_ENV_DTO)
                 .build();
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
@@ -133,17 +100,6 @@ public class ImageServiceIntegrationTest extends BaseUnitTest {
         /* test */
         imageService.delete(IMAGE_1_ID);
         assertTrue(imageRepository.findById(IMAGE_1_ID).isEmpty());
-    }
-
-    @Test
-    public void pull_fails() {
-        final String repository = HexUtils.toHexString(RandomUtils.nextBytes(16));
-        final String tag = HexUtils.toHexString(RandomUtils.nextBytes(16));
-
-        /* test */
-        assertThrows(ImageNotFoundException.class, () -> {
-            imageService.pull("docker.io/library", repository, tag);
-        });
     }
 
 }

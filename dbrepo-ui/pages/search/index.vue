@@ -179,16 +179,16 @@ export default {
     },
     link (item) {
       if (this.isDatabase(item)) {
-        return `/container/${item.id}/database/${item.id}`
+        return `/database/${item.id}`
       }
       if (this.isTable(item)) {
-        return `/container/${item.containerId}/database/${item.databaseId}/table/${item.id}`
+        return `/database/${item.databaseId}/table/${item.id}`
       }
       if (this.isView(item)) {
-        return `/container/${item.vdbid}/database/${item.vdbid}/view/${item.id}`
+        return `/database/${item.vdbid}/view/${item.id}`
       }
       if (this.isColumn(item)) {
-        return `/container/${item.cdbid}/database/${item.cdbid}/table/${item.tid}`
+        return `/database/${item.cdbid}/table/${item.tid}`
       }
       if (this.isIdentifier(item)) {
         return `/pid/${item.id}`

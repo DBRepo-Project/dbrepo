@@ -1,12 +1,12 @@
 <template>
   <div>
-    <v-progress-linear v-if="loadingIdentifiers || loadingQueries || error" :color="loadingColor" :indeterminate="!error" />
-    <v-card v-if="!error && !(loadingIdentifiers || loadingQueries) && queries && queries.length === 0" flat tile>
+    <v-progress-linear v-if="loadingIdentifiers || loadingQueries" color="primary" :indeterminate="!error" />
+    <v-card v-if="queries && identifiers && queries.length === 0 && identifiers.length === 0" flat tile>
       <v-card-text>
         (no subsets)
       </v-card-text>
     </v-card>
-    <v-card v-if="error" flat tile>
+    <v-card v-if="isNotReachable" flat tile>
       <v-card-text>
         Failed to load queries: database is not reachable
       </v-card-text>
@@ -84,7 +84,9 @@ export default {
       loadingIdentifiers: false,
       error: false,
       queries: [],
-      identifiers: []
+      identifiers: [],
+      isNotReachable: false,
+      isAuthorizationError: false
     }
   },
   computed: {
@@ -107,9 +109,6 @@ export default {
     },
     database () {
       return this.$store.state.database
-    },
-    loadingColor () {
-      return this.error ? 'error' : 'primary'
     },
     creator () {
       return this.queryDetails.creator
@@ -147,11 +146,17 @@ export default {
     },
     loadQueries () {
       this.loadingQueries = true
-      QueryService.findAll(this.$route.params.container_id, this.$route.params.database_id, true)
+      QueryService.findAll(this.$route.params.database_id, true)
         .then((queries) => {
           this.queries = queries
         })
-        .catch(() => {
+        .catch((error) => {
+          if (error.response.status === 405) {
+            this.isAuthorizationError = true
+            return
+          }
+          const { code, message } = error
+          this.$toast.error(`[${code}] Failed to load queries: ${message}`)
           this.error = true
         })
         .finally(() => {
@@ -166,7 +171,7 @@ export default {
     },
     link (queryOrIdentifier) {
       if (queryOrIdentifier.identifier === null) {
-        return `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/query/${queryOrIdentifier.id}`
+        return `/database/${this.$route.params.database_id}/query/${queryOrIdentifier.id}`
       }
       if ('query_id' in queryOrIdentifier) {
         return null

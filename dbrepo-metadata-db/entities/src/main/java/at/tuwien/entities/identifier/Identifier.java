@@ -4,17 +4,15 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.LanguageType;
 import at.tuwien.entities.database.License;
 import at.tuwien.entities.user.User;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import jakarta.persistence.*;;
-import jakarta.validation.constraints.NotBlank;
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -29,9 +27,8 @@ import java.util.UUID;
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 @jakarta.persistence.Table(name = "mdb_identifiers", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"qid", "cid", "dbid"})
+        @UniqueConstraint(columnNames = {"qid", "dbid"})
 })
-@Document(indexName = "identifier")
 public class Identifier implements Serializable {
 
     @Id
@@ -41,20 +38,13 @@ public class Identifier implements Serializable {
     @Column(updatable = false, nullable = false)
     private Long id;
 
-    @Field(name = "container_id")
-    @Column(name = "cid", nullable = false)
-    private Long containerId;
-
-    @Field(name = "database_id")
     @Column(name = "dbid", nullable = false)
     private Long databaseId;
 
-    @Field(name = "query_id")
     @Column(name = "qid")
     private Long queryId;
 
     @ToString.Exclude
-    @Field(name = "created_by")
     @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column(name = "created_by", nullable = false, columnDefinition = "VARCHAR(36)")
     private UUID createdBy;

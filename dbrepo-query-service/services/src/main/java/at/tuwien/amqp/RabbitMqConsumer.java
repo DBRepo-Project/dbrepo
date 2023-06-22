@@ -1,7 +1,6 @@
 package at.tuwien.amqp;
 
 import at.tuwien.api.database.table.TableCsvDto;
-import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.*;
 import at.tuwien.service.QueryService;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -21,15 +20,12 @@ import java.util.HashMap;
 @Log4j2
 public class RabbitMqConsumer implements Consumer {
 
-    private final Long containerId;
     private final Long databaseId;
     private final Long tableId;
     private final ObjectMapper objectMapper;
     private final QueryService queryService;
 
-    public RabbitMqConsumer(Long containerId, Long databaseId, Long tableId, ObjectMapper objectMapper,
-                            QueryService queryService) {
-        this.containerId = containerId;
+    public RabbitMqConsumer(Long databaseId, Long tableId, ObjectMapper objectMapper, QueryService queryService) {
         this.databaseId = databaseId;
         this.tableId = tableId;
         this.objectMapper = objectMapper;
@@ -74,7 +70,7 @@ public class RabbitMqConsumer implements Consumer {
                 .build();
         log.trace("received tuple data {}", data);
         try {
-            queryService.insert(containerId, databaseId, tableId, data, new BasicUserPrincipal(properties.getUserId()));
+            queryService.insert(databaseId, tableId, data, new BasicUserPrincipal(properties.getUserId()));
         } catch (HttpClientErrorException.Unauthorized e) {
             log.error("Failed to authenticate for table with id {}, reason: {}", tableId, e.getMessage());
             throw new IOException("Failed to authenticate for table", e);
@@ -93,11 +89,8 @@ public class RabbitMqConsumer implements Consumer {
         } catch (ImageNotSupportedException e) {
             log.error("Image is not supported");
             throw new IOException("Image is not supported", e);
-        } catch (ContainerNotFoundException e) {
-            log.error("Failed to find container with id {}, reason: {}", containerId, e.getMessage());
-            throw new IOException("Failed to find container", e);
         } catch (DatabaseConnectionException e) {
-            log.error("Failed to connect to container with id {}, reason: {}", containerId, e.getMessage());
+            log.error("Failed to connect to database, reason: {}", e.getMessage());
             throw new IOException("Failed to connect to container", e);
         } catch (UserNotFoundException e) {
             log.error("Failed to find user with id {}", properties.getUserId());

@@ -1,9 +1,7 @@
 package at.tuwien.endpoints;
 
-import at.tuwien.api.container.ContainerDto;
 import at.tuwien.api.database.*;
 import at.tuwien.api.error.ApiErrorDto;
-import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.user.User;
@@ -20,6 +18,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -28,8 +28,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -37,25 +35,23 @@ import java.util.stream.Collectors;
 @Log4j2
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping("/api/container/{id}/database")
+@RequestMapping("/api/database")
 public class DatabaseEndpoint {
 
     private final UserService userService;
     private final AccessService accessService;
     private final DatabaseMapper databaseMapper;
-    private final ContainerService containerService;
     private final MariaDbServiceImpl databaseService;
     private final QueryStoreService queryStoreService;
     private final MessageQueueService messageQueueService;
     private final DatabaseAccessRepository databaseAccessRepository;
 
     @Autowired
-    public DatabaseEndpoint(DatabaseMapper databaseMapper, UserService userService, ContainerService containerService,
+    public DatabaseEndpoint(DatabaseMapper databaseMapper, UserService userService,
                             MariaDbServiceImpl databaseService, QueryStoreService queryStoreService,
                             MessageQueueService messageQueueService, AccessService accessService,
                             DatabaseAccessRepository databaseAccessRepository) {
         this.userService = userService;
-        this.containerService = containerService;
         this.accessService = accessService;
         this.databaseMapper = databaseMapper;
         this.databaseService = databaseService;
@@ -75,12 +71,12 @@ public class DatabaseEndpoint {
                             mediaType = "application/json",
                             array = @ArraySchema(schema = @Schema(implementation = DatabaseBriefDto.class)))}),
     })
-    public ResponseEntity<List<DatabaseBriefDto>> list(@NotNull @PathVariable("id") Long containerId,
-                                                       @NotNull Principal principal) {
-        log.debug("endpoint list databases, containerId={}, principal={}", containerId, principal);
-        final List<DatabaseBriefDto> databases = databaseService.findAll(containerId)
+    public ResponseEntity<List<DatabaseDto>> list(@NotNull Principal principal) {
+        log.debug("endpoint list databases, principal={}", principal);
+        List<DatabaseDto> databases;
+        databases = databaseService.findAll()
                 .stream()
-                .map(databaseMapper::databaseToDatabaseBriefDto)
+                .map(databaseMapper::databaseToDatabaseDto)
                 .collect(Collectors.toList());
         log.trace("list databases resulted in databases {}", databases);
         return ResponseEntity.ok(databases);
@@ -138,35 +134,29 @@ public class DatabaseEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<DatabaseBriefDto> create(@NotNull @PathVariable("id") Long containerId,
-                                                   @Valid @RequestBody DatabaseCreateDto createDto,
+    public ResponseEntity<DatabaseBriefDto> create(@Valid @RequestBody DatabaseCreateDto createDto,
                                                    @NotNull Principal principal)
             throws ImageNotSupportedException, ContainerNotFoundException, DatabaseMalformedException,
             AmqpException, ContainerConnectionException, UserNotFoundException,
             DatabaseNotFoundException, DatabaseNameExistsException, DatabaseConnectionException,
             QueryMalformedException, NotAllowedException, BrokerVirtualHostCreationException, QueryStoreException,
             BrokerVirtualHostGrantException {
-        log.debug("endpoint create database, containerId={}, createDto={}, principal={}", containerId, createDto,
+        log.debug("endpoint create database, createDto={}, principal={}", createDto,
                 principal);
-        final Container container = containerService.find(containerId);
         final User user = userService.findByUsername(principal.getName());
-        if (!container.getOwner().equals(user)) {
-            log.error("Failed to create database: not owner");
-            throw new NotAllowedException(("Failed to create database: not owner"));
-        }
-        final Database database = databaseService.create(containerId, createDto, principal);
+        final Database database = databaseService.create(createDto, principal);
         messageQueueService.createUser(user);
         messageQueueService.createExchange(database, principal);
-        messageQueueService.updatePermissions(principal);
-        queryStoreService.create(containerId, database.getId(), principal);
+        queryStoreService.create(database.getId(), principal);
         databaseAccessRepository.save(databaseMapper.defaultCreatorAccess(database, user));
+        messageQueueService.updatePermissions(user);
         final DatabaseBriefDto dto = databaseMapper.databaseToDatabaseBriefDto(database);
         log.trace("create database resulted in database {}", dto);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(dto);
     }
 
-    @PutMapping("/{databaseId}/visibility")
+    @PutMapping("/{id}/visibility")
     @Transactional
     @PreAuthorize("hasAuthority('modify-database-visibility')")
     @Timed(value = "database.visibility", description = "Time needed to modify a database visibility")
@@ -188,26 +178,24 @@ public class DatabaseEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<DatabaseDto> visibility(@NotNull @PathVariable("id") Long containerId,
-                                                  @NotNull @PathVariable Long databaseId,
+    public ResponseEntity<DatabaseDto> visibility(@NotNull @PathVariable Long id,
                                                   @Valid @RequestBody DatabaseModifyVisibilityDto data,
                                                   @NotNull Principal principal)
             throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException {
-        log.debug("endpoint update database, containerId={}, databaseId={}, data={}, principal={}", containerId,
-                databaseId, data, principal);
-        final Database database = databaseService.findById(containerId, databaseId);
+        log.debug("endpoint update database, id={}, data={}, principal={}", id, data, principal);
+        final Database database = databaseService.findById(id);
         final User user = userService.findByUsername(principal.getName());
         if (!database.getOwner().equals(user)) {
             log.error("Failed to create database: not owner");
             throw new NotAllowedException(("Failed to create database: not owner"));
         }
-        final DatabaseDto dto = databaseMapper.databaseToDatabaseDto(databaseService.visibility(containerId, databaseId, data));
+        final DatabaseDto dto = databaseMapper.databaseToDatabaseDto(databaseService.visibility(id, data));
         log.trace("update database resulted in database {}", dto);
         return ResponseEntity.accepted()
                 .body(dto);
     }
 
-    @PutMapping("/{databaseId}/transfer")
+    @PutMapping("/{id}/transfer")
     @Transactional
     @PreAuthorize("hasAuthority('modify-database-owner')")
     @Timed(value = "database.transfer", description = "Time needed to transfer a database ownership")
@@ -229,26 +217,24 @@ public class DatabaseEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<DatabaseDto> transfer(@NotNull @PathVariable("id") Long containerId,
-                                                @NotNull @PathVariable Long databaseId,
+    public ResponseEntity<DatabaseDto> transfer(@NotNull @PathVariable Long id,
                                                 @Valid @RequestBody DatabaseTransferDto transferDto,
                                                 @NotNull Principal principal)
             throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException {
-        log.debug("endpoint update database, containerId={}, databaseId={}, transferDto={}, principal={}", containerId,
-                databaseId, transferDto, principal);
-        final Database database = databaseService.findById(containerId, databaseId);
+        log.debug("endpoint update database, id={}, transferDto={}, principal={}", id, transferDto, principal);
+        final Database database = databaseService.findById(id);
         final User user = userService.findByUsername(principal.getName());
         if (!database.getOwner().equals(user)) {
             log.error("Failed to create database: not owner");
             throw new NotAllowedException(("Failed to create database: not owner"));
         }
-        final DatabaseDto dto = databaseMapper.databaseToDatabaseDto(databaseService.transfer(containerId, databaseId, transferDto));
+        final DatabaseDto dto = databaseMapper.databaseToDatabaseDto(databaseService.transfer(id, transferDto));
         log.trace("update database resulted in database {}", dto);
         return ResponseEntity.accepted()
                 .body(dto);
     }
 
-    @GetMapping("/{databaseId}")
+    @GetMapping("/{id}")
     @Transactional(readOnly = true)
     @Timed(value = "database.find", description = "Time needed to find a database")
     @Operation(summary = "Find some database", security = @SecurityRequirement(name = "bearerAuth"))
@@ -269,27 +255,23 @@ public class DatabaseEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<DatabaseDto> findById(@NotNull @PathVariable("id") Long containerId,
-                                                @NotNull @PathVariable Long databaseId,
-                                                Principal principal)
-            throws DatabaseNotFoundException, AccessDeniedException, ContainerNotFoundException {
-        log.debug("endpoint find database, containerId={}, databaseId={}", containerId, databaseId);
-        final Database database = databaseService.findById(containerId, databaseId);
+    public ResponseEntity<DatabaseDto> findById(@NotNull @PathVariable Long id, Principal principal)
+            throws DatabaseNotFoundException, AccessDeniedException {
+        log.debug("endpoint find database, id={}", id);
+        final Database database = databaseService.findById(id);
         final DatabaseDto dto = databaseMapper.databaseToDatabaseDto(database);
         if (principal != null && database.getOwner().equalsPrincipal(principal)) {
             /* only owner sees the access rights */ // TODO improve this by proper mapping
-            final List<DatabaseAccess> accesses = accessService.list(databaseId);
+            final List<DatabaseAccess> accesses = accessService.list(id);
             dto.setAccesses(accesses.stream()
                     .map(databaseMapper::databaseAccessToDatabaseAccessDto)
                     .collect(Collectors.toList()));
         }
-        final ContainerDto containerDto = containerService.inspect(containerId);
-        dto.setContainer(containerDto);
         log.trace("find database resulted in dto {}", dto);
         return ResponseEntity.ok(dto);
     }
 
-    @DeleteMapping("/{databaseId}")
+    @DeleteMapping("/{id}")
     @Transactional
     @PreAuthorize("hasAuthority('delete-database')")
     @Timed(value = "database.delete", description = "Time needed to delete a database")
@@ -336,18 +318,17 @@ public class DatabaseEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<?> delete(@NotNull @PathVariable("id") Long containerId,
-                                    @NotNull @PathVariable Long databaseId,
-                                    Principal principal) throws DatabaseNotFoundException,
-            ImageNotSupportedException, DatabaseMalformedException, AmqpException, ContainerNotFoundException,
-            QueryMalformedException, BrokerVirtualHostCreationException, UserNotFoundException,
-            BrokerVirtualHostGrantException, DatabaseConnectionException {
-        log.debug("endpoint delete database, containerId={}, databaseId={}, principal={}", containerId, databaseId,
+    public ResponseEntity<?> delete(@NotNull @PathVariable Long id, Principal principal)
+            throws DatabaseNotFoundException, ImageNotSupportedException, DatabaseMalformedException, AmqpException,
+            QueryMalformedException, UserNotFoundException, BrokerVirtualHostGrantException,
+            DatabaseConnectionException {
+        log.debug("endpoint delete database, id={}, principal={}", id,
                 principal);
-        final Database database = databaseService.findById(containerId, databaseId);
+        final Database database = databaseService.findById(id);
+        final User user = userService.findByUsername(principal.getName());
         messageQueueService.deleteExchange(database);
-        databaseService.delete(containerId, databaseId, principal);
-        messageQueueService.updatePermissions(principal);
+        databaseService.delete(id, user.getId());
+        messageQueueService.updatePermissions(user);
         return ResponseEntity.accepted()
                 .build();
     }

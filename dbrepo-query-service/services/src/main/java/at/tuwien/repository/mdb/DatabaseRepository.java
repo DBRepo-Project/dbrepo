@@ -11,8 +11,8 @@ import java.util.Optional;
 @Repository
 public interface DatabaseRepository extends JpaRepository<Database, Long> {
 
-    @Query(value = "select d from Database d where d.container.id = :containerId and d.id = :databaseId")
-    Optional<Database> findByContainerIdAndDatabaseId(@Param("containerId") Long containerId, @Param("databaseId") Long databaseId);
+    @Query(value = "select d from Database d where d.id = :databaseId")
+    Optional<Database> findByDatabaseId(@Param("databaseId") Long databaseId);
 
 }
 

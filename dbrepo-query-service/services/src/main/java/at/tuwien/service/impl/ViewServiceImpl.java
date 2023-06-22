@@ -6,7 +6,6 @@ import at.tuwien.entities.database.View;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
-import at.tuwien.mapper.DatabaseMapper;
 import at.tuwien.mapper.ViewMapper;
 import at.tuwien.repository.sdb.ViewIdxRepository;
 import at.tuwien.repository.mdb.ViewRepository;
@@ -34,19 +33,16 @@ public class ViewServiceImpl extends HibernateConnector implements ViewService {
 
     private final ViewMapper viewMapper;
     private final UserService userService;
-    private final DatabaseMapper databaseMapper;
     private final ViewRepository viewRepository;
     private final DatabaseService databaseService;
     private final ViewIdxRepository viewIdxRepository;
     private final QueryService queryService;
 
     @Autowired
-    public ViewServiceImpl(ViewMapper viewMapper, UserService userService, DatabaseMapper databaseMapper,
-                           ViewRepository viewRepository, DatabaseService databaseService,
-                           ViewIdxRepository viewIdxRepository, QueryService queryService) {
+    public ViewServiceImpl(ViewMapper viewMapper, UserService userService, ViewRepository viewRepository,
+                           DatabaseService databaseService, ViewIdxRepository viewIdxRepository, QueryService queryService) {
         this.viewMapper = viewMapper;
         this.userService = userService;
-        this.databaseMapper = databaseMapper;
         this.viewRepository = viewRepository;
         this.databaseService = databaseService;
         this.viewIdxRepository = viewIdxRepository;
@@ -84,15 +80,14 @@ public class ViewServiceImpl extends HibernateConnector implements ViewService {
 
     @Override
     @Transactional
-    public void delete(Long containerId, Long databaseId, Long id, Principal principal) throws ViewNotFoundException,
+    public void delete(Long databaseId, Long id, Principal principal) throws ViewNotFoundException,
             UserNotFoundException, DatabaseNotFoundException, DatabaseConnectionException, QueryMalformedException, ViewMalformedException {
         /* find */
         final View view = findById(databaseId, id, principal);
-        final Database database = databaseService.find(containerId, databaseId);
-        final User root = databaseMapper.containerToPrivilegedUser(database.getContainer());
+        final Database database = databaseService.find(databaseId);
         /* delete view */
-        final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(),
-                database.getContainer(), database, root);
+        final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(),
+                database.getContainer(), database);
         try {
             final Connection connection = dataSource.getConnection();
             final PreparedStatement createViewStatement = viewMapper.viewToRawDeleteViewQuery(connection, view);
@@ -112,16 +107,15 @@ public class ViewServiceImpl extends HibernateConnector implements ViewService {
 
     @Override
     @Transactional
-    public View create(Long containerId, Long databaseId, ViewCreateDto data, Principal principal)
+    public View create(Long databaseId, ViewCreateDto data, Principal principal)
             throws DatabaseNotFoundException, DatabaseConnectionException, QueryMalformedException,
             ViewMalformedException, UserNotFoundException {
         /* find */
-        final Database database = databaseService.find(containerId, databaseId);
+        final Database database = databaseService.find(databaseId);
         final User user = userService.findByUsername(principal.getName());
-        final User root = databaseMapper.containerToPrivilegedUser(database.getContainer());
         /* create view */
-        final ComboPooledDataSource dataSource = getDataSource(database.getContainer().getImage(),
-                database.getContainer(), database, root);
+        final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(),
+                database.getContainer(), database);
         final List<TableColumn> columns;
         try {
             columns = queryService.parseColumns(data.getQuery(), database);
@@ -141,7 +135,6 @@ public class ViewServiceImpl extends HibernateConnector implements ViewService {
         }
         /* save in metadata database */
         final View entity = View.builder()
-                .vcid(containerId)
                 .vdbid(databaseId)
                 .name(data.getName())
                 .internalName(viewMapper.nameToInternalName(data.getName()))

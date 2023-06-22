@@ -18,6 +18,9 @@ import java.util.UUID;
 @EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Table(name = "keycloak_role")
+@NamedQueries({
+        @NamedQuery(name = "Role.findDefault", query = "select r from Role r join Realm rr on rr.name = 'dbrepo' and rr.id = r.realmId and rr.defaultRole = r.id")
+})
 public class Role {
 
     @Id

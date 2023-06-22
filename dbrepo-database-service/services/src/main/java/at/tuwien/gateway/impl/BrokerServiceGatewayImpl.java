@@ -11,29 +11,40 @@ import at.tuwien.gateway.BrokerServiceGateway;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.env.Environment;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
+import java.util.Arrays;
 
 @Slf4j
 @Service
 public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
 
+    private final Environment environment;
     private final RestTemplate restTemplate;
     private final GatewayConfig gatewayConfig;
 
     @Autowired
-    public BrokerServiceGatewayImpl(@Qualifier("brokerRestTemplate") RestTemplate restTemplate,
+    public BrokerServiceGatewayImpl(Environment environment, @Qualifier("brokerRestTemplate") RestTemplate restTemplate,
                                     GatewayConfig gatewayConfig) {
+        this.environment = environment;
         this.restTemplate = restTemplate;
         this.gatewayConfig = gatewayConfig;
     }
 
+    private URI parseUrl(String path) {
+        final String prefix = !Arrays.asList(environment.getActiveProfiles()).contains("junit") ? "/broker" : "";
+        final URI url = URI.create(gatewayConfig.getGatewayEndpoint() + "/api" + prefix + path);
+        log.debug("parse url: {}", url);
+        return url;
+    }
+
     @Override
     public void createVirtualHost(CreateVirtualHostDto data) throws BrokerVirtualHostCreationException {
-        final ResponseEntity<Void> response = restTemplate.exchange(gatewayConfig.getGatewayEndpoint() + "/api/broker/vhost", HttpMethod.POST,
+        final ResponseEntity<Void> response = restTemplate.exchange(parseUrl("/vhost"), HttpMethod.POST,
                 new HttpEntity<>(data), Void.class);
         if (!response.getStatusCode().equals(HttpStatus.CREATED)) {
             log.error("Failed to create virtual host: {}", response.getStatusCode());
@@ -45,8 +56,7 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
     @Override
     public void grantPermission(String username, ExchangeUpdatePermissionsDto data)
             throws BrokerVirtualHostGrantException {
-        final URI grantUri = URI.create(gatewayConfig.getGatewayEndpoint() + "/api/broker/topic-permissions/dbrepo/" + username);
-        final ResponseEntity<Void> response = restTemplate.exchange(grantUri, HttpMethod.PUT,
+        final ResponseEntity<Void> response = restTemplate.exchange(parseUrl("/topic-permissions/dbrepo/" + username), HttpMethod.PUT,
                 new HttpEntity<>(data), Void.class);
         if (!response.getStatusCode().equals(HttpStatus.CREATED) && !response.getStatusCode().equals(HttpStatus.NO_CONTENT)) {
             log.error("Failed to grant exchange: {}", response.getStatusCode());
@@ -61,7 +71,7 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
                 .passwordHash("")
                 .tags("")
                 .build();
-        final ResponseEntity<Void> response = restTemplate.exchange(gatewayConfig.getGatewayEndpoint() + "/api/broker/users/" + username, HttpMethod.PUT,
+        final ResponseEntity<Void> response = restTemplate.exchange(parseUrl("/users/" + username), HttpMethod.PUT,
                 new HttpEntity<>(data), Void.class);
         if (!response.getStatusCode().equals(HttpStatus.CREATED) && !response.getStatusCode().equals(HttpStatus.NO_CONTENT)) {
             log.error("Failed to create user: {}", response.getStatusCode());
@@ -73,8 +83,7 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
     @Override
     public void grantPermission(String username, GrantVirtualHostPermissionsDto data)
             throws BrokerVirtualHostGrantException {
-        final URI grantUri = URI.create(gatewayConfig.getGatewayEndpoint() + "/api/broker/permissions/dbrepo/" + username);
-        final ResponseEntity<Void> response = restTemplate.exchange(grantUri, HttpMethod.PUT,
+        final ResponseEntity<Void> response = restTemplate.exchange(parseUrl("/permissions/dbrepo/" + username), HttpMethod.PUT,
                 new HttpEntity<>(data), Void.class);
         if (!response.getStatusCode().equals(HttpStatus.CREATED) && !response.getStatusCode().equals(HttpStatus.NO_CONTENT)) {
             log.error("Failed to grant virtual host: {}", response.getStatusCode());

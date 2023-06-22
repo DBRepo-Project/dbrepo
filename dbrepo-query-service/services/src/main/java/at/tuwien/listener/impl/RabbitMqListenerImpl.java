@@ -8,6 +8,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.concurrent.TimeUnit;
+
 @Log4j2
 @Service
 public class RabbitMqListenerImpl implements MessageQueueListener {
@@ -19,7 +21,7 @@ public class RabbitMqListenerImpl implements MessageQueueListener {
     }
 
     @Override
-    @Scheduled(fixedDelay = 5000)
+    @Scheduled(fixedDelay = 5, initialDelay = 300, timeUnit = TimeUnit.SECONDS)
     @Transactional(readOnly = true)
     public void updateConsumers() throws AmqpException {
         messageQueueService.restore();

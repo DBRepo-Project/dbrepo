@@ -7,8 +7,7 @@ import at.tuwien.api.user.UserUpdateDto;
 import at.tuwien.entities.user.*;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.UserMapper;
-import at.tuwien.repository.mdb.CredentialRepository;
-import at.tuwien.repository.mdb.UserRepository;
+import at.tuwien.repository.mdb.*;
 import at.tuwien.repository.sdb.UserIdxRepository;
 import at.tuwien.service.UserAttributeService;
 import at.tuwien.service.UserService;
@@ -42,16 +41,21 @@ public class UserServiceImpl implements UserService {
     private static final Integer MAX_PADDING_LENGTH = 14;
 
     private final UserMapper userMapper;
+    private final RoleRepository roleRepository;
     private final UserRepository userRepository;
+    private final GroupRepository groupRepository;
     private final UserIdxRepository userIdxRepository;
     private final UserAttributeService userAttributeService;
     private final CredentialRepository credentialRepository;
 
     @Autowired
-    public UserServiceImpl(UserMapper userMapper, UserRepository userRepository, UserIdxRepository userIdxRepository,
+    public UserServiceImpl(UserMapper userMapper, RoleRepository roleRepository, UserRepository userRepository,
+                           GroupRepository groupRepository, UserIdxRepository userIdxRepository,
                            UserAttributeService userAttributeService, CredentialRepository credentialRepository) {
         this.userMapper = userMapper;
+        this.roleRepository = roleRepository;
         this.userRepository = userRepository;
+        this.groupRepository = groupRepository;
         this.userIdxRepository = userIdxRepository;
         this.userAttributeService = userAttributeService;
         this.credentialRepository = credentialRepository;
@@ -65,7 +69,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(rollbackFor = RuntimeException.class)
-    public User create(SignupRequestDto data, Realm realm, Role role) throws UserAlreadyExistsException {
+    public User create(SignupRequestDto data, Realm realm) throws UserAlreadyExistsException {
         /* create secret */
         final byte[] salt = getSalt();
         final StringBuilder secretData = new StringBuilder("{\"value\":\"")
@@ -81,7 +85,7 @@ public class UserServiceImpl implements UserService {
                 .priority(10)
                 .credentialData("{\"hashIterations\":" + DEFAULT_ITERATIONS + ",\"algorithm\":\"" + ID + "\",\"additionalParameters\":{}}")
                 .build();
-        /* save */
+        /* save user attributes */
         User user = userMapper.signupRequestDtoToUser(data);
         user.setId(UUID.randomUUID());
         user.setEmailVerified(false);
@@ -96,11 +100,21 @@ public class UserServiceImpl implements UserService {
         final UserAttribute userAttribute3 = userAttributeService.create(userMapper.tripleToUserAttribute(user.getId(),
                 "affiliation", ""));
         credential.setUserId(user.getId());
+        /* find default roles and groups */
+        final List<Group> groups = groupRepository.findDefault();
+        final Optional<Role> optionalRole = roleRepository.findDefault();
+        if (optionalRole.isPresent()) {
+            final Role defaultRole = optionalRole.get();
+            log.debug("set default role: {}", defaultRole.getName());
+            user.setRoles(List.of(defaultRole));
+        } else {
+            user.setRoles(List.of());
+        }
         /* save in metadata database */
         credential = credentialRepository.save(credential);
         user.setCredentials(List.of(credential));
         user.setAttributes(List.of(userAttribute1, userAttribute2, userAttribute3));
-        user.setRoles(List.of(role));
+        user.setGroups(groups);
         log.info("Created user with id {} in metadata database", user.getId());
         /* save in open search database */
         userIdxRepository.save(user);

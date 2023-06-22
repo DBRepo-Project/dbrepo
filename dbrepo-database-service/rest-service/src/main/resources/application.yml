@@ -31,7 +31,20 @@ spring:
     password: "${SEARCH_PASSWORD}"
     username: "${SEARCH_USERNAME}"
     uris: search-db:9200
-management.endpoints.web.exposure.include: health,info,prometheus
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  health:
+    readinessState:
+      enabled: true
+    livenessState:
+      enabled: true
 server:
   port: 9092
 logging:

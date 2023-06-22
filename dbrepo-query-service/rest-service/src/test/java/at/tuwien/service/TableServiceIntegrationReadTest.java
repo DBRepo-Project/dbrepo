@@ -2,8 +2,9 @@ package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.table.TableHistoryDto;
-import at.tuwien.config.H2Utils;
 import at.tuwien.config.IndexConfig;
+import at.tuwien.config.MariaDbConfig;
+import at.tuwien.config.MariaDbContainerConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.BrokerServiceGateway;
@@ -11,9 +12,10 @@ import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.repository.mdb.*;
 import at.tuwien.repository.sdb.ViewIdxRepository;
 import com.rabbitmq.client.Channel;
-import at.tuwien.config.DockerConfig;
 import lombok.extern.log4j.Log4j2;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -24,8 +26,11 @@ import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.testcontainers.containers.MariaDBContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.io.File;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,6 +39,7 @@ import static org.mockito.Mockito.when;
 
 
 @Log4j2
+@Testcontainers
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @EnableAutoConfiguration(exclude= RabbitAutoConfiguration.class)
 @SpringBootTest
@@ -79,25 +85,13 @@ public class TableServiceIntegrationReadTest extends BaseUnitTest {
     @Autowired
     private TableService tableService;
 
-    @Autowired
-    private H2Utils h2Utils;
-
-    final static String BIND_WEATHER = new File("../../dbrepo-metadata-db/test/src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
+    @Container
+    private static MariaDBContainer<?> mariaDBContainer = MariaDbContainerConfig.getContainer();
 
     @BeforeAll
-    public static void beforeAll() throws InterruptedException {
-        afterAll();
-        /* create networks */
-        DockerConfig.createAllNetworks();
-        /* user container */
-        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
-        DockerConfig.startContainer(CONTAINER_1);
-    }
-
-    @AfterAll
-    public static void afterAll() {
-        DockerConfig.removeAllContainers();
-        DockerConfig.removeAllNetworks();
+    public static void beforeAll() throws SQLException {
+        MariaDbConfig.dropAllDatabases(CONTAINER_1);
+        MariaDbConfig.createInitDatabase(CONTAINER_1, DATABASE_1);
     }
 
     @BeforeEach
@@ -120,11 +114,11 @@ public class TableServiceIntegrationReadTest extends BaseUnitTest {
             QueryStoreException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException {
 
         /* mock */
-        when(tableRepository.find(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID))
+        when(tableRepository.find(DATABASE_1_ID, TABLE_1_ID))
                 .thenReturn(Optional.of(TABLE_1));
 
         /* test */
-        final List<TableHistoryDto> response = tableService.findHistory(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, null);
+        final List<TableHistoryDto> response = tableService.findHistory(DATABASE_1_ID, TABLE_1_ID, null);
         assertEquals(1, response.size());
         final TableHistoryDto history = response.get(0);
         assertEquals("INSERT", history.getEvent());
@@ -136,11 +130,11 @@ public class TableServiceIntegrationReadTest extends BaseUnitTest {
             QueryStoreException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException {
 
         /* mock */
-        when(tableRepository.find(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID))
+        when(tableRepository.find(DATABASE_1_ID, TABLE_1_ID))
                 .thenReturn(Optional.of(TABLE_1));
 
         /* test */
-        final List<TableHistoryDto> response = tableService.findHistory(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, null);
+        final List<TableHistoryDto> response = tableService.findHistory(DATABASE_1_ID, TABLE_1_ID, null);
         assertEquals(1, response.size());
         final TableHistoryDto history = response.get(0);
         assertEquals("INSERT", history.getEvent());
@@ -152,11 +146,11 @@ public class TableServiceIntegrationReadTest extends BaseUnitTest {
             QueryStoreException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException {
 
         /* mock */
-        when(tableRepository.find(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID))
+        when(tableRepository.find(DATABASE_1_ID, TABLE_1_ID))
                 .thenReturn(Optional.of(TABLE_1));
 
         /* test */
-        final List<TableHistoryDto> response = tableService.findHistory(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, USER_1_PRINCIPAL);
+        final List<TableHistoryDto> response = tableService.findHistory(DATABASE_1_ID, TABLE_1_ID, USER_1_PRINCIPAL);
         assertEquals(1, response.size());
         final TableHistoryDto history = response.get(0);
         assertEquals("INSERT", history.getEvent());
@@ -168,11 +162,11 @@ public class TableServiceIntegrationReadTest extends BaseUnitTest {
             QueryStoreException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException {
 
         /* mock */
-        when(tableRepository.find(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID))
+        when(tableRepository.find(DATABASE_1_ID, TABLE_1_ID))
                 .thenReturn(Optional.of(TABLE_1));
 
         /* test */
-        final List<TableHistoryDto> response = tableService.findHistory(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, USER_2_PRINCIPAL);
+        final List<TableHistoryDto> response = tableService.findHistory(DATABASE_1_ID, TABLE_1_ID, USER_2_PRINCIPAL);
         assertEquals(1, response.size());
         final TableHistoryDto history = response.get(0);
         assertEquals("INSERT", history.getEvent());
@@ -184,11 +178,11 @@ public class TableServiceIntegrationReadTest extends BaseUnitTest {
             QueryStoreException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException {
 
         /* mock */
-        when(tableRepository.find(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID))
+        when(tableRepository.find(DATABASE_1_ID, TABLE_1_ID))
                 .thenReturn(Optional.of(TABLE_1));
 
         /* test */
-        final List<TableHistoryDto> response = tableService.findHistory(CONTAINER_1_ID, DATABASE_1_ID, TABLE_1_ID, USER_3_PRINCIPAL);
+        final List<TableHistoryDto> response = tableService.findHistory(DATABASE_1_ID, TABLE_1_ID, USER_3_PRINCIPAL);
         assertEquals(1, response.size());
         final TableHistoryDto history = response.get(0);
         assertEquals("INSERT", history.getEvent());

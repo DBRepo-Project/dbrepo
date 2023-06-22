@@ -31,7 +31,20 @@ spring:
     uris: search-db:9200
   cloud:
     loadbalancer.ribbon.enabled: false
-management.endpoints.web.exposure.include: health,info,prometheus
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  health:
+    readinessState:
+      enabled: true
+    livenessState:
+      enabled: true
 server:
   port: 9094
 logging:

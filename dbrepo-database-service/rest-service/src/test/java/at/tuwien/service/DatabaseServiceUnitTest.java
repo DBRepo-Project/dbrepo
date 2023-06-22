@@ -7,7 +7,10 @@ import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.entities.database.Database;
-import at.tuwien.exception.*;
+import at.tuwien.exception.ContainerNotFoundException;
+import at.tuwien.exception.DatabaseNotFoundException;
+import at.tuwien.exception.ImageNotSupportedException;
+import at.tuwien.exception.UserNotFoundException;
 import at.tuwien.repository.mdb.ContainerRepository;
 import at.tuwien.repository.mdb.DatabaseRepository;
 import at.tuwien.repository.sdb.DatabaseIdxRepository;
@@ -25,8 +28,10 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @Log4j2
 @SpringBootTest
@@ -52,6 +57,9 @@ public class DatabaseServiceUnitTest extends BaseUnitTest {
     private MariaDbServiceImpl databaseService;
 
     @MockBean
+    private UserService userService;
+
+    @MockBean
     private DatabaseRepository databaseRepository;
 
     @MockBean
@@ -60,11 +68,11 @@ public class DatabaseServiceUnitTest extends BaseUnitTest {
     @Test
     public void findAll_succeeds() {
         /* mock */
-        when(databaseRepository.findAll(CONTAINER_1_ID))
+        when(databaseRepository.findAll())
                 .thenReturn(List.of(DATABASE_1));
 
         /* test */
-        final List<Database> response = databaseService.findAll(CONTAINER_1_ID);
+        final List<Database> response = databaseService.findAll();
         assertEquals(1, response.size());
         assertEquals(DATABASE_1, response.get(0));
     }
@@ -76,7 +84,7 @@ public class DatabaseServiceUnitTest extends BaseUnitTest {
         when(databaseRepository.findById(DATABASE_1_ID))
                 .thenReturn(Optional.of(DATABASE_1));
 
-        final Database response = databaseService.findById(CONTAINER_1_ID, DATABASE_1_ID);
+        final Database response = databaseService.findById(DATABASE_1_ID);
 
         /* test */
         assertEquals(DATABASE_1, response);
@@ -91,7 +99,7 @@ public class DatabaseServiceUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
-            databaseService.findById(CONTAINER_1_ID, DATABASE_1_ID);
+            databaseService.findById(DATABASE_1_ID);
         });
     }
 
@@ -106,30 +114,33 @@ public class DatabaseServiceUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
-            databaseService.delete(CONTAINER_1_ID, DATABASE_1_ID, USER_1_PRINCIPAL);
+            databaseService.delete(DATABASE_1_ID, USER_1_ID);
         });
     }
 
     @Test
-    public void create_notFound_fails() {
+    public void create_notFound_fails() throws UserNotFoundException {
         final DatabaseCreateDto request = DatabaseCreateDto.builder()
+                .cid(CONTAINER_1_ID)
                 .name(DATABASE_1_NAME)
                 .build();
 
         /* mock */
+        when(userService.findByUsername(USER_1_USERNAME))
+                .thenReturn(USER_1);
         when(containerRepository.findById(CONTAINER_1_ID))
                 .thenReturn(Optional.empty());
 
         /* test */
         assertThrows(ContainerNotFoundException.class, () -> {
-            databaseService.create(CONTAINER_1_ID, request, USER_1_PRINCIPAL);
+            databaseService.create(request, USER_1_PRINCIPAL);
         });
     }
 
     @Test
     public void delete_image_fails() {
         final ContainerImage image = ContainerImage.builder()
-                .repository("mysql")
+                .name("mysql")
                 .build();
         final Container container = Container.builder()
                 .image(image)
@@ -141,12 +152,12 @@ public class DatabaseServiceUnitTest extends BaseUnitTest {
         /* mock */
         when(containerRepository.findById(CONTAINER_1_ID))
                 .thenReturn(Optional.of(CONTAINER_1));
-        when(databaseRepository.findPublicOrMine(CONTAINER_1_ID, DATABASE_1_ID, USER_1_USERNAME))
+        when(databaseRepository.findById(DATABASE_1_ID))
                 .thenReturn(Optional.of(database));
 
         /* test */
         assertThrows(ImageNotSupportedException.class, () -> {
-            databaseService.delete(CONTAINER_1_ID, DATABASE_1_ID, USER_1_PRINCIPAL);
+            databaseService.delete(DATABASE_1_ID, USER_1_ID);
         });
     }
 

@@ -18,13 +18,15 @@ import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Log4j2
 @Service
@@ -48,54 +50,55 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
     }
 
     @Override
-    public List<Database> findAll(Long containerId) {
-        return databaseRepository.findAll(containerId);
+    public List<Database> findAll() {
+        return databaseRepository.findAll();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Database findPublicOrMineById(Long containerId, Long databaseId, Principal principal)
-            throws DatabaseNotFoundException {
+    public Database findPublicOrMineById(Long databaseId, UUID userId) throws DatabaseNotFoundException {
         final Optional<Database> database;
-        if (principal == null) {
-            log.trace("principal is null, find public database");
-            database = databaseRepository.findPublic(containerId, databaseId);
+        if (userId == null) {
+            log.trace("user id is null, find public database");
+            database = databaseRepository.findPublic(databaseId);
         } else {
-            log.trace("principal is not null, find public or mine database");
-            database = databaseRepository.findPublicOrMine(containerId, databaseId, principal.getName());
+            log.trace("user id is not null, find public or mine database");
+            database = databaseRepository.findPublicOrMine(databaseId, userId);
         }
         if (database.isEmpty()) {
             log.error("Failed to find database with id {}", databaseId);
-            throw new DatabaseNotFoundException("Failed to find database with id "+ databaseId);
+            throw new DatabaseNotFoundException("Failed to find database with id " + databaseId);
         }
         return database.get();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Database findById(Long id, Long databaseId) throws DatabaseNotFoundException {
-        final Optional<Database> database = databaseRepository.findById(databaseId);
+    public Database findById(Long id) throws DatabaseNotFoundException {
+        final Optional<Database> database = databaseRepository.findById(id);
         if (database.isEmpty()) {
-            log.error("Failed to find database with id {}", databaseId);
-            throw new DatabaseNotFoundException("could not find database with id " + databaseId);
+            log.error("Failed to find database with id {}", id);
+            throw new DatabaseNotFoundException("could not find database with id " + id);
         }
         return database.get();
     }
 
     @Override
     @Transactional
-    public void delete(Long containerId, Long databaseId, Principal principal) throws DatabaseNotFoundException,
-            ImageNotSupportedException, DatabaseMalformedException, ContainerNotFoundException,
-            DatabaseConnectionException, QueryMalformedException, UserNotFoundException {
-        final Container container = containerService.find(containerId);
-        final Database database = findPublicOrMineById(containerId, databaseId, principal);
-        if (!database.getContainer().getImage().getRepository().equals("mariadb")) {
+    public void delete(Long databaseId, UUID userId) throws DatabaseNotFoundException,
+            ImageNotSupportedException, DatabaseMalformedException, DatabaseConnectionException,
+            QueryMalformedException, UserNotFoundException {
+        final Database database = findById(databaseId);
+        if (!database.getContainer().getImage().getName().equals("mariadb")) {
             log.error("Currently only MariaDB is supported");
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
         }
-        final User root = databaseMapper.containerToPrivilegedUser(container);
+        if (!database.getOwner().getId().equals(userId)) {
+            log.error("Failed to delete database: user is not owner");
+            throw new DatabaseMalformedException("Failed to delete database: user is not owner");
+        }
         /* run query */
-        final ComboPooledDataSource dataSource = getDataSource(container.getImage(), container, database, root);
+        final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(), database.getContainer(), database);
         try {
             final Connection connection = dataSource.getConnection();
             final PreparedStatement preparedStatement = databaseMapper.databaseToRawDeleteDatabaseQuery(connection, database);
@@ -116,27 +119,21 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
 
     @Override
     @Transactional
-    public Database create(Long containerId, DatabaseCreateDto createDto, Principal principal)
+    public Database create(DatabaseCreateDto createDto, Principal principal)
             throws ImageNotSupportedException, ContainerNotFoundException,
             DatabaseMalformedException, AmqpException, ContainerConnectionException, UserNotFoundException,
             DatabaseNameExistsException, DatabaseConnectionException, QueryMalformedException {
-        final Container container = containerService.find(containerId);
-        if (container.getDatabase() != null) {
-            log.error("Failed to create database {} in container with id {}, only one database per container", createDto.getName(), containerId);
-            throw new DatabaseMalformedException("Failed to create database " + createDto.getName() + " in container with id " + containerId + ", only one database per container");
-        }
-        final User root = databaseMapper.containerToPrivilegedUser(container);
         final User user = userService.findByUsername(principal.getName());
         /* start the object */
         final Database database = databaseMapper.databaseCreateDtoToDatabase(createDto);
-        database.setId(containerId);
-        database.setContainer(container);
+        final Container container = containerService.find(database.getCid());
         final User owner = userService.findByUsername(principal.getName());
+        database.setContainer(container);
         database.setOwnedBy(owner.getId());
         database.setCreatedBy(owner.getId());
         database.setContactPerson(owner.getId());
         database.setExchangeName("dbrepo." + database.getInternalName());
-        final ComboPooledDataSource dataSource = getDataSource(container.getImage(), container, root);
+        final ComboPooledDataSource dataSource = getPrivilegedDataSource(container.getImage(), container);
         try {
             final Connection connection = dataSource.getConnection();
             /* create database */
@@ -163,10 +160,9 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
 
     @Override
     @Transactional
-    public Database visibility(Long containerId, Long databaseId, DatabaseModifyVisibilityDto data)
-            throws DatabaseNotFoundException {
+    public Database visibility(Long databaseId, DatabaseModifyVisibilityDto data) throws DatabaseNotFoundException {
         /* check */
-        final Database database = findById(containerId, databaseId);
+        final Database database = findById(databaseId);
         /* map */
         database.setIsPublic(data.getIsPublic());
         /* update entity in metadata database */
@@ -180,10 +176,10 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
 
     @Override
     @Transactional
-    public Database transfer(Long containerId, Long databaseId, DatabaseTransferDto transferDto)
-            throws DatabaseNotFoundException, UserNotFoundException {
+    public Database transfer(Long databaseId, DatabaseTransferDto transferDto) throws DatabaseNotFoundException,
+            UserNotFoundException {
         /* check */
-        final Database entity = findById(containerId, databaseId);
+        final Database entity = findById(databaseId);
         final User user = userService.findByUsername(transferDto.getUsername());
         /* update in metadata database */
         entity.setOwnedBy(user.getId());

@@ -1,7 +1,7 @@
 <template>
   <v-data-table
     flat
-    :headers="result.headers"
+    :headers="headers"
     :items="result.rows"
     :loading="loading > 0"
     :options.sync="options"
@@ -15,6 +15,12 @@ export default {
     type: {
       type: String,
       default: () => 'query' /* query or view */
+    },
+    view: {
+      type: Object,
+      default: () => {
+        return {}
+      }
     }
   },
   data () {
@@ -33,6 +39,23 @@ export default {
       total: -1
     }
   },
+  computed: {
+    headers () {
+      if (this.result.headers.length !== 0) {
+        return this.result.headers
+      }
+      if (this.type === 'view' && this.view && this.view.columns) {
+        return this.view.columns.map((c) => {
+          return {
+            text: c.internal_name,
+            value: c.internal_name,
+            sortable: false
+          }
+        })
+      }
+      return []
+    }
+  },
   watch: {
     options: { /* keep */
       handler () {
@@ -48,7 +71,7 @@ export default {
         statement: sql,
         timestamp
       }
-      QueryService.execute(this.$route.params.container_id, this.$route.params.database_id, payload, 0, this.options.itemsPerPage)
+      QueryService.execute(this.$route.params.database_id, payload, 0, this.options.itemsPerPage)
         .then((result) => {
           this.mapResults(result)
           parent.resultId = result.id
@@ -70,7 +93,7 @@ export default {
       }
       this.loading++
       if (this.type === 'query') {
-        QueryService.reExecuteQuery(this.$route.params.container_id, this.$route.params.database_id, id, 0, this.options.itemsPerPage)
+        QueryService.reExecuteQuery(this.$route.params.database_id, id, 0, this.options.itemsPerPage)
           .then((result) => {
             this.mapResults(result)
             this.id = id
@@ -79,7 +102,7 @@ export default {
             this.loading--
           })
       } else {
-        QueryService.reExecuteView(this.$route.params.container_id, this.$route.params.database_id, id, 0, this.options.itemsPerPage)
+        QueryService.reExecuteView(this.$route.params.database_id, id, 0, this.options.itemsPerPage)
           .then((result) => {
             this.mapResults(result)
             this.id = id
@@ -95,7 +118,7 @@ export default {
       }
       this.loading++
       if (this.type === 'query') {
-        QueryService.reExecuteQueryCount(this.$route.params.container_id, this.$route.params.database_id, id)
+        QueryService.reExecuteQueryCount(this.$route.params.database_id, id)
           .then((count) => {
             this.total = count
           })
@@ -103,7 +126,7 @@ export default {
             this.loading--
           })
       } else {
-        QueryService.reExecuteViewCount(this.$route.params.container_id, this.$route.params.database_id, id)
+        QueryService.reExecuteViewCount(this.$route.params.database_id, id)
           .then((count) => {
             this.total = count
           })

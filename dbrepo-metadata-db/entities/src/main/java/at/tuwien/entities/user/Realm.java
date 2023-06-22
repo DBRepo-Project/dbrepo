@@ -5,6 +5,7 @@ import org.hibernate.annotations.Immutable;
 import org.hibernate.annotations.JdbcTypeCode;
 
 import jakarta.persistence.*;
+
 import java.util.UUID;
 
 @Data
@@ -32,5 +33,9 @@ public class Realm {
 
     @Column(nullable = false)
     private String name;
+
+    @JdbcTypeCode(java.sql.Types.VARCHAR)
+    @Column(name = "DEFAULT_ROLE", columnDefinition = "VARCHAR(36)")
+    private UUID defaultRole;
 
 }

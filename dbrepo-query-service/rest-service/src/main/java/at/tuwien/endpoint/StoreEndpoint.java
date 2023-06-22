@@ -2,17 +2,19 @@ package at.tuwien.endpoint;
 
 import at.tuwien.api.database.query.QueryBriefDto;
 import at.tuwien.api.database.query.QueryDto;
-import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.identifier.IdentifierType;
 import at.tuwien.entities.user.User;
+import at.tuwien.exception.*;
 import at.tuwien.mapper.IdentifierMapper;
+import at.tuwien.mapper.QueryMapper;
 import at.tuwien.mapper.UserMapper;
 import at.tuwien.querystore.Query;
-import at.tuwien.exception.*;
-import at.tuwien.mapper.QueryMapper;
-import at.tuwien.service.*;
+import at.tuwien.service.AccessService;
+import at.tuwien.service.IdentifierService;
+import at.tuwien.service.StoreService;
+import at.tuwien.service.UserService;
 import at.tuwien.validation.EndpointValidator;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
@@ -22,6 +24,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.constraints.NotNull;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -30,7 +33,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.validation.constraints.NotNull;
 import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
@@ -38,7 +40,7 @@ import java.util.stream.Collectors;
 
 @Log4j2
 @RestController
-@RequestMapping("/api/container/{id}/database/{databaseId}/query")
+@RequestMapping("/api/database/{databaseId}/query")
 public class StoreEndpoint {
 
     private final UserMapper userMapper;
@@ -105,16 +107,15 @@ public class StoreEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<List<QueryBriefDto>> findAll(@NotNull @PathVariable("id") Long containerId,
-                                                       @NotNull @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<List<QueryBriefDto>> findAll(@NotNull @PathVariable("databaseId") Long databaseId,
                                                        @RequestParam(value = "persisted", required = false) Boolean persisted,
                                                        Principal principal) throws QueryStoreException,
             DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException,
             DatabaseConnectionException, TableMalformedException, UserNotFoundException, NotAllowedException {
-        log.debug("endpoint list queries, containerId={}, databaseId={}, persisted={}, principal={}", containerId,
+        log.debug("endpoint list queries, databaseId={}, persisted={}, principal={}",
                 databaseId, persisted, principal);
-        endpointValidator.validateOnlyAccessOrPublic(containerId, databaseId, principal);
-        final List<Query> queries = storeService.findAll(containerId, databaseId, persisted, principal);
+        endpointValidator.validateOnlyAccessOrPublic(databaseId, principal);
+        final List<Query> queries = storeService.findAll(databaseId, persisted, principal);
         final List<Identifier> identifiers = identifierService.findAll();
         final List<User> users = userService.findAll();
         final List<QueryBriefDto> dto = queries.stream()
@@ -171,19 +172,18 @@ public class StoreEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<QueryDto> find(@NotNull @PathVariable("id") Long containerId,
-                                         @NotNull @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<QueryDto> find(@NotNull @PathVariable("databaseId") Long databaseId,
                                          @NotNull @PathVariable Long queryId,
                                          Principal principal)
             throws DatabaseNotFoundException, ImageNotSupportedException,
             QueryStoreException, QueryNotFoundException, UserNotFoundException, NotAllowedException,
             DatabaseConnectionException {
-        log.debug("endpoint find query, containerId={}, databaseId={}, queryId={}, principal={}", containerId, databaseId,
+        log.debug("endpoint find query, databaseId={}, queryId={}, principal={}", databaseId,
                 queryId, principal);
         /* check */
-        endpointValidator.validateOnlyAccessOrPublic(containerId, databaseId, principal);
+        endpointValidator.validateOnlyAccessOrPublic(databaseId, queryId, principal);
         /* find */
-        final Query query = storeService.findOne(containerId, databaseId, queryId, principal);
+        final Query query = storeService.findOne(databaseId, queryId, principal);
         final QueryDto dto = queryMapper.queryToQueryDto(query);
         final User creator = userService.findByUsername(query.getCreatedBy());
         dto.setCreator(userMapper.userToUserDto(creator));
@@ -234,18 +234,17 @@ public class StoreEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<QueryDto> persist(@NotNull @PathVariable("id") Long containerId,
-                                            @NotNull @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<QueryDto> persist(@NotNull @PathVariable("databaseId") Long databaseId,
                                             @NotNull @PathVariable("queryId") Long queryId,
                                             @NotNull Principal principal)
             throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
             DatabaseConnectionException, UserNotFoundException, QueryNotFoundException,
             QueryAlreadyPersistedException, NotAllowedException {
-        log.debug("endpoint persist query, container, containerId={}, databaseId={}, queryId={}, principal={}",
-                containerId, databaseId, queryId, principal);
+        log.debug("endpoint persist query, container, databaseId={}, queryId={}, principal={}",
+                databaseId, queryId, principal);
         /* check */
-        endpointValidator.validateOnlyAccessOrPublic(containerId, databaseId, principal);
-        final Query check = storeService.findOne(containerId, databaseId, queryId, principal);
+        endpointValidator.validateOnlyAccessOrPublic(databaseId, principal);
+        final Query check = storeService.findOne(databaseId, queryId, principal);
         if (!check.getCreatedBy().equals(principal.getName())) {
             log.error("Cannot persist foreign query: created by {}", check.getCreatedBy());
             throw new NotAllowedException("Cannot persist foreign query: created by " + check.getCreatedBy());
@@ -257,7 +256,7 @@ public class StoreEndpoint {
         /* has access */
         accessService.find(databaseId, principal.getName());
         /* persist */
-        final Query query = storeService.persist(containerId, databaseId, queryId, principal);
+        final Query query = storeService.persist(databaseId, queryId, principal);
         final QueryDto dto = queryMapper.queryToQueryDto(query);
         final User creator = userService.findByUsername(query.getCreatedBy());
         dto.setCreator(userMapper.userToUserDto(creator));

@@ -4,17 +4,18 @@ import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.ViewCreateDto;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.config.MariaDbConfig;
+import at.tuwien.config.MariaDbContainerConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.database.View;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.BrokerServiceGateway;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
+import at.tuwien.repository.mdb.DatabaseRepository;
+import at.tuwien.repository.mdb.UserRepository;
+import at.tuwien.repository.mdb.ViewRepository;
 import at.tuwien.repository.sdb.ViewIdxRepository;
-import at.tuwien.repository.mdb.*;
 import com.rabbitmq.client.Channel;
-import at.tuwien.config.DockerConfig;
 import lombok.extern.log4j.Log4j2;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,8 +27,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.testcontainers.containers.MariaDBContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.io.File;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +43,7 @@ import static org.mockito.Mockito.when;
 
 
 @Log4j2
+@Testcontainers
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @EnableAutoConfiguration(exclude= RabbitAutoConfiguration.class)
 @SpringBootTest
@@ -78,22 +82,13 @@ public class ViewServiceIntegrationTest extends BaseUnitTest {
     @Autowired
     private ViewService viewService;
 
-    final static String BIND_WEATHER = new File("../../dbrepo-metadata-db/test/src/test/resources/weather").toPath().toAbsolutePath() + ":/docker-entrypoint-initdb.d";
+    @Container
+    private static MariaDBContainer<?> mariaDBContainer = MariaDbContainerConfig.getContainer();
 
     @BeforeAll
-    public static void beforeAll() throws InterruptedException {
-        afterAll();
-        /* create network */
-        DockerConfig.createAllNetworks();
-        /* create container */
-        DockerConfig.createContainer(BIND_WEATHER, CONTAINER_1, CONTAINER_1_ENV);
-        DockerConfig.startContainer(CONTAINER_1);
-    }
-
-    @AfterAll
-    public static void afterAll() {
-        DockerConfig.removeAllContainers();
-        DockerConfig.removeAllNetworks();
+    public static void beforeAll() throws SQLException {
+        MariaDbConfig.dropAllDatabases(CONTAINER_1);
+        MariaDbConfig.createInitDatabase(CONTAINER_1, DATABASE_1);
     }
 
     @BeforeEach
@@ -112,7 +107,7 @@ public class ViewServiceIntegrationTest extends BaseUnitTest {
                 .build();
 
         /* mock */
-        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
+        when(databaseRepository.findByDatabaseId(DATABASE_1_ID))
                 .thenReturn(Optional.of(DATABASE_1));
         when(userRepository.findByUsername(USER_1_USERNAME))
                 .thenReturn(Optional.of(USER_1));
@@ -122,12 +117,12 @@ public class ViewServiceIntegrationTest extends BaseUnitTest {
                 .thenReturn(VIEW_3);
 
         /* test */
-        final View response = viewService.create(CONTAINER_1_ID, DATABASE_1_ID, request, USER_1_PRINCIPAL);
+        final View response = viewService.create(DATABASE_1_ID, request, USER_1_PRINCIPAL);
         assertEquals(VIEW_3_ID, response.getId());
         assertEquals(VIEW_3_NAME, response.getName());
         assertEquals(VIEW_3_INTERNAL_NAME, response.getInternalName());
         assertEquals(VIEW_3_QUERY, response.getQuery());
-        final List<Map<String, String>> resultSet = MariaDbConfig.selectQuery(CONTAINER_1_INTERNALNAME, DATABASE_1_INTERNALNAME,
+        final List<Map<String, String>> resultSet = MariaDbConfig.selectQuery(DATABASE_1,
                 "SELECT j.* FROM `debug` j", "mintemp", "rainfall", "date", "location");
         assertEquals("13.4", resultSet.get(0).get("mintemp"));
         assertEquals("0.6", resultSet.get(0).get("rainfall"));
@@ -154,7 +149,7 @@ public class ViewServiceIntegrationTest extends BaseUnitTest {
                 .build();
 
         /* mock */
-        when(databaseRepository.findByContainerIdAndDatabaseId(CONTAINER_1_ID, DATABASE_1_ID))
+        when(databaseRepository.findByDatabaseId(DATABASE_1_ID))
                 .thenReturn(Optional.of(DATABASE_1));
         when(userRepository.findByUsername(USER_1_USERNAME))
                 .thenReturn(Optional.of(USER_1));
@@ -164,12 +159,12 @@ public class ViewServiceIntegrationTest extends BaseUnitTest {
                 .thenReturn(VIEW_1);
 
         /* test */
-        final View response = viewService.create(CONTAINER_1_ID, DATABASE_1_ID, request, USER_1_PRINCIPAL);
+        final View response = viewService.create(DATABASE_1_ID, request, USER_1_PRINCIPAL);
         assertEquals(VIEW_1_ID, response.getId());
         assertEquals(VIEW_1_NAME, response.getName());
         assertEquals(VIEW_1_INTERNAL_NAME, response.getInternalName());
         assertEquals(VIEW_1_QUERY, response.getQuery());
-        final List<Map<String, String>> resultSet = MariaDbConfig.selectQuery(CONTAINER_1_INTERNALNAME, DATABASE_1_INTERNALNAME,
+        final List<Map<String, String>> resultSet = MariaDbConfig.selectQuery(DATABASE_1,
                 "SELECT l.`location`, l.`lat`, l.`lng` FROM `weather_location` l ORDER BY l.`location` ASC", "location", "lat", "lng");
         assertEquals(3, resultSet.size());
         final Map<String, String> row0 = resultSet.get(0);

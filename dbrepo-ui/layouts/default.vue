@@ -29,7 +29,7 @@
           </v-list-item-content>
         </v-list-item>
         <v-list-item
-          to="/container"
+          to="/database"
           router>
           <v-list-item-action>
             <v-icon>mdi-database</v-icon>
@@ -105,12 +105,14 @@
               </v-btn>
             </template>
             <v-list>
+              <!--
               <v-list-item
                 v-for="locale in []"
                 :key="locale.code"
                 :to="switchLocalePath(locale.code)">
                 <v-list-item-title>{{ locale.name }}</v-list-item-title>
               </v-list-item>
+              -->
               <v-list-item
                 v-if="user"
                 @click="logout">
@@ -161,9 +163,6 @@ export default {
     },
     user () {
       return this.$store.state.user
-    },
-    container () {
-      return this.$store.state.container
     },
     locale () {
       return this.$store.state.locale
@@ -257,15 +256,15 @@ export default {
       this.$store.commit('SET_USER', null)
       this.$store.commit('SET_ACCESS', null)
       this.$vuetify.theme.dark = false
-      this.$router.push('/container')
+      this.$router.push('/database')
     },
     loadDatabase () {
-      if (!this.$route.params.container_id || !this.$route.params.database_id) {
+      if (!this.$route.params.database_id) {
         this.$store.commit('SET_DATABASE', null)
         return
       }
       this.loading = true
-      DatabaseService.findOne(this.$route.params.container_id, this.$route.params.database_id)
+      DatabaseService.findOne(this.$route.params.database_id)
         .then((database) => {
           this.$store.commit('SET_DATABASE', database)
           this.loading = false
@@ -276,11 +275,11 @@ export default {
         })
     },
     loadTable () {
-      if (!this.$route.params.container_id || !this.$route.params.database_id || !this.$route.params.table_id) {
+      if (!this.$route.params.database_id || !this.$route.params.table_id) {
         return
       }
       this.loading = true
-      TableService.findOne(this.$route.params.container_id, this.$route.params.database_id, this.$route.params.table_id)
+      TableService.findOne(this.$route.params.database_id, this.$route.params.table_id)
         .then((table) => {
           this.$store.commit('SET_TABLE', table)
         })
@@ -289,14 +288,14 @@ export default {
         })
     },
     loadAccess () {
-      if (!this.$route.params.container_id || !this.$route.params.database_id) {
+      if (!this.$route.params.database_id) {
         return
       }
       if (!this.token) {
         return
       }
       this.loading = true
-      DatabaseService.checkAccess(this.$route.params.container_id, this.$route.params.database_id)
+      DatabaseService.checkAccess(this.$route.params.database_id)
         .then((access) => {
           this.$store.commit('SET_ACCESS', access)
           this.loading = false

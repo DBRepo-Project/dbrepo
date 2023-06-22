@@ -201,7 +201,7 @@ export default {
     },
     revokeAccess () {
       this.loading = true
-      DatabaseService.revokeAccess(this.$route.params.container_id, this.$route.params.database_id, this.modify.username)
+      DatabaseService.revokeAccess(this.$route.params.database_id, this.modify.username)
         .then(() => {
           this.$toast.success(`Successfully revoked access of ${this.modify.username}`)
           this.$emit('close-dialog', { success: true })
@@ -212,7 +212,7 @@ export default {
     },
     modifyAccess () {
       this.loading = true
-      DatabaseService.modifyAccess(this.$route.params.container_id, this.$route.params.database_id, this.modify.username, this.modify.type)
+      DatabaseService.modifyAccess(this.$route.params.database_id, this.modify.username, this.modify.type)
         .then(() => {
           this.$toast.success(`Successfully modified access of ${this.modify.username}`)
           this.$emit('close-dialog', { success: true })
@@ -223,7 +223,7 @@ export default {
     },
     giveAccess () {
       this.loading = true
-      DatabaseService.giveAccess(this.$route.params.container_id, this.$route.params.database_id, this.modify.username, this.modify.type)
+      DatabaseService.giveAccess(this.$route.params.database_id, this.modify.username, this.modify.type)
         .then(() => {
           this.$toast.success(`Successfully gave ${this.modify.username} access`)
           this.$emit('close-dialog', { success: true })

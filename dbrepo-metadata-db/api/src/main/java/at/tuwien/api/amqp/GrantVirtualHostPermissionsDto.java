@@ -14,6 +14,7 @@ import lombok.extern.jackson.Jacksonized;
 @Jacksonized
 @ToString
 public class GrantVirtualHostPermissionsDto {
+
     @NotNull
     @Schema(example = ".*")
     private String configure;

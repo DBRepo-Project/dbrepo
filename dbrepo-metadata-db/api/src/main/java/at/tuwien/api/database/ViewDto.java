@@ -1,5 +1,6 @@
 package at.tuwien.api.database;
 
+import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.user.UserDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -12,6 +13,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -40,6 +42,7 @@ public class ViewDto {
 
     @NotBlank
     @Schema(example = "air_quality")
+    @JsonProperty("internal_name")
     private String internalName;
 
     @JsonProperty("is_public")
@@ -64,6 +67,9 @@ public class ViewDto {
 
     @NotNull
     private UserDto creator;
+
+    @NotNull(message = "columns are required")
+    private List<ColumnDto> columns;
 
     @JsonProperty("last_modified")
     @Schema(example = "2020-08-04 11:12:00")

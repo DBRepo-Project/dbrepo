@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
+import java.util.UUID;
 
 @Log4j2
 @Service
@@ -73,11 +74,14 @@ public class RabbitMqServiceImpl implements MessageQueueService {
     }
 
     @Override
-    public void updatePermissions(Principal principal) throws BrokerVirtualHostGrantException {
-        final List<Database> databases = databaseRepository.findAllByUsername(principal.getName());
-        final GrantVirtualHostPermissionsDto permissions = amqpMapper.databasesToGrantVirtualHostPermissionsDto(databases);
+    public void updatePermissions(User user) throws BrokerVirtualHostGrantException {
+        final GrantVirtualHostPermissionsDto permissions = GrantVirtualHostPermissionsDto.builder()
+                .configure(amqpMapper.databaseListToPermissionString(databaseRepository.findConfigureAccess(user.getId())))
+                .write(amqpMapper.databaseListToPermissionString(databaseRepository.findWriteAccess(user.getId())))
+                .read(amqpMapper.databaseListToPermissionString(databaseRepository.findReadAccess(user.getId())))
+                .build();
         log.trace("mapped permissions {}", permissions);
-        brokerServiceGateway.grantPermission(principal.getName(), permissions);
+        brokerServiceGateway.grantPermission(user.getUsername(), permissions);
     }
 
     @Override

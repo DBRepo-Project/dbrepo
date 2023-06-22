@@ -5,13 +5,10 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import lombok.*;
-
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.*;
 import lombok.extern.jackson.Jacksonized;
-
-import java.util.List;
 
 @Getter
 @Setter
@@ -28,11 +25,11 @@ public class ImageCreateDto {
 
     @NotBlank
     @Schema(example = "mariadb")
-    private String repository;
+    private String name;
 
     @NotBlank
     @Parameter(example = "10.5")
-    private String tag;
+    private String version;
 
     @NotBlank
     @JsonProperty("driver_class")
@@ -54,7 +51,5 @@ public class ImageCreateDto {
     @Max(value = 65535, message = "only user ports are allowed 1024-65535")
     @Parameter(required = true, example = "3006")
     private Integer defaultPort;
-
-    private List<ImageEnvItemDto> environment;
 
 }

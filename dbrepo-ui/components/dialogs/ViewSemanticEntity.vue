@@ -63,7 +63,7 @@ export default {
       this.$emit('close', { success: false, action: 'cancel' })
     },
     link (item) {
-      return `/container/${item.database_id}/database/${item.database_id}/table/${item.table_id}/schema`
+      return `/database/${item.database_id}/table/${item.table_id}/schema`
     }
   }
 }

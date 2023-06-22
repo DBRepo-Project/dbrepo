@@ -1,9 +1,8 @@
 package at.tuwien.endpoint;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.config.DockerConfig;
-import at.tuwien.config.H2Utils;
 import at.tuwien.config.IndexConfig;
+import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.ReadyConfig;
 import at.tuwien.endpoints.TableEndpoint;
 import at.tuwien.exception.*;
@@ -12,7 +11,6 @@ import at.tuwien.repository.sdb.TableIdxRepository;
 import at.tuwien.repository.mdb.*;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,8 +21,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.testcontainers.containers.MariaDBContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+
+import java.sql.SQLException;
 
 @Log4j2
+@Testcontainers
 @EnableAutoConfiguration(exclude = RabbitAutoConfiguration.class)
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
@@ -66,40 +70,32 @@ public class TableEndpointIntegrationTest extends BaseUnitTest {
     @Autowired
     private TableEndpoint tableEndpoint;
 
+    @Container
     @Autowired
-    private H2Utils h2Utils;
+    private MariaDBContainer<?> mariaDBContainer;
 
     @BeforeEach
-    public void beforeEach() {
-        afterEach();
-        /* create network */
-        DockerConfig.createAllNetworks();
+    public void beforeEach() throws SQLException {
         /* metadata database */
         imageRepository.save(IMAGE_1);
         realmRepository.save(REALM_DBREPO);
         userRepository.save(USER_1_SIMPLE);
         containerRepository.save(CONTAINER_1_SIMPLE);
         databaseRepository.save(DATABASE_1_SIMPLE);
-    }
-
-    @AfterEach
-    public void afterEach() {
-        DockerConfig.removeAllContainers();
-        DockerConfig.removeAllNetworks();
+        MariaDbConfig.dropAllDatabases(CONTAINER_1);
+        MariaDbConfig.createInitDatabase(CONTAINER_1, DATABASE_1);
     }
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"create-table"})
     public void create_hasRoleHasAccess_succeeds() throws UserNotFoundException, TableMalformedException, NotAllowedException,
             QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, AmqpException,
-            TableNameExistsException, ContainerNotFoundException, InterruptedException {
+            TableNameExistsException, ContainerNotFoundException {
 
         /* mock */
-        DockerConfig.createContainer(null, CONTAINER_1, CONTAINER_1_ENV);
-        DockerConfig.startContainer(CONTAINER_1);
         accessRepository.save(DATABASE_1_USER_1_WRITE_OWN_ACCESS);
 
         /* test */
-        tableEndpoint.create(CONTAINER_1_ID, DATABASE_1_ID, TABLE_3_CREATE_DTO, USER_1_PRINCIPAL);
+        tableEndpoint.create(DATABASE_1_ID, TABLE_3_CREATE_DTO, USER_1_PRINCIPAL);
     }
 }

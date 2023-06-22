@@ -19,23 +19,6 @@ class ContainerService {
     })
   }
 
-  findAllImages () {
-    return new Promise((resolve, reject) => {
-      api.get('/api/image', { headers: { Accept: 'application/json' } })
-        .then((response) => {
-          const images = response.data
-          console.debug('response images', images)
-          resolve(images)
-        })
-        .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to load images', error)
-          Vue.$toast.error(`[${code}] Failed to load images: ${message}`)
-          reject(error)
-        })
-    })
-  }
-
   findOne (id) {
     return new Promise((resolve, reject) => {
       api.get(`/api/container/${id}`, { headers: { Accept: 'application/json' } })
@@ -66,46 +49,6 @@ class ContainerService {
           console.error('Failed to load image', error)
           Vue.$toast.error(`[${code}] Failed to load image: ${message}`)
           reject(error)
-        })
-    })
-  }
-
-  create (data) {
-    return new Promise((resolve, reject) => {
-      api.post('/api/container', data, { headers: { Accept: 'application/json' } })
-        .then((response) => {
-          const container = response.data
-          console.debug('response container', container)
-          resolve(container)
-        })
-        .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to create container', error)
-          Vue.$toast.error(`[${code}] Failed to create container: ${message}`)
-          reject(error)
-        })
-    })
-  }
-
-  modify (id, action) {
-    return new Promise((resolve, reject) => {
-      api.put(`/api/container/${id}`, { action }, { headers: { Accept: 'application/json' } })
-        .then((response) => {
-          const container = response.data
-          console.debug('response container', container)
-          resolve(container)
-        })
-        .catch((error) => {
-          const { code, message, response } = error
-          const { status } = response
-          if (status === 409) {
-            console.warn('Failed to modify container', error)
-            reject(error)
-          } else {
-            console.error('Failed to modify container', error)
-            Vue.$toast.error(`[${code}] Failed to modify container: ${message}`)
-            reject(error)
-          }
         })
     })
   }
