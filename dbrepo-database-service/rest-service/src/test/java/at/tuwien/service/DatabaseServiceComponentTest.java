@@ -5,12 +5,11 @@ import at.tuwien.api.database.DatabaseCreateDto;
 import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.config.MariaDbConfig;
-import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.database.Database;
-import at.tuwien.repository.sdb.DatabaseIdxRepository;
 import at.tuwien.repository.mdb.ContainerRepository;
 import at.tuwien.repository.mdb.DatabaseRepository;
 import at.tuwien.repository.mdb.UserRepository;
+import at.tuwien.repository.sdb.DatabaseIdxRepository;
 import at.tuwien.service.impl.MariaDbServiceImpl;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
@@ -38,9 +37,6 @@ import static org.mockito.Mockito.when;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 public class DatabaseServiceComponentTest extends BaseUnitTest {
-
-    @MockBean
-    private ReadyConfig readyConfig;
 
     @MockBean
     private Channel channel;

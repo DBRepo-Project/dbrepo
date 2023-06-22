@@ -2,7 +2,6 @@ package at.tuwien.mapper;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.config.IndexConfig;
-import at.tuwien.config.ReadyConfig;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
@@ -18,9 +17,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Log4j2
 public class StoreMapperTest extends BaseUnitTest {
-
-    @MockBean
-    private ReadyConfig readyConfig;
 
     @MockBean
     private Channel channel;

@@ -4,7 +4,6 @@ import at.tuwien.BaseUnitTest;
 import at.tuwien.api.container.ContainerBriefDto;
 import at.tuwien.api.container.ContainerCreateRequestDto;
 import at.tuwien.api.container.ContainerDto;
-import at.tuwien.config.ReadyConfig;
 import at.tuwien.endpoints.ContainerEndpoint;
 import at.tuwien.entities.container.Container;
 import at.tuwien.exception.*;
@@ -36,9 +35,6 @@ import static org.mockito.Mockito.when;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 public class ContainerEndpointUnitTest extends BaseUnitTest {
-
-    @MockBean
-    private ReadyConfig readyConfig;
 
     @MockBean
     private ContainerServiceImpl containerService;

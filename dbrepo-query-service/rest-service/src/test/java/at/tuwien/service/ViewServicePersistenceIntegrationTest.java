@@ -5,7 +5,6 @@ import at.tuwien.api.database.ViewCreateDto;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.MariaDbContainerConfig;
-import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.database.View;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.BrokerServiceGateway;
@@ -42,9 +41,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 public class ViewServicePersistenceIntegrationTest extends BaseUnitTest {
-
-    @MockBean
-    private ReadyConfig readyConfig;
 
     @MockBean
     private Channel channel;

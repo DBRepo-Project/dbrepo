@@ -3,7 +3,6 @@ package at.tuwien.endpoint;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.LicenseDto;
 import at.tuwien.config.IndexConfig;
-import at.tuwien.config.ReadyConfig;
 import at.tuwien.endpoints.LicenseEndpoint;
 import at.tuwien.repository.mdb.LicenseRepository;
 import at.tuwien.repository.sdb.DatabaseIdxRepository;
@@ -28,9 +27,6 @@ import static org.mockito.Mockito.when;
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 public class LicenseEndpointUnitTest extends BaseUnitTest {
-
-    @MockBean
-    private ReadyConfig readyConfig;
 
     @MockBean
     private IndexConfig indexConfig;

@@ -6,7 +6,6 @@ import at.tuwien.api.database.DatabaseGiveAccessDto;
 import at.tuwien.api.database.DatabaseModifyAccessDto;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.config.MariaDbConfig;
-import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.database.AccessType;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.exception.*;
@@ -42,9 +41,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @ExtendWith(SpringExtension.class)
 public class AccessServiceIntegrationTest extends BaseUnitTest {
-
-    @MockBean
-    private ReadyConfig readyConfig;
 
     @MockBean
     private IndexConfig indexConfig;

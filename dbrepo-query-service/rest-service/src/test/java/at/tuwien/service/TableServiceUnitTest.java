@@ -2,7 +2,6 @@ package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.config.IndexConfig;
-import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.exception.DatabaseNotFoundException;
 import at.tuwien.exception.TableNotFoundException;
@@ -35,9 +34,6 @@ import static org.mockito.Mockito.when;
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 public class TableServiceUnitTest extends BaseUnitTest {
-
-    @MockBean
-    private ReadyConfig readyConfig;
 
     @MockBean
     private Channel channel;

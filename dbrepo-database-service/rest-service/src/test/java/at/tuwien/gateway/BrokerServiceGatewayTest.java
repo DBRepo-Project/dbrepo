@@ -2,7 +2,6 @@ package at.tuwien.gateway;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.config.IndexConfig;
-import at.tuwien.config.ReadyConfig;
 import at.tuwien.exception.BrokerVirtualHostCreationException;
 import at.tuwien.exception.BrokerVirtualHostGrantException;
 import at.tuwien.repository.sdb.DatabaseIdxRepository;
@@ -24,16 +23,12 @@ import org.springframework.web.client.RestTemplate;
 import java.net.URI;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @Log4j2
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 public class BrokerServiceGatewayTest extends BaseUnitTest {
-
-    @MockBean
-    private ReadyConfig readyConfig;
 
     @MockBean
     private Channel channel;

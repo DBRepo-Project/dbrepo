@@ -51,9 +51,6 @@ import static org.mockito.Mockito.when;
 public class QueueServiceIntegrationTest extends BaseUnitTest {
 
     @MockBean
-    private ReadyConfig readyConfig;
-
-    @MockBean
     private DatabaseRepository databaseRepository;
 
     @MockBean
