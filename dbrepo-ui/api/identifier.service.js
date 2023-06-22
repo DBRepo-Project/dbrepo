@@ -22,6 +22,24 @@ class IdentifierService {
     return this.findAccept(id, 'application/json')
   }
 
+  retrieve (url) {
+    return new Promise((resolve, reject) => {
+      if (url === null) {
+        reject(Error)
+      }
+      api.get(`/api/identifier/retrieve?url=${url}`, { headers: { Accept: 'application/json' } })
+        .then((response) => {
+          const metadata = response.data
+          console.debug('response metadata', metadata)
+          resolve(metadata)
+        })
+        .catch((error) => {
+          console.error('Failed to load metadata', error)
+          reject(error)
+        })
+    })
+  }
+
   findAccept (id, accept) {
     return new Promise((resolve, reject) => {
       api.get(`/api/pid/${id}`, { headers: { Accept: accept } })

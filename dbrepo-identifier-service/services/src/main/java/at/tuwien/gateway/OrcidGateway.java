@@ -6,5 +6,6 @@ import org.springframework.stereotype.Service;
 
 @Service
 public interface OrcidGateway {
+
     OrcidDto findByUrl(String url) throws OrcidNotFoundException;
 }

@@ -1,6 +1,7 @@
 package at.tuwien.api.orcid;
 
-import at.tuwien.api.orcid.affiliation.OrcidSummaryDto;
+import at.tuwien.api.orcid.activities.OrcidActivitiesSummaryDto;
+import at.tuwien.api.orcid.person.OrcidPersonDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
@@ -14,13 +15,11 @@ import lombok.extern.jackson.Jacksonized;
 @ToString
 public class OrcidDto {
 
-    @JsonProperty("person.name.given-names.value")
-    private String givenNames;
+    private String path;
 
-    @JsonProperty("person.name.family-name.value")
-    private String familyName;
+    private OrcidPersonDto person;
 
-    @JsonProperty("activities-summary.employments.affiliation-group")
-    private OrcidSummaryDto[] affiliationGroup;
+    @JsonProperty("activities-summary")
+    private OrcidActivitiesSummaryDto activitiesSummary;
 
 }

@@ -1,37 +1,144 @@
 <template>
   <div>
-    <v-card>
-      <v-card-title v-text="title" />
-      <v-card-text>
-        <v-alert
-          v-if="identifier.visibility === 'self'"
-          border="left"
-          color="info">
-          Private datasets significantly impact the reusability of your research.
-        </v-alert>
-        <v-form v-model="formValid" autocomplete="off">
+    <v-form ref="form" v-model="formValid" autocomplete="off">
+      <v-card>
+        <v-card-title>Creators</v-card-title>
+        <v-card-text v-for="(creator, i) in identifier.creators" :key="`c-${i}`">
           <v-row dense>
             <v-col>
               <v-text-field
-                id="title"
-                v-model="identifier.title"
-                name="title"
-                autofocus
-                :label="`${prefix} title *`"
-                :rules="[v => !!v || $t('Required')]"
+                v-model="creator.identifier"
+                label="Name Identifier"
+                hint="Use a name identifier expressed as URL for automatic metadata retrieval of schemas: ORCID or ROR"
+                :loading="creator.loading"
+                persistent-hint
+                required
+                @focusout="retrieve(creator)" />
+            </v-col>
+          </v-row>
+          <v-row dense>
+            <v-col>
+              <v-radio-group v-model="creator.type">
+                <v-radio
+                  label="Person"
+                  value="person" />
+                <v-radio
+                  label="Organization"
+                  value="organization" />
+              </v-radio-group>
+            </v-col>
+          </v-row>
+          <v-row dense>
+            <v-col>
+              <v-text-field
+                v-model="creator.firstname"
+                label="Given Name"
+                :disabled="creator.success || creator.type === 'organization'"
                 required />
             </v-col>
           </v-row>
           <v-row dense>
             <v-col>
-              <v-textarea
-                id="description"
-                v-model="identifier.description"
-                name="description"
-                rows="2"
-                :label="`${prefix} description *`" />
+              <v-text-field
+                v-model="creator.lastname"
+                label="Family Name"
+                :disabled="creator.success || creator.type === 'organization'"
+                required />
             </v-col>
           </v-row>
+          <v-row dense>
+            <v-col>
+              <v-text-field
+                v-model="creator.name"
+                label="Name *"
+                :disabled="creator.success && creator.type === 'organization'"
+                :rules="[v => !!v || $t('Required')]"
+                required />
+            </v-col>
+            <v-col v-if="i > 0" cols="1" class="mt-5">
+              <v-btn icon x-small @click="deleteCreator(i)">
+                <v-icon>mdi-close</v-icon>
+              </v-btn>
+            </v-col>
+          </v-row>
+          <v-row dense>
+            <v-col>
+              <v-btn x-small @click="addCreator">
+                Add Creator
+              </v-btn>
+            </v-col>
+          </v-row>
+        </v-card-text>
+        <v-card-title>Titles</v-card-title>
+        <v-card-text v-for="(title, i) in identifier.titles" :key="`t-${i}`">
+          <v-row dense>
+            <v-col>
+              <v-text-field
+                v-model="title.name"
+                autofocus
+                label="Title"
+                placeholder="Type ..."
+                required />
+            </v-col>
+          </v-row>
+          <v-row dense>
+            <v-col>
+              <v-select
+                v-model="title.language"
+                autofocus
+                label="Language"
+                required />
+            </v-col>
+          </v-row>
+        </v-card-text>
+        <v-card-text>
+          <v-row dense>
+            <v-col>
+              <v-btn x-small>
+                Add Title
+              </v-btn>
+            </v-col>
+          </v-row>
+        </v-card-text>
+        <v-card-title>Descriptions</v-card-title>
+        <v-card-text v-for="(description, j) in identifier.descriptions" :key="`d-${j}`">
+          <v-row dense>
+            <v-col>
+              <v-textarea
+                v-model="description.text"
+                label="Text"
+                rows="2" />
+            </v-col>
+          </v-row>
+          <v-row dense>
+            <v-col>
+              <v-select
+                v-model="description.type"
+                autofocus
+                label="Type"
+                required />
+            </v-col>
+          </v-row>
+          <v-row dense>
+            <v-col>
+              <v-select
+                v-model="description.language"
+                autofocus
+                label="Language"
+                required />
+            </v-col>
+          </v-row>
+        </v-card-text>
+        <v-card-text>
+          <v-row dense>
+            <v-col>
+              <v-btn x-small>
+                Add Description
+              </v-btn>
+            </v-col>
+          </v-row>
+        </v-card-text>
+        <v-card-text>
           <v-row v-if="isSubset" dense>
             <v-col>
               <v-select
@@ -82,51 +189,8 @@
                 required />
             </v-col>
           </v-row>
-          <v-row v-for="(creator, i) in identifier.creators" :key="`c-${i}`" dense>
-            <v-col cols="3">
-              <v-text-field
-                v-model="creator.firstname"
-                name="firstname"
-                label="Firstname *"
-                :rules="[v => !!v || $t('Required')]"
-                required />
-            </v-col>
-            <v-col cols="3">
-              <v-text-field
-                v-model="creator.lastname"
-                name="lastname"
-                label="Lastname *"
-                :rules="[v => !!v || $t('Required')]"
-                required />
-            </v-col>
-            <v-col cols="3">
-              <v-text-field
-                v-model="creator.affiliation"
-                name="affiliation"
-                label="Affiliation *"
-                :rules="[v => !!v || $t('Required')]"
-                required />
-            </v-col>
-            <v-col cols="2">
-              <v-text-field
-                v-model="creator.orcid"
-                name="orcid"
-                label="ORCID"
-                :rules="[v => !validateOrcidInput(v) || $t('Please remove the https:// part')]" />
-            </v-col>
-            <v-col v-if="i > 0" cols="1" class="mt-5">
-              <v-btn icon x-small @click="deleteCreator(i)">
-                <v-icon>mdi-close</v-icon>
-              </v-btn>
-            </v-col>
-          </v-row>
-          <v-row dense>
-            <v-col>
-              <v-btn x-small @click="addCreator">
-                Add Creator
-              </v-btn>
-            </v-col>
-          </v-row>
+        </v-card-text>
+        <v-card-text>
           <v-row v-for="(related,i) in identifier.related_identifiers" :key="`r-${i}`" dense>
             <v-col cols="4">
               <v-text-field
@@ -177,35 +241,35 @@
               </v-btn>
             </v-col>
           </v-row>
-        </v-form>
-      </v-card-text>
-      <v-card-actions>
-        <v-spacer />
-        <v-btn
-          class="mb-2"
-          @click="cancel">
-          Cancel
-        </v-btn>
-        <v-btn
-          v-if="isUpdate"
-          class="mb-2"
-          :loading="loading"
-          :disabled="!formValid || loading"
-          color="primary"
-          @click="update">
-          Update
-        </v-btn>
-        <v-btn
-          v-if="!isUpdate"
-          class="mb-2"
-          :loading="loading"
-          :disabled="!formValid || loading"
-          color="primary"
-          @click="persist">
-          Persist
-        </v-btn>
-      </v-card-actions>
-    </v-card>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            class="mb-2"
+            @click="cancel">
+            Cancel
+          </v-btn>
+          <v-btn
+            v-if="isUpdate"
+            class="mb-2"
+            :loading="loading"
+            :disabled="!formValid || loading"
+            color="primary"
+            @click="update">
+            Update
+          </v-btn>
+          <v-btn
+            v-if="!isUpdate"
+            class="mb-2"
+            :loading="loading"
+            :disabled="!formValid || loading"
+            color="primary"
+            @click="persist">
+            Persist
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-form>
   </div>
 </template>
 
@@ -240,8 +304,19 @@ export default {
       identifier: {
         dbid: parseInt(this.$route.params.database_id),
         qid: parseInt(this.$route.params.query_id),
-        title: null,
-        description: null,
+        titles: [
+          {
+            name: null,
+            language: null
+          }
+        ],
+        descriptions: [
+          {
+            text: null,
+            type: null,
+            language: null
+          }
+        ],
         visibility: 'everyone',
         publisher: this.$config.defaultPublisher,
         publication_year: formatYearUTC(Date.now()),
@@ -254,7 +329,12 @@ export default {
             firstname: null,
             lastname: null,
             affiliation: null,
-            orcid: null
+            orcid: null,
+            type: 'person',
+            name: null,
+            identifier: null,
+            loading: false,
+            success: false
           }
         ],
         related_identifiers: []
@@ -339,15 +419,6 @@ export default {
       }
       return this.database.identifier.id !== null
     },
-    title () {
-      let title = (this.isUpdate ? 'Update' : 'Get') + ' '
-      if (this.isSubset) {
-        title += 'subset'
-      } else if (this.isDatabase) {
-        title += 'database'
-      }
-      return (title + ' identifier')
-    },
     visibilityHint () {
       if (this.identifier.visibility === 'public') {
         return 'The result set will be open access (world-readable)'
@@ -380,6 +451,25 @@ export default {
   methods: {
     cancel () {
       this.$emit('close', { action: 'closed' })
+    },
+    retrieve (creator) {
+      creator.loading = true
+      IdentifierService.retrieve(creator.identifier)
+        .then((metadata) => {
+          creator.success = true
+          creator.firstname = metadata.given_names
+          creator.lastname = metadata.family_name
+          creator.type = metadata.type
+          if (metadata.type === 'organization' && metadata.affiliations) {
+            creator.name = metadata.affiliations[0].organization_name
+          }
+        })
+        .catch(() => {
+          creator.success = false
+        })
+        .finally(() => {
+          creator.loading = false
+        })
     },
     addCreator () {
       this.identifier.creators.push({

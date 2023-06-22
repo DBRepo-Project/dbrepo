@@ -4,7 +4,7 @@ import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.api.identifier.IdentifierCreateDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.identifier.IdentifierTypeDto;
-import at.tuwien.api.user.UserOrOrganisationIdentifierDto;
+import at.tuwien.api.user.external.ExternalMetadataDto;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
@@ -162,9 +162,9 @@ public class IdentifierEndpoint {
                 .body(identifierMapper.identifierToIdentifierDto(identifier));
     }
 
-    @PostMapping("/retrieve")
+    @GetMapping("/retrieve")
     @Timed(value = "identifier.retrieve", description = "Retrieve person or organization metadata from identifier")
-    @Operation(summary = "Retrieve metadata from identifier", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Retrieve metadata from identifier")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Retrieved metadata from identifier",
@@ -172,9 +172,9 @@ public class IdentifierEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = IdentifierDto.class))}),
     })
-    public ResponseEntity<UserOrOrganisationIdentifierDto> create(
-            @NotNull @Valid @RequestBody UserOrOrganisationIdentifierDto data) throws OrcidNotFoundException {
-        return ResponseEntity.ok(metadataService.findById(data));
+    public ResponseEntity<ExternalMetadataDto> create(@NotNull @Valid @RequestParam String url)
+            throws OrcidNotFoundException, RorNotFoundException, RemoteUnavailableException {
+        return ResponseEntity.ok(metadataService.findByUrl(url));
     }
 
 
