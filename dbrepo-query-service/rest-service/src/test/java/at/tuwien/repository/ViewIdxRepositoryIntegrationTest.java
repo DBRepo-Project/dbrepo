@@ -3,7 +3,6 @@ package at.tuwien.repository;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.ViewCreateDto;
 import at.tuwien.config.MariaDbConfig;
-import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.database.View;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.BrokerServiceGateway;
@@ -49,9 +48,6 @@ import static org.mockito.Mockito.when;
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 public class ViewIdxRepositoryIntegrationTest extends BaseUnitTest {
-
-    @MockBean
-    private ReadyConfig readyConfig;
 
     @MockBean
     private Channel channel;

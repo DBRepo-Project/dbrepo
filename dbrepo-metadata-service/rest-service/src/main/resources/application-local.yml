@@ -41,7 +41,6 @@ logging:
     at.tuwien.: trace
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 fda:
-  ready.path: ./ready
   pid.base: https://example.com/pid/
   gateway.endpoint: http://localhost
 dbrepo:

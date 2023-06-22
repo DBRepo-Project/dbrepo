@@ -2,7 +2,6 @@ package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.config.IndexConfig;
-import at.tuwien.config.ReadyConfig;
 import at.tuwien.entities.database.License;
 import at.tuwien.exception.LicenseNotFoundException;
 import at.tuwien.repository.mdb.LicenseRepository;
@@ -30,9 +29,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 public class LicenseServiceIntegrationTest extends BaseUnitTest {
-
-    @MockBean
-    private ReadyConfig readyConfig;
 
     @MockBean
     private IndexConfig indexConfig;

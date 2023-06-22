@@ -59,7 +59,6 @@ logging:
 fda:
   network: "${USER_NETWORK}"
   mount.path: "${SHARED_FILESYSTEM}"
-  ready.path: /ready
   jwt:
     issuer: "${JWT_ISSUER}"
     public_key: "${JWT_PUBKEY}"

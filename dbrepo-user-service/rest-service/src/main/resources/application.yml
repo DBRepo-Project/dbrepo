@@ -56,7 +56,6 @@ logging:
     at.tuwien.: "${LOG_LEVEL}"
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 fda:
-  ready.path: /ready
   gateway.endpoint: "${GATEWAY_ENDPOINT}"
   default_role: "${DEFAULT_ROLE}"
   jwt:

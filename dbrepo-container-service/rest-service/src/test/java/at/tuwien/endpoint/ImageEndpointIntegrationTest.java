@@ -1,7 +1,6 @@
 package at.tuwien.endpoint;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.config.ReadyConfig;
 import at.tuwien.endpoints.ImageEndpoint;
 import at.tuwien.exception.ImageAlreadyExistsException;
 import at.tuwien.exception.ImageInvalidException;
@@ -23,9 +22,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 public class ImageEndpointIntegrationTest extends BaseUnitTest {
-
-    @MockBean
-    private ReadyConfig readyConfig;
 
     @MockBean
     private RealmRepository realmRepository;
