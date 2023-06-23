@@ -99,8 +99,8 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
         final IdentifierDto body = (IdentifierDto) response.getBody();
         assertNotNull(body);
         assertEquals(compare.getId(), body.getId());
-        assertEquals(compare.getTitle(), body.getTitle());
-        assertEquals(compare.getDescription(), body.getDescription());
+        assertEquals(compare.getTitles(), body.getTitles());
+        assertEquals(compare.getDescriptions(), body.getDescriptions());
         assertEquals(compare.getDatabaseId(), body.getDatabaseId());
         assertEquals(compare.getCreated(), body.getCreated());
         assertEquals(compare.getLastModified(), body.getLastModified());
@@ -130,8 +130,8 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
         final IdentifierDto body = (IdentifierDto) response.getBody();
         assertNotNull(body);
         assertEquals(compare.getId(), body.getId());
-        assertEquals(compare.getTitle(), body.getTitle());
-        assertEquals(compare.getDescription(), body.getDescription());
+        assertEquals(compare.getTitles(), body.getTitles());
+        assertEquals(compare.getDescriptions(), body.getDescriptions());
         assertEquals(compare.getDatabaseId(), body.getDatabaseId());
         assertEquals(compare.getCreated(), body.getCreated());
         assertEquals(compare.getLastModified(), body.getLastModified());
@@ -144,11 +144,15 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
         assertNotNull(compare.getCreators());
         assertNotNull(body.getCreators());
         assertEquals(compare.getCreators().size(), body.getCreators().size());
-        final CreatorDto creator1 = body.getCreators().get(0);
-        assertEquals(compare.getCreators().get(0).getFirstname(), creator1.getFirstname());
-        assertEquals(compare.getCreators().get(0).getLastname(), creator1.getLastname());
-        assertEquals(compare.getCreators().get(0).getAffiliation(), creator1.getAffiliation());
-        assertEquals(compare.getCreators().get(0).getOrcid(), creator1.getOrcid());
+        final CreatorDto creator0 = body.getCreators().get(0);
+        assertEquals(compare.getCreators().get(0).getFirstname(), creator0.getFirstname());
+        assertEquals(compare.getCreators().get(0).getLastname(), creator0.getLastname());
+        assertEquals(compare.getCreators().get(0).getCreatorName(), creator0.getCreatorName());
+        assertEquals(compare.getCreators().get(0).getAffiliation(), creator0.getAffiliation());
+        assertEquals(compare.getCreators().get(0).getAffiliationIdentifier(), creator0.getAffiliationIdentifier());
+        assertEquals(compare.getCreators().get(0).getAffiliationIdentifierScheme(), creator0.getAffiliationIdentifierScheme());
+        assertEquals(compare.getCreators().get(0).getNameIdentifier(), creator0.getNameIdentifier());
+        assertEquals(compare.getCreators().get(0).getNameIdentifierScheme(), creator0.getNameIdentifierScheme());
     }
 
     @Test
@@ -645,8 +649,12 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
         final IdentifierDto body = response.getBody();
         assertNotNull(body);
         assertEquals(IDENTIFIER_3_ID, body.getId());
-        assertEquals(IDENTIFIER_3_TITLE, body.getTitle());
-        assertEquals(IDENTIFIER_3_DESCRIPTION, body.getDescription());
+        assertEquals(1, body.getTitles().size());
+        assertEquals(IDENTIFIER_3_TITLE_1_TITLE, body.getTitles().get(0).getTitle());
+        assertEquals(IDENTIFIER_3_TITLE_1_LANG_DTO, body.getTitles().get(0).getLanguage());
+        assertEquals(1, body.getDescriptions().size());
+        assertEquals(IDENTIFIER_3_DESCRIPTION_1_DESCRIPTION, body.getDescriptions().get(0).getDescription());
+        assertEquals(IDENTIFIER_3_DESCRIPTION_1_LANG_DTO, body.getDescriptions().get(0).getLanguage());
         assertEquals(IDENTIFIER_3_QUERY, body.getQuery());
         assertEquals(IDENTIFIER_3_QUERY_HASH, body.getQueryHash());
         assertEquals(IDENTIFIER_3_RESULT_NUMBER, body.getResultNumber());

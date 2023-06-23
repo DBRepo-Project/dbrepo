@@ -31,14 +31,14 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_images_date`
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_containers`
 (
-    id            bigint                       NOT NULL AUTO_INCREMENT,
-    INTERNAL_NAME character varying(255)       NOT NULL,
-    NAME          character varying(255)       NOT NULL,
-    HOST          character varying(255)       NOT NULL,
-    PORT          integer                      NOT NULL,
-    image_id      bigint                       NOT NULL,
-    created       timestamp                    NOT NULL DEFAULT NOW(),
-    LAST_MODIFIED timestamp,
+    id                  bigint                 NOT NULL AUTO_INCREMENT,
+    INTERNAL_NAME       character varying(255) NOT NULL,
+    NAME                character varying(255) NOT NULL,
+    HOST                character varying(255) NOT NULL,
+    PORT                integer                NOT NULL,
+    image_id            bigint                 NOT NULL,
+    created             timestamp              NOT NULL DEFAULT NOW(),
+    LAST_MODIFIED       timestamp,
     privileged_username character varying(255) NOT NULL,
     privileged_password character varying(255) NOT NULL,
     PRIMARY KEY (id),
@@ -362,11 +362,9 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifiers`
     id                bigint                    NOT NULL AUTO_INCREMENT,
     dbid              bigint                    NOT NULL,
     qid               bigint,
-    title             VARCHAR(255)              NOT NULL,
     publisher         VARCHAR(255)              NOT NULL,
-    language          VARCHAR(50),
+    language          VARCHAR(2),
     license           VARCHAR(50),
-    description       TEXT,
     visibility        ENUM ('SELF', 'EVERYONE') NOT NULL default 'EVERYONE',
     publication_year  INTEGER                   NOT NULL,
     publication_month INTEGER,
@@ -387,6 +385,30 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifiers`
     UNIQUE (dbid, qid)
 ) WITH SYSTEM VERSIONING;
 
+CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifier_titles`
+(
+    id         bigint NOT NULL AUTO_INCREMENT,
+    iid        bigint NOT NULL,
+    title      text   NOT NULL,
+    title_type ENUM ('AlternativeTitle', 'Subtitle', 'TranslatedTitle', 'Other'),
+    language   VARCHAR(2),
+    PRIMARY KEY (id),
+    FOREIGN KEY (iid) REFERENCES mdb_identifiers (id),
+    UNIQUE (iid, language)
+) WITH SYSTEM VERSIONING;
+
+CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifier_descriptions`
+(
+    id               bigint NOT NULL AUTO_INCREMENT,
+    iid              bigint NOT NULL,
+    description      text   NOT NULL,
+    description_type ENUM ('Abstract', 'Methods', 'SeriesInformation', 'TableOfContents', 'TechnicalInfo', 'Other'),
+    language         VARCHAR(2),
+    PRIMARY KEY (id),
+    FOREIGN KEY (iid) REFERENCES mdb_identifiers (id),
+    UNIQUE (iid, language)
+) WITH SYSTEM VERSIONING;
+
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_related_identifiers`
 (
     id            bigint                 NOT NULL AUTO_INCREMENT,
@@ -403,15 +425,22 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_related_identifiers`
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_creators`
 (
-    id            bigint                 NOT NULL AUTO_INCREMENT,
-    pid           bigint                 NOT NULL,
-    firstname     VARCHAR(255)           NOT NULL,
-    lastname      VARCHAR(255)           NOT NULL,
-    affiliation   VARCHAR(255),
-    orcid         VARCHAR(255),
-    created       timestamp              NOT NULL DEFAULT NOW(),
-    created_by    character varying(255) NOT NULL,
-    last_modified timestamp              NOT NULL,
+    id                            bigint                 NOT NULL AUTO_INCREMENT,
+    pid                           bigint                 NOT NULL,
+    given_names                   text,
+    family_name                   text,
+    creator_name                  VARCHAR(255)           NOT NULL,
+    name_type                     ENUM ('Personal', 'Organizational') default 'Personal',
+    name_identifier               text,
+    name_identifier_scheme        ENUM ('ROR', 'GRID', 'ISNI', 'ORCID'),
+    name_identifier_scheme_uri    text,
+    affiliation                   VARCHAR(255),
+    affiliation_identifier        text,
+    affiliation_identifier_scheme ENUM ('ROR', 'GRID', 'ISNI'),
+    orcid                         VARCHAR(255),
+    created                       timestamp              NOT NULL     DEFAULT NOW(),
+    created_by                    character varying(255) NOT NULL,
+    last_modified                 timestamp              NOT NULL,
     PRIMARY KEY (id, pid),
     FOREIGN KEY (pid) REFERENCES mdb_identifiers (id)
 ) WITH SYSTEM VERSIONING;

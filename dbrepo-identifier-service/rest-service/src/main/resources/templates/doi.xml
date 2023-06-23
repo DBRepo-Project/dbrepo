@@ -4,17 +4,18 @@
     <identifier th:attr="identifierType=${identifierType}">[[${identifier}]]</identifier>
     <creators th:if="${not #lists.isEmpty(creators)}">
         <creator th:each="creator: ${creators}">
-            <creatorName nameType="Personal">[[${creator.lastname}]], [[${creator.firstname}]]</creatorName>
+            <creatorName th:attr="nameType=${creator.nameType}">[[${creator.lastname}]], [[${creator.firstname}]]</creatorName>
             <givenName>[[${creator.firstname}]]</givenName>
             <familyName>[[${creator.lastname}]]</familyName>
-            <nameIdentifier th:if="${creator.orcid != null}" schemeURI="https://orcid.org" nameIdentifierScheme="ORCID">
-                [[${creator.orcid}]]
+            <nameIdentifier th:if="${creator.nameIdentifier != null}"
+                            th:attr="schemeURI=${creator.nameIdentifierSchemeUri},nameIdentifierScheme=${creator.nameIdentifierScheme}">
+                [[${creator.nameIdentifier}]]
             </nameIdentifier>
             <affiliation th:if="${creator.affiliation != null}">[[${creator.affiliation}]]</affiliation>
         </creator>
     </creators>
     <titles>
-        <title xml:lang="en">[[${title}]]</title>
+        <title th:each="title: ${titles}" th:xmllang="${title.language}" th:attr="titleType=${title.titleType}">[[${title.title}]]</title>
     </titles>
     <publisher xml:lang="en">[[${publisher}]]</publisher>
     <publicationYear>[[${publicationYear}]]</publicationYear>
@@ -29,8 +30,9 @@
             [[${relatedIdentifier.value}]]
         </relatedIdentifier>
     </relatedIdentifiers>
-    <descriptions th:if="${description != null}">
-        <description descriptionType="Abstract">[[${description}]]</description>
+    <descriptions>
+        <description th:each="description: ${descriptions}" th:attr="descriptionType=${description.descriptionType}"
+                     th:xmllang="${description.language}">[[${description.description}]]</description>
     </descriptions>
     <version>1.0</version>
 </resource>

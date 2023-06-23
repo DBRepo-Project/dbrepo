@@ -1,6 +1,8 @@
 package at.tuwien.entities.identifier;
 
 import at.tuwien.entities.user.User;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
@@ -32,17 +34,38 @@ public class Creator {
     @EqualsAndHashCode.Include
     private Long pid;
 
-    @Column(nullable = false)
+    @Column(name = "given_names")
     private String firstname;
 
-    @Column(nullable = false)
+    @Column(name = "family_name")
     private String lastname;
+
+    @Column(nullable = false)
+    private String creatorName;
+
+    @Column(columnDefinition = "enum('Personal', 'Organizational')")
+    @Enumerated(EnumType.STRING)
+    private NameType nameType;
+
+    @Column
+    private String nameIdentifier;
+
+    @Column(columnDefinition = "enum('ROR', 'GRID', 'ISNI', 'ORCID')")
+    @Enumerated(EnumType.STRING)
+    private NameIdentifierSchemeType nameIdentifierScheme;
+
+    @Column
+    private String nameIdentifierSchemeUri;
 
     @Column
     private String affiliation;
 
     @Column
-    private String orcid;
+    private String affiliationIdentifier;
+
+    @Column(columnDefinition = "enum('ROR', 'GRID', 'ISNI')")
+    @Enumerated(EnumType.STRING)
+    private AffiliationIdentifierSchemeType affiliationIdentifierScheme;
 
     @org.springframework.data.annotation.Transient
     @ToString.Exclude

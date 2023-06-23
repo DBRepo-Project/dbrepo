@@ -1,9 +1,7 @@
 package at.tuwien.endpoint;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.api.identifier.IdentifierCreateDto;
-import at.tuwien.api.identifier.IdentifierDto;
-import at.tuwien.api.identifier.IdentifierTypeDto;
+import at.tuwien.api.identifier.*;
 import at.tuwien.config.EndpointConfig;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.endpoints.IdentifierEndpoint;
@@ -103,8 +101,16 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final IdentifierDto body = (IdentifierDto) response.getBody();
         assertNotNull(body);
-        assertEquals(IDENTIFIER_1_ID, body.getId());
-        assertEquals(IDENTIFIER_1_TITLE, body.getTitle());
+        final List<IdentifierTitleDto> titles = body.getTitles();
+        assertEquals(1, titles.size());
+        final IdentifierTitleDto title0 = titles.get(0);
+        assertEquals(IDENTIFIER_1_TITLE_1_TITLE, title0.getTitle());
+        assertEquals(IDENTIFIER_1_TITLE_1_LANG_DTO, title0.getLanguage());
+        final List<IdentifierDescriptionDto> descriptions = body.getDescriptions();
+        assertEquals(1, descriptions.size());
+        final IdentifierDescriptionDto description0 = descriptions.get(0);
+        assertEquals(IDENTIFIER_1_DESCRIPTION_1_DESCRIPTION, description0.getDescription());
+        assertEquals(IDENTIFIER_1_DESCRIPTION_1_LANG_DTO, description0.getLanguage());
     }
 
     @Test
@@ -213,8 +219,8 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
         final IdentifierCreateDto request = IdentifierCreateDto.builder()
                 .qid(null)  // <--
                 .dbid(IDENTIFIER_1_DATABASE_ID)
-                .description(IDENTIFIER_1_DESCRIPTION)
-                .title(IDENTIFIER_1_TITLE)
+                .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_CREATE_DTO))
+                .titles(List.of(IDENTIFIER_1_TITLE_1_CREATE_DTO))
                 .relatedIdentifiers(List.of())
                 .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
                 .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
@@ -235,8 +241,8 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
         final IdentifierCreateDto request = IdentifierCreateDto.builder()
                 .qid(IDENTIFIER_1_QUERY_ID) // <--
                 .dbid(IDENTIFIER_1_DATABASE_ID)
-                .description(IDENTIFIER_1_DESCRIPTION)
-                .title(IDENTIFIER_1_TITLE)
+                .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_CREATE_DTO))
+                .titles(List.of(IDENTIFIER_1_TITLE_1_CREATE_DTO))
                 .relatedIdentifiers(List.of(IDENTIFIER_1_RELATED_IDENTIFIER_2_CREATE_DTO))
                 .publicationDay(IDENTIFIER_2_PUBLICATION_DAY)
                 .publicationMonth(IDENTIFIER_2_PUBLICATION_MONTH)
@@ -307,8 +313,6 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
         final IdentifierDto body = response.getBody();
         assertNotNull(body);
         assertEquals(identifier.getId(), body.getId());
-        assertEquals(identifier.getTitle(), body.getTitle());
-        assertEquals(identifier.getDescription(), body.getDescription());
         assertEquals(identifier.getQuery(), body.getQuery());
         assertEquals(identifier.getQueryHash(), body.getQueryHash());
         assertEquals(identifier.getResultHash(), body.getResultHash());

@@ -1,10 +1,7 @@
 package at.tuwien.mapper;
 
 import at.tuwien.api.identifier.*;
-import at.tuwien.entities.identifier.Creator;
-import at.tuwien.entities.identifier.Identifier;
-import at.tuwien.entities.identifier.IdentifierType;
-import at.tuwien.entities.identifier.RelatedIdentifier;
+import at.tuwien.entities.identifier.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
@@ -17,6 +14,8 @@ public interface IdentifierMapper {
     @Mappings({
             @Mapping(target = "databaseId", source = "dbid"),
             @Mapping(target = "queryId", source = "qid"),
+            @Mapping(target = "titles", ignore = true),
+            @Mapping(target = "descriptions", ignore = true),
     })
     Identifier identifierCreateDtoToIdentifier(IdentifierCreateDto data);
 
@@ -26,12 +25,14 @@ public interface IdentifierMapper {
     })
     Identifier identifierUpdateDtoToIdentifier(IdentifierUpdateDto data);
 
-    /* keep */
+    IdentifierTitle identifierCreateTitleDtoToIdentifierTitle(IdentifierCreateTitleDto data);
+
+    IdentifierDescription identifierCreateDescriptionDtoToIdentifierDescription(IdentifierCreateDescriptionDto data);
+
     RelatedIdentifierDto relatedIdentifierToRelatedIdentifierDto(RelatedIdentifier data);
 
     Identifier identifierDtoToIdentifier(IdentifierDto data);
 
-    /* keep */
     Creator creatorDtoToCreator(CreatorDto data);
 
     Creator creatorCreateDtoToCreator(CreatorCreateDto data);

@@ -2,9 +2,7 @@ package at.tuwien.mapper;
 
 import at.tuwien.api.datacite.doi.*;
 import at.tuwien.entities.database.License;
-import at.tuwien.entities.identifier.Creator;
-import at.tuwien.entities.identifier.Identifier;
-import at.tuwien.entities.identifier.RelatedIdentifier;
+import at.tuwien.entities.identifier.*;
 import at.tuwien.utils.EnumToStringConverter;
 import org.mapstruct.*;
 import org.springframework.context.annotation.Profile;
@@ -27,8 +25,7 @@ public interface DataCiteMapper {
             @Mapping(target = "publicationMonth", source = "publicationMonth"),
             @Mapping(target = "publicationDay", source = "publicationDay"),
             @Mapping(target = "language", source = "language"),
-            @Mapping(target = "rightsList",
-                    expression = "java(list(licenseToDoiRights(identifier.getLicense())))"),
+            @Mapping(target = "rightsList", expression = "java(list(licenseToDoiRights(identifier.getLicense())))"),
             @Mapping(target = "creators", source = "creators"),
             @Mapping(target = "relatedIdentifiers", source = "related"),
     })
@@ -44,21 +41,17 @@ public interface DataCiteMapper {
         );
     }
 
-    DataCiteCreateDoi addParametersToCreateDoi(@MappingTarget DataCiteCreateDoi target,
-                                  String url,
-                                  String prefix,
-                                  DataCiteDoiTypes types,
-                                  DataCiteDoiEvent event);
+    DataCiteDoiTitle identifierTitleToDataCiteDoiTitle(IdentifierTitle data);
 
-    default List<DataCiteDoiTitle> identifierToDoiTitles(Identifier identifier) {
-        return List.of(
-                DataCiteDoiTitle.builder().title(identifier.getTitle()).build(),
-                DataCiteDoiTitle.builder()
-                        .title(identifier.getDescription())
-                        .titleType(DataCiteDoiTitle.Type.SUBTITLE)
-                        .build()
-        );
+    default List<DataCiteDoiTitle> identifierToDataCiteDoiTitleList(Identifier data) {
+        return data.getTitles()
+                .stream()
+                .map(this::identifierTitleToDataCiteDoiTitle)
+                .toList();
     }
+
+    DataCiteCreateDoi addParametersToCreateDoi(@MappingTarget DataCiteCreateDoi target, String url, String prefix,
+                                               DataCiteDoiTypes types, DataCiteDoiEvent event);
 
     @Mappings({
             @Mapping(target = "rights", source = "identifier"),
@@ -67,27 +60,38 @@ public interface DataCiteMapper {
     DataCiteDoiRights licenseToDoiRights(License license);
 
     @Mappings({
-            @Mapping(target = "name", expression = "java(license.getLastname() + \", \" + license.getFirstname())"),
+            @Mapping(target = "name", expression = "java(data.getLastname() + \", \" + data.getFirstname())"),
             @Mapping(target = "givenName", source = "firstname"),
             @Mapping(target = "familyName", source = "lastname"),
-            @Mapping(target = "affiliation",
-                    expression = "java(list(affiliationStringToDoiCreatorAffiliation(license.getAffiliation())))"),
-            @Mapping(target = "nameIdentifiers",
-                    expression = "java(list(orcidStringToDoiCreatorNameIdentifier(license.getOrcid())))"),
+            @Mapping(target = "affiliation", expression = "java(list(affiliationStringToDoiCreatorAffiliation(data.getAffiliation())))"),
+            @Mapping(target = "nameIdentifier", expression = "java(list(creatorToDataCiteDoiCreatorNameIdentifier(data)))"),
     })
-    DataCiteDoiCreator creatorToDoiCreator(Creator license);
+    DataCiteDoiCreator creatorToDoiCreator(Creator data);
+
+    DataCiteDoiCreatorNameIdentifier creatorToDataCiteDoiCreatorNameIdentifier(Creator data);
+
+    default String nameIdentifierSchemeTypeToUri(NameIdentifierSchemeType data) {
+        switch (data) {
+            case ROR -> {
+                return "https://ror.org/";
+            }
+            case ORCID -> {
+                return "https://orcid.org/";
+            }
+            case ISNI -> {
+                return "https://isni.org/isni/";
+            }
+            case GRID -> {
+                return "https://www.grid.ac/";
+            }
+        }
+        return null;
+    }
 
     @Mappings({
             @Mapping(target = "name", constant = "affiliation"),
     })
     DataCiteDoiCreatorAffiliation affiliationStringToDoiCreatorAffiliation(String affiliation);
-
-    @Mappings({
-            @Mapping(target = "schemeUri", constant = "https://orcid.org"),
-            @Mapping(target = "nameIdentifier", expression = "java(\"https://orcid.org/\" + orcid)"),
-            @Mapping(target = "nameIdentifierScheme", constant = "ORCID"),
-    })
-    DataCiteDoiCreatorNameIdentifier orcidStringToDoiCreatorNameIdentifier(String orcid);
 
     @Mappings({
             @Mapping(target = "relatedIdentifier", source = "value"),

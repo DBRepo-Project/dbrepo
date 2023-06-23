@@ -18,8 +18,13 @@
       "id": 1,
       "firstname": "Max",
       "lastname": "Mustermann",
+      "creator_name": "Mustermann, Max",
+      "name_type": "Personal",
       "affiliation": "TU Graz",
-      "orcid": "00000-00000-00000"
+      "affiliation_identifier": "https://ror.org/04wn28048",
+      "affiliation_identifier_scheme": "ROR",
+      "name_identifier": "00000-00000-00000",
+      "name_identifier_scheme": "ORCID"
     }
   ],
   "publication_month": 5,

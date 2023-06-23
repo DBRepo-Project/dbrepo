@@ -29,12 +29,9 @@ public class IdentifierCreateDto {
     @NotNull
     private IdentifierTypeDto type;
 
-    @NotBlank
-    @Schema(example = "Airquality Stephansplatz, Vienna, Austria")
-    private String title;
+    private List<IdentifierCreateTitleDto> titles;
 
-    @Schema(example = "Air quality reports at Stephansplatz, Vienna")
-    private String description;
+    private List<IdentifierCreateDescriptionDto> descriptions;
 
     @NotNull
     @Schema(example = "everyone")

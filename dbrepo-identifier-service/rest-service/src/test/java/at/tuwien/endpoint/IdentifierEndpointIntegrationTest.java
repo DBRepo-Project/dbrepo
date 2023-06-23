@@ -1,10 +1,15 @@
 package at.tuwien.endpoint;
 
 import at.tuwien.BaseUnitTest;
+import at.tuwien.api.identifier.IdentifierDescriptionDto;
 import at.tuwien.api.identifier.IdentifierDto;
+import at.tuwien.api.identifier.IdentifierTitleDto;
 import at.tuwien.api.identifier.IdentifierTypeDto;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.endpoints.IdentifierEndpoint;
+import at.tuwien.entities.identifier.Identifier;
+import at.tuwien.entities.identifier.IdentifierDescription;
+import at.tuwien.entities.identifier.IdentifierTitle;
 import at.tuwien.exception.NotAllowedException;
 import at.tuwien.repository.mdb.*;
 import at.tuwien.repository.sdb.IdentifierIdxRepository;
@@ -95,8 +100,16 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
         assertEquals(1, response.size());
         final IdentifierDto identifier = response.get(0);
         assertEquals(IDENTIFIER_1_ID, identifier.getId());
-        assertEquals(IDENTIFIER_1_TITLE, identifier.getTitle());
-        assertEquals(IDENTIFIER_1_DESCRIPTION, identifier.getDescription());
+        final List<IdentifierTitleDto> titles = identifier.getTitles();
+        assertEquals(1, titles.size());
+        final IdentifierTitleDto title0 = titles.get(0);
+        assertEquals(IDENTIFIER_1_TITLE_1_TITLE, title0.getTitle());
+        assertEquals(IDENTIFIER_1_TITLE_1_LANG_DTO, title0.getLanguage());
+        final List<IdentifierDescriptionDto> descriptions = identifier.getDescriptions();
+        assertEquals(1, descriptions.size());
+        final IdentifierDescriptionDto description0 = descriptions.get(0);
+        assertEquals(IDENTIFIER_1_DESCRIPTION_1_DESCRIPTION, description0.getDescription());
+        assertEquals(IDENTIFIER_1_DESCRIPTION_1_LANG_DTO, description0.getLanguage());
     }
 
     @Test
@@ -110,9 +123,16 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
         final List<IdentifierDto> response = this.generic_list(null, null, null);
         assertEquals(1, response.size());
         final IdentifierDto identifier = response.get(0);
-        assertEquals(IDENTIFIER_1_ID, identifier.getId());
-        assertEquals(IDENTIFIER_1_TITLE, identifier.getTitle());
-        assertEquals(IDENTIFIER_1_DESCRIPTION, identifier.getDescription());
+        final List<IdentifierTitleDto> titles = identifier.getTitles();
+        assertEquals(1, titles.size());
+        final IdentifierTitleDto title0 = titles.get(0);
+        assertEquals(IDENTIFIER_1_TITLE_1_TITLE, title0.getTitle());
+        assertEquals(IDENTIFIER_1_TITLE_1_LANG_DTO, title0.getLanguage());
+        final List<IdentifierDescriptionDto> descriptions = identifier.getDescriptions();
+        assertEquals(1, descriptions.size());
+        final IdentifierDescriptionDto description0 = descriptions.get(0);
+        assertEquals(IDENTIFIER_1_DESCRIPTION_1_DESCRIPTION, description0.getDescription());
+        assertEquals(IDENTIFIER_1_DESCRIPTION_1_LANG_DTO, description0.getLanguage());
     }
 
     @Test
@@ -126,9 +146,16 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
         final List<IdentifierDto> response = this.generic_list(DATABASE_1_ID, null, null);
         assertEquals(1, response.size());
         final IdentifierDto identifier = response.get(0);
-        assertEquals(IDENTIFIER_1_ID, identifier.getId());
-        assertEquals(IDENTIFIER_1_TITLE, identifier.getTitle());
-        assertEquals(IDENTIFIER_1_DESCRIPTION, identifier.getDescription());
+        final List<IdentifierTitleDto> titles = identifier.getTitles();
+        assertEquals(1, titles.size());
+        final IdentifierTitleDto title0 = titles.get(0);
+        assertEquals(IDENTIFIER_1_TITLE_1_TITLE, title0.getTitle());
+        assertEquals(IDENTIFIER_1_TITLE_1_LANG_DTO, title0.getLanguage());
+        final List<IdentifierDescriptionDto> descriptions = identifier.getDescriptions();
+        assertEquals(1, descriptions.size());
+        final IdentifierDescriptionDto description0 = descriptions.get(0);
+        assertEquals(IDENTIFIER_1_DESCRIPTION_1_DESCRIPTION, description0.getDescription());
+        assertEquals(IDENTIFIER_1_DESCRIPTION_1_LANG_DTO, description0.getLanguage());
     }
 
     @Test
@@ -149,9 +176,16 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
         final List<IdentifierDto> response = this.generic_list(DATABASE_4_ID, null, IdentifierTypeDto.DATABASE);
         assertEquals(1, response.size());
         final IdentifierDto identifier = response.get(0);
-        assertEquals(IDENTIFIER_4_ID, identifier.getId());
-        assertEquals(IDENTIFIER_4_TITLE, identifier.getTitle());
-        assertEquals(IDENTIFIER_4_DESCRIPTION, identifier.getDescription());
+        final List<IdentifierTitleDto> titles = identifier.getTitles();
+        assertEquals(1, titles.size());
+        final IdentifierTitleDto title0 = titles.get(0);
+        assertEquals(IDENTIFIER_4_TITLE_1_TITLE, title0.getTitle());
+        assertEquals(IDENTIFIER_4_DESCRIPTION_1_LANG_DTO, title0.getLanguage());
+        final List<IdentifierDescriptionDto> descriptions = identifier.getDescriptions();
+        assertEquals(1, descriptions.size());
+        final IdentifierDescriptionDto description0 = descriptions.get(0);
+        assertEquals(IDENTIFIER_4_DESCRIPTION_1_DESCRIPTION, description0.getDescription());
+        assertEquals(IDENTIFIER_4_DESCRIPTION_1_LANG, description0.getLanguage());
     }
 
     @Test
@@ -165,9 +199,16 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
         final List<IdentifierDto> response = this.generic_list(DATABASE_1_ID, QUERY_1_ID, IdentifierTypeDto.DATABASE);
         assertEquals(1, response.size());
         final IdentifierDto identifier = response.get(0);
-        assertEquals(IDENTIFIER_1_ID, identifier.getId());
-        assertEquals(IDENTIFIER_1_TITLE, identifier.getTitle());
-        assertEquals(IDENTIFIER_1_DESCRIPTION, identifier.getDescription());
+        final List<IdentifierTitleDto> titles = identifier.getTitles();
+        assertEquals(1, titles.size());
+        final IdentifierTitleDto title0 = titles.get(0);
+        assertEquals(IDENTIFIER_1_TITLE_1_TITLE, title0.getTitle());
+        assertEquals(IDENTIFIER_1_TITLE_1_LANG_DTO, title0.getLanguage());
+        final List<IdentifierDescriptionDto> descriptions = identifier.getDescriptions();
+        assertEquals(1, descriptions.size());
+        final IdentifierDescriptionDto description0 = descriptions.get(0);
+        assertEquals(IDENTIFIER_1_DESCRIPTION_1_DESCRIPTION, description0.getDescription());
+        assertEquals(IDENTIFIER_1_DESCRIPTION_1_LANG_DTO, description0.getLanguage());
     }
 
     @Test

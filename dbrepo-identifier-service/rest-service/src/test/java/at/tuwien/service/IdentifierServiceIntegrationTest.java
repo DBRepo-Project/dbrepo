@@ -5,6 +5,7 @@ import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.entities.identifier.Identifier;
+import at.tuwien.entities.identifier.IdentifierTitle;
 import at.tuwien.entities.identifier.RelatedIdentifier;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.QueryServiceGateway;
@@ -58,6 +59,12 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     private IdentifierRepository identifierRepository;
 
     @Autowired
+    private IdentifierTitleRepository identifierTitleRepository;
+
+    @Autowired
+    private IdentifierDescriptionRepository identifierDescriptionRepository;
+
+    @Autowired
     private ContainerRepository containerRepository;
 
     @Autowired
@@ -103,8 +110,10 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
         /* test */
         final Identifier response = identifierService.create(IDENTIFIER_2_DTO_REQUEST, USER_2_PRINCIPAL, bearer);
         assertEquals(IDENTIFIER_2_ID, response.getId());
-        assertEquals(IDENTIFIER_2_TITLE, response.getTitle());
-        assertEquals(IDENTIFIER_2_DESCRIPTION, response.getDescription());
+        assertEquals(1, response.getTitles().size());
+        assertEquals(IDENTIFIER_2_TITLE_1, response.getTitles().get(0));
+        assertEquals(1, response.getDescriptions().size());
+        assertEquals(IDENTIFIER_2_DESCRIPTION_1, response.getDescriptions().get(0));
         assertEquals(IDENTIFIER_2_DOI, response.getDoi());
         assertEquals(IDENTIFIER_2_PUBLISHER, response.getPublisher());
         assertEquals(IDENTIFIER_2_DATABASE_ID, response.getDatabaseId());
@@ -142,7 +151,8 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
         final Identifier response = identifierService.update(IDENTIFIER_1_ID, IDENTIFIER_1_DTO_UPDATE_REQUEST);
         assertEquals(IDENTIFIER_1_ID, response.getId());
         assertEquals(IDENTIFIER_1_DATABASE_ID, response.getDatabaseId());
-        assertEquals(IDENTIFIER_1_TITLE_MODIFY, response.getTitle());
+        assertEquals(1, response.getTitles().size());
+        assertEquals(IDENTIFIER_1_TITLE_1_TITLE_MODIFY, response.getTitles().get(0).getTitle());
         assertEquals(IDENTIFIER_1_PUBLICATION_YEAR, response.getPublicationYear());
         assertEquals(IDENTIFIER_1_PUBLICATION_MONTH, response.getPublicationMonth());
         assertEquals(IDENTIFIER_1_PUBLICATION_DAY, response.getPublicationDay());

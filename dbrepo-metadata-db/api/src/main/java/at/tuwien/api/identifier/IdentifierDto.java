@@ -40,12 +40,9 @@ public class IdentifierDto {
     @NotNull
     private IdentifierTypeDto type;
 
-    @NotBlank
-    @Schema(example = "Airquality Stephansplatz, Vienna, Austria")
-    private String title;
+    private List<IdentifierTitleDto> titles;
 
-    @Schema(example = "Air quality reports at Stephansplatz, Vienna")
-    private String description;
+    private List<IdentifierDescriptionDto> descriptions;
 
     @NotBlank
     @Schema(example = "SELECT `id`, `value`, `location` FROM `air_quality` WHERE `location` = \"09:STEF\"")

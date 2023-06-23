@@ -7,10 +7,8 @@ import at.tuwien.api.identifier.IdentifierTypeDto;
 import at.tuwien.api.identifier.IdentifierUpdateDto;
 import at.tuwien.config.EndpointConfig;
 import at.tuwien.entities.database.Database;
-import at.tuwien.entities.identifier.Creator;
-import at.tuwien.entities.identifier.Identifier;
-import at.tuwien.entities.identifier.IdentifierType;
-import at.tuwien.entities.identifier.RelatedIdentifier;
+import at.tuwien.entities.database.LanguageType;
+import at.tuwien.entities.identifier.*;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.QueryServiceGateway;
@@ -105,7 +103,7 @@ public class IdentifierServiceImpl implements IdentifierService {
             UserNotFoundException, DatabaseNotFoundException, IdentifierPublishingNotAllowedException,
             IdentifierRequestException {
         /* check */
-        final Database database = databaseService.find(data.getDbid());
+        databaseService.find(data.getDbid());
         if (data.getType().equals(IdentifierTypeDto.DATABASE) && identifierRepository.existsByDatabaseIdAndType(data.getDbid(), IdentifierType.DATABASE)) {
             log.error("Identifier already issued for database with id {}", data.getDbid());
             throw new IdentifierAlreadyExistsException("Database identifier already exists");
@@ -134,12 +132,28 @@ public class IdentifierServiceImpl implements IdentifierService {
         entity.setCreators(data.getCreators()
                 .stream()
                 .map(c -> {
-                    final Creator creatorDto = identifierMapper.creatorCreateDtoToCreator(c);
-                    creatorDto.setPid(entity.getId());
-                    creatorDto.setCreator(creator);
-                    return creatorDto;
+                    final Creator creatorTmp = identifierMapper.creatorCreateDtoToCreator(c);
+                    creatorTmp.setPid(entity.getId());
+                    creatorTmp.setCreator(creator);
+                    return creatorTmp;
                 })
-                .collect(Collectors.toList()));
+                .toList());
+        entity.setTitles(data.getTitles()
+                .stream()
+                .map(t -> {
+                    final IdentifierTitle titleTmp = identifierMapper.identifierCreateTitleDtoToIdentifierTitle(t);
+                    titleTmp.setIdentifierId(entity.getId());
+                    return titleTmp;
+                })
+                .toList());
+//        entity.setDescriptions(data.getDescriptions()
+//                .stream()
+//                .map(d -> {
+//                    final IdentifierDescription descriptionTmp = identifierMapper.identifierCreateDescriptionDtoToIdentifierDescription(d);
+//                    descriptionTmp.setIdentifierId(entity.getId());
+//                    return descriptionTmp;
+//                })
+//                .toList());
         if (data.getRelatedIdentifiers() != null) {
             entity.setRelated(new LinkedList<>());
             data.getRelatedIdentifiers()
@@ -186,12 +200,12 @@ public class IdentifierServiceImpl implements IdentifierService {
             context.setVariable("identifier", endpointConfig.getWebsiteUrl() + "/pid/" + identifier.getId());
         }
         context.setVariable("creators", identifier.getCreators());
-        context.setVariable("title", identifier.getTitle());
+        context.setVariable("titles", identifier.getTitles());
         context.setVariable("publisher", identifier.getPublisher());
         context.setVariable("publicationYear", identifier.getPublicationYear());
         context.setVariable("created", identifier.getCreated());
         context.setVariable("relatedIdentifiers", identifier.getRelated());
-        context.setVariable("description", identifier.getDescription());
+        context.setVariable("descriptions", identifier.getDescriptions());
         /* map */
         final String body = templateEngine.process("doi.xml", context)
                 .replaceAll("\\s+", " ");
@@ -217,7 +231,7 @@ public class IdentifierServiceImpl implements IdentifierService {
         }
         context.setVariable("creator", identifier.getCreator());
         context.setVariable("creators", identifier.getCreators());
-        context.setVariable("title", identifier.getTitle());
+        context.setVariable("title", preferTitle(identifier.getTitles()));
         context.setVariable("publisher", identifier.getPublisher());
         context.setVariable("publicationMonth", identifier.getPublicationMonth());
         context.setVariable("publicationYear", identifier.getPublicationYear());
@@ -287,6 +301,13 @@ public class IdentifierServiceImpl implements IdentifierService {
         }
         identifierIdxRepository.deleteById(identifierId);
         log.info("Deleted identifier with id {} in elastic search", identifierId);
+    }
+
+    public IdentifierTitle preferTitle(List<IdentifierTitle> titles) {
+        final Optional<IdentifierTitle> optional = titles.stream()
+                .filter(t -> t.getLanguage().equals(LanguageType.EN))
+                .findFirst();
+        return optional.orElseGet(() -> titles.get(0));
     }
 
 }

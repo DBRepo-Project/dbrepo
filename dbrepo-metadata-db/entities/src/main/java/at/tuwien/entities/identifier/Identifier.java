@@ -16,8 +16,6 @@ import java.io.Serializable;
 import java.time.Instant;
 import java.util.List;
 
-;
-
 @Data
 @Entity
 @Builder
@@ -49,19 +47,25 @@ public class Identifier implements Serializable {
     })
     private User creator;
 
-    @Column(nullable = false)
-    private String title;
-
-    @Column(columnDefinition = "TEXT")
-    private String description;
-
     @NotBlank
     @Column(nullable = false)
     private String publisher;
 
-    @Column(columnDefinition = "enum('AB','AA','AF','AK','SQ','AM','AR','AN','HY','AS','AV','AE','AY','AZ','BM','BA','EU','BE','BN','BH','BI','BS','BR','BG','MY','CA','KM','CH','CE','NY','ZH','CU','CV','KW','CO','CR','HR','CS','DA','DV','NL','DZ','EN','EO','ET','EE','FO','FJ','FI','FR','FF','GD','GL','LG','KA','DE','KI','EL','KL','GN','GU','HT','HA','HE','HZ','HI','HO','HU','IS','IO','IG','ID','IA','IE','IU','IK','GA','IT','JA','JV','KN','KR','KS','KK','RW','KV','KG','KO','KJ','KU','KY','LO','LA','LV','LB','LI','LN','LT','LU','MK','MG','MS','ML','MT','GV','MI','MR','MH','RO','MN','NA','NV','ND','NG','NE','SE','NO','NB','NN','II','OC','OJ','OR','OM','OS','PI','PA','PS','FA','PL','PT','QU','RM','RN','RU','SM','SG','SA','SC','SR','SN','SD','SI','SK','SL','SO','ST','NR','ES','SU','SW','SS','SV','TL','TY','TG','TA','TT','TE','TH','BO','TI','TO','TS','TN','TR','TK','TW','UG','UK','UR','UZ','VE','VI','VO','WA','CY','FY','WO','XH','YI','YO','ZA','ZU')")
+    @Column(columnDefinition = "ENUM('ab','aa','af','ak','sq','am','ar','an','hy','as','av','ae','ay','az','bm','ba','eu','be','bn','bh','bi','bs','br','bg','my','ca','km','ch','ce','ny','zh','cu','cv','kw','co','cr','hr','cs','da','dv','nl','dz','en','eo','et','ee','fo','fj','fi','fr','ff','gd','gl','lg','ka','de','ki','el','kl','gn','gu','ht','ha','he','hz','hi','ho','hu','is','io','ig','id','ia','ie','iu','ik','ga','it','ja','jv','kn','kr','ks','kk','rw','kv','kg','ko','kj','ku','ky','lo','la','lv','lb','li','ln','lt','lu','mk','mg','ms','ml','mt','gv','mi','mr','mh','ro','mn','na','nv','nd','ng','ne','se','no','nb','nn','ii','oc','oj','or','om','os','pi','pa','ps','fa','pl','pt','qu','rm','rn','ru','sm','sg','sa','sc','sr','sn','sd','si','sk','sl','so','st','nr','es','su','sw','ss','sv','tl','ty','tg','ta','tt','te','th','bo','ti','to','ts','tn','tr','tk','tw','ug','uk','ur','uz','ve','vi','vo','wa','cy','fy','wo','xh','yi','yo','za','zu')")
     @Enumerated(EnumType.STRING)
     private LanguageType language;
+
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumns({
+            @JoinColumn(name = "iid", referencedColumnName = "id", insertable = false, updatable = false)
+    })
+    private List<IdentifierTitle> titles;
+
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumns({
+            @JoinColumn(name = "iid", referencedColumnName = "id", insertable = false, updatable = false)
+    })
+    private List<IdentifierDescription> descriptions;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumns({
