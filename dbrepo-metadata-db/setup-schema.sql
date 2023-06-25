@@ -388,48 +388,46 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifiers`
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifier_titles`
 (
     id         bigint NOT NULL AUTO_INCREMENT,
-    iid        bigint NOT NULL,
+    pid        bigint NOT NULL,
     title      text   NOT NULL,
     title_type ENUM ('AlternativeTitle', 'Subtitle', 'TranslatedTitle', 'Other'),
     language   VARCHAR(2),
     PRIMARY KEY (id),
-    FOREIGN KEY (iid) REFERENCES mdb_identifiers (id),
-    UNIQUE (iid, language)
+    FOREIGN KEY (pid) REFERENCES mdb_identifiers (id),
+    UNIQUE (pid, language)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifier_descriptions`
 (
     id               bigint NOT NULL AUTO_INCREMENT,
-    iid              bigint NOT NULL,
+    pid              bigint NOT NULL,
     description      text   NOT NULL,
     description_type ENUM ('Abstract', 'Methods', 'SeriesInformation', 'TableOfContents', 'TechnicalInfo', 'Other'),
     language         VARCHAR(2),
     PRIMARY KEY (id),
-    FOREIGN KEY (iid) REFERENCES mdb_identifiers (id),
-    UNIQUE (iid, language)
+    FOREIGN KEY (pid) REFERENCES mdb_identifiers (id),
+    UNIQUE (pid, language)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_related_identifiers`
 (
-    id            bigint                 NOT NULL AUTO_INCREMENT,
-    iid           bigint                 NOT NULL,
-    value         varchar(255)           NOT NULL,
-    type          varchar(255),
-    relation      varchar(255),
-    created       timestamp              NOT NULL DEFAULT NOW(),
-    created_by    character varying(255) NOT NULL,
-    last_modified timestamp,
-    PRIMARY KEY (id, iid), /* must be a single id from persistent identifier concept */
-    FOREIGN KEY (iid) REFERENCES mdb_identifiers (id)
+    id       bigint       NOT NULL AUTO_INCREMENT,
+    pid      bigint       NOT NULL,
+    value    varchar(255) NOT NULL,
+    type     varchar(255),
+    relation varchar(255),
+    PRIMARY KEY (id), /* must be a single id from persistent identifier concept */
+    FOREIGN KEY (pid) REFERENCES mdb_identifiers (id),
+    UNIQUE (pid, value)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_creators`
 (
-    id                            bigint                 NOT NULL AUTO_INCREMENT,
-    pid                           bigint                 NOT NULL,
+    id                            bigint       NOT NULL AUTO_INCREMENT,
+    pid                           bigint       NOT NULL,
     given_names                   text,
     family_name                   text,
-    creator_name                  VARCHAR(255)           NOT NULL,
+    creator_name                  VARCHAR(255) NOT NULL,
     name_type                     ENUM ('Personal', 'Organizational') default 'Personal',
     name_identifier               text,
     name_identifier_scheme        ENUM ('ROR', 'GRID', 'ISNI', 'ORCID'),
@@ -438,11 +436,9 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_creators`
     affiliation_identifier        text,
     affiliation_identifier_scheme ENUM ('ROR', 'GRID', 'ISNI'),
     orcid                         VARCHAR(255),
-    created                       timestamp              NOT NULL     DEFAULT NOW(),
-    created_by                    character varying(255) NOT NULL,
-    last_modified                 timestamp              NOT NULL,
-    PRIMARY KEY (id, pid),
-    FOREIGN KEY (pid) REFERENCES mdb_identifiers (id)
+    PRIMARY KEY (id),
+    FOREIGN KEY (pid) REFERENCES mdb_identifiers (id),
+    UNIQUE (pid, creator_name)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_feed`

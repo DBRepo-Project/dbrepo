@@ -189,7 +189,7 @@ public class PersistenceEndpoint {
         final Identifier identifier = identifierService.find(id);
         final User user = userService.findByUsername(principal.getName());
         try {
-            accessService.find(identifier.getDatabaseId(), user.getId());
+            accessService.find(identifier.getDatabase().getId(), user.getId());
         } catch (AccessDeniedException e) {
             if (!User.hasRole(principal, "modify-identifier-metadata")) {
                 log.error("Failed to update identifier: insufficient access");

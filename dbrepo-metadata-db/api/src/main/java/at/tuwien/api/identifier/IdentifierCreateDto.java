@@ -22,11 +22,14 @@ import java.util.List;
 public class IdentifierCreateDto {
 
     @NotNull
+    @Schema(example = "1")
     private Long dbid;
 
+    @Schema(example = "null")
     private Long qid;
 
     @NotNull
+    @Schema(example = "database")
     private IdentifierTypeDto type;
 
     private List<IdentifierCreateTitleDto> titles;

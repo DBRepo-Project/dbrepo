@@ -35,17 +35,11 @@ public class Identifier implements Serializable {
     @Column(updatable = false, nullable = false)
     private Long id;
 
-    @Column(name = "dbid", nullable = false)
-    private Long databaseId;
-
     @Column(name = "qid")
     private Long queryId;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
-    @JoinColumns({
-            @JoinColumn(name = "createdBy", referencedColumnName = "ID", nullable = false, columnDefinition = "VARCHAR(36)", updatable = false)
-    })
-    private User creator;
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "identifier")
+    private List<Creator> creators;
 
     @NotBlank
     @Column(nullable = false)
@@ -55,16 +49,10 @@ public class Identifier implements Serializable {
     @Enumerated(EnumType.STRING)
     private LanguageType language;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumns({
-            @JoinColumn(name = "iid", referencedColumnName = "id", insertable = false, updatable = false)
-    })
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST, mappedBy = "identifier")
     private List<IdentifierTitle> titles;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumns({
-            @JoinColumn(name = "iid", referencedColumnName = "id", insertable = false, updatable = false)
-    })
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST, mappedBy = "identifier")
     private List<IdentifierDescription> descriptions;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
@@ -108,23 +96,23 @@ public class Identifier implements Serializable {
     @Enumerated(EnumType.STRING)
     private VisibilityType visibility;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = {})
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumns({
-            @JoinColumn(name = "dbid", referencedColumnName = "id", insertable = false, updatable = false)
+            @JoinColumn(name = "dbid", nullable = false)
     })
     private Database database;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumns({
-            @JoinColumn(name = "iid", referencedColumnName = "id", insertable = false, updatable = false)
-    })
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST, mappedBy = "identifier")
     private List<RelatedIdentifier> related;
 
     @Column
     private String doi;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "identifier")
-    private List<Creator> creators;
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @JoinColumns({
+            @JoinColumn(name = "createdBy", nullable = false, columnDefinition = "VARCHAR(36)", updatable = false)
+    })
+    private User creator;
 
     @CreatedDate
     @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP")
@@ -137,8 +125,6 @@ public class Identifier implements Serializable {
     @PreRemove
     private void preRemove() {
         this.creator = null;
-        this.related.forEach(r -> r.setCreator(null));
-        this.creators.forEach(c -> c.setCreator(null));
     }
 
 }

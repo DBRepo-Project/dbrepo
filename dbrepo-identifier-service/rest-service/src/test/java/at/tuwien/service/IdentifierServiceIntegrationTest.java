@@ -59,12 +59,6 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     private IdentifierRepository identifierRepository;
 
     @Autowired
-    private IdentifierTitleRepository identifierTitleRepository;
-
-    @Autowired
-    private IdentifierDescriptionRepository identifierDescriptionRepository;
-
-    @Autowired
     private ContainerRepository containerRepository;
 
     @Autowired
@@ -89,7 +83,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
         databaseRepository.save(DATABASE_1_SIMPLE);
         containerRepository.save(CONTAINER_2_SIMPLE);
         databaseRepository.save(DATABASE_2_SIMPLE);
-        identifierRepository.save(IDENTIFIER_1);
+        IDENTIFIER_1_SIMPLE.setDatabase(DATABASE_1);
     }
 
     @Test
@@ -106,17 +100,20 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
                 .thenReturn(QUERY_2_DTO);
         when(identifierIdxRepository.save(any(IdentifierDto.class)))
                 .thenReturn(IDENTIFIER_2_DTO);
+        identifierRepository.save(IDENTIFIER_1_SIMPLE) /* id */;
 
         /* test */
         final Identifier response = identifierService.create(IDENTIFIER_2_DTO_REQUEST, USER_2_PRINCIPAL, bearer);
         assertEquals(IDENTIFIER_2_ID, response.getId());
+        assertNotNull(response.getTitles());
         assertEquals(1, response.getTitles().size());
         assertEquals(IDENTIFIER_2_TITLE_1, response.getTitles().get(0));
+        assertNotNull(response.getDescriptions());
         assertEquals(1, response.getDescriptions().size());
         assertEquals(IDENTIFIER_2_DESCRIPTION_1, response.getDescriptions().get(0));
         assertEquals(IDENTIFIER_2_DOI, response.getDoi());
         assertEquals(IDENTIFIER_2_PUBLISHER, response.getPublisher());
-        assertEquals(IDENTIFIER_2_DATABASE_ID, response.getDatabaseId());
+        assertEquals(IDENTIFIER_2_DATABASE_ID, response.getDatabase().getId());
         assertNull(response.getLanguage());
         assertEquals(IDENTIFIER_2_PUBLICATION_YEAR, response.getPublicationYear());
         assertEquals(IDENTIFIER_2_PUBLICATION_MONTH, response.getPublicationMonth());
@@ -131,6 +128,20 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
+    public void create_succeeds() throws DatabaseNotFoundException, UserNotFoundException,
+            IdentifierAlreadyExistsException, QueryNotFoundException, IdentifierPublishingNotAllowedException,
+            RemoteUnavailableException, IdentifierRequestException {
+        final String bearer = "Bearer abcxyz";
+
+        /* mock */
+        when(identifierIdxRepository.save(any(IdentifierDto.class)))
+                .thenReturn(IDENTIFIER_1_DTO);
+
+        /* test */
+        final Identifier response = identifierService.create(IDENTIFIER_1_DTO_REQUEST, USER_1_PRINCIPAL, bearer);
+    }
+
+    @Test
     public void find_fails() {
 
         /* test */
@@ -140,8 +151,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void update_succeeds()
-            throws IdentifierNotFoundException, IdentifierRequestException, IdentifierUpdateBadFormException {
+    public void update_succeeds() throws IdentifierNotFoundException, IdentifierRequestException {
 
         /* mock */
         when(identifierIdxRepository.save(any(IdentifierDto.class)))
@@ -150,7 +160,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
         /* test */
         final Identifier response = identifierService.update(IDENTIFIER_1_ID, IDENTIFIER_1_DTO_UPDATE_REQUEST);
         assertEquals(IDENTIFIER_1_ID, response.getId());
-        assertEquals(IDENTIFIER_1_DATABASE_ID, response.getDatabaseId());
+        assertEquals(IDENTIFIER_1_DATABASE_ID, response.getDatabase().getId());
         assertEquals(1, response.getTitles().size());
         assertEquals(IDENTIFIER_1_TITLE_1_TITLE_MODIFY, response.getTitles().get(0).getTitle());
         assertEquals(IDENTIFIER_1_PUBLICATION_YEAR, response.getPublicationYear());

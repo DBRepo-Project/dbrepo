@@ -31,7 +31,7 @@ public class CreatorCreateDto {
 
     @NotBlank
     @JsonProperty("name_type")
-    @Schema(example = "Josiah Carberry")
+    @Schema(example = "Personal")
     private NameTypeDto nameType;
 
     @JsonProperty("name_identifier")

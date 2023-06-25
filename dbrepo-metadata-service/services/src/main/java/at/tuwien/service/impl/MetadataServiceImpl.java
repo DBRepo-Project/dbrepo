@@ -76,8 +76,8 @@ public class MetadataServiceImpl implements MetadataService {
         context.setVariable("identifier", identifier.getId());
         context.setVariable("creators", identifier.getCreators());
         context.setVariable("datestamp", metadataMapper.instantToDatestamp(identifier.getCreated()));
-        context.setVariable("title", identifier.getTitle());
-        context.setVariable("description", identifier.getDescription());
+        context.setVariable("titles", identifier.getTitles());
+        context.setVariable("descriptions", identifier.getDescriptions());
         context.setVariable("publisher", identifier.getPublisher());
         return parseResponse(parameters.getParametersString(), templateEngine.process("record.xml", context));
     }

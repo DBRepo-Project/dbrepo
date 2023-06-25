@@ -1,14 +1,10 @@
 package at.tuwien.entities.identifier;
 
-import at.tuwien.entities.user.User;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import jakarta.persistence.*;;
-import java.time.Instant;
 
 @Data
 @Entity
@@ -16,11 +12,10 @@ import java.time.Instant;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-@IdClass(RelatedIdentifierKey.class)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "mdb_related_identifiers", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"id", "iid"})
+        @UniqueConstraint(columnNames = {"id", "pid"})
 })
 public class RelatedIdentifier {
 
@@ -30,10 +25,6 @@ public class RelatedIdentifier {
     @GenericGenerator(name = "related-identifiers-sequence", strategy = "increment")
     @Column(updatable = false, nullable = false)
     private Long id;
-
-    @Id
-    @EqualsAndHashCode.Include
-    private Long iid;
 
     @Column(nullable = false)
     private String value;
@@ -46,19 +37,12 @@ public class RelatedIdentifier {
     @Enumerated(EnumType.STRING)
     private RelationType relation;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ToString.Exclude
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
-            @JoinColumn(name = "created_by", referencedColumnName = "ID", nullable = false, columnDefinition = "VARCHAR(36)", updatable = false)
+            @JoinColumn(name = "pid", updatable = false, nullable = false)
     })
-    private User creator;
-
-    @CreatedDate
-    @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP")
-    private Instant created;
-
-    @LastModifiedDate
-    @Column(columnDefinition = "TIMESTAMP")
-    private Instant lastModified;
+    private Identifier identifier;
 
 }
 

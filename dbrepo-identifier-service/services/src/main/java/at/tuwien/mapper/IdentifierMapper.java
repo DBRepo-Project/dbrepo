@@ -12,7 +12,6 @@ public interface IdentifierMapper {
     IdentifierDto identifierToIdentifierDto(Identifier data);
 
     @Mappings({
-            @Mapping(target = "databaseId", source = "dbid"),
             @Mapping(target = "queryId", source = "qid"),
             @Mapping(target = "titles", ignore = true),
             @Mapping(target = "descriptions", ignore = true),
@@ -20,7 +19,6 @@ public interface IdentifierMapper {
     Identifier identifierCreateDtoToIdentifier(IdentifierCreateDto data);
 
     @Mappings({
-            @Mapping(target = "databaseId", source = "dbid"),
             @Mapping(target = "queryId", source = "qid"),
     })
     Identifier identifierUpdateDtoToIdentifier(IdentifierUpdateDto data);
@@ -43,9 +41,9 @@ public interface IdentifierMapper {
 
     default String identifierToLocationUrl(String baseUrl, Identifier data) {
         if (data.getType().equals(IdentifierType.SUBSET)) {
-            return baseUrl + "/database/" + data.getDatabaseId() + "/query/" + data.getQueryId();
+            return baseUrl + "/database/" + data.getDatabase().getId() + "/query/" + data.getQueryId();
         } else if (data.getType().equals(IdentifierType.DATABASE)) {
-            return baseUrl + "/database/" + data.getDatabaseId();
+            return baseUrl + "/database/" + data.getDatabase().getId();
         } else {
             return null;
         }

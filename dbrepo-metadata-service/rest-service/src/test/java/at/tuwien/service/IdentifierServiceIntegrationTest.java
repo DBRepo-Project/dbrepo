@@ -2,6 +2,7 @@ package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.entities.identifier.Identifier;
+import at.tuwien.entities.identifier.IdentifierTitle;
 import at.tuwien.exception.IdentifierNotFoundException;
 import at.tuwien.repository.mdb.*;
 import lombok.extern.log4j.Log4j2;
@@ -70,7 +71,10 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
         /* test */
         final Identifier response = identifierService.find(IDENTIFIER_1_ID);
         assertEquals(IDENTIFIER_1_ID, response.getId());
-        assertEquals(IDENTIFIER_1_TITLE, response.getTitle());
+        assertEquals(1, response.getTitles().size());
+        final IdentifierTitle title0 = response.getTitles().get(0);
+        assertEquals(IDENTIFIER_1_TITLE_1_TITLE, title0.getTitle());
+        assertEquals(IDENTIFIER_1_TITLE_1_LANG, title0.getLanguage());
     }
 
     @Test

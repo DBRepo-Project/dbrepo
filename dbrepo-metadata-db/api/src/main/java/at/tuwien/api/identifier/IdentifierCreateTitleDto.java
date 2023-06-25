@@ -24,6 +24,7 @@ public class IdentifierCreateTitleDto {
     private LanguageTypeDto language;
 
     @JsonProperty("type")
+    @Schema(example = "Subtitle")
     private TitleTypeDto titleType;
 
 }

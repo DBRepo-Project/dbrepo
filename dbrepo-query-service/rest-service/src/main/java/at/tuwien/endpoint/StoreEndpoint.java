@@ -126,7 +126,7 @@ public class StoreEndpoint {
                     optional1.ifPresent(user -> brief.setCreator(userMapper.userToUserDto(user)));
                     final Optional<Identifier> optional2 = identifiers.stream()
                             .filter(i -> i.getType().equals(IdentifierType.SUBSET))
-                            .filter(i -> i.getDatabaseId().equals(databaseId) && i.getQueryId().equals(q.getId()))
+                            .filter(i -> i.getDatabase().getId().equals(databaseId) && i.getQueryId().equals(q.getId()))
                             .findFirst();
                     optional2.ifPresent(identifier -> brief.setIdentifier(identifierMapper.identifierToIdentifierBriefDto(identifier)));
                     return brief;

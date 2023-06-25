@@ -66,9 +66,6 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
     private UserRepository userRepository;
 
     @MockBean
-    private RelatedIdentifierRepository relatedIdentifierRepository;
-
-    @MockBean
     private AccessRepository accessRepository;
 
     @MockBean
@@ -224,7 +221,7 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
                 .relatedIdentifiers(List.of())
                 .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
                 .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
-                .creators(List.of(CREATOR_1_CREATE_DTO, CREATOR_1_CREATE_DTO))
+                .creators(List.of(IDENTIFIER_2_CREATOR_1_CREATE_DTO, IDENTIFIER_2_CREATOR_2_CREATE_DTO))
                 .publisher(IDENTIFIER_1_PUBLISHER)
                 .type(IdentifierTypeDto.SUBSET)
                 .build();
@@ -247,7 +244,7 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
                 .publicationDay(IDENTIFIER_2_PUBLICATION_DAY)
                 .publicationMonth(IDENTIFIER_2_PUBLICATION_MONTH)
                 .publicationYear(IDENTIFIER_2_PUBLICATION_YEAR)
-                .creators(List.of(CREATOR_1_CREATE_DTO, CREATOR_2_CREATE_DTO))
+                .creators(List.of(IDENTIFIER_2_CREATOR_1_CREATE_DTO, IDENTIFIER_2_CREATOR_2_CREATE_DTO))
                 .publisher(IDENTIFIER_2_PUBLISHER)
                 .type(IdentifierTypeDto.DATABASE)
                 .build();
@@ -304,8 +301,6 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
         when(identifierRepository.save(any(Identifier.class)))
                 .thenReturn(identifier)
                 .thenReturn(identifier);
-        when(relatedIdentifierRepository.save(any(RelatedIdentifier.class)))
-                .thenReturn(IDENTIFIER_1_RELATED_IDENTIFIER_1);
 
         /* test */
         final ResponseEntity<IdentifierDto> response = identifierEndpoint.create(data, "ABC", principal);
