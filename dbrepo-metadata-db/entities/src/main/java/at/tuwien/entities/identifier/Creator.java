@@ -31,7 +31,7 @@ public class Creator {
     @Column(name = "family_name")
     private String lastname;
 
-    @Column(nullable = false)
+    @Column(name = "creator_name", nullable = false)
     private String creatorName;
 
     @Column(columnDefinition = "enum('Personal', 'Organizational')")
