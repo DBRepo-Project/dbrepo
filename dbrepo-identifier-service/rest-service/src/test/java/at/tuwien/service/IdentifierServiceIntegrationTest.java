@@ -2,9 +2,11 @@ package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.query.QueryDto;
+import at.tuwien.api.identifier.IdentifierCreateDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.entities.identifier.Identifier;
+import at.tuwien.entities.identifier.IdentifierDescription;
 import at.tuwien.entities.identifier.IdentifierTitle;
 import at.tuwien.entities.identifier.RelatedIdentifier;
 import at.tuwien.exception.*;
@@ -59,6 +61,12 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     private IdentifierRepository identifierRepository;
 
     @Autowired
+    private IdentifierTitleRepository identifierTitleRepository;
+
+    @Autowired
+    private IdentifierDescriptionRepository identifierDescriptionRepository;
+
+    @Autowired
     private ContainerRepository containerRepository;
 
     @Autowired
@@ -84,6 +92,8 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
         containerRepository.save(CONTAINER_2_SIMPLE);
         databaseRepository.save(DATABASE_2_SIMPLE);
         IDENTIFIER_1_SIMPLE.setDatabase(DATABASE_1);
+        IDENTIFIER_1_TITLE_1.setIdentifier(IDENTIFIER_1);
+        IDENTIFIER_1_DESCRIPTION_1.setIdentifier(IDENTIFIER_1);
     }
 
     @Test
@@ -100,17 +110,25 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
                 .thenReturn(QUERY_2_DTO);
         when(identifierIdxRepository.save(any(IdentifierDto.class)))
                 .thenReturn(IDENTIFIER_2_DTO);
-        identifierRepository.save(IDENTIFIER_1_SIMPLE) /* id */;
+        identifierRepository.save(IDENTIFIER_1_SIMPLE);
+        identifierTitleRepository.save(IDENTIFIER_1_TITLE_1);
+        identifierDescriptionRepository.save(IDENTIFIER_1_DESCRIPTION_1);
 
         /* test */
         final Identifier response = identifierService.create(IDENTIFIER_2_DTO_REQUEST, USER_2_PRINCIPAL, bearer);
         assertEquals(IDENTIFIER_2_ID, response.getId());
         assertNotNull(response.getTitles());
         assertEquals(1, response.getTitles().size());
-        assertEquals(IDENTIFIER_2_TITLE_1, response.getTitles().get(0));
+        final IdentifierTitle title0 = response.getTitles().get(0);
+        assertEquals(IDENTIFIER_2_TITLE_1_TITLE, title0.getTitle());
+        assertEquals(IDENTIFIER_2_TITLE_1_LANG, title0.getLanguage());
+        assertEquals(IDENTIFIER_2_TITLE_1_TYPE, title0.getTitleType());
         assertNotNull(response.getDescriptions());
         assertEquals(1, response.getDescriptions().size());
-        assertEquals(IDENTIFIER_2_DESCRIPTION_1, response.getDescriptions().get(0));
+        final IdentifierDescription description0 = response.getDescriptions().get(0);
+        assertEquals(IDENTIFIER_2_DESCRIPTION_1_DESCRIPTION, description0.getDescription());
+        assertEquals(IDENTIFIER_2_DESCRIPTION_1_LANG, description0.getLanguage());
+        assertEquals(IDENTIFIER_2_DESCRIPTION_1_TYPE, description0.getDescriptionType());
         assertEquals(IDENTIFIER_2_DOI, response.getDoi());
         assertEquals(IDENTIFIER_2_PUBLISHER, response.getPublisher());
         assertEquals(IDENTIFIER_2_DATABASE_ID, response.getDatabase().getId());
@@ -177,6 +195,9 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
         doNothing()
                 .when(identifierIdxRepository)
                 .deleteById(IDENTIFIER_1_ID);
+        identifierRepository.save(IDENTIFIER_1_SIMPLE);
+        identifierTitleRepository.save(IDENTIFIER_1_TITLE_1);
+        identifierDescriptionRepository.save(IDENTIFIER_1_DESCRIPTION_1);
 
         /* test */
         identifierService.delete(IDENTIFIER_1_ID);
