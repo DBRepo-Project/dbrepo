@@ -478,8 +478,8 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
                     .when(databaseService)
                     .findById(databaseId);
         }
-        when(databaseIdxRepository.save(any(DatabaseDto.class)))
-                .thenReturn(dto);
+        when(databaseIdxRepository.save(any(Database.class)))
+                .thenReturn(database);
 
         /* test */
         final ResponseEntity<DatabaseDto> response = databaseEndpoint.visibility(databaseId, data, principal);

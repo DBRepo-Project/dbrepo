@@ -154,8 +154,7 @@ public class IdentifierServiceImpl implements IdentifierService {
         }
         final Identifier identifier = identifierRepository.save(entity);
         log.info("Created identifier with id {}", identifier.getId());
-        log.trace("created identifier {}", identifier);
-        identifierIdxRepository.save(identifierMapper.identifierToIdentifierDto(identifier));
+        identifierIdxRepository.save(identifier);
         log.info("Created identifier with id {} in elastic search", identifier.getId());
         return identifier;
     }
@@ -265,9 +264,8 @@ public class IdentifierServiceImpl implements IdentifierService {
         /* update */
         final Identifier identifier = identifierRepository.save(entity);
         log.info("Updated identifier with id {}", identifierId);
-        log.trace("updated identifier {}", identifier);
         /* elastic search */
-        identifierIdxRepository.save(identifierMapper.identifierToIdentifierDto(identifier));
+        identifierIdxRepository.save(identifier);
         log.info("Updated identifier with id {} in elastic search", identifierId);
         return identifier;
     }

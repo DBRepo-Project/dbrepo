@@ -7,17 +7,16 @@ import at.tuwien.entities.user.User;
 import lombok.*;
 import lombok.extern.log4j.Log4j2;
 import net.sf.jsqlparser.statement.select.FromItem;
-import net.sf.jsqlparser.statement.select.SelectItem;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import jakarta.persistence.*;;
 import java.time.Instant;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Data
 @Entity
@@ -31,6 +30,7 @@ import java.util.regex.Pattern;
 @jakarta.persistence.Table(name = "mdb_tables", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"tdbid", "internalName"})
 })
+@Document(indexName = "table")
 public class Table {
 
     @Id
@@ -42,29 +42,37 @@ public class Table {
 
     @Id
     @EqualsAndHashCode.Include
+    @Field(name = "database_id")
     private Long tdbid;
 
+    @ToString.Exclude
+    @org.springframework.data.annotation.Transient
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumns({
             @JoinColumn(name = "createdBy", referencedColumnName = "ID", nullable = false, columnDefinition = "VARCHAR(36)", updatable = false)
     })
     private User creator;
 
+    @ToString.Exclude
+    @org.springframework.data.annotation.Transient
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumns({
             @JoinColumn(name = "ownedBy", referencedColumnName = "ID", nullable = false, columnDefinition = "VARCHAR(36)", updatable = false)
     })
     private User owner;
 
-    @Column(nullable = false, name = "tname")
+    @Column(name = "tname", nullable = false)
     private String name;
 
+    @Field(name = "internal_name")
     @Column(nullable = false)
     private String internalName;
 
+    @Field(name = "queue_name")
     @Column(name = "queue_name", nullable = false, updatable = false)
     private String queueName;
 
+    @Field(name = "routing_key")
     @Column(name = "routing_key", nullable = false, updatable = false)
     private String routingKey;
 
@@ -72,7 +80,7 @@ public class Table {
     private String description;
 
     @ToString.Exclude
-    @ManyToOne(fetch = FetchType.LAZY, cascade = {})
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tdbid", insertable = false, updatable = false)
     private Database database;
 
@@ -88,6 +96,7 @@ public class Table {
     private Instant created;
 
     @LastModifiedDate
+    @Field(name = "last_modified")
     @Column(columnDefinition = "TIMESTAMP")
     private Instant lastModified;
 

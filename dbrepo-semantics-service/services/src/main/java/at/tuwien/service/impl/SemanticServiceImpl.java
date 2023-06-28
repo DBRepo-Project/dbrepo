@@ -1,8 +1,6 @@
 package at.tuwien.service.impl;
 
-import at.tuwien.api.database.table.columns.concepts.ConceptDto;
 import at.tuwien.api.database.table.columns.concepts.ConceptSaveDto;
-import at.tuwien.api.database.table.columns.concepts.UnitDto;
 import at.tuwien.api.database.table.columns.concepts.UnitSaveDto;
 import at.tuwien.entities.database.table.columns.TableColumnConcept;
 import at.tuwien.entities.database.table.columns.TableColumnUnit;
@@ -58,9 +56,8 @@ public class SemanticServiceImpl implements SemanticService {
         final TableColumnConcept entity = ontologyMapper.conceptSaveDtoToTableColumnConcept(data);
         final TableColumnConcept concept = tableColumnConceptRepository.save(entity);
         log.info("Saved concept with uri {} in metadata database", concept.getUri());
-        final ConceptDto conceptDto = ontologyMapper.tableColumnConceptToConceptDto(concept);
-        conceptIdxRepository.save(conceptDto);
-        log.info("Saved concept with uri {} in open search database", conceptDto.getUri());
+        conceptIdxRepository.save(concept);
+        log.info("Saved concept with uri {} in search database", concept.getUri());
         return concept;
     }
 
@@ -70,9 +67,8 @@ public class SemanticServiceImpl implements SemanticService {
         final TableColumnUnit entity = ontologyMapper.unitSaveDtoToTableColumnUnit(data);
         final TableColumnUnit unit = tableColumnUnitRepository.save(entity);
         log.info("Saved unit with uri {} in metadata database", unit.getUri());
-        final UnitDto unitDto = ontologyMapper.tableColumnUnitToUnitDto(unit);
-        unitIdxRepository.save(unitDto);
-        log.info("Saved unit with uri {} in open search database", unitDto.getUri());
+        unitIdxRepository.save(unit);
+        log.info("Saved unit with uri {} in search database", unit.getUri());
         return unit;
     }
 

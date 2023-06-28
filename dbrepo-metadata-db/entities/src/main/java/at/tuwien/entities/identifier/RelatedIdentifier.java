@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import jakarta.persistence.*;;
@@ -57,6 +58,7 @@ public class RelatedIdentifier {
     private Instant created;
 
     @LastModifiedDate
+    @Field(name = "last_modified")
     @Column(columnDefinition = "TIMESTAMP")
     private Instant lastModified;
 

@@ -3,12 +3,9 @@ package at.tuwien.service;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.entities.database.Database;
-import at.tuwien.entities.user.User;
 import at.tuwien.exception.DatabaseNotFoundException;
-import at.tuwien.exception.UserNotFoundException;
 import at.tuwien.repository.mdb.*;
 import at.tuwien.repository.sdb.IdentifierIdxRepository;
-import at.tuwien.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,11 +15,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.util.Optional;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)

@@ -1,13 +1,13 @@
 package at.tuwien.entities.database.table.columns;
 
 import lombok.*;
-import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import jakarta.persistence.*;;
-import java.net.URI;
-import java.sql.Types;
 import java.time.Instant;
 import java.util.List;
 
@@ -19,15 +19,24 @@ import java.util.List;
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@jakarta.persistence.Table(name = "mdb_units")
+@jakarta.persistence.Table(name = "mdb_units", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"uri"})
+})
 @NamedQueries({
         @NamedQuery(name = "TableColumnUnit.findById", query = "select u from TableColumnUnit u where u.uri = ?1")
 })
+@Document(indexName = "unit")
 public class TableColumnUnit {
 
     @Id
     @EqualsAndHashCode.Include
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @GeneratedValue(generator = "units-sequence")
+    @GenericGenerator(name = "units-sequence", strategy = "increment")
+    @Column(updatable = false, nullable = false)
+    private Long id;
+
+    @EqualsAndHashCode.Include
+    @Column(nullable = false, unique = true, columnDefinition = "TEXT")
     private String uri;
 
     @Column(columnDefinition = "VARCHAR(255)")
@@ -42,6 +51,7 @@ public class TableColumnUnit {
 
     @ToString.Exclude
     @OneToMany(fetch = FetchType.LAZY)
+    @org.springframework.data.annotation.Transient
     @JoinTable(name = "mdb_columns_concepts",
             inverseJoinColumns = {
                     @JoinColumn(name = "cid", referencedColumnName = "id", insertable = false, updatable = false),

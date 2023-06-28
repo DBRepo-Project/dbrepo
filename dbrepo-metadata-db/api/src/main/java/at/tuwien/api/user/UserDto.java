@@ -46,31 +46,25 @@ public class UserDto {
     private String lastname;
 
     @EqualsAndHashCode.Exclude
-    @org.springframework.data.annotation.Transient
     private List<UserAttributeDto> attributes;
 
     @EqualsAndHashCode.Exclude
-    @org.springframework.data.annotation.Transient
     private List<ContainerDto> containers;
 
     @EqualsAndHashCode.Exclude
-    @org.springframework.data.annotation.Transient
     private List<ContainerDto> databases;
 
     @EqualsAndHashCode.Exclude
-    @org.springframework.data.annotation.Transient
     private List<ContainerDto> identifiers;
 
     @NotNull
     @Schema(example = "jcarberry@brown.edu")
-    @org.springframework.data.annotation.Transient
     private String email;
 
     @NotNull
     @Field(name = "email_verified")
     @JsonProperty("email_verified")
     @Schema(example = "true")
-    @org.springframework.data.annotation.Transient
     private Boolean emailVerified;
 
 }

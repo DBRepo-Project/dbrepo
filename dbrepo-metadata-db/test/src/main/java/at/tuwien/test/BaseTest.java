@@ -4154,6 +4154,7 @@ public abstract class BaseTest {
     public final static Boolean VIEW_1_INITIAL_VIEW = false;
     public final static String VIEW_1_NAME = "JUnit";
     public final static String VIEW_1_INTERNAL_NAME = "junit";
+    public final static Long VIEW_1_CONTAINER_ID = CONTAINER_1_ID;
     public final static Long VIEW_1_DATABASE_ID = DATABASE_1_ID;
     public final static Boolean VIEW_1_PUBLIC = true;
     public final static String VIEW_1_QUERY = "select `location`, `lat`, `lng` from `weather_location`";
@@ -4232,6 +4233,7 @@ public abstract class BaseTest {
     public final static Boolean VIEW_2_INITIAL_VIEW = false;
     public final static String VIEW_2_NAME = "JUnit2";
     public final static String VIEW_2_INTERNAL_NAME = "junit2";
+    public final static Long VIEW_2_CONTAINER_ID = CONTAINER_1_ID;
     public final static Long VIEW_2_DATABASE_ID = DATABASE_1_ID;
     public final static Boolean VIEW_2_PUBLIC = true;
     public final static String VIEW_2_QUERY = "select `date`, `location`, `mintemp`, `rainfall` from `weather_aus` where `location` = 'Albury'";
@@ -4340,6 +4342,7 @@ public abstract class BaseTest {
     public final static Boolean VIEW_3_INITIAL_VIEW = false;
     public final static String VIEW_3_NAME = "JUnit3";
     public final static String VIEW_3_INTERNAL_NAME = "junit3";
+    public final static Long VIEW_3_CONTAINER_ID = CONTAINER_1_ID;
     public final static Long VIEW_3_DATABASE_ID = DATABASE_1_ID;
     public final static Boolean VIEW_3_PUBLIC = false;
     public final static String VIEW_3_QUERY = "select w.`mintemp`, w.`rainfall`, w.`location`, m.`date` from `weather_aus` w join `junit2` m on m.`location` = w.`location`";
@@ -4433,6 +4436,7 @@ public abstract class BaseTest {
     public final static Boolean VIEW_4_INITIAL_VIEW = false;
     public final static String VIEW_4_NAME = "Mock View";
     public final static String VIEW_4_INTERNAL_NAME = "mock_view";
+    public final static Long VIEW_4_CONTAINER_ID = CONTAINER_2_ID;
     public final static Long VIEW_4_DATABASE_ID = DATABASE_2_ID;
     public final static Long VIEW_4_TABLE_ID = TABLE_4_ID;
     public final static Boolean VIEW_4_PUBLIC = true;
@@ -4708,6 +4712,7 @@ public abstract class BaseTest {
     public final static Boolean VIEW_5_INITIAL_VIEW = false;
     public final static String VIEW_5_NAME = "Mock View";
     public final static String VIEW_5_INTERNAL_NAME = "mock_view";
+    public final static Long VIEW_5_CONTAINER_ID = CONTAINER_2_ID;
     public final static Long VIEW_5_DATABASE_ID = DATABASE_2_ID;
     public final static Boolean VIEW_5_PUBLIC = true;
     public final static String VIEW_5_QUERY = "SELECT `location`, `lat`, `lng` FROM `weather_location` WHERE `location` = 'Albury'";
@@ -4803,6 +4808,7 @@ public abstract class BaseTest {
 
     public final static Long IDENTIFIER_1_ID = 1L;
     public final static Long IDENTIFIER_1_QUERY_ID = QUERY_1_ID;
+    public final static Long IDENTIFIER_1_CONTAINER_ID = CONTAINER_1_ID;
     public final static Long IDENTIFIER_1_DATABASE_ID = DATABASE_1_ID;
     public final static String IDENTIFIER_1_DESCRIPTION = "Selecting all from the weather Austrian table";
     public final static String IDENTIFIER_1_DESCRIPTION_MODIFY = "Selecting some from the weather Austrian table";
@@ -4969,6 +4975,7 @@ public abstract class BaseTest {
 
     public final static Long IDENTIFIER_2_ID = 2L;
     public final static Long IDENTIFIER_2_QUERY_ID = QUERY_2_ID;
+    public final static Long IDENTIFIER_2_CONTAINER_ID = CONTAINER_2_ID;
     public final static Long IDENTIFIER_2_DATABASE_ID = DATABASE_2_ID;
     public final static String IDENTIFIER_2_DESCRIPTION = "Selecting all from the weather Austria table";
     public final static String IDENTIFIER_2_TITLE = "Australian weather data";
@@ -5274,6 +5281,7 @@ public abstract class BaseTest {
 
     public final static Long IDENTIFIER_3_ID = 3L;
     public final static Long IDENTIFIER_3_QUERY_ID = QUERY_3_ID;
+    public final static Long IDENTIFIER_3_CONTAINER_ID = CONTAINER_3_ID;
     public final static Long IDENTIFIER_3_DATABASE_ID = DATABASE_3_ID;
     public final static String IDENTIFIER_3_DESCRIPTION = "Selecting all from the weather Norwegian table";
     public final static String IDENTIFIER_3_TITLE = "Norwegian weather data";

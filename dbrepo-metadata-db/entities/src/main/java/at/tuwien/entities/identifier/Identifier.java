@@ -8,15 +8,16 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.List;
-
-;
+import java.util.UUID;
 
 @Data
 @Entity
@@ -45,7 +46,7 @@ public class Identifier implements Serializable {
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumns({
-            @JoinColumn(name = "createdBy", referencedColumnName = "ID", nullable = false, columnDefinition = "VARCHAR(36)", updatable = false)
+            @JoinColumn(name = "created_by", referencedColumnName = "ID", nullable = false, columnDefinition = "VARCHAR(36)", updatable = false)
     })
     private User creator;
 
@@ -76,27 +77,34 @@ public class Identifier implements Serializable {
     @Column(columnDefinition = "TEXT")
     private String query;
 
+    @Field(name = "query_normalized")
     @Column(columnDefinition = "TEXT")
     private String queryNormalized;
 
+    @Field(name = "query_hash")
     @Column
     private String queryHash;
 
+    @Field(name = "result_hash")
     @Column
     private String resultHash;
 
     @Column(updatable = false, columnDefinition = "TIMESTAMP")
     private Instant execution;
 
+    @Field(name = "result_number")
     @Column
     private Long resultNumber;
 
+    @Field(name = "publication_year")
     @Column(nullable = false)
     private Integer publicationYear;
 
+    @Field(name = "publication_month")
     @Column
     private Integer publicationMonth;
 
+    @Field(name = "publication_day")
     @Column
     private Integer publicationDay;
 
@@ -104,7 +112,7 @@ public class Identifier implements Serializable {
     @Enumerated(EnumType.STRING)
     private VisibilityType visibility;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = {})
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumns({
             @JoinColumn(name = "dbid", referencedColumnName = "id", insertable = false, updatable = false)
     })
@@ -127,6 +135,7 @@ public class Identifier implements Serializable {
     private Instant created;
 
     @LastModifiedDate
+    @Field(name = "last_modified")
     @Column(columnDefinition = "TIMESTAMP")
     private Instant lastModified;
 

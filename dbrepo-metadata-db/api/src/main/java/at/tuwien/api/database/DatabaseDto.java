@@ -25,7 +25,6 @@ import java.util.List;
 @AllArgsConstructor
 @Jacksonized
 @ToString
-@Document(indexName = "database")
 public class DatabaseDto {
 
     @NotNull
@@ -36,7 +35,6 @@ public class DatabaseDto {
     private String name;
 
     @NotBlank
-    @Field(name = "exchange_name")
     @JsonProperty("exchange_name")
     @Schema(example = "dbrepo/air_quality")
     private String exchangeName;
@@ -44,7 +42,6 @@ public class DatabaseDto {
     private IdentifierDto identifier;
 
     @NotBlank
-    @Field(name = "internal_name")
     @JsonProperty("internal_name")
     @Schema(example = "weather_australia")
     private String internalName;
@@ -56,12 +53,10 @@ public class DatabaseDto {
 
     private List<ViewBriefDto> views;
 
-    @Field(name = "is_public")
     @JsonProperty("is_public")
     @Schema(example = "true")
     private Boolean isPublic;
 
-    @org.springframework.data.annotation.Transient
     private ImageDto image;
 
     private ContainerDto container;

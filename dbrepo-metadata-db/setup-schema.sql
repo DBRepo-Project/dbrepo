@@ -259,22 +259,24 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_constraints_checks`
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_concepts`
 (
+    id          BIGINT       NOT NULL AUTO_INCREMENT,
     uri         text         not null,
     name        VARCHAR(255) null,
     description TEXT         null,
     created     timestamp    NOT NULL DEFAULT NOW(),
     created_by  character varying(255),
-    PRIMARY KEY (uri(200))
+    PRIMARY KEY (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_units`
 (
+    id          BIGINT       NOT NULL AUTO_INCREMENT,
     uri         text         not null,
     name        VARCHAR(255) null,
     description TEXT         null,
     created     timestamp    NOT NULL DEFAULT NOW(),
     created_by  character varying(255),
-    PRIMARY KEY (uri(200))
+    PRIMARY KEY (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns_concepts`

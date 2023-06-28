@@ -1,9 +1,9 @@
 package at.tuwien.repository.sdb;
 
-import at.tuwien.api.database.DatabaseDto;
+import at.tuwien.entities.database.Database;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface DatabaseIdxRepository extends ElasticsearchRepository<DatabaseDto, Long> {
+public interface DatabaseIdxRepository extends ElasticsearchRepository<Database, Long> {
 }

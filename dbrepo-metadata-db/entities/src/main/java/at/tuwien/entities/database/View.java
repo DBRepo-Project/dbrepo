@@ -9,6 +9,8 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
@@ -24,6 +26,7 @@ import java.util.UUID;
 @IdClass(at.tuwien.entities.database.ViewKey.class)
 @EntityListeners(AuditingEntityListener.class)
 @jakarta.persistence.Table(name = "mdb_view")
+@Document(indexName = "view")
 @NamedQueries({
         @NamedQuery(name = "View.findAllPublicByDatabaseId", query = "select v from View v where v.database.id = ?1 and v.isPublic = true"),
         @NamedQuery(name = "View.findAllPublicOrMineByDatabaseId", query = "select v from View v where v.database.id = ?1 and (v.isPublic = true or v.creator.username = ?2)"),
@@ -41,14 +44,17 @@ public class View {
 
     @Id
     @EqualsAndHashCode.Include
+    @Field(name = "database_id")
     private Long vdbid;
 
     @ToString.Exclude
     @JdbcTypeCode(java.sql.Types.VARCHAR)
+    @Field(name = "created_by")
     @Column(name = "createdBy", nullable = false, columnDefinition = "VARCHAR(36)")
     private UUID createdBy;
 
     @ToString.Exclude
+    @org.springframework.data.annotation.Transient
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumns({
             @JoinColumn(name = "createdBy", referencedColumnName = "ID", insertable = false, updatable = false)
@@ -58,17 +64,20 @@ public class View {
     @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "vdbid", insertable = false, updatable = false)
-    private at.tuwien.entities.database.Database database;
+    private Database database;
 
     @Column(name = "vname", nullable = false)
     private String name;
 
+    @Field(name = "internal_name")
     @Column(nullable = false)
     private String internalName;
 
+    @Field(name = "is_public")
     @Column(name = "public", nullable = false)
     private Boolean isPublic;
 
+    @Field(name = "is_initial_view")
     @Column(name = "initialview", nullable = false)
     private Boolean isInitialView;
 
@@ -109,6 +118,7 @@ public class View {
     private Instant created;
 
     @LastModifiedDate
+    @Field(name = "last_modified")
     @Column(columnDefinition = "TIMESTAMP")
     private Instant lastModified;
 

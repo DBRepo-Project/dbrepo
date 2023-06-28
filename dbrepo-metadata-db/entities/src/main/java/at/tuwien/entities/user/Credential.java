@@ -44,6 +44,7 @@ public class Credential {
     private Integer priority;
 
     @ToString.Exclude
+    @org.springframework.data.annotation.Transient
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumns({
             @JoinColumn(name = "user_id", referencedColumnName = "id", insertable = false, updatable = false)

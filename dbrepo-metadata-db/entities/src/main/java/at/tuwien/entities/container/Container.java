@@ -53,8 +53,9 @@ public class Container {
     })
     private List<Database> databases;
 
+    @ToString.Exclude
     @org.springframework.data.annotation.Transient
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
             @JoinColumn(name = "image_id", referencedColumnName = "id", insertable = false, updatable = false)
     })

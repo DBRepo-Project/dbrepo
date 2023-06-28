@@ -1,13 +1,10 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.api.database.table.columns.concepts.ConceptDto;
-import at.tuwien.api.database.table.columns.concepts.UnitDto;
 import at.tuwien.entities.database.table.columns.TableColumnConcept;
 import at.tuwien.entities.database.table.columns.TableColumnUnit;
 import at.tuwien.repository.mdb.*;
 import at.tuwien.repository.sdb.*;
-import at.tuwien.repository.sdb.TableColumnIdxRepository;
 import lombok.extern.log4j.Log4j2;
 import org.apache.jena.sys.JenaSystem;
 import org.junit.jupiter.api.BeforeAll;
@@ -35,12 +32,6 @@ public class SemanticServiceUnitTest extends BaseUnitTest {
 
     @MockBean
     private ConceptIdxRepository conceptIdxRepository;
-
-    @MockBean
-    private TableIdxRepository tableIdxRepository;
-
-    @MockBean
-    private TableColumnIdxRepository tableColumnIdxRepository;
 
     @MockBean
     private TableColumnConceptRepository tableColumnConceptRepository;
@@ -91,8 +82,8 @@ public class SemanticServiceUnitTest extends BaseUnitTest {
     public void saveUnit_exists_succeeds() {
 
         /* mock */
-        when(unitIdxRepository.save(any(UnitDto.class)))
-                .thenReturn(COLUMN_UNIT_DEGREES_CELSIUS_DTO);
+        when(unitIdxRepository.save(any(TableColumnUnit.class)))
+                .thenReturn(COLUMN_UNIT_DEGREES_CELSIUS);
         when(tableColumnUnitRepository.save(any(TableColumnUnit.class)))
                 .thenReturn(COLUMN_UNIT_DEGREES_CELSIUS);
 
@@ -107,8 +98,8 @@ public class SemanticServiceUnitTest extends BaseUnitTest {
     public void saveUnit_succeeds() {
 
         /* mock */
-        when(unitIdxRepository.save(any(UnitDto.class)))
-                .thenReturn(COLUMN_UNIT_TON_DTO);
+        when(unitIdxRepository.save(any(TableColumnUnit.class)))
+                .thenReturn(COLUMN_UNIT_TON);
         when(tableColumnUnitRepository.save(any(TableColumnUnit.class)))
                 .thenReturn(COLUMN_UNIT_TON);
 
@@ -123,8 +114,8 @@ public class SemanticServiceUnitTest extends BaseUnitTest {
     public void saveConcept_exists_succeeds() {
 
         /* mock */
-        when(conceptIdxRepository.save(any(ConceptDto.class)))
-                .thenReturn(COLUMN_CONCEPT_TEMPERATURE_DTO);
+        when(conceptIdxRepository.save(any(TableColumnConcept.class)))
+                .thenReturn(COLUMN_CONCEPT_TEMPERATURE);
         when(tableColumnConceptRepository.save(any(TableColumnConcept.class)))
                 .thenReturn(COLUMN_CONCEPT_TEMPERATURE);
 
@@ -139,8 +130,8 @@ public class SemanticServiceUnitTest extends BaseUnitTest {
     public void saveConcept_succeeds() {
 
         /* mock */
-        when(conceptIdxRepository.save(any(ConceptDto.class)))
-                .thenReturn(COLUMN_CONCEPT_FAIR_DATA_DTO);
+        when(conceptIdxRepository.save(any(TableColumnConcept.class)))
+                .thenReturn(COLUMN_CONCEPT_FAIR_DATA);
         when(tableColumnConceptRepository.save(any(TableColumnConcept.class)))
                 .thenReturn(COLUMN_CONCEPT_FAIR_DATA);
 

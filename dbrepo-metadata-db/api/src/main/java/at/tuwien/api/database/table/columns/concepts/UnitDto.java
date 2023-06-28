@@ -7,9 +7,7 @@ import lombok.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.jackson.Jacksonized;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
-import org.springframework.data.elasticsearch.annotations.Field;
 
 import java.time.Instant;
 import java.util.List;
@@ -24,8 +22,6 @@ import java.util.List;
 @Document(indexName = "unit")
 public class UnitDto {
 
-    @Id
-    @Field(name = "id")
     @NotBlank
     private String uri;
 

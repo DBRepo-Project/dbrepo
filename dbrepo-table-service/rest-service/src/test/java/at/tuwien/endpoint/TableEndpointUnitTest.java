@@ -10,8 +10,10 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.*;
+import at.tuwien.repository.sdb.ConceptIdxRepository;
 import at.tuwien.repository.sdb.TableColumnIdxRepository;
 import at.tuwien.repository.sdb.TableIdxRepository;
+import at.tuwien.repository.sdb.UnitIdxRepository;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.TableService;
@@ -52,6 +54,12 @@ public class TableEndpointUnitTest extends BaseUnitTest {
 
     @MockBean
     private TableIdxRepository tableidxRepository;
+
+    @MockBean
+    private UnitIdxRepository unitIdxRepository;
+
+    @MockBean
+    private ConceptIdxRepository conceptIdxRepository;
 
     @MockBean
     private TableColumnIdxRepository tableColumnidxRepository;
