@@ -4,12 +4,14 @@ import at.tuwien.BaseUnitTest;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.exception.IdentifierNotFoundException;
 import at.tuwien.repository.mdb.*;
+import at.tuwien.repository.sdb.IdentifierIdxRepository;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -23,6 +25,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @ExtendWith(SpringExtension.class)
 public class IdentifierServiceIntegrationTest extends BaseUnitTest {
+
+    @MockBean
+    private IdentifierIdxRepository identifierIdxRepository;
 
     @Autowired
     private ImageRepository imageRepository;
