@@ -12,6 +12,7 @@ import lombok.*;
 import org.hibernate.annotations.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.io.Serializable;
@@ -29,6 +30,7 @@ import java.util.UUID;
 @jakarta.persistence.Table(name = "mdb_databases", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"cid", "internalName"})
 })
+@Document(indexName = "database")
 @NamedQueries({
         @NamedQuery(name = "Database.findReadAccess", query = "select distinct d from Database d join DatabaseAccess a on a.hdbid = d.id and a.huserid = ?1"),
         @NamedQuery(name = "Database.findWriteAccess", query = "select distinct d from Database d join DatabaseAccess a on a.hdbid = d.id and a.huserid = ?1 where a.type = 'WRITE_OWN' or a.type = 'WRITE_ALL'"),
