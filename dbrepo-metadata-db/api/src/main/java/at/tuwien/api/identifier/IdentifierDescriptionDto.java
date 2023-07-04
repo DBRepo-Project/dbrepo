@@ -18,7 +18,6 @@ import lombok.extern.jackson.Jacksonized;
 public class IdentifierDescriptionDto {
 
     @NotNull
-    @JsonIgnore
     private Long id;
 
     @Schema(example = "Air quality reports at Stephansplatz, Vienna")

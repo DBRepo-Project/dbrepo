@@ -18,7 +18,6 @@ import lombok.extern.jackson.Jacksonized;
 public class IdentifierTitleDto {
 
     @NotNull
-    @JsonIgnore
     private Long id;
 
     @Schema(example = "Airquality Demonstrator")
