@@ -169,13 +169,13 @@ public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void update_existing_succeeds()
-            throws IdentifierRequestException, IdentifierNotFoundException, IdentifierUpdateBadFormException {
+    public void update_existing_succeeds() throws IdentifierRequestException, UserNotFoundException,
+            QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException {
         final DataCiteBody<DataCiteDoi> response =
                 new DataCiteBody<>(new DataCiteData<>(null, "dois", new DataCiteDoi(IDENTIFIER_1_DOI_NOT_NULL)));
 
         /* mock */
-        when(identifierService.update(eq(IDENTIFIER_1_ID), any(IdentifierUpdateDto.class)))
+        when(identifierService.update(eq(IDENTIFIER_1_ID), any(IdentifierUpdateDto.class), any(Principal.class), anyString()))
                 .thenAnswer((i) -> identifierRepository.save(IDENTIFIER_1_WITH_DOI));
         when(restTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class),
                 any(ParameterizedTypeReference.class), eq(IDENTIFIER_1_DOI_NOT_NULL)))
@@ -183,16 +183,17 @@ public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
         when(restTemplateBuilder.build()).thenReturn(restTemplate);
 
         /* test */
-        Identifier result = dataCiteIdentifierService.update(IDENTIFIER_1_ID, IDENTIFIER_1_DTO_UPDATE_REQUEST);
+        Identifier result = dataCiteIdentifierService.update(IDENTIFIER_1_ID, IDENTIFIER_1_DTO_UPDATE_REQUEST, USER_1_PRINCIPAL, "abc");
         assertTrue(identifierRepository.existsById(IDENTIFIER_1_ID));
         assertEquals(IDENTIFIER_1_DOI_NOT_NULL, result.getDoi());
     }
 
     @Test
-    public void update_invalidMetadata_fails() throws IdentifierNotFoundException {
+    public void update_invalidMetadata_fails() throws UserNotFoundException, QueryNotFoundException,
+            DatabaseNotFoundException, RemoteUnavailableException {
 
         /* mock */
-        when(identifierService.update(eq(IDENTIFIER_1_ID), any(IdentifierUpdateDto.class)))
+        when(identifierService.update(eq(IDENTIFIER_1_ID), any(IdentifierUpdateDto.class), any(Principal.class), anyString()))
                 .thenAnswer((i) -> identifierRepository.save(IDENTIFIER_1_WITH_DOI));
         when(restTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class),
                 any(ParameterizedTypeReference.class), eq(IDENTIFIER_1_DOI_NOT_NULL)))
@@ -201,16 +202,17 @@ public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(IdentifierRequestException.class, () -> {
-            dataCiteIdentifierService.update(IDENTIFIER_1_ID, IDENTIFIER_1_DTO_UPDATE_REQUEST);
+            dataCiteIdentifierService.update(IDENTIFIER_1_ID, IDENTIFIER_1_DTO_UPDATE_REQUEST, USER_1_PRINCIPAL, "abc");
         });
         assertEquals(0, identifierRepository.count());
     }
 
     @Test
-    public void update_restClientException_fails() throws IdentifierNotFoundException {
+    public void update_restClientException_fails() throws UserNotFoundException, QueryNotFoundException,
+            DatabaseNotFoundException, RemoteUnavailableException {
 
         /* mock */
-        when(identifierService.update(eq(IDENTIFIER_1_ID), any(IdentifierUpdateDto.class)))
+        when(identifierService.update(eq(IDENTIFIER_1_ID), any(IdentifierUpdateDto.class), any(Principal.class), anyString()))
                 .thenAnswer((i) -> identifierRepository.save(IDENTIFIER_1_WITH_DOI));
         when(restTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class),
                 any(ParameterizedTypeReference.class), eq(IDENTIFIER_1_DOI_NOT_NULL)))
@@ -219,7 +221,7 @@ public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(InternalError.class, () -> {
-            dataCiteIdentifierService.update(IDENTIFIER_1_ID, IDENTIFIER_1_DTO_UPDATE_REQUEST);
+            dataCiteIdentifierService.update(IDENTIFIER_1_ID, IDENTIFIER_1_DTO_UPDATE_REQUEST, USER_1_PRINCIPAL, "abc");
         });
         assertEquals(0, identifierRepository.count());
     }

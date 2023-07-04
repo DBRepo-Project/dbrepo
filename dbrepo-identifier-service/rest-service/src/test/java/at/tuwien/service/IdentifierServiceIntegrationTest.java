@@ -10,7 +10,6 @@ import at.tuwien.entities.identifier.IdentifierTitle;
 import at.tuwien.entities.identifier.RelatedIdentifier;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.QueryServiceGateway;
-import at.tuwien.gateway.impl.QueryServiceGatewayImpl;
 import at.tuwien.repository.sdb.IdentifierIdxRepository;
 import at.tuwien.repository.mdb.*;
 import lombok.extern.log4j.Log4j2;

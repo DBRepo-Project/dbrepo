@@ -9,6 +9,9 @@ import org.mapstruct.Mappings;
 @Mapper(componentModel = "spring")
 public interface IdentifierMapper {
 
+    @Mappings({
+            @Mapping(target = "database.identifier", ignore = true),
+    })
     IdentifierDto identifierToIdentifierDto(Identifier data);
 
     @Mappings({

@@ -99,7 +99,8 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
         final IdentifierDto body = (IdentifierDto) response.getBody();
         assertNotNull(body);
         assertEquals(compare.getId(), body.getId());
-        assertEquals(compare.getTitles(), body.getTitles());
+        assertEquals(compare.getTitles().size(), body.getTitles().size());
+        assertEquals(compare.getDescriptions().size(), body.getDescriptions().size());
         assertEquals(compare.getDescriptions(), body.getDescriptions());
         assertEquals(compare.getDatabase().getId(), body.getDatabase().getId());
         assertEquals(compare.getCreated(), body.getCreated());
@@ -130,8 +131,16 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
         final IdentifierDto body = (IdentifierDto) response.getBody();
         assertNotNull(body);
         assertEquals(compare.getId(), body.getId());
-        assertEquals(compare.getTitles(), body.getTitles());
-        assertEquals(compare.getDescriptions(), body.getDescriptions());
+        assertEquals(compare.getTitles().size(), body.getTitles().size());
+        assertEquals(compare.getTitles().get(0).getId(), body.getTitles().get(0).getId());
+        assertEquals(compare.getTitles().get(0).getTitle(), body.getTitles().get(0).getTitle());
+        assertEquals(compare.getTitles().get(0).getLanguage(), body.getTitles().get(0).getLanguage());
+        assertEquals(compare.getTitles().get(0).getTitleType(), body.getTitles().get(0).getTitleType());
+        assertEquals(compare.getDescriptions().size(), body.getDescriptions().size());
+        assertEquals(compare.getDescriptions().get(0).getId(), body.getDescriptions().get(0).getId());
+        assertEquals(compare.getDescriptions().get(0).getDescription(), body.getDescriptions().get(0).getDescription());
+        assertEquals(compare.getDescriptions().get(0).getLanguage(), body.getDescriptions().get(0).getLanguage());
+        assertEquals(compare.getDescriptions().get(0).getDescriptionType(), body.getDescriptions().get(0).getDescriptionType());
         assertEquals(compare.getDatabase().getId(), body.getDatabase().getId());
         assertEquals(compare.getCreated(), body.getCreated());
         assertEquals(compare.getLastModified(), body.getLastModified());

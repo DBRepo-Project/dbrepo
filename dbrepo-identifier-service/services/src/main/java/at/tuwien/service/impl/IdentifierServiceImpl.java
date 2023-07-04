@@ -222,6 +222,7 @@ public class IdentifierServiceImpl implements IdentifierService {
             throws UserNotFoundException, DatabaseNotFoundException, QueryNotFoundException, RemoteUnavailableException {
         /* create identifier */
         final Identifier identifier = identifierMapper.identifierUpdateDtoToIdentifier(data);
+        identifier.setId(identifierId);
         final User creator = userService.findByUsername(principal.getName());
         identifier.setCreator(creator);
         final Database database = databaseService.find(data.getDbid());

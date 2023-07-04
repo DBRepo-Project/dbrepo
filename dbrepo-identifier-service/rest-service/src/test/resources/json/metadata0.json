@@ -1,9 +1,16 @@
 {
   "id": 4,
-  "database_id": 4,
+  "database": {
+    "id": 4,
+    "name": "Weather AT",
+    "exchange_name": "dbrepo.weather_at",
+    "internal_name": "weather_at",
+    "description": "Weather data",
+    "is_public": true
+  },
   "type": "database",
-  "title": "Sweden weather data",
-  "description": "Selecting all from the weather Sweden table",
+  "titles": [],
+  "descriptions": [],
   "doi": null,
   "publisher": "Swedish Government",
   "publication_day": 14,
