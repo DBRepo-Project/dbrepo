@@ -101,7 +101,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
         assertEquals(compare.getId(), body.getId());
         assertEquals(compare.getTitles(), body.getTitles());
         assertEquals(compare.getDescriptions(), body.getDescriptions());
-        assertEquals(compare.getDatabaseId(), body.getDatabaseId());
+        assertEquals(compare.getDatabase().getId(), body.getDatabase().getId());
         assertEquals(compare.getCreated(), body.getCreated());
         assertEquals(compare.getLastModified(), body.getLastModified());
         assertEquals(compare.getDoi(), body.getDoi());
@@ -132,7 +132,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
         assertEquals(compare.getId(), body.getId());
         assertEquals(compare.getTitles(), body.getTitles());
         assertEquals(compare.getDescriptions(), body.getDescriptions());
-        assertEquals(compare.getDatabaseId(), body.getDatabaseId());
+        assertEquals(compare.getDatabase().getId(), body.getDatabase().getId());
         assertEquals(compare.getCreated(), body.getCreated());
         assertEquals(compare.getLastModified(), body.getLastModified());
         assertEquals(compare.getDoi(), body.getDoi());
@@ -546,8 +546,9 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_3_USERNAME, authorities = {"modify-identifier-metadata"})
-    public void update_hasRoleNoAccess_succeeds() throws UserNotFoundException, IdentifierUpdateBadFormException,
-            NotAllowedException, IdentifierNotFoundException, IdentifierRequestException {
+    public void update_hasRoleNoAccess_succeeds() throws UserNotFoundException, NotAllowedException,
+            IdentifierNotFoundException, IdentifierRequestException, QueryNotFoundException, DatabaseNotFoundException,
+            RemoteUnavailableException {
 
         /* test */
         generic_update(IDENTIFIER_3_ID, IDENTIFIER_3, IDENTIFIER_3_DTO_UPDATE_REQUEST, USER_3_USERNAME, USER_3, USER_3_PRINCIPAL);
@@ -556,7 +557,8 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithMockUser(username = USER_3_USERNAME, authorities = {"modify-identifier-metadata"})
     public void update_hasRoleHasAccess_succeeds() throws IdentifierNotFoundException, IdentifierRequestException,
-            UserNotFoundException, at.tuwien.exception.AccessDeniedException, NotAllowedException, IdentifierUpdateBadFormException {
+            UserNotFoundException, at.tuwien.exception.AccessDeniedException, NotAllowedException,
+            QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException {
 
         /* mock */
         when(accessService.find(IDENTIFIER_3_DATABASE_ID, USER_3_ID))
@@ -621,11 +623,12 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
 
     protected void generic_update(Long id, Identifier identifier, IdentifierUpdateDto data, String username, User user,
                                   Principal principal) throws IdentifierNotFoundException, IdentifierRequestException,
-            UserNotFoundException, NotAllowedException, IdentifierUpdateBadFormException {
+            UserNotFoundException, NotAllowedException, QueryNotFoundException, DatabaseNotFoundException,
+            RemoteUnavailableException {
 
         /* mock */
         if (identifier != null) {
-            when(identifierService.update(id, data))
+            when(identifierService.update(id, data, principal, "Bearer abc"))
                     .thenReturn(identifier);
             when(identifierService.find(id))
                     .thenReturn(identifier);
@@ -644,7 +647,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
         }
 
         /* test */
-        final ResponseEntity<IdentifierDto> response = persistenceEndpoint.update(id, data, principal);
+        final ResponseEntity<IdentifierDto> response = persistenceEndpoint.update(id, data, "Bearer abc", principal);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
         final IdentifierDto body = response.getBody();
         assertNotNull(body);

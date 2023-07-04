@@ -38,7 +38,7 @@ public class Identifier implements Serializable {
     @Column(name = "qid")
     private Long queryId;
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "identifier")
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "identifier")
     private List<Creator> creators;
 
     @NotBlank
@@ -49,13 +49,13 @@ public class Identifier implements Serializable {
     @Enumerated(EnumType.STRING)
     private LanguageType language;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST, mappedBy = "identifier")
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "identifier")
     private List<IdentifierTitle> titles;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST, mappedBy = "identifier")
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "identifier")
     private List<IdentifierDescription> descriptions;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumns({
             @JoinColumn(name = "License", referencedColumnName = "identifier")
     })
@@ -98,11 +98,11 @@ public class Identifier implements Serializable {
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumns({
-            @JoinColumn(name = "dbid", nullable = false)
+            @JoinColumn(name = "dbid", referencedColumnName = "id", nullable = false)
     })
     private Database database;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST, mappedBy = "identifier")
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "identifier")
     private List<RelatedIdentifier> related;
 
     @Column

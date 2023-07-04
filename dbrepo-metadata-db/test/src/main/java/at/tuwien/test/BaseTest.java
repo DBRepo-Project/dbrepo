@@ -85,7 +85,7 @@ import static java.time.temporal.ChronoUnit.MINUTES;
  * <li>Query 2</li>
  * <li>Query 6</li>
  * <li>View 4</li>
- * <li>Identifier 2 (Ttitle=de, Description=de)</li>
+ * <li>Identifier 2 (Title=de, Description=de)</li>
  * </ul>
  * <p>
  * Database 3 (Public, User 3)
@@ -95,9 +95,11 @@ import static java.time.temporal.ChronoUnit.MINUTES;
  * <li>Query 4</li>
  * <li>Query 5</li>
  * <li>View 5</li>
+ * <li>Identifier 3 (Title=en, Description=en, Query=3)</li>
  * </ul>
  * <p>
  * Database 4 (Public, User 4)
+ * <li>Identifier 4 (Database=4)</li>
  * <ul>
  * </ul>
  * <br />
@@ -610,20 +612,87 @@ public abstract class BaseTest {
     public final static Instant USER_4_CREATED = Instant.ofEpochSecond(1677399592) /* 2023-02-26 08:19:52 (UTC) */;
     public final static UUID USER_4_REALM_ID = REALM_DBREPO_ID;
 
+    public final static List<UserAttribute> USER_4_ATTRIBUTES = List.of(UserAttribute.builder()
+                    .id(UUID.fromString("58062219-7b99-4c0d-b00b-236b7d916c04"))
+                    .userId(USER_4_ID)
+                    .name("theme_dark")
+                    .value(USER_4_THEME_DARK.toString())
+                    .build(),
+            UserAttribute.builder()
+                    .id(UUID.fromString("384851ee-83c4-4cda-805e-ce0c1bab71eb"))
+                    .userId(USER_4_ID)
+                    .name("orcid")
+                    .value(null)
+                    .build(),
+            UserAttribute.builder()
+                    .id(UUID.fromString("c2cb2357-5e34-453f-b080-da1c97f56d4a"))
+                    .userId(USER_4_ID)
+                    .name("affiliation")
+                    .value(USER_4_AFFILIATION)
+                    .build());
+
+    public final static List<UserAttributeDto> USER_4_ATTRIBUTES_DTO = List.of(UserAttributeDto.builder()
+                    .id(UUID.fromString("58062219-7b99-4c0d-b00b-236b7d916c04"))
+                    .userId(USER_4_ID)
+                    .name("theme_dark")
+                    .value(USER_4_THEME_DARK.toString())
+                    .build(),
+            UserAttributeDto.builder()
+                    .id(UUID.fromString("384851ee-83c4-4cda-805e-ce0c1bab71eb"))
+                    .userId(USER_4_ID)
+                    .name("orcid")
+                    .value(null)
+                    .build(),
+            UserAttributeDto.builder()
+                    .id(UUID.fromString("c2cb2357-5e34-453f-b080-da1c97f56d4a"))
+                    .userId(USER_4_ID)
+                    .name("affiliation")
+                    .value(USER_4_AFFILIATION)
+                    .build());
+
     public final static User USER_4 = User.builder()
             .id(USER_4_ID)
             .username(USER_4_USERNAME)
             .email(USER_4_EMAIL)
-            .emailVerified(USER_4_VERIFIED)
+            .emailVerified(true)
             .databasePassword(USER_4_DATABASE_PASSWORD)
+            .firstname(USER_4_FIRSTNAME)
+            .lastname(USER_4_LASTNAME)
+            .emailVerified(USER_4_VERIFIED)
             .enabled(USER_4_ENABLED)
             .realmId(USER_4_REALM_ID)
+            .attributes(USER_4_ATTRIBUTES)
+            .build();
+
+    public final static User USER_4_SIMPLE = User.builder()
+            .id(USER_4_ID)
+            .username(USER_4_USERNAME)
+            .email(USER_4_EMAIL)
+            .emailVerified(true)
+            .databasePassword(USER_4_DATABASE_PASSWORD)
+            .firstname(USER_4_FIRSTNAME)
+            .lastname(USER_4_LASTNAME)
+            .emailVerified(USER_4_VERIFIED)
+            .enabled(USER_4_ENABLED)
+            .realmId(USER_4_REALM_ID)
+            .attributes(List.of() /* for jpa */)
             .build();
 
     public final static UserDto USER_4_DTO = UserDto.builder()
             .id(USER_4_ID)
             .username(USER_4_USERNAME)
             .email(USER_4_EMAIL)
+            .emailVerified(true)
+            .firstname(USER_4_FIRSTNAME)
+            .lastname(USER_4_LASTNAME)
+            .emailVerified(USER_4_VERIFIED)
+            .attributes(USER_4_ATTRIBUTES_DTO)
+            .build();
+
+    public final static UserBriefDto USER_4_BRIEF_DTO = UserBriefDto.builder()
+            .id(USER_4_ID)
+            .username(USER_4_USERNAME)
+            .emailVerified(true)
             .firstname(USER_4_FIRSTNAME)
             .lastname(USER_4_LASTNAME)
             .emailVerified(USER_4_VERIFIED)
@@ -976,7 +1045,6 @@ public abstract class BaseTest {
             .privilegedUsername(CONTAINER_4_PRIVILEGED_USERNAME)
             .privilegedPassword(CONTAINER_4_PRIVILEGED_PASSWORD)
             .build();
-
 
     public final static Long DATABASE_1_ID = 1L;
     public final static String DATABASE_1_NAME = "Weather";
@@ -1417,6 +1485,21 @@ public abstract class BaseTest {
             .ownedBy(USER_4_ID)
             .creator(USER_4)
             .owner(USER_4)
+            .tables(List.of())
+            .views(List.of())
+            .build();
+
+    public final static DatabaseDto DATABASE_4_DTO = DatabaseDto.builder()
+            .id(DATABASE_4_ID)
+            .created(Instant.now().minus(4, HOURS))
+            .isPublic(DATABASE_4_PUBLIC)
+            .name(DATABASE_4_NAME)
+            .description(DATABASE_4_DESCRIPTION)
+            .internalName(DATABASE_4_INTERNALNAME)
+            .exchangeName(DATABASE_4_EXCHANGE)
+            .created(DATABASE_4_CREATED)
+            .creator(USER_4_BRIEF_DTO)
+            .owner(USER_4_BRIEF_DTO)
             .tables(List.of())
             .views(List.of())
             .build();
@@ -4956,12 +5039,23 @@ public abstract class BaseTest {
             .affiliationIdentifier(CREATOR_1_AFFIL_ROR)
             .build();
 
+    public final static CreatorCreateDto IDENTIFIER_1_CREATOR_1_MODIFY_DTO = CreatorCreateDto.builder()
+            .firstname(CREATOR_1_FIRSTNAME)
+            .lastname(CREATOR_1_LASTNAME)
+            .creatorName(CREATOR_1_NAME)
+            .nameIdentifier(CREATOR_1_ORCID)
+            .nameIdentifierScheme(NameIdentifierSchemeTypeDto.ORCID)
+            .affiliation("JKU Linz")
+            .affiliationIdentifier(CREATOR_1_AFFIL_ROR)
+            .build();
+
     public final static Identifier IDENTIFIER_1 = Identifier.builder()
             .id(IDENTIFIER_1_ID)
             .queryId(IDENTIFIER_1_QUERY_ID)
             .titles(List.of(IDENTIFIER_1_TITLE_1))
             .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1))
             .doi(IDENTIFIER_1_DOI)
+            .database(DATABASE_1)
             .created(IDENTIFIER_1_CREATED)
             .lastModified(IDENTIFIER_1_MODIFIED)
             .execution(IDENTIFIER_1_EXECUTION)
@@ -4985,6 +5079,7 @@ public abstract class BaseTest {
             .descriptions(List.of() /* for jpa */)
             .titles(List.of() /* for jpa */)
             .doi(IDENTIFIER_1_DOI)
+            .database(null /* for jpa */)
             .created(IDENTIFIER_1_CREATED)
             .lastModified(IDENTIFIER_1_MODIFIED)
             .execution(IDENTIFIER_1_EXECUTION)
@@ -5008,6 +5103,7 @@ public abstract class BaseTest {
             .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1))
             .titles(List.of(IDENTIFIER_1_TITLE_1))
             .doi(IDENTIFIER_1_DOI_NOT_NULL)
+            .database(DATABASE_1)
             .created(IDENTIFIER_1_CREATED)
             .lastModified(IDENTIFIER_1_MODIFIED)
             .execution(IDENTIFIER_1_EXECUTION)
@@ -5027,11 +5123,11 @@ public abstract class BaseTest {
 
     public final static IdentifierDto IDENTIFIER_1_DTO = IdentifierDto.builder()
             .id(IDENTIFIER_1_ID)
-            .databaseId(IDENTIFIER_1_DATABASE_ID)
             .queryId(IDENTIFIER_1_QUERY_ID)
             .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_DTO))
             .titles(List.of(IDENTIFIER_1_TITLE_1_DTO))
             .doi(IDENTIFIER_1_DOI)
+            .database(DATABASE_1_DTO)
             .created(IDENTIFIER_1_CREATED)
             .lastModified(IDENTIFIER_1_MODIFIED)
             .execution(IDENTIFIER_1_EXECUTION)
@@ -5051,11 +5147,11 @@ public abstract class BaseTest {
 
     public final static IdentifierDto IDENTIFIER_1_WITH_DOI_DTO = IdentifierDto.builder()
             .id(IDENTIFIER_1_ID)
-            .databaseId(IDENTIFIER_1_DATABASE_ID)
             .queryId(IDENTIFIER_1_QUERY_ID)
             .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_DTO))
             .titles(List.of(IDENTIFIER_1_TITLE_1_DTO))
             .doi(IDENTIFIER_1_DOI_NOT_NULL)
+            .database(DATABASE_1_DTO)
             .created(IDENTIFIER_1_CREATED)
             .lastModified(IDENTIFIER_1_MODIFIED)
             .execution(IDENTIFIER_1_EXECUTION)
@@ -5185,6 +5281,15 @@ public abstract class BaseTest {
             .affiliation(CREATOR_1_AFFIL)
             .build();
 
+    public final static CreatorCreateDto IDENTIFIER_2_CREATOR_1_MODIFY_DTO = CreatorCreateDto.builder()
+            .firstname(CREATOR_1_FIRSTNAME)
+            .lastname(CREATOR_1_LASTNAME)
+            .creatorName(CREATOR_1_NAME)
+            .nameIdentifier(null) /* <<<< */
+            .nameIdentifierScheme(null) /* <<<< */
+            .affiliation(CREATOR_1_AFFIL)
+            .build();
+
     public final static Long IDENTIFIER_2_CREATOR_2_ID = 3L;
 
     public final static Creator IDENTIFIER_2_CREATOR_2 = Creator.builder()
@@ -5216,12 +5321,22 @@ public abstract class BaseTest {
             .affiliation(CREATOR_2_AFFIL)
             .build();
 
+    public final static CreatorCreateDto IDENTIFIER_2_CREATOR_2_MODIFY_DTO = CreatorCreateDto.builder()
+            .firstname(CREATOR_2_FIRSTNAME)
+            .lastname(CREATOR_2_LASTNAME)
+            .creatorName(CREATOR_2_NAME)
+            .nameIdentifier(null) /* <<<< */
+            .nameIdentifierScheme(NameIdentifierSchemeTypeDto.ORCID)
+            .affiliation(CREATOR_2_AFFIL)
+            .build();
+
     public final static Identifier IDENTIFIER_2 = Identifier.builder()
             .id(IDENTIFIER_2_ID)
             .queryId(IDENTIFIER_2_QUERY_ID)
             .descriptions(List.of(IDENTIFIER_2_DESCRIPTION_1))
             .titles(List.of(IDENTIFIER_2_TITLE_1))
             .doi(IDENTIFIER_2_DOI)
+            .database(DATABASE_2)
             .created(IDENTIFIER_2_CREATED)
             .lastModified(IDENTIFIER_2_MODIFIED)
             .execution(IDENTIFIER_2_EXECUTION)
@@ -5246,6 +5361,7 @@ public abstract class BaseTest {
             .descriptions(List.of() /* for jpa */)
             .titles(List.of() /* for jpa */)
             .doi(IDENTIFIER_2_DOI)
+            .database(null /* for jpa */)
             .created(IDENTIFIER_2_CREATED)
             .lastModified(IDENTIFIER_2_MODIFIED)
             .execution(IDENTIFIER_2_EXECUTION)
@@ -5266,11 +5382,11 @@ public abstract class BaseTest {
 
     public final static IdentifierDto IDENTIFIER_2_DTO = IdentifierDto.builder()
             .id(IDENTIFIER_2_ID)
-            .databaseId(IDENTIFIER_2_DATABASE_ID)
             .queryId(IDENTIFIER_2_QUERY_ID)
             .descriptions(List.of(IDENTIFIER_2_DESCRIPTION_1_DTO))
             .titles(List.of(IDENTIFIER_2_TITLE_1_DTO))
             .doi(IDENTIFIER_2_DOI)
+            .database(DATABASE_2_DTO)
             .created(IDENTIFIER_2_CREATED)
             .lastModified(IDENTIFIER_2_MODIFIED)
             .execution(IDENTIFIER_2_EXECUTION)
@@ -5291,9 +5407,8 @@ public abstract class BaseTest {
 
     public final static IdentifierDto IDENTIFIER_1_MODIFY_DTO = IdentifierDto.builder()
             .id(IDENTIFIER_1_ID)
-            .databaseId(DATABASE_1_ID)
             .queryId(IDENTIFIER_1_QUERY_ID)
-            .databaseId(IDENTIFIER_1_DATABASE_ID)
+            .database(DATABASE_1_DTO)
             .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_DTO_MODIFY))
             .titles(List.of(IDENTIFIER_1_TITLE_1_DTO_MODIFY))
             .doi(IDENTIFIER_1_DOI)
@@ -5328,7 +5443,7 @@ public abstract class BaseTest {
             .relatedIdentifiers(List.of())
             .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
             .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
-            .creators(List.of(IDENTIFIER_1_CREATOR_1_DTO))
+            .creators(List.of(IDENTIFIER_1_CREATOR_1_MODIFY_DTO)) /* <<<< */
             .publisher(IDENTIFIER_1_PUBLISHER)
             .type(IDENTIFIER_1_TYPE_DTO)
             .visibility(IDENTIFIER_1_VISIBILITY_DTO)
@@ -5382,7 +5497,7 @@ public abstract class BaseTest {
             .publicationDay(IDENTIFIER_2_PUBLICATION_DAY)
             .publicationMonth(IDENTIFIER_2_PUBLICATION_MONTH)
             .publicationYear(IDENTIFIER_2_PUBLICATION_YEAR)
-            .creators(List.of(IDENTIFIER_2_CREATOR_1_DTO, IDENTIFIER_2_CREATOR_2_DTO))
+            .creators(List.of(IDENTIFIER_2_CREATOR_1_MODIFY_DTO, IDENTIFIER_2_CREATOR_2_MODIFY_DTO))
             .publisher(IDENTIFIER_2_PUBLISHER)
             .type(IDENTIFIER_2_TYPE_DTO)
             .visibility(IDENTIFIER_2_VISIBILITY_DTO)
@@ -5507,6 +5622,16 @@ public abstract class BaseTest {
             .affiliationIdentifier(CREATOR_1_AFFIL_ROR)
             .build();
 
+    public final static CreatorCreateDto IDENTIFIER_3_CREATOR_1_MODIFY_DTO = CreatorCreateDto.builder()
+            .firstname(CREATOR_1_FIRSTNAME)
+            .lastname(CREATOR_1_LASTNAME)
+            .creatorName(CREATOR_1_NAME)
+            .nameIdentifier(null) /* <<<< */
+            .nameIdentifierScheme(NameIdentifierSchemeTypeDto.ISNI) /* <<<< */
+            .affiliation(CREATOR_1_AFFIL)
+            .affiliationIdentifier(CREATOR_1_AFFIL_ROR)
+            .build();
+
     private final static Long IDENTIFIER_3_CREATOR_2_ID = 5L;
 
     public final static Creator IDENTIFIER_3_CREATOR_2 = Creator.builder()
@@ -5559,6 +5684,7 @@ public abstract class BaseTest {
             .descriptions(List.of(IDENTIFIER_3_DESCRIPTION_1))
             .titles(List.of(IDENTIFIER_3_TITLE_1))
             .doi(IDENTIFIER_3_DOI)
+            .database(DATABASE_3)
             .created(IDENTIFIER_3_CREATED)
             .lastModified(IDENTIFIER_3_MODIFIED)
             .execution(IDENTIFIER_3_EXECUTION)
@@ -5583,6 +5709,7 @@ public abstract class BaseTest {
             .descriptions(List.of() /* for jpa */)
             .titles(List.of() /* for jpa */)
             .doi(IDENTIFIER_3_DOI)
+            .database(null /* for jpa */)
             .created(IDENTIFIER_3_CREATED)
             .lastModified(IDENTIFIER_3_MODIFIED)
             .execution(IDENTIFIER_3_EXECUTION)
@@ -5603,11 +5730,11 @@ public abstract class BaseTest {
 
     public final static IdentifierDto IDENTIFIER_3_DTO = IdentifierDto.builder()
             .id(IDENTIFIER_3_ID)
-            .databaseId(IDENTIFIER_3_DATABASE_ID)
             .queryId(IDENTIFIER_3_QUERY_ID)
             .descriptions(List.of(IDENTIFIER_3_DESCRIPTION_1_DTO))
             .titles(List.of(IDENTIFIER_3_TITLE_1_DTO))
             .doi(IDENTIFIER_3_DOI)
+            .database(DATABASE_3_DTO)
             .created(IDENTIFIER_3_CREATED)
             .lastModified(IDENTIFIER_3_MODIFIED)
             .execution(IDENTIFIER_3_EXECUTION)
@@ -5649,7 +5776,7 @@ public abstract class BaseTest {
             .relatedIdentifiers(List.of())
             .publicationMonth(IDENTIFIER_3_PUBLICATION_MONTH)
             .publicationYear(IDENTIFIER_3_PUBLICATION_YEAR)
-            .creators(List.of(IDENTIFIER_3_CREATOR_1_DTO))
+            .creators(List.of(IDENTIFIER_3_CREATOR_1_MODIFY_DTO))
             .publisher(IDENTIFIER_3_PUBLISHER)
             .type(IDENTIFIER_3_TYPE_DTO)
             .visibility(IDENTIFIER_3_VISIBILITY_DTO)
@@ -5657,8 +5784,6 @@ public abstract class BaseTest {
 
     public final static Long IDENTIFIER_4_ID = 4L;
     public final static Long IDENTIFIER_4_DATABASE_ID = DATABASE_4_ID;
-    public final static String IDENTIFIER_4_DESCRIPTION = "Selecting all from the weather Sweden table";
-    public final static String IDENTIFIER_4_TITLE = "Sweden weather data";
     public final static String IDENTIFIER_4_DOI = null;
     public final static Instant IDENTIFIER_4_CREATED = Instant.ofEpochSecond(1641588352);
     public final static Instant IDENTIFIER_4_MODIFIED = Instant.ofEpochSecond(1541588352);
@@ -5673,39 +5798,44 @@ public abstract class BaseTest {
     public final static Long IDENTIFIER_4_RESULT_NUMBER = 2L;
     public final static String IDENTIFIER_4_PUBLISHER = "Swedish Government";
     public final static IdentifierType IDENTIFIER_4_TYPE = IdentifierType.DATABASE;
+    public final static IdentifierTypeDto IDENTIFIER_4_TYPE_DTO = IdentifierTypeDto.DATABASE;
     public final static UUID IDENTIFIER_4_CREATOR_ID = USER_4_ID;
     public final static User IDENTIFIER_4_CREATOR = USER_4;
     public final static VisibilityType IDENTIFIER_4_VISIBILITY = VisibilityType.EVERYONE;
     public final static VisibilityTypeDto IDENTIFIER_4_VISIBILITY_DTO = VisibilityTypeDto.EVERYONE;
 
-    public final static Long IDENTIFIER_4_TITLE_1_ID = 4L;
-    public final static Long IDENTIFIER_4_TITLE_1_IDENTIFIER_ID = IDENTIFIER_4_ID;
-    public final static String IDENTIFIER_4_TITLE_1_TITLE = "Swedish weather data";
-    public final static LanguageType IDENTIFIER_4_TITLE_1_LANG = LanguageType.EN;
+    private final static Long IDENTIFIER_4_CREATOR_1_ID = 6L;
 
-    public final static IdentifierTitle IDENTIFIER_4_TITLE_1 = IdentifierTitle.builder()
-            .id(IDENTIFIER_4_TITLE_1_ID)
-            .title(IDENTIFIER_4_TITLE_1_TITLE)
-            .language(IDENTIFIER_4_TITLE_1_LANG)
+    public final static Creator IDENTIFIER_4_CREATOR_1 = Creator.builder()
+            .id(IDENTIFIER_4_CREATOR_1_ID)
+            .firstname(CREATOR_1_FIRSTNAME)
+            .lastname(CREATOR_1_LASTNAME)
+            .creatorName(CREATOR_1_NAME)
+            .nameIdentifier(CREATOR_1_ORCID)
+            .nameIdentifierScheme(NameIdentifierSchemeType.ORCID)
+            .affiliation(CREATOR_1_AFFIL)
+            .affiliationIdentifier(CREATOR_1_AFFIL_ROR)
+            .affiliationIdentifierScheme(CREATOR_1_AFFIL_TYPE)
             .build();
 
-    public final static Long IDENTIFIER_4_DESCRIPTION_1_ID = 1L;
-    public final static Long IDENTIFIER_4_DESCRIPTION_1_IDENTIFIER_ID = IDENTIFIER_4_ID;
-    public final static String IDENTIFIER_4_DESCRIPTION_1_DESCRIPTION = "Selecting all from the weather Sweden table";
-    public final static LanguageType IDENTIFIER_4_DESCRIPTION_1_LANG = LanguageType.EN;
-    public final static LanguageTypeDto IDENTIFIER_4_DESCRIPTION_1_LANG_DTO = LanguageTypeDto.EN;
-
-    public final static IdentifierDescription IDENTIFIER_4_DESCRIPTION_1 = IdentifierDescription.builder()
-            .id(IDENTIFIER_4_DESCRIPTION_1_ID)
-            .description(IDENTIFIER_4_DESCRIPTION_1_DESCRIPTION)
-            .language(IDENTIFIER_4_DESCRIPTION_1_LANG)
+    public final static CreatorDto IDENTIFIER_4_CREATOR_1_DTO = CreatorDto.builder()
+            .id(IDENTIFIER_4_CREATOR_1_ID)
+            .firstname(CREATOR_1_FIRSTNAME)
+            .lastname(CREATOR_1_LASTNAME)
+            .creatorName(CREATOR_1_NAME)
+            .nameIdentifier(CREATOR_1_ORCID)
+            .nameIdentifierScheme(NameIdentifierSchemeTypeDto.ORCID)
+            .affiliation(CREATOR_1_AFFIL)
+            .affiliationIdentifier(CREATOR_1_AFFIL_ROR)
+            .affiliationIdentifierScheme(CREATOR_1_AFFIL_TYPE_DTO)
             .build();
 
     public final static Identifier IDENTIFIER_4 = Identifier.builder()
             .id(IDENTIFIER_4_ID)
-            .descriptions(List.of(IDENTIFIER_4_DESCRIPTION_1))
-            .titles(List.of(IDENTIFIER_4_TITLE_1))
+            .descriptions(List.of())
+            .titles(List.of())
             .doi(IDENTIFIER_4_DOI)
+            .database(DATABASE_4)
             .created(IDENTIFIER_4_CREATED)
             .lastModified(IDENTIFIER_4_MODIFIED)
             .execution(IDENTIFIER_4_EXECUTION)
@@ -5729,6 +5859,7 @@ public abstract class BaseTest {
             .descriptions(List.of() /* for jpa */)
             .titles(List.of() /* for jpa */)
             .doi(IDENTIFIER_4_DOI)
+            .database(null /* for jpa */)
             .created(IDENTIFIER_4_CREATED)
             .lastModified(IDENTIFIER_4_MODIFIED)
             .execution(IDENTIFIER_4_EXECUTION)
@@ -5746,6 +5877,54 @@ public abstract class BaseTest {
             .creators(List.of() /* for jpa */)
             .visibility(IDENTIFIER_4_VISIBILITY)
             .build();
+
+    public final static IdentifierDto IDENTIFIER_4_DTO = IdentifierDto.builder()
+            .id(IDENTIFIER_4_ID)
+            .descriptions(List.of())
+            .titles(List.of())
+            .doi(IDENTIFIER_4_DOI)
+            .database(DATABASE_4_DTO)
+            .created(IDENTIFIER_4_CREATED)
+            .lastModified(IDENTIFIER_4_MODIFIED)
+            .execution(IDENTIFIER_4_EXECUTION)
+            .publicationDay(IDENTIFIER_4_PUBLICATION_DAY)
+            .publicationMonth(IDENTIFIER_4_PUBLICATION_MONTH)
+            .publicationYear(IDENTIFIER_4_PUBLICATION_YEAR)
+            .queryHash(IDENTIFIER_4_QUERY_HASH)
+            .resultHash(IDENTIFIER_4_RESULT_HASH)
+            .query(IDENTIFIER_4_QUERY)
+            .queryNormalized(IDENTIFIER_4_NORMALIZED)
+            .resultNumber(IDENTIFIER_4_RESULT_NUMBER)
+            .publisher(IDENTIFIER_4_PUBLISHER)
+            .type(IDENTIFIER_4_TYPE_DTO)
+            .creator(USER_4_DTO)
+            .creators(List.of(IDENTIFIER_4_CREATOR_1_DTO))
+            .visibility(IDENTIFIER_4_VISIBILITY_DTO)
+            .build();
+
+    public final static CreatorCreateDto IDENTIFIER_4_CREATOR_1_CREATE_DTO = CreatorCreateDto.builder()
+            .firstname(CREATOR_1_FIRSTNAME)
+            .lastname(CREATOR_1_LASTNAME)
+            .creatorName(CREATOR_1_NAME)
+            .nameIdentifier(CREATOR_1_ORCID)
+            .nameIdentifierScheme(NameIdentifierSchemeTypeDto.ORCID)
+            .affiliation(CREATOR_1_AFFIL)
+            .affiliationIdentifier(CREATOR_1_AFFIL_ROR)
+            .build();
+
+    public final static IdentifierCreateDto IDENTIFIER_4_DTO_REQUEST = IdentifierCreateDto.builder()
+            .dbid(IDENTIFIER_4_DATABASE_ID)
+            .descriptions(List.of())
+            .titles(List.of())
+            .relatedIdentifiers(List.of())
+            .publicationMonth(IDENTIFIER_4_PUBLICATION_MONTH)
+            .publicationYear(IDENTIFIER_4_PUBLICATION_YEAR)
+            .creators(List.of(IDENTIFIER_4_CREATOR_1_CREATE_DTO))
+            .publisher(IDENTIFIER_4_PUBLISHER)
+            .type(IDENTIFIER_4_TYPE_DTO)
+            .visibility(IDENTIFIER_4_VISIBILITY_DTO)
+            .build();
+
 
     public final static String VIRTUAL_HOST_NAME = "fda";
     public final static String VIRTUAL_HOST_DESCRIPTION = "FAIR Data Austria";

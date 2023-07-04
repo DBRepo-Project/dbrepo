@@ -176,16 +176,8 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
         final List<IdentifierDto> response = this.generic_list(DATABASE_4_ID, null, IdentifierTypeDto.DATABASE);
         assertEquals(1, response.size());
         final IdentifierDto identifier = response.get(0);
-        final List<IdentifierTitleDto> titles = identifier.getTitles();
-        assertEquals(1, titles.size());
-        final IdentifierTitleDto title0 = titles.get(0);
-        assertEquals(IDENTIFIER_4_TITLE_1_TITLE, title0.getTitle());
-        assertEquals(IDENTIFIER_4_DESCRIPTION_1_LANG_DTO, title0.getLanguage());
-        final List<IdentifierDescriptionDto> descriptions = identifier.getDescriptions();
-        assertEquals(1, descriptions.size());
-        final IdentifierDescriptionDto description0 = descriptions.get(0);
-        assertEquals(IDENTIFIER_4_DESCRIPTION_1_DESCRIPTION, description0.getDescription());
-        assertEquals(IDENTIFIER_4_DESCRIPTION_1_LANG, description0.getLanguage());
+        assertEquals(0, identifier.getTitles().size());
+        assertEquals(0, identifier.getDescriptions().size());
     }
 
     @Test

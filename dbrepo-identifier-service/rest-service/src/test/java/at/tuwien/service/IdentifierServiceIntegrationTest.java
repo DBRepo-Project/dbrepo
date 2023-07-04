@@ -2,7 +2,6 @@ package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.query.QueryDto;
-import at.tuwien.api.identifier.IdentifierCreateDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.entities.identifier.Identifier;
@@ -11,6 +10,7 @@ import at.tuwien.entities.identifier.IdentifierTitle;
 import at.tuwien.entities.identifier.RelatedIdentifier;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.QueryServiceGateway;
+import at.tuwien.gateway.impl.QueryServiceGatewayImpl;
 import at.tuwien.repository.sdb.IdentifierIdxRepository;
 import at.tuwien.repository.mdb.*;
 import lombok.extern.log4j.Log4j2;
@@ -87,13 +87,12 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
         realmRepository.save(REALM_DBREPO);
         userRepository.save(USER_1_SIMPLE);
         userRepository.save(USER_2_SIMPLE);
+        userRepository.save(USER_3_SIMPLE);
+        userRepository.save(USER_4_SIMPLE);
         containerRepository.save(CONTAINER_1_SIMPLE);
         databaseRepository.save(DATABASE_1_SIMPLE);
         containerRepository.save(CONTAINER_2_SIMPLE);
         databaseRepository.save(DATABASE_2_SIMPLE);
-        IDENTIFIER_1_SIMPLE.setDatabase(DATABASE_1);
-        IDENTIFIER_1_TITLE_1.setIdentifier(IDENTIFIER_1);
-        IDENTIFIER_1_DESCRIPTION_1.setIdentifier(IDENTIFIER_1);
     }
 
     @Test
@@ -110,9 +109,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
                 .thenReturn(QUERY_2_DTO);
         when(identifierIdxRepository.save(any(IdentifierDto.class)))
                 .thenReturn(IDENTIFIER_2_DTO);
-        identifierRepository.save(IDENTIFIER_1_SIMPLE);
-        identifierTitleRepository.save(IDENTIFIER_1_TITLE_1);
-        identifierDescriptionRepository.save(IDENTIFIER_1_DESCRIPTION_1);
+        identifierRepository.save(IDENTIFIER_1);
 
         /* test */
         final Identifier response = identifierService.create(IDENTIFIER_2_DTO_REQUEST, USER_2_PRINCIPAL, bearer);
@@ -160,7 +157,28 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
+    public void create_noRelatedTitleDescription_succeeds() throws DatabaseNotFoundException, UserNotFoundException,
+            IdentifierAlreadyExistsException, QueryNotFoundException, IdentifierPublishingNotAllowedException,
+            RemoteUnavailableException, IdentifierRequestException {
+        final String bearer = "Bearer abcxyz";
+
+        /* mock */
+        containerRepository.save(CONTAINER_3_SIMPLE);
+        containerRepository.save(CONTAINER_4_SIMPLE);
+        databaseRepository.save(DATABASE_3_SIMPLE);
+        databaseRepository.save(DATABASE_4_SIMPLE);
+        when(identifierIdxRepository.save(any(IdentifierDto.class)))
+                .thenReturn(IDENTIFIER_4_DTO);
+
+        /* test */
+        final Identifier response = identifierService.create(IDENTIFIER_4_DTO_REQUEST, USER_1_PRINCIPAL, bearer);
+    }
+
+    @Test
     public void find_fails() {
+
+        /* mock */
+        identifierRepository.save(IDENTIFIER_1);
 
         /* test */
         assertThrows(IdentifierNotFoundException.class, () -> {
@@ -169,14 +187,16 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void update_succeeds() throws IdentifierNotFoundException, IdentifierRequestException {
+    public void update_succeeds() throws UserNotFoundException, QueryNotFoundException, DatabaseNotFoundException,
+            RemoteUnavailableException, IdentifierRequestException {
 
         /* mock */
+        identifierRepository.save(IDENTIFIER_1);
         when(identifierIdxRepository.save(any(IdentifierDto.class)))
                 .thenReturn(IDENTIFIER_1_DTO);
 
         /* test */
-        final Identifier response = identifierService.update(IDENTIFIER_1_ID, IDENTIFIER_1_DTO_UPDATE_REQUEST);
+        final Identifier response = identifierService.update(IDENTIFIER_1_ID, IDENTIFIER_1_DTO_UPDATE_REQUEST, USER_1_PRINCIPAL, "Bearer abc");
         assertEquals(IDENTIFIER_1_ID, response.getId());
         assertEquals(IDENTIFIER_1_DATABASE_ID, response.getDatabase().getId());
         assertEquals(1, response.getTitles().size());
@@ -195,9 +215,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
         doNothing()
                 .when(identifierIdxRepository)
                 .deleteById(IDENTIFIER_1_ID);
-        identifierRepository.save(IDENTIFIER_1_SIMPLE);
-        identifierTitleRepository.save(IDENTIFIER_1_TITLE_1);
-        identifierDescriptionRepository.save(IDENTIFIER_1_DESCRIPTION_1);
+        identifierRepository.save(IDENTIFIER_1);
 
         /* test */
         identifierService.delete(IDENTIFIER_1_ID);
@@ -206,6 +224,10 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void delete_notFound_fails() {
+
+        /* mock */
+        final Identifier id = IDENTIFIER_1;
+        identifierRepository.save(IDENTIFIER_1);
 
         /* test */
         assertThrows(IdentifierNotFoundException.class, () -> {

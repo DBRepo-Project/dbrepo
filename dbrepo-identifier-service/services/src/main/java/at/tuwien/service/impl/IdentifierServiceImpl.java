@@ -1,10 +1,7 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.api.database.query.QueryDto;
-import at.tuwien.api.identifier.BibliographyTypeDto;
-import at.tuwien.api.identifier.IdentifierCreateDto;
-import at.tuwien.api.identifier.IdentifierTypeDto;
-import at.tuwien.api.identifier.IdentifierUpdateDto;
+import at.tuwien.api.identifier.*;
 import at.tuwien.config.EndpointConfig;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.LanguageType;
@@ -30,7 +27,6 @@ import org.thymeleaf.exceptions.TemplateInputException;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.Charset;
 import java.security.Principal;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
@@ -98,7 +94,6 @@ public class IdentifierServiceImpl implements IdentifierService {
             UserNotFoundException, DatabaseNotFoundException, IdentifierPublishingNotAllowedException,
             IdentifierRequestException {
         /* check */
-        final Database database = databaseService.find(data.getDbid());
         if (data.getType().equals(IdentifierTypeDto.DATABASE) && identifierRepository.existsByDatabaseIdAndType(data.getDbid(), IdentifierType.DATABASE)) {
             log.error("Identifier already issued for database with id {}", data.getDbid());
             throw new IdentifierAlreadyExistsException("Database identifier already exists");
@@ -110,6 +105,7 @@ public class IdentifierServiceImpl implements IdentifierService {
         final Identifier identifier = identifierMapper.identifierCreateDtoToIdentifier(data);
         final User creator = userService.findByUsername(principal.getName());
         identifier.setCreator(creator);
+        final Database database = databaseService.find(data.getDbid());
         identifier.setDatabase(database);
         if (data.getType().equals(IdentifierTypeDto.SUBSET)) {
             log.debug("identifier describes a subset");
@@ -122,40 +118,7 @@ public class IdentifierServiceImpl implements IdentifierService {
             identifier.setResultNumber(query.getResultNumber());
             identifier.setResultHash(query.getResultHash());
         }
-        /* create in metadata database */
-        data.getCreators()
-                .stream()
-                .map(identifierMapper::creatorCreateDtoToCreator)
-                .forEach(c -> {
-                    c.setIdentifier(identifier);
-                    log.trace("mapped creator: {}", c);
-                    identifier.getCreators().add(c);
-                });
-        if (data.getRelatedIdentifiers() != null) {
-            identifier.setRelated(data.getRelatedIdentifiers()
-                    .stream()
-                    .map(identifierMapper::relatedIdentifierCreateDtoToRelatedIdentifier)
-                    .peek(r -> r.setIdentifier(identifier))
-                    .toList());
-            log.debug("set {} related identifier(s)", identifier.getRelated().size());
-        }
-        if (data.getTitles() != null) {
-            identifier.setTitles(data.getTitles()
-                    .stream()
-                    .map(identifierMapper::identifierCreateTitleDtoToIdentifierTitle)
-                    .peek(t -> t.setIdentifier(identifier))
-                    .toList());
-            log.debug("set {} title(s)", identifier.getTitles().size());
-        }
-        if (data.getDescriptions() != null) {
-            identifier.setDescriptions(data.getDescriptions()
-                    .stream()
-                    .map(identifierMapper::identifierCreateDescriptionDtoToIdentifierDescription)
-                    .peek(d -> d.setIdentifier(identifier))
-                    .toList());
-            log.debug("set {} description(s)", identifier.getDescriptions().size());
-        }
-        identifierRepository.save(identifier);
+        saveIdentifier(identifier, data.getCreators(), data.getRelatedIdentifiers(), data.getTitles(), data.getDescriptions());
         log.info("Created identifier with id {}", identifier.getId());
         log.trace("created identifier {}", identifier);
         identifierIdxRepository.save(identifierMapper.identifierToIdentifierDto(identifier));
@@ -255,21 +218,33 @@ public class IdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional
-    public Identifier update(Long identifierId, IdentifierUpdateDto data) throws IdentifierNotFoundException {
-        /* map */
-        final Identifier old = find(identifierId);
-        final Identifier entity = identifierMapper.identifierUpdateDtoToIdentifier(data);
-        entity.setId(identifierId);
-        entity.setCreator(old.getCreator());
-        entity.getCreators().forEach(c -> c.setIdentifier(entity));
-        /* update */
-        final Identifier identifier = identifierRepository.save(entity);
+    public Identifier update(Long identifierId, IdentifierUpdateDto data, Principal principal, String authorization)
+            throws UserNotFoundException, DatabaseNotFoundException, QueryNotFoundException, RemoteUnavailableException {
+        /* create identifier */
+        final Identifier identifier = identifierMapper.identifierUpdateDtoToIdentifier(data);
+        final User creator = userService.findByUsername(principal.getName());
+        identifier.setCreator(creator);
+        final Database database = databaseService.find(data.getDbid());
+        identifier.setDatabase(database);
+        if (data.getType().equals(IdentifierTypeDto.SUBSET)) {
+            log.debug("identifier describes a subset");
+            final IdentifierCreateDto payload = identifierMapper.identifierUpdateDtoToIdentifierCreateDto(data);
+            final QueryDto query = queryServiceGateway.find(data.getDbid(), payload, authorization);
+            identifier.setQuery(query.getQuery());
+            identifier.setQueryId(query.getId());
+            identifier.setQueryNormalized(query.getQueryNormalized());
+            identifier.setQueryHash(query.getQueryHash());
+            identifier.setExecution(query.getExecution());
+            identifier.setResultNumber(query.getResultNumber());
+            identifier.setResultHash(query.getResultHash());
+        }
+        /* update in metadata database */
+        final Identifier out = saveIdentifier(identifier, data.getCreators(), data.getRelatedIdentifiers(), data.getTitles(), data.getDescriptions());
         log.info("Updated identifier with id {}", identifierId);
-        log.trace("updated identifier {}", identifier);
         /* elastic search */
-        identifierIdxRepository.save(identifierMapper.identifierToIdentifierDto(identifier));
+        identifierIdxRepository.save(identifierMapper.identifierToIdentifierDto(out));
         log.info("Updated identifier with id {} in elastic search", identifierId);
-        return identifier;
+        return out;
     }
 
     @Override
@@ -294,6 +269,47 @@ public class IdentifierServiceImpl implements IdentifierService {
                 .filter(t -> t.getLanguage().equals(LanguageType.EN))
                 .findFirst();
         return optional.orElseGet(() -> titles.get(0));
+    }
+
+    public Identifier saveIdentifier(Identifier identifier,
+                                     List<CreatorCreateDto> creators,
+                                     List<RelatedIdentifierCreateDto> relatedIdentifiers,
+                                     List<IdentifierCreateTitleDto> titles,
+                                     List<IdentifierCreateDescriptionDto> descriptions) {
+        /* create in metadata database */
+        if (creators != null) {
+            identifier.setCreators(null);
+            identifier.setCreators(creators.stream()
+                    .map(identifierMapper::creatorCreateDtoToCreator)
+                    .peek(c -> c.setIdentifier(identifier))
+                    .toList());
+            log.debug("set {} creator(s)", identifier.getCreators().size());
+        }
+        if (relatedIdentifiers != null) {
+            identifier.setRelated(null);
+            identifier.setRelated(relatedIdentifiers.stream()
+                    .map(identifierMapper::relatedIdentifierCreateDtoToRelatedIdentifier)
+                    .peek(r -> r.setIdentifier(identifier))
+                    .toList());
+            log.debug("set {} related identifier(s)", identifier.getRelated().size());
+        }
+        if (titles != null) {
+            identifier.setTitles(null);
+            identifier.setTitles(titles.stream()
+                    .map(identifierMapper::identifierCreateTitleDtoToIdentifierTitle)
+                    .peek(t -> t.setIdentifier(identifier))
+                    .toList());
+            log.debug("set {} title(s)", identifier.getTitles().size());
+        }
+        if (descriptions != null) {
+            identifier.setDescriptions(null);
+            identifier.setDescriptions(descriptions.stream()
+                    .map(identifierMapper::identifierCreateDescriptionDtoToIdentifierDescription)
+                    .peek(d -> d.setIdentifier(identifier))
+                    .toList());
+            log.debug("set {} description(s)", identifier.getDescriptions().size());
+        }
+        return identifierRepository.save(identifier);
     }
 
 }

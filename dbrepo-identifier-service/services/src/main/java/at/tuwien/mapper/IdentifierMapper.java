@@ -27,6 +27,8 @@ public interface IdentifierMapper {
 
     IdentifierDescription identifierCreateDescriptionDtoToIdentifierDescription(IdentifierCreateDescriptionDto data);
 
+    IdentifierCreateDto identifierUpdateDtoToIdentifierCreateDto(IdentifierUpdateDto data);
+
     RelatedIdentifierDto relatedIdentifierToRelatedIdentifierDto(RelatedIdentifier data);
 
     Identifier identifierDtoToIdentifier(IdentifierDto data);

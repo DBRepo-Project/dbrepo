@@ -183,8 +183,10 @@ public class PersistenceEndpoint {
     })
     public ResponseEntity<IdentifierDto> update(@NotNull @PathVariable("id") Long id,
                                                 @NotNull @Valid @RequestBody IdentifierUpdateDto data,
+                                                @NotNull @RequestHeader(name = "Authorization") String authorization,
                                                 @NotNull Principal principal)
-            throws IdentifierNotFoundException, IdentifierRequestException, UserNotFoundException, NotAllowedException {
+            throws IdentifierNotFoundException, IdentifierRequestException, UserNotFoundException, NotAllowedException,
+            QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException {
         log.debug("endpoint update identifier, id={}, data={}", id, data);
         final Identifier identifier = identifierService.find(id);
         final User user = userService.findByUsername(principal.getName());
@@ -201,7 +203,7 @@ public class PersistenceEndpoint {
             log.error("Failed to update identifier: once attached the DOI cannot be changed");
             throw new IdentifierRequestException("Failed to update identifier: once attached the DOI cannot be changed");
         }
-        final IdentifierDto dto = identifierMapper.identifierToIdentifierDto(identifierService.update(id, data));
+        final IdentifierDto dto = identifierMapper.identifierToIdentifierDto(identifierService.update(id, data, principal, authorization));
         log.debug("update identifier resulted in dto={}", dto);
         return ResponseEntity.accepted()
                 .body(dto);

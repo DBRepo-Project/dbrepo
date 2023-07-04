@@ -101,6 +101,7 @@ public class Database implements Serializable {
     })
     private User contact;
 
+    @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumnsOrFormulas({
             @JoinColumnOrFormula(formula = @JoinFormula(value = "'DATABASE'", referencedColumnName = "identifier_type")),

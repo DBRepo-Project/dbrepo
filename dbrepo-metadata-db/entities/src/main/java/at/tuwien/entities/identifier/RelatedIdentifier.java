@@ -4,7 +4,7 @@ import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import jakarta.persistence.*;;
+import jakarta.persistence.*;
 
 @Data
 @Entity
@@ -40,7 +40,7 @@ public class RelatedIdentifier {
     @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
-            @JoinColumn(name = "pid", updatable = false, nullable = false)
+            @JoinColumn(name = "pid", referencedColumnName = "id", updatable = false)
     })
     private Identifier identifier;
 

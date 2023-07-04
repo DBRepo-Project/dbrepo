@@ -4,7 +4,6 @@ import at.tuwien.entities.database.LanguageType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.JdbcTypeCode;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.io.Serializable;
@@ -42,7 +41,7 @@ public class IdentifierTitle implements Serializable {
     @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
-            @JoinColumn(name = "pid", updatable = false, nullable = false)
+            @JoinColumn(name = "pid", referencedColumnName = "id", updatable = false)
     })
     private Identifier identifier;
 

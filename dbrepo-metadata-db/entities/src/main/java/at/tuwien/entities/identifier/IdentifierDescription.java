@@ -41,7 +41,7 @@ public class IdentifierDescription implements Serializable {
     @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
-            @JoinColumn(name = "pid", updatable = false, nullable = false)
+            @JoinColumn(name = "pid", referencedColumnName = "id", updatable = false)
     })
     private Identifier identifier;
 

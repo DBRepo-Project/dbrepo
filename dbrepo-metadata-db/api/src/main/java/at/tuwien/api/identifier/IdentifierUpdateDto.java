@@ -4,7 +4,6 @@ import at.tuwien.api.database.LanguageTypeDto;
 import at.tuwien.api.database.LicenseDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -62,7 +61,7 @@ public class IdentifierUpdateDto {
 
     @NotNull
     @NotEmpty
-    private List<CreatorDto> creators;
+    private List<CreatorCreateDto> creators;
 
     @JsonProperty("related_identifiers")
     private List<RelatedIdentifierCreateDto> relatedIdentifiers;

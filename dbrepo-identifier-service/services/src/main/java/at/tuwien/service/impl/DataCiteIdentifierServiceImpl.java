@@ -153,9 +153,9 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional(rollbackFor = {Exception.class})
-    public Identifier update(Long identifierId, IdentifierUpdateDto data)
-            throws IdentifierNotFoundException, IdentifierRequestException {
-        Identifier identifier = identifierService.update(identifierId, data);
+    public Identifier update(Long identifierId, IdentifierUpdateDto data, Principal principal, String authorization)
+            throws UserNotFoundException, QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException, IdentifierRequestException {
+        Identifier identifier = identifierService.update(identifierId, data, principal, authorization);
         if (identifier.getDoi() == null) {
             return identifier;
         }

@@ -7,6 +7,7 @@ import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.exception.*;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
 import java.util.List;
@@ -107,10 +108,11 @@ public interface IdentifierService {
      *
      * @param identifierId The identifier id.
      * @param data         The metadata.
+     * @param principal    The user principal.
      * @return The updated identifier if successful.
-     * @throws IdentifierNotFoundException TThe identifier was not found in the metadata database or was deleted.
      */
-    Identifier update(Long identifierId, IdentifierUpdateDto data) throws IdentifierNotFoundException, IdentifierRequestException;
+    Identifier update(Long identifierId, IdentifierUpdateDto data, Principal principal, String authorization)
+            throws UserNotFoundException, DatabaseNotFoundException, QueryNotFoundException, RemoteUnavailableException, IdentifierRequestException;
 
     /**
      * Soft-deletes an identifier for a given id in the metadata database. Does not actually remove the entity from the database, but sets it as deleted.

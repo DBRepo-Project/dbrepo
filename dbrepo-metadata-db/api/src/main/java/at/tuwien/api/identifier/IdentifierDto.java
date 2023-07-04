@@ -1,5 +1,6 @@
 package at.tuwien.api.identifier;
 
+import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.LanguageTypeDto;
 import at.tuwien.api.database.LicenseDto;
 import at.tuwien.api.user.UserDto;
@@ -28,11 +29,6 @@ public class IdentifierDto {
 
     private Long id;
 
-    @NotNull
-    @JsonProperty("database_id")
-    @Schema(name = "database id", example = "1")
-    private Long databaseId;
-
     @JsonProperty("query_id")
     @Schema(name = "query id", example = "1")
     private Long queryId;
@@ -55,6 +51,9 @@ public class IdentifierDto {
 
     @JsonProperty("related")
     private List<RelatedIdentifierDto> related;
+
+    @NotNull
+    private DatabaseDto database;
 
     @NotBlank
     @JsonProperty("query_hash")
