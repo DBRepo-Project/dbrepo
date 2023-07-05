@@ -11,6 +11,7 @@ import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -34,6 +35,9 @@ public class Identifier implements Serializable {
     @GenericGenerator(name = "identifiers-sequence", strategy = "increment")
     @Column(updatable = false, nullable = false)
     private Long id;
+
+    @Column(name = "dbid")
+    private transient Long databaseId;
 
     @Column(name = "qid")
     private Long queryId;
