@@ -30,7 +30,7 @@ public class IdentifierDescription implements Serializable {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String description;
 
-    @Column(columnDefinition = "enum('ABSTRACT', 'METHODS', 'SERIESINFORMATION', 'TABLEOFCONTENTS', 'TECHNICALINFO', 'OTHER')")
+    @Column(columnDefinition = "enum('ABSTRACT', 'METHODS', 'SERIES_INFORMATION', 'TABLE_OF_CONTENTS', 'TECHNICAL_INFO', 'OTHER')")
     @Enumerated(EnumType.STRING)
     private DescriptionType descriptionType;
 

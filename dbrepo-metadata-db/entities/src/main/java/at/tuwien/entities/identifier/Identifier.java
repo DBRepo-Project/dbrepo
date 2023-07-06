@@ -11,7 +11,6 @@ import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -37,7 +36,7 @@ public class Identifier implements Serializable {
     private Long id;
 
     @Column(name = "dbid")
-    private transient Long databaseId;
+    private Long databaseId;
 
     @Column(name = "qid")
     private Long queryId;
@@ -99,12 +98,6 @@ public class Identifier implements Serializable {
     @Column(nullable = false, columnDefinition = "enum('EVERYONE', 'SELF')")
     @Enumerated(EnumType.STRING)
     private VisibilityType visibility;
-
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
-    @JoinColumns({
-            @JoinColumn(name = "dbid", referencedColumnName = "id", nullable = false)
-    })
-    private Database database;
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "identifier")
     private List<RelatedIdentifier> related;
