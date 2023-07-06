@@ -99,10 +99,9 @@ public class Identifier implements Serializable {
     @Enumerated(EnumType.STRING)
     private VisibilityType visibility;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
-    @JoinColumnsOrFormulas({
-            @JoinColumnOrFormula(formula = @JoinFormula(value = "'DATABASE'", referencedColumnName = "identifier_type")),
-            @JoinColumnOrFormula(column = @JoinColumn(name = "dbid", referencedColumnName = "id", insertable = false, updatable = false)),
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumns({
+            @JoinColumn(name = "dbid", referencedColumnName = "id", insertable = false, updatable = false),
     })
     private Database database;
 
