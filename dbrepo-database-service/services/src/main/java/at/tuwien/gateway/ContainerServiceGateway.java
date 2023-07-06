@@ -6,9 +6,11 @@ import at.tuwien.exception.ContainerNotFoundException;
 public interface ContainerServiceGateway {
 
     /**
-     * @param id
-     * @return
-     * @throws ContainerNotFoundException
+     * Finds a container by given id.
+     *
+     * @param id The container id.
+     * @return The container.
+     * @throws ContainerNotFoundException The container was not found.
      */
     ContainerDto find(Long id) throws ContainerNotFoundException;
 }

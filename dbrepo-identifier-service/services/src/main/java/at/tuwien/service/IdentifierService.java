@@ -7,7 +7,6 @@ import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.exception.*;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
 import java.util.List;
@@ -31,9 +30,8 @@ public interface IdentifierService {
      * @param databaseId The database id.
      * @param queryId    The query id.
      * @return The identifier, if found.
-     * @throws IdentifierNotFoundException No identifier with the query id was found.
      */
-    Identifier find(Long databaseId, Long queryId) throws IdentifierNotFoundException;
+    List<Identifier> findByDatabaseIdAndQueryId(Long databaseId, Long queryId);
 
     /**
      * Finds all identifiers

@@ -61,7 +61,7 @@ public class IdentifierServiceImpl implements IdentifierService {
     @Transactional(readOnly = true)
     public List<Identifier> findAll(Long databaseId, Long queryId) throws IdentifierNotFoundException {
         if (databaseId != null && queryId != null) {
-            return List.of(find(databaseId, queryId));
+            return findByDatabaseIdAndQueryId(databaseId, queryId);
         } else if (databaseId == null && queryId != null) {
             return identifierRepository.findByQueryId(queryId);
         } else if (databaseId != null && queryId == null) {
@@ -72,13 +72,8 @@ public class IdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional(readOnly = true)
-    public Identifier find(Long databaseId, Long queryId) throws IdentifierNotFoundException {
-        final Optional<Identifier> identifier = identifierRepository.findByDatabaseIdAndQueryId(databaseId, queryId);
-        if (identifier.isEmpty()) {
-            log.error("Failed to find identifier with query id {}", queryId);
-            throw new IdentifierNotFoundException("Failed to find identifier");
-        }
-        return identifier.get();
+    public List<Identifier> findByDatabaseIdAndQueryId(Long databaseId, Long queryId) {
+        return identifierRepository.findByDatabaseIdAndQueryId(databaseId, queryId);
     }
 
     @Override
@@ -196,6 +191,7 @@ public class IdentifierServiceImpl implements IdentifierService {
             log.error("Failed to load template: {}", e.getMessage());
             throw new IdentifierRequestException("Failed to load template", e);
         }
+        log.trace("mapped bibliography {}", body);
         return body;
     }
 

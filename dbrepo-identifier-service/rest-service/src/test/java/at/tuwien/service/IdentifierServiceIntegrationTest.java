@@ -2,6 +2,7 @@ package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.query.QueryDto;
+import at.tuwien.api.identifier.IdentifierCreateDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.entities.identifier.Identifier;
@@ -186,7 +187,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void update_succeeds() throws UserNotFoundException, QueryNotFoundException, DatabaseNotFoundException,
+    public void update_database_succeeds() throws UserNotFoundException, QueryNotFoundException, DatabaseNotFoundException,
             RemoteUnavailableException, IdentifierRequestException {
 
         /* mock */
@@ -203,6 +204,28 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
         assertEquals(IDENTIFIER_1_PUBLICATION_YEAR, response.getPublicationYear());
         assertEquals(IDENTIFIER_1_PUBLICATION_MONTH, response.getPublicationMonth());
         assertEquals(IDENTIFIER_1_PUBLICATION_DAY, response.getPublicationDay());
+    }
+
+    @Test
+    public void update_subset_succeeds() throws UserNotFoundException, QueryNotFoundException,
+            DatabaseNotFoundException, RemoteUnavailableException, IdentifierRequestException {
+
+        /* mock */
+        identifierRepository.save(IDENTIFIER_1);
+        identifierRepository.save(IDENTIFIER_2);
+        when(identifierIdxRepository.save(any(IdentifierDto.class)))
+                .thenReturn(IDENTIFIER_2_DTO);
+        when(queryServiceGateway.find(eq(IDENTIFIER_2_DATABASE_ID), any(IdentifierCreateDto.class), anyString()))
+                .thenReturn(QUERY_2_DTO);
+
+        /* test */
+        final Identifier response = identifierService.update(IDENTIFIER_2_ID, IDENTIFIER_2_DTO_UPDATE_REQUEST, USER_2_PRINCIPAL, "Bearer abc");
+        assertEquals(IDENTIFIER_2_ID, response.getId());
+        assertEquals(IDENTIFIER_2_DATABASE_ID, response.getDatabase().getId());
+        assertEquals(1, response.getTitles().size());
+        assertEquals(IDENTIFIER_2_PUBLICATION_YEAR, response.getPublicationYear());
+        assertEquals(IDENTIFIER_2_PUBLICATION_MONTH, response.getPublicationMonth());
+        assertEquals(IDENTIFIER_2_PUBLICATION_DAY, response.getPublicationDay());
     }
 
     @Test

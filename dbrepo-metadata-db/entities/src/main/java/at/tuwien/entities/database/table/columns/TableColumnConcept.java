@@ -1,6 +1,7 @@
 package at.tuwien.entities.database.table.columns;
 
 import lombok.*;
+import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -19,7 +20,9 @@ import java.util.List;
 @ToString
 @EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@jakarta.persistence.Table(name = "mdb_concepts")
+@jakarta.persistence.Table(name = "mdb_concepts", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"uri"})
+})
 @NamedQueries({
         @NamedQuery(name = "TableColumnConcept.findById", query = "select c from TableColumnConcept c where c.uri = ?1")
 })
@@ -27,6 +30,11 @@ public class TableColumnConcept {
 
     @Id
     @EqualsAndHashCode.Include
+    @GeneratedValue(generator = "units-sequence")
+    @GenericGenerator(name = "units-sequence", strategy = "increment")
+    @Column(updatable = false, nullable = false)
+    private Long id;
+
     @Column(nullable = false, columnDefinition = "TEXT")
     private String uri;
 
@@ -48,6 +56,6 @@ public class TableColumnConcept {
                     @JoinColumn(name = "tid", referencedColumnName = "tid", insertable = false, updatable = false),
                     @JoinColumn(name = "cdbid", referencedColumnName = "cdbid", insertable = false, updatable = false)
             },
-            joinColumns = @JoinColumn(name = "uri", referencedColumnName = "uri"))
+            joinColumns = @JoinColumn(name = "id", referencedColumnName = "id"))
     private List<TableColumn> columns;
 }

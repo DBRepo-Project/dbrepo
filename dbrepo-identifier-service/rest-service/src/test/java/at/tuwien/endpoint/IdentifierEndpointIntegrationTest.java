@@ -177,22 +177,14 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    @Transactional
     @WithMockUser(username = USER_1_USERNAME)
     public void list_databaseIdAndType_succeeds() {
 
         /* mock */
-        containerRepository.save(CONTAINER_3_SIMPLE);
-        containerRepository.save(CONTAINER_4_SIMPLE);
-        databaseRepository.save(DATABASE_3_SIMPLE);
-        databaseRepository.save(DATABASE_4_SIMPLE);
         identifierRepository.save(IDENTIFIER_1);
-        identifierRepository.save(IDENTIFIER_2);
-        identifierRepository.save(IDENTIFIER_3);
-        identifierRepository.save(IDENTIFIER_4);
 
         /* test */
-        final List<IdentifierDto> response = generic_list(DATABASE_4_ID, null, IdentifierTypeDto.DATABASE);
+        final List<IdentifierDto> response = generic_list(DATABASE_1_ID, null, IdentifierTypeDto.DATABASE);
         assertEquals(1, response.size());
         final IdentifierDto identifier = response.get(0);
         assertEquals(0, identifier.getTitles().size());

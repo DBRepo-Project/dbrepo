@@ -2,6 +2,7 @@ package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.query.QueryDto;
+import at.tuwien.api.identifier.BibliographyTypeDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.entities.identifier.Identifier;
@@ -113,7 +114,7 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
 
         /* mock */
         when(identifierRepository.findByDatabaseIdAndQueryId(DATABASE_1_ID, QUERY_1_ID))
-                .thenReturn(Optional.of(IDENTIFIER_1));
+                .thenReturn(List.of(IDENTIFIER_1));
 
         /* test */
         final List<Identifier> response = identifierService.findAll(DATABASE_1_ID, QUERY_1_ID);
@@ -134,28 +135,29 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void find2_succeeds() throws IdentifierNotFoundException {
+    public void findByDatabaseIdAndQueryId_succeeds() {
 
         /* mock */
         when(identifierRepository.findByDatabaseIdAndQueryId(DATABASE_1_ID, QUERY_1_ID))
-                .thenReturn(Optional.of(IDENTIFIER_1));
+                .thenReturn(List.of(IDENTIFIER_1));
 
         /* test */
-        final Identifier response = identifierService.find(DATABASE_1_ID, QUERY_1_ID);
-        assertEquals(IDENTIFIER_1, response);
+        final List<Identifier> response = identifierService.findByDatabaseIdAndQueryId(DATABASE_1_ID, QUERY_1_ID);
+        assertEquals(1, response.size());
+        final Identifier identifier0 = response.get(0);
+        assertEquals(IDENTIFIER_1_ID, identifier0.getId());
     }
 
     @Test
-    public void find2_fails() {
+    public void findByDatabaseIdAndQueryId_fails() {
 
         /* mock */
         when(identifierRepository.findByDatabaseIdAndQueryId(DATABASE_1_ID, QUERY_1_ID))
-                .thenReturn(Optional.empty());
+                .thenReturn(List.of());
 
         /* test */
-        assertThrows(IdentifierNotFoundException.class, () -> {
-            identifierService.find(DATABASE_1_ID, QUERY_1_ID);
-        });
+        final List<Identifier> response = identifierService.findByDatabaseIdAndQueryId(DATABASE_1_ID, QUERY_1_ID);
+        assertEquals(0, response.size());
     }
 
     @Test
@@ -214,8 +216,7 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void create_existsDatabase_fails()
-            throws DatabaseNotFoundException {
+    public void create_existsDatabase_fails() throws DatabaseNotFoundException {
         final String bearer = "Bearer abcxyz";
 
         /* mock */
@@ -229,6 +230,48 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
         assertThrows(IdentifierAlreadyExistsException.class, () -> {
             identifierService.create(IDENTIFIER_1_DTO_REQUEST, USER_1_PRINCIPAL, bearer);
         });
+    }
+
+    @Test
+    public void exportBibliography_apa_succeeds() throws IdentifierNotFoundException, IdentifierRequestException {
+
+        /* mock */
+        when(identifierRepository.findById(IDENTIFIER_1_ID))
+                .thenReturn(Optional.of(IDENTIFIER_1));
+
+        /* test */
+        final String response = identifierService.exportBibliography(IDENTIFIER_1_ID, BibliographyTypeDto.APA);
+        assertTrue(response.contains(IDENTIFIER_1_TITLE_1.getTitle()));
+        assertTrue(response.contains("" + IDENTIFIER_1_PUBLICATION_YEAR));
+        assertTrue(response.contains(IDENTIFIER_1_CREATOR_1.getLastname()));
+    }
+
+    @Test
+    public void exportBibliography_bibtex_succeeds() throws IdentifierNotFoundException, IdentifierRequestException {
+
+        /* mock */
+        when(identifierRepository.findById(IDENTIFIER_1_ID))
+                .thenReturn(Optional.of(IDENTIFIER_1));
+
+        /* test */
+        final String response = identifierService.exportBibliography(IDENTIFIER_1_ID, BibliographyTypeDto.BIBTEX);
+        assertTrue(response.contains(IDENTIFIER_1_TITLE_1.getTitle()));
+        assertTrue(response.contains("" + IDENTIFIER_1_PUBLICATION_YEAR));
+        assertTrue(response.contains(IDENTIFIER_1_CREATOR_1.getLastname()));
+    }
+
+    @Test
+    public void exportBibliography_ieee_succeeds() throws IdentifierNotFoundException, IdentifierRequestException {
+
+        /* mock */
+        when(identifierRepository.findById(IDENTIFIER_1_ID))
+                .thenReturn(Optional.of(IDENTIFIER_1));
+
+        /* test */
+        final String response = identifierService.exportBibliography(IDENTIFIER_1_ID, BibliographyTypeDto.IEEE);
+        assertTrue(response.contains(IDENTIFIER_1_TITLE_1.getTitle()));
+        assertTrue(response.contains("" + IDENTIFIER_1_PUBLICATION_YEAR));
+        assertTrue(response.contains(IDENTIFIER_1_CREATOR_1.getLastname()));
     }
 
     @Test

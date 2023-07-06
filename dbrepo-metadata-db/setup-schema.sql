@@ -259,22 +259,26 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_constraints_checks`
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_concepts`
 (
+    id          bigint       NOT NULL AUTO_INCREMENT,
     uri         text         not null,
     name        VARCHAR(255) null,
     description TEXT         null,
     created     timestamp    NOT NULL DEFAULT NOW(),
     created_by  character varying(255),
-    PRIMARY KEY (uri(200))
+    PRIMARY KEY (id),
+    UNIQUE (uri)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_units`
 (
+    id          bigint       NOT NULL AUTO_INCREMENT,
     uri         text         not null,
     name        VARCHAR(255) null,
     description TEXT         null,
     created     timestamp    NOT NULL DEFAULT NOW(),
     created_by  character varying(255),
-    PRIMARY KEY (uri(200))
+    PRIMARY KEY (id),
+    UNIQUE (uri)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns_concepts`
@@ -282,7 +286,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns_concepts`
     cDBID   bigint    NOT NULL,
     tID     bigint    NOT NULL,
     cID     bigint    NOT NULL,
-    uri     text      NOT NULL,
+    id      bigint    NOT NULL,
     created timestamp NOT NULL DEFAULT NOW(),
     PRIMARY KEY (cDBID, tID, cID),
     FOREIGN KEY (cDBID, tID, cID) REFERENCES mdb_columns (cDBID, tID, ID)
@@ -293,7 +297,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns_units`
     cDBID   bigint    NOT NULL,
     tID     bigint    NOT NULL,
     cID     bigint    NOT NULL,
-    uri     text      NOT NULL,
+    id      bigint    NOT NULL,
     created timestamp NOT NULL DEFAULT NOW(),
     PRIMARY KEY (cDBID, tID, cID),
     FOREIGN KEY (cDBID, tID, cID) REFERENCES mdb_columns (cDBID, tID, ID)

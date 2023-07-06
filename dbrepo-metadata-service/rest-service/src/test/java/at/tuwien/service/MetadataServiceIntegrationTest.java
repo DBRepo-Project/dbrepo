@@ -1,6 +1,7 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
+import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.oaipmh.OaiErrorType;
 import at.tuwien.oaipmh.OaiListIdentifiersParameters;
 import at.tuwien.oaipmh.OaiRecordParameters;
@@ -14,6 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -97,6 +101,7 @@ public class MetadataServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
+    @Transactional
     public void getRecord_succeeds() throws IdentifierNotFoundException {
         final OaiRecordParameters parameters = new OaiRecordParameters();
         parameters.setIdentifier(Long.toString(1L));

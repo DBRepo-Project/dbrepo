@@ -8,9 +8,6 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.JoinColumnOrFormula;
-import org.hibernate.annotations.JoinColumnsOrFormulas;
-import org.hibernate.annotations.JoinFormula;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -29,6 +26,11 @@ import java.util.List;
 @jakarta.persistence.Table(name = "mdb_identifiers", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"qid", "dbid"})
 })
+@NamedQueries({
+        @NamedQuery(name = "Identifier.findByDatabaseId", query = "select i from Identifier i where i.database.id = ?1"),
+        @NamedQuery(name = "Identifier.findByQueryId", query = "select i from Identifier i where i.queryId = ?1"),
+        @NamedQuery(name = "Identifier.findByDatabaseIdAndQueryId", query = "select i from Identifier i where i.database.id = ?1 and i.queryId = ?2"),
+})
 public class Identifier implements Serializable {
 
     @Id
@@ -37,6 +39,9 @@ public class Identifier implements Serializable {
     @GenericGenerator(name = "identifiers-sequence", strategy = "increment")
     @Column(updatable = false, nullable = false)
     private Long id;
+
+    @Column(name = "dbid")
+    private Long databaseId;
 
     @Column(name = "qid")
     private Long queryId;
@@ -99,6 +104,7 @@ public class Identifier implements Serializable {
     @Enumerated(EnumType.STRING)
     private VisibilityType visibility;
 
+    @org.springframework.data.annotation.Transient
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumns({
             @JoinColumn(name = "dbid", referencedColumnName = "id", insertable = false, updatable = false),

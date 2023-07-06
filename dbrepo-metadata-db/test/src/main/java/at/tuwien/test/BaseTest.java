@@ -250,6 +250,7 @@ public abstract class BaseTest {
     public final static String USER_1_AFFILIATION = "TU Graz";
     public final static String USER_1_ORCID = "000000034216302X";
     public final static String USER_1_ORCID_UNCOMPRESSED = "0000-0003-4216-302X";
+    public final static String USER_1_ORCID_URL = "https://orcid.org/" + USER_1_ORCID_UNCOMPRESSED;
     public final static String USER_1_TITLES_BEFORE = "Dr.";
     public final static String USER_1_TITLES_AFTER = "MSc BSc";
     public final static Boolean USER_1_VERIFIED = false;
@@ -386,6 +387,7 @@ public abstract class BaseTest {
     public final static String USER_2_AFFILIATION = "TU Wien";
     public final static String USER_2_ORCID = "0000000292726225";
     public final static String USER_2_ORCID_UNCOMPRESSED = "0000-0002-9272-6225";
+    public final static String USER_2_ORCID_URL = "https://orcid.org/" + USER_2_ORCID_UNCOMPRESSED;
     public final static String USER_2_PASSWORD = "s3cr3t1nf0rm4t10n";
     public final static String USER_2_DATABASE_PASSWORD = "*9AA70A8B0EEFAFCB5BED5BDEF6EE264D5DA915AE" /* junit2 */;
     public final static Boolean USER_2_VERIFIED = true;
@@ -5051,6 +5053,7 @@ public abstract class BaseTest {
 
     public final static Identifier IDENTIFIER_1 = Identifier.builder()
             .id(IDENTIFIER_1_ID)
+            .databaseId(DATABASE_1_ID)
             .queryId(IDENTIFIER_1_QUERY_ID)
             .titles(List.of(IDENTIFIER_1_TITLE_1))
             .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1))
@@ -5075,6 +5078,7 @@ public abstract class BaseTest {
 
     public final static Identifier IDENTIFIER_1_SIMPLE = Identifier.builder()
             .id(IDENTIFIER_1_ID)
+            .databaseId(DATABASE_1_ID)
             .queryId(IDENTIFIER_1_QUERY_ID)
             .descriptions(List.of() /* for jpa */)
             .titles(List.of() /* for jpa */)
@@ -5099,6 +5103,7 @@ public abstract class BaseTest {
 
     public final static Identifier IDENTIFIER_1_WITH_DOI = Identifier.builder()
             .id(IDENTIFIER_1_ID)
+            .databaseId(DATABASE_1_ID)
             .queryId(IDENTIFIER_1_QUERY_ID)
             .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1))
             .titles(List.of(IDENTIFIER_1_TITLE_1))
@@ -5123,6 +5128,7 @@ public abstract class BaseTest {
 
     public final static IdentifierDto IDENTIFIER_1_DTO = IdentifierDto.builder()
             .id(IDENTIFIER_1_ID)
+            .databaseId(DATABASE_1_ID)
             .queryId(IDENTIFIER_1_QUERY_ID)
             .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_DTO))
             .titles(List.of(IDENTIFIER_1_TITLE_1_DTO))
@@ -5147,6 +5153,7 @@ public abstract class BaseTest {
 
     public final static IdentifierDto IDENTIFIER_1_WITH_DOI_DTO = IdentifierDto.builder()
             .id(IDENTIFIER_1_ID)
+            .databaseId(DATABASE_1_ID)
             .queryId(IDENTIFIER_1_QUERY_ID)
             .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_DTO))
             .titles(List.of(IDENTIFIER_1_TITLE_1_DTO))
@@ -5332,6 +5339,7 @@ public abstract class BaseTest {
 
     public final static Identifier IDENTIFIER_2 = Identifier.builder()
             .id(IDENTIFIER_2_ID)
+            .databaseId(DATABASE_2_ID)
             .queryId(IDENTIFIER_2_QUERY_ID)
             .descriptions(List.of(IDENTIFIER_2_DESCRIPTION_1))
             .titles(List.of(IDENTIFIER_2_TITLE_1))
@@ -5357,6 +5365,7 @@ public abstract class BaseTest {
 
     public final static Identifier IDENTIFIER_2_SIMPLE = Identifier.builder()
             .id(IDENTIFIER_2_ID)
+            .databaseId(DATABASE_2_ID)
             .queryId(IDENTIFIER_2_QUERY_ID)
             .descriptions(List.of() /* for jpa */)
             .titles(List.of() /* for jpa */)
@@ -5382,6 +5391,7 @@ public abstract class BaseTest {
 
     public final static IdentifierDto IDENTIFIER_2_DTO = IdentifierDto.builder()
             .id(IDENTIFIER_2_ID)
+            .databaseId(DATABASE_2_ID)
             .queryId(IDENTIFIER_2_QUERY_ID)
             .descriptions(List.of(IDENTIFIER_2_DESCRIPTION_1_DTO))
             .titles(List.of(IDENTIFIER_2_TITLE_1_DTO))
@@ -5407,6 +5417,7 @@ public abstract class BaseTest {
 
     public final static IdentifierDto IDENTIFIER_1_MODIFY_DTO = IdentifierDto.builder()
             .id(IDENTIFIER_1_ID)
+            .databaseId(DATABASE_2_ID)
             .queryId(IDENTIFIER_1_QUERY_ID)
             .database(DATABASE_1_DTO)
             .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_DTO_MODIFY))
@@ -5705,6 +5716,7 @@ public abstract class BaseTest {
 
     public final static Identifier IDENTIFIER_3_SIMPLE = Identifier.builder()
             .id(IDENTIFIER_3_ID)
+            .databaseId(DATABASE_3_ID)
             .queryId(IDENTIFIER_3_QUERY_ID)
             .descriptions(List.of() /* for jpa */)
             .titles(List.of() /* for jpa */)
@@ -5730,6 +5742,7 @@ public abstract class BaseTest {
 
     public final static IdentifierDto IDENTIFIER_3_DTO = IdentifierDto.builder()
             .id(IDENTIFIER_3_ID)
+            .databaseId(DATABASE_3_ID)
             .queryId(IDENTIFIER_3_QUERY_ID)
             .descriptions(List.of(IDENTIFIER_3_DESCRIPTION_1_DTO))
             .titles(List.of(IDENTIFIER_3_TITLE_1_DTO))
@@ -5832,6 +5845,7 @@ public abstract class BaseTest {
 
     public final static Identifier IDENTIFIER_4 = Identifier.builder()
             .id(IDENTIFIER_4_ID)
+            .databaseId(DATABASE_4_ID)
             .descriptions(List.of())
             .titles(List.of())
             .doi(IDENTIFIER_4_DOI)
@@ -5856,6 +5870,7 @@ public abstract class BaseTest {
 
     public final static Identifier IDENTIFIER_4_SIMPLE = Identifier.builder()
             .id(IDENTIFIER_4_ID)
+            .databaseId(DATABASE_4_ID)
             .descriptions(List.of() /* for jpa */)
             .titles(List.of() /* for jpa */)
             .doi(IDENTIFIER_4_DOI)
@@ -5880,6 +5895,7 @@ public abstract class BaseTest {
 
     public final static IdentifierDto IDENTIFIER_4_DTO = IdentifierDto.builder()
             .id(IDENTIFIER_4_ID)
+            .databaseId(DATABASE_4_ID)
             .descriptions(List.of())
             .titles(List.of())
             .doi(IDENTIFIER_4_DOI)

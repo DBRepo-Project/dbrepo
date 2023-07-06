@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
@@ -24,21 +23,18 @@ public class IdentifierBriefDto {
     @NotNull
     private Long id;
 
-    @NotNull
     @JsonProperty("database_id")
-    @Schema(name = "database id", example = "1")
+    @Schema(example = "1")
     private Long databaseId;
 
     @JsonProperty("query_id")
-    @Schema(name = "query id", example = "1")
+    @Schema(example = "1")
     private Long queryId;
-
-    @NotBlank
-    @Schema(example = "Airquality Stephansplatz, Vienna, Austria")
-    private String title;
 
     @NotNull
     private IdentifierTypeDto type;
+
+    private List<IdentifierTitleDto> titles;
 
     @Schema(example = "10.1038/nphys1170")
     private String doi;

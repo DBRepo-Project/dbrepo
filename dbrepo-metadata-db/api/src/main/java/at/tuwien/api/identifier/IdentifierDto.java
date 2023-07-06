@@ -29,8 +29,12 @@ public class IdentifierDto {
 
     private Long id;
 
+    @JsonProperty("database_id")
+    @Schema(example = "1")
+    private Long databaseId;
+
     @JsonProperty("query_id")
-    @Schema(name = "query id", example = "1")
+    @Schema(example = "1")
     private Long queryId;
 
     @NotNull

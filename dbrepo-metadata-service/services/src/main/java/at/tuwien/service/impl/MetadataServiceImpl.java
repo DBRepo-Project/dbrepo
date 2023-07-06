@@ -79,7 +79,9 @@ public class MetadataServiceImpl implements MetadataService {
         context.setVariable("titles", identifier.getTitles());
         context.setVariable("descriptions", identifier.getDescriptions());
         context.setVariable("publisher", identifier.getPublisher());
-        return parseResponse(parameters.getParametersString(), templateEngine.process("record.xml", context));
+        final String body = parseResponse(parameters.getParametersString(), templateEngine.process("record.xml", context));
+        log.trace("mapped body {}", body);
+        return body;
     }
 
     @Override

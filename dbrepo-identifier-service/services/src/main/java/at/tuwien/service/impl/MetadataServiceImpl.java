@@ -1,5 +1,6 @@
 package at.tuwien.service.impl;
 
+import at.tuwien.api.orcid.OrcidDto;
 import at.tuwien.api.ror.RorDto;
 import at.tuwien.api.user.external.ExternalMetadataDto;
 import at.tuwien.exception.OrcidNotFoundException;
@@ -32,7 +33,8 @@ public class MetadataServiceImpl implements MetadataService {
     public ExternalMetadataDto findByUrl(String url) throws OrcidNotFoundException, RorNotFoundException,
             RemoteUnavailableException {
         if (url.contains("orcid.org")) {
-            return externalMapper.orcidDtoToExternalMetadataDto(orcidGateway.findByUrl(url));
+            final OrcidDto orcidDto = orcidGateway.findByUrl(url);
+            return externalMapper.orcidDtoToExternalMetadataDto(orcidDto);
         } else if (url.contains("ror.org")) {
             final int idx = url.lastIndexOf('/');
             if (idx + 1 >= url.length()) {
@@ -40,10 +42,11 @@ public class MetadataServiceImpl implements MetadataService {
                 throw new RorNotFoundException("Failed to find metadata from ROR URL: too short");
             }
             final String id = url.substring(idx + 1);
-            return externalMapper.rorDtoToExternalMetadataDto(rorGateway.findById(id));
+            final RorDto rorDto = rorGateway.findById(id);
+            return externalMapper.rorDtoToExternalMetadataDto(rorDto);
         }
-        log.error("Failed to find metadata: unsupported identifier");
-        throw new RemoteUnavailableException("Failed to find metadata: unsupported identifier");
+        log.error("Failed to find metadata: unsupported identifier {}", url);
+        throw new RemoteUnavailableException("Failed to find metadata: unsupported identifier " + url);
     }
 
 }

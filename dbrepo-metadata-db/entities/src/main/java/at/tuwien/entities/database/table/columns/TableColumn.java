@@ -117,7 +117,7 @@ public class TableColumn implements Comparable<TableColumn> {
                     @JoinColumn(name = "tid", referencedColumnName = "tid", insertable = false, updatable = false),
                     @JoinColumn(name = "cdbid", referencedColumnName = "cdbid", insertable = false, updatable = false)
             },
-            inverseJoinColumns = @JoinColumn(name = "uri", referencedColumnName = "uri"))
+            inverseJoinColumns = @JoinColumn(name = "id", referencedColumnName = "id"))
     private TableColumnConcept concept;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
@@ -127,7 +127,7 @@ public class TableColumn implements Comparable<TableColumn> {
                     @JoinColumn(name = "tid", referencedColumnName = "tid", insertable = false, updatable = false),
                     @JoinColumn(name = "cdbid", referencedColumnName = "cdbid", insertable = false, updatable = false)
             },
-            inverseJoinColumns = @JoinColumn(name = "uri", referencedColumnName = "uri"))
+            inverseJoinColumns = @JoinColumn(name = "id", referencedColumnName = "id"))
     private TableColumnUnit unit;
 
     @LastModifiedDate

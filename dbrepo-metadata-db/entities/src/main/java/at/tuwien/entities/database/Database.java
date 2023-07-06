@@ -102,7 +102,7 @@ public class Database implements Serializable {
     private User contact;
 
     @ToString.Exclude
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST, mappedBy = "database")
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     private Identifier identifier;
 
     @ToString.Exclude
