@@ -8,6 +8,9 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.JoinColumnOrFormula;
+import org.hibernate.annotations.JoinColumnsOrFormulas;
+import org.hibernate.annotations.JoinFormula;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -34,9 +37,6 @@ public class Identifier implements Serializable {
     @GenericGenerator(name = "identifiers-sequence", strategy = "increment")
     @Column(updatable = false, nullable = false)
     private Long id;
-
-    @Column(name = "dbid")
-    private Long databaseId;
 
     @Column(name = "qid")
     private Long queryId;
@@ -98,6 +98,13 @@ public class Identifier implements Serializable {
     @Column(nullable = false, columnDefinition = "enum('EVERYONE', 'SELF')")
     @Enumerated(EnumType.STRING)
     private VisibilityType visibility;
+
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @JoinColumnsOrFormulas({
+            @JoinColumnOrFormula(formula = @JoinFormula(value = "'DATABASE'", referencedColumnName = "identifier_type")),
+            @JoinColumnOrFormula(column = @JoinColumn(name = "dbid", referencedColumnName = "id", insertable = false, updatable = false)),
+    })
+    private Database database;
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "identifier")
     private List<RelatedIdentifier> related;
