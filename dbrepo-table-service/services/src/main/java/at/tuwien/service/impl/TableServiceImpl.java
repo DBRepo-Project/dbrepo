@@ -37,7 +37,6 @@ public class TableServiceImpl extends HibernateConnector implements TableService
     private final DatabaseService databaseService;
     private final SemanticService semanticService;
     private final TableRepository tableRepository;
-    private final ContainerService containerService;
     private final TableIdxRepository tableIdxRepository;
     private final TableColumnRepository tableColumnRepository;
     private final TableColumnIdxRepository tableColumnIdxRepository;
@@ -45,15 +44,13 @@ public class TableServiceImpl extends HibernateConnector implements TableService
     @Autowired
     public TableServiceImpl(TableMapper tableMapper, UserService userService, SemanticService semanticService,
                             TableRepository tableRepository, DatabaseService databaseService,
-                            ContainerService containerService, TableIdxRepository tableIdxRepository,
-                            at.tuwien.repository.mdb.TableColumnRepository tableColumnRepository,
+                            TableIdxRepository tableIdxRepository, TableColumnRepository tableColumnRepository,
                             TableColumnIdxRepository tableColumnIdxRepository) {
         this.tableMapper = tableMapper;
         this.userService = userService;
         this.semanticService = semanticService;
         this.tableRepository = tableRepository;
         this.databaseService = databaseService;
-        this.containerService = containerService;
         this.tableIdxRepository = tableIdxRepository;
         this.tableColumnRepository = tableColumnRepository;
         this.tableColumnIdxRepository = tableColumnIdxRepository;
@@ -72,7 +69,7 @@ public class TableServiceImpl extends HibernateConnector implements TableService
     @Transactional
     public void deleteTable(Long databaseId, Long tableId)
             throws TableNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
-            TableMalformedException, QueryMalformedException, ContainerNotFoundException {
+            TableMalformedException, QueryMalformedException {
         /* find */
         final Database database = databaseService.find(databaseId);
         final Table table = findById(databaseId, tableId);
@@ -203,8 +200,8 @@ public class TableServiceImpl extends HibernateConnector implements TableService
     @Transactional
     public TableColumn update(Long databaseId, Long tableId, Long columnId,
                               ColumnSemanticsUpdateDto updateDto, String authorization)
-            throws TableNotFoundException, DatabaseNotFoundException, ContainerNotFoundException,
-            TableMalformedException, SemanticEntityNotFoundException {
+            throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
+            SemanticEntityNotFoundException {
         final Table table = findById(databaseId, tableId);
         final TableColumn column = findColumn(table, columnId);
         /* assign */

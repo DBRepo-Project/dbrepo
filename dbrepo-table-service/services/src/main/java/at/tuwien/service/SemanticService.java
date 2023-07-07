@@ -9,7 +9,7 @@ import at.tuwien.exception.UnitNotFoundException;
 public interface SemanticService {
 
     /**
-     * Finds a ColumnConcept with given uri
+     * Finds a ColumnConcept with given uri.
      *
      * @param uri The uri.
      * @return The concept, if successful.
@@ -18,7 +18,7 @@ public interface SemanticService {
     TableColumnConcept findConcept(String uri) throws ConceptNotFoundException;
 
     /**
-     * Finds a unit with given uri
+     * Finds a unit with given uri.
      *
      * @param uri The uri.
      * @return The unit, if successful.
@@ -26,7 +26,23 @@ public interface SemanticService {
      */
     TableColumnUnit findUnit(String uri) throws UnitNotFoundException;
 
+    /**
+     * Saves a concept with uri and authorization information for retrieving information from the semantics service.
+     *
+     * @param uri           The uri.
+     * @param authorization The authorization information.
+     * @return The saved column concept.
+     * @throws SemanticEntityNotFoundException The semantic information could not be found.
+     */
     TableColumnConcept saveConcept(String uri, String authorization) throws SemanticEntityNotFoundException;
 
+    /**
+     * Saves a unit with uri and authorization information for retrieving information from the semantics service.
+     *
+     * @param uri           The uri.
+     * @param authorization The authorization information.
+     * @return The saved column unit.
+     * @throws SemanticEntityNotFoundException The semantic information could not be found.
+     */
     TableColumnUnit saveUnit(String uri, String authorization) throws SemanticEntityNotFoundException;
 }

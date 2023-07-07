@@ -216,16 +216,9 @@
       type="query"
       class="mt-0 mb-0" />
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
-    <v-dialog
-      v-model="persistQueryDialog"
-      persistent
-      max-width="860">
-      <Persist @close="closeDialog" />
-    </v-dialog>
   </div>
 </template>
 <script>
-import Persist from '@/components/dialogs/Persist.vue'
 import Citation from '@/components/identifier/Citation.vue'
 import Banner from '@/components/identifier/Banner.vue'
 import DownloadButton from '@/components/identifier/DownloadButton.vue'
@@ -236,7 +229,6 @@ import UserUtils from '@/api/user.utils'
 export default {
   name: 'QueryShow',
   components: {
-    Persist,
     Citation,
     Banner,
     DownloadButton

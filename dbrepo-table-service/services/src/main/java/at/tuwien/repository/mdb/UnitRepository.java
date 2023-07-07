@@ -7,8 +7,14 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface UnitRepository extends JpaRepository<TableColumnUnit, String> {
+public interface UnitRepository extends JpaRepository<TableColumnUnit, Long> {
 
-    Optional<TableColumnUnit> findById(String id);
+    /**
+     * Finds a semantic unit by URI.
+     *
+     * @param uri The URI.
+     * @return Optional semantic unit that matches this filter.
+     */
+    Optional<TableColumnUnit> findByUri(String uri);
 
 }

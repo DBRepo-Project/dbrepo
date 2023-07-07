@@ -102,12 +102,13 @@ public class Database implements Serializable {
     private User contact;
 
     @ToString.Exclude
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @org.springframework.data.annotation.Transient
+    @OneToOne(fetch = FetchType.LAZY, mappedBy = "database")
     private Identifier identifier;
 
     @ToString.Exclude
     @org.springframework.data.annotation.Transient
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.LAZY)
     @JoinColumns({
             @JoinColumn(name = "tdbid", referencedColumnName = "id", insertable = false, updatable = false)
     })

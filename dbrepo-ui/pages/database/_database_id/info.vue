@@ -112,15 +112,15 @@
               <v-btn
                 v-if="canCreateIdentifier"
                 small
-                color="primary"
-                @click="persistDialog = true">
+                :to="`/database/${$route.params.database_id}/persist`"
+                color="primary">
                 Get Database PID
               </v-btn>
               <v-btn
                 v-if="canEditIdentifier"
                 small
-                color="secondary"
-                @click="persistDialog = true">
+                :to="`/database/${$route.params.database_id}/persist`"
+                color="secondary">
                 Edit Database PID
               </v-btn>
               <v-btn
@@ -235,12 +235,6 @@
       </v-tab-item>
     </v-tabs-items>
     <v-dialog
-      v-model="persistDialog"
-      persistent
-      max-width="1080">
-      <Persist type="database" :database="database" @close="closePersistDialog" />
-    </v-dialog>
-    <v-dialog
       v-model="deleteDialog"
       persistent
       max-width="480">
@@ -252,7 +246,6 @@
 
 <script>
 import DBToolbar from '@/components/DBToolbar.vue'
-import Persist from '@/components/dialogs/Persist.vue'
 import OrcidIcon from '@/components/icons/OrcidIcon.vue'
 import Citation from '@/components/identifier/Citation.vue'
 import { formatTimestampUTCLabel } from '@/utils'
@@ -264,7 +257,6 @@ export default {
   components: {
     DeleteIdentifier,
     DBToolbar,
-    Persist,
     OrcidIcon,
     Citation,
     Banner
@@ -277,7 +269,6 @@ export default {
       loadingStop: false,
       editDialog: false,
       deleteDialog: false,
-      persistDialog: false,
       items: [
         { text: 'Databases', to: '/database', activeClass: '' },
         {
@@ -435,13 +426,6 @@ export default {
     }
   },
   methods: {
-    async closePersistDialog (event) {
-      if (event.action === 'persisted') {
-        await this.$store.dispatch('reloadDatabase')
-      }
-      this.persistDialog = false
-      this.editVisibilityDialog = false
-    },
     async closeDeleteDialog (event) {
       if (event.action === 'deleted') {
         await this.$store.dispatch('reloadDatabase')

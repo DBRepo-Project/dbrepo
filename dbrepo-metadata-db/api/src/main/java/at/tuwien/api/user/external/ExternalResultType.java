@@ -6,11 +6,11 @@ import lombok.Getter;
 @Getter
 public enum ExternalResultType {
 
-    @JsonProperty("person")
-    PERSON("person"),
+    @JsonProperty("Personal")
+    PERSONAL("Personal"),
 
-    @JsonProperty("organization")
-    ORGANIZATION("organization");
+    @JsonProperty("Organizational")
+    ORGANIZATIONAL("Organizational");
 
     private String name;
 

@@ -20,7 +20,7 @@ public interface ExternalMapper {
     @Mappings({
             @Mapping(target = "givenNames", source = "person.name.givenNames.value"),
             @Mapping(target = "familyName", source = "person.name.familyName.value"),
-            @Mapping(target = "type", expression = "java(ExternalResultType.PERSON)"),
+            @Mapping(target = "type", expression = "java(ExternalResultType.PERSONAL)"),
             @Mapping(target = "affiliations", source = "activitiesSummary.employments.affiliationGroup"),
     })
     ExternalMetadataDto orcidDtoToExternalMetadataDto(OrcidDto data);
@@ -53,7 +53,7 @@ public interface ExternalMapper {
                         ExternalAffiliationDto.builder()
                                 .organizationName(data.getName())
                                 .build()})
-                .type(ExternalResultType.ORGANIZATION)
+                .type(ExternalResultType.ORGANIZATIONAL)
                 .build();
     }
 

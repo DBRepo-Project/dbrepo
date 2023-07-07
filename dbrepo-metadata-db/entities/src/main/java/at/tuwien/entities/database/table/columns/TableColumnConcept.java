@@ -24,7 +24,7 @@ import java.util.List;
         @UniqueConstraint(columnNames = {"uri"})
 })
 @NamedQueries({
-        @NamedQuery(name = "TableColumnConcept.findById", query = "select c from TableColumnConcept c where c.uri = ?1")
+        @NamedQuery(name = "TableColumnConcept.findByUri", query = "select c from TableColumnConcept c where c.uri = ?1")
 })
 public class TableColumnConcept {
 

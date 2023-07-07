@@ -41,7 +41,7 @@ public class SemanticServiceImpl implements SemanticService {
 
     @Override
     public TableColumnConcept findConcept(String uri) throws ConceptNotFoundException {
-        final Optional<TableColumnConcept> optional = conceptRepository.findById(uri);
+        final Optional<TableColumnConcept> optional = conceptRepository.findByUri(uri);
         if (optional.isEmpty()) {
             log.error("Failed to find column concept with uri {}", uri);
             throw new ConceptNotFoundException("Failed to find concept with uri " + uri);
@@ -51,7 +51,7 @@ public class SemanticServiceImpl implements SemanticService {
 
     @Override
     public TableColumnUnit findUnit(String uri) throws UnitNotFoundException {
-        final Optional<TableColumnUnit> optional = unitRepository.findById(uri);
+        final Optional<TableColumnUnit> optional = unitRepository.findByUri(uri);
         if (optional.isEmpty()) {
             log.error("Failed to find unit with uri {}", uri);
             throw new UnitNotFoundException("Failed to find unit");
