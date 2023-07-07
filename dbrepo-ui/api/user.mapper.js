@@ -21,6 +21,19 @@ class UserMapper {
     return obj
   }
 
+  nameIdentifierToNameIdentifierScheme (nameIdentifier) {
+    if (nameIdentifier.matches('orcid.org')) {
+      return 'ORCID'
+    } else if (nameIdentifier.matches('ror.org')) {
+      return 'ROR'
+    } else if (nameIdentifier.matches('isni.org')) {
+      return 'ISNI'
+    } else if (nameIdentifier.matches('grid.ac')) {
+      return 'GRID'
+    }
+    return null
+  }
+
   userToFullName (user) {
     if (!user) {
       return null

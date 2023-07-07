@@ -18,7 +18,7 @@ import java.util.List;
 
 @Data
 @Entity
-@Builder
+@Builder(toBuilder = true)
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
@@ -47,6 +47,7 @@ public class Identifier implements Serializable {
     private Long queryId;
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "identifier")
+    @OrderBy("id")
     private List<Creator> creators;
 
     @NotBlank

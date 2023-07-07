@@ -34,7 +34,7 @@ public class Creator {
     @Column(name = "creator_name", nullable = false)
     private String creatorName;
 
-    @Column(columnDefinition = "enum('Personal', 'Organizational')")
+    @Column(columnDefinition = "enum('PERSONAL', 'ORGANIZATIONAL')")
     @Enumerated(EnumType.STRING)
     private NameType nameType;
 
@@ -65,5 +65,14 @@ public class Creator {
     })
     private Identifier identifier;
 
+    public String getApaName() {
+        if (this.getFirstname() == null) {
+            if (this.getLastname() == null) {
+                return this.getCreatorName();
+            }
+            return this.getLastname();
+        }
+        return this.getFirstname().charAt(0) + "., " + this.getLastname();
+    }
 
 }

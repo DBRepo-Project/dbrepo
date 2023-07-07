@@ -354,6 +354,7 @@
 import { formatYearUTC, formatMonthUTC, formatDayUTC } from '@/utils'
 import IdentifierService from '@/api/identifier.service'
 import DatabaseService from '@/api/database.service'
+import UserMapper from '@/api/user.mapper'
 
 export default {
   props: {
@@ -730,6 +731,7 @@ export default {
             creator.creator_name = (creator.lastname + ', ' + creator.firstname)
             creator.affiliation = metadata.affiliations.length > 0 ? metadata.affiliations[0].organization_name : null
           }
+          creator.name_identifier_scheme = UserMapper.nameIdentifierToNameIdentifierScheme(creator.name_identifier)
         })
         .catch(() => {
           creator.success = false
@@ -804,7 +806,8 @@ export default {
       IdentifierService.create(payload)
         .then(() => {
           this.$toast.success(this.prefix + ' successfully persisted')
-          this.$emit('close', { action: 'persisted' })
+          this.$store.dispatch('reloadDatabase')
+          this.$router.push(this.backTo)
         })
         .finally(() => {
           this.loading = false

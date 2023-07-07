@@ -23,6 +23,9 @@ export default {
       if (this.orcid === null) {
         return null
       }
+      if (this.orcid.match('orcid.org')) {
+        return this.orcid
+      }
       return `https://orcid.org/${this.orcid}`
     }
   }

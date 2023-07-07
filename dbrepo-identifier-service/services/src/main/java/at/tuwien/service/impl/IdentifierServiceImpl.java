@@ -28,6 +28,7 @@ import java.io.ByteArrayInputStream;
 import java.nio.charset.Charset;
 import java.security.Principal;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Slf4j
@@ -262,6 +263,7 @@ public class IdentifierServiceImpl implements IdentifierService {
 
     public IdentifierTitle preferTitle(List<IdentifierTitle> titles) {
         final Optional<IdentifierTitle> optional = titles.stream()
+                .filter(t -> Objects.nonNull(t.getLanguage()))
                 .filter(t -> t.getLanguage().equals(LanguageType.EN))
                 .findFirst();
         return optional.orElseGet(() -> titles.get(0));

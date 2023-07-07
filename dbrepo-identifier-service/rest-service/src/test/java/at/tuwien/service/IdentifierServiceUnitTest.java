@@ -5,8 +5,10 @@ import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.identifier.BibliographyTypeDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.config.IndexConfig;
+import at.tuwien.entities.identifier.Creator;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.identifier.IdentifierType;
+import at.tuwien.entities.identifier.NameIdentifierSchemeType;
 import at.tuwien.exception.*;
 import at.tuwien.repository.sdb.IdentifierIdxRepository;
 import at.tuwien.repository.mdb.IdentifierRepository;
@@ -244,6 +246,30 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
         assertTrue(response.contains(IDENTIFIER_1_TITLE_1.getTitle()));
         assertTrue(response.contains("" + IDENTIFIER_1_PUBLICATION_YEAR));
         assertTrue(response.contains(IDENTIFIER_1_CREATOR_1.getLastname()));
+    }
+
+    @Test
+    public void exportBibliography_apaMixedPersonAndOrg_succeeds() throws IdentifierNotFoundException,
+            IdentifierRequestException {
+        final Creator org = Creator.builder()
+                .id(CREATOR_2_ID)
+                .creatorName("Institute of Science and Technology Austria")
+                .nameIdentifier("https://ror.org/03gnh5541")
+                .nameIdentifierScheme(NameIdentifierSchemeType.ROR)
+                .build();
+        final Identifier identifier = IDENTIFIER_1.toBuilder()
+                .creators(List.of(IDENTIFIER_1_CREATOR_1, org))
+                .build();
+
+        /* mock */
+        when(identifierRepository.findById(IDENTIFIER_1_ID))
+                .thenReturn(Optional.of(identifier));
+
+        /* test */
+        final String response = identifierService.exportBibliography(IDENTIFIER_1_ID, BibliographyTypeDto.APA);
+        final String title = IDENTIFIER_1_CREATOR_1.getFirstname().charAt(0) + "., " + IDENTIFIER_1_CREATOR_1.getLastname() + " & Institute of Science and Technology Austria";
+        assertTrue(response.contains(title));
+        assertTrue(response.contains("" + IDENTIFIER_1_PUBLICATION_YEAR));
     }
 
     @Test

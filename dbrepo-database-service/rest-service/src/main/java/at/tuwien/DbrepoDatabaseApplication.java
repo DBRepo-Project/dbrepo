@@ -16,10 +16,10 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableElasticsearchRepositories(basePackages = {"at.tuwien.repository.sdb"})
 @EnableJpaRepositories(basePackages = {"at.tuwien.repository.mdb"})
 @SpringBootApplication(exclude = {ElasticsearchDataAutoConfiguration.class, ElasticsearchRestClientAutoConfiguration.class})
-public class DbrepoDatabaseManagingApplication {
+public class DbrepoDatabaseApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(DbrepoDatabaseManagingApplication.class, args);
+        SpringApplication.run(DbrepoDatabaseApplication.class, args);
     }
 
 }

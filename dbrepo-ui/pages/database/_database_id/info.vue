@@ -20,16 +20,12 @@
                   <v-list-item-title class="mt-2">
                     Database Title
                   </v-list-item-title>
-                  <v-list-item-content>
-                    <v-skeleton-loader v-if="loading" type="paragraph" width="50%" />
-                    <span v-if="!loading">{{ identifier.title }}</span>
-                  </v-list-item-content>
+                  <v-list-item-content v-for="(title,i) in identifier.titles" :key="`t-${i}`" v-text="printTitle(title)" />
                   <v-list-item-title class="mt-2">
                     Database Description
                   </v-list-item-title>
                   <v-list-item-content>
-                    <v-skeleton-loader v-if="loading" type="paragraph" width="50%" />
-                    <span v-if="!loading">{{ identifier.description }}</span>
+                    <v-list-item-content v-for="(description,i) in identifier.descriptions" :key="`d-${i}`" v-text="printDescription(description)" />
                   </v-list-item-content>
                   <v-list-item-title class="mt-2">
                     Database Publisher
@@ -42,9 +38,11 @@
                   </v-list-item-title>
                   <v-list-item-content>
                     <p v-for="(person_or_org, i) in identifier.creators" :key="`c-${i}`" class="mt-2">
-                      <OrcidIcon v-if="person_or_org.orcid" :orcid="person_or_org.orcid" />
-                      <span v-text="`${person_or_org.firstname} ${person_or_org.lastname}`" />
-                      <sup v-text="person_or_org.affiliation" />
+                      <OrcidIcon v-if="person_or_org.name_identifier && person_or_org.name_identifier_scheme === 'ORCID'" :orcid="person_or_org.name_identifier" />
+                      <IsniIcon v-if="person_or_org.name_identifier && person_or_org.name_identifier_scheme === 'ISNI'" :isni="person_or_org.name_identifier" />
+                      <RorIcon v-if="person_or_org.name_identifier && person_or_org.name_identifier_scheme === 'ROR'" :ror="person_or_org.name_identifier" />
+                      <span v-text="person_or_org.creator_name" />
+                      <sup v-if="person_or_org.affiliation" v-text="person_or_org.affiliation" />
                     </p>
                     <span v-for="(affiliation, i) in identifier.affiliations" :key="`a-${i}`" class="mt-4">
                       <span>
@@ -247,6 +245,8 @@
 <script>
 import DBToolbar from '@/components/DBToolbar.vue'
 import OrcidIcon from '@/components/icons/OrcidIcon.vue'
+import IsniIcon from '@/components/icons/IsniIcon.vue'
+import RorIcon from '@/components/icons/RorIcon.vue'
 import Citation from '@/components/identifier/Citation.vue'
 import { formatTimestampUTCLabel } from '@/utils'
 import Banner from '@/components/identifier/Banner.vue'
@@ -255,6 +255,8 @@ import DeleteIdentifier from '@/components/dialogs/DeleteIdentifier.vue'
 
 export default {
   components: {
+    IsniIcon,
+    RorIcon,
     DeleteIdentifier,
     DBToolbar,
     OrcidIcon,
@@ -431,6 +433,20 @@ export default {
         await this.$store.dispatch('reloadDatabase')
       }
       this.deleteDialog = false
+    },
+    printTitle (title) {
+      let str = (title.type ? title.type : 'Title')
+      if (title.language) {
+        str += ` (${title.language})`
+      }
+      return (str + ': ' + title.title)
+    },
+    printDescription (description) {
+      let str = (description.type ? description.type : 'Description')
+      if (description.language) {
+        str += ` (${description.language})`
+      }
+      return (str + ': ' + description.description)
     }
   }
 }
