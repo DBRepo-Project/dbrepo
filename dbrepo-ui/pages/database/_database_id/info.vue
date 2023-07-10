@@ -4,107 +4,8 @@
     <v-progress-linear v-if="loading" />
     <v-tabs-items v-model="tab">
       <v-tab-item>
-        <v-card v-if="showIdentifierCard" flat tile>
-          <v-card-title>Identifier</v-card-title>
-          <v-card-text v-if="hasIdentifier">
-            <v-list dense>
-              <v-list-item>
-                <v-list-item-content>
-                  <v-list-item-title class="mt-2">
-                    Persistent Identifier
-                  </v-list-item-title>
-                  <v-list-item-content>
-                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
-                    <Banner v-if="!loading" :identifier="database.identifier" />
-                  </v-list-item-content>
-                  <v-list-item-title class="mt-2">
-                    Database Title
-                  </v-list-item-title>
-                  <v-list-item-content v-for="(title,i) in identifier.titles" :key="`t-${i}`" v-text="printTitle(title)" />
-                  <v-list-item-title class="mt-2">
-                    Database Description
-                  </v-list-item-title>
-                  <v-list-item-content>
-                    <v-list-item-content v-for="(description,i) in identifier.descriptions" :key="`d-${i}`" v-text="printDescription(description)" />
-                  </v-list-item-content>
-                  <v-list-item-title class="mt-2">
-                    Database Publisher
-                  </v-list-item-title>
-                  <v-list-item-content>
-                    {{ database.identifier.publisher }}
-                  </v-list-item-content>
-                  <v-list-item-title v-if="identifier.creators.length > 0" class="mt-2">
-                    Creators
-                  </v-list-item-title>
-                  <v-list-item-content>
-                    <p v-for="(person_or_org, i) in identifier.creators" :key="`c-${i}`" class="mt-2">
-                      <OrcidIcon v-if="person_or_org.name_identifier && person_or_org.name_identifier_scheme === 'ORCID'" :orcid="person_or_org.name_identifier" />
-                      <IsniIcon v-if="person_or_org.name_identifier && person_or_org.name_identifier_scheme === 'ISNI'" :isni="person_or_org.name_identifier" />
-                      <RorIcon v-if="person_or_org.name_identifier && person_or_org.name_identifier_scheme === 'ROR'" :ror="person_or_org.name_identifier" />
-                      <span v-text="person_or_org.creator_name" />
-                      <sup v-if="person_or_org.affiliation" v-text="person_or_org.affiliation" />
-                    </p>
-                    <span v-for="(affiliation, i) in identifier.affiliations" :key="`a-${i}`" class="mt-4">
-                      <span>
-                        <sup>{{ i+1 }}</sup>
-                        {{ affiliation }}
-                      </span>
-                    </span>
-                  </v-list-item-content>
-                  <v-list-item-title v-if="language" class="mt-2">
-                    Language
-                  </v-list-item-title>
-                  <v-list-item-content v-if="language">
-                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
-                    <span v-if="!loading" v-text="language" />
-                  </v-list-item-content>
-                  <v-list-item-title v-if="publication" class="mt-2">
-                    Publication Date
-                  </v-list-item-title>
-                  <v-list-item-content v-if="publication">
-                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
-                    <span v-if="!loading" v-text="publication" />
-                  </v-list-item-content>
-                  <v-list-item-title v-if="identifier.related.length > 0" class="mt-2">
-                    Related Identifiers
-                  </v-list-item-title>
-                  <v-list-item-content v-if="identifier.related.length > 0">
-                    <div v-for="(rel, i) in identifier.related" :key="`r-${i}`">
-                      <span v-if="rel.type === 'DOI'">
-                        {{ rel.type }}: <a :href="`https://doi.org/${rel.value}`" target="_blank">{{ rel.value }}</a>
-                        <span v-if="rel.relation">({{ rel.relation }})</span>
-                      </span>
-                      <span v-if="rel.type === 'URL'">
-                        {{ rel.type }}: <a :href="`${rel.value}`" target="_blank">{{ rel.value }}</a>
-                        <span v-if="rel.relation">({{ rel.relation }})</span>
-                      </span>
-                      <span v-if="rel.type === 'arXiv'">
-                        {{ rel.type }}: <a :href="`https://arxiv.org/abs/${rel.value}`" target="_blank">{{ rel.value }}</a>
-                        <span v-if="rel.relation">({{ rel.relation }})</span>
-                      </span>
-                      <span v-if="rel.type === 'EISSN'">
-                        {{ rel.type }}: <a :href="`https://portal.issn.org/resource/ISSN/${rel.value}`" target="_blank">{{ rel.value }}</a>
-                        <span v-if="rel.relation">({{ rel.relation }})</span>
-                      </span>
-                      <span v-if="rel.type !== 'DOI' && rel.type !== 'URL' && rel.type !== 'arXiv' && rel.type !== 'EISSN'">
-                        {{ rel.type }}: {{ rel.value }}
-                        <span v-if="rel.relation">({{ rel.relation }})</span>
-                      </span>
-                    </div>
-                  </v-list-item-content>
-                  <v-list-item-title v-if="identifier.license" class="mt-2">
-                    License
-                  </v-list-item-title>
-                  <v-list-item-content v-if="identifier.license">
-                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
-                    <a v-if="identifier.license" target="_blank" :href="identifier.license.uri">{{ identifier.license.identifier }}</a>
-                    <span v-if="!identifier.license">(none)</span>
-                  </v-list-item-content>
-                  <Citation :pid="database.identifier.id" />
-                </v-list-item-content>
-              </v-list-item>
-            </v-list>
-          </v-card-text>
+        <Summary v-if="showIdentifierCard" :identifier="identifier" />
+        <v-card flat tile>
           <v-card-text v-if="canCreateIdentifier || canDeleteIdentifier">
             <v-card-actions>
               <v-btn
@@ -244,24 +145,16 @@
 
 <script>
 import DBToolbar from '@/components/DBToolbar.vue'
-import OrcidIcon from '@/components/icons/OrcidIcon.vue'
-import IsniIcon from '@/components/icons/IsniIcon.vue'
-import RorIcon from '@/components/icons/RorIcon.vue'
-import Citation from '@/components/identifier/Citation.vue'
 import { formatTimestampUTCLabel } from '@/utils'
-import Banner from '@/components/identifier/Banner.vue'
 import DatabaseMapper from '@/api/database.mapper'
+import Summary from '@/components/identifier/Summary.vue'
 import DeleteIdentifier from '@/components/dialogs/DeleteIdentifier.vue'
 
 export default {
   components: {
-    IsniIcon,
-    RorIcon,
     DeleteIdentifier,
     DBToolbar,
-    OrcidIcon,
-    Citation,
-    Banner
+    Summary
   },
   data () {
     return {
@@ -284,9 +177,6 @@ export default {
   computed: {
     tab () {
       return 0
-    },
-    baseUrl () {
-      return location.protocol + '//' + location.host
     },
     description () {
       if (!this.hasIdentifier) {
@@ -326,9 +216,6 @@ export default {
     },
     createdUTC () {
       return formatTimestampUTCLabel(this.database.created)
-    },
-    language () {
-      return this.database.identifier.language
     },
     internal_name () {
       return this.database.internal_name
@@ -378,15 +265,6 @@ export default {
     contact () {
       return DatabaseMapper.databaseToContact(this.database)
     },
-    publication () {
-      if (this.database.identifier.publication_year === null) {
-        return null
-      } else if (this.database.identifier.publication_month !== null && this.database.identifier.publication_day !== null) {
-        return this.database.identifier.publication_year + '-' + this.database.identifier.publication_month + '-' + this.database.identifier.publication_day
-      } else {
-        return this.database.identifier.publication_year
-      }
-    },
     creator () {
       return DatabaseMapper.databaseToOwner(this.database)
     },
@@ -433,20 +311,6 @@ export default {
         await this.$store.dispatch('reloadDatabase')
       }
       this.deleteDialog = false
-    },
-    printTitle (title) {
-      let str = (title.type ? title.type : 'Title')
-      if (title.language) {
-        str += ` (${title.language})`
-      }
-      return (str + ': ' + title.title)
-    },
-    printDescription (description) {
-      let str = (description.type ? description.type : 'Description')
-      if (description.language) {
-        str += ` (${description.language})`
-      }
-      return (str + ': ' + description.description)
     }
   }
 }

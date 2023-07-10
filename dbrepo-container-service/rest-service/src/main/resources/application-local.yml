@@ -30,7 +30,9 @@ spring:
   opensearch:
     username: admin
     password: admin
-    uris: localhost:9200
+    host: localhost
+    port: 9200
+    protocol: http
 management.endpoints.web.exposure.include: health,info,prometheus
 springdoc.swagger-ui.enabled: true
 server:

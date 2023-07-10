@@ -330,9 +330,9 @@
             </v-col>
           </v-row>
         </v-card-text>
-        <v-card-title>License</v-card-title>
-        <v-card-text>
-          <v-row v-if="isDatabase" dense>
+        <v-card-title v-if="isDatabase">License</v-card-title>
+        <v-card-text v-if="isDatabase">
+          <v-row dense>
             <v-col>
               <v-select
                 v-model="identifier.license"
@@ -363,6 +363,12 @@ export default {
       default: 'subset'
     },
     database: {
+      type: Object,
+      default () {
+        return {}
+      }
+    },
+    query: {
       type: Object,
       default () {
         return {}
@@ -672,10 +678,17 @@ export default {
       return `/database/${this.$route.params.database_id}` + (this.isSubset ? `/query/${this.$route.params.query_id}` : '')
     },
     isUpdate () {
-      if (!this.database.identifier) {
-        return false
+      if (this.isDatabase) {
+        if (!this.database.identifier) {
+          return false
+        }
+        return this.database.identifier.id !== null
+      } else {
+        if (!this.query.identifier) {
+          return false
+        }
+        return this.query.identifier.id !== null
       }
-      return this.database.identifier.id !== null
     },
     visibilityHint () {
       if (this.identifier.visibility === 'public') {
@@ -694,10 +707,10 @@ export default {
   },
   watch: {
     database () {
-      if (!this.database.identifier) {
-        return
-      }
-      this.identifier = Object.assign(this.database.identifier, {})
+      this.init()
+    },
+    query () {
+      this.init()
     }
   },
   mounted () {
@@ -705,9 +718,7 @@ export default {
     this.addTitle()
     this.addDescription()
     this.loadLicenses()
-    if (this.database.identifier) {
-      this.identifier = Object.assign(this.database.identifier, {})
-    }
+    this.init()
   },
   methods: {
     cancel () {
@@ -715,6 +726,7 @@ export default {
     },
     retrieve (creator) {
       if (!creator || !creator.name_identifier) {
+        creator.name_identifier_scheme = null
         return
       }
       creator.loading = true
@@ -850,6 +862,13 @@ export default {
         .finally(() => {
           this.loading = false
         })
+    },
+    init () {
+      if (this.isDatabase && this.database.identifier) {
+        this.identifier = Object.assign(this.database.identifier, {})
+      } else if (this.isSubset && this.query.identifier) {
+        this.identifier = Object.assign(this.query.identifier, {})
+      }
     },
     validateOrcidInput (val) {
       if (!val) {

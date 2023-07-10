@@ -10,6 +10,10 @@ spring:
     show-sql: false
     database-platform: org.hibernate.dialect.MariaDBDialect
     hibernate:
+      search:
+        default:
+          elasticsearch:
+            host: search-db
       ddl-auto: validate
       use-new-id-generator-mappings: false
     open-in-view: false
@@ -28,7 +32,9 @@ spring:
   opensearch:
     username: admin
     password: admin
-    uris: localhost:9200
+    host: search-db
+    port: 9200
+    protocol: http
   cloud:
     loadbalancer.ribbon.enabled: false
 management.endpoints.web.exposure.include: health,info,prometheus

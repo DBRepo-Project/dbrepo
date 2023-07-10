@@ -74,7 +74,8 @@ import static java.time.temporal.ChronoUnit.MINUTES;
  * <li>Query 1</li>
  * <li>View 2</li>
  * <li>View 3</li>
- * <li>Identifier 1 (Title=en, Description=en)</li>
+ * <li>Identifier 1 (Title=en, Description=en, type=database)</li>
+ * <li>Identifier 5 (Title=en, Description=en, type=subset, queryId=1)</li>
  * </ul>
  * <p>
  * Database 2 (Private, User 2)
@@ -5384,7 +5385,7 @@ public abstract class BaseTest {
             .resultNumber(IDENTIFIER_2_RESULT_NUMBER)
             .publisher(IDENTIFIER_2_PUBLISHER)
             .type(IDENTIFIER_2_TYPE)
-            .creator(null /* for jpa */)
+            .creator(USER_2)
             .creators(List.of() /* for jpa */)
             .visibility(IDENTIFIER_2_VISIBILITY)
             .build();
@@ -5940,7 +5941,91 @@ public abstract class BaseTest {
             .type(IDENTIFIER_4_TYPE_DTO)
             .visibility(IDENTIFIER_4_VISIBILITY_DTO)
             .build();
+    
+    public final static Long IDENTIFIER_5_ID = 5L;
+    public final static Long IDENTIFIER_5_DATABASE_ID = DATABASE_1_ID;
+    public final static String IDENTIFIER_5_DOI = null;
+    public final static Instant IDENTIFIER_5_CREATED = Instant.ofEpochSecond(1651588352);
+    public final static Instant IDENTIFIER_5_MODIFIED = Instant.ofEpochSecond(1551588352);
+    public final static Instant IDENTIFIER_5_EXECUTION = Instant.ofEpochSecond(1551588352);
+    public final static Integer IDENTIFIER_5_PUBLICATION_DAY = 10;
+    public final static Integer IDENTIFIER_5_PUBLICATION_MONTH = 7;
+    public final static Integer IDENTIFIER_5_PUBLICATION_YEAR = 2023;
+    public final static String IDENTIFIER_5_QUERY_HASH = QUERY_1_QUERY_HASH;
+    public final static String IDENTIFIER_5_RESULT_HASH = QUERY_1_RESULT_HASH;
+    public final static String IDENTIFIER_5_QUERY = QUERY_1_STATEMENT;
+    public final static String IDENTIFIER_5_NORMALIZED = QUERY_1_STATEMENT;
+    public final static Long IDENTIFIER_5_RESULT_NUMBER = QUERY_1_RESULT_NUMBER;
+    public final static String IDENTIFIER_5_PUBLISHER = "Swedish Government";
+    public final static IdentifierType IDENTIFIER_5_TYPE = IdentifierType.SUBSET;
+    public final static IdentifierTypeDto IDENTIFIER_5_TYPE_DTO = IdentifierTypeDto.SUBSET;
+    public final static UUID IDENTIFIER_5_CREATOR_ID = USER_1_ID;
+    public final static User IDENTIFIER_5_CREATOR = USER_1;
+    public final static VisibilityType IDENTIFIER_5_VISIBILITY = VisibilityType.EVERYONE;
+    public final static VisibilityTypeDto IDENTIFIER_5_VISIBILITY_DTO = VisibilityTypeDto.EVERYONE;
 
+    public final static Identifier IDENTIFIER_5 = Identifier.builder()
+            .id(IDENTIFIER_5_ID)
+            .databaseId(IDENTIFIER_5_DATABASE_ID)
+            .descriptions(List.of())
+            .titles(List.of())
+            .doi(IDENTIFIER_5_DOI)
+            .database(DATABASE_1)
+            .created(IDENTIFIER_5_CREATED)
+            .lastModified(IDENTIFIER_5_MODIFIED)
+            .execution(IDENTIFIER_5_EXECUTION)
+            .publicationDay(IDENTIFIER_5_PUBLICATION_DAY)
+            .publicationMonth(IDENTIFIER_5_PUBLICATION_MONTH)
+            .publicationYear(IDENTIFIER_5_PUBLICATION_YEAR)
+            .queryHash(IDENTIFIER_5_QUERY_HASH)
+            .resultHash(IDENTIFIER_5_RESULT_HASH)
+            .query(IDENTIFIER_5_QUERY)
+            .queryNormalized(IDENTIFIER_5_NORMALIZED)
+            .resultNumber(IDENTIFIER_5_RESULT_NUMBER)
+            .publisher(IDENTIFIER_5_PUBLISHER)
+            .type(IDENTIFIER_5_TYPE)
+            .creator(USER_1)
+            .creators(List.of())
+            .visibility(IDENTIFIER_5_VISIBILITY)
+            .build();
+
+    public final static IdentifierDto IDENTIFIER_5_DTO = IdentifierDto.builder()
+            .id(IDENTIFIER_5_ID)
+            .databaseId(IDENTIFIER_5_DATABASE_ID)
+            .descriptions(List.of())
+            .titles(List.of())
+            .doi(IDENTIFIER_5_DOI)
+            .database(DATABASE_1_DTO)
+            .created(IDENTIFIER_5_CREATED)
+            .lastModified(IDENTIFIER_5_MODIFIED)
+            .execution(IDENTIFIER_5_EXECUTION)
+            .publicationDay(IDENTIFIER_5_PUBLICATION_DAY)
+            .publicationMonth(IDENTIFIER_5_PUBLICATION_MONTH)
+            .publicationYear(IDENTIFIER_5_PUBLICATION_YEAR)
+            .queryHash(IDENTIFIER_5_QUERY_HASH)
+            .resultHash(IDENTIFIER_5_RESULT_HASH)
+            .query(IDENTIFIER_5_QUERY)
+            .queryNormalized(IDENTIFIER_5_NORMALIZED)
+            .resultNumber(IDENTIFIER_5_RESULT_NUMBER)
+            .publisher(IDENTIFIER_5_PUBLISHER)
+            .type(IDENTIFIER_5_TYPE_DTO)
+            .creator(USER_1_DTO)
+            .creators(List.of())
+            .visibility(IDENTIFIER_5_VISIBILITY_DTO)
+            .build();
+
+    public final static IdentifierCreateDto IDENTIFIER_5_DTO_REQUEST = IdentifierCreateDto.builder()
+            .dbid(IDENTIFIER_5_DATABASE_ID)
+            .descriptions(List.of())
+            .titles(List.of())
+            .relatedIdentifiers(List.of())
+            .publicationMonth(IDENTIFIER_5_PUBLICATION_MONTH)
+            .publicationYear(IDENTIFIER_5_PUBLICATION_YEAR)
+            .creators(List.of())
+            .publisher(IDENTIFIER_5_PUBLISHER)
+            .type(IDENTIFIER_5_TYPE_DTO)
+            .visibility(IDENTIFIER_5_VISIBILITY_DTO)
+            .build();
 
     public final static String VIRTUAL_HOST_NAME = "fda";
     public final static String VIRTUAL_HOST_DESCRIPTION = "FAIR Data Austria";

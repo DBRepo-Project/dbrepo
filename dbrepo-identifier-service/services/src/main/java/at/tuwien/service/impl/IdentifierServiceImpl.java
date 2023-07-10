@@ -102,6 +102,8 @@ public class IdentifierServiceImpl implements IdentifierService {
         final User creator = userService.findByUsername(principal.getName());
         identifier.setCreator(creator);
         identifier.setDatabaseId(data.getDbid());
+        final Database database = databaseService.find(data.getDbid());
+        identifier.setDatabase(database);
         if (data.getType().equals(IdentifierTypeDto.SUBSET)) {
             log.debug("identifier describes a subset");
             final QueryDto query = queryServiceGateway.find(data.getDbid(), data, authorization);

@@ -17,4 +17,8 @@ public interface IdentifierService {
     Identifier findByDatabaseIdAndQueryId(Long databaseId, Long queryId) throws IdentifierNotFoundException;
 
     List<Identifier> findAll();
+
+    List<Identifier> findAllDatabaseIdentifiers();
+
+    List<Identifier> findAllSubsetIdentifiers();
 }

@@ -365,7 +365,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_view_columns`
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifiers`
 (
     id                bigint                    NOT NULL AUTO_INCREMENT,
-    dbid              bigint                    NOT NULL,
+    dbid              bigint,
     qid               bigint,
     publisher         VARCHAR(255)              NOT NULL,
     language          VARCHAR(2),
@@ -388,6 +388,15 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifiers`
     PRIMARY KEY (id), /* must be a single id from persistent identifier concept */
     FOREIGN KEY (dbid) REFERENCES mdb_databases (id),
     UNIQUE (dbid, qid)
+) WITH SYSTEM VERSIONING;
+
+CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifiers_databases`
+(
+    identifier_id bigint not null,
+    database_id   bigint not null,
+    PRIMARY KEY (identifier_id, database_id),
+    FOREIGN KEY (identifier_id) REFERENCES mdb_identifiers (id),
+    FOREIGN KEY (database_id) REFERENCES mdb_databases (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifier_titles`
@@ -506,7 +515,8 @@ VALUES (1, '%Y-%c-%d %H:%i:%S.%f', 'yyyy-MM-dd HH:mm:ss.SSSSSS', '2022-01-30 13:
        (1, '%Y-%c-%d', 'yyyy-MM-dd', '2022-01-30', false);
 
 INSERT INTO `fda`.`mdb_ontologies` (prefix, uri, uri_pattern, sparql_endpoint)
-VALUES ('om', 'http://www.ontology-of-units-of-measure.org/resource/om-2/', 'http://www.ontology-of-units-of-measure.org/resource/om-2/.*', null),
+VALUES ('om', 'http://www.ontology-of-units-of-measure.org/resource/om-2/',
+        'http://www.ontology-of-units-of-measure.org/resource/om-2/.*', null),
        ('wd', 'http://www.wikidata.org/', 'http://www.wikidata.org/entity/.*', 'https://query.wikidata.org/sparql'),
        ('mo', 'http://purl.org/ontology/mo/', 'http://purl.org/ontology/mo/.*', null),
        ('dc', 'http://purl.org/dc/elements/1.1/', null, null),

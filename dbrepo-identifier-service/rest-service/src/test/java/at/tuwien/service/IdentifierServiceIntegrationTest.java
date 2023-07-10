@@ -109,7 +109,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
                 .thenReturn(QUERY_2_DTO);
         when(identifierIdxRepository.save(any(IdentifierDto.class)))
                 .thenReturn(IDENTIFIER_2_DTO);
-        identifierRepository.save(IDENTIFIER_1);
+        identifierRepository.save(IDENTIFIER_1_SIMPLE);
 
         /* test */
         final Identifier response = identifierService.create(IDENTIFIER_2_DTO_REQUEST, USER_2_PRINCIPAL, bearer);
@@ -175,10 +175,34 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
+    public void create_subsetHasDatabaseIdentifier_succeeds() throws DatabaseNotFoundException, UserNotFoundException,
+            IdentifierAlreadyExistsException, QueryNotFoundException, IdentifierPublishingNotAllowedException,
+            RemoteUnavailableException, IdentifierRequestException {
+        final String authorization = "Bearer abcxyz";
+
+        /* mock */
+        identifierRepository.save(IDENTIFIER_1_SIMPLE);
+        when(queryServiceGateway.find(DATABASE_1_ID, IDENTIFIER_5_DTO_REQUEST, authorization))
+                .thenReturn(QUERY_1_DTO);
+        when(identifierIdxRepository.save(any(IdentifierDto.class)))
+                .thenReturn(IDENTIFIER_5_DTO);
+
+        /* test */
+        final Identifier response = identifierService.create(IDENTIFIER_5_DTO_REQUEST, USER_1_PRINCIPAL, authorization);
+        assertEquals(IDENTIFIER_5_DATABASE_ID, response.getDatabaseId());
+        assertEquals(IDENTIFIER_5_DATABASE_ID, response.getDatabase().getId());
+        assertEquals(IDENTIFIER_5_QUERY, response.getQuery());
+        assertEquals(IDENTIFIER_5_QUERY_HASH, response.getQueryHash());
+        assertEquals(IDENTIFIER_5_RESULT_HASH, response.getResultHash());
+        assertEquals(0, response.getTitles().size());
+        assertEquals(0, response.getDescriptions().size());
+    }
+
+    @Test
     public void find_fails() {
 
         /* mock */
-        identifierRepository.save(IDENTIFIER_1);
+        identifierRepository.save(IDENTIFIER_1_SIMPLE);
 
         /* test */
         assertThrows(IdentifierNotFoundException.class, () -> {
@@ -191,7 +215,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
             RemoteUnavailableException, IdentifierRequestException {
 
         /* mock */
-        identifierRepository.save(IDENTIFIER_1);
+        identifierRepository.save(IDENTIFIER_1_SIMPLE);
         when(identifierIdxRepository.save(any(IdentifierDto.class)))
                 .thenReturn(IDENTIFIER_1_DTO);
 
@@ -211,8 +235,8 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
             DatabaseNotFoundException, RemoteUnavailableException, IdentifierRequestException {
 
         /* mock */
-        identifierRepository.save(IDENTIFIER_1);
-        identifierRepository.save(IDENTIFIER_2);
+        identifierRepository.save(IDENTIFIER_1_SIMPLE);
+        identifierRepository.save(IDENTIFIER_2_SIMPLE);
         when(identifierIdxRepository.save(any(IdentifierDto.class)))
                 .thenReturn(IDENTIFIER_2_DTO);
         when(queryServiceGateway.find(eq(IDENTIFIER_2_DATABASE_ID), any(IdentifierCreateDto.class), anyString()))
@@ -237,7 +261,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
         doNothing()
                 .when(identifierIdxRepository)
                 .deleteById(IDENTIFIER_1_ID);
-        identifierRepository.save(IDENTIFIER_1);
+        identifierRepository.save(IDENTIFIER_1_SIMPLE);
 
         /* test */
         identifierService.delete(IDENTIFIER_1_ID);
@@ -248,8 +272,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     public void delete_notFound_fails() {
 
         /* mock */
-        final Identifier id = IDENTIFIER_1;
-        identifierRepository.save(IDENTIFIER_1);
+        identifierRepository.save(IDENTIFIER_1_SIMPLE);
 
         /* test */
         assertThrows(IdentifierNotFoundException.class, () -> {

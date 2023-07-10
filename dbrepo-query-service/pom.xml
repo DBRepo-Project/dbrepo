@@ -54,6 +54,8 @@
         <testcontainers.version>1.18.3</testcontainers.version>
         <opensearch-testcontainer.version>2.0.0</opensearch-testcontainer.version>
         <opensearch-client.version>1.1.0</opensearch-client.version>
+        <opensearch-rest-client.version>2.8.0</opensearch-rest-client.version>
+        <jackson.version>2.15.2</jackson.version>
     </properties>
 
     <dependencies>
@@ -132,6 +134,27 @@
             <groupId>org.opensearch.client</groupId>
             <artifactId>spring-data-opensearch-starter</artifactId>
             <version>${opensearch-client.version}</version>
+        </dependency>
+        <!-- OpenSearch -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.opensearch.client</groupId>
+            <artifactId>opensearch-rest-high-level-client</artifactId>
+            <version>${opensearch-rest-client.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.opensearch.client</groupId>
+            <artifactId>opensearch-rest-client-sniffer</artifactId>
+            <version>${opensearch-rest-client.version}</version>
         </dependency>
         <!-- AMPQ -->
         <dependency>

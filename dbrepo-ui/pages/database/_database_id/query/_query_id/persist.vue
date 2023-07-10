@@ -1,6 +1,6 @@
 <template>
   <div v-if="canPersistQuery">
-    <Persist type="subset" :database="database" />
+    <Persist type="subset" :database="database" :query="query" />
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
   </div>
 </template>
@@ -41,13 +41,13 @@ export default {
       return this.$store.state.access
     },
     hasIdentifier () {
-      if ('identifier' in this.database && this.database.identifier) {
-        return 'id' in this.database.identifier
+      if ('identifier' in this.query && this.query.identifier) {
+        return 'id' in this.query.identifier
       }
       return false
     },
     canPersistQuery () {
-      if (this.loadingQuery || !this.query || this.query.is_persisted) {
+      if (this.loadingQuery || !this.query || this.hasIdentifier) {
         return false
       }
       return UserUtils.hasReadAccess(this.access)

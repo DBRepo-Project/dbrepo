@@ -3,6 +3,8 @@ package at.tuwien.endpoint;
 import at.tuwien.api.database.query.QueryBriefDto;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.error.ApiErrorDto;
+import at.tuwien.api.identifier.IdentifierBriefDto;
+import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.identifier.IdentifierType;
 import at.tuwien.entities.user.User;
@@ -116,20 +118,17 @@ public class StoreEndpoint {
                 databaseId, persisted, principal);
         endpointValidator.validateOnlyAccessOrPublic(databaseId, principal);
         final List<Query> queries = storeService.findAll(databaseId, persisted, principal);
-        final List<Identifier> identifiers = identifierService.findAll();
-        final List<User> users = userService.findAll();
+        final List<IdentifierBriefDto> identifiers = identifierService.findAllSubsetIdentifiers()
+                .stream()
+                .map(identifierMapper::identifierToIdentifierBriefDto)
+                .toList();
         final List<QueryBriefDto> dto = queries.stream()
-                .map(q -> {
-                    final QueryBriefDto brief = queryMapper.queryToQueryBriefDto(q);
-                    final Optional<User> optional1 = users.stream().filter(u -> u.getUsername().equals(q.getCreatedBy()))
+                .map(queryMapper::queryToQueryBriefDto)
+                .peek(q -> {
+                    final Optional<IdentifierBriefDto> optional = identifiers.stream()
+                            .filter(i -> i.getDatabaseId().equals(databaseId) && i.getQueryId().equals(q.getId()))
                             .findFirst();
-                    optional1.ifPresent(user -> brief.setCreator(userMapper.userToUserDto(user)));
-                    final Optional<Identifier> optional2 = identifiers.stream()
-                            .filter(i -> i.getType().equals(IdentifierType.SUBSET))
-                            .filter(i -> i.getDatabase().getId().equals(databaseId) && i.getQueryId().equals(q.getId()))
-                            .findFirst();
-                    optional2.ifPresent(identifier -> brief.setIdentifier(identifierMapper.identifierToIdentifierBriefDto(identifier)));
-                    return brief;
+                    optional.ifPresent(q::setIdentifier);
                 })
                 .collect(Collectors.toList());
         log.trace("find queries resulted in queries {}", dto);

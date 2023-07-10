@@ -22,13 +22,13 @@ class UserMapper {
   }
 
   nameIdentifierToNameIdentifierScheme (nameIdentifier) {
-    if (nameIdentifier.matches('orcid.org')) {
+    if (nameIdentifier.includes('orcid.org')) {
       return 'ORCID'
-    } else if (nameIdentifier.matches('ror.org')) {
+    } else if (nameIdentifier.includes('ror.org')) {
       return 'ROR'
-    } else if (nameIdentifier.matches('isni.org')) {
+    } else if (nameIdentifier.includes('isni.org')) {
       return 'ISNI'
-    } else if (nameIdentifier.matches('grid.ac')) {
+    } else if (nameIdentifier.includes('grid.ac')) {
       return 'GRID'
     }
     return null

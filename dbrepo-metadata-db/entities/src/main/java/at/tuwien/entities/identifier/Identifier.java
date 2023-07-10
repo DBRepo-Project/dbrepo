@@ -23,13 +23,12 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-@jakarta.persistence.Table(name = "mdb_identifiers", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"qid", "dbid"})
-})
+@jakarta.persistence.Table(name = "mdb_identifiers")
 @NamedQueries({
-        @NamedQuery(name = "Identifier.findByDatabaseId", query = "select i from Identifier i where i.database.id = ?1"),
-        @NamedQuery(name = "Identifier.findByQueryId", query = "select i from Identifier i where i.queryId = ?1"),
-        @NamedQuery(name = "Identifier.findByDatabaseIdAndQueryId", query = "select i from Identifier i where i.database.id = ?1 and i.queryId = ?2"),
+        @NamedQuery(name = "Identifier.findAllDatabaseIdentifiers", query = "select i from Identifier i where i.type = 'DATABASE'"),
+        @NamedQuery(name = "Identifier.findAllSubsetIdentifiers", query = "select i from Identifier i where i.type = 'SUBSET'"),
+        @NamedQuery(name = "Identifier.findDatabaseIdentifier", query = "select i from Identifier i where i.databaseId = ?1 and i.type = 'DATABASE'"),
+        @NamedQuery(name = "Identifier.findSubsetIdentifier", query = "select i from Identifier i where i.databaseId = ?1 and i.queryId = ?2 and i.type = 'SUBSET'"),
 })
 public class Identifier implements Serializable {
 
@@ -106,10 +105,14 @@ public class Identifier implements Serializable {
     private VisibilityType visibility;
 
     @org.springframework.data.annotation.Transient
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumns({
-            @JoinColumn(name = "dbid", referencedColumnName = "id", insertable = false, updatable = false),
-    })
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @JoinTable(name = "mdb_identifiers_databases",
+            inverseJoinColumns = {
+                    @JoinColumn(name = "id", referencedColumnName = "database_id")
+            },
+            joinColumns = {
+                    @JoinColumn(name = "identifier_id", referencedColumnName = "id")
+            })
     private Database database;
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "identifier")
@@ -118,7 +121,7 @@ public class Identifier implements Serializable {
     @Column
     private String doi;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
             @JoinColumn(name = "createdBy", nullable = false, columnDefinition = "VARCHAR(36)", updatable = false)
     })
