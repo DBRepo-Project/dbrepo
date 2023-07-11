@@ -33,7 +33,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
 import java.security.Principal;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -74,12 +73,7 @@ public class IdentifierEndpoint {
                                                     @RequestParam(required = false) Long qid,
                                                     @RequestParam(required = false) IdentifierTypeDto type) {
         log.debug("endpoint find identifiers, dbid={}, qid={}, type={}", dbid, qid, type);
-        List<Identifier> identifiers = new LinkedList<>();
-        try {
-            identifiers = identifierService.findAll(dbid, qid);
-        } catch (IdentifierNotFoundException e) {
-            /* ignore */
-        }
+        final List<Identifier> identifiers = identifierService.findAll(dbid, qid);
         final List<IdentifierDto> dto = identifiers.stream()
                 .map(identifierMapper::identifierToIdentifierDto)
                 .filter(i -> {

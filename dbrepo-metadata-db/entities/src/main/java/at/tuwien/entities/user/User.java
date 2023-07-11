@@ -72,7 +72,7 @@ public class User {
 
     @ToString.Exclude
     @org.springframework.data.annotation.Transient
-    @Column(nullable = false)
+    @Column
     private String databasePassword;
 
     @ToString.Exclude

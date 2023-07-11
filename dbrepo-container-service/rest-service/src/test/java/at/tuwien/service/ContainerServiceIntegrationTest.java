@@ -8,12 +8,14 @@ import at.tuwien.repository.mdb.ContainerRepository;
 import at.tuwien.repository.mdb.ImageRepository;
 import at.tuwien.repository.mdb.RealmRepository;
 import at.tuwien.repository.mdb.UserRepository;
+import at.tuwien.repository.sdb.DatabaseIdxRepository;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -27,6 +29,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 public class ContainerServiceIntegrationTest extends BaseUnitTest {
+
+    @MockBean
+    private DatabaseIdxRepository databaseIdxRepository;
 
     @Autowired
     private ContainerRepository containerRepository;

@@ -69,7 +69,6 @@ public class Creator {
     private AffiliationIdentifierSchemeType affiliationIdentifierScheme;
 
     @ToString.Exclude
-    @org.springframework.data.annotation.Transient
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
             @JoinColumn(name = "pid", referencedColumnName = "id", updatable = false)

@@ -20,10 +20,8 @@ public interface IdentifierService {
      * @param databaseId Optional. The database id.
      * @param queryId    Optional. The query id.
      * @return List of identifiers
-     * @throws IdentifierNotFoundException The identifier with this filter conditions could not be found in the
-     *                                     metadata database.
      */
-    List<Identifier> findAll(Long databaseId, Long queryId) throws IdentifierNotFoundException;
+    List<Identifier> findAll(Long databaseId, Long queryId);
 
     /**
      * Finds all identifiers in the metadata database which are not deleted and filter by query id.

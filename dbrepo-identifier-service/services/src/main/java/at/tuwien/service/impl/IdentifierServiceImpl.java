@@ -60,7 +60,7 @@ public class IdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Identifier> findAll(Long databaseId, Long queryId) throws IdentifierNotFoundException {
+    public List<Identifier> findAll(Long databaseId, Long queryId) {
         if (databaseId != null && queryId != null) {
             return findByDatabaseIdAndQueryId(databaseId, queryId);
         } else if (databaseId == null && queryId != null) {
@@ -115,13 +115,15 @@ public class IdentifierServiceImpl implements IdentifierService {
             identifier.setResultNumber(query.getResultNumber());
             identifier.setResultHash(query.getResultHash());
         }
-        final Identifier out = saveIdentifier(identifier, data.getCreators(), data.getRelatedIdentifiers(),
+        /* create in metadata database */
+        final Identifier entity = saveIdentifier(identifier, data.getCreators(), data.getRelatedIdentifiers(),
                 data.getTitles(), data.getDescriptions(), data.getFunders());
-        log.info("Created identifier with id {} in metadata database", out.getId());
-        log.trace("created identifier {}", out);
-        identifierIdxRepository.save(out);
-        log.info("Created identifier with id {} in open search database", out.getId());
-        return out;
+        log.info("Created identifier with id {} in metadata database", entity.getId());
+        /* create in open search database */
+        removeBidirectionalReferences(entity);
+        identifierIdxRepository.save(entity);
+        log.info("Created identifier with id {} in open search database", entity.getId());
+        return entity;
     }
 
     @Override
@@ -245,13 +247,14 @@ public class IdentifierServiceImpl implements IdentifierService {
             identifier.setResultHash(query.getResultHash());
         }
         /* update in metadata database */
-        final Identifier out = saveIdentifier(identifier, data.getCreators(), data.getRelatedIdentifiers(),
+        final Identifier entity = saveIdentifier(identifier, data.getCreators(), data.getRelatedIdentifiers(),
                 data.getTitles(), data.getDescriptions(), data.getFunders());
         log.info("Updated identifier with id {} in metadata database", identifierId);
-        /* elastic search */
-        identifierIdxRepository.save(out);
+        /* update in open search database */
+        removeBidirectionalReferences(entity);
+        identifierIdxRepository.save(entity);
         log.info("Updated identifier with id {} in open search database", identifierId);
-        return out;
+        return entity;
     }
 
     @Override
@@ -289,7 +292,6 @@ public class IdentifierServiceImpl implements IdentifierService {
                                      List<IdentifierFunderSaveDto> funders) {
         /* create in metadata database */
         if (creators != null) {
-            identifier.setCreators(null);
             identifier.setCreators(creators.stream()
                     .map(identifierMapper::creatorCreateDtoToCreator)
                     .peek(c -> c.setIdentifier(identifier))
@@ -297,7 +299,6 @@ public class IdentifierServiceImpl implements IdentifierService {
             log.debug("set {} creator(s)", identifier.getCreators().size());
         }
         if (relatedIdentifiers != null) {
-            identifier.setRelatedIdentifiers(null);
             identifier.setRelatedIdentifiers(relatedIdentifiers.stream()
                     .map(identifierMapper::relatedIdentifierCreateDtoToRelatedIdentifier)
                     .peek(r -> r.setIdentifier(identifier))
@@ -313,7 +314,6 @@ public class IdentifierServiceImpl implements IdentifierService {
             log.debug("set {} title(s)", identifier.getTitles().size());
         }
         if (descriptions != null) {
-            identifier.setDescriptions(null);
             identifier.setDescriptions(descriptions.stream()
                     .map(identifierMapper::identifierCreateDescriptionDtoToIdentifierDescription)
                     .peek(d -> d.setIdentifier(identifier))
@@ -321,7 +321,6 @@ public class IdentifierServiceImpl implements IdentifierService {
             log.debug("set {} description(s)", identifier.getDescriptions().size());
         }
         if (funders != null) {
-            identifier.setFunders(null);
             identifier.setFunders(funders.stream()
                     .map(identifierMapper::identifierFunderSaveDtoToIdentifierFunder)
                     .peek(d -> d.setIdentifier(identifier))
@@ -329,6 +328,24 @@ public class IdentifierServiceImpl implements IdentifierService {
             log.debug("set {} funder(s)", identifier.getFunders().size());
         }
         return identifierRepository.save(identifier);
+    }
+
+    protected void removeBidirectionalReferences(Identifier identifier) {
+        if (identifier.getCreators() != null) {
+            identifier.setCreators(identifier.getCreators().stream().peek(c -> c.setIdentifier(null)).toList());
+        }
+        if (identifier.getRelatedIdentifiers() != null) {
+            identifier.setRelatedIdentifiers(identifier.getRelatedIdentifiers().stream().peek(c -> c.setIdentifier(null)).toList());
+        }
+        if (identifier.getTitles() != null) {
+            identifier.setTitles(identifier.getTitles().stream().peek(c -> c.setIdentifier(null)).toList());
+        }
+        if (identifier.getDescriptions() != null) {
+            identifier.setDescriptions(identifier.getDescriptions().stream().peek(c -> c.setIdentifier(null)).toList());
+        }
+        if (identifier.getFunders() != null) {
+            identifier.setFunders(identifier.getFunders().stream().peek(c -> c.setIdentifier(null)).toList());
+        }
     }
 
 }

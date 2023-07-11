@@ -8,6 +8,7 @@ import at.tuwien.exception.ImageNotFoundException;
 import at.tuwien.exception.UserNotFoundException;
 import at.tuwien.repository.mdb.RealmRepository;
 import at.tuwien.repository.mdb.UserRepository;
+import at.tuwien.repository.sdb.DatabaseIdxRepository;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,6 +23,9 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 public class ImageEndpointIntegrationTest extends BaseUnitTest {
+
+    @MockBean
+    private DatabaseIdxRepository databaseIdxRepository;
 
     @MockBean
     private RealmRepository realmRepository;

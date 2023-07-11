@@ -51,7 +51,6 @@ public class IdentifierFunder implements Serializable {
     private String awardTitle;
 
     @ToString.Exclude
-    @org.springframework.data.annotation.Transient
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
             @JoinColumn(name = "pid", referencedColumnName = "id", updatable = false)

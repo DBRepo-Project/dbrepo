@@ -38,7 +38,6 @@ public class RelatedIdentifier {
     private RelationType relation;
 
     @ToString.Exclude
-    @org.springframework.data.annotation.Transient
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
             @JoinColumn(name = "pid", referencedColumnName = "id", updatable = false)

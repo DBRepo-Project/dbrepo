@@ -9,6 +9,7 @@ import at.tuwien.entities.container.Container;
 import at.tuwien.exception.*;
 import at.tuwien.repository.mdb.ImageRepository;
 import at.tuwien.repository.mdb.UserRepository;
+import at.tuwien.repository.sdb.DatabaseIdxRepository;
 import at.tuwien.service.impl.ContainerServiceImpl;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
@@ -35,6 +36,9 @@ import static org.mockito.Mockito.when;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 public class ContainerEndpointUnitTest extends BaseUnitTest {
+
+    @MockBean
+    private DatabaseIdxRepository databaseIdxRepository;
 
     @MockBean
     private ContainerServiceImpl containerService;
