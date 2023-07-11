@@ -70,7 +70,6 @@ public class User {
     @Column
     private Long createdTimestamp;
 
-    @Transient
     @ToString.Exclude
     @org.springframework.data.annotation.Transient
     @Column(nullable = false)
@@ -80,19 +79,18 @@ public class User {
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "user")
     private List<UserAttribute> attributes;
 
-    @Transient
     @ToString.Exclude
     @org.springframework.data.annotation.Transient
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "user")
     private List<Credential> credentials;
 
-    @Transient
     @ToString.Exclude
+    @org.springframework.data.annotation.Transient
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "owner")
     private List<Database> databases;
 
-    @Transient
     @ToString.Exclude
+    @org.springframework.data.annotation.Transient
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "creator")
     private List<Identifier> identifiers;
 

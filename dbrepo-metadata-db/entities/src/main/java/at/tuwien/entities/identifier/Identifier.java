@@ -74,7 +74,7 @@ public class Identifier implements Serializable {
     @OrderBy("id")
     private List<IdentifierFunder> funders;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
             @JoinColumn(name = "License", referencedColumnName = "identifier")
     })
@@ -122,6 +122,7 @@ public class Identifier implements Serializable {
     @Enumerated(EnumType.STRING)
     private VisibilityType visibility;
 
+    @ToString.Exclude
     @org.springframework.data.annotation.Transient
     @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumns({
