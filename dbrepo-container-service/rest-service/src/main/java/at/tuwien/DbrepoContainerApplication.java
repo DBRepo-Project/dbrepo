@@ -14,10 +14,10 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EntityScan(basePackages = {"at.tuwien.entities"})
 @EnableJpaRepositories(basePackages = {"at.tuwien.repository.mdb"})
 @SpringBootApplication(exclude = {ElasticsearchDataAutoConfiguration.class, ElasticsearchRestClientAutoConfiguration.class})
-public class DbrepoContainerManagingApplication {
+public class DbrepoContainerApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(DbrepoContainerManagingApplication.class, args);
+        SpringApplication.run(DbrepoContainerApplication.class, args);
     }
 
 }

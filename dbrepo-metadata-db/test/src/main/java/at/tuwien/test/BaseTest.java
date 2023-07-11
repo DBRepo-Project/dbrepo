@@ -4973,7 +4973,7 @@ public abstract class BaseTest {
             .language(IDENTIFIER_1_TITLE_1_LANG_DTO)
             .build();
 
-    public final static IdentifierCreateTitleDto IDENTIFIER_1_TITLE_1_CREATE_DTO = IdentifierCreateTitleDto.builder()
+    public final static IdentifierSaveTitleDto IDENTIFIER_1_TITLE_1_CREATE_DTO = IdentifierSaveTitleDto.builder()
             .title(IDENTIFIER_1_TITLE_1_TITLE_MODIFY)
             .language(IDENTIFIER_1_TITLE_1_LANG_DTO)
             .build();
@@ -5003,7 +5003,7 @@ public abstract class BaseTest {
             .language(IDENTIFIER_1_DESCRIPTION_1_LANG_DTO)
             .build();
 
-    public final static IdentifierCreateDescriptionDto IDENTIFIER_1_DESCRIPTION_1_CREATE_DTO = IdentifierCreateDescriptionDto.builder()
+    public final static IdentifierSaveDescriptionDto IDENTIFIER_1_DESCRIPTION_1_CREATE_DTO = IdentifierSaveDescriptionDto.builder()
             .description(IDENTIFIER_1_DESCRIPTION_1_DESCRIPTION_MODIFY)
             .language(IDENTIFIER_1_DESCRIPTION_1_LANG_DTO)
             .build();
@@ -5032,7 +5032,7 @@ public abstract class BaseTest {
             .affiliationIdentifierScheme(CREATOR_1_AFFIL_TYPE_DTO)
             .build();
 
-    public final static CreatorCreateDto IDENTIFIER_1_CREATOR_1_CREATE_DTO = CreatorCreateDto.builder()
+    public final static CreatorSaveDto IDENTIFIER_1_CREATOR_1_CREATE_DTO = CreatorSaveDto.builder()
             .firstname(CREATOR_1_FIRSTNAME)
             .lastname(CREATOR_1_LASTNAME)
             .creatorName(CREATOR_1_NAME)
@@ -5042,7 +5042,7 @@ public abstract class BaseTest {
             .affiliationIdentifier(CREATOR_1_AFFIL_ROR)
             .build();
 
-    public final static CreatorCreateDto IDENTIFIER_1_CREATOR_1_MODIFY_DTO = CreatorCreateDto.builder()
+    public final static CreatorSaveDto IDENTIFIER_1_CREATOR_1_MODIFY_DTO = CreatorSaveDto.builder()
             .firstname(CREATOR_1_FIRSTNAME)
             .lastname(CREATOR_1_LASTNAME)
             .creatorName(CREATOR_1_NAME)
@@ -5050,6 +5050,37 @@ public abstract class BaseTest {
             .nameIdentifierScheme(NameIdentifierSchemeTypeDto.ORCID)
             .affiliation("JKU Linz")
             .affiliationIdentifier(CREATOR_1_AFFIL_ROR)
+            .build();
+
+    public final static Long FUNDER_1_ID = 1L;
+    public final static String FUNDER_1_NAME = "European Commission";
+    public final static String FUNDER_1_IDENTIFIER = "http://doi.org/10.13039/501100000780";
+    public final static String FUNDER_1_IDENTIFIER_ID_ONLY = "10.13039/501100000780";
+    public final static IdentifierFunderType FUNDER_1_IDENTIFIER_TYPE = IdentifierFunderType.CROSSREF_FUNDER_ID;
+    public final static IdentifierFunderTypeDto FUNDER_1_IDENTIFIER_TYPE_DTO = IdentifierFunderTypeDto.CROSSREF_FUNDER_ID;
+    public final static String FUNDER_1_AWARD_TITLE = "Institutionalizing global genetic-resource commons. Global Strategies for accessing and using essential public knowledge assets in the life science";
+
+    public final static IdentifierFunder IDENTIFIER_1_FUNDER_1 = IdentifierFunder.builder()
+            .id(FUNDER_1_ID)
+            .funderName(FUNDER_1_NAME)
+            .funderIdentifier(FUNDER_1_IDENTIFIER)
+            .funderIdentifierType(FUNDER_1_IDENTIFIER_TYPE)
+            .awardTitle(FUNDER_1_AWARD_TITLE)
+            .build();
+
+    public final static IdentifierFunderDto IDENTIFIER_1_FUNDER_1_DTO = IdentifierFunderDto.builder()
+            .id(FUNDER_1_ID)
+            .funderName(FUNDER_1_NAME)
+            .funderIdentifier(FUNDER_1_IDENTIFIER)
+            .funderIdentifierType(FUNDER_1_IDENTIFIER_TYPE_DTO)
+            .awardTitle(FUNDER_1_AWARD_TITLE)
+            .build();
+
+    public final static IdentifierFunderSaveDto IDENTIFIER_1_FUNDER_1_CREATE_DTO = IdentifierFunderSaveDto.builder()
+            .funderName(FUNDER_1_NAME)
+            .funderIdentifier(FUNDER_1_IDENTIFIER)
+            .funderIdentifierType(FUNDER_1_IDENTIFIER_TYPE_DTO)
+            .awardTitle(FUNDER_1_AWARD_TITLE)
             .build();
 
     public final static Identifier IDENTIFIER_1 = Identifier.builder()
@@ -5074,6 +5105,7 @@ public abstract class BaseTest {
             .type(IDENTIFIER_1_TYPE)
             .creator(USER_1)
             .creators(List.of(IDENTIFIER_1_CREATOR_1))
+            .funders(List.of(IDENTIFIER_1_FUNDER_1))
             .visibility(IDENTIFIER_1_VISIBILITY)
             .build();
 
@@ -5099,6 +5131,7 @@ public abstract class BaseTest {
             .type(IDENTIFIER_1_TYPE)
             .creator(USER_1)
             .creators(List.of() /* for jpa */)
+            .funders(List.of() /* for jpa */)
             .visibility(IDENTIFIER_1_VISIBILITY)
             .build();
 
@@ -5124,6 +5157,7 @@ public abstract class BaseTest {
             .type(IDENTIFIER_1_TYPE)
             .creator(USER_1)
             .creators(List.of(IDENTIFIER_1_CREATOR_1))
+            .funders(List.of(IDENTIFIER_1_FUNDER_1))
             .visibility(IDENTIFIER_1_VISIBILITY)
             .build();
 
@@ -5149,6 +5183,7 @@ public abstract class BaseTest {
             .type(IDENTIFIER_1_TYPE_DTO)
             .creator(USER_1_DTO)
             .creators(List.of(IDENTIFIER_1_CREATOR_1_DTO))
+            .funders(List.of(IDENTIFIER_1_FUNDER_1_DTO))
             .visibility(IDENTIFIER_1_VISIBILITY_DTO)
             .build();
 
@@ -5174,6 +5209,7 @@ public abstract class BaseTest {
             .type(IDENTIFIER_1_TYPE_DTO)
             .creator(USER_1_DTO)
             .creators(List.of(IDENTIFIER_1_CREATOR_1_DTO))
+            .funders(List.of(IDENTIFIER_1_FUNDER_1_DTO))
             .visibility(IDENTIFIER_1_VISIBILITY_DTO)
             .build();
 
@@ -5222,7 +5258,7 @@ public abstract class BaseTest {
             .titleType(IDENTIFIER_2_TITLE_1_TYPE_DTO)
             .build();
 
-    public final static IdentifierCreateTitleDto IDENTIFIER_2_TITLE_1_CREATE_DTO = IdentifierCreateTitleDto.builder()
+    public final static IdentifierSaveTitleDto IDENTIFIER_2_TITLE_1_CREATE_DTO = IdentifierSaveTitleDto.builder()
             .title(IDENTIFIER_2_TITLE_1_TITLE)
             .language(IDENTIFIER_2_TITLE_1_LANG_DTO)
             .titleType(IDENTIFIER_2_TITLE_1_TYPE_DTO)
@@ -5250,7 +5286,7 @@ public abstract class BaseTest {
             .descriptionType(IDENTIFIER_2_DESCRIPTION_1_TYPE_DTO)
             .build();
 
-    public final static IdentifierCreateDescriptionDto IDENTIFIER_2_DESCRIPTION_1_CREATE_DTO = IdentifierCreateDescriptionDto.builder()
+    public final static IdentifierSaveDescriptionDto IDENTIFIER_2_DESCRIPTION_1_CREATE_DTO = IdentifierSaveDescriptionDto.builder()
             .description(IDENTIFIER_2_DESCRIPTION_1_DESCRIPTION)
             .language(IDENTIFIER_2_DESCRIPTION_1_LANG_DTO)
             .descriptionType(IDENTIFIER_2_DESCRIPTION_1_TYPE_DTO)
@@ -5280,7 +5316,7 @@ public abstract class BaseTest {
             .affiliation(CREATOR_1_AFFIL)
             .build();
 
-    public final static CreatorCreateDto IDENTIFIER_2_CREATOR_1_CREATE_DTO = CreatorCreateDto.builder()
+    public final static CreatorSaveDto IDENTIFIER_2_CREATOR_1_CREATE_DTO = CreatorSaveDto.builder()
             .firstname(CREATOR_1_FIRSTNAME)
             .lastname(CREATOR_1_LASTNAME)
             .creatorName(CREATOR_1_NAME)
@@ -5289,7 +5325,7 @@ public abstract class BaseTest {
             .affiliation(CREATOR_1_AFFIL)
             .build();
 
-    public final static CreatorCreateDto IDENTIFIER_2_CREATOR_1_MODIFY_DTO = CreatorCreateDto.builder()
+    public final static CreatorSaveDto IDENTIFIER_2_CREATOR_1_MODIFY_DTO = CreatorSaveDto.builder()
             .firstname(CREATOR_1_FIRSTNAME)
             .lastname(CREATOR_1_LASTNAME)
             .creatorName(CREATOR_1_NAME)
@@ -5320,7 +5356,7 @@ public abstract class BaseTest {
             .affiliation(CREATOR_2_AFFIL)
             .build();
 
-    public final static CreatorCreateDto IDENTIFIER_2_CREATOR_2_CREATE_DTO = CreatorCreateDto.builder()
+    public final static CreatorSaveDto IDENTIFIER_2_CREATOR_2_CREATE_DTO = CreatorSaveDto.builder()
             .firstname(CREATOR_2_FIRSTNAME)
             .lastname(CREATOR_2_LASTNAME)
             .creatorName(CREATOR_2_NAME)
@@ -5329,7 +5365,7 @@ public abstract class BaseTest {
             .affiliation(CREATOR_2_AFFIL)
             .build();
 
-    public final static CreatorCreateDto IDENTIFIER_2_CREATOR_2_MODIFY_DTO = CreatorCreateDto.builder()
+    public final static CreatorSaveDto IDENTIFIER_2_CREATOR_2_MODIFY_DTO = CreatorSaveDto.builder()
             .firstname(CREATOR_2_FIRSTNAME)
             .lastname(CREATOR_2_LASTNAME)
             .creatorName(CREATOR_2_NAME)
@@ -5434,24 +5470,24 @@ public abstract class BaseTest {
             .visibility(IDENTIFIER_2_VISIBILITY_DTO)
             .build();
 
-    public final static IdentifierCreateDto IDENTIFIER_1_DTO_REQUEST = IdentifierCreateDto.builder()
-            .dbid(IDENTIFIER_1_DATABASE_ID)
+    public final static IdentifierSaveDto IDENTIFIER_1_DTO_REQUEST = IdentifierSaveDto.builder()
+            .databaseId(IDENTIFIER_1_DATABASE_ID)
             .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_CREATE_DTO))
             .titles(List.of(IDENTIFIER_1_TITLE_1_CREATE_DTO))
             .relatedIdentifiers(List.of())
             .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
             .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
             .creators(List.of(IDENTIFIER_1_CREATOR_1_CREATE_DTO))
+            .funders(List.of(IDENTIFIER_1_FUNDER_1_CREATE_DTO))
             .publisher(IDENTIFIER_1_PUBLISHER)
             .type(IDENTIFIER_1_TYPE_DTO)
             .visibility(IDENTIFIER_1_VISIBILITY_DTO)
             .build();
 
-    public final static IdentifierUpdateDto IDENTIFIER_1_DTO_UPDATE_REQUEST = IdentifierUpdateDto.builder()
-            .dbid(IDENTIFIER_1_DATABASE_ID)
+    public final static IdentifierSaveDto IDENTIFIER_1_DTO_UPDATE_REQUEST = IdentifierSaveDto.builder()
+            .databaseId(IDENTIFIER_1_DATABASE_ID)
             .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_CREATE_DTO))
             .titles(List.of(IDENTIFIER_1_TITLE_1_CREATE_DTO))
-            .doi(IDENTIFIER_1_DOI)
             .relatedIdentifiers(List.of())
             .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
             .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
@@ -5476,16 +5512,15 @@ public abstract class BaseTest {
             .value(RELATED_IDENTIFIER_2_VALUE)
             .build();
 
-    public final static RelatedIdentifierCreateDto IDENTIFIER_1_RELATED_IDENTIFIER_2_CREATE_DTO = RelatedIdentifierCreateDto.builder()
+    public final static RelatedIdentifierSaveDto IDENTIFIER_1_RELATED_IDENTIFIER_2_CREATE_DTO = RelatedIdentifierSaveDto.builder()
             .value(RELATED_IDENTIFIER_2_VALUE)
             .type(RELATED_IDENTIFIER_2_TYPE_DTO)
             .relation(RELATED_IDENTIFIER_2_RELATION)
             .build();
 
-    public final static IdentifierCreateDto IDENTIFIER_2_DTO_REQUEST = IdentifierCreateDto.builder()
-            .qid(IDENTIFIER_2_QUERY_ID)
-            .qid(IDENTIFIER_2_QUERY_ID)
-            .dbid(IDENTIFIER_2_DATABASE_ID)
+    public final static IdentifierSaveDto IDENTIFIER_2_DTO_REQUEST = IdentifierSaveDto.builder()
+            .queryId(IDENTIFIER_2_QUERY_ID)
+            .databaseId(IDENTIFIER_2_DATABASE_ID)
             .descriptions(List.of(IDENTIFIER_2_DESCRIPTION_1_CREATE_DTO))
             .titles(List.of(IDENTIFIER_2_TITLE_1_CREATE_DTO))
             .relatedIdentifiers(List.of(IDENTIFIER_1_RELATED_IDENTIFIER_2_CREATE_DTO))
@@ -5498,13 +5533,11 @@ public abstract class BaseTest {
             .visibility(IDENTIFIER_2_VISIBILITY_DTO)
             .build();
 
-    public final static IdentifierUpdateDto IDENTIFIER_2_DTO_UPDATE_REQUEST = IdentifierUpdateDto.builder()
-            .qid(IDENTIFIER_2_QUERY_ID)
-            .qid(IDENTIFIER_2_QUERY_ID)
-            .dbid(IDENTIFIER_2_DATABASE_ID)
+    public final static IdentifierSaveDto IDENTIFIER_2_DTO_UPDATE_REQUEST = IdentifierSaveDto.builder()
+            .queryId(IDENTIFIER_2_QUERY_ID)
+            .databaseId(IDENTIFIER_2_DATABASE_ID)
             .descriptions(List.of(IDENTIFIER_2_DESCRIPTION_1_CREATE_DTO))
             .titles(List.of(IDENTIFIER_2_TITLE_1_CREATE_DTO))
-            .doi(IDENTIFIER_2_DOI)
             .relatedIdentifiers(List.of(IDENTIFIER_1_RELATED_IDENTIFIER_2_CREATE_DTO))
             .publicationDay(IDENTIFIER_2_PUBLICATION_DAY)
             .publicationMonth(IDENTIFIER_2_PUBLICATION_MONTH)
@@ -5563,7 +5596,7 @@ public abstract class BaseTest {
             .language(IDENTIFIER_3_TITLE_1_LANG_DTO)
             .build();
 
-    public final static IdentifierCreateTitleDto IDENTIFIER_3_TITLE_1_CREATE_DTO = IdentifierCreateTitleDto.builder()
+    public final static IdentifierSaveTitleDto IDENTIFIER_3_TITLE_1_CREATE_DTO = IdentifierSaveTitleDto.builder()
             .title(IDENTIFIER_3_TITLE_1_TITLE_MODIFY)
             .language(IDENTIFIER_3_TITLE_1_LANG_DTO)
             .build();
@@ -5593,7 +5626,7 @@ public abstract class BaseTest {
             .language(IDENTIFIER_3_DESCRIPTION_1_LANG_DTO)
             .build();
 
-    public final static IdentifierCreateDescriptionDto IDENTIFIER_3_DESCRIPTION_1_CREATE_DTO = IdentifierCreateDescriptionDto.builder()
+    public final static IdentifierSaveDescriptionDto IDENTIFIER_3_DESCRIPTION_1_CREATE_DTO = IdentifierSaveDescriptionDto.builder()
             .description(IDENTIFIER_3_DESCRIPTION_1_DESCRIPTION_MODIFY)
             .language(IDENTIFIER_3_DESCRIPTION_1_LANG_DTO)
             .build();
@@ -5624,7 +5657,7 @@ public abstract class BaseTest {
             .affiliationIdentifierScheme(CREATOR_1_AFFIL_TYPE_DTO)
             .build();
 
-    public final static CreatorCreateDto IDENTIFIER_3_CREATOR_1_CREATE_DTO = CreatorCreateDto.builder()
+    public final static CreatorSaveDto IDENTIFIER_3_CREATOR_1_CREATE_DTO = CreatorSaveDto.builder()
             .firstname(CREATOR_1_FIRSTNAME)
             .lastname(CREATOR_1_LASTNAME)
             .creatorName(CREATOR_1_NAME)
@@ -5634,7 +5667,7 @@ public abstract class BaseTest {
             .affiliationIdentifier(CREATOR_1_AFFIL_ROR)
             .build();
 
-    public final static CreatorCreateDto IDENTIFIER_3_CREATOR_1_MODIFY_DTO = CreatorCreateDto.builder()
+    public final static CreatorSaveDto IDENTIFIER_3_CREATOR_1_MODIFY_DTO = CreatorSaveDto.builder()
             .firstname(CREATOR_1_FIRSTNAME)
             .lastname(CREATOR_1_LASTNAME)
             .creatorName(CREATOR_1_NAME)
@@ -5767,9 +5800,9 @@ public abstract class BaseTest {
             .visibility(IDENTIFIER_3_VISIBILITY_DTO)
             .build();
 
-    public final static IdentifierCreateDto IDENTIFIER_3_DTO_REQUEST = IdentifierCreateDto.builder()
-            .dbid(IDENTIFIER_3_DATABASE_ID)
-            .qid(IDENTIFIER_3_QUERY_ID)
+    public final static IdentifierSaveDto IDENTIFIER_3_DTO_REQUEST = IdentifierSaveDto.builder()
+            .databaseId(IDENTIFIER_3_DATABASE_ID)
+            .queryId(IDENTIFIER_3_QUERY_ID)
             .descriptions(List.of(IDENTIFIER_3_DESCRIPTION_1_CREATE_DTO))
             .titles(List.of(IDENTIFIER_3_TITLE_1_CREATE_DTO))
             .relatedIdentifiers(List.of())
@@ -5781,12 +5814,11 @@ public abstract class BaseTest {
             .visibility(IDENTIFIER_3_VISIBILITY_DTO)
             .build();
 
-    public final static IdentifierUpdateDto IDENTIFIER_3_DTO_UPDATE_REQUEST = IdentifierUpdateDto.builder()
-            .dbid(IDENTIFIER_3_DATABASE_ID)
-            .qid(IDENTIFIER_3_QUERY_ID)
+    public final static IdentifierSaveDto IDENTIFIER_3_DTO_UPDATE_REQUEST = IdentifierSaveDto.builder()
+            .databaseId(IDENTIFIER_3_DATABASE_ID)
+            .queryId(IDENTIFIER_3_QUERY_ID)
             .descriptions(List.of(IDENTIFIER_3_DESCRIPTION_1_CREATE_DTO))
             .titles(List.of(IDENTIFIER_3_TITLE_1_CREATE_DTO))
-            .doi(IDENTIFIER_3_DOI)
             .relatedIdentifiers(List.of())
             .publicationMonth(IDENTIFIER_3_PUBLICATION_MONTH)
             .publicationYear(IDENTIFIER_3_PUBLICATION_YEAR)
@@ -5919,7 +5951,7 @@ public abstract class BaseTest {
             .visibility(IDENTIFIER_4_VISIBILITY_DTO)
             .build();
 
-    public final static CreatorCreateDto IDENTIFIER_4_CREATOR_1_CREATE_DTO = CreatorCreateDto.builder()
+    public final static CreatorSaveDto IDENTIFIER_4_CREATOR_1_CREATE_DTO = CreatorSaveDto.builder()
             .firstname(CREATOR_1_FIRSTNAME)
             .lastname(CREATOR_1_LASTNAME)
             .creatorName(CREATOR_1_NAME)
@@ -5929,8 +5961,8 @@ public abstract class BaseTest {
             .affiliationIdentifier(CREATOR_1_AFFIL_ROR)
             .build();
 
-    public final static IdentifierCreateDto IDENTIFIER_4_DTO_REQUEST = IdentifierCreateDto.builder()
-            .dbid(IDENTIFIER_4_DATABASE_ID)
+    public final static IdentifierSaveDto IDENTIFIER_4_DTO_REQUEST = IdentifierSaveDto.builder()
+            .databaseId(IDENTIFIER_4_DATABASE_ID)
             .descriptions(List.of())
             .titles(List.of())
             .relatedIdentifiers(List.of())
@@ -6014,8 +6046,8 @@ public abstract class BaseTest {
             .visibility(IDENTIFIER_5_VISIBILITY_DTO)
             .build();
 
-    public final static IdentifierCreateDto IDENTIFIER_5_DTO_REQUEST = IdentifierCreateDto.builder()
-            .dbid(IDENTIFIER_5_DATABASE_ID)
+    public final static IdentifierSaveDto IDENTIFIER_5_DTO_REQUEST = IdentifierSaveDto.builder()
+            .databaseId(IDENTIFIER_5_DATABASE_ID)
             .descriptions(List.of())
             .titles(List.of())
             .relatedIdentifiers(List.of())

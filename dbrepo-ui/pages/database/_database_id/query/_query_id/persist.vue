@@ -26,6 +26,12 @@ export default {
           text: `${this.$route.params.database_id}`,
           to: `/database/${this.$route.params.database_id}/info`,
           activeClass: ''
+        },
+        { text: 'Queries', to: `/database/${this.$route.params.database_id}/query`, activeClass: '' },
+        {
+          text: `${this.$route.params.query_id}`,
+          to: `/database/${this.$route.params.database_id}/query/${this.$route.params.query_id}`,
+          activeClass: ''
         }
       ]
     }

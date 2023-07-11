@@ -212,9 +212,9 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"create-identifier"})
     public void create_invalidSubset_fails() {
-        final IdentifierCreateDto request = IdentifierCreateDto.builder()
-                .qid(null)  // <--
-                .dbid(IDENTIFIER_1_DATABASE_ID)
+        final IdentifierSaveDto request = IdentifierSaveDto.builder()
+                .queryId(null)  // <--
+                .databaseId(IDENTIFIER_1_DATABASE_ID)
                 .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_CREATE_DTO))
                 .titles(List.of(IDENTIFIER_1_TITLE_1_CREATE_DTO))
                 .relatedIdentifiers(List.of())
@@ -234,9 +234,9 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"create-identifier"})
     public void create_invalidDatabase_fails() {
-        final IdentifierCreateDto request = IdentifierCreateDto.builder()
-                .qid(IDENTIFIER_1_QUERY_ID) // <--
-                .dbid(IDENTIFIER_1_DATABASE_ID)
+        final IdentifierSaveDto request = IdentifierSaveDto.builder()
+                .queryId(IDENTIFIER_1_QUERY_ID) // <--
+                .databaseId(IDENTIFIER_1_DATABASE_ID)
                 .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_CREATE_DTO))
                 .titles(List.of(IDENTIFIER_1_TITLE_1_CREATE_DTO))
                 .relatedIdentifiers(List.of(IDENTIFIER_1_RELATED_IDENTIFIER_2_CREATE_DTO))
@@ -269,7 +269,7 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
     /* ################################################################################################### */
 
     protected void generic_create(Long databaseId, Database database, DatabaseAccess access,
-                                  IdentifierCreateDto data, Identifier identifier, Principal principal, UUID userId,
+                                  IdentifierSaveDto data, Identifier identifier, Principal principal, UUID userId,
                                   String username, User user) throws QueryNotFoundException, RemoteUnavailableException,
             IdentifierAlreadyExistsException, UserNotFoundException, DatabaseNotFoundException,
             IdentifierPublishingNotAllowedException, IdentifierRequestException, NotAllowedException,

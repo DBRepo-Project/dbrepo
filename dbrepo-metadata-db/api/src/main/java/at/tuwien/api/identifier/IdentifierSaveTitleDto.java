@@ -1,10 +1,8 @@
 package at.tuwien.api.identifier;
 
 import at.tuwien.api.database.LanguageTypeDto;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
@@ -15,16 +13,18 @@ import lombok.extern.jackson.Jacksonized;
 @AllArgsConstructor
 @Jacksonized
 @ToString
-public class IdentifierCreateDescriptionDto {
+public class IdentifierSaveTitleDto {
 
-    @Schema(example = "Air quality reports at Stephansplatz, Vienna")
-    private String description;
+    private Long id;
+
+    @Schema(example = "Airquality Demonstrator")
+    private String title;
 
     @Schema(example = "en")
     private LanguageTypeDto language;
 
-    @Schema(example = "Abstract")
     @JsonProperty("type")
-    private DescriptionTypeDto descriptionType;
+    @Schema(example = "Subtitle")
+    private TitleTypeDto titleType;
 
 }

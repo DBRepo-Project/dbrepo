@@ -14,7 +14,9 @@ import lombok.extern.jackson.Jacksonized;
 @AllArgsConstructor
 @Jacksonized
 @ToString
-public class CreatorCreateDto {
+public class CreatorSaveDto {
+
+    private Long id;
 
     @NotBlank
     @Schema(example = "Josiah")

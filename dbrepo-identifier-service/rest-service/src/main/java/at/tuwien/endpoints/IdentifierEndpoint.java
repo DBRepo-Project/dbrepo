@@ -1,8 +1,8 @@
 package at.tuwien.endpoints;
 
 import at.tuwien.api.error.ApiErrorDto;
-import at.tuwien.api.identifier.IdentifierCreateDto;
 import at.tuwien.api.identifier.IdentifierDto;
+import at.tuwien.api.identifier.IdentifierSaveDto;
 import at.tuwien.api.identifier.IdentifierTypeDto;
 import at.tuwien.api.user.external.ExternalMetadataDto;
 import at.tuwien.entities.identifier.Identifier;
@@ -135,22 +135,22 @@ public class IdentifierEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<IdentifierDto> create(@NotNull @Valid @RequestBody IdentifierCreateDto data,
+    public ResponseEntity<IdentifierDto> create(@NotNull @Valid @RequestBody IdentifierSaveDto data,
                                                 @NotNull @RequestHeader(name = "Authorization") String authorization,
                                                 @NotNull Principal principal)
             throws IdentifierAlreadyExistsException, QueryNotFoundException, IdentifierPublishingNotAllowedException,
             RemoteUnavailableException, UserNotFoundException, DatabaseNotFoundException, IdentifierRequestException, NotAllowedException {
         log.debug("endpoint create identifier, data={}, authorization=(hidden), principal={}", data, principal);
-        if (data.getType().equals(IdentifierTypeDto.SUBSET) && data.getQid() == null) {
+        if (data.getType().equals(IdentifierTypeDto.SUBSET) && data.getQueryId() == null) {
             log.error("Identifier of type subset need to have a qid present");
             throw new IdentifierRequestException("Identifier of type subset need to have a qid present");
-        } else if (data.getType().equals(IdentifierTypeDto.DATABASE) && data.getQid() != null) {
+        } else if (data.getType().equals(IdentifierTypeDto.DATABASE) && data.getQueryId() != null) {
             log.error("Identifier of type database must not have a qid present");
             throw new IdentifierRequestException("Identifier of type database must not have a qid present");
         }
         final User user = userService.findByUsername(principal.getName());
         try {
-            accessService.find(data.getDbid(), user.getId());
+            accessService.find(data.getDatabaseId(), user.getId());
         } catch (AccessDeniedException e) {
             if (!User.hasRole(principal, "create-foreign-identifier")) {
                 log.error("Failed to create identifier: insufficient access");
@@ -173,7 +173,7 @@ public class IdentifierEndpoint {
                             schema = @Schema(implementation = IdentifierDto.class))}),
     })
     public ResponseEntity<ExternalMetadataDto> create(@NotNull @Valid @RequestParam String url)
-            throws OrcidNotFoundException, RorNotFoundException, RemoteUnavailableException {
+            throws OrcidNotFoundException, RorNotFoundException, RemoteUnavailableException, DoiNotFoundException {
         return ResponseEntity.ok(metadataService.findByUrl(url));
     }
 

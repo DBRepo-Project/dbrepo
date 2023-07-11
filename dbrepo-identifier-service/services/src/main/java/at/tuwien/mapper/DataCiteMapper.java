@@ -27,7 +27,6 @@ public interface DataCiteMapper {
             @Mapping(target = "language", source = "language"),
             @Mapping(target = "rightsList", expression = "java(list(licenseToDoiRights(identifier.getLicense())))"),
             @Mapping(target = "creators", source = "creators"),
-            @Mapping(target = "relatedIdentifiers", source = "related"),
     })
     DataCiteCreateDoi identifierToDataCiteCreateDoi(Identifier identifier);
 

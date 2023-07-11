@@ -85,28 +85,28 @@ public class IdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional
-    public Identifier create(IdentifierCreateDto data, Principal principal, String authorization)
+    public Identifier create(IdentifierSaveDto data, Principal principal, String authorization)
             throws QueryNotFoundException, RemoteUnavailableException, IdentifierAlreadyExistsException,
             UserNotFoundException, DatabaseNotFoundException, IdentifierPublishingNotAllowedException,
             IdentifierRequestException {
         /* check */
-        if (data.getType().equals(IdentifierTypeDto.DATABASE) && identifierRepository.existsByDatabaseIdAndType(data.getDbid(), IdentifierType.DATABASE)) {
-            log.error("Identifier already issued for database with id {}", data.getDbid());
+        if (data.getType().equals(IdentifierTypeDto.DATABASE) && identifierRepository.existsByDatabaseIdAndType(data.getDatabaseId(), IdentifierType.DATABASE)) {
+            log.error("Identifier already issued for database with id {}", data.getDatabaseId());
             throw new IdentifierAlreadyExistsException("Database identifier already exists");
-        } else if (data.getType().equals(IdentifierTypeDto.SUBSET) && identifierRepository.existsByDatabaseIdAndQueryIdAndType(data.getDbid(), data.getQid(), IdentifierType.SUBSET)) {
-            log.error("Identifier already issued for database with id {} and query with id {}", data.getDbid(), data.getQid());
+        } else if (data.getType().equals(IdentifierTypeDto.SUBSET) && identifierRepository.existsByDatabaseIdAndQueryIdAndType(data.getDatabaseId(), data.getQueryId(), IdentifierType.SUBSET)) {
+            log.error("Identifier already issued for database with id {} and query with id {}", data.getDatabaseId(), data.getQueryId());
             throw new IdentifierAlreadyExistsException("Subset identifier already exists");
         }
         /* create identifier */
         final Identifier identifier = identifierMapper.identifierCreateDtoToIdentifier(data);
         final User creator = userService.findByUsername(principal.getName());
         identifier.setCreator(creator);
-        identifier.setDatabaseId(data.getDbid());
-        final Database database = databaseService.find(data.getDbid());
+        identifier.setDatabaseId(data.getDatabaseId());
+        final Database database = databaseService.find(data.getDatabaseId());
         identifier.setDatabase(database);
         if (data.getType().equals(IdentifierTypeDto.SUBSET)) {
             log.debug("identifier describes a subset");
-            final QueryDto query = queryServiceGateway.find(data.getDbid(), data, authorization);
+            final QueryDto query = queryServiceGateway.find(data.getDatabaseId(), data, authorization);
             identifier.setQuery(query.getQuery());
             identifier.setQueryId(query.getId());
             identifier.setQueryNormalized(query.getQueryNormalized());
@@ -115,12 +115,13 @@ public class IdentifierServiceImpl implements IdentifierService {
             identifier.setResultNumber(query.getResultNumber());
             identifier.setResultHash(query.getResultHash());
         }
-        saveIdentifier(identifier, data.getCreators(), data.getRelatedIdentifiers(), data.getTitles(), data.getDescriptions());
-        log.info("Created identifier with id {}", identifier.getId());
-        log.trace("created identifier {}", identifier);
-        identifierIdxRepository.save(identifierMapper.identifierToIdentifierDto(identifier));
-        log.info("Created identifier with id {} in elastic search", identifier.getId());
-        return identifier;
+        final Identifier out = saveIdentifier(identifier, data.getCreators(), data.getRelatedIdentifiers(),
+                data.getTitles(), data.getDescriptions(), data.getFunders());
+        log.info("Created identifier with id {}", out.getId());
+        log.trace("created identifier {}", out);
+        identifierIdxRepository.save(identifierMapper.identifierToIdentifierDto(out));
+        log.info("Created identifier with id {} in elastic search", out.getId());
+        return out;
     }
 
     @Override
@@ -148,12 +149,14 @@ public class IdentifierServiceImpl implements IdentifierService {
             context.setVariable("identifierType", "PID");
             context.setVariable("identifier", endpointConfig.getWebsiteUrl() + "/pid/" + identifier.getId());
         }
+        context.setVariable("language", identifier.getLanguage());
         context.setVariable("creators", identifier.getCreators());
         context.setVariable("titles", identifier.getTitles());
         context.setVariable("publisher", identifier.getPublisher());
         context.setVariable("publicationYear", identifier.getPublicationYear());
         context.setVariable("created", identifier.getCreated());
-        context.setVariable("relatedIdentifiers", identifier.getRelated());
+        context.setVariable("relatedIdentifiers", identifier.getRelatedIdentifiers());
+        context.setVariable("funders", identifier.getFunders());
         context.setVariable("descriptions", identifier.getDescriptions());
         /* map */
         final String body = templateEngine.process("doi.xml", context)
@@ -216,19 +219,23 @@ public class IdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional
-    public Identifier update(Long identifierId, IdentifierUpdateDto data, Principal principal, String authorization)
-            throws UserNotFoundException, DatabaseNotFoundException, QueryNotFoundException, RemoteUnavailableException {
+    public Identifier update(Long identifierId, IdentifierSaveDto data, Principal principal, String authorization)
+            throws UserNotFoundException, DatabaseNotFoundException, QueryNotFoundException, RemoteUnavailableException,
+            IdentifierNotFoundException {
+        /* find doi */
+        final Identifier oldIdentifier = find(identifierId);
         /* create identifier */
         final Identifier identifier = identifierMapper.identifierUpdateDtoToIdentifier(data);
         identifier.setId(identifierId);
+        identifier.setDoi(oldIdentifier.getDoi());
         final User creator = userService.findByUsername(principal.getName());
         identifier.setCreator(creator);
-        final Database database = databaseService.find(data.getDbid());
+        final Database database = databaseService.find(data.getDatabaseId());
         identifier.setDatabase(database);
         if (data.getType().equals(IdentifierTypeDto.SUBSET)) {
             log.debug("identifier describes a subset");
-            final IdentifierCreateDto payload = identifierMapper.identifierUpdateDtoToIdentifierCreateDto(data);
-            final QueryDto query = queryServiceGateway.find(data.getDbid(), payload, authorization);
+            final IdentifierSaveDto payload = identifierMapper.identifierUpdateDtoToIdentifierCreateDto(data);
+            final QueryDto query = queryServiceGateway.find(data.getDatabaseId(), payload, authorization);
             identifier.setQuery(query.getQuery());
             identifier.setQueryId(query.getId());
             identifier.setQueryNormalized(query.getQueryNormalized());
@@ -238,7 +245,8 @@ public class IdentifierServiceImpl implements IdentifierService {
             identifier.setResultHash(query.getResultHash());
         }
         /* update in metadata database */
-        final Identifier out = saveIdentifier(identifier, data.getCreators(), data.getRelatedIdentifiers(), data.getTitles(), data.getDescriptions());
+        final Identifier out = saveIdentifier(identifier, data.getCreators(), data.getRelatedIdentifiers(),
+                data.getTitles(), data.getDescriptions(), data.getFunders());
         log.info("Updated identifier with id {}", identifierId);
         /* elastic search */
         identifierIdxRepository.save(identifierMapper.identifierToIdentifierDto(out));
@@ -272,10 +280,11 @@ public class IdentifierServiceImpl implements IdentifierService {
     }
 
     public Identifier saveIdentifier(Identifier identifier,
-                                     List<CreatorCreateDto> creators,
-                                     List<RelatedIdentifierCreateDto> relatedIdentifiers,
-                                     List<IdentifierCreateTitleDto> titles,
-                                     List<IdentifierCreateDescriptionDto> descriptions) {
+                                     List<CreatorSaveDto> creators,
+                                     List<RelatedIdentifierSaveDto> relatedIdentifiers,
+                                     List<IdentifierSaveTitleDto> titles,
+                                     List<IdentifierSaveDescriptionDto> descriptions,
+                                     List<IdentifierFunderSaveDto> funders) {
         /* create in metadata database */
         if (creators != null) {
             identifier.setCreators(null);
@@ -286,12 +295,12 @@ public class IdentifierServiceImpl implements IdentifierService {
             log.debug("set {} creator(s)", identifier.getCreators().size());
         }
         if (relatedIdentifiers != null) {
-            identifier.setRelated(null);
-            identifier.setRelated(relatedIdentifiers.stream()
+            identifier.setRelatedIdentifiers(null);
+            identifier.setRelatedIdentifiers(relatedIdentifiers.stream()
                     .map(identifierMapper::relatedIdentifierCreateDtoToRelatedIdentifier)
                     .peek(r -> r.setIdentifier(identifier))
                     .toList());
-            log.debug("set {} related identifier(s)", identifier.getRelated().size());
+            log.debug("set {} related identifier(s)", identifier.getRelatedIdentifiers().size());
         }
         if (titles != null) {
             identifier.setTitles(null);
@@ -308,6 +317,14 @@ public class IdentifierServiceImpl implements IdentifierService {
                     .peek(d -> d.setIdentifier(identifier))
                     .toList());
             log.debug("set {} description(s)", identifier.getDescriptions().size());
+        }
+        if (funders != null) {
+            identifier.setFunders(null);
+            identifier.setFunders(funders.stream()
+                    .map(identifierMapper::identifierFunderSaveDtoToIdentifierFunder)
+                    .peek(d -> d.setIdentifier(identifier))
+                    .toList());
+            log.debug("set {} funder(s)", identifier.getFunders().size());
         }
         return identifierRepository.save(identifier);
     }

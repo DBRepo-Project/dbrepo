@@ -6,6 +6,7 @@
       <v-tab-item>
         <Summary v-if="showIdentifierCard" :identifier="identifier" />
         <v-card flat tile>
+          <v-card-title v-if="!showIdentifierCard && (canCreateIdentifier || canDeleteIdentifier)">Identifier</v-card-title>
           <v-card-text v-if="canCreateIdentifier || canDeleteIdentifier">
             <v-card-actions>
               <v-btn
@@ -33,7 +34,7 @@
             </v-card-actions>
           </v-card-text>
         </v-card>
-        <v-divider v-if="showIdentifierCard" />
+        <v-divider v-if="hasIdentifier || canCreateIdentifier || canDeleteIdentifier" />
         <v-card flat tile>
           <v-card-title>Database</v-card-title>
           <v-card-text>
@@ -233,13 +234,7 @@ export default {
       return this.database.container.image.version
     },
     showIdentifierCard () {
-      if (this.hasIdentifier) {
-        return true
-      }
-      if (!this.user) {
-        return false
-      }
-      return this.canCreateIdentifier || this.hasIdentifier
+      return this.hasIdentifier
     },
     canCreateIdentifier () {
       if (!this.roles || this.hasIdentifier) {

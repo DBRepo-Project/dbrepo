@@ -35,11 +35,11 @@ export default {
   },
   computed: {
     link () {
-      if (this.ror === null) {
+      if (!this.ror) {
         return null
       }
-      if (this.ror.match('ror.org')) {
-        return this.orcid
+      if (this.ror.includes('ror.org')) {
+        return this.ror
       }
       return `https://ror.org/${this.ror}`
     }

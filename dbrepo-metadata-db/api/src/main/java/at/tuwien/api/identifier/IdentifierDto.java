@@ -44,6 +44,8 @@ public class IdentifierDto {
 
     private List<IdentifierDescriptionDto> descriptions;
 
+    private List<IdentifierFunderDto> funders;
+
     @NotBlank
     @Schema(example = "SELECT `id`, `value`, `location` FROM `air_quality` WHERE `location` = \"09:STEF\"")
     private String query;
@@ -53,8 +55,8 @@ public class IdentifierDto {
     @Schema(example = "SELECT `id`, `value`, `location` FROM `air_quality` WHERE `location` = \"09:STEF\"")
     private String queryNormalized;
 
-    @JsonProperty("related")
-    private List<RelatedIdentifierDto> related;
+    @JsonProperty("related_identifiers")
+    private List<RelatedIdentifierDto> relatedIdentifiers;
 
     @NotNull
     private DatabaseDto database;

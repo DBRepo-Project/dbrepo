@@ -1,5 +1,6 @@
 package at.tuwien.mapper;
 
+import at.tuwien.api.crossref.CrossrefDto;
 import at.tuwien.api.orcid.OrcidDto;
 import at.tuwien.api.orcid.activities.employments.affiliation.OrcidAffiliationGroupDto;
 import at.tuwien.api.orcid.activities.employments.affiliation.group.OrcidEmploymentSummaryDto;
@@ -52,6 +53,17 @@ public interface ExternalMapper {
                 .affiliations(new ExternalAffiliationDto[]{
                         ExternalAffiliationDto.builder()
                                 .organizationName(data.getName())
+                                .build()})
+                .type(ExternalResultType.ORGANIZATIONAL)
+                .build();
+    }
+
+    default ExternalMetadataDto crossrefDtoToExternalMetadataDto(CrossrefDto data) {
+        return ExternalMetadataDto.builder()
+                .affiliations(new ExternalAffiliationDto[]{
+                        ExternalAffiliationDto.builder()
+                                .crossrefFunderId(data.getId())
+                                .organizationName(data.getPrefLabel().getLabel().getLiteralForm().getContent())
                                 .build()})
                 .type(ExternalResultType.ORGANIZATIONAL)
                 .build();

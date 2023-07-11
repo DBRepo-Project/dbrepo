@@ -287,6 +287,30 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
     }
 
     @Test
+    public void exportBibliography_bibtexMixedPersonAndOrg_succeeds() throws IdentifierNotFoundException,
+            IdentifierRequestException {
+        final Creator org = Creator.builder()
+                .id(CREATOR_2_ID)
+                .creatorName("Institute of Science and Technology Austria")
+                .nameIdentifier("https://ror.org/03gnh5541")
+                .nameIdentifierScheme(NameIdentifierSchemeType.ROR)
+                .build();
+        final Identifier identifier = IDENTIFIER_1.toBuilder()
+                .creators(List.of(IDENTIFIER_1_CREATOR_1, org))
+                .build();
+
+        /* mock */
+        when(identifierRepository.findById(IDENTIFIER_1_ID))
+                .thenReturn(Optional.of(identifier));
+
+        /* test */
+        final String response = identifierService.exportBibliography(IDENTIFIER_1_ID, BibliographyTypeDto.BIBTEX);
+        final String title = IDENTIFIER_1_CREATOR_1.getLastname() + ", " + IDENTIFIER_1_CREATOR_1.getFirstname() + " and Institute of Science and Technology Austria";
+        assertTrue(response.contains(title));
+        assertTrue(response.contains("" + IDENTIFIER_1_PUBLICATION_YEAR));
+    }
+
+    @Test
     public void exportBibliography_ieee_succeeds() throws IdentifierNotFoundException, IdentifierRequestException {
 
         /* mock */
@@ -298,6 +322,30 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
         assertTrue(response.contains(IDENTIFIER_1_TITLE_1.getTitle()));
         assertTrue(response.contains("" + IDENTIFIER_1_PUBLICATION_YEAR));
         assertTrue(response.contains(IDENTIFIER_1_CREATOR_1.getLastname()));
+    }
+
+    @Test
+    public void exportBibliography_ieeeMixedPersonAndOrg_succeeds() throws IdentifierNotFoundException,
+            IdentifierRequestException {
+        final Creator org = Creator.builder()
+                .id(CREATOR_2_ID)
+                .creatorName("Institute of Science and Technology Austria")
+                .nameIdentifier("https://ror.org/03gnh5541")
+                .nameIdentifierScheme(NameIdentifierSchemeType.ROR)
+                .build();
+        final Identifier identifier = IDENTIFIER_1.toBuilder()
+                .creators(List.of(IDENTIFIER_1_CREATOR_1, org))
+                .build();
+
+        /* mock */
+        when(identifierRepository.findById(IDENTIFIER_1_ID))
+                .thenReturn(Optional.of(identifier));
+
+        /* test */
+        final String response = identifierService.exportBibliography(IDENTIFIER_1_ID, BibliographyTypeDto.IEEE);
+        final String title = IDENTIFIER_1_CREATOR_1.getFirstname().charAt(0) + ". " + IDENTIFIER_1_CREATOR_1.getLastname() + ", Institute of Science and Technology Austria";
+        assertTrue(response.contains(title));
+        assertTrue(response.contains("" + IDENTIFIER_1_PUBLICATION_YEAR));
     }
 
     @Test

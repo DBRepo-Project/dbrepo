@@ -1,6 +1,7 @@
 package at.tuwien.service;
 
 import at.tuwien.api.user.external.ExternalMetadataDto;
+import at.tuwien.exception.DoiNotFoundException;
 import at.tuwien.exception.OrcidNotFoundException;
 import at.tuwien.exception.RemoteUnavailableException;
 import at.tuwien.exception.RorNotFoundException;
@@ -16,5 +17,5 @@ public interface MetadataService {
      * @throws RorNotFoundException       The provided identifier is of ROR type and does not exist.
      * @throws RemoteUnavailableException The remote service is not supported.
      */
-    ExternalMetadataDto findByUrl(String url) throws OrcidNotFoundException, RorNotFoundException, RemoteUnavailableException;
+    ExternalMetadataDto findByUrl(String url) throws OrcidNotFoundException, RorNotFoundException, RemoteUnavailableException, DoiNotFoundException;
 }

@@ -66,6 +66,9 @@ public class Creator {
     private Identifier identifier;
 
     public String getApaName() {
+        if (this.getNameType() != null && this.getNameType().equals(NameType.ORGANIZATIONAL)) {
+            return this.getCreatorName();
+        }
         if (this.getFirstname() == null) {
             if (this.getLastname() == null) {
                 return this.getCreatorName();
@@ -73,6 +76,32 @@ public class Creator {
             return this.getLastname();
         }
         return this.getFirstname().charAt(0) + "., " + this.getLastname();
+    }
+
+    public String getBibtexName() {
+        if (this.getNameType() != null && this.getNameType().equals(NameType.ORGANIZATIONAL)) {
+            return this.getCreatorName();
+        }
+        if (this.getFirstname() == null) {
+            if (this.getLastname() == null) {
+                return this.getCreatorName();
+            }
+            return this.getLastname();
+        }
+        return this.getLastname() + ", " + this.getFirstname();
+    }
+
+    public String getIeeeName() {
+        if (this.getNameType() != null && this.getNameType().equals(NameType.ORGANIZATIONAL)) {
+            return this.getCreatorName();
+        }
+        if (this.getFirstname() == null) {
+            if (this.getLastname() == null) {
+                return this.getCreatorName();
+            }
+            return this.getLastname();
+        }
+        return this.getFirstname().charAt(0) + ". " + this.getLastname();
     }
 
 }

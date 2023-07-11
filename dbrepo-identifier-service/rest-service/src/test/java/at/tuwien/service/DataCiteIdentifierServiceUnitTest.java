@@ -4,8 +4,7 @@ import at.tuwien.BaseUnitTest;
 import at.tuwien.api.datacite.DataCiteBody;
 import at.tuwien.api.datacite.DataCiteData;
 import at.tuwien.api.datacite.doi.DataCiteDoi;
-import at.tuwien.api.identifier.IdentifierCreateDto;
-import at.tuwien.api.identifier.IdentifierUpdateDto;
+import at.tuwien.api.identifier.IdentifierSaveDto;
 import at.tuwien.config.DataCiteConfig;
 import at.tuwien.config.EndpointConfig;
 import at.tuwien.config.IndexConfig;
@@ -109,7 +108,7 @@ public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
                 new DataCiteBody<>(new DataCiteData<>(null, "dois", new DataCiteDoi(IDENTIFIER_1_DOI_NOT_NULL)));
 
         /* mock */
-        when(identifierService.create(any(IdentifierCreateDto.class), eq(principal), eq(bearer)))
+        when(identifierService.create(any(IdentifierSaveDto.class), eq(principal), eq(bearer)))
                 .thenAnswer((i) -> identifierRepository.save(IDENTIFIER_1));
         when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class),
                 any(ParameterizedTypeReference.class)))
@@ -131,7 +130,7 @@ public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
         final String bearer = "Bearer abcxyz";
 
         /* mock */
-        when(identifierService.create(any(IdentifierCreateDto.class), eq(principal), eq(bearer)))
+        when(identifierService.create(any(IdentifierSaveDto.class), eq(principal), eq(bearer)))
                 .thenAnswer((i) -> identifierRepository.save(IDENTIFIER_1));
         when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class),
                 any(ParameterizedTypeReference.class)))
@@ -154,7 +153,7 @@ public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
         final String bearer = "Bearer abcxyz";
 
         /* mock */
-        when(identifierService.create(any(IdentifierCreateDto.class), eq(principal), eq(bearer)))
+        when(identifierService.create(any(IdentifierSaveDto.class), eq(principal), eq(bearer)))
                 .thenAnswer((i) -> identifierRepository.save(IDENTIFIER_1));
         when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class),
                 any(ParameterizedTypeReference.class)))
@@ -170,12 +169,12 @@ public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
 
     @Test
     public void update_existing_succeeds() throws IdentifierRequestException, UserNotFoundException,
-            QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException {
+            QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException, IdentifierNotFoundException {
         final DataCiteBody<DataCiteDoi> response =
                 new DataCiteBody<>(new DataCiteData<>(null, "dois", new DataCiteDoi(IDENTIFIER_1_DOI_NOT_NULL)));
 
         /* mock */
-        when(identifierService.update(eq(IDENTIFIER_1_ID), any(IdentifierUpdateDto.class), any(Principal.class), anyString()))
+        when(identifierService.update(eq(IDENTIFIER_1_ID), any(IdentifierSaveDto.class), any(Principal.class), anyString()))
                 .thenAnswer((i) -> identifierRepository.save(IDENTIFIER_1_WITH_DOI));
         when(restTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class),
                 any(ParameterizedTypeReference.class), eq(IDENTIFIER_1_DOI_NOT_NULL)))
@@ -190,10 +189,10 @@ public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
 
     @Test
     public void update_invalidMetadata_fails() throws UserNotFoundException, QueryNotFoundException,
-            DatabaseNotFoundException, RemoteUnavailableException {
+            DatabaseNotFoundException, RemoteUnavailableException, IdentifierNotFoundException {
 
         /* mock */
-        when(identifierService.update(eq(IDENTIFIER_1_ID), any(IdentifierUpdateDto.class), any(Principal.class), anyString()))
+        when(identifierService.update(eq(IDENTIFIER_1_ID), any(IdentifierSaveDto.class), any(Principal.class), anyString()))
                 .thenAnswer((i) -> identifierRepository.save(IDENTIFIER_1_WITH_DOI));
         when(restTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class),
                 any(ParameterizedTypeReference.class), eq(IDENTIFIER_1_DOI_NOT_NULL)))
@@ -209,10 +208,10 @@ public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
 
     @Test
     public void update_restClientException_fails() throws UserNotFoundException, QueryNotFoundException,
-            DatabaseNotFoundException, RemoteUnavailableException {
+            DatabaseNotFoundException, RemoteUnavailableException, IdentifierNotFoundException {
 
         /* mock */
-        when(identifierService.update(eq(IDENTIFIER_1_ID), any(IdentifierUpdateDto.class), any(Principal.class), anyString()))
+        when(identifierService.update(eq(IDENTIFIER_1_ID), any(IdentifierSaveDto.class), any(Principal.class), anyString()))
                 .thenAnswer((i) -> identifierRepository.save(IDENTIFIER_1_WITH_DOI));
         when(restTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class),
                 any(ParameterizedTypeReference.class), eq(IDENTIFIER_1_DOI_NOT_NULL)))

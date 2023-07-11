@@ -3,7 +3,7 @@ package at.tuwien.endpoints;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.api.identifier.BibliographyTypeDto;
 import at.tuwien.api.identifier.IdentifierDto;
-import at.tuwien.api.identifier.IdentifierUpdateDto;
+import at.tuwien.api.identifier.IdentifierSaveDto;
 import at.tuwien.config.EndpointConfig;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.user.User;
@@ -182,7 +182,7 @@ public class PersistenceEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<IdentifierDto> update(@NotNull @PathVariable("id") Long id,
-                                                @NotNull @Valid @RequestBody IdentifierUpdateDto data,
+                                                @NotNull @Valid @RequestBody IdentifierSaveDto data,
                                                 @NotNull @RequestHeader(name = "Authorization") String authorization,
                                                 @NotNull Principal principal)
             throws IdentifierNotFoundException, IdentifierRequestException, UserNotFoundException, NotAllowedException,
@@ -199,10 +199,6 @@ public class PersistenceEndpoint {
             }
         }
         /* check */
-        if (identifier.getDoi() != null && !identifier.getDoi().equals(data.getDoi())) {
-            log.error("Failed to update identifier: once attached the DOI cannot be changed");
-            throw new IdentifierRequestException("Failed to update identifier: once attached the DOI cannot be changed");
-        }
         final IdentifierDto dto = identifierMapper.identifierToIdentifierDto(identifierService.update(id, data, principal, authorization));
         log.debug("update identifier resulted in dto={}", dto);
         return ResponseEntity.accepted()

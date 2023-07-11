@@ -1,11 +1,13 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
+import at.tuwien.api.crossref.CrossrefDto;
 import at.tuwien.api.orcid.OrcidDto;
 import at.tuwien.api.ror.RorDto;
 import at.tuwien.api.user.external.ExternalMetadataDto;
 import at.tuwien.api.user.external.affiliation.ExternalAffiliationDto;
 import at.tuwien.exception.*;
+import at.tuwien.gateway.CrossrefGateway;
 import at.tuwien.gateway.OrcidGateway;
 import at.tuwien.gateway.RorGateway;
 import at.tuwien.repository.mdb.IdentifierRepository;
@@ -22,7 +24,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -45,6 +46,9 @@ public class MetadataServiceUnitTest extends BaseUnitTest {
     @MockBean
     private RorGateway rorGateway;
 
+    @MockBean
+    private CrossrefGateway crossrefGateway;
+
     @Autowired
     private MetadataService metadataService;
 
@@ -53,7 +57,7 @@ public class MetadataServiceUnitTest extends BaseUnitTest {
 
     @Test
     public void findByUrl_orcid_succeeds() throws OrcidNotFoundException, RemoteUnavailableException,
-            RorNotFoundException, IOException {
+            RorNotFoundException, IOException, DoiNotFoundException {
         final OrcidDto orcid = objectMapper
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
                 .readValue(new File("src/test/resources/orcid_jdoe.json"), OrcidDto.class);
@@ -83,8 +87,41 @@ public class MetadataServiceUnitTest extends BaseUnitTest {
     }
 
     @Test
+    public void findByUrl_doi_succeeds() throws OrcidNotFoundException, RemoteUnavailableException,
+            RorNotFoundException, IOException, DoiNotFoundException {
+        final CrossrefDto doi = objectMapper
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                .readValue(new File("src/test/resources/doi_ec.json"), CrossrefDto.class);
+
+        /* mock */
+        when(crossrefGateway.findById(FUNDER_1_IDENTIFIER_ID_ONLY))
+                .thenReturn(doi);
+
+        /* test */
+        final ExternalMetadataDto response = metadataService.findByUrl(FUNDER_1_IDENTIFIER);
+        assertEquals(1, response.getAffiliations().length);
+        final ExternalAffiliationDto affiliation0 = response.getAffiliations()[0];
+        assertEquals(FUNDER_1_NAME, affiliation0.getOrganizationName());
+        assertEquals(FUNDER_1_IDENTIFIER, affiliation0.getCrossrefFunderId());
+    }
+
+    @Test
+    public void findByUrl_doi_fails() throws DoiNotFoundException {
+
+        /* mock */
+        doThrow(DoiNotFoundException.class)
+                .when(crossrefGateway)
+                .findById(anyString());
+
+        /* test */
+        assertThrows(OrcidNotFoundException.class, () -> {
+            metadataService.findByUrl("https://doi.org/10.12345/1234567890");
+        });
+    }
+
+    @Test
     public void findByUrl_ror_succeeds() throws OrcidNotFoundException, RemoteUnavailableException,
-            RorNotFoundException, IOException {
+            RorNotFoundException, IOException, DoiNotFoundException {
         final RorDto ror = objectMapper
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
                 .readValue(new File("src/test/resources/ror_tuw.json"), RorDto.class);

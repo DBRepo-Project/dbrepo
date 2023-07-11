@@ -390,15 +390,6 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifiers`
     UNIQUE (dbid, qid)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifiers_databases`
-(
-    identifier_id bigint not null,
-    database_id   bigint not null,
-    PRIMARY KEY (identifier_id, database_id),
-    FOREIGN KEY (identifier_id) REFERENCES mdb_identifiers (id),
-    FOREIGN KEY (database_id) REFERENCES mdb_databases (id)
-) WITH SYSTEM VERSIONING;
-
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifier_titles`
 (
     id         bigint NOT NULL AUTO_INCREMENT,
@@ -409,6 +400,21 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifier_titles`
     PRIMARY KEY (id),
     FOREIGN KEY (pid) REFERENCES mdb_identifiers (id),
     UNIQUE (pid, language)
+) WITH SYSTEM VERSIONING;
+
+CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifier_funders`
+(
+    id                     bigint       NOT NULL AUTO_INCREMENT,
+    pid                    bigint       NOT NULL,
+    funder_name            VARCHAR(255) NOT NULL,
+    funder_identifier      TEXT,
+    funder_identifier_type ENUM ('CROSSREF_FUNDER_ID', 'GRID', 'ISNI', 'ROR', 'OTHER'),
+    scheme_uri             text,
+    award_number           VARCHAR(255),
+    award_title            text,
+    language               VARCHAR(255),
+    PRIMARY KEY (id),
+    FOREIGN KEY (pid) REFERENCES mdb_identifiers (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifier_descriptions`

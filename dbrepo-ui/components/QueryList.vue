@@ -171,7 +171,7 @@ export default {
       if (enTitle.length !== 1) {
         return query.identifier.titles[0].title
       }
-      return enTitle.title
+      return enTitle[0].title
     },
     link (queryOrIdentifier) {
       if (queryOrIdentifier.identifier === null) {

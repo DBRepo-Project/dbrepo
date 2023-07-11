@@ -246,7 +246,7 @@ export default {
       if (enTitle.length !== 1) {
         return this.query.identifier.titles[0].title
       }
-      return enTitle.title
+      return enTitle[0].title
     },
     result_hash () {
       if (!this.query.result_hash) {

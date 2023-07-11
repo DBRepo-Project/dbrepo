@@ -15,22 +15,20 @@ public interface IdentifierMapper {
     IdentifierDto identifierToIdentifierDto(Identifier data);
 
     @Mappings({
-            @Mapping(target = "queryId", source = "qid"),
             @Mapping(target = "titles", ignore = true),
             @Mapping(target = "descriptions", ignore = true),
     })
-    Identifier identifierCreateDtoToIdentifier(IdentifierCreateDto data);
+    Identifier identifierCreateDtoToIdentifier(IdentifierSaveDto data);
 
-    @Mappings({
-            @Mapping(target = "queryId", source = "qid"),
-    })
-    Identifier identifierUpdateDtoToIdentifier(IdentifierUpdateDto data);
+    Identifier identifierUpdateDtoToIdentifier(IdentifierSaveDto data);
 
-    IdentifierTitle identifierCreateTitleDtoToIdentifierTitle(IdentifierCreateTitleDto data);
+    IdentifierTitle identifierCreateTitleDtoToIdentifierTitle(IdentifierSaveTitleDto data);
 
-    IdentifierDescription identifierCreateDescriptionDtoToIdentifierDescription(IdentifierCreateDescriptionDto data);
+    IdentifierDescription identifierCreateDescriptionDtoToIdentifierDescription(IdentifierSaveDescriptionDto data);
 
-    IdentifierCreateDto identifierUpdateDtoToIdentifierCreateDto(IdentifierUpdateDto data);
+    IdentifierFunder identifierFunderSaveDtoToIdentifierFunder(IdentifierFunderSaveDto data);
+
+    IdentifierSaveDto identifierUpdateDtoToIdentifierCreateDto(IdentifierSaveDto data);
 
     RelatedIdentifierDto relatedIdentifierToRelatedIdentifierDto(RelatedIdentifier data);
 
@@ -38,9 +36,9 @@ public interface IdentifierMapper {
 
     Creator creatorDtoToCreator(CreatorDto data);
 
-    Creator creatorCreateDtoToCreator(CreatorCreateDto data);
+    Creator creatorCreateDtoToCreator(CreatorSaveDto data);
 
-    RelatedIdentifier relatedIdentifierCreateDtoToRelatedIdentifier(RelatedIdentifierCreateDto data);
+    RelatedIdentifier relatedIdentifierCreateDtoToRelatedIdentifier(RelatedIdentifierSaveDto data);
 
     IdentifierType identifierTypeDtoToIdentifierType(IdentifierTypeDto data);
 

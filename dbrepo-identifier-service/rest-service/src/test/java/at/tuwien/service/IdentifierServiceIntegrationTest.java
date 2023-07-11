@@ -2,8 +2,8 @@ package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.query.QueryDto;
-import at.tuwien.api.identifier.IdentifierCreateDto;
 import at.tuwien.api.identifier.IdentifierDto;
+import at.tuwien.api.identifier.IdentifierSaveDto;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.identifier.IdentifierDescription;
@@ -133,7 +133,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
         assertEquals(IDENTIFIER_2_PUBLICATION_YEAR, response.getPublicationYear());
         assertEquals(IDENTIFIER_2_PUBLICATION_MONTH, response.getPublicationMonth());
         assertEquals(IDENTIFIER_2_PUBLICATION_DAY, response.getPublicationDay());
-        final List<RelatedIdentifier> relatedIdentifiers = response.getRelated();
+        final List<RelatedIdentifier> relatedIdentifiers = response.getRelatedIdentifiers();
         assertEquals(1, relatedIdentifiers.size());
         final RelatedIdentifier relatedIdentifier1 = relatedIdentifiers.get(0);
         assertEquals(RELATED_IDENTIFIER_2_ID, relatedIdentifier1.getId());
@@ -211,8 +211,9 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void update_database_succeeds() throws UserNotFoundException, QueryNotFoundException, DatabaseNotFoundException,
-            RemoteUnavailableException, IdentifierRequestException {
+    public void update_database_succeeds() throws UserNotFoundException, QueryNotFoundException,
+            DatabaseNotFoundException, RemoteUnavailableException, IdentifierRequestException,
+            IdentifierNotFoundException {
 
         /* mock */
         identifierRepository.save(IDENTIFIER_1_SIMPLE);
@@ -232,14 +233,15 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void update_subset_succeeds() throws UserNotFoundException, QueryNotFoundException,
-            DatabaseNotFoundException, RemoteUnavailableException, IdentifierRequestException {
+            DatabaseNotFoundException, RemoteUnavailableException, IdentifierRequestException,
+            IdentifierNotFoundException {
 
         /* mock */
         identifierRepository.save(IDENTIFIER_1_SIMPLE);
         identifierRepository.save(IDENTIFIER_2_SIMPLE);
         when(identifierIdxRepository.save(any(IdentifierDto.class)))
                 .thenReturn(IDENTIFIER_2_DTO);
-        when(queryServiceGateway.find(eq(IDENTIFIER_2_DATABASE_ID), any(IdentifierCreateDto.class), anyString()))
+        when(queryServiceGateway.find(eq(IDENTIFIER_2_DATABASE_ID), any(IdentifierSaveDto.class), anyString()))
                 .thenReturn(QUERY_2_DTO);
 
         /* test */
@@ -247,6 +249,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
         assertEquals(IDENTIFIER_2_ID, response.getId());
         assertEquals(IDENTIFIER_2_DATABASE_ID, response.getDatabase().getId());
         assertEquals(1, response.getTitles().size());
+        assertEquals(1, identifierRepository.findAll().stream().map(Identifier::getTitles).flatMap(List::stream).toList().size());
         assertEquals(IDENTIFIER_2_PUBLICATION_YEAR, response.getPublicationYear());
         assertEquals(IDENTIFIER_2_PUBLICATION_MONTH, response.getPublicationMonth());
         assertEquals(IDENTIFIER_2_PUBLICATION_DAY, response.getPublicationDay());

@@ -4,7 +4,7 @@ import at.tuwien.BaseUnitTest;
 import at.tuwien.api.identifier.BibliographyTypeDto;
 import at.tuwien.api.identifier.CreatorDto;
 import at.tuwien.api.identifier.IdentifierDto;
-import at.tuwien.api.identifier.IdentifierUpdateDto;
+import at.tuwien.api.identifier.IdentifierSaveDto;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.endpoints.PersistenceEndpoint;
 import at.tuwien.entities.identifier.Identifier;
@@ -578,23 +578,6 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_1_USERNAME, authorities = {"modify-identifier-metadata"})
-    public void update_doiChange_fails() throws at.tuwien.exception.AccessDeniedException {
-        final IdentifierUpdateDto request = IdentifierUpdateDto.builder()
-                .doi("10.000/thisisadifferentdoi")
-                .build();
-
-        /* mock */
-        when(accessService.find(IDENTIFIER_1_DATABASE_ID, USER_1_ID))
-                .thenReturn(DATABASE_1_USER_3_READ_ACCESS);
-
-        /* test */
-        assertThrows(IdentifierRequestException.class, () -> {
-            generic_update(IDENTIFIER_1_ID, IDENTIFIER_1_WITH_DOI, request, USER_1_USERNAME, USER_1, USER_1_PRINCIPAL);
-        });
-    }
-
-    @Test
     @WithAnonymousUser
     public void delete_anonymous_fails() {
 
@@ -630,7 +613,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
         return IOUtils.toString(inputStream, StandardCharsets.UTF_8);
     }
 
-    protected void generic_update(Long id, Identifier identifier, IdentifierUpdateDto data, String username, User user,
+    protected void generic_update(Long id, Identifier identifier, IdentifierSaveDto data, String username, User user,
                                   Principal principal) throws IdentifierNotFoundException, IdentifierRequestException,
             UserNotFoundException, NotAllowedException, QueryNotFoundException, DatabaseNotFoundException,
             RemoteUnavailableException {

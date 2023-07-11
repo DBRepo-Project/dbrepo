@@ -58,10 +58,16 @@ public class Identifier implements Serializable {
     private LanguageType language;
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "identifier")
+    @OrderBy("id")
     private List<IdentifierTitle> titles;
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "identifier")
+    @OrderBy("id")
     private List<IdentifierDescription> descriptions;
+
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "identifier")
+    @OrderBy("id")
+    private List<IdentifierFunder> funders;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumns({
@@ -105,18 +111,15 @@ public class Identifier implements Serializable {
     private VisibilityType visibility;
 
     @org.springframework.data.annotation.Transient
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
-    @JoinTable(name = "mdb_identifiers_databases",
-            inverseJoinColumns = {
-                    @JoinColumn(name = "id", referencedColumnName = "database_id")
-            },
-            joinColumns = {
-                    @JoinColumn(name = "identifier_id", referencedColumnName = "id")
-            })
+    @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinColumns({
+            @JoinColumn(name = "dbid", referencedColumnName = "id", insertable = false, updatable = false)
+    })
     private Database database;
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "identifier")
-    private List<RelatedIdentifier> related;
+    @OrderBy("id")
+    private List<RelatedIdentifier> relatedIdentifiers;
 
     @Column
     private String doi;

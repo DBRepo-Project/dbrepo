@@ -6,7 +6,7 @@
           <v-icon left>mdi-arrow-left</v-icon>
         </v-btn>
       </v-toolbar-title>
-      <v-toolbar-title>Create Identifier</v-toolbar-title>
+      <v-toolbar-title v-text="pageTitle" />
       <v-spacer />
       <v-toolbar-title>
         <v-btn
@@ -15,8 +15,8 @@
           :loading="loading"
           :disabled="!formValid || loading"
           color="primary"
-          @click="persist">
-          <v-icon left>mdi-identifier</v-icon> Persist
+          @click="save">
+          <v-icon left>mdi-content-save-outline</v-icon> Get PID
         </v-btn>
         <v-btn
           v-if="isUpdate"
@@ -24,32 +24,41 @@
           :loading="loading"
           :disabled="!formValid || loading"
           color="primary"
-          @click="update">
-          <v-icon left>mdi-identifier</v-icon> Update
+          @click="save">
+          <v-icon left>mdi-content-save-outline</v-icon> Update PID
         </v-btn>
       </v-toolbar-title>
     </v-toolbar>
-    <v-form ref="form" v-model="formValid" autocomplete="off">
+    <v-form ref="form" v-model="formValid">
       <v-card tile elevation="0">
         <v-card-title>Creators</v-card-title>
         <v-stepper v-for="(creator, i) in identifier.creators" :key="`c-${i}`" tile elevation="0" vertical>
           <v-stepper-step :step="i+1" class="pt-0 pb-0">
             <v-card-text class="pt-0 pb-0">
               <v-row dense>
-                <v-col cols="10">
+                <v-col cols="8">
                   <v-text-field
                     v-model="creator.name_identifier"
                     label="Name Identifier"
-                    :autofocus="i === 0"
-                    hint="Use a name identifier expressed as URL for automatic metadata retrieval of schemas: ORCID or ROR"
+                    name="name-identifier"
+                    hint="Use a name identifier expressed as URL from ORCID*, ROR*, DOI*, ISNI, GND (schemes with * support automatic metadata retrieval)"
                     :loading="creator.loading"
                     persistent-hint
                     required
                     clearable
-                    @focusout="retrieve(creator)" />
+                    @focusout="retrieveCreator(creator)" />
                 </v-col>
-                <v-col v-if="i > 0" cols="2" class="mt-5">
-                  <v-btn color="error" small @click="deleteCreator(i)">
+                <v-col cols="4" class="mt-5">
+                  <v-btn :disabled="!canShiftUp(creator, i)" small @click="shiftUp(i)">
+                    <v-icon small>mdi-arrow-up</v-icon>
+                  </v-btn>
+                  <v-btn :disabled="!canShiftDown(creator, i)" small @click="shiftDown(i)">
+                    <v-icon small>mdi-arrow-down</v-icon>
+                  </v-btn>
+                  <v-btn v-if="canInsertSelf" color="secondary" small @click="insertSelf(creator)">
+                    Insert Myself
+                  </v-btn>
+                  <v-btn v-if="i > 0" color="error" small @click="deleteCreator(i)">
                     Remove
                   </v-btn>
                 </v-col>
@@ -59,7 +68,7 @@
           <v-stepper-content :step="1">
             <v-card-text>
               <v-row dense>
-                <v-col>
+                <v-col cols="8">
                   <v-radio-group v-model="creator.name_type" row>
                     <v-radio
                       label="Person"
@@ -71,7 +80,7 @@
                 </v-col>
               </v-row>
               <v-row dense>
-                <v-col>
+                <v-col cols="8">
                   <v-text-field
                     v-model="creator.firstname"
                     label="Given Name"
@@ -80,7 +89,7 @@
                 </v-col>
               </v-row>
               <v-row dense>
-                <v-col>
+                <v-col cols="8">
                   <v-text-field
                     v-model="creator.lastname"
                     label="Family Name"
@@ -89,7 +98,7 @@
                 </v-col>
               </v-row>
               <v-row dense>
-                <v-col>
+                <v-col cols="8">
                   <v-text-field
                     v-model="creator.creator_name"
                     label="Name *"
@@ -99,7 +108,7 @@
                 </v-col>
               </v-row>
               <v-row dense>
-                <v-col>
+                <v-col cols="8">
                   <v-text-field
                     v-model="creator.affiliation"
                     label="Affiliation"
@@ -123,7 +132,7 @@
           <v-stepper-step :step="i+1" class="pt-0 pb-0">
             <v-card-text>
               <v-row dense>
-                <v-col cols="10">
+                <v-col cols="8">
                   <v-text-field
                     v-model="title.title"
                     label="Title *"
@@ -141,7 +150,7 @@
           <v-stepper-content :step="1">
             <v-card-text>
               <v-row dense>
-                <v-col>
+                <v-col cols="8">
                   <v-select
                     v-model="title.type"
                     label="Type"
@@ -152,7 +161,7 @@
                 </v-col>
               </v-row>
               <v-row dense>
-                <v-col>
+                <v-col cols="8">
                   <v-autocomplete
                     v-model="title.language"
                     label="Language"
@@ -179,7 +188,7 @@
           <v-stepper-step :step="i+1" class="pt-0 pb-0">
             <v-card-text>
               <v-row dense>
-                <v-col cols="10">
+                <v-col cols="8">
                   <v-textarea
                     v-model="description.description"
                     label="Description *"
@@ -197,7 +206,7 @@
           <v-stepper-content :step="1">
             <v-card-text>
               <v-row dense>
-                <v-col>
+                <v-col cols="8">
                   <v-select
                     v-model="description.type"
                     label="Type"
@@ -208,7 +217,7 @@
                 </v-col>
               </v-row>
               <v-row dense>
-                <v-col>
+                <v-col cols="8">
                   <v-autocomplete
                     v-model="description.language"
                     label="Language"
@@ -233,7 +242,7 @@
         <v-card-title>Publication</v-card-title>
         <v-card-text>
           <v-row v-if="isSubset" dense>
-            <v-col>
+            <v-col cols="8">
               <v-select
                 v-model="identifier.visibility"
                 :items="visibilities"
@@ -247,7 +256,7 @@
             </v-col>
           </v-row>
           <v-row dense>
-            <v-col>
+            <v-col cols="8">
               <v-text-field
                 id="publisher"
                 v-model="identifier.publisher"
@@ -258,21 +267,21 @@
             </v-col>
           </v-row>
           <v-row dense>
-            <v-col cols="4">
+            <v-col cols="2">
               <v-text-field
                 id="publication-day"
                 v-model.number="identifier.publication_day"
                 type="number"
                 label="Publication day" />
             </v-col>
-            <v-col cols="4">
+            <v-col cols="2">
               <v-text-field
                 id="publication-month"
                 v-model.number="identifier.publication_month"
                 type="number"
                 label="Publication month" />
             </v-col>
-            <v-col cols="4">
+            <v-col cols="2">
               <v-text-field
                 id="publication-year"
                 v-model.number="identifier.publication_year"
@@ -288,7 +297,7 @@
           <v-stepper-step :step="i+1" class="pt-0 pb-0">
             <v-card-text>
               <v-row dense>
-                <v-col cols="6">
+                <v-col cols="4">
                   <v-text-field
                     v-model="related.value"
                     name="related"
@@ -333,7 +342,7 @@
         <v-card-title v-if="isDatabase">License</v-card-title>
         <v-card-text v-if="isDatabase">
           <v-row dense>
-            <v-col>
+            <v-col cols="8">
               <v-select
                 v-model="identifier.license"
                 return-object
@@ -342,6 +351,84 @@
                 label="License *"
                 :rules="[ v => !!v || $t('Required') ]"
                 required />
+            </v-col>
+          </v-row>
+        </v-card-text>
+        <v-card-title>Language</v-card-title>
+        <v-card-text>
+          <v-row dense>
+            <v-col cols="8">
+              <v-autocomplete
+                v-model="identifier.language"
+                label="Language"
+                :items="languages"
+                item-text="value"
+                item-value="value"
+                required />
+            </v-col>
+          </v-row>
+        </v-card-text>
+        <v-card-title>Funding Information</v-card-title>
+        <v-stepper v-for="(funder, i) in identifier.funders" :key="`f-${i}`" tile elevation="0" vertical>
+          <v-stepper-step :step="i+1" class="pt-0 pb-0">
+            <v-card-text class="pt-0 pb-0">
+              <v-row dense>
+                <v-col cols="8">
+                  <v-text-field
+                    v-model="funder.funder_identifier"
+                    label="Funder Identifier"
+                    name="funder-identifier"
+                    hint="Use a name identifier expressed as URL from ORCID*, ROR*, DOI*, ISNI, GND (schemes with * support automatic metadata retrieval)"
+                    :loading="funder.loading"
+                    persistent-hint
+                    required
+                    clearable
+                    @focusout="retrieveFunder(funder)" />
+                </v-col>
+                <v-col cols="4" class="mt-5">
+                  <v-btn v-if="i > 0" color="error" small @click="deleteFunder(i)">
+                    Remove
+                  </v-btn>
+                </v-col>
+              </v-row>
+            </v-card-text>
+          </v-stepper-step>
+          <v-stepper-content :step="1">
+            <v-card-text>
+              <v-row dense>
+                <v-col cols="8">
+                  <v-text-field
+                    v-model="funder.funder_name"
+                    label="Name *"
+                    hint="e.g. European Commission"
+                    :rules="[v => !!v || $t('Required')]"
+                    required />
+                </v-col>
+              </v-row>
+              <v-row dense>
+                <v-col cols="8">
+                  <v-text-field
+                    v-model="funder.award_number"
+                    label="Award Number"
+                    hint="e.g. CBET-106" />
+                </v-col>
+              </v-row>
+              <v-row dense>
+                <v-col cols="8">
+                  <v-text-field
+                    v-model="funder.award_title"
+                    label="Award Title" />
+                </v-col>
+              </v-row>
+            </v-card-text>
+          </v-stepper-content>
+        </v-stepper>
+        <v-card-text>
+          <v-row dense>
+            <v-col>
+              <v-btn x-small @click="addFunding">
+                Add Funding
+              </v-btn>
             </v-col>
           </v-row>
         </v-card-text>
@@ -355,6 +442,7 @@ import { formatYearUTC, formatMonthUTC, formatDayUTC } from '@/utils'
 import IdentifierService from '@/api/identifier.service'
 import DatabaseService from '@/api/database.service'
 import UserMapper from '@/api/user.mapper'
+import identifierMapper from '@/api/identifier.mapper'
 
 export default {
   props: {
@@ -386,8 +474,8 @@ export default {
         { name: 'Private', value: 'self' }
       ],
       identifier: {
-        dbid: parseInt(this.$route.params.database_id),
-        qid: parseInt(this.$route.params.query_id),
+        database_id: parseInt(this.$route.params.database_id),
+        query_id: parseInt(this.$route.params.query_id),
         titles: [],
         descriptions: [],
         visibility: 'everyone',
@@ -398,7 +486,8 @@ export default {
         license: null,
         type: this.type,
         creators: [],
-        related_identifiers: []
+        related_identifiers: [],
+        funders: []
       },
       titleType: [
         { value: 'AlternativeTitle' },
@@ -677,18 +766,17 @@ export default {
     backTo () {
       return `/database/${this.$route.params.database_id}` + (this.isSubset ? `/query/${this.$route.params.query_id}` : '')
     },
+    pageTitle () {
+      return (this.isUpdate ? 'Update' : 'Create') + ' Identifier'
+    },
     isUpdate () {
-      if (this.isDatabase) {
-        if (!this.database.identifier) {
-          return false
-        }
-        return this.database.identifier.id !== null
-      } else {
-        if (!this.query.identifier) {
-          return false
-        }
-        return this.query.identifier.id !== null
+      return 'id' in this.identifier && this.identifier.id
+    },
+    canInsertSelf () {
+      if (!this.user.attributes || !this.user.attributes.orcid) {
+        return false
       }
+      return this.identifier.creators.filter(c => c.name_identifier === this.user.attributes.orcid).length === 0
     },
     visibilityHint () {
       if (this.identifier.visibility === 'public') {
@@ -724,7 +812,7 @@ export default {
     cancel () {
       this.$emit('close', { action: 'closed' })
     },
-    retrieve (creator) {
+    retrieveCreator (creator) {
       if (!creator || !creator.name_identifier) {
         creator.name_identifier_scheme = null
         return
@@ -752,6 +840,26 @@ export default {
           creator.loading = false
         })
     },
+    retrieveFunder (funder) {
+      if (!funder || !funder.funder_identifier) {
+        funder.funder_identifier_scheme = null
+        return
+      }
+      funder.loading = true
+      IdentifierService.retrieve(funder.funder_identifier)
+        .then((metadata) => {
+          if (metadata.type === 'Organizational' && metadata.affiliations) {
+            funder.funder_name = metadata.affiliations[0].organization_name
+          }
+          funder.funder_identifier_scheme = UserMapper.nameIdentifierToNameIdentifierScheme(funder.name_identifier)
+        })
+        .catch(() => {
+          funder.success = false
+        })
+        .finally(() => {
+          funder.loading = false
+        })
+    },
     addCreator () {
       this.identifier.creators.push({
         firstname: null,
@@ -771,6 +879,17 @@ export default {
         title: null,
         type: null,
         language: null
+      })
+    },
+    addFunding () {
+      this.identifier.funders.push({
+        funder_name: null,
+        funder_identifier: null,
+        funder_identifier_type: null,
+        award_number: null,
+        award_title: null,
+        loading: false /* removed later */,
+        success: false /* removed later */
       })
     },
     addDescription () {
@@ -793,6 +912,12 @@ export default {
       }
       this.identifier.creators.splice(index, 1)
     },
+    deleteFunder (index) {
+      if (index === 0) {
+        return
+      }
+      this.identifier.funders.splice(index, 1)
+    },
     deleteTitle (index) {
       if (index === 0) {
         return
@@ -808,47 +933,32 @@ export default {
     deleteRelatedIdentifier (index) {
       this.identifier.related_identifiers.splice(index, 1)
     },
-    persist () {
+    save () {
       this.loading = true
-      const payload = Object.assign({}, this.identifier)
-      payload.creators.forEach((c) => {
-        delete c.loading
-        delete c.success
-      })
-      IdentifierService.create(payload)
-        .then(() => {
-          this.$toast.success(this.prefix + ' successfully persisted')
-          this.$store.dispatch('reloadDatabase')
-          this.$router.push(this.backTo)
-        })
-        .finally(() => {
-          this.loading = false
-        })
-    },
-    update () {
-      // this.loading = true
-      // const payload = {
-      //   dbid: parseInt(this.$route.params.database_id),
-      //   qid: parseInt(this.$route.params.query_id),
-      //   title: this.identifier.title,
-      //   description: this.identifier.description,
-      //   publisher: this.identifier.publisher,
-      //   publication_year: this.identifier.publication_year,
-      //   publication_month: this.identifier.publication_month,
-      //   publication_day: this.identifier.publication_day,
-      //   license: this.identifier.license,
-      //   type: this.identifier.type,
-      //   creators: this.identifier.creators,
-      //   related_identifiers: this.identifier.related_identifiers
-      // }
-      // IdentifierService.update(this.identifier.id, payload)
-      //   .then(() => {
-      //     this.$toast.success(this.prefix + ' identifier successfully updated')
-      //     this.$emit('close', { action: 'persisted' })
-      //   })
-      //   .finally(() => {
-      //     this.loading = false
-      //   })
+      const payload = identifierMapper.identifierToIdentifierSave(this.identifier)
+      if (this.isUpdate) {
+        IdentifierService.update(this.identifier.id, payload)
+          .then(async () => {
+            await this.$store.dispatch('reloadDatabase')
+            await this.$router.push(this.backTo)
+            await this.$toast.success(this.prefix + ' successfully persisted')
+          })
+          .finally(() => {
+            this.loading = false
+          })
+        console.info('Updated identifier with id', this.identifier.id)
+      } else {
+        IdentifierService.create(payload)
+          .then(async () => {
+            await this.$store.dispatch('reloadDatabase')
+            await this.$router.push(this.backTo)
+            await this.$toast.success(this.prefix + ' successfully persisted')
+          })
+          .finally(() => {
+            this.loading = false
+          })
+        console.info('Created identifier')
+      }
     },
     loadLicenses () {
       if (!this.token) {
@@ -864,17 +974,38 @@ export default {
         })
     },
     init () {
-      if (this.isDatabase && this.database.identifier) {
+      if (this.isDatabase && this.database && 'identifier' in this.database && this.database.identifier) {
         this.identifier = Object.assign(this.database.identifier, {})
-      } else if (this.isSubset && this.query.identifier) {
+      } else if (this.isSubset && this.query && 'identifier' in this.query && this.query.identifier) {
         this.identifier = Object.assign(this.query.identifier, {})
       }
     },
-    validateOrcidInput (val) {
-      if (!val) {
+    insertSelf (creator) {
+      creator.name_identifier = this.user.attributes.orcid
+      this.retrieveCreator(creator)
+    },
+    canShiftUp (creator, idx) {
+      if (this.identifier.creators.length === 1 || idx === 0) {
         return false
       }
-      return val.startsWith('http')
+      return true
+    },
+    canShiftDown (creator, idx) {
+      if (this.identifier.creators.length === 1 || idx + 1 === this.identifier.creators.length) {
+        return false
+      }
+      return true
+    },
+    shiftUp (idx) {
+      this.arrayMove(this.identifier.creators, idx, idx - 1)
+    },
+    shiftDown (idx) {
+      this.arrayMove(this.identifier.creators, idx, idx + 1)
+    },
+    arrayMove (array, fromIndex, toIndex) {
+      const element = array[fromIndex]
+      array.splice(fromIndex, 1)
+      array.splice(toIndex, 0, element)
     }
   }
 }

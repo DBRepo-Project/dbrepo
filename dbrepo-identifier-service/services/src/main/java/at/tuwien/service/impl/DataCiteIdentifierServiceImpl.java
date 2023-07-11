@@ -5,8 +5,7 @@ import at.tuwien.api.datacite.DataCiteData;
 import at.tuwien.api.datacite.doi.DataCiteCreateDoi;
 import at.tuwien.api.datacite.doi.DataCiteDoi;
 import at.tuwien.api.identifier.BibliographyTypeDto;
-import at.tuwien.api.identifier.IdentifierCreateDto;
-import at.tuwien.api.identifier.IdentifierUpdateDto;
+import at.tuwien.api.identifier.IdentifierSaveDto;
 import at.tuwien.config.DataCiteConfig;
 import at.tuwien.config.EndpointConfig;
 import at.tuwien.entities.identifier.Identifier;
@@ -77,7 +76,7 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional(rollbackFor = {Exception.class})
-    public Identifier create(IdentifierCreateDto data, Principal principal, String authorization)
+    public Identifier create(IdentifierSaveDto data, Principal principal, String authorization)
             throws IdentifierPublishingNotAllowedException, QueryNotFoundException, RemoteUnavailableException,
             IdentifierAlreadyExistsException, UserNotFoundException, DatabaseNotFoundException,
             IdentifierRequestException {
@@ -153,8 +152,9 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional(rollbackFor = {Exception.class})
-    public Identifier update(Long identifierId, IdentifierUpdateDto data, Principal principal, String authorization)
-            throws UserNotFoundException, QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException, IdentifierRequestException {
+    public Identifier update(Long identifierId, IdentifierSaveDto data, Principal principal, String authorization)
+            throws UserNotFoundException, QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException,
+            IdentifierRequestException, IdentifierNotFoundException {
         Identifier identifier = identifierService.update(identifierId, data, principal, authorization);
         if (identifier.getDoi() == null) {
             return identifier;

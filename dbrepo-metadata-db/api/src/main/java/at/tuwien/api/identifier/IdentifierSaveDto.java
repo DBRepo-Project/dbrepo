@@ -18,22 +18,26 @@ import java.util.List;
 @AllArgsConstructor
 @Jacksonized
 @ToString
-public class IdentifierUpdateDto {
+public class IdentifierSaveDto {
 
     @NotNull
-    private Long dbid;
+    @JsonProperty("database_id")
+    @Schema(example = "1")
+    private Long databaseId;
 
-    private Long qid;
-
-    @Schema(example = "10.1038/nphys1170")
-    private String doi;
+    @JsonProperty("query_id")
+    @Schema(example = "null")
+    private Long queryId;
 
     @NotNull
+    @Schema(example = "database")
     private IdentifierTypeDto type;
 
-    private List<IdentifierCreateTitleDto> titles;
+    private List<IdentifierSaveTitleDto> titles;
 
-    private List<IdentifierCreateDescriptionDto> descriptions;
+    private List<IdentifierSaveDescriptionDto> descriptions;
+
+    private List<IdentifierFunderSaveDto> funders;
 
     @NotNull
     @Schema(example = "everyone")
@@ -61,9 +65,9 @@ public class IdentifierUpdateDto {
 
     @NotNull
     @NotEmpty
-    private List<CreatorCreateDto> creators;
+    private List<CreatorSaveDto> creators;
 
     @JsonProperty("related_identifiers")
-    private List<RelatedIdentifierCreateDto> relatedIdentifiers;
+    private List<RelatedIdentifierSaveDto> relatedIdentifiers;
 
 }

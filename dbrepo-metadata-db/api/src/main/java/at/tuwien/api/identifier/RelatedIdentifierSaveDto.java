@@ -13,7 +13,7 @@ import jakarta.validation.constraints.NotNull;
 @AllArgsConstructor
 @Jacksonized
 @ToString
-public class RelatedIdentifierCreateDto {
+public class RelatedIdentifierSaveDto {
 
     @NotNull
     @Schema(example = "10.70124/dc4zh-9ce78")

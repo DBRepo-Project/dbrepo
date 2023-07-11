@@ -103,7 +103,11 @@ public class Database implements Serializable {
 
     @ToString.Exclude
     @org.springframework.data.annotation.Transient
-    @OneToOne(fetch = FetchType.LAZY, mappedBy = "database")
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumnsOrFormulas({
+            @JoinColumnOrFormula(column = @JoinColumn(name = "id", referencedColumnName = "dbid", insertable = false, updatable = false)),
+            @JoinColumnOrFormula(formula = @JoinFormula(referencedColumnName = "identifier_type", value = "'DATABASE'"))
+    })
     private Identifier identifier;
 
     @ToString.Exclude
