@@ -4,8 +4,10 @@ package at.tuwien.service;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.exception.AmqpException;
+import at.tuwien.repository.sdb.ConceptIdxRepository;
 import at.tuwien.repository.sdb.TableColumnIdxRepository;
 import at.tuwien.repository.sdb.TableIdxRepository;
+import at.tuwien.repository.sdb.UnitIdxRepository;
 import at.tuwien.utils.AmqpUtils;
 import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;
@@ -36,6 +38,12 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
 
     @MockBean
     private IndexConfig indexInitializer;
+
+    @MockBean
+    private UnitIdxRepository unitIdxRepository;
+
+    @MockBean
+    private ConceptIdxRepository conceptIdxRepository;
 
     @MockBean
     private TableIdxRepository tableidxRepository;

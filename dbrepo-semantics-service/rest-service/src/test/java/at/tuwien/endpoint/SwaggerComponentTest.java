@@ -2,7 +2,6 @@ package at.tuwien.endpoint;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.repository.sdb.*;
-import at.tuwien.repository.sdb.TableColumnIdxRepository;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,12 +30,6 @@ public class SwaggerComponentTest extends BaseUnitTest {
 
     @MockBean
     private ConceptIdxRepository conceptIdxRepository;
-
-    @MockBean
-    private TableIdxRepository tableIdxRepository;
-
-    @MockBean
-    private TableColumnIdxRepository tableColumnIdxRepository;
 
     @Test
     public void swaggerUi_succeeds() throws Exception {

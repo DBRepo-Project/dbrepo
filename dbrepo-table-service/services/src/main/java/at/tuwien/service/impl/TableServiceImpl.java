@@ -87,7 +87,7 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         }
         tableRepository.delete(table);
         log.info("Deleted table with id {} in metadata database", table.getId());
-        tableIdxRepository.delete(tableMapper.tableToTableDto(table));
+        tableIdxRepository.delete(table);
         log.info("Deleted table with id {} in open search database", table.getId());
     }
 
@@ -188,10 +188,10 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         final Table table = tableRepository.save(entity);
         log.info("Created table with id {} in metadata database", table.getId());
         /* save in database_index - elastic search */
-        tableIdxRepository.save(tableMapper.tableToTableDto(table));
+        tableIdxRepository.save(table);
         log.info("Created table with id {} in open search database", table.getId());
         /* save in column_index - elastic search */
-        tableColumnIdxRepository.saveAll(tableMapper.tableToTableDto(table).getColumns());
+        tableColumnIdxRepository.saveAll(table.getColumns());
         log.info("Saved table columns with table id {} in open search database", table.getId());
         return table;
     }
@@ -229,12 +229,13 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         }
         final TableColumn out = tableColumnRepository.save(column);
         log.info("Updated table column with id {} of table with id {}", columnId, tableId);
-        log.debug("updated table column {}", out);
         /* save in database_index - elastic search */
         table.getColumns().set(table.getColumns().indexOf(column), column);
-        tableIdxRepository.save(tableMapper.tableToTableDto(table));
+        tableIdxRepository.save(table);
+        log.info("Updated table column with id {} of table with id {} in open search database", columnId, tableId);
         /* save in column_index - elastic search */
-        tableColumnIdxRepository.save(tableMapper.tableColumnToColumnDto(out));
+        tableColumnIdxRepository.save(column);
+        log.info("Updated table column with id {} of table with id {} in open search database", columnId, tableId);
         return out;
     }
 

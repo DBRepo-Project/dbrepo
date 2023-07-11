@@ -153,8 +153,7 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         final Database entity = databaseRepository.save(database);
         log.info("Created database with id {} in metadata database", entity.getId());
         /* save in database_index - elastic search */
-        final DatabaseDto databaseDto = databaseMapper.databaseToDatabaseDto(entity);
-        databaseIdxRepository.save(databaseDto);
+        databaseIdxRepository.save(entity);
         log.info("Created database with id {} in open search database", entity.getId());
         return entity;
     }
@@ -170,7 +169,7 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         final Database entity = databaseRepository.save(database);
         log.info("Updated database visibility to {} with id {}", data.getIsPublic(), entity.getId());
         // save in database_index - elastic search
-        databaseIdxRepository.save(databaseMapper.databaseToDatabaseDto(entity));
+        databaseIdxRepository.save(entity);
         log.info("Updated database in elastic search with id {}", entity.getId());
         return entity;
     }
@@ -184,7 +183,7 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         final User user = userService.findByUsername(transferDto.getUsername());
         /* update in metadata database */
         entity.setOwnedBy(user.getId());
-        databaseIdxRepository.save(databaseMapper.databaseToDatabaseDto(entity));
+        databaseIdxRepository.save(entity);
         log.info("Updated database in elastic search with id {}", entity.getId());
         return entity;
     }

@@ -2,13 +2,11 @@ package at.tuwien.entities.database.table.columns;
 
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.JdbcTypeCode;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import jakarta.persistence.*;;
-import java.net.URI;
-import java.sql.Types;
+import jakarta.persistence.*;
 import java.time.Instant;
 import java.util.List;
 
@@ -26,16 +24,18 @@ import java.util.List;
 @NamedQueries({
         @NamedQuery(name = "TableColumnConcept.findByUri", query = "select c from TableColumnConcept c where c.uri = ?1")
 })
+@Document(indexName = "concept")
 public class TableColumnConcept {
 
     @Id
     @EqualsAndHashCode.Include
-    @GeneratedValue(generator = "units-sequence")
-    @GenericGenerator(name = "units-sequence", strategy = "increment")
+    @GeneratedValue(generator = "concepts-sequence")
+    @GenericGenerator(name = "concepts-sequence", strategy = "increment")
     @Column(updatable = false, nullable = false)
     private Long id;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @EqualsAndHashCode.Include
+    @Column(nullable = false, unique = true, columnDefinition = "TEXT")
     private String uri;
 
     @Column(columnDefinition = "VARCHAR(255)")
@@ -50,6 +50,7 @@ public class TableColumnConcept {
 
     @ToString.Exclude
     @OneToMany(fetch = FetchType.LAZY)
+    @org.springframework.data.annotation.Transient
     @JoinTable(name = "mdb_columns_concepts",
             inverseJoinColumns = {
                     @JoinColumn(name = "cid", referencedColumnName = "id", insertable = false, updatable = false),

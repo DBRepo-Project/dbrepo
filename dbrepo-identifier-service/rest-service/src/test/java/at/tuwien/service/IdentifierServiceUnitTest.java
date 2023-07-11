@@ -191,8 +191,8 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
                 .thenReturn(USER_1);
         when(identifierRepository.save(any(Identifier.class)))
                 .thenReturn(IDENTIFIER_1);
-        when(identifierIdxRepository.save(any(IdentifierDto.class)))
-                .thenReturn(IDENTIFIER_1_DTO);
+        when(identifierIdxRepository.save(any(Identifier.class)))
+                .thenReturn(IDENTIFIER_1);
 
 
         /* test */

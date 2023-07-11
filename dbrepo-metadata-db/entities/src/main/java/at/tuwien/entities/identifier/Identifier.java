@@ -10,6 +10,8 @@ import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.io.Serializable;
@@ -30,6 +32,7 @@ import java.util.List;
         @NamedQuery(name = "Identifier.findDatabaseIdentifier", query = "select i from Identifier i where i.databaseId = ?1 and i.type = 'DATABASE'"),
         @NamedQuery(name = "Identifier.findSubsetIdentifier", query = "select i from Identifier i where i.databaseId = ?1 and i.queryId = ?2 and i.type = 'SUBSET'"),
 })
+@Document(indexName = "identifier")
 public class Identifier implements Serializable {
 
     @Id
@@ -39,9 +42,11 @@ public class Identifier implements Serializable {
     @Column(updatable = false, nullable = false)
     private Long id;
 
-    @Column(name = "dbid")
+    @Field(name = "database_id")
+    @Column(name = "dbid", nullable = false)
     private Long databaseId;
 
+    @Field(name = "query_id")
     @Column(name = "qid")
     private Long queryId;
 
@@ -82,27 +87,34 @@ public class Identifier implements Serializable {
     @Column(columnDefinition = "TEXT")
     private String query;
 
+    @Field(name = "query_normalized")
     @Column(columnDefinition = "TEXT")
     private String queryNormalized;
 
+    @Field(name = "query_hash")
     @Column
     private String queryHash;
 
+    @Field(name = "result_hash")
     @Column
     private String resultHash;
 
     @Column(updatable = false, columnDefinition = "TIMESTAMP")
     private Instant execution;
 
+    @Field(name = "result_number")
     @Column
     private Long resultNumber;
 
+    @Field(name = "publication_year")
     @Column(nullable = false)
     private Integer publicationYear;
 
+    @Field(name = "publication_month")
     @Column
     private Integer publicationMonth;
 
+    @Field(name = "publication_day")
     @Column
     private Integer publicationDay;
 
@@ -117,6 +129,7 @@ public class Identifier implements Serializable {
     })
     private Database database;
 
+    @Field(name = "related_identifiers")
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "identifier")
     @OrderBy("id")
     private List<RelatedIdentifier> relatedIdentifiers;
@@ -135,6 +148,7 @@ public class Identifier implements Serializable {
     private Instant created;
 
     @LastModifiedDate
+    @Field(name = "last_modified")
     @Column(columnDefinition = "TIMESTAMP")
     private Instant lastModified;
 

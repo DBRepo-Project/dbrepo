@@ -1,7 +1,6 @@
 package at.tuwien.config;
 
-import at.tuwien.api.user.UserDto;
-import at.tuwien.mapper.UserMapper;
+import at.tuwien.entities.user.User;
 import at.tuwien.repository.sdb.UserIdxRepository;
 import at.tuwien.repository.mdb.UserRepository;
 import lombok.extern.log4j.Log4j2;
@@ -17,14 +16,11 @@ import java.util.List;
 @Log4j2
 public class IndexConfig {
 
-    private final UserMapper userMapper;
     private final UserRepository userRepository;
     private final UserIdxRepository userIdxRepository;
 
     @Autowired
-    public IndexConfig(UserMapper userMapper, UserRepository userRepository,
-                       UserIdxRepository userIdxRepository) {
-        this.userMapper = userMapper;
+    public IndexConfig(UserRepository userRepository, UserIdxRepository userIdxRepository) {
         this.userRepository = userRepository;
         this.userIdxRepository = userIdxRepository;
     }
@@ -32,11 +28,8 @@ public class IndexConfig {
     @Transactional
     @EventListener(ApplicationReadyEvent.class)
     public void initIndex() {
-        final List<UserDto> users = userRepository.findAll()
-                .stream()
-                .map(userMapper::userToUserDto)
-                .toList();
+        final List<User> users = userRepository.findAll();
         userIdxRepository.saveAll(users);
-        log.info("Added {} users to OpenSearch index", users.size());
+        log.info("Added {} users to open search database", users.size());
     }
 }

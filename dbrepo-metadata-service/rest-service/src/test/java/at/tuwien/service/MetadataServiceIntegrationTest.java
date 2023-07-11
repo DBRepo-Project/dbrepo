@@ -7,12 +7,14 @@ import at.tuwien.oaipmh.OaiListIdentifiersParameters;
 import at.tuwien.oaipmh.OaiRecordParameters;
 import at.tuwien.exception.IdentifierNotFoundException;
 import at.tuwien.repository.mdb.*;
+import at.tuwien.repository.sdb.IdentifierIdxRepository;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +28,9 @@ import static org.junit.jupiter.api.Assertions.*;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @ExtendWith(SpringExtension.class)
 public class MetadataServiceIntegrationTest extends BaseUnitTest {
+
+    @MockBean
+    private IdentifierIdxRepository identifierIdxRepository;
 
     @Autowired
     private ImageRepository imageRepository;

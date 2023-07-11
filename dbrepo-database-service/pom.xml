@@ -121,7 +121,8 @@
             <groupId>org.opensearch.client</groupId>
             <artifactId>spring-data-opensearch-starter</artifactId>
             <version>${opensearch-client.version}</version>
-        </dependency><!-- OpenSearch -->
+        </dependency>
+        <!-- OpenSearch -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>

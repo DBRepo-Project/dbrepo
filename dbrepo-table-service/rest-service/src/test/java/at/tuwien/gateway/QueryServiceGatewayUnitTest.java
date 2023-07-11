@@ -3,8 +3,10 @@ package at.tuwien.gateway;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.exception.AmqpException;
+import at.tuwien.repository.sdb.ConceptIdxRepository;
 import at.tuwien.repository.sdb.TableColumnIdxRepository;
 import at.tuwien.repository.sdb.TableIdxRepository;
+import at.tuwien.repository.sdb.UnitIdxRepository;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
@@ -34,6 +36,12 @@ public class QueryServiceGatewayUnitTest extends BaseUnitTest {
 
     @MockBean
     private Channel channel;
+
+    @MockBean
+    private UnitIdxRepository unitIdxRepository;
+
+    @MockBean
+    private ConceptIdxRepository conceptIdxRepository;
 
     @MockBean
     private IndexConfig indexInitializer;

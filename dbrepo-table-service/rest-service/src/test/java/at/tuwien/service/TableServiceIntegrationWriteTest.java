@@ -5,10 +5,13 @@ import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.config.MariaDbConfig;
+import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.*;
+import at.tuwien.repository.sdb.ConceptIdxRepository;
 import at.tuwien.repository.sdb.TableColumnIdxRepository;
 import at.tuwien.repository.sdb.TableIdxRepository;
 import at.tuwien.repository.mdb.*;
+import at.tuwien.repository.sdb.UnitIdxRepository;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.apache.http.auth.BasicUserPrincipal;
@@ -47,6 +50,12 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
 
     @MockBean
     private Channel channel;
+
+    @MockBean
+    private UnitIdxRepository unitIdxRepository;
+
+    @MockBean
+    private ConceptIdxRepository conceptIdxRepository;
 
     @MockBean
     private IndexConfig indexInitializer;
@@ -104,7 +113,7 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
             ContainerNotFoundException {
 
         /* mock */
-        when(tableidxRepository.save(any(TableDto.class)))
+        when(tableidxRepository.save(any(Table.class)))
                 .thenReturn(null);
         when(tableColumnidxRepository.saveAll(anyList()))
                 .thenReturn(List.of());
@@ -120,7 +129,7 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
-        when(tableidxRepository.save(any(TableDto.class)))
+        when(tableidxRepository.save(any(Table.class)))
                 .thenReturn(null);
         when(tableColumnidxRepository.saveAll(anyList()))
                 .thenReturn(List.of());
@@ -140,7 +149,7 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
             ContainerNotFoundException {
 
         /* mock */
-        when(tableidxRepository.save(any(TableDto.class)))
+        when(tableidxRepository.save(any(Table.class)))
                 .thenReturn(null);
         when(tableColumnidxRepository.saveAll(anyList()))
                 .thenReturn(List.of());
@@ -166,7 +175,7 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
         /* mock */
         doNothing()
                 .when(tableidxRepository)
-                .delete(any(TableDto.class));
+                .delete(any(Table.class));
 
         /* test */
         tableService.deleteTable(DATABASE_1_ID, TABLE_1_ID);
@@ -180,7 +189,7 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
         /* mock */
         doNothing()
                 .when(tableidxRepository)
-                .delete(any(TableDto.class));
+                .delete(any(Table.class));
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {

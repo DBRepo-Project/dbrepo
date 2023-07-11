@@ -3,20 +3,14 @@ package at.tuwien.endpoint;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.semantics.*;
-import at.tuwien.endpoints.OntologyEndpoint;
 import at.tuwien.endpoints.TableEndpoint;
-import at.tuwien.entities.semantics.Ontology;
-import at.tuwien.exception.OntologyNotFoundException;
 import at.tuwien.exception.QueryMalformedException;
 import at.tuwien.exception.TableColumnNotFoundException;
 import at.tuwien.exception.TableNotFoundException;
 import at.tuwien.repository.sdb.*;
-import at.tuwien.repository.sdb.TableColumnIdxRepository;
-import at.tuwien.service.OntologyService;
 import at.tuwien.service.TableService;
 import lombok.extern.log4j.Log4j2;
 import org.apache.jena.sys.JenaSystem;
-import org.hibernate.HibernateException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,7 +24,6 @@ import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.security.Principal;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -49,12 +42,6 @@ public class TableEndpointUnitTest extends BaseUnitTest {
 
     @MockBean
     private ConceptIdxRepository conceptIdxRepository;
-
-    @MockBean
-    private TableIdxRepository tableIdxRepository;
-
-    @MockBean
-    private TableColumnIdxRepository tableColumnIdxRepository;
 
     @Autowired
     private TableEndpoint tableEndpoint;

@@ -1,17 +1,13 @@
 package at.tuwien.api.database.table.columns.concepts;
 
 import at.tuwien.api.database.table.columns.ColumnBriefDto;
-import at.tuwien.api.database.table.columns.ColumnDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.jackson.Jacksonized;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
-import org.springframework.data.elasticsearch.annotations.Field;
 
 import java.time.Instant;
 import java.util.List;
@@ -26,8 +22,6 @@ import java.util.List;
 @Document(indexName = "concept")
 public class ConceptDto {
 
-    @Id
-    @Field(name = "id")
     @NotBlank
     private String uri;
 

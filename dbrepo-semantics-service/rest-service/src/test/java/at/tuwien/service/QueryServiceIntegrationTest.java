@@ -7,7 +7,6 @@ import at.tuwien.repository.mdb.OntologyRepository;
 import at.tuwien.repository.mdb.RealmRepository;
 import at.tuwien.repository.mdb.UserRepository;
 import at.tuwien.repository.sdb.*;
-import at.tuwien.repository.sdb.TableColumnIdxRepository;
 import lombok.extern.log4j.Log4j2;
 import org.apache.jena.sys.JenaSystem;
 import org.junit.jupiter.api.BeforeAll;
@@ -36,12 +35,6 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
     @MockBean
     private ConceptIdxRepository conceptIdxRepository;
-
-    @MockBean
-    private TableIdxRepository tableIdxRepository;
-
-    @MockBean
-    private TableColumnIdxRepository tableColumnIdxRepository;
 
     @Autowired
     private RealmRepository realmRepository;

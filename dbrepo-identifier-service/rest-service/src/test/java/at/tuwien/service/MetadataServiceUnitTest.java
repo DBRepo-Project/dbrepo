@@ -114,7 +114,7 @@ public class MetadataServiceUnitTest extends BaseUnitTest {
                 .findById(anyString());
 
         /* test */
-        assertThrows(OrcidNotFoundException.class, () -> {
+        assertThrows(DoiNotFoundException.class, () -> {
             metadataService.findByUrl("https://doi.org/10.12345/1234567890");
         });
     }

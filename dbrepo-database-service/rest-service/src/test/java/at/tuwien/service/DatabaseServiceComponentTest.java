@@ -2,7 +2,6 @@ package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.DatabaseCreateDto;
-import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.entities.database.Database;
@@ -72,8 +71,8 @@ public class DatabaseServiceComponentTest extends BaseUnitTest {
     public void create_elasticSearch_succeeds() throws Exception {
 
         /* mock */
-        when(databaseIdxRepository.save(any(DatabaseDto.class)))
-                .thenReturn(DATABASE_3_DTO);
+        when(databaseIdxRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_3);
 
         /* test */
         generic_create(DATABASE_3_CREATE, DATABASE_3);

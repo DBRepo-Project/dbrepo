@@ -5,8 +5,7 @@ import org.hibernate.annotations.Immutable;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import jakarta.persistence.*;;
-import java.util.List;
+import jakarta.persistence.*;
 import java.util.UUID;
 
 @Data
@@ -36,9 +35,5 @@ public class Role {
     @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column(name = "REALM_ID", nullable = false, columnDefinition = "VARCHAR(36)")
     private UUID realmId;
-
-    @ToString.Exclude
-    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "roles")
-    private List<User> users;
 
 }

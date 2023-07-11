@@ -2,7 +2,6 @@ package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.query.QueryDto;
-import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.identifier.IdentifierSaveDto;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.entities.identifier.Identifier;
@@ -17,6 +16,7 @@ import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.opensearch.testcontainers.OpensearchContainer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -25,17 +25,23 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 @Log4j2
+@Testcontainers
 @ExtendWith(SpringExtension.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @SpringBootTest
@@ -43,9 +49,6 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
 
     @MockBean
     private IndexConfig indexInitializer;
-
-    @MockBean
-    private IdentifierIdxRepository identifierIdxRepository;
 
     @MockBean
     private QueryServiceGateway queryServiceGateway;
@@ -59,6 +62,9 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
 
     @Autowired
     private IdentifierRepository identifierRepository;
+
+    @Autowired
+    private IdentifierIdxRepository identifierIdxRepository;
 
     @Autowired
     private IdentifierTitleRepository identifierTitleRepository;
@@ -80,6 +86,18 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
 
     @Autowired
     private RealmRepository realmRepository;
+
+    @Container
+    private static final OpensearchContainer opensearchContainer = new OpensearchContainer(DockerImageName.parse("opensearchproject/opensearch:2"));
+
+    @DynamicPropertySource
+    static void elasticsearchProperties(DynamicPropertyRegistry registry) {
+        final int idx = opensearchContainer.getHttpHostAddress().lastIndexOf(':');
+        registry.add("spring.opensearch.host", () -> "127.0.0.1");
+        registry.add("spring.opensearch.port", () -> opensearchContainer.getHttpHostAddress().substring(idx + 1));
+        registry.add("spring.opensearch.username", opensearchContainer::getUsername);
+        registry.add("spring.opensearch.password", opensearchContainer::getPassword);
+    }
 
     @BeforeEach
     public void beforeEach() {
@@ -107,8 +125,6 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
                 .thenReturn(ResponseEntity.ok(QUERY_2_DTO));
         when(queryServiceGateway.find(DATABASE_2_ID, IDENTIFIER_2_DTO_REQUEST, bearer))
                 .thenReturn(QUERY_2_DTO);
-        when(identifierIdxRepository.save(any(IdentifierDto.class)))
-                .thenReturn(IDENTIFIER_2_DTO);
         identifierRepository.save(IDENTIFIER_1_SIMPLE);
 
         /* test */
@@ -140,6 +156,8 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
         assertEquals(RELATED_IDENTIFIER_2_TYPE, relatedIdentifier1.getType());
         assertEquals(RELATED_IDENTIFIER_2_RELATION_TYPE, relatedIdentifier1.getRelation());
         assertEquals(RELATED_IDENTIFIER_2_VALUE, relatedIdentifier1.getValue());
+        /* open search database */
+        assertTrue(identifierIdxRepository.existsById(IDENTIFIER_2_ID));
     }
 
     @Test
@@ -148,12 +166,19 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
             RemoteUnavailableException, IdentifierRequestException {
         final String bearer = "Bearer abcxyz";
 
-        /* mock */
-        when(identifierIdxRepository.save(any(IdentifierDto.class)))
-                .thenReturn(IDENTIFIER_1_DTO);
-
         /* test */
         final Identifier response = identifierService.create(IDENTIFIER_1_DTO_REQUEST, USER_1_PRINCIPAL, bearer);
+        assertEquals(IDENTIFIER_1_ID, response.getId());
+        assertNotNull(response.getTitles());
+        assertEquals(1, response.getTitles().size());
+        assertNotNull(response.getDescriptions());
+        assertEquals(1, response.getDescriptions().size());
+        assertNotNull(response.getCreators());
+        assertEquals(1, response.getCreators().size());
+        assertNotNull(response.getFunders());
+        assertEquals(1, response.getFunders().size());
+        /* open search database */
+        assertTrue(identifierIdxRepository.existsById(IDENTIFIER_1_ID));
     }
 
     @Test
@@ -167,11 +192,26 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
         containerRepository.save(CONTAINER_4_SIMPLE);
         databaseRepository.save(DATABASE_3_SIMPLE);
         databaseRepository.save(DATABASE_4_SIMPLE);
-        when(identifierIdxRepository.save(any(IdentifierDto.class)))
-                .thenReturn(IDENTIFIER_4_DTO);
+        identifierRepository.save(IDENTIFIER_1_SIMPLE);
+        identifierRepository.save(IDENTIFIER_2_SIMPLE);
+        identifierRepository.save(IDENTIFIER_3_SIMPLE);
+        identifierIdxRepository.save(IDENTIFIER_1_SIMPLE);
+        identifierIdxRepository.save(IDENTIFIER_2_SIMPLE);
+        identifierIdxRepository.save(IDENTIFIER_3_SIMPLE);
 
         /* test */
         final Identifier response = identifierService.create(IDENTIFIER_4_DTO_REQUEST, USER_1_PRINCIPAL, bearer);
+        assertEquals(IDENTIFIER_4_ID, response.getId());
+        assertNotNull(response.getTitles());
+        assertEquals(0, response.getTitles().size());
+        assertNotNull(response.getDescriptions());
+        assertEquals(0, response.getDescriptions().size());
+        assertNotNull(response.getCreators());
+        assertEquals(1, response.getCreators().size());
+        assertNotNull(response.getFunders());
+        assertEquals(0, response.getFunders().size());
+        /* open search database */
+        assertTrue(identifierIdxRepository.existsById(IDENTIFIER_4_ID));
     }
 
     @Test
@@ -181,11 +221,20 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
         final String authorization = "Bearer abcxyz";
 
         /* mock */
+        containerRepository.save(CONTAINER_3_SIMPLE);
+        containerRepository.save(CONTAINER_4_SIMPLE);
+        databaseRepository.save(DATABASE_3_SIMPLE);
+        databaseRepository.save(DATABASE_4_SIMPLE);
         identifierRepository.save(IDENTIFIER_1_SIMPLE);
+        identifierRepository.save(IDENTIFIER_2_SIMPLE);
+        identifierRepository.save(IDENTIFIER_3_SIMPLE);
+        identifierRepository.save(IDENTIFIER_4_SIMPLE);
+        identifierIdxRepository.save(IDENTIFIER_1_SIMPLE);
+        identifierIdxRepository.save(IDENTIFIER_2_SIMPLE);
+        identifierIdxRepository.save(IDENTIFIER_3_SIMPLE);
+        identifierIdxRepository.save(IDENTIFIER_4_SIMPLE);
         when(queryServiceGateway.find(DATABASE_1_ID, IDENTIFIER_5_DTO_REQUEST, authorization))
                 .thenReturn(QUERY_1_DTO);
-        when(identifierIdxRepository.save(any(IdentifierDto.class)))
-                .thenReturn(IDENTIFIER_5_DTO);
 
         /* test */
         final Identifier response = identifierService.create(IDENTIFIER_5_DTO_REQUEST, USER_1_PRINCIPAL, authorization);
@@ -196,6 +245,8 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
         assertEquals(IDENTIFIER_5_RESULT_HASH, response.getResultHash());
         assertEquals(0, response.getTitles().size());
         assertEquals(0, response.getDescriptions().size());
+        /* open search database */
+        assertTrue(identifierIdxRepository.existsById(IDENTIFIER_5_ID));
     }
 
     @Test
@@ -217,8 +268,6 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
 
         /* mock */
         identifierRepository.save(IDENTIFIER_1_SIMPLE);
-        when(identifierIdxRepository.save(any(IdentifierDto.class)))
-                .thenReturn(IDENTIFIER_1_DTO);
 
         /* test */
         final Identifier response = identifierService.update(IDENTIFIER_1_ID, IDENTIFIER_1_DTO_UPDATE_REQUEST, USER_1_PRINCIPAL, "Bearer abc");
@@ -229,9 +278,12 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
         assertEquals(IDENTIFIER_1_PUBLICATION_YEAR, response.getPublicationYear());
         assertEquals(IDENTIFIER_1_PUBLICATION_MONTH, response.getPublicationMonth());
         assertEquals(IDENTIFIER_1_PUBLICATION_DAY, response.getPublicationDay());
+        /* open search database */
+        assertTrue(identifierIdxRepository.existsById(IDENTIFIER_1_ID));
     }
 
     @Test
+    @Transactional
     public void update_subset_succeeds() throws UserNotFoundException, QueryNotFoundException,
             DatabaseNotFoundException, RemoteUnavailableException, IdentifierRequestException,
             IdentifierNotFoundException {
@@ -239,8 +291,6 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
         /* mock */
         identifierRepository.save(IDENTIFIER_1_SIMPLE);
         identifierRepository.save(IDENTIFIER_2_SIMPLE);
-        when(identifierIdxRepository.save(any(IdentifierDto.class)))
-                .thenReturn(IDENTIFIER_2_DTO);
         when(queryServiceGateway.find(eq(IDENTIFIER_2_DATABASE_ID), any(IdentifierSaveDto.class), anyString()))
                 .thenReturn(QUERY_2_DTO);
 
@@ -253,22 +303,22 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
         assertEquals(IDENTIFIER_2_PUBLICATION_YEAR, response.getPublicationYear());
         assertEquals(IDENTIFIER_2_PUBLICATION_MONTH, response.getPublicationMonth());
         assertEquals(IDENTIFIER_2_PUBLICATION_DAY, response.getPublicationDay());
+        /* open search database */
+        assertTrue(identifierIdxRepository.existsById(IDENTIFIER_2_ID));
     }
 
     @Test
     public void delete_succeeds() throws IdentifierNotFoundException {
 
         /* mock */
-        when(identifierIdxRepository.existsById(IDENTIFIER_1_ID))
-                .thenReturn(true);
-        doNothing()
-                .when(identifierIdxRepository)
-                .deleteById(IDENTIFIER_1_ID);
         identifierRepository.save(IDENTIFIER_1_SIMPLE);
+        identifierIdxRepository.save(IDENTIFIER_1_SIMPLE);
 
         /* test */
         identifierService.delete(IDENTIFIER_1_ID);
         assertTrue(userRepository.findById(IDENTIFIER_1_CREATED_BY).isPresent()) /* no cascade of delete */;
+        /* open search database */
+        assertFalse(identifierIdxRepository.existsById(IDENTIFIER_1_ID));
     }
 
     @Test

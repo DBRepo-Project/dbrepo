@@ -1,7 +1,6 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.api.auth.SignupRequestDto;
-import at.tuwien.api.user.UserDto;
 import at.tuwien.api.user.UserPasswordDto;
 import at.tuwien.api.user.UserThemeSetDto;
 import at.tuwien.api.user.UserUpdateDto;
@@ -118,8 +117,7 @@ public class UserServiceImpl implements UserService {
         user.setGroups(groups);
         log.info("Created user with id {} in metadata database", user.getId());
         /* save in open search database */
-        final UserDto userDto = userMapper.userToUserDto(user);
-        userIdxRepository.save(userDto);
+        userIdxRepository.save(user);
         log.info("Created user with id {} in open search database", user.getId());
         return user;
     }

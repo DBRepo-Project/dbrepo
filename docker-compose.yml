@@ -199,9 +199,9 @@ services:
     depends_on:
       dbrepo-authentication-service:
         condition: service_healthy
-      dbrepo-broker-service:
-        condition: service_healthy
       dbrepo-search-db:
+        condition: service_healthy
+      dbrepo-broker-service:
         condition: service_healthy
     logging:
       driver: json-file
@@ -357,14 +357,15 @@ services:
       driver: json-file
 
   dbrepo-search-db:
-    restart: always
+    restart: "no"
     container_name: dbrepo-search-db
     hostname: search-db
-    image: opensearchproject/opensearch:2
+    image: opensearchproject/opensearch:2.8.0
     networks:
       core:
     ports:
-      - 9200:9200
+      - "2020:2020"
+      - "9200:9200"
     env_file:
       - .env
     healthcheck:
@@ -427,6 +428,8 @@ services:
       dbrepo-identifier-service:
         condition: service_healthy
       dbrepo-metadata-service:
+        condition: service_healthy
+      dbrepo-query-service:
         condition: service_healthy
       dbrepo-search-db:
         condition: service_healthy

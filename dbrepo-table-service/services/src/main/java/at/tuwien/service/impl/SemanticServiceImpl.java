@@ -11,6 +11,8 @@ import at.tuwien.mapper.TableMapper;
 import at.tuwien.repository.mdb.ConceptRepository;
 import at.tuwien.repository.mdb.OntologyRepository;
 import at.tuwien.repository.mdb.UnitRepository;
+import at.tuwien.repository.sdb.ConceptIdxRepository;
+import at.tuwien.repository.sdb.UnitIdxRepository;
 import at.tuwien.service.SemanticService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,16 +28,22 @@ public class SemanticServiceImpl implements SemanticService {
     private final TableMapper tableMapper;
     private final UnitRepository unitRepository;
     private final ConceptRepository conceptRepository;
+    private final UnitIdxRepository unitIdxRepository;
     private final OntologyRepository ontologyRepository;
+    private final ConceptIdxRepository conceptIdxRepository;
     private final SemanticServiceGateway semanticServiceGateway;
 
     @Autowired
-    public SemanticServiceImpl(TableMapper tableMapper, UnitRepository unitRepository, ConceptRepository conceptRepository,
-                               OntologyRepository ontologyRepository, SemanticServiceGateway semanticServiceGateway) {
+    public SemanticServiceImpl(TableMapper tableMapper, UnitRepository unitRepository,
+                               ConceptRepository conceptRepository, UnitIdxRepository unitIdxRepository,
+                               OntologyRepository ontologyRepository, ConceptIdxRepository conceptIdxRepository,
+                               SemanticServiceGateway semanticServiceGateway) {
         this.tableMapper = tableMapper;
         this.unitRepository = unitRepository;
         this.conceptRepository = conceptRepository;
+        this.unitIdxRepository = unitIdxRepository;
         this.ontologyRepository = ontologyRepository;
+        this.conceptIdxRepository = conceptIdxRepository;
         this.semanticServiceGateway = semanticServiceGateway;
     }
 
@@ -68,10 +76,10 @@ public class SemanticServiceImpl implements SemanticService {
                     .uri(uri)
                     .build();
         }
-        final TableColumnConcept entity = tableMapper.entityDtoToTableColumnConcept(semanticServiceGateway.getEntity(ontology.getId(), uri, authorization));
-        final TableColumnConcept concept = conceptRepository.save(entity);
-        log.debug("saved concept with uri {}", concept.getUri());
-        log.trace("saved concept {}", concept.getUri());
+        final TableColumnConcept concept = tableMapper.entityDtoToTableColumnConcept(semanticServiceGateway.getEntity(ontology.getId(), uri, authorization));
+        log.info("Saved concept with uri {} in metadata database", concept.getUri());
+        conceptIdxRepository.save(concept);
+        log.info("Saved concept with uri {} in search database", concept.getUri());
         return concept;
     }
 
@@ -83,10 +91,10 @@ public class SemanticServiceImpl implements SemanticService {
                     .uri(uri)
                     .build();
         }
-        final TableColumnUnit entity = tableMapper.entityDtoToTableColumnUnit(semanticServiceGateway.getEntity(ontology.getId(), uri, authorization));
-        final TableColumnUnit unit = unitRepository.save(entity);
-        log.debug("saved unit with uri {}", unit.getUri());
-        log.trace("saved unit {}", unit.getUri());
+        final TableColumnUnit unit = tableMapper.entityDtoToTableColumnUnit(semanticServiceGateway.getEntity(ontology.getId(), uri, authorization));
+        log.info("Saved unit with uri {} in metadata database", unit.getUri());
+        unitIdxRepository.save(unit);
+        log.info("Saved unit with uri {} in search database", unit.getUri());
         return unit;
     }
 

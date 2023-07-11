@@ -4266,6 +4266,7 @@ public abstract class BaseTest {
     public final static Boolean VIEW_1_INITIAL_VIEW = false;
     public final static String VIEW_1_NAME = "JUnit";
     public final static String VIEW_1_INTERNAL_NAME = "junit";
+    public final static Long VIEW_1_CONTAINER_ID = CONTAINER_1_ID;
     public final static Long VIEW_1_DATABASE_ID = DATABASE_1_ID;
     public final static Boolean VIEW_1_PUBLIC = true;
     public final static String VIEW_1_QUERY = "select `location`, `lat`, `lng` from `weather_location`";
@@ -4344,6 +4345,7 @@ public abstract class BaseTest {
     public final static Boolean VIEW_2_INITIAL_VIEW = false;
     public final static String VIEW_2_NAME = "JUnit2";
     public final static String VIEW_2_INTERNAL_NAME = "junit2";
+    public final static Long VIEW_2_CONTAINER_ID = CONTAINER_1_ID;
     public final static Long VIEW_2_DATABASE_ID = DATABASE_1_ID;
     public final static Boolean VIEW_2_PUBLIC = true;
     public final static String VIEW_2_QUERY = "select `date`, `location`, `mintemp`, `rainfall` from `weather_aus` where `location` = 'Albury'";
@@ -4452,6 +4454,7 @@ public abstract class BaseTest {
     public final static Boolean VIEW_3_INITIAL_VIEW = false;
     public final static String VIEW_3_NAME = "JUnit3";
     public final static String VIEW_3_INTERNAL_NAME = "junit3";
+    public final static Long VIEW_3_CONTAINER_ID = CONTAINER_1_ID;
     public final static Long VIEW_3_DATABASE_ID = DATABASE_1_ID;
     public final static Boolean VIEW_3_PUBLIC = false;
     public final static String VIEW_3_QUERY = "select w.`mintemp`, w.`rainfall`, w.`location`, m.`date` from `weather_aus` w join `junit2` m on m.`location` = w.`location`";
@@ -4545,6 +4548,7 @@ public abstract class BaseTest {
     public final static Boolean VIEW_4_INITIAL_VIEW = false;
     public final static String VIEW_4_NAME = "Mock View";
     public final static String VIEW_4_INTERNAL_NAME = "mock_view";
+    public final static Long VIEW_4_CONTAINER_ID = CONTAINER_2_ID;
     public final static Long VIEW_4_DATABASE_ID = DATABASE_2_ID;
     public final static Long VIEW_4_TABLE_ID = TABLE_4_ID;
     public final static Boolean VIEW_4_PUBLIC = true;
@@ -4820,6 +4824,7 @@ public abstract class BaseTest {
     public final static Boolean VIEW_5_INITIAL_VIEW = false;
     public final static String VIEW_5_NAME = "Mock View";
     public final static String VIEW_5_INTERNAL_NAME = "mock_view";
+    public final static Long VIEW_5_CONTAINER_ID = CONTAINER_2_ID;
     public final static Long VIEW_5_DATABASE_ID = DATABASE_2_ID;
     public final static Boolean VIEW_5_PUBLIC = true;
     public final static String VIEW_5_QUERY = "SELECT `location`, `lat`, `lng` FROM `weather_location` WHERE `location` = 'Albury'";
@@ -4926,6 +4931,7 @@ public abstract class BaseTest {
 
     public final static Long IDENTIFIER_1_ID = 1L;
     public final static Long IDENTIFIER_1_QUERY_ID = QUERY_1_ID;
+    public final static Long IDENTIFIER_1_CONTAINER_ID = CONTAINER_1_ID;
     public final static Long IDENTIFIER_1_DATABASE_ID = DATABASE_1_ID;
     public final static String IDENTIFIER_1_DOI = null;
     public final static String IDENTIFIER_1_DOI_NOT_NULL = "10.1000/183";
@@ -5054,7 +5060,7 @@ public abstract class BaseTest {
 
     public final static Long FUNDER_1_ID = 1L;
     public final static String FUNDER_1_NAME = "European Commission";
-    public final static String FUNDER_1_IDENTIFIER = "http://doi.org/10.13039/501100000780";
+    public final static String FUNDER_1_IDENTIFIER = "https://doi.org/10.13039/501100000780";
     public final static String FUNDER_1_IDENTIFIER_ID_ONLY = "10.13039/501100000780";
     public final static IdentifierFunderType FUNDER_1_IDENTIFIER_TYPE = IdentifierFunderType.CROSSREF_FUNDER_ID;
     public final static IdentifierFunderTypeDto FUNDER_1_IDENTIFIER_TYPE_DTO = IdentifierFunderTypeDto.CROSSREF_FUNDER_ID;
@@ -5215,6 +5221,7 @@ public abstract class BaseTest {
 
     public final static Long IDENTIFIER_2_ID = 2L;
     public final static Long IDENTIFIER_2_QUERY_ID = QUERY_2_ID;
+    public final static Long IDENTIFIER_2_CONTAINER_ID = CONTAINER_2_ID;
     public final static Long IDENTIFIER_2_DATABASE_ID = DATABASE_2_ID;
     public final static String IDENTIFIER_2_DOI = null;
     public final static Instant IDENTIFIER_2_CREATED = Instant.ofEpochSecond(1641588352);
@@ -5550,6 +5557,7 @@ public abstract class BaseTest {
 
     public final static Long IDENTIFIER_3_ID = 3L;
     public final static Long IDENTIFIER_3_QUERY_ID = QUERY_3_ID;
+    public final static Long IDENTIFIER_3_CONTAINER_ID = CONTAINER_3_ID;
     public final static Long IDENTIFIER_3_DATABASE_ID = DATABASE_3_ID;
     public final static String IDENTIFIER_3_DOI = null;
     public final static Instant IDENTIFIER_3_CREATED = Instant.ofEpochSecond(1641588352);
@@ -5769,7 +5777,7 @@ public abstract class BaseTest {
             .resultNumber(IDENTIFIER_3_RESULT_NUMBER)
             .publisher(IDENTIFIER_3_PUBLISHER)
             .type(IDENTIFIER_3_TYPE)
-            .creator(null /* for jpa */)
+            .creator(IDENTIFIER_3_CREATOR)
             .creators(List.of() /* for jpa */)
             .visibility(IDENTIFIER_3_VISIBILITY)
             .build();
@@ -5896,8 +5904,9 @@ public abstract class BaseTest {
             .resultNumber(IDENTIFIER_4_RESULT_NUMBER)
             .publisher(IDENTIFIER_4_PUBLISHER)
             .type(IDENTIFIER_4_TYPE)
-            .creator(USER_3)
+            .creator(IDENTIFIER_4_CREATOR)
             .creators(List.of())
+            .funders(List.of())
             .visibility(IDENTIFIER_4_VISIBILITY)
             .build();
 
@@ -5921,7 +5930,8 @@ public abstract class BaseTest {
             .resultNumber(IDENTIFIER_4_RESULT_NUMBER)
             .publisher(IDENTIFIER_4_PUBLISHER)
             .type(IDENTIFIER_4_TYPE)
-            .creator(null /* for jpa */)
+            .creator(IDENTIFIER_4_CREATOR)
+            .funders(List.of())
             .creators(List.of() /* for jpa */)
             .visibility(IDENTIFIER_4_VISIBILITY)
             .build();
@@ -5947,6 +5957,7 @@ public abstract class BaseTest {
             .publisher(IDENTIFIER_4_PUBLISHER)
             .type(IDENTIFIER_4_TYPE_DTO)
             .creator(USER_4_DTO)
+            .funders(List.of())
             .creators(List.of(IDENTIFIER_4_CREATOR_1_DTO))
             .visibility(IDENTIFIER_4_VISIBILITY_DTO)
             .build();
@@ -5969,6 +5980,7 @@ public abstract class BaseTest {
             .publicationMonth(IDENTIFIER_4_PUBLICATION_MONTH)
             .publicationYear(IDENTIFIER_4_PUBLICATION_YEAR)
             .creators(List.of(IDENTIFIER_4_CREATOR_1_CREATE_DTO))
+            .funders(List.of())
             .publisher(IDENTIFIER_4_PUBLISHER)
             .type(IDENTIFIER_4_TYPE_DTO)
             .visibility(IDENTIFIER_4_VISIBILITY_DTO)

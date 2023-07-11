@@ -12,7 +12,6 @@ import at.tuwien.entities.user.User;
 import at.tuwien.exception.OntologyNotFoundException;
 import at.tuwien.exception.UserNotFoundException;
 import at.tuwien.repository.sdb.*;
-import at.tuwien.repository.sdb.TableColumnIdxRepository;
 import at.tuwien.service.OntologyService;
 import at.tuwien.service.UserService;
 import lombok.extern.log4j.Log4j2;
@@ -53,12 +52,6 @@ public class OntologyEndpointUnitTest extends BaseUnitTest {
 
     @MockBean
     private ConceptIdxRepository conceptIdxRepository;
-
-    @MockBean
-    private TableIdxRepository tableIdxRepository;
-
-    @MockBean
-    private TableColumnIdxRepository tableColumnIdxRepository;
 
     @Autowired
     private OntologyEndpoint ontologyEndpoint;

@@ -117,10 +117,10 @@ public class IdentifierServiceImpl implements IdentifierService {
         }
         final Identifier out = saveIdentifier(identifier, data.getCreators(), data.getRelatedIdentifiers(),
                 data.getTitles(), data.getDescriptions(), data.getFunders());
-        log.info("Created identifier with id {}", out.getId());
+        log.info("Created identifier with id {} in metadata database", out.getId());
         log.trace("created identifier {}", out);
-        identifierIdxRepository.save(identifierMapper.identifierToIdentifierDto(out));
-        log.info("Created identifier with id {} in elastic search", out.getId());
+        identifierIdxRepository.save(out);
+        log.info("Created identifier with id {} in open search database", out.getId());
         return out;
     }
 
@@ -247,10 +247,10 @@ public class IdentifierServiceImpl implements IdentifierService {
         /* update in metadata database */
         final Identifier out = saveIdentifier(identifier, data.getCreators(), data.getRelatedIdentifiers(),
                 data.getTitles(), data.getDescriptions(), data.getFunders());
-        log.info("Updated identifier with id {}", identifierId);
+        log.info("Updated identifier with id {} in metadata database", identifierId);
         /* elastic search */
-        identifierIdxRepository.save(identifierMapper.identifierToIdentifierDto(out));
-        log.info("Updated identifier with id {} in elastic search", identifierId);
+        identifierIdxRepository.save(out);
+        log.info("Updated identifier with id {} in open search database", identifierId);
         return out;
     }
 
@@ -259,16 +259,18 @@ public class IdentifierServiceImpl implements IdentifierService {
     public void delete(Long identifierId) throws IdentifierNotFoundException {
         /* delete in metadata database */
         if (!identifierRepository.existsById(identifierId)) {
-            throw new IdentifierNotFoundException("Identifier not found in metadata database");
+            log.error("Failed to find identifier with id {} in metadata database", identifierId);
+            throw new IdentifierNotFoundException("Failed to find identifier with id " + identifierId + " in metadata database");
         }
         identifierRepository.deleteById(identifierId);
-        log.info("Deleted identifier with id {}", identifierId);
+        log.info("Deleted identifier with id {} in metadata database", identifierId);
         /* delete in elastic search */
         if (!identifierIdxRepository.existsById(identifierId)) {
-            throw new IdentifierNotFoundException("Identifier not found in metadata database");
+            log.error("Failed to find identifier with id {} in open search database", identifierId);
+            throw new IdentifierNotFoundException("Failed to find identifier with id " + identifierId + " in open search database");
         }
         identifierIdxRepository.deleteById(identifierId);
-        log.info("Deleted identifier with id {} in elastic search", identifierId);
+        log.info("Deleted identifier with id {} in open search database", identifierId);
     }
 
     public IdentifierTitle preferTitle(List<IdentifierTitle> titles) {

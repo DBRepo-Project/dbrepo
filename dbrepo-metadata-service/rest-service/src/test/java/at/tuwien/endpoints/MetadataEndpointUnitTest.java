@@ -4,6 +4,7 @@ import at.tuwien.BaseUnitTest;
 import at.tuwien.oaipmh.OaiListIdentifiersParameters;
 import at.tuwien.oaipmh.OaiRecordParameters;
 import at.tuwien.repository.mdb.*;
+import at.tuwien.repository.sdb.IdentifierIdxRepository;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,6 +29,9 @@ public class MetadataEndpointUnitTest extends BaseUnitTest {
 
     @MockBean
     private IdentifierRepository identifierRepository;
+
+    @MockBean
+    private IdentifierIdxRepository identifierIdxRepository;
 
     @Autowired
     private MetadataEndpoint metadataEndpoint;
