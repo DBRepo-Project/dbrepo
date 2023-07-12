@@ -209,7 +209,8 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"modify-database-visibility"})
-    public void visibility_hasRole_succeeds() throws NotAllowedException, DatabaseNotFoundException, UserNotFoundException {
+    public void visibility_hasRole_succeeds() throws NotAllowedException, DatabaseNotFoundException,
+            UserNotFoundException {
         final DatabaseModifyVisibilityDto request = DatabaseModifyVisibilityDto.builder()
                 .isPublic(true)
                 .build();
@@ -290,7 +291,8 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"modify-database-owner"})
-    public void transfer_hasRole_succeeds() throws UserNotFoundException, DatabaseNotFoundException, NotAllowedException {
+    public void transfer_hasRole_succeeds() throws UserNotFoundException, DatabaseNotFoundException,
+            NotAllowedException {
         final DatabaseTransferDto request = DatabaseTransferDto.builder()
                 .username(USER_4_USERNAME)
                 .build();
@@ -331,7 +333,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void findById_anonymous_succeeds() throws AccessDeniedException, DatabaseNotFoundException, ContainerNotFoundException {
+    public void findById_anonymous_succeeds() throws AccessDeniedException, DatabaseNotFoundException {
 
         /* test */
         findById_generic(DATABASE_1_ID, DATABASE_1, null);
@@ -349,7 +351,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"find-database"})
-    public void findById_hasRole_succeeds() throws AccessDeniedException, DatabaseNotFoundException, ContainerNotFoundException {
+    public void findById_hasRole_succeeds() throws AccessDeniedException, DatabaseNotFoundException {
 
         /* pre-condition */
         assertTrue(DATABASE_3_PUBLIC);
@@ -360,8 +362,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"find-database"})
-    public void findById_hasRoleForeign_succeeds() throws AccessDeniedException,
-            DatabaseNotFoundException, ContainerNotFoundException {
+    public void findById_hasRoleForeign_succeeds() throws AccessDeniedException, DatabaseNotFoundException {
 
         /* pre-condition */
         assertTrue(DATABASE_3_PUBLIC);
@@ -372,8 +373,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"find-database"})
-    public void findById_ownerSeesAccessRights_succeeds() throws AccessDeniedException,
-            DatabaseNotFoundException, ContainerNotFoundException {
+    public void findById_ownerSeesAccessRights_succeeds() throws AccessDeniedException, DatabaseNotFoundException {
 
         /* mock */
         when(accessService.list(DATABASE_1_ID))
@@ -411,7 +411,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
     @WithMockUser(username = USER_2_USERNAME, authorities = {"delete-database"})
     public void delete_hasRole_succeeds() throws UserNotFoundException, BrokerVirtualHostGrantException,
             DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
-            AmqpException, BrokerVirtualHostCreationException, ContainerNotFoundException, DatabaseMalformedException {
+            AmqpException, DatabaseMalformedException {
 
         /* test */
         delete_generic(DATABASE_2_ID, DATABASE_2, USER_2_USERNAME, USER_2_PRINCIPAL);
@@ -478,8 +478,8 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
                     .when(databaseService)
                     .findById(databaseId);
         }
-        when(databaseIdxRepository.save(any(Database.class)))
-                .thenReturn(database);
+        when(databaseIdxRepository.save(any(DatabaseDto.class)))
+                .thenReturn(dto);
 
         /* test */
         final ResponseEntity<DatabaseDto> response = databaseEndpoint.visibility(databaseId, data, principal);
@@ -487,8 +487,8 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
         assertNotNull(response.getBody());
     }
 
-    public DatabaseDto findById_generic(Long databaseId, Database database,
-                                        Principal principal) throws DatabaseNotFoundException, AccessDeniedException, ContainerNotFoundException {
+    public DatabaseDto findById_generic(Long databaseId, Database database, Principal principal)
+            throws DatabaseNotFoundException, AccessDeniedException {
 
         /* mock */
         if (database != null) {
@@ -508,10 +508,10 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
         return body;
     }
 
-    public void delete_generic(Long databaseId, Database database,
-                               String username, Principal principal) throws DatabaseNotFoundException,
-            UserNotFoundException, DatabaseConnectionException, QueryMalformedException, ImageNotSupportedException,
-            AmqpException, BrokerVirtualHostCreationException, ContainerNotFoundException, DatabaseMalformedException, BrokerVirtualHostGrantException {
+    public void delete_generic(Long databaseId, Database database, String username, Principal principal)
+            throws DatabaseNotFoundException, UserNotFoundException, DatabaseConnectionException,
+            QueryMalformedException, ImageNotSupportedException, AmqpException, DatabaseMalformedException,
+            BrokerVirtualHostGrantException {
 
         /* mock */
         if (database != null) {

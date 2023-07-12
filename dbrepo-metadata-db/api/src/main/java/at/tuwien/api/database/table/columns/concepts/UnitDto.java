@@ -2,6 +2,7 @@ package at.tuwien.api.database.table.columns.concepts;
 
 import at.tuwien.api.database.table.columns.ColumnBriefDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.persistence.Id;
 import lombok.*;
 
 import jakarta.validation.constraints.NotBlank;
@@ -21,6 +22,9 @@ import java.util.List;
 @ToString
 @Document(indexName = "unit")
 public class UnitDto {
+
+    @Id
+    private Long id;
 
     @NotBlank
     private String uri;

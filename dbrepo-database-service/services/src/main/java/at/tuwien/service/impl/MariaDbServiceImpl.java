@@ -1,7 +1,6 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.api.database.DatabaseCreateDto;
-import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.DatabaseModifyVisibilityDto;
 import at.tuwien.api.database.DatabaseTransferDto;
 import at.tuwien.entities.container.Container;
@@ -112,7 +111,7 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         /* save in metadata database */
         databaseRepository.deleteById(databaseId);
         log.info("Deleted database with id {} in metadata database", databaseId);
-        // delete in database_index - elastic search
+        /* save in open search database */
         databaseIdxRepository.deleteById(databaseId);
         log.info("Deleted database with id {} in open search database", databaseId);
     }
@@ -152,8 +151,8 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         /* save in metadata database */
         final Database entity = databaseRepository.save(database);
         log.info("Created database with id {} in metadata database", entity.getId());
-        /* save in database_index - elastic search */
-        databaseIdxRepository.save(entity);
+        /* save in open search database */
+        databaseIdxRepository.save(databaseMapper.databaseToDatabaseDto(entity));
         log.info("Created database with id {} in open search database", entity.getId());
         return entity;
     }
@@ -167,10 +166,10 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         database.setIsPublic(data.getIsPublic());
         /* update entity in metadata database */
         final Database entity = databaseRepository.save(database);
-        log.info("Updated database visibility to {} with id {}", data.getIsPublic(), entity.getId());
-        // save in database_index - elastic search
-        databaseIdxRepository.save(entity);
-        log.info("Updated database in elastic search with id {}", entity.getId());
+        log.info("Updated database visibility of database with id {} in metadata database", entity.getId());
+        /* update in open search database */
+        databaseIdxRepository.save(databaseMapper.databaseToDatabaseDto(entity));
+        log.info("Updated database visibility of database with id {} in open search database", entity.getId());
         return entity;
     }
 
@@ -179,12 +178,15 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
     public Database transfer(Long databaseId, DatabaseTransferDto transferDto) throws DatabaseNotFoundException,
             UserNotFoundException {
         /* check */
-        final Database entity = findById(databaseId);
+        final Database database = findById(databaseId);
         final User user = userService.findByUsername(transferDto.getUsername());
         /* update in metadata database */
-        entity.setOwnedBy(user.getId());
-        databaseIdxRepository.save(entity);
-        log.info("Updated database in elastic search with id {}", entity.getId());
+        database.setOwnedBy(user.getId());
+        final Database entity = databaseRepository.save(database);
+        log.info("Updated database owner of database with id {} in metadata database", entity.getId());
+        /* save in open search database */
+        databaseIdxRepository.save(databaseMapper.databaseToDatabaseDto(entity));
+        log.info("Updated database owner of database with id {} in open search database", entity.getId());
         return entity;
     }
 

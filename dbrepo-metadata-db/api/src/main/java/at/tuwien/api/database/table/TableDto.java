@@ -6,11 +6,13 @@ import at.tuwien.api.user.UserBriefDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.Id;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import org.springframework.data.elasticsearch.annotations.Document;
 
 import java.time.Instant;
 import java.util.List;
@@ -22,18 +24,22 @@ import java.util.List;
 @AllArgsConstructor
 @Jacksonized
 @ToString
+@Document(indexName = "table")
 public class TableDto {
 
+    @Id
+    @NotNull
+    private Long id;
+
+    @Id
     @NotNull
     @JsonProperty("container_id")
     private Long containerId;
 
+    @Id
     @NotNull
     @JsonProperty("database_id")
     private Long databaseId;
-
-    @NotNull
-    private Long id;
 
     @NotBlank(message = "name is required")
     @Schema(example = "Air Quality")

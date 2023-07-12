@@ -5,12 +5,9 @@ import at.tuwien.entities.identifier.Identifier;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
-import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.core.Authentication;
-
-import jakarta.persistence.*;
 
 import java.security.Principal;
 import java.util.List;
@@ -28,7 +25,6 @@ import java.util.UUID;
         @UniqueConstraint(columnNames = {"REALM_ID", "EMAIL"}),
         @UniqueConstraint(columnNames = {"REALM_ID", "USERNAME"})
 })
-@Document(indexName = "user")
 @NamedQueries({
         @NamedQuery(name = "User.findAll", query = "select u from User u join Realm r on r.name = 'dbrepo' and u.enabled = true"),
         @NamedQuery(name = "User.findById", query = "select u from User u join Realm r on r.name = 'dbrepo' and u.id = ?1 and u.enabled = true"),
@@ -71,9 +67,7 @@ public class User {
     private Long createdTimestamp;
 
     @ToString.Exclude
-    @org.springframework.data.annotation.Transient
-    @Column
-    private String databasePassword;
+    private transient String databasePassword;
 
     @ToString.Exclude
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "user")

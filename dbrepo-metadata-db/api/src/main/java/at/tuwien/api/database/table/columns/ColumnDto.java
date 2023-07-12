@@ -6,10 +6,12 @@ import at.tuwien.api.database.table.columns.concepts.UnitDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
+import org.springframework.data.elasticsearch.annotations.Document;
 
 @Getter
 @Setter
@@ -18,22 +20,22 @@ import lombok.extern.jackson.Jacksonized;
 @AllArgsConstructor
 @Jacksonized
 @ToString
+@Document(indexName = "column")
 public class ColumnDto {
 
+    @Id
     @NotNull
-    @JsonProperty("container_id")
-    private Long containerId;
+    private Long id;
 
+    @Id
     @NotNull
     @JsonProperty("database_id")
     private Long databaseId;
 
+    @Id
     @NotNull
     @JsonProperty("table_id")
     private Long tableId;
-
-    @NotNull
-    private Long id;
 
     @NotBlank
     @Schema(example = "Date")

@@ -1,6 +1,8 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
+import at.tuwien.api.database.table.columns.concepts.ConceptDto;
+import at.tuwien.api.database.table.columns.concepts.UnitDto;
 import at.tuwien.entities.database.table.columns.TableColumnConcept;
 import at.tuwien.entities.database.table.columns.TableColumnUnit;
 import at.tuwien.repository.mdb.*;
@@ -82,8 +84,8 @@ public class SemanticServiceUnitTest extends BaseUnitTest {
     public void saveUnit_exists_succeeds() {
 
         /* mock */
-        when(unitIdxRepository.save(any(TableColumnUnit.class)))
-                .thenReturn(COLUMN_UNIT_DEGREES_CELSIUS);
+        when(unitIdxRepository.save(any(UnitDto.class)))
+                .thenReturn(COLUMN_UNIT_DEGREES_CELSIUS_DTO);
         when(tableColumnUnitRepository.save(any(TableColumnUnit.class)))
                 .thenReturn(COLUMN_UNIT_DEGREES_CELSIUS);
 
@@ -98,8 +100,8 @@ public class SemanticServiceUnitTest extends BaseUnitTest {
     public void saveUnit_succeeds() {
 
         /* mock */
-        when(unitIdxRepository.save(any(TableColumnUnit.class)))
-                .thenReturn(COLUMN_UNIT_TON);
+        when(unitIdxRepository.save(any(UnitDto.class)))
+                .thenReturn(COLUMN_UNIT_TON_DTO);
         when(tableColumnUnitRepository.save(any(TableColumnUnit.class)))
                 .thenReturn(COLUMN_UNIT_TON);
 
@@ -114,8 +116,8 @@ public class SemanticServiceUnitTest extends BaseUnitTest {
     public void saveConcept_exists_succeeds() {
 
         /* mock */
-        when(conceptIdxRepository.save(any(TableColumnConcept.class)))
-                .thenReturn(COLUMN_CONCEPT_TEMPERATURE);
+        when(conceptIdxRepository.save(any(ConceptDto.class)))
+                .thenReturn(COLUMN_CONCEPT_TEMPERATURE_DTO);
         when(tableColumnConceptRepository.save(any(TableColumnConcept.class)))
                 .thenReturn(COLUMN_CONCEPT_TEMPERATURE);
 
@@ -130,8 +132,8 @@ public class SemanticServiceUnitTest extends BaseUnitTest {
     public void saveConcept_succeeds() {
 
         /* mock */
-        when(conceptIdxRepository.save(any(TableColumnConcept.class)))
-                .thenReturn(COLUMN_CONCEPT_FAIR_DATA);
+        when(conceptIdxRepository.save(any(ConceptDto.class)))
+                .thenReturn(COLUMN_CONCEPT_FAIR_DATA_DTO);
         when(tableColumnConceptRepository.save(any(TableColumnConcept.class)))
                 .thenReturn(COLUMN_CONCEPT_FAIR_DATA);
 

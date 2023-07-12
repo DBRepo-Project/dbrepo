@@ -3,7 +3,6 @@ package at.tuwien.entities.database.table.columns;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import jakarta.persistence.*;
@@ -24,7 +23,6 @@ import java.util.List;
 @NamedQueries({
         @NamedQuery(name = "TableColumnConcept.findByUri", query = "select c from TableColumnConcept c where c.uri = ?1")
 })
-@Document(indexName = "concept")
 public class TableColumnConcept {
 
     @Id

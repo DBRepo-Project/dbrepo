@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -27,8 +28,10 @@ import java.util.List;
 @Document(indexName = "identifier")
 public class IdentifierDto {
 
+    @Id
     private Long id;
 
+    @Id
     @JsonProperty("database_id")
     @Schema(example = "1")
     private Long databaseId;

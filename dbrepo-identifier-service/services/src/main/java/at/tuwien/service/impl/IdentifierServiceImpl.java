@@ -121,7 +121,7 @@ public class IdentifierServiceImpl implements IdentifierService {
         log.info("Created identifier with id {} in metadata database", entity.getId());
         /* create in open search database */
         removeBidirectionalReferences(entity);
-        identifierIdxRepository.save(entity);
+        identifierIdxRepository.save(identifierMapper.identifierToIdentifierDto(entity));
         log.info("Created identifier with id {} in open search database", entity.getId());
         return entity;
     }
@@ -252,7 +252,7 @@ public class IdentifierServiceImpl implements IdentifierService {
         log.info("Updated identifier with id {} in metadata database", identifierId);
         /* update in open search database */
         removeBidirectionalReferences(entity);
-        identifierIdxRepository.save(entity);
+        identifierIdxRepository.save(identifierMapper.identifierToIdentifierDto(entity));
         log.info("Updated identifier with id {} in open search database", identifierId);
         return entity;
     }

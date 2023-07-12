@@ -14,7 +14,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @EnableAutoConfiguration(exclude = RabbitAutoConfiguration.class)
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
-public class ElasticSearchIndexIntegrationTest extends BaseUnitTest {
+public class OpenSearchIndexIntegrationTest extends BaseUnitTest {
 
 
 }

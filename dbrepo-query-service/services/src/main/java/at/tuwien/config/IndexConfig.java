@@ -1,6 +1,7 @@
 package at.tuwien.config;
 
-import at.tuwien.entities.database.View;
+import at.tuwien.api.database.ViewDto;
+import at.tuwien.mapper.ViewMapper;
 import at.tuwien.repository.sdb.ViewIdxRepository;
 import at.tuwien.repository.mdb.ViewRepository;
 import lombok.extern.log4j.Log4j2;
@@ -16,11 +17,13 @@ import java.util.List;
 @Component
 public class IndexConfig {
 
+    private final ViewMapper viewMapper;
     private final ViewRepository viewRepository;
     private final ViewIdxRepository viewIdxRepository;
 
     @Autowired
-    public IndexConfig(ViewRepository viewRepository, ViewIdxRepository viewIdxRepository) {
+    public IndexConfig(ViewMapper viewMapper, ViewRepository viewRepository, ViewIdxRepository viewIdxRepository) {
+        this.viewMapper = viewMapper;
         this.viewRepository = viewRepository;
         this.viewIdxRepository = viewIdxRepository;
     }
@@ -28,7 +31,10 @@ public class IndexConfig {
     @Transactional
     @EventListener(ApplicationReadyEvent.class)
     public void initIndex() {
-        final List<View> views = viewRepository.findAll();
+        final List<ViewDto> views = viewRepository.findAll()
+                .stream()
+                .map(viewMapper::viewToViewDto)
+                .toList();
         viewIdxRepository.saveAll(views);
         log.info("Added {} views to open search database", views.size());
     }

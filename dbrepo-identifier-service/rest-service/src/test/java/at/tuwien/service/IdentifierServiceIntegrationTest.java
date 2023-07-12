@@ -195,9 +195,9 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
         identifierRepository.save(IDENTIFIER_1_SIMPLE);
         identifierRepository.save(IDENTIFIER_2_SIMPLE);
         identifierRepository.save(IDENTIFIER_3_SIMPLE);
-        identifierIdxRepository.save(IDENTIFIER_1_SIMPLE);
-        identifierIdxRepository.save(IDENTIFIER_2_SIMPLE);
-        identifierIdxRepository.save(IDENTIFIER_3_SIMPLE);
+        identifierIdxRepository.save(IDENTIFIER_1_DTO);
+        identifierIdxRepository.save(IDENTIFIER_2_DTO);
+        identifierIdxRepository.save(IDENTIFIER_3_DTO);
 
         /* test */
         final Identifier response = identifierService.create(IDENTIFIER_4_DTO_REQUEST, USER_1_PRINCIPAL, bearer);
@@ -229,10 +229,10 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
         identifierRepository.save(IDENTIFIER_2_SIMPLE);
         identifierRepository.save(IDENTIFIER_3_SIMPLE);
         identifierRepository.save(IDENTIFIER_4_SIMPLE);
-        identifierIdxRepository.save(IDENTIFIER_1_SIMPLE);
-        identifierIdxRepository.save(IDENTIFIER_2_SIMPLE);
-        identifierIdxRepository.save(IDENTIFIER_3_SIMPLE);
-        identifierIdxRepository.save(IDENTIFIER_4_SIMPLE);
+        identifierIdxRepository.save(IDENTIFIER_1_DTO);
+        identifierIdxRepository.save(IDENTIFIER_2_DTO);
+        identifierIdxRepository.save(IDENTIFIER_3_DTO);
+        identifierIdxRepository.save(IDENTIFIER_4_DTO);
         when(queryServiceGateway.find(DATABASE_1_ID, IDENTIFIER_5_DTO_REQUEST, authorization))
                 .thenReturn(QUERY_1_DTO);
 
@@ -312,7 +312,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
 
         /* mock */
         identifierRepository.save(IDENTIFIER_1_SIMPLE);
-        identifierIdxRepository.save(IDENTIFIER_1_SIMPLE);
+        identifierIdxRepository.save(IDENTIFIER_1_DTO);
 
         /* test */
         identifierService.delete(IDENTIFIER_1_ID);

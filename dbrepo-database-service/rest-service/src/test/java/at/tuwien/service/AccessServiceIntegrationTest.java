@@ -162,7 +162,7 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
     protected <T extends Throwable> void create_succeeds(String test, AccessTypeDto accessTypeDto, AccessType access,
                                                          String username, UUID userId)
             throws UserNotFoundException, NotAllowedException, QueryMalformedException, DatabaseNotFoundException,
-            DatabaseMalformedException, InterruptedException {
+            DatabaseMalformedException {
         final DatabaseGiveAccessDto request = DatabaseGiveAccessDto.builder()
                 .type(accessTypeDto)
                 .username(username)
@@ -181,7 +181,7 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
     @MethodSource("update_succeeds_parameters")
     protected void update_succeeds(String test, Long databaseId, AccessTypeDto accessTypeDto, AccessType access,
                                    String username) throws UserNotFoundException, NotAllowedException,
-            QueryMalformedException, DatabaseNotFoundException, DatabaseMalformedException, AccessDeniedException, InterruptedException {
+            QueryMalformedException, DatabaseNotFoundException, DatabaseMalformedException, AccessDeniedException {
         final DatabaseModifyAccessDto request = DatabaseModifyAccessDto.builder()
                 .type(accessTypeDto)
                 .build();
@@ -224,8 +224,8 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
 
     @ParameterizedTest
     @MethodSource("delete_succeeds_parameters")
-    protected <T extends Throwable> void delete_succeeds(String name, String username) throws InterruptedException,
-            UserNotFoundException, NotAllowedException, QueryMalformedException, DatabaseNotFoundException,
+    protected <T extends Throwable> void delete_succeeds(String name, String username)
+            throws UserNotFoundException, NotAllowedException, QueryMalformedException, DatabaseNotFoundException,
             DatabaseMalformedException {
 
         /* test */

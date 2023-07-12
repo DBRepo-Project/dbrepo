@@ -4,7 +4,6 @@ import at.tuwien.BaseUnitTest;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.entities.database.table.Table;
-import at.tuwien.exception.ContainerNotFoundException;
 import at.tuwien.exception.DatabaseNotFoundException;
 import at.tuwien.exception.TableNotFoundException;
 import at.tuwien.repository.mdb.*;
@@ -87,7 +86,7 @@ public class TableServiceIntegrationReadTest extends BaseUnitTest {
     private MariaDBContainer<?> mariaDBContainer;
 
     @BeforeAll
-    public static void beforeAll() throws InterruptedException {
+    public static void beforeAll() {
     }
 
     @BeforeEach
@@ -123,8 +122,7 @@ public class TableServiceIntegrationReadTest extends BaseUnitTest {
     }
 
     @Test
-    public void findById_succeeds() throws TableNotFoundException, DatabaseNotFoundException,
-            ContainerNotFoundException {
+    public void findById_succeeds() throws TableNotFoundException, DatabaseNotFoundException{
 
         /* test */
         final Table response = tableService.findById(DATABASE_1_ID, TABLE_1_ID);

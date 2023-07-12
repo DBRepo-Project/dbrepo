@@ -3,6 +3,7 @@ package at.tuwien.api.user;
 import at.tuwien.api.container.ContainerDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.Id;
 import lombok.*;
 
 import jakarta.validation.constraints.NotNull;
@@ -23,6 +24,7 @@ import java.util.UUID;
 @Document(indexName = "user")
 public class UserDto {
 
+    @Id
     @NotNull
     @Schema(example = "1ffc7b0e-9aeb-4e8b-b8f1-68f3936155b4")
     private UUID id;

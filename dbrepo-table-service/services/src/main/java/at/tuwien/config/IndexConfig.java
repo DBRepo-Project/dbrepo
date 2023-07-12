@@ -1,7 +1,8 @@
 package at.tuwien.config;
 
-import at.tuwien.entities.database.table.Table;
-import at.tuwien.entities.database.table.columns.TableColumn;
+import at.tuwien.api.database.table.TableDto;
+import at.tuwien.api.database.table.columns.ColumnDto;
+import at.tuwien.mapper.TableMapper;
 import at.tuwien.repository.mdb.TableColumnRepository;
 import at.tuwien.repository.mdb.TableRepository;
 import at.tuwien.repository.sdb.TableColumnIdxRepository;
@@ -18,13 +19,15 @@ import java.util.List;
 @Log4j2
 public class IndexConfig {
 
+    private final TableMapper tableMapper;
     private final TableRepository tableRepository;
     private final TableIdxRepository tableIdxRepository;
     private final TableColumnRepository tableColumnRepository;
     private final TableColumnIdxRepository tableColumnIdxRepository;
 
-    public IndexConfig(TableRepository tableRepository, TableIdxRepository tableIdxRepository,
+    public IndexConfig(TableMapper tableMapper, TableRepository tableRepository, TableIdxRepository tableIdxRepository,
                        TableColumnRepository tableColumnRepository, TableColumnIdxRepository tableColumnIdxRepository) {
+        this.tableMapper = tableMapper;
         this.tableRepository = tableRepository;
         this.tableIdxRepository = tableIdxRepository;
         this.tableColumnRepository = tableColumnRepository;
@@ -34,10 +37,16 @@ public class IndexConfig {
     @Transactional
     @EventListener(ApplicationReadyEvent.class)
     public void initIndex() {
-        final List<Table> tables = tableRepository.findAll();
+        final List<TableDto> tables = tableRepository.findAll()
+                .stream()
+                .map(tableMapper::tableToTableDto)
+                .toList();
         tableIdxRepository.saveAll(tables);
         log.info("Added {} tables to open search index", tables.size());
-        final List<TableColumn> columns = tableColumnRepository.findAll();
+        final List<ColumnDto> columns = tableColumnRepository.findAll()
+                .stream()
+                .map(tableMapper::tableColumnToColumnDto)
+                .toList();
         tableColumnIdxRepository.saveAll(columns);
         log.info("Added {} columns to open search index", columns.size());
     }
