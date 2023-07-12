@@ -14,6 +14,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
 
 import java.time.Instant;
 import java.util.List;
@@ -33,10 +34,12 @@ public class IdentifierDto {
 
     @Id
     @JsonProperty("database_id")
+    @Field(name = "database_id")
     @Schema(example = "1")
     private Long databaseId;
 
     @JsonProperty("query_id")
+    @Field(name = "query_id")
     @Schema(example = "1")
     private Long queryId;
 
@@ -55,10 +58,12 @@ public class IdentifierDto {
 
     @NotBlank
     @JsonProperty("query_normalized")
+    @Field(name = "query_normalized")
     @Schema(example = "SELECT `id`, `value`, `location` FROM `air_quality` WHERE `location` = \"09:STEF\"")
     private String queryNormalized;
 
     @JsonProperty("related_identifiers")
+    @Field(name = "related_identifiers")
     private List<RelatedIdentifierDto> relatedIdentifiers;
 
     @NotNull
@@ -66,6 +71,7 @@ public class IdentifierDto {
 
     @NotBlank
     @JsonProperty("query_hash")
+    @Field(name = "query_hash")
     @Schema(description = "query hash in sha512")
     private String queryHash;
 
@@ -75,10 +81,13 @@ public class IdentifierDto {
 
     @NotBlank
     @JsonProperty("result_hash")
+    @Field(name = "result_hash")
+    @Schema(example = "34fe82cda2c53f13f8d90cfd7a3469e3a939ff311add50dce30d9136397bf8e5")
     private String resultHash;
 
     @NotNull
     @JsonProperty("result_number")
+    @Field(name = "result_number")
     @Schema(example = "1")
     private Long resultNumber;
 
@@ -97,15 +106,18 @@ public class IdentifierDto {
     private UserDto creator;
 
     @JsonProperty("publication_day")
+    @Field(name = "publication_day")
     @Schema(example = "15")
     private Integer publicationDay;
 
     @JsonProperty("publication_month")
+    @Field(name = "publication_month")
     @Schema(example = "12")
     private Integer publicationMonth;
 
     @NotNull
     @JsonProperty("publication_year")
+    @Field(name = "publication_year")
     @Schema(example = "2022")
     private Integer publicationYear;
 
@@ -120,6 +132,7 @@ public class IdentifierDto {
     private Instant created;
 
     @JsonProperty("last_modified")
+    @org.springframework.data.annotation.Transient
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant lastModified;
 

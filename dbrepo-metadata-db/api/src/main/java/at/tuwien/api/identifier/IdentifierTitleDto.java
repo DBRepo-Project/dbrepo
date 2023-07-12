@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
+import org.springframework.data.elasticsearch.annotations.Field;
 
 @Getter
 @Setter
@@ -27,6 +28,7 @@ public class IdentifierTitleDto {
     private LanguageTypeDto language;
 
     @JsonProperty("type")
+    @Field(name = "type")
     private TitleTypeDto titleType;
 
 }

@@ -11,6 +11,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
+import org.springframework.data.elasticsearch.annotations.Field;
 
 import java.time.Instant;
 
@@ -36,6 +37,7 @@ public class DatabaseBriefDto {
     private IdentifierBriefDto identifier;
 
     @JsonProperty("is_public")
+    @Field(name = "is_public")
     @Schema(example = "true")
     private Boolean isPublic;
 

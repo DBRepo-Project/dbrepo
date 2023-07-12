@@ -120,7 +120,6 @@ public class IdentifierServiceImpl implements IdentifierService {
                 data.getTitles(), data.getDescriptions(), data.getFunders());
         log.info("Created identifier with id {} in metadata database", entity.getId());
         /* create in open search database */
-        removeBidirectionalReferences(entity);
         identifierIdxRepository.save(identifierMapper.identifierToIdentifierDto(entity));
         log.info("Created identifier with id {} in open search database", entity.getId());
         return entity;
@@ -251,7 +250,6 @@ public class IdentifierServiceImpl implements IdentifierService {
                 data.getTitles(), data.getDescriptions(), data.getFunders());
         log.info("Updated identifier with id {} in metadata database", identifierId);
         /* update in open search database */
-        removeBidirectionalReferences(entity);
         identifierIdxRepository.save(identifierMapper.identifierToIdentifierDto(entity));
         log.info("Updated identifier with id {} in open search database", identifierId);
         return entity;
@@ -328,24 +326,6 @@ public class IdentifierServiceImpl implements IdentifierService {
             log.debug("set {} funder(s)", identifier.getFunders().size());
         }
         return identifierRepository.save(identifier);
-    }
-
-    protected void removeBidirectionalReferences(Identifier identifier) {
-        if (identifier.getCreators() != null) {
-            identifier.setCreators(identifier.getCreators().stream().peek(c -> c.setIdentifier(null)).toList());
-        }
-        if (identifier.getRelatedIdentifiers() != null) {
-            identifier.setRelatedIdentifiers(identifier.getRelatedIdentifiers().stream().peek(c -> c.setIdentifier(null)).toList());
-        }
-        if (identifier.getTitles() != null) {
-            identifier.setTitles(identifier.getTitles().stream().peek(c -> c.setIdentifier(null)).toList());
-        }
-        if (identifier.getDescriptions() != null) {
-            identifier.setDescriptions(identifier.getDescriptions().stream().peek(c -> c.setIdentifier(null)).toList());
-        }
-        if (identifier.getFunders() != null) {
-            identifier.setFunders(identifier.getFunders().stream().peek(c -> c.setIdentifier(null)).toList());
-        }
     }
 
 }

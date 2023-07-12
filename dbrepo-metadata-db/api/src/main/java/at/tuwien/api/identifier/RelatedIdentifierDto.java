@@ -9,6 +9,7 @@ import lombok.*;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.jackson.Jacksonized;
+import org.springframework.data.elasticsearch.annotations.Field;
 
 import java.time.Instant;
 
@@ -44,6 +45,7 @@ public class RelatedIdentifierDto {
     private Instant created;
 
     @JsonProperty("last_modified")
+    @org.springframework.data.annotation.Transient
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant lastModified;
 

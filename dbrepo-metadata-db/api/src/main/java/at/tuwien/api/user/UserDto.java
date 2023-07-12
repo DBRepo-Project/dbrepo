@@ -9,7 +9,6 @@ import lombok.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.jackson.Jacksonized;
 import org.springframework.data.elasticsearch.annotations.Document;
-import org.springframework.data.elasticsearch.annotations.Field;
 
 import java.util.List;
 import java.util.UUID;
@@ -47,25 +46,30 @@ public class UserDto {
     @Schema(example = "Carberry")
     private String lastname;
 
-    @EqualsAndHashCode.Exclude
+    @NotNull
+    @org.springframework.data.annotation.Transient
     private List<UserAttributeDto> attributes;
 
-    @EqualsAndHashCode.Exclude
+    @NotNull
+    @org.springframework.data.annotation.Transient
     private List<ContainerDto> containers;
 
-    @EqualsAndHashCode.Exclude
+    @NotNull
+    @org.springframework.data.annotation.Transient
     private List<ContainerDto> databases;
 
-    @EqualsAndHashCode.Exclude
+    @NotNull
+    @org.springframework.data.annotation.Transient
     private List<ContainerDto> identifiers;
 
     @NotNull
+    @org.springframework.data.annotation.Transient
     @Schema(example = "jcarberry@brown.edu")
     private String email;
 
     @NotNull
-    @Field(name = "email_verified")
     @JsonProperty("email_verified")
+    @org.springframework.data.annotation.Transient
     @Schema(example = "true")
     private Boolean emailVerified;
 

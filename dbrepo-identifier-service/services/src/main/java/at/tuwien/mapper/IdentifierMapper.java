@@ -5,6 +5,7 @@ import at.tuwien.entities.identifier.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
+import org.mapstruct.Named;
 
 @Mapper(componentModel = "spring")
 public interface IdentifierMapper {
@@ -36,6 +37,10 @@ public interface IdentifierMapper {
 
     Creator creatorDtoToCreator(CreatorDto data);
 
+    @Mappings({
+            @Mapping(target = "nameIdentifierSchemeUri", source = "nameIdentifierScheme", qualifiedByName = "nameSchemaMapper"),
+            @Mapping(target = "affiliationIdentifier", source = "affiliationIdentifierScheme", qualifiedByName = "affiliationSchemaMapper"),
+    })
     Creator creatorCreateDtoToCreator(CreatorSaveDto data);
 
     RelatedIdentifier relatedIdentifierCreateDtoToRelatedIdentifier(RelatedIdentifierSaveDto data);
@@ -50,6 +55,25 @@ public interface IdentifierMapper {
         } else {
             return null;
         }
+    }
+
+    @Named("nameSchemaMapper")
+    default String nameIdentifierSchemeToNameIdentifierSchemeUri(NameIdentifierSchemeTypeDto data) {
+        return switch (data) {
+            case ROR -> "https://ror.org/";
+            case ORCID -> "https://orcid.org/";
+            case GRID -> "https://grid.ac/";
+            case ISNI -> "https://isni.org/";
+        };
+    }
+
+    @Named("affiliationSchemaMapper")
+    default String affiliationIdentifierSchemeTypeToAffiliationIdentifier(AffiliationIdentifierSchemeType data) {
+        return switch (data) {
+            case ROR -> "https://ror.org/";
+            case GRID -> "https://grid.ac/";
+            case ISNI -> "https://isni.org/";
+        };
     }
 
 }

@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
+import org.springframework.data.elasticsearch.annotations.Field;
 
 import java.time.Instant;
 
@@ -36,10 +37,12 @@ public class ContainerBriefDto {
 
     @NotBlank
     @JsonProperty("internal_name")
+    @Field(name = "internal_name")
     @Schema(example = "air-quality")
     private String internalName;
 
     @NotNull
+    @org.springframework.data.annotation.Transient
     @Schema(example = "true")
     private Boolean running;
 

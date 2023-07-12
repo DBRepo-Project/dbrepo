@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
+import org.springframework.data.elasticsearch.annotations.Field;
 
 import java.time.Instant;
 import java.util.List;
@@ -24,10 +25,12 @@ public class IdentifierBriefDto {
     private Long id;
 
     @JsonProperty("database_id")
+    @Field(name = "database_id")
     @Schema(example = "1")
     private Long databaseId;
 
     @JsonProperty("query_id")
+    @Field(name = "query_id")
     @Schema(example = "1")
     private Long queryId;
 
@@ -44,6 +47,7 @@ public class IdentifierBriefDto {
 
     @NotNull
     @JsonProperty("publication_year")
+    @Field(name = "publication_year")
     @Schema(example = "2022")
     private Integer publicationYear;
 
@@ -55,6 +59,7 @@ public class IdentifierBriefDto {
     private Instant created;
 
     @JsonIgnore
+    @org.springframework.data.annotation.Transient
     @JsonProperty("last_modified")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant lastModified;

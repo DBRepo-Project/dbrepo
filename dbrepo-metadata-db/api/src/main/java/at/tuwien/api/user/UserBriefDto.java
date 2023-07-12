@@ -6,6 +6,7 @@ import lombok.*;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.jackson.Jacksonized;
+import org.springframework.data.elasticsearch.annotations.Field;
 
 import java.util.UUID;
 

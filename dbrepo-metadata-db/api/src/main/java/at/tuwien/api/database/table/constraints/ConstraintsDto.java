@@ -5,6 +5,7 @@ import at.tuwien.api.database.table.constraints.foreignKey.ForeignKeyDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
+import org.springframework.data.elasticsearch.annotations.Field;
 
 import java.util.List;
 
@@ -19,6 +20,7 @@ public class ConstraintsDto {
 
     List<List<ColumnDto>> uniques;
 
+    @Field(name = "foreign_keys")
     @JsonProperty("foreign_keys")
     List<ForeignKeyDto> foreignKeys;
 
