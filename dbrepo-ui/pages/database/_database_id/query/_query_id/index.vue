@@ -63,7 +63,7 @@
                 <v-skeleton-loader v-if="!database" type="text" class="skeleton-small" />
                 <span v-if="database">{{ database.name }}</span>
               </v-list-item-content>
-              <div v-if="database && database.identifier">
+              <div v-if="database && database.identifier && database.identifier.license">
                 <v-list-item-title class="mt-2">
                   Database License
                 </v-list-item-title>

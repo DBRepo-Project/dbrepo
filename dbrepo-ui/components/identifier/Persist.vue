@@ -42,7 +42,7 @@
                     label="Name Identifier"
                     name="name-identifier"
                     hint="Use a name identifier expressed as URL from ORCID*, ROR*, DOI*, ISNI, GND (schemes with * support automatic metadata retrieval)"
-                    :loading="creator.loading"
+                    :loading="creator.name_loading"
                     persistent-hint
                     required
                     clearable
@@ -110,17 +110,21 @@
               <v-row dense>
                 <v-col cols="8">
                   <v-text-field
-                    v-model="creator.affiliation"
-                    label="Affiliation"
-                    hint="e.g. Brown University" />
+                    v-model="creator.affiliation_identifier"
+                    label="Affiliation Identifier"
+                    :loading="creator.affiliation_loading"
+                    hint="Use an affiliation identifier expressed as URL from ORCID*, ROR*, DOI*, ISNI, GND (schemes with * support automatic metadata retrieval)"
+                    persistent-hint
+                    clearable
+                    @focusout="retrieveAffiliation(creator)" />
                 </v-col>
               </v-row>
               <v-row dense>
                 <v-col cols="8">
                   <v-text-field
-                    v-model="creator.affiliation_identifier"
-                    label="Affiliation Identifier"
-                    hint="e.g. https://ror.org/05gq02987" />
+                    v-model="creator.affiliation"
+                    label="Affiliation"
+                    hint="e.g. Brown University" />
                 </v-col>
               </v-row>
             </v-card-text>
@@ -826,7 +830,7 @@ export default {
         creator.name_identifier_scheme = null
         return
       }
-      creator.loading = true
+      creator.name_loading = true
       IdentifierService.retrieve(creator.name_identifier)
         .then((metadata) => {
           creator.success = true
@@ -838,7 +842,9 @@ export default {
             creator.affiliation = null
           } else {
             creator.creator_name = (creator.lastname + ', ' + creator.firstname)
-            creator.affiliation = metadata.affiliations.length > 0 ? metadata.affiliations[0].organization_name : null
+            if (metadata.affiliations.length > 0) {
+              creator.affiliation = metadata.affiliations[0].organization_name
+            }
           }
           creator.name_identifier_scheme = UserMapper.nameIdentifierToNameIdentifierScheme(creator.name_identifier)
         })
@@ -846,7 +852,28 @@ export default {
           creator.success = false
         })
         .finally(() => {
-          creator.loading = false
+          creator.name_loading = false
+        })
+    },
+    retrieveAffiliation (creator) {
+      if (!creator || !creator.affiliation_identifier) {
+        creator.affiliation_identifier_scheme = null
+        return
+      }
+      creator.affiliation_loading = true
+      IdentifierService.retrieve(creator.affiliation_identifier)
+        .then((metadata) => {
+          creator.success = true
+          if (metadata.type === 'Organizational') {
+            creator.affiliation = metadata.affiliations[0].organization_name
+          }
+          creator.name_identifier_scheme = UserMapper.nameIdentifierToNameIdentifierScheme(creator.affiliation_identifier)
+        })
+        .catch(() => {
+          creator.success = false
+        })
+        .finally(() => {
+          creator.affiliation_loading = false
         })
     },
     retrieveFunder (funder) {
@@ -880,7 +907,8 @@ export default {
         name_identifier_scheme: null,
         name_type: 'Personal',
         creator_name: null,
-        loading: false /* removed later */,
+        name_loading: false /* removed later */,
+        affiliation_loading: false /* removed later */,
         success: false /* removed later */
       })
     },

@@ -35,7 +35,11 @@
                 <IsniIcon v-if="hasIsni(personOrOrg)" :isni="personOrOrg.name_identifier" />
                 <RorIcon v-if="hasRor(personOrOrg)" :ror="personOrOrg.name_identifier" />
                 <span v-text="personOrOrg.creator_name" />
-                <sup v-if="personOrOrg.affiliation" v-text="personOrOrg.affiliation" />
+                <sup v-if="hasAffiliation(personOrOrg)">
+                  <a v-if="personOrOrg.affiliation_identifier" :href="personOrOrg.affiliation_identifier" target="_blank">
+                    {{ personOrOrg.affiliation ? personOrOrg.affiliation : personOrOrg.affiliation_identifier }}
+                  </a>
+                </sup>
               </p>
             </v-list-item-content>
             <v-list-item-title v-if="identifierLang" class="mt-2">
@@ -185,6 +189,9 @@ export default {
     },
     hasRor (personOrOrg) {
       return personOrOrg.name_identifier && personOrOrg.name_identifier_scheme === 'ROR'
+    },
+    hasAffiliation (personOrOrg) {
+      return personOrOrg.affiliation || personOrOrg.affiliation_identifier
     }
   }
 }
