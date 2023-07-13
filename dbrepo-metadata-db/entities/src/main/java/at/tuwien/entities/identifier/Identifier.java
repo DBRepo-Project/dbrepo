@@ -72,11 +72,13 @@ public class Identifier implements Serializable {
     @OrderBy("id")
     private List<IdentifierFunder> funders;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumns({
-            @JoinColumn(name = "License", referencedColumnName = "identifier")
-    })
-    private License license;
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "mdb_identifier_licenses",
+            joinColumns = @JoinColumn(name = "pid", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "license_id", referencedColumnName = "identifier")
+    )
+    private List<License> licenses;
 
     @Column(name = "identifier_type", nullable = false, columnDefinition = "enum('SUBSET', 'DATABASE')")
     @Enumerated(EnumType.STRING)

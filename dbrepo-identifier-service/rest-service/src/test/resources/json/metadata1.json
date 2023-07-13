@@ -46,6 +46,12 @@
       "name_identifier_scheme": "ORCID"
     }
   ],
+  "licenses": [
+    {
+      "identifier": "MIT",
+      "uri": "https://opensource.org/license/mit/"
+    }
+  ],
   "publication_month": 5,
   "publication_year": 2022,
   "created": "2022-01-07T20:45:52.000+00:00",

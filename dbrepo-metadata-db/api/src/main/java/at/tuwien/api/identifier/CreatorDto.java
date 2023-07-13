@@ -67,4 +67,9 @@ public class CreatorDto {
     @Schema(example = "ROR")
     private AffiliationIdentifierSchemeTypeDto affiliationIdentifierScheme;
 
+    @JsonProperty("affiliation_identifier_scheme_uri")
+    @Field(name="affiliation_identifier_scheme_uri")
+    @Schema(example = "https://ror.org/")
+    private String affiliationIdentifierSchemeUri;
+
 }

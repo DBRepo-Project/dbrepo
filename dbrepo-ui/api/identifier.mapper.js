@@ -58,7 +58,12 @@ class IdentifierMapper {
       visibility: data.visibility,
       publisher: data.publisher,
       language: data.language,
-      license: data.license,
+      licenses: data.licenses.map((l) => {
+        return {
+          identifier: l.identifier,
+          uri: l.uri
+        }
+      }),
       creators: data.creators.map((c) => {
         return {
           id: c.id,
@@ -69,7 +74,8 @@ class IdentifierMapper {
           name_identifier: c.name_identifier,
           name_identifier_scheme: c.name_identifier_scheme,
           affiliation: c.affiliation,
-          affiliation_identifier: c.affiliation_identifier
+          affiliation_identifier: c.affiliation_identifier,
+          affiliation_identifier_scheme: this.identifierToIdentifierScheme(c.affiliation_identifier)
         }
       }),
       publication_day: data.publication_day,
@@ -84,6 +90,22 @@ class IdentifierMapper {
         }
       })
     }
+  }
+
+  identifierToIdentifierScheme (data) {
+    if (!data) {
+      return null
+    }
+    if (data.includes('ror.org')) {
+      return 'ROR'
+    } else if (data.includes('orcid.org')) {
+      return 'ORCID'
+    } else if (data.includes('grid.ac')) {
+      return 'GRID'
+    } else if (data.includes('isni.org')) {
+      return 'ISNI'
+    }
+    return null
   }
 }
 

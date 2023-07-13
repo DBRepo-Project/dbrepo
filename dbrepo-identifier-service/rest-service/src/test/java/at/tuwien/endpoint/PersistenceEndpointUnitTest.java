@@ -106,7 +106,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
         assertEquals(compare.getCreated(), body.getCreated());
         assertEquals(compare.getLastModified(), body.getLastModified());
         assertEquals(compare.getDoi(), body.getDoi());
-        assertEquals(compare.getLicense(), body.getLicense());
+        assertEquals(compare.getLicenses().size(), body.getLicenses().size());
         assertEquals(compare.getPublicationDay(), body.getPublicationDay());
         assertEquals(compare.getPublicationMonth(), body.getPublicationMonth());
         assertEquals(compare.getPublicationYear(), body.getPublicationYear());
@@ -145,7 +145,9 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
         assertEquals(compare.getCreated(), body.getCreated());
         assertEquals(compare.getLastModified(), body.getLastModified());
         assertEquals(compare.getDoi(), body.getDoi());
-        assertEquals(compare.getLicense(), body.getLicense());
+        assertEquals(compare.getLicenses().size(), body.getLicenses().size());
+        assertEquals(compare.getLicenses().get(0).getIdentifier(), body.getLicenses().get(0).getIdentifier());
+        assertEquals(compare.getLicenses().get(0).getUri(), body.getLicenses().get(0).getUri());
         assertEquals(compare.getPublicationDay(), body.getPublicationDay());
         assertEquals(compare.getPublicationMonth(), body.getPublicationMonth());
         assertEquals(compare.getPublicationYear(), body.getPublicationYear());

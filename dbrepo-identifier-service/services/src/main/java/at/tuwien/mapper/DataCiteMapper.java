@@ -25,7 +25,6 @@ public interface DataCiteMapper {
             @Mapping(target = "publicationMonth", source = "publicationMonth"),
             @Mapping(target = "publicationDay", source = "publicationDay"),
             @Mapping(target = "language", source = "language"),
-            @Mapping(target = "rightsList", expression = "java(list(licenseToDoiRights(identifier.getLicense())))"),
             @Mapping(target = "creators", source = "creators"),
     })
     DataCiteCreateDoi identifierToDataCiteCreateDoi(Identifier identifier);
@@ -62,7 +61,7 @@ public interface DataCiteMapper {
             @Mapping(target = "name", expression = "java(data.getLastname() + \", \" + data.getFirstname())"),
             @Mapping(target = "givenName", source = "firstname"),
             @Mapping(target = "familyName", source = "lastname"),
-            @Mapping(target = "affiliation", expression = "java(list(affiliationStringToDoiCreatorAffiliation(data.getAffiliation())))"),
+            @Mapping(target = "affiliation", expression = "java(list(creatorToDoiCreatorAffiliation(data)))"),
             @Mapping(target = "nameIdentifier", expression = "java(list(creatorToDataCiteDoiCreatorNameIdentifier(data)))"),
     })
     DataCiteDoiCreator creatorToDoiCreator(Creator data);
@@ -88,9 +87,12 @@ public interface DataCiteMapper {
     }
 
     @Mappings({
-            @Mapping(target = "name", constant = "affiliation"),
+            @Mapping(target = "name", source = "affiliation"),
+            @Mapping(target = "affiliationIdentifier", source = "affiliationIdentifier"),
+            @Mapping(target = "affiliationScheme", source = "affiliationIdentifierScheme"),
+            @Mapping(target = "schemeUri", source = "affiliationIdentifierSchemeUri"),
     })
-    DataCiteDoiCreatorAffiliation affiliationStringToDoiCreatorAffiliation(String affiliation);
+    DataCiteDoiCreatorAffiliation creatorToDoiCreatorAffiliation(Creator data);
 
     @Mappings({
             @Mapping(target = "relatedIdentifier", source = "value"),

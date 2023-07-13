@@ -115,6 +115,14 @@
                     hint="e.g. Brown University" />
                 </v-col>
               </v-row>
+              <v-row dense>
+                <v-col cols="8">
+                  <v-text-field
+                    v-model="creator.affiliation_identifier"
+                    label="Affiliation Identifier"
+                    hint="e.g. https://ror.org/05gq02987" />
+                </v-col>
+              </v-row>
             </v-card-text>
           </v-stepper-content>
         </v-stepper>
@@ -339,16 +347,17 @@
             </v-col>
           </v-row>
         </v-card-text>
-        <v-card-title v-if="isDatabase">License</v-card-title>
+        <v-card-title v-if="isDatabase">Licenses</v-card-title>
         <v-card-text v-if="isDatabase">
           <v-row dense>
             <v-col cols="8">
               <v-select
-                v-model="identifier.license"
+                v-model="identifier.licenses"
                 return-object
+                multiple
                 :items="licenses"
                 item-text="identifier"
-                label="License *"
+                label="Licenses *"
                 :rules="[ v => !!v || $t('Required') ]"
                 required />
             </v-col>
@@ -483,7 +492,7 @@ export default {
         publication_year: formatYearUTC(Date.now()),
         publication_month: formatMonthUTC(Date.now()),
         publication_day: formatDayUTC(Date.now()),
-        license: null,
+        licenses: [],
         type: this.type,
         creators: [],
         related_identifiers: [],
@@ -866,6 +875,7 @@ export default {
         lastname: null,
         affiliation: null,
         affiliation_identifier: null,
+        affiliation_identifier_scheme: null,
         name_identifier: null,
         name_identifier_scheme: null,
         name_type: 'Personal',

@@ -39,7 +39,7 @@ public interface IdentifierMapper {
 
     @Mappings({
             @Mapping(target = "nameIdentifierSchemeUri", source = "nameIdentifierScheme", qualifiedByName = "nameSchemaMapper"),
-            @Mapping(target = "affiliationIdentifier", source = "affiliationIdentifierScheme", qualifiedByName = "affiliationSchemaMapper"),
+            @Mapping(target = "affiliationIdentifierSchemeUri", source = "affiliationIdentifierScheme", qualifiedByName = "affiliationSchemaMapper"),
     })
     Creator creatorCreateDtoToCreator(CreatorSaveDto data);
 
@@ -63,15 +63,18 @@ public interface IdentifierMapper {
             case ROR -> "https://ror.org/";
             case ORCID -> "https://orcid.org/";
             case GRID -> "https://grid.ac/";
-            case ISNI -> "https://isni.org/";
+            case ISNI -> "https://grid.ac/institutes/";
         };
     }
 
     @Named("affiliationSchemaMapper")
-    default String affiliationIdentifierSchemeTypeToAffiliationIdentifier(AffiliationIdentifierSchemeType data) {
+    default String affiliationIdentifierSchemeTypeToAffiliationIdentifier(AffiliationIdentifierSchemeTypeDto data) {
+        if (data == null) {
+            return null;
+        }
         return switch (data) {
             case ROR -> "https://ror.org/";
-            case GRID -> "https://grid.ac/";
+            case GRID -> "https://grid.ac/institutes/";
             case ISNI -> "https://isni.org/";
         };
     }

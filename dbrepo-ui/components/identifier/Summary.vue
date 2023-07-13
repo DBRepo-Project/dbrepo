@@ -77,13 +77,12 @@
               Funding Information
             </v-list-item-title>
             <v-list-item-content v-if="funding" v-text="funding" />
-            <v-list-item-title v-if="identifier.license" class="mt-2">
-              License
-            </v-list-item-title>
-            <v-list-item-content v-if="identifier.license">
-              <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
-              <a v-if="identifier.license" target="_blank" :href="identifier.license.uri">{{ identifier.license.identifier }}</a>
-              <span v-if="!identifier.license">(none)</span>
+            <v-list-item-title v-if="identifier.licenses" class="mt-2" v-text="licensesHeading" />
+            <v-list-item-content v-if="identifier.licenses" style="display:inline;">
+              <span v-for="(license,i) in identifier.licenses" :key="i">
+                {{ i > 0 ? ', ' : '' }}
+                <a v-if="license" target="_blank" :href="license.uri">{{ license.identifier }}</a>
+              </span>
             </v-list-item-content>
             <Citation :identifier="identifier" />
           </v-list-item-content>
@@ -139,6 +138,12 @@ export default {
     },
     identifierLang () {
       return this.identifier.language ? this.identifier.language.toUpperCase() : null
+    },
+    licensesHeading () {
+      if (!this.identifier.licenses) {
+        return null
+      }
+      return 'License' + (this.identifier.licenses.length > 1 ? 's' : '')
     },
     funding () {
       if (!this.identifier.funders || this.identifier.funders.length === 0) {

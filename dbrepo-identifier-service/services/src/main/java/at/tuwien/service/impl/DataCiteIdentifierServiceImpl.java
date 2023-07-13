@@ -48,9 +48,9 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
                                          IdentifierRepository identifierRepository, IdentifierServiceImpl identifierService) {
         this.dataCiteConfig = dataCiteConfig;
         this.dataCiteMapper = dataCiteMapper;
-        this.restTemplateBuilder =
-                restTemplateBuilder.basicAuthentication(dataCiteConfig.getUsername(), dataCiteConfig.getPassword())
-                        .uriTemplateHandler(new DefaultUriBuilderFactory(dataCiteConfig.getUrl()));
+        this.restTemplateBuilder = restTemplateBuilder.basicAuthentication(dataCiteConfig.getUsername(),
+                        dataCiteConfig.getPassword())
+                .uriTemplateHandler(new DefaultUriBuilderFactory(dataCiteConfig.getUrl()));
         this.endpointConfig = endpointConfig;
         this.identifierRepository = identifierRepository;
         this.identifierService = identifierService;

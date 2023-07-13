@@ -369,7 +369,6 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifiers`
     qid               bigint,
     publisher         VARCHAR(255)              NOT NULL,
     language          VARCHAR(2),
-    license           VARCHAR(50),
     visibility        ENUM ('SELF', 'EVERYONE') NOT NULL default 'EVERYONE',
     publication_year  INTEGER                   NOT NULL,
     publication_month INTEGER,
@@ -388,6 +387,15 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifiers`
     PRIMARY KEY (id), /* must be a single id from persistent identifier concept */
     FOREIGN KEY (dbid) REFERENCES mdb_databases (id),
     UNIQUE (dbid, qid)
+) WITH SYSTEM VERSIONING;
+
+CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifier_licenses`
+(
+    pid        bigint       NOT NULL,
+    license_id VARCHAR(255) NOT NULL,
+    PRIMARY KEY (pid, license_id),
+    FOREIGN KEY (pid) REFERENCES mdb_identifiers (id),
+    FOREIGN KEY (license_id) REFERENCES mdb_licenses (identifier)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifier_titles`
@@ -441,21 +449,21 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_related_identifiers`
     UNIQUE (pid, value)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS `fda`.`mdb_creators`
+CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifier_creators`
 (
-    id                            bigint       NOT NULL AUTO_INCREMENT,
-    pid                           bigint       NOT NULL,
-    given_names                   text,
-    family_name                   text,
-    creator_name                  VARCHAR(255) NOT NULL,
-    name_type                     ENUM ('PERSONAL', 'ORGANIZATIONAL') default 'PERSONAL',
-    name_identifier               text,
-    name_identifier_scheme        ENUM ('ROR', 'GRID', 'ISNI', 'ORCID'),
-    name_identifier_scheme_uri    text,
-    affiliation                   VARCHAR(255),
-    affiliation_identifier        text,
-    affiliation_identifier_scheme ENUM ('ROR', 'GRID', 'ISNI'),
-    orcid                         VARCHAR(255),
+    id                                bigint       NOT NULL AUTO_INCREMENT,
+    pid                               bigint       NOT NULL,
+    given_names                       text,
+    family_name                       text,
+    creator_name                      VARCHAR(255) NOT NULL,
+    name_type                         ENUM ('PERSONAL', 'ORGANIZATIONAL') default 'PERSONAL',
+    name_identifier                   text,
+    name_identifier_scheme            ENUM ('ROR', 'GRID', 'ISNI', 'ORCID'),
+    name_identifier_scheme_uri        text,
+    affiliation                       VARCHAR(255),
+    affiliation_identifier            text,
+    affiliation_identifier_scheme     ENUM ('ROR', 'GRID', 'ISNI'),
+    affiliation_identifier_scheme_uri text,
     PRIMARY KEY (id),
     FOREIGN KEY (pid) REFERENCES mdb_identifiers (id),
     UNIQUE (pid, creator_name)

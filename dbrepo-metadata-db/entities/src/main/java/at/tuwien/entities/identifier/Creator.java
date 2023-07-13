@@ -2,7 +2,6 @@ package at.tuwien.entities.identifier;
 
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
-import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import jakarta.persistence.*;
@@ -14,7 +13,7 @@ import jakarta.persistence.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-@Table(name = "mdb_creators", uniqueConstraints = {
+@Table(name = "mdb_identifier_creators", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"pid", "creator_name"})
 })
 public class Creator {
@@ -26,47 +25,40 @@ public class Creator {
     @Column(updatable = false, nullable = false)
     private Long id;
 
-    @Field(name = "firstname")
     @Column(name = "given_names")
     private String firstname;
 
-    @Field(name = "lastname")
     @Column(name = "family_name")
     private String lastname;
 
-    @Field(name = "creator_name")
     @Column(name = "creator_name", nullable = false)
     private String creatorName;
 
-    @Field(name = "name_type")
     @Column(columnDefinition = "enum('PERSONAL', 'ORGANIZATIONAL')")
     @Enumerated(EnumType.STRING)
     private NameType nameType;
 
-    @Field(name = "name_identifier")
     @Column
     private String nameIdentifier;
 
-    @Field(name = "name_identifier_scheme")
     @Column(columnDefinition = "enum('ROR', 'GRID', 'ISNI', 'ORCID')")
     @Enumerated(EnumType.STRING)
     private NameIdentifierSchemeType nameIdentifierScheme;
 
-    @Field(name = "name_identifier_scheme_uri")
     @Column
     private String nameIdentifierSchemeUri;
 
     @Column
     private String affiliation;
 
-    @Field(name = "affiliation_identifier")
     @Column
     private String affiliationIdentifier;
 
-    @Field(name = "affiliation_identifier_scheme")
     @Column(columnDefinition = "enum('ROR', 'GRID', 'ISNI')")
     @Enumerated(EnumType.STRING)
     private AffiliationIdentifierSchemeType affiliationIdentifierScheme;
+
+    private String affiliationIdentifierSchemeUri;
 
     @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY)

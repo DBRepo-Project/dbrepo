@@ -51,4 +51,8 @@ public class CreatorSaveDto {
     @Schema(example = "https://ror.org/04d836q62")
     private String affiliationIdentifier;
 
+    @JsonProperty("affiliation_identifier_scheme")
+    @Schema(example = "ROR")
+    private AffiliationIdentifierSchemeTypeDto affiliationIdentifierScheme;
+
 }

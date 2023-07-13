@@ -123,7 +123,7 @@ public class IdentifierDto {
 
     private LanguageTypeDto language;
 
-    private LicenseDto license;
+    private List<LicenseDto> licenses;
 
     @NotNull
     private List<CreatorDto> creators;

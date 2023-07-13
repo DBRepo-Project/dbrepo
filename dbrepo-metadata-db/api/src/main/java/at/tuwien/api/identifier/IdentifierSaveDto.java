@@ -39,6 +39,8 @@ public class IdentifierSaveDto {
 
     private List<IdentifierFunderSaveDto> funders;
 
+    private List<LicenseDto> licenses;
+
     @NotNull
     @Schema(example = "everyone")
     private VisibilityTypeDto visibility;
@@ -55,8 +57,6 @@ public class IdentifierSaveDto {
     private String publisher;
 
     private LanguageTypeDto language;
-
-    private LicenseDto license;
 
     @NotNull
     @JsonProperty("publication_year")

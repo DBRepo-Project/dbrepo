@@ -11,7 +11,7 @@
                             th:attr="schemeURI=${creator.nameIdentifierSchemeUri},nameIdentifierScheme=${creator.nameIdentifierScheme}">
                 [[${creator.nameIdentifier}]]
             </nameIdentifier>
-            <affiliation th:if="${creator.affiliation != null}">[[${creator.affiliation}]]</affiliation>
+            <affiliation th:if="${creator.affiliation != null}" th:attr="affiliationIdentifier=${creator.affiliationIdentifier},affiliationIdentifierScheme=${creator.affiliationIdentifierScheme},schemeURI=${creator.affiliationIdentifierSchemeUri}">[[${creator.affiliation}]]</affiliation>
         </creator>
     </creators>
     <titles>
@@ -31,6 +31,9 @@
             [[${relatedIdentifier.value}]]
         </relatedIdentifier>
     </relatedIdentifiers>
+    <rightsList th:if="${not #lists.isEmpty(licenses)}">
+        <rights th:each="license: ${licenses}" th:attr="rightsURI=${license.uri}">[[${license.identifier}]]</rights>
+    </rightsList>
     <descriptions>
         <description th:each="description: ${descriptions}" th:attr="descriptionType=${description.descriptionType}"
                      th:xmllang="${description.language}">[[${description.description}]]</description>

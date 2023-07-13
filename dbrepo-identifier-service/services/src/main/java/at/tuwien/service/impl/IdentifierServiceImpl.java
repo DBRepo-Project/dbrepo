@@ -159,6 +159,7 @@ public class IdentifierServiceImpl implements IdentifierService {
         context.setVariable("relatedIdentifiers", identifier.getRelatedIdentifiers());
         context.setVariable("funders", identifier.getFunders());
         context.setVariable("descriptions", identifier.getDescriptions());
+        context.setVariable("licenses", identifier.getLicenses());
         /* map */
         final String body = templateEngine.process("doi.xml", context)
                 .replaceAll("\\s+", " ");
