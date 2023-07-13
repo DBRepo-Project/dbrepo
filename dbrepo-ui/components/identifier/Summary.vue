@@ -81,8 +81,8 @@
               Funding Information
             </v-list-item-title>
             <v-list-item-content v-if="funding" v-text="funding" />
-            <v-list-item-title v-if="identifier.licenses" class="mt-2" v-text="licensesHeading" />
-            <v-list-item-content v-if="identifier.licenses" style="display:inline;">
+            <v-list-item-title v-if="hasLicenses" class="mt-2" v-text="licensesHeading" />
+            <v-list-item-content v-if="hasLicenses" style="display:inline;">
               <span v-for="(license,i) in identifier.licenses" :key="i">
                 {{ i > 0 ? ', ' : '' }}
                 <a v-if="license" target="_blank" :href="license.uri">{{ license.identifier }}</a>
@@ -148,6 +148,9 @@ export default {
         return null
       }
       return 'License' + (this.identifier.licenses.length > 1 ? 's' : '')
+    },
+    hasLicenses () {
+      return this.identifier.licenses && this.identifier.licenses.length > 0
     },
     funding () {
       if (!this.identifier.funders || this.identifier.funders.length === 0) {

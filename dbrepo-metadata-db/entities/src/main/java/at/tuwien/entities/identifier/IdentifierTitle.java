@@ -16,9 +16,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-@Table(name = "mdb_identifier_titles", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"pid", "language"})
-})
+@Table(name = "mdb_identifier_titles")
 public class IdentifierTitle implements Serializable {
 
     @Id

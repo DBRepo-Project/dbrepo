@@ -13,9 +13,7 @@ import jakarta.persistence.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-@Table(name = "mdb_identifier_creators", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"pid", "creator_name"})
-})
+@Table(name = "mdb_identifier_creators")
 public class Creator {
 
     @Id

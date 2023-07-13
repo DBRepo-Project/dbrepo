@@ -40,12 +40,12 @@
                   <v-text-field
                     v-model="creator.name_identifier"
                     label="Name Identifier"
+                    clearable
                     name="name-identifier"
                     hint="Use a name identifier expressed as URL from ORCID*, ROR*, DOI*, ISNI, GND (schemes with * support automatic metadata retrieval)"
                     :loading="creator.name_loading"
                     persistent-hint
                     required
-                    clearable
                     @focusout="retrieveCreator(creator)" />
                 </v-col>
                 <v-col cols="4" class="mt-5">
@@ -84,6 +84,7 @@
                   <v-text-field
                     v-model="creator.firstname"
                     label="Given Name"
+                    clearable
                     hint="e.g. John"
                     required />
                 </v-col>
@@ -93,6 +94,7 @@
                   <v-text-field
                     v-model="creator.lastname"
                     label="Family Name"
+                    clearable
                     hint="e.g. Doe"
                     required />
                 </v-col>
@@ -124,6 +126,7 @@
                   <v-text-field
                     v-model="creator.affiliation"
                     label="Affiliation"
+                    clearable
                     hint="e.g. Brown University" />
                 </v-col>
               </v-row>
@@ -166,6 +169,7 @@
                   <v-select
                     v-model="title.type"
                     label="Type"
+                    clearable
                     :items="titleType"
                     item-text="value"
                     item-value="value"
@@ -177,6 +181,7 @@
                   <v-autocomplete
                     v-model="title.language"
                     label="Language"
+                    clearable
                     :items="languages"
                     item-text="value"
                     item-value="value"
@@ -222,6 +227,7 @@
                   <v-select
                     v-model="description.type"
                     label="Type"
+                    clearable
                     :items="descriptionType"
                     item-text="value"
                     item-value="value"
@@ -233,6 +239,7 @@
                   <v-autocomplete
                     v-model="description.language"
                     label="Language"
+                    clearable
                     :items="languages"
                     item-text="value"
                     item-value="value"
@@ -284,14 +291,16 @@
                 id="publication-day"
                 v-model.number="identifier.publication_day"
                 type="number"
-                label="Publication day" />
+                label="Publication day"
+                clearable />
             </v-col>
             <v-col cols="2">
               <v-text-field
                 id="publication-month"
                 v-model.number="identifier.publication_month"
                 type="number"
-                label="Publication month" />
+                label="Publication month"
+                clearable />
             </v-col>
             <v-col cols="2">
               <v-text-field
@@ -323,7 +332,8 @@
                     :items="relatedTypes"
                     item-value="value"
                     item-text="value"
-                    label="Type" />
+                    label="Type"
+                    clearable />
                 </v-col>
                 <v-col cols="2">
                   <v-select
@@ -331,7 +341,8 @@
                     :items="relationTypes"
                     item-value="value"
                     item-text="value"
-                    label="Relation" />
+                    label="Relation"
+                    clearable />
                 </v-col>
                 <v-col cols="2" class="mt-5">
                   <v-btn color="error" small @click="deleteRelatedIdentifier(i)">
@@ -374,6 +385,7 @@
               <v-autocomplete
                 v-model="identifier.language"
                 label="Language"
+                clearable
                 :items="languages"
                 item-text="value"
                 item-value="value"
@@ -423,6 +435,7 @@
                   <v-text-field
                     v-model="funder.award_number"
                     label="Award Number"
+                    clearable
                     hint="e.g. CBET-106" />
                 </v-col>
               </v-row>
@@ -430,7 +443,8 @@
                 <v-col cols="8">
                   <v-text-field
                     v-model="funder.award_title"
-                    label="Award Title" />
+                    label="Award Title"
+                    clearable />
                 </v-col>
               </v-row>
             </v-card-text>
@@ -867,7 +881,7 @@ export default {
           if (metadata.type === 'Organizational') {
             creator.affiliation = metadata.affiliations[0].organization_name
           }
-          creator.name_identifier_scheme = UserMapper.nameIdentifierToNameIdentifierScheme(creator.affiliation_identifier)
+          creator.affiliation_identifier_scheme = UserMapper.nameIdentifierToNameIdentifierScheme(creator.affiliation_identifier)
         })
         .catch(() => {
           creator.success = false

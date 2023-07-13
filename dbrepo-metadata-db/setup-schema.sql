@@ -406,8 +406,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifier_titles`
     title_type ENUM ('ALTERNATIVE_TITLE', 'SUBTITLE', 'TRANSLATED_TITLE', 'OTHER'),
     language   VARCHAR(2),
     PRIMARY KEY (id),
-    FOREIGN KEY (pid) REFERENCES mdb_identifiers (id),
-    UNIQUE (pid, language)
+    FOREIGN KEY (pid) REFERENCES mdb_identifiers (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifier_funders`
@@ -433,8 +432,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifier_descriptions`
     description_type ENUM ('ABSTRACT', 'METHODS', 'SERIES_INFORMATION', 'TABLE_OF_CONTENTS', 'TECHNICAL_INFO', 'OTHER'),
     language         VARCHAR(2),
     PRIMARY KEY (id),
-    FOREIGN KEY (pid) REFERENCES mdb_identifiers (id),
-    UNIQUE (pid, language)
+    FOREIGN KEY (pid) REFERENCES mdb_identifiers (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_related_identifiers`

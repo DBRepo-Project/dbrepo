@@ -4961,59 +4961,119 @@ public abstract class BaseTest {
     public final static Long IDENTIFIER_1_TITLE_1_IDENTIFIER_ID = IDENTIFIER_1_ID;
     public final static String IDENTIFIER_1_TITLE_1_TITLE = "Austrian weather data";
     public final static String IDENTIFIER_1_TITLE_1_TITLE_MODIFY = "Austrian weather some data";
+    public final static TitleType IDENTIFIER_1_TITLE_1_TYPE = null;
+    public final static TitleTypeDto IDENTIFIER_1_TITLE_1_TYPE_DTO = null;
     public final static LanguageType IDENTIFIER_1_TITLE_1_LANG = LanguageType.EN;
     public final static LanguageTypeDto IDENTIFIER_1_TITLE_1_LANG_DTO = LanguageTypeDto.EN;
 
     public final static IdentifierTitle IDENTIFIER_1_TITLE_1 = IdentifierTitle.builder()
             .id(IDENTIFIER_1_TITLE_1_ID)
             .title(IDENTIFIER_1_TITLE_1_TITLE)
+            .titleType(IDENTIFIER_1_TITLE_1_TYPE)
             .language(IDENTIFIER_1_TITLE_1_LANG)
             .build();
 
     public final static IdentifierTitleDto IDENTIFIER_1_TITLE_1_DTO = IdentifierTitleDto.builder()
             .id(IDENTIFIER_1_TITLE_1_ID)
             .title(IDENTIFIER_1_TITLE_1_TITLE)
+            .titleType(IDENTIFIER_1_TITLE_1_TYPE_DTO)
             .language(IDENTIFIER_1_TITLE_1_LANG_DTO)
             .build();
 
     public final static IdentifierTitleDto IDENTIFIER_1_TITLE_1_DTO_MODIFY = IdentifierTitleDto.builder()
             .id(IDENTIFIER_1_TITLE_1_ID)
             .title(IDENTIFIER_1_TITLE_1_TITLE_MODIFY)
+            .titleType(IDENTIFIER_1_TITLE_1_TYPE_DTO)
             .language(IDENTIFIER_1_TITLE_1_LANG_DTO)
             .build();
 
     public final static IdentifierSaveTitleDto IDENTIFIER_1_TITLE_1_CREATE_DTO = IdentifierSaveTitleDto.builder()
-            .title(IDENTIFIER_1_TITLE_1_TITLE_MODIFY)
+            .title(IDENTIFIER_1_TITLE_1_TITLE)
+            .titleType(IDENTIFIER_1_TITLE_1_TYPE_DTO)
             .language(IDENTIFIER_1_TITLE_1_LANG_DTO)
+            .build();
+
+    public final static IdentifierSaveTitleDto IDENTIFIER_1_TITLE_1_UPDATE_DTO = IdentifierSaveTitleDto.builder()
+            .title(IDENTIFIER_1_TITLE_1_TITLE_MODIFY)
+            .titleType(IDENTIFIER_1_TITLE_1_TYPE_DTO)
+            .language(IDENTIFIER_1_TITLE_1_LANG_DTO)
+            .build();
+
+    public final static Long IDENTIFIER_1_TITLE_2_ID = 2L;
+    public final static Long IDENTIFIER_1_TITLE_2_IDENTIFIER_ID = IDENTIFIER_1_ID;
+    public final static String IDENTIFIER_1_TITLE_2_TITLE = "Österreichische Wetterdaten";
+    public final static String IDENTIFIER_1_TITLE_2_TITLE_MODIFY = "Österreichische Wetterdaten übersetzt";
+    public final static TitleType IDENTIFIER_1_TITLE_2_TYPE = TitleType.TRANSLATED_TITLE;
+    public final static TitleTypeDto IDENTIFIER_1_TITLE_2_TYPE_DTO = TitleTypeDto.TRANSLATED_TITLE;
+    public final static LanguageType IDENTIFIER_1_TITLE_2_LANG = LanguageType.EN;
+    public final static LanguageTypeDto IDENTIFIER_1_TITLE_2_LANG_DTO = LanguageTypeDto.EN;
+
+    public final static IdentifierTitle IDENTIFIER_1_TITLE_2 = IdentifierTitle.builder()
+            .id(IDENTIFIER_1_TITLE_2_ID)
+            .title(IDENTIFIER_1_TITLE_2_TITLE)
+            .titleType(IDENTIFIER_1_TITLE_2_TYPE)
+            .language(IDENTIFIER_1_TITLE_2_LANG)
+            .build();
+
+    public final static IdentifierTitleDto IDENTIFIER_1_TITLE_2_DTO = IdentifierTitleDto.builder()
+            .id(IDENTIFIER_1_TITLE_2_ID)
+            .title(IDENTIFIER_1_TITLE_2_TITLE)
+            .titleType(IDENTIFIER_1_TITLE_2_TYPE_DTO)
+            .language(IDENTIFIER_1_TITLE_2_LANG_DTO)
+            .build();
+
+    public final static IdentifierTitleDto IDENTIFIER_1_TITLE_2_DTO_MODIFY = IdentifierTitleDto.builder()
+            .id(IDENTIFIER_1_TITLE_2_ID)
+            .title(IDENTIFIER_1_TITLE_2_TITLE_MODIFY)
+            .titleType(IDENTIFIER_1_TITLE_2_TYPE_DTO)
+            .language(IDENTIFIER_1_TITLE_2_LANG_DTO)
+            .build();
+
+    public final static IdentifierSaveTitleDto IDENTIFIER_1_TITLE_2_CREATE_DTO = IdentifierSaveTitleDto.builder()
+            .title(IDENTIFIER_1_TITLE_2_TITLE)
+            .titleType(IDENTIFIER_1_TITLE_2_TYPE_DTO)
+            .language(IDENTIFIER_1_TITLE_2_LANG_DTO)
+            .build();
+
+    public final static IdentifierSaveTitleDto IDENTIFIER_1_TITLE_2_UPDATE_DTO = IdentifierSaveTitleDto.builder()
+            .title(IDENTIFIER_1_TITLE_2_TITLE_MODIFY)
+            .titleType(IDENTIFIER_1_TITLE_2_TYPE_DTO)
+            .language(IDENTIFIER_1_TITLE_2_LANG_DTO)
             .build();
 
     public final static Long IDENTIFIER_1_DESCRIPTION_1_ID = 1L;
     public final static Long IDENTIFIER_1_DESCRIPTION_1_IDENTIFIER_ID = IDENTIFIER_1_ID;
     public final static String IDENTIFIER_1_DESCRIPTION_1_DESCRIPTION = "Selecting all from the weather Austrian table";
     public final static String IDENTIFIER_1_DESCRIPTION_1_DESCRIPTION_MODIFY = "Selecting some from the weather Austrian table";
+    public final static DescriptionType IDENTIFIER_1_DESCRIPTION_1_TYPE = null;
+    public final static DescriptionTypeDto IDENTIFIER_1_DESCRIPTION_1_TYPE_DTO = null;
     public final static LanguageType IDENTIFIER_1_DESCRIPTION_1_LANG = LanguageType.EN;
     public final static LanguageTypeDto IDENTIFIER_1_DESCRIPTION_1_LANG_DTO = LanguageTypeDto.EN;
 
     public final static IdentifierDescription IDENTIFIER_1_DESCRIPTION_1 = IdentifierDescription.builder()
             .id(IDENTIFIER_1_DESCRIPTION_1_ID)
             .description(IDENTIFIER_1_DESCRIPTION_1_DESCRIPTION)
+            .descriptionType(IDENTIFIER_1_DESCRIPTION_1_TYPE)
             .language(IDENTIFIER_1_DESCRIPTION_1_LANG)
             .build();
 
     public final static IdentifierDescriptionDto IDENTIFIER_1_DESCRIPTION_1_DTO = IdentifierDescriptionDto.builder()
             .id(IDENTIFIER_1_DESCRIPTION_1_ID)
             .description(IDENTIFIER_1_DESCRIPTION_1_DESCRIPTION)
+            .descriptionType(IDENTIFIER_1_DESCRIPTION_1_TYPE_DTO)
             .language(IDENTIFIER_1_DESCRIPTION_1_LANG_DTO)
             .build();
 
     public final static IdentifierDescriptionDto IDENTIFIER_1_DESCRIPTION_1_DTO_MODIFY = IdentifierDescriptionDto.builder()
             .id(IDENTIFIER_1_DESCRIPTION_1_ID)
             .description(IDENTIFIER_1_DESCRIPTION_1_DESCRIPTION_MODIFY)
+            .descriptionType(IDENTIFIER_1_DESCRIPTION_1_TYPE_DTO)
             .language(IDENTIFIER_1_DESCRIPTION_1_LANG_DTO)
             .build();
 
     public final static IdentifierSaveDescriptionDto IDENTIFIER_1_DESCRIPTION_1_CREATE_DTO = IdentifierSaveDescriptionDto.builder()
-            .description(IDENTIFIER_1_DESCRIPTION_1_DESCRIPTION_MODIFY)
+            .description(IDENTIFIER_1_DESCRIPTION_1_DESCRIPTION)
+            .descriptionType(IDENTIFIER_1_DESCRIPTION_1_TYPE_DTO)
             .language(IDENTIFIER_1_DESCRIPTION_1_LANG_DTO)
             .build();
 
@@ -5100,7 +5160,7 @@ public abstract class BaseTest {
             .id(IDENTIFIER_1_ID)
             .databaseId(DATABASE_1_ID)
             .queryId(IDENTIFIER_1_QUERY_ID)
-            .titles(List.of(IDENTIFIER_1_TITLE_1))
+            .titles(List.of(IDENTIFIER_1_TITLE_1, IDENTIFIER_1_TITLE_2))
             .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1))
             .doi(IDENTIFIER_1_DOI)
             .database(DATABASE_1)
@@ -5155,7 +5215,7 @@ public abstract class BaseTest {
             .databaseId(DATABASE_1_ID)
             .queryId(IDENTIFIER_1_QUERY_ID)
             .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1))
-            .titles(List.of(IDENTIFIER_1_TITLE_1))
+            .titles(List.of(IDENTIFIER_1_TITLE_1, IDENTIFIER_1_TITLE_2))
             .doi(IDENTIFIER_1_DOI_NOT_NULL)
             .database(DATABASE_1)
             .created(IDENTIFIER_1_CREATED)
@@ -5182,7 +5242,7 @@ public abstract class BaseTest {
             .databaseId(DATABASE_1_ID)
             .queryId(IDENTIFIER_1_QUERY_ID)
             .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_DTO))
-            .titles(List.of(IDENTIFIER_1_TITLE_1_DTO))
+            .titles(List.of(IDENTIFIER_1_TITLE_1_DTO, IDENTIFIER_1_TITLE_2_DTO))
             .doi(IDENTIFIER_1_DOI)
             .database(DATABASE_1_DTO)
             .created(IDENTIFIER_1_CREATED)
@@ -5209,7 +5269,7 @@ public abstract class BaseTest {
             .databaseId(DATABASE_1_ID)
             .queryId(IDENTIFIER_1_QUERY_ID)
             .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_DTO))
-            .titles(List.of(IDENTIFIER_1_TITLE_1_DTO))
+            .titles(List.of(IDENTIFIER_1_TITLE_1_DTO, IDENTIFIER_1_TITLE_2_DTO))
             .doi(IDENTIFIER_1_DOI_NOT_NULL)
             .database(DATABASE_1_DTO)
             .created(IDENTIFIER_1_CREATED)
@@ -5238,7 +5298,7 @@ public abstract class BaseTest {
             .queryId(IDENTIFIER_1_QUERY_ID)
             .database(DATABASE_1_DTO)
             .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_DTO_MODIFY))
-            .titles(List.of(IDENTIFIER_1_TITLE_1_DTO_MODIFY))
+            .titles(List.of(IDENTIFIER_1_TITLE_1_DTO_MODIFY, IDENTIFIER_1_TITLE_2_DTO))
             .doi(IDENTIFIER_1_DOI)
             .publisher(IDENTIFIER_1_PUBLISHER)
             .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
@@ -5254,7 +5314,7 @@ public abstract class BaseTest {
     public final static IdentifierSaveDto IDENTIFIER_1_DTO_REQUEST = IdentifierSaveDto.builder()
             .databaseId(IDENTIFIER_1_DATABASE_ID)
             .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_CREATE_DTO))
-            .titles(List.of(IDENTIFIER_1_TITLE_1_CREATE_DTO))
+            .titles(List.of(IDENTIFIER_1_TITLE_1_CREATE_DTO, IDENTIFIER_1_TITLE_2_CREATE_DTO))
             .relatedIdentifiers(List.of())
             .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
             .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
@@ -5269,7 +5329,7 @@ public abstract class BaseTest {
     public final static IdentifierSaveDto IDENTIFIER_1_DTO_UPDATE_REQUEST = IdentifierSaveDto.builder()
             .databaseId(IDENTIFIER_1_DATABASE_ID)
             .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_CREATE_DTO))
-            .titles(List.of(IDENTIFIER_1_TITLE_1_CREATE_DTO))
+            .titles(List.of(IDENTIFIER_1_TITLE_1_UPDATE_DTO, IDENTIFIER_1_TITLE_2_UPDATE_DTO))
             .relatedIdentifiers(List.of())
             .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
             .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)

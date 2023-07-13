@@ -15,6 +15,12 @@
       "id": 1,
       "title": "Austrian weather data",
       "language": "en"
+    },
+    {
+      "id": 2,
+      "title": "Österreichische Wetterdaten",
+      "type": "TranslatedTitle",
+      "language": "de"
     }
   ],
   "descriptions": [

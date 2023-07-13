@@ -41,6 +41,18 @@ public interface DataCiteMapper {
 
     DataCiteDoiTitle identifierTitleToDataCiteDoiTitle(IdentifierTitle data);
 
+    default DataCiteDoiTitle.Type titleTypeToDataCiteDoiTitleType(TitleType data) {
+        if (data == null) {
+            return null;
+        }
+        return switch (data) {
+            case OTHER -> DataCiteDoiTitle.Type.OTHER;
+            case TRANSLATED_TITLE -> DataCiteDoiTitle.Type.TRANSLATED_TITLE;
+            case SUBTITLE -> DataCiteDoiTitle.Type.SUBTITLE;
+            case ALTERNATIVE_TITLE -> DataCiteDoiTitle.Type.ALTERNATIVE_TITLE;
+        };
+    }
+
     default List<DataCiteDoiTitle> identifierToDataCiteDoiTitleList(Identifier data) {
         return data.getTitles()
                 .stream()

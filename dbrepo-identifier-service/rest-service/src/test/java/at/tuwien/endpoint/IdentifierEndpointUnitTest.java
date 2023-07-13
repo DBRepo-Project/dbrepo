@@ -98,7 +98,7 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
         final IdentifierDto body = (IdentifierDto) response.getBody();
         assertNotNull(body);
         final List<IdentifierTitleDto> titles = body.getTitles();
-        assertEquals(1, titles.size());
+        assertEquals(2, titles.size());
         final IdentifierTitleDto title0 = titles.get(0);
         assertEquals(IDENTIFIER_1_TITLE_1_TITLE, title0.getTitle());
         assertEquals(IDENTIFIER_1_TITLE_1_LANG_DTO, title0.getLanguage());
