@@ -82,10 +82,16 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
         /* test */
         final Identifier response = identifierService.find(IDENTIFIER_1_ID);
         assertEquals(IDENTIFIER_1_ID, response.getId());
-        assertEquals(1, response.getTitles().size());
-        final IdentifierTitle title0 = response.getTitles().get(0);
+        final List<IdentifierTitle> titles = response.getTitles();
+        assertEquals(2, titles.size());
+        final IdentifierTitle title0 = titles.get(0);
         assertEquals(IDENTIFIER_1_TITLE_1_TITLE, title0.getTitle());
         assertEquals(IDENTIFIER_1_TITLE_1_LANG, title0.getLanguage());
+        assertEquals(IDENTIFIER_1_TITLE_1_TYPE, title0.getTitleType());
+        final IdentifierTitle title1 = titles.get(1);
+        assertEquals(IDENTIFIER_1_TITLE_2_TITLE, title1.getTitle());
+        assertEquals(IDENTIFIER_1_TITLE_2_LANG, title1.getLanguage());
+        assertEquals(IDENTIFIER_1_TITLE_2_TYPE, title1.getTitleType());
     }
 
     @Test
