@@ -62,12 +62,16 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
     private RealmRepository realmRepository;
 
     @Autowired
+    private LicenseRepository licenseRepository;
+
+    @Autowired
     private IdentifierEndpoint identifierEndpoint;
 
     @BeforeEach
     public void beforeEach() {
         imageRepository.save(IMAGE_1);
         realmRepository.save(REALM_DBREPO);
+        licenseRepository.save(LICENSE_1);
         userRepository.save(USER_1);
         userRepository.save(USER_2);
         userRepository.save(USER_3);

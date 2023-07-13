@@ -58,6 +58,9 @@ public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
     private IdentifierIdxRepository identifierIdxRepository;
 
     @Autowired
+    private LicenseRepository licenseRepository;
+
+    @Autowired
     private ImageRepository imageRepository;
 
     @Autowired
@@ -91,6 +94,7 @@ public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
     @BeforeEach
     public void beforeEach() {
         realmRepository.save(REALM_DBREPO);
+        licenseRepository.save(LICENSE_1);
         userRepository.save(USER_1);
         imageRepository.save(IMAGE_1);
         containerRepository.save(CONTAINER_1_SIMPLE);

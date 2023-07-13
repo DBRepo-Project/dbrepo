@@ -59,6 +59,9 @@ public interface IdentifierMapper {
 
     @Named("nameSchemaMapper")
     default String nameIdentifierSchemeToNameIdentifierSchemeUri(NameIdentifierSchemeTypeDto data) {
+        if (data == null) {
+            return null;
+        }
         return switch (data) {
             case ROR -> "https://ror.org/";
             case ORCID -> "https://orcid.org/";

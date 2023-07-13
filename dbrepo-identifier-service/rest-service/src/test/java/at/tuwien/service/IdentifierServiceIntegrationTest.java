@@ -58,6 +58,9 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     private RestTemplate restTemplate;
 
     @Autowired
+    private LicenseRepository licenseRepository;
+
+    @Autowired
     private IdentifierService identifierService;
 
     @Autowired
@@ -103,6 +106,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     public void beforeEach() {
         imageRepository.save(IMAGE_1_SIMPLE);
         realmRepository.save(REALM_DBREPO);
+        licenseRepository.save(LICENSE_1);
         userRepository.save(USER_1_SIMPLE);
         userRepository.save(USER_2_SIMPLE);
         userRepository.save(USER_3_SIMPLE);
@@ -272,7 +276,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
         /* test */
         final Identifier response = identifierService.update(IDENTIFIER_1_ID, IDENTIFIER_1_DTO_UPDATE_REQUEST, USER_1_PRINCIPAL, "Bearer abc");
         assertEquals(IDENTIFIER_1_ID, response.getId());
-        assertEquals(IDENTIFIER_1_DATABASE_ID, response.getDatabase().getId());
+        assertEquals(IDENTIFIER_1_DATABASE_ID, response.getDatabaseId());
         assertEquals(1, response.getTitles().size());
         assertEquals(IDENTIFIER_1_TITLE_1_TITLE_MODIFY, response.getTitles().get(0).getTitle());
         assertEquals(IDENTIFIER_1_PUBLICATION_YEAR, response.getPublicationYear());

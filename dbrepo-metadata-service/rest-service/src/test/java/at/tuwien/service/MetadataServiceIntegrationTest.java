@@ -42,6 +42,9 @@ public class MetadataServiceIntegrationTest extends BaseUnitTest {
     private DatabaseRepository databaseRepository;
 
     @Autowired
+    private LicenseRepository licenseRepository;
+
+    @Autowired
     private UserRepository userRepository;
 
     @Autowired
@@ -58,6 +61,7 @@ public class MetadataServiceIntegrationTest extends BaseUnitTest {
         /* metadata database */
         imageRepository.save(IMAGE_1_SIMPLE);
         realmRepository.save(REALM_DBREPO);
+        licenseRepository.save(LICENSE_1);
         userRepository.save(USER_1_SIMPLE);
         containerRepository.save(CONTAINER_1);
         databaseRepository.save(DATABASE_1_SIMPLE);
