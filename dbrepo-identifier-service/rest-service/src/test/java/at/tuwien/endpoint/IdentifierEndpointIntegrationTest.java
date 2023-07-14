@@ -5,9 +5,7 @@ import at.tuwien.api.identifier.IdentifierDescriptionDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.identifier.IdentifierTitleDto;
 import at.tuwien.api.identifier.IdentifierTypeDto;
-import at.tuwien.config.IndexConfig;
 import at.tuwien.endpoints.IdentifierEndpoint;
-import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.exception.NotAllowedException;
 import at.tuwien.repository.mdb.*;
 import at.tuwien.repository.sdb.IdentifierIdxRepository;
@@ -36,9 +34,6 @@ import static org.junit.jupiter.api.Assertions.*;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
-
-    @MockBean
-    private IndexConfig indexInitializer;
 
     @MockBean
     private IdentifierIdxRepository identifierIdxRepository;

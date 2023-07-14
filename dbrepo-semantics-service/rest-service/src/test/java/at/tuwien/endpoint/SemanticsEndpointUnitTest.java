@@ -121,7 +121,7 @@ public class SemanticsEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            saveUnit_generic(COLUMN_UNIT_DEGREES_CELSIUS_SAVE_DTO, COLUMN_UNIT_DEGREES_CELSIUS);
+            saveUnit_generic(UNIT_1_SAVE_DTO, UNIT_1);
         });
     }
 
@@ -131,7 +131,7 @@ public class SemanticsEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            saveUnit_generic(COLUMN_UNIT_DEGREES_CELSIUS_SAVE_DTO, COLUMN_UNIT_DEGREES_CELSIUS);
+            saveUnit_generic(UNIT_1_SAVE_DTO, UNIT_1);
         });
     }
 
@@ -140,7 +140,7 @@ public class SemanticsEndpointUnitTest extends BaseUnitTest {
     public void saveUnit_hasRole_succeeds() {
 
         /* test */
-        saveUnit_generic(COLUMN_UNIT_DEGREES_CELSIUS_SAVE_DTO, COLUMN_UNIT_DEGREES_CELSIUS);
+        saveUnit_generic(UNIT_1_SAVE_DTO, UNIT_1);
     }
 
     /* ################################################################################################### */
@@ -165,7 +165,7 @@ public class SemanticsEndpointUnitTest extends BaseUnitTest {
 
         /* mock */
         when(semanticService.findAllUnits())
-                .thenReturn(List.of(COLUMN_UNIT_TON, COLUMN_UNIT_DEGREES_CELSIUS));
+                .thenReturn(List.of(UNIT_2, UNIT_1));
 
         /* test */
         final ResponseEntity<List<UnitDto>> response = semanticsEndpoint.findAllUnits();

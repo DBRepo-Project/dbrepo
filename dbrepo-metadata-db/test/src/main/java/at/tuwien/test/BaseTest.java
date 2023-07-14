@@ -1927,52 +1927,58 @@ public abstract class BaseTest {
             .created(COLUMN_CONCEPT_FAIR_DATA_CREATED)
             .build();
 
-    public final static String COLUMN_UNIT_DEGREES_CELSIUS_NAME = "Degrees Celsius";
-    public final static String COLUMN_UNIT_DEGREES_CELSIUS_URI = "http://www.ontology-of-units-of-measure.org/resource/om-2/degreeCelsius";
-    public final static String COLUMN_UNIT_DEGREES_CELSIUS_DESCRIPTION = "The degree Celsius is a unit of temperature defined as 1 kelvin.";
-    public final static Instant COLUMN_UNIT_DEGREES_CELSIUS_CREATED = Instant.now();
+    public final static Long UNIT_1_ID = 1L;
+    public final static String UNIT_1_NAME = "Degrees Celsius";
+    public final static String UNIT_1_URI = "http://www.ontology-of-units-of-measure.org/resource/om-2/degreeCelsius";
+    public final static String UNIT_1_DESCRIPTION = "The degree Celsius is a unit of temperature defined as 1 kelvin.";
+    public final static Instant UNIT_1_CREATED = Instant.now();
 
-    public final static UnitSaveDto COLUMN_UNIT_DEGREES_CELSIUS_SAVE_DTO = UnitSaveDto.builder()
-            .uri(COLUMN_UNIT_DEGREES_CELSIUS_URI)
-            .name(COLUMN_UNIT_DEGREES_CELSIUS_NAME)
-            .description(COLUMN_UNIT_DEGREES_CELSIUS_DESCRIPTION)
+    public final static UnitSaveDto UNIT_1_SAVE_DTO = UnitSaveDto.builder()
+            .uri(UNIT_1_URI)
+            .name(UNIT_1_NAME)
+            .description(UNIT_1_DESCRIPTION)
             .build();
 
-    public final static UnitDto COLUMN_UNIT_DEGREES_CELSIUS_DTO = UnitDto.builder()
-            .uri(COLUMN_UNIT_DEGREES_CELSIUS_URI)
-            .name(COLUMN_UNIT_DEGREES_CELSIUS_NAME)
-            .description(COLUMN_UNIT_DEGREES_CELSIUS_DESCRIPTION)
+    public final static UnitDto UNIT_1_DTO = UnitDto.builder()
+            .id(UNIT_1_ID)
+            .uri(UNIT_1_URI)
+            .name(UNIT_1_NAME)
+            .description(UNIT_1_DESCRIPTION)
             .build();
 
-    public final static TableColumnUnit COLUMN_UNIT_DEGREES_CELSIUS = TableColumnUnit.builder()
-            .uri(COLUMN_UNIT_DEGREES_CELSIUS_URI)
-            .name(COLUMN_UNIT_DEGREES_CELSIUS_NAME)
-            .description(COLUMN_UNIT_DEGREES_CELSIUS_DESCRIPTION)
+    public final static TableColumnUnit UNIT_1 = TableColumnUnit.builder()
+            .id(UNIT_1_ID)
+            .uri(UNIT_1_URI)
+            .name(UNIT_1_NAME)
+            .description(UNIT_1_DESCRIPTION)
             .created(COLUMN_CONCEPT_TEMPERATURE_CREATED)
             .build();
 
-    public final static String COLUMN_UNIT_TON_NAME = "tonne";
-    public final static String COLUMN_UNIT_TON_URI = "http://www.ontology-of-units-of-measure.org/resource/om-2/tonne";
-    public final static String COLUMN_UNIT_TON_DESCRIPTION = "The tonne is a unit of mass defined as 1000 kilogram.";
-    public final static Instant COLUMN_UNIT_TON_CREATED = Instant.now();
+    public final static Long UNIT_2_ID = 2L;
+    public final static String UNIT_2_NAME = "tonne";
+    public final static String UNIT_2_URI = "http://www.ontology-of-units-of-measure.org/resource/om-2/tonne";
+    public final static String UNIT_2_DESCRIPTION = "The tonne is a unit of mass defined as 1000 kilogram.";
+    public final static Instant UNIT_2_CREATED = Instant.now();
 
-    public final static UnitSaveDto COLUMN_UNIT_TON_SAVE_DTO = UnitSaveDto.builder()
-            .uri(COLUMN_UNIT_TON_URI)
-            .name(COLUMN_UNIT_TON_NAME)
-            .description(COLUMN_UNIT_TON_DESCRIPTION)
+    public final static UnitSaveDto UNIT_2_SAVE_DTO = UnitSaveDto.builder()
+            .uri(UNIT_2_URI)
+            .name(UNIT_2_NAME)
+            .description(UNIT_2_DESCRIPTION)
             .build();
 
-    public final static UnitDto COLUMN_UNIT_TON_DTO = UnitDto.builder()
-            .uri(COLUMN_UNIT_TON_URI)
-            .name(COLUMN_UNIT_TON_NAME)
-            .description(COLUMN_UNIT_TON_DESCRIPTION)
+    public final static UnitDto UNIT_2_DTO = UnitDto.builder()
+            .id(UNIT_2_ID)
+            .uri(UNIT_2_URI)
+            .name(UNIT_2_NAME)
+            .description(UNIT_2_DESCRIPTION)
             .build();
 
-    public final static TableColumnUnit COLUMN_UNIT_TON = TableColumnUnit.builder()
-            .uri(COLUMN_UNIT_TON_URI)
-            .name(COLUMN_UNIT_TON_NAME)
-            .description(COLUMN_UNIT_TON_DESCRIPTION)
-            .created(COLUMN_UNIT_TON_CREATED)
+    public final static TableColumnUnit UNIT_2 = TableColumnUnit.builder()
+            .id(UNIT_2_ID)
+            .uri(UNIT_2_URI)
+            .name(UNIT_2_NAME)
+            .description(UNIT_2_DESCRIPTION)
+            .created(UNIT_2_CREATED)
             .build();
 
     public final static Long COLUMN_1_1_ID = 1L;
@@ -2033,7 +2039,7 @@ public abstract class BaseTest {
 
     public final static ColumnSemanticsUpdateDto COLUMN_1_4_SEMANTICS_UPDATE_DTO = ColumnSemanticsUpdateDto.builder()
             .conceptUri(COLUMN_CONCEPT_TEMPERATURE_URI)
-            .unitUri(COLUMN_UNIT_DEGREES_CELSIUS_URI)
+            .unitUri(UNIT_1_URI)
             .build();
 
     public final static TableColumn COLUMN_1_4_WITH_SEMANTICS = TableColumn.builder()
@@ -2050,7 +2056,7 @@ public abstract class BaseTest {
             .isPrimaryKey(COLUMN_1_4_PRIMARY)
             .enumValues(COLUMN_1_4_ENUM_VALUES)
             .concept(COLUMN_CONCEPT_TEMPERATURE)
-            .unit(COLUMN_UNIT_DEGREES_CELSIUS)
+            .unit(UNIT_1)
             .build();
 
     public final static Long COLUMN_1_5_ID = 5L;
@@ -2501,7 +2507,7 @@ public abstract class BaseTest {
 
     public final static ColumnSemanticsUpdateDto COLUMN_8_2_SEMANTICS_UPDATE_DTO = ColumnSemanticsUpdateDto.builder()
             .conceptUri(COLUMN_CONCEPT_TEMPERATURE_URI)
-            .unitUri(COLUMN_UNIT_DEGREES_CELSIUS_URI)
+            .unitUri(UNIT_1_URI)
             .build();
 
     public final static TableColumn COLUMN_8_2_WITH_SEMANTICS = TableColumn.builder()
@@ -2516,7 +2522,7 @@ public abstract class BaseTest {
             .isNullAllowed(COLUMN_8_2_NULL)
             .autoGenerated(COLUMN_8_2_AUTO_GENERATED)
             .isPrimaryKey(COLUMN_8_2_PRIMARY)
-            .unit(COLUMN_UNIT_DEGREES_CELSIUS)
+            .unit(UNIT_1)
             .concept(COLUMN_CONCEPT_TEMPERATURE)
             .build();
 
@@ -2572,12 +2578,15 @@ public abstract class BaseTest {
 
     public final static Long CONCEPT_1_ID = 1L;
     public final static String CONCEPT_1_NAME = "Temperature";
+    public final static String CONCEPT_1_URI = "http://www.ontology-of-units-of-measure.org/resource/om-2/Temperature";
     public final static Instant CONCEPT_1_CREATED = Instant.now().minus(1, HOURS);
+    public final static String CONCEPT_1_DESCRIPTION = "Temperature is the extent to which an object is hot.";
 
     public final static TableColumnConcept CONCEPT_1 = TableColumnConcept.builder()
             .name(CONCEPT_1_NAME)
             .created(CONCEPT_1_CREATED)
-            .uri("http://www.ontology-of-units-of-measure.org/resource/om-2/")
+            .uri(CONCEPT_1_URI)
+            .description(CONCEPT_1_DESCRIPTION)
             .build();
 
     public final static Long QUERY_1_ID = 1L;

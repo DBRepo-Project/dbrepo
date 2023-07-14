@@ -5,7 +5,6 @@ import at.tuwien.ExportResource;
 import at.tuwien.SortType;
 import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.api.database.query.QueryResultDto;
-import at.tuwien.config.IndexConfig;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.exception.*;
@@ -50,9 +49,6 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
 
     @MockBean
     private Channel channel;
-
-    @MockBean
-    private IndexConfig indexConfig;
 
     @MockBean
     private ViewIdxRepository viewIdxRepository;

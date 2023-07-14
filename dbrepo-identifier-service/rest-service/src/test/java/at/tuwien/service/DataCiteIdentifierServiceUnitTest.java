@@ -7,7 +7,6 @@ import at.tuwien.api.datacite.doi.DataCiteDoi;
 import at.tuwien.api.identifier.IdentifierSaveDto;
 import at.tuwien.config.DataCiteConfig;
 import at.tuwien.config.EndpointConfig;
-import at.tuwien.config.IndexConfig;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.exception.*;
 import at.tuwien.repository.mdb.*;
@@ -44,9 +43,6 @@ import static org.mockito.Mockito.when;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @SpringBootTest(properties = "spring.profiles.active:local,doi")
 public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
-
-    @MockBean
-    private IndexConfig indexConfig;
 
     @MockBean(answer = Answers.RETURNS_MOCKS)
     private DataCiteConfig dataCiteConfig;

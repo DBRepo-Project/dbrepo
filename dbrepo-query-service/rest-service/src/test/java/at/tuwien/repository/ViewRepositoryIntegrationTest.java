@@ -1,7 +1,6 @@
 package at.tuwien.repository;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.config.IndexConfig;
 import at.tuwien.entities.database.View;
 import at.tuwien.gateway.BrokerServiceGateway;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
@@ -38,9 +37,6 @@ public class ViewRepositoryIntegrationTest extends BaseUnitTest {
 
     @MockBean
     private BrokerServiceGateway brokerServiceGateway;
-
-    @MockBean
-    private IndexConfig indexConfig;
 
     @MockBean
     private ViewIdxRepository viewIdxRepository;

@@ -5,7 +5,6 @@ import at.tuwien.api.database.DatabaseCreateDto;
 import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.DatabaseModifyVisibilityDto;
 import at.tuwien.api.database.DatabaseTransferDto;
-import at.tuwien.config.IndexConfig;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
@@ -41,9 +40,6 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
 
     @MockBean
     private Channel channel;
-
-    @MockBean
-    private IndexConfig indexConfig;
 
     @MockBean
     private DatabaseIdxRepository databaseIdxRepository;

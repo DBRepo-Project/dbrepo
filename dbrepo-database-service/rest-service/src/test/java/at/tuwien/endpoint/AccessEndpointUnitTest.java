@@ -5,7 +5,6 @@ import at.tuwien.api.database.AccessTypeDto;
 import at.tuwien.api.database.DatabaseAccessDto;
 import at.tuwien.api.database.DatabaseGiveAccessDto;
 import at.tuwien.api.database.DatabaseModifyAccessDto;
-import at.tuwien.config.IndexConfig;
 import at.tuwien.endpoints.AccessEndpoint;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
@@ -41,9 +40,6 @@ import static org.mockito.Mockito.*;
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 public class AccessEndpointUnitTest extends BaseUnitTest {
-
-    @MockBean
-    private IndexConfig indexInitializer;
 
     @MockBean
     private DatabaseIdxRepository databaseIdxRepository;

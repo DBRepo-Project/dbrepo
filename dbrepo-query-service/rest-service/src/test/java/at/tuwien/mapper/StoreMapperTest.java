@@ -1,7 +1,6 @@
 package at.tuwien.mapper;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.config.IndexConfig;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
@@ -20,9 +19,6 @@ public class StoreMapperTest extends BaseUnitTest {
 
     @MockBean
     private Channel channel;
-
-    @MockBean
-    private IndexConfig indexInitializer;
 
     @MockBean
     private RabbitMqListenerImpl rabbitMqListener;

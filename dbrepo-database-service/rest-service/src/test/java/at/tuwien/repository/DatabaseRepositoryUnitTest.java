@@ -1,7 +1,6 @@
 package at.tuwien.repository;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.config.IndexConfig;
 import at.tuwien.entities.database.Database;
 import at.tuwien.repository.mdb.*;
 import at.tuwien.repository.sdb.DatabaseIdxRepository;
@@ -27,9 +26,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS)
 @ExtendWith(SpringExtension.class)
 public class DatabaseRepositoryUnitTest extends BaseUnitTest {
-
-    @MockBean
-    private IndexConfig indexConfig;
 
     @MockBean
     private DatabaseIdxRepository databaseIdxRepository;

@@ -1,7 +1,6 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.config.IndexConfig;
 import at.tuwien.entities.user.Role;
 import at.tuwien.exception.RoleNotFoundException;
 import at.tuwien.repository.mdb.RoleRepository;
@@ -27,9 +26,6 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 public class RoleServiceIntegrationTest extends BaseUnitTest {
-
-    @MockBean
-    private IndexConfig indexConfig;
 
     @MockBean
     private UserIdxRepository userIdxRepository;

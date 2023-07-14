@@ -1,7 +1,6 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.config.IndexConfig;
 import at.tuwien.exception.AmqpException;
 import at.tuwien.gateway.BrokerServiceGateway;
 import at.tuwien.repository.mdb.DatabaseRepository;
@@ -26,9 +25,6 @@ import static org.mockito.Mockito.doThrow;
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 public class MessageQueueServiceUnitTest extends BaseUnitTest {
-
-    @MockBean
-    private IndexConfig indexConfig;
 
     @MockBean
     private DatabaseIdxRepository databaseIdxRepository;

@@ -3,7 +3,6 @@ package at.tuwien.endpoint;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.user.*;
-import at.tuwien.config.IndexConfig;
 import at.tuwien.entities.user.Realm;
 import at.tuwien.entities.user.Role;
 import at.tuwien.entities.user.User;
@@ -39,9 +38,6 @@ import static org.mockito.Mockito.*;
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 public class UserEndpointUnitTest extends BaseUnitTest {
-
-    @MockBean
-    private IndexConfig indexConfig;
 
     @MockBean
     private UserIdxRepository userIdxRepository;

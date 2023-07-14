@@ -3,7 +3,6 @@ package at.tuwien.listener;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.amqp.ConsumerDto;
 import at.tuwien.config.AmqpConfig;
-import at.tuwien.config.IndexConfig;
 import at.tuwien.config.RabbitMqConfig;
 import at.tuwien.repository.mdb.*;
 import at.tuwien.repository.sdb.ViewIdxRepository;
@@ -42,9 +41,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 public class RabbitMqListenerIntegrationTest extends BaseUnitTest {
-
-    @MockBean
-    private IndexConfig indexConfig;
 
     @MockBean
     private ViewIdxRepository viewIdxRepository;

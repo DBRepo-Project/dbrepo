@@ -1,7 +1,6 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.config.IndexConfig;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.DatabaseNotFoundException;
 import at.tuwien.repository.mdb.*;
@@ -23,9 +22,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @SpringBootTest
 public class DatabaseServiceIntegrationTest extends BaseUnitTest {
-
-    @MockBean
-    private IndexConfig indexConfig;
 
     @MockBean
     private IdentifierIdxRepository identifierIdxRepository;

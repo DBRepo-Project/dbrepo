@@ -7,7 +7,7 @@ NGINX_VERSION ?= 1.25.0-alpine-slim
 
 all:
 
-build-backend: build-metadata-db build-database-service build-query-service build-table-service build-identifier-service build-container-service build-metadata-service build-analyse-service build-user-service build-semantics-service
+build-backend: build-metadata-db build-database-service build-query-service build-table-service build-identifier-service build-container-service build-metadata-service build-analyse-service build-user-service build-semantics-service build-search-sync-agent
 
 build-metadata-db:
 	mvn -f ./dbrepo-metadata-db/pom.xml clean install
@@ -20,6 +20,9 @@ build-table-service: build-metadata-db
 
 build-container-service: build-metadata-db
 	mvn -f ./dbrepo-container-service/pom.xml clean package -DskipTests
+
+build-search-sync-agent: build-metadata-db
+	mvn -f ./dbrepo-search-sync-agent/pom.xml clean package -DskipTests
 
 build-database-service: build-metadata-db
 	mvn -f ./dbrepo-database-service/pom.xml clean package -DskipTests
@@ -50,7 +53,7 @@ build-frontend:
 build-clients:
 	bash ./.gitlab/swagger/generate.sh
 
-tag: tag-identifier tag-container tag-database tag-query tag-table tag-analyse tag-authentication tag-metadata-db tag-ui tag-semantics tag-broker tag-metadata tag-user
+tag: tag-identifier tag-container tag-database tag-query tag-table tag-analyse tag-authentication tag-metadata-db tag-ui tag-semantics tag-broker tag-metadata tag-user tag-search-sync-agent
 
 tag-analyse:
 	docker tag dbrepo-analyse-service:latest "dbrepo/analyse-service:${TAG}"
@@ -66,6 +69,9 @@ tag-ui:
 
 tag-identifier:
 	docker tag dbrepo-identifier-service:latest "dbrepo/identifier-service:${TAG}"
+
+tag-search-sync-agent:
+	docker tag dbrepo-search-sync-agent:latest "dbrepo/search-sync-agent:${TAG}"
 
 tag-metadata:
 	docker tag dbrepo-metadata-service:latest "dbrepo/metadata-service:${TAG}"
@@ -94,7 +100,7 @@ tag-broker:
 tag-search:
 	docker tag dbrepo-search-db:latest "dbrepo/search-db:${TAG}"
 
-release: build-docker tag release-identifier release-container release-database release-query release-table release-analyse release-authentication release-metadata-db release-ui release-semantics release-broker release-metadata release-user
+release: build-docker tag release-identifier release-container release-database release-query release-table release-analyse release-authentication release-metadata-db release-ui release-semantics release-broker release-metadata release-user release-search-sync-agent
 
 release-analyse: tag-analyse
 	docker push "dbrepo/analyse-service:${TAG}"
@@ -110,6 +116,9 @@ release-ui: tag-ui
 
 release-identifier: tag-identifier
 	docker push "dbrepo/identifier-service:${TAG}"
+
+release-search-sync-agent: tag-search-sync-agent
+	docker push "dbrepo/search-sync-agent:${TAG}"
 
 release-container: tag-container
 	docker push "dbrepo/container-service:${TAG}"
@@ -135,7 +144,7 @@ release-broker: tag-broker
 release-metadata: tag-metadata
 	docker push "dbrepo/metadata-service:${TAG}"
 
-test-backend: test-container-service test-database-service test-query-service test-table-service test-identifier-service test-metadata-service test-semantics-service test-analyse-service test-user-service
+test-backend: test-container-service test-database-service test-query-service test-table-service test-identifier-service test-metadata-service test-semantics-service test-analyse-service test-user-service test-search-sync-agent
 
 test-identifier-service: build-metadata-db build-identifier-service
 	mvn -f ./dbrepo-identifier-service/pom.xml clean test verify
@@ -154,6 +163,9 @@ test-query-service: build-metadata-db build-query-service
 test-table-service: build-metadata-db build-table-service
 	mvn -f ./dbrepo-table-service/pom.xml clean test verify
 
+test-search-sync-agent: build-metadata-db build-search-sync-agent
+	mvn -f ./dbrepo-search-sync-agent/pom.xml clean test verify
+
 test-metadata-service: build-metadata-db build-metadata-service
 	mvn -f ./dbrepo-metadata-service/pom.xml clean test verify
 
@@ -166,7 +178,7 @@ test-semantics-service: build-metadata-db build-semantics-service
 test-analyse-service: build-analyse-service
 	bash ./dbrepo-analyse-service/test.sh
 
-scan: scan-analyse-service scan-authentication-service scan-broker-service scan-container-service scan-database-service scan-gateway-service scan-identifier-service scan-metadata-db scan-metadata-service scan-query-service scan-search-db scan-semantics-service scan-table-service scan-ui scan-user-service
+scan: scan-analyse-service scan-authentication-service scan-broker-service scan-container-service scan-database-service scan-gateway-service scan-identifier-service scan-metadata-db scan-metadata-service scan-query-service scan-search-db scan-semantics-service scan-table-service scan-ui scan-user-service scan-search-sync-agent
 
 scan-analyse-service:
 	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-analyse-service-report.json dbrepo-analyse-service:latest
@@ -218,6 +230,11 @@ scan-query-service:
 	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-query-service-report.json dbrepo-query-service:latest
 	trivy image --insecure --exit-code 0 dbrepo-query-service:latest
 	trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-query-service:latest
+
+scan-search-sync-agent:
+	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-sync-agent-report.json dbrepo-search-sync-agent:latest
+	trivy image --insecure --exit-code 0 dbrepo-search-sync-agent:latest
+	trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-search-sync-agent:latest
 
 scan-search-db:
 	docker pull "elasticsearch:${ELASTIC_VERSION}"

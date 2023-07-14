@@ -60,9 +60,6 @@ public class QueueServiceIntegrationTest extends BaseUnitTest {
     private ViewIdxRepository viewIdxRepository;
 
     @MockBean
-    private IndexConfig indexConfig;
-
-    @MockBean
     private RabbitMqConsumer rabbitMqConsumer;
 
     @MockBean
