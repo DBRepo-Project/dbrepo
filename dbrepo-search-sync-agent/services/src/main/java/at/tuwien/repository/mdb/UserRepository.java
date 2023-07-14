@@ -10,12 +10,4 @@ import java.util.UUID;
 @Repository
 public interface UserRepository extends JpaRepository<User, UUID> {
 
-    /**
-     * Finds a user by username.
-     *
-     * @param username The username.
-     * @return Optional user that matches this filter.
-     */
-    Optional<User> findByUsername(String username);
-
 }

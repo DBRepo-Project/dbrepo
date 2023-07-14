@@ -1,6 +1,7 @@
 package at.tuwien.config;
 
 import at.tuwien.api.database.DatabaseDto;
+import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.columns.concepts.ConceptDto;
@@ -13,7 +14,6 @@ import at.tuwien.repository.sdb.*;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,9 +26,11 @@ public class IndexConfig {
 
     private final UnitMapper unitMapper;
     private final UserMapper userMapper;
+    private final ViewMapper viewMapper;
     private final TableMapper tableMapper;
     private final ConceptMapper conceptMapper;
     private final DatabaseMapper databaseMapper;
+    private final ViewRepository viewRepository;
     private final UnitRepository unitRepository;
     private final UserRepository userRepository;
     private final TableRepository tableRepository;
@@ -36,6 +38,7 @@ public class IndexConfig {
     private final ConceptRepository conceptRepository;
     private final UnitIdxRepository unitIdxRepository;
     private final UserIdxRepository userIdxRepository;
+    private final ViewIdxRepository viewIdxRepository;
     private final DatabaseRepository databaseRepository;
     private final TableIdxRepository tableIdxRepository;
     private final IdentifierRepository identifierRepository;
@@ -44,25 +47,25 @@ public class IndexConfig {
     private final TableColumnRepository tableColumnRepository;
     private final IdentifierIdxRepository identifierIdxRepository;
     private final TableColumnIdxRepository tableColumnIdxRepository;
-    private final ConfigurableApplicationContext ctx;
 
     @Autowired
-    public IndexConfig(UnitMapper unitMapper, UserMapper userMapper, TableMapper tableMapper,
-                       ConceptMapper conceptMapper, DatabaseMapper databaseMapper, UnitRepository unitRepository,
-                       UserRepository userRepository, TableRepository tableRepository,
+    public IndexConfig(UnitMapper unitMapper, UserMapper userMapper, ViewMapper viewMapper, TableMapper tableMapper,
+                       ConceptMapper conceptMapper, DatabaseMapper databaseMapper, ViewRepository viewRepository,
+                       UnitRepository unitRepository, UserRepository userRepository, TableRepository tableRepository,
                        IdentifierMapper identifierMapper, ConceptRepository conceptRepository,
                        UnitIdxRepository unitIdxRepository, UserIdxRepository userIdxRepository,
-                       DatabaseRepository databaseRepository, TableIdxRepository tableIdxRepository,
-                       IdentifierRepository identifierRepository, ConceptIdxRepository conceptIdxRepository,
-                       DatabaseIdxRepository databaseIdxRepository, TableColumnRepository tableColumnRepository,
-                       IdentifierIdxRepository identifierIdxRepository,
-                       TableColumnIdxRepository tableColumnIdxRepository, ConfigurableApplicationContext ctx) {
-        this.ctx = ctx;
+                       ViewIdxRepository viewIdxRepository, DatabaseRepository databaseRepository,
+                       TableIdxRepository tableIdxRepository, IdentifierRepository identifierRepository,
+                       ConceptIdxRepository conceptIdxRepository, DatabaseIdxRepository databaseIdxRepository,
+                       TableColumnRepository tableColumnRepository, IdentifierIdxRepository identifierIdxRepository,
+                       TableColumnIdxRepository tableColumnIdxRepository) {
         this.unitMapper = unitMapper;
         this.userMapper = userMapper;
+        this.viewMapper = viewMapper;
         this.tableMapper = tableMapper;
         this.conceptMapper = conceptMapper;
         this.databaseMapper = databaseMapper;
+        this.viewRepository = viewRepository;
         this.unitRepository = unitRepository;
         this.userRepository = userRepository;
         this.tableRepository = tableRepository;
@@ -70,6 +73,7 @@ public class IndexConfig {
         this.conceptRepository = conceptRepository;
         this.unitIdxRepository = unitIdxRepository;
         this.userIdxRepository = userIdxRepository;
+        this.viewIdxRepository = viewIdxRepository;
         this.databaseRepository = databaseRepository;
         this.tableIdxRepository = tableIdxRepository;
         this.identifierRepository = identifierRepository;
@@ -133,5 +137,12 @@ public class IndexConfig {
                 .toList();
         userIdxRepository.saveAll(users);
         log.debug("Saved {} users to open search database", users.size());
+        /* view */
+        final List<ViewDto> views = viewRepository.findAll()
+                .stream()
+                .map(viewMapper::viewToViewDto)
+                .toList();
+        viewIdxRepository.saveAll(views);
+        log.debug("Saved {} views to open search database", views.size());
     }
 }

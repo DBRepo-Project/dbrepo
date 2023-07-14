@@ -1,8 +1,8 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
+import at.tuwien.entities.database.View;
 import at.tuwien.entities.database.table.Table;
-import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.repository.mdb.*;
 import lombok.extern.log4j.Log4j2;
 import org.junit.Rule;
@@ -17,7 +17,6 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
@@ -32,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
-public class TableServiceIntegrationTest extends BaseUnitTest {
+public class ViewServiceIntegrationTest extends BaseUnitTest {
 
     @Autowired
     private RealmRepository realmRepository;
@@ -56,7 +55,10 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
     private TableColumnRepository tableColumnRepository;
 
     @Autowired
-    private TableService tableService;
+    private ViewRepository viewRepository;
+
+    @Autowired
+    private ViewService viewService;
 
     @Rule
     public Timeout globalTimeout = Timeout.seconds(60);
@@ -80,22 +82,23 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
         imageRepository.save(IMAGE_1);
         containerRepository.save(CONTAINER_1);
         databaseRepository.save(DATABASE_1);
-        tableRepository.save(TABLE_1);
+        tableRepository.save(TABLE_1_SIMPLE);
+        tableColumnRepository.saveAll(TABLE_1_COLUMNS);
+        tableRepository.save(TABLE_2_SIMPLE);
+        tableColumnRepository.saveAll(TABLE_2_COLUMNS);
+        viewRepository.save(VIEW_1);
     }
 
     @Test
-    @Transactional
     public void findAll_succeeds() {
 
         /* test */
-        final List<Table> tables = tableService.findAll();
-        assertEquals(1, tables.size());
-        final Table table0 = tables.get(0);
-        assertEquals(TABLE_1_ID, table0.getId());
-        assertEquals(TABLE_1_NAME, table0.getName());
-        assertEquals(TABLE_1_INTERNALNAME, table0.getInternalName());
-        assertEquals(TABLE_1_QUEUE_NAME, table0.getQueueName());
-        assertEquals(TABLE_1_ROUTING_KEY, table0.getRoutingKey());
-        assertEquals(TABLE_1_COLUMNS.size(), table0.getColumns().size());
+        final List<View> views = viewService.findAll();
+        assertEquals(1, views.size());
+        final View view0 = views.get(0);
+        assertEquals(VIEW_1_ID, view0.getId());
+        assertEquals(VIEW_1_NAME, view0.getName());
+        assertEquals(VIEW_1_INTERNAL_NAME, view0.getInternalName());
+        assertEquals(VIEW_1_QUERY, view0.getQuery());
     }
 }

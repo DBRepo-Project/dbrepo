@@ -48,8 +48,11 @@ public class ImageDateDto {
     @Schema(example = "false")
     private Boolean hasTime;
 
+
+    @NotNull
+    @Schema(example = "2021-03-12T15:26:21Z")
+    @Field(name = "created_at", type = FieldType.Date)
     @JsonProperty("created_at")
-    @Field(name = "created_at")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant createdAt;
 
