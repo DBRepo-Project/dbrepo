@@ -146,6 +146,12 @@ public class TableColumn implements Comparable<TableColumn> {
             inverseJoinColumns = @JoinColumn(name = "id", referencedColumnName = "id"))
     private TableColumnUnit unit;
 
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "column")
+    private List<TableColumnEnum> enums;
+
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "column")
+    private List<TableColumnSet> sets;
+
     @LastModifiedDate
     @Field(name = "last_modified")
     @Column(columnDefinition = "TIMESTAMP")

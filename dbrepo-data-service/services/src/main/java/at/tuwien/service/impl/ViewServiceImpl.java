@@ -2,7 +2,9 @@ package at.tuwien.service.impl;
 
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.entities.database.Database;
+import at.tuwien.exception.ColumnTypeMalformedException;
 import at.tuwien.exception.QueryMalformedException;
+import at.tuwien.exception.ViewNotFoundException;
 import at.tuwien.mapper.QueryMapper;
 import at.tuwien.service.ViewService;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
@@ -34,12 +36,30 @@ public class ViewServiceImpl extends HibernateConnector implements ViewService {
                 database.getContainer(), database);
         try {
             final Connection connection = dataSource.getConnection();
-            final PreparedStatement preparedStatement = prepareStatement(connection, queryMapper.findAllViewsQuery());
+            final PreparedStatement preparedStatement = prepareStatement(connection, queryMapper.findAllViewsQuery(database));
             final ResultSet resultSet = preparedStatement.executeQuery();
             return queryMapper.resultSetToViewDtoList(resultSet);
         } catch (SQLException | QueryMalformedException e) {
             log.error("Failed to find views: {}", e.getMessage());
             throw new QueryMalformedException("Failed to find views: " + e.getMessage(), e);
+        } finally {
+            dataSource.close();
+        }
+    }
+
+    @Override
+    public ViewDto find(Database database, String name) throws ViewNotFoundException, ColumnTypeMalformedException {
+        /* run query */
+        final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(),
+                database.getContainer(), database);
+        try {
+            final Connection connection = dataSource.getConnection();
+            final PreparedStatement preparedStatement = prepareStatement(connection, queryMapper.findColumnsForTable(database, name));
+            final ResultSet resultSet = preparedStatement.executeQuery();
+            return queryMapper.resultSetToViewDto(resultSet, name);
+        } catch (SQLException | QueryMalformedException e) {
+            log.error("Failed to find view with name {}: {}", name, e.getMessage());
+            throw new ViewNotFoundException("Failed to find view with name " + name + ": " + e.getMessage(), e);
         } finally {
             dataSource.close();
         }

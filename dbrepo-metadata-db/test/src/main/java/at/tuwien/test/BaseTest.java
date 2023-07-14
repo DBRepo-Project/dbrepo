@@ -1980,7 +1980,7 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_1_1_PRIMARY = true;
     public final static String COLUMN_1_1_NAME = "id";
     public final static String COLUMN_1_1_INTERNAL_NAME = "id";
-    public final static TableColumnType COLUMN_1_1_TYPE = TableColumnType.NUMBER;
+    public final static TableColumnType COLUMN_1_1_TYPE = TableColumnType.BIGINT;
     public final static Long COLUMN_1_1_DATE_FORMAT = null;
     public final static Boolean COLUMN_1_1_NULL = false;
     public final static Boolean COLUMN_1_1_UNIQUE = true;
@@ -2008,7 +2008,7 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_1_3_PRIMARY = false;
     public final static String COLUMN_1_3_NAME = "Location";
     public final static String COLUMN_1_3_INTERNAL_NAME = "location";
-    public final static TableColumnType COLUMN_1_3_TYPE = TableColumnType.STRING;
+    public final static TableColumnType COLUMN_1_3_TYPE = TableColumnType.VARCHAR;
     public final static Long COLUMN_1_3_DATE_FORMAT = null;
     public final static Boolean COLUMN_1_3_NULL = true;
     public final static Boolean COLUMN_1_3_UNIQUE = false;
@@ -2072,7 +2072,7 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_2_1_PRIMARY = true;
     public final static String COLUMN_2_1_NAME = "location";
     public final static String COLUMN_2_1_INTERNAL_NAME = "location";
-    public final static TableColumnType COLUMN_2_1_TYPE = TableColumnType.STRING;
+    public final static TableColumnType COLUMN_2_1_TYPE = TableColumnType.VARCHAR;
     public final static Long COLUMN_2_1_DATE_FORMAT = null;
     public final static Boolean COLUMN_2_1_NULL = false;
     public final static Boolean COLUMN_2_1_UNIQUE = true;
@@ -2114,7 +2114,7 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_4_1_PRIMARY = true;
     public final static String COLUMN_4_1_NAME = "id";
     public final static String COLUMN_4_1_INTERNAL_NAME = "id";
-    public final static TableColumnType COLUMN_4_1_TYPE = TableColumnType.NUMBER;
+    public final static TableColumnType COLUMN_4_1_TYPE = TableColumnType.BIGINT;
     public final static Long COLUMN_4_1_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_1_NULL = false;
     public final static Boolean COLUMN_4_1_UNIQUE = true;
@@ -2122,7 +2122,7 @@ public abstract class BaseTest {
     public final static String COLUMN_4_1_FOREIGN_KEY = null;
     public final static String COLUMN_4_1_CHECK = null;
     public final static List<String> COLUMN_4_1_ENUM_VALUES = null;
-    public final static ColumnTypeDto COLUMN_4_1_TYPE_DTO = ColumnTypeDto.NUMBER;
+    public final static ColumnTypeDto COLUMN_4_1_TYPE_DTO = ColumnTypeDto.BIGINT;
     public final static String[] COLUMN_4_1_ENUM_VALUES_ARRAY = null;
 
     public final static Long COLUMN_4_2_ID = 45L;
@@ -2130,7 +2130,7 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_4_2_PRIMARY = false;
     public final static String COLUMN_4_2_NAME = "Animal Name";
     public final static String COLUMN_4_2_INTERNAL_NAME = "animal_name";
-    public final static TableColumnType COLUMN_4_2_TYPE = TableColumnType.STRING;
+    public final static TableColumnType COLUMN_4_2_TYPE = TableColumnType.VARCHAR;
     public final static Long COLUMN_4_2_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_2_NULL = true;
     public final static Boolean COLUMN_4_2_UNIQUE = false;
@@ -2138,7 +2138,7 @@ public abstract class BaseTest {
     public final static String COLUMN_4_2_FOREIGN_KEY = null;
     public final static String COLUMN_4_2_CHECK = null;
     public final static List<String> COLUMN_4_2_ENUM_VALUES = null;
-    public final static ColumnTypeDto COLUMN_4_2_TYPE_DTO = ColumnTypeDto.STRING;
+    public final static ColumnTypeDto COLUMN_4_2_TYPE_DTO = ColumnTypeDto.VARCHAR;
     public final static String[] COLUMN_4_2_ENUM_VALUES_ARRAY = null;
 
     public final static Long COLUMN_4_3_ID = 46L;
@@ -2146,7 +2146,7 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_4_3_PRIMARY = false;
     public final static String COLUMN_4_3_NAME = "Hair";
     public final static String COLUMN_4_3_INTERNAL_NAME = "hair";
-    public final static TableColumnType COLUMN_4_3_TYPE = TableColumnType.BOOLEAN;
+    public final static TableColumnType COLUMN_4_3_TYPE = TableColumnType.BOOL;
     public final static Long COLUMN_4_3_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_3_NULL = true;
     public final static Boolean COLUMN_4_3_UNIQUE = false;
@@ -2160,7 +2160,7 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_4_4_PRIMARY = false;
     public final static String COLUMN_4_4_NAME = "Feathers";
     public final static String COLUMN_4_4_INTERNAL_NAME = "feathers";
-    public final static TableColumnType COLUMN_4_4_TYPE = TableColumnType.BOOLEAN;
+    public final static TableColumnType COLUMN_4_4_TYPE = TableColumnType.BOOL;
     public final static Long COLUMN_4_4_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_4_NULL = true;
     public final static Boolean COLUMN_4_4_UNIQUE = false;
@@ -2174,7 +2174,7 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_4_5_PRIMARY = false;
     public final static String COLUMN_4_5_NAME = "Bread";
     public final static String COLUMN_4_5_INTERNAL_NAME = "bread";
-    public final static TableColumnType COLUMN_4_5_TYPE = TableColumnType.BOOLEAN;
+    public final static TableColumnType COLUMN_4_5_TYPE = TableColumnType.BOOL;
     public final static Long COLUMN_4_5_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_5_NULL = true;
     public final static Boolean COLUMN_4_5_UNIQUE = false;
@@ -2188,7 +2188,7 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_4_6_PRIMARY = false;
     public final static String COLUMN_4_6_NAME = "Eggs";
     public final static String COLUMN_4_6_INTERNAL_NAME = "eggs";
-    public final static TableColumnType COLUMN_4_6_TYPE = TableColumnType.BOOLEAN;
+    public final static TableColumnType COLUMN_4_6_TYPE = TableColumnType.BOOL;
     public final static Long COLUMN_4_6_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_6_NULL = true;
     public final static Boolean COLUMN_4_6_UNIQUE = false;
@@ -2202,7 +2202,7 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_4_7_PRIMARY = false;
     public final static String COLUMN_4_7_NAME = "Milk";
     public final static String COLUMN_4_7_INTERNAL_NAME = "milk";
-    public final static TableColumnType COLUMN_4_7_TYPE = TableColumnType.BOOLEAN;
+    public final static TableColumnType COLUMN_4_7_TYPE = TableColumnType.BOOL;
     public final static Long COLUMN_4_7_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_7_NULL = true;
     public final static Boolean COLUMN_4_7_UNIQUE = false;
@@ -2216,7 +2216,7 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_4_8_PRIMARY = false;
     public final static String COLUMN_4_8_NAME = "Water";
     public final static String COLUMN_4_8_INTERNAL_NAME = "water";
-    public final static TableColumnType COLUMN_4_8_TYPE = TableColumnType.BOOLEAN;
+    public final static TableColumnType COLUMN_4_8_TYPE = TableColumnType.BOOL;
     public final static Long COLUMN_4_8_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_8_NULL = true;
     public final static Boolean COLUMN_4_8_UNIQUE = false;
@@ -2230,7 +2230,7 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_4_9_PRIMARY = false;
     public final static String COLUMN_4_9_NAME = "Airborne";
     public final static String COLUMN_4_9_INTERNAL_NAME = "airborne";
-    public final static TableColumnType COLUMN_4_9_TYPE = TableColumnType.BOOLEAN;
+    public final static TableColumnType COLUMN_4_9_TYPE = TableColumnType.BOOL;
     public final static Long COLUMN_4_9_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_9_NULL = true;
     public final static Boolean COLUMN_4_9_UNIQUE = false;
@@ -2244,7 +2244,7 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_4_10_PRIMARY = false;
     public final static String COLUMN_4_10_NAME = "Waterborne";
     public final static String COLUMN_4_10_INTERNAL_NAME = "waterborne";
-    public final static TableColumnType COLUMN_4_10_TYPE = TableColumnType.BOOLEAN;
+    public final static TableColumnType COLUMN_4_10_TYPE = TableColumnType.BOOL;
     public final static Long COLUMN_4_10_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_10_NULL = true;
     public final static Boolean COLUMN_4_10_UNIQUE = false;
@@ -2258,7 +2258,7 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_4_11_PRIMARY = false;
     public final static String COLUMN_4_11_NAME = "Aquantic";
     public final static String COLUMN_4_11_INTERNAL_NAME = "aquatic";
-    public final static TableColumnType COLUMN_4_11_TYPE = TableColumnType.BOOLEAN;
+    public final static TableColumnType COLUMN_4_11_TYPE = TableColumnType.BOOL;
     public final static Long COLUMN_4_11_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_11_NULL = true;
     public final static Boolean COLUMN_4_11_UNIQUE = false;
@@ -2272,7 +2272,7 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_4_12_PRIMARY = false;
     public final static String COLUMN_4_12_NAME = "Predator";
     public final static String COLUMN_4_12_INTERNAL_NAME = "predator";
-    public final static TableColumnType COLUMN_4_12_TYPE = TableColumnType.BOOLEAN;
+    public final static TableColumnType COLUMN_4_12_TYPE = TableColumnType.BOOL;
     public final static Long COLUMN_4_12_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_12_NULL = true;
     public final static Boolean COLUMN_4_12_UNIQUE = false;
@@ -2286,7 +2286,7 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_4_13_PRIMARY = false;
     public final static String COLUMN_4_13_NAME = "Backbone";
     public final static String COLUMN_4_13_INTERNAL_NAME = "backbone";
-    public final static TableColumnType COLUMN_4_13_TYPE = TableColumnType.BOOLEAN;
+    public final static TableColumnType COLUMN_4_13_TYPE = TableColumnType.BOOL;
     public final static Long COLUMN_4_13_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_13_NULL = true;
     public final static Boolean COLUMN_4_13_UNIQUE = false;
@@ -2300,7 +2300,7 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_4_14_PRIMARY = false;
     public final static String COLUMN_4_14_NAME = "Breathes";
     public final static String COLUMN_4_14_INTERNAL_NAME = "breathes";
-    public final static TableColumnType COLUMN_4_14_TYPE = TableColumnType.BOOLEAN;
+    public final static TableColumnType COLUMN_4_14_TYPE = TableColumnType.BOOL;
     public final static Long COLUMN_4_14_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_14_NULL = true;
     public final static Boolean COLUMN_4_14_UNIQUE = false;
@@ -2314,7 +2314,7 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_4_15_PRIMARY = false;
     public final static String COLUMN_4_15_NAME = "Venomous";
     public final static String COLUMN_4_15_INTERNAL_NAME = "venomous";
-    public final static TableColumnType COLUMN_4_15_TYPE = TableColumnType.BOOLEAN;
+    public final static TableColumnType COLUMN_4_15_TYPE = TableColumnType.BOOL;
     public final static Long COLUMN_4_15_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_15_NULL = true;
     public final static Boolean COLUMN_4_15_UNIQUE = false;
@@ -2328,7 +2328,7 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_4_16_PRIMARY = false;
     public final static String COLUMN_4_16_NAME = "Fin";
     public final static String COLUMN_4_16_INTERNAL_NAME = "fins";
-    public final static TableColumnType COLUMN_4_16_TYPE = TableColumnType.BOOLEAN;
+    public final static TableColumnType COLUMN_4_16_TYPE = TableColumnType.BOOL;
     public final static Long COLUMN_4_16_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_16_NULL = true;
     public final static Boolean COLUMN_4_16_UNIQUE = false;
@@ -2342,7 +2342,7 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_4_17_PRIMARY = false;
     public final static String COLUMN_4_17_NAME = "Legs";
     public final static String COLUMN_4_17_INTERNAL_NAME = "legs";
-    public final static TableColumnType COLUMN_4_17_TYPE = TableColumnType.NUMBER;
+    public final static TableColumnType COLUMN_4_17_TYPE = TableColumnType.INT;
     public final static Long COLUMN_4_17_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_17_NULL = true;
     public final static Boolean COLUMN_4_17_UNIQUE = false;
@@ -2370,7 +2370,7 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_4_19_PRIMARY = false;
     public final static String COLUMN_4_19_NAME = "Domestic";
     public final static String COLUMN_4_19_INTERNAL_NAME = "domestic";
-    public final static TableColumnType COLUMN_4_19_TYPE = TableColumnType.BOOLEAN;
+    public final static TableColumnType COLUMN_4_19_TYPE = TableColumnType.BOOL;
     public final static Long COLUMN_4_19_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_19_NULL = true;
     public final static Boolean COLUMN_4_19_UNIQUE = false;
@@ -2384,7 +2384,7 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_4_20_PRIMARY = false;
     public final static String COLUMN_4_20_NAME = "Cat Size";
     public final static String COLUMN_4_20_INTERNAL_NAME = "catsize";
-    public final static TableColumnType COLUMN_4_20_TYPE = TableColumnType.BOOLEAN;
+    public final static TableColumnType COLUMN_4_20_TYPE = TableColumnType.BOOL;
     public final static Long COLUMN_4_20_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_20_NULL = true;
     public final static Boolean COLUMN_4_20_UNIQUE = false;
@@ -2412,8 +2412,8 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_5_1_PRIMARY = true;
     public final static String COLUMN_5_1_NAME = "id";
     public final static String COLUMN_5_1_INTERNAL_NAME = "id";
-    public final static TableColumnType COLUMN_5_1_TYPE = TableColumnType.NUMBER;
-    public final static ColumnTypeDto COLUMN_5_1_TYPE_DTO = ColumnTypeDto.NUMBER;
+    public final static TableColumnType COLUMN_5_1_TYPE = TableColumnType.BIGINT;
+    public final static ColumnTypeDto COLUMN_5_1_TYPE_DTO = ColumnTypeDto.BIGINT;
     public final static Long COLUMN_5_1_DATE_FORMAT = null;
     public final static Boolean COLUMN_5_1_NULL = false;
     public final static Boolean COLUMN_5_1_UNIQUE = true;
@@ -2427,8 +2427,8 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_5_2_PRIMARY = false;
     public final static String COLUMN_5_2_NAME = "firstname";
     public final static String COLUMN_5_2_INTERNAL_NAME = "firstname";
-    public final static TableColumnType COLUMN_5_2_TYPE = TableColumnType.STRING;
-    public final static ColumnTypeDto COLUMN_5_2_TYPE_DTO = ColumnTypeDto.STRING;
+    public final static TableColumnType COLUMN_5_2_TYPE = TableColumnType.VARCHAR;
+    public final static ColumnTypeDto COLUMN_5_2_TYPE_DTO = ColumnTypeDto.VARCHAR;
     public final static Integer COLUMN_5_2_LENGTH = 20;
     public final static Long COLUMN_5_2_DATE_FORMAT = null;
     public final static Boolean COLUMN_5_2_NULL = false;
@@ -2443,8 +2443,8 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_5_3_PRIMARY = false;
     public final static String COLUMN_5_3_NAME = "lastname";
     public final static String COLUMN_5_3_INTERNAL_NAME = "lastname";
-    public final static TableColumnType COLUMN_5_3_TYPE = TableColumnType.STRING;
-    public final static ColumnTypeDto COLUMN_5_3_TYPE_DTO = ColumnTypeDto.STRING;
+    public final static TableColumnType COLUMN_5_3_TYPE = TableColumnType.VARCHAR;
+    public final static ColumnTypeDto COLUMN_5_3_TYPE_DTO = ColumnTypeDto.VARCHAR;
     public final static Integer COLUMN_5_3_LENGTH = 40;
     public final static Long COLUMN_5_3_DATE_FORMAT = null;
     public final static Boolean COLUMN_5_3_NULL = false;
@@ -2459,8 +2459,8 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_5_4_PRIMARY = false;
     public final static String COLUMN_5_4_NAME = "ref_id";
     public final static String COLUMN_5_4_INTERNAL_NAME = "ref_id";
-    public final static TableColumnType COLUMN_5_4_TYPE = TableColumnType.NUMBER;
-    public final static ColumnTypeDto COLUMN_5_4_TYPE_DTO = ColumnTypeDto.NUMBER;
+    public final static TableColumnType COLUMN_5_4_TYPE = TableColumnType.VARCHAR;
+    public final static ColumnTypeDto COLUMN_5_4_TYPE_DTO = ColumnTypeDto.VARCHAR;
     public final static Long COLUMN_5_4_DATE_FORMAT = null;
     public final static Boolean COLUMN_5_4_NULL = false;
     public final static Boolean COLUMN_5_4_UNIQUE = false;
@@ -2474,8 +2474,8 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_8_1_PRIMARY = true;
     public final static String COLUMN_8_1_NAME = "ID";
     public final static String COLUMN_8_1_INTERNAL_NAME = "id";
-    public final static TableColumnType COLUMN_8_1_TYPE = TableColumnType.NUMBER;
-    public final static ColumnTypeDto COLUMN_8_1_TYPE_DTO = ColumnTypeDto.NUMBER;
+    public final static TableColumnType COLUMN_8_1_TYPE = TableColumnType.BIGINT;
+    public final static ColumnTypeDto COLUMN_8_1_TYPE_DTO = ColumnTypeDto.BIGINT;
     public final static Long COLUMN_8_1_DATE_FORMAT = null;
     public final static Boolean COLUMN_8_1_NULL = false;
     public final static Boolean COLUMN_8_1_UNIQUE = true;
@@ -2489,8 +2489,8 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_8_2_PRIMARY = true;
     public final static String COLUMN_8_2_NAME = "Value";
     public final static String COLUMN_8_2_INTERNAL_NAME = "value";
-    public final static TableColumnType COLUMN_8_2_TYPE = TableColumnType.NUMBER;
-    public final static ColumnTypeDto COLUMN_8_2_TYPE_DTO = ColumnTypeDto.NUMBER;
+    public final static TableColumnType COLUMN_8_2_TYPE = TableColumnType.INT;
+    public final static ColumnTypeDto COLUMN_8_2_TYPE_DTO = ColumnTypeDto.INT;
     public final static Long COLUMN_8_2_DATE_FORMAT = null;
     public final static Boolean COLUMN_8_2_NULL = true;
     public final static Boolean COLUMN_8_2_UNIQUE = false;
@@ -3061,7 +3061,7 @@ public abstract class BaseTest {
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(0)
                     .autoGenerated(true)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.BIGINT)
                     .name("id")
                     .internalName("id")
                     .isNullAllowed(false)
@@ -3076,7 +3076,7 @@ public abstract class BaseTest {
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(1)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("linie")
                     .internalName("linie")
                     .isNullAllowed(true)
@@ -3091,7 +3091,7 @@ public abstract class BaseTest {
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(2)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("richtung")
                     .internalName("richtung")
                     .isNullAllowed(true)
@@ -3121,7 +3121,7 @@ public abstract class BaseTest {
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(4)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("fahrzeug")
                     .internalName("fahrzeug")
                     .isNullAllowed(true)
@@ -3136,7 +3136,7 @@ public abstract class BaseTest {
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(5)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("kurs")
                     .internalName("kurs")
                     .isNullAllowed(true)
@@ -3151,7 +3151,7 @@ public abstract class BaseTest {
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(6)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("seq_von")
                     .internalName("seq_von")
                     .isNullAllowed(true)
@@ -3166,7 +3166,7 @@ public abstract class BaseTest {
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(7)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("halt_diva_von")
                     .internalName("halt_diva_von")
                     .isNullAllowed(true)
@@ -3181,7 +3181,7 @@ public abstract class BaseTest {
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(8)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("halt_punkt_diva_von")
                     .internalName("halt_punkt_diva_von")
                     .isNullAllowed(true)
@@ -3196,7 +3196,7 @@ public abstract class BaseTest {
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(9)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.STRING)
+                    .columnType(TableColumnType.INT)
                     .name("halt_kurz_von1")
                     .internalName("halt_kurz_von1")
                     .isNullAllowed(true)
@@ -3226,7 +3226,7 @@ public abstract class BaseTest {
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(11)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("soll_an_von")
                     .internalName("soll_an_von")
                     .isNullAllowed(true)
@@ -3241,7 +3241,7 @@ public abstract class BaseTest {
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(12)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("ist_an_von")
                     .internalName("ist_an_von")
                     .isNullAllowed(true)
@@ -3256,7 +3256,7 @@ public abstract class BaseTest {
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(13)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("soll_ab_von")
                     .internalName("soll_ab_von")
                     .isNullAllowed(true)
@@ -3271,7 +3271,7 @@ public abstract class BaseTest {
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(14)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("ist_ab_von")
                     .internalName("ist_ab_von")
                     .isNullAllowed(true)
@@ -3286,7 +3286,7 @@ public abstract class BaseTest {
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(15)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("seq_nach")
                     .internalName("seq_nach")
                     .isNullAllowed(true)
@@ -3301,7 +3301,7 @@ public abstract class BaseTest {
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(16)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("halt_diva_nach")
                     .internalName("halt_diva_nach")
                     .isNullAllowed(true)
@@ -3316,7 +3316,7 @@ public abstract class BaseTest {
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(17)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("halt_punkt_diva_nach")
                     .internalName("halt_punkt_diva_nach")
                     .isNullAllowed(true)
@@ -3331,7 +3331,7 @@ public abstract class BaseTest {
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(18)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.STRING)
+                    .columnType(TableColumnType.INT)
                     .name("halt_kurz_nach1")
                     .internalName("halt_kurz_nach1")
                     .isNullAllowed(true)
@@ -3361,7 +3361,7 @@ public abstract class BaseTest {
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(20)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("soll_an_nach")
                     .internalName("soll_an_nach")
                     .isNullAllowed(true)
@@ -3376,7 +3376,7 @@ public abstract class BaseTest {
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(21)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("ist_an_nach1")
                     .internalName("ist_an_nach1")
                     .isNullAllowed(true)
@@ -3391,7 +3391,7 @@ public abstract class BaseTest {
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(22)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("soll_ab_nach")
                     .internalName("soll_ab_nach")
                     .isNullAllowed(true)
@@ -3406,7 +3406,7 @@ public abstract class BaseTest {
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(23)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("ist_ab_nach")
                     .internalName("ist_ab_nach")
                     .isNullAllowed(true)
@@ -3421,7 +3421,7 @@ public abstract class BaseTest {
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(24)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("fahrt_id")
                     .internalName("fahrt_id")
                     .isNullAllowed(true)
@@ -3436,7 +3436,7 @@ public abstract class BaseTest {
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(25)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("fahrweg_id")
                     .internalName("fahrweg_id")
                     .isNullAllowed(true)
@@ -3451,7 +3451,7 @@ public abstract class BaseTest {
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(26)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("fw_no")
                     .internalName("fw_no")
                     .isNullAllowed(true)
@@ -3466,7 +3466,7 @@ public abstract class BaseTest {
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(27)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("fw_typ")
                     .internalName("fw_typ")
                     .isNullAllowed(true)
@@ -3481,7 +3481,7 @@ public abstract class BaseTest {
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(28)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("fw_kurz")
                     .internalName("fw_kurz")
                     .isNullAllowed(true)
@@ -3496,7 +3496,7 @@ public abstract class BaseTest {
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(29)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.STRING)
+                    .columnType(TableColumnType.INT)
                     .name("fw_lang")
                     .internalName("fw_lang")
                     .isNullAllowed(true)
@@ -3511,7 +3511,7 @@ public abstract class BaseTest {
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(30)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.STRING)
+                    .columnType(TableColumnType.INT)
                     .name("umlauf_von")
                     .internalName("umlauf_von")
                     .isNullAllowed(true)
@@ -3526,7 +3526,7 @@ public abstract class BaseTest {
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(31)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("halt_id_von")
                     .internalName("halt_id_von")
                     .isNullAllowed(true)
@@ -3541,7 +3541,7 @@ public abstract class BaseTest {
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(32)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("halt_id_nach")
                     .internalName("halt_id_nach")
                     .isNullAllowed(true)
@@ -3556,7 +3556,7 @@ public abstract class BaseTest {
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(33)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("halt_punkt_id_von")
                     .internalName("halt_punkt_id_von")
                     .isNullAllowed(true)
@@ -3571,7 +3571,7 @@ public abstract class BaseTest {
                     .cdbid(DATABASE_1_ID)
                     .ordinalPosition(34)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("halt_punkt_id_nach")
                     .internalName("halt_punkt_id_nach")
                     .isNullAllowed(true)
@@ -4174,7 +4174,7 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_6_1_PRIMARY = true;
     public final static String COLUMN_6_1_NAME = "name_id";
     public final static String COLUMN_6_1_INTERNAL_NAME = "name_id";
-    public final static TableColumnType COLUMN_6_1_TYPE = TableColumnType.NUMBER;
+    public final static TableColumnType COLUMN_6_1_TYPE = TableColumnType.BIGINT;
     public final static Long COLUMN_6_1_DATE_FORMAT = null;
     public final static Boolean COLUMN_6_1_NULL = false;
     public final static Boolean COLUMN_6_1_UNIQUE = false;
@@ -4188,7 +4188,7 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_6_2_PRIMARY = true;
     public final static String COLUMN_6_2_NAME = "zoo_id";
     public final static String COLUMN_6_2_INTERNAL_NAME = "zoo_id";
-    public final static TableColumnType COLUMN_6_2_TYPE = TableColumnType.NUMBER;
+    public final static TableColumnType COLUMN_6_2_TYPE = TableColumnType.BIGINT;
     public final static Long COLUMN_6_2_DATE_FORMAT = null;
     public final static Boolean COLUMN_6_2_NULL = false;
     public final static Boolean COLUMN_6_2_UNIQUE = false;
@@ -4560,7 +4560,7 @@ public abstract class BaseTest {
                     .tid(VIEW_4_TABLE_ID)
                     .name("animal_name")
                     .internalName("animal_name")
-                    .columnType(TableColumnType.STRING)
+                    .columnType(TableColumnType.VARCHAR)
                     .dfid(null)
                     .isNullAllowed(null)
                     .autoGenerated(false)
@@ -4574,7 +4574,7 @@ public abstract class BaseTest {
                     .tid(VIEW_4_TABLE_ID)
                     .name("hair")
                     .internalName("hair")
-                    .columnType(TableColumnType.BOOLEAN)
+                    .columnType(TableColumnType.BOOL)
                     .dfid(null)
                     .isNullAllowed(null)
                     .autoGenerated(false)
@@ -4588,7 +4588,7 @@ public abstract class BaseTest {
                     .tid(VIEW_4_TABLE_ID)
                     .name("feathers")
                     .internalName("feathers")
-                    .columnType(TableColumnType.BOOLEAN)
+                    .columnType(TableColumnType.BOOL)
                     .dfid(null)
                     .isNullAllowed(null)
                     .autoGenerated(false)
@@ -4602,7 +4602,7 @@ public abstract class BaseTest {
                     .tid(VIEW_4_TABLE_ID)
                     .name("eggs")
                     .internalName("eggs")
-                    .columnType(TableColumnType.BOOLEAN)
+                    .columnType(TableColumnType.BOOL)
                     .dfid(null)
                     .isNullAllowed(null)
                     .autoGenerated(false)
@@ -4616,7 +4616,7 @@ public abstract class BaseTest {
                     .tid(VIEW_4_TABLE_ID)
                     .name("milk")
                     .internalName("milk")
-                    .columnType(TableColumnType.BOOLEAN)
+                    .columnType(TableColumnType.BOOL)
                     .dfid(null)
                     .isNullAllowed(null)
                     .autoGenerated(false)
@@ -4630,7 +4630,7 @@ public abstract class BaseTest {
                     .tid(VIEW_4_TABLE_ID)
                     .name("airborne")
                     .internalName("airborne")
-                    .columnType(TableColumnType.BOOLEAN)
+                    .columnType(TableColumnType.BOOL)
                     .dfid(null)
                     .isNullAllowed(null)
                     .autoGenerated(false)
@@ -4644,7 +4644,7 @@ public abstract class BaseTest {
                     .tid(VIEW_4_TABLE_ID)
                     .name("aquatic")
                     .internalName("aquatic")
-                    .columnType(TableColumnType.BOOLEAN)
+                    .columnType(TableColumnType.BOOL)
                     .dfid(null)
                     .isNullAllowed(null)
                     .autoGenerated(false)
@@ -4658,7 +4658,7 @@ public abstract class BaseTest {
                     .tid(VIEW_4_TABLE_ID)
                     .name("predator")
                     .internalName("predator")
-                    .columnType(TableColumnType.BOOLEAN)
+                    .columnType(TableColumnType.BOOL)
                     .dfid(null)
                     .isNullAllowed(null)
                     .autoGenerated(false)
@@ -4672,7 +4672,7 @@ public abstract class BaseTest {
                     .tid(VIEW_4_TABLE_ID)
                     .name("toothed")
                     .internalName("toothed")
-                    .columnType(TableColumnType.BOOLEAN)
+                    .columnType(TableColumnType.BOOL)
                     .dfid(null)
                     .isNullAllowed(null)
                     .autoGenerated(false)
@@ -4686,7 +4686,7 @@ public abstract class BaseTest {
                     .tid(VIEW_4_TABLE_ID)
                     .name("backbone")
                     .internalName("backbone")
-                    .columnType(TableColumnType.BOOLEAN)
+                    .columnType(TableColumnType.BOOL)
                     .dfid(null)
                     .isNullAllowed(null)
                     .autoGenerated(false)
@@ -4700,7 +4700,7 @@ public abstract class BaseTest {
                     .tid(VIEW_4_TABLE_ID)
                     .name("breathes")
                     .internalName("breathes")
-                    .columnType(TableColumnType.BOOLEAN)
+                    .columnType(TableColumnType.BOOL)
                     .dfid(null)
                     .isNullAllowed(null)
                     .autoGenerated(false)
@@ -4714,7 +4714,7 @@ public abstract class BaseTest {
                     .tid(VIEW_4_TABLE_ID)
                     .name("venomous")
                     .internalName("venomous")
-                    .columnType(TableColumnType.BOOLEAN)
+                    .columnType(TableColumnType.BOOL)
                     .dfid(null)
                     .isNullAllowed(null)
                     .autoGenerated(false)
@@ -4728,7 +4728,7 @@ public abstract class BaseTest {
                     .tid(VIEW_4_TABLE_ID)
                     .name("fins")
                     .internalName("fins")
-                    .columnType(TableColumnType.BOOLEAN)
+                    .columnType(TableColumnType.BOOL)
                     .dfid(null)
                     .isNullAllowed(null)
                     .autoGenerated(false)
@@ -4742,7 +4742,7 @@ public abstract class BaseTest {
                     .tid(VIEW_4_TABLE_ID)
                     .name("legs")
                     .internalName("legs")
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .dfid(null)
                     .isNullAllowed(null)
                     .autoGenerated(false)
@@ -4756,7 +4756,7 @@ public abstract class BaseTest {
                     .tid(VIEW_4_TABLE_ID)
                     .name("tail")
                     .internalName("tail")
-                    .columnType(TableColumnType.BOOLEAN)
+                    .columnType(TableColumnType.BOOL)
                     .dfid(null)
                     .isNullAllowed(null)
                     .autoGenerated(false)
@@ -4770,7 +4770,7 @@ public abstract class BaseTest {
                     .tid(VIEW_4_TABLE_ID)
                     .name("domestic")
                     .internalName("domestic")
-                    .columnType(TableColumnType.BOOLEAN)
+                    .columnType(TableColumnType.BOOL)
                     .dfid(null)
                     .isNullAllowed(null)
                     .autoGenerated(false)
@@ -4784,7 +4784,7 @@ public abstract class BaseTest {
                     .tid(VIEW_4_TABLE_ID)
                     .name("catsize")
                     .internalName("catsize")
-                    .columnType(TableColumnType.BOOLEAN)
+                    .columnType(TableColumnType.BOOL)
                     .dfid(null)
                     .isNullAllowed(null)
                     .autoGenerated(false)
@@ -4798,7 +4798,7 @@ public abstract class BaseTest {
                     .tid(VIEW_4_TABLE_ID)
                     .name("class_type")
                     .internalName("class_type")
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .dfid(null)
                     .isNullAllowed(null)
                     .autoGenerated(false)

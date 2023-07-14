@@ -124,7 +124,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns`
     dfID             bigint,
     cName            VARCHAR(100),
     internal_name    VARCHAR(100)           NOT NULL,
-    Datatype         VARCHAR(50),
+    Datatype         ENUM ('CHAR','VARCHAR','BINARY','VARBINARY','TINYBLOB','TINYTEXT','TEXT','BLOB','MEDIUMTEXT','MEDIUMBLOB','LONGTEXT','LONGBLOB','ENUM','SET','BIT','TINYINT','BOOL','SMALLINT','MEDIUMINT','INT','BIGINT','FLOAT','DOUBLE','DECIMAL','DATE','DATETIME','TIMESTAMP','TIME','YEAR'),
     length           INT                    NULL,
     ordinal_position INTEGER                NOT NULL,
     is_primary_key   BOOLEAN                NOT NULL,
@@ -140,15 +140,24 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns`
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns_enums`
 (
-    ID            bigint                 NOT NULL AUTO_INCREMENT,
-    eDBID         bigint                 NOT NULL,
-    tID           bigint                 NOT NULL,
-    cID           bigint                 NOT NULL,
-    enum_values   CHARACTER VARYING(255) NOT NULL,
-    created       timestamp              NOT NULL DEFAULT NOW(),
-    last_modified timestamp,
-    FOREIGN KEY (eDBID, tID, cID) REFERENCES mdb_columns (cDBID, tID, ID),
-    PRIMARY KEY (ID, eDBID, tID, cID)
+    id          bigint                 NOT NULL AUTO_INCREMENT,
+    database_id bigint                 NOT NULL,
+    table_id    bigint                 NOT NULL,
+    column_id   bigint                 NOT NULL,
+    value       CHARACTER VARYING(255) NOT NULL,
+    FOREIGN KEY (database_id, table_id, column_id) REFERENCES mdb_columns (cDBID, tID, ID),
+    PRIMARY KEY (id, database_id, table_id, column_id)
+) WITH SYSTEM VERSIONING;
+
+CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns_sets`
+(
+    id          bigint                 NOT NULL AUTO_INCREMENT,
+    database_id bigint                 NOT NULL,
+    table_id    bigint                 NOT NULL,
+    column_id   bigint                 NOT NULL,
+    value       CHARACTER VARYING(255) NOT NULL,
+    FOREIGN KEY (database_id, table_id, column_id) REFERENCES mdb_columns (cDBID, tID, ID),
+    PRIMARY KEY (id, database_id, table_id, column_id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns_nom`
