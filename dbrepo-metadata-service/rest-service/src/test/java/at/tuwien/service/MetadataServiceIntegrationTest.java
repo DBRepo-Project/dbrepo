@@ -1,6 +1,7 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
+import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.oaipmh.OaiErrorType;
 import at.tuwien.oaipmh.OaiListIdentifiersParameters;
 import at.tuwien.oaipmh.OaiRecordParameters;
@@ -16,6 +17,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -38,6 +42,9 @@ public class MetadataServiceIntegrationTest extends BaseUnitTest {
     private DatabaseRepository databaseRepository;
 
     @Autowired
+    private LicenseRepository licenseRepository;
+
+    @Autowired
     private UserRepository userRepository;
 
     @Autowired
@@ -54,6 +61,7 @@ public class MetadataServiceIntegrationTest extends BaseUnitTest {
         /* metadata database */
         imageRepository.save(IMAGE_1_SIMPLE);
         realmRepository.save(REALM_DBREPO);
+        licenseRepository.save(LICENSE_1);
         userRepository.save(USER_1_SIMPLE);
         containerRepository.save(CONTAINER_1);
         databaseRepository.save(DATABASE_1_SIMPLE);
@@ -102,6 +110,7 @@ public class MetadataServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
+    @Transactional
     public void getRecord_succeeds() throws IdentifierNotFoundException {
         final OaiRecordParameters parameters = new OaiRecordParameters();
         parameters.setIdentifier(Long.toString(1L));

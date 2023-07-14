@@ -11,6 +11,12 @@ import java.util.UUID;
 @Repository
 public interface UserRepository extends JpaRepository<User, UUID> {
 
+    /**
+     * Finds an user by given username.
+     *
+     * @param username The username.
+     * @return Non-empty optional if this user exists, empty optional otherwise.
+     */
     Optional<User> findByUsername(String username);
 
 }

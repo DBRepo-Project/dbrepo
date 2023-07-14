@@ -31,14 +31,14 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_images_date`
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_containers`
 (
-    id            bigint                       NOT NULL AUTO_INCREMENT,
-    INTERNAL_NAME character varying(255)       NOT NULL,
-    NAME          character varying(255)       NOT NULL,
-    HOST          character varying(255)       NOT NULL,
-    PORT          integer                      NOT NULL,
-    image_id      bigint                       NOT NULL,
-    created       timestamp                    NOT NULL DEFAULT NOW(),
-    LAST_MODIFIED timestamp,
+    id                  bigint                 NOT NULL AUTO_INCREMENT,
+    INTERNAL_NAME       character varying(255) NOT NULL,
+    NAME                character varying(255) NOT NULL,
+    HOST                character varying(255) NOT NULL,
+    PORT                integer                NOT NULL,
+    image_id            bigint                 NOT NULL,
+    created             timestamp              NOT NULL DEFAULT NOW(),
+    LAST_MODIFIED       timestamp,
     privileged_username character varying(255) NOT NULL,
     privileged_password character varying(255) NOT NULL,
     PRIMARY KEY (id),
@@ -259,24 +259,26 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_constraints_checks`
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_concepts`
 (
-    id          BIGINT       NOT NULL AUTO_INCREMENT,
+    id          bigint       NOT NULL AUTO_INCREMENT,
     uri         text         not null,
     name        VARCHAR(255) null,
     description TEXT         null,
     created     timestamp    NOT NULL DEFAULT NOW(),
     created_by  character varying(255),
-    PRIMARY KEY (id)
+    PRIMARY KEY (id),
+    UNIQUE (uri)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_units`
 (
-    id          BIGINT       NOT NULL AUTO_INCREMENT,
+    id          bigint       NOT NULL AUTO_INCREMENT,
     uri         text         not null,
     name        VARCHAR(255) null,
     description TEXT         null,
     created     timestamp    NOT NULL DEFAULT NOW(),
     created_by  character varying(255),
-    PRIMARY KEY (id)
+    PRIMARY KEY (id),
+    UNIQUE (uri)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns_concepts`
@@ -284,7 +286,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns_concepts`
     cDBID   bigint    NOT NULL,
     tID     bigint    NOT NULL,
     cID     bigint    NOT NULL,
-    uri     text      NOT NULL,
+    id      bigint    NOT NULL,
     created timestamp NOT NULL DEFAULT NOW(),
     PRIMARY KEY (cDBID, tID, cID),
     FOREIGN KEY (cDBID, tID, cID) REFERENCES mdb_columns (cDBID, tID, ID)
@@ -295,7 +297,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns_units`
     cDBID   bigint    NOT NULL,
     tID     bigint    NOT NULL,
     cID     bigint    NOT NULL,
-    uri     text      NOT NULL,
+    id      bigint    NOT NULL,
     created timestamp NOT NULL DEFAULT NOW(),
     PRIMARY KEY (cDBID, tID, cID),
     FOREIGN KEY (cDBID, tID, cID) REFERENCES mdb_columns (cDBID, tID, ID)
@@ -336,6 +338,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_ontologies`
     id              bigint                 NOT NULL AUTO_INCREMENT,
     prefix          VARCHAR(8)             NOT NULL,
     uri             TEXT                   NOT NULL,
+    uri_pattern     TEXT,
     sparql_endpoint TEXT                   NULL,
     last_modified   timestamp,
     created         timestamp              NOT NULL DEFAULT NOW(),
@@ -362,13 +365,10 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_view_columns`
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifiers`
 (
     id                bigint                    NOT NULL AUTO_INCREMENT,
-    dbid              bigint                    NOT NULL,
+    dbid              bigint,
     qid               bigint,
-    title             VARCHAR(255)              NOT NULL,
     publisher         VARCHAR(255)              NOT NULL,
-    language          VARCHAR(50),
-    license           VARCHAR(50),
-    description       TEXT,
+    language          VARCHAR(2),
     visibility        ENUM ('SELF', 'EVERYONE') NOT NULL default 'EVERYONE',
     publication_year  INTEGER                   NOT NULL,
     publication_month INTEGER,
@@ -389,33 +389,82 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifiers`
     UNIQUE (dbid, qid)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS `fda`.`mdb_related_identifiers`
+CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifier_licenses`
 (
-    id            bigint                 NOT NULL AUTO_INCREMENT,
-    iid           bigint                 NOT NULL,
-    value         varchar(255)           NOT NULL,
-    type          varchar(255),
-    relation      varchar(255),
-    created       timestamp              NOT NULL DEFAULT NOW(),
-    created_by    character varying(255) NOT NULL,
-    last_modified timestamp,
-    PRIMARY KEY (id, iid), /* must be a single id from persistent identifier concept */
-    FOREIGN KEY (iid) REFERENCES mdb_identifiers (id)
+    pid        bigint       NOT NULL,
+    license_id VARCHAR(255) NOT NULL,
+    PRIMARY KEY (pid, license_id),
+    FOREIGN KEY (pid) REFERENCES mdb_identifiers (id),
+    FOREIGN KEY (license_id) REFERENCES mdb_licenses (identifier)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS `fda`.`mdb_creators`
+CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifier_titles`
 (
-    id            bigint                 NOT NULL AUTO_INCREMENT,
-    pid           bigint                 NOT NULL,
-    firstname     VARCHAR(255)           NOT NULL,
-    lastname      VARCHAR(255)           NOT NULL,
-    affiliation   VARCHAR(255),
-    orcid         VARCHAR(255),
-    created       timestamp              NOT NULL DEFAULT NOW(),
-    created_by    character varying(255) NOT NULL,
-    last_modified timestamp              NOT NULL,
-    PRIMARY KEY (id, pid),
+    id         bigint NOT NULL AUTO_INCREMENT,
+    pid        bigint NOT NULL,
+    title      text   NOT NULL,
+    title_type ENUM ('ALTERNATIVE_TITLE', 'SUBTITLE', 'TRANSLATED_TITLE', 'OTHER'),
+    language   VARCHAR(2),
+    PRIMARY KEY (id),
     FOREIGN KEY (pid) REFERENCES mdb_identifiers (id)
+) WITH SYSTEM VERSIONING;
+
+CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifier_funders`
+(
+    id                     bigint       NOT NULL AUTO_INCREMENT,
+    pid                    bigint       NOT NULL,
+    funder_name            VARCHAR(255) NOT NULL,
+    funder_identifier      TEXT,
+    funder_identifier_type ENUM ('CROSSREF_FUNDER_ID', 'GRID', 'ISNI', 'ROR', 'OTHER'),
+    scheme_uri             text,
+    award_number           VARCHAR(255),
+    award_title            text,
+    language               VARCHAR(255),
+    PRIMARY KEY (id),
+    FOREIGN KEY (pid) REFERENCES mdb_identifiers (id)
+) WITH SYSTEM VERSIONING;
+
+CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifier_descriptions`
+(
+    id               bigint NOT NULL AUTO_INCREMENT,
+    pid              bigint NOT NULL,
+    description      text   NOT NULL,
+    description_type ENUM ('ABSTRACT', 'METHODS', 'SERIES_INFORMATION', 'TABLE_OF_CONTENTS', 'TECHNICAL_INFO', 'OTHER'),
+    language         VARCHAR(2),
+    PRIMARY KEY (id),
+    FOREIGN KEY (pid) REFERENCES mdb_identifiers (id)
+) WITH SYSTEM VERSIONING;
+
+CREATE TABLE IF NOT EXISTS `fda`.`mdb_related_identifiers`
+(
+    id       bigint       NOT NULL AUTO_INCREMENT,
+    pid      bigint       NOT NULL,
+    value    varchar(255) NOT NULL,
+    type     varchar(255),
+    relation varchar(255),
+    PRIMARY KEY (id), /* must be a single id from persistent identifier concept */
+    FOREIGN KEY (pid) REFERENCES mdb_identifiers (id),
+    UNIQUE (pid, value)
+) WITH SYSTEM VERSIONING;
+
+CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifier_creators`
+(
+    id                                bigint       NOT NULL AUTO_INCREMENT,
+    pid                               bigint       NOT NULL,
+    given_names                       text,
+    family_name                       text,
+    creator_name                      VARCHAR(255) NOT NULL,
+    name_type                         ENUM ('PERSONAL', 'ORGANIZATIONAL') default 'PERSONAL',
+    name_identifier                   text,
+    name_identifier_scheme            ENUM ('ROR', 'GRID', 'ISNI', 'ORCID'),
+    name_identifier_scheme_uri        text,
+    affiliation                       VARCHAR(255),
+    affiliation_identifier            text,
+    affiliation_identifier_scheme     ENUM ('ROR', 'GRID', 'ISNI'),
+    affiliation_identifier_scheme_uri text,
+    PRIMARY KEY (id),
+    FOREIGN KEY (pid) REFERENCES mdb_identifiers (id),
+    UNIQUE (pid, creator_name)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_feed`
@@ -477,18 +526,19 @@ VALUES (1, '%Y-%c-%d %H:%i:%S.%f', 'yyyy-MM-dd HH:mm:ss.SSSSSS', '2022-01-30 13:
        (1, '%Y-%c-%d %H:%i:%S', 'yyyy-MM-dd HH:mm:ss', '2022-01-30 13:44:25', true),
        (1, '%Y-%c-%d', 'yyyy-MM-dd', '2022-01-30', false);
 
-INSERT INTO `fda`.`mdb_ontologies` (prefix, uri, sparql_endpoint)
-VALUES ('om', 'http://www.ontology-of-units-of-measure.org/resource/om-2/', null),
-       ('wd', 'http://www.wikidata.org/', 'https://query.wikidata.org/sparql'),
-       ('mo', 'http://purl.org/ontology/mo/', null),
-       ('dc', 'http://purl.org/dc/elements/1.1/', null),
-       ('xsd', 'http://www.w3.org/2001/XMLSchema#', null),
-       ('tl', 'http://purl.org/NET/c4dm/timeline.owl#', null),
-       ('foaf', 'http://xmlns.com/foaf/0.1/', null),
-       ('schema', 'http://schema.org/', null),
-       ('rdf', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#', null),
-       ('rdfs', 'http://www.w3.org/2000/01/rdf-schema#', null),
-       ('owl', 'http://www.w3.org/2002/07/owl#', null),
-       ('prov', 'http://www.w3.org/ns/prov#', null),
-       ('db', 'http://dbpedia.org', 'http://dbpedia.org/sparql');
+INSERT INTO `fda`.`mdb_ontologies` (prefix, uri, uri_pattern, sparql_endpoint)
+VALUES ('om', 'http://www.ontology-of-units-of-measure.org/resource/om-2/',
+        'http://www.ontology-of-units-of-measure.org/resource/om-2/.*', null),
+       ('wd', 'http://www.wikidata.org/', 'http://www.wikidata.org/entity/.*', 'https://query.wikidata.org/sparql'),
+       ('mo', 'http://purl.org/ontology/mo/', 'http://purl.org/ontology/mo/.*', null),
+       ('dc', 'http://purl.org/dc/elements/1.1/', null, null),
+       ('xsd', 'http://www.w3.org/2001/XMLSchema#', null, null),
+       ('tl', 'http://purl.org/NET/c4dm/timeline.owl#', null, null),
+       ('foaf', 'http://xmlns.com/foaf/0.1/', null, null),
+       ('schema', 'http://schema.org/', null, null),
+       ('rdf', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#', null, null),
+       ('rdfs', 'http://www.w3.org/2000/01/rdf-schema#', null, null),
+       ('owl', 'http://www.w3.org/2002/07/owl#', null, null),
+       ('prov', 'http://www.w3.org/ns/prov#', null, null),
+       ('db', 'http://dbpedia.org', 'http://dbpedia.org/ontology/.*', 'http://dbpedia.org/sparql');
 COMMIT;

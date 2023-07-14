@@ -99,7 +99,7 @@ public class ViewServicePersistenceIntegrationTest extends BaseUnitTest {
         imageRepository.save(IMAGE_1);
         userRepository.save(USER_1);
         containerRepository.save(CONTAINER_1);
-        databaseRepository.save(DATABASE_1);
+        databaseRepository.save(DATABASE_1_SIMPLE);
         tableRepository.save(TABLE_1_SIMPLE);
         tableColumnRepository.saveAll(TABLE_1_COLUMNS);
     }

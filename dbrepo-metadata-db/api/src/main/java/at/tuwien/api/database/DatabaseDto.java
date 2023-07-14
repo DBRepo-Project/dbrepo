@@ -8,6 +8,7 @@ import at.tuwien.api.user.UserBriefDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -25,8 +26,10 @@ import java.util.List;
 @AllArgsConstructor
 @Jacksonized
 @ToString
+@Document(indexName = "database")
 public class DatabaseDto {
 
+    @Id
     @NotNull
     private Long id;
 
@@ -36,17 +39,19 @@ public class DatabaseDto {
 
     @NotBlank
     @JsonProperty("exchange_name")
-    @Schema(example = "dbrepo/air_quality")
+    @Field(name = "exchange_name")
+    @Schema(example = "dbrepo.air_quality")
     private String exchangeName;
 
     private IdentifierDto identifier;
 
     @NotBlank
     @JsonProperty("internal_name")
-    @Schema(example = "weather_australia")
+    @Field(name = "internal_name")
+    @Schema(example = "air_quality")
     private String internalName;
 
-    @Schema(example = "Weather Australia 2009-2021")
+    @Schema(example = "Air Quality")
     private String description;
 
     private List<TableBriefDto> tables;
@@ -54,6 +59,7 @@ public class DatabaseDto {
     private List<ViewBriefDto> views;
 
     @JsonProperty("is_public")
+    @Field(name = "is_public")
     @Schema(example = "true")
     private Boolean isPublic;
 

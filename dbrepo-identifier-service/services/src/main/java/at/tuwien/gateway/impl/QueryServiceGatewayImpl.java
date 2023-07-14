@@ -1,7 +1,7 @@
 package at.tuwien.gateway.impl;
 
 import at.tuwien.api.database.query.QueryDto;
-import at.tuwien.api.identifier.IdentifierCreateDto;
+import at.tuwien.api.identifier.IdentifierSaveDto;
 import at.tuwien.exception.QueryNotFoundException;
 import at.tuwien.exception.RemoteUnavailableException;
 import at.tuwien.gateway.QueryServiceGateway;
@@ -25,29 +25,29 @@ public class QueryServiceGatewayImpl implements QueryServiceGateway {
     }
 
     @Override
-    public QueryDto find(Long databaseId, IdentifierCreateDto identifier, String authorization) throws QueryNotFoundException,
+    public QueryDto find(Long databaseId, IdentifierSaveDto identifier, String authorization) throws QueryNotFoundException,
             RemoteUnavailableException {
         final HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", authorization);
         final String url =
-                "/api/database/" + databaseId + "/query/" + identifier.getQid();
+                "/api/database/" + databaseId + "/query/" + identifier.getQueryId();
         final ResponseEntity<QueryDto> response;
         try {
             log.trace("call gateway path {}", url);
             response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(null, headers), QueryDto.class);
         } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable e) {
             log.error("Query service not available for database with id {} for query with id {}, reason {}",
-                    databaseId, identifier.getQid(), e.getMessage());
+                    databaseId, identifier.getQueryId(), e.getMessage());
             throw new RemoteUnavailableException("Query service not available", e);
         }
         if (response.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
             log.error("Query not found for and database with id {} for query with id {}",
-                    databaseId, identifier.getQid());
+                    databaseId, identifier.getQueryId());
             throw new QueryNotFoundException("Query not found");
         }
         if (response.getStatusCode().equals(HttpStatus.UNAUTHORIZED)) {
             log.error("Query not authorized for and database with id {} for query with id {}",
-                    databaseId, identifier.getQid());
+                    databaseId, identifier.getQueryId());
             throw new RemoteUnavailableException("Query not authorized");
         }
         log.debug("found query {}", response.getBody());

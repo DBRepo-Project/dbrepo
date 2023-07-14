@@ -2,6 +2,7 @@ package at.tuwien.service.impl;
 
 import at.tuwien.api.database.table.TableCreateDto;
 import at.tuwien.api.database.table.TableCreateRawQuery;
+import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
@@ -37,7 +38,6 @@ public class TableServiceImpl extends HibernateConnector implements TableService
     private final DatabaseService databaseService;
     private final SemanticService semanticService;
     private final TableRepository tableRepository;
-    private final ContainerService containerService;
     private final TableIdxRepository tableIdxRepository;
     private final TableColumnRepository tableColumnRepository;
     private final TableColumnIdxRepository tableColumnIdxRepository;
@@ -45,15 +45,13 @@ public class TableServiceImpl extends HibernateConnector implements TableService
     @Autowired
     public TableServiceImpl(TableMapper tableMapper, UserService userService, SemanticService semanticService,
                             TableRepository tableRepository, DatabaseService databaseService,
-                            ContainerService containerService, TableIdxRepository tableIdxRepository,
-                            at.tuwien.repository.mdb.TableColumnRepository tableColumnRepository,
+                            TableIdxRepository tableIdxRepository, TableColumnRepository tableColumnRepository,
                             TableColumnIdxRepository tableColumnIdxRepository) {
         this.tableMapper = tableMapper;
         this.userService = userService;
         this.semanticService = semanticService;
         this.tableRepository = tableRepository;
         this.databaseService = databaseService;
-        this.containerService = containerService;
         this.tableIdxRepository = tableIdxRepository;
         this.tableColumnRepository = tableColumnRepository;
         this.tableColumnIdxRepository = tableColumnIdxRepository;
@@ -72,7 +70,7 @@ public class TableServiceImpl extends HibernateConnector implements TableService
     @Transactional
     public void deleteTable(Long databaseId, Long tableId)
             throws TableNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
-            TableMalformedException, QueryMalformedException, ContainerNotFoundException {
+            TableMalformedException, QueryMalformedException {
         /* find */
         final Database database = databaseService.find(databaseId);
         final Table table = findById(databaseId, tableId);
@@ -88,9 +86,11 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         } finally {
             dataSource.close();
         }
+        /* delete in metadata database */
         tableRepository.delete(table);
         log.info("Deleted table with id {} in metadata database", table.getId());
-        tableIdxRepository.delete(table);
+        /* delete in open search database */
+        tableIdxRepository.delete(tableMapper.tableToTableDto(table));
         log.info("Deleted table with id {} in open search database", table.getId());
     }
 
@@ -187,15 +187,18 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         } finally {
             dataSource1.close();
         }
-        /* save in metadata database */
+        /* create in metadata database */
         final Table table = tableRepository.save(entity);
         log.info("Created table with id {} in metadata database", table.getId());
-        /* save in database_index - elastic search */
-        tableIdxRepository.save(table);
+        /* create in open search database */
+        tableIdxRepository.save(tableMapper.tableToTableDto(table));
         log.info("Created table with id {} in open search database", table.getId());
-        /* save in column_index - elastic search */
-        tableColumnIdxRepository.saveAll(table.getColumns());
-        log.info("Saved table columns with table id {} in open search database", table.getId());
+        final List<ColumnDto> columns = table.getColumns()
+                .stream()
+                .map(tableMapper::tableColumnToColumnDto)
+                .toList();
+        tableColumnIdxRepository.saveAll(columns);
+        log.info("Created table columns with table id {} in open search database", table.getId());
         return table;
     }
 
@@ -203,8 +206,8 @@ public class TableServiceImpl extends HibernateConnector implements TableService
     @Transactional
     public TableColumn update(Long databaseId, Long tableId, Long columnId,
                               ColumnSemanticsUpdateDto updateDto, String authorization)
-            throws TableNotFoundException, DatabaseNotFoundException, ContainerNotFoundException,
-            TableMalformedException, SemanticEntityNotFoundException {
+            throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
+            SemanticEntityNotFoundException {
         final Table table = findById(databaseId, tableId);
         final TableColumn column = findColumn(table, columnId);
         /* assign */
@@ -230,14 +233,13 @@ public class TableServiceImpl extends HibernateConnector implements TableService
             column.setConcept(null);
             log.debug("remove ColumnConcept of column, column={}", column);
         }
+        /* update in metadata database */
         final TableColumn out = tableColumnRepository.save(column);
-        log.info("Updated table column with id {} of table with id {}", columnId, tableId);
-        /* save in database_index - elastic search */
+        log.info("Updated table column with id {} of table with id {} in metadata database", columnId, tableId);
+        /* update in open search database */
         table.getColumns().set(table.getColumns().indexOf(column), column);
-        tableIdxRepository.save(table);
-        log.info("Updated table column with id {} of table with id {} in open search database", columnId, tableId);
-        /* save in column_index - elastic search */
-        tableColumnIdxRepository.save(column);
+        tableIdxRepository.save(tableMapper.tableToTableDto(table));
+        tableColumnIdxRepository.save(tableMapper.tableColumnToColumnDto(column));
         log.info("Updated table column with id {} of table with id {} in open search database", columnId, tableId);
         return out;
     }

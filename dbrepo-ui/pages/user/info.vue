@@ -52,8 +52,8 @@
                     <v-text-field
                       v-model="model.orcid"
                       :disabled="!canModifyInformation"
-                      maxlength="19"
-                      hint="e.g. 0000-0002-1825-0097"
+                      maxlength="37"
+                      hint="e.g. https://orcid.org/0000-0002-1825-0097"
                       label="ORCID" />
                   </v-col>
                 </v-row>

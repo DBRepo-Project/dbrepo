@@ -19,6 +19,7 @@
         <div class="db-tags">
           <v-chip v-if="database.is_public" small color="green" outlined>Public</v-chip>
           <v-chip v-if="!database.is_public" small color="red" outlined>Private</v-chip>
+          <v-chip v-if="identifierLanguage(database)" small outlined v-text="identifierLanguage(database)" />
           <v-chip
             v-if="identifierYear(database)"
             small
@@ -29,6 +30,7 @@
             small
             outlined
             v-text="database.identifier.publisher" />
+          <v-chip v-for="(funder,i) in identifierFunders(database)" :key="`f-${i}`" small outlined v-text="funder.funder_name" />
         </div>
         <div v-text="identifierDescription(database)" />
       </v-card-text>
@@ -93,6 +95,18 @@ export default {
         return null
       }
       return database.identifier.description
+    },
+    identifierLanguage (database) {
+      if (!database || !database.identifier || !database.identifier.language) {
+        return null
+      }
+      return database.identifier.language.toUpperCase()
+    },
+    identifierFunders (database) {
+      if (!database || !database.identifier || !database.identifier.funders) {
+        return null
+      }
+      return database.identifier.funders
     },
     loadDatabases () {
       this.createDbDialog = false

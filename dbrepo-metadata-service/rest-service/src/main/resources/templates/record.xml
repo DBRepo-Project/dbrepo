@@ -5,11 +5,16 @@
             <datestamp>[[${datestamp}]]</datestamp>
         </header>
         <metadata>
-            <oai_dc:dc xmlns="http://www.openarchives.org/OAI/2.0/oai_dc/" xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:dc="http://purl.org/dc/elements/1.1/" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
+            <oai_dc:dc
+                    xmlns="http://www.openarchives.org/OAI/2.0/oai_dc/"
+                    xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/"
+                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                    xmlns:dc="http://purl.org/dc/elements/1.1/"
+                    xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
                 <dc:identifier>[[${identifier}]]</dc:identifier>
-                <dc:title>[[${title}]]</dc:title>
+                <dc:title th:each="title: ${titles}" th:xmllang="${title.language}">[[${title.title}]]</dc:title>
                 <dc:publisher>[[${publisher}]]</dc:publisher>
-                <dc:description>[[${description}]]</dc:description>
+                <dc:description th:each="description: ${descriptions}" th:xmllang="${description.language}">[[${description.description}]]</dc:description>
                 <dc:creator th:each="creator: ${creators}">[(${creator.getLastname()})], [(${creator.getFirstname()})]</dc:creator>
             </oai_dc:dc>
         </metadata>

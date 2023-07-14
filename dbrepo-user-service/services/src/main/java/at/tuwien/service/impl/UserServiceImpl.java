@@ -117,15 +117,14 @@ public class UserServiceImpl implements UserService {
         user.setGroups(groups);
         log.info("Created user with id {} in metadata database", user.getId());
         /* save in open search database */
-        userIdxRepository.save(user);
+        userIdxRepository.save(userMapper.userToUserDto(user));
         log.info("Created user with id {} in open search database", user.getId());
         return user;
     }
 
     @Override
     @Transactional
-    public User modify(UUID id, UserUpdateDto data) throws UserNotFoundException,
-            UserAttributeNotFoundException {
+    public User modify(UUID id, UserUpdateDto data) throws UserNotFoundException, UserAttributeNotFoundException {
         /* check */
         final User entity = find(id);
         entity.setFirstname(data.getFirstname());
@@ -136,6 +135,8 @@ public class UserServiceImpl implements UserService {
         /* modify attributes */
         userAttributeService.update(user.getId(), "orcid", data.getOrcid());
         userAttributeService.update(user.getId(), "affiliation", data.getAffiliation());
+        /* save in open search database */
+        userIdxRepository.save(userMapper.userToUserDto(user));
         return user;
     }
 

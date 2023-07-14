@@ -4,7 +4,7 @@ import at.tuwien.BaseUnitTest;
 import at.tuwien.api.identifier.BibliographyTypeDto;
 import at.tuwien.api.identifier.CreatorDto;
 import at.tuwien.api.identifier.IdentifierDto;
-import at.tuwien.api.identifier.IdentifierUpdateDto;
+import at.tuwien.api.identifier.IdentifierSaveDto;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.endpoints.PersistenceEndpoint;
 import at.tuwien.entities.identifier.Identifier;
@@ -99,13 +99,14 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
         final IdentifierDto body = (IdentifierDto) response.getBody();
         assertNotNull(body);
         assertEquals(compare.getId(), body.getId());
-        assertEquals(compare.getTitle(), body.getTitle());
-        assertEquals(compare.getDescription(), body.getDescription());
-        assertEquals(compare.getDatabaseId(), body.getDatabaseId());
+        assertEquals(compare.getTitles().size(), body.getTitles().size());
+        assertEquals(compare.getDescriptions().size(), body.getDescriptions().size());
+        assertEquals(compare.getDescriptions(), body.getDescriptions());
+        assertEquals(compare.getDatabase().getId(), body.getDatabase().getId());
         assertEquals(compare.getCreated(), body.getCreated());
         assertEquals(compare.getLastModified(), body.getLastModified());
         assertEquals(compare.getDoi(), body.getDoi());
-        assertEquals(compare.getLicense(), body.getLicense());
+        assertEquals(compare.getLicenses().size(), body.getLicenses().size());
         assertEquals(compare.getPublicationDay(), body.getPublicationDay());
         assertEquals(compare.getPublicationMonth(), body.getPublicationMonth());
         assertEquals(compare.getPublicationYear(), body.getPublicationYear());
@@ -130,13 +131,23 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
         final IdentifierDto body = (IdentifierDto) response.getBody();
         assertNotNull(body);
         assertEquals(compare.getId(), body.getId());
-        assertEquals(compare.getTitle(), body.getTitle());
-        assertEquals(compare.getDescription(), body.getDescription());
-        assertEquals(compare.getDatabaseId(), body.getDatabaseId());
+        assertEquals(compare.getTitles().size(), body.getTitles().size());
+        assertEquals(compare.getTitles().get(0).getId(), body.getTitles().get(0).getId());
+        assertEquals(compare.getTitles().get(0).getTitle(), body.getTitles().get(0).getTitle());
+        assertEquals(compare.getTitles().get(0).getLanguage(), body.getTitles().get(0).getLanguage());
+        assertEquals(compare.getTitles().get(0).getTitleType(), body.getTitles().get(0).getTitleType());
+        assertEquals(compare.getDescriptions().size(), body.getDescriptions().size());
+        assertEquals(compare.getDescriptions().get(0).getId(), body.getDescriptions().get(0).getId());
+        assertEquals(compare.getDescriptions().get(0).getDescription(), body.getDescriptions().get(0).getDescription());
+        assertEquals(compare.getDescriptions().get(0).getLanguage(), body.getDescriptions().get(0).getLanguage());
+        assertEquals(compare.getDescriptions().get(0).getDescriptionType(), body.getDescriptions().get(0).getDescriptionType());
+        assertEquals(compare.getDatabase().getId(), body.getDatabase().getId());
         assertEquals(compare.getCreated(), body.getCreated());
         assertEquals(compare.getLastModified(), body.getLastModified());
         assertEquals(compare.getDoi(), body.getDoi());
-        assertEquals(compare.getLicense(), body.getLicense());
+        assertEquals(compare.getLicenses().size(), body.getLicenses().size());
+        assertEquals(compare.getLicenses().get(0).getIdentifier(), body.getLicenses().get(0).getIdentifier());
+        assertEquals(compare.getLicenses().get(0).getUri(), body.getLicenses().get(0).getUri());
         assertEquals(compare.getPublicationDay(), body.getPublicationDay());
         assertEquals(compare.getPublicationMonth(), body.getPublicationMonth());
         assertEquals(compare.getPublicationYear(), body.getPublicationYear());
@@ -144,11 +155,15 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
         assertNotNull(compare.getCreators());
         assertNotNull(body.getCreators());
         assertEquals(compare.getCreators().size(), body.getCreators().size());
-        final CreatorDto creator1 = body.getCreators().get(0);
-        assertEquals(compare.getCreators().get(0).getFirstname(), creator1.getFirstname());
-        assertEquals(compare.getCreators().get(0).getLastname(), creator1.getLastname());
-        assertEquals(compare.getCreators().get(0).getAffiliation(), creator1.getAffiliation());
-        assertEquals(compare.getCreators().get(0).getOrcid(), creator1.getOrcid());
+        final CreatorDto creator0 = body.getCreators().get(0);
+        assertEquals(compare.getCreators().get(0).getFirstname(), creator0.getFirstname());
+        assertEquals(compare.getCreators().get(0).getLastname(), creator0.getLastname());
+        assertEquals(compare.getCreators().get(0).getCreatorName(), creator0.getCreatorName());
+        assertEquals(compare.getCreators().get(0).getAffiliation(), creator0.getAffiliation());
+        assertEquals(compare.getCreators().get(0).getAffiliationIdentifier(), creator0.getAffiliationIdentifier());
+        assertEquals(compare.getCreators().get(0).getAffiliationIdentifierScheme(), creator0.getAffiliationIdentifierScheme());
+        assertEquals(compare.getCreators().get(0).getNameIdentifier(), creator0.getNameIdentifier());
+        assertEquals(compare.getCreators().get(0).getNameIdentifierScheme(), creator0.getNameIdentifierScheme());
     }
 
     @Test
@@ -542,8 +557,9 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_3_USERNAME, authorities = {"modify-identifier-metadata"})
-    public void update_hasRoleNoAccess_succeeds() throws UserNotFoundException, IdentifierUpdateBadFormException,
-            NotAllowedException, IdentifierNotFoundException, IdentifierRequestException {
+    public void update_hasRoleNoAccess_succeeds() throws UserNotFoundException, NotAllowedException,
+            IdentifierNotFoundException, IdentifierRequestException, QueryNotFoundException, DatabaseNotFoundException,
+            RemoteUnavailableException {
 
         /* test */
         generic_update(IDENTIFIER_3_ID, IDENTIFIER_3, IDENTIFIER_3_DTO_UPDATE_REQUEST, USER_3_USERNAME, USER_3, USER_3_PRINCIPAL);
@@ -552,7 +568,8 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithMockUser(username = USER_3_USERNAME, authorities = {"modify-identifier-metadata"})
     public void update_hasRoleHasAccess_succeeds() throws IdentifierNotFoundException, IdentifierRequestException,
-            UserNotFoundException, at.tuwien.exception.AccessDeniedException, NotAllowedException, IdentifierUpdateBadFormException {
+            UserNotFoundException, at.tuwien.exception.AccessDeniedException, NotAllowedException,
+            QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException {
 
         /* mock */
         when(accessService.find(IDENTIFIER_3_DATABASE_ID, USER_3_ID))
@@ -560,23 +577,6 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         generic_update(IDENTIFIER_3_ID, IDENTIFIER_3, IDENTIFIER_3_DTO_UPDATE_REQUEST, USER_3_USERNAME, USER_3, USER_3_PRINCIPAL);
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME, authorities = {"modify-identifier-metadata"})
-    public void update_doiChange_fails() throws at.tuwien.exception.AccessDeniedException {
-        final IdentifierUpdateDto request = IdentifierUpdateDto.builder()
-                .doi("10.000/thisisadifferentdoi")
-                .build();
-
-        /* mock */
-        when(accessService.find(IDENTIFIER_1_DATABASE_ID, USER_1_ID))
-                .thenReturn(DATABASE_1_USER_3_READ_ACCESS);
-
-        /* test */
-        assertThrows(IdentifierRequestException.class, () -> {
-            generic_update(IDENTIFIER_1_ID, IDENTIFIER_1_WITH_DOI, request, USER_1_USERNAME, USER_1, USER_1_PRINCIPAL);
-        });
     }
 
     @Test
@@ -615,13 +615,14 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
         return IOUtils.toString(inputStream, StandardCharsets.UTF_8);
     }
 
-    protected void generic_update(Long id, Identifier identifier, IdentifierUpdateDto data, String username, User user,
+    protected void generic_update(Long id, Identifier identifier, IdentifierSaveDto data, String username, User user,
                                   Principal principal) throws IdentifierNotFoundException, IdentifierRequestException,
-            UserNotFoundException, NotAllowedException, IdentifierUpdateBadFormException {
+            UserNotFoundException, NotAllowedException, QueryNotFoundException, DatabaseNotFoundException,
+            RemoteUnavailableException {
 
         /* mock */
         if (identifier != null) {
-            when(identifierService.update(id, data))
+            when(identifierService.update(id, data, principal, "Bearer abc"))
                     .thenReturn(identifier);
             when(identifierService.find(id))
                     .thenReturn(identifier);
@@ -640,13 +641,17 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
         }
 
         /* test */
-        final ResponseEntity<IdentifierDto> response = persistenceEndpoint.update(id, data, principal);
+        final ResponseEntity<IdentifierDto> response = persistenceEndpoint.update(id, data, "Bearer abc", principal);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
         final IdentifierDto body = response.getBody();
         assertNotNull(body);
         assertEquals(IDENTIFIER_3_ID, body.getId());
-        assertEquals(IDENTIFIER_3_TITLE, body.getTitle());
-        assertEquals(IDENTIFIER_3_DESCRIPTION, body.getDescription());
+        assertEquals(1, body.getTitles().size());
+        assertEquals(IDENTIFIER_3_TITLE_1_TITLE, body.getTitles().get(0).getTitle());
+        assertEquals(IDENTIFIER_3_TITLE_1_LANG_DTO, body.getTitles().get(0).getLanguage());
+        assertEquals(1, body.getDescriptions().size());
+        assertEquals(IDENTIFIER_3_DESCRIPTION_1_DESCRIPTION, body.getDescriptions().get(0).getDescription());
+        assertEquals(IDENTIFIER_3_DESCRIPTION_1_LANG_DTO, body.getDescriptions().get(0).getLanguage());
         assertEquals(IDENTIFIER_3_QUERY, body.getQuery());
         assertEquals(IDENTIFIER_3_QUERY_HASH, body.getQueryHash());
         assertEquals(IDENTIFIER_3_RESULT_NUMBER, body.getResultNumber());

@@ -6,15 +6,13 @@
           <v-icon left>mdi-arrow-left</v-icon>
         </v-btn>
       </v-toolbar-title>
-      <v-toolbar-title>
-        <span v-if="query.identifier">{{ query.identifier.title }}</span>
-      </v-toolbar-title>
+      <v-toolbar-title v-if="title" v-text="title" />
       <v-spacer />
       <v-toolbar-title>
         <v-btn v-if="canPersistQuery" :loading="loadingSave" class="mb-1" @click.stop="save">
           <v-icon left>mdi-content-save-outline</v-icon> Save
         </v-btn>
-        <v-btn v-if="query.is_persisted && !query.identifier && canWrite" class="mb-1 ml-2" color="primary" :disabled="!executionUTC" @click.stop="openDialog()">
+        <v-btn v-if="query.is_persisted && !query.identifier && canWrite" class="mb-1 ml-2" color="primary" :disabled="!executionUTC" :to="`/database/${$route.params.database_id}/query/${$route.params.query_id}/persist`">
           <v-icon left>mdi-content-save-outline</v-icon> Get PID
         </v-btn>
         <v-btn v-if="result_visibility && query.result_number" class="mb-1 ml-2" :loading="downloadLoading" @click.stop="downloadSubset">
@@ -25,78 +23,7 @@
         </DownloadButton>
       </v-toolbar-title>
     </v-toolbar>
-    <v-card v-if="query.identifier" flat tile>
-      <v-card-title>Identifier</v-card-title>
-      <v-card-text>
-        <v-list dense>
-          <v-list-item>
-            <v-list-item-icon>
-              <v-icon>mdi-lock-clock</v-icon>
-            </v-list-item-icon>
-            <v-list-item-content>
-              <v-list-item-title>
-                Persistent Identifier
-              </v-list-item-title>
-              <v-list-item-content>
-                <Banner :identifier="query.identifier" />
-              </v-list-item-content>
-              <v-list-item-title class="mt-2">
-                Title
-              </v-list-item-title>
-              <v-list-item-content>
-                {{ query.identifier.title }}
-              </v-list-item-content>
-              <v-list-item-title class="mt-2">
-                Description
-              </v-list-item-title>
-              <v-list-item-content>
-                {{ query.identifier.description }}
-              </v-list-item-content>
-              <v-list-item-title class="mt-2">
-                Publisher
-              </v-list-item-title>
-              <v-list-item-content>
-                {{ query.identifier.publisher }}
-              </v-list-item-content>
-              <v-list-item-title class="mt-2">
-                Publication Date
-              </v-list-item-title>
-              <v-list-item-content>
-                {{ publication }}
-              </v-list-item-content>
-              <v-list-item-title v-if="query.identifier.related.length > 0" class="mt-2">
-                Related Identifiers
-              </v-list-item-title>
-              <v-list-item-content v-if="query.identifier.related.length > 0">
-                <div v-for="(rel, i) in query.identifier.related" :key="`r-${i}`">
-                  <span v-if="rel.type === 'DOI'">
-                    {{ rel.type }}: <a :href="`https://doi.org/${rel.value}`" target="_blank">{{ rel.value }}</a>
-                    <span v-if="rel.relation">({{ rel.relation }})</span>
-                  </span>
-                  <span v-if="rel.type === 'URL'">
-                    {{ rel.type }}: <a :href="`${rel.value}`" target="_blank">{{ rel.value }}</a>
-                    <span v-if="rel.relation">({{ rel.relation }})</span>
-                  </span>
-                  <span v-if="rel.type === 'arXiv'">
-                    {{ rel.type }}: <a :href="`https://arxiv.org/abs/${rel.value}`" target="_blank">{{ rel.value }}</a>
-                    <span v-if="rel.relation">({{ rel.relation }})</span>
-                  </span>
-                  <span v-if="rel.type === 'EISSN'">
-                    {{ rel.type }}: <a :href="`https://portal.issn.org/resource/ISSN/${rel.value}`" target="_blank">{{ rel.value }}</a>
-                    <span v-if="rel.relation">({{ rel.relation }})</span>
-                  </span>
-                  <span v-if="rel.type !== 'DOI' && rel.type !== 'URL' && rel.type !== 'arXiv' && rel.type !== 'EISSN'">
-                    {{ rel.type }}: {{ rel.value }}
-                    <span v-if="rel.relation">({{ rel.relation }})</span>
-                  </span>
-                </div>
-              </v-list-item-content>
-              <Citation :pid="pid" />
-            </v-list-item-content>
-          </v-list-item>
-        </v-list>
-      </v-card-text>
-    </v-card>
+    <Summary v-if="showIdentifierCard" :identifier="identifier" />
     <v-divider v-if="query && query.identifier" />
     <v-card flat tile>
       <v-card-title>
@@ -136,7 +63,7 @@
                 <v-skeleton-loader v-if="!database" type="text" class="skeleton-small" />
                 <span v-if="database">{{ database.name }}</span>
               </v-list-item-content>
-              <div v-if="database && database.identifier">
+              <div v-if="database && database.identifier && database.identifier.license">
                 <v-list-item-title class="mt-2">
                   Database License
                 </v-list-item-title>
@@ -216,18 +143,10 @@
       type="query"
       class="mt-0 mb-0" />
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
-    <v-dialog
-      v-model="persistQueryDialog"
-      persistent
-      max-width="860">
-      <Persist @close="closeDialog" />
-    </v-dialog>
   </div>
 </template>
 <script>
-import Persist from '@/components/dialogs/Persist.vue'
-import Citation from '@/components/identifier/Citation.vue'
-import Banner from '@/components/identifier/Banner.vue'
+import Summary from '@/components/identifier/Summary.vue'
 import DownloadButton from '@/components/identifier/DownloadButton.vue'
 import { formatTimestampUTCLabel, formatDateUTC } from '@/utils'
 import QueryService from '@/api/query.service'
@@ -236,10 +155,8 @@ import UserUtils from '@/api/user.utils'
 export default {
   name: 'QueryShow',
   components: {
-    Persist,
-    Citation,
-    Banner,
-    DownloadButton
+    DownloadButton,
+    Summary
   },
   data () {
     return {
@@ -282,6 +199,15 @@ export default {
     baseUrl () {
       return location.protocol + '//' + location.host
     },
+    showIdentifierCard () {
+      if (this.hasIdentifier) {
+        return true
+      }
+      if (!this.user) {
+        return false
+      }
+      return this.canCreateIdentifier || this.hasIdentifier
+    },
     loadingColor () {
       return this.error ? 'error' : 'primary'
     },
@@ -303,14 +229,39 @@ export default {
     user () {
       return this.$store.state.user
     },
+    identifier () {
+      if (!this.query) {
+        return null
+      }
+      return this.query.identifier
+    },
+    hasIdentifier () {
+      return this.query.identifier !== null
+    },
     title () {
-      return null
+      if (!this.hasIdentifier) {
+        return null
+      }
+      const enTitle = this.query.identifier.titles.filter(t => t.language).filter(t => t.language === 'en')
+      if (enTitle.length !== 1) {
+        return this.query.identifier.titles[0].title
+      }
+      return enTitle[0].title
     },
     result_hash () {
       if (!this.query.result_hash) {
         return '(none)'
       }
       return this.query.result_hash
+    },
+    canCreateIdentifier () {
+      if (!this.roles || this.hasIdentifier) {
+        return false
+      }
+      if (this.roles.includes('create-foreign-identifier')) {
+        return true
+      }
+      return this.roles.includes('create-identifier') && this.isOwner
     },
     canPersistQuery () {
       if (this.loadingQuery || !this.query || this.query.is_persisted) {
@@ -323,6 +274,12 @@ export default {
         return 'NA'
       }
       return this.database.publisher
+    },
+    isOwner () {
+      if (!this.query || !this.user) {
+        return false
+      }
+      return this.query.creator.username === this.user.username
     },
     backTo () {
       return `/database/${this.$route.params.database_id}/query`

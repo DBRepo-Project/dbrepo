@@ -1,5 +1,5 @@
 <template>
-  <div v-if="pid">
+  <div v-if="identifier">
     <v-list-item-title class="mt-2">
       Citation
     </v-list-item-title>
@@ -39,10 +39,10 @@ import IdentifierService from '@/api/identifier.service'
 
 export default {
   props: {
-    pid: {
-      type: Number,
+    identifier: {
+      type: Object,
       default () {
-        return null
+        return {}
       }
     }
   },
@@ -72,11 +72,11 @@ export default {
   },
   methods: {
     loadCitation (accept) {
-      if (!this.pid || !accept) {
+      if (!this.identifier || !accept) {
         return
       }
       this.loading = true
-      IdentifierService.findAccept(this.pid, accept)
+      IdentifierService.findAccept(this.identifier.id, accept)
         .then((citation) => {
           this.citation = citation
         })

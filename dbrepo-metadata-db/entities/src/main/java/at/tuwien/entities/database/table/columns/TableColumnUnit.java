@@ -3,11 +3,9 @@ package at.tuwien.entities.database.table.columns;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.elasticsearch.annotations.Document;
-import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import jakarta.persistence.*;;
+import jakarta.persistence.*;
 import java.time.Instant;
 import java.util.List;
 
@@ -23,9 +21,8 @@ import java.util.List;
         @UniqueConstraint(columnNames = {"uri"})
 })
 @NamedQueries({
-        @NamedQuery(name = "TableColumnUnit.findById", query = "select u from TableColumnUnit u where u.uri = ?1")
+        @NamedQuery(name = "TableColumnUnit.findByUri", query = "select u from TableColumnUnit u where u.uri = ?1")
 })
-@Document(indexName = "unit")
 public class TableColumnUnit {
 
     @Id
@@ -58,6 +55,6 @@ public class TableColumnUnit {
                     @JoinColumn(name = "tid", referencedColumnName = "tid", insertable = false, updatable = false),
                     @JoinColumn(name = "cdbid", referencedColumnName = "cdbid", insertable = false, updatable = false)
             },
-            joinColumns = @JoinColumn(name = "uri", referencedColumnName = "uri"))
+            joinColumns = @JoinColumn(name = "id", referencedColumnName = "id"))
     private List<TableColumn> columns;
 }

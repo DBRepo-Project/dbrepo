@@ -1,10 +1,12 @@
 package at.tuwien.api.identifier;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.extern.jackson.Jacksonized;
+import org.springframework.data.elasticsearch.annotations.Field;
 
 @Getter
 @Setter
@@ -15,13 +17,21 @@ import lombok.extern.jackson.Jacksonized;
 @ToString
 public class CreatorBriefDto {
 
-    @NotBlank
-    @Schema(example = "Josiah")
-    private String firstname;
+    @JsonProperty("name_identifier")
+    @Field(name = "name_identifier")
+    @Schema(example = "https://orcid.org/0000-0002-1825-0097")
+    private String nameIdentifier;
+
+    @JsonProperty("name_type")
+    @Field(name = "name_type")
+    @Schema(example = "Personal")
+    private NameTypeDto nameType;
 
     @NotBlank
-    @Schema(example = "Carberry")
-    private String lastname;
+    @JsonProperty("creator_name")
+    @Field(name = "creator_name")
+    @Schema(example = "Carberry, Josiah")
+    private String creatorName;
 
     @Schema(example = "Wesleyan University")
     private String affiliation;

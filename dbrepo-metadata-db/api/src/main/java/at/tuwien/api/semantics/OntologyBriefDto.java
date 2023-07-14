@@ -1,5 +1,6 @@
 package at.tuwien.api.semantics;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -19,11 +20,15 @@ public class OntologyBriefDto {
     private Long id;
 
     @NotBlank
-    @Schema(example = "Ontology URI")
+    @Schema(example = "http://www.wikidata.org/")
     private String uri;
 
+    @JsonProperty("uri_pattern")
+    @Schema(example = "http://www.wikidata.org/entity/.*")
+    private String uriPattern;
+
     @NotBlank
-    @Schema(example = "Ontology prefix")
+    @Schema(example = "wd")
     private String prefix;
 
     @NotNull
@@ -31,7 +36,7 @@ public class OntologyBriefDto {
     private Boolean sparql;
 
     @NotNull
-    @Schema(example = "true")
+    @Schema(example = "false")
     private Boolean rdf;
 
 }

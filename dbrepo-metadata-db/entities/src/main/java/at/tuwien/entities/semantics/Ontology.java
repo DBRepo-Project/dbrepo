@@ -32,6 +32,9 @@ public class Ontology {
     @Column(nullable = false, unique = true)
     private String uri;
 
+    @Column
+    private String uriPattern;
+
     @Column(nullable = false, unique = true, columnDefinition = "VARCHAR(8)")
     private String prefix;
 

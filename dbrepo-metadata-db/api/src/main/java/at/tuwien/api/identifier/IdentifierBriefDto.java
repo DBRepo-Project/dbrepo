@@ -4,10 +4,10 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
+import org.springframework.data.elasticsearch.annotations.Field;
 
 import java.time.Instant;
 import java.util.List;
@@ -24,21 +24,20 @@ public class IdentifierBriefDto {
     @NotNull
     private Long id;
 
-    @NotNull
     @JsonProperty("database_id")
-    @Schema(name = "database id", example = "1")
+    @Field(name = "database_id")
+    @Schema(example = "1")
     private Long databaseId;
 
     @JsonProperty("query_id")
-    @Schema(name = "query id", example = "1")
+    @Field(name = "query_id")
+    @Schema(example = "1")
     private Long queryId;
-
-    @NotBlank
-    @Schema(example = "Airquality Stephansplatz, Vienna, Austria")
-    private String title;
 
     @NotNull
     private IdentifierTypeDto type;
+
+    private List<IdentifierTitleDto> titles;
 
     @Schema(example = "10.1038/nphys1170")
     private String doi;
@@ -48,6 +47,7 @@ public class IdentifierBriefDto {
 
     @NotNull
     @JsonProperty("publication_year")
+    @Field(name = "publication_year")
     @Schema(example = "2022")
     private Integer publicationYear;
 
@@ -59,6 +59,7 @@ public class IdentifierBriefDto {
     private Instant created;
 
     @JsonIgnore
+    @org.springframework.data.annotation.Transient
     @JsonProperty("last_modified")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant lastModified;

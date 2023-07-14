@@ -54,10 +54,12 @@ public class SemanticServiceImpl implements SemanticService {
     @Transactional
     public TableColumnConcept saveConcept(ConceptSaveDto data) {
         final TableColumnConcept entity = ontologyMapper.conceptSaveDtoToTableColumnConcept(data);
+        /* save in metadata database */
         final TableColumnConcept concept = tableColumnConceptRepository.save(entity);
-        log.info("Saved concept with uri {} in metadata database", concept.getUri());
-        conceptIdxRepository.save(concept);
-        log.info("Saved concept with uri {} in search database", concept.getUri());
+        log.info("Saved concept with id {} in metadata database", concept.getId());
+        /* save in open search database */
+        conceptIdxRepository.save(ontologyMapper.tableColumnConceptToConceptDto(concept));
+        log.info("Saved concept with id {} in open search database", concept.getId());
         return concept;
     }
 
@@ -65,10 +67,12 @@ public class SemanticServiceImpl implements SemanticService {
     @Transactional
     public TableColumnUnit saveUnit(UnitSaveDto data) {
         final TableColumnUnit entity = ontologyMapper.unitSaveDtoToTableColumnUnit(data);
+        /* save in metadata database */
         final TableColumnUnit unit = tableColumnUnitRepository.save(entity);
-        log.info("Saved unit with uri {} in metadata database", unit.getUri());
-        unitIdxRepository.save(unit);
-        log.info("Saved unit with uri {} in search database", unit.getUri());
+        log.info("Saved unit with id {} in metadata database", unit.getId());
+        /* save in open search database */
+        unitIdxRepository.save(ontologyMapper.tableColumnUnitToUnitDto(unit));
+        log.info("Saved unit with id {} in open search database", unit.getId());
         return unit;
     }
 

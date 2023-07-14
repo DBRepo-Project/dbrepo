@@ -10,7 +10,6 @@ import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -20,15 +19,18 @@ import java.util.List;
 
 @Data
 @Entity
-@Builder
+@Builder(toBuilder = true)
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-@jakarta.persistence.Table(name = "mdb_identifiers", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"qid", "dbid"})
+@jakarta.persistence.Table(name = "mdb_identifiers")
+@NamedQueries({
+        @NamedQuery(name = "Identifier.findAllDatabaseIdentifiers", query = "select i from Identifier i where i.type = 'DATABASE'"),
+        @NamedQuery(name = "Identifier.findAllSubsetIdentifiers", query = "select i from Identifier i where i.type = 'SUBSET'"),
+        @NamedQuery(name = "Identifier.findDatabaseIdentifier", query = "select i from Identifier i where i.databaseId = ?1 and i.type = 'DATABASE'"),
+        @NamedQuery(name = "Identifier.findSubsetIdentifier", query = "select i from Identifier i where i.databaseId = ?1 and i.queryId = ?2 and i.type = 'SUBSET'"),
 })
-@Document(indexName = "identifier")
 public class Identifier implements Serializable {
 
     @Id
@@ -38,37 +40,45 @@ public class Identifier implements Serializable {
     @Column(updatable = false, nullable = false)
     private Long id;
 
+    @Field(name = "database_id")
     @Column(name = "dbid", nullable = false)
     private Long databaseId;
 
+    @Field(name = "query_id")
     @Column(name = "qid")
     private Long queryId;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
-    @JoinColumns({
-            @JoinColumn(name = "created_by", referencedColumnName = "ID", nullable = false, columnDefinition = "VARCHAR(36)", updatable = false)
-    })
-    private User creator;
-
-    @Column(nullable = false)
-    private String title;
-
-    @Column(columnDefinition = "TEXT")
-    private String description;
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "identifier")
+    @OrderBy("id")
+    private List<Creator> creators;
 
     @NotBlank
     @Column(nullable = false)
     private String publisher;
 
-    @Column(columnDefinition = "enum('AB','AA','AF','AK','SQ','AM','AR','AN','HY','AS','AV','AE','AY','AZ','BM','BA','EU','BE','BN','BH','BI','BS','BR','BG','MY','CA','KM','CH','CE','NY','ZH','CU','CV','KW','CO','CR','HR','CS','DA','DV','NL','DZ','EN','EO','ET','EE','FO','FJ','FI','FR','FF','GD','GL','LG','KA','DE','KI','EL','KL','GN','GU','HT','HA','HE','HZ','HI','HO','HU','IS','IO','IG','ID','IA','IE','IU','IK','GA','IT','JA','JV','KN','KR','KS','KK','RW','KV','KG','KO','KJ','KU','KY','LO','LA','LV','LB','LI','LN','LT','LU','MK','MG','MS','ML','MT','GV','MI','MR','MH','RO','MN','NA','NV','ND','NG','NE','SE','NO','NB','NN','II','OC','OJ','OR','OM','OS','PI','PA','PS','FA','PL','PT','QU','RM','RN','RU','SM','SG','SA','SC','SR','SN','SD','SI','SK','SL','SO','ST','NR','ES','SU','SW','SS','SV','TL','TY','TG','TA','TT','TE','TH','BO','TI','TO','TS','TN','TR','TK','TW','UG','UK','UR','UZ','VE','VI','VO','WA','CY','FY','WO','XH','YI','YO','ZA','ZU')")
+    @Column(columnDefinition = "ENUM('ab','aa','af','ak','sq','am','ar','an','hy','as','av','ae','ay','az','bm','ba','eu','be','bn','bh','bi','bs','br','bg','my','ca','km','ch','ce','ny','zh','cu','cv','kw','co','cr','hr','cs','da','dv','nl','dz','en','eo','et','ee','fo','fj','fi','fr','ff','gd','gl','lg','ka','de','ki','el','kl','gn','gu','ht','ha','he','hz','hi','ho','hu','is','io','ig','id','ia','ie','iu','ik','ga','it','ja','jv','kn','kr','ks','kk','rw','kv','kg','ko','kj','ku','ky','lo','la','lv','lb','li','ln','lt','lu','mk','mg','ms','ml','mt','gv','mi','mr','mh','ro','mn','na','nv','nd','ng','ne','se','no','nb','nn','ii','oc','oj','or','om','os','pi','pa','ps','fa','pl','pt','qu','rm','rn','ru','sm','sg','sa','sc','sr','sn','sd','si','sk','sl','so','st','nr','es','su','sw','ss','sv','tl','ty','tg','ta','tt','te','th','bo','ti','to','ts','tn','tr','tk','tw','ug','uk','ur','uz','ve','vi','vo','wa','cy','fy','wo','xh','yi','yo','za','zu')")
     @Enumerated(EnumType.STRING)
     private LanguageType language;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
-    @JoinColumns({
-            @JoinColumn(name = "License", referencedColumnName = "identifier")
-    })
-    private License license;
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "identifier")
+    @OrderBy("id")
+    private List<IdentifierTitle> titles;
+
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "identifier")
+    @OrderBy("id")
+    private List<IdentifierDescription> descriptions;
+
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "identifier")
+    @OrderBy("id")
+    private List<IdentifierFunder> funders;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "mdb_identifier_licenses",
+            joinColumns = @JoinColumn(name = "pid", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "license_id", referencedColumnName = "identifier")
+    )
+    private List<License> licenses;
 
     @Column(name = "identifier_type", nullable = false, columnDefinition = "enum('SUBSET', 'DATABASE')")
     @Enumerated(EnumType.STRING)
@@ -112,23 +122,27 @@ public class Identifier implements Serializable {
     @Enumerated(EnumType.STRING)
     private VisibilityType visibility;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ToString.Exclude
+    @org.springframework.data.annotation.Transient
+    @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumns({
             @JoinColumn(name = "dbid", referencedColumnName = "id", insertable = false, updatable = false)
     })
     private Database database;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumns({
-            @JoinColumn(name = "iid", referencedColumnName = "id", insertable = false, updatable = false)
-    })
-    private List<RelatedIdentifier> related;
+    @Field(name = "related_identifiers")
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "identifier")
+    @OrderBy("id")
+    private List<RelatedIdentifier> relatedIdentifiers;
 
     @Column
     private String doi;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "identifier")
-    private List<Creator> creators;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumns({
+            @JoinColumn(name = "createdBy", nullable = false, columnDefinition = "VARCHAR(36)", updatable = false)
+    })
+    private User creator;
 
     @CreatedDate
     @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP")
@@ -142,8 +156,6 @@ public class Identifier implements Serializable {
     @PreRemove
     private void preRemove() {
         this.creator = null;
-        this.related.forEach(r -> r.setCreator(null));
-        this.creators.forEach(c -> c.setCreator(null));
     }
 
 }

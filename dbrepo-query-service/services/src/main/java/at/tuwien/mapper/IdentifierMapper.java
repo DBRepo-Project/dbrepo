@@ -11,7 +11,7 @@ import org.mapstruct.Mapper;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {DatabaseMapper.class})
 public interface IdentifierMapper {
 
     Identifier identifierDtoToIdentifier(IdentifierDto data);

@@ -1,12 +1,14 @@
 package at.tuwien.endpoint;
 
 import at.tuwien.BaseUnitTest;
+import at.tuwien.repository.sdb.DatabaseIdxRepository;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -19,6 +21,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @SpringBootTest
 public class SwaggerComponentTest extends BaseUnitTest {
+
+    @MockBean
+    private DatabaseIdxRepository databaseIdxRepository;
 
     @Autowired
     private MockMvc mockMvc;

@@ -7,6 +7,7 @@ import at.tuwien.service.DatabaseService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -22,6 +23,7 @@ public class DatabaseServiceImpl implements DatabaseService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Database find(Long databaseId) throws DatabaseNotFoundException {
         final Optional<Database> database = databaseRepository.findById(databaseId);
         if (database.isEmpty()) {

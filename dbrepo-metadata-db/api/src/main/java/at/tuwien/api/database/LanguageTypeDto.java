@@ -2,7 +2,6 @@ package at.tuwien.api.database;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
-import lombok.ToString;
 
 @Getter
 public enum LanguageTypeDto {
@@ -559,14 +558,14 @@ public enum LanguageTypeDto {
     @JsonProperty("zu")
     ZU("zu");
 
-    private String name;
+    private String value;
 
-    LanguageTypeDto(String name) {
-        this.name = name;
+    LanguageTypeDto(String value) {
+        this.value = value;
     }
 
     @Override
     public String toString() {
-        return this.name;
+        return this.value;
     }
 }

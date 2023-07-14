@@ -8,7 +8,6 @@ import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -27,7 +26,6 @@ import java.util.List;
 @jakarta.persistence.Table(name = "mdb_columns", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"tid", "internalName"})
 })
-@Document(indexName = "column")
 public class TableColumn implements Comparable<TableColumn> {
 
     @Id
@@ -135,7 +133,7 @@ public class TableColumn implements Comparable<TableColumn> {
                     @JoinColumn(name = "tid", referencedColumnName = "tid", insertable = false, updatable = false),
                     @JoinColumn(name = "cdbid", referencedColumnName = "cdbid", insertable = false, updatable = false)
             },
-            inverseJoinColumns = @JoinColumn(name = "uri", referencedColumnName = "uri"))
+            inverseJoinColumns = @JoinColumn(name = "id", referencedColumnName = "id"))
     private TableColumnConcept concept;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
@@ -145,7 +143,7 @@ public class TableColumn implements Comparable<TableColumn> {
                     @JoinColumn(name = "tid", referencedColumnName = "tid", insertable = false, updatable = false),
                     @JoinColumn(name = "cdbid", referencedColumnName = "cdbid", insertable = false, updatable = false)
             },
-            inverseJoinColumns = @JoinColumn(name = "uri", referencedColumnName = "uri"))
+            inverseJoinColumns = @JoinColumn(name = "id", referencedColumnName = "id"))
     private TableColumnUnit unit;
 
     @LastModifiedDate

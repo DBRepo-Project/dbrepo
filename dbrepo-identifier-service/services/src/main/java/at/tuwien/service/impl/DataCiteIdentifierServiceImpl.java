@@ -5,8 +5,7 @@ import at.tuwien.api.datacite.DataCiteData;
 import at.tuwien.api.datacite.doi.DataCiteCreateDoi;
 import at.tuwien.api.datacite.doi.DataCiteDoi;
 import at.tuwien.api.identifier.BibliographyTypeDto;
-import at.tuwien.api.identifier.IdentifierCreateDto;
-import at.tuwien.api.identifier.IdentifierUpdateDto;
+import at.tuwien.api.identifier.IdentifierSaveDto;
 import at.tuwien.config.DataCiteConfig;
 import at.tuwien.config.EndpointConfig;
 import at.tuwien.entities.identifier.Identifier;
@@ -49,9 +48,9 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
                                          IdentifierRepository identifierRepository, IdentifierServiceImpl identifierService) {
         this.dataCiteConfig = dataCiteConfig;
         this.dataCiteMapper = dataCiteMapper;
-        this.restTemplateBuilder =
-                restTemplateBuilder.basicAuthentication(dataCiteConfig.getUsername(), dataCiteConfig.getPassword())
-                        .uriTemplateHandler(new DefaultUriBuilderFactory(dataCiteConfig.getUrl()));
+        this.restTemplateBuilder = restTemplateBuilder.basicAuthentication(dataCiteConfig.getUsername(),
+                        dataCiteConfig.getPassword())
+                .uriTemplateHandler(new DefaultUriBuilderFactory(dataCiteConfig.getUrl()));
         this.endpointConfig = endpointConfig;
         this.identifierRepository = identifierRepository;
         this.identifierService = identifierService;
@@ -59,14 +58,14 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Identifier> findAll(Long databaseId, Long queryId) throws IdentifierNotFoundException {
+    public List<Identifier> findAll(Long databaseId, Long queryId) {
         return identifierService.findAll(databaseId, queryId);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Identifier find(Long databaseId, Long queryId) throws IdentifierNotFoundException {
-        return identifierService.find(databaseId, queryId);
+    public List<Identifier> findByDatabaseIdAndQueryId(Long databaseId, Long queryId) {
+        return identifierService.findByDatabaseIdAndQueryId(databaseId, queryId);
     }
 
     @Override
@@ -77,7 +76,7 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional(rollbackFor = {Exception.class})
-    public Identifier create(IdentifierCreateDto data, Principal principal, String authorization)
+    public Identifier create(IdentifierSaveDto data, Principal principal, String authorization)
             throws IdentifierPublishingNotAllowedException, QueryNotFoundException, RemoteUnavailableException,
             IdentifierAlreadyExistsException, UserNotFoundException, DatabaseNotFoundException,
             IdentifierRequestException {
@@ -153,9 +152,10 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional(rollbackFor = {Exception.class})
-    public Identifier update(Long identifierId, IdentifierUpdateDto data)
-            throws IdentifierNotFoundException, IdentifierRequestException {
-        Identifier identifier = identifierService.update(identifierId, data);
+    public Identifier update(Long identifierId, IdentifierSaveDto data, Principal principal, String authorization)
+            throws UserNotFoundException, QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException,
+            IdentifierRequestException, IdentifierNotFoundException {
+        Identifier identifier = identifierService.update(identifierId, data, principal, authorization);
         if (identifier.getDoi() == null) {
             return identifier;
         }

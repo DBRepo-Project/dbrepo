@@ -1,5 +1,6 @@
 package at.tuwien.api.datacite.doi;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import jakarta.validation.constraints.NotBlank;
@@ -24,7 +25,10 @@ public class DataCiteDoiCreator implements Serializable {
 
     private String familyName;
 
+    @NotNull
+    private DataCiteNameType nameType;
+
     private List<DataCiteDoiCreatorAffiliation> affiliation;
 
-    private List<DataCiteDoiCreatorNameIdentifier> nameIdentifiers;
+    private List<DataCiteDoiCreatorNameIdentifier> nameIdentifier;
 }

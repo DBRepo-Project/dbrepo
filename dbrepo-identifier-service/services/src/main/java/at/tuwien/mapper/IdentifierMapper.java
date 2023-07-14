@@ -1,53 +1,85 @@
 package at.tuwien.mapper;
 
 import at.tuwien.api.identifier.*;
-import at.tuwien.entities.identifier.Creator;
-import at.tuwien.entities.identifier.Identifier;
-import at.tuwien.entities.identifier.IdentifierType;
-import at.tuwien.entities.identifier.RelatedIdentifier;
+import at.tuwien.entities.identifier.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
+import org.mapstruct.Named;
 
 @Mapper(componentModel = "spring")
 public interface IdentifierMapper {
 
+    @Mappings({
+            @Mapping(target = "database.identifier", ignore = true),
+    })
     IdentifierDto identifierToIdentifierDto(Identifier data);
 
     @Mappings({
-            @Mapping(target = "databaseId", source = "dbid"),
-            @Mapping(target = "queryId", source = "qid"),
+            @Mapping(target = "titles", ignore = true),
+            @Mapping(target = "descriptions", ignore = true),
     })
-    Identifier identifierCreateDtoToIdentifier(IdentifierCreateDto data);
+    Identifier identifierCreateDtoToIdentifier(IdentifierSaveDto data);
 
-    @Mappings({
-            @Mapping(target = "databaseId", source = "dbid"),
-            @Mapping(target = "queryId", source = "qid"),
-    })
-    Identifier identifierUpdateDtoToIdentifier(IdentifierUpdateDto data);
+    Identifier identifierUpdateDtoToIdentifier(IdentifierSaveDto data);
 
-    /* keep */
+    IdentifierTitle identifierCreateTitleDtoToIdentifierTitle(IdentifierSaveTitleDto data);
+
+    IdentifierDescription identifierCreateDescriptionDtoToIdentifierDescription(IdentifierSaveDescriptionDto data);
+
+    IdentifierFunder identifierFunderSaveDtoToIdentifierFunder(IdentifierFunderSaveDto data);
+
+    IdentifierSaveDto identifierUpdateDtoToIdentifierCreateDto(IdentifierSaveDto data);
+
     RelatedIdentifierDto relatedIdentifierToRelatedIdentifierDto(RelatedIdentifier data);
 
     Identifier identifierDtoToIdentifier(IdentifierDto data);
 
-    /* keep */
     Creator creatorDtoToCreator(CreatorDto data);
 
-    Creator creatorCreateDtoToCreator(CreatorCreateDto data);
+    @Mappings({
+            @Mapping(target = "nameIdentifierSchemeUri", source = "nameIdentifierScheme", qualifiedByName = "nameSchemaMapper"),
+            @Mapping(target = "affiliationIdentifierSchemeUri", source = "affiliationIdentifierScheme", qualifiedByName = "affiliationSchemaMapper"),
+    })
+    Creator creatorCreateDtoToCreator(CreatorSaveDto data);
 
-    RelatedIdentifier relatedIdentifierCreateDtoToRelatedIdentifier(RelatedIdentifierCreateDto data);
+    RelatedIdentifier relatedIdentifierCreateDtoToRelatedIdentifier(RelatedIdentifierSaveDto data);
 
     IdentifierType identifierTypeDtoToIdentifierType(IdentifierTypeDto data);
 
     default String identifierToLocationUrl(String baseUrl, Identifier data) {
         if (data.getType().equals(IdentifierType.SUBSET)) {
-            return baseUrl + "/database/" + data.getDatabaseId() + "/query/" + data.getQueryId();
+            return baseUrl + "/database/" + data.getDatabase().getId() + "/query/" + data.getQueryId();
         } else if (data.getType().equals(IdentifierType.DATABASE)) {
-            return baseUrl + "/database/" + data.getDatabaseId();
+            return baseUrl + "/database/" + data.getDatabase().getId();
         } else {
             return null;
         }
+    }
+
+    @Named("nameSchemaMapper")
+    default String nameIdentifierSchemeToNameIdentifierSchemeUri(NameIdentifierSchemeTypeDto data) {
+        if (data == null) {
+            return null;
+        }
+        return switch (data) {
+            case ROR -> "https://ror.org/";
+            case ORCID -> "https://orcid.org/";
+            case GRID -> "https://grid.ac/";
+            case ISNI -> "https://grid.ac/institutes/";
+        };
+    }
+
+    @Named("affiliationSchemaMapper")
+    default String affiliationIdentifierSchemeTypeToAffiliationIdentifier(AffiliationIdentifierSchemeTypeDto data) {
+        if (data == null) {
+            return null;
+        }
+        return switch (data) {
+            case ROR -> "https://ror.org/";
+            case GRID -> "https://grid.ac/institutes/";
+            case ISNI -> "https://isni.org/";
+        };
     }
 
 }

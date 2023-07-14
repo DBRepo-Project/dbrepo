@@ -9,6 +9,12 @@ import java.util.Optional;
 @Repository
 public interface ConceptRepository extends JpaRepository<TableColumnConcept, Long> {
 
+    /**
+     * Retrieve a column concept by URI.
+     *
+     * @param uri The URI.
+     * @return Optional table column concept.
+     */
     Optional<TableColumnConcept> findByUri(String uri);
 
 }

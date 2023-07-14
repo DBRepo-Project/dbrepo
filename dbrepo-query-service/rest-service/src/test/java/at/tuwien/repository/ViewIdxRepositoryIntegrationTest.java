@@ -2,6 +2,7 @@ package at.tuwien.repository;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.ViewCreateDto;
+import at.tuwien.api.database.ViewDto;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.entities.database.View;
 import at.tuwien.exception.*;
@@ -85,7 +86,9 @@ public class ViewIdxRepositoryIntegrationTest extends BaseUnitTest {
 
     @DynamicPropertySource
     static void elasticsearchProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.opensearch.uris", () -> opensearchContainer.getHttpHostAddress().substring(7));
+        final int idx = opensearchContainer.getHttpHostAddress().lastIndexOf(':');
+        registry.add("spring.opensearch.host", () -> "127.0.0.1");
+        registry.add("spring.opensearch.port", () -> opensearchContainer.getHttpHostAddress().substring(idx + 1));
         registry.add("spring.opensearch.username", opensearchContainer::getUsername);
         registry.add("spring.opensearch.password", opensearchContainer::getPassword);
     }
@@ -117,9 +120,9 @@ public class ViewIdxRepositoryIntegrationTest extends BaseUnitTest {
 
         /* test */
         viewService.create(DATABASE_1_ID, request, USER_1_PRINCIPAL);
-        final Optional<View> response = viewIdxRepository.findById(VIEW_1_ID);
+        final Optional<ViewDto> response = viewIdxRepository.findById(VIEW_1_ID);
         assertTrue(response.isPresent());
-        final View view = response.get();
+        final ViewDto view = response.get();
         assertEquals(VIEW_1_ID, view.getId());
         assertEquals(VIEW_1_NAME, view.getName());
         assertEquals(VIEW_1_INTERNAL_NAME, view.getInternalName());

@@ -24,11 +24,15 @@ public class OntologyDto {
     private Long id;
 
     @NotBlank
-    @Schema(example = "Ontology URI")
+    @Schema(example = "http://www.wikidata.org/")
     private String uri;
 
+    @JsonProperty("uri_pattern")
+    @Schema(example = "http://www.wikidata.org/entity/.*")
+    private String uriPattern;
+
     @NotBlank
-    @Schema(example = "Ontology prefix")
+    @Schema(example = "wd")
     private String prefix;
 
     @NotNull
@@ -36,11 +40,11 @@ public class OntologyDto {
     private Boolean sparql;
 
     @NotNull
-    @Schema(example = "true")
+    @Schema(example = "false")
     private Boolean rdf;
 
     @JsonProperty("sparql_endpoint")
-    @Schema(example = "Ontology SPARQL endpoint")
+    @Schema(example = "https://query.wikidata.org/sparql")
     private String sparqlEndpoint;
 
     private UserBriefDto creator;

@@ -226,7 +226,7 @@ public class EndpointValidatorUnitTest extends BaseUnitTest {
         /* mock */
         when(databaseService.find(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
-        when(identifierRepository.findByDatabaseIdAndQueryId(DATABASE_1_ID, QUERY_1_ID))
+        when(identifierRepository.findSubsetIdentifier(DATABASE_1_ID, QUERY_1_ID))
                 .thenReturn(Optional.of(IDENTIFIER_1));
 
         /* test */
@@ -243,7 +243,7 @@ public class EndpointValidatorUnitTest extends BaseUnitTest {
         /* mock */
         when(databaseService.find(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
-        when(identifierRepository.findByDatabaseIdAndQueryId(DATABASE_1_ID, QUERY_1_ID))
+        when(identifierRepository.findSubsetIdentifier(DATABASE_1_ID, QUERY_1_ID))
                 .thenReturn(Optional.of(identifier));
 
         /* test */
@@ -263,7 +263,7 @@ public class EndpointValidatorUnitTest extends BaseUnitTest {
         /* mock */
         when(databaseService.find(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
-        when(identifierRepository.findByDatabaseIdAndQueryId(DATABASE_1_ID, QUERY_1_ID))
+        when(identifierRepository.findSubsetIdentifier(DATABASE_1_ID, QUERY_1_ID))
                 .thenReturn(Optional.of(identifier));
 
         /* test */

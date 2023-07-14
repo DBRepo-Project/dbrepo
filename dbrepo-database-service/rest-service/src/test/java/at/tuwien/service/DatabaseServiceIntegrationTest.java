@@ -2,6 +2,7 @@ package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.DatabaseCreateDto;
+import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.DatabaseModifyVisibilityDto;
 import at.tuwien.api.database.DatabaseTransferDto;
 import at.tuwien.config.IndexConfig;
@@ -91,10 +92,10 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
 
         /* mock */
         MariaDbConfig.dropDatabase(CONTAINER_1, DATABASE_1_INTERNALNAME);
-        when(databaseIdxRepository.save(any(Database.class)))
-                .thenReturn(DATABASE_1);
-        when(databaseIdxRepository.save(any(Database.class)))
-                .thenReturn(DATABASE_1);
+        when(databaseIdxRepository.save(any(DatabaseDto.class)))
+                .thenReturn(DATABASE_1_DTO);
+        when(databaseIdxRepository.save(any(DatabaseDto.class)))
+                .thenReturn(DATABASE_1_DTO);
 
         /* test */
         generic_create(DATABASE_1_CREATE, DATABASE_1);
@@ -107,9 +108,9 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         MariaDbConfig.dropDatabase(CONTAINER_1, DATABASE_2_INTERNALNAME);
         MariaDbConfig.dropDatabase(CONTAINER_1, DATABASE_3_INTERNALNAME);
         databaseRepository.deleteAll();
-        when(databaseIdxRepository.save(any(Database.class)))
-                .thenReturn(DATABASE_2)
-                .thenReturn(DATABASE_3);
+        when(databaseIdxRepository.save(any(DatabaseDto.class)))
+                .thenReturn(DATABASE_2_DTO)
+                .thenReturn(DATABASE_3_DTO);
 
         /* test */
         generic_create(DATABASE_2_CREATE, DATABASE_2);
@@ -123,9 +124,9 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         MariaDbConfig.dropDatabase(CONTAINER_1, DATABASE_2_INTERNALNAME);
         MariaDbConfig.dropDatabase(CONTAINER_1, DATABASE_3_INTERNALNAME);
         databaseRepository.deleteAll();
-        when(databaseIdxRepository.save(any(Database.class)))
-                .thenReturn(DATABASE_3)
-                .thenReturn(DATABASE_2);
+        when(databaseIdxRepository.save(any(DatabaseDto.class)))
+                .thenReturn(DATABASE_3_DTO)
+                .thenReturn(DATABASE_2_DTO);
 
         /* test */
         generic_create(DATABASE_3_CREATE, DATABASE_3);

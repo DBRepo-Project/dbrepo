@@ -21,7 +21,7 @@ public class GatewayConfig {
 
     @Bean("restTemplate")
     public RestTemplate restTemplate() {
-        final RestTemplate restTemplate =  new RestTemplate();
+        final RestTemplate restTemplate = new RestTemplate();
         restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(gatewayEndpoint));
         return restTemplate;
     }

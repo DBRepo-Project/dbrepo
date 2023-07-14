@@ -17,6 +17,8 @@ import java.io.Serializable;
 public class DataCiteData<T> implements Serializable {
 
     private String id;
+
     private String type;
+
     private T attributes;
 }

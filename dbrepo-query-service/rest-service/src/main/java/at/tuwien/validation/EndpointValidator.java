@@ -114,7 +114,7 @@ public class EndpointValidator {
 
     public void validateOnlyAccessOrPublic(Long databaseId, Long queryId, Principal principal)
             throws NotAllowedException, DatabaseNotFoundException {
-        final Optional<Identifier> optional = identifierRepository.findByDatabaseIdAndQueryId(databaseId, queryId);
+        final Optional<Identifier> optional = identifierRepository.findSubsetIdentifier(databaseId, queryId);
         if (optional.isPresent()) {
             final Identifier identifier = optional.get();
             log.trace("found identifier for query with id {}", queryId);

@@ -5,7 +5,6 @@ import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.config.MariaDbConfig;
-import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.*;
 import at.tuwien.repository.sdb.ConceptIdxRepository;
 import at.tuwien.repository.sdb.TableColumnIdxRepository;
@@ -113,7 +112,7 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
             ContainerNotFoundException {
 
         /* mock */
-        when(tableidxRepository.save(any(Table.class)))
+        when(tableidxRepository.save(any(TableDto.class)))
                 .thenReturn(null);
         when(tableColumnidxRepository.saveAll(anyList()))
                 .thenReturn(List.of());
@@ -129,7 +128,7 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
-        when(tableidxRepository.save(any(Table.class)))
+        when(tableidxRepository.save(any(TableDto.class)))
                 .thenReturn(null);
         when(tableColumnidxRepository.saveAll(anyList()))
                 .thenReturn(List.of());
@@ -149,7 +148,7 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
             ContainerNotFoundException {
 
         /* mock */
-        when(tableidxRepository.save(any(Table.class)))
+        when(tableidxRepository.save(any(TableDto.class)))
                 .thenReturn(null);
         when(tableColumnidxRepository.saveAll(anyList()))
                 .thenReturn(List.of());
@@ -175,7 +174,7 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
         /* mock */
         doNothing()
                 .when(tableidxRepository)
-                .delete(any(Table.class));
+                .delete(any(TableDto.class));
 
         /* test */
         tableService.deleteTable(DATABASE_1_ID, TABLE_1_ID);
@@ -189,7 +188,7 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
         /* mock */
         doNothing()
                 .when(tableidxRepository)
-                .delete(any(Table.class));
+                .delete(any(TableDto.class));
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {

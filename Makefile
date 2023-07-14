@@ -7,7 +7,7 @@ NGINX_VERSION ?= 1.25.0-alpine-slim
 
 all:
 
-build-backend: build-metadata-db build-database-service build-query-service build-table-service build-identifier-service build-container-service build-metadata-service build-analyse-service build-user-service
+build-backend: build-metadata-db build-database-service build-query-service build-table-service build-identifier-service build-container-service build-metadata-service build-analyse-service build-user-service build-semantics-service
 
 build-metadata-db:
 	mvn -f ./dbrepo-metadata-db/pom.xml clean install

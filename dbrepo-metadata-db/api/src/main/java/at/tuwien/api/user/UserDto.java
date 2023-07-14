@@ -3,12 +3,12 @@ package at.tuwien.api.user;
 import at.tuwien.api.container.ContainerDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.Id;
 import lombok.*;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.jackson.Jacksonized;
 import org.springframework.data.elasticsearch.annotations.Document;
-import org.springframework.data.elasticsearch.annotations.Field;
 
 import java.util.List;
 import java.util.UUID;
@@ -23,6 +23,7 @@ import java.util.UUID;
 @Document(indexName = "user")
 public class UserDto {
 
+    @Id
     @NotNull
     @Schema(example = "1ffc7b0e-9aeb-4e8b-b8f1-68f3936155b4")
     private UUID id;
@@ -45,25 +46,30 @@ public class UserDto {
     @Schema(example = "Carberry")
     private String lastname;
 
-    @EqualsAndHashCode.Exclude
+    @NotNull
+    @org.springframework.data.annotation.Transient
     private List<UserAttributeDto> attributes;
 
-    @EqualsAndHashCode.Exclude
+    @NotNull
+    @org.springframework.data.annotation.Transient
     private List<ContainerDto> containers;
 
-    @EqualsAndHashCode.Exclude
+    @NotNull
+    @org.springframework.data.annotation.Transient
     private List<ContainerDto> databases;
 
-    @EqualsAndHashCode.Exclude
+    @NotNull
+    @org.springframework.data.annotation.Transient
     private List<ContainerDto> identifiers;
 
     @NotNull
+    @org.springframework.data.annotation.Transient
     @Schema(example = "jcarberry@brown.edu")
     private String email;
 
     @NotNull
-    @Field(name = "email_verified")
     @JsonProperty("email_verified")
+    @org.springframework.data.annotation.Transient
     @Schema(example = "true")
     private Boolean emailVerified;
 

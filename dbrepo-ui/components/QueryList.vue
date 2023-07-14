@@ -37,7 +37,7 @@
           <v-list-item-group>
             <v-list-item two-line :class="clazz(item)" :to="link(item)" :href="navigate(item)">
               <v-list-item-content>
-                <v-list-item-title v-text="item.title" />
+                <v-list-item-title v-text="title(item)" />
                 <v-list-item-subtitle class="mt-2">
                   <pre>{{ item.query }}</pre>
                 </v-list-item-subtitle>
@@ -56,7 +56,7 @@
           <v-list-item-group>
             <v-list-item two-line :class="clazz(item)" :to="link(item)" :href="navigate(item)">
               <v-list-item-content>
-                <v-list-item-title v-text="item.title" />
+                <v-list-item-title v-text="title(item)" />
                 <v-list-item-subtitle class="mt-2">
                   <pre>{{ item.query }}</pre>
                 </v-list-item-subtitle>
@@ -164,10 +164,14 @@ export default {
         })
     },
     title (query) {
-      if (query.identifier === null) {
+      if (!query.identifier || !('titles' in query.identifier)) {
         return formatTimestampUTCLabel(query.created)
       }
-      return query.identifier.title
+      const enTitle = query.identifier.titles.filter(t => t.language).filter(t => t.language === 'en')
+      if (enTitle.length !== 1) {
+        return query.identifier.titles[0].title
+      }
+      return enTitle[0].title
     },
     link (queryOrIdentifier) {
       if (queryOrIdentifier.identifier === null) {

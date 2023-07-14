@@ -1,27 +1,19 @@
 package at.tuwien.entities.identifier;
 
-import at.tuwien.entities.user.User;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import jakarta.persistence.*;;
-import java.time.Instant;
-import java.util.UUID;
+import jakarta.persistence.*;
 
 @Data
 @Entity
 @Builder
 @ToString
-@IdClass(CreatorKey.class)
 @AllArgsConstructor
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-@Table(name = "mdb_creators")
+@Table(name = "mdb_identifier_creators")
 public class Creator {
 
     @Id
@@ -31,42 +23,85 @@ public class Creator {
     @Column(updatable = false, nullable = false)
     private Long id;
 
-    @Id
-    @EqualsAndHashCode.Include
-    private Long pid;
-
-    @Column(nullable = false)
+    @Column(name = "given_names")
     private String firstname;
 
-    @Column(nullable = false)
+    @Column(name = "family_name")
     private String lastname;
+
+    @Column(name = "creator_name", nullable = false)
+    private String creatorName;
+
+    @Column(columnDefinition = "enum('PERSONAL', 'ORGANIZATIONAL')")
+    @Enumerated(EnumType.STRING)
+    private NameType nameType;
+
+    @Column
+    private String nameIdentifier;
+
+    @Column(columnDefinition = "enum('ROR', 'GRID', 'ISNI', 'ORCID')")
+    @Enumerated(EnumType.STRING)
+    private NameIdentifierSchemeType nameIdentifierScheme;
+
+    @Column
+    private String nameIdentifierSchemeUri;
 
     @Column
     private String affiliation;
 
     @Column
-    private String orcid;
+    private String affiliationIdentifier;
+
+    @Column(columnDefinition = "enum('ROR', 'GRID', 'ISNI')")
+    @Enumerated(EnumType.STRING)
+    private AffiliationIdentifierSchemeType affiliationIdentifierScheme;
+
+    private String affiliationIdentifierSchemeUri;
 
     @ToString.Exclude
-    @org.springframework.data.annotation.Transient
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "pid", referencedColumnName = "id", insertable = false, updatable = false)
+    @JoinColumns({
+            @JoinColumn(name = "pid", referencedColumnName = "id", updatable = false)
+    })
     private Identifier identifier;
 
-    @CreatedDate
-    @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP")
-    private Instant created;
+    public String getApaName() {
+        if (this.getNameType() != null && this.getNameType().equals(NameType.ORGANIZATIONAL)) {
+            return this.getCreatorName();
+        }
+        if (this.getFirstname() == null) {
+            if (this.getLastname() == null) {
+                return this.getCreatorName();
+            }
+            return this.getLastname();
+        }
+        return this.getFirstname().charAt(0) + "., " + this.getLastname();
+    }
 
-    @Field(name = "created_by")
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumns({
-            @JoinColumn(name = "created_by", referencedColumnName = "ID", nullable = false, columnDefinition = "VARCHAR(36)", updatable = false)
-    })
-    private User creator;
+    public String getBibtexName() {
+        if (this.getNameType() != null && this.getNameType().equals(NameType.ORGANIZATIONAL)) {
+            return this.getCreatorName();
+        }
+        if (this.getFirstname() == null) {
+            if (this.getLastname() == null) {
+                return this.getCreatorName();
+            }
+            return this.getLastname();
+        }
+        return this.getLastname() + ", " + this.getFirstname();
+    }
 
-    @LastModifiedDate
-    @Field(name = "last_modified")
-    @Column(columnDefinition = "TIMESTAMP")
-    private Instant lastModified;
+    public String getIeeeName() {
+        if (this.getNameType() != null && this.getNameType().equals(NameType.ORGANIZATIONAL)) {
+            return this.getCreatorName();
+        }
+        if (this.getFirstname() == null) {
+            if (this.getLastname() == null) {
+                return this.getCreatorName();
+            }
+            return this.getLastname();
+        }
+        return this.getFirstname().charAt(0) + ". " + this.getLastname();
+    }
 
 }

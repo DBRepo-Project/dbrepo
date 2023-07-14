@@ -6,5 +6,4 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface OntologyRepository extends JpaRepository<Ontology, Long> {
-
 }

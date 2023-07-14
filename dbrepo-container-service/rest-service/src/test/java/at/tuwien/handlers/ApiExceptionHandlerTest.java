@@ -1,11 +1,13 @@
 package at.tuwien.handlers;
 
 import at.tuwien.BaseUnitTest;
+import at.tuwien.repository.sdb.DatabaseIdxRepository;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.RegexPatternTypeFilter;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -23,6 +25,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 public class ApiExceptionHandlerTest extends BaseUnitTest {
+
+    @MockBean
+    private DatabaseIdxRepository databaseIdxRepository;
 
     @Test
     public void handle_succeeds() throws ClassNotFoundException {

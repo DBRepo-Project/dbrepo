@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
+import org.springframework.data.elasticsearch.annotations.Field;
 
 import java.util.List;
 
@@ -35,27 +36,28 @@ public class ImageDto {
 
     @NotBlank
     @JsonProperty("driver_class")
+    @Field(name = "driver_class")
     @Schema(example = "org.mariadb.jdbc.Driver")
     @org.springframework.data.annotation.Transient
     private String driverClass;
 
     @JsonProperty("date_formats")
-    @org.springframework.data.annotation.Transient
+    @Field(name = "date_formats")
     private List<ImageDateDto> dateFormats;
 
     @NotBlank
     @Schema(example = "org.hibernate.dialect.MariaDBDialect")
-    @org.springframework.data.annotation.Transient
     private String dialect;
 
     @NotBlank
     @JsonProperty("jdbc_method")
+    @Field(name = "jdbc_method")
     @Schema(example = "mariadb")
-    @org.springframework.data.annotation.Transient
     private String jdbcMethod;
 
     @NotNull
     @JsonProperty("default_port")
+    @Field(name = "default_port")
     @Schema(example = "3306")
     private Integer defaultPort;
 

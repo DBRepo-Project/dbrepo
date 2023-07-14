@@ -1,16 +1,17 @@
 package at.tuwien.endpoints;
 
-import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.error.ApiErrorDto;
-import at.tuwien.api.identifier.IdentifierCreateDto;
 import at.tuwien.api.identifier.IdentifierDto;
+import at.tuwien.api.identifier.IdentifierSaveDto;
 import at.tuwien.api.identifier.IdentifierTypeDto;
+import at.tuwien.api.user.external.ExternalMetadataDto;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.IdentifierMapper;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.IdentifierService;
+import at.tuwien.service.MetadataService;
 import at.tuwien.service.UserService;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
@@ -30,8 +31,8 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+
 import java.security.Principal;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -43,14 +44,16 @@ public class IdentifierEndpoint {
 
     private final UserService userService;
     private final AccessService accessService;
+    private final MetadataService metadataService;
     private final IdentifierMapper identifierMapper;
     private final IdentifierService identifierService;
 
     @Autowired
-    public IdentifierEndpoint(UserService userService, AccessService accessService, IdentifierMapper identifierMapper,
-                              IdentifierService identifierService) {
+    public IdentifierEndpoint(UserService userService, AccessService accessService, MetadataService metadataService,
+                              IdentifierMapper identifierMapper, IdentifierService identifierService) {
         this.userService = userService;
         this.accessService = accessService;
+        this.metadataService = metadataService;
         this.identifierMapper = identifierMapper;
         this.identifierService = identifierService;
     }
@@ -70,12 +73,7 @@ public class IdentifierEndpoint {
                                                     @RequestParam(required = false) Long qid,
                                                     @RequestParam(required = false) IdentifierTypeDto type) {
         log.debug("endpoint find identifiers, dbid={}, qid={}, type={}", dbid, qid, type);
-        List<Identifier> identifiers = new LinkedList<>();
-        try {
-            identifiers = identifierService.findAll(dbid, qid);
-        } catch (IdentifierNotFoundException e) {
-            /* ignore */
-        }
+        final List<Identifier> identifiers = identifierService.findAll(dbid, qid);
         final List<IdentifierDto> dto = identifiers.stream()
                 .map(identifierMapper::identifierToIdentifierDto)
                 .filter(i -> {
@@ -131,22 +129,22 @@ public class IdentifierEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<IdentifierDto> create(@NotNull @Valid @RequestBody IdentifierCreateDto data,
+    public ResponseEntity<IdentifierDto> create(@NotNull @Valid @RequestBody IdentifierSaveDto data,
                                                 @NotNull @RequestHeader(name = "Authorization") String authorization,
                                                 @NotNull Principal principal)
             throws IdentifierAlreadyExistsException, QueryNotFoundException, IdentifierPublishingNotAllowedException,
             RemoteUnavailableException, UserNotFoundException, DatabaseNotFoundException, IdentifierRequestException, NotAllowedException {
         log.debug("endpoint create identifier, data={}, authorization=(hidden), principal={}", data, principal);
-        if (data.getType().equals(IdentifierTypeDto.SUBSET) && data.getQid() == null) {
+        if (data.getType().equals(IdentifierTypeDto.SUBSET) && data.getQueryId() == null) {
             log.error("Identifier of type subset need to have a qid present");
             throw new IdentifierRequestException("Identifier of type subset need to have a qid present");
-        } else if (data.getType().equals(IdentifierTypeDto.DATABASE) && data.getQid() != null) {
+        } else if (data.getType().equals(IdentifierTypeDto.DATABASE) && data.getQueryId() != null) {
             log.error("Identifier of type database must not have a qid present");
             throw new IdentifierRequestException("Identifier of type database must not have a qid present");
         }
         final User user = userService.findByUsername(principal.getName());
         try {
-            accessService.find(data.getDbid(), user.getId());
+            accessService.find(data.getDatabaseId(), user.getId());
         } catch (AccessDeniedException e) {
             if (!User.hasRole(principal, "create-foreign-identifier")) {
                 log.error("Failed to create identifier: insufficient access");
@@ -157,4 +155,21 @@ public class IdentifierEndpoint {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(identifierMapper.identifierToIdentifierDto(identifier));
     }
+
+    @GetMapping("/retrieve")
+    @Timed(value = "identifier.retrieve", description = "Retrieve person or organization metadata from identifier")
+    @Operation(summary = "Retrieve metadata from identifier")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Retrieved metadata from identifier",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = IdentifierDto.class))}),
+    })
+    public ResponseEntity<ExternalMetadataDto> create(@NotNull @Valid @RequestParam String url)
+            throws OrcidNotFoundException, RorNotFoundException, RemoteUnavailableException, DoiNotFoundException {
+        return ResponseEntity.ok(metadataService.findByUrl(url));
+    }
+
+
 }

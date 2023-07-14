@@ -6,11 +6,14 @@ import at.tuwien.api.user.UserBriefDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.Id;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
 
 import java.time.Instant;
 import java.util.List;
@@ -22,18 +25,24 @@ import java.util.List;
 @AllArgsConstructor
 @Jacksonized
 @ToString
+@Document(indexName = "table")
 public class TableDto {
 
+    @Id
     @NotNull
+    private Long id;
+
+    @Id
+    @NotNull
+    @Field(name = "container_id")
     @JsonProperty("container_id")
     private Long containerId;
 
+    @Id
     @NotNull
+    @Field(name = "database_id")
     @JsonProperty("database_id")
     private Long databaseId;
-
-    @NotNull
-    private Long id;
 
     @NotBlank(message = "name is required")
     @Schema(example = "Air Quality")
@@ -41,6 +50,7 @@ public class TableDto {
 
     @NotBlank(message = "internalName is required")
     @JsonProperty("internal_name")
+    @Field(name = "internal_name")
     @Schema(example = "air_quality")
     private String internalName;
 
@@ -52,12 +62,14 @@ public class TableDto {
 
     @NotBlank(message = "queueName is required")
     @JsonProperty("queue_name")
-    @Schema(example = "dbrepo/air_quality/air_quality")
+    @Field(name = "queue_name")
+    @Schema(example = "dbrepo.air_quality")
     private String queueName;
 
     @NotBlank(message = "routingKey is required")
     @JsonProperty("routing_key")
-    @Schema(example = "dbrepo/air_quality/air_quality/1")
+    @Field(name = "routing_key")
+    @Schema(example = "dbrepo.air_quality")
     private String routingKey;
 
     @NotBlank(message = "description is required")
@@ -66,6 +78,7 @@ public class TableDto {
 
     @NotNull(message = "isPublic is required")
     @JsonProperty("is_public")
+    @Field(name = "is_public")
     @Schema(example = "true")
     private Boolean isPublic;
 

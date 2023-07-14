@@ -7,6 +7,7 @@ import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.exception.ImageAlreadyExistsException;
 import at.tuwien.exception.ImageNotFoundException;
 import at.tuwien.repository.mdb.ImageRepository;
+import at.tuwien.repository.sdb.DatabaseIdxRepository;
 import at.tuwien.service.impl.ImageServiceImpl;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
@@ -28,11 +29,14 @@ import static org.mockito.Mockito.*;
 @SpringBootTest
 public class ImageServiceUnitTest extends BaseUnitTest {
 
-    @Autowired
-    private ImageServiceImpl imageService;
+    @MockBean
+    private DatabaseIdxRepository databaseIdxRepository;
 
     @MockBean
     private ImageRepository imageRepository;
+
+    @Autowired
+    private ImageServiceImpl imageService;
 
     @Test
     public void getAll_succeeds() {

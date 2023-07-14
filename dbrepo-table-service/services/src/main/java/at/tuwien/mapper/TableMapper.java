@@ -7,6 +7,8 @@ import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.columns.ColumnCreateDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.columns.ColumnTypeDto;
+import at.tuwien.api.database.table.columns.concepts.ConceptDto;
+import at.tuwien.api.database.table.columns.concepts.UnitDto;
 import at.tuwien.api.database.table.constraints.ConstraintsCreateDto;
 import at.tuwien.api.database.table.constraints.foreignKey.ForeignKeyCreateDto;
 import at.tuwien.api.database.table.constraints.foreignKey.ForeignKeyDto;
@@ -72,6 +74,10 @@ public interface TableMapper {
             @Mapping(target = "isPublic", source = "table.database.isPublic"),
     })
     ColumnDto tableColumnToColumnDto(TableColumn data);
+
+    ConceptDto tableColumnConceptToConceptDto(TableColumnConcept data);
+
+    UnitDto tableColumnUnitToUnitDto(TableColumnUnit data);
 
     ColumnTypeDto columnTypeToColumnTypeDto(TableColumnType data);
 

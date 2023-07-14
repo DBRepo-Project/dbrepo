@@ -1,6 +1,7 @@
 package at.tuwien.config;
 
-import at.tuwien.entities.identifier.Identifier;
+import at.tuwien.api.identifier.IdentifierDto;
+import at.tuwien.mapper.IdentifierMapper;
 import at.tuwien.repository.sdb.IdentifierIdxRepository;
 import at.tuwien.repository.mdb.IdentifierRepository;
 import lombok.extern.log4j.Log4j2;
@@ -16,11 +17,14 @@ import java.util.List;
 @Log4j2
 public class IndexConfig {
 
+    private final IdentifierMapper identifierMapper;
     private final IdentifierRepository identifierRepository;
     private final IdentifierIdxRepository identifierIdxRepository;
 
     @Autowired
-    public IndexConfig(IdentifierRepository identifierRepository, IdentifierIdxRepository identifierIdxRepository) {
+    public IndexConfig(IdentifierMapper identifierMapper, IdentifierRepository identifierRepository,
+                       IdentifierIdxRepository identifierIdxRepository) {
+        this.identifierMapper = identifierMapper;
         this.identifierRepository = identifierRepository;
         this.identifierIdxRepository = identifierIdxRepository;
     }
@@ -28,7 +32,10 @@ public class IndexConfig {
     @Transactional
     @EventListener(ApplicationReadyEvent.class)
     public void initIndex() {
-        final List<Identifier> identifiers = identifierRepository.findAll();
+        final List<IdentifierDto> identifiers = identifierRepository.findAll()
+                .stream()
+                .map(identifierMapper::identifierToIdentifierDto)
+                .toList();
         identifierIdxRepository.saveAll(identifiers);
         log.info("Added {} identifiers to open search index", identifiers.size());
     }

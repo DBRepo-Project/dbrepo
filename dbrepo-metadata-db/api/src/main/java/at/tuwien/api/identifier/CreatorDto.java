@@ -1,17 +1,14 @@
 package at.tuwien.api.identifier;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.jackson.Jacksonized;
+import org.springframework.data.elasticsearch.annotations.Field;
 
-import java.time.Instant;
 
 @Getter
 @Setter
@@ -25,28 +22,54 @@ public class CreatorDto {
     @NotNull
     private Long id;
 
-    @NotBlank
     @Schema(example = "Josiah")
     private String firstname;
 
-    @NotBlank
     @Schema(example = "Carberry")
     private String lastname;
 
-    @Schema(example = "Wesleyan University")
+    @NotBlank
+    @JsonProperty("creator_name")
+    @Field(name="creator_name")
+    @Schema(example = "Carberry, Josiah")
+    private String creatorName;
+
+    @JsonProperty("name_type")
+    @Field(name="name_type")
+    @Schema(example = "Personal")
+    private NameTypeDto nameType;
+
+    @JsonProperty("name_identifier")
+    @Field(name="name_identifier")
+    @Schema(example = "0000-0002-1825-0097")
+    private String nameIdentifier;
+
+    @JsonProperty("name_identifier_scheme")
+    @Field(name="name_identifier_scheme")
+    @Schema(example = "ORCID")
+    private NameIdentifierSchemeTypeDto nameIdentifierScheme;
+
+    @JsonProperty("name_identifier_scheme_uri")
+    @Field(name="name_identifier_scheme_uri")
+    @Schema(example = "https://orcid.org/")
+    private String nameIdentifierSchemeUri;
+
+    @Schema(example = "Brown University")
     private String affiliation;
 
-    @Schema(example = "0000-0002-1825-0097")
-    private String orcid;
+    @JsonProperty("affiliation_identifier")
+    @Field(name="affiliation_identifier")
+    @Schema(example = "https://ror.org/05gq02987")
+    private String affiliationIdentifier;
 
-    @NotNull
-    @JsonIgnore
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
-    private Instant created;
+    @JsonProperty("affiliation_identifier_scheme")
+    @Field(name="affiliation_identifier_scheme")
+    @Schema(example = "ROR")
+    private AffiliationIdentifierSchemeTypeDto affiliationIdentifierScheme;
 
-    @JsonIgnore
-    @JsonProperty("last_modified")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
-    private Instant lastModified;
+    @JsonProperty("affiliation_identifier_scheme_uri")
+    @Field(name="affiliation_identifier_scheme_uri")
+    @Schema(example = "https://ror.org/")
+    private String affiliationIdentifierSchemeUri;
 
 }

@@ -9,6 +9,7 @@ import lombok.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.jackson.Jacksonized;
+import org.springframework.data.elasticsearch.annotations.Field;
 
 import java.util.List;
 
@@ -34,6 +35,7 @@ public class TableBriefDto {
 
     @NotBlank(message = "internal name is required")
     @JsonProperty("internal_name")
+    @Field(name = "internal_name")
     @Schema(example = "air_quality")
     private String internalName;
 

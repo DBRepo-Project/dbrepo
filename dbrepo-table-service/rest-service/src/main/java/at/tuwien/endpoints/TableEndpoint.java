@@ -175,7 +175,7 @@ public class TableEndpoint {
     public ResponseEntity<TableDto> findById(@NotNull @PathVariable("databaseId") Long databaseId,
                                              @NotNull @PathVariable("tableId") Long tableId,
                                              Principal principal)
-            throws TableNotFoundException, DatabaseNotFoundException, ContainerNotFoundException {
+            throws TableNotFoundException, DatabaseNotFoundException {
         log.debug("endpoint find table, databaseId={}, tableId={}, principal={}", databaseId, tableId, principal);
         final Table table = tableService.findById(databaseId, tableId);
         final TableDto dto = tableMapper.tableToTableDto(table);

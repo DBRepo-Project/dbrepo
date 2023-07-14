@@ -2,6 +2,7 @@ package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.ViewCreateDto;
+import at.tuwien.api.database.ViewDto;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.MariaDbContainerConfig;
@@ -109,8 +110,8 @@ public class ViewServiceIntegrationTest extends BaseUnitTest {
                 .thenReturn(Optional.of(USER_1));
         when(viewRepository.save(any(View.class)))
                 .thenReturn(VIEW_3);
-        when(viewIdxRepository.save(any(View.class)))
-                .thenReturn(VIEW_3);
+        when(viewIdxRepository.save(any(ViewDto.class)))
+                .thenReturn(VIEW_3_DTO);
 
         /* test */
         final View response = viewService.create(DATABASE_1_ID, request, USER_1_PRINCIPAL);
@@ -151,8 +152,8 @@ public class ViewServiceIntegrationTest extends BaseUnitTest {
                 .thenReturn(Optional.of(USER_1));
         when(viewRepository.save(any(View.class)))
                 .thenReturn(VIEW_1);
-        when(viewIdxRepository.save(any(View.class)))
-                .thenReturn(VIEW_1);
+        when(viewIdxRepository.save(any(ViewDto.class)))
+                .thenReturn(VIEW_1_DTO);
 
         /* test */
         final View response = viewService.create(DATABASE_1_ID, request, USER_1_PRINCIPAL);

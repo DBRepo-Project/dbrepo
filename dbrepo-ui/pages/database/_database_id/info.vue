@@ -4,123 +4,23 @@
     <v-progress-linear v-if="loading" />
     <v-tabs-items v-model="tab">
       <v-tab-item>
-        <v-card v-if="showIdentifierCard" flat tile>
-          <v-card-title>Identifier</v-card-title>
-          <v-card-text v-if="hasIdentifier">
-            <v-list dense>
-              <v-list-item>
-                <v-list-item-content>
-                  <v-list-item-title class="mt-2">
-                    Persistent Identifier
-                  </v-list-item-title>
-                  <v-list-item-content>
-                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
-                    <Banner v-if="!loading" :identifier="database.identifier" />
-                  </v-list-item-content>
-                  <v-list-item-title class="mt-2">
-                    Database Title
-                  </v-list-item-title>
-                  <v-list-item-content>
-                    <v-skeleton-loader v-if="loading" type="paragraph" width="50%" />
-                    <span v-if="!loading">{{ identifier.title }}</span>
-                  </v-list-item-content>
-                  <v-list-item-title class="mt-2">
-                    Database Description
-                  </v-list-item-title>
-                  <v-list-item-content>
-                    <v-skeleton-loader v-if="loading" type="paragraph" width="50%" />
-                    <span v-if="!loading">{{ identifier.description }}</span>
-                  </v-list-item-content>
-                  <v-list-item-title class="mt-2">
-                    Database Publisher
-                  </v-list-item-title>
-                  <v-list-item-content>
-                    {{ database.identifier.publisher }}
-                  </v-list-item-content>
-                  <v-list-item-title v-if="identifier.creators.length > 0" class="mt-2">
-                    Creators
-                  </v-list-item-title>
-                  <v-list-item-content>
-                    <p v-for="(person_or_org, i) in identifier.creators" :key="`c-${i}`" class="mt-2">
-                      <OrcidIcon v-if="person_or_org.orcid" :orcid="person_or_org.orcid" />
-                      <span v-text="`${person_or_org.firstname} ${person_or_org.lastname}`" />
-                      <sup v-text="person_or_org.affiliation" />
-                    </p>
-                    <span v-for="(affiliation, i) in identifier.affiliations" :key="`a-${i}`" class="mt-4">
-                      <span>
-                        <sup>{{ i+1 }}</sup>
-                        {{ affiliation }}
-                      </span>
-                    </span>
-                  </v-list-item-content>
-                  <v-list-item-title v-if="language" class="mt-2">
-                    Language
-                  </v-list-item-title>
-                  <v-list-item-content v-if="language">
-                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
-                    <span v-if="!loading" v-text="language" />
-                  </v-list-item-content>
-                  <v-list-item-title v-if="publication" class="mt-2">
-                    Publication Date
-                  </v-list-item-title>
-                  <v-list-item-content v-if="publication">
-                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
-                    <span v-if="!loading" v-text="publication" />
-                  </v-list-item-content>
-                  <v-list-item-title v-if="identifier.related.length > 0" class="mt-2">
-                    Related Identifiers
-                  </v-list-item-title>
-                  <v-list-item-content v-if="identifier.related.length > 0">
-                    <div v-for="(rel, i) in identifier.related" :key="`r-${i}`">
-                      <span v-if="rel.type === 'DOI'">
-                        {{ rel.type }}: <a :href="`https://doi.org/${rel.value}`" target="_blank">{{ rel.value }}</a>
-                        <span v-if="rel.relation">({{ rel.relation }})</span>
-                      </span>
-                      <span v-if="rel.type === 'URL'">
-                        {{ rel.type }}: <a :href="`${rel.value}`" target="_blank">{{ rel.value }}</a>
-                        <span v-if="rel.relation">({{ rel.relation }})</span>
-                      </span>
-                      <span v-if="rel.type === 'arXiv'">
-                        {{ rel.type }}: <a :href="`https://arxiv.org/abs/${rel.value}`" target="_blank">{{ rel.value }}</a>
-                        <span v-if="rel.relation">({{ rel.relation }})</span>
-                      </span>
-                      <span v-if="rel.type === 'EISSN'">
-                        {{ rel.type }}: <a :href="`https://portal.issn.org/resource/ISSN/${rel.value}`" target="_blank">{{ rel.value }}</a>
-                        <span v-if="rel.relation">({{ rel.relation }})</span>
-                      </span>
-                      <span v-if="rel.type !== 'DOI' && rel.type !== 'URL' && rel.type !== 'arXiv' && rel.type !== 'EISSN'">
-                        {{ rel.type }}: {{ rel.value }}
-                        <span v-if="rel.relation">({{ rel.relation }})</span>
-                      </span>
-                    </div>
-                  </v-list-item-content>
-                  <v-list-item-title v-if="identifier.license" class="mt-2">
-                    License
-                  </v-list-item-title>
-                  <v-list-item-content v-if="identifier.license">
-                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
-                    <a v-if="identifier.license" target="_blank" :href="identifier.license.uri">{{ identifier.license.identifier }}</a>
-                    <span v-if="!identifier.license">(none)</span>
-                  </v-list-item-content>
-                  <Citation :pid="database.identifier.id" />
-                </v-list-item-content>
-              </v-list-item>
-            </v-list>
-          </v-card-text>
+        <Summary v-if="showIdentifierCard" :identifier="identifier" />
+        <v-card flat tile>
+          <v-card-title v-if="!showIdentifierCard && (canCreateIdentifier || canDeleteIdentifier)">Identifier</v-card-title>
           <v-card-text v-if="canCreateIdentifier || canDeleteIdentifier">
             <v-card-actions>
               <v-btn
                 v-if="canCreateIdentifier"
                 small
-                color="primary"
-                @click="persistDialog = true">
+                :to="`/database/${$route.params.database_id}/persist`"
+                color="primary">
                 Get Database PID
               </v-btn>
               <v-btn
                 v-if="canEditIdentifier"
                 small
-                color="secondary"
-                @click="persistDialog = true">
+                :to="`/database/${$route.params.database_id}/persist`"
+                color="secondary">
                 Edit Database PID
               </v-btn>
               <v-btn
@@ -134,7 +34,7 @@
             </v-card-actions>
           </v-card-text>
         </v-card>
-        <v-divider v-if="showIdentifierCard" />
+        <v-divider v-if="hasIdentifier || canCreateIdentifier || canDeleteIdentifier" />
         <v-card flat tile>
           <v-card-title>Database</v-card-title>
           <v-card-text>
@@ -235,12 +135,6 @@
       </v-tab-item>
     </v-tabs-items>
     <v-dialog
-      v-model="persistDialog"
-      persistent
-      max-width="1080">
-      <Persist type="database" :database="database" @close="closePersistDialog" />
-    </v-dialog>
-    <v-dialog
       v-model="deleteDialog"
       persistent
       max-width="480">
@@ -252,22 +146,16 @@
 
 <script>
 import DBToolbar from '@/components/DBToolbar.vue'
-import Persist from '@/components/dialogs/Persist.vue'
-import OrcidIcon from '@/components/icons/OrcidIcon.vue'
-import Citation from '@/components/identifier/Citation.vue'
 import { formatTimestampUTCLabel } from '@/utils'
-import Banner from '@/components/identifier/Banner.vue'
 import DatabaseMapper from '@/api/database.mapper'
+import Summary from '@/components/identifier/Summary.vue'
 import DeleteIdentifier from '@/components/dialogs/DeleteIdentifier.vue'
 
 export default {
   components: {
     DeleteIdentifier,
     DBToolbar,
-    Persist,
-    OrcidIcon,
-    Citation,
-    Banner
+    Summary
   },
   data () {
     return {
@@ -277,7 +165,6 @@ export default {
       loadingStop: false,
       editDialog: false,
       deleteDialog: false,
-      persistDialog: false,
       items: [
         { text: 'Databases', to: '/database', activeClass: '' },
         {
@@ -291,9 +178,6 @@ export default {
   computed: {
     tab () {
       return 0
-    },
-    baseUrl () {
-      return location.protocol + '//' + location.host
     },
     description () {
       if (!this.hasIdentifier) {
@@ -334,9 +218,6 @@ export default {
     createdUTC () {
       return formatTimestampUTCLabel(this.database.created)
     },
-    language () {
-      return this.database.identifier.language
-    },
     internal_name () {
       return this.database.internal_name
     },
@@ -353,13 +234,7 @@ export default {
       return this.database.container.image.version
     },
     showIdentifierCard () {
-      if (this.hasIdentifier) {
-        return true
-      }
-      if (!this.user) {
-        return false
-      }
-      return this.canCreateIdentifier || this.hasIdentifier
+      return this.hasIdentifier
     },
     canCreateIdentifier () {
       if (!this.roles || this.hasIdentifier) {
@@ -384,15 +259,6 @@ export default {
     },
     contact () {
       return DatabaseMapper.databaseToContact(this.database)
-    },
-    publication () {
-      if (this.database.identifier.publication_year === null) {
-        return null
-      } else if (this.database.identifier.publication_month !== null && this.database.identifier.publication_day !== null) {
-        return this.database.identifier.publication_year + '-' + this.database.identifier.publication_month + '-' + this.database.identifier.publication_day
-      } else {
-        return this.database.identifier.publication_year
-      }
     },
     creator () {
       return DatabaseMapper.databaseToOwner(this.database)
@@ -435,13 +301,6 @@ export default {
     }
   },
   methods: {
-    async closePersistDialog (event) {
-      if (event.action === 'persisted') {
-        await this.$store.dispatch('reloadDatabase')
-      }
-      this.persistDialog = false
-      this.editVisibilityDialog = false
-    },
     async closeDeleteDialog (event) {
       if (event.action === 'deleted') {
         await this.$store.dispatch('reloadDatabase')

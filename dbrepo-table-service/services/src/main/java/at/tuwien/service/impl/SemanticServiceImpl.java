@@ -62,7 +62,7 @@ public class SemanticServiceImpl implements SemanticService {
         final Optional<TableColumnUnit> optional = unitRepository.findByUri(uri);
         if (optional.isEmpty()) {
             log.error("Failed to find unit with uri {}", uri);
-            throw new UnitNotFoundException("Failed to find unit");
+            throw new UnitNotFoundException("Failed to find unit with uri " + uri);
         }
         return optional.get();
     }
@@ -76,10 +76,12 @@ public class SemanticServiceImpl implements SemanticService {
                     .uri(uri)
                     .build();
         }
+        /* save in metadata database */
         final TableColumnConcept concept = tableMapper.entityDtoToTableColumnConcept(semanticServiceGateway.getEntity(ontology.getId(), uri, authorization));
         log.info("Saved concept with uri {} in metadata database", concept.getUri());
-        conceptIdxRepository.save(concept);
-        log.info("Saved concept with uri {} in search database", concept.getUri());
+        /* save in open search database */
+        conceptIdxRepository.save(tableMapper.tableColumnConceptToConceptDto(concept));
+        log.info("Saved concept with uri {} in open search database", concept.getUri());
         return concept;
     }
 
@@ -91,10 +93,12 @@ public class SemanticServiceImpl implements SemanticService {
                     .uri(uri)
                     .build();
         }
+        /* save in metadata database */
         final TableColumnUnit unit = tableMapper.entityDtoToTableColumnUnit(semanticServiceGateway.getEntity(ontology.getId(), uri, authorization));
         log.info("Saved unit with uri {} in metadata database", unit.getUri());
-        unitIdxRepository.save(unit);
-        log.info("Saved unit with uri {} in search database", unit.getUri());
+        /* save in open search database */
+        unitIdxRepository.save(tableMapper.tableColumnUnitToUnitDto(unit));
+        log.info("Saved unit with uri {} in open search database", unit.getUri());
         return unit;
     }
 

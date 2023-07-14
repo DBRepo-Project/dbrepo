@@ -1,9 +1,7 @@
 package at.tuwien.endpoint;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.api.identifier.IdentifierCreateDto;
-import at.tuwien.api.identifier.IdentifierDto;
-import at.tuwien.api.identifier.IdentifierTypeDto;
+import at.tuwien.api.identifier.*;
 import at.tuwien.config.EndpointConfig;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.endpoints.IdentifierEndpoint;
@@ -11,7 +9,6 @@ import at.tuwien.endpoints.PersistenceEndpoint;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.identifier.Identifier;
-import at.tuwien.entities.identifier.RelatedIdentifier;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.QueryServiceGateway;
@@ -68,9 +65,6 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
     private UserRepository userRepository;
 
     @MockBean
-    private RelatedIdentifierRepository relatedIdentifierRepository;
-
-    @MockBean
     private AccessRepository accessRepository;
 
     @MockBean
@@ -103,8 +97,16 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final IdentifierDto body = (IdentifierDto) response.getBody();
         assertNotNull(body);
-        assertEquals(IDENTIFIER_1_ID, body.getId());
-        assertEquals(IDENTIFIER_1_TITLE, body.getTitle());
+        final List<IdentifierTitleDto> titles = body.getTitles();
+        assertEquals(2, titles.size());
+        final IdentifierTitleDto title0 = titles.get(0);
+        assertEquals(IDENTIFIER_1_TITLE_1_TITLE, title0.getTitle());
+        assertEquals(IDENTIFIER_1_TITLE_1_LANG_DTO, title0.getLanguage());
+        final List<IdentifierDescriptionDto> descriptions = body.getDescriptions();
+        assertEquals(1, descriptions.size());
+        final IdentifierDescriptionDto description0 = descriptions.get(0);
+        assertEquals(IDENTIFIER_1_DESCRIPTION_1_DESCRIPTION, description0.getDescription());
+        assertEquals(IDENTIFIER_1_DESCRIPTION_1_LANG_DTO, description0.getLanguage());
     }
 
     @Test
@@ -210,15 +212,15 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"create-identifier"})
     public void create_invalidSubset_fails() {
-        final IdentifierCreateDto request = IdentifierCreateDto.builder()
-                .qid(null)  // <--
-                .dbid(IDENTIFIER_1_DATABASE_ID)
-                .description(IDENTIFIER_1_DESCRIPTION)
-                .title(IDENTIFIER_1_TITLE)
+        final IdentifierSaveDto request = IdentifierSaveDto.builder()
+                .queryId(null)  // <--
+                .databaseId(IDENTIFIER_1_DATABASE_ID)
+                .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_CREATE_DTO))
+                .titles(List.of(IDENTIFIER_1_TITLE_1_CREATE_DTO))
                 .relatedIdentifiers(List.of())
                 .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
                 .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
-                .creators(List.of(CREATOR_1_CREATE_DTO, CREATOR_1_CREATE_DTO))
+                .creators(List.of(IDENTIFIER_2_CREATOR_1_CREATE_DTO, IDENTIFIER_2_CREATOR_2_CREATE_DTO))
                 .publisher(IDENTIFIER_1_PUBLISHER)
                 .type(IdentifierTypeDto.SUBSET)
                 .build();
@@ -232,16 +234,16 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"create-identifier"})
     public void create_invalidDatabase_fails() {
-        final IdentifierCreateDto request = IdentifierCreateDto.builder()
-                .qid(IDENTIFIER_1_QUERY_ID) // <--
-                .dbid(IDENTIFIER_1_DATABASE_ID)
-                .description(IDENTIFIER_1_DESCRIPTION)
-                .title(IDENTIFIER_1_TITLE)
+        final IdentifierSaveDto request = IdentifierSaveDto.builder()
+                .queryId(IDENTIFIER_1_QUERY_ID) // <--
+                .databaseId(IDENTIFIER_1_DATABASE_ID)
+                .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_CREATE_DTO))
+                .titles(List.of(IDENTIFIER_1_TITLE_1_CREATE_DTO))
                 .relatedIdentifiers(List.of(IDENTIFIER_1_RELATED_IDENTIFIER_2_CREATE_DTO))
                 .publicationDay(IDENTIFIER_2_PUBLICATION_DAY)
                 .publicationMonth(IDENTIFIER_2_PUBLICATION_MONTH)
                 .publicationYear(IDENTIFIER_2_PUBLICATION_YEAR)
-                .creators(List.of(CREATOR_1_CREATE_DTO, CREATOR_2_CREATE_DTO))
+                .creators(List.of(IDENTIFIER_2_CREATOR_1_CREATE_DTO, IDENTIFIER_2_CREATOR_2_CREATE_DTO))
                 .publisher(IDENTIFIER_2_PUBLISHER)
                 .type(IdentifierTypeDto.DATABASE)
                 .build();
@@ -267,7 +269,7 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
     /* ################################################################################################### */
 
     protected void generic_create(Long databaseId, Database database, DatabaseAccess access,
-                                  IdentifierCreateDto data, Identifier identifier, Principal principal, UUID userId,
+                                  IdentifierSaveDto data, Identifier identifier, Principal principal, UUID userId,
                                   String username, User user) throws QueryNotFoundException, RemoteUnavailableException,
             IdentifierAlreadyExistsException, UserNotFoundException, DatabaseNotFoundException,
             IdentifierPublishingNotAllowedException, IdentifierRequestException, NotAllowedException,
@@ -298,8 +300,6 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
         when(identifierRepository.save(any(Identifier.class)))
                 .thenReturn(identifier)
                 .thenReturn(identifier);
-        when(relatedIdentifierRepository.save(any(RelatedIdentifier.class)))
-                .thenReturn(IDENTIFIER_1_RELATED_IDENTIFIER_1);
 
         /* test */
         final ResponseEntity<IdentifierDto> response = identifierEndpoint.create(data, "ABC", principal);
@@ -307,8 +307,6 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
         final IdentifierDto body = response.getBody();
         assertNotNull(body);
         assertEquals(identifier.getId(), body.getId());
-        assertEquals(identifier.getTitle(), body.getTitle());
-        assertEquals(identifier.getDescription(), body.getDescription());
         assertEquals(identifier.getQuery(), body.getQuery());
         assertEquals(identifier.getQueryHash(), body.getQueryHash());
         assertEquals(identifier.getResultHash(), body.getResultHash());

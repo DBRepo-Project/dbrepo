@@ -2,6 +2,7 @@ package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.entities.identifier.Identifier;
+import at.tuwien.entities.identifier.IdentifierTitle;
 import at.tuwien.exception.IdentifierNotFoundException;
 import at.tuwien.repository.mdb.*;
 import at.tuwien.repository.sdb.IdentifierIdxRepository;
@@ -14,6 +15,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -36,6 +38,9 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     private ContainerRepository containerRepository;
 
     @Autowired
+    private LicenseRepository licenseRepository;
+
+    @Autowired
     private DatabaseRepository databaseRepository;
 
     @Autowired
@@ -55,6 +60,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
         /* metadata database */
         imageRepository.save(IMAGE_1_SIMPLE);
         realmRepository.save(REALM_DBREPO);
+        licenseRepository.save(LICENSE_1);
         userRepository.save(USER_1_SIMPLE);
         containerRepository.save(CONTAINER_1_SIMPLE);
         databaseRepository.save(DATABASE_1_SIMPLE);
@@ -70,12 +76,22 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
+    @Transactional
     public void find_succeeds() throws IdentifierNotFoundException {
 
         /* test */
         final Identifier response = identifierService.find(IDENTIFIER_1_ID);
         assertEquals(IDENTIFIER_1_ID, response.getId());
-        assertEquals(IDENTIFIER_1_TITLE, response.getTitle());
+        final List<IdentifierTitle> titles = response.getTitles();
+        assertEquals(2, titles.size());
+        final IdentifierTitle title0 = titles.get(0);
+        assertEquals(IDENTIFIER_1_TITLE_1_TITLE, title0.getTitle());
+        assertEquals(IDENTIFIER_1_TITLE_1_LANG, title0.getLanguage());
+        assertEquals(IDENTIFIER_1_TITLE_1_TYPE, title0.getTitleType());
+        final IdentifierTitle title1 = titles.get(1);
+        assertEquals(IDENTIFIER_1_TITLE_2_TITLE, title1.getTitle());
+        assertEquals(IDENTIFIER_1_TITLE_2_LANG, title1.getLanguage());
+        assertEquals(IDENTIFIER_1_TITLE_2_TYPE, title1.getTitleType());
     }
 
     @Test
