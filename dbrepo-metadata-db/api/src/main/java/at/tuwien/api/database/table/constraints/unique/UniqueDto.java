@@ -1,0 +1,35 @@
+
+package at.tuwien.api.database.table.constraints.unique;
+
+import at.tuwien.api.database.table.TableDto;
+import at.tuwien.api.database.table.columns.ColumnDto;
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
+import lombok.extern.jackson.Jacksonized;
+
+import java.util.List;
+
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Jacksonized
+@ToString
+public class UniqueDto {
+
+    @NotNull
+    private Long uid;
+
+    @NotNull
+    private Long tid;
+
+    @NotNull
+    private Long tdbid;
+
+    @NotNull
+    private TableDto table;
+
+    @NotNull
+    private List<ColumnDto> columns;
+}

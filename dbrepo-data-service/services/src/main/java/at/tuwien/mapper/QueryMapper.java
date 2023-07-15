@@ -27,7 +27,7 @@ public interface QueryMapper {
     }
 
     default String findAllTablesQuery(Database database) {
-        return "SELECT TABLE_NAME as internal_name FROM information_schema.TABLES WHERE TABLE_SCHEMA = '" + database.getInternalName() + "' AND TABLE_TYPE = 'TABLE';";
+        return "SELECT TABLE_NAME as internal_name, IF(TABLE_TYPE = 'SYSTEM VERSIONED', true, false) as is_versioned FROM information_schema.TABLES WHERE TABLE_SCHEMA = '" + database.getInternalName() + "' AND TABLE_NAME != 'qs_queries' AND (TABLE_TYPE = 'BASE TABLE' OR TABLE_TYPE = 'SYSTEM VERSIONED');";
     }
 
     default String findColumnsForTable(Database database, String name) {
@@ -55,6 +55,7 @@ public interface QueryMapper {
             final TableBriefDto table = TableBriefDto.builder()
                     .name(result.getString("internal_name"))
                     .internalName(result.getString("internal_name"))
+                    .isVersioned(result.getBoolean("is_versioned"))
                     .build();
             tables.add(table);
         }

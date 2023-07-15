@@ -45,7 +45,7 @@ public class Table {
 
     @ToString.Exclude
     @org.springframework.data.annotation.Transient
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
             @JoinColumn(name = "createdBy", referencedColumnName = "ID", nullable = false, columnDefinition = "VARCHAR(36)", updatable = false)
     })
@@ -53,7 +53,7 @@ public class Table {
 
     @ToString.Exclude
     @org.springframework.data.annotation.Transient
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
             @JoinColumn(name = "ownedBy", referencedColumnName = "ID", nullable = false, columnDefinition = "VARCHAR(36)", updatable = false)
     })
@@ -89,6 +89,9 @@ public class Table {
     @Embedded
     private Constraints constraints;
 
+    @Column(name = "versioned", columnDefinition = "boolean default true")
+    private Boolean isVersioned;
+
     @CreatedDate
     @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP")
     private Instant created;
@@ -101,7 +104,6 @@ public class Table {
     @PreRemove
     public void preRemove() {
         this.creator = null;
-        this.columns.forEach(c -> c.setCreator(null));
     }
 
     /**

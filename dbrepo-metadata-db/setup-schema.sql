@@ -109,6 +109,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_tables`
     element_false VARCHAR(50),
     Version       TEXT,
     created       timestamp              NOT NULL DEFAULT NOW(),
+    versioned     boolean                not null default true,
     created_by    character varying(255) NOT NULL,
     owned_by      character varying(255) NOT NULL,
     last_modified timestamp,

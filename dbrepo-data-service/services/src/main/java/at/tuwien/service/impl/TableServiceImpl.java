@@ -4,6 +4,7 @@ import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
+import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.exception.ColumnTypeMalformedException;
 import at.tuwien.exception.QueryMalformedException;
 import at.tuwien.exception.TableNotFoundException;

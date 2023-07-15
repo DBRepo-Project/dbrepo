@@ -57,6 +57,12 @@ public class TableDto {
     private String internalName;
 
     @NotNull
+    @JsonProperty("is_versioned")
+    @Field(name = "is_versioned")
+    @Schema(example = "true")
+    private Boolean isVersioned;
+
+    @NotNull
     @JsonProperty("created_by")
     private UUID createdBy;
 

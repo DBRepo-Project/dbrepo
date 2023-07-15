@@ -47,7 +47,7 @@ public class ContainerImage {
     @Column(nullable = false)
     private Integer defaultPort;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "image")
+    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "image")
     private List<ContainerImageDate> dateFormats;
 
     @ToString.Exclude
