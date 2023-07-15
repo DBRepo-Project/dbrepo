@@ -5,6 +5,8 @@ import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.columns.ColumnTypeDto;
 import at.tuwien.config.MariaDbConfig;
+import at.tuwien.entities.database.View;
+import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.exception.*;
 import at.tuwien.repository.mdb.*;
 import at.tuwien.repository.sdb.DatabaseIdxRepository;
@@ -25,8 +27,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import java.sql.SQLException;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 @Log4j2
 @Testcontainers
@@ -82,6 +83,7 @@ public class ViewServiceIntegrationTest extends BaseUnitTest {
         final List<ViewDto> views = viewService.findAll(DATABASE_1);
         assertEquals(1, views.size());
         final ViewDto view0 = views.get(0);
+        assertEquals("hs_weather_aus", view0.getName());
         assertEquals("hs_weather_aus", view0.getInternalName());
     }
 
@@ -96,6 +98,7 @@ public class ViewServiceIntegrationTest extends BaseUnitTest {
         final List<ViewDto> views = viewService.findAll(DATABASE_1);
         assertEquals(1, views.size());
         final ViewDto view0 = views.get(0);
+        assertEquals("hs_weather_aus", view0.getName());
         assertEquals("hs_weather_aus", view0.getInternalName());
     }
 
@@ -105,6 +108,8 @@ public class ViewServiceIntegrationTest extends BaseUnitTest {
         /* test */
         final ViewDto view = viewService.find(DATABASE_1, "hs_weather_aus");
         assertEquals("hs_weather_aus", view.getInternalName());
+        assertEquals(DATABASE_1_CREATOR.getId(), view.getCreatedBy());
+        assertNotNull(view.getCreator());
         final List<ColumnDto> columns = view.getColumns();
         assertEquals(4, columns.size());
         final ColumnDto column0 = columns.get(0);
@@ -130,12 +135,16 @@ public class ViewServiceIntegrationTest extends BaseUnitTest {
 
         /* test */
         final ViewDto view = viewService.find(DATABASE_1, "full_view_example");
+        assertEquals("full_view_example", view.getName());
         assertEquals("full_view_example", view.getInternalName());
+        assertEquals(DATABASE_1_CREATOR.getId(), view.getCreatedBy());
+        assertNotNull(view.getCreator());
         final List<ColumnDto> columns = view.getColumns();
         assertEquals(34, columns.size());
         final List<ColumnTypeDto> types = List.of(ColumnTypeDto.CHAR, ColumnTypeDto.VARCHAR, ColumnTypeDto.BINARY, ColumnTypeDto.VARBINARY, ColumnTypeDto.TINYBLOB, ColumnTypeDto.TINYTEXT, ColumnTypeDto.TEXT, ColumnTypeDto.BLOB, ColumnTypeDto.MEDIUMTEXT, ColumnTypeDto.MEDIUMBLOB, ColumnTypeDto.LONGTEXT, ColumnTypeDto.LONGBLOB, ColumnTypeDto.ENUM, ColumnTypeDto.SET, ColumnTypeDto.BIT, ColumnTypeDto.TINYINT, ColumnTypeDto.BOOL, ColumnTypeDto.BOOL, ColumnTypeDto.SMALLINT, ColumnTypeDto.MEDIUMINT, ColumnTypeDto.INT, ColumnTypeDto.INT, ColumnTypeDto.BIGINT, ColumnTypeDto.FLOAT, ColumnTypeDto.DOUBLE, ColumnTypeDto.DOUBLE, ColumnTypeDto.DOUBLE, ColumnTypeDto.DECIMAL, ColumnTypeDto.DECIMAL, ColumnTypeDto.DATE, ColumnTypeDto.DATETIME, ColumnTypeDto.TIMESTAMP, ColumnTypeDto.TIME, ColumnTypeDto.YEAR);
         for (int i = 0; i < columns.size(); i++) {
             final ColumnDto column = columns.get(i);
+            assertEquals("col" + (i + 1), column.getName());
             assertEquals("col" + (i + 1), column.getInternalName());
             log.trace("column {} has type {}", column.getInternalName(), column.getColumnType());
             assertEquals(types.get(i), column.getColumnType());
@@ -149,5 +158,16 @@ public class ViewServiceIntegrationTest extends BaseUnitTest {
         assertThrows(ViewNotFoundException.class, () -> {
             viewService.find(DATABASE_1, "i_d0_n0t_3x1st");
         });
+    }
+
+    @Test
+    public void save_succeeds() throws ViewNameExistsException {
+
+        /* test */
+        final View response = viewService.save(VIEW_1_DTO);
+        assertEquals(VIEW_1_INTERNAL_NAME, response.getName());
+        assertEquals(VIEW_1_INTERNAL_NAME, response.getInternalName());
+        final List<TableColumn> columns = response.getColumns();
+        assertEquals(3, columns.size());
     }
 }

@@ -32,6 +32,7 @@ public interface QueryMapper {
         final List<ViewDto> views = new LinkedList<>();
         while (result.next()) {
             final ViewDto view = ViewDto.builder()
+                    .name(result.getString("internal_name"))
                     .internalName(result.getString("internal_name"))
                     .build();
             views.add(view);
@@ -44,11 +45,13 @@ public interface QueryMapper {
             ColumnTypeMalformedException {
         log.trace("mapping result list to view result, result={}", result);
         final ViewDto view = ViewDto.builder()
+                .name(name)
                 .internalName(name)
                 .build();
         final List<ColumnDto> columns = new LinkedList<>();
         while (result.next()) {
             final ColumnDto column = ColumnDto.builder()
+                    .name(result.getString("Field"))
                     .internalName(result.getString("Field"))
                     .columnType(typetoColumnTypeDto(result.getString("Type")))
                     .isNullAllowed(nullToBoolean(result.getString("Null")))

@@ -2,10 +2,16 @@ package at.tuwien.service.impl;
 
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.entities.database.Database;
+import at.tuwien.entities.database.View;
 import at.tuwien.exception.ColumnTypeMalformedException;
 import at.tuwien.exception.QueryMalformedException;
+import at.tuwien.exception.ViewNameExistsException;
 import at.tuwien.exception.ViewNotFoundException;
+import at.tuwien.mapper.DatabaseMapper;
 import at.tuwien.mapper.QueryMapper;
+import at.tuwien.mapper.UserMapper;
+import at.tuwien.mapper.ViewMapper;
+import at.tuwien.repository.mdb.ViewRepository;
 import at.tuwien.service.ViewService;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.log4j.Log4j2;
@@ -17,16 +23,26 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 
 @Log4j2
 @Service
 public class ViewServiceImpl extends HibernateConnector implements ViewService {
 
+    private final UserMapper userMapper;
+    private final ViewMapper viewMapper;
     private final QueryMapper queryMapper;
+    private final DatabaseMapper databaseMapper;
+    private final ViewRepository viewRepository;
 
     @Autowired
-    public ViewServiceImpl(QueryMapper queryMapper) {
+    public ViewServiceImpl(UserMapper userMapper, ViewMapper viewMapper, QueryMapper queryMapper,
+                           DatabaseMapper databaseMapper, ViewRepository viewRepository) {
+        this.userMapper = userMapper;
+        this.viewMapper = viewMapper;
         this.queryMapper = queryMapper;
+        this.databaseMapper = databaseMapper;
+        this.viewRepository = viewRepository;
     }
 
     @Override
@@ -56,13 +72,35 @@ public class ViewServiceImpl extends HibernateConnector implements ViewService {
             final Connection connection = dataSource.getConnection();
             final PreparedStatement preparedStatement = prepareStatement(connection, queryMapper.findColumnsForTable(database, name));
             final ResultSet resultSet = preparedStatement.executeQuery();
-            return queryMapper.resultSetToViewDto(resultSet, name);
+            final ViewDto dto = queryMapper.resultSetToViewDto(resultSet, name);
+            dto.setDatabase(databaseMapper.databaseToDatabaseDto(database));
+            dto.setCreator(userMapper.userToUserDto(database.getCreator()));
+            dto.setCreatedBy(userMapper.userToUserDto(database.getCreator()).getId());
+            return dto;
         } catch (SQLException | QueryMalformedException e) {
             log.error("Failed to find view with name {}: {}", name, e.getMessage());
             throw new ViewNotFoundException("Failed to find view with name " + name + ": " + e.getMessage(), e);
         } finally {
             dataSource.close();
         }
+    }
+
+    @Override
+    public View save(ViewDto data) throws ViewNameExistsException {
+        final View mapped = viewMapper.viewDtoToView(data);
+        final int[] idx = new int[]{0};
+        mapped.getColumns()
+                .forEach(c -> c.setOrdinalPosition(idx[0]++));
+        /* check */
+        final Optional<View> optional = viewRepository.findByInternalName(mapped.getInternalName());
+        if (optional.isPresent()) {
+            log.error("Failed to save view: a view with name {} already exists", mapped.getInternalName());
+            throw new ViewNameExistsException("Failed to save view: a view with name " + mapped.getInternalName() + " already exists");
+        }
+        /* save */
+        final View view = viewRepository.save(mapped);
+        log.info("Saved view with id {}", view.getId());
+        return view;
     }
 
     private PreparedStatement prepareStatement(Connection connection, String statement) throws QueryMalformedException {

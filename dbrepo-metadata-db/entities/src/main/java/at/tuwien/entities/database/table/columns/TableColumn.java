@@ -109,15 +109,6 @@ public class TableColumn implements Comparable<TableColumn> {
     @Column(nullable = false)
     private Boolean isNullAllowed = true;
 
-    @Field(name = "enum_values")
-    @ElementCollection
-    @CollectionTable(name = "mdb_columns_enums", joinColumns = {
-            @JoinColumn(name = "id", insertable = false, updatable = false),
-            @JoinColumn(name = "tid", insertable = false, updatable = false),
-            @JoinColumn(name = "edbid", insertable = false, updatable = false)
-    })
-    private List<String> enumValues;
-
     @Field(name = "ordinal_position")
     @Column(nullable = false)
     private Integer ordinalPosition;

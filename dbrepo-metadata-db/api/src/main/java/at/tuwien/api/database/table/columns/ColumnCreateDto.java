@@ -8,6 +8,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.jackson.Jacksonized;
 
+import java.util.List;
+
 @Getter
 @Setter
 @Builder
@@ -44,8 +46,7 @@ public class ColumnCreateDto {
     @Schema(description = "date format id")
     private Long dfid;
 
-    @JsonProperty("enum_values")
     @Schema(description = "enum values, only considered when type = ENUM")
-    private String[] enumValues = null;
+    private List<String> enums = null;
 
 }
