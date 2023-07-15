@@ -1,6 +1,7 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
+import at.tuwien.api.database.ViewBriefDto;
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.columns.ColumnTypeDto;
@@ -58,6 +59,12 @@ public class ViewServiceIntegrationTest extends BaseUnitTest {
     private DatabaseRepository databaseRepository;
 
     @Autowired
+    private TableRepository tableRepository;
+
+    @Autowired
+    private TableColumnRepository tableColumnRepository;
+
+    @Autowired
     private ViewService viewService;
 
     @Container
@@ -74,15 +81,19 @@ public class ViewServiceIntegrationTest extends BaseUnitTest {
         imageRepository.save(IMAGE_1);
         containerRepository.save(CONTAINER_1);
         databaseRepository.save(DATABASE_1);
+        tableRepository.save(TABLE_1);
+        tableRepository.save(TABLE_2);
+        tableColumnRepository.saveAll(TABLE_1_COLUMNS);
+        tableColumnRepository.saveAll(TABLE_2_COLUMNS);
     }
 
     @Test
     public void findAll_succeeds() throws QueryMalformedException {
 
         /* test */
-        final List<ViewDto> views = viewService.findAll(DATABASE_1);
+        final List<ViewBriefDto> views = viewService.findAll(DATABASE_1);
         assertEquals(1, views.size());
-        final ViewDto view0 = views.get(0);
+        final ViewBriefDto view0 = views.get(0);
         assertEquals("hs_weather_aus", view0.getName());
         assertEquals("hs_weather_aus", view0.getInternalName());
     }
@@ -95,9 +106,9 @@ public class ViewServiceIntegrationTest extends BaseUnitTest {
         MariaDbConfig.execute(DATABASE_1, "CREATE VIEW  `" + DATABASE_2_INTERNALNAME + "`.`debug` AS (SELECT 1);");
 
         /* test */
-        final List<ViewDto> views = viewService.findAll(DATABASE_1);
+        final List<ViewBriefDto> views = viewService.findAll(DATABASE_1);
         assertEquals(1, views.size());
-        final ViewDto view0 = views.get(0);
+        final ViewBriefDto view0 = views.get(0);
         assertEquals("hs_weather_aus", view0.getName());
         assertEquals("hs_weather_aus", view0.getInternalName());
     }
@@ -161,13 +172,22 @@ public class ViewServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void save_succeeds() throws ViewNameExistsException {
+    public void save_succeeds() {
 
         /* test */
         final View response = viewService.save(VIEW_1_DTO);
-        assertEquals(VIEW_1_INTERNAL_NAME, response.getName());
+        assertNotNull(response.getName()) /* this is the internal name in the real world outside junit */;
         assertEquals(VIEW_1_INTERNAL_NAME, response.getInternalName());
         final List<TableColumn> columns = response.getColumns();
         assertEquals(3, columns.size());
+        final TableColumn column0 = columns.get(0);
+        assertEquals(COLUMN_2_1_INTERNAL_NAME, column0.getInternalName());
+        assertEquals(COLUMN_2_1_TYPE, column0.getColumnType());
+        final TableColumn column1 = columns.get(1);
+        assertEquals(COLUMN_2_2_INTERNAL_NAME, column1.getInternalName());
+        assertEquals(COLUMN_2_2_TYPE, column1.getColumnType());
+        final TableColumn column2 = columns.get(2);
+        assertEquals(COLUMN_2_3_INTERNAL_NAME, column2.getInternalName());
+        assertEquals(COLUMN_2_3_TYPE, column2.getColumnType());
     }
 }

@@ -1,6 +1,9 @@
 package at.tuwien.mapper;
 
+import at.tuwien.api.database.ViewBriefDto;
 import at.tuwien.api.database.ViewDto;
+import at.tuwien.api.database.table.TableBriefDto;
+import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.columns.ColumnTypeDto;
 import at.tuwien.entities.database.Database;
@@ -23,15 +26,19 @@ public interface QueryMapper {
         return "SELECT TABLE_NAME as internal_name FROM information_schema.TABLES WHERE TABLE_SCHEMA = '" + database.getInternalName() + "' AND TABLE_TYPE = 'VIEW';";
     }
 
+    default String findAllTablesQuery(Database database) {
+        return "SELECT TABLE_NAME as internal_name FROM information_schema.TABLES WHERE TABLE_SCHEMA = '" + database.getInternalName() + "' AND TABLE_TYPE = 'TABLE';";
+    }
+
     default String findColumnsForTable(Database database, String name) {
         return "SHOW COLUMNS FROM `" + name + "`;";
     }
 
-    default List<ViewDto> resultSetToViewDtoList(ResultSet result) throws SQLException {
+    default List<ViewBriefDto> resultSetToViewDtoList(ResultSet result) throws SQLException {
         log.trace("mapping result list to view list result, result={}", result);
-        final List<ViewDto> views = new LinkedList<>();
+        final List<ViewBriefDto> views = new LinkedList<>();
         while (result.next()) {
-            final ViewDto view = ViewDto.builder()
+            final ViewBriefDto view = ViewBriefDto.builder()
                     .name(result.getString("internal_name"))
                     .internalName(result.getString("internal_name"))
                     .build();
@@ -39,6 +46,20 @@ public interface QueryMapper {
         }
         log.trace("mapped result list {} to view list {}", result, views);
         return views;
+    }
+
+    default List<TableBriefDto> resultSetToTableDtoList(ResultSet result) throws SQLException {
+        log.trace("mapping result list to table list result, result={}", result);
+        final List<TableBriefDto> tables = new LinkedList<>();
+        while (result.next()) {
+            final TableBriefDto table = TableBriefDto.builder()
+                    .name(result.getString("internal_name"))
+                    .internalName(result.getString("internal_name"))
+                    .build();
+            tables.add(table);
+        }
+        log.trace("mapped result list {} to table list {}", result, tables);
+        return tables;
     }
 
     default ViewDto resultSetToViewDto(ResultSet result, String name) throws SQLException,
@@ -61,6 +82,28 @@ public interface QueryMapper {
         view.setColumns(columns);
         log.trace("mapped result list {} to view {}", result, view);
         return view;
+    }
+
+    default TableDto resultSetToTableDto(ResultSet result, String name) throws SQLException,
+            ColumnTypeMalformedException {
+        log.trace("mapping result list to table result, result={}", result);
+        final TableDto table = TableDto.builder()
+                .name(name)
+                .internalName(name)
+                .build();
+        final List<ColumnDto> columns = new LinkedList<>();
+        while (result.next()) {
+            final ColumnDto column = ColumnDto.builder()
+                    .name(result.getString("Field"))
+                    .internalName(result.getString("Field"))
+                    .columnType(typetoColumnTypeDto(result.getString("Type")))
+                    .isNullAllowed(nullToBoolean(result.getString("Null")))
+                    .build();
+            columns.add(column);
+        }
+        table.setColumns(columns);
+        log.trace("mapped result list {} to table {}", result, table);
+        return table;
     }
 
     default ColumnTypeDto typetoColumnTypeDto(String data) throws ColumnTypeMalformedException {

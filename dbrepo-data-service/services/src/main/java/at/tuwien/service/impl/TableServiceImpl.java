@@ -1,18 +1,18 @@
 package at.tuwien.service.impl;
 
-import at.tuwien.api.database.ViewBriefDto;
-import at.tuwien.api.database.ViewDto;
+import at.tuwien.api.database.table.TableBriefDto;
+import at.tuwien.api.database.table.TableDto;
 import at.tuwien.entities.database.Database;
-import at.tuwien.entities.database.View;
+import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.ColumnTypeMalformedException;
 import at.tuwien.exception.QueryMalformedException;
-import at.tuwien.exception.ViewNotFoundException;
+import at.tuwien.exception.TableNotFoundException;
 import at.tuwien.mapper.DatabaseMapper;
 import at.tuwien.mapper.QueryMapper;
 import at.tuwien.mapper.UserMapper;
 import at.tuwien.mapper.ViewMapper;
-import at.tuwien.repository.mdb.ViewRepository;
-import at.tuwien.service.ViewService;
+import at.tuwien.repository.mdb.TableRepository;
+import at.tuwien.service.TableService;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,34 +26,34 @@ import java.util.List;
 
 @Log4j2
 @Service
-public class ViewServiceImpl extends HibernateConnector implements ViewService {
+public class TableServiceImpl extends HibernateConnector implements TableService {
 
     private final UserMapper userMapper;
     private final ViewMapper viewMapper;
     private final QueryMapper queryMapper;
     private final DatabaseMapper databaseMapper;
-    private final ViewRepository viewRepository;
+    private final TableRepository tableRepository;
 
     @Autowired
-    public ViewServiceImpl(UserMapper userMapper, ViewMapper viewMapper, QueryMapper queryMapper,
-                           DatabaseMapper databaseMapper, ViewRepository viewRepository) {
+    public TableServiceImpl(UserMapper userMapper, ViewMapper viewMapper, QueryMapper queryMapper,
+                            DatabaseMapper databaseMapper, TableRepository tableRepository) {
         this.userMapper = userMapper;
         this.viewMapper = viewMapper;
         this.queryMapper = queryMapper;
         this.databaseMapper = databaseMapper;
-        this.viewRepository = viewRepository;
+        this.tableRepository = tableRepository;
     }
 
     @Override
-    public List<ViewBriefDto> findAll(Database database) throws QueryMalformedException {
+    public List<TableBriefDto> findAll(Database database) throws QueryMalformedException {
         /* run query */
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(),
                 database.getContainer(), database);
         try {
             final Connection connection = dataSource.getConnection();
-            final PreparedStatement preparedStatement = prepareStatement(connection, queryMapper.findAllViewsQuery(database));
+            final PreparedStatement preparedStatement = prepareStatement(connection, queryMapper.findAllTablesQuery(database));
             final ResultSet resultSet = preparedStatement.executeQuery();
-            return queryMapper.resultSetToViewDtoList(resultSet);
+            return queryMapper.resultSetToTableDtoList(resultSet);
         } catch (SQLException | QueryMalformedException e) {
             log.error("Failed to find views: {}", e.getMessage());
             throw new QueryMalformedException("Failed to find views: " + e.getMessage(), e);
@@ -63,7 +63,7 @@ public class ViewServiceImpl extends HibernateConnector implements ViewService {
     }
 
     @Override
-    public ViewDto find(Database database, String name) throws ViewNotFoundException, ColumnTypeMalformedException {
+    public TableDto find(Database database, String name) throws TableNotFoundException, ColumnTypeMalformedException {
         /* run query */
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(),
                 database.getContainer(), database);
@@ -71,31 +71,31 @@ public class ViewServiceImpl extends HibernateConnector implements ViewService {
             final Connection connection = dataSource.getConnection();
             final PreparedStatement preparedStatement = prepareStatement(connection, queryMapper.findColumnsForTable(database, name));
             final ResultSet resultSet = preparedStatement.executeQuery();
-            final ViewDto dto = queryMapper.resultSetToViewDto(resultSet, name);
+            final TableDto dto = queryMapper.resultSetToTableDto(resultSet, name);
             dto.setDatabase(databaseMapper.databaseToDatabaseDto(database));
             dto.setCreator(userMapper.userToUserDto(database.getCreator()));
             dto.setCreatedBy(userMapper.userToUserDto(database.getCreator()).getId());
             return dto;
         } catch (SQLException | QueryMalformedException e) {
-            log.error("Failed to find view with name {}: {}", name, e.getMessage());
-            throw new ViewNotFoundException("Failed to find view with name " + name + ": " + e.getMessage(), e);
+            log.error("Failed to find table with name {}: {}", name, e.getMessage());
+            throw new TableNotFoundException("Failed to find table with name " + name + ": " + e.getMessage(), e);
         } finally {
             dataSource.close();
         }
     }
 
     @Override
-    public View save(ViewDto data) {
+    public Table save(TableDto data) {
         final int[] idx = new int[]{0};
-        final View mapped = viewMapper.viewDtoToView(data);
+        final Table mapped = viewMapper.tableDtoToTable(data);
         mapped.setColumns(mapped.getColumns()
                 .stream()
                 .peek(c -> c.setOrdinalPosition(idx[0]++))
                 .toList());
         /* save */
-        final View view = viewRepository.save(mapped);
-        log.info("Saved view with id {}", view.getId());
-        return view;
+        final Table table = tableRepository.save(mapped);
+        log.info("Saved table with id {}", table.getId());
+        return table;
     }
 
     private PreparedStatement prepareStatement(Connection connection, String statement) throws QueryMalformedException {
@@ -108,3 +108,4 @@ public class ViewServiceImpl extends HibernateConnector implements ViewService {
     }
 
 }
+
