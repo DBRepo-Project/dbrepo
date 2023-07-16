@@ -1,6 +1,7 @@
 package at.tuwien.entities.database.table.columns;
 
 import at.tuwien.entities.container.image.ContainerImageDate;
+import at.tuwien.entities.database.View;
 import at.tuwien.entities.database.table.Table;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
@@ -60,6 +61,10 @@ public class TableColumn implements Comparable<TableColumn> {
             @JoinColumn(name = "cdbid", referencedColumnName = "tdbid", insertable = false, updatable = false)
     })
     private Table table;
+
+    @ToString.Exclude
+    @org.springframework.data.annotation.Transient
+    private transient View view;
 
     @Column(name = "cname", nullable = false)
     private String name;

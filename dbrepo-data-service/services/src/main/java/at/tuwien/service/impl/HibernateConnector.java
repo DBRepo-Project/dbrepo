@@ -4,9 +4,14 @@ import at.tuwien.entities.container.Container;
 import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.user.User;
+import at.tuwien.exception.QueryMalformedException;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 @Log4j2
 @Service
@@ -60,6 +65,15 @@ public abstract class HibernateConnector {
 
         log.debug("connecting via jdbc, url={}", stringBuilder);
         return stringBuilder.toString();
+    }
+
+    public PreparedStatement prepareStatement(Connection connection, String statement) throws QueryMalformedException {
+        try {
+            return connection.prepareStatement(statement);
+        } catch (SQLException e) {
+            log.error("Failed to prepare statement {}m reason: {}", statement, e.getMessage());
+            throw new QueryMalformedException("Failed to prepare statement", e);
+        }
     }
 
 }

@@ -6,6 +6,8 @@ import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.columns.ColumnTypeDto;
+import at.tuwien.api.user.UserBriefDto;
+import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.ColumnTypeMalformedException;
 import org.mapstruct.Mapper;
@@ -28,6 +30,14 @@ public interface QueryMapper {
 
     default String findAllTablesQuery(Database database) {
         return "SELECT TABLE_NAME as internal_name, IF(TABLE_TYPE = 'SYSTEM VERSIONED', true, false) as is_versioned FROM information_schema.TABLES WHERE TABLE_SCHEMA = '" + database.getInternalName() + "' AND TABLE_NAME != 'qs_queries' AND (TABLE_TYPE = 'BASE TABLE' OR TABLE_TYPE = 'SYSTEM VERSIONED');";
+    }
+
+    default String findTableQuery(Database database, String name) {
+        return "SELECT TABLE_NAME as internal_name, IF(TABLE_TYPE = 'SYSTEM VERSIONED', true, false) as is_versioned FROM information_schema.TABLES WHERE TABLE_SCHEMA = '" + database.getInternalName() + "' AND TABLE_NAME = '" + name + "';";
+    }
+
+    default String findAllUsersQuery() {
+        return "SELECT DISTINCT user as username FROM mysql.user WHERE user != 'mariadb.sys' ORDER BY user ASC";
     }
 
     default String findColumnsForTable(Database database, String name) {
@@ -105,6 +115,19 @@ public interface QueryMapper {
         table.setColumns(columns);
         log.trace("mapped result list {} to table {}", result, table);
         return table;
+    }
+
+    default List<UserBriefDto> resultSetToUserDtoList(ResultSet result) throws SQLException {
+        log.trace("mapping result list to user result, result={}", result);
+        final List<UserBriefDto> users = new LinkedList<>();
+        while (result.next()) {
+            final UserBriefDto user = UserBriefDto.builder()
+                    .username(result.getString("username"))
+                    .build();
+            users.add(user);
+        }
+        log.trace("mapped result list {} to user list {}", result, users);
+        return users;
     }
 
     default ColumnTypeDto typetoColumnTypeDto(String data) throws ColumnTypeMalformedException {

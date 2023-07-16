@@ -98,13 +98,4 @@ public class ViewServiceImpl extends HibernateConnector implements ViewService {
         return view;
     }
 
-    private PreparedStatement prepareStatement(Connection connection, String statement) throws QueryMalformedException {
-        try {
-            return connection.prepareStatement(statement);
-        } catch (SQLException e) {
-            log.error("Failed to prepare statement {}m reason: {}", statement, e.getMessage());
-            throw new QueryMalformedException("Failed to prepare statement", e);
-        }
-    }
-
 }

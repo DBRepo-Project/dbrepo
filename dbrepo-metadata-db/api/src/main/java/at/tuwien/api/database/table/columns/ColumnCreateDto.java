@@ -49,4 +49,7 @@ public class ColumnCreateDto {
     @Schema(description = "enum values, only considered when type = ENUM")
     private List<String> enums = null;
 
+    @Schema(description = "set values, only considered when type = SET")
+    private List<String> sets = null;
+
 }

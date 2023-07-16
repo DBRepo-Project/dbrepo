@@ -19,6 +19,7 @@ import at.tuwien.exception.QueryStoreException;
 import at.tuwien.exception.TableMalformedException;
 import at.tuwien.querystore.Query;
 import net.sf.jsqlparser.statement.select.SelectItem;
+import org.hibernate.engine.jdbc.BinaryStream;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
@@ -26,6 +27,9 @@ import org.mapstruct.Named;
 import org.mariadb.jdbc.MariaDbBlob;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.math.BigInteger;
 import java.sql.Date;
 import java.sql.*;
@@ -33,6 +37,7 @@ import java.text.Normalizer;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.ChronoField;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -166,7 +171,7 @@ public interface QueryMapper {
                         log.trace("import column has date format, need to format it differently");
                         /* reformat dates */
                         columnToDateSet(data, column, set);
-                    } else if (column.getColumnType().equals(TableColumnType.BOOLEAN)) {
+                    } else if (column.getColumnType().equals(TableColumnType.BOOL)) {
                         log.trace("import column has boolean format, need to format it differently");
                         /* reformat booleans */
                         columnToBoolSet(data, column, set);
@@ -771,7 +776,7 @@ public interface QueryMapper {
             return null;
         }
         switch (column.getColumnType()) {
-            case BLOB -> {
+            case BLOB, TINYBLOB, MEDIUMBLOB, LONGBLOB -> {
                 log.trace("mapping {} to blob", data);
                 return new MariaDbBlob((byte[]) data);
             }
@@ -800,27 +805,57 @@ public interface QueryMapper {
                 return Timestamp.valueOf(data.toString())
                         .toInstant();
             }
-            case ENUM, TEXT, STRING -> {
+            case DATETIME -> {
+                if (column.getDateFormat() == null) {
+                    log.error("Missing date format for column {} of table {}", column.getId(),
+                            column.getTable().getId());
+                    throw new IllegalArgumentException("Missing date format");
+                }
+                log.trace("mapping {} to timestamp with format '{}'", data, column.getDateFormat());
+                return Timestamp.valueOf(data.toString())
+                        .toInstant();
+            }
+            case BINARY, VARBINARY, BIT -> {
+                log.trace("mapping {} to binary", data);
+                return Long.parseLong(String.valueOf(data), 2);
+            }
+            case TEXT, CHAR, VARCHAR, TINYTEXT, MEDIUMTEXT, LONGTEXT, ENUM, SET -> {
                 log.trace("mapping {} to character array", data);
                 return String.valueOf(data);
             }
-            case NUMBER -> {
-                log.trace("mapping {} to non-decimal number", data);
+            case BIGINT -> {
+                log.trace("mapping {} to bigint number", data);
                 return new BigInteger(String.valueOf(data));
             }
-            case DECIMAL -> {
+            case INT, TINYINT, SMALLINT, MEDIUMINT -> {
+                log.trace("mapping {} to int number", data);
+                return Integer.parseInt(String.valueOf(data));
+            }
+            case DECIMAL, FLOAT, DOUBLE -> {
                 log.trace("mapping {} to decimal number", data);
                 return Double.valueOf(String.valueOf(data));
             }
-            case BOOLEAN -> {
+            case BOOL -> {
                 log.trace("mapping {} to boolean", data);
                 return Boolean.valueOf(String.valueOf(data));
             }
-            default -> {
-                log.warn("column type {} is not known", column.getColumnType());
-                throw new IllegalArgumentException("Column type not known");
+            case TIME -> {
+                log.trace("mapping {} to time", data);
+                return Instant.parse(String.valueOf(data));
+            }
+            case YEAR -> {
+                log.trace("mapping {} to year", data);
+                Instant.now()
+                        .with(ChronoField.YEAR_OF_ERA, Long.parseLong(String.valueOf(data)))
+                        .with(ChronoField.MONTH_OF_YEAR, 0)
+                        .with(ChronoField.DAY_OF_YEAR, 0)
+                        .with(ChronoField.HOUR_OF_DAY, 0)
+                        .with(ChronoField.MINUTE_OF_DAY, 0)
+                        .with(ChronoField.SECOND_OF_DAY, 0);
             }
         }
+        log.warn("column type {} is not known", column.getColumnType());
+        throw new IllegalArgumentException("Column type not known");
     }
 
     @Named("EscapedString")
@@ -894,9 +929,17 @@ public interface QueryMapper {
 
     default void prepareStatementWithColumnTypeObject(PreparedStatement ps, TableColumnType columnType, int idx, Object value) throws SQLException {
         switch (columnType) {
-            case TEXT:
-            case STRING:
-                log.trace("prepare statement idx {} string {}", idx, value);
+            case BLOB, TINYBLOB, MEDIUMBLOB, LONGBLOB:
+                log.trace("prepare statement idx {} blob", idx);
+                try {
+                    ps.setBlob(idx, new FileInputStream(String.valueOf(value)));
+                } catch (FileNotFoundException e) {
+                    log.error("Failed to set blob: {}", e.getMessage());
+                    throw new SQLException("Failed to set blob", e);
+                }
+                break;
+            case TEXT, CHAR, VARCHAR, TINYTEXT, MEDIUMTEXT, LONGTEXT, ENUM, SET:
+                log.trace("prepare statement idx {} {} {}", idx, columnType, value);
                 if (value == null) {
                     log.trace("idx {} is null, prepare with null value", idx);
                     ps.setNull(idx, Types.VARCHAR);
@@ -913,11 +956,38 @@ public interface QueryMapper {
                 }
                 ps.setDate(idx, Date.valueOf(String.valueOf(value)));
                 break;
-            case NUMBER:
-                log.trace("prepare statement idx {} number {}", idx, value);
+            case BIGINT:
+                log.trace("prepare statement idx {} bigint {}", idx, value);
                 if (value == null) {
                     log.trace("idx {} is null, prepare with null value", idx);
                     ps.setNull(idx, Types.BIGINT);
+                    break;
+                }
+                ps.setLong(idx, Long.parseLong(String.valueOf(value)));
+                break;
+            case INT, MEDIUMINT:
+                log.trace("prepare statement idx {} {} {}", idx, columnType, value);
+                if (value == null) {
+                    log.trace("idx {} is null, prepare with null value", idx);
+                    ps.setNull(idx, Types.INTEGER);
+                    break;
+                }
+                ps.setLong(idx, Long.parseLong(String.valueOf(value)));
+                break;
+            case TINYINT:
+                log.trace("prepare statement idx {} tinyint {}", idx, value);
+                if (value == null) {
+                    log.trace("idx {} is null, prepare with null value", idx);
+                    ps.setNull(idx, Types.TINYINT);
+                    break;
+                }
+                ps.setLong(idx, Long.parseLong(String.valueOf(value)));
+                break;
+            case SMALLINT:
+                log.trace("prepare statement idx {} smallint {}", idx, value);
+                if (value == null) {
+                    log.trace("idx {} is null, prepare with null value", idx);
+                    ps.setNull(idx, Types.SMALLINT);
                     break;
                 }
                 ps.setLong(idx, Long.parseLong(String.valueOf(value)));
@@ -931,7 +1001,34 @@ public interface QueryMapper {
                 }
                 ps.setDouble(idx, Double.parseDouble(String.valueOf(value)));
                 break;
-            case BOOLEAN:
+            case FLOAT:
+                log.trace("prepare statement idx {} float {}", idx, value);
+                if (value == null) {
+                    log.trace("idx {} is null, prepare with null value", idx);
+                    ps.setNull(idx, Types.FLOAT);
+                    break;
+                }
+                ps.setDouble(idx, Double.parseDouble(String.valueOf(value)));
+                break;
+            case DOUBLE:
+                log.trace("prepare statement idx {} double {}", idx, value);
+                if (value == null) {
+                    log.trace("idx {} is null, prepare with null value", idx);
+                    ps.setNull(idx, Types.DOUBLE);
+                    break;
+                }
+                ps.setDouble(idx, Double.parseDouble(String.valueOf(value)));
+                break;
+            case BINARY, VARBINARY, BIT:
+                log.trace("prepare statement idx {} {} {}", idx, columnType, value);
+                if (value == null) {
+                    log.trace("idx {} is null, prepare with null value", idx);
+                    ps.setNull(idx, Types.DECIMAL);
+                    break;
+                }
+                ps.setBinaryStream(idx, (InputStream) value);
+                break;
+            case BOOL:
                 log.trace("prepare statement idx {} boolean {}", idx, value);
                 if (value == null) {
                     log.trace("idx {} is null, prepare with null value", idx);
@@ -948,6 +1045,33 @@ public interface QueryMapper {
                     break;
                 }
                 ps.setTimestamp(idx, Timestamp.valueOf(String.valueOf(value)));
+                break;
+            case DATETIME:
+                log.trace("prepare statement idx {} datetime {}", idx, value);
+                if (value == null) {
+                    log.trace("idx {} is null, prepare with null value", idx);
+                    ps.setNull(idx, Types.TIMESTAMP);
+                    break;
+                }
+                ps.setTimestamp(idx, Timestamp.valueOf(String.valueOf(value)));
+                break;
+            case TIME:
+                log.trace("prepare statement idx {} time {}", idx, value);
+                if (value == null) {
+                    log.trace("idx {} is null, prepare with null value", idx);
+                    ps.setNull(idx, Types.TIME);
+                    break;
+                }
+                ps.setTime(idx, Time.valueOf(String.valueOf(value)));
+                break;
+            case YEAR:
+                log.trace("prepare statement idx {} year {}", idx, value);
+                if (value == null) {
+                    log.trace("idx {} is null, prepare with null value", idx);
+                    ps.setNull(idx, Types.TIME);
+                    break;
+                }
+                ps.setString(idx, String.valueOf(value));
                 break;
             default:
                 log.error("Failed to map column type {} at index {} for value {}", columnType, idx, value);
