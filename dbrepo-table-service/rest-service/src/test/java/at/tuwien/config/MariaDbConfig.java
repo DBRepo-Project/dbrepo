@@ -2,6 +2,7 @@ package at.tuwien.config;
 
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
+import at.tuwien.entities.database.table.Table;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
@@ -9,8 +10,10 @@ import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 
 import java.sql.*;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Configuration
@@ -44,6 +47,27 @@ public class MariaDbConfig {
             statement.close();
             log.debug("received queryId={}", queryId);
             return queryId;
+        }
+    }
+
+    public static Map<String, List<Object>> describeTableSchema(Table table, String username, String password)
+            throws SQLException {
+        final String jdbc = "jdbc:mariadb://" + table.getDatabase().getContainer().getHost() + ":" + table.getDatabase().getContainer().getPort() + "/" + table.getDatabase().getInternalName();
+        log.trace("connect to database {}", jdbc);
+        final Map<String, List<Object>> out = new HashMap<>();
+        try (Connection connection = DriverManager.getConnection(jdbc, username, password)) {
+            final String query = "SHOW COLUMNS FROM `" + table.getInternalName() + "`;";
+            log.trace("prepare statement '{}'", query);
+            final PreparedStatement statement = connection.prepareStatement(query);
+            final ResultSet resultSet = statement.executeQuery();
+            statement.close();
+            while (resultSet.next()) {
+                if (resultSet.getString("Field").equals("id")) {
+                    continue;
+                }
+                out.put(resultSet.getString("Field"), List.of(resultSet.getString("Type"), resultSet.getString("Null"), resultSet.getString("Key")));
+            }
+            return out;
         }
     }
 

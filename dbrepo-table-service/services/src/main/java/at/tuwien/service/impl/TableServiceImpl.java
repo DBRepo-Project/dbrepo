@@ -2,7 +2,9 @@ package at.tuwien.service.impl;
 
 import at.tuwien.api.database.table.TableCreateDto;
 import at.tuwien.api.database.table.TableCreateRawQuery;
+import at.tuwien.api.database.table.columns.ColumnCreateDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
+import at.tuwien.api.database.table.columns.ColumnTypeDto;
 import at.tuwien.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
@@ -26,6 +28,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -112,8 +115,27 @@ public class TableServiceImpl extends HibernateConnector implements TableService
     public Table createTable(Long databaseId, TableCreateDto createDto, Principal principal)
             throws ImageNotSupportedException, DatabaseNotFoundException, TableMalformedException,
             TableNameExistsException, UserNotFoundException, QueryMalformedException {
+        /* checks */
+        if (createDto.getName().isBlank()) {
+            log.error("Failed create table: table name is blank");
+            throw new TableMalformedException("Failed create table: table name is blank");
+        }
+        final List<ColumnCreateDto> check1 = createDto.getColumns().stream().filter(c -> c.getType().equals(ColumnTypeDto.VARBINARY)).toList();
+        if (check1.stream().anyMatch(c -> Objects.isNull(c.getLength()))) {
+            log.error("Failed create table: length field is blank for column {}", check1.get(0).getName());
+            throw new TableMalformedException("Failed create table: length field is blank for column " + check1.get(0).getName());
+        }
+        final List<ColumnCreateDto> check2 = createDto.getColumns().stream().filter(c -> c.getType().equals(ColumnTypeDto.SET)).toList();
+        if (check2.stream().anyMatch(c -> c.getSets() == null || c.getSets().size() == 0)) {
+            log.error("Failed create table: set values are blank for column {}", check2.get(0).getName());
+            throw new TableMalformedException("Failed create table: set values are blank for column " + check2.get(0).getName());
+        }
         /* find */
         final Database database = databaseService.find(databaseId);
+        if (!database.getContainer().getImage().getName().equals("mariadb")) {
+            log.error("Currently only MariaDB is supported");
+            throw new ImageNotSupportedException("Currently only MariaDB is supported");
+        }
         final Optional<Table> optional = tableRepository.findByDatabaseAndInternalName(database,
                 tableMapper.nameToInternalName(createDto.getName()));
         if (optional.isPresent()) {
@@ -125,7 +147,7 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         final TableCreateRawQuery query;
         try {
             final Connection connection = dataSource.getConnection();
-            query = tableMapper.tableToCreateTableRawQuery(connection, database, createDto);
+            query = tableMapper.tableToCreateTableRawQuery(connection, createDto);
             if (query.getGenerated()) {
                 /* in case the id column needs to be generated, we need to generate the sequence too */
                 final PreparedStatement preparedStatement10 = tableMapper.tableToCreateSequenceRawQuery(connection, database, createDto);

@@ -13,6 +13,7 @@ import at.tuwien.api.database.table.constraints.ConstraintsCreateDto;
 import at.tuwien.api.database.table.constraints.foreignKey.ForeignKeyCreateDto;
 import at.tuwien.api.database.table.constraints.foreignKey.ForeignKeyDto;
 import at.tuwien.api.database.table.constraints.foreignKey.ReferenceTypeDto;
+import at.tuwien.api.database.table.constraints.unique.UniqueDto;
 import at.tuwien.api.semantics.EntityDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
@@ -60,9 +61,13 @@ public interface TableMapper {
             @Mapping(target = "routingKey", expression = "java(data.getRoutingKey())"),
             @Mapping(source = "description", target = "description"),
             @Mapping(source = "database.isPublic", target = "isPublic"),
-            @Mapping(source = "constraints", target = "constraints"),
     })
     TableDto tableToTableDto(Table data);
+
+    @Mappings({
+            @Mapping(target = "table", ignore = true),
+    })
+    UniqueDto uniqueToUniqueDto(Unique data);
 
     /* keep */
     @Mappings({
@@ -193,6 +198,9 @@ public interface TableMapper {
 
     /* keep */
     default List<String> tableColumnEnumListToStringList(List<TableColumnEnum> data) {
+        if (data == null) {
+            return List.of();
+        }
         return data.stream()
                 .map(TableColumnEnum::getValue)
                 .toList();
@@ -200,6 +208,9 @@ public interface TableMapper {
 
     /* keep */
     default List<TableColumnEnum> stringListToTableColumnEnumList(List<String> data) {
+        if (data == null) {
+            return List.of();
+        }
         return data.stream()
                 .map(s -> TableColumnEnum.builder()
                         .value(s)
@@ -209,6 +220,9 @@ public interface TableMapper {
 
     /* keep */
     default List<String> tableColumnSetListToStringList(List<TableColumnSet> data) {
+        if (data == null) {
+            return List.of();
+        }
         return data.stream()
                 .map(TableColumnSet::getValue)
                 .toList();
@@ -216,6 +230,9 @@ public interface TableMapper {
 
     /* keep */
     default List<TableColumnSet> stringListToTableColumnSetList(List<String> data) {
+        if (data == null) {
+            return List.of();
+        }
         return data.stream()
                 .map(s -> TableColumnSet.builder()
                         .value(s)
@@ -304,23 +321,16 @@ public interface TableMapper {
      * @return The MySQL string.
      */
     default String columnTypeDtoToDataType(ColumnCreateDto data) {
-        switch (data.getType()) {
-            case CHAR:
-                return "CHAR(" + Objects.requireNonNullElse(data.getLength(), 1) + ")";
-            case VARCHAR:
-                return "TINYINT(" + data.getLength() + ")";
-            case BINARY:
-                return "BINARY(" + Objects.requireNonNullElse(data.getLength(), 1) + ")";
-            case VARBINARY:
-                return "VARBINARY(" + Objects.requireNonNullElse(data.getLength(), 255) + ")";
-            case ENUM:
-                return "ENUM (" + String.join(",", data.getEnums()) + ")";
-            case SET:
-                return "SET (" + String.join(",", data.getSets()) + ")";
-            case BIT:
-                return "BIT(" + Objects.requireNonNullElse(data.getLength(), 1) + ")";
-        }
-        return data.getType().getType().toUpperCase();
+        return switch (data.getType()) {
+            case CHAR -> "CHAR" + (data.getLength() != null ? "(" + data.getLength() + ")" : "");
+            case VARCHAR -> "TINYINT" + (data.getLength() != null ? "(" + data.getLength() + ")" : "");
+            case BINARY -> "BINARY" + (data.getLength() != null ? "(" + data.getLength() + ")" : "");
+            case VARBINARY -> "VARBINARY" + (data.getLength() != null ? "(" + data.getLength() + ")" : "");
+            case ENUM -> "ENUM (" + String.join(",", data.getEnums().stream().map(e -> ("'" + e + "'")).toList()) + ")";
+            case SET -> "SET (" + String.join(",", data.getSets().stream().map(e -> ("'" + e + "'")).toList()) + ")";
+            case BIT -> "BIT" + (data.getLength() != null ? "(" + data.getLength() + ")" : "");
+            default -> data.getType().getType().toUpperCase();
+        };
     }
 
     /**
@@ -352,26 +362,18 @@ public interface TableMapper {
      * Map the table to a create table query
      * TODO for e.g. postgres image
      *
-     * @param database The database
-     * @param data     The table
+     * @param data The table
      * @return The create table query
      */
-    default TableCreateRawQuery tableToCreateTableRawQuery(Connection connection, Database database, TableCreateDto data)
-            throws ImageNotSupportedException, TableMalformedException, QueryMalformedException {
-        if (!database.getContainer().getImage().getName().equals("mariadb")) {
-            log.error("Currently only MariaDB is supported");
-            throw new ImageNotSupportedException("Currently only MariaDB is supported");
-        }
-        if (data.getName().isBlank()) {
-            log.error("Failed to map create table statement: table name is blank");
-            throw new TableMalformedException("Failed to map create table statement");
-        }
+    default TableCreateRawQuery tableToCreateTableRawQuery(Connection connection, TableCreateDto data)
+            throws TableMalformedException, QueryMalformedException {
         final StringBuilder query = new StringBuilder("CREATE TABLE `")
                 .append(nameToInternalName(data.getName()))
                 .append("` (");
         /* internal checks */
         final boolean primaryColumnExists = data.getColumns()
                 .stream()
+                .filter(c -> Objects.nonNull(c.getPrimaryKey()))
                 .anyMatch(ColumnCreateDto::getPrimaryKey);
         /* create columns */
         if (!primaryColumnExists) {
@@ -401,7 +403,7 @@ public interface TableMapper {
                     /* data type */
                     .append(columnTypeDtoToDataType(column))
                     /* null expressions */
-                    .append(column.getNullAllowed() ? " NULL" : " NOT NULL")
+                    .append(column.getNullAllowed() != null && column.getNullAllowed() ? " NULL" : " NOT NULL")
                     /* default expressions */
                     .append(!primaryColumnExists && column.getName().equals(
                             "id") ? " DEFAULT NEXTVAL(`" + tableCreateDtoToSequenceName(data) + "`)" : "");
@@ -410,6 +412,7 @@ public interface TableMapper {
         query.append(", PRIMARY KEY (")
                 .append(String.join(",", data.getColumns()
                         .stream()
+                        .filter(c -> Objects.nonNull(c.getPrimaryKey()))
                         .filter(ColumnCreateDto::getPrimaryKey)
                         .map(c -> "`" + nameToInternalName(
                                 c.getName()) + "`" + columnCreateDtoToPrimaryKeyLengthSpecification(c))
@@ -519,6 +522,7 @@ public interface TableMapper {
         final int[] idx = new int[]{0};
         data.getColumns()
                 .stream()
+                .filter(c -> Objects.nonNull(c.getIsPrimaryKey()))
                 .filter(TableColumn::getIsPrimaryKey)
                 .forEach(c -> statement.append(idx[0]++ > 0 ? "," : "")
                         .append("`")

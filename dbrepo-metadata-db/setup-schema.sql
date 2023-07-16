@@ -131,7 +131,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns`
     is_primary_key   BOOLEAN                NOT NULL,
     index_length     INT                    NULL,
     auto_generated   BOOLEAN                         DEFAULT false,
-    is_null_allowed  BOOLEAN                NOT NULL,
+    is_null_allowed  BOOLEAN                NOT NULL DEFAULT true,
     created_by       character varying(255) NOT NULL,
     created          timestamp              NOT NULL DEFAULT NOW(),
     last_modified    timestamp,
