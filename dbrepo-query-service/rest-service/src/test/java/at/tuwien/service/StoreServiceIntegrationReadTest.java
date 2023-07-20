@@ -1,7 +1,6 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.config.IndexConfig;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.MariaDbContainerConfig;
 import at.tuwien.exception.*;
@@ -43,9 +42,6 @@ import static org.mockito.Mockito.when;
 @EnableAutoConfiguration(exclude= RabbitAutoConfiguration.class)
 @SpringBootTest
 public class StoreServiceIntegrationReadTest extends BaseUnitTest {
-
-    @MockBean
-    private IndexConfig indexConfig;
 
     @MockBean
     private Channel channel;

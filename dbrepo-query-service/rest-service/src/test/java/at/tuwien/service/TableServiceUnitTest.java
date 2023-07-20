@@ -1,7 +1,6 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.config.IndexConfig;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.exception.DatabaseNotFoundException;
 import at.tuwien.exception.TableNotFoundException;
@@ -37,9 +36,6 @@ public class TableServiceUnitTest extends BaseUnitTest {
 
     @MockBean
     private Channel channel;
-
-    @MockBean
-    private IndexConfig indexConfig;
 
     @MockBean
     private ViewIdxRepository viewIdxRepository;

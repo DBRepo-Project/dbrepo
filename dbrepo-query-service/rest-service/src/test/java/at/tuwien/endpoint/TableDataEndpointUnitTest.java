@@ -5,7 +5,6 @@ import at.tuwien.SortType;
 import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.TableCsvDto;
-import at.tuwien.config.IndexConfig;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.database.table.Table;
@@ -63,9 +62,6 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
     @MockBean
     private DatabaseService databaseService;
-
-    @MockBean
-    private IndexConfig indexInitializer;
 
     @MockBean
     private AccessService accessService;

@@ -5,7 +5,6 @@ import at.tuwien.api.maintenance.BannerMessageBriefDto;
 import at.tuwien.api.maintenance.BannerMessageCreateDto;
 import at.tuwien.api.maintenance.BannerMessageDto;
 import at.tuwien.api.maintenance.BannerMessageUpdateDto;
-import at.tuwien.config.IndexConfig;
 import at.tuwien.entities.maintenance.BannerMessage;
 import at.tuwien.exception.BannerMessageNotFoundException;
 import at.tuwien.repository.sdb.UserIdxRepository;
@@ -35,9 +34,6 @@ import static org.mockito.Mockito.*;
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 public class MaintenanceEndpointUnitTest extends BaseUnitTest {
-
-    @MockBean
-    private IndexConfig indexConfig;
 
     @MockBean
     private UserIdxRepository userIdxRepository;

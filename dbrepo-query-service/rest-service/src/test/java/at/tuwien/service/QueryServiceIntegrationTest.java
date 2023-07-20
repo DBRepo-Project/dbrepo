@@ -5,7 +5,6 @@ import at.tuwien.ExportResource;
 import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.TableCsvDto;
-import at.tuwien.config.IndexConfig;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.BrokerServiceGateway;
@@ -56,9 +55,6 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
     @MockBean
     private Channel channel;
-
-    @MockBean
-    private IndexConfig indexInitializer;
 
     @MockBean
     private RabbitMqListenerImpl rabbitMqListener;

@@ -1,7 +1,6 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.config.IndexConfig;
 import at.tuwien.entities.user.UserAttribute;
 import at.tuwien.exception.UserAttributeNotFoundException;
 import at.tuwien.repository.mdb.UserAttributeRepository;
@@ -29,9 +28,6 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 public class UserAttributeServiceIntegrationTest extends BaseUnitTest {
-
-    @MockBean
-    private IndexConfig indexConfig;
 
     @MockBean
     private UserIdxRepository userIdxRepository;

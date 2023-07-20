@@ -5,7 +5,6 @@ import at.tuwien.api.identifier.BibliographyTypeDto;
 import at.tuwien.api.identifier.CreatorDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.identifier.IdentifierSaveDto;
-import at.tuwien.config.IndexConfig;
 import at.tuwien.endpoints.PersistenceEndpoint;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.user.User;
@@ -49,9 +48,6 @@ import static org.mockito.Mockito.*;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 public class PersistenceEndpointUnitTest extends BaseUnitTest {
-
-    @MockBean
-    private IndexConfig indexConfig;
 
     @MockBean
     private IdentifierIdxRepository identifierIdxRepository;

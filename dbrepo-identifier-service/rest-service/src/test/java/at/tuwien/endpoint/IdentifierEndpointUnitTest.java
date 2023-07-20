@@ -3,7 +3,6 @@ package at.tuwien.endpoint;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.identifier.*;
 import at.tuwien.config.EndpointConfig;
-import at.tuwien.config.IndexConfig;
 import at.tuwien.endpoints.IdentifierEndpoint;
 import at.tuwien.endpoints.PersistenceEndpoint;
 import at.tuwien.entities.database.Database;
@@ -45,9 +44,6 @@ import static org.mockito.Mockito.when;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 public class IdentifierEndpointUnitTest extends BaseUnitTest {
-
-    @MockBean
-    private IndexConfig indexConfig;
 
     @MockBean
     private IdentifierService identifierService;

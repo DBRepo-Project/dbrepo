@@ -3,7 +3,6 @@ package at.tuwien.endpoint;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
-import at.tuwien.config.IndexConfig;
 import at.tuwien.endpoints.TableColumnEndpoint;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
@@ -46,9 +45,6 @@ public class TableColumnEndpointUnitTest extends BaseUnitTest {
 
     @MockBean
     private Channel channel;
-
-    @MockBean
-    private IndexConfig indexInitializer;
 
     @MockBean
     private UnitIdxRepository unitIdxRepository;

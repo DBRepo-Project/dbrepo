@@ -5,8 +5,6 @@ import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.user.UserPasswordDto;
 import at.tuwien.api.user.UserThemeSetDto;
 import at.tuwien.api.user.UserUpdateDto;
-import at.tuwien.config.IndexConfig;
-import at.tuwien.entities.user.Role;
 import at.tuwien.entities.user.User;
 import at.tuwien.entities.user.UserAttribute;
 import at.tuwien.exception.*;
@@ -39,9 +37,6 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 public class UserServiceIntegrationTest extends BaseUnitTest {
-
-    @MockBean
-    private IndexConfig indexConfig;
 
     @MockBean
     private UserIdxRepository userIdxRepository;

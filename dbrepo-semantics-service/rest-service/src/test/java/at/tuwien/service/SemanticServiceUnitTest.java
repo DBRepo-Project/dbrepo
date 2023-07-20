@@ -69,15 +69,15 @@ public class SemanticServiceUnitTest extends BaseUnitTest {
 
         /* mock */
         when(tableColumnUnitRepository.findAll())
-                .thenReturn(List.of(COLUMN_UNIT_DEGREES_CELSIUS));
+                .thenReturn(List.of(UNIT_1));
 
         /* test */
         final List<TableColumnUnit> response = semanticService.findAllUnits();
         assertEquals(1, response.size());
         final TableColumnUnit unit0 = response.get(0);
-        assertEquals(COLUMN_UNIT_DEGREES_CELSIUS_URI, unit0.getUri());
-        assertEquals(COLUMN_UNIT_DEGREES_CELSIUS_NAME, unit0.getName());
-        assertEquals(COLUMN_UNIT_DEGREES_CELSIUS_DESCRIPTION, unit0.getDescription());
+        assertEquals(UNIT_1_URI, unit0.getUri());
+        assertEquals(UNIT_1_NAME, unit0.getName());
+        assertEquals(UNIT_1_DESCRIPTION, unit0.getDescription());
     }
 
     @Test
@@ -85,15 +85,15 @@ public class SemanticServiceUnitTest extends BaseUnitTest {
 
         /* mock */
         when(unitIdxRepository.save(any(UnitDto.class)))
-                .thenReturn(COLUMN_UNIT_DEGREES_CELSIUS_DTO);
+                .thenReturn(UNIT_1_DTO);
         when(tableColumnUnitRepository.save(any(TableColumnUnit.class)))
-                .thenReturn(COLUMN_UNIT_DEGREES_CELSIUS);
+                .thenReturn(UNIT_1);
 
         /* test */
-        final TableColumnUnit response = semanticService.saveUnit(COLUMN_UNIT_DEGREES_CELSIUS_SAVE_DTO);
-        assertEquals(COLUMN_UNIT_DEGREES_CELSIUS_URI, response.getUri());
-        assertEquals(COLUMN_UNIT_DEGREES_CELSIUS_NAME, response.getName());
-        assertEquals(COLUMN_UNIT_DEGREES_CELSIUS_DESCRIPTION, response.getDescription());
+        final TableColumnUnit response = semanticService.saveUnit(UNIT_1_SAVE_DTO);
+        assertEquals(UNIT_1_URI, response.getUri());
+        assertEquals(UNIT_1_NAME, response.getName());
+        assertEquals(UNIT_1_DESCRIPTION, response.getDescription());
     }
 
     @Test
@@ -101,15 +101,15 @@ public class SemanticServiceUnitTest extends BaseUnitTest {
 
         /* mock */
         when(unitIdxRepository.save(any(UnitDto.class)))
-                .thenReturn(COLUMN_UNIT_TON_DTO);
+                .thenReturn(UNIT_2_DTO);
         when(tableColumnUnitRepository.save(any(TableColumnUnit.class)))
-                .thenReturn(COLUMN_UNIT_TON);
+                .thenReturn(UNIT_2);
 
         /* test */
-        final TableColumnUnit response = semanticService.saveUnit(COLUMN_UNIT_TON_SAVE_DTO);
-        assertEquals(COLUMN_UNIT_TON_URI, response.getUri());
-        assertEquals(COLUMN_UNIT_TON_NAME, response.getName());
-        assertEquals(COLUMN_UNIT_TON_DESCRIPTION, response.getDescription());
+        final TableColumnUnit response = semanticService.saveUnit(UNIT_2_SAVE_DTO);
+        assertEquals(UNIT_2_URI, response.getUri());
+        assertEquals(UNIT_2_NAME, response.getName());
+        assertEquals(UNIT_2_DESCRIPTION, response.getDescription());
     }
 
     @Test

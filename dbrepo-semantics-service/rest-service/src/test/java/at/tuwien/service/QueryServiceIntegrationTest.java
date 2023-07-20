@@ -79,9 +79,9 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         final List<EntityDto> response = queryService.findByLabel(ONTOLOGY_1, "tonne");
         assertEquals(1, response.size());
         final EntityDto entity0 = response.get(0);
-        assertEquals(COLUMN_UNIT_TON_NAME, entity0.getLabel());
-        assertNull(COLUMN_UNIT_TON_URI);
-        assertNull(COLUMN_UNIT_TON_DESCRIPTION);
+        assertEquals(UNIT_2_NAME, entity0.getLabel());
+        assertNull(UNIT_2_URI);
+        assertNull(UNIT_2_DESCRIPTION);
     }
 
     @Test
@@ -120,12 +120,12 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     public void findByUri_measurements_fails() throws QueryMalformedException {
 
         /* test */
-        final List<EntityDto> response = queryService.findByUri(ONTOLOGY_1, COLUMN_UNIT_TON_URI);
+        final List<EntityDto> response = queryService.findByUri(ONTOLOGY_1, UNIT_2_URI);
         assertEquals(1, response.size());
         final EntityDto entity0 = response.get(0);
-        assertEquals(COLUMN_UNIT_TON_URI, entity0.getUri());
-        assertNull(COLUMN_UNIT_TON_NAME);
-        assertNull(COLUMN_UNIT_TON_DESCRIPTION);
+        assertEquals(UNIT_2_URI, entity0.getUri());
+        assertNull(UNIT_2_NAME);
+        assertNull(UNIT_2_DESCRIPTION);
     }
 
     @Test
