@@ -29,14 +29,17 @@ public class ColumnCreateDto {
     private Boolean primaryKey;
 
     @JsonProperty("index_length")
-    private Integer indexLength = null;
+    private Integer indexLength;
 
     @NotNull
     @Schema(example = "string")
     private ColumnTypeDto type;
 
     @Schema(example = "255")
-    private Integer length = null;
+    private Integer size;
+
+    @Schema(example = "0")
+    private Integer d;
 
     @NotNull
     @JsonProperty("null_allowed")
@@ -47,9 +50,9 @@ public class ColumnCreateDto {
     private Long dfid;
 
     @Schema(description = "enum values, only considered when type = ENUM")
-    private List<String> enums = null;
+    private List<String> enums;
 
     @Schema(description = "set values, only considered when type = SET")
-    private List<String> sets = null;
+    private List<String> sets;
 
 }

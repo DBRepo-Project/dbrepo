@@ -2708,7 +2708,7 @@ public abstract class BaseTest {
     public final static String COLUMN_5_2_INTERNAL_NAME = "firstname";
     public final static TableColumnType COLUMN_5_2_TYPE = TableColumnType.VARCHAR;
     public final static ColumnTypeDto COLUMN_5_2_TYPE_DTO = ColumnTypeDto.VARCHAR;
-    public final static Integer COLUMN_5_2_LENGTH = 20;
+    public final static Integer COLUMN_5_2_SIZE = 20;
     public final static Long COLUMN_5_2_DATE_FORMAT = null;
     public final static Boolean COLUMN_5_2_NULL = false;
     public final static Boolean COLUMN_5_2_UNIQUE = false;
@@ -2727,7 +2727,7 @@ public abstract class BaseTest {
     public final static String COLUMN_5_3_INTERNAL_NAME = "lastname";
     public final static TableColumnType COLUMN_5_3_TYPE = TableColumnType.VARCHAR;
     public final static ColumnTypeDto COLUMN_5_3_TYPE_DTO = ColumnTypeDto.VARCHAR;
-    public final static Integer COLUMN_5_3_LENGTH = 40;
+    public final static Integer COLUMN_5_3_SIZE = 40;
     public final static Long COLUMN_5_3_DATE_FORMAT = null;
     public final static Boolean COLUMN_5_3_NULL = false;
     public final static Boolean COLUMN_5_3_UNIQUE = false;
@@ -4943,7 +4943,7 @@ public abstract class BaseTest {
             ColumnCreateDto.builder()
                     .name(COLUMN_5_2_NAME)
                     .type(COLUMN_5_2_TYPE_DTO)
-                    .length(COLUMN_5_2_LENGTH)
+                    .size(COLUMN_5_2_SIZE)
                     .dfid(COLUMN_5_2_DATE_FORMAT)
                     .nullAllowed(COLUMN_5_2_NULL)
                     .primaryKey(COLUMN_5_2_PRIMARY)
@@ -4951,7 +4951,7 @@ public abstract class BaseTest {
             ColumnCreateDto.builder()
                     .name(COLUMN_5_3_NAME)
                     .type(COLUMN_5_3_TYPE_DTO)
-                    .length(COLUMN_5_3_LENGTH)
+                    .size(COLUMN_5_3_SIZE)
                     .dfid(COLUMN_5_3_DATE_FORMAT)
                     .nullAllowed(COLUMN_5_3_NULL)
                     .primaryKey(COLUMN_5_3_PRIMARY)

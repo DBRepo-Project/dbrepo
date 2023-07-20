@@ -137,6 +137,7 @@ public class TableEndpoint {
             NotAllowedException {
         log.debug("endpoint create table, databaseId={}, createDto={}, principal={}", databaseId, createDto, principal);
         endpointValidator.validateOnlyAccess(databaseId, principal, true);
+        endpointValidator.validateColumnCreateConstraints(createDto);
         final Table table = tableService.createTable(databaseId, createDto, principal);
         amqpService.create(table);
         final TableBriefDto dto = tableMapper.tableToTableBriefDto(table);

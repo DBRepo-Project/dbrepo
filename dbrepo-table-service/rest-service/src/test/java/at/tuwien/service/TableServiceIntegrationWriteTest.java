@@ -172,26 +172,26 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
                         .foreignKeys(List.of())
                         .build())
                 .columns(List.of(ColumnCreateDto.builder()
-                                .name("col1")
-                                .type(ColumnTypeDto.CHAR)
-                                .nullAllowed(true)
-                                .primaryKey(false)
-                                .build(),
-                        ColumnCreateDto.builder()
                                 .name("col1a")
                                 .type(ColumnTypeDto.CHAR)
                                 .nullAllowed(true)
                                 .primaryKey(false)
-                                .length(50)
                                 .build(),
                         ColumnCreateDto.builder()
-                                .name("col2")
+                                .name("col1b")
+                                .type(ColumnTypeDto.CHAR)
+                                .nullAllowed(true)
+                                .primaryKey(false)
+                                .size(50)
+                                .build(),
+                        ColumnCreateDto.builder()
+                                .name("col2a")
                                 .type(ColumnTypeDto.VARCHAR)
                                 .nullAllowed(true)
                                 .primaryKey(false)
                                 .build(),
                         ColumnCreateDto.builder()
-                                .name("col2a")
+                                .name("col2b")
                                 .type(ColumnTypeDto.VARCHAR)
                                 .nullAllowed(true)
                                 .primaryKey(false)
@@ -208,7 +208,7 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
                                 .type(ColumnTypeDto.VARBINARY)
                                 .nullAllowed(true)
                                 .primaryKey(false)
-                                .length(200)
+                                .size(200)
                                 .build(),
                         ColumnCreateDto.builder()
                                 .name("col5")
@@ -389,8 +389,8 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
             assertEquals(columnRequest.getPrimaryKey(), columnEntity.getIsPrimaryKey());
             /* correct in the user database */
             assertEquals(columnRequest.getType(), MariaDbConfig.typetoColumnTypeDto(String.valueOf(columnSchema.get(0)))) /* type */;
-            if (columnRequest.getLength() != null) {
-                assertEquals(columnRequest.getLength(), getLength(columnSchema.get(0))) /* length */;
+            if (columnRequest.getSize() != null) {
+                assertEquals(columnRequest.getSize(), getLength(columnSchema.get(0))) /* length */;
             }
             final boolean isNullAllowed = String.valueOf(columnSchema.get(1)).equals("YES") /* nullable */;
             assertTrue(isNullAllowed);

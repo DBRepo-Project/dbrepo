@@ -27,6 +27,7 @@ import at.tuwien.exception.ImageNotSupportedException;
 import at.tuwien.exception.QueryMalformedException;
 import at.tuwien.exception.TableMalformedException;
 import at.tuwien.repository.mdb.TableRepository;
+import com.mchange.v2.lang.ObjectUtils;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
@@ -322,13 +323,21 @@ public interface TableMapper {
      */
     default String columnTypeDtoToDataType(ColumnCreateDto data) {
         return switch (data.getType()) {
-            case CHAR -> "CHAR" + (data.getLength() != null ? "(" + data.getLength() + ")" : "");
-            case VARCHAR -> "TINYINT" + (data.getLength() != null ? "(" + data.getLength() + ")" : "");
-            case BINARY -> "BINARY" + (data.getLength() != null ? "(" + data.getLength() + ")" : "");
-            case VARBINARY -> "VARBINARY" + (data.getLength() != null ? "(" + data.getLength() + ")" : "");
-            case ENUM -> "ENUM (" + String.join(",", data.getEnums().stream().map(e -> ("'" + e + "'")).toList()) + ")";
-            case SET -> "SET (" + String.join(",", data.getSets().stream().map(e -> ("'" + e + "'")).toList()) + ")";
-            case BIT -> "BIT" + (data.getLength() != null ? "(" + data.getLength() + ")" : "");
+            case CHAR -> "CHAR(" + Objects.requireNonNullElse(data.getSize(), "1") + ")";
+            case VARCHAR -> "VARCHAR(" + Objects.requireNonNullElse(data.getSize(), "255") + ")";
+            case BINARY -> "BINARY(" + Objects.requireNonNullElse(data.getSize(), "1") + ")";
+            case VARBINARY -> "VARBINARY(" + Objects.requireNonNullElse(data.getSize(), "1") + ")";
+            case ENUM -> "ENUM(" + String.join(",", data.getEnums().stream().map(e -> ("'" + e + "'")).toList()) + ")";
+            case SET -> "SET(" + String.join(",", data.getSets().stream().map(e -> ("'" + e + "'")).toList()) + ")";
+            case BIT -> "BIT(" + Objects.requireNonNullElse(data.getSize(), "1") + ")";
+            case TINYINT -> "TINYINT(" + Objects.requireNonNullElse(data.getSize(), "10") + ")";
+            case SMALLINT -> "SMALLINT(" + Objects.requireNonNullElse(data.getSize(), "10") + ")";
+            case MEDIUMINT -> "MEDIUMINT(" + Objects.requireNonNullElse(data.getSize(), "10") + ")";
+            case INT -> "INT(" + Objects.requireNonNullElse(data.getSize(), "255") + ")";
+            case BIGINT -> "BIGINT(" + Objects.requireNonNullElse(data.getSize(), "255") + ")";
+            case FLOAT -> "FLOAT(" + Objects.requireNonNullElse(data.getSize(), "24") + ")";
+            case DOUBLE -> "DOUBLE(" + Objects.requireNonNullElse(data.getSize(), "25") + "," + Objects.requireNonNullElse(data.getD(), "0") + ")";
+            case DECIMAL -> "DECIMAL(" + Objects.requireNonNullElse(data.getSize(), "10") + "," + Objects.requireNonNullElse(data.getD(), "0") + ")";
             default -> data.getType().getType().toUpperCase();
         };
     }

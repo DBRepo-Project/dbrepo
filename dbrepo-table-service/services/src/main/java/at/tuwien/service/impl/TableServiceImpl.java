@@ -120,16 +120,6 @@ public class TableServiceImpl extends HibernateConnector implements TableService
             log.error("Failed create table: table name is blank");
             throw new TableMalformedException("Failed create table: table name is blank");
         }
-        final List<ColumnCreateDto> check1 = createDto.getColumns().stream().filter(c -> c.getType().equals(ColumnTypeDto.VARBINARY)).toList();
-        if (check1.stream().anyMatch(c -> Objects.isNull(c.getLength()))) {
-            log.error("Failed create table: length field is blank for column {}", check1.get(0).getName());
-            throw new TableMalformedException("Failed create table: length field is blank for column " + check1.get(0).getName());
-        }
-        final List<ColumnCreateDto> check2 = createDto.getColumns().stream().filter(c -> c.getType().equals(ColumnTypeDto.SET)).toList();
-        if (check2.stream().anyMatch(c -> c.getSets() == null || c.getSets().size() == 0)) {
-            log.error("Failed create table: set values are blank for column {}", check2.get(0).getName());
-            throw new TableMalformedException("Failed create table: set values are blank for column " + check2.get(0).getName());
-        }
         /* find */
         final Database database = databaseService.find(databaseId);
         if (!database.getContainer().getImage().getName().equals("mariadb")) {
