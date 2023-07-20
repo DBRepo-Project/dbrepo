@@ -484,8 +484,6 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
                                 allColumns.add(tmp);
                             });
                 });
-        final List<TableColumn> col = allColumns.stream().filter(c -> c.getInternalName().equals("date")).toList();
-        log.trace("");
         log.trace("table(s) or view(s) referenced in the statement: {}", tablesOrViews.stream().map(t -> ((net.sf.jsqlparser.schema.Table) t).getName()).collect(Collectors.toList()));
         /* Checking if all columns exist */
         for (SelectItem clause : clauses) {

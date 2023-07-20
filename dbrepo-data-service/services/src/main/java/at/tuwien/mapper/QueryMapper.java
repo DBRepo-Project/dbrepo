@@ -1,5 +1,6 @@
 package at.tuwien.mapper;
 
+import at.tuwien.api.database.DatabaseBriefDto;
 import at.tuwien.api.database.ViewBriefDto;
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.table.TableBriefDto;
@@ -40,6 +41,10 @@ public interface QueryMapper {
         return "SELECT DISTINCT user as username FROM mysql.user WHERE user != 'mariadb.sys' ORDER BY user ASC";
     }
 
+    default String findAllDatabasesQuery() {
+        return "SELECT SCHEMA_NAME as internal_name FROM SCHEMATA WHERE SCHEMA_NAME NOT IN ('information_schema', 'performance_schema', 'mysql') ORDER BY SCHEMA_NAME";
+    }
+
     default String findColumnsForTable(Database database, String name) {
         return "SHOW COLUMNS FROM `" + name + "`;";
     }
@@ -71,6 +76,20 @@ public interface QueryMapper {
         }
         log.trace("mapped result list {} to table list {}", result, tables);
         return tables;
+    }
+
+    default List<DatabaseBriefDto> resultSetToDatabaseDtoList(ResultSet result) throws SQLException {
+        log.trace("mapping result list to database list result, result={}", result);
+        final List<DatabaseBriefDto> databases = new LinkedList<>();
+        while (result.next()) {
+            final DatabaseBriefDto database = DatabaseBriefDto.builder()
+                    .name(result.getString("internal_name"))
+                    .internalName(result.getString("internal_name"))
+                    .build();
+            databases.add(database);
+        }
+        log.trace("mapped result list {} to database list {}", result, databases);
+        return databases;
     }
 
     default ViewDto resultSetToViewDto(ResultSet result, String name) throws SQLException,

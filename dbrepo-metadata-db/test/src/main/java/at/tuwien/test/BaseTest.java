@@ -4,6 +4,7 @@ import at.tuwien.api.amqp.CreateUserDto;
 import at.tuwien.api.amqp.CreateVirtualHostDto;
 import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
 import at.tuwien.api.auth.SignupRequestDto;
+import at.tuwien.api.container.ContainerBriefDto;
 import at.tuwien.api.container.ContainerDto;
 import at.tuwien.api.container.image.ImageBriefDto;
 import at.tuwien.api.container.image.ImageCreateDto;
@@ -472,6 +473,14 @@ public abstract class BaseTest {
             .emailVerified(USER_2_VERIFIED)
             .build();
 
+    public final static UserBriefDto USER_2_BRIEF_DTO = UserBriefDto.builder()
+            .id(USER_2_ID)
+            .username(USER_2_USERNAME)
+            .firstname(USER_2_FIRSTNAME)
+            .lastname(USER_2_LASTNAME)
+            .emailVerified(USER_2_VERIFIED)
+            .build();
+
     public final static SignupRequestDto USER_2_SIGNUP_REQUEST_DTO = SignupRequestDto.builder()
             .username(USER_2_USERNAME)
             .password(USER_2_PASSWORD)
@@ -899,6 +908,7 @@ public abstract class BaseTest {
     public final static String CONTAINER_1_NAME = "u01";
     public final static String CONTAINER_1_INTERNALNAME = "dbrepo-userdb-u01";
     public final static String CONTAINER_1_IP = "127.0.0.1";
+    public final static Boolean CONTAINER_1_RUNNING = true;
     public final static Integer CONTAINER_1_PORT = 3308;
     public final static String CONTAINER_1_PRIVILEGED_USERNAME = "root";
     public final static String CONTAINER_1_PRIVILEGED_PASSWORD = "dbrepo";
@@ -940,12 +950,22 @@ public abstract class BaseTest {
             .owner(USER_1_BRIEF_DTO)
             .build();
 
+    public final static ContainerBriefDto CONTAINER_1_DTO_BRIEF = ContainerBriefDto.builder()
+            .id(CONTAINER_1_ID)
+            .name(CONTAINER_1_NAME)
+            .internalName(CONTAINER_1_INTERNALNAME)
+            .created(CONTAINER_1_CREATED)
+            .running(CONTAINER_1_RUNNING)
+            .build();
+
     public final static Long CONTAINER_2_ID = 2L;
     public final static ContainerImage CONTAINER_2_IMAGE = IMAGE_1;
+    public final static ImageBriefDto CONTAINER_2_IMAGE_BRIEF_DTO = IMAGE_1_BRIEF_DTO;
     public final static String CONTAINER_2_NAME = "u02";
     public final static Integer CONTAINER_2_PORT = 3309;
     public final static String CONTAINER_2_INTERNALNAME = "dbrepo-userdb-u02";
     public final static String CONTAINER_2_IP = "172.30.0.6";
+    public final static Boolean CONTAINER_2_RUNNING = true;
     public final static String CONTAINER_2_PRIVILEGED_USERNAME = "root";
     public final static String CONTAINER_2_PRIVILEGED_PASSWORD = "dbrepo";
     public final static Instant CONTAINER_2_CREATED = Instant.ofEpochSecond(1677399655) /* 2023-02-26 08:20:55 (UTC) */;
@@ -955,10 +975,10 @@ public abstract class BaseTest {
             .name(CONTAINER_2_NAME)
             .internalName(CONTAINER_2_INTERNALNAME)
             .imageId(IMAGE_1_ID)
-            .port(CONTAINER_2_PORT)
             .image(CONTAINER_2_IMAGE)
             .created(CONTAINER_2_CREATED)
             .host(CONTAINER_2_IP)
+            .port(CONTAINER_2_PORT)
             .privilegedUsername(CONTAINER_2_PRIVILEGED_USERNAME)
             .privilegedPassword(CONTAINER_2_PRIVILEGED_PASSWORD)
             .build();
@@ -968,12 +988,30 @@ public abstract class BaseTest {
             .name(CONTAINER_2_NAME)
             .internalName(CONTAINER_2_INTERNALNAME)
             .imageId(IMAGE_1_ID)
-            .port(CONTAINER_2_PORT)
-            .image(CONTAINER_2_IMAGE)
+            .image(null /* for jpa */)
             .created(CONTAINER_2_CREATED)
             .host(CONTAINER_2_IP)
+            .port(CONTAINER_2_PORT)
             .privilegedUsername(CONTAINER_2_PRIVILEGED_USERNAME)
             .privilegedPassword(CONTAINER_2_PRIVILEGED_PASSWORD)
+            .build();
+
+    public final static ContainerDto CONTAINER_2_DTO = ContainerDto.builder()
+            .id(CONTAINER_2_ID)
+            .name(CONTAINER_2_NAME)
+            .internalName(CONTAINER_2_INTERNALNAME)
+            .image(CONTAINER_2_IMAGE_BRIEF_DTO)
+            .created(CONTAINER_2_CREATED)
+            .host(CONTAINER_2_IP)
+            .owner(USER_2_BRIEF_DTO)
+            .build();
+
+    public final static ContainerBriefDto CONTAINER_2_DTO_BRIEF = ContainerBriefDto.builder()
+            .id(CONTAINER_2_ID)
+            .name(CONTAINER_2_NAME)
+            .internalName(CONTAINER_2_INTERNALNAME)
+            .created(CONTAINER_2_CREATED)
+            .running(CONTAINER_2_RUNNING)
             .build();
 
     public final static Long CONTAINER_3_ID = 3L;
@@ -1116,6 +1154,15 @@ public abstract class BaseTest {
             .views(List.of())
             .build();
 
+    public final static DatabaseBriefDto DATABASE_1_DTO_BRIEF = DatabaseBriefDto.builder()
+            .id(DATABASE_1_ID)
+            .container(CONTAINER_1_DTO_BRIEF)
+            .created(Instant.now().minus(1, HOURS))
+            .isPublic(DATABASE_1_PUBLIC)
+            .name(DATABASE_1_NAME)
+            .internalName(DATABASE_1_INTERNALNAME)
+            .build();
+
     public final static DatabaseAccess DATABASE_1_USER_1_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_1_ID)
@@ -1251,6 +1298,15 @@ public abstract class BaseTest {
             .exchangeName(DATABASE_2_EXCHANGE)
             .tables(List.of()) /* TABLE_2, TABLE_2, TABLE_3 */
             .views(List.of())
+            .build();
+
+    public final static DatabaseBriefDto DATABASE_2_DTO_BRIEF = DatabaseBriefDto.builder()
+            .id(DATABASE_2_ID)
+            .container(CONTAINER_2_DTO_BRIEF)
+            .created(DATABASE_2_CREATED)
+            .isPublic(DATABASE_2_PUBLIC)
+            .name(DATABASE_2_NAME)
+            .internalName(DATABASE_2_INTERNALNAME)
             .build();
 
     public final static DatabaseAccess DATABASE_2_USER_1_READ_ACCESS = DatabaseAccess.builder()
@@ -1390,6 +1446,14 @@ public abstract class BaseTest {
             .views(List.of())
             .build();
 
+    public final static DatabaseBriefDto DATABASE_3_DTO_BRIEF = DatabaseBriefDto.builder()
+            .id(DATABASE_3_ID)
+            .created(DATABASE_3_CREATED)
+            .isPublic(DATABASE_3_PUBLIC)
+            .name(DATABASE_3_NAME)
+            .internalName(DATABASE_3_INTERNALNAME)
+            .build();
+
     public final static DatabaseAccess DATABASE_3_USER_1_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_3_ID)
@@ -1504,6 +1568,18 @@ public abstract class BaseTest {
             .owner(USER_4_BRIEF_DTO)
             .tables(List.of())
             .views(List.of())
+            .build();
+
+    public final static DatabaseBriefDto DATABASE_4_DTO_BRIEF = DatabaseBriefDto.builder()
+            .id(DATABASE_4_ID)
+            .created(Instant.now().minus(4, HOURS))
+            .isPublic(DATABASE_4_PUBLIC)
+            .name(DATABASE_4_NAME)
+            .description(DATABASE_4_DESCRIPTION)
+            .internalName(DATABASE_4_INTERNALNAME)
+            .created(DATABASE_4_CREATED)
+            .creator(USER_4_BRIEF_DTO)
+            .owner(USER_4_BRIEF_DTO)
             .build();
 
     public final static Database DATABASE_4_SIMPLE = Database.builder()
@@ -2810,9 +2886,9 @@ public abstract class BaseTest {
             .resultHash(QUERY_1_RESULT_HASH)
             .resultNumber(QUERY_1_RESULT_NUMBER)
             .created(QUERY_1_CREATED)
+            .executed(QUERY_1_EXECUTION)
             .createdBy(USER_1_USERNAME)
             .isPersisted(QUERY_1_PERSISTED)
-            .executed(QUERY_1_EXECUTION)
             .build();
 
     public final static QueryDto QUERY_1_DTO = QueryDto.builder()
@@ -2860,10 +2936,9 @@ public abstract class BaseTest {
             .resultHash(QUERY_2_RESULT_HASH)
             .resultNumber(QUERY_2_RESULT_NUMBER)
             .created(QUERY_2_CREATED)
+            .executed(QUERY_2_EXECUTION)
             .createdBy(USER_1_USERNAME)
             .isPersisted(QUERY_2_PERSISTED)
-            .created(QUERY_2_CREATED)
-            .executed(QUERY_2_EXECUTION)
             .build();
 
     public final static QueryDto QUERY_2_DTO = QueryDto.builder()
@@ -2898,7 +2973,9 @@ public abstract class BaseTest {
             .queryHash(QUERY_3_QUERY_HASH)
             .resultHash(QUERY_3_RESULT_HASH)
             .created(QUERY_3_CREATED)
+            .executed(QUERY_3_EXECUTION)
             .createdBy(USER_1_USERNAME)
+            .resultNumber(QUERY_3_RESULT_NUMBER)
             .isPersisted(QUERY_3_PERSISTED)
             .build();
 
@@ -2925,6 +3002,8 @@ public abstract class BaseTest {
     public final static Instant QUERY_4_CREATED = Instant.now().minus(4, MINUTES);
     public final static Instant QUERY_4_EXECUTION = Instant.now().minus(1, MINUTES);
     public final static Instant QUERY_4_LAST_MODIFIED = Instant.ofEpochSecond(1541588454);
+    public final static Long QUERY_4_RESULT_NUMBER = 6L;
+    public final static Long QUERY_4_RESULT_ID = 4L;
     public final static Boolean QUERY_4_PERSISTED = false;
 
     public final static Query QUERY_4 = Query.builder()
@@ -2933,13 +3012,11 @@ public abstract class BaseTest {
             .queryHash(QUERY_4_QUERY_HASH)
             .resultHash(QUERY_4_RESULT_HASH)
             .created(QUERY_4_CREATED)
-            .createdBy(USER_1_USERNAME)
+            .executed(QUERY_4_EXECUTION)
             .isPersisted(QUERY_4_PERSISTED)
+            .resultNumber(QUERY_4_RESULT_NUMBER)
             .createdBy(USER_1_USERNAME)
             .build();
-
-    public final static Long QUERY_4_RESULT_NUMBER = 6L;
-    public final static Long QUERY_4_RESULT_ID = 4L;
     public final static List<Map<String, Object>> QUERY_4_RESULT_RESULT = List.of(
             new HashMap<>() {{
                 put("id", BigInteger.valueOf(1L));
@@ -2999,6 +3076,7 @@ public abstract class BaseTest {
             .queryHash(QUERY_5_QUERY_HASH)
             .resultHash(QUERY_5_RESULT_HASH)
             .created(QUERY_5_CREATED)
+            .executed(QUERY_5_EXECUTION)
             .createdBy(USER_1_USERNAME)
             .isPersisted(QUERY_5_PERSISTED)
             .build();
@@ -3035,6 +3113,7 @@ public abstract class BaseTest {
             .queryHash(QUERY_6_QUERY_HASH)
             .resultHash(QUERY_6_RESULT_HASH)
             .created(QUERY_6_CREATED)
+            .executed(QUERY_6_EXECUTION)
             .createdBy(USER_1_USERNAME)
             .isPersisted(QUERY_6_PERSISTED)
             .build();

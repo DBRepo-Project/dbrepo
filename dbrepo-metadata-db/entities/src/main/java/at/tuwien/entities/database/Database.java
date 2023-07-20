@@ -49,7 +49,7 @@ public class Database implements Serializable {
 
     @ToString.Exclude
     @JdbcTypeCode(java.sql.Types.VARCHAR)
-    @Column(name = "created_by", nullable = false, columnDefinition = "VARCHAR(36)")
+    @Column(name = "created_by", columnDefinition = "VARCHAR(36)")
     private UUID createdBy;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
@@ -60,7 +60,7 @@ public class Database implements Serializable {
 
     @ToString.Exclude
     @JdbcTypeCode(java.sql.Types.VARCHAR)
-    @Column(name = "owned_by", nullable = false, columnDefinition = "VARCHAR(36)")
+    @Column(name = "owned_by", columnDefinition = "VARCHAR(36)")
     private UUID ownedBy;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
@@ -94,7 +94,7 @@ public class Database implements Serializable {
 
     @ToString.Exclude
     @JdbcTypeCode(java.sql.Types.VARCHAR)
-    @Column(name = "contact_person", nullable = false, columnDefinition = "VARCHAR(36)")
+    @Column(name = "contact_person", columnDefinition = "VARCHAR(36)")
     private UUID contactPerson;
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)

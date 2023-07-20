@@ -1,6 +1,7 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.api.database.query.ExecuteStatementDto;
+import at.tuwien.api.database.query.QueryPersistDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
@@ -141,8 +142,8 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
 
     @Override
     @Transactional
-    public Query persist(Long databaseId, Long queryId, Principal principal)
-            throws DatabaseNotFoundException, ImageNotSupportedException, QueryStoreException {
+    public Query persist(Long databaseId, Long queryId, QueryPersistDto data) throws DatabaseNotFoundException,
+            ImageNotSupportedException, QueryStoreException {
         /* find */
         final Database database = databaseService.find(databaseId);
         if (!database.getContainer().getImage().getName().equals("mariadb")) {
@@ -155,7 +156,7 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
         final Query out;
         try {
             final Connection connection = dataSource.getConnection();
-            final PreparedStatement preparedStatement = storeMapper.queryStoreRawPersistQuery(connection, true, queryId);
+            final PreparedStatement preparedStatement = storeMapper.queryStoreRawPersistQuery(connection, data.getPersist(), queryId);
             preparedStatement.executeUpdate();
             final PreparedStatement preparedStatement1 = storeMapper.queryStoreRawSelectOneQuery(connection, queryId);
             final ResultSet resultSet = preparedStatement1.executeQuery();

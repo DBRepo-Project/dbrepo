@@ -145,7 +145,6 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
 
         /* mock */
         MariaDbConfig.execute(DATABASE_1, "CREATE TABLE `full_example` (col1 char(20), col2 varchar(20), col3 binary(20), col4 varbinary(20), col5 tinyblob, col6 tinytext, col7 text, col8 blob(2000), col9 mediumtext, col10 mediumblob, col11 longtext, col12 longblob, col13 enum('enum1','enum2'), col14 set('set1','set2'), col15 bit(20), col16 tinyint(20), col17 bool, col18 boolean, col19 smallint(20), col20 mediumint(20), col21 int(20), col22 integer(20), col23 bigint(20), col24 float(20), col25 float(40), col26 double(20,5), col27 double precision(20,5), col28 decimal(20,5), col29 dec(20,5), col30 date, col31 datetime, col32 timestamp, col33 time, col34 year) WITH SYSTEM VERSIONING;");
-        MariaDbConfig.execute(DATABASE_1, "CREATE VIEW `full_view_example` AS (SELECT * FROM `full_example`);");
 
         /* test */
         final TableDto response = tableService.find(DATABASE_1, TABLE_1_INTERNALNAME);

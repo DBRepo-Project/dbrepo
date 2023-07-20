@@ -11,7 +11,6 @@ import at.tuwien.config.IndexConfig;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
-import at.tuwien.entities.database.table.columns.TableColumnType;
 import at.tuwien.exception.*;
 import at.tuwien.repository.sdb.ConceptIdxRepository;
 import at.tuwien.repository.sdb.TableColumnIdxRepository;
@@ -168,9 +167,7 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
     }
 
     @Test
-    public void create_full_succeeds() throws UserNotFoundException, TableMalformedException, QueryMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, TableNameExistsException,
-            ContainerNotFoundException, SQLException {
+    public void create_full_succeeds() throws Exception {
         final TableCreateDto request = TableCreateDto.builder()
                 .name("full")
                 .description("full example")
@@ -383,19 +380,19 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
         assertEquals("full example", response.getDescription());
         assertEquals(32, response.getColumns().size());
         final Map<String, List<Object>> schema = MariaDbConfig.describeTableSchema(response, CONTAINER_1_PRIVILEGED_USERNAME, CONTAINER_1_PRIVILEGED_PASSWORD);
-        for (int i = 0; i < response.getColumns().size(); i++) {
-            final ColumnCreateDto columnRequest = request.getColumns().get(i);
-            final TableColumn columnEntity = response.getColumns().get(i);
+        for (Map.Entry<String, List<Object>> entry : schema.entrySet()) {
+            final ColumnCreateDto columnRequest = request.getColumns().stream().filter(c -> c.getName().equals(entry.getKey())).findFirst().get();
+            final TableColumn columnEntity = response.getColumns().stream().filter(c -> c.getName().equals(entry.getKey())).findFirst().get();
             final List<Object> columnSchema = schema.get(columnEntity.getInternalName());
             if (columnEntity.getInternalName().equals("id")) {
                 continue;
             }
-            log.trace("internalName={}", columnEntity.getInternalName());
+            log.trace("internalName={}, type={}", columnEntity.getInternalName(), columnEntity.getColumnType());
             /* correct in the metadata database */
             assertEquals(columnRequest.getNullAllowed(), columnEntity.getIsNullAllowed());
             assertEquals(columnRequest.getPrimaryKey(), columnEntity.getIsPrimaryKey());
             /* correct in the user database */
-            assertEquals(columnRequest.getType().getType(), getType(columnSchema.get(0))) /* type */;
+            assertEquals(columnRequest.getType(), MariaDbConfig.typetoColumnTypeDto(String.valueOf(columnSchema.get(0)))) /* type */;
             if (columnRequest.getLength() != null) {
                 assertEquals(columnRequest.getLength(), getLength(columnSchema.get(0))) /* length */;
             }

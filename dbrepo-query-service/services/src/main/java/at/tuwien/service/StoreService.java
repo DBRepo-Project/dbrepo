@@ -1,6 +1,7 @@
 package at.tuwien.service;
 
 import at.tuwien.api.database.query.ExecuteStatementDto;
+import at.tuwien.api.database.query.QueryPersistDto;
 import at.tuwien.exception.*;
 import at.tuwien.querystore.Query;
 import org.springframework.stereotype.Service;
@@ -42,11 +43,11 @@ public interface StoreService {
             ImageNotSupportedException, DatabaseConnectionException, QueryNotFoundException, QueryStoreException, UserNotFoundException;
 
     /**
-     * Inserts a query and metadata to the query store of a given database id
+     * Inserts a query and metadata to the query store of a given database id.
      *
-     * @param databaseId  The database id.
-     * @param metadata    The statement.
-     * @param principal   The user principal.
+     * @param databaseId The database id.
+     * @param metadata   The statement.
+     * @param principal  The user principal.
      * @return The stored query on success
      * @throws QueryStoreException         The query store raised some error
      * @throws DatabaseNotFoundException   The database id was not found in the metadata database
@@ -58,18 +59,18 @@ public interface StoreService {
             DatabaseNotFoundException, ImageNotSupportedException, UserNotFoundException, DatabaseConnectionException;
 
     /**
-     * Persists a query to be displayed in the frontend
+     * Persists a query to be displayed in the frontend.
      *
-     * @param databaseId  The database id.
-     * @param queryId     The query id.
-     * @param principal   The user principal.
+     * @param databaseId The database id.
+     * @param queryId    The query id.
+     * @param data       The desired persist state.
      * @return The stored query on success.
      * @throws DatabaseNotFoundException   The database id was not found in the metadata database
      * @throws ImageNotSupportedException  The image is not supported.
      * @throws DatabaseConnectionException The database connection to the remote container failed.
      * @throws QueryStoreException         The query store raised some error.
      */
-    Query persist(Long databaseId, Long queryId, Principal principal) throws DatabaseNotFoundException,
+    Query persist(Long databaseId, Long queryId, QueryPersistDto data) throws DatabaseNotFoundException,
             ImageNotSupportedException, DatabaseConnectionException, QueryStoreException, UserNotFoundException;
 
     /**

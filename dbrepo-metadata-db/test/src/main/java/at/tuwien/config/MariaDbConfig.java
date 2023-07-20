@@ -126,4 +126,14 @@ public class MariaDbConfig {
             statement.executeUpdate(query);
         }
     }
+
+    public static void execute(Container container, String query)
+            throws SQLException {
+        final String jdbc = "jdbc:mariadb://" + container.getHost() + ":" + container.getPort();
+        log.trace("connect to database {}", jdbc);
+        try (Connection connection = DriverManager.getConnection(jdbc, container.getPrivilegedUsername(), container.getPrivilegedPassword())) {
+            final Statement statement = connection.createStatement();
+            statement.executeUpdate(query);
+        }
+    }
 }

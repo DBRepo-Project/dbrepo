@@ -31,6 +31,12 @@ public class DatabaseBriefDto {
     @Schema(example = "Air Quality")
     private String name;
 
+    @NotBlank(message = "internal name is required")
+    @JsonProperty("internal_name")
+    @Field(name = "internal_name")
+    @Schema(example = "air_quality")
+    private String internalName;
+
     @Schema(example = "Air Quality in Austria")
     private String description;
 
