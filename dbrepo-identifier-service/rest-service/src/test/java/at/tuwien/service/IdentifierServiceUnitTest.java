@@ -4,7 +4,6 @@ import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.identifier.BibliographyTypeDto;
 import at.tuwien.api.identifier.IdentifierDto;
-import at.tuwien.config.IndexConfig;
 import at.tuwien.entities.identifier.Creator;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.identifier.IdentifierType;
@@ -39,9 +38,6 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
 
     @MockBean
     private IdentifierRepository identifierRepository;
-
-    @MockBean
-    private IndexConfig indexInitializer;
 
     @MockBean
     private IdentifierIdxRepository identifierIdxRepository;

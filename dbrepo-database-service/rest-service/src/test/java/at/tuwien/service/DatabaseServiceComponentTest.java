@@ -3,7 +3,6 @@ package at.tuwien.service;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.DatabaseCreateDto;
 import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.config.IndexConfig;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.entities.database.Database;
 import at.tuwien.repository.mdb.ContainerRepository;
@@ -40,9 +39,6 @@ public class DatabaseServiceComponentTest extends BaseUnitTest {
 
     @MockBean
     private Channel channel;
-
-    @MockBean
-    private IndexConfig indexConfig;
 
     @MockBean
     private UserRepository userRepository;

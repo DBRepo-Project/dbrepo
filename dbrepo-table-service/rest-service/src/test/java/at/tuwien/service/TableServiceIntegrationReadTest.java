@@ -1,7 +1,6 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.config.IndexConfig;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.DatabaseNotFoundException;
@@ -44,9 +43,6 @@ public class TableServiceIntegrationReadTest extends BaseUnitTest {
 
     @MockBean
     private Channel channel;
-
-    @MockBean
-    private IndexConfig indexInitializer;
 
     @MockBean
     private UnitIdxRepository unitIdxRepository;

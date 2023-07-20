@@ -13,6 +13,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
 
 import java.time.Instant;
 import java.util.List;
@@ -65,7 +66,8 @@ public class ViewDto {
     private String query;
 
     @NotNull
-    @Schema(example = "2020-08-04 11:12:00")
+    @Field(type = FieldType.Date)
+    @Schema(example = "2021-03-12T15:26:21Z")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant created;
 
@@ -81,7 +83,7 @@ public class ViewDto {
 
     @JsonProperty("last_modified")
     @org.springframework.data.annotation.Transient
-    @Schema(example = "2020-08-04 11:12:00")
+    @Schema(example = "2021-03-12T15:26:21Z")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant lastModified;
 

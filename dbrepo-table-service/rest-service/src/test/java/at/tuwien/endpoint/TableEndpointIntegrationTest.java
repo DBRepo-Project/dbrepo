@@ -1,7 +1,6 @@
 package at.tuwien.endpoint;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.config.IndexConfig;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.endpoints.TableEndpoint;
 import at.tuwien.exception.*;
@@ -43,9 +42,6 @@ public class TableEndpointIntegrationTest extends BaseUnitTest {
 
     @MockBean
     private ConceptIdxRepository conceptIdxRepository;
-
-    @MockBean
-    private IndexConfig indexInitializer;
 
     @MockBean
     private TableIdxRepository tableidxRepository;

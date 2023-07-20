@@ -2,7 +2,6 @@ package at.tuwien.endpoint;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.table.TableHistoryDto;
-import at.tuwien.config.IndexConfig;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.database.table.Table;
@@ -39,9 +38,6 @@ import static org.mockito.Mockito.when;
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 public class TableHistoryEndpointUnitTest extends BaseUnitTest {
-
-    @MockBean
-    private IndexConfig indexConfig;
 
     @MockBean
     private Channel channel;

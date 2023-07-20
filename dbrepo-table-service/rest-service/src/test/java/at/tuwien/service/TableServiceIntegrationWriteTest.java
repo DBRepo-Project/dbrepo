@@ -3,7 +3,6 @@ package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.table.TableDto;
-import at.tuwien.config.IndexConfig;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.exception.*;
 import at.tuwien.repository.sdb.ConceptIdxRepository;
@@ -55,9 +54,6 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
 
     @MockBean
     private ConceptIdxRepository conceptIdxRepository;
-
-    @MockBean
-    private IndexConfig indexInitializer;
 
     @MockBean
     private TableIdxRepository tableidxRepository;

@@ -1,7 +1,6 @@
 package at.tuwien.endpoint;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.config.IndexConfig;
 import at.tuwien.repository.sdb.ConceptIdxRepository;
 import at.tuwien.repository.sdb.TableColumnIdxRepository;
 import at.tuwien.repository.sdb.TableIdxRepository;
@@ -32,9 +31,6 @@ public class SwaggerComponentTest extends BaseUnitTest {
 
     @MockBean
     private Channel channel;
-
-    @MockBean
-    private IndexConfig indexConfig;
 
     @MockBean
     private UnitIdxRepository unitIdxRepository;

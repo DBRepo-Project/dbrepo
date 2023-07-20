@@ -1,7 +1,6 @@
 package at.tuwien.endpoint;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.config.IndexConfig;
 import at.tuwien.repository.sdb.UserIdxRepository;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
@@ -24,9 +23,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @SpringBootTest
 public class ActuatorComponentTest extends BaseUnitTest {
-
-    @MockBean
-    private IndexConfig indexConfig;
 
     @MockBean
     private UserIdxRepository userIdxRepository;

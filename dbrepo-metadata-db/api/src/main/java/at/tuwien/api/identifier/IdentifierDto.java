@@ -15,6 +15,7 @@ import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
 
 import java.time.Instant;
 import java.util.List;
@@ -76,6 +77,8 @@ public class IdentifierDto {
     private String queryHash;
 
     @NotNull
+    @Field(type = FieldType.Date)
+    @Schema(example = "2021-03-12T15:26:21Z")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant execution;
 
@@ -128,10 +131,15 @@ public class IdentifierDto {
     @NotNull
     private List<CreatorDto> creators;
 
+    @NotNull
+    @Field(type = FieldType.Date)
+    @Schema(example = "2021-03-12T15:26:21Z")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant created;
 
+    @NotNull
     @JsonProperty("last_modified")
+    @Schema(example = "2021-03-12T15:26:21Z")
     @org.springframework.data.annotation.Transient
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant lastModified;

@@ -3,8 +3,6 @@ package at.tuwien.service;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.identifier.IdentifierSaveDto;
-import at.tuwien.api.identifier.IdentifierTitleDto;
-import at.tuwien.config.IndexConfig;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.identifier.IdentifierDescription;
 import at.tuwien.entities.identifier.IdentifierTitle;
@@ -47,9 +45,6 @@ import static org.mockito.Mockito.when;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @SpringBootTest
 public class IdentifierServiceIntegrationTest extends BaseUnitTest {
-
-    @MockBean
-    private IndexConfig indexInitializer;
 
     @MockBean
     private QueryServiceGateway queryServiceGateway;

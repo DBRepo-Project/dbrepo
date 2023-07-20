@@ -1,7 +1,6 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.config.IndexConfig;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.exception.*;
 import at.tuwien.repository.mdb.*;
@@ -32,9 +31,6 @@ import java.sql.SQLException;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @ExtendWith(SpringExtension.class)
 public class QueryStoreServiceIntegrationTest extends BaseUnitTest {
-
-    @MockBean
-    private IndexConfig indexConfig;
 
     @MockBean
     private DatabaseIdxRepository databaseIdxRepository;

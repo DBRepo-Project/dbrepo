@@ -3,7 +3,6 @@ package at.tuwien.service;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.AccessTypeDto;
 import at.tuwien.api.database.DatabaseModifyAccessDto;
-import at.tuwien.config.IndexConfig;
 import at.tuwien.entities.database.AccessType;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.exception.AccessDeniedException;
@@ -32,9 +31,6 @@ import static org.mockito.Mockito.when;
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 public class AccessServiceUnitTest extends BaseUnitTest {
-
-    @MockBean
-    private IndexConfig indexConfig;
 
     @MockBean
     private Channel channel;
