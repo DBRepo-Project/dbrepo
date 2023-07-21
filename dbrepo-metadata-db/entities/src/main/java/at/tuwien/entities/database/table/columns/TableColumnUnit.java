@@ -51,9 +51,7 @@ public class TableColumnUnit {
     @org.springframework.data.annotation.Transient
     @JoinTable(name = "mdb_columns_concepts",
             inverseJoinColumns = {
-                    @JoinColumn(name = "cid", referencedColumnName = "id", insertable = false, updatable = false),
-                    @JoinColumn(name = "tid", referencedColumnName = "tid", insertable = false, updatable = false),
-                    @JoinColumn(name = "cdbid", referencedColumnName = "cdbid", insertable = false, updatable = false)
+                    @JoinColumn(name = "cid", referencedColumnName = "id", insertable = false, updatable = false)
             },
             joinColumns = @JoinColumn(name = "id", referencedColumnName = "id"))
     private List<TableColumn> columns;

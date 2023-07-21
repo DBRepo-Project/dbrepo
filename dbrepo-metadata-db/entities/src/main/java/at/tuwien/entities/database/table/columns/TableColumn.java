@@ -20,7 +20,6 @@ import java.util.List;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-@IdClass(TableColumnKey.class)
 @EntityListeners(AuditingEntityListener.class)
 @jakarta.persistence.Table(name = "mdb_columns", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"tid", "internalName"})
@@ -34,31 +33,25 @@ public class TableColumn implements Comparable<TableColumn> {
     @Column(updatable = false, nullable = false)
     private Long id;
 
-    @Id
-    @EqualsAndHashCode.Include
     @Field(name = "table_id")
+    @Column(updatable = false, insertable = false)
     private Long tid;
 
-    @Id
-    @EqualsAndHashCode.Include
     @Field(name = "database_id")
+    @Column(updatable = false, insertable = false)
     private Long cdbid;
-
-    @Column
-    private Long dfid;
 
     @ToString.Exclude
     @Field(name = "date_format")
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
-    @JoinColumn(name = "dfid", referencedColumnName = "id", insertable = false, updatable = false)
+    @JoinColumn(name = "dfid", referencedColumnName = "id")
     private ContainerImageDate dateFormat;
 
     @ToString.Exclude
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     @org.springframework.data.annotation.Transient
     @JoinColumns({
-            @JoinColumn(name = "tid", referencedColumnName = "id", insertable = false, updatable = false),
-            @JoinColumn(name = "cdbid", referencedColumnName = "tdbid", insertable = false, updatable = false)
+            @JoinColumn(name = "tid", referencedColumnName = "id", nullable = false)
     })
     private Table table;
 
@@ -113,9 +106,7 @@ public class TableColumn implements Comparable<TableColumn> {
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinTable(name = "mdb_columns_concepts",
             joinColumns = {
-                    @JoinColumn(name = "cid", referencedColumnName = "id", insertable = false, updatable = false),
-                    @JoinColumn(name = "tid", referencedColumnName = "tid", insertable = false, updatable = false),
-                    @JoinColumn(name = "cdbid", referencedColumnName = "cdbid", insertable = false, updatable = false)
+                    @JoinColumn(name = "cid", referencedColumnName = "id", nullable = false)
             },
             inverseJoinColumns = @JoinColumn(name = "id", referencedColumnName = "id"))
     private TableColumnConcept concept;
@@ -123,17 +114,15 @@ public class TableColumn implements Comparable<TableColumn> {
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinTable(name = "mdb_columns_units",
             joinColumns = {
-                    @JoinColumn(name = "cid", referencedColumnName = "id", insertable = false, updatable = false),
-                    @JoinColumn(name = "tid", referencedColumnName = "tid", insertable = false, updatable = false),
-                    @JoinColumn(name = "cdbid", referencedColumnName = "cdbid", insertable = false, updatable = false)
+                    @JoinColumn(name = "cid", referencedColumnName = "id", nullable = false)
             },
             inverseJoinColumns = @JoinColumn(name = "id", referencedColumnName = "id"))
     private TableColumnUnit unit;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "column")
+    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE}, mappedBy = "column")
     private List<TableColumnEnum> enums;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "column")
+    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE}, mappedBy = "column")
     private List<TableColumnSet> sets;
 
     @LastModifiedDate
@@ -160,7 +149,6 @@ public class TableColumn implements Comparable<TableColumn> {
         if (!(object instanceof final TableColumn other)) {
             return false;
         }
-        return this.getId().equals(other.getId()) && this.getTid().equals(other.getTid())
-                && this.getCdbid().equals(other.getCdbid());
+        return this.getId().equals(other.getId()) && this.getTable().equals(other.getTable());
     }
 }

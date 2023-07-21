@@ -31,11 +31,9 @@
               <v-textarea
                 v-model="tableCreate.description"
                 name="description"
-                label="Description *"
+                label="Description"
                 autocomplete="off"
-                rows="3"
-                :rules="[v => notEmpty(v) || $t('Required')]"
-                required />
+                rows="3" />
             </v-col>
           </v-row>
           <v-row dense>
@@ -51,7 +49,7 @@
         Table Schema
       </v-stepper-step>
       <v-stepper-content step="2">
-        <TableSchema :back="true" :columns="tableCreate.columns" @close="schemaClose" />
+        <TableSchema :back="true" :columns="tableCreate.columns" :loading="loading" @close="schemaClose" />
       </v-stepper-content>
     </v-stepper>
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
@@ -97,7 +95,7 @@ export default {
       return this.$route.params.database_id
     },
     step1Valid () {
-      return this.tableCreate.name !== null && this.tableCreate.name.length > 0 && this.tableCreate.description !== null && this.tableCreate.description.length > 0
+      return this.tableCreate.name !== null && this.tableCreate.name.length > 0
     },
     token () {
       return this.$store.state.token
@@ -155,12 +153,16 @@ export default {
       this.loading = true
       const table = this.tableCreate.columns.reduce((table, column) => {
         // eslint-disable-next-line camelcase
-        const { name, type, null_allowed, primary_key } = column
+        const { name, type, null_allowed, primary_key, size, d, enums, sets } = column
         table.columns.push({
           name,
           type,
           null_allowed,
-          primary_key
+          primary_key,
+          size: size !== null && size !== false ? size : null,
+          d: d !== null && d !== false ? d : null,
+          enums: enums !== null ? enums : [],
+          sets: sets !== null ? sets : []
         })
         if (column.unique) {
           table.constraints.uniques.push([column.name])
@@ -191,6 +193,9 @@ export default {
           this.$toast.success('Table created')
           await this.$store.dispatch('reloadDatabase')
           await this.$router.push(`/database/${this.databaseId}/table/${table.id}`)
+        })
+        .finally(() => {
+          this.loading = false
         })
     },
     schemaClose (event) {

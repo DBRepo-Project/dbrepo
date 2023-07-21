@@ -3,7 +3,6 @@ package at.tuwien.api.database.table;
 import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.constraints.ConstraintsDto;
-import at.tuwien.api.user.UserBriefDto;
 import at.tuwien.api.user.UserDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -33,16 +32,6 @@ public class TableDto {
 
     @NotNull
     private Long id;
-
-    @NotNull
-    @Field(name = "container_id")
-    @JsonProperty("container_id")
-    private Long containerId;
-
-    @NotNull
-    @Field(name = "database_id")
-    @JsonProperty("database_id")
-    private Long databaseId;
 
     @NotNull
     private DatabaseDto database;
@@ -85,7 +74,6 @@ public class TableDto {
     @Schema(example = "dbrepo.air_quality")
     private String routingKey;
 
-    @NotBlank(message = "description is required")
     @Schema(example = "Air Quality in Austria")
     private String description;
 

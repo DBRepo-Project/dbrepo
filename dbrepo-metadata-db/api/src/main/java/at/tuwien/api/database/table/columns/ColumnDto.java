@@ -79,7 +79,10 @@ public class ColumnDto {
     private ColumnTypeDto columnType;
 
     @Schema(example = "255")
-    private Integer length;
+    private Integer size;
+
+    @Schema(example = "0")
+    private Integer d;
 
     private ConceptDto concept;
 

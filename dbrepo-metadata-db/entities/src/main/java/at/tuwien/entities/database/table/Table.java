@@ -25,10 +25,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-@IdClass(TableKey.class)
-@jakarta.persistence.Table(name = "mdb_tables", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"tdbid", "internalName"})
-})
+@jakarta.persistence.Table(name = "mdb_tables")
 public class Table {
 
     @Id
@@ -38,22 +35,19 @@ public class Table {
     @Column(updatable = false, nullable = false)
     private Long id;
 
-    @Id
-    @EqualsAndHashCode.Include
     @Field(name = "database_id")
+    @Column(updatable = false, nullable = false)
     private Long tdbid;
 
     @ToString.Exclude
-    @org.springframework.data.annotation.Transient
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumns({
             @JoinColumn(name = "createdBy", referencedColumnName = "ID", nullable = false, columnDefinition = "VARCHAR(36)", updatable = false)
     })
     private User creator;
 
     @ToString.Exclude
-    @org.springframework.data.annotation.Transient
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumns({
             @JoinColumn(name = "ownedBy", referencedColumnName = "ID", nullable = false, columnDefinition = "VARCHAR(36)", updatable = false)
     })
@@ -78,11 +72,13 @@ public class Table {
     private String description;
 
     @ToString.Exclude
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "tdbid", insertable = false, updatable = false)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @JoinColumns({
+            @JoinColumn(name = "tdbid", referencedColumnName = "id", insertable = false, updatable = false)
+    })
     private Database database;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "table")
+    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "table")
     @OrderBy("ordinalPosition")
     private List<TableColumn> columns;
 

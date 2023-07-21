@@ -22,7 +22,6 @@ import java.util.UUID;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-@IdClass(at.tuwien.entities.database.ViewKey.class)
 @EntityListeners(AuditingEntityListener.class)
 @jakarta.persistence.Table(name = "mdb_view")
 @NamedQueries({
@@ -40,9 +39,8 @@ public class View {
     @Column(updatable = false, nullable = false)
     private Long id;
 
-    @Id
-    @EqualsAndHashCode.Include
     @Field(name = "database_id")
+    @Column(updatable = false, nullable = false)
     private Long vdbid;
 
     @ToString.Exclude
@@ -58,11 +56,6 @@ public class View {
             @JoinColumn(name = "createdBy", referencedColumnName = "ID", insertable = false, updatable = false)
     })
     private User creator;
-
-    @ToString.Exclude
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
-    @JoinColumn(name = "vdbid", insertable = false, updatable = false)
-    private Database database;
 
     @Column(name = "vname", nullable = false)
     private String name;
@@ -81,6 +74,14 @@ public class View {
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String query;
+
+    @ToString.Exclude
+    @org.springframework.data.annotation.Transient
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumns({
+            @JoinColumn(name = "vdbid", referencedColumnName = "id", insertable = false, updatable = false)
+    })
+    private Database database;
 
     /**
      * KEEP THIS FUNCTION HERE! IT WILL BREAK CODE!

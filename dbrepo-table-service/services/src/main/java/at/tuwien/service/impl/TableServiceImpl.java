@@ -2,9 +2,7 @@ package at.tuwien.service.impl;
 
 import at.tuwien.api.database.table.TableCreateDto;
 import at.tuwien.api.database.table.TableCreateRawQuery;
-import at.tuwien.api.database.table.columns.ColumnCreateDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
-import at.tuwien.api.database.table.columns.ColumnTypeDto;
 import at.tuwien.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
@@ -28,9 +26,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Log4j2
 @Service
@@ -162,24 +158,23 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         }
         int[] idx = {0};
         /* map table */
-        final Table tmp = tableMapper.tableCreateDtoToTable(createDto);
-        tmp.setInternalName(tableMapper.nameToInternalName(tmp.getName()));
-        tmp.setQueueName(database.getExchangeName() + "." + tmp.getInternalName());
-        tmp.setRoutingKey(tmp.getQueueName());
-        tmp.setTdbid(databaseId);
-        tmp.setDatabase(database);
-        tmp.setColumns(List.of());
-        tmp.setConstraints(null);
+        final Table entity = tableMapper.tableCreateDtoToTable(createDto);
+        entity.setInternalName(tableMapper.nameToInternalName(entity.getName()));
+        entity.setQueueName(database.getExchangeName() + "." + entity.getInternalName());
+        entity.setRoutingKey(entity.getQueueName());
+        entity.setIsVersioned(true);
+        entity.setTdbid(databaseId);
+        entity.setDatabase(database);
+        entity.setConstraints(null);
         final User creator = userService.findByUsername(principal.getName());
-        tmp.setCreator(creator);
-        tmp.setOwner(creator);
+        entity.setCreator(creator);
+        entity.setOwner(creator);
         /* save in metadata database */
-        final Table entity = tableRepository.save(tmp);
         entity.setColumns(createDto.getColumns()
                 .stream()
                 .map(tableMapper::columnCreateDtoToTableColumn)
                 .map(column -> tableMapper.tableColumnToTableColumn(entity, column, query))
-                .collect(Collectors.toList()));
+                .toList());
         /* set the ordinal position for the columns */
         entity.getColumns()
                 .forEach(column -> {

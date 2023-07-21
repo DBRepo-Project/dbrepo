@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div id="persist">
     <v-toolbar flat>
       <v-toolbar-title>
         <v-btn id="back-btn" class="mr-2" :to="backTo">
@@ -1063,7 +1063,7 @@ export default {
 }
 </script>
 <style>
-.v-stepper .v-stepper__step--active .v-stepper__label {
+#persist .v-stepper .v-stepper__step--active .v-stepper__label {
   text-shadow: none !important;
 }
 </style>

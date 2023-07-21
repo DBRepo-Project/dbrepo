@@ -24,7 +24,6 @@ public class TableCreateDto {
     @Schema(example = "Air Quality")
     private String name;
 
-    @NotBlank
     @Schema(example = "Air Quality in Austria")
     private String description;
 

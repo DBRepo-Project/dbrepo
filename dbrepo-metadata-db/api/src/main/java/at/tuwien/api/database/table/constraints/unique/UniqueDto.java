@@ -22,12 +22,6 @@ public class UniqueDto {
     private Long uid;
 
     @NotNull
-    private Long tid;
-
-    @NotNull
-    private Long tdbid;
-
-    @NotNull
     private TableDto table;
 
     @NotNull

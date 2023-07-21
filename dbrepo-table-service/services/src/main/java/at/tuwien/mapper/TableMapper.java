@@ -27,7 +27,6 @@ import at.tuwien.exception.ImageNotSupportedException;
 import at.tuwien.exception.QueryMalformedException;
 import at.tuwien.exception.TableMalformedException;
 import at.tuwien.repository.mdb.TableRepository;
-import com.mchange.v2.lang.ObjectUtils;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
@@ -55,7 +54,6 @@ public interface TableMapper {
 
     @Mappings({
             @Mapping(source = "id", target = "id"),
-            @Mapping(source = "tdbid", target = "databaseId"),
             @Mapping(target = "name", expression = "java(data.getName())"),
             @Mapping(target = "internalName", expression = "java(data.getInternalName())"),
             @Mapping(target = "queueName", expression = "java(data.getQueueName())"),
@@ -123,8 +121,6 @@ public interface TableMapper {
 
     default Unique columnNameListToUnique(Table table, List<String> names) throws TableMalformedException {
         return Unique.builder()
-                .tid(table.getId())
-                .tdbid(table.getTdbid())
                 .table(table)
                 .columns(columnNameListToTableColumn(table, names))
                 .build();
@@ -133,34 +129,28 @@ public interface TableMapper {
     ReferenceType referenceTypeDtoToReferenceType(ReferenceTypeDto dto);
 
     default ForeignKey foreignKeyCreateDtoToForeignKey(TableRepository repo, Table table, ForeignKeyCreateDto data) throws TableMalformedException {
-        ForeignKey.ForeignKeyBuilder builder = ForeignKey.builder()
-                .tid(table.getId())
-                .tdbid(table.getTdbid())
+        final Optional<Table> referencedTable = repo.findByTdbidAndInternalName(table.getDatabase().getId(), nameToInternalName(data.getReferencedTable()));
+        if (referencedTable.isEmpty()) {
+            log.error("Failed to find referenced table with database id {} and internal name {}", table.getDatabase().getId(), nameToInternalName(data.getReferencedTable()));
+            throw new TableMalformedException("Failed to find referenced table with database id " + table.getDatabase().getId() + " and internal name " + nameToInternalName(data.getReferencedTable()));
+        }
+        final ForeignKey.ForeignKeyBuilder builder = ForeignKey.builder()
                 .table(table)
                 .onUpdate(referenceTypeDtoToReferenceType(data.getOnUpdate()))
-                .onDelete(referenceTypeDtoToReferenceType(data.getOnDelete()));
-        Optional<Table> referencedTable = repo.findByTdbidAndInternalName(table.getTdbid(), nameToInternalName(data.getReferencedTable()));
-
-        if (referencedTable.isEmpty()) {
-            throw new TableMalformedException("Could not find table referenced in foreign key.");
-        }
-
-        builder.rtid(table.getId())
-                .rtdbid(table.getTdbid())
+                .onDelete(referenceTypeDtoToReferenceType(data.getOnDelete()))
                 .referencedTable(referencedTable.get());
-        List<TableColumn> columns = columnNameListToTableColumn(table, data.getColumns());
-        List<TableColumn> referencedColumns = columnNameListToTableColumn(referencedTable.get(), data.getReferencedColumns());
-
+        final List<TableColumn> columns = columnNameListToTableColumn(table, data.getColumns());
+        final List<TableColumn> referencedColumns = columnNameListToTableColumn(referencedTable.get(), data.getReferencedColumns());
         if (columns.isEmpty()) {
+            log.error("Foreign key does not have any columns.");
             throw new TableMalformedException("Foreign key does not have any columns.");
         }
         if (columns.size() != referencedColumns.size()) {
+            log.error("There have to be equally as many columns and referenced columns in a foreign key.");
             throw new TableMalformedException("There have to be equally as many columns and referenced columns in a foreign key.");
         }
-
-        List<ForeignKeyReference> references = new ArrayList<>();
-        ForeignKey foreignKey = builder.references(references).build();
-
+        final List<ForeignKeyReference> references = new ArrayList<>();
+        final ForeignKey foreignKey = builder.references(references).build();
         for (int i = 0; i < columns.size(); i++) {
             TableColumn column = columns.get(i);
             TableColumn referencedColumn = referencedColumns.get(i);
@@ -170,7 +160,6 @@ public interface TableMapper {
                     .referencedColumn(referencedColumn)
                     .build());
         }
-
         return foreignKey;
     }
 
@@ -275,7 +264,7 @@ public interface TableMapper {
             @Mapping(source = "data.name", target = "name"),
             @Mapping(source = "data.internalName", target = "internalName"),
             @Mapping(source = "data.created", target = "created"),
-            @Mapping(source = "data.dfid", target = "dfid"),
+            @Mapping(source = "data.dateFormat", target = "dateFormat"),
             @Mapping(source = "data.lastModified", target = "lastModified"),
     })
     TableColumn tableColumnToTableColumn(Table table, TableColumn data, TableCreateRawQuery query);
@@ -336,8 +325,10 @@ public interface TableMapper {
             case INT -> "INT(" + Objects.requireNonNullElse(data.getSize(), "255") + ")";
             case BIGINT -> "BIGINT(" + Objects.requireNonNullElse(data.getSize(), "255") + ")";
             case FLOAT -> "FLOAT(" + Objects.requireNonNullElse(data.getSize(), "24") + ")";
-            case DOUBLE -> "DOUBLE(" + Objects.requireNonNullElse(data.getSize(), "25") + "," + Objects.requireNonNullElse(data.getD(), "0") + ")";
-            case DECIMAL -> "DECIMAL(" + Objects.requireNonNullElse(data.getSize(), "10") + "," + Objects.requireNonNullElse(data.getD(), "0") + ")";
+            case DOUBLE ->
+                    "DOUBLE(" + Objects.requireNonNullElse(data.getSize(), "25") + "," + Objects.requireNonNullElse(data.getD(), "0") + ")";
+            case DECIMAL ->
+                    "DECIMAL(" + Objects.requireNonNullElse(data.getSize(), "10") + "," + Objects.requireNonNullElse(data.getD(), "0") + ")";
             default -> data.getType().getType().toUpperCase();
         };
     }
