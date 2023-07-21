@@ -3,7 +3,6 @@ package at.tuwien.service;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.semantics.EntityDto;
 import at.tuwien.api.semantics.TableColumnEntityDto;
-import at.tuwien.entities.database.table.columns.TableColumnKey;
 import at.tuwien.exception.QueryMalformedException;
 import at.tuwien.exception.TableColumnNotFoundException;
 import at.tuwien.exception.TableNotFoundException;
@@ -25,7 +24,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 
 @Log4j2
@@ -74,7 +73,7 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
     public void suggestTableColumnSemantics_success() throws QueryMalformedException, TableColumnNotFoundException {
 
         /* mock */
-        when(tableColumnRepository.findById(any(TableColumnKey.class)))
+        when(tableColumnRepository.findById(anyLong()))
                 .thenReturn(Optional.of(TABLE_1_COLUMNS.get(0)));
         when(ontologyRepository.findAll())
                 .thenReturn(List.of(ONTOLOGY_1, ONTOLOGY_2, ONTOLOGY_3, ONTOLOGY_4, ONTOLOGY_5));

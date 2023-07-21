@@ -4,12 +4,10 @@ import at.tuwien.api.semantics.EntityDto;
 import at.tuwien.api.semantics.TableColumnEntityDto;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
-import at.tuwien.entities.database.table.columns.TableColumnKey;
 import at.tuwien.entities.semantics.Ontology;
 import at.tuwien.exception.QueryMalformedException;
 import at.tuwien.exception.TableColumnNotFoundException;
 import at.tuwien.exception.TableNotFoundException;
-import at.tuwien.mapper.TableMapper;
 import at.tuwien.repository.mdb.TableColumnRepository;
 import at.tuwien.repository.mdb.TableRepository;
 import at.tuwien.service.OntologyService;
@@ -28,16 +26,14 @@ import java.util.Optional;
 @Service
 public class TableServiceImpl implements TableService {
 
-    private final TableMapper tableMapper;
     private final QueryService queryService;
     private final OntologyService ontologyService;
     private final TableRepository tableRepository;
     private final TableColumnRepository tableColumnRepository;
 
     @Autowired
-    public TableServiceImpl(TableMapper tableMapper, OntologyService ontologyService, TableRepository tableRepository,
-                            QueryService queryService, TableColumnRepository tableColumnRepository) {
-        this.tableMapper = tableMapper;
+    public TableServiceImpl(OntologyService ontologyService, TableRepository tableRepository, QueryService queryService,
+                            TableColumnRepository tableColumnRepository) {
         this.queryService = queryService;
         this.ontologyService = ontologyService;
         this.tableRepository = tableRepository;
@@ -72,11 +68,10 @@ public class TableServiceImpl implements TableService {
     @Transactional(readOnly = true)
     public List<TableColumnEntityDto> suggestTableColumnSemantics(Long databaseId, Long tableId, Long columnId)
             throws QueryMalformedException, TableColumnNotFoundException {
-        final TableColumnKey key = tableMapper.toTableColumnKey(databaseId, tableId, columnId);
-        final Optional<TableColumn> optional = tableColumnRepository.findById(key);
+        final Optional<TableColumn> optional = tableColumnRepository.findById(columnId);
         if (optional.isEmpty()) {
-            log.error("Failed to find column with key {}", key);
-            throw new TableColumnNotFoundException("Failed to find column with key " + key);
+            log.error("Failed to find column with id {}", columnId);
+            throw new TableColumnNotFoundException("Failed to find column with id " + columnId);
         }
         final List<TableColumnEntityDto> suggestions = new LinkedList<>();
         for (Ontology ontology : ontologyService.findAll()) {
