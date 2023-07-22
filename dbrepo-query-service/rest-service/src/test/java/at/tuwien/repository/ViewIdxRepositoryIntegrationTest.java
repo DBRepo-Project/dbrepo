@@ -4,13 +4,11 @@ import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.ViewCreateDto;
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.config.MariaDbConfig;
-import at.tuwien.entities.database.View;
+import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.BrokerServiceGateway;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
-import at.tuwien.repository.mdb.DatabaseRepository;
-import at.tuwien.repository.mdb.UserRepository;
-import at.tuwien.repository.mdb.ViewRepository;
+import at.tuwien.repository.mdb.*;
 import at.tuwien.repository.sdb.ViewIdxRepository;
 import at.tuwien.service.ViewService;
 import com.rabbitmq.client.Channel;
@@ -39,7 +37,6 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 
@@ -59,14 +56,29 @@ public class ViewIdxRepositoryIntegrationTest extends BaseUnitTest {
     @MockBean
     private BrokerServiceGateway brokerServiceGateway;
 
-    @MockBean
+    @Autowired
     private UserRepository userRepository;
 
-    @MockBean
+    @Autowired
     private DatabaseRepository databaseRepository;
 
-    @MockBean
+    @Autowired
     private ViewRepository viewRepository;
+
+    @Autowired
+    private RealmRepository realmRepository;
+
+    @Autowired
+    private ImageRepository imageRepository;
+
+    @Autowired
+    private ContainerRepository containerRepository;
+
+    @Autowired
+    private TableRepository tableRepository;
+
+    @Autowired
+    private TableColumnRepository tableColumnRepository;
 
     @Autowired
     private ViewIdxRepository viewIdxRepository;
@@ -97,18 +109,17 @@ public class ViewIdxRepositoryIntegrationTest extends BaseUnitTest {
     public void beforeEach() throws SQLException {
         MariaDbConfig.dropAllDatabases(CONTAINER_1);
         MariaDbConfig.createInitDatabase(CONTAINER_1, DATABASE_1);
-        /* metadata database */
         TABLE_1.setColumns(TABLE_1_COLUMNS);
         TABLE_2.setColumns(TABLE_2_COLUMNS);
-        TABLE_3.setColumns(TABLE_3_COLUMNS);
-        TABLE_4.setColumns(TABLE_4_COLUMNS);
-        TABLE_5.setColumns(TABLE_5_COLUMNS);
-        TABLE_6.setColumns(TABLE_6_COLUMNS);
-        TABLE_7.setColumns(TABLE_7_COLUMNS);
-        VIEW_1.setColumns(VIEW_1_COLUMNS);
-        VIEW_2.setColumns(VIEW_2_COLUMNS);
-        VIEW_3.setColumns(VIEW_3_COLUMNS);
-        VIEW_4.setColumns(VIEW_4_COLUMNS);
+        /* metadata database */
+        realmRepository.save(REALM_DBREPO);
+        imageRepository.save(IMAGE_1);
+        userRepository.save(USER_1);
+        containerRepository.save(CONTAINER_1);
+        databaseRepository.save(DATABASE_1_SIMPLE);
+        tableRepository.saveAll(List.of(TABLE_1_SIMPLE, TABLE_2_SIMPLE));
+        tableColumnRepository.saveAll(TABLE_1_COLUMNS);
+        tableColumnRepository.saveAll(TABLE_2_COLUMNS);
     }
 
     @Test
@@ -119,14 +130,6 @@ public class ViewIdxRepositoryIntegrationTest extends BaseUnitTest {
                 .query(VIEW_1_QUERY)
                 .isPublic(VIEW_1_PUBLIC)
                 .build();
-
-        /* mock */
-        when(databaseRepository.findByDatabaseId(DATABASE_1_ID))
-                .thenReturn(Optional.of(DATABASE_1));
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
-        when(viewRepository.save(any(View.class)))
-                .thenReturn(VIEW_1);
 
         /* test */
         viewService.create(DATABASE_1_ID, request, USER_1_PRINCIPAL);

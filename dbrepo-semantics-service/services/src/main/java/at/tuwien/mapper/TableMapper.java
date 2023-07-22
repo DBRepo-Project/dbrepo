@@ -14,14 +14,12 @@ public interface TableMapper {
     org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(TableMapper.class);
 
     @Mappings({
-            @Mapping(source = "tid", target = "tableId"),
-            @Mapping(source = "cdbid", target = "databaseId"),
+            @Mapping(target = "tableId", source = "table.id"),
     })
     ColumnBriefDto tableColumnToColumnBriefDto(TableColumn data);
 
     @Mappings({
-            @Mapping(source = "tid", target = "tableId"),
-            @Mapping(source = "cdbid", target = "databaseId"),
+            @Mapping(target = "tableId", source = "table.id"),
     })
     ColumnDto tableColumnToColumnDto(TableColumn data);
 }

@@ -29,7 +29,7 @@ public class DatabaseServiceImpl implements DatabaseService {
         final Optional<Database> database = databaseRepository.findByDatabaseId(databaseId);
         if (database.isEmpty()) {
             log.error("Failed to find database with database id {}", databaseId);
-            throw new DatabaseNotFoundException("Failed to find database");
+            throw new DatabaseNotFoundException("Failed to find database with id " + databaseId);
         }
         return database.get();
     }

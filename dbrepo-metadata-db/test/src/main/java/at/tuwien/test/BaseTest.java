@@ -730,6 +730,7 @@ public abstract class BaseTest {
     public final static String USER_5_DATABASE_PASSWORD = "*C20EF5C6875857DEFA9BE6E9B62DD76AAAE51882" /* junit5 */;
     public final static String USER_5_EMAIL = "system@ossdip.at";
     public final static Boolean USER_5_VERIFIED = true;
+    public final static Boolean USER_5_ENABLED = true;
     public final static Boolean USER_5_THEME_DARK = false;
     public final static Instant USER_5_CREATED = Instant.ofEpochSecond(1677399592) /* 2023-02-26 08:19:52 (UTC) */;
     public final static UUID USER_5_REALM_ID = REALM_DBREPO_ID;
@@ -739,6 +740,7 @@ public abstract class BaseTest {
             .username(USER_5_USERNAME)
             .email(USER_5_EMAIL)
             .emailVerified(USER_5_VERIFIED)
+            .enabled(USER_5_ENABLED)
             .databasePassword(USER_5_DATABASE_PASSWORD)
             .realmId(USER_5_REALM_ID)
             .build();
@@ -761,6 +763,50 @@ public abstract class BaseTest {
 
     public final static Principal USER_5_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_5_DETAILS,
             USER_5_PASSWORD, USER_5_DETAILS.getAuthorities());
+
+    public final static UUID USER_6_ID = UUID.fromString("28ff851d-d7bc-4422-959c-edd7a5b15630");
+    public final static String USER_6_USERNAME = "system";
+    public final static String USER_6_FIRSTNAME = "System";
+    public final static String USER_6_LASTNAME = "System";
+    public final static String USER_6_AFFILIATION = "TU Wien";
+    public final static String USER_6_ORCID = null;
+    public final static String USER_6_PASSWORD = "junit5";
+    public final static String USER_6_DATABASE_PASSWORD = "*C20EF5C6875857DEFA9BE6E9B62DD76AAAE51882" /* junit5 */;
+    public final static String USER_6_EMAIL = "system@ossdip.at";
+    public final static Boolean USER_6_VERIFIED = true;
+    public final static Boolean USER_6_ENABLED = true;
+    public final static Boolean USER_6_THEME_DARK = false;
+    public final static Instant USER_6_CREATED = Instant.ofEpochSecond(1677399592) /* 2023-02-26 08:19:52 (UTC) */;
+    public final static UUID USER_6_REALM_ID = REALM_DBREPO_ID;
+
+    public final static User USER_6 = User.builder()
+            .id(USER_6_ID)
+            .username(USER_6_USERNAME)
+            .email(USER_6_EMAIL)
+            .emailVerified(USER_6_VERIFIED)
+            .enabled(USER_6_ENABLED)
+            .databasePassword(USER_6_DATABASE_PASSWORD)
+            .realmId(USER_6_REALM_ID)
+            .build();
+
+    public final static UserDto USER_6_DTO = UserDto.builder()
+            .id(USER_6_ID)
+            .username(USER_6_USERNAME)
+            .email(USER_6_EMAIL)
+            .firstname(USER_6_FIRSTNAME)
+            .lastname(USER_6_LASTNAME)
+            .emailVerified(USER_6_VERIFIED)
+            .build();
+
+    public final static UserDetails USER_6_DETAILS = UserDetailsDto.builder()
+            .username(USER_6_USERNAME)
+            .email(USER_6_EMAIL)
+            .password(USER_6_PASSWORD)
+            .authorities(AUTHORITY_DEFAULT_RESEARCHER_AUTHORITIES)
+            .build();
+
+    public final static Principal USER_6_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_6_DETAILS,
+            USER_6_PASSWORD, USER_6_DETAILS.getAuthorities());
 
     public final static Long IMAGE_1_ID = 1L;
     public final static String IMAGE_1_REGISTRY = "docker.io/library";

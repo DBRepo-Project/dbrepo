@@ -175,6 +175,7 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
     }
 
     @Override
+    @Transactional
     public void deleteStaleQueries() throws ImageNotSupportedException, QueryStoreException {
         /* find */
         final List<Database> databases = databaseService.findAll();
