@@ -95,10 +95,20 @@ public class ViewIdxRepositoryIntegrationTest extends BaseUnitTest {
 
     @BeforeEach
     public void beforeEach() throws SQLException {
-        DATABASE_1.setTables(List.of(TABLE_1, TABLE_2, TABLE_3, TABLE_7));
-        DATABASE_1.setViews(List.of(VIEW_1));
         MariaDbConfig.dropAllDatabases(CONTAINER_1);
         MariaDbConfig.createInitDatabase(CONTAINER_1, DATABASE_1);
+        /* metadata database */
+        TABLE_1.setColumns(TABLE_1_COLUMNS);
+        TABLE_2.setColumns(TABLE_2_COLUMNS);
+        TABLE_3.setColumns(TABLE_3_COLUMNS);
+        TABLE_4.setColumns(TABLE_4_COLUMNS);
+        TABLE_5.setColumns(TABLE_5_COLUMNS);
+        TABLE_6.setColumns(TABLE_6_COLUMNS);
+        TABLE_7.setColumns(TABLE_7_COLUMNS);
+        VIEW_1.setColumns(VIEW_1_COLUMNS);
+        VIEW_2.setColumns(VIEW_2_COLUMNS);
+        VIEW_3.setColumns(VIEW_3_COLUMNS);
+        VIEW_4.setColumns(VIEW_4_COLUMNS);
     }
 
     @Test

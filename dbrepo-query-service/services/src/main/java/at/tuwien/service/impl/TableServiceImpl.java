@@ -42,12 +42,11 @@ public class TableServiceImpl extends HibernateConnector implements TableService
 
     @Override
     @Transactional(readOnly = true)
-    public Table find(Long databaseId, Long tableId) throws DatabaseNotFoundException,
-            TableNotFoundException {
+    public Table find(Long databaseId, Long tableId) throws DatabaseNotFoundException, TableNotFoundException {
         final Optional<Table> table = tableRepository.find(databaseId, tableId);
         if (table.isEmpty()) {
             log.error("Failed to find table with id {} in database with id {}", tableId, databaseId);
-            throw new TableNotFoundException("Failed to find table");
+            throw new TableNotFoundException("Failed to find table with id " + tableId + " in database with id " + databaseId);
         }
         return table.get();
     }

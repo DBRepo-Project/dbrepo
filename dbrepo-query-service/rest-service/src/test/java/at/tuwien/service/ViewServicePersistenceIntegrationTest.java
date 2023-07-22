@@ -5,6 +5,7 @@ import at.tuwien.api.database.ViewCreateDto;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.MariaDbContainerConfig;
 import at.tuwien.entities.database.View;
+import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.BrokerServiceGateway;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
@@ -91,13 +92,16 @@ public class ViewServicePersistenceIntegrationTest extends BaseUnitTest {
 
     @BeforeEach
     public void beforeEach() {
+        TABLE_1.setColumns(TABLE_1_COLUMNS);
+        TABLE_2.setColumns(TABLE_2_COLUMNS);
+        /* metadata database */
         realmRepository.save(REALM_DBREPO);
         imageRepository.save(IMAGE_1);
         userRepository.save(USER_1);
         containerRepository.save(CONTAINER_1);
         databaseRepository.save(DATABASE_1_SIMPLE);
-        tableRepository.save(TABLE_1_SIMPLE);
-        tableColumnRepository.saveAll(TABLE_1_COLUMNS);
+        tableRepository.save(TABLE_1);
+        tableRepository.save(TABLE_2);
     }
 
     @Test

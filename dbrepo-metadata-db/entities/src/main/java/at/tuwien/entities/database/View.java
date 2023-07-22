@@ -51,7 +51,7 @@ public class View {
 
     @ToString.Exclude
     @org.springframework.data.annotation.Transient
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     @JoinColumns({
             @JoinColumn(name = "createdBy", referencedColumnName = "ID", insertable = false, updatable = false)
     })
@@ -98,16 +98,17 @@ public class View {
         return this.internalName.equals(table.getName().replace("`", ""));
     }
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    /**
+     * Cascade cannot be CascadeType.PERSIST since columns already exist
+     */
+    @ToString.Exclude
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinTable(name = "mdb_view_columns",
-            joinColumns = {
-                    @JoinColumn(name = "vid", referencedColumnName = "id", insertable = false, updatable = false),
-                    @JoinColumn(name = "vdbid", referencedColumnName = "vdbid", insertable = false, updatable = false)
-            },
             inverseJoinColumns = {
-                    @JoinColumn(name = "cid", referencedColumnName = "id", insertable = false, updatable = false),
-                    @JoinColumn(name = "ctid", referencedColumnName = "tid", insertable = false, updatable = false),
-                    @JoinColumn(name = "cdbid", referencedColumnName = "cdbid", insertable = false, updatable = false)
+                    @JoinColumn(name = "vid", referencedColumnName = "id"),
+            },
+            joinColumns = {
+                    @JoinColumn(name = "cid", referencedColumnName = "id"),
             })
     @OrderColumn(name = "position")
     private List<TableColumn> columns;

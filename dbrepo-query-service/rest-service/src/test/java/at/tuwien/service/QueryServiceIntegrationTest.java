@@ -10,9 +10,7 @@ import at.tuwien.exception.*;
 import at.tuwien.gateway.BrokerServiceGateway;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.querystore.Query;
-import at.tuwien.repository.mdb.DatabaseRepository;
-import at.tuwien.repository.mdb.TableRepository;
-import at.tuwien.repository.mdb.UserRepository;
+import at.tuwien.repository.mdb.*;
 import at.tuwien.repository.sdb.ViewIdxRepository;
 import com.rabbitmq.client.Channel;
 import lombok.SneakyThrows;
@@ -65,14 +63,26 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     @MockBean
     private BrokerServiceGateway brokerServiceGateway;
 
-    @MockBean
+    @Autowired
     private DatabaseRepository databaseRepository;
 
-    @MockBean
-    private TableRepository tableRepository;
+    @Autowired
+    private RealmRepository realmRepository;
 
-    @MockBean
+    @Autowired
+    private ImageRepository imageRepository;
+
+    @Autowired
+    private ContainerRepository containerRepository;
+
+    @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private ViewRepository viewRepository;
+
+    @Autowired
+    private TableRepository tableRepository;
 
     @Autowired
     private QueryService queryService;
@@ -86,23 +96,32 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         MariaDbConfig.dropAllDatabases(CONTAINER_1);
         MariaDbConfig.createInitDatabase(CONTAINER_1, DATABASE_2);
         MariaDbConfig.createInitDatabase(CONTAINER_1, DATABASE_1);
+        TABLE_1.setColumns(TABLE_1_COLUMNS);
+        TABLE_2.setColumns(TABLE_2_COLUMNS);
+        TABLE_3.setColumns(TABLE_3_COLUMNS);
+        TABLE_4.setColumns(TABLE_4_COLUMNS);
+        TABLE_5.setColumns(TABLE_5_COLUMNS);
+        TABLE_6.setColumns(TABLE_6_COLUMNS);
+        TABLE_7.setColumns(TABLE_7_COLUMNS);
+        VIEW_1.setColumns(VIEW_1_COLUMNS);
+        VIEW_2.setColumns(VIEW_2_COLUMNS);
+        VIEW_3.setColumns(VIEW_3_COLUMNS);
+        VIEW_4.setColumns(VIEW_4_COLUMNS);
         /* metadata database */
-        DATABASE_1.setTables(List.of(TABLE_1, TABLE_2, TABLE_3, TABLE_7));
-        DATABASE_1.setViews(List.of(VIEW_2, VIEW_3));
-        DATABASE_2.setTables(List.of(TABLE_4, TABLE_5, TABLE_6));
-        DATABASE_2.setViews(List.of(VIEW_4));
+        realmRepository.save(REALM_DBREPO);
+        imageRepository.save(IMAGE_1);
+        userRepository.save(USER_1);
+        userRepository.save(USER_2);
+        containerRepository.saveAll(List.of(CONTAINER_1, CONTAINER_2));
+        databaseRepository.saveAll(List.of(DATABASE_1_SIMPLE, DATABASE_2_SIMPLE));
+        tableRepository.saveAll(List.of(TABLE_1, TABLE_2, TABLE_3, TABLE_4, TABLE_5, TABLE_6, TABLE_7));
+        viewRepository.saveAll(List.of(VIEW_1, VIEW_2, VIEW_3, VIEW_4));
     }
 
     @Test
     public void findAll_succeeds() throws DatabaseNotFoundException, ImageNotSupportedException,
             TableMalformedException, TableNotFoundException, DatabaseConnectionException,
             PaginationException, QueryMalformedException, UserNotFoundException {
-
-        /* mock */
-        when(databaseRepository.findByDatabaseId(DATABASE_1_ID))
-                .thenReturn(Optional.of(DATABASE_1));
-        when(tableRepository.find(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(Optional.of(TABLE_1));
 
         /* test */
         final QueryResultDto result = queryService.tableFindAll(DATABASE_1_ID, TABLE_1_ID, Instant.now(),
@@ -132,12 +151,6 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         final Long page = 0L;
         final Long size = 10L;
 
-        /* mock */
-        when(databaseRepository.findByDatabaseId(DATABASE_1_ID))
-                .thenReturn(Optional.of(DATABASE_1));
-        when(tableRepository.find(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(Optional.of(TABLE_1));
-
         /* test */
         queryService.tableFindAll(DATABASE_1_ID, TABLE_1_ID, Instant.now(), page, size, USER_1_PRINCIPAL);
     }
@@ -147,15 +160,9 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         final Long page = 0L;
         final Long size = 10L;
 
-        /* mock */
-        when(databaseRepository.findByDatabaseId(DATABASE_1_ID))
-                .thenReturn(Optional.of(DATABASE_1));
-        when(tableRepository.find(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(Optional.empty());
-
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
-            queryService.tableFindAll(DATABASE_1_ID, TABLE_1_ID, Instant.now(), page, size, USER_1_PRINCIPAL);
+            queryService.tableFindAll(DATABASE_1_ID, 9999L, Instant.now(), page, size, USER_1_PRINCIPAL);
         });
     }
 
@@ -164,12 +171,6 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         final TableCsvDto request = TableCsvDto.builder()
                 .data(Map.of("key", "some_value"))
                 .build();
-
-        /* mock */
-        when(databaseRepository.findByDatabaseId(DATABASE_1_ID))
-                .thenReturn(Optional.of(DATABASE_1));
-        when(tableRepository.find(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(Optional.of(TABLE_1));
 
         /* test */
         assertThrows(TableMalformedException.class, () -> {
@@ -189,12 +190,6 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                     put("rainfall", 23.1);
                 }}).build();
 
-        /* mock */
-        when(databaseRepository.findByDatabaseId(DATABASE_1_ID))
-                .thenReturn(Optional.of(DATABASE_1));
-        when(tableRepository.find(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(Optional.of(TABLE_1));
-
         /* test */
         queryService.insert(DATABASE_1_ID, TABLE_1_ID, request, USER_1_PRINCIPAL);
         final List<Map<String, String>> response = MariaDbConfig.selectQuery(DATABASE_1, "SELECT `id`, `date`, `location` FROM `weather_aus` WHERE `id` = 4", "id", "date", "location");
@@ -213,12 +208,6 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                     put("value", 12.3);
                 }}).build();
 
-        /* mock */
-        when(databaseRepository.findByDatabaseId(DATABASE_1_ID))
-                .thenReturn(Optional.of(DATABASE_1));
-        when(tableRepository.find(DATABASE_1_ID, TABLE_7_ID))
-                .thenReturn(Optional.of(TABLE_7));
-
         /* test */
         queryService.insert(DATABASE_1_ID, TABLE_7_ID, request, USER_1_PRINCIPAL);
     }
@@ -231,12 +220,6 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                     put("timestamp", "2023-02-10 12:15:20.613405");
                     put("value", null);
                 }}).build();
-
-        /* mock */
-        when(databaseRepository.findByDatabaseId(DATABASE_1_ID))
-                .thenReturn(Optional.of(DATABASE_1));
-        when(tableRepository.find(DATABASE_1_ID, TABLE_7_ID))
-                .thenReturn(Optional.of(TABLE_7));
 
         /* test */
         queryService.insert(DATABASE_1_ID, TABLE_7_ID, request, USER_1_PRINCIPAL);
@@ -253,12 +236,6 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                         "rainfall", 0))
                 .build();
 
-        /* mock */
-        when(databaseRepository.findByDatabaseId(DATABASE_1_ID))
-                .thenReturn(Optional.of(DATABASE_1));
-        when(tableRepository.find(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(Optional.of(TABLE_1));
-
         /* test */
         queryService.insert(DATABASE_1_ID, TABLE_1_ID, request, USER_1_PRINCIPAL);
     }
@@ -272,12 +249,6 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                         "mintemp", 5,
                         "rainfall", 0))
                 .build();
-
-        /* mock */
-        when(databaseRepository.findByDatabaseId(DATABASE_1_ID))
-                .thenReturn(Optional.of(DATABASE_1));
-        when(tableRepository.find(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(Optional.of(TABLE_1));
 
         /* test */
         assertThrows(TableMalformedException.class, () -> {
@@ -295,12 +266,6 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                         "rainfall", 0))
                 .build();
 
-        /* mock */
-        when(databaseRepository.findByDatabaseId(DATABASE_1_ID))
-                .thenReturn(Optional.of(DATABASE_1));
-        when(tableRepository.find(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(Optional.of(TABLE_1));
-
         /* test */
         assertThrows(TableMalformedException.class, () -> {
             queryService.insert(DATABASE_1_ID, TABLE_1_ID, request, USER_1_PRINCIPAL);
@@ -317,12 +282,6 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                         "rainfall", 0))
                 .build();
 
-        /* mock */
-        when(databaseRepository.findByDatabaseId(DATABASE_1_ID))
-                .thenReturn(Optional.of(DATABASE_1));
-        when(tableRepository.find(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(Optional.of(TABLE_1));
-
         /* test */
         assertThrows(TableMalformedException.class, () -> {
             queryService.insert(DATABASE_1_ID, TABLE_1_ID, request, USER_1_PRINCIPAL);
@@ -334,12 +293,6 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
             TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, PaginationException,
             QueryMalformedException, UserNotFoundException {
 
-        /* mock */
-        when(databaseRepository.findByDatabaseId(DATABASE_1_ID))
-                .thenReturn(Optional.of(DATABASE_1));
-        when(tableRepository.find(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(Optional.of(TABLE_1));
-
         /* test */
         queryService.tableFindAll(DATABASE_1_ID, TABLE_1_ID, null, null, null, USER_1_PRINCIPAL);
     }
@@ -349,12 +302,6 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
             TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, PaginationException,
             QueryMalformedException, UserNotFoundException {
         final Instant timestamp = DATABASE_1_CREATED.minus(1, ChronoUnit.SECONDS);
-
-        /* mock */
-        when(databaseRepository.findByDatabaseId(DATABASE_1_ID))
-                .thenReturn(Optional.of(DATABASE_1));
-        when(tableRepository.find(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(Optional.of(TABLE_1));
 
         /* test */
         queryService.tableFindAll(DATABASE_1_ID, TABLE_1_ID, timestamp, null, null, USER_1_PRINCIPAL);
@@ -369,16 +316,9 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                 .statement("SELECT n.`firstname`, n.`lastname`, z.`animal_name`, z.`legs` FROM `likes` l JOIN `names` n ON l.`name_id` = n.`id` JOIN `mock_view` z ON z.`id` = l.`zoo_id`")
                 .build();
 
-        /* mock */
-        Thread.sleep(2000); // wait for database creation
-        when(databaseRepository.findByDatabaseId(DATABASE_2_ID))
-                .thenReturn(Optional.of(DATABASE_2));
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
-
         /* test */
-        final QueryResultDto response = queryService.execute(DATABASE_2_ID, request, USER_1_PRINCIPAL,
-                0L, 100L, null, null);
+        Thread.sleep(1000) /* wait for test container some more */;
+        final QueryResultDto response = queryService.execute(DATABASE_2_ID, request, USER_1_PRINCIPAL, 0L, 100L, null, null);
         assertEquals(4L, response.getResultNumber());
         assertNotNull(response.getResult());
         final List<Map<String, Object>> result = response.getResult();
@@ -408,14 +348,8 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                 .statement("SELECT `location`, `lng` FROM `weather_location` WHERE `lat` IS NULL")
                 .build();
 
-        /* mock */
-        Thread.sleep(1000); // wait for database creation
-        when(databaseRepository.findByDatabaseId(DATABASE_1_ID))
-                .thenReturn(Optional.of(DATABASE_1));
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
-
         /* test */
+        Thread.sleep(1000) /* wait for test container some more */;
         final QueryResultDto response = queryService.execute(DATABASE_1_ID, request, USER_1_PRINCIPAL,
                 0L, 100L, null, null);
         assertEquals(1L, response.getResultNumber());
@@ -434,14 +368,8 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                 .statement("SELECT `location` FROM `weather_location` WHERE `lat` IS NULL")
                 .build();
 
-        /* mock */
-        Thread.sleep(1000); // wait for database creation
-        when(databaseRepository.findByDatabaseId(DATABASE_1_ID))
-                .thenReturn(Optional.of(DATABASE_1));
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
-
         /* test */
+        Thread.sleep(1000) /* wait for test container some more */;
         final QueryResultDto response = queryService.execute(DATABASE_1_ID, request, USER_1_PRINCIPAL,
                 0L, 100L, null, null);
         assertEquals(1L, response.getResultNumber());
@@ -460,14 +388,8 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                 .statement("SELECT `lat`, `lng` FROM `weather_location` WHERE `lat` IS NULL")
                 .build();
 
-        /* mock */
-        Thread.sleep(1000); // wait for database creation
-        when(databaseRepository.findByDatabaseId(DATABASE_1_ID))
-                .thenReturn(Optional.of(DATABASE_1));
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
-
         /* test */
+        Thread.sleep(1000) /* wait for test container some more */;
         final QueryResultDto response = queryService.execute(DATABASE_1_ID, request, USER_1_PRINCIPAL,
                 0L, 100L, null, null);
         assertEquals(1L, response.getResultNumber());
@@ -482,16 +404,9 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                 .statement("SELECT aus.location as a, loc.location from weather_aus aus, weather_location loc")
                 .build();
 
-        /* mock */
-        Thread.sleep(1000); // wait for database creation
-        when(databaseRepository.findByDatabaseId(DATABASE_1_ID))
-                .thenReturn(Optional.of(DATABASE_1));
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
-
         /* test */
-        final QueryResultDto response = queryService.execute(DATABASE_1_ID, request, USER_1_PRINCIPAL,
-                0L, 100L, null, null);
+        Thread.sleep(1000) /* wait for test container some more */;
+        final QueryResultDto response = queryService.execute(DATABASE_1_ID, request, USER_1_PRINCIPAL, 0L, 100L, null, null);
         assertEquals(9L, response.getResultNumber());
         assertNotNull(response.getResult());
         final List<Map<String, Object>> result = response.getResult();
@@ -524,11 +439,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                 .build();
 
         /* mock */
-        Thread.sleep(1000); // wait for database creation
-        when(databaseRepository.findByDatabaseId(DATABASE_1_ID))
-                .thenReturn(Optional.of(DATABASE_1));
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
+        Thread.sleep(1000) /* wait for test container some more */;
 
         /* test */
         final QueryResultDto response = queryService.execute(DATABASE_1_ID, request, USER_1_PRINCIPAL,
@@ -574,10 +485,6 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
 
         /* mock */
-        when(databaseRepository.findByDatabaseId(DATABASE_1_ID))
-                .thenReturn(Optional.of(DATABASE_1));
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
         MariaDbConfig.insertQueryStore(DATABASE_1, query, USER_1_USERNAME);
 
         /* test */

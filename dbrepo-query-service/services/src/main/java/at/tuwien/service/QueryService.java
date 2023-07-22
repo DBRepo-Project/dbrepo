@@ -41,11 +41,10 @@ public interface QueryService {
      * @throws ImageNotSupportedException The image is not supported.
      * @throws QueryMalformedException    The query is malformed.
      */
-    QueryResultDto execute(Long databaseId, ExecuteStatementDto statement,
-                           Principal principal, Long page, Long size,
+    QueryResultDto execute(Long databaseId, ExecuteStatementDto statement, Principal principal, Long page, Long size,
                            SortType sortDirection, String sortColumn) throws DatabaseNotFoundException,
-            ImageNotSupportedException, QueryMalformedException, QueryStoreException,
-            ColumnParseException, UserNotFoundException, TableMalformedException, DatabaseConnectionException;
+            ImageNotSupportedException, QueryMalformedException, QueryStoreException, ColumnParseException,
+            UserNotFoundException, TableMalformedException, DatabaseConnectionException;
 
     /**
      * Re-Executes an arbitrary query on the database. We allow the user to only view the data, therefore the
@@ -76,9 +75,9 @@ public interface QueryService {
      * Re-Executes the count-statement of an arbitrary query on the database. We allow the user to only view
      * the data, therefore the default "mariadb" user is allowed read-only access "SELECT".
      *
-     * @param databaseId    The database id.
-     * @param query         The query.
-     * @param principal     The user principal.
+     * @param databaseId The database id.
+     * @param query      The query.
+     * @param principal  The user principal.
      * @return The result.
      * @throws QueryStoreException        The query store is not reachable.
      * @throws QueryMalformedException    The query is malformed.
@@ -95,12 +94,12 @@ public interface QueryService {
      * Select all data known in the database-table id tuple at a given time and return a page of specific size, using
      * Instant to better abstract time concept (JDK 8) from SQL. We use the "mariadb" user for this.
      *
-     * @param databaseId  The database id.
-     * @param tableId     The table id.
-     * @param timestamp   The given time.
-     * @param page        The page.
-     * @param size        The page size.
-     * @param principal   The user principal.
+     * @param databaseId The database id.
+     * @param tableId    The table id.
+     * @param timestamp  The given time.
+     * @param page       The page.
+     * @param size       The page size.
+     * @param principal  The user principal.
      * @return The select all data result
      * @throws TableNotFoundException     The table was not found in the metadata database.
      * @throws DatabaseNotFoundException  The database was not found in the metdata database.
@@ -118,10 +117,10 @@ public interface QueryService {
      * resource at a given time. Instant to better abstract time concept (JDK 8) from SQL. We use the "mariadb" user
      * for this.
      *
-     * @param databaseId  The database id.
-     * @param tableId     The table id.
-     * @param timestamp   The given time.
-     * @param principal   The user principal.
+     * @param databaseId The database id.
+     * @param tableId    The table id.
+     * @param timestamp  The given time.
+     * @param principal  The user principal.
      * @return The select all data result in the form of a downloadable .csv file.
      * @throws TableNotFoundException      The table was not found in the metadata database.
      * @throws TableMalformedException     The table columns are messed up what we got from the metadata database.
@@ -140,16 +139,16 @@ public interface QueryService {
      * Select all data known in the view id tuple and return a page of specific size.
      * We use the "mariadb" user for this.
      *
-     * @param databaseId  The database id.
-     * @param view        The view.
-     * @param page        The page.
-     * @param size        The page size.
-     * @param principal   The user principal.
+     * @param databaseId The database id.
+     * @param view       The view.
+     * @param page       The page.
+     * @param size       The page size.
+     * @param principal  The user principal.
      * @return The select all data result
-     * @throws ViewNotFoundException     The view was not found in the metadata database.
+     * @throws ViewNotFoundException      The view was not found in the metadata database.
      * @throws DatabaseNotFoundException  The database was not found in the metdata database.
      * @throws ImageNotSupportedException The image is not supported.
-     * @throws ViewMalformedException    The table is malformed.
+     * @throws ViewMalformedException     The table is malformed.
      * @throws QueryMalformedException    The query is malformed.
      */
     QueryResultDto viewFindAll(Long databaseId, View view,
@@ -160,9 +159,9 @@ public interface QueryService {
     /**
      * Finds one query by database id and query id.
      *
-     * @param databaseId  The database id.
-     * @param queryId     The query id.
-     * @param principal   The user principal.
+     * @param databaseId The database id.
+     * @param queryId    The query id.
+     * @param principal  The user principal.
      * @return The query result in the form  of a downloadable .csv file.
      * @throws DatabaseNotFoundException  The database was not found in the remote database.
      * @throws ImageNotSupportedException The image is not supported.
@@ -179,10 +178,10 @@ public interface QueryService {
     /**
      * Count the total tuples for a given table id within a database id at a given time.
      *
-     * @param databaseId  The database id.
-     * @param tableId     The table id.
-     * @param timestamp   The time.
-     * @param principal   The user principal.
+     * @param databaseId The database id.
+     * @param tableId    The table id.
+     * @param timestamp  The time.
+     * @param principal  The user principal.
      * @return The number of records, if successful
      * @throws DatabaseNotFoundException  The database was not found in the remote database.
      * @throws TableNotFoundException     The table was not found in the metadata database.
@@ -195,9 +194,9 @@ public interface QueryService {
     /**
      * Count the total tuples for a given table id within a database id at a given time.
      *
-     * @param databaseId  The database id.
-     * @param view        The view.
-     * @param principal   The user principal.
+     * @param databaseId The database id.
+     * @param view       The view.
+     * @param principal  The user principal.
      * @return The number of records, if successful
      * @throws DatabaseNotFoundException  The database was not found in the remote database.
      * @throws TableMalformedException    The view columns are messed up what we got from the metadata database.
@@ -207,10 +206,10 @@ public interface QueryService {
             throws DatabaseNotFoundException, TableMalformedException, ImageNotSupportedException, DatabaseConnectionException, QueryMalformedException, QueryStoreException, UserNotFoundException;
 
     /**
-     * @param databaseId  The database id.
-     * @param tableId     The table id.
+     * @param databaseId The database id.
+     * @param tableId    The table id.
      * @param data
-     * @param principal   The user principal.
+     * @param principal  The user principal.
      * @throws ImageNotSupportedException  The image is not supported.
      * @throws TableMalformedException     The table does not exist in the metadata database.
      * @throws DatabaseNotFoundException   The database was not found in the remote database.
@@ -227,10 +226,10 @@ public interface QueryService {
      * Insert data from AMQP client into a table of a table-database id tuple, we need the "root" role for this as the
      * default "mariadb" user is configured to only be allowed to execute "SELECT" statements.
      *
-     * @param databaseId  The database id.
-     * @param tableId     The table id.
-     * @param data        The data.
-     * @param principal   The user principal.
+     * @param databaseId The database id.
+     * @param tableId    The table id.
+     * @param data       The data.
+     * @param principal  The user principal.
      * @throws ImageNotSupportedException The image is not supported.
      * @throws TableMalformedException    The table does not exist in the metadata database.
      * @throws DatabaseNotFoundException  The database is not found in the metadata database.
@@ -242,10 +241,10 @@ public interface QueryService {
     /**
      * Deletes a tuple by given constraint set
      *
-     * @param databaseId  The database id.
-     * @param tableId     The table id.
-     * @param data        The constraint set.
-     * @param principal   The user principal.
+     * @param databaseId The database id.
+     * @param tableId    The table id.
+     * @param data       The constraint set.
+     * @param principal  The user principal.
      * @throws ImageNotSupportedException The image is not supported.
      * @throws TableMalformedException    The table does not exist in the metadata database.
      * @throws DatabaseNotFoundException  The database is not found in the metadata database.

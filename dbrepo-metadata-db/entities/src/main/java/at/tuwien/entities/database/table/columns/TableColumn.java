@@ -24,6 +24,9 @@ import java.util.List;
 @jakarta.persistence.Table(name = "mdb_columns", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"tid", "internalName"})
 })
+@NamedQueries({
+        @NamedQuery(name = "TableColumn.findAllByDatabaseId", query = "select c from TableColumn c where c.table.database.id = ?1"),
+})
 public class TableColumn implements Comparable<TableColumn> {
 
     @Id
@@ -33,14 +36,6 @@ public class TableColumn implements Comparable<TableColumn> {
     @Column(updatable = false, nullable = false)
     private Long id;
 
-    @Field(name = "table_id")
-    @Column(updatable = false, insertable = false)
-    private Long tid;
-
-    @Field(name = "database_id")
-    @Column(updatable = false, insertable = false)
-    private Long cdbid;
-
     @ToString.Exclude
     @Field(name = "date_format")
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
@@ -48,16 +43,15 @@ public class TableColumn implements Comparable<TableColumn> {
     private ContainerImageDate dateFormat;
 
     @ToString.Exclude
-    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST})
-    @org.springframework.data.annotation.Transient
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
             @JoinColumn(name = "tid", referencedColumnName = "id", nullable = false)
     })
     private Table table;
 
     @ToString.Exclude
-    @org.springframework.data.annotation.Transient
-    private transient View view;
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE, mappedBy = "columns")
+    private List<View> views;
 
     @Column(name = "cname", nullable = false)
     private String name;
