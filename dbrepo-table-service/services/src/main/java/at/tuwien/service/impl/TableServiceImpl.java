@@ -142,7 +142,7 @@ public class TableServiceImpl extends HibernateConnector implements TableService
             }
             final PreparedStatement preparedStatement11 = query.getPreparedStatement();
             preparedStatement11.executeUpdate();
-        } catch (SQLException e) {
+        } catch (Exception e) {
             try {
                 final Connection connection = dataSource.getConnection();
                 final PreparedStatement preparedStatement11 = tableMapper.tableToDropSequenceRawQuery(connection, database, createDto);

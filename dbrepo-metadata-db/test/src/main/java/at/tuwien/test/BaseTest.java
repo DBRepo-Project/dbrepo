@@ -1821,7 +1821,7 @@ public abstract class BaseTest {
 
     public final static Long TABLE_3_ID = 3L;
     public final static String TABLE_3_NAME = "Traffic Zürich";
-    public final static String TABLE_3_INTERNALNAME = "traffic_zurich";
+    public final static String TABLE_3_INTERNALNAME = "traffic_zu_rich";
     public final static Boolean TABLE_3_VERSIONED = true;
     public final static String TABLE_3_DESCRIPTION = "https://www.kaggle.com/laa283/zurich-public-transport/version/2";
     public final static String TABLE_3_QUEUE_NAME = DATABASE_1_EXCHANGE + "." + TABLE_3_INTERNALNAME;

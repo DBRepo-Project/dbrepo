@@ -144,7 +144,6 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns_enums`
     column_id   bigint                 NOT NULL,
     value       CHARACTER VARYING(255) NOT NULL,
     FOREIGN KEY (table_id, column_id) REFERENCES mdb_columns (tID, ID),
-    FOREIGN KEY (table_id) REFERENCES mdb_tables (ID),
     PRIMARY KEY (id)
 ) WITH SYSTEM VERSIONING;
 
@@ -155,7 +154,6 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns_sets`
     column_id   bigint                 NOT NULL,
     value       CHARACTER VARYING(255) NOT NULL,
     FOREIGN KEY (table_id, column_id) REFERENCES mdb_columns (tID, ID),
-    FOREIGN KEY (table_id) REFERENCES mdb_tables (ID),
     PRIMARY KEY (id)
 ) WITH SYSTEM VERSIONING;
 

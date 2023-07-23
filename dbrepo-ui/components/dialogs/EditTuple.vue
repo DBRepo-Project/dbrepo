@@ -68,7 +68,7 @@
               :items="attr.enum_values"
               :label="label(attr)" />
             <v-select
-              v-if="attr.column_type === 'boolean'"
+              v-if="attr.column_type === 'bool'"
               v-model="localTuple[attr.internal_name]"
               class="mb-2"
               :rules="(attr.is_null_allowed || attr.auto_generated) ? [] : [ v => v !== null || $t('Required') ]"

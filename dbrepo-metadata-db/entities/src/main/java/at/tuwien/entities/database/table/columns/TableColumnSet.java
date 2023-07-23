@@ -24,7 +24,8 @@ public class TableColumnSet {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
-            @JoinColumn(name = "column_id", referencedColumnName = "id")
+            @JoinColumn(name = "column_id", referencedColumnName = "id"),
+            @JoinColumn(name = "table_id", referencedColumnName = "tID")
     })
     private TableColumn column;
 

@@ -161,6 +161,19 @@ public class MariaDbConfig {
         }
     }
 
+    public static boolean tableExists(Database database, String tableName)
+            throws SQLException {
+        final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
+        log.trace("connect to database {}", jdbc);
+        try (Connection connection = DriverManager.getConnection(jdbc, database.getContainer().getPrivilegedUsername(), database.getContainer().getPrivilegedPassword())) {
+            final Statement statement = connection.createStatement();
+            final String query = "SHOW TABLES LIKE '" + tableName + "';";
+            log.trace("execute query {}", query);
+            final ResultSet result = statement.executeQuery(query);
+            return result.next();
+        }
+    }
+
     public static void dropDatabase(Container container, String database)
             throws SQLException {
         final String jdbc = "jdbc:mariadb://" + container.getHost() + ":" + container.getPort();

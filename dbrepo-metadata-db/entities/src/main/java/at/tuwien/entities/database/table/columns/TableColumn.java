@@ -36,6 +36,9 @@ public class TableColumn implements Comparable<TableColumn> {
     @Column(updatable = false, nullable = false)
     private Long id;
 
+    @Column(name = "tID", insertable = false, updatable = false)
+    private Long tableId;
+
     @ToString.Exclude
     @Field(name = "date_format")
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
@@ -45,7 +48,7 @@ public class TableColumn implements Comparable<TableColumn> {
     @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
-            @JoinColumn(name = "tid", referencedColumnName = "id", nullable = false)
+            @JoinColumn(name = "tID", referencedColumnName = "id", nullable = false)
     })
     private Table table;
 
