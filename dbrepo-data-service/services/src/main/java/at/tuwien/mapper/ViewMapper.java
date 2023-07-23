@@ -19,13 +19,12 @@ public interface ViewMapper {
 
     @Mappings({
             @Mapping(target = "constraints", ignore = true),
-            @Mapping(target = "tdbid", source = "databaseId")
+            @Mapping(target = "tdbid", source = "database.id"),
     })
     Table tableDtoToTable(TableDto data);
 
     @Mappings({
-            @Mapping(target = "cdbid", source = "databaseId"),
-            @Mapping(target = "tid", source = "tableId"),
+            @Mapping(target = "table.id", source = "tableId"),
             @Mapping(target = "dateFormat", ignore = true)
     })
     TableColumn columnDtoToTableColumn(ColumnDto data);

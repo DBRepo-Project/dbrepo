@@ -1,20 +1,13 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.TableDto;
-import at.tuwien.api.database.table.columns.ColumnDto;
-import at.tuwien.api.database.table.columns.ColumnTypeDto;
 import at.tuwien.config.MariaDbConfig;
-import at.tuwien.entities.database.View;
 import at.tuwien.entities.database.table.Table;
-import at.tuwien.entities.database.table.columns.TableColumn;
-import at.tuwien.entities.database.table.columns.TableColumnType;
 import at.tuwien.exception.ColumnTypeMalformedException;
 import at.tuwien.exception.QueryMalformedException;
 import at.tuwien.exception.TableNotFoundException;
-import at.tuwien.exception.ViewNotFoundException;
 import at.tuwien.repository.mdb.*;
 import at.tuwien.repository.sdb.DatabaseIdxRepository;
 import com.rabbitmq.client.Channel;
@@ -27,6 +20,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.MariaDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -84,11 +78,11 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
         /* metadata database */
         realmRepository.save(REALM_DBREPO);
         userRepository.save(USER_1);
+        userRepository.save(USER_2);
         imageRepository.save(IMAGE_1);
         containerRepository.save(CONTAINER_1);
         databaseRepository.save(DATABASE_1);
-        tableRepository.save(TABLE_1);
-        tableRepository.save(TABLE_2);
+        tableRepository.saveAll(List.of(TABLE_1, TABLE_2));
         tableColumnRepository.saveAll(TABLE_1_COLUMNS);
         tableColumnRepository.saveAll(TABLE_2_COLUMNS);
     }
@@ -128,6 +122,7 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
+    @Transactional(readOnly = true)
     public void find_succeeds() throws ColumnTypeMalformedException, TableNotFoundException {
 
         /* test */
@@ -136,11 +131,12 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
         assertEquals(TABLE_1_INTERNALNAME, response.getInternalName());
         assertEquals(TABLE_1_QUEUE_NAME, response.getQueueName());
         assertEquals(TABLE_1_ROUTING_KEY, response.getRoutingKey());
-        assertEquals(TABLE_1_DATABASE_ID, response.getDatabaseId());
+        assertEquals(TABLE_1_DATABASE_ID, response.getDatabase().getId());
         assertTrue(response.getIsVersioned());
     }
 
     @Test
+    @Transactional(readOnly = true)
     public void find_full_succeeds() throws ColumnTypeMalformedException, SQLException, TableNotFoundException {
 
         /* mock */
@@ -152,7 +148,7 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
         assertEquals(TABLE_1_INTERNALNAME, response.getInternalName());
         assertEquals(TABLE_1_QUEUE_NAME, response.getQueueName());
         assertEquals(TABLE_1_ROUTING_KEY, response.getRoutingKey());
-        assertEquals(TABLE_1_DATABASE_ID, response.getDatabaseId());
+        assertEquals(TABLE_1_DATABASE_ID, response.getDatabase().getId());
         assertTrue(response.getIsVersioned());
     }
 

@@ -73,7 +73,6 @@ public class TableServiceImpl extends HibernateConnector implements TableService
             final ResultSet resultSet1 = preparedStatement1.executeQuery();
             final TableDto dto = queryMapper.resultSetToTableDto(resultSet1, name);
             dto.setDatabase(databaseMapper.databaseToDatabaseDto(database));
-            dto.setDatabaseId(database.getId());
             dto.setCreator(userMapper.userToUserDto(database.getCreator()));
             dto.setCreatedBy(userMapper.userToUserDto(database.getCreator()).getId());
             dto.setQueueName("dbrepo." + database.getInternalName() + "." + dto.getInternalName());
