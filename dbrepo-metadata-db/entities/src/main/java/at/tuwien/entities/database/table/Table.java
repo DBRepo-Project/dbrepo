@@ -32,7 +32,7 @@ public class Table {
     @EqualsAndHashCode.Include
     @GeneratedValue(generator = "tables-sequence")
     @GenericGenerator(name = "tables-sequence", strategy = "increment")
-    @Column(updatable = false, nullable = false)
+    @Column(name = "ID", updatable = false, nullable = false)
     private Long id;
 
     @Field(name = "database_id")

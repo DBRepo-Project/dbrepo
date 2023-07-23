@@ -10,7 +10,9 @@ import at.tuwien.api.database.table.constraints.ConstraintsCreateDto;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
+import at.tuwien.entities.database.table.columns.TableColumnType;
 import at.tuwien.exception.*;
+import at.tuwien.mapper.TableMapper;
 import at.tuwien.repository.sdb.ConceptIdxRepository;
 import at.tuwien.repository.sdb.TableColumnIdxRepository;
 import at.tuwien.repository.sdb.TableIdxRepository;
@@ -89,6 +91,9 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
 
     @Autowired
     private RealmRepository realmRepository;
+
+    @Autowired
+    private TableMapper tableMapper;
 
     @Container
     @Autowired
@@ -384,6 +389,12 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
         assertEquals("full", response.getInternalName());
         assertEquals("full example", response.getDescription());
         assertEquals(32, response.getColumns().size());
+        for (int i = 1; i < request.getColumns().size(); i++) {
+            final ColumnCreateDto expected = request.getColumns().get(i);
+            final TableColumn result = response.getColumns().get(i);
+            assertEquals(expected.getName(), result.getName());
+            assertEquals(expected.getType(), tableMapper.columnTypeToColumnTypeDto(result.getColumnType()));
+        }
         final Map<String, List<Object>> schema = MariaDbConfig.describeTableSchema(response, CONTAINER_1_PRIVILEGED_USERNAME, CONTAINER_1_PRIVILEGED_PASSWORD);
         for (Map.Entry<String, List<Object>> entry : schema.entrySet()) {
             final ColumnCreateDto columnRequest = request.getColumns().stream().filter(c -> c.getName().equals(entry.getKey())).findFirst().get();

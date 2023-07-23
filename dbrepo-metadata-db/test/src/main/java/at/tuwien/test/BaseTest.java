@@ -2431,10 +2431,10 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_1_1_AUTO_GENERATED = false;
     public final static String COLUMN_1_1_FOREIGN_KEY = null;
     public final static String COLUMN_1_1_CHECK = null;
-    public final static List<TableColumnEnum> COLUMN_1_1_ENUM_VALUES = null;
-    public final static List<ColumnEnumDto> COLUMN_1_1_ENUM_VALUES_DTO = null;
-    public final static List<TableColumnSet> COLUMN_1_1_SET_VALUES = null;
-    public final static List<ColumnSetDto> COLUMN_1_1_SET_VALUES_DTO = null;
+    public final static List<String> COLUMN_1_1_ENUM_VALUES = null;
+    public final static List<String> COLUMN_1_1_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_1_1_SET_VALUES = null;
+    public final static List<String> COLUMN_1_1_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_1_2_ID = 2L;
     public final static Integer COLUMN_1_2_ORDINALPOS = 1;
@@ -2450,10 +2450,10 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_1_2_AUTO_GENERATED = false;
     public final static String COLUMN_1_2_FOREIGN_KEY = null;
     public final static String COLUMN_1_2_CHECK = null;
-    public final static List<TableColumnEnum> COLUMN_1_2_ENUM_VALUES = null;
-    public final static List<ColumnEnumDto> COLUMN_1_2_ENUM_VALUES_DTO = null;
-    public final static List<TableColumnSet> COLUMN_1_2_SET_VALUES = null;
-    public final static List<ColumnSetDto> COLUMN_1_2_SET_VALUES_DTO = null;
+    public final static List<String> COLUMN_1_2_ENUM_VALUES = null;
+    public final static List<String> COLUMN_1_2_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_1_2_SET_VALUES = null;
+    public final static List<String> COLUMN_1_2_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_1_3_ID = 3L;
     public final static Integer COLUMN_1_3_ORDINALPOS = 2;
@@ -2468,10 +2468,10 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_1_3_AUTO_GENERATED = false;
     public final static String COLUMN_1_3_FOREIGN_KEY = null;
     public final static String COLUMN_1_3_CHECK = null;
-    public final static List<TableColumnEnum> COLUMN_1_3_ENUM_VALUES = null;
-    public final static List<ColumnEnumDto> COLUMN_1_3_ENUM_VALUES_DTO = null;
-    public final static List<TableColumnSet> COLUMN_1_3_SET_VALUES = null;
-    public final static List<ColumnSetDto> COLUMN_1_3_SET_VALUES_DTO = null;
+    public final static List<String> COLUMN_1_3_ENUM_VALUES = null;
+    public final static List<String> COLUMN_1_3_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_1_3_SET_VALUES = null;
+    public final static List<String> COLUMN_1_3_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_1_4_ID = 4L;
     public final static Integer COLUMN_1_4_ORDINALPOS = 3;
@@ -2486,10 +2486,10 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_1_4_AUTO_GENERATED = false;
     public final static String COLUMN_1_4_FOREIGN_KEY = null;
     public final static String COLUMN_1_4_CHECK = null;
-    public final static List<TableColumnEnum> COLUMN_1_4_ENUM_VALUES = null;
-    public final static List<ColumnEnumDto> COLUMN_1_4_ENUM_VALUES_DTO = null;
-    public final static List<TableColumnSet> COLUMN_1_4_SET_VALUES = null;
-    public final static List<ColumnSetDto> COLUMN_1_4_SET_VALUES_DTO = null;
+    public final static List<String> COLUMN_1_4_ENUM_VALUES = null;
+    public final static List<String> COLUMN_1_4_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_1_4_SET_VALUES = null;
+    public final static List<String> COLUMN_1_4_SET_VALUES_DTO = null;
 
     public final static ColumnSemanticsUpdateDto COLUMN_1_4_SEMANTICS_UPDATE_DTO = ColumnSemanticsUpdateDto.builder()
             .conceptUri(COLUMN_CONCEPT_TEMPERATURE_URI)
@@ -2525,10 +2525,10 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_1_5_AUTO_GENERATED = false;
     public final static String COLUMN_1_5_FOREIGN_KEY = null;
     public final static String COLUMN_1_5_CHECK = null;
-    public final static List<TableColumnEnum> COLUMN_1_5_ENUM_VALUES = null;
-    public final static List<ColumnEnumDto> COLUMN_1_5_ENUM_VALUES_DTO = null;
-    public final static List<TableColumnSet> COLUMN_1_5_SET_VALUES = null;
-    public final static List<ColumnSetDto> COLUMN_1_5_SET_VALUES_DTO = null;
+    public final static List<String> COLUMN_1_5_ENUM_VALUES = null;
+    public final static List<String> COLUMN_1_5_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_1_5_SET_VALUES = null;
+    public final static List<String> COLUMN_1_5_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_2_1_ID = 6L;
     public final static Integer COLUMN_2_1_ORDINALPOS = 0;
@@ -2543,10 +2543,10 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_2_1_AUTO_GENERATED = false;
     public final static String COLUMN_2_1_FOREIGN_KEY = null;
     public final static String COLUMN_2_1_CHECK = null;
-    public final static List<TableColumnEnum> COLUMN_2_1_ENUM_VALUES = null;
-    public final static List<ColumnEnumDto> COLUMN_2_1_ENUM_VALUES_DTO = null;
-    public final static List<TableColumnSet> COLUMN_2_1_SET_VALUES = null;
-    public final static List<ColumnSetDto> COLUMN_2_1_SET_VALUES_DTO = null;
+    public final static List<String> COLUMN_2_1_ENUM_VALUES = null;
+    public final static List<String> COLUMN_2_1_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_2_1_SET_VALUES = null;
+    public final static List<String> COLUMN_2_1_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_2_2_ID = 7L;
     public final static Integer COLUMN_2_2_ORDINALPOS = 0;
@@ -2561,10 +2561,10 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_2_2_AUTO_GENERATED = false;
     public final static String COLUMN_2_2_FOREIGN_KEY = null;
     public final static String COLUMN_2_2_CHECK = null;
-    public final static List<TableColumnEnum> COLUMN_2_2_ENUM_VALUES = null;
-    public final static List<ColumnEnumDto> COLUMN_2_2_ENUM_VALUES_DTO = null;
-    public final static List<TableColumnSet> COLUMN_2_2_SET_VALUES = null;
-    public final static List<ColumnSetDto> COLUMN_2_2_SET_VALUES_DTO = null;
+    public final static List<String> COLUMN_2_2_ENUM_VALUES = null;
+    public final static List<String> COLUMN_2_2_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_2_2_SET_VALUES = null;
+    public final static List<String> COLUMN_2_2_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_2_3_ID = 8L;
     public final static Integer COLUMN_2_3_ORDINALPOS = 0;
@@ -2579,10 +2579,10 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_2_3_AUTO_GENERATED = false;
     public final static String COLUMN_2_3_FOREIGN_KEY = null;
     public final static String COLUMN_2_3_CHECK = null;
-    public final static List<TableColumnEnum> COLUMN_2_3_ENUM_VALUES = null;
-    public final static List<ColumnEnumDto> COLUMN_2_3_ENUM_VALUES_DTO = null;
-    public final static List<TableColumnSet> COLUMN_2_3_SET_VALUES = null;
-    public final static List<ColumnSetDto> COLUMN_2_3_SET_VALUES_DTO = null;
+    public final static List<String> COLUMN_2_3_ENUM_VALUES = null;
+    public final static List<String> COLUMN_2_3_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_2_3_SET_VALUES = null;
+    public final static List<String> COLUMN_2_3_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_4_1_ID = 44L;
     public final static Integer COLUMN_4_1_ORDINALPOS = 0;
@@ -2599,10 +2599,10 @@ public abstract class BaseTest {
     public final static String COLUMN_4_1_CHECK = null;
     public final static List<String> COLUMN_4_1_ENUM_VALUES_ARR = List.of();
     public final static List<String> COLUMN_4_1_SET_VALUES_ARR = List.of();
-    public final static List<TableColumnEnum> COLUMN_4_1_ENUM_VALUES = null;
-    public final static List<ColumnEnumDto> COLUMN_4_1_ENUM_VALUES_DTO = null;
-    public final static List<TableColumnSet> COLUMN_4_1_SET_VALUES = null;
-    public final static List<ColumnSetDto> COLUMN_4_1_SET_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_1_ENUM_VALUES = null;
+    public final static List<String> COLUMN_4_1_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_1_SET_VALUES = null;
+    public final static List<String> COLUMN_4_1_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_4_2_ID = 45L;
     public final static Integer COLUMN_4_2_ORDINALPOS = 1;
@@ -2619,10 +2619,10 @@ public abstract class BaseTest {
     public final static String COLUMN_4_2_CHECK = null;
     public final static List<String> COLUMN_4_2_ENUM_VALUES_ARR = List.of();
     public final static List<String> COLUMN_4_2_SET_VALUES_ARR = List.of();
-    public final static List<TableColumnEnum> COLUMN_4_2_ENUM_VALUES = null;
-    public final static List<ColumnEnumDto> COLUMN_4_2_ENUM_VALUES_DTO = null;
-    public final static List<TableColumnSet> COLUMN_4_2_SET_VALUES = null;
-    public final static List<ColumnSetDto> COLUMN_4_2_SET_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_2_ENUM_VALUES = null;
+    public final static List<String> COLUMN_4_2_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_2_SET_VALUES = null;
+    public final static List<String> COLUMN_4_2_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_4_3_ID = 46L;
     public final static Integer COLUMN_4_3_ORDINALPOS = 2;
@@ -2639,10 +2639,10 @@ public abstract class BaseTest {
     public final static String COLUMN_4_3_CHECK = null;
     public final static List<String> COLUMN_4_3_ENUM_VALUES_ARR = List.of();
     public final static List<String> COLUMN_4_3_SET_VALUES_ARR = List.of();
-    public final static List<TableColumnEnum> COLUMN_4_3_ENUM_VALUES = null;
-    public final static List<ColumnEnumDto> COLUMN_4_3_ENUM_VALUES_DTO = null;
-    public final static List<TableColumnSet> COLUMN_4_3_SET_VALUES = null;
-    public final static List<ColumnSetDto> COLUMN_4_3_SET_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_3_ENUM_VALUES = null;
+    public final static List<String> COLUMN_4_3_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_3_SET_VALUES = null;
+    public final static List<String> COLUMN_4_3_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_4_4_ID = 47L;
     public final static Integer COLUMN_4_4_ORDINALPOS = 3;
@@ -2659,10 +2659,10 @@ public abstract class BaseTest {
     public final static String COLUMN_4_4_CHECK = null;
     public final static List<String> COLUMN_4_4_ENUM_VALUES_ARR = List.of();
     public final static List<String> COLUMN_4_4_SET_VALUES_ARR = List.of();
-    public final static List<TableColumnEnum> COLUMN_4_4_ENUM_VALUES = null;
-    public final static List<ColumnEnumDto> COLUMN_4_4_ENUM_VALUES_DTO = null;
-    public final static List<TableColumnSet> COLUMN_4_4_SET_VALUES = null;
-    public final static List<ColumnSetDto> COLUMN_4_4_SET_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_4_ENUM_VALUES = null;
+    public final static List<String> COLUMN_4_4_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_4_SET_VALUES = null;
+    public final static List<String> COLUMN_4_4_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_4_5_ID = 48L;
     public final static Integer COLUMN_4_5_ORDINALPOS = 4;
@@ -2679,10 +2679,10 @@ public abstract class BaseTest {
     public final static String COLUMN_4_5_CHECK = null;
     public final static List<String> COLUMN_4_5_ENUM_VALUES_ARR = List.of();
     public final static List<String> COLUMN_4_5_SET_VALUES_ARR = List.of();
-    public final static List<TableColumnEnum> COLUMN_4_5_ENUM_VALUES = null;
-    public final static List<ColumnEnumDto> COLUMN_4_5_ENUM_VALUES_DTO = null;
-    public final static List<TableColumnSet> COLUMN_4_5_SET_VALUES = null;
-    public final static List<TableColumnSet> COLUMN_4_5_SET_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_5_ENUM_VALUES = null;
+    public final static List<String> COLUMN_4_5_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_5_SET_VALUES = null;
+    public final static List<String> COLUMN_4_5_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_4_6_ID = 49L;
     public final static Integer COLUMN_4_6_ORDINALPOS = 5;
@@ -2699,10 +2699,10 @@ public abstract class BaseTest {
     public final static String COLUMN_4_6_CHECK = null;
     public final static List<String> COLUMN_4_6_ENUM_VALUES_ARR = List.of();
     public final static List<String> COLUMN_4_6_SET_VALUES_ARR = List.of();
-    public final static List<TableColumnEnum> COLUMN_4_6_ENUM_VALUES = null;
-    public final static List<ColumnEnumDto> COLUMN_4_6_ENUM_VALUES_DTO = null;
-    public final static List<TableColumnSet> COLUMN_4_6_SET_VALUES = null;
-    public final static List<TableColumnSet> COLUMN_4_6_SET_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_6_ENUM_VALUES = null;
+    public final static List<String> COLUMN_4_6_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_6_SET_VALUES = null;
+    public final static List<String> COLUMN_4_6_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_4_7_ID = 50L;
     public final static Integer COLUMN_4_7_ORDINALPOS = 6;
@@ -2719,10 +2719,10 @@ public abstract class BaseTest {
     public final static String COLUMN_4_7_CHECK = null;
     public final static List<String> COLUMN_4_7_ENUM_VALUES_ARR = List.of();
     public final static List<String> COLUMN_4_7_SET_VALUES_ARR = List.of();
-    public final static List<TableColumnEnum> COLUMN_4_7_ENUM_VALUES = null;
-    public final static List<ColumnEnumDto> COLUMN_4_7_ENUM_VALUES_DTO = null;
-    public final static List<TableColumnSet> COLUMN_4_7_SET_VALUES = null;
-    public final static List<TableColumnSet> COLUMN_4_7_SET_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_7_ENUM_VALUES = null;
+    public final static List<String> COLUMN_4_7_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_7_SET_VALUES = null;
+    public final static List<String> COLUMN_4_7_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_4_8_ID = 51L;
     public final static Integer COLUMN_4_8_ORDINALPOS = 7;
@@ -2739,10 +2739,10 @@ public abstract class BaseTest {
     public final static String COLUMN_4_8_CHECK = null;
     public final static List<String> COLUMN_4_8_ENUM_VALUES_ARR = List.of();
     public final static List<String> COLUMN_4_8_SET_VALUES_ARR = List.of();
-    public final static List<TableColumnEnum> COLUMN_4_8_ENUM_VALUES = null;
-    public final static List<ColumnEnumDto> COLUMN_4_8_ENUM_VALUES_DTO = null;
-    public final static List<TableColumnSet> COLUMN_4_8_SET_VALUES = null;
-    public final static List<TableColumnSet> COLUMN_4_8_SET_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_8_ENUM_VALUES = null;
+    public final static List<String> COLUMN_4_8_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_8_SET_VALUES = null;
+    public final static List<String> COLUMN_4_8_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_4_9_ID = 52L;
     public final static Integer COLUMN_4_9_ORDINALPOS = 8;
@@ -2759,10 +2759,10 @@ public abstract class BaseTest {
     public final static String COLUMN_4_9_CHECK = null;
     public final static List<String> COLUMN_4_9_ENUM_VALUES_ARR = List.of();
     public final static List<String> COLUMN_4_9_SET_VALUES_ARR = List.of();
-    public final static List<TableColumnEnum> COLUMN_4_9_ENUM_VALUES = null;
-    public final static List<ColumnEnumDto> COLUMN_4_9_ENUM_VALUES_DTO = null;
-    public final static List<TableColumnSet> COLUMN_4_9_SET_VALUES = null;
-    public final static List<TableColumnSet> COLUMN_4_9_SET_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_9_ENUM_VALUES = null;
+    public final static List<String> COLUMN_4_9_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_9_SET_VALUES = null;
+    public final static List<String> COLUMN_4_9_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_4_10_ID = 53L;
     public final static Integer COLUMN_4_10_ORDINALPOS = 9;
@@ -2779,10 +2779,10 @@ public abstract class BaseTest {
     public final static String COLUMN_4_10_CHECK = null;
     public final static List<String> COLUMN_4_10_ENUM_VALUES_ARR = List.of();
     public final static List<String> COLUMN_4_10_SET_VALUES_ARR = List.of();
-    public final static List<TableColumnEnum> COLUMN_4_10_ENUM_VALUES = null;
-    public final static List<ColumnEnumDto> COLUMN_4_10_ENUM_VALUES_DTO = null;
-    public final static List<TableColumnSet> COLUMN_4_10_SET_VALUES = null;
-    public final static List<TableColumnSet> COLUMN_4_10_SET_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_10_ENUM_VALUES = null;
+    public final static List<String> COLUMN_4_10_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_10_SET_VALUES = null;
+    public final static List<String> COLUMN_4_10_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_4_11_ID = 54L;
     public final static Integer COLUMN_4_11_ORDINALPOS = 10;
@@ -2799,10 +2799,10 @@ public abstract class BaseTest {
     public final static String COLUMN_4_11_CHECK = null;
     public final static List<String> COLUMN_4_11_ENUM_VALUES_ARR = List.of();
     public final static List<String> COLUMN_4_11_SET_VALUES_ARR = List.of();
-    public final static List<TableColumnEnum> COLUMN_4_11_ENUM_VALUES = null;
-    public final static List<ColumnEnumDto> COLUMN_4_11_ENUM_VALUES_DTO = null;
-    public final static List<TableColumnSet> COLUMN_4_11_SET_VALUES = null;
-    public final static List<TableColumnSet> COLUMN_4_11_SET_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_11_ENUM_VALUES = null;
+    public final static List<String> COLUMN_4_11_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_11_SET_VALUES = null;
+    public final static List<String> COLUMN_4_11_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_4_12_ID = 55L;
     public final static Integer COLUMN_4_12_ORDINALPOS = 11;
@@ -2819,10 +2819,10 @@ public abstract class BaseTest {
     public final static String COLUMN_4_12_CHECK = null;
     public final static List<String> COLUMN_4_12_ENUM_VALUES_ARR = List.of();
     public final static List<String> COLUMN_4_12_SET_VALUES_ARR = List.of();
-    public final static List<TableColumnEnum> COLUMN_4_12_ENUM_VALUES = null;
-    public final static List<ColumnEnumDto> COLUMN_4_12_ENUM_VALUES_DTO = null;
-    public final static List<TableColumnSet> COLUMN_4_12_SET_VALUES = null;
-    public final static List<TableColumnSet> COLUMN_4_12_SET_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_12_ENUM_VALUES = null;
+    public final static List<String> COLUMN_4_12_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_12_SET_VALUES = null;
+    public final static List<String> COLUMN_4_12_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_4_13_ID = 56L;
     public final static Integer COLUMN_4_13_ORDINALPOS = 12;
@@ -2839,10 +2839,10 @@ public abstract class BaseTest {
     public final static String COLUMN_4_13_CHECK = null;
     public final static List<String> COLUMN_4_13_ENUM_VALUES_ARR = List.of();
     public final static List<String> COLUMN_4_13_SET_VALUES_ARR = List.of();
-    public final static List<TableColumnEnum> COLUMN_4_13_ENUM_VALUES = null;
-    public final static List<ColumnEnumDto> COLUMN_4_13_ENUM_VALUES_DTO = null;
-    public final static List<TableColumnSet> COLUMN_4_13_SET_VALUES = null;
-    public final static List<TableColumnSet> COLUMN_4_13_SET_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_13_ENUM_VALUES = null;
+    public final static List<String> COLUMN_4_13_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_13_SET_VALUES = null;
+    public final static List<String> COLUMN_4_13_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_4_14_ID = 57L;
     public final static Integer COLUMN_4_14_ORDINALPOS = 13;
@@ -2859,10 +2859,10 @@ public abstract class BaseTest {
     public final static String COLUMN_4_14_CHECK = null;
     public final static List<String> COLUMN_4_14_ENUM_VALUES_ARR = List.of();
     public final static List<String> COLUMN_4_14_SET_VALUES_ARR = List.of();
-    public final static List<TableColumnEnum> COLUMN_4_14_ENUM_VALUES = null;
-    public final static List<ColumnEnumDto> COLUMN_4_14_ENUM_VALUES_DTO = null;
-    public final static List<TableColumnSet> COLUMN_4_14_SET_VALUES = null;
-    public final static List<TableColumnSet> COLUMN_4_14_SET_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_14_ENUM_VALUES = null;
+    public final static List<String> COLUMN_4_14_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_14_SET_VALUES = null;
+    public final static List<String> COLUMN_4_14_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_4_15_ID = 58L;
     public final static Integer COLUMN_4_15_ORDINALPOS = 14;
@@ -2879,10 +2879,10 @@ public abstract class BaseTest {
     public final static String COLUMN_4_15_CHECK = null;
     public final static List<String> COLUMN_4_15_ENUM_VALUES_ARR = List.of();
     public final static List<String> COLUMN_4_15_SET_VALUES_ARR = List.of();
-    public final static List<TableColumnEnum> COLUMN_4_15_ENUM_VALUES = null;
-    public final static List<ColumnEnumDto> COLUMN_4_15_ENUM_VALUES_DTO = null;
-    public final static List<TableColumnSet> COLUMN_4_15_SET_VALUES = null;
-    public final static List<TableColumnSet> COLUMN_4_15_SET_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_15_ENUM_VALUES = null;
+    public final static List<String> COLUMN_4_15_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_15_SET_VALUES = null;
+    public final static List<String> COLUMN_4_15_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_4_16_ID = 59L;
     public final static Integer COLUMN_4_16_ORDINALPOS = 15;
@@ -2899,10 +2899,10 @@ public abstract class BaseTest {
     public final static String COLUMN_4_16_CHECK = null;
     public final static List<String> COLUMN_4_16_ENUM_VALUES_ARR = List.of();
     public final static List<String> COLUMN_4_16_SET_VALUES_ARR = List.of();
-    public final static List<TableColumnEnum> COLUMN_4_16_ENUM_VALUES = null;
-    public final static List<ColumnEnumDto> COLUMN_4_16_ENUM_VALUES_DTO = null;
-    public final static List<TableColumnSet> COLUMN_4_16_SET_VALUES = null;
-    public final static List<TableColumnSet> COLUMN_4_16_SET_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_16_ENUM_VALUES = null;
+    public final static List<String> COLUMN_4_16_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_16_SET_VALUES = null;
+    public final static List<String> COLUMN_4_16_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_4_17_ID = 60L;
     public final static Integer COLUMN_4_17_ORDINALPOS = 16;
@@ -2919,10 +2919,10 @@ public abstract class BaseTest {
     public final static String COLUMN_4_17_CHECK = null;
     public final static List<String> COLUMN_4_17_ENUM_VALUES_ARR = List.of();
     public final static List<String> COLUMN_4_17_SET_VALUES_ARR = List.of();
-    public final static List<TableColumnEnum> COLUMN_4_17_ENUM_VALUES = null;
-    public final static List<ColumnEnumDto> COLUMN_4_17_ENUM_VALUES_DTO = null;
-    public final static List<TableColumnSet> COLUMN_4_17_SET_VALUES = null;
-    public final static List<TableColumnSet> COLUMN_4_17_SET_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_17_ENUM_VALUES = null;
+    public final static List<String> COLUMN_4_17_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_17_SET_VALUES = null;
+    public final static List<String> COLUMN_4_17_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_4_18_ID = 61L;
     public final static Integer COLUMN_4_18_ORDINALPOS = 17;
@@ -2939,10 +2939,10 @@ public abstract class BaseTest {
     public final static String COLUMN_4_18_CHECK = null;
     public final static List<String> COLUMN_4_18_ENUM_VALUES_ARR = List.of();
     public final static List<String> COLUMN_4_18_SET_VALUES_ARR = List.of();
-    public final static List<TableColumnEnum> COLUMN_4_18_ENUM_VALUES = null;
-    public final static List<ColumnEnumDto> COLUMN_4_18_ENUM_VALUES_DTO = null;
-    public final static List<TableColumnSet> COLUMN_4_18_SET_VALUES = null;
-    public final static List<TableColumnSet> COLUMN_4_18_SET_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_18_ENUM_VALUES = null;
+    public final static List<String> COLUMN_4_18_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_18_SET_VALUES = null;
+    public final static List<String> COLUMN_4_18_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_4_19_ID = 62L;
     public final static Integer COLUMN_4_19_ORDINALPOS = 18;
@@ -2959,10 +2959,10 @@ public abstract class BaseTest {
     public final static String COLUMN_4_19_CHECK = null;
     public final static List<String> COLUMN_4_19_ENUM_VALUES_ARR = List.of();
     public final static List<String> COLUMN_4_19_SET_VALUES_ARR = List.of();
-    public final static List<TableColumnEnum> COLUMN_4_19_ENUM_VALUES = null;
-    public final static List<ColumnEnumDto> COLUMN_4_19_ENUM_VALUES_DTO = null;
-    public final static List<TableColumnSet> COLUMN_4_19_SET_VALUES = null;
-    public final static List<TableColumnSet> COLUMN_4_19_SET_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_19_ENUM_VALUES = null;
+    public final static List<String> COLUMN_4_19_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_19_SET_VALUES = null;
+    public final static List<String> COLUMN_4_19_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_4_20_ID = 63L;
     public final static Integer COLUMN_4_20_ORDINALPOS = 19;
@@ -2979,10 +2979,10 @@ public abstract class BaseTest {
     public final static String COLUMN_4_20_CHECK = null;
     public final static List<String> COLUMN_4_20_ENUM_VALUES_ARR = List.of();
     public final static List<String> COLUMN_4_20_SET_VALUES_ARR = List.of();
-    public final static List<TableColumnEnum> COLUMN_4_20_ENUM_VALUES = null;
-    public final static List<ColumnEnumDto> COLUMN_4_20_ENUM_VALUES_DTO = null;
-    public final static List<TableColumnSet> COLUMN_4_20_SET_VALUES = null;
-    public final static List<TableColumnSet> COLUMN_4_20_SET_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_20_ENUM_VALUES = null;
+    public final static List<String> COLUMN_4_20_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_20_SET_VALUES = null;
+    public final static List<String> COLUMN_4_20_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_4_21_ID = 64L;
     public final static Integer COLUMN_4_21_ORDINALPOS = 20;
@@ -2999,10 +2999,10 @@ public abstract class BaseTest {
     public final static String COLUMN_4_21_CHECK = null;
     public final static List<String> COLUMN_4_21_ENUM_VALUES_ARR = List.of();
     public final static List<String> COLUMN_4_21_SET_VALUES_ARR = List.of();
-    public final static List<TableColumnEnum> COLUMN_4_21_ENUM_VALUES = null;
-    public final static List<ColumnEnumDto> COLUMN_4_21_ENUM_VALUES_DTO = null;
-    public final static List<TableColumnSet> COLUMN_4_21_SET_VALUES = null;
-    public final static List<TableColumnSet> COLUMN_4_21_SET_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_21_ENUM_VALUES = null;
+    public final static List<String> COLUMN_4_21_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_21_SET_VALUES = null;
+    public final static List<String> COLUMN_4_21_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_5_1_ID = 65L;
     public final static Integer COLUMN_5_1_ORDINALPOS = 0;
@@ -3017,10 +3017,10 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_5_1_AUTO_GENERATED = true;
     public final static String COLUMN_5_1_FOREIGN_KEY = null;
     public final static String COLUMN_5_1_CHECK = null;
-    public final static List<TableColumnEnum> COLUMN_5_1_ENUM_VALUES = null;
-    public final static List<ColumnEnumDto> COLUMN_5_1_ENUM_VALUES_DTO = null;
-    public final static List<TableColumnSet> COLUMN_5_1_SET_VALUES = null;
-    public final static List<TableColumnSet> COLUMN_5_1_SET_VALUES_DTO = null;
+    public final static List<String> COLUMN_5_1_ENUM_VALUES = null;
+    public final static List<String> COLUMN_5_1_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_5_1_SET_VALUES = null;
+    public final static List<String> COLUMN_5_1_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_5_2_ID = 66L;
     public final static Integer COLUMN_5_2_ORDINALPOS = 1;
@@ -3036,10 +3036,10 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_5_2_AUTO_GENERATED = false;
     public final static String COLUMN_5_2_FOREIGN_KEY = null;
     public final static String COLUMN_5_2_CHECK = null;
-    public final static List<TableColumnEnum> COLUMN_5_2_ENUM_VALUES = null;
-    public final static List<ColumnEnumDto> COLUMN_5_2_ENUM_VALUES_DTO = null;
-    public final static List<TableColumnSet> COLUMN_5_2_SET_VALUES = null;
-    public final static List<TableColumnSet> COLUMN_5_2_SET_VALUES_DTO = null;
+    public final static List<String> COLUMN_5_2_ENUM_VALUES = null;
+    public final static List<String> COLUMN_5_2_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_5_2_SET_VALUES = null;
+    public final static List<String> COLUMN_5_2_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_5_3_ID = 67L;
     public final static Integer COLUMN_5_3_ORDINALPOS = 2;
@@ -3055,10 +3055,10 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_5_3_AUTO_GENERATED = false;
     public final static String COLUMN_5_3_FOREIGN_KEY = null;
     public final static String COLUMN_5_3_CHECK = null;
-    public final static List<TableColumnEnum> COLUMN_5_3_ENUM_VALUES = null;
-    public final static List<ColumnEnumDto> COLUMN_5_3_ENUM_VALUES_DTO = null;
-    public final static List<TableColumnSet> COLUMN_5_3_SET_VALUES = null;
-    public final static List<TableColumnSet> COLUMN_5_3_SET_VALUES_DTO = null;
+    public final static List<String> COLUMN_5_3_ENUM_VALUES = null;
+    public final static List<String> COLUMN_5_3_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_5_3_SET_VALUES = null;
+    public final static List<String> COLUMN_5_3_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_5_4_ID = 68L;
     public final static Integer COLUMN_5_4_ORDINALPOS = 2;
@@ -3073,10 +3073,10 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_5_4_AUTO_GENERATED = false;
     public final static String COLUMN_5_4_FOREIGN_KEY = null;
     public final static String COLUMN_5_4_CHECK = null;
-    public final static List<TableColumnEnum> COLUMN_5_4_ENUM_VALUES = null;
-    public final static List<ColumnEnumDto> COLUMN_5_4_ENUM_VALUES_DTO = null;
-    public final static List<TableColumnSet> COLUMN_5_4_SET_VALUES = null;
-    public final static List<TableColumnSet> COLUMN_5_4_SET_VALUES_DTO = null;
+    public final static List<String> COLUMN_5_4_ENUM_VALUES = null;
+    public final static List<String> COLUMN_5_4_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_5_4_SET_VALUES = null;
+    public final static List<String> COLUMN_5_4_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_8_1_ID = 69L;
     public final static Integer COLUMN_8_1_ORDINALPOS = 0;
@@ -3091,10 +3091,10 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_8_1_AUTO_GENERATED = true;
     public final static String COLUMN_8_1_FOREIGN_KEY = null;
     public final static String COLUMN_8_1_CHECK = null;
-    public final static List<TableColumnEnum> COLUMN_8_1_ENUM_VALUES = null;
-    public final static List<ColumnEnumDto> COLUMN_8_1_ENUM_VALUES_DTO = null;
-    public final static List<TableColumnSet> COLUMN_8_1_SET_VALUES = null;
-    public final static List<TableColumnSet> COLUMN_8_1_SET_VALUES_DTO = null;
+    public final static List<String> COLUMN_8_1_ENUM_VALUES = null;
+    public final static List<String> COLUMN_8_1_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_8_1_SET_VALUES = null;
+    public final static List<String> COLUMN_8_1_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_8_2_ID = 70L;
     public final static Integer COLUMN_8_2_ORDINALPOS = 1;
@@ -3109,10 +3109,10 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_8_2_AUTO_GENERATED = false;
     public final static String COLUMN_8_2_FOREIGN_KEY = null;
     public final static String COLUMN_8_2_CHECK = null;
-    public final static List<TableColumnEnum> COLUMN_8_2_ENUM_VALUES = null;
-    public final static List<ColumnEnumDto> COLUMN_8_2_ENUM_VALUES_DTO = null;
-    public final static List<TableColumnSet> COLUMN_8_2_SET_VALUES = null;
-    public final static List<TableColumnSet> COLUMN_8_2_SET_VALUES_DTO = null;
+    public final static List<String> COLUMN_8_2_ENUM_VALUES = null;
+    public final static List<String> COLUMN_8_2_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_8_2_SET_VALUES = null;
+    public final static List<String> COLUMN_8_2_SET_VALUES_DTO = null;
 
     public final static ColumnSemanticsUpdateDto COLUMN_8_2_SEMANTICS_UPDATE_DTO = ColumnSemanticsUpdateDto.builder()
             .conceptUri(COLUMN_CONCEPT_TEMPERATURE_URI)
@@ -5004,10 +5004,10 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_6_1_AUTO_GENERATED = false;
     public final static String COLUMN_6_1_FOREIGN_KEY = null;
     public final static String COLUMN_6_1_CHECK = null;
-    public final static List<TableColumnEnum> COLUMN_6_1_ENUM_VALUES = null;
-    public final static List<ColumnEnumDto> COLUMN_6_1_ENUM_VALUES_DTO = null;
-    public final static List<TableColumnSet> COLUMN_6_1_SET_VALUES = null;
-    public final static List<ColumnSetDto> COLUMN_6_1_SET_VALUES_DTO = null;
+    public final static List<String> COLUMN_6_1_ENUM_VALUES = null;
+    public final static List<String> COLUMN_6_1_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_6_1_SET_VALUES = null;
+    public final static List<String> COLUMN_6_1_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_6_2_ID = 27L;
     public final static Integer COLUMN_6_2_ORDINALPOS = 1;
@@ -5021,10 +5021,10 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_6_2_AUTO_GENERATED = false;
     public final static String COLUMN_6_2_FOREIGN_KEY = null;
     public final static String COLUMN_6_2_CHECK = null;
-    public final static List<TableColumnEnum> COLUMN_6_2_ENUM_VALUES = null;
-    public final static List<ColumnEnumDto> COLUMN_6_2_ENUM_VALUES_DTO = null;
-    public final static List<TableColumnSet> COLUMN_6_2_SET_VALUES = null;
-    public final static List<ColumnSetDto> COLUMN_6_2_SET_VALUES_DTO = null;
+    public final static List<String> COLUMN_6_2_ENUM_VALUES = null;
+    public final static List<String> COLUMN_6_2_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_6_2_SET_VALUES = null;
+    public final static List<String> COLUMN_6_2_SET_VALUES_DTO = null;
 
     public final static List<TableColumn> TABLE_6_COLUMNS = List.of(TableColumn.builder()
                     .id(COLUMN_6_1_ID)

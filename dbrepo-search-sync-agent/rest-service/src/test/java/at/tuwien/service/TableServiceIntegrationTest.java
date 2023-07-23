@@ -2,7 +2,6 @@ package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.entities.database.table.Table;
-import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.repository.mdb.*;
 import lombok.extern.log4j.Log4j2;
 import org.junit.Rule;
@@ -81,6 +80,7 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
         containerRepository.save(CONTAINER_1);
         databaseRepository.save(DATABASE_1);
         tableRepository.save(TABLE_1);
+        tableColumnRepository.saveAll(TABLE_1_COLUMNS);
     }
 
     @Test

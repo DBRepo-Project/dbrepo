@@ -30,13 +30,11 @@ public class ColumnDto {
     @NotNull
     private Long id;
 
-    @Id
     @NotNull
     @Field(name = "database_id")
     @JsonProperty("database_id")
     private Long databaseId;
 
-    @Id
     @NotNull
     @Field(name = "table_id")
     @JsonProperty("table_id")
@@ -101,9 +99,9 @@ public class ColumnDto {
     private Boolean isNullAllowed;
 
     @Parameter(description = "enum values, only considered when type = ENUM")
-    private List<ColumnEnumDto> enums;
+    private List<String> enums;
 
     @Parameter(description = "enum values, only considered when type = ENUM")
-    private List<ColumnSetDto> sets;
+    private List<String> sets;
 
 }

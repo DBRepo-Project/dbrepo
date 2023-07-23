@@ -10,7 +10,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import jakarta.persistence.*;;
+import jakarta.persistence.*;
 import java.time.Instant;
 import java.util.List;
 
@@ -35,9 +35,6 @@ public class TableColumn implements Comparable<TableColumn> {
     @GenericGenerator(name = "columns-sequence", strategy = "increment")
     @Column(updatable = false, nullable = false)
     private Long id;
-
-    @Column(name = "tID", insertable = false, updatable = false)
-    private Long tableId;
 
     @ToString.Exclude
     @Field(name = "date_format")
@@ -102,25 +99,25 @@ public class TableColumn implements Comparable<TableColumn> {
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinTable(name = "mdb_columns_concepts",
-            joinColumns = {
-                    @JoinColumn(name = "cid", referencedColumnName = "id", nullable = false)
-            },
+            joinColumns = @JoinColumn(name = "cid", referencedColumnName = "id", nullable = false),
             inverseJoinColumns = @JoinColumn(name = "id", referencedColumnName = "id"))
     private TableColumnConcept concept;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinTable(name = "mdb_columns_units",
-            joinColumns = {
-                    @JoinColumn(name = "cid", referencedColumnName = "id", nullable = false)
-            },
+            joinColumns = @JoinColumn(name = "cid", referencedColumnName = "id", nullable = false),
             inverseJoinColumns = @JoinColumn(name = "id", referencedColumnName = "id"))
     private TableColumnUnit unit;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE}, mappedBy = "column")
-    private List<TableColumnEnum> enums;
+    @ElementCollection(targetClass = String.class, fetch = FetchType.EAGER)
+    @CollectionTable(name = "mdb_columns_enums", joinColumns = @JoinColumn(name = "column_id"))
+    @Column(name = "value", nullable = false)
+    private List<String> enums;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE}, mappedBy = "column")
-    private List<TableColumnSet> sets;
+    @ElementCollection(targetClass = String.class, fetch = FetchType.EAGER)
+    @CollectionTable(name = "mdb_columns_sets", joinColumns = @JoinColumn(name = "column_id"))
+    @Column(name = "value", nullable = false)
+    private List<String> sets;
 
     @LastModifiedDate
     @Field(name = "last_modified")

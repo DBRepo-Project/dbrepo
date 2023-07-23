@@ -140,20 +140,18 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns`
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns_enums`
 (
     id          bigint                 NOT NULL AUTO_INCREMENT,
-    table_id    bigint                 NOT NULL,
     column_id   bigint                 NOT NULL,
     value       CHARACTER VARYING(255) NOT NULL,
-    FOREIGN KEY (table_id, column_id) REFERENCES mdb_columns (tID, ID),
+    FOREIGN KEY (column_id) REFERENCES mdb_columns (ID),
     PRIMARY KEY (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns_sets`
 (
     id          bigint                 NOT NULL AUTO_INCREMENT,
-    table_id    bigint                 NOT NULL,
     column_id   bigint                 NOT NULL,
     value       CHARACTER VARYING(255) NOT NULL,
-    FOREIGN KEY (table_id, column_id) REFERENCES mdb_columns (tID, ID),
+    FOREIGN KEY (column_id) REFERENCES mdb_columns (ID),
     PRIMARY KEY (id)
 ) WITH SYSTEM VERSIONING;
 

@@ -186,50 +186,6 @@ public interface TableMapper {
         return dto;
     }
 
-    /* keep */
-    default List<String> tableColumnEnumListToStringList(List<TableColumnEnum> data) {
-        if (data == null) {
-            return List.of();
-        }
-        return data.stream()
-                .map(TableColumnEnum::getValue)
-                .toList();
-    }
-
-    /* keep */
-    default List<TableColumnEnum> stringListToTableColumnEnumList(List<String> data) {
-        if (data == null) {
-            return List.of();
-        }
-        return data.stream()
-                .map(s -> TableColumnEnum.builder()
-                        .value(s)
-                        .build())
-                .toList();
-    }
-
-    /* keep */
-    default List<String> tableColumnSetListToStringList(List<TableColumnSet> data) {
-        if (data == null) {
-            return List.of();
-        }
-        return data.stream()
-                .map(TableColumnSet::getValue)
-                .toList();
-    }
-
-    /* keep */
-    default List<TableColumnSet> stringListToTableColumnSetList(List<String> data) {
-        if (data == null) {
-            return List.of();
-        }
-        return data.stream()
-                .map(s -> TableColumnSet.builder()
-                        .value(s)
-                        .build())
-                .toList();
-    }
-
     default Constraints constraintsCreateDtoToConstraints(TableRepository repo, Table table, ConstraintsCreateDto data) throws TableMalformedException {
         if (data == null) {
             return null;
