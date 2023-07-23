@@ -96,10 +96,15 @@ build-analyse-service:
   script:
     - "make build-analyse-service"
 
-build-test-search-sync-agent:
+build-search-sync-agent:
   stage: build-backend
   script:
-    - "make build-test-search-sync-agent"
+    - "make build-search-sync-agent"
+
+build-data-service:
+  stage: build-backend
+  script:
+    - "make build-data-service"
 
 test-identifier-service:
   stage: test-backend
@@ -223,6 +228,23 @@ test-metadata-service:
       junit: ./dbrepo-metadata-service/rest-service/target/surefire-reports/TEST-*.xml
   coverage: '/Total.*?([0-9]{1,3})%/'
 
+test-data-service:
+  stage: test-backend
+  needs:
+    - build-data-service
+  script:
+    - "make test-data-service"
+    - "cat ./dbrepo-data-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
+  artifacts:
+    when: always
+    paths:
+      - ./dbrepo-data-service/report/target/site/jacoco-aggregate/
+      - ./dbrepo-data-service/rest-service/target/surefire-reports/
+    expire_in: 1 days
+    reports:
+      junit: ./dbrepo-data-service/rest-service/target/surefire-reports/TEST-*.xml
+  coverage: '/Total.*?([0-9]{1,3})%/'
+
 test-semantics-service:
   stage: test-backend
   needs:
@@ -243,18 +265,18 @@ test-semantics-service:
 test-search-sync-agent:
   stage: test-backend
   needs:
-    - build-test-search-sync-agent
+    - build-search-sync-agent
   script:
-    - "make test-test-search-sync-agent"
-    - "cat ./dbrepo-test-search-sync-agent/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
+    - "make test-search-sync-agent"
+    - "cat ./dbrepo-search-sync-agent/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
   artifacts:
     when: always
     paths:
-      - ./dbrepo-test-search-sync-agent/report/target/site/jacoco-aggregate/
-      - ./dbrepo-test-search-sync-agent/rest-service/target/surefire-reports/
+      - ./dbrepo-search-sync-agent/report/target/site/jacoco-aggregate/
+      - ./dbrepo-search-sync-agent/rest-service/target/surefire-reports/
     expire_in: 1 days
     reports:
-      junit: ./dbrepo-test-search-sync-agent/rest-service/target/surefire-reports/TEST-*.xml
+      junit: ./dbrepo-search-sync-agent/rest-service/target/surefire-reports/TEST-*.xml
   coverage: '/Total.*?([0-9]{1,3})%/'
 
 test-analyse-service:
@@ -492,6 +514,26 @@ scan-metadata-service:
     expire_in: 1 days
     reports:
       container_scanning: ./.trivy/trivy-metadata-service-report.json
+
+scan-data-service:
+  stage: scan-docker
+  needs:
+    - build-docker
+  only:
+    refs:
+      - dev
+      - master
+  allow_failure: true
+  script:
+    - make scan-data-service
+  cache:
+    paths:
+      - .trivycache/
+  artifacts:
+    when: always
+    expire_in: 1 days
+    reports:
+      container_scanning: ./.trivy/trivy-data-service-report.json
 
 scan-proxy:
   stage: scan-docker
