@@ -84,6 +84,9 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     private TableRepository tableRepository;
 
     @Autowired
+    private TableColumnRepository tableColumnRepository;
+
+    @Autowired
     private QueryService queryService;
 
     @Container
@@ -95,25 +98,20 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         MariaDbConfig.dropAllDatabases(CONTAINER_1);
         MariaDbConfig.createInitDatabase(CONTAINER_1, DATABASE_2);
         MariaDbConfig.createInitDatabase(CONTAINER_1, DATABASE_1);
-        TABLE_1.setColumns(TABLE_1_COLUMNS);
-        TABLE_2.setColumns(TABLE_2_COLUMNS);
-        TABLE_3.setColumns(TABLE_3_COLUMNS);
-        TABLE_4.setColumns(TABLE_4_COLUMNS);
-        TABLE_5.setColumns(TABLE_5_COLUMNS);
-        TABLE_6.setColumns(TABLE_6_COLUMNS);
-        TABLE_7.setColumns(TABLE_7_COLUMNS);
-        VIEW_1.setColumns(VIEW_1_COLUMNS);
-        VIEW_2.setColumns(VIEW_2_COLUMNS);
-        VIEW_3.setColumns(VIEW_3_COLUMNS);
-        VIEW_4.setColumns(VIEW_4_COLUMNS);
         /* metadata database */
         realmRepository.save(REALM_DBREPO);
+        userRepository.saveAll(List.of(USER_1, USER_2));
         imageRepository.save(IMAGE_1);
-        userRepository.save(USER_1);
-        userRepository.save(USER_2);
-        containerRepository.saveAll(List.of(CONTAINER_1, CONTAINER_2));
+        containerRepository.saveAll(List.of(CONTAINER_1_SIMPLE, CONTAINER_2_SIMPLE));
         databaseRepository.saveAll(List.of(DATABASE_1_SIMPLE, DATABASE_2_SIMPLE));
-        tableRepository.saveAll(List.of(TABLE_1, TABLE_2, TABLE_3, TABLE_4, TABLE_5, TABLE_6, TABLE_7));
+        tableRepository.saveAll(List.of(TABLE_1_SIMPLE, TABLE_2_SIMPLE, TABLE_3_SIMPLE, TABLE_4_SIMPLE, TABLE_5_SIMPLE, TABLE_6_SIMPLE, TABLE_7_SIMPLE));
+        tableColumnRepository.saveAll(TABLE_1_COLUMNS);
+        tableColumnRepository.saveAll(TABLE_2_COLUMNS);
+        tableColumnRepository.saveAll(TABLE_3_COLUMNS);
+        tableColumnRepository.saveAll(TABLE_4_COLUMNS);
+        tableColumnRepository.saveAll(TABLE_5_COLUMNS);
+        tableColumnRepository.saveAll(TABLE_6_COLUMNS);
+        tableColumnRepository.saveAll(TABLE_7_COLUMNS);
         viewRepository.saveAll(List.of(VIEW_1, VIEW_2, VIEW_3, VIEW_4));
     }
 
