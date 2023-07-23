@@ -129,6 +129,8 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns`
     ordinal_position INTEGER      NOT NULL,
     is_primary_key   BOOLEAN      NOT NULL,
     index_length     INT          NULL,
+    size             bigint,
+    d                bigint,
     auto_generated   BOOLEAN               DEFAULT false,
     is_null_allowed  BOOLEAN      NOT NULL DEFAULT true,
     created          timestamp    NOT NULL DEFAULT NOW(),
@@ -139,18 +141,18 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns`
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns_enums`
 (
-    id          bigint                 NOT NULL AUTO_INCREMENT,
-    column_id   bigint                 NOT NULL,
-    value       CHARACTER VARYING(255) NOT NULL,
+    id        bigint                 NOT NULL AUTO_INCREMENT,
+    column_id bigint                 NOT NULL,
+    value     CHARACTER VARYING(255) NOT NULL,
     FOREIGN KEY (column_id) REFERENCES mdb_columns (ID),
     PRIMARY KEY (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns_sets`
 (
-    id          bigint                 NOT NULL AUTO_INCREMENT,
-    column_id   bigint                 NOT NULL,
-    value       CHARACTER VARYING(255) NOT NULL,
+    id        bigint                 NOT NULL AUTO_INCREMENT,
+    column_id bigint                 NOT NULL,
+    value     CHARACTER VARYING(255) NOT NULL,
     FOREIGN KEY (column_id) REFERENCES mdb_columns (ID),
     PRIMARY KEY (id)
 ) WITH SYSTEM VERSIONING;

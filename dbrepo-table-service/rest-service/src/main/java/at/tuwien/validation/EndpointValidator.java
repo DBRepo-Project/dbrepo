@@ -20,7 +20,6 @@ import java.security.Principal;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 @Log4j2
 @Component
@@ -70,7 +69,7 @@ public class EndpointValidator {
             throw new TableMalformedException("Validation failed: table data is null");
         }
         final List<ColumnTypeDto> needSize = List.of(ColumnTypeDto.CHAR, ColumnTypeDto.VARCHAR, ColumnTypeDto.BINARY, ColumnTypeDto.VARBINARY, ColumnTypeDto.BIT, ColumnTypeDto.TINYINT, ColumnTypeDto.SMALLINT, ColumnTypeDto.MEDIUMINT, ColumnTypeDto.INT);
-        final List<ColumnTypeDto> needSizeAndD = List.of(ColumnTypeDto.FLOAT, ColumnTypeDto.DOUBLE, ColumnTypeDto.DECIMAL);
+        final List<ColumnTypeDto> needSizeAndD = List.of(ColumnTypeDto.DOUBLE, ColumnTypeDto.DECIMAL);
         final List<ColumnTypeDto> needDateFormat = List.of(ColumnTypeDto.DATETIME, ColumnTypeDto.TIMESTAMP, ColumnTypeDto.TIME);
         /* check size */
         final Optional<ColumnCreateDto> optional0 = data.getColumns()
