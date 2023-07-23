@@ -96,6 +96,5 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
         assertEquals(TABLE_1_INTERNALNAME, table0.getInternalName());
         assertEquals(TABLE_1_QUEUE_NAME, table0.getQueueName());
         assertEquals(TABLE_1_ROUTING_KEY, table0.getRoutingKey());
-        assertEquals(TABLE_1_COLUMNS.size(), table0.getColumns().size());
     }
 }

@@ -11,6 +11,8 @@ import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.user.UserDto;
 import at.tuwien.config.IndexConfig;
 import at.tuwien.entities.database.View;
+import at.tuwien.entities.database.table.Table;
+import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.repository.mdb.*;
 import at.tuwien.repository.sdb.*;
 import at.tuwien.service.ViewService;
@@ -78,6 +80,9 @@ public class SearchSyncComponentTest extends BaseUnitTest {
     private LicenseRepository licenseRepository;
 
     @Autowired
+    private TableColumnRepository tableColumnRepository;
+
+    @Autowired
     private UnitRepository unitRepository;
 
     @Autowired
@@ -131,8 +136,9 @@ public class SearchSyncComponentTest extends BaseUnitTest {
         containerRepository.save(CONTAINER_1);
         databaseRepository.save(DATABASE_1);
         identifierRepository.save(IDENTIFIER_1);
-        tableRepository.save(TABLE_1);
-        tableRepository.save(TABLE_2);
+        tableRepository.saveAll(List.of(TABLE_1, TABLE_2));
+        tableColumnRepository.saveAll(TABLE_1_COLUMNS);
+        tableColumnRepository.saveAll(TABLE_2_COLUMNS);
         viewRepository.save(VIEW_1);
         conceptRepository.save(CONCEPT_1);
         unitRepository.save(UNIT_1);

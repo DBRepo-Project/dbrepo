@@ -1740,7 +1740,7 @@ public abstract class BaseTest {
             .queueName(TABLE_1_QUEUE_NAME)
             .routingKey(TABLE_1_ROUTING_KEY)
             .columns(List.of() /* needs to be set in the junit tests */)
-            .constraints(null) /* TABLE_1_CONSTRAINTS */
+            .constraints(null /* TABLE_1_CONSTRAINTS */)
             .creator(USER_1)
             .owner(USER_1)
             .created(TABLE_1_CREATED)
@@ -1759,8 +1759,8 @@ public abstract class BaseTest {
             .lastModified(TABLE_1_LAST_MODIFIED)
             .queueName(TABLE_1_QUEUE_NAME)
             .routingKey(TABLE_1_ROUTING_KEY)
-            .columns(List.of() /* for jpa */)
-            .constraints(null /* for jpa */) /* TABLE_1_CONSTRAINTS */
+            .columns(List.of() /* needs to be set in the junit tests */)
+            .constraints(null /* TABLE_1_CONSTRAINTS */)
             .creator(USER_1)
             .owner(USER_1)
             .created(TABLE_1_CREATED)

@@ -96,6 +96,11 @@ build-analyse-service:
   script:
     - "make build-analyse-service"
 
+build-test-search-sync-agent:
+  stage: build-backend
+  script:
+    - "make build-test-search-sync-agent"
+
 test-identifier-service:
   stage: test-backend
   needs:
@@ -233,6 +238,23 @@ test-semantics-service:
     expire_in: 1 days
     reports:
       junit: ./dbrepo-semantics-service/rest-service/target/surefire-reports/TEST-*.xml
+  coverage: '/Total.*?([0-9]{1,3})%/'
+
+test-search-sync-agent:
+  stage: test-backend
+  needs:
+    - build-test-search-sync-agent
+  script:
+    - "make test-test-search-sync-agent"
+    - "cat ./dbrepo-test-search-sync-agent/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
+  artifacts:
+    when: always
+    paths:
+      - ./dbrepo-test-search-sync-agent/report/target/site/jacoco-aggregate/
+      - ./dbrepo-test-search-sync-agent/rest-service/target/surefire-reports/
+    expire_in: 1 days
+    reports:
+      junit: ./dbrepo-test-search-sync-agent/rest-service/target/surefire-reports/TEST-*.xml
   coverage: '/Total.*?([0-9]{1,3})%/'
 
 test-analyse-service:
