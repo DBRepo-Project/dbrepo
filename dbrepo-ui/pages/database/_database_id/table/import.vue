@@ -28,13 +28,11 @@
           </v-row>
           <v-row dense>
             <v-col cols="8">
-              <v-textarea
+              <v-text-field
                 v-model="tableCreate.description"
-                :rules="[v => notEmpty(v) || $t('Required')]"
                 autocomplete="off"
-                rows="3"
                 name="description"
-                label="Description *" />
+                label="Description (short)" />
             </v-col>
           </v-row>
           <v-row dense>
@@ -199,6 +197,8 @@ import TableService from '@/api/table.service'
 import MiddlewareService from '@/api/middleware.service'
 import AnalyseService from '@/api/analyse.service'
 import DatabaseService from '@/api/database.service'
+import QueryMapper from '@/api/query.mapper'
+import TableMapper from '@/api/table.mapper'
 
 export default {
   name: 'TableFromCSV',
@@ -339,6 +339,7 @@ export default {
       AnalyseService.determineDataTypes(`/tmp/${this.file.filename}`)
         .then((analysis) => {
           const { columns } = analysis
+          const dataTypes = QueryMapper.mySql8DataTypes()
           this.tableCreate.columns = Object.entries(columns)
             .map(([key, val]) => {
               return {
@@ -346,7 +347,10 @@ export default {
                 type: val,
                 null_allowed: true,
                 primary_key: false,
-                enum_values: []
+                size: dataTypes.filter(d => d.value === val).length > 0 ? dataTypes.filter(d => d.value === val)[0].defaultSize : null,
+                d: dataTypes.filter(d => d.value === val).length > 0 ? dataTypes.filter(d => d.value === val)[0].defaultD : null,
+                enums: [],
+                sets: []
               }
             })
           this.tableImport.location = `/tmp/${this.file.filename}`
@@ -392,51 +396,11 @@ export default {
           this.$toast.error('Column `id` has to be a Primary Key')
           return false
         }
-        if (column.enum_values === null) {
-          return false
-        }
-        if (column.enum_values.length > 0) {
-          column.enum_values = column.enum_values.split(',')
-        }
         return true
       })
-
       // bail out if there is a problem with one of the columns
       if (!validColumns.every(Boolean)) { return }
-
-      const table = this.tableCreate.columns.reduce((table, column) => {
-        // eslint-disable-next-line camelcase
-        const { name, type, null_allowed, primary_key } = column
-        table.columns.push({
-          name,
-          type,
-          null_allowed,
-          primary_key
-        })
-        if (column.unique) {
-          table.constraints.uniques.push([column.name])
-        }
-        if (column.check_expression) {
-          table.checks.push(column.check_expression)
-        }
-        if (column.foreign_key && column.references) {
-          table.foreign_keys.push({
-            columns: [column.name],
-            referenced_table: column.foreign_key,
-            referenced_columns: [column.references]
-          })
-        }
-        return table
-      }, {
-        name: this.tableCreate.name,
-        description: this.tableCreate.description,
-        columns: [],
-        constraints: {
-          foreign_keys: [],
-          uniques: [],
-          checks: []
-        }
-      })
+      const table = TableMapper.tableCreateToTableCreateDto(this.tableCreate)
       TableService.create(this.$route.params.database_id, table)
         .then((table) => {
           this.newTableId = table.id

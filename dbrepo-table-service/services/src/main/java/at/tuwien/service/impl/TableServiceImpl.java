@@ -4,6 +4,7 @@ import at.tuwien.api.database.table.TableCreateDto;
 import at.tuwien.api.database.table.TableCreateRawQuery;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
+import at.tuwien.entities.container.image.ContainerImageDate;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
@@ -169,10 +170,10 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         final User creator = userService.findByUsername(principal.getName());
         entity.setCreator(creator);
         entity.setOwner(creator);
-        /* save in metadata database */
+        /* map columns */
         entity.setColumns(createDto.getColumns()
                 .stream()
-                .map(tableMapper::columnCreateDtoToTableColumn)
+                .map(column -> tableMapper.columnCreateDtoToTableColumn(column, database.getContainer().getImage()))
                 .map(column -> tableMapper.tableColumnToTableColumn(entity, column, query))
                 .toList());
         /* set the ordinal position for the columns */

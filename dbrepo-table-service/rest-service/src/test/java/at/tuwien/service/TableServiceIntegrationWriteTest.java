@@ -10,7 +10,6 @@ import at.tuwien.api.database.table.constraints.ConstraintsCreateDto;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
-import at.tuwien.entities.database.table.columns.TableColumnType;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.TableMapper;
 import at.tuwien.repository.sdb.ConceptIdxRepository;
@@ -20,7 +19,6 @@ import at.tuwien.repository.mdb.*;
 import at.tuwien.repository.sdb.UnitIdxRepository;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
-import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,7 +33,6 @@ import org.testcontainers.containers.MariaDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.security.Principal;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
@@ -101,6 +98,8 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
 
     @BeforeEach
     public void beforeEach() throws SQLException {
+        MariaDbConfig.dropAllDatabases(CONTAINER_1);
+        MariaDbConfig.createInitDatabase(CONTAINER_1, DATABASE_1);
         /* metadata database */
         imageRepository.save(IMAGE_1);
         realmRepository.save(REALM_DBREPO);
@@ -111,8 +110,6 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
         databaseRepository.save(DATABASE_1_SIMPLE);
         tableRepository.save(TABLE_1_SIMPLE);
         tableRepository.save(TABLE_2_SIMPLE);
-        MariaDbConfig.dropAllDatabases(CONTAINER_1);
-        MariaDbConfig.createInitDatabase(CONTAINER_1, DATABASE_1);
     }
 
     @Test
@@ -209,7 +206,7 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
                                 .type(ColumnTypeDto.VARCHAR)
                                 .nullAllowed(true)
                                 .primaryKey(false)
-                                .indexLength(1024)
+                                .size(1024)
                                 .build(),
                         ColumnCreateDto.builder()
                                 .name("col3")
@@ -351,24 +348,28 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
                                 .type(ColumnTypeDto.DATE)
                                 .nullAllowed(true)
                                 .primaryKey(false)
+                                .dfid(IMAGE_DATE_1_ID)
                                 .build(),
                         ColumnCreateDto.builder()
                                 .name("col26")
                                 .type(ColumnTypeDto.DATETIME)
                                 .nullAllowed(true)
                                 .primaryKey(false)
+                                .dfid(IMAGE_DATE_3_ID)
                                 .build(),
                         ColumnCreateDto.builder()
                                 .name("col27")
                                 .type(ColumnTypeDto.TIMESTAMP)
                                 .nullAllowed(true)
                                 .primaryKey(false)
+                                .dfid(IMAGE_DATE_3_ID)
                                 .build(),
                         ColumnCreateDto.builder()
                                 .name("col28")
                                 .type(ColumnTypeDto.TIME)
                                 .nullAllowed(true)
                                 .primaryKey(false)
+                                .dfid(IMAGE_DATE_4_ID)
                                 .build(),
                         ColumnCreateDto.builder()
                                 .name("col29")
@@ -394,6 +395,22 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
             final TableColumn result = response.getColumns().get(i);
             assertEquals(expected.getName(), result.getName());
             assertEquals(expected.getType(), tableMapper.columnTypeToColumnTypeDto(result.getColumnType()));
+            if (expected.getSize() == null) {
+                assertNull(result.getSize());
+            } else {
+                assertEquals(expected.getSize(), result.getSize());
+            }
+            if (expected.getD() == null) {
+                assertNull(result.getD());
+            } else {
+                assertEquals(expected.getD(), result.getD());
+            }
+            if (expected.getDfid() == null) {
+                assertNull(result.getDateFormat());
+            } else {
+                assertNotNull(result.getDateFormat());
+                assertEquals(expected.getDfid(), result.getDateFormat().getId());
+            }
         }
         final Map<String, List<Object>> schema = MariaDbConfig.describeTableSchema(response, CONTAINER_1_PRIVILEGED_USERNAME, CONTAINER_1_PRIVILEGED_PASSWORD);
         for (Map.Entry<String, List<Object>> entry : schema.entrySet()) {

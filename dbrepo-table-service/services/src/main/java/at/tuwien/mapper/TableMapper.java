@@ -15,6 +15,8 @@ import at.tuwien.api.database.table.constraints.foreignKey.ForeignKeyDto;
 import at.tuwien.api.database.table.constraints.foreignKey.ReferenceTypeDto;
 import at.tuwien.api.database.table.constraints.unique.UniqueDto;
 import at.tuwien.api.semantics.EntityDto;
+import at.tuwien.entities.container.image.ContainerImage;
+import at.tuwien.entities.container.image.ContainerImageDate;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.*;
@@ -240,13 +242,14 @@ public interface TableMapper {
     }
 
     @Mappings({
-            @Mapping(source = "primaryKey", target = "isPrimaryKey"),
-            @Mapping(source = "type", target = "columnType"),
-            @Mapping(source = "nullAllowed", target = "isNullAllowed"),
-            @Mapping(source = "name", target = "name"),
+            @Mapping(target = "isPrimaryKey", source = "data.primaryKey"),
+            @Mapping(target = "columnType", source = "data.type"),
+            @Mapping(target = "isNullAllowed", source = "data.nullAllowed"),
+            @Mapping(target = "name", source = "data.name"),
             @Mapping(target = "internalName", expression = "java(nameToInternalName(data.getName()))"),
+            @Mapping(target = "dateFormat", expression = "java(dateFormatIdToContainerImageDate(data.getDfid(), image))"),
     })
-    TableColumn columnCreateDtoToTableColumn(ColumnCreateDto data);
+    TableColumn columnCreateDtoToTableColumn(ColumnCreateDto data, ContainerImage image);
 
     default String columnCreateDtoToPrimaryKeyLengthSpecification(ColumnCreateDto data) {
         if (!data.getPrimaryKey()) {
@@ -256,6 +259,19 @@ public interface TableMapper {
             return "(" + Objects.requireNonNullElse(data.getIndexLength(), 255) + ")";
         }
         return "";
+    }
+
+    default ContainerImageDate dateFormatIdToContainerImageDate(Long dateFormatId, ContainerImage image) {
+        if (dateFormatId == null) {
+            return null;
+        }
+        log.trace("image has {} date formats", image.getDateFormats().size());
+        final Optional<ContainerImageDate> optional = image.getDateFormats()
+                .stream()
+                .filter(i -> dateFormatId.equals(i.getId()))
+                .findFirst();
+        optional.ifPresentOrElse(containerImageDate -> log.trace("mapped date format to {}", containerImageDate), () -> log.warn("dfid {} was not found in {}", dateFormatId, image.getDateFormats().stream().map(ContainerImageDate::getId).toList()));
+        return optional.orElse(null);
     }
 
     /**

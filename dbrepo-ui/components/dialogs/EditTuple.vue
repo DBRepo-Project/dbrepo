@@ -20,7 +20,7 @@
             <v-text-field
               v-if="isTextField(column)"
               v-model="localTuple[column.internal_name]"
-              :disabled="(edit && column.is_primary_key) || (!edit && column.auto_generated)"
+              :disabled="disabled(column)"
               class="mb-2"
               :clearable="!required(column)"
               :counter="maxLength(column) !== null"
@@ -32,7 +32,7 @@
             <v-text-field
               v-if="isFloatingPoint(column)"
               v-model="localTuple[column.internal_name]"
-              :disabled="(edit && column.is_primary_key) || (!edit && column.auto_generated)"
+              :disabled="disabled(column)"
               class="mb-2"
               step=".1"
               :clearable="!required(column)"
@@ -44,7 +44,7 @@
             <v-file-input
               v-if="isFileField(column)"
               v-model="localTuple[column.internal_name]"
-              :disabled="(edit && column.is_primary_key) || (!edit && column.auto_generated)"
+              :disabled="disabled(column)"
               prepend-icon="mdi-code-brackets"
               class="mb-2"
               :clearable="!required(column)"
@@ -58,7 +58,7 @@
             <v-textarea
               v-if="isTextArea(column)"
               v-model="localTuple[column.internal_name]"
-              :disabled="(edit && column.is_primary_key) || (!edit && column.auto_generated)"
+              :disabled="disabled(column)"
               class="mb-2"
               rows="3"
               :clearable="!required(column)"
@@ -67,39 +67,15 @@
               :hint="hint(column)"
               :label="label(column)" />
             <v-text-field
-              v-if="column.column_type === 'timestamp'"
+              v-if="isTimeField(column)"
               v-model="localTuple[column.internal_name]"
-              suffix="UTC"
-              hint="e.g. 2022-07-12 18:32:59"
-              :rules="(column.auto_generated) ? [] : (column.is_null_allowed ? [ validateTimestamp ] : [validateTimestamp || $t('Required format yyyy-MM-dd HH:mm:ss'), v => !!v || $t('Required')])"
+              :hint="hint(column)"
+              persistent-hint
               class="mb-2"
               :clearable="!required(column)"
               :required="required(column)"
               :label="label(column)"
               type="text" />
-            <v-menu
-              v-if="column.column_type === 'date'"
-              ref="menu"
-              v-model="menu"
-              :close-on-content-click="true"
-              transition="scale-transition"
-              offset-y
-              min-width="auto">
-              <template v-slot:activator="{ on, columns }">
-                <v-text-field
-                  v-model="localTuple[column.internal_name]"
-                  :label="label(column)"
-                  suffix="UTC"
-                  readonly
-                  v-bind="columns"
-                  v-on="on" />
-              </template>
-              <v-date-picker
-                v-model="localTuple[column.internal_name]"
-                color="primary"
-                no-title
-                scrollable />
-            </v-menu>
             <v-select
               v-if="isSet(column) || isEnum(column)"
               v-model="localTuple[column.internal_name]"
@@ -215,8 +191,11 @@ export default {
       if (this.edit && column.is_primary_key) {
         return 'Required (Primary Key)'
       }
-      if (column.column_type === 'double' || column.column_type === 'decimal') {
+      if (['double', 'decimal'].includes(column.column_type)) {
         return `Floating point number max. ${column.size} digit${column.size !== 1 ? 's' : ''} before and max. ${column.d} digit${column.d !== 1 ? 's' : ''} after the dot`
+      }
+      if (this.isTimeField(column)) {
+        return `Format: ${column.date_format?.unix_format}`
       }
     },
     label (column) {
@@ -246,6 +225,9 @@ export default {
     isSet (column) {
       return column.column_type === 'set'
     },
+    isTimeField (column) {
+      return ['date', 'datetime', 'timestamp', 'time'].includes(column.column_type)
+    },
     rules (column) {
       if (column.auto_generated) {
         return []
@@ -271,6 +253,9 @@ export default {
     },
     required (column) {
       return column.is_null_allowed === false
+    },
+    disabled (column) {
+      return (this.edit && column.is_primary_key) || (!this.edit && column.auto_generated)
     },
     validateTimestamp (val) {
       return /^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$/.test(val)

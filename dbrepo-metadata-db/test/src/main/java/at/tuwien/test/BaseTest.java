@@ -899,6 +899,30 @@ public abstract class BaseTest {
             .hasTime(IMAGE_DATE_3_HAS_TIME)
             .build();
 
+    public final static Long IMAGE_DATE_4_ID = 4L;
+    public final static Long IMAGE_DATE_4_IMAGE_ID = IMAGE_1_ID;
+    public final static String IMAGE_DATE_4_UNIX_FORMAT = "HH:mm:ss";
+    public final static String IMAGE_DATE_4_DATABASE_FORMAT = "%H:%i:%S";
+    public final static String IMAGE_DATE_4_EXAMPLE = "14:44:25";
+    public final static Boolean IMAGE_DATE_4_HAS_TIME = true;
+
+    public final static ContainerImageDate IMAGE_DATE_4 = ContainerImageDate.builder()
+            .id(IMAGE_DATE_4_ID)
+            .iid(IMAGE_DATE_4_IMAGE_ID)
+            .unixFormat(IMAGE_DATE_4_UNIX_FORMAT)
+            .databaseFormat(IMAGE_DATE_4_DATABASE_FORMAT)
+            .example(IMAGE_DATE_4_EXAMPLE)
+            .hasTime(IMAGE_DATE_4_HAS_TIME)
+            .build();
+
+    public final static ImageDateDto IMAGE_DATE_4_DTO = ImageDateDto.builder()
+            .id(IMAGE_DATE_4_ID)
+            .unixFormat(IMAGE_DATE_4_UNIX_FORMAT)
+            .databaseFormat(IMAGE_DATE_4_DATABASE_FORMAT)
+            .example(IMAGE_DATE_4_EXAMPLE)
+            .hasTime(IMAGE_DATE_4_HAS_TIME)
+            .build();
+
     public final static ContainerImage IMAGE_1 = ContainerImage.builder()
             .id(IMAGE_1_ID)
             .name(IMAGE_1_NAME)
@@ -907,7 +931,7 @@ public abstract class BaseTest {
             .jdbcMethod(IMAGE_1_JDBC)
             .driverClass(IMAGE_1_DRIVER)
             .defaultPort(IMAGE_1_PORT)
-            .dateFormats(List.of(IMAGE_DATE_1, IMAGE_DATE_2, IMAGE_DATE_3))
+            .dateFormats(List.of(IMAGE_DATE_1, IMAGE_DATE_2, IMAGE_DATE_3, IMAGE_DATE_4))
             .build();
 
     public final static ContainerImage IMAGE_1_SIMPLE = ContainerImage.builder()
@@ -994,7 +1018,6 @@ public abstract class BaseTest {
             .image(CONTAINER_1_IMAGE_BRIEF_DTO)
             .created(CONTAINER_1_CREATED)
             .host(CONTAINER_1_IP)
-            .owner(USER_1_BRIEF_DTO)
             .build();
 
     public final static ContainerBriefDto CONTAINER_1_DTO_BRIEF = ContainerBriefDto.builder()
@@ -1050,7 +1073,6 @@ public abstract class BaseTest {
             .image(CONTAINER_2_IMAGE_BRIEF_DTO)
             .created(CONTAINER_2_CREATED)
             .host(CONTAINER_2_IP)
-            .owner(USER_2_BRIEF_DTO)
             .build();
 
     public final static ContainerBriefDto CONTAINER_2_DTO_BRIEF = ContainerBriefDto.builder()

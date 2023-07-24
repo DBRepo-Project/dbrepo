@@ -129,8 +129,8 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns`
     ordinal_position INTEGER      NOT NULL,
     is_primary_key   BOOLEAN      NOT NULL,
     index_length     INT          NULL,
-    size             bigint,
-    d                bigint,
+    size             INT,
+    d                INT,
     auto_generated   BOOLEAN               DEFAULT false,
     is_null_allowed  BOOLEAN      NOT NULL DEFAULT true,
     created          timestamp    NOT NULL DEFAULT NOW(),
@@ -229,7 +229,6 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_constraints_unique`
 (
     uid      BIGINT NOT NULL AUTO_INCREMENT,
     tid      BIGINT NOT NULL,
-    tdbid    BIGINT NOT NULL,
     position INT    NULL,
     PRIMARY KEY (uid),
     FOREIGN KEY (tid) REFERENCES mdb_tables (id)
@@ -281,23 +280,19 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_units`
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns_concepts`
 (
     id      bigint    NOT NULL,
-    tID     bigint    NOT NULL,
     cID     bigint    NOT NULL,
     created timestamp NOT NULL DEFAULT NOW(),
     PRIMARY KEY (id),
-    FOREIGN KEY (cID) REFERENCES mdb_columns (ID),
-    FOREIGN KEY (tid) REFERENCES mdb_tables (id)
+    FOREIGN KEY (cID) REFERENCES mdb_columns (ID)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns_units`
 (
     id      bigint    NOT NULL,
-    tID     bigint    NOT NULL,
     cID     bigint    NOT NULL,
     created timestamp NOT NULL DEFAULT NOW(),
     PRIMARY KEY (id),
-    FOREIGN KEY (cID) REFERENCES mdb_columns (ID),
-    FOREIGN KEY (tid) REFERENCES mdb_tables (id)
+    FOREIGN KEY (cID) REFERENCES mdb_columns (ID)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_view`

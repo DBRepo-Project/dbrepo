@@ -38,7 +38,7 @@ public class SwaggerConfig {
                         .url("https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services"))
                 .servers(List.of(new Server()
                                 .description("Generated server url")
-                                .url("http://localhost:9092"),
+                                .url("http://localhost:9091"),
                         new Server()
                                 .description("Sandbox")
                                 .url("https://dbrepo2.tuwien.ac.at")));

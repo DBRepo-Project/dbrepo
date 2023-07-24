@@ -1,6 +1,5 @@
 package at.tuwien.api.container;
 
-import at.tuwien.api.user.UserBriefDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -32,9 +31,6 @@ public class ContainerBriefDto {
     @NotBlank
     @Schema(example = "Air Quality")
     private String name;
-
-    @NotNull
-    private UserBriefDto creator;
 
     @NotBlank
     @JsonProperty("internal_name")

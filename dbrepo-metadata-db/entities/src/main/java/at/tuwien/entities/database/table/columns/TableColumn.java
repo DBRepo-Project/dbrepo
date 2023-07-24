@@ -111,10 +111,10 @@ public class TableColumn implements Comparable<TableColumn> {
     private List<String> sets;
 
     @Column
-    private Long size;
+    private Integer size;
 
     @Column
-    private Long d;
+    private Integer d;
 
     @LastModifiedDate
     @Column(columnDefinition = "TIMESTAMP")

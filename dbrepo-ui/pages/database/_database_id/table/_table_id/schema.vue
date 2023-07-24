@@ -15,11 +15,8 @@
       <template v-slot:item.unique="{ item }">
         <span v-if="isUnique(item)">●</span> {{ isUnique(item) }}
       </template>
-      <template v-slot:item.column_type="{ item }">
-        {{ columnName(item) }}
-      </template>
-      <template v-slot:item.date_format="{ item }">
-        {{ dateFormat(item) }}
+      <template v-slot:item.extra="{ item }">
+        <pre>{{ extra(item) }}</pre>
       </template>
       <template v-slot:item.is_primary_key="{ item }">
         <span v-if="item.is_primary_key">●</span> {{ item.is_primary_key }}
@@ -98,24 +95,13 @@ export default {
       headers: [
         { value: 'internal_name', text: 'Column Name' },
         { value: 'column_type', text: 'Type' },
-        { value: 'date_format', text: 'Date Format' },
+        { value: 'extra', text: 'Extra Information' },
         { value: 'column_concept', text: 'Concept' },
         { value: 'column_unit', text: 'Unit' },
         { value: 'is_primary_key', text: 'Primary Key' },
         { value: 'unique', text: 'Unique' },
         { value: 'is_null_allowed', text: 'Nullable' },
         { value: 'auto_generated', text: 'Sequence' }
-      ],
-      columnTypes: [
-        // { value: 'ENUM', text: 'Enumeration' }, // Disabled for now, not implemented, #145
-        { value: 'boolean', text: 'Boolean' },
-        { value: 'number', text: 'Number' },
-        { value: 'blob', text: 'Binary Large Object' },
-        { value: 'date', text: 'Date' },
-        { value: 'timestamp', text: 'Timestamp' },
-        { value: 'decimal', text: 'Floating Number' },
-        { value: 'string', text: 'Character Varying' },
-        { value: 'text', text: 'Text' }
       ],
       dateColumns: []
     }
@@ -172,7 +158,11 @@ export default {
   },
   methods: {
     isUnique (column) {
-      return !!this.table.constraints?.uniques?.some(uniqueCols => [...uniqueCols].every(unique => unique.id === column.id))
+      if (!this.table || !this.table.constraints || !this.table.constraints.uniques) {
+        return false
+      }
+      const uniqueColumnIds = this.table.constraints.uniques.map(u => u.columns.map(c => c.id)).flat()
+      return uniqueColumnIds.includes(column.id)
     },
     columnName (column) {
       const filter = this.columnTypes.filter(t => t.value === column.column_type)
@@ -181,9 +171,19 @@ export default {
       }
       return column.column_type
     },
-    dateFormat (column) {
-      if (column.date_format) {
-        return column.date_format.unix_format
+    extra (column) {
+      if (['date', 'datetime', 'timestamp', 'time'].includes(column.column_type)) {
+        return `fsp=${column.date_format.unix_format}`
+      } else if (column.column_type === 'float') {
+        return `p=${column.size}`
+      } else if (['decimal', 'double'].includes(column.column_type)) {
+        return `size=${column.size} d=${column.d}`
+      } else if (column.column_type === 'enum') {
+        return `(${column.enums.join(', ')})`
+      } else if (column.column_type === 'set') {
+        return `(${column.sets.join(', ')})`
+      } else if (['int', 'char', 'varchar', 'binary', 'varbinary', 'tinyint', 'smallint', 'mediumint', 'bigint'].includes(column.column_type)) {
+        return column.size !== null ? `size=${column.size}` : ''
       }
       return null
     },

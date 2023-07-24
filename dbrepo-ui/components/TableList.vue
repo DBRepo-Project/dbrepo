@@ -14,7 +14,10 @@
           :to="`/database/${$route.params.database_id}/table/${item.id}`">
           <v-list-item-content>
             <v-list-item-title v-text="item.name" />
-            <v-list-item-subtitle class="mt-2" v-text="item.description" />
+            <v-list-item-subtitle class="mt-2">
+              <span v-if="item.description" v-text="item.description" />
+              <span v-else>(no description)</span>
+            </v-list-item-subtitle>
           </v-list-item-content>
         </v-list-item>
       </v-list-item-group>
