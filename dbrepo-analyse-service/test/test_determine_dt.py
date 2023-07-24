@@ -20,13 +20,13 @@ class DetermineDatatypesTest(unittest.TestCase):
     def test_determine_datatypes_succeeds(self):
         exp = {
             'columns': {
-                'int': 'number',
+                'int': 'bigint',
                 'float': 'decimal',
-                'string': 'text',
-                'boolean': 'boolean',
+                'string': 'varchar',
+                'boolean': 'bool',
                 'date': 'date',
                 'time': 'timestamp',
-                'enum': 'text'  # currently not used
+                'enum': 'varchar'  # currently not used
             },
             'separator': ','
         }

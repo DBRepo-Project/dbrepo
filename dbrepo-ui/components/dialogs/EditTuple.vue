@@ -131,6 +131,7 @@
 
 <script>
 import QueryService from '@/api/query.service'
+import MiddlewareService from '@/api/middleware.service'
 
 export default {
   props: {
@@ -208,7 +209,7 @@ export default {
       return ['text'].includes(column.column_type)
     },
     isFileField (column) {
-      return ['blob', 'longblob'].includes(column.column_type)
+      return ['blob', 'longblob', 'mediumblob', 'tinyblob'].includes(column.column_type)
     },
     isBoolean (column) {
       return ['bool'].includes(column.column_type)
@@ -289,10 +290,25 @@ export default {
           this.localTuple[column.internal_name] = null
         }
       })
-      QueryService.insertTuple(this.$route.params.database_id, this.$route.params.table_id, { data: this.localTuple })
-        .then(() => {
-          this.$toast.success('Successfully added tuple!')
-          this.$emit('close', { success: true })
+      const promises = []
+      Object.keys(this.localTuple)
+        .filter(key => this.localTuple[key] instanceof File)
+        .forEach((key) => {
+          promises.push(MiddlewareService.upload(key, this.localTuple[key]))
+        })
+      Promise.all(promises)
+        .then((values) => {
+          values.forEach((value) => {
+            if (value.length !== 1) {
+              return
+            }
+            this.localTuple[value[0].fieldname] = value[0].path
+          })
+          QueryService.insertTuple(this.$route.params.database_id, this.$route.params.table_id, this.localTuple)
+            .then(() => {
+              this.$toast.success('Successfully added tuple!')
+              this.$emit('close', { success: true })
+            })
         })
     }
   }

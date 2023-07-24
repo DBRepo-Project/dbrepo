@@ -321,9 +321,9 @@ export default {
     upload () {
       this.loadingUpload = true
       return new Promise((resolve, reject) => {
-        MiddlewareService.upload(this.fileModel)
+        MiddlewareService.upload('file', this.fileModel)
           .then((file) => {
-            this.file = file
+            this.file = file[0]
             resolve(file)
           })
           .catch((error) => {

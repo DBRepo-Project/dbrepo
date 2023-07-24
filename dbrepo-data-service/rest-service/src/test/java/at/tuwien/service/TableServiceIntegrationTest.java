@@ -94,13 +94,17 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
         final List<TableBriefDto> tables = tableService.findAll(DATABASE_1);
         assertEquals(3, tables.size());
         final TableBriefDto table0 = tables.get(0);
-        assertEquals("weather_aus", table0.getName());
-        assertEquals("weather_aus", table0.getInternalName());
+        assertEquals(TABLE_7_INTERNAL_NAME, table0.getName());
+        assertEquals(TABLE_7_INTERNAL_NAME, table0.getInternalName());
         assertTrue(table0.getIsVersioned());
         final TableBriefDto table1 = tables.get(1);
-        assertEquals("sensor", table1.getName());
-        assertEquals("sensor", table1.getInternalName());
+        assertEquals(TABLE_1_INTERNALNAME, table1.getName());
+        assertEquals(TABLE_1_INTERNALNAME, table1.getInternalName());
         assertTrue(table1.getIsVersioned());
+        final TableBriefDto table2 = tables.get(2);
+        assertEquals(TABLE_2_INTERNALNAME, table2.getName());
+        assertEquals(TABLE_2_INTERNALNAME, table2.getInternalName());
+        assertTrue(table2.getIsVersioned());
     }
 
     @Test
@@ -114,11 +118,14 @@ public class TableServiceIntegrationTest extends BaseUnitTest {
         final List<TableBriefDto> tables = tableService.findAll(DATABASE_1);
         assertEquals(3, tables.size());
         final TableBriefDto table0 = tables.get(0);
-        assertEquals("weather_aus", table0.getName());
-        assertEquals("weather_aus", table0.getInternalName());
+        assertEquals(TABLE_7_INTERNAL_NAME, table0.getName());
+        assertEquals(TABLE_7_INTERNAL_NAME, table0.getInternalName());
         final TableBriefDto table1 = tables.get(1);
-        assertEquals("sensor", table1.getName());
-        assertEquals("sensor", table1.getInternalName());
+        assertEquals(TABLE_1_INTERNALNAME, table1.getName());
+        assertEquals(TABLE_1_INTERNALNAME, table1.getInternalName());
+        final TableBriefDto table2 = tables.get(2);
+        assertEquals(TABLE_2_INTERNALNAME, table2.getName());
+        assertEquals(TABLE_2_INTERNALNAME, table2.getInternalName());
     }
 
     @Test

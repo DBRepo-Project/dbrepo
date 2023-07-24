@@ -67,21 +67,22 @@ class QueryService {
 
   insertTuple (databaseId, tableId, data) {
     return new Promise((resolve, reject) => {
-      api.post(`/api/database/${databaseId}/table/${tableId}/data`, data, { headers: { Accept: 'text/csv' } })
+      api.post(`/api/database/${databaseId}/table/${tableId}/data`, { data }, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const tuple = response.data
           console.debug('response insert tuple', tuple)
           resolve(tuple)
         })
         .catch((error) => {
-          const { code, message, response } = error
-          const { status } = response
+          const { response } = error
+          const { status, data } = response
+          const { message } = data
           if (status === 423) {
             console.error('Database failed to accept tuple', error)
-            Vue.$toast.error(`Database failed to accept tuple: ${message}`)
+            Vue.$toast.error(message)
           } else {
             console.error('Failed to insert tuple', error)
-            Vue.$toast.error(`[${code}] Failed to insert tuple: ${message}`)
+            Vue.$toast.error(message)
           }
           reject(error)
         })

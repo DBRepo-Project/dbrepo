@@ -26,15 +26,15 @@ public interface QueryMapper {
     org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(QueryMapper.class);
 
     default String findAllViewsQuery(Database database) {
-        return "SELECT TABLE_NAME as internal_name FROM information_schema.TABLES WHERE TABLE_SCHEMA = '" + database.getInternalName() + "' AND TABLE_TYPE = 'VIEW';";
+        return "SELECT TABLE_NAME as internal_name FROM information_schema.TABLES WHERE TABLE_SCHEMA = '" + database.getInternalName() + "' AND TABLE_TYPE = 'VIEW' ORDER BY TABLE_NAME ASC;";
     }
 
     default String findAllTablesQuery(Database database) {
-        return "SELECT TABLE_NAME as internal_name, IF(TABLE_TYPE = 'SYSTEM VERSIONED', true, false) as is_versioned FROM information_schema.TABLES WHERE TABLE_SCHEMA = '" + database.getInternalName() + "' AND TABLE_NAME != 'qs_queries' AND (TABLE_TYPE = 'BASE TABLE' OR TABLE_TYPE = 'SYSTEM VERSIONED');";
+        return "SELECT TABLE_NAME as internal_name, IF(TABLE_TYPE = 'SYSTEM VERSIONED', true, false) as is_versioned FROM information_schema.TABLES WHERE TABLE_SCHEMA = '" + database.getInternalName() + "' AND TABLE_NAME != 'qs_queries' AND (TABLE_TYPE = 'BASE TABLE' OR TABLE_TYPE = 'SYSTEM VERSIONED') ORDER BY TABLE_NAME ASC;";
     }
 
     default String findTableQuery(Database database, String name) {
-        return "SELECT TABLE_NAME as internal_name, IF(TABLE_TYPE = 'SYSTEM VERSIONED', true, false) as is_versioned FROM information_schema.TABLES WHERE TABLE_SCHEMA = '" + database.getInternalName() + "' AND TABLE_NAME = '" + name + "';";
+        return "SELECT TABLE_NAME as internal_name, IF(TABLE_TYPE = 'SYSTEM VERSIONED', true, false) as is_versioned FROM information_schema.TABLES WHERE TABLE_SCHEMA = '" + database.getInternalName() + "' AND TABLE_NAME = '" + name + "' ORDER BY TABLE_NAME ASC;";
     }
 
     default String findAllUsersQuery() {
@@ -42,7 +42,7 @@ public interface QueryMapper {
     }
 
     default String findAllDatabasesQuery() {
-        return "SELECT SCHEMA_NAME as internal_name FROM SCHEMATA WHERE SCHEMA_NAME NOT IN ('information_schema', 'performance_schema', 'mysql') ORDER BY SCHEMA_NAME";
+        return "SELECT SCHEMA_NAME as internal_name FROM SCHEMATA WHERE SCHEMA_NAME NOT IN ('information_schema', 'performance_schema', 'mysql') ORDER BY SCHEMA_NAME ASC";
     }
 
     default String findColumnsForTable(Database database, String name) {

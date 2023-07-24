@@ -185,9 +185,9 @@ export default {
     isNonNegativeInteger,
     uploadAndImport () {
       this.loading = true
-      MiddlewareService.upload(this.fileModel)
+      MiddlewareService.upload('file', this.fileModel)
         .then((file) => {
-          this.file = file
+          this.file = file[0]
           this.tableImport.location = `/tmp/${this.file.filename}`
           QueryService.importCsv(this.$route.params.database_id, this.$route.params.table_id, this.tableImport)
             .then(() => {

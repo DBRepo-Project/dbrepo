@@ -19,7 +19,7 @@ import at.tuwien.exception.QueryStoreException;
 import at.tuwien.exception.TableMalformedException;
 import at.tuwien.querystore.Query;
 import net.sf.jsqlparser.statement.select.SelectItem;
-import org.hibernate.engine.jdbc.BinaryStream;
+import org.apache.commons.io.FileUtils;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
@@ -27,9 +27,7 @@ import org.mapstruct.Named;
 import org.mariadb.jdbc.MariaDbBlob;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
+import java.io.*;
 import java.math.BigInteger;
 import java.sql.Date;
 import java.sql.*;
@@ -85,11 +83,16 @@ public interface QueryMapper {
             int[] idx = new int[]{1};
             final Map<String, Object> map = new HashMap<>();
             for (final TableColumn column : columns) {
+                final String columnOrAlias = column.getAlias() != null ? column.getAlias() : column.getInternalName();
+                if (List.of(TableColumnType.BLOB, TableColumnType.TINYBLOB, TableColumnType.MEDIUMBLOB, TableColumnType.LONGBLOB).contains(column.getColumnType())) {
+                    log.debug("column {} is of type blob", columnOrAlias);
+                    map.put(columnOrAlias, result.getBlob(idx[0]++));
+                    continue;
+                }
                 final Object object = dataColumnToObject(result.getObject(idx[0]++), column);
                 if (object == null) {
                     log.warn("result set for column {} is empty (=null)", column.getInternalName());
                 }
-                final String columnOrAlias = column.getAlias() != null ? column.getAlias() : column.getInternalName();
                 map.put(columnOrAlias, object);
             }
             resultList.add(map);
@@ -404,7 +407,7 @@ public interface QueryMapper {
 
     default PreparedStatement tableCsvDtoToRawInsertQuery(Connection connection, Table table, TableCsvDto data)
             throws TableMalformedException, ImageNotSupportedException, QueryMalformedException {
-        log.trace("mapping table csv to insert query, table={}, data={}", table, data);
+        log.trace("mapping table data to insert query, table={}, data={}", table, data);
         if (table.getColumns().size() == 0) {
             log.error("Column size is zero");
             throw new TableMalformedException("Columns are not known");
@@ -776,10 +779,6 @@ public interface QueryMapper {
             return null;
         }
         switch (column.getColumnType()) {
-            case BLOB, TINYBLOB, MEDIUMBLOB, LONGBLOB -> {
-                log.trace("mapping {} to blob", data);
-                return new MariaDbBlob((byte[]) data);
-            }
             case DATE -> {
                 if (column.getDateFormat() == null) {
                     log.error("Missing date format for column {} of table {}", column.getId(),
@@ -931,11 +930,15 @@ public interface QueryMapper {
         switch (columnType) {
             case BLOB, TINYBLOB, MEDIUMBLOB, LONGBLOB:
                 log.trace("prepare statement idx {} blob", idx);
+                if (value == null) {
+                    ps.setNull(idx, Types.BLOB);
+                    break;
+                }
                 try {
-                    ps.setBlob(idx, new FileInputStream(String.valueOf(value)));
-                } catch (FileNotFoundException e) {
+                    ps.setBlob(idx, FileUtils.openInputStream(new File(String.valueOf(value))));
+                } catch (IOException e) {
                     log.error("Failed to set blob: {}", e.getMessage());
-                    throw new SQLException("Failed to set blob", e);
+                    throw new SQLException("Failed to set blob: " + e.getMessage(), e);
                 }
                 break;
             case TEXT, CHAR, VARCHAR, TINYTEXT, MEDIUMTEXT, LONGTEXT, ENUM, SET:
