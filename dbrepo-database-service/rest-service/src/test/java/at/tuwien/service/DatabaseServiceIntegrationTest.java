@@ -98,6 +98,21 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
+    public void create_sameName_succeeds() throws Exception {
+
+        /* mock */
+        MariaDbConfig.dropDatabase(CONTAINER_1, DATABASE_1_INTERNALNAME);
+        when(databaseIdxRepository.save(any(DatabaseDto.class)))
+                .thenReturn(DATABASE_1_DTO);
+        when(databaseIdxRepository.save(any(DatabaseDto.class)))
+                .thenReturn(DATABASE_1_DTO);
+
+        /* test */
+        generic_create(DATABASE_1_CREATE, DATABASE_1);
+        generic_create(DATABASE_1_CREATE, DATABASE_1);
+    }
+
+    @Test
     public void create_inSequence_succeeds() throws Exception {
 
         /* mock */
@@ -132,16 +147,12 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     @Test
     public void create_queryStore_succeeds() throws Exception {
 
-        /* mock */
-
         /* test */
         generic_insert(QUERY_4_STATEMENT, 1L);
     }
 
     @Test
     public void create_queryStoreSameQueryHash_succeeds() throws Exception {
-
-        /* mock */
 
         /* test */
         generic_insert(QUERY_4_STATEMENT, 1L);
@@ -152,16 +163,12 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     @Test
     public void create_systemProcedure_succeeds() throws Exception {
 
-        /* mock */
-
         /* test */
         generic_system_insert(CONTAINER_1_PRIVILEGED_USERNAME, CONTAINER_1_PRIVILEGED_PASSWORD);
     }
 
     @Test
-    public void create_systemProcedure_fails() throws InterruptedException {
-
-        /* mock */
+    public void create_systemProcedure_fails() {
 
         /* test */
         assertThrows(SQLException.class, () -> {
@@ -170,18 +177,14 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void create_userProcedureRoot_succeeds() throws SQLException, InterruptedException, QueryMalformedException {
-
-        /* mock */
+    public void create_userProcedureRoot_succeeds() throws SQLException, QueryMalformedException {
 
         /* test */
         generic_user_insert(CONTAINER_1_PRIVILEGED_USERNAME, CONTAINER_1_PRIVILEGED_PASSWORD);
     }
 
     @Test
-    public void create_userProcedureUser_succeeds() throws SQLException, InterruptedException, QueryMalformedException {
-
-        /* mock */
+    public void create_userProcedureUser_succeeds() throws SQLException, QueryMalformedException {
 
         /* test */
         generic_user_insert("junit1", "junit1");
@@ -249,6 +252,7 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         /* test */
         final Database response = databaseService.create(createDto, USER_1_PRINCIPAL);
         assertEquals(database.getName(), response.getName());
+        assertTrue(response.getInternalName().startsWith(database.getInternalName()));
     }
 
     protected void generic_system_insert(String username, String password) throws SQLException, QueryMalformedException {

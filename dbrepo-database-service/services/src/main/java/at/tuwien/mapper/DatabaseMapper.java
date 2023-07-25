@@ -9,6 +9,7 @@ import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.database.LanguageType;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.QueryMalformedException;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.http.auth.BasicUserPrincipal;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -23,7 +24,7 @@ import java.text.Normalizer;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
-@Mapper(componentModel = "spring", uses = {ContainerMapper.class, UserMapper.class, ImageMapper.class, IdentifierMapper.class})
+@Mapper(componentModel = "spring", uses = {ContainerMapper.class, UserMapper.class, ImageMapper.class, IdentifierMapper.class}, imports = {RandomStringUtils.class})
 public interface DatabaseMapper {
 
     org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(DatabaseMapper.class);
@@ -70,7 +71,7 @@ public interface DatabaseMapper {
     DatabaseDto databaseToDatabaseDto(Database data);
 
     @Mappings({
-            @Mapping(target = "internalName", source = "name", qualifiedByName = "internalMapping"),
+            @Mapping(target = "internalName", expression = "java(nameToInternalName(data.getName()) + \"_\" + RandomStringUtils.randomAlphabetic(4).toLowerCase())"),
     })
     Database databaseCreateDtoToDatabase(DatabaseCreateDto data);
 
