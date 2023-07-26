@@ -282,7 +282,33 @@ build-docker:
     - build-semantics-service
     - build-analyse-service
     - build-user-service
+  except:
+    refs:
+      - dev
+      - master
   script:
+    - cp .env.unix.example .env
+    - make build-docker
+
+build-docker-complete:
+  stage: build-docker
+  needs:
+    - build-metadata-db
+    - build-identifier-service
+    - build-container-service
+    - build-database-service
+    - build-query-service
+    - build-table-service
+    - build-metadata-service
+    - build-semantics-service
+    - build-analyse-service
+    - build-user-service
+  only:
+    refs:
+      - dev
+      - master
+  script:
+    - docker system prune -f -a --volumes
     - cp .env.unix.example .env
     - make build-docker
 
