@@ -152,6 +152,7 @@ test-query-service: clean build-metadata-db build-query-service
 	mvn -f ./dbrepo-query-service/pom.xml clean test verify
 
 test-table-service: clean build-metadata-db build-table-service
+	docker pull mysql:8.0
 	mvn -f ./dbrepo-table-service/pom.xml clean test verify
 
 test-metadata-service: clean build-metadata-db build-metadata-service
