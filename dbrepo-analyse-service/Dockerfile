@@ -1,8 +1,5 @@
-FROM python:3.9-alpine
+FROM python:3.9-slim
 MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
-
-RUN apk update && apk --no-cache add build-base gcc python3-dev libpq-dev libffi-dev bash curl py3-pandas \
-    py3-sqlalchemy py3-requests py3-gevent py3-psycopg2
 
 WORKDIR /app
 
