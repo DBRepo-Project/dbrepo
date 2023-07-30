@@ -29,6 +29,9 @@ fda-ui/
 # demo
 .demo
 
+# Generated
+ready
+
 # crt
 *.crt
 *.key
