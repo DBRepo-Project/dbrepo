@@ -20,6 +20,9 @@ import java.util.UUID;
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "mdb_ontologies")
+@NamedQueries({
+        @NamedQuery(name = "Ontology.findAll", query = "select o from Ontology o order by sparqlEndpoint desc"),
+})
 public class Ontology {
 
     @Id
