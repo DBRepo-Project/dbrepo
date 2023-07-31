@@ -14,6 +14,8 @@ import lombok.extern.jackson.Jacksonized;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 
+import java.util.List;
+
 @Getter
 @Setter
 @Builder
@@ -28,13 +30,11 @@ public class ColumnDto {
     @NotNull
     private Long id;
 
-    @Id
     @NotNull
     @Field(name = "database_id")
     @JsonProperty("database_id")
     private Long databaseId;
 
-    @Id
     @NotNull
     @Field(name = "table_id")
     @JsonProperty("table_id")
@@ -77,7 +77,10 @@ public class ColumnDto {
     private ColumnTypeDto columnType;
 
     @Schema(example = "255")
-    private Integer length;
+    private Integer size;
+
+    @Schema(example = "0")
+    private Integer d;
 
     private ConceptDto concept;
 
@@ -95,9 +98,10 @@ public class ColumnDto {
     @Schema(example = "false")
     private Boolean isNullAllowed;
 
-    @JsonProperty("enum_values")
-    @Field(name = "enum_values")
     @Parameter(description = "enum values, only considered when type = ENUM")
-    private String[] enumValues;
+    private List<String> enums;
+
+    @Parameter(description = "enum values, only considered when type = ENUM")
+    private List<String> sets;
 
 }

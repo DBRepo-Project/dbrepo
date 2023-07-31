@@ -6,7 +6,7 @@ import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import jakarta.persistence.*;;
+import jakarta.persistence.*;
 import java.util.List;
 
 @Data
@@ -27,31 +27,22 @@ public class Unique {
     @EqualsAndHashCode.Include
     private Long uid;
 
-    @Column
-    private Long tid;
-
-    @Column
-    private Long tdbid;
-
     @org.springframework.data.annotation.Transient
     @ToString.Exclude
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumns({
-            @JoinColumn(name = "tid", referencedColumnName = "id", insertable = false, updatable = false),
-            @JoinColumn(name = "tdbid", referencedColumnName = "tdbid", insertable = false, updatable = false)
+            @JoinColumn(name = "tid", referencedColumnName = "id")
     })
     private Table table;
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinTable(
             name = "mdb_constraints_unique_columns",
             joinColumns = {
-                    @JoinColumn(name = "uid", referencedColumnName = "uid", insertable = false, updatable = false)
+                    @JoinColumn(name = "uid", referencedColumnName = "uid")
             },
             inverseJoinColumns = {
-                    @JoinColumn(name = "cid", referencedColumnName = "id", insertable = false, updatable = false),
-                    @JoinColumn(name = "ctid", referencedColumnName = "tid", insertable = false, updatable = false),
-                    @JoinColumn(name = "ctdbid", referencedColumnName = "cdbid", insertable = false, updatable = false)
+                    @JoinColumn(name = "cid", referencedColumnName = "id")
             }
     )
     private List<TableColumn> columns;

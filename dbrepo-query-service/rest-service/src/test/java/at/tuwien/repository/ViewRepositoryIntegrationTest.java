@@ -71,14 +71,19 @@ public class ViewRepositoryIntegrationTest extends BaseUnitTest {
     @BeforeEach
     public void beforeEach() {
         realmRepository.save(REALM_DBREPO);
-        userRepository.save(USER_1);
+        userRepository.saveAll(List.of(USER_1, USER_2));
         imageRepository.save(IMAGE_1);
-        containerRepository.save(CONTAINER_1_SIMPLE);
-        databaseRepository.save(DATABASE_1_SIMPLE);
-        tableRepository.saveAll(List.of(TABLE_1, TABLE_2, TABLE_3, TABLE_7));
-        viewRepository.save(VIEW_1);
-        viewRepository.save(VIEW_3);
-        viewRepository.save(VIEW_3);
+        containerRepository.saveAll(List.of(CONTAINER_1_SIMPLE, CONTAINER_2_SIMPLE));
+        databaseRepository.saveAll(List.of(DATABASE_1_SIMPLE, DATABASE_2_SIMPLE));
+        tableRepository.saveAll(List.of(TABLE_1_SIMPLE, TABLE_2_SIMPLE, TABLE_3_SIMPLE, TABLE_4_SIMPLE, TABLE_5_SIMPLE, TABLE_6_SIMPLE, TABLE_7_SIMPLE));
+        tableColumnRepository.saveAll(TABLE_1_COLUMNS);
+        tableColumnRepository.saveAll(TABLE_2_COLUMNS);
+        tableColumnRepository.saveAll(TABLE_3_COLUMNS);
+        tableColumnRepository.saveAll(TABLE_4_COLUMNS);
+        tableColumnRepository.saveAll(TABLE_5_COLUMNS);
+        tableColumnRepository.saveAll(TABLE_6_COLUMNS);
+        tableColumnRepository.saveAll(TABLE_7_COLUMNS);
+        viewRepository.saveAll(List.of(VIEW_1, VIEW_2, VIEW_3, VIEW_4));
     }
 
     @Test
@@ -86,7 +91,7 @@ public class ViewRepositoryIntegrationTest extends BaseUnitTest {
 
         /* test */
         final List<View> response = viewRepository.findAllPublicByDatabaseId(DATABASE_1_ID);
-        assertEquals(1, response.size());
+        assertEquals(2, response.size());
     }
 
     @Test

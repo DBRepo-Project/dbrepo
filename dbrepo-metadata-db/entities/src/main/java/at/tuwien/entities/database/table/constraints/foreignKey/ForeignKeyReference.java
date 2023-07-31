@@ -5,7 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import jakarta.persistence.*;;
+import jakarta.persistence.*;
 
 @Data
 @Entity
@@ -30,19 +30,15 @@ public class ForeignKeyReference {
     @JoinColumn(name = "fkid", referencedColumnName = "fkid", nullable = false)
     private ForeignKey foreignKey;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumns({
-            @JoinColumn(name = "cid", referencedColumnName = "id", nullable = false),
-            @JoinColumn(name = "ctid", referencedColumnName = "tid", nullable = false),
-            @JoinColumn(name = "ctdbid", referencedColumnName = "cdbid", nullable = false)
+            @JoinColumn(name = "cid", referencedColumnName = "id", nullable = false)
     })
     private TableColumn column;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumns({
-            @JoinColumn(name = "rcid", referencedColumnName = "id", nullable = false),
-            @JoinColumn(name = "rctid", referencedColumnName = "tid", nullable = false),
-            @JoinColumn(name = "rctdbid", referencedColumnName = "cdbid", nullable = false)
+            @JoinColumn(name = "rcid", referencedColumnName = "id", nullable = false)
     })
     private TableColumn referencedColumn;
 

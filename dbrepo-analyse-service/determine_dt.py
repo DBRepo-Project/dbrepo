@@ -54,11 +54,11 @@ def determine_datatypes(path, enum=False, enum_tol=0.0001, separator=None) -> {}
 
         for i in range(0, (len(types))):
             if type(types[i]) == messytables.types.BoolType:
-                r[headers[i]] = "boolean"
+                r[headers[i]] = "bool"
             elif type(types[i]) == messytables.types.IntegerType:
-                r[headers[i]] = "number"
+                r[headers[i]] = "bigint"
             elif type(types[i]) == messytables.types.FloatType:
-                r[headers[i]] = "decimal"
+                r[headers[i]] = "float"
             elif type(types[i]) == messytables.types.DateType:
                 if ("S" in str(types[i])):
                     r[headers[i]] = "timestamp"
@@ -66,6 +66,14 @@ def determine_datatypes(path, enum=False, enum_tol=0.0001, separator=None) -> {}
                     r[headers[i]] = "date"
             elif type(types[i]) == messytables.types.DecimalType:
                 r[headers[i]] = "decimal"
+            elif type(types[i]) == messytables.types.StringType:
+                r[headers[i]] = "varchar"
+            elif type(types[i]) == messytables.types.PercentageType:
+                r[headers[i]] = "double"
+            elif type(types[i]) == messytables.types.CurrencyType:
+                r[headers[i]] = "double"
+            elif type(types[i]) == messytables.types.TimeType:
+                r[headers[i]] = "time"
             else:
                 if enum == True:
                     enum_set = set()
@@ -80,7 +88,7 @@ def determine_datatypes(path, enum=False, enum_tol=0.0001, separator=None) -> {}
                         m = len(enum_set)
                     if is_enum:
                         enum_set.discard(None)
-                        r[headers[i]] = {"Enum": list(enum_set)}
+                        r[headers[i]] = {"enums": list(enum_set)}
                     else:
                         r[headers[i]] = "text"
                 else:

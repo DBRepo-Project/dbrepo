@@ -3,35 +3,96 @@ package at.tuwien.api.database.table.columns;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 
+/* MYSQL 8 */
 @Getter
 public enum ColumnTypeDto {
 
-    @JsonProperty("enum")
-    ENUM("enum"),
+    @JsonProperty("char")
+    CHAR("char"),
 
-    @JsonProperty("number")
-    NUMBER("number"),
+    @JsonProperty("varchar")
+    VARCHAR("varchar"),
 
-    @JsonProperty("decimal")
-    DECIMAL("decimal"),
+    @JsonProperty("binary")
+    BINARY("binary"),
 
-    @JsonProperty("string")
-    STRING("string"),
+    @JsonProperty("varbinary")
+    VARBINARY("varbinary"),
+
+    @JsonProperty("tinyblob")
+    TINYBLOB("tinyblob"),
+
+    @JsonProperty("tinytext")
+    TINYTEXT("tinytext"),
 
     @JsonProperty("text")
     TEXT("text"),
 
-    @JsonProperty("boolean")
-    BOOLEAN("boolean"),
+    @JsonProperty("blob")
+    BLOB("blob"),
+
+    @JsonProperty("mediumtext")
+    MEDIUMTEXT("mediumtext"),
+
+    @JsonProperty("mediumblob")
+    MEDIUMBLOB("mediumblob"),
+
+    @JsonProperty("longtext")
+    LONGTEXT("longtext"),
+
+    @JsonProperty("longblob")
+    LONGBLOB("longblob"),
+
+    @JsonProperty("enum")
+    ENUM("enum"),
+
+    @JsonProperty("set")
+    SET("set"),
+
+    @JsonProperty("bit")
+    BIT("bit"),
+
+    @JsonProperty("tinyint")
+    TINYINT("tinyint"),
+
+    @JsonProperty("bool")
+    BOOL("bool"),
+
+    @JsonProperty("smallint")
+    SMALLINT("smallint"),
+
+    @JsonProperty("mediumint")
+    MEDIUMINT("mediumint"),
+
+    @JsonProperty("int")
+    INT("int"),
+
+    @JsonProperty("bigint")
+    BIGINT("bigint"),
+
+    @JsonProperty("float")
+    FLOAT("float"),
+
+    @JsonProperty("double")
+    DOUBLE("double"),
+
+    @JsonProperty("decimal")
+    DECIMAL("decimal"),
 
     @JsonProperty("date")
     DATE("date"),
 
+    @JsonProperty("datetime")
+    DATETIME("datetime"),
+
     @JsonProperty("timestamp")
     TIMESTAMP("timestamp"),
 
-    @JsonProperty("blob")
-    BLOB("blob");
+    @JsonProperty("time")
+    TIME("time"),
+
+    @JsonProperty("year")
+    YEAR("year");
 
     private String type;
 

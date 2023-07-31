@@ -5,6 +5,7 @@ import at.tuwien.api.database.ViewCreateDto;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.MariaDbContainerConfig;
 import at.tuwien.entities.database.View;
+import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.BrokerServiceGateway;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
@@ -29,6 +30,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.sql.SQLException;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -91,13 +93,21 @@ public class ViewServicePersistenceIntegrationTest extends BaseUnitTest {
 
     @BeforeEach
     public void beforeEach() {
+        /* metadata database */
         realmRepository.save(REALM_DBREPO);
+        userRepository.saveAll(List.of(USER_1, USER_2));
         imageRepository.save(IMAGE_1);
-        userRepository.save(USER_1);
-        containerRepository.save(CONTAINER_1);
-        databaseRepository.save(DATABASE_1_SIMPLE);
-        tableRepository.save(TABLE_1_SIMPLE);
+        containerRepository.saveAll(List.of(CONTAINER_1_SIMPLE, CONTAINER_2_SIMPLE));
+        databaseRepository.saveAll(List.of(DATABASE_1_SIMPLE, DATABASE_2_SIMPLE));
+        tableRepository.saveAll(List.of(TABLE_1_SIMPLE, TABLE_2_SIMPLE, TABLE_3_SIMPLE, TABLE_4_SIMPLE, TABLE_5_SIMPLE, TABLE_6_SIMPLE, TABLE_7_SIMPLE));
         tableColumnRepository.saveAll(TABLE_1_COLUMNS);
+        tableColumnRepository.saveAll(TABLE_2_COLUMNS);
+        tableColumnRepository.saveAll(TABLE_3_COLUMNS);
+        tableColumnRepository.saveAll(TABLE_4_COLUMNS);
+        tableColumnRepository.saveAll(TABLE_5_COLUMNS);
+        tableColumnRepository.saveAll(TABLE_6_COLUMNS);
+        tableColumnRepository.saveAll(TABLE_7_COLUMNS);
+        viewRepository.saveAll(List.of(VIEW_1, VIEW_2, VIEW_3, VIEW_4));
     }
 
     @Test

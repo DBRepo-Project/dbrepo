@@ -4,6 +4,9 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+# ready
+ready
+
 # Notebooks
 .jupyter/
 .pytest_cache/

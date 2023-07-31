@@ -83,6 +83,13 @@ function formatTimestampUTC (str) {
   return format(new Date(date), 'yyyy-MM-dd HH:mm:ss')
 }
 
+function formatBinaryStream (bin) {
+  if (bin === null || !bin.binaryStream) {
+    return null
+  }
+  return '(binary)'
+}
+
 function isOrcid (orcid) {
   if (!orcid || orcid.startsWith('http')) {
     return false
@@ -137,5 +144,6 @@ module.exports = {
   formatDayUTC,
   isOrcid,
   isActiveMessage,
-  timestampToTimeZonedTimestamp
+  timestampToTimeZonedTimestamp,
+  formatBinaryStream
 }

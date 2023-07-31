@@ -2,11 +2,10 @@ package at.tuwien.endpoint;
 
 import at.tuwien.api.database.query.QueryBriefDto;
 import at.tuwien.api.database.query.QueryDto;
+import at.tuwien.api.database.query.QueryPersistDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.api.identifier.IdentifierBriefDto;
-import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.entities.identifier.Identifier;
-import at.tuwien.entities.identifier.IdentifierType;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.IdentifierMapper;
@@ -26,6 +25,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -235,6 +235,7 @@ public class StoreEndpoint {
     })
     public ResponseEntity<QueryDto> persist(@NotNull @PathVariable("databaseId") Long databaseId,
                                             @NotNull @PathVariable("queryId") Long queryId,
+                                            @NotNull @Valid @RequestBody QueryPersistDto data,
                                             @NotNull Principal principal)
             throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
             DatabaseConnectionException, UserNotFoundException, QueryNotFoundException,
@@ -255,7 +256,7 @@ public class StoreEndpoint {
         /* has access */
         accessService.find(databaseId, principal.getName());
         /* persist */
-        final Query query = storeService.persist(databaseId, queryId, principal);
+        final Query query = storeService.persist(databaseId, queryId, data);
         final QueryDto dto = queryMapper.queryToQueryDto(query);
         final User creator = userService.findByUsername(query.getCreatedBy());
         dto.setCreator(userMapper.userToUserDto(creator));

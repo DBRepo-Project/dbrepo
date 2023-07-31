@@ -48,7 +48,7 @@
 import TimeTravel from '@/components/dialogs/TimeTravel.vue'
 import TableToolbar from '@/components/TableToolbar.vue'
 import TableService from '@/api/table.service'
-import { formatTimestampUTC, formatDateUTC, formatTimestamp } from '@/utils'
+import { formatTimestampUTC, formatDateUTC, formatTimestamp, formatBinaryStream } from '@/utils'
 
 export default {
   components: {
@@ -270,6 +270,11 @@ export default {
         .then((data) => {
           this.rows = data.result.map((row) => {
             for (const col in row) {
+              const column = this.table.columns.filter(c => c.internal_name === col)[0]
+              if (['blob', 'tinyblob', 'mediumblob', 'longblob'].includes(column.column_type)) {
+                row[col] = formatBinaryStream(row[col])
+                continue
+              }
               const columnDefinition = this.dateColumns.filter(c => c.internal_name === col)
               if (columnDefinition.length > 0) {
                 if (columnDefinition[0].column_type === 'date') {

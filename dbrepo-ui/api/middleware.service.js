@@ -2,10 +2,10 @@ import Vue from 'vue'
 import axios from 'axios'
 
 class MiddlewareService {
-  upload (file) {
+  upload (name, file) {
     return new Promise((resolve, reject) => {
       const data = new FormData()
-      data.append('file', file)
+      data.append(name, file)
       axios.post('/server-middleware/upload', data, { headers: { 'Content-Type': 'multipart/form-data' } })
         .then((response) => {
           const file = response.data

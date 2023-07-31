@@ -3,6 +3,7 @@ package at.tuwien.endpoint;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.api.database.query.QueryBriefDto;
 import at.tuwien.api.database.query.QueryDto;
+import at.tuwien.api.database.query.QueryPersistDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.user.User;
@@ -279,13 +280,16 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
             throws DatabaseNotFoundException, UserNotFoundException, QueryStoreException, QueryNotFoundException,
             ImageNotSupportedException, NotAllowedException, DatabaseConnectionException,
             QueryAlreadyPersistedException {
+        final QueryPersistDto request = QueryPersistDto.builder()
+                .persist(true)
+                .build();
 
         /* mock */
         when(databaseService.find(databaseId))
                 .thenReturn(database);
         when(storeService.findOne(databaseId, queryId, principal))
                 .thenReturn(query);
-        when(storeService.persist(databaseId, queryId, principal))
+        when(storeService.persist(databaseId, queryId, request))
                 .thenReturn(query);
         if (access != null) {
             log.trace("mock access for database with id {} and username {}", databaseId, username);
@@ -300,7 +304,7 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(Optional.of(user));
 
         /* test */
-        final ResponseEntity<QueryDto> response = storeEndpoint.persist(databaseId, queryId, principal);
+        final ResponseEntity<QueryDto> response = storeEndpoint.persist(databaseId, queryId, request, principal);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
         assertNotNull(response.getBody());
         return response.getBody();

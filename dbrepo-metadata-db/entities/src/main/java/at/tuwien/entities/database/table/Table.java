@@ -25,35 +25,29 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-@IdClass(TableKey.class)
-@jakarta.persistence.Table(name = "mdb_tables", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"tdbid", "internalName"})
-})
+@jakarta.persistence.Table(name = "mdb_tables")
 public class Table {
 
     @Id
     @EqualsAndHashCode.Include
     @GeneratedValue(generator = "tables-sequence")
     @GenericGenerator(name = "tables-sequence", strategy = "increment")
-    @Column(updatable = false, nullable = false)
+    @Column(name = "ID", updatable = false, nullable = false)
     private Long id;
 
-    @Id
-    @EqualsAndHashCode.Include
     @Field(name = "database_id")
+    @Column(updatable = false, nullable = false)
     private Long tdbid;
 
     @ToString.Exclude
-    @org.springframework.data.annotation.Transient
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
             @JoinColumn(name = "createdBy", referencedColumnName = "ID", nullable = false, columnDefinition = "VARCHAR(36)", updatable = false)
     })
     private User creator;
 
     @ToString.Exclude
-    @org.springframework.data.annotation.Transient
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
             @JoinColumn(name = "ownedBy", referencedColumnName = "ID", nullable = false, columnDefinition = "VARCHAR(36)", updatable = false)
     })
@@ -79,15 +73,20 @@ public class Table {
 
     @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "tdbid", insertable = false, updatable = false)
+    @JoinColumns({
+            @JoinColumn(name = "tdbid", referencedColumnName = "id", insertable = false, updatable = false)
+    })
     private Database database;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "table")
+    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "table")
     @OrderBy("ordinalPosition")
     private List<TableColumn> columns;
 
     @Embedded
     private Constraints constraints;
+
+    @Column(name = "versioned", columnDefinition = "boolean default true")
+    private Boolean isVersioned;
 
     @CreatedDate
     @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP")
@@ -101,7 +100,6 @@ public class Table {
     @PreRemove
     public void preRemove() {
         this.creator = null;
-        this.columns.forEach(c -> c.setCreator(null));
     }
 
     /**

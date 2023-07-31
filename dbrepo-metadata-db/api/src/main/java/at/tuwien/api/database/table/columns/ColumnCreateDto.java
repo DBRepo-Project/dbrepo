@@ -8,6 +8,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.jackson.Jacksonized;
 
+import java.util.List;
+
 @Getter
 @Setter
 @Builder
@@ -27,14 +29,17 @@ public class ColumnCreateDto {
     private Boolean primaryKey;
 
     @JsonProperty("index_length")
-    private Integer indexLength = null;
+    private Integer indexLength;
 
     @NotNull
     @Schema(example = "string")
     private ColumnTypeDto type;
 
     @Schema(example = "255")
-    private Integer length = null;
+    private Integer size;
+
+    @Schema(example = "0")
+    private Integer d;
 
     @NotNull
     @JsonProperty("null_allowed")
@@ -44,8 +49,10 @@ public class ColumnCreateDto {
     @Schema(description = "date format id")
     private Long dfid;
 
-    @JsonProperty("enum_values")
     @Schema(description = "enum values, only considered when type = ENUM")
-    private String[] enumValues = null;
+    private List<String> enums;
+
+    @Schema(description = "set values, only considered when type = SET")
+    private List<String> sets;
 
 }

@@ -52,7 +52,7 @@ public class User {
     @Column(name = "REALM_ID", columnDefinition = "VARCHAR(36)")
     private UUID realmId;
 
-    @Column(nullable = false)
+    @Column
     private String email;
 
     @Field(name = "email_verified")

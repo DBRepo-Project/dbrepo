@@ -24,41 +24,58 @@
               item-value="value"
               required
               :rules="[v => !!v || $t('Required')]"
-              label="Data Type *" />
+              label="Data Type *"
+              @change="setDefaultSizeAndD(c)" />
           </v-col>
-          <v-col cols="2" :hidden="c.type !== 'ENUM'">
-            <v-select
-              v-model="c.enum_values"
-              :disabled="c.type !== 'ENUM'"
-              :items="c.suggestions"
-              :menu-props="{ maxHeight: '400' }"
-              label="Enumeration"
-              multiple />
+          <v-col cols="2" :hidden="c.type !== 'set'">
+            <v-text-field
+              v-model="c.sets_values"
+              required
+              counter
+              :counter-value="() => c.sets.length"
+              hint="Separate values by ,"
+              :rules="[v => !!v || $t('Required')]"
+              label="Set Values *"
+              @focusout="formatValues(c)" />
           </v-col>
-          <v-col v-if="c.type.match('(timestamp)|(date)')" cols="2">
+          <v-col cols="2" :hidden="c.type !== 'enum'">
+            <v-text-field
+              v-model="c.enums_values"
+              required
+              counter
+              :counter-value="() => c.enums.length"
+              hint="Separate values by ,"
+              :rules="[v => !!v || $t('Required')]"
+              label="Enum Values *"
+              @focusout="formatValues(c)" />
+          </v-col>
+          <v-col cols="1" :hidden="defaultSize(c) === false">
+            <v-text-field
+              v-model.number="c.size"
+              type="number"
+              required
+              :rules="[v => (v !== null && v !== '') || $t('Required')]"
+              label="size *" />
+          </v-col>
+          <v-col cols="1" :hidden="defaultD(c) === false">
+            <v-text-field
+              v-model.number="c.d"
+              type="number"
+              required
+              :rules="[v => (v !== null && v !== '') || $t('Required')]"
+              label="d *" />
+          </v-col>
+          <v-col v-if="hasDate(c)" cols="1">
             <v-select
-              v-if="c.type !== 'timestamp'"
               v-model="c.dfid"
               required
               :rules="[v => !!v || $t('Required')]"
-              :items="dateFormats.filter(f => !f.has_time)"
-              label="Date Format *"
-              :item-text="item => `${item.example}`"
-              item-value="id" />
-            <v-select
-              v-if="c.type !== 'date'"
-              v-model="c.dfid"
-              required
-              :rules="[v => !!v || $t('Required')]"
-              :items="dateFormats.filter(f => f.has_time)"
-              label="Timestamp Format *"
+              :items="filterDateFormats(c)"
+              label="fsp *"
               :item-text="item => `${item.example}`"
               item-value="id" />
           </v-col>
-          <v-col v-if="needsShift(c)" cols="2" />
-          <v-col cols="auto" class="pl-10" :hidden="c.type !== 'string' || c.type !== 'VARCHAR'">
-            <v-text-field v-model="c.check_expression" label="Check Expression" />
-          </v-col>
+          <v-col v-if="shift(c)" :cols="shift(c)" />
           <v-col cols="auto" class="pl-2">
             <v-checkbox v-model="c.primary_key" label="Primary Key" @click="setOthers(c)" />
           </v-col>
@@ -90,7 +107,7 @@
         <v-btn v-if="back" class="mt-10 mr-2 mb-1" @click="stepBack()">
           Back
         </v-btn>
-        <v-btn color="primary" :loading="localLoading" :disabled="!valid" class="mt-10 mb-1" @click="submit">
+        <v-btn color="primary" :loading="localLoading" class="mt-10 mb-1" @click="submit">
           Continue
         </v-btn>
       </div>
@@ -100,6 +117,8 @@
 
 <script>
 import DatabaseService from '@/api/database.service'
+import QueryMapper from '@/api/query.mapper'
+
 export default {
   props: {
     columns: {
@@ -134,18 +153,7 @@ export default {
       valid: true,
       finished: false,
       tableColumns: [],
-      columnTypes: [
-        // { value: 'ENUM', text: 'Enumeration' }, // Disabled for now, not implemented, #145
-        { value: 'boolean', text: 'Boolean' },
-        { value: 'number', text: 'Number' },
-        { value: 'blob', text: 'Binary Large Object' },
-        { value: 'date', text: 'Date' },
-        { value: 'decimal', text: 'Floating Number' },
-        { value: 'timestamp', text: 'Timestamp' },
-        { value: 'decimal', text: 'Decimal' },
-        { value: 'string', text: 'Character Varying' },
-        { value: 'text', text: 'Text' }
-      ]
+      columnTypes: QueryMapper.mySql8DataTypes()
     }
   },
   computed: {
@@ -163,16 +171,26 @@ export default {
     this.loadDateFormats()
   },
   methods: {
-    needsShift (column) {
-      if (column.type === 'date' || column.type === 'timestamp') {
+    shift (column) {
+      if (!this.columns || this.columns.length === 0) {
         return false
       }
-      return this.columns.filter(c => c.type === 'date' || c.type === 'timestamp').length > 0
+      let shift = 0
+      if (this.hasDate(column) === false && this.columns.filter(c => this.hasDate(c) !== false).length > 0 && this.defaultSize(column) === false && this.columns.filter(c => this.defaultSize(c) !== false).length > 0) {
+        shift++
+      }
+      if (this.defaultD(column) === false && this.columns.filter(c => this.defaultD(c) !== false).length > 0) {
+        shift++
+      }
+      if (this.hasEnumOrSet(column) === false && this.columns.filter(c => this.hasEnumOrSet(c) !== false).length > 0) {
+        shift++
+      }
+      return shift
     },
     async loadDateFormats () {
       try {
         const database = await DatabaseService.findOne(this.$route.params.database_id)
-        this.dateFormats = database.container.image.date_formats
+        this.dateFormats = database.image.date_formats
       } finally {
         this.localLoading = false
       }
@@ -209,7 +227,65 @@ export default {
         name,
         type,
         null_allowed,
-        primary_key
+        primary_key,
+        dfid: null,
+        sets: [],
+        sets_values: null,
+        enums: [],
+        enums_values: null,
+        size: 0,
+        d: 0
+      })
+    },
+    formatValues (column) {
+      if (column.type === 'set') {
+        if (!column.sets_values || column.sets_values.length === 0) {
+          return
+        }
+        column.sets = column.sets_values.split(',').map(v => v.trim())
+      } else if (column.type === 'enum') {
+        if (!column.enums_values || column.enums_values.length === 0) {
+          return
+        }
+        column.enums = column.enums_values.split(',').map(v => v.trim())
+      }
+    },
+    defaultSize (column) {
+      const filter = this.columnTypes.filter(t => t.value === column.type)
+      if (!filter || filter.length === 0) {
+        return false
+      }
+      if (filter[0].defaultSize === undefined || filter[0].defaultSize === null) {
+        return false
+      }
+      return filter[0].defaultSize
+    },
+    defaultD (column) {
+      const filter = this.columnTypes.filter(t => t.value === column.type)
+      if (!filter || filter.length === 0) {
+        return false
+      }
+      if (filter[0].defaultD === undefined || filter[0].defaultD === null) {
+        return false
+      }
+      return filter[0].defaultD
+    },
+    setDefaultSizeAndD (column) {
+      column.size = this.defaultSize(column)
+      column.d = this.defaultD(column)
+    },
+    hasDate (column) {
+      return column.type === 'date' || column.type === 'datetime' || column.type === 'timestamp' || column.type === 'time'
+    },
+    hasEnumOrSet (column) {
+      return column.type === 'enum' || column.type === 'set'
+    },
+    filterDateFormats (column) {
+      return this.dateFormats.filter((df) => {
+        if (column.type === 'date') {
+          return !df.has_time
+        }
+        return df.has_time
       })
     }
   }

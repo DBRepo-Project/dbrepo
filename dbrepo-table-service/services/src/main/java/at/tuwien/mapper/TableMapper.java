@@ -13,13 +13,13 @@ import at.tuwien.api.database.table.constraints.ConstraintsCreateDto;
 import at.tuwien.api.database.table.constraints.foreignKey.ForeignKeyCreateDto;
 import at.tuwien.api.database.table.constraints.foreignKey.ForeignKeyDto;
 import at.tuwien.api.database.table.constraints.foreignKey.ReferenceTypeDto;
+import at.tuwien.api.database.table.constraints.unique.UniqueDto;
 import at.tuwien.api.semantics.EntityDto;
+import at.tuwien.entities.container.image.ContainerImage;
+import at.tuwien.entities.container.image.ContainerImageDate;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
-import at.tuwien.entities.database.table.columns.TableColumn;
-import at.tuwien.entities.database.table.columns.TableColumnConcept;
-import at.tuwien.entities.database.table.columns.TableColumnType;
-import at.tuwien.entities.database.table.columns.TableColumnUnit;
+import at.tuwien.entities.database.table.columns.*;
 import at.tuwien.entities.database.table.constraints.Constraints;
 import at.tuwien.entities.database.table.constraints.foreignKey.ForeignKey;
 import at.tuwien.entities.database.table.constraints.foreignKey.ForeignKeyReference;
@@ -56,21 +56,24 @@ public interface TableMapper {
 
     @Mappings({
             @Mapping(source = "id", target = "id"),
-            @Mapping(source = "tdbid", target = "databaseId"),
             @Mapping(target = "name", expression = "java(data.getName())"),
             @Mapping(target = "internalName", expression = "java(data.getInternalName())"),
             @Mapping(target = "queueName", expression = "java(data.getQueueName())"),
             @Mapping(target = "routingKey", expression = "java(data.getRoutingKey())"),
             @Mapping(source = "description", target = "description"),
             @Mapping(source = "database.isPublic", target = "isPublic"),
-            @Mapping(source = "constraints", target = "constraints"),
     })
     TableDto tableToTableDto(Table data);
 
+    @Mappings({
+            @Mapping(target = "table", ignore = true),
+    })
+    UniqueDto uniqueToUniqueDto(Unique data);
+
     /* keep */
     @Mappings({
-            @Mapping(target = "tableId", source = "tid"),
-            @Mapping(target = "databaseId", source = "cdbid"),
+            @Mapping(target = "tableId", source = "table.id"),
+            @Mapping(target = "databaseId", source = "table.database.id"),
             @Mapping(target = "isPublic", source = "table.database.isPublic"),
     })
     ColumnDto tableColumnToColumnDto(TableColumn data);
@@ -120,8 +123,6 @@ public interface TableMapper {
 
     default Unique columnNameListToUnique(Table table, List<String> names) throws TableMalformedException {
         return Unique.builder()
-                .tid(table.getId())
-                .tdbid(table.getTdbid())
                 .table(table)
                 .columns(columnNameListToTableColumn(table, names))
                 .build();
@@ -130,34 +131,28 @@ public interface TableMapper {
     ReferenceType referenceTypeDtoToReferenceType(ReferenceTypeDto dto);
 
     default ForeignKey foreignKeyCreateDtoToForeignKey(TableRepository repo, Table table, ForeignKeyCreateDto data) throws TableMalformedException {
-        ForeignKey.ForeignKeyBuilder builder = ForeignKey.builder()
-                .tid(table.getId())
-                .tdbid(table.getTdbid())
+        final Optional<Table> referencedTable = repo.findByTdbidAndInternalName(table.getDatabase().getId(), nameToInternalName(data.getReferencedTable()));
+        if (referencedTable.isEmpty()) {
+            log.error("Failed to find referenced table with database id {} and internal name {}", table.getDatabase().getId(), nameToInternalName(data.getReferencedTable()));
+            throw new TableMalformedException("Failed to find referenced table with database id " + table.getDatabase().getId() + " and internal name " + nameToInternalName(data.getReferencedTable()));
+        }
+        final ForeignKey.ForeignKeyBuilder builder = ForeignKey.builder()
                 .table(table)
                 .onUpdate(referenceTypeDtoToReferenceType(data.getOnUpdate()))
-                .onDelete(referenceTypeDtoToReferenceType(data.getOnDelete()));
-        Optional<Table> referencedTable = repo.findByTdbidAndInternalName(table.getTdbid(), nameToInternalName(data.getReferencedTable()));
-
-        if (referencedTable.isEmpty()) {
-            throw new TableMalformedException("Could not find table referenced in foreign key.");
-        }
-
-        builder.rtid(table.getId())
-                .rtdbid(table.getTdbid())
+                .onDelete(referenceTypeDtoToReferenceType(data.getOnDelete()))
                 .referencedTable(referencedTable.get());
-        List<TableColumn> columns = columnNameListToTableColumn(table, data.getColumns());
-        List<TableColumn> referencedColumns = columnNameListToTableColumn(referencedTable.get(), data.getReferencedColumns());
-
+        final List<TableColumn> columns = columnNameListToTableColumn(table, data.getColumns());
+        final List<TableColumn> referencedColumns = columnNameListToTableColumn(referencedTable.get(), data.getReferencedColumns());
         if (columns.isEmpty()) {
+            log.error("Foreign key does not have any columns.");
             throw new TableMalformedException("Foreign key does not have any columns.");
         }
         if (columns.size() != referencedColumns.size()) {
+            log.error("There have to be equally as many columns and referenced columns in a foreign key.");
             throw new TableMalformedException("There have to be equally as many columns and referenced columns in a foreign key.");
         }
-
-        List<ForeignKeyReference> references = new ArrayList<>();
-        ForeignKey foreignKey = builder.references(references).build();
-
+        final List<ForeignKeyReference> references = new ArrayList<>();
+        final ForeignKey foreignKey = builder.references(references).build();
         for (int i = 0; i < columns.size(); i++) {
             TableColumn column = columns.get(i);
             TableColumn referencedColumn = referencedColumns.get(i);
@@ -167,7 +162,6 @@ public interface TableMapper {
                     .referencedColumn(referencedColumn)
                     .build());
         }
-
         return foreignKey;
     }
 
@@ -220,16 +214,13 @@ public interface TableMapper {
     }
 
     @Mappings({
-            @Mapping(source = "table.id", target = "tid"),
-            @Mapping(source = "table.database.id", target = "cdbid"),
-            @Mapping(source = "table.creator", target = "creator"),
             @Mapping(source = "table", target = "table"),
             @Mapping(target = "id", ignore = true),
             @Mapping(target = "autoGenerated", expression = "java(data.getInternalName() == \"id\" && query.getGenerated())"),
             @Mapping(source = "data.name", target = "name"),
             @Mapping(source = "data.internalName", target = "internalName"),
             @Mapping(source = "data.created", target = "created"),
-            @Mapping(source = "data.dfid", target = "dfid"),
+            @Mapping(source = "data.dateFormat", target = "dateFormat"),
             @Mapping(source = "data.lastModified", target = "lastModified"),
     })
     TableColumn tableColumnToTableColumn(Table table, TableColumn data, TableCreateRawQuery query);
@@ -251,13 +242,14 @@ public interface TableMapper {
     }
 
     @Mappings({
-            @Mapping(source = "primaryKey", target = "isPrimaryKey"),
-            @Mapping(source = "type", target = "columnType"),
-            @Mapping(source = "nullAllowed", target = "isNullAllowed"),
-            @Mapping(source = "name", target = "name"),
+            @Mapping(target = "isPrimaryKey", source = "data.primaryKey"),
+            @Mapping(target = "columnType", source = "data.type"),
+            @Mapping(target = "isNullAllowed", source = "data.nullAllowed"),
+            @Mapping(target = "name", source = "data.name"),
             @Mapping(target = "internalName", expression = "java(nameToInternalName(data.getName()))"),
+            @Mapping(target = "dateFormat", expression = "java(dateFormatIdToContainerImageDate(data.getDfid(), image))"),
     })
-    TableColumn columnCreateDtoToTableColumn(ColumnCreateDto data);
+    TableColumn columnCreateDtoToTableColumn(ColumnCreateDto data, ContainerImage image);
 
     default String columnCreateDtoToPrimaryKeyLengthSpecification(ColumnCreateDto data) {
         if (!data.getPrimaryKey()) {
@@ -269,29 +261,46 @@ public interface TableMapper {
         return "";
     }
 
-    default String columnTypeDtoToDataType(ColumnCreateDto data) {
-        switch (data.getType()) {
-            case BLOB:
-                return "BLOB";
-            case DATE:
-                return "DATE";
-            case TIMESTAMP:
-                return "TIMESTAMP";
-            case TEXT:
-                return "TEXT";
-            case STRING:
-                return "VARCHAR(" + Objects.requireNonNullElse(data.getLength(), 255) + ")";
-            case NUMBER:
-                return "BIGINT";
-            case DECIMAL:
-                return "DOUBLE";
-            case BOOLEAN:
-                return "BOOLEAN";
-            case ENUM:
-                return "ENUM (" + String.join(",", data.getEnumValues()) + ")";
-            default:
-                throw new IllegalArgumentException("Invalid data type");
+    default ContainerImageDate dateFormatIdToContainerImageDate(Long dateFormatId, ContainerImage image) {
+        if (dateFormatId == null) {
+            return null;
         }
+        log.trace("image has {} date formats", image.getDateFormats().size());
+        final Optional<ContainerImageDate> optional = image.getDateFormats()
+                .stream()
+                .filter(i -> dateFormatId.equals(i.getId()))
+                .findFirst();
+        optional.ifPresentOrElse(containerImageDate -> log.trace("mapped date format to {}", containerImageDate), () -> log.warn("dfid {} was not found in {}", dateFormatId, image.getDateFormats().stream().map(ContainerImageDate::getId).toList()));
+        return optional.orElse(null);
+    }
+
+    /**
+     * Maps the desired data type to a MySQL string with the default MySQL 8 values for each
+     *
+     * @param data The column definition.
+     * @return The MySQL string.
+     */
+    default String columnTypeDtoToDataType(ColumnCreateDto data) {
+        return switch (data.getType()) {
+            case CHAR -> "CHAR(" + Objects.requireNonNullElse(data.getSize(), "1") + ")";
+            case VARCHAR -> "VARCHAR(" + Objects.requireNonNullElse(data.getSize(), "255") + ")";
+            case BINARY -> "BINARY(" + Objects.requireNonNullElse(data.getSize(), "1") + ")";
+            case VARBINARY -> "VARBINARY(" + Objects.requireNonNullElse(data.getSize(), "1") + ")";
+            case ENUM -> "ENUM(" + String.join(",", data.getEnums().stream().map(e -> ("'" + e + "'")).toList()) + ")";
+            case SET -> "SET(" + String.join(",", data.getSets().stream().map(e -> ("'" + e + "'")).toList()) + ")";
+            case BIT -> "BIT(" + Objects.requireNonNullElse(data.getSize(), "1") + ")";
+            case TINYINT -> "TINYINT(" + Objects.requireNonNullElse(data.getSize(), "10") + ")";
+            case SMALLINT -> "SMALLINT(" + Objects.requireNonNullElse(data.getSize(), "10") + ")";
+            case MEDIUMINT -> "MEDIUMINT(" + Objects.requireNonNullElse(data.getSize(), "10") + ")";
+            case INT -> "INT(" + Objects.requireNonNullElse(data.getSize(), "255") + ")";
+            case BIGINT -> "BIGINT(" + Objects.requireNonNullElse(data.getSize(), "255") + ")";
+            case FLOAT -> "FLOAT(" + Objects.requireNonNullElse(data.getSize(), "24") + ")";
+            case DOUBLE ->
+                    "DOUBLE(" + Objects.requireNonNullElse(data.getSize(), "25") + "," + Objects.requireNonNullElse(data.getD(), "0") + ")";
+            case DECIMAL ->
+                    "DECIMAL(" + Objects.requireNonNullElse(data.getSize(), "10") + "," + Objects.requireNonNullElse(data.getD(), "0") + ")";
+            default -> data.getType().getType().toUpperCase();
+        };
     }
 
     /**
@@ -323,26 +332,18 @@ public interface TableMapper {
      * Map the table to a create table query
      * TODO for e.g. postgres image
      *
-     * @param database The database
-     * @param data     The table
+     * @param data The table
      * @return The create table query
      */
-    default TableCreateRawQuery tableToCreateTableRawQuery(Connection connection, Database database, TableCreateDto data)
-            throws ImageNotSupportedException, TableMalformedException, QueryMalformedException {
-        if (!database.getContainer().getImage().getName().equals("mariadb")) {
-            log.error("Currently only MariaDB is supported");
-            throw new ImageNotSupportedException("Currently only MariaDB is supported");
-        }
-        if (data.getName().isBlank()) {
-            log.error("Failed to map create table statement: table name is blank");
-            throw new TableMalformedException("Failed to map create table statement");
-        }
+    default TableCreateRawQuery tableToCreateTableRawQuery(Connection connection, TableCreateDto data)
+            throws TableMalformedException, QueryMalformedException {
         final StringBuilder query = new StringBuilder("CREATE TABLE `")
                 .append(nameToInternalName(data.getName()))
                 .append("` (");
         /* internal checks */
         final boolean primaryColumnExists = data.getColumns()
                 .stream()
+                .filter(c -> Objects.nonNull(c.getPrimaryKey()))
                 .anyMatch(ColumnCreateDto::getPrimaryKey);
         /* create columns */
         if (!primaryColumnExists) {
@@ -350,7 +351,7 @@ public interface TableMapper {
             final ColumnCreateDto idColumn = ColumnCreateDto.builder()
                     .name("id")
                     .primaryKey(true)
-                    .type(ColumnTypeDto.NUMBER)
+                    .type(ColumnTypeDto.BIGINT)
                     .nullAllowed(false)
                     .build();
             log.trace("attempt to create id column {}", idColumn);
@@ -372,7 +373,7 @@ public interface TableMapper {
                     /* data type */
                     .append(columnTypeDtoToDataType(column))
                     /* null expressions */
-                    .append(column.getNullAllowed() ? " NULL" : " NOT NULL")
+                    .append(column.getNullAllowed() != null && column.getNullAllowed() ? " NULL" : " NOT NULL")
                     /* default expressions */
                     .append(!primaryColumnExists && column.getName().equals(
                             "id") ? " DEFAULT NEXTVAL(`" + tableCreateDtoToSequenceName(data) + "`)" : "");
@@ -381,6 +382,7 @@ public interface TableMapper {
         query.append(", PRIMARY KEY (")
                 .append(String.join(",", data.getColumns()
                         .stream()
+                        .filter(c -> Objects.nonNull(c.getPrimaryKey()))
                         .filter(ColumnCreateDto::getPrimaryKey)
                         .map(c -> "`" + nameToInternalName(
                                 c.getName()) + "`" + columnCreateDtoToPrimaryKeyLengthSpecification(c))
@@ -490,6 +492,7 @@ public interface TableMapper {
         final int[] idx = new int[]{0};
         data.getColumns()
                 .stream()
+                .filter(c -> Objects.nonNull(c.getIsPrimaryKey()))
                 .filter(TableColumn::getIsPrimaryKey)
                 .forEach(c -> statement.append(idx[0]++ > 0 ? "," : "")
                         .append("`")

@@ -39,6 +39,12 @@ public class TableBriefDto {
     @Schema(example = "air_quality")
     private String internalName;
 
+    @NotNull
+    @JsonProperty("is_versioned")
+    @Field(name = "is_versioned")
+    @Schema(example = "true")
+    private Boolean isVersioned;
+
     @NotNull(message = "owner is required")
     private UserBriefDto owner;
 

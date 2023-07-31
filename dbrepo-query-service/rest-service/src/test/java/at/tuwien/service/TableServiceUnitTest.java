@@ -10,6 +10,7 @@ import at.tuwien.repository.mdb.TableRepository;
 import at.tuwien.repository.sdb.ViewIdxRepository;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +30,7 @@ import static org.mockito.Mockito.when;
 
 @Log4j2
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-@EnableAutoConfiguration(exclude= RabbitAutoConfiguration.class)
+@EnableAutoConfiguration(exclude = RabbitAutoConfiguration.class)
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 public class TableServiceUnitTest extends BaseUnitTest {
@@ -51,6 +52,11 @@ public class TableServiceUnitTest extends BaseUnitTest {
 
     @MockBean
     private TableRepository tableRepository;
+
+    @BeforeEach
+    public void beforeEach() {
+        TABLE_8.setColumns(TABLE_8_COLUMNS);
+    }
 
     @Test
     public void findAll_succeeds() throws TableNotFoundException, DatabaseNotFoundException {

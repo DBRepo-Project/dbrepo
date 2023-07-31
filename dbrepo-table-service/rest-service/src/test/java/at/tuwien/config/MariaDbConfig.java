@@ -1,7 +1,9 @@
 package at.tuwien.config;
 
+import at.tuwien.api.database.table.columns.ColumnTypeDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
+import at.tuwien.entities.database.table.Table;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
@@ -9,8 +11,12 @@ import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 
 import java.sql.*;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Slf4j
 @Configuration
@@ -45,6 +51,67 @@ public class MariaDbConfig {
             log.debug("received queryId={}", queryId);
             return queryId;
         }
+    }
+
+    public static Map<String, List<Object>> describeTableSchema(Table table, String username, String password)
+            throws SQLException {
+        final String jdbc = "jdbc:mariadb://" + table.getDatabase().getContainer().getHost() + ":" + table.getDatabase().getContainer().getPort() + "/" + table.getDatabase().getInternalName();
+        log.trace("connect to database {}", jdbc);
+        final Map<String, List<Object>> out = new HashMap<>();
+        try (Connection connection = DriverManager.getConnection(jdbc, username, password)) {
+            final String query = "SHOW COLUMNS FROM `" + table.getInternalName() + "`;";
+            log.trace("prepare statement '{}'", query);
+            final PreparedStatement statement = connection.prepareStatement(query);
+            final ResultSet resultSet = statement.executeQuery();
+            statement.close();
+            while (resultSet.next()) {
+                if (resultSet.getString("Field").equals("id")) {
+                    continue;
+                }
+                out.put(resultSet.getString("Field"), List.of(resultSet.getString("Type"), resultSet.getString("Null"), resultSet.getString("Key")));
+            }
+            return out;
+        }
+    }
+
+    public static ColumnTypeDto typetoColumnTypeDto(String data) throws Exception {
+        if (data.toUpperCase().startsWith("TINYINT(1)")) {
+            /* boolean in MySQL */
+            return ColumnTypeDto.BOOL;
+        }
+        final Matcher matcher = Pattern.compile("([A-Z]+)")
+                .matcher(data.toUpperCase());
+        if (!matcher.find()) {
+            log.error("Failed to map type: does not match expected format");
+            throw new Exception("Failed to map type: does not match expected format");
+        }
+        final String type = matcher.group(1);
+        try {
+            return ColumnTypeDto.valueOf(type);
+        } catch (IllegalArgumentException e) {
+            if (type.startsWith("TINYINT")) {
+                /* boolean in MySQL */
+                return ColumnTypeDto.BOOL;
+            } else if (type.startsWith("BOOL")) {
+                /* boolean */
+                return ColumnTypeDto.BOOL;
+            } else if (type.startsWith("DOUBLE")) {
+                /* double precision */
+                return ColumnTypeDto.DOUBLE;
+            } else if (type.startsWith("INT")) {
+                /* integer synonym */
+                return ColumnTypeDto.INT;
+            } else if (type.startsWith("DEC")) {
+                /* decimal synonym */
+                return ColumnTypeDto.DECIMAL;
+            } else if (type.startsWith("ENUM")) {
+                return ColumnTypeDto.ENUM;
+            } else if (type.startsWith("SET")) {
+                return ColumnTypeDto.SET;
+            }
+        }
+        log.error("Failed to map data {} and type {}", data, type);
+        throw new Exception("Failed to map data " + data + " and type " + type);
     }
 
     public static void createDatabase(Container container, String database) throws SQLException {
@@ -91,6 +158,19 @@ public class MariaDbConfig {
             }
         } catch (SQLException e) {
             log.error("could not drop all databases", e);
+        }
+    }
+
+    public static boolean tableExists(Database database, String tableName)
+            throws SQLException {
+        final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
+        log.trace("connect to database {}", jdbc);
+        try (Connection connection = DriverManager.getConnection(jdbc, database.getContainer().getPrivilegedUsername(), database.getContainer().getPrivilegedPassword())) {
+            final Statement statement = connection.createStatement();
+            final String query = "SHOW TABLES LIKE '" + tableName + "';";
+            log.trace("execute query {}", query);
+            final ResultSet result = statement.executeQuery(query);
+            return result.next();
         }
     }
 

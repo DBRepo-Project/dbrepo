@@ -16,14 +16,10 @@
                 <span v-if="table && table.id">{{ table.id }}</span>
                 <v-skeleton-loader v-if="!table" type="text" class="skeleton-xsmall" />
               </v-list-item-content>
-              <v-list-item-title class="mt-2">
+              <v-list-item-title v-if="hasDescription" class="mt-2">
                 Table Description
               </v-list-item-title>
-              <v-list-item-content>
-                <span v-if="table && table.description">{{ table.description }}</span>
-                <v-skeleton-loader v-if="!table" type="text" />
-                <v-skeleton-loader v-if="!table" type="text" class="skeleton-medium" />
-              </v-list-item-content>
+              <v-list-item-content v-if="hasDescription" v-text="table.description" />
               <v-list-item-title class="mt-2">
                 Table Owner
               </v-list-item-title>
@@ -149,6 +145,9 @@ export default {
     },
     access () {
       return this.$store.state.access
+    },
+    hasDescription () {
+      return this.table && this.table.description !== null
     },
     consumersTotal () {
       return this.consumers.length

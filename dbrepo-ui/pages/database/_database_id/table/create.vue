@@ -28,14 +28,11 @@
           </v-row>
           <v-row dense>
             <v-col cols="8">
-              <v-textarea
+              <v-text-field
                 v-model="tableCreate.description"
                 name="description"
-                label="Description *"
-                autocomplete="off"
-                rows="3"
-                :rules="[v => notEmpty(v) || $t('Required')]"
-                required />
+                label="Description (short)"
+                autocomplete="off" />
             </v-col>
           </v-row>
           <v-row dense>
@@ -51,7 +48,7 @@
         Table Schema
       </v-stepper-step>
       <v-stepper-content step="2">
-        <TableSchema :back="true" :columns="tableCreate.columns" @close="schemaClose" />
+        <TableSchema :back="true" :columns="tableCreate.columns" :loading="loading" @close="schemaClose" />
       </v-stepper-content>
     </v-stepper>
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
@@ -62,6 +59,7 @@
 import TableSchema from '@/components/TableSchema.vue'
 import { notEmpty } from '@/utils'
 import TableService from '@/api/table.service'
+import TableMapper from '@/api/table.mapper'
 
 export default {
   components: {
@@ -97,7 +95,7 @@ export default {
       return this.$route.params.database_id
     },
     step1Valid () {
-      return this.tableCreate.name !== null && this.tableCreate.name.length > 0 && this.tableCreate.description !== null && this.tableCreate.description.length > 0
+      return this.tableCreate.name !== null && this.tableCreate.name.length > 0
     },
     token () {
       return this.$store.state.token
@@ -153,44 +151,15 @@ export default {
     },
     createTable () {
       this.loading = true
-      const table = this.tableCreate.columns.reduce((table, column) => {
-        // eslint-disable-next-line camelcase
-        const { name, type, null_allowed, primary_key } = column
-        table.columns.push({
-          name,
-          type,
-          null_allowed,
-          primary_key
-        })
-        if (column.unique) {
-          table.constraints.uniques.push([column.name])
-        }
-        if (column.check_expression) {
-          table.checks.push(column.check_expression)
-        }
-        if (column.foreign_key && column.references) {
-          table.foreign_keys.push({
-            columns: [column.name],
-            referenced_table: column.foreign_key,
-            referenced_columns: [column.references]
-          })
-        }
-        return table
-      }, {
-        name: this.tableCreate.name,
-        description: this.tableCreate.description,
-        columns: [],
-        constraints: {
-          foreign_keys: [],
-          uniques: [],
-          checks: []
-        }
-      })
+      const table = TableMapper.tableCreateToTableCreateDto(this.tableCreate)
       TableService.create(this.$route.params.database_id, table)
         .then(async (table) => {
           this.$toast.success('Table created')
           await this.$store.dispatch('reloadDatabase')
           await this.$router.push(`/database/${this.databaseId}/table/${table.id}`)
+        })
+        .finally(() => {
+          this.loading = false
         })
     },
     schemaClose (event) {

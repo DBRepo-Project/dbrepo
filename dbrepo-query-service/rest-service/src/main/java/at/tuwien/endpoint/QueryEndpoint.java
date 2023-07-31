@@ -63,8 +63,8 @@ public class QueryEndpoint {
                                                   @RequestParam(required = false) SortType sortDirection,
                                                   @RequestParam(required = false) String sortColumn)
             throws DatabaseNotFoundException, ImageNotSupportedException, QueryStoreException, QueryMalformedException,
-            ContainerNotFoundException, ColumnParseException, UserNotFoundException, TableMalformedException,
-            DatabaseConnectionException, SortException, PaginationException, NotAllowedException {
+            ColumnParseException, UserNotFoundException, TableMalformedException, DatabaseConnectionException,
+            SortException, PaginationException, NotAllowedException {
         log.debug("endpoint execute query, databaseId={}, data={}, page={}, size={}, principal={}, sortDirection={}, sortColumn={}",
                 databaseId, data, page, size, principal, sortDirection, sortColumn);
         /* check */
@@ -96,8 +96,8 @@ public class QueryEndpoint {
                                                     @RequestParam(required = false) SortType sortDirection,
                                                     @RequestParam(required = false) String sortColumn)
             throws QueryStoreException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
-            QueryMalformedException, TableMalformedException, ColumnParseException,
-            DatabaseConnectionException, SortException, PaginationException, UserNotFoundException, NotAllowedException {
+            QueryMalformedException, TableMalformedException, ColumnParseException, DatabaseConnectionException,
+            SortException, PaginationException, UserNotFoundException, NotAllowedException {
         log.debug("endpoint re-execute query, databaseId={}, queryId={}, principal={}, page={}, size={}, sortDirection={}, sortColumn={}",
                 databaseId, queryId, principal, page, size, sortDirection, sortColumn);
         endpointValidator.validateDataParams(page, size, sortDirection, sortColumn);
@@ -142,8 +142,8 @@ public class QueryEndpoint {
                                     @RequestHeader(HttpHeaders.ACCEPT) String accept,
                                     Principal principal)
             throws QueryStoreException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
-            ContainerNotFoundException, TableMalformedException, FileStorageException, QueryMalformedException,
-            DatabaseConnectionException, UserNotFoundException, NotAllowedException {
+            TableMalformedException, FileStorageException, QueryMalformedException, DatabaseConnectionException,
+            UserNotFoundException, NotAllowedException {
         log.debug("endpoint export query, databaseId={}, queryId={}, accept={}, principal={}",
                 databaseId, queryId, accept, principal);
         final Database database = databaseService.find(databaseId);

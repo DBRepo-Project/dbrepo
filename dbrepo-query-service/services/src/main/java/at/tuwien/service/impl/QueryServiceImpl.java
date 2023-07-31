@@ -15,6 +15,7 @@ import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.QueryMapper;
 import at.tuwien.querystore.Query;
+import at.tuwien.repository.mdb.TableColumnRepository;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.QueryService;
 import at.tuwien.service.StoreService;
@@ -43,9 +44,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Log4j2
@@ -56,14 +55,16 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     private final TableService tableService;
     private final StoreService storeService;
     private final DatabaseService databaseService;
+    private final TableColumnRepository tableColumnRepository;
 
     @Autowired
-    public QueryServiceImpl(QueryMapper queryMapper, TableService tableService,
-                            DatabaseService databaseService, StoreService storeService) {
+    public QueryServiceImpl(QueryMapper queryMapper, TableService tableService, DatabaseService databaseService,
+                            StoreService storeService, TableColumnRepository tableColumnRepository) {
         this.queryMapper = queryMapper;
         this.tableService = tableService;
         this.storeService = storeService;
         this.databaseService = databaseService;
+        this.tableColumnRepository = tableColumnRepository;
     }
 
     @Override
@@ -83,10 +84,9 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
 
     @Override
     @Transactional(readOnly = true)
-    public QueryResultDto reExecute(Long databaseId, Query query, Long page, Long size,
-                                    SortType sortDirection, String sortColumn, Principal principal)
-            throws QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, ColumnParseException,
-            TableMalformedException {
+    public QueryResultDto reExecute(Long databaseId, Query query, Long page, Long size, SortType sortDirection,
+                                    String sortColumn, Principal principal) throws QueryMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException, ColumnParseException, TableMalformedException {
         /* find */
         final Database database = databaseService.find(databaseId);
         if (!database.getContainer().getImage().getName().equals("mariadb")) {
@@ -147,6 +147,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         try {
             final Connection connection = dataSource.getConnection();
             final PreparedStatement preparedStatement = prepareStatement(connection, statement);
+            log.trace("prepared statement {}", statement);
             final ResultSet resultSet = preparedStatement.executeQuery();
             return queryMapper.resultListToQueryResultDto(columns, resultSet);
         } catch (SQLException e) {
@@ -461,31 +462,9 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
                 }
             }
         }
+        final List<TableColumn> allColumns = tableColumnRepository.findAllByDatabaseId(database.getId());
         log.trace("columns referenced in the from-clause and join-clause(s): {}", clauses);
         /* Checking if all tables or views exist */
-        final List<TableColumn> allColumns = new ArrayList<>();
-        database.getTables()
-                .forEach(table -> {
-                    table.getColumns()
-                            .forEach(column -> {
-                                final TableColumn tmp = column.toBuilder() /* copy constructor */
-                                        .table(table)
-                                        .build();
-                                allColumns.add(tmp);
-                            });
-                });
-        database.getViews()
-                .forEach(view -> {
-                    view.getColumns()
-                            .forEach(column -> {
-                                final TableColumn tmp = column.toBuilder() /* copy constructor */
-                                        .view(view)
-                                        .build();
-                                allColumns.add(tmp);
-                            });
-                });
-        final List<TableColumn> col = allColumns.stream().filter(c -> c.getInternalName().equals("date")).toList();
-        log.trace("");
         log.trace("table(s) or view(s) referenced in the statement: {}", tablesOrViews.stream().map(t -> ((net.sf.jsqlparser.schema.Table) t).getName()).collect(Collectors.toList()));
         /* Checking if all columns exist */
         for (SelectItem clause : clauses) {
@@ -517,13 +496,13 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
                 log.error("Failed to find table or view with alias '{}'", column.getTable().getAlias());
                 throw new JSQLParserException("Failed to find table or view with alias " + column.getTable().getAlias());
             }
-            final String tableOrViewName = optionalTableOrView.get().getName().replace("`", "");
             final Optional<TableColumn> optionalColumn = allColumns.stream()
-                    .filter(c -> c.getTable() == null ? c.getView().getInternalName().equals(tableOrViewName) : c.getTable().getInternalName().equals(tableOrViewName))
                     .filter(c -> c.getInternalName().equals(column.getColumnName().replace("`", "")))
+                    .filter(c -> columnMatches(c, optionalTableOrView.get().getName().replace("`", "")))
                     .findFirst();
             if (optionalColumn.isEmpty()) {
-                throw new JSQLParserException("Failed to find column with name " + column.getColumnName());
+                log.error("Failed to find column with name {} in {}", column.getColumnName(), allColumns.stream().map(TableColumn::getInternalName).toList());
+                throw new JSQLParserException("Failed to find column with name " + column.getColumnName() + " in " + allColumns.stream().map(TableColumn::getInternalName).toList());
             }
             final TableColumn aliasColumn = optionalColumn.get();
             if (item.getAlias() != null) {
@@ -535,5 +514,16 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         return columns;
     }
 
+    @Transactional(readOnly = true)
+    protected boolean columnMatches(TableColumn column, String tableOrView) {
+        if (column.getTable().getInternalName().equals(tableOrView)) {
+            /* matches table name */
+            return true;
+        }
+        /* maybe matches one of the views */
+        return column.getViews()
+                .stream()
+                .anyMatch(v -> v.getInternalName().equals(tableOrView));
+    }
 
 }

@@ -46,7 +46,7 @@ BEGIN
     ELSE
         INSERT INTO `qs_queries` (`created_by`, `query`, `query_normalized`, `is_persisted`, `query_hash`, `result_hash`,
                                   `result_number`, `executed`)
-        SELECT _username, query, query, false, _queryhash, @hash, @count, executed
+        SELECT _username, query, query, true, _queryhash, @hash, @count, executed
         WHERE NOT EXISTS (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` = @hash);
         SET queryId = (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` = @hash);
     END IF;
@@ -68,7 +68,7 @@ BEGIN
     ELSE
         INSERT INTO `qs_queries` (`created_by`, `query`, `query_normalized`, `is_persisted`, `query_hash`, `result_hash`,
                                   `result_number`, `executed`)
-        SELECT _username, query, query, false, _queryhash, @hash, @count, executed
+        SELECT _username, query, query, true, _queryhash, @hash, @count, executed
         WHERE NOT EXISTS (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` = @hash);
         SET queryId = (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` = @hash);
     END IF;

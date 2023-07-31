@@ -32,7 +32,7 @@ public class UserServiceImpl implements UserService {
         final Optional<User> optional = userRepository.findByUsername(username);
         if (optional.isEmpty()) {
             log.error("Failed to retrieve user with username {}", username);
-            throw new UserNotFoundException("Failed to retrieve user");
+            throw new UserNotFoundException("Failed to retrieve user with username " + username);
         }
         return optional.get();
     }

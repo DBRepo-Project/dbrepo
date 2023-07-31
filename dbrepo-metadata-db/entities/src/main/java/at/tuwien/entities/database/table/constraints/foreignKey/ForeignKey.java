@@ -5,7 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import jakarta.persistence.*;;
+import jakarta.persistence.*;
 import java.util.List;
 
 @Data
@@ -26,38 +26,24 @@ public class ForeignKey {
     @Column(updatable = false, nullable = false)
     private Long fkid;
 
-    @Column
-    private Long tid;
-
-    @Column
-    private Long tdbid;
-
     @org.springframework.data.annotation.Transient
     @ToString.Exclude
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumns({
-            @JoinColumn(name = "tid", referencedColumnName = "id", nullable = false, insertable = false, updatable = false),
-            @JoinColumn(name = "tdbid", referencedColumnName = "tdbid", nullable = false, insertable = false, updatable = false)
+            @JoinColumn(name = "tid", referencedColumnName = "id", nullable = false)
     })
     private Table table;
 
-    @Column
-    private Long rtid;
-
-    @Column
-    private Long rtdbid;
-
     @org.springframework.data.annotation.Transient
     @ToString.Exclude
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumns({
-            @JoinColumn(name = "rtid", referencedColumnName = "id", nullable = false, insertable = false, updatable = false),
-            @JoinColumn(name = "rtdbid", referencedColumnName = "tdbid", nullable = false, insertable = false, updatable = false)
+            @JoinColumn(name = "rtid", referencedColumnName = "id", nullable = false)
     })
     private Table referencedTable;
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE, mappedBy = "foreignKey")
-    private List<ForeignKeyReference> references = new java.util.ArrayList<>();
+    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "foreignKey")
+    private List<ForeignKeyReference> references;
 
     @Column(columnDefinition = "VARCHAR(50)")
     @Enumerated(EnumType.STRING)

@@ -4,6 +4,7 @@ import at.tuwien.api.amqp.CreateUserDto;
 import at.tuwien.api.amqp.CreateVirtualHostDto;
 import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
 import at.tuwien.api.auth.SignupRequestDto;
+import at.tuwien.api.container.ContainerBriefDto;
 import at.tuwien.api.container.ContainerDto;
 import at.tuwien.api.container.image.ImageBriefDto;
 import at.tuwien.api.container.image.ImageCreateDto;
@@ -15,11 +16,13 @@ import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.TableCreateDto;
 import at.tuwien.api.database.table.TableCsvDto;
-import at.tuwien.api.database.table.columns.ColumnCreateDto;
-import at.tuwien.api.database.table.columns.ColumnTypeDto;
+import at.tuwien.api.database.table.TableDto;
+import at.tuwien.api.database.table.columns.*;
 import at.tuwien.api.database.table.columns.concepts.*;
 import at.tuwien.api.database.table.constraints.ConstraintsCreateDto;
+import at.tuwien.api.database.table.constraints.ConstraintsDto;
 import at.tuwien.api.database.table.constraints.foreignKey.ForeignKeyCreateDto;
+import at.tuwien.api.database.table.constraints.unique.UniqueDto;
 import at.tuwien.api.identifier.*;
 import at.tuwien.api.maintenance.BannerMessageCreateDto;
 import at.tuwien.api.maintenance.BannerMessageTypeDto;
@@ -32,10 +35,7 @@ import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.entities.container.image.ContainerImageDate;
 import at.tuwien.entities.database.*;
 import at.tuwien.entities.database.table.Table;
-import at.tuwien.entities.database.table.columns.TableColumn;
-import at.tuwien.entities.database.table.columns.TableColumnConcept;
-import at.tuwien.entities.database.table.columns.TableColumnType;
-import at.tuwien.entities.database.table.columns.TableColumnUnit;
+import at.tuwien.entities.database.table.columns.*;
 import at.tuwien.entities.database.table.constraints.Constraints;
 import at.tuwien.entities.database.table.constraints.foreignKey.ForeignKey;
 import at.tuwien.entities.database.table.constraints.foreignKey.ForeignKeyReference;
@@ -72,6 +72,7 @@ import static java.time.temporal.ChronoUnit.MINUTES;
  * <li>Table 3</li>
  * <li>Table 7</li>
  * <li>Query 1</li>
+ * <li>View 1</li>
  * <li>View 2</li>
  * <li>View 3</li>
  * <li>Identifier 1 (Title=en, Description=en, type=database)</li>
@@ -473,6 +474,14 @@ public abstract class BaseTest {
             .emailVerified(USER_2_VERIFIED)
             .build();
 
+    public final static UserBriefDto USER_2_BRIEF_DTO = UserBriefDto.builder()
+            .id(USER_2_ID)
+            .username(USER_2_USERNAME)
+            .firstname(USER_2_FIRSTNAME)
+            .lastname(USER_2_LASTNAME)
+            .emailVerified(USER_2_VERIFIED)
+            .build();
+
     public final static SignupRequestDto USER_2_SIGNUP_REQUEST_DTO = SignupRequestDto.builder()
             .username(USER_2_USERNAME)
             .password(USER_2_PASSWORD)
@@ -721,6 +730,7 @@ public abstract class BaseTest {
     public final static String USER_5_DATABASE_PASSWORD = "*C20EF5C6875857DEFA9BE6E9B62DD76AAAE51882" /* junit5 */;
     public final static String USER_5_EMAIL = "system@ossdip.at";
     public final static Boolean USER_5_VERIFIED = true;
+    public final static Boolean USER_5_ENABLED = true;
     public final static Boolean USER_5_THEME_DARK = false;
     public final static Instant USER_5_CREATED = Instant.ofEpochSecond(1677399592) /* 2023-02-26 08:19:52 (UTC) */;
     public final static UUID USER_5_REALM_ID = REALM_DBREPO_ID;
@@ -730,6 +740,7 @@ public abstract class BaseTest {
             .username(USER_5_USERNAME)
             .email(USER_5_EMAIL)
             .emailVerified(USER_5_VERIFIED)
+            .enabled(USER_5_ENABLED)
             .databasePassword(USER_5_DATABASE_PASSWORD)
             .realmId(USER_5_REALM_ID)
             .build();
@@ -752,6 +763,50 @@ public abstract class BaseTest {
 
     public final static Principal USER_5_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_5_DETAILS,
             USER_5_PASSWORD, USER_5_DETAILS.getAuthorities());
+
+    public final static UUID USER_6_ID = UUID.fromString("28ff851d-d7bc-4422-959c-edd7a5b15630");
+    public final static String USER_6_USERNAME = "system";
+    public final static String USER_6_FIRSTNAME = "System";
+    public final static String USER_6_LASTNAME = "System";
+    public final static String USER_6_AFFILIATION = "TU Wien";
+    public final static String USER_6_ORCID = null;
+    public final static String USER_6_PASSWORD = "junit5";
+    public final static String USER_6_DATABASE_PASSWORD = "*C20EF5C6875857DEFA9BE6E9B62DD76AAAE51882" /* junit5 */;
+    public final static String USER_6_EMAIL = "system@ossdip.at";
+    public final static Boolean USER_6_VERIFIED = true;
+    public final static Boolean USER_6_ENABLED = true;
+    public final static Boolean USER_6_THEME_DARK = false;
+    public final static Instant USER_6_CREATED = Instant.ofEpochSecond(1677399592) /* 2023-02-26 08:19:52 (UTC) */;
+    public final static UUID USER_6_REALM_ID = REALM_DBREPO_ID;
+
+    public final static User USER_6 = User.builder()
+            .id(USER_6_ID)
+            .username(USER_6_USERNAME)
+            .email(USER_6_EMAIL)
+            .emailVerified(USER_6_VERIFIED)
+            .enabled(USER_6_ENABLED)
+            .databasePassword(USER_6_DATABASE_PASSWORD)
+            .realmId(USER_6_REALM_ID)
+            .build();
+
+    public final static UserDto USER_6_DTO = UserDto.builder()
+            .id(USER_6_ID)
+            .username(USER_6_USERNAME)
+            .email(USER_6_EMAIL)
+            .firstname(USER_6_FIRSTNAME)
+            .lastname(USER_6_LASTNAME)
+            .emailVerified(USER_6_VERIFIED)
+            .build();
+
+    public final static UserDetails USER_6_DETAILS = UserDetailsDto.builder()
+            .username(USER_6_USERNAME)
+            .email(USER_6_EMAIL)
+            .password(USER_6_PASSWORD)
+            .authorities(AUTHORITY_DEFAULT_RESEARCHER_AUTHORITIES)
+            .build();
+
+    public final static Principal USER_6_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_6_DETAILS,
+            USER_6_PASSWORD, USER_6_DETAILS.getAuthorities());
 
     public final static Long IMAGE_1_ID = 1L;
     public final static String IMAGE_1_REGISTRY = "docker.io/library";
@@ -844,6 +899,30 @@ public abstract class BaseTest {
             .hasTime(IMAGE_DATE_3_HAS_TIME)
             .build();
 
+    public final static Long IMAGE_DATE_4_ID = 4L;
+    public final static Long IMAGE_DATE_4_IMAGE_ID = IMAGE_1_ID;
+    public final static String IMAGE_DATE_4_UNIX_FORMAT = "HH:mm:ss";
+    public final static String IMAGE_DATE_4_DATABASE_FORMAT = "%H:%i:%S";
+    public final static String IMAGE_DATE_4_EXAMPLE = "14:44:25";
+    public final static Boolean IMAGE_DATE_4_HAS_TIME = true;
+
+    public final static ContainerImageDate IMAGE_DATE_4 = ContainerImageDate.builder()
+            .id(IMAGE_DATE_4_ID)
+            .iid(IMAGE_DATE_4_IMAGE_ID)
+            .unixFormat(IMAGE_DATE_4_UNIX_FORMAT)
+            .databaseFormat(IMAGE_DATE_4_DATABASE_FORMAT)
+            .example(IMAGE_DATE_4_EXAMPLE)
+            .hasTime(IMAGE_DATE_4_HAS_TIME)
+            .build();
+
+    public final static ImageDateDto IMAGE_DATE_4_DTO = ImageDateDto.builder()
+            .id(IMAGE_DATE_4_ID)
+            .unixFormat(IMAGE_DATE_4_UNIX_FORMAT)
+            .databaseFormat(IMAGE_DATE_4_DATABASE_FORMAT)
+            .example(IMAGE_DATE_4_EXAMPLE)
+            .hasTime(IMAGE_DATE_4_HAS_TIME)
+            .build();
+
     public final static ContainerImage IMAGE_1 = ContainerImage.builder()
             .id(IMAGE_1_ID)
             .name(IMAGE_1_NAME)
@@ -852,7 +931,7 @@ public abstract class BaseTest {
             .jdbcMethod(IMAGE_1_JDBC)
             .driverClass(IMAGE_1_DRIVER)
             .defaultPort(IMAGE_1_PORT)
-            .dateFormats(List.of(IMAGE_DATE_1, IMAGE_DATE_2, IMAGE_DATE_3))
+            .dateFormats(List.of(IMAGE_DATE_1, IMAGE_DATE_2, IMAGE_DATE_3, IMAGE_DATE_4))
             .build();
 
     public final static ContainerImage IMAGE_1_SIMPLE = ContainerImage.builder()
@@ -900,6 +979,7 @@ public abstract class BaseTest {
     public final static String CONTAINER_1_NAME = "u01";
     public final static String CONTAINER_1_INTERNALNAME = "dbrepo-userdb-u01";
     public final static String CONTAINER_1_IP = "127.0.0.1";
+    public final static Boolean CONTAINER_1_RUNNING = true;
     public final static Integer CONTAINER_1_PORT = 3308;
     public final static String CONTAINER_1_PRIVILEGED_USERNAME = "root";
     public final static String CONTAINER_1_PRIVILEGED_PASSWORD = "dbrepo";
@@ -938,15 +1018,24 @@ public abstract class BaseTest {
             .image(CONTAINER_1_IMAGE_BRIEF_DTO)
             .created(CONTAINER_1_CREATED)
             .host(CONTAINER_1_IP)
-            .owner(USER_1_BRIEF_DTO)
+            .build();
+
+    public final static ContainerBriefDto CONTAINER_1_DTO_BRIEF = ContainerBriefDto.builder()
+            .id(CONTAINER_1_ID)
+            .name(CONTAINER_1_NAME)
+            .internalName(CONTAINER_1_INTERNALNAME)
+            .created(CONTAINER_1_CREATED)
+            .running(CONTAINER_1_RUNNING)
             .build();
 
     public final static Long CONTAINER_2_ID = 2L;
     public final static ContainerImage CONTAINER_2_IMAGE = IMAGE_1;
+    public final static ImageBriefDto CONTAINER_2_IMAGE_BRIEF_DTO = IMAGE_1_BRIEF_DTO;
     public final static String CONTAINER_2_NAME = "u02";
     public final static Integer CONTAINER_2_PORT = 3309;
     public final static String CONTAINER_2_INTERNALNAME = "dbrepo-userdb-u02";
     public final static String CONTAINER_2_IP = "172.30.0.6";
+    public final static Boolean CONTAINER_2_RUNNING = true;
     public final static String CONTAINER_2_PRIVILEGED_USERNAME = "root";
     public final static String CONTAINER_2_PRIVILEGED_PASSWORD = "dbrepo";
     public final static Instant CONTAINER_2_CREATED = Instant.ofEpochSecond(1677399655) /* 2023-02-26 08:20:55 (UTC) */;
@@ -956,10 +1045,10 @@ public abstract class BaseTest {
             .name(CONTAINER_2_NAME)
             .internalName(CONTAINER_2_INTERNALNAME)
             .imageId(IMAGE_1_ID)
-            .port(CONTAINER_2_PORT)
             .image(CONTAINER_2_IMAGE)
             .created(CONTAINER_2_CREATED)
             .host(CONTAINER_2_IP)
+            .port(CONTAINER_2_PORT)
             .privilegedUsername(CONTAINER_2_PRIVILEGED_USERNAME)
             .privilegedPassword(CONTAINER_2_PRIVILEGED_PASSWORD)
             .build();
@@ -969,12 +1058,29 @@ public abstract class BaseTest {
             .name(CONTAINER_2_NAME)
             .internalName(CONTAINER_2_INTERNALNAME)
             .imageId(IMAGE_1_ID)
-            .port(CONTAINER_2_PORT)
-            .image(CONTAINER_2_IMAGE)
+            .image(null /* for jpa */)
             .created(CONTAINER_2_CREATED)
             .host(CONTAINER_2_IP)
+            .port(CONTAINER_2_PORT)
             .privilegedUsername(CONTAINER_2_PRIVILEGED_USERNAME)
             .privilegedPassword(CONTAINER_2_PRIVILEGED_PASSWORD)
+            .build();
+
+    public final static ContainerDto CONTAINER_2_DTO = ContainerDto.builder()
+            .id(CONTAINER_2_ID)
+            .name(CONTAINER_2_NAME)
+            .internalName(CONTAINER_2_INTERNALNAME)
+            .image(CONTAINER_2_IMAGE_BRIEF_DTO)
+            .created(CONTAINER_2_CREATED)
+            .host(CONTAINER_2_IP)
+            .build();
+
+    public final static ContainerBriefDto CONTAINER_2_DTO_BRIEF = ContainerBriefDto.builder()
+            .id(CONTAINER_2_ID)
+            .name(CONTAINER_2_NAME)
+            .internalName(CONTAINER_2_INTERNALNAME)
+            .created(CONTAINER_2_CREATED)
+            .running(CONTAINER_2_RUNNING)
             .build();
 
     public final static Long CONTAINER_3_ID = 3L;
@@ -1117,6 +1223,15 @@ public abstract class BaseTest {
             .views(List.of())
             .build();
 
+    public final static DatabaseBriefDto DATABASE_1_DTO_BRIEF = DatabaseBriefDto.builder()
+            .id(DATABASE_1_ID)
+            .container(CONTAINER_1_DTO_BRIEF)
+            .created(Instant.now().minus(1, HOURS))
+            .isPublic(DATABASE_1_PUBLIC)
+            .name(DATABASE_1_NAME)
+            .internalName(DATABASE_1_INTERNALNAME)
+            .build();
+
     public final static DatabaseAccess DATABASE_1_USER_1_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_1_ID)
@@ -1252,6 +1367,15 @@ public abstract class BaseTest {
             .exchangeName(DATABASE_2_EXCHANGE)
             .tables(List.of()) /* TABLE_2, TABLE_2, TABLE_3 */
             .views(List.of())
+            .build();
+
+    public final static DatabaseBriefDto DATABASE_2_DTO_BRIEF = DatabaseBriefDto.builder()
+            .id(DATABASE_2_ID)
+            .container(CONTAINER_2_DTO_BRIEF)
+            .created(DATABASE_2_CREATED)
+            .isPublic(DATABASE_2_PUBLIC)
+            .name(DATABASE_2_NAME)
+            .internalName(DATABASE_2_INTERNALNAME)
             .build();
 
     public final static DatabaseAccess DATABASE_2_USER_1_READ_ACCESS = DatabaseAccess.builder()
@@ -1391,6 +1515,14 @@ public abstract class BaseTest {
             .views(List.of())
             .build();
 
+    public final static DatabaseBriefDto DATABASE_3_DTO_BRIEF = DatabaseBriefDto.builder()
+            .id(DATABASE_3_ID)
+            .created(DATABASE_3_CREATED)
+            .isPublic(DATABASE_3_PUBLIC)
+            .name(DATABASE_3_NAME)
+            .internalName(DATABASE_3_INTERNALNAME)
+            .build();
+
     public final static DatabaseAccess DATABASE_3_USER_1_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_3_ID)
@@ -1507,6 +1639,18 @@ public abstract class BaseTest {
             .views(List.of())
             .build();
 
+    public final static DatabaseBriefDto DATABASE_4_DTO_BRIEF = DatabaseBriefDto.builder()
+            .id(DATABASE_4_ID)
+            .created(Instant.now().minus(4, HOURS))
+            .isPublic(DATABASE_4_PUBLIC)
+            .name(DATABASE_4_NAME)
+            .description(DATABASE_4_DESCRIPTION)
+            .internalName(DATABASE_4_INTERNALNAME)
+            .created(DATABASE_4_CREATED)
+            .creator(USER_4_BRIEF_DTO)
+            .owner(USER_4_BRIEF_DTO)
+            .build();
+
     public final static Database DATABASE_4_SIMPLE = Database.builder()
             .id(DATABASE_4_ID)
             .created(Instant.now().minus(4, HOURS))
@@ -1596,6 +1740,7 @@ public abstract class BaseTest {
     public final static Long TABLE_1_ID = 1L;
     public final static String TABLE_1_NAME = "Weather AUS";
     public final static String TABLE_1_INTERNALNAME = "weather_aus";
+    public final static Boolean TABLE_1_VERSIONED = true;
     public final static String TABLE_1_DESCRIPTION = "Weather in the world";
     public final static String TABLE_1_QUEUE_NAME = DATABASE_1_EXCHANGE + "." + TABLE_1_INTERNALNAME;
     public final static String TABLE_1_ROUTING_KEY = TABLE_1_QUEUE_NAME;
@@ -1604,9 +1749,50 @@ public abstract class BaseTest {
     public final static Instant TABLE_1_CREATED = Instant.ofEpochSecond(1677399975) /* 2023-02-26 08:26:15 (UTC) */;
     public final static Instant TABLE_1_LAST_MODIFIED = Instant.ofEpochSecond(1677399975) /* 2023-02-26 08:26:15 (UTC) */;
 
+    public final static Table TABLE_1 = Table.builder()
+            .id(TABLE_1_ID)
+            .tdbid(DATABASE_1_ID)
+            .database(DATABASE_1)
+            .created(Instant.now())
+            .internalName(TABLE_1_INTERNALNAME)
+            .isVersioned(TABLE_1_VERSIONED)
+            .description(TABLE_1_DESCRIPTION)
+            .name(TABLE_1_NAME)
+            .lastModified(TABLE_1_LAST_MODIFIED)
+            .queueName(TABLE_1_QUEUE_NAME)
+            .routingKey(TABLE_1_ROUTING_KEY)
+            .columns(List.of() /* needs to be set in the junit tests */)
+            .constraints(null /* TABLE_1_CONSTRAINTS */)
+            .creator(USER_1)
+            .owner(USER_1)
+            .created(TABLE_1_CREATED)
+            .lastModified(TABLE_1_LAST_MODIFIED)
+            .build();
+
+    public final static Table TABLE_1_SIMPLE = Table.builder()
+            .id(TABLE_1_ID)
+            .tdbid(DATABASE_1_ID)
+            .database(null /* for jpa */)
+            .created(Instant.now())
+            .internalName(TABLE_1_INTERNALNAME)
+            .isVersioned(TABLE_1_VERSIONED)
+            .description(TABLE_1_DESCRIPTION)
+            .name(TABLE_1_NAME)
+            .lastModified(TABLE_1_LAST_MODIFIED)
+            .queueName(TABLE_1_QUEUE_NAME)
+            .routingKey(TABLE_1_ROUTING_KEY)
+            .columns(List.of() /* needs to be set in the junit tests */)
+            .constraints(null /* TABLE_1_CONSTRAINTS */)
+            .creator(USER_1)
+            .owner(USER_1)
+            .created(TABLE_1_CREATED)
+            .lastModified(TABLE_1_LAST_MODIFIED)
+            .build();
+
     public final static Long TABLE_2_ID = 2L;
     public final static String TABLE_2_NAME = "Weather Location";
     public final static String TABLE_2_INTERNALNAME = "weather_location";
+    public final static Boolean TABLE_2_VERSIONED = true;
     public final static String TABLE_2_DESCRIPTION = "Weather location";
     public final static String TABLE_2_QUEUE_NAME = DATABASE_1_EXCHANGE + "." + TABLE_2_INTERNALNAME;
     public final static String TABLE_2_ROUTING_KEY = TABLE_2_QUEUE_NAME;
@@ -1615,9 +1801,50 @@ public abstract class BaseTest {
     public final static Instant TABLE_2_CREATED = Instant.ofEpochSecond(1677400007) /* 2023-02-26 08:26:47 (UTC) */;
     public final static Instant TABLE_2_LAST_MODIFIED = Instant.ofEpochSecond(1677400007) /* 2023-02-26 08:26:47 (UTC) */;
 
+    public final static Table TABLE_2 = Table.builder()
+            .id(TABLE_2_ID)
+            .tdbid(DATABASE_1_ID)
+            .database(DATABASE_1)
+            .created(Instant.now())
+            .internalName(TABLE_2_INTERNALNAME)
+            .isVersioned(TABLE_2_VERSIONED)
+            .description(TABLE_2_DESCRIPTION)
+            .name(TABLE_2_NAME)
+            .lastModified(TABLE_2_LAST_MODIFIED)
+            .queueName(TABLE_2_QUEUE_NAME)
+            .routingKey(TABLE_2_ROUTING_KEY)
+            .columns(List.of() /* needs to be set in the junit tests */)
+            .constraints(null /* TABLE_2_CONSTRAINTS */)
+            .creator(USER_1)
+            .owner(USER_1)
+            .created(TABLE_2_CREATED)
+            .lastModified(TABLE_2_LAST_MODIFIED)
+            .build();
+
+    public final static Table TABLE_2_SIMPLE = Table.builder()
+            .id(TABLE_2_ID)
+            .tdbid(DATABASE_1_ID)
+            .database(null /* for jpa */)
+            .created(Instant.now())
+            .internalName(TABLE_2_INTERNALNAME)
+            .isVersioned(TABLE_2_VERSIONED)
+            .description(TABLE_2_DESCRIPTION)
+            .name(TABLE_2_NAME)
+            .lastModified(TABLE_2_LAST_MODIFIED)
+            .queueName(TABLE_2_QUEUE_NAME)
+            .routingKey(TABLE_2_ROUTING_KEY)
+            .columns(List.of() /* for jpa */)
+            .constraints(null /* TABLE_2_CONSTRAINTS */)
+            .creator(USER_1)
+            .owner(USER_1)
+            .created(TABLE_2_CREATED)
+            .lastModified(TABLE_2_LAST_MODIFIED)
+            .build();
+
     public final static Long TABLE_3_ID = 3L;
     public final static String TABLE_3_NAME = "Traffic Zürich";
-    public final static String TABLE_3_INTERNALNAME = "traffic_zurich";
+    public final static String TABLE_3_INTERNALNAME = "traffic_zu_rich";
+    public final static Boolean TABLE_3_VERSIONED = true;
     public final static String TABLE_3_DESCRIPTION = "https://www.kaggle.com/laa283/zurich-public-transport/version/2";
     public final static String TABLE_3_QUEUE_NAME = DATABASE_1_EXCHANGE + "." + TABLE_3_INTERNALNAME;
     public final static String TABLE_3_ROUTING_KEY = TABLE_3_QUEUE_NAME;
@@ -1625,6 +1852,46 @@ public abstract class BaseTest {
     public final static Long TABLE_3_DATABASE_ID = DATABASE_1_ID;
     public final static Instant TABLE_3_CREATED = Instant.ofEpochSecond(1677400031) /* 2023-02-26 08:27:11 (UTC) */;
     public final static Instant TABLE_3_LAST_MODIFIED = Instant.ofEpochSecond(1677400031) /* 2023-02-26 08:27:11 (UTC) */;
+
+    public final static Table TABLE_3 = Table.builder()
+            .id(TABLE_3_ID)
+            .tdbid(DATABASE_1_ID)
+            .database(DATABASE_1)
+            .created(Instant.now())
+            .internalName(TABLE_3_INTERNALNAME)
+            .isVersioned(TABLE_3_VERSIONED)
+            .description(TABLE_3_DESCRIPTION)
+            .name(TABLE_3_NAME)
+            .lastModified(TABLE_3_LAST_MODIFIED)
+            .queueName(TABLE_3_QUEUE_NAME)
+            .routingKey(TABLE_3_ROUTING_KEY)
+            .columns(List.of() /* needs to be set in the junit tests */)
+            .constraints(null /* TABLE_3_CONSTRAINTS */)
+            .creator(USER_1)
+            .owner(USER_1)
+            .created(TABLE_3_CREATED)
+            .lastModified(TABLE_3_LAST_MODIFIED)
+            .build();
+
+    public final static Table TABLE_3_SIMPLE = Table.builder()
+            .id(TABLE_3_ID)
+            .tdbid(DATABASE_1_ID)
+            .database(null /* for jpa */)
+            .created(Instant.now())
+            .internalName(TABLE_3_INTERNALNAME)
+            .isVersioned(TABLE_3_VERSIONED)
+            .description(TABLE_3_DESCRIPTION)
+            .name(TABLE_3_NAME)
+            .lastModified(TABLE_3_LAST_MODIFIED)
+            .queueName(TABLE_3_QUEUE_NAME)
+            .routingKey(TABLE_3_ROUTING_KEY)
+            .columns(List.of() /* for jpa */)
+            .constraints(null /* TABLE_3_CONSTRAINTS */)
+            .creator(USER_1)
+            .owner(USER_1)
+            .created(TABLE_3_CREATED)
+            .lastModified(TABLE_3_LAST_MODIFIED)
+            .build();
 
     public final static ConstraintsCreateDto TABLE_3_CONSTRAINTS_CREATE_DTO = ConstraintsCreateDto.builder()
             .uniques(List.of(List.of("id")))
@@ -1655,11 +1922,48 @@ public abstract class BaseTest {
     public final static Long TABLE_4_ID = 4L;
     public final static String TABLE_4_NAME = "zoo";
     public final static String TABLE_4_INTERNALNAME = "zoo";
+    public final static Boolean TABLE_4_VERSIONED = true;
     public final static String TABLE_4_DESCRIPTION = "Some Kaggle dataset";
     public final static String TABLE_4_QUEUE_NAME = DATABASE_2_EXCHANGE + "." + TABLE_4_INTERNALNAME;
     public final static String TABLE_4_ROUTING_KEY = TABLE_4_QUEUE_NAME;
     public final static Instant TABLE_4_CREATED = Instant.ofEpochSecond(1677400067) /* 2023-02-26 08:27:47 (UTC) */;
     public final static Instant TABLE_4_LAST_MODIFIED = Instant.ofEpochSecond(1677400067) /* 2023-02-26 08:27:47 (UTC) */;
+
+    public final static Table TABLE_4 = Table.builder()
+            .id(TABLE_4_ID)
+            .tdbid(DATABASE_2_ID)
+            .database(DATABASE_2)
+            .created(Instant.now())
+            .internalName(TABLE_4_INTERNALNAME)
+            .isVersioned(TABLE_4_VERSIONED)
+            .description(TABLE_4_DESCRIPTION)
+            .name(TABLE_4_NAME)
+            .lastModified(TABLE_4_LAST_MODIFIED)
+            .queueName(TABLE_4_QUEUE_NAME)
+            .routingKey(TABLE_4_ROUTING_KEY)
+            .columns(List.of() /* needs to be set in the junit tests */)
+            .constraints(null) /* TABLE_4_CONSTRAINTS */
+            .creator(USER_1)
+            .owner(USER_1)
+            .build();
+
+    public final static Table TABLE_4_SIMPLE = Table.builder()
+            .id(TABLE_4_ID)
+            .tdbid(DATABASE_2_ID)
+            .database(null /* for jpa */)
+            .created(Instant.now())
+            .internalName(TABLE_4_INTERNALNAME)
+            .isVersioned(TABLE_4_VERSIONED)
+            .description(TABLE_4_DESCRIPTION)
+            .name(TABLE_4_NAME)
+            .lastModified(TABLE_4_LAST_MODIFIED)
+            .queueName(TABLE_4_QUEUE_NAME)
+            .routingKey(TABLE_4_ROUTING_KEY)
+            .columns(List.of() /* for jpa */)
+            .constraints(null /* for jpa */)
+            .creator(USER_1)
+            .owner(USER_1)
+            .build();
 
     public final static TableCsvDto TABLE_4_CSV_DTO = TableCsvDto.builder()
             .data(new HashMap<>() {{
@@ -1670,70 +1974,124 @@ public abstract class BaseTest {
     public final static Long TABLE_5_ID = 5L;
     public final static String TABLE_5_NAME = "names";
     public final static String TABLE_5_INTERNALNAME = "names";
+    public final static Boolean TABLE_5_VERSIONED = true;
     public final static String TABLE_5_DESCRIPTION = "Some names dataset";
     public final static String TABLE_5_QUEUE_NAME = DATABASE_2_EXCHANGE + "." + TABLE_5_INTERNALNAME;
     public final static String TABLE_5_ROUTING_KEY = TABLE_5_QUEUE_NAME;
     public final static Instant TABLE_5_CREATED = Instant.ofEpochSecond(1677400117) /* 2023-02-26 08:28:37 (UTC) */;
     public final static Instant TABLE_5_LAST_MODIFIED = Instant.ofEpochSecond(1677400117) /* 2023-02-26 08:28:37 (UTC) */;
 
+    public final static Table TABLE_5 = Table.builder()
+            .id(TABLE_5_ID)
+            .tdbid(DATABASE_2_ID)
+            .database(DATABASE_2)
+            .created(Instant.now())
+            .internalName(TABLE_5_INTERNALNAME)
+            .isVersioned(TABLE_5_VERSIONED)
+            .description(TABLE_5_DESCRIPTION)
+            .name(TABLE_5_NAME)
+            .lastModified(TABLE_5_LAST_MODIFIED)
+            .queueName(TABLE_5_QUEUE_NAME)
+            .routingKey(TABLE_5_ROUTING_KEY)
+            .columns(List.of() /* needs to be set in the junit tests */)
+            .constraints(null) /* TABLE_5_CONSTRAINTS */
+            .creator(USER_1)
+            .owner(USER_1)
+            .created(TABLE_5_CREATED)
+            .lastModified(TABLE_5_LAST_MODIFIED)
+            .build();
+
+    public final static Table TABLE_5_SIMPLE = Table.builder()
+            .id(TABLE_5_ID)
+            .tdbid(DATABASE_2_ID)
+            .database(null /* for jpa */)
+            .created(Instant.now())
+            .internalName(TABLE_5_INTERNALNAME)
+            .isVersioned(TABLE_5_VERSIONED)
+            .description(TABLE_5_DESCRIPTION)
+            .name(TABLE_5_NAME)
+            .lastModified(TABLE_5_LAST_MODIFIED)
+            .queueName(TABLE_5_QUEUE_NAME)
+            .routingKey(TABLE_5_ROUTING_KEY)
+            .columns(List.of() /* for jpa */)
+            .constraints(null /* for jpa */)
+            .creator(USER_1)
+            .owner(USER_1)
+            .created(TABLE_5_CREATED)
+            .lastModified(TABLE_5_LAST_MODIFIED)
+            .build();
+
     public final static Long TABLE_6_ID = 6L;
     public final static String TABLE_6_NAME = "likes";
     public final static String TABLE_6_INTERNAL_NAME = "likes";
+    public final static Boolean TABLE_6_VERSIONED = true;
     public final static String TABLE_6_DESCRIPTION = "Some likes dataset";
     public final static String TABLE_6_QUEUE_NAME = DATABASE_2_EXCHANGE + "." + TABLE_6_INTERNAL_NAME;
     public final static String TABLE_6_ROUTING_KEY = TABLE_6_QUEUE_NAME;
     public final static Instant TABLE_6_CREATED = Instant.ofEpochSecond(1677400147) /* 2023-02-26 08:29:07 (UTC) */;
     public final static Instant TABLE_6_LAST_MODIFIED = Instant.ofEpochSecond(1677400147) /* 2023-02-26 08:29:07 (UTC) */;
 
-    public final static Long TABLE_7_ID = 4L;
+    public final static Table TABLE_6 = Table.builder()
+            .id(TABLE_6_ID)
+            .tdbid(DATABASE_2_ID)
+            .database(DATABASE_2)
+            .created(Instant.now())
+            .internalName(TABLE_6_INTERNAL_NAME)
+            .isVersioned(TABLE_6_VERSIONED)
+            .description(TABLE_6_DESCRIPTION)
+            .name(TABLE_6_NAME)
+            .lastModified(TABLE_6_LAST_MODIFIED)
+            .queueName(TABLE_6_QUEUE_NAME)
+            .routingKey(TABLE_6_ROUTING_KEY)
+            .columns(List.of() /* needs to be set in the junit tests */)
+            .constraints(null) /* TABLE_6_CONSTRAINTS */
+            .creator(USER_1)
+            .owner(USER_1)
+            .created(TABLE_6_CREATED)
+            .lastModified(TABLE_6_LAST_MODIFIED)
+            .build();
+
+    public final static Table TABLE_6_SIMPLE = Table.builder()
+            .id(TABLE_6_ID)
+            .tdbid(DATABASE_2_ID)
+            .database(null /* for jpa */)
+            .created(Instant.now())
+            .internalName(TABLE_6_INTERNAL_NAME)
+            .isVersioned(TABLE_6_VERSIONED)
+            .description(TABLE_6_DESCRIPTION)
+            .name(TABLE_6_NAME)
+            .lastModified(TABLE_6_LAST_MODIFIED)
+            .queueName(TABLE_6_QUEUE_NAME)
+            .routingKey(TABLE_6_ROUTING_KEY)
+            .columns(List.of() /* for jpa */)
+            .creator(USER_1)
+            .owner(USER_1)
+            .created(TABLE_6_CREATED)
+            .lastModified(TABLE_6_LAST_MODIFIED)
+            .build();
+
+    public final static Long TABLE_7_ID = 7L;
     public final static String TABLE_7_NAME = "Sensor";
     public final static String TABLE_7_INTERNAL_NAME = "sensor";
+    public final static Boolean TABLE_7_VERSIONED = true;
     public final static String TABLE_7_DESCRIPTION = "Hello sensor";
     public final static String TABLE_7_QUEUE_NAME = DATABASE_1_EXCHANGE + "." + TABLE_7_INTERNAL_NAME;
     public final static String TABLE_7_ROUTING_KEY = TABLE_7_QUEUE_NAME;
     public final static Instant TABLE_7_CREATED = Instant.ofEpochSecond(1677400175) /* 2023-02-26 08:29:35 (UTC) */;
     public final static Instant TABLE_7_LAST_MODIFIED = Instant.ofEpochSecond(1677400175) /* 2023-02-26 08:29:35 (UTC) */;
 
-    public final static List<TableColumn> TABLE_7_COLUMNS = List.of(TableColumn.builder()
-                    .id(44L)
-                    .ordinalPosition(0)
-                    .cdbid(DATABASE_1_ID)
-                    .tid(TABLE_7_ID)
-                    .name("Timestamp")
-                    .internalName("timestamp")
-                    .columnType(TableColumnType.TIMESTAMP)
-                    .dfid(IMAGE_DATE_3_ID)
-                    .isNullAllowed(false)
-                    .autoGenerated(false)
-                    .isPrimaryKey(true)
-                    .creator(USER_1)
-                    .build(),
-            TableColumn.builder()
-                    .id(45L)
-                    .ordinalPosition(1)
-                    .cdbid(DATABASE_1_ID)
-                    .tid(TABLE_7_ID)
-                    .name("Value")
-                    .internalName("value")
-                    .columnType(TableColumnType.DECIMAL)
-                    .dfid(null)
-                    .isNullAllowed(true)
-                    .autoGenerated(false)
-                    .isPrimaryKey(false)
-                    .creator(USER_1)
-                    .build());
-
     public final static Table TABLE_7 = Table.builder()
             .id(TABLE_7_ID)
+            .tdbid(DATABASE_1_ID)
+            .database(DATABASE_1)
             .created(Instant.now())
             .internalName(TABLE_7_INTERNAL_NAME)
             .description(TABLE_7_DESCRIPTION)
             .database(DATABASE_1)
             .name(TABLE_7_NAME)
-            .tdbid(DATABASE_1_ID)
             .queueName(TABLE_7_QUEUE_NAME)
             .routingKey(TABLE_7_ROUTING_KEY)
-            .columns(TABLE_7_COLUMNS)
+            .columns(List.of() /* needs to be set in the junit tests */)
             .creator(USER_1)
             .owner(USER_1)
             .created(TABLE_7_CREATED)
@@ -1742,12 +2100,13 @@ public abstract class BaseTest {
 
     public final static Table TABLE_7_SIMPLE = Table.builder()
             .id(TABLE_7_ID)
+            .tdbid(DATABASE_1_ID)
+            .database(null /* for jpa */)
             .created(Instant.now())
             .internalName(TABLE_7_INTERNAL_NAME)
             .description(TABLE_7_DESCRIPTION)
             .database(DATABASE_1_SIMPLE)
             .name(TABLE_7_NAME)
-            .tdbid(DATABASE_1_ID)
             .queueName(TABLE_7_QUEUE_NAME)
             .routingKey(TABLE_7_ROUTING_KEY)
             .columns(List.of() /* for jpa */)
@@ -1757,14 +2116,114 @@ public abstract class BaseTest {
             .lastModified(TABLE_7_LAST_MODIFIED)
             .build();
 
+    public final static List<TableColumn> TABLE_7_COLUMNS = List.of(TableColumn.builder()
+                    .id(44L)
+                    .ordinalPosition(0)
+                    .table(TABLE_7)
+                    .name("Timestamp")
+                    .internalName("timestamp")
+                    .columnType(TableColumnType.TIMESTAMP)
+                    .isNullAllowed(false)
+                    .autoGenerated(false)
+                    .isPrimaryKey(true)
+                    .build(),
+            TableColumn.builder()
+                    .id(45L)
+                    .ordinalPosition(1)
+                    .table(TABLE_7)
+                    .name("Value")
+                    .internalName("value")
+                    .columnType(TableColumnType.DECIMAL)
+                    .isNullAllowed(true)
+                    .autoGenerated(false)
+                    .isPrimaryKey(false)
+                    .build());
+
+    public final static List<ColumnDto> TABLE_7_COLUMNS_DTO = List.of(ColumnDto.builder()
+                    .id(44L)
+                    .databaseId(DATABASE_1_ID)
+                    .tableId(TABLE_7_ID)
+                    .name("Timestamp")
+                    .internalName("timestamp")
+                    .columnType(ColumnTypeDto.TIMESTAMP)
+                    .dateFormat(IMAGE_DATE_3_DTO)
+                    .isNullAllowed(false)
+                    .autoGenerated(false)
+                    .isPrimaryKey(true)
+                    .build(),
+            ColumnDto.builder()
+                    .id(45L)
+                    .databaseId(DATABASE_1_ID)
+                    .tableId(TABLE_7_ID)
+                    .name("Value")
+                    .internalName("value")
+                    .columnType(ColumnTypeDto.DECIMAL)
+                    .dateFormat(null)
+                    .isNullAllowed(true)
+                    .autoGenerated(false)
+                    .isPrimaryKey(false)
+                    .build());
+
+    public final static TableDto TABLE_7_DTO = TableDto.builder()
+            .id(TABLE_7_ID)
+            .created(Instant.now())
+            .internalName(TABLE_7_INTERNAL_NAME)
+            .description(TABLE_7_DESCRIPTION)
+            .database(DATABASE_1_DTO)
+            .name(TABLE_7_NAME)
+            .queueName(TABLE_7_QUEUE_NAME)
+            .routingKey(TABLE_7_ROUTING_KEY)
+            .columns(TABLE_7_COLUMNS_DTO)
+            .creator(USER_1_DTO)
+            .owner(USER_1_DTO)
+            .created(TABLE_7_CREATED)
+            .build();
+
     public final static Long TABLE_8_ID = 8L;
     public final static String TABLE_8_NAME = "mfcc";
     public final static String TABLE_8_INTERNAL_NAME = "mfcc";
+    public final static Boolean TABLE_8_VERSIONED = true;
     public final static String TABLE_8_DESCRIPTION = "Hello mfcc";
     public final static String TABLE_8_QUEUE_NAME = DATABASE_3_EXCHANGE + "." + TABLE_8_INTERNAL_NAME;
     public final static String TABLE_8_ROUTING_KEY = TABLE_8_QUEUE_NAME;
     public final static Instant TABLE_8_CREATED = Instant.ofEpochSecond(1688400185) /* 2023-02-26 08:29:35 (UTC) */;
     public final static Instant TABLE_8_LAST_MODIFIED = Instant.ofEpochSecond(1688400185) /* 2023-02-26 08:29:35 (UTC) */;
+
+    public final static Table TABLE_8 = Table.builder()
+            .id(TABLE_8_ID)
+            .tdbid(DATABASE_1_ID)
+            .database(DATABASE_1)
+            .created(Instant.now())
+            .internalName(TABLE_8_INTERNAL_NAME)
+            .description(TABLE_8_DESCRIPTION)
+            .database(DATABASE_1)
+            .name(TABLE_8_NAME)
+            .queueName(TABLE_8_QUEUE_NAME)
+            .routingKey(TABLE_8_ROUTING_KEY)
+            .columns(List.of() /* needs to be set in the junit tests */)
+            .creator(USER_1)
+            .owner(USER_1)
+            .created(TABLE_8_CREATED)
+            .lastModified(TABLE_8_LAST_MODIFIED)
+            .build();
+
+    public final static Table TABLE_8_SIMPLE = Table.builder()
+            .id(TABLE_8_ID)
+            .tdbid(DATABASE_1_ID)
+            .database(null /* for jpa */)
+            .created(Instant.now())
+            .internalName(TABLE_8_INTERNAL_NAME)
+            .description(TABLE_8_DESCRIPTION)
+            .database(DATABASE_1_SIMPLE)
+            .name(TABLE_8_NAME)
+            .queueName(TABLE_8_QUEUE_NAME)
+            .routingKey(TABLE_8_ROUTING_KEY)
+            .columns(List.of() /* for jpa */)
+            .creator(USER_1)
+            .owner(USER_1)
+            .created(TABLE_8_CREATED)
+            .lastModified(TABLE_8_LAST_MODIFIED)
+            .build();
 
     public final static TableCsvDto TABLE_8_CSV_DTO = TableCsvDto.builder()
             .data(new HashMap<>() {{
@@ -1986,7 +2445,8 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_1_1_PRIMARY = true;
     public final static String COLUMN_1_1_NAME = "id";
     public final static String COLUMN_1_1_INTERNAL_NAME = "id";
-    public final static TableColumnType COLUMN_1_1_TYPE = TableColumnType.NUMBER;
+    public final static TableColumnType COLUMN_1_1_TYPE = TableColumnType.BIGINT;
+    public final static ColumnTypeDto COLUMN_1_1_TYPE_DTO = ColumnTypeDto.BIGINT;
     public final static Long COLUMN_1_1_DATE_FORMAT = null;
     public final static Boolean COLUMN_1_1_NULL = false;
     public final static Boolean COLUMN_1_1_UNIQUE = true;
@@ -1994,6 +2454,9 @@ public abstract class BaseTest {
     public final static String COLUMN_1_1_FOREIGN_KEY = null;
     public final static String COLUMN_1_1_CHECK = null;
     public final static List<String> COLUMN_1_1_ENUM_VALUES = null;
+    public final static List<String> COLUMN_1_1_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_1_1_SET_VALUES = null;
+    public final static List<String> COLUMN_1_1_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_1_2_ID = 2L;
     public final static Integer COLUMN_1_2_ORDINALPOS = 1;
@@ -2001,20 +2464,26 @@ public abstract class BaseTest {
     public final static String COLUMN_1_2_NAME = "Date";
     public final static String COLUMN_1_2_INTERNAL_NAME = "date";
     public final static TableColumnType COLUMN_1_2_TYPE = TableColumnType.DATE;
+    public final static ColumnTypeDto COLUMN_1_2_TYPE_DTO = ColumnTypeDto.DATE;
     public final static Long COLUMN_1_2_DATE_FORMAT = IMAGE_DATE_1_ID;
+    public final static ContainerImageDate COLUMN_1_2_DATE = IMAGE_DATE_1;
     public final static Boolean COLUMN_1_2_NULL = true;
     public final static Boolean COLUMN_1_2_UNIQUE = false;
     public final static Boolean COLUMN_1_2_AUTO_GENERATED = false;
     public final static String COLUMN_1_2_FOREIGN_KEY = null;
     public final static String COLUMN_1_2_CHECK = null;
     public final static List<String> COLUMN_1_2_ENUM_VALUES = null;
+    public final static List<String> COLUMN_1_2_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_1_2_SET_VALUES = null;
+    public final static List<String> COLUMN_1_2_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_1_3_ID = 3L;
     public final static Integer COLUMN_1_3_ORDINALPOS = 2;
     public final static Boolean COLUMN_1_3_PRIMARY = false;
     public final static String COLUMN_1_3_NAME = "Location";
     public final static String COLUMN_1_3_INTERNAL_NAME = "location";
-    public final static TableColumnType COLUMN_1_3_TYPE = TableColumnType.STRING;
+    public final static TableColumnType COLUMN_1_3_TYPE = TableColumnType.VARCHAR;
+    public final static ColumnTypeDto COLUMN_1_3_TYPE_DTO = ColumnTypeDto.VARCHAR;
     public final static Long COLUMN_1_3_DATE_FORMAT = null;
     public final static Boolean COLUMN_1_3_NULL = true;
     public final static Boolean COLUMN_1_3_UNIQUE = false;
@@ -2022,6 +2491,9 @@ public abstract class BaseTest {
     public final static String COLUMN_1_3_FOREIGN_KEY = null;
     public final static String COLUMN_1_3_CHECK = null;
     public final static List<String> COLUMN_1_3_ENUM_VALUES = null;
+    public final static List<String> COLUMN_1_3_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_1_3_SET_VALUES = null;
+    public final static List<String> COLUMN_1_3_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_1_4_ID = 4L;
     public final static Integer COLUMN_1_4_ORDINALPOS = 3;
@@ -2029,6 +2501,7 @@ public abstract class BaseTest {
     public final static String COLUMN_1_4_NAME = "MinTemp";
     public final static String COLUMN_1_4_INTERNAL_NAME = "mintemp";
     public final static TableColumnType COLUMN_1_4_TYPE = TableColumnType.DECIMAL;
+    public final static ColumnTypeDto COLUMN_1_4_TYPE_DTO = ColumnTypeDto.DECIMAL;
     public final static Long COLUMN_1_4_DATE_FORMAT = null;
     public final static Boolean COLUMN_1_4_NULL = true;
     public final static Boolean COLUMN_1_4_UNIQUE = false;
@@ -2036,6 +2509,9 @@ public abstract class BaseTest {
     public final static String COLUMN_1_4_FOREIGN_KEY = null;
     public final static String COLUMN_1_4_CHECK = null;
     public final static List<String> COLUMN_1_4_ENUM_VALUES = null;
+    public final static List<String> COLUMN_1_4_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_1_4_SET_VALUES = null;
+    public final static List<String> COLUMN_1_4_SET_VALUES_DTO = null;
 
     public final static ColumnSemanticsUpdateDto COLUMN_1_4_SEMANTICS_UPDATE_DTO = ColumnSemanticsUpdateDto.builder()
             .conceptUri(COLUMN_CONCEPT_TEMPERATURE_URI)
@@ -2045,16 +2521,15 @@ public abstract class BaseTest {
     public final static TableColumn COLUMN_1_4_WITH_SEMANTICS = TableColumn.builder()
             .id(COLUMN_1_4_ID)
             .ordinalPosition(COLUMN_1_4_ORDINALPOS)
-            .cdbid(DATABASE_1_ID)
-            .tid(TABLE_1_ID)
+            .table(TABLE_1)
             .name(COLUMN_1_4_NAME)
             .internalName(COLUMN_1_4_INTERNAL_NAME)
             .columnType(COLUMN_1_4_TYPE)
-            .dfid(COLUMN_1_4_DATE_FORMAT)
             .isNullAllowed(COLUMN_1_4_NULL)
             .autoGenerated(COLUMN_1_4_AUTO_GENERATED)
             .isPrimaryKey(COLUMN_1_4_PRIMARY)
-            .enumValues(COLUMN_1_4_ENUM_VALUES)
+            .enums(COLUMN_1_4_ENUM_VALUES)
+            .sets(COLUMN_1_4_SET_VALUES)
             .concept(COLUMN_CONCEPT_TEMPERATURE)
             .unit(UNIT_1)
             .build();
@@ -2065,6 +2540,7 @@ public abstract class BaseTest {
     public final static String COLUMN_1_5_NAME = "Rainfall";
     public final static String COLUMN_1_5_INTERNAL_NAME = "rainfall";
     public final static TableColumnType COLUMN_1_5_TYPE = TableColumnType.DECIMAL;
+    public final static ColumnTypeDto COLUMN_1_5_TYPE_DTO = ColumnTypeDto.DECIMAL;
     public final static Long COLUMN_1_5_DATE_FORMAT = null;
     public final static Boolean COLUMN_1_5_NULL = true;
     public final static Boolean COLUMN_1_5_UNIQUE = false;
@@ -2072,13 +2548,17 @@ public abstract class BaseTest {
     public final static String COLUMN_1_5_FOREIGN_KEY = null;
     public final static String COLUMN_1_5_CHECK = null;
     public final static List<String> COLUMN_1_5_ENUM_VALUES = null;
+    public final static List<String> COLUMN_1_5_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_1_5_SET_VALUES = null;
+    public final static List<String> COLUMN_1_5_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_2_1_ID = 6L;
     public final static Integer COLUMN_2_1_ORDINALPOS = 0;
     public final static Boolean COLUMN_2_1_PRIMARY = true;
     public final static String COLUMN_2_1_NAME = "location";
     public final static String COLUMN_2_1_INTERNAL_NAME = "location";
-    public final static TableColumnType COLUMN_2_1_TYPE = TableColumnType.STRING;
+    public final static TableColumnType COLUMN_2_1_TYPE = TableColumnType.VARCHAR;
+    public final static ColumnTypeDto COLUMN_2_1_TYPE_DTO = ColumnTypeDto.VARCHAR;
     public final static Long COLUMN_2_1_DATE_FORMAT = null;
     public final static Boolean COLUMN_2_1_NULL = false;
     public final static Boolean COLUMN_2_1_UNIQUE = true;
@@ -2086,6 +2566,9 @@ public abstract class BaseTest {
     public final static String COLUMN_2_1_FOREIGN_KEY = null;
     public final static String COLUMN_2_1_CHECK = null;
     public final static List<String> COLUMN_2_1_ENUM_VALUES = null;
+    public final static List<String> COLUMN_2_1_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_2_1_SET_VALUES = null;
+    public final static List<String> COLUMN_2_1_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_2_2_ID = 7L;
     public final static Integer COLUMN_2_2_ORDINALPOS = 0;
@@ -2093,6 +2576,7 @@ public abstract class BaseTest {
     public final static String COLUMN_2_2_NAME = "lat";
     public final static String COLUMN_2_2_INTERNAL_NAME = "lat";
     public final static TableColumnType COLUMN_2_2_TYPE = TableColumnType.DECIMAL;
+    public final static ColumnTypeDto COLUMN_2_2_TYPE_DTO = ColumnTypeDto.DECIMAL;
     public final static Long COLUMN_2_2_DATE_FORMAT = null;
     public final static Boolean COLUMN_2_2_NULL = true;
     public final static Boolean COLUMN_2_2_UNIQUE = false;
@@ -2100,6 +2584,9 @@ public abstract class BaseTest {
     public final static String COLUMN_2_2_FOREIGN_KEY = null;
     public final static String COLUMN_2_2_CHECK = null;
     public final static List<String> COLUMN_2_2_ENUM_VALUES = null;
+    public final static List<String> COLUMN_2_2_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_2_2_SET_VALUES = null;
+    public final static List<String> COLUMN_2_2_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_2_3_ID = 8L;
     public final static Integer COLUMN_2_3_ORDINALPOS = 0;
@@ -2107,6 +2594,7 @@ public abstract class BaseTest {
     public final static String COLUMN_2_3_NAME = "lng";
     public final static String COLUMN_2_3_INTERNAL_NAME = "lng";
     public final static TableColumnType COLUMN_2_3_TYPE = TableColumnType.DECIMAL;
+    public final static ColumnTypeDto COLUMN_2_3_TYPE_DTO = ColumnTypeDto.DECIMAL;
     public final static Long COLUMN_2_3_DATE_FORMAT = null;
     public final static Boolean COLUMN_2_3_NULL = true;
     public final static Boolean COLUMN_2_3_UNIQUE = false;
@@ -2114,248 +2602,349 @@ public abstract class BaseTest {
     public final static String COLUMN_2_3_FOREIGN_KEY = null;
     public final static String COLUMN_2_3_CHECK = null;
     public final static List<String> COLUMN_2_3_ENUM_VALUES = null;
+    public final static List<String> COLUMN_2_3_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_2_3_SET_VALUES = null;
+    public final static List<String> COLUMN_2_3_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_4_1_ID = 44L;
     public final static Integer COLUMN_4_1_ORDINALPOS = 0;
     public final static Boolean COLUMN_4_1_PRIMARY = true;
     public final static String COLUMN_4_1_NAME = "id";
     public final static String COLUMN_4_1_INTERNAL_NAME = "id";
-    public final static TableColumnType COLUMN_4_1_TYPE = TableColumnType.NUMBER;
+    public final static TableColumnType COLUMN_4_1_TYPE = TableColumnType.BIGINT;
+    public final static ColumnTypeDto COLUMN_4_1_TYPE_DTO = ColumnTypeDto.BIGINT;
     public final static Long COLUMN_4_1_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_1_NULL = false;
     public final static Boolean COLUMN_4_1_UNIQUE = true;
     public final static Boolean COLUMN_4_1_AUTO_GENERATED = true;
     public final static String COLUMN_4_1_FOREIGN_KEY = null;
     public final static String COLUMN_4_1_CHECK = null;
+    public final static List<String> COLUMN_4_1_ENUM_VALUES_ARR = List.of();
+    public final static List<String> COLUMN_4_1_SET_VALUES_ARR = List.of();
     public final static List<String> COLUMN_4_1_ENUM_VALUES = null;
-    public final static ColumnTypeDto COLUMN_4_1_TYPE_DTO = ColumnTypeDto.NUMBER;
-    public final static String[] COLUMN_4_1_ENUM_VALUES_ARRAY = null;
+    public final static List<String> COLUMN_4_1_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_1_SET_VALUES = null;
+    public final static List<String> COLUMN_4_1_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_4_2_ID = 45L;
     public final static Integer COLUMN_4_2_ORDINALPOS = 1;
     public final static Boolean COLUMN_4_2_PRIMARY = false;
     public final static String COLUMN_4_2_NAME = "Animal Name";
     public final static String COLUMN_4_2_INTERNAL_NAME = "animal_name";
-    public final static TableColumnType COLUMN_4_2_TYPE = TableColumnType.STRING;
+    public final static TableColumnType COLUMN_4_2_TYPE = TableColumnType.VARCHAR;
+    public final static ColumnTypeDto COLUMN_4_2_TYPE_DTO = ColumnTypeDto.VARCHAR;
     public final static Long COLUMN_4_2_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_2_NULL = true;
     public final static Boolean COLUMN_4_2_UNIQUE = false;
     public final static Boolean COLUMN_4_2_AUTO_GENERATED = false;
     public final static String COLUMN_4_2_FOREIGN_KEY = null;
     public final static String COLUMN_4_2_CHECK = null;
+    public final static List<String> COLUMN_4_2_ENUM_VALUES_ARR = List.of();
+    public final static List<String> COLUMN_4_2_SET_VALUES_ARR = List.of();
     public final static List<String> COLUMN_4_2_ENUM_VALUES = null;
-    public final static ColumnTypeDto COLUMN_4_2_TYPE_DTO = ColumnTypeDto.STRING;
-    public final static String[] COLUMN_4_2_ENUM_VALUES_ARRAY = null;
+    public final static List<String> COLUMN_4_2_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_2_SET_VALUES = null;
+    public final static List<String> COLUMN_4_2_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_4_3_ID = 46L;
     public final static Integer COLUMN_4_3_ORDINALPOS = 2;
     public final static Boolean COLUMN_4_3_PRIMARY = false;
     public final static String COLUMN_4_3_NAME = "Hair";
     public final static String COLUMN_4_3_INTERNAL_NAME = "hair";
-    public final static TableColumnType COLUMN_4_3_TYPE = TableColumnType.BOOLEAN;
+    public final static TableColumnType COLUMN_4_3_TYPE = TableColumnType.BOOL;
+    public final static ColumnTypeDto COLUMN_4_3_TYPE_DTO = ColumnTypeDto.BOOL;
     public final static Long COLUMN_4_3_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_3_NULL = true;
     public final static Boolean COLUMN_4_3_UNIQUE = false;
     public final static Boolean COLUMN_4_3_AUTO_GENERATED = false;
     public final static String COLUMN_4_3_FOREIGN_KEY = null;
     public final static String COLUMN_4_3_CHECK = null;
+    public final static List<String> COLUMN_4_3_ENUM_VALUES_ARR = List.of();
+    public final static List<String> COLUMN_4_3_SET_VALUES_ARR = List.of();
     public final static List<String> COLUMN_4_3_ENUM_VALUES = null;
+    public final static List<String> COLUMN_4_3_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_3_SET_VALUES = null;
+    public final static List<String> COLUMN_4_3_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_4_4_ID = 47L;
     public final static Integer COLUMN_4_4_ORDINALPOS = 3;
     public final static Boolean COLUMN_4_4_PRIMARY = false;
     public final static String COLUMN_4_4_NAME = "Feathers";
     public final static String COLUMN_4_4_INTERNAL_NAME = "feathers";
-    public final static TableColumnType COLUMN_4_4_TYPE = TableColumnType.BOOLEAN;
+    public final static TableColumnType COLUMN_4_4_TYPE = TableColumnType.BOOL;
+    public final static ColumnTypeDto COLUMN_4_4_TYPE_DTO = ColumnTypeDto.BOOL;
     public final static Long COLUMN_4_4_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_4_NULL = true;
     public final static Boolean COLUMN_4_4_UNIQUE = false;
     public final static Boolean COLUMN_4_4_AUTO_GENERATED = false;
     public final static String COLUMN_4_4_FOREIGN_KEY = null;
     public final static String COLUMN_4_4_CHECK = null;
+    public final static List<String> COLUMN_4_4_ENUM_VALUES_ARR = List.of();
+    public final static List<String> COLUMN_4_4_SET_VALUES_ARR = List.of();
     public final static List<String> COLUMN_4_4_ENUM_VALUES = null;
+    public final static List<String> COLUMN_4_4_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_4_SET_VALUES = null;
+    public final static List<String> COLUMN_4_4_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_4_5_ID = 48L;
     public final static Integer COLUMN_4_5_ORDINALPOS = 4;
     public final static Boolean COLUMN_4_5_PRIMARY = false;
     public final static String COLUMN_4_5_NAME = "Bread";
     public final static String COLUMN_4_5_INTERNAL_NAME = "bread";
-    public final static TableColumnType COLUMN_4_5_TYPE = TableColumnType.BOOLEAN;
+    public final static TableColumnType COLUMN_4_5_TYPE = TableColumnType.BOOL;
+    public final static ColumnTypeDto COLUMN_4_5_TYPE_DTO = ColumnTypeDto.BOOL;
     public final static Long COLUMN_4_5_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_5_NULL = true;
     public final static Boolean COLUMN_4_5_UNIQUE = false;
     public final static Boolean COLUMN_4_5_AUTO_GENERATED = false;
     public final static String COLUMN_4_5_FOREIGN_KEY = null;
     public final static String COLUMN_4_5_CHECK = null;
+    public final static List<String> COLUMN_4_5_ENUM_VALUES_ARR = List.of();
+    public final static List<String> COLUMN_4_5_SET_VALUES_ARR = List.of();
     public final static List<String> COLUMN_4_5_ENUM_VALUES = null;
+    public final static List<String> COLUMN_4_5_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_5_SET_VALUES = null;
+    public final static List<String> COLUMN_4_5_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_4_6_ID = 49L;
     public final static Integer COLUMN_4_6_ORDINALPOS = 5;
     public final static Boolean COLUMN_4_6_PRIMARY = false;
     public final static String COLUMN_4_6_NAME = "Eggs";
     public final static String COLUMN_4_6_INTERNAL_NAME = "eggs";
-    public final static TableColumnType COLUMN_4_6_TYPE = TableColumnType.BOOLEAN;
+    public final static TableColumnType COLUMN_4_6_TYPE = TableColumnType.BOOL;
+    public final static ColumnTypeDto COLUMN_4_6_TYPE_DTO = ColumnTypeDto.BOOL;
     public final static Long COLUMN_4_6_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_6_NULL = true;
     public final static Boolean COLUMN_4_6_UNIQUE = false;
     public final static Boolean COLUMN_4_6_AUTO_GENERATED = false;
     public final static String COLUMN_4_6_FOREIGN_KEY = null;
     public final static String COLUMN_4_6_CHECK = null;
+    public final static List<String> COLUMN_4_6_ENUM_VALUES_ARR = List.of();
+    public final static List<String> COLUMN_4_6_SET_VALUES_ARR = List.of();
     public final static List<String> COLUMN_4_6_ENUM_VALUES = null;
+    public final static List<String> COLUMN_4_6_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_6_SET_VALUES = null;
+    public final static List<String> COLUMN_4_6_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_4_7_ID = 50L;
     public final static Integer COLUMN_4_7_ORDINALPOS = 6;
     public final static Boolean COLUMN_4_7_PRIMARY = false;
     public final static String COLUMN_4_7_NAME = "Milk";
     public final static String COLUMN_4_7_INTERNAL_NAME = "milk";
-    public final static TableColumnType COLUMN_4_7_TYPE = TableColumnType.BOOLEAN;
+    public final static TableColumnType COLUMN_4_7_TYPE = TableColumnType.BOOL;
+    public final static ColumnTypeDto COLUMN_4_7_TYPE_DTO = ColumnTypeDto.BOOL;
     public final static Long COLUMN_4_7_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_7_NULL = true;
     public final static Boolean COLUMN_4_7_UNIQUE = false;
     public final static Boolean COLUMN_4_7_AUTO_GENERATED = false;
     public final static String COLUMN_4_7_FOREIGN_KEY = null;
     public final static String COLUMN_4_7_CHECK = null;
+    public final static List<String> COLUMN_4_7_ENUM_VALUES_ARR = List.of();
+    public final static List<String> COLUMN_4_7_SET_VALUES_ARR = List.of();
     public final static List<String> COLUMN_4_7_ENUM_VALUES = null;
+    public final static List<String> COLUMN_4_7_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_7_SET_VALUES = null;
+    public final static List<String> COLUMN_4_7_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_4_8_ID = 51L;
     public final static Integer COLUMN_4_8_ORDINALPOS = 7;
     public final static Boolean COLUMN_4_8_PRIMARY = false;
     public final static String COLUMN_4_8_NAME = "Water";
     public final static String COLUMN_4_8_INTERNAL_NAME = "water";
-    public final static TableColumnType COLUMN_4_8_TYPE = TableColumnType.BOOLEAN;
+    public final static TableColumnType COLUMN_4_8_TYPE = TableColumnType.BOOL;
+    public final static ColumnTypeDto COLUMN_4_8_TYPE_DTO = ColumnTypeDto.BOOL;
     public final static Long COLUMN_4_8_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_8_NULL = true;
     public final static Boolean COLUMN_4_8_UNIQUE = false;
     public final static Boolean COLUMN_4_8_AUTO_GENERATED = false;
     public final static String COLUMN_4_8_FOREIGN_KEY = null;
     public final static String COLUMN_4_8_CHECK = null;
+    public final static List<String> COLUMN_4_8_ENUM_VALUES_ARR = List.of();
+    public final static List<String> COLUMN_4_8_SET_VALUES_ARR = List.of();
     public final static List<String> COLUMN_4_8_ENUM_VALUES = null;
+    public final static List<String> COLUMN_4_8_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_8_SET_VALUES = null;
+    public final static List<String> COLUMN_4_8_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_4_9_ID = 52L;
     public final static Integer COLUMN_4_9_ORDINALPOS = 8;
     public final static Boolean COLUMN_4_9_PRIMARY = false;
     public final static String COLUMN_4_9_NAME = "Airborne";
     public final static String COLUMN_4_9_INTERNAL_NAME = "airborne";
-    public final static TableColumnType COLUMN_4_9_TYPE = TableColumnType.BOOLEAN;
+    public final static TableColumnType COLUMN_4_9_TYPE = TableColumnType.BOOL;
+    public final static ColumnTypeDto COLUMN_4_9_TYPE_DTO = ColumnTypeDto.BOOL;
     public final static Long COLUMN_4_9_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_9_NULL = true;
     public final static Boolean COLUMN_4_9_UNIQUE = false;
     public final static Boolean COLUMN_4_9_AUTO_GENERATED = false;
     public final static String COLUMN_4_9_FOREIGN_KEY = null;
     public final static String COLUMN_4_9_CHECK = null;
+    public final static List<String> COLUMN_4_9_ENUM_VALUES_ARR = List.of();
+    public final static List<String> COLUMN_4_9_SET_VALUES_ARR = List.of();
     public final static List<String> COLUMN_4_9_ENUM_VALUES = null;
+    public final static List<String> COLUMN_4_9_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_9_SET_VALUES = null;
+    public final static List<String> COLUMN_4_9_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_4_10_ID = 53L;
     public final static Integer COLUMN_4_10_ORDINALPOS = 9;
     public final static Boolean COLUMN_4_10_PRIMARY = false;
     public final static String COLUMN_4_10_NAME = "Waterborne";
     public final static String COLUMN_4_10_INTERNAL_NAME = "waterborne";
-    public final static TableColumnType COLUMN_4_10_TYPE = TableColumnType.BOOLEAN;
+    public final static TableColumnType COLUMN_4_10_TYPE = TableColumnType.BOOL;
+    public final static ColumnTypeDto COLUMN_4_10_TYPE_DTO = ColumnTypeDto.BOOL;
     public final static Long COLUMN_4_10_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_10_NULL = true;
     public final static Boolean COLUMN_4_10_UNIQUE = false;
     public final static Boolean COLUMN_4_10_AUTO_GENERATED = false;
     public final static String COLUMN_4_10_FOREIGN_KEY = null;
     public final static String COLUMN_4_10_CHECK = null;
+    public final static List<String> COLUMN_4_10_ENUM_VALUES_ARR = List.of();
+    public final static List<String> COLUMN_4_10_SET_VALUES_ARR = List.of();
     public final static List<String> COLUMN_4_10_ENUM_VALUES = null;
+    public final static List<String> COLUMN_4_10_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_10_SET_VALUES = null;
+    public final static List<String> COLUMN_4_10_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_4_11_ID = 54L;
     public final static Integer COLUMN_4_11_ORDINALPOS = 10;
     public final static Boolean COLUMN_4_11_PRIMARY = false;
     public final static String COLUMN_4_11_NAME = "Aquantic";
     public final static String COLUMN_4_11_INTERNAL_NAME = "aquatic";
-    public final static TableColumnType COLUMN_4_11_TYPE = TableColumnType.BOOLEAN;
+    public final static TableColumnType COLUMN_4_11_TYPE = TableColumnType.BOOL;
+    public final static ColumnTypeDto COLUMN_4_11_TYPE_DTO = ColumnTypeDto.BOOL;
     public final static Long COLUMN_4_11_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_11_NULL = true;
     public final static Boolean COLUMN_4_11_UNIQUE = false;
     public final static Boolean COLUMN_4_11_AUTO_GENERATED = false;
     public final static String COLUMN_4_11_FOREIGN_KEY = null;
     public final static String COLUMN_4_11_CHECK = null;
+    public final static List<String> COLUMN_4_11_ENUM_VALUES_ARR = List.of();
+    public final static List<String> COLUMN_4_11_SET_VALUES_ARR = List.of();
     public final static List<String> COLUMN_4_11_ENUM_VALUES = null;
+    public final static List<String> COLUMN_4_11_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_11_SET_VALUES = null;
+    public final static List<String> COLUMN_4_11_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_4_12_ID = 55L;
     public final static Integer COLUMN_4_12_ORDINALPOS = 11;
     public final static Boolean COLUMN_4_12_PRIMARY = false;
     public final static String COLUMN_4_12_NAME = "Predator";
     public final static String COLUMN_4_12_INTERNAL_NAME = "predator";
-    public final static TableColumnType COLUMN_4_12_TYPE = TableColumnType.BOOLEAN;
+    public final static TableColumnType COLUMN_4_12_TYPE = TableColumnType.BOOL;
+    public final static ColumnTypeDto COLUMN_4_12_TYPE_DTO = ColumnTypeDto.BOOL;
     public final static Long COLUMN_4_12_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_12_NULL = true;
     public final static Boolean COLUMN_4_12_UNIQUE = false;
     public final static Boolean COLUMN_4_12_AUTO_GENERATED = false;
     public final static String COLUMN_4_12_FOREIGN_KEY = null;
     public final static String COLUMN_4_12_CHECK = null;
+    public final static List<String> COLUMN_4_12_ENUM_VALUES_ARR = List.of();
+    public final static List<String> COLUMN_4_12_SET_VALUES_ARR = List.of();
     public final static List<String> COLUMN_4_12_ENUM_VALUES = null;
+    public final static List<String> COLUMN_4_12_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_12_SET_VALUES = null;
+    public final static List<String> COLUMN_4_12_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_4_13_ID = 56L;
     public final static Integer COLUMN_4_13_ORDINALPOS = 12;
     public final static Boolean COLUMN_4_13_PRIMARY = false;
     public final static String COLUMN_4_13_NAME = "Backbone";
     public final static String COLUMN_4_13_INTERNAL_NAME = "backbone";
-    public final static TableColumnType COLUMN_4_13_TYPE = TableColumnType.BOOLEAN;
+    public final static TableColumnType COLUMN_4_13_TYPE = TableColumnType.BOOL;
+    public final static ColumnTypeDto COLUMN_4_13_TYPE_DTO = ColumnTypeDto.BOOL;
     public final static Long COLUMN_4_13_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_13_NULL = true;
     public final static Boolean COLUMN_4_13_UNIQUE = false;
     public final static Boolean COLUMN_4_13_AUTO_GENERATED = false;
     public final static String COLUMN_4_13_FOREIGN_KEY = null;
     public final static String COLUMN_4_13_CHECK = null;
+    public final static List<String> COLUMN_4_13_ENUM_VALUES_ARR = List.of();
+    public final static List<String> COLUMN_4_13_SET_VALUES_ARR = List.of();
     public final static List<String> COLUMN_4_13_ENUM_VALUES = null;
+    public final static List<String> COLUMN_4_13_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_13_SET_VALUES = null;
+    public final static List<String> COLUMN_4_13_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_4_14_ID = 57L;
     public final static Integer COLUMN_4_14_ORDINALPOS = 13;
     public final static Boolean COLUMN_4_14_PRIMARY = false;
     public final static String COLUMN_4_14_NAME = "Breathes";
     public final static String COLUMN_4_14_INTERNAL_NAME = "breathes";
-    public final static TableColumnType COLUMN_4_14_TYPE = TableColumnType.BOOLEAN;
+    public final static TableColumnType COLUMN_4_14_TYPE = TableColumnType.BOOL;
+    public final static ColumnTypeDto COLUMN_4_14_TYPE_DTO = ColumnTypeDto.BOOL;
     public final static Long COLUMN_4_14_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_14_NULL = true;
     public final static Boolean COLUMN_4_14_UNIQUE = false;
     public final static Boolean COLUMN_4_14_AUTO_GENERATED = false;
     public final static String COLUMN_4_14_FOREIGN_KEY = null;
     public final static String COLUMN_4_14_CHECK = null;
+    public final static List<String> COLUMN_4_14_ENUM_VALUES_ARR = List.of();
+    public final static List<String> COLUMN_4_14_SET_VALUES_ARR = List.of();
     public final static List<String> COLUMN_4_14_ENUM_VALUES = null;
+    public final static List<String> COLUMN_4_14_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_14_SET_VALUES = null;
+    public final static List<String> COLUMN_4_14_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_4_15_ID = 58L;
     public final static Integer COLUMN_4_15_ORDINALPOS = 14;
     public final static Boolean COLUMN_4_15_PRIMARY = false;
     public final static String COLUMN_4_15_NAME = "Venomous";
     public final static String COLUMN_4_15_INTERNAL_NAME = "venomous";
-    public final static TableColumnType COLUMN_4_15_TYPE = TableColumnType.BOOLEAN;
+    public final static TableColumnType COLUMN_4_15_TYPE = TableColumnType.BOOL;
+    public final static ColumnTypeDto COLUMN_4_15_TYPE_DTO = ColumnTypeDto.BOOL;
     public final static Long COLUMN_4_15_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_15_NULL = true;
     public final static Boolean COLUMN_4_15_UNIQUE = false;
     public final static Boolean COLUMN_4_15_AUTO_GENERATED = false;
     public final static String COLUMN_4_15_FOREIGN_KEY = null;
     public final static String COLUMN_4_15_CHECK = null;
+    public final static List<String> COLUMN_4_15_ENUM_VALUES_ARR = List.of();
+    public final static List<String> COLUMN_4_15_SET_VALUES_ARR = List.of();
     public final static List<String> COLUMN_4_15_ENUM_VALUES = null;
+    public final static List<String> COLUMN_4_15_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_15_SET_VALUES = null;
+    public final static List<String> COLUMN_4_15_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_4_16_ID = 59L;
     public final static Integer COLUMN_4_16_ORDINALPOS = 15;
     public final static Boolean COLUMN_4_16_PRIMARY = false;
     public final static String COLUMN_4_16_NAME = "Fin";
     public final static String COLUMN_4_16_INTERNAL_NAME = "fins";
-    public final static TableColumnType COLUMN_4_16_TYPE = TableColumnType.BOOLEAN;
+    public final static TableColumnType COLUMN_4_16_TYPE = TableColumnType.BOOL;
+    public final static ColumnTypeDto COLUMN_4_16_TYPE_DTO = ColumnTypeDto.BOOL;
     public final static Long COLUMN_4_16_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_16_NULL = true;
     public final static Boolean COLUMN_4_16_UNIQUE = false;
     public final static Boolean COLUMN_4_16_AUTO_GENERATED = false;
     public final static String COLUMN_4_16_FOREIGN_KEY = null;
     public final static String COLUMN_4_16_CHECK = null;
+    public final static List<String> COLUMN_4_16_ENUM_VALUES_ARR = List.of();
+    public final static List<String> COLUMN_4_16_SET_VALUES_ARR = List.of();
     public final static List<String> COLUMN_4_16_ENUM_VALUES = null;
+    public final static List<String> COLUMN_4_16_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_16_SET_VALUES = null;
+    public final static List<String> COLUMN_4_16_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_4_17_ID = 60L;
     public final static Integer COLUMN_4_17_ORDINALPOS = 16;
     public final static Boolean COLUMN_4_17_PRIMARY = false;
     public final static String COLUMN_4_17_NAME = "Legs";
     public final static String COLUMN_4_17_INTERNAL_NAME = "legs";
-    public final static TableColumnType COLUMN_4_17_TYPE = TableColumnType.NUMBER;
+    public final static TableColumnType COLUMN_4_17_TYPE = TableColumnType.INT;
+    public final static ColumnTypeDto COLUMN_4_17_TYPE_DTO = ColumnTypeDto.INT;
     public final static Long COLUMN_4_17_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_17_NULL = true;
     public final static Boolean COLUMN_4_17_UNIQUE = false;
     public final static Boolean COLUMN_4_17_AUTO_GENERATED = false;
     public final static String COLUMN_4_17_FOREIGN_KEY = null;
     public final static String COLUMN_4_17_CHECK = null;
+    public final static List<String> COLUMN_4_17_ENUM_VALUES_ARR = List.of();
+    public final static List<String> COLUMN_4_17_SET_VALUES_ARR = List.of();
     public final static List<String> COLUMN_4_17_ENUM_VALUES = null;
+    public final static List<String> COLUMN_4_17_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_17_SET_VALUES = null;
+    public final static List<String> COLUMN_4_17_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_4_18_ID = 61L;
     public final static Integer COLUMN_4_18_ORDINALPOS = 17;
@@ -2363,41 +2952,59 @@ public abstract class BaseTest {
     public final static String COLUMN_4_18_NAME = "Tail";
     public final static String COLUMN_4_18_INTERNAL_NAME = "tail";
     public final static TableColumnType COLUMN_4_18_TYPE = TableColumnType.DECIMAL;
+    public final static ColumnTypeDto COLUMN_4_18_TYPE_DTO = ColumnTypeDto.DECIMAL;
     public final static Long COLUMN_4_18_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_18_NULL = true;
     public final static Boolean COLUMN_4_18_UNIQUE = false;
     public final static Boolean COLUMN_4_18_AUTO_GENERATED = false;
     public final static String COLUMN_4_18_FOREIGN_KEY = null;
     public final static String COLUMN_4_18_CHECK = null;
+    public final static List<String> COLUMN_4_18_ENUM_VALUES_ARR = List.of();
+    public final static List<String> COLUMN_4_18_SET_VALUES_ARR = List.of();
     public final static List<String> COLUMN_4_18_ENUM_VALUES = null;
+    public final static List<String> COLUMN_4_18_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_18_SET_VALUES = null;
+    public final static List<String> COLUMN_4_18_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_4_19_ID = 62L;
     public final static Integer COLUMN_4_19_ORDINALPOS = 18;
     public final static Boolean COLUMN_4_19_PRIMARY = false;
     public final static String COLUMN_4_19_NAME = "Domestic";
     public final static String COLUMN_4_19_INTERNAL_NAME = "domestic";
-    public final static TableColumnType COLUMN_4_19_TYPE = TableColumnType.BOOLEAN;
+    public final static TableColumnType COLUMN_4_19_TYPE = TableColumnType.BOOL;
+    public final static ColumnTypeDto COLUMN_4_19_TYPE_DTO = ColumnTypeDto.BOOL;
     public final static Long COLUMN_4_19_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_19_NULL = true;
     public final static Boolean COLUMN_4_19_UNIQUE = false;
     public final static Boolean COLUMN_4_19_AUTO_GENERATED = false;
     public final static String COLUMN_4_19_FOREIGN_KEY = null;
     public final static String COLUMN_4_19_CHECK = null;
+    public final static List<String> COLUMN_4_19_ENUM_VALUES_ARR = List.of();
+    public final static List<String> COLUMN_4_19_SET_VALUES_ARR = List.of();
     public final static List<String> COLUMN_4_19_ENUM_VALUES = null;
+    public final static List<String> COLUMN_4_19_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_19_SET_VALUES = null;
+    public final static List<String> COLUMN_4_19_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_4_20_ID = 63L;
     public final static Integer COLUMN_4_20_ORDINALPOS = 19;
     public final static Boolean COLUMN_4_20_PRIMARY = false;
     public final static String COLUMN_4_20_NAME = "Cat Size";
     public final static String COLUMN_4_20_INTERNAL_NAME = "catsize";
-    public final static TableColumnType COLUMN_4_20_TYPE = TableColumnType.BOOLEAN;
+    public final static TableColumnType COLUMN_4_20_TYPE = TableColumnType.BOOL;
+    public final static ColumnTypeDto COLUMN_4_20_TYPE_DTO = ColumnTypeDto.BOOL;
     public final static Long COLUMN_4_20_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_20_NULL = true;
     public final static Boolean COLUMN_4_20_UNIQUE = false;
     public final static Boolean COLUMN_4_20_AUTO_GENERATED = false;
     public final static String COLUMN_4_20_FOREIGN_KEY = null;
     public final static String COLUMN_4_20_CHECK = null;
+    public final static List<String> COLUMN_4_20_ENUM_VALUES_ARR = List.of();
+    public final static List<String> COLUMN_4_20_SET_VALUES_ARR = List.of();
     public final static List<String> COLUMN_4_20_ENUM_VALUES = null;
+    public final static List<String> COLUMN_4_20_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_20_SET_VALUES = null;
+    public final static List<String> COLUMN_4_20_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_4_21_ID = 64L;
     public final static Integer COLUMN_4_21_ORDINALPOS = 20;
@@ -2405,21 +3012,27 @@ public abstract class BaseTest {
     public final static String COLUMN_4_21_NAME = "Class Type";
     public final static String COLUMN_4_21_INTERNAL_NAME = "class_type";
     public final static TableColumnType COLUMN_4_21_TYPE = TableColumnType.DECIMAL;
+    public final static ColumnTypeDto COLUMN_4_22_TYPE_DTO = ColumnTypeDto.DECIMAL;
     public final static Long COLUMN_4_21_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_21_NULL = true;
     public final static Boolean COLUMN_4_21_UNIQUE = false;
     public final static Boolean COLUMN_4_21_AUTO_GENERATED = false;
     public final static String COLUMN_4_21_FOREIGN_KEY = null;
     public final static String COLUMN_4_21_CHECK = null;
+    public final static List<String> COLUMN_4_21_ENUM_VALUES_ARR = List.of();
+    public final static List<String> COLUMN_4_21_SET_VALUES_ARR = List.of();
     public final static List<String> COLUMN_4_21_ENUM_VALUES = null;
+    public final static List<String> COLUMN_4_21_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_4_21_SET_VALUES = null;
+    public final static List<String> COLUMN_4_21_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_5_1_ID = 65L;
     public final static Integer COLUMN_5_1_ORDINALPOS = 0;
     public final static Boolean COLUMN_5_1_PRIMARY = true;
     public final static String COLUMN_5_1_NAME = "id";
     public final static String COLUMN_5_1_INTERNAL_NAME = "id";
-    public final static TableColumnType COLUMN_5_1_TYPE = TableColumnType.NUMBER;
-    public final static ColumnTypeDto COLUMN_5_1_TYPE_DTO = ColumnTypeDto.NUMBER;
+    public final static TableColumnType COLUMN_5_1_TYPE = TableColumnType.BIGINT;
+    public final static ColumnTypeDto COLUMN_5_1_TYPE_DTO = ColumnTypeDto.BIGINT;
     public final static Long COLUMN_5_1_DATE_FORMAT = null;
     public final static Boolean COLUMN_5_1_NULL = false;
     public final static Boolean COLUMN_5_1_UNIQUE = true;
@@ -2427,15 +3040,18 @@ public abstract class BaseTest {
     public final static String COLUMN_5_1_FOREIGN_KEY = null;
     public final static String COLUMN_5_1_CHECK = null;
     public final static List<String> COLUMN_5_1_ENUM_VALUES = null;
+    public final static List<String> COLUMN_5_1_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_5_1_SET_VALUES = null;
+    public final static List<String> COLUMN_5_1_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_5_2_ID = 66L;
     public final static Integer COLUMN_5_2_ORDINALPOS = 1;
     public final static Boolean COLUMN_5_2_PRIMARY = false;
     public final static String COLUMN_5_2_NAME = "firstname";
     public final static String COLUMN_5_2_INTERNAL_NAME = "firstname";
-    public final static TableColumnType COLUMN_5_2_TYPE = TableColumnType.STRING;
-    public final static ColumnTypeDto COLUMN_5_2_TYPE_DTO = ColumnTypeDto.STRING;
-    public final static Integer COLUMN_5_2_LENGTH = 20;
+    public final static TableColumnType COLUMN_5_2_TYPE = TableColumnType.VARCHAR;
+    public final static ColumnTypeDto COLUMN_5_2_TYPE_DTO = ColumnTypeDto.VARCHAR;
+    public final static Integer COLUMN_5_2_SIZE = 20;
     public final static Long COLUMN_5_2_DATE_FORMAT = null;
     public final static Boolean COLUMN_5_2_NULL = false;
     public final static Boolean COLUMN_5_2_UNIQUE = false;
@@ -2443,15 +3059,18 @@ public abstract class BaseTest {
     public final static String COLUMN_5_2_FOREIGN_KEY = null;
     public final static String COLUMN_5_2_CHECK = null;
     public final static List<String> COLUMN_5_2_ENUM_VALUES = null;
+    public final static List<String> COLUMN_5_2_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_5_2_SET_VALUES = null;
+    public final static List<String> COLUMN_5_2_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_5_3_ID = 67L;
     public final static Integer COLUMN_5_3_ORDINALPOS = 2;
     public final static Boolean COLUMN_5_3_PRIMARY = false;
     public final static String COLUMN_5_3_NAME = "lastname";
     public final static String COLUMN_5_3_INTERNAL_NAME = "lastname";
-    public final static TableColumnType COLUMN_5_3_TYPE = TableColumnType.STRING;
-    public final static ColumnTypeDto COLUMN_5_3_TYPE_DTO = ColumnTypeDto.STRING;
-    public final static Integer COLUMN_5_3_LENGTH = 40;
+    public final static TableColumnType COLUMN_5_3_TYPE = TableColumnType.VARCHAR;
+    public final static ColumnTypeDto COLUMN_5_3_TYPE_DTO = ColumnTypeDto.VARCHAR;
+    public final static Integer COLUMN_5_3_SIZE = 40;
     public final static Long COLUMN_5_3_DATE_FORMAT = null;
     public final static Boolean COLUMN_5_3_NULL = false;
     public final static Boolean COLUMN_5_3_UNIQUE = false;
@@ -2459,14 +3078,17 @@ public abstract class BaseTest {
     public final static String COLUMN_5_3_FOREIGN_KEY = null;
     public final static String COLUMN_5_3_CHECK = null;
     public final static List<String> COLUMN_5_3_ENUM_VALUES = null;
+    public final static List<String> COLUMN_5_3_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_5_3_SET_VALUES = null;
+    public final static List<String> COLUMN_5_3_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_5_4_ID = 68L;
     public final static Integer COLUMN_5_4_ORDINALPOS = 2;
     public final static Boolean COLUMN_5_4_PRIMARY = false;
     public final static String COLUMN_5_4_NAME = "ref_id";
     public final static String COLUMN_5_4_INTERNAL_NAME = "ref_id";
-    public final static TableColumnType COLUMN_5_4_TYPE = TableColumnType.NUMBER;
-    public final static ColumnTypeDto COLUMN_5_4_TYPE_DTO = ColumnTypeDto.NUMBER;
+    public final static TableColumnType COLUMN_5_4_TYPE = TableColumnType.BIGINT;
+    public final static ColumnTypeDto COLUMN_5_4_TYPE_DTO = ColumnTypeDto.BIGINT;
     public final static Long COLUMN_5_4_DATE_FORMAT = null;
     public final static Boolean COLUMN_5_4_NULL = false;
     public final static Boolean COLUMN_5_4_UNIQUE = false;
@@ -2474,14 +3096,17 @@ public abstract class BaseTest {
     public final static String COLUMN_5_4_FOREIGN_KEY = null;
     public final static String COLUMN_5_4_CHECK = null;
     public final static List<String> COLUMN_5_4_ENUM_VALUES = null;
+    public final static List<String> COLUMN_5_4_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_5_4_SET_VALUES = null;
+    public final static List<String> COLUMN_5_4_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_8_1_ID = 69L;
     public final static Integer COLUMN_8_1_ORDINALPOS = 0;
     public final static Boolean COLUMN_8_1_PRIMARY = true;
     public final static String COLUMN_8_1_NAME = "ID";
     public final static String COLUMN_8_1_INTERNAL_NAME = "id";
-    public final static TableColumnType COLUMN_8_1_TYPE = TableColumnType.NUMBER;
-    public final static ColumnTypeDto COLUMN_8_1_TYPE_DTO = ColumnTypeDto.NUMBER;
+    public final static TableColumnType COLUMN_8_1_TYPE = TableColumnType.BIGINT;
+    public final static ColumnTypeDto COLUMN_8_1_TYPE_DTO = ColumnTypeDto.BIGINT;
     public final static Long COLUMN_8_1_DATE_FORMAT = null;
     public final static Boolean COLUMN_8_1_NULL = false;
     public final static Boolean COLUMN_8_1_UNIQUE = true;
@@ -2489,14 +3114,17 @@ public abstract class BaseTest {
     public final static String COLUMN_8_1_FOREIGN_KEY = null;
     public final static String COLUMN_8_1_CHECK = null;
     public final static List<String> COLUMN_8_1_ENUM_VALUES = null;
+    public final static List<String> COLUMN_8_1_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_8_1_SET_VALUES = null;
+    public final static List<String> COLUMN_8_1_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_8_2_ID = 70L;
     public final static Integer COLUMN_8_2_ORDINALPOS = 1;
     public final static Boolean COLUMN_8_2_PRIMARY = true;
     public final static String COLUMN_8_2_NAME = "Value";
     public final static String COLUMN_8_2_INTERNAL_NAME = "value";
-    public final static TableColumnType COLUMN_8_2_TYPE = TableColumnType.NUMBER;
-    public final static ColumnTypeDto COLUMN_8_2_TYPE_DTO = ColumnTypeDto.NUMBER;
+    public final static TableColumnType COLUMN_8_2_TYPE = TableColumnType.INT;
+    public final static ColumnTypeDto COLUMN_8_2_TYPE_DTO = ColumnTypeDto.INT;
     public final static Long COLUMN_8_2_DATE_FORMAT = null;
     public final static Boolean COLUMN_8_2_NULL = true;
     public final static Boolean COLUMN_8_2_UNIQUE = false;
@@ -2504,6 +3132,9 @@ public abstract class BaseTest {
     public final static String COLUMN_8_2_FOREIGN_KEY = null;
     public final static String COLUMN_8_2_CHECK = null;
     public final static List<String> COLUMN_8_2_ENUM_VALUES = null;
+    public final static List<String> COLUMN_8_2_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_8_2_SET_VALUES = null;
+    public final static List<String> COLUMN_8_2_SET_VALUES_DTO = null;
 
     public final static ColumnSemanticsUpdateDto COLUMN_8_2_SEMANTICS_UPDATE_DTO = ColumnSemanticsUpdateDto.builder()
             .conceptUri(COLUMN_CONCEPT_TEMPERATURE_URI)
@@ -2513,12 +3144,10 @@ public abstract class BaseTest {
     public final static TableColumn COLUMN_8_2_WITH_SEMANTICS = TableColumn.builder()
             .id(COLUMN_8_2_ID)
             .ordinalPosition(COLUMN_8_2_ORDINALPOS)
-            .cdbid(DATABASE_3_ID)
-            .tid(TABLE_8_ID)
+            .table(TABLE_8)
             .name(COLUMN_8_2_NAME)
             .internalName(COLUMN_8_2_INTERNAL_NAME)
             .columnType(COLUMN_8_2_TYPE)
-            .dfid(COLUMN_8_2_DATE_FORMAT)
             .isNullAllowed(COLUMN_8_2_NULL)
             .autoGenerated(COLUMN_8_2_AUTO_GENERATED)
             .isPrimaryKey(COLUMN_8_2_PRIMARY)
@@ -2529,46 +3158,25 @@ public abstract class BaseTest {
     public final static List<TableColumn> TABLE_8_COLUMNS = List.of(TableColumn.builder()
                     .id(COLUMN_8_1_ID)
                     .ordinalPosition(COLUMN_8_1_ORDINALPOS)
-                    .cdbid(DATABASE_3_ID)
-                    .tid(TABLE_8_ID)
+                    .table(TABLE_8)
                     .name(COLUMN_8_1_NAME)
                     .internalName(COLUMN_8_1_INTERNAL_NAME)
                     .columnType(COLUMN_8_1_TYPE)
-                    .dfid(COLUMN_8_1_DATE_FORMAT)
                     .isNullAllowed(COLUMN_8_1_NULL)
                     .autoGenerated(COLUMN_8_1_AUTO_GENERATED)
                     .isPrimaryKey(COLUMN_8_1_PRIMARY)
-                    .creator(USER_3)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_8_2_ID)
                     .ordinalPosition(COLUMN_8_2_ORDINALPOS)
-                    .cdbid(DATABASE_3_ID)
-                    .tid(TABLE_8_ID)
+                    .table(TABLE_8)
                     .name(COLUMN_8_2_NAME)
                     .internalName(COLUMN_8_2_INTERNAL_NAME)
                     .columnType(COLUMN_8_2_TYPE)
-                    .dfid(COLUMN_8_2_DATE_FORMAT)
                     .isNullAllowed(COLUMN_8_2_NULL)
                     .autoGenerated(COLUMN_8_2_AUTO_GENERATED)
                     .isPrimaryKey(COLUMN_8_2_PRIMARY)
-                    .creator(USER_3)
                     .build());
-
-    public final static Table TABLE_8 = Table.builder()
-            .id(TABLE_8_ID)
-            .created(Instant.now())
-            .internalName(TABLE_8_INTERNAL_NAME)
-            .description(TABLE_8_DESCRIPTION)
-            .name(TABLE_8_NAME)
-            .tdbid(DATABASE_1_ID)
-            .queueName(TABLE_8_QUEUE_NAME)
-            .routingKey(TABLE_8_ROUTING_KEY)
-            .columns(TABLE_8_COLUMNS)
-            .creator(USER_1)
-            .created(TABLE_8_CREATED)
-            .lastModified(TABLE_8_LAST_MODIFIED)
-            .build();
 
     public final static List<String> CONSTRAINTS_1_UNIQUE_1 = List.of(COLUMN_1_1_NAME);
     public final static List<String> CONSTRAINTS_2_UNIQUE_1 = List.of(COLUMN_2_1_NAME);
@@ -2609,9 +3217,9 @@ public abstract class BaseTest {
             .resultHash(QUERY_1_RESULT_HASH)
             .resultNumber(QUERY_1_RESULT_NUMBER)
             .created(QUERY_1_CREATED)
+            .executed(QUERY_1_EXECUTION)
             .createdBy(USER_1_USERNAME)
             .isPersisted(QUERY_1_PERSISTED)
-            .executed(QUERY_1_EXECUTION)
             .build();
 
     public final static QueryDto QUERY_1_DTO = QueryDto.builder()
@@ -2659,10 +3267,9 @@ public abstract class BaseTest {
             .resultHash(QUERY_2_RESULT_HASH)
             .resultNumber(QUERY_2_RESULT_NUMBER)
             .created(QUERY_2_CREATED)
+            .executed(QUERY_2_EXECUTION)
             .createdBy(USER_1_USERNAME)
             .isPersisted(QUERY_2_PERSISTED)
-            .created(QUERY_2_CREATED)
-            .executed(QUERY_2_EXECUTION)
             .build();
 
     public final static QueryDto QUERY_2_DTO = QueryDto.builder()
@@ -2697,7 +3304,9 @@ public abstract class BaseTest {
             .queryHash(QUERY_3_QUERY_HASH)
             .resultHash(QUERY_3_RESULT_HASH)
             .created(QUERY_3_CREATED)
+            .executed(QUERY_3_EXECUTION)
             .createdBy(USER_1_USERNAME)
+            .resultNumber(QUERY_3_RESULT_NUMBER)
             .isPersisted(QUERY_3_PERSISTED)
             .build();
 
@@ -2724,6 +3333,8 @@ public abstract class BaseTest {
     public final static Instant QUERY_4_CREATED = Instant.now().minus(4, MINUTES);
     public final static Instant QUERY_4_EXECUTION = Instant.now().minus(1, MINUTES);
     public final static Instant QUERY_4_LAST_MODIFIED = Instant.ofEpochSecond(1541588454);
+    public final static Long QUERY_4_RESULT_NUMBER = 6L;
+    public final static Long QUERY_4_RESULT_ID = 4L;
     public final static Boolean QUERY_4_PERSISTED = false;
 
     public final static Query QUERY_4 = Query.builder()
@@ -2732,13 +3343,11 @@ public abstract class BaseTest {
             .queryHash(QUERY_4_QUERY_HASH)
             .resultHash(QUERY_4_RESULT_HASH)
             .created(QUERY_4_CREATED)
-            .createdBy(USER_1_USERNAME)
+            .executed(QUERY_4_EXECUTION)
             .isPersisted(QUERY_4_PERSISTED)
+            .resultNumber(QUERY_4_RESULT_NUMBER)
             .createdBy(USER_1_USERNAME)
             .build();
-
-    public final static Long QUERY_4_RESULT_NUMBER = 6L;
-    public final static Long QUERY_4_RESULT_ID = 4L;
     public final static List<Map<String, Object>> QUERY_4_RESULT_RESULT = List.of(
             new HashMap<>() {{
                 put("id", BigInteger.valueOf(1L));
@@ -2798,6 +3407,7 @@ public abstract class BaseTest {
             .queryHash(QUERY_5_QUERY_HASH)
             .resultHash(QUERY_5_RESULT_HASH)
             .created(QUERY_5_CREATED)
+            .executed(QUERY_5_EXECUTION)
             .createdBy(USER_1_USERNAME)
             .isPersisted(QUERY_5_PERSISTED)
             .build();
@@ -2834,6 +3444,7 @@ public abstract class BaseTest {
             .queryHash(QUERY_6_QUERY_HASH)
             .resultHash(QUERY_6_RESULT_HASH)
             .created(QUERY_6_CREATED)
+            .executed(QUERY_6_EXECUTION)
             .createdBy(USER_1_USERNAME)
             .isPersisted(QUERY_6_PERSISTED)
             .build();
@@ -2855,199 +3466,110 @@ public abstract class BaseTest {
     public final static List<TableColumn> TABLE_1_COLUMNS = List.of(TableColumn.builder()
                     .id(COLUMN_1_1_ID)
                     .ordinalPosition(COLUMN_1_1_ORDINALPOS)
-                    .cdbid(DATABASE_1_ID)
-                    .tid(TABLE_1_ID)
+                    .table(TABLE_1)
                     .name(COLUMN_1_1_NAME)
                     .internalName(COLUMN_1_1_INTERNAL_NAME)
                     .columnType(COLUMN_1_1_TYPE)
-                    .dfid(COLUMN_1_1_DATE_FORMAT)
                     .isNullAllowed(COLUMN_1_1_NULL)
                     .autoGenerated(COLUMN_1_1_AUTO_GENERATED)
                     .isPrimaryKey(COLUMN_1_1_PRIMARY)
-                    .enumValues(COLUMN_1_1_ENUM_VALUES)
-                    .creator(USER_1)
+                    .enums(COLUMN_1_1_ENUM_VALUES)
+                    .sets(COLUMN_1_1_SET_VALUES)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_1_2_ID)
                     .ordinalPosition(COLUMN_1_2_ORDINALPOS)
-                    .cdbid(DATABASE_1_ID)
-                    .tid(TABLE_1_ID)
+                    .table(TABLE_1)
+                    .dateFormat(COLUMN_1_2_DATE)
                     .name(COLUMN_1_2_NAME)
                     .internalName(COLUMN_1_2_INTERNAL_NAME)
                     .columnType(COLUMN_1_2_TYPE)
-                    .dfid(COLUMN_1_2_DATE_FORMAT)
                     .dateFormat(IMAGE_DATE_1)
                     .isNullAllowed(COLUMN_1_2_NULL)
                     .autoGenerated(COLUMN_1_2_AUTO_GENERATED)
                     .isPrimaryKey(COLUMN_1_2_PRIMARY)
-                    .enumValues(COLUMN_1_2_ENUM_VALUES)
-                    .creator(USER_1)
+                    .enums(COLUMN_1_2_ENUM_VALUES)
+                    .sets(COLUMN_1_2_SET_VALUES)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_1_3_ID)
                     .ordinalPosition(COLUMN_1_3_ORDINALPOS)
-                    .cdbid(DATABASE_1_ID)
-                    .tid(TABLE_1_ID)
+                    .table(TABLE_1)
                     .name(COLUMN_1_3_NAME)
                     .internalName(COLUMN_1_3_INTERNAL_NAME)
                     .columnType(COLUMN_1_3_TYPE)
-                    .dfid(COLUMN_1_3_DATE_FORMAT)
                     .isNullAllowed(COLUMN_1_3_NULL)
                     .autoGenerated(COLUMN_1_3_AUTO_GENERATED)
                     .isPrimaryKey(COLUMN_1_3_PRIMARY)
-                    .enumValues(COLUMN_1_3_ENUM_VALUES)
-                    .creator(USER_1)
+                    .enums(COLUMN_1_3_ENUM_VALUES)
+                    .sets(COLUMN_1_3_SET_VALUES)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_1_4_ID)
                     .ordinalPosition(COLUMN_1_4_ORDINALPOS)
-                    .cdbid(DATABASE_1_ID)
-                    .tid(TABLE_1_ID)
+                    .table(TABLE_1)
                     .name(COLUMN_1_4_NAME)
                     .internalName(COLUMN_1_4_INTERNAL_NAME)
                     .columnType(COLUMN_1_4_TYPE)
-                    .dfid(COLUMN_1_4_DATE_FORMAT)
                     .isNullAllowed(COLUMN_1_4_NULL)
                     .autoGenerated(COLUMN_1_4_AUTO_GENERATED)
                     .isPrimaryKey(COLUMN_1_4_PRIMARY)
-                    .enumValues(COLUMN_1_4_ENUM_VALUES)
-                    .creator(USER_1)
+                    .enums(COLUMN_1_4_ENUM_VALUES)
+                    .sets(COLUMN_1_4_SET_VALUES)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_1_5_ID)
                     .ordinalPosition(COLUMN_1_5_ORDINALPOS)
-                    .cdbid(DATABASE_1_ID)
-                    .tid(TABLE_1_ID)
+                    .table(TABLE_1)
                     .name(COLUMN_1_5_NAME)
                     .internalName(COLUMN_1_5_INTERNAL_NAME)
                     .columnType(COLUMN_1_5_TYPE)
-                    .dfid(COLUMN_1_5_DATE_FORMAT)
                     .isNullAllowed(COLUMN_1_5_NULL)
                     .autoGenerated(COLUMN_1_5_AUTO_GENERATED)
                     .isPrimaryKey(COLUMN_1_5_PRIMARY)
-                    .enumValues(COLUMN_1_5_ENUM_VALUES)
-                    .creator(USER_1)
+                    .enums(COLUMN_1_5_ENUM_VALUES)
+                    .sets(COLUMN_1_5_SET_VALUES)
                     .build());
-
-    public final static Table TABLE_1 = Table.builder()
-            .id(TABLE_1_ID)
-            .database(DATABASE_1)
-            .created(Instant.now())
-            .internalName(TABLE_1_INTERNALNAME)
-            .description(TABLE_1_DESCRIPTION)
-            .name(TABLE_1_NAME)
-            .lastModified(TABLE_1_LAST_MODIFIED)
-            .tdbid(DATABASE_1_ID)
-            .queueName(TABLE_1_QUEUE_NAME)
-            .routingKey(TABLE_1_ROUTING_KEY)
-            .columns(TABLE_1_COLUMNS)
-            .constraints(null) /* TABLE_1_CONSTRAINTS */
-            .creator(USER_1)
-            .owner(USER_1)
-            .created(TABLE_1_CREATED)
-            .lastModified(TABLE_1_LAST_MODIFIED)
-            .build();
-
-    public final static Table TABLE_1_SIMPLE = Table.builder()
-            .id(TABLE_1_ID)
-            .database(null /* for jpa */)
-            .created(Instant.now())
-            .internalName(TABLE_1_INTERNALNAME)
-            .description(TABLE_1_DESCRIPTION)
-            .name(TABLE_1_NAME)
-            .lastModified(TABLE_1_LAST_MODIFIED)
-            .tdbid(DATABASE_1_ID)
-            .queueName(TABLE_1_QUEUE_NAME)
-            .routingKey(TABLE_1_ROUTING_KEY)
-            .columns(List.of() /* for jpa */)
-            .constraints(null /* for jpa */) /* TABLE_1_CONSTRAINTS */
-            .creator(USER_1)
-            .owner(USER_1)
-            .created(TABLE_1_CREATED)
-            .lastModified(TABLE_1_LAST_MODIFIED)
-            .build();
 
     public final static List<TableColumn> TABLE_2_COLUMNS = List.of(TableColumn.builder()
                     .id(COLUMN_2_1_ID)
                     .ordinalPosition(COLUMN_2_1_ORDINALPOS)
-                    .cdbid(DATABASE_1_ID)
-                    .tid(TABLE_2_ID)
+                    .table(TABLE_2)
                     .name(COLUMN_2_1_NAME)
                     .internalName(COLUMN_2_1_INTERNAL_NAME)
                     .columnType(COLUMN_2_1_TYPE)
-                    .dfid(COLUMN_2_1_DATE_FORMAT)
                     .isNullAllowed(COLUMN_2_1_NULL)
                     .autoGenerated(COLUMN_2_1_AUTO_GENERATED)
                     .isPrimaryKey(COLUMN_2_1_PRIMARY)
-                    .enumValues(COLUMN_2_1_ENUM_VALUES)
-                    .creator(USER_1)
+                    .enums(COLUMN_2_1_ENUM_VALUES)
+                    .sets(COLUMN_2_1_SET_VALUES)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_2_2_ID)
                     .ordinalPosition(COLUMN_2_2_ORDINALPOS)
-                    .cdbid(DATABASE_1_ID)
-                    .tid(TABLE_2_ID)
+                    .table(TABLE_2)
                     .name(COLUMN_2_2_NAME)
                     .internalName(COLUMN_2_2_INTERNAL_NAME)
                     .columnType(COLUMN_2_2_TYPE)
-                    .dfid(COLUMN_2_2_DATE_FORMAT)
                     .isNullAllowed(COLUMN_2_2_NULL)
                     .autoGenerated(COLUMN_2_2_AUTO_GENERATED)
                     .isPrimaryKey(COLUMN_2_2_PRIMARY)
-                    .enumValues(COLUMN_2_2_ENUM_VALUES)
-                    .creator(USER_1)
+                    .enums(COLUMN_2_2_ENUM_VALUES)
+                    .sets(COLUMN_2_2_SET_VALUES)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_2_3_ID)
                     .ordinalPosition(COLUMN_2_3_ORDINALPOS)
-                    .cdbid(DATABASE_1_ID)
-                    .tid(TABLE_2_ID)
+                    .table(TABLE_2)
                     .name(COLUMN_2_3_NAME)
                     .internalName(COLUMN_2_3_INTERNAL_NAME)
                     .columnType(COLUMN_2_3_TYPE)
-                    .dfid(COLUMN_2_3_DATE_FORMAT)
                     .isNullAllowed(COLUMN_2_3_NULL)
                     .autoGenerated(COLUMN_2_3_AUTO_GENERATED)
                     .isPrimaryKey(COLUMN_2_3_PRIMARY)
-                    .enumValues(COLUMN_2_3_ENUM_VALUES)
-                    .creator(USER_1)
+                    .enums(COLUMN_2_3_ENUM_VALUES)
+                    .sets(COLUMN_2_3_SET_VALUES)
                     .build());
-
-    public final static Table TABLE_2 = Table.builder()
-            .id(TABLE_2_ID)
-            .database(DATABASE_1)
-            .created(Instant.now())
-            .internalName(TABLE_2_INTERNALNAME)
-            .description(TABLE_2_DESCRIPTION)
-            .name(TABLE_2_NAME)
-            .lastModified(TABLE_2_LAST_MODIFIED)
-            .tdbid(DATABASE_1_ID)
-            .queueName(TABLE_2_QUEUE_NAME)
-            .routingKey(TABLE_2_ROUTING_KEY)
-            .columns(TABLE_2_COLUMNS)
-            .creator(USER_1)
-            .owner(USER_1)
-            .created(TABLE_2_CREATED)
-            .lastModified(TABLE_2_LAST_MODIFIED)
-            .build();
-
-    public final static Table TABLE_2_SIMPLE = Table.builder()
-            .id(TABLE_2_ID)
-            .database(null /* for jpa */)
-            .created(Instant.now())
-            .internalName(TABLE_2_INTERNALNAME)
-            .description(TABLE_2_DESCRIPTION)
-            .name(TABLE_2_NAME)
-            .lastModified(TABLE_2_LAST_MODIFIED)
-            .tdbid(DATABASE_1_ID)
-            .queueName(TABLE_2_QUEUE_NAME)
-            .routingKey(TABLE_2_ROUTING_KEY)
-            .columns(List.of() /* for jpa */)
-            .creator(USER_1)
-            .owner(USER_1)
-            .created(TABLE_2_CREATED)
-            .lastModified(TABLE_2_LAST_MODIFIED)
-            .build();
 
     public final static Constraints TABLE_1_CONSTRAINTS = Constraints.builder()
             .foreignKeys(List.of(ForeignKey.builder()
@@ -3066,53 +3588,49 @@ public abstract class BaseTest {
 
     public final static List<TableColumn> TABLE_3_COLUMNS = List.of(TableColumn.builder()
                     .id(9L)
-                    .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_1_ID)
+                    .table(TABLE_3)
                     .ordinalPosition(0)
                     .autoGenerated(true)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.BIGINT)
                     .name("id")
                     .internalName("id")
                     .isNullAllowed(false)
                     .isPrimaryKey(true)
                     .dateFormat(null)
-                    .enumValues(null)
-                    .creator(USER_1)
+                    .enums(List.of())
+                    .sets(List.of())
                     .build(),
             TableColumn.builder()
                     .id(10L)
-                    .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_1_ID)
+                    .table(TABLE_3)
                     .ordinalPosition(1)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("linie")
                     .internalName("linie")
                     .isNullAllowed(true)
                     .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enumValues(null)
-                    .creator(USER_1)
+                    .enums(List.of())
+                    .sets(List.of())
                     .build(),
             TableColumn.builder()
                     .id(11L)
-                    .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_1_ID)
+                    .table(TABLE_3)
                     .ordinalPosition(2)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("richtung")
                     .internalName("richtung")
                     .isNullAllowed(true)
                     .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enumValues(null)
-                    .creator(USER_1)
+                    .enums(List.of())
+                    .sets(List.of())
                     .build(),
             TableColumn.builder()
                     .id(12L)
-                    .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_1_ID)
+                    .table(TABLE_3)
                     .ordinalPosition(3)
                     .autoGenerated(false)
                     .columnType(TableColumnType.DATE)
@@ -3120,104 +3638,96 @@ public abstract class BaseTest {
                     .internalName("betriebsdatum")
                     .isNullAllowed(true)
                     .isPrimaryKey(false)
-                    .dfid(IMAGE_DATE_2_ID)
-                    .enumValues(null)
-                    .creator(USER_1)
+                    .enums(List.of())
+                    .sets(List.of())
                     .build(),
             TableColumn.builder()
                     .id(13L)
-                    .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_1_ID)
+                    .table(TABLE_3)
                     .ordinalPosition(4)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("fahrzeug")
                     .internalName("fahrzeug")
                     .isNullAllowed(true)
                     .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enumValues(null)
-                    .creator(USER_1)
+                    .enums(List.of())
+                    .sets(List.of())
                     .build(),
             TableColumn.builder()
                     .id(14L)
-                    .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_1_ID)
+                    .table(TABLE_3)
                     .ordinalPosition(5)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("kurs")
                     .internalName("kurs")
                     .isNullAllowed(true)
                     .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enumValues(null)
-                    .creator(USER_1)
+                    .enums(List.of())
+                    .sets(List.of())
                     .build(),
             TableColumn.builder()
                     .id(15L)
-                    .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_1_ID)
+                    .table(TABLE_3)
                     .ordinalPosition(6)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("seq_von")
                     .internalName("seq_von")
                     .isNullAllowed(true)
                     .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enumValues(null)
-                    .creator(USER_1)
+                    .enums(List.of())
+                    .sets(List.of())
                     .build(),
             TableColumn.builder()
                     .id(16L)
-                    .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_1_ID)
+                    .table(TABLE_3)
                     .ordinalPosition(7)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("halt_diva_von")
                     .internalName("halt_diva_von")
                     .isNullAllowed(true)
                     .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enumValues(null)
-                    .creator(USER_1)
+                    .enums(List.of())
+                    .sets(List.of())
                     .build(),
             TableColumn.builder()
                     .id(17L)
-                    .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_1_ID)
+                    .table(TABLE_3)
                     .ordinalPosition(8)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("halt_punkt_diva_von")
                     .internalName("halt_punkt_diva_von")
                     .isNullAllowed(true)
                     .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enumValues(null)
-                    .creator(USER_1)
+                    .enums(List.of())
+                    .sets(List.of())
                     .build(),
             TableColumn.builder()
                     .id(18L)
-                    .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_1_ID)
+                    .table(TABLE_3)
                     .ordinalPosition(9)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.STRING)
+                    .columnType(TableColumnType.INT)
                     .name("halt_kurz_von1")
                     .internalName("halt_kurz_von1")
                     .isNullAllowed(true)
                     .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enumValues(null)
-                    .creator(USER_1)
+                    .enums(List.of())
+                    .sets(List.of())
                     .build(),
             TableColumn.builder()
                     .id(19L)
-                    .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_1_ID)
+                    .table(TABLE_3)
                     .ordinalPosition(10)
                     .autoGenerated(false)
                     .columnType(TableColumnType.DATE)
@@ -3225,134 +3735,124 @@ public abstract class BaseTest {
                     .internalName("datum_von")
                     .isNullAllowed(true)
                     .isPrimaryKey(false)
-                    .dfid(IMAGE_DATE_2_ID)
-                    .enumValues(null)
-                    .creator(USER_1)
+                    .enums(List.of())
+                    .sets(List.of())
                     .build(),
             TableColumn.builder()
                     .id(20L)
-                    .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_1_ID)
+                    .table(TABLE_3)
                     .ordinalPosition(11)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("soll_an_von")
                     .internalName("soll_an_von")
                     .isNullAllowed(true)
                     .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enumValues(null)
-                    .creator(USER_1)
+                    .enums(List.of())
+                    .sets(List.of())
                     .build(),
             TableColumn.builder()
                     .id(21L)
-                    .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_1_ID)
+                    .table(TABLE_3)
                     .ordinalPosition(12)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("ist_an_von")
                     .internalName("ist_an_von")
                     .isNullAllowed(true)
                     .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enumValues(null)
-                    .creator(USER_1)
+                    .enums(List.of())
+                    .sets(List.of())
                     .build(),
             TableColumn.builder()
                     .id(22L)
-                    .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_1_ID)
+                    .table(TABLE_3)
                     .ordinalPosition(13)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("soll_ab_von")
                     .internalName("soll_ab_von")
                     .isNullAllowed(true)
                     .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enumValues(null)
-                    .creator(USER_1)
+                    .enums(List.of())
+                    .sets(List.of())
                     .build(),
             TableColumn.builder()
                     .id(23L)
-                    .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_1_ID)
+                    .table(TABLE_3)
                     .ordinalPosition(14)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("ist_ab_von")
                     .internalName("ist_ab_von")
                     .isNullAllowed(true)
                     .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enumValues(null)
-                    .creator(USER_1)
+                    .enums(List.of())
+                    .sets(List.of())
                     .build(),
             TableColumn.builder()
                     .id(24L)
-                    .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_1_ID)
+                    .table(TABLE_3)
                     .ordinalPosition(15)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("seq_nach")
                     .internalName("seq_nach")
                     .isNullAllowed(true)
                     .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enumValues(null)
-                    .creator(USER_1)
+                    .enums(List.of())
+                    .sets(List.of())
                     .build(),
             TableColumn.builder()
                     .id(25L)
-                    .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_1_ID)
+                    .table(TABLE_3)
                     .ordinalPosition(16)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("halt_diva_nach")
                     .internalName("halt_diva_nach")
                     .isNullAllowed(true)
                     .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enumValues(null)
-                    .creator(USER_1)
+                    .enums(List.of())
+                    .sets(List.of())
                     .build(),
             TableColumn.builder()
                     .id(26L)
-                    .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_1_ID)
+                    .table(TABLE_3)
                     .ordinalPosition(17)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("halt_punkt_diva_nach")
                     .internalName("halt_punkt_diva_nach")
                     .isNullAllowed(true)
                     .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enumValues(null)
-                    .creator(USER_1)
+                    .enums(List.of())
+                    .sets(List.of())
                     .build(),
             TableColumn.builder()
                     .id(27L)
-                    .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_1_ID)
+                    .table(TABLE_3)
                     .ordinalPosition(18)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.STRING)
+                    .columnType(TableColumnType.INT)
                     .name("halt_kurz_nach1")
                     .internalName("halt_kurz_nach1")
                     .isNullAllowed(true)
                     .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enumValues(null)
-                    .creator(USER_1)
+                    .enums(List.of())
+                    .sets(List.of())
                     .build(),
             TableColumn.builder()
                     .id(28L)
-                    .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_1_ID)
+                    .table(TABLE_3)
                     .ordinalPosition(19)
                     .autoGenerated(false)
                     .columnType(TableColumnType.DATE)
@@ -3360,628 +3860,1013 @@ public abstract class BaseTest {
                     .internalName("datum_nach")
                     .isNullAllowed(true)
                     .isPrimaryKey(false)
-                    .dfid(IMAGE_DATE_2_ID)
-                    .enumValues(null)
-                    .creator(USER_1)
+                    .enums(List.of())
+                    .sets(List.of())
                     .build(),
             TableColumn.builder()
                     .id(29L)
-                    .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_1_ID)
+                    .table(TABLE_3)
                     .ordinalPosition(20)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("soll_an_nach")
                     .internalName("soll_an_nach")
                     .isNullAllowed(true)
                     .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enumValues(null)
-                    .creator(USER_1)
+                    .enums(List.of())
+                    .sets(List.of())
                     .build(),
             TableColumn.builder()
                     .id(30L)
-                    .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_1_ID)
+                    .table(TABLE_3)
                     .ordinalPosition(21)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("ist_an_nach1")
                     .internalName("ist_an_nach1")
                     .isNullAllowed(true)
                     .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enumValues(null)
-                    .creator(USER_1)
+                    .enums(List.of())
+                    .sets(List.of())
                     .build(),
             TableColumn.builder()
                     .id(31L)
-                    .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_1_ID)
+                    .table(TABLE_3)
                     .ordinalPosition(22)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("soll_ab_nach")
                     .internalName("soll_ab_nach")
                     .isNullAllowed(true)
                     .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enumValues(null)
-                    .creator(USER_1)
+                    .enums(List.of())
+                    .sets(List.of())
                     .build(),
             TableColumn.builder()
                     .id(32L)
-                    .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_1_ID)
+                    .table(TABLE_3)
                     .ordinalPosition(23)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("ist_ab_nach")
                     .internalName("ist_ab_nach")
                     .isNullAllowed(true)
                     .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enumValues(null)
-                    .creator(USER_1)
+                    .enums(List.of())
+                    .sets(List.of())
                     .build(),
             TableColumn.builder()
                     .id(33L)
-                    .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_1_ID)
+                    .table(TABLE_3)
                     .ordinalPosition(24)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("fahrt_id")
                     .internalName("fahrt_id")
                     .isNullAllowed(true)
                     .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enumValues(null)
-                    .creator(USER_1)
+                    .enums(List.of())
+                    .sets(List.of())
                     .build(),
             TableColumn.builder()
                     .id(34L)
-                    .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_1_ID)
+                    .table(TABLE_3)
                     .ordinalPosition(25)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("fahrweg_id")
                     .internalName("fahrweg_id")
                     .isNullAllowed(true)
                     .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enumValues(null)
-                    .creator(USER_1)
+                    .enums(List.of())
+                    .sets(List.of())
                     .build(),
             TableColumn.builder()
                     .id(35L)
-                    .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_1_ID)
+                    .table(TABLE_3)
                     .ordinalPosition(26)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("fw_no")
                     .internalName("fw_no")
                     .isNullAllowed(true)
                     .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enumValues(null)
-                    .creator(USER_1)
+                    .enums(List.of())
+                    .sets(List.of())
                     .build(),
             TableColumn.builder()
                     .id(36L)
-                    .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_1_ID)
+                    .table(TABLE_3)
                     .ordinalPosition(27)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("fw_typ")
                     .internalName("fw_typ")
                     .isNullAllowed(true)
                     .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enumValues(null)
-                    .creator(USER_1)
+                    .enums(List.of())
+                    .sets(List.of())
                     .build(),
             TableColumn.builder()
                     .id(37L)
-                    .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_1_ID)
+                    .table(TABLE_3)
                     .ordinalPosition(28)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("fw_kurz")
                     .internalName("fw_kurz")
                     .isNullAllowed(true)
                     .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enumValues(null)
-                    .creator(USER_1)
+                    .enums(List.of())
+                    .sets(List.of())
                     .build(),
             TableColumn.builder()
                     .id(38L)
-                    .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_1_ID)
+                    .table(TABLE_3)
                     .ordinalPosition(29)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.STRING)
+                    .columnType(TableColumnType.INT)
                     .name("fw_lang")
                     .internalName("fw_lang")
                     .isNullAllowed(true)
                     .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enumValues(null)
-                    .creator(USER_1)
+                    .enums(List.of())
+                    .sets(List.of())
                     .build(),
             TableColumn.builder()
                     .id(39L)
-                    .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_1_ID)
+                    .table(TABLE_3)
                     .ordinalPosition(30)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.STRING)
+                    .columnType(TableColumnType.INT)
                     .name("umlauf_von")
                     .internalName("umlauf_von")
                     .isNullAllowed(true)
                     .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enumValues(null)
-                    .creator(USER_1)
+                    .enums(List.of())
+                    .sets(List.of())
                     .build(),
             TableColumn.builder()
                     .id(40L)
-                    .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_1_ID)
+                    .table(TABLE_3)
                     .ordinalPosition(31)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("halt_id_von")
                     .internalName("halt_id_von")
                     .isNullAllowed(true)
                     .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enumValues(null)
-                    .creator(USER_1)
+                    .enums(List.of())
+                    .sets(List.of())
                     .build(),
             TableColumn.builder()
                     .id(41L)
-                    .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_1_ID)
+                    .table(TABLE_3)
                     .ordinalPosition(32)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("halt_id_nach")
                     .internalName("halt_id_nach")
                     .isNullAllowed(true)
                     .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enumValues(null)
-                    .creator(USER_1)
+                    .enums(List.of())
+                    .sets(List.of())
                     .build(),
             TableColumn.builder()
                     .id(42L)
-                    .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_1_ID)
+                    .table(TABLE_3)
                     .ordinalPosition(33)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("halt_punkt_id_von")
                     .internalName("halt_punkt_id_von")
                     .isNullAllowed(true)
                     .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enumValues(null)
-                    .creator(USER_1)
+                    .enums(List.of())
+                    .sets(List.of())
                     .build(),
             TableColumn.builder()
                     .id(43L)
-                    .tid(TABLE_3_ID)
-                    .cdbid(DATABASE_1_ID)
+                    .table(TABLE_3)
                     .ordinalPosition(34)
                     .autoGenerated(false)
-                    .columnType(TableColumnType.NUMBER)
+                    .columnType(TableColumnType.INT)
                     .name("halt_punkt_id_nach")
                     .internalName("halt_punkt_id_nach")
                     .isNullAllowed(true)
                     .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enumValues(null)
-                    .creator(USER_1)
+                    .enums(List.of())
+                    .sets(List.of())
+                    .build());
+
+    public final static List<ColumnDto> TABLE_3_COLUMNS_DTO = List.of(ColumnDto.builder()
+                    .id(9L)
+                    .tableId(TABLE_3_ID)
+                    .databaseId(DATABASE_1_ID)
+                    .autoGenerated(true)
+                    .columnType(ColumnTypeDto.BIGINT)
+                    .name("id")
+                    .internalName("id")
+                    .isNullAllowed(false)
+                    .isPrimaryKey(true)
+                    .dateFormat(null)
+                    .enums(List.of())
+                    .sets(List.of())
+                    .build(),
+            ColumnDto.builder()
+                    .id(10L)
+                    .tableId(TABLE_3_ID)
+                    .databaseId(DATABASE_1_ID)
+                    .autoGenerated(false)
+                    .columnType(ColumnTypeDto.INT)
+                    .name("linie")
+                    .internalName("linie")
+                    .isNullAllowed(true)
+                    .isPrimaryKey(false)
+                    .dateFormat(null)
+                    .enums(List.of())
+                    .sets(List.of())
+                    .build(),
+            ColumnDto.builder()
+                    .id(11L)
+                    .tableId(TABLE_3_ID)
+                    .databaseId(DATABASE_1_ID)
+                    .autoGenerated(false)
+                    .columnType(ColumnTypeDto.INT)
+                    .name("richtung")
+                    .internalName("richtung")
+                    .isNullAllowed(true)
+                    .isPrimaryKey(false)
+                    .dateFormat(null)
+                    .enums(List.of())
+                    .sets(List.of())
+                    .build(),
+            ColumnDto.builder()
+                    .id(12L)
+                    .tableId(TABLE_3_ID)
+                    .databaseId(DATABASE_1_ID)
+                    .autoGenerated(false)
+                    .columnType(ColumnTypeDto.DATE)
+                    .name("betriebsdatum")
+                    .internalName("betriebsdatum")
+                    .isNullAllowed(true)
+                    .isPrimaryKey(false)
+                    .dateFormat(IMAGE_DATE_2_DTO)
+                    .enums(List.of())
+                    .sets(List.of())
+                    .build(),
+            ColumnDto.builder()
+                    .id(13L)
+                    .tableId(TABLE_3_ID)
+                    .databaseId(DATABASE_1_ID)
+                    .autoGenerated(false)
+                    .columnType(ColumnTypeDto.INT)
+                    .name("fahrzeug")
+                    .internalName("fahrzeug")
+                    .isNullAllowed(true)
+                    .isPrimaryKey(false)
+                    .dateFormat(null)
+                    .enums(List.of())
+                    .sets(List.of())
+                    .build(),
+            ColumnDto.builder()
+                    .id(14L)
+                    .tableId(TABLE_3_ID)
+                    .databaseId(DATABASE_1_ID)
+                    .autoGenerated(false)
+                    .columnType(ColumnTypeDto.INT)
+                    .name("kurs")
+                    .internalName("kurs")
+                    .isNullAllowed(true)
+                    .isPrimaryKey(false)
+                    .dateFormat(null)
+                    .enums(List.of())
+                    .sets(List.of())
+                    .build(),
+            ColumnDto.builder()
+                    .id(15L)
+                    .tableId(TABLE_3_ID)
+                    .databaseId(DATABASE_1_ID)
+                    .autoGenerated(false)
+                    .columnType(ColumnTypeDto.INT)
+                    .name("seq_von")
+                    .internalName("seq_von")
+                    .isNullAllowed(true)
+                    .isPrimaryKey(false)
+                    .dateFormat(null)
+                    .enums(List.of())
+                    .sets(List.of())
+                    .build(),
+            ColumnDto.builder()
+                    .id(16L)
+                    .tableId(TABLE_3_ID)
+                    .databaseId(DATABASE_1_ID)
+                    .autoGenerated(false)
+                    .columnType(ColumnTypeDto.INT)
+                    .name("halt_diva_von")
+                    .internalName("halt_diva_von")
+                    .isNullAllowed(true)
+                    .isPrimaryKey(false)
+                    .dateFormat(null)
+                    .enums(List.of())
+                    .sets(List.of())
+                    .build(),
+            ColumnDto.builder()
+                    .id(17L)
+                    .tableId(TABLE_3_ID)
+                    .databaseId(DATABASE_1_ID)
+                    .autoGenerated(false)
+                    .columnType(ColumnTypeDto.INT)
+                    .name("halt_punkt_diva_von")
+                    .internalName("halt_punkt_diva_von")
+                    .isNullAllowed(true)
+                    .isPrimaryKey(false)
+                    .dateFormat(null)
+                    .enums(List.of())
+                    .sets(List.of())
+                    .build(),
+            ColumnDto.builder()
+                    .id(18L)
+                    .tableId(TABLE_3_ID)
+                    .databaseId(DATABASE_1_ID)
+                    .autoGenerated(false)
+                    .columnType(ColumnTypeDto.INT)
+                    .name("halt_kurz_von1")
+                    .internalName("halt_kurz_von1")
+                    .isNullAllowed(true)
+                    .isPrimaryKey(false)
+                    .dateFormat(null)
+                    .enums(List.of())
+                    .sets(List.of())
+                    .build(),
+            ColumnDto.builder()
+                    .id(19L)
+                    .tableId(TABLE_3_ID)
+                    .databaseId(DATABASE_1_ID)
+                    .autoGenerated(false)
+                    .columnType(ColumnTypeDto.DATE)
+                    .name("datum_von")
+                    .internalName("datum_von")
+                    .isNullAllowed(true)
+                    .isPrimaryKey(false)
+                    .dateFormat(IMAGE_DATE_2_DTO)
+                    .enums(List.of())
+                    .sets(List.of())
+                    .build(),
+            ColumnDto.builder()
+                    .id(20L)
+                    .tableId(TABLE_3_ID)
+                    .databaseId(DATABASE_1_ID)
+                    .autoGenerated(false)
+                    .columnType(ColumnTypeDto.INT)
+                    .name("soll_an_von")
+                    .internalName("soll_an_von")
+                    .isNullAllowed(true)
+                    .isPrimaryKey(false)
+                    .dateFormat(null)
+                    .enums(List.of())
+                    .sets(List.of())
+                    .build(),
+            ColumnDto.builder()
+                    .id(21L)
+                    .tableId(TABLE_3_ID)
+                    .databaseId(DATABASE_1_ID)
+                    .autoGenerated(false)
+                    .columnType(ColumnTypeDto.INT)
+                    .name("ist_an_von")
+                    .internalName("ist_an_von")
+                    .isNullAllowed(true)
+                    .isPrimaryKey(false)
+                    .dateFormat(null)
+                    .enums(List.of())
+                    .sets(List.of())
+                    .build(),
+            ColumnDto.builder()
+                    .id(22L)
+                    .tableId(TABLE_3_ID)
+                    .databaseId(DATABASE_1_ID)
+                    .autoGenerated(false)
+                    .columnType(ColumnTypeDto.INT)
+                    .name("soll_ab_von")
+                    .internalName("soll_ab_von")
+                    .isNullAllowed(true)
+                    .isPrimaryKey(false)
+                    .dateFormat(null)
+                    .enums(List.of())
+                    .sets(List.of())
+                    .build(),
+            ColumnDto.builder()
+                    .id(23L)
+                    .tableId(TABLE_3_ID)
+                    .databaseId(DATABASE_1_ID)
+                    .autoGenerated(false)
+                    .columnType(ColumnTypeDto.INT)
+                    .name("ist_ab_von")
+                    .internalName("ist_ab_von")
+                    .isNullAllowed(true)
+                    .isPrimaryKey(false)
+                    .dateFormat(null)
+                    .enums(List.of())
+                    .sets(List.of())
+                    .build(),
+            ColumnDto.builder()
+                    .id(24L)
+                    .tableId(TABLE_3_ID)
+                    .databaseId(DATABASE_1_ID)
+                    .autoGenerated(false)
+                    .columnType(ColumnTypeDto.INT)
+                    .name("seq_nach")
+                    .internalName("seq_nach")
+                    .isNullAllowed(true)
+                    .isPrimaryKey(false)
+                    .dateFormat(null)
+                    .enums(List.of())
+                    .sets(List.of())
+                    .build(),
+            ColumnDto.builder()
+                    .id(25L)
+                    .tableId(TABLE_3_ID)
+                    .databaseId(DATABASE_1_ID)
+                    .autoGenerated(false)
+                    .columnType(ColumnTypeDto.INT)
+                    .name("halt_diva_nach")
+                    .internalName("halt_diva_nach")
+                    .isNullAllowed(true)
+                    .isPrimaryKey(false)
+                    .dateFormat(null)
+                    .enums(List.of())
+                    .sets(List.of())
+                    .build(),
+            ColumnDto.builder()
+                    .id(26L)
+                    .tableId(TABLE_3_ID)
+                    .databaseId(DATABASE_1_ID)
+                    .autoGenerated(false)
+                    .columnType(ColumnTypeDto.INT)
+                    .name("halt_punkt_diva_nach")
+                    .internalName("halt_punkt_diva_nach")
+                    .isNullAllowed(true)
+                    .isPrimaryKey(false)
+                    .dateFormat(null)
+                    .enums(List.of())
+                    .sets(List.of())
+                    .build(),
+            ColumnDto.builder()
+                    .id(27L)
+                    .tableId(TABLE_3_ID)
+                    .databaseId(DATABASE_1_ID)
+                    .autoGenerated(false)
+                    .columnType(ColumnTypeDto.INT)
+                    .name("halt_kurz_nach1")
+                    .internalName("halt_kurz_nach1")
+                    .isNullAllowed(true)
+                    .isPrimaryKey(false)
+                    .dateFormat(null)
+                    .enums(List.of())
+                    .sets(List.of())
+                    .build(),
+            ColumnDto.builder()
+                    .id(28L)
+                    .tableId(TABLE_3_ID)
+                    .databaseId(DATABASE_1_ID)
+                    .autoGenerated(false)
+                    .columnType(ColumnTypeDto.DATE)
+                    .name("datum_nach")
+                    .internalName("datum_nach")
+                    .isNullAllowed(true)
+                    .isPrimaryKey(false)
+                    .dateFormat(IMAGE_DATE_2_DTO)
+                    .enums(List.of())
+                    .sets(List.of())
+                    .build(),
+            ColumnDto.builder()
+                    .id(29L)
+                    .tableId(TABLE_3_ID)
+                    .databaseId(DATABASE_1_ID)
+                    .autoGenerated(false)
+                    .columnType(ColumnTypeDto.INT)
+                    .name("soll_an_nach")
+                    .internalName("soll_an_nach")
+                    .isNullAllowed(true)
+                    .isPrimaryKey(false)
+                    .dateFormat(null)
+                    .enums(List.of())
+                    .sets(List.of())
+                    .build(),
+            ColumnDto.builder()
+                    .id(30L)
+                    .tableId(TABLE_3_ID)
+                    .databaseId(DATABASE_1_ID)
+                    .autoGenerated(false)
+                    .columnType(ColumnTypeDto.INT)
+                    .name("ist_an_nach1")
+                    .internalName("ist_an_nach1")
+                    .isNullAllowed(true)
+                    .isPrimaryKey(false)
+                    .dateFormat(null)
+                    .enums(List.of())
+                    .sets(List.of())
+                    .build(),
+            ColumnDto.builder()
+                    .id(31L)
+                    .tableId(TABLE_3_ID)
+                    .databaseId(DATABASE_1_ID)
+                    .autoGenerated(false)
+                    .columnType(ColumnTypeDto.INT)
+                    .name("soll_ab_nach")
+                    .internalName("soll_ab_nach")
+                    .isNullAllowed(true)
+                    .isPrimaryKey(false)
+                    .dateFormat(null)
+                    .enums(List.of())
+                    .sets(List.of())
+                    .build(),
+            ColumnDto.builder()
+                    .id(32L)
+                    .tableId(TABLE_3_ID)
+                    .databaseId(DATABASE_1_ID)
+                    .autoGenerated(false)
+                    .columnType(ColumnTypeDto.INT)
+                    .name("ist_ab_nach")
+                    .internalName("ist_ab_nach")
+                    .isNullAllowed(true)
+                    .isPrimaryKey(false)
+                    .dateFormat(null)
+                    .enums(List.of())
+                    .sets(List.of())
+                    .build(),
+            ColumnDto.builder()
+                    .id(33L)
+                    .tableId(TABLE_3_ID)
+                    .databaseId(DATABASE_1_ID)
+                    .autoGenerated(false)
+                    .columnType(ColumnTypeDto.INT)
+                    .name("fahrt_id")
+                    .internalName("fahrt_id")
+                    .isNullAllowed(true)
+                    .isPrimaryKey(false)
+                    .dateFormat(null)
+                    .enums(List.of())
+                    .sets(List.of())
+                    .build(),
+            ColumnDto.builder()
+                    .id(34L)
+                    .tableId(TABLE_3_ID)
+                    .databaseId(DATABASE_1_ID)
+                    .autoGenerated(false)
+                    .columnType(ColumnTypeDto.INT)
+                    .name("fahrweg_id")
+                    .internalName("fahrweg_id")
+                    .isNullAllowed(true)
+                    .isPrimaryKey(false)
+                    .dateFormat(null)
+                    .enums(List.of())
+                    .sets(List.of())
+                    .build(),
+            ColumnDto.builder()
+                    .id(35L)
+                    .tableId(TABLE_3_ID)
+                    .databaseId(DATABASE_1_ID)
+                    .autoGenerated(false)
+                    .columnType(ColumnTypeDto.INT)
+                    .name("fw_no")
+                    .internalName("fw_no")
+                    .isNullAllowed(true)
+                    .isPrimaryKey(false)
+                    .dateFormat(null)
+                    .enums(List.of())
+                    .sets(List.of())
+                    .build(),
+            ColumnDto.builder()
+                    .id(36L)
+                    .tableId(TABLE_3_ID)
+                    .databaseId(DATABASE_1_ID)
+                    .autoGenerated(false)
+                    .columnType(ColumnTypeDto.INT)
+                    .name("fw_typ")
+                    .internalName("fw_typ")
+                    .isNullAllowed(true)
+                    .isPrimaryKey(false)
+                    .dateFormat(null)
+                    .enums(List.of())
+                    .sets(List.of())
+                    .build(),
+            ColumnDto.builder()
+                    .id(37L)
+                    .tableId(TABLE_3_ID)
+                    .databaseId(DATABASE_1_ID)
+                    .autoGenerated(false)
+                    .columnType(ColumnTypeDto.INT)
+                    .name("fw_kurz")
+                    .internalName("fw_kurz")
+                    .isNullAllowed(true)
+                    .isPrimaryKey(false)
+                    .dateFormat(null)
+                    .enums(List.of())
+                    .sets(List.of())
+                    .build(),
+            ColumnDto.builder()
+                    .id(38L)
+                    .tableId(TABLE_3_ID)
+                    .databaseId(DATABASE_1_ID)
+                    .autoGenerated(false)
+                    .columnType(ColumnTypeDto.INT)
+                    .name("fw_lang")
+                    .internalName("fw_lang")
+                    .isNullAllowed(true)
+                    .isPrimaryKey(false)
+                    .dateFormat(null)
+                    .enums(List.of())
+                    .sets(List.of())
+                    .build(),
+            ColumnDto.builder()
+                    .id(39L)
+                    .tableId(TABLE_3_ID)
+                    .databaseId(DATABASE_1_ID)
+                    .autoGenerated(false)
+                    .columnType(ColumnTypeDto.INT)
+                    .name("umlauf_von")
+                    .internalName("umlauf_von")
+                    .isNullAllowed(true)
+                    .isPrimaryKey(false)
+                    .dateFormat(null)
+                    .enums(List.of())
+                    .sets(List.of())
+                    .build(),
+            ColumnDto.builder()
+                    .id(40L)
+                    .tableId(TABLE_3_ID)
+                    .databaseId(DATABASE_1_ID)
+                    .autoGenerated(false)
+                    .columnType(ColumnTypeDto.INT)
+                    .name("halt_id_von")
+                    .internalName("halt_id_von")
+                    .isNullAllowed(true)
+                    .isPrimaryKey(false)
+                    .dateFormat(null)
+                    .enums(List.of())
+                    .sets(List.of())
+                    .build(),
+            ColumnDto.builder()
+                    .id(41L)
+                    .tableId(TABLE_3_ID)
+                    .databaseId(DATABASE_1_ID)
+                    .autoGenerated(false)
+                    .columnType(ColumnTypeDto.INT)
+                    .name("halt_id_nach")
+                    .internalName("halt_id_nach")
+                    .isNullAllowed(true)
+                    .isPrimaryKey(false)
+                    .dateFormat(null)
+                    .enums(List.of())
+                    .sets(List.of())
+                    .build(),
+            ColumnDto.builder()
+                    .id(42L)
+                    .tableId(TABLE_3_ID)
+                    .databaseId(DATABASE_1_ID)
+                    .autoGenerated(false)
+                    .columnType(ColumnTypeDto.INT)
+                    .name("halt_punkt_id_von")
+                    .internalName("halt_punkt_id_von")
+                    .isNullAllowed(true)
+                    .isPrimaryKey(false)
+                    .dateFormat(null)
+                    .enums(List.of())
+                    .sets(List.of())
+                    .build(),
+            ColumnDto.builder()
+                    .id(43L)
+                    .tableId(TABLE_3_ID)
+                    .databaseId(DATABASE_1_ID)
+                    .autoGenerated(false)
+                    .columnType(ColumnTypeDto.INT)
+                    .name("halt_punkt_id_nach")
+                    .internalName("halt_punkt_id_nach")
+                    .isNullAllowed(true)
+                    .isPrimaryKey(false)
+                    .dateFormat(null)
+                    .enums(List.of())
+                    .sets(List.of())
                     .build());
 
     public final static Constraints TABLE_3_CONSTRAINTS = Constraints.builder()
             .uniques(List.of(Unique.builder().columns(List.of(TABLE_3_COLUMNS.get(0))).build()))
             .build();
 
-    public final static Table TABLE_3 = Table.builder()
-            .id(TABLE_3_ID)
-            .database(DATABASE_1)
-            .created(Instant.now())
-            .internalName(TABLE_3_INTERNALNAME)
-            .description(TABLE_3_DESCRIPTION)
-            .name(TABLE_3_NAME)
-            .lastModified(TABLE_3_LAST_MODIFIED)
-            .tdbid(DATABASE_1_ID)
-            .queueName(TABLE_3_QUEUE_NAME)
-            .routingKey(TABLE_3_ROUTING_KEY)
-            .columns(TABLE_3_COLUMNS)
-            .constraints(TABLE_3_CONSTRAINTS)
-            .creator(USER_1)
-            .owner(USER_1)
-            .created(TABLE_3_CREATED)
-            .lastModified(TABLE_3_LAST_MODIFIED)
+    public final static ConstraintsDto TABLE_3_CONSTRAINTS_DTO = ConstraintsDto.builder()
+            .uniques(List.of(UniqueDto.builder().columns(List.of(TABLE_3_COLUMNS_DTO.get(0))).build()))
             .build();
 
-    public final static Table TABLE_3_SIMPLE = Table.builder()
+    public final static TableDto TABLE_3_DTO = TableDto.builder()
             .id(TABLE_3_ID)
-            .database(null /* for jpa */)
+            .database(DATABASE_1_DTO)
             .created(Instant.now())
             .internalName(TABLE_3_INTERNALNAME)
+            .isVersioned(TABLE_3_VERSIONED)
             .description(TABLE_3_DESCRIPTION)
             .name(TABLE_3_NAME)
-            .lastModified(TABLE_3_LAST_MODIFIED)
-            .tdbid(DATABASE_1_ID)
+            .database(DATABASE_1_DTO)
             .queueName(TABLE_3_QUEUE_NAME)
             .routingKey(TABLE_3_ROUTING_KEY)
-            .columns(List.of() /* for jpa */)
-            .constraints(TABLE_3_CONSTRAINTS)
-            .creator(USER_1)
-            .owner(USER_1)
+            .columns(TABLE_3_COLUMNS_DTO)
+            .constraints(TABLE_3_CONSTRAINTS_DTO)
+            .creator(USER_1_DTO)
+            .owner(USER_1_DTO)
             .created(TABLE_3_CREATED)
-            .lastModified(TABLE_3_LAST_MODIFIED)
             .build();
 
     public final static List<TableColumn> TABLE_4_COLUMNS = List.of(TableColumn.builder()
                     .id(COLUMN_4_1_ID)
                     .ordinalPosition(COLUMN_4_1_ORDINALPOS)
-                    .cdbid(DATABASE_2_ID)
-                    .tid(TABLE_4_ID)
+                    .table(TABLE_4)
                     .name(COLUMN_4_1_NAME)
                     .internalName(COLUMN_4_1_INTERNAL_NAME)
                     .columnType(COLUMN_4_1_TYPE)
-                    .dfid(COLUMN_4_1_DATE_FORMAT)
                     .isNullAllowed(COLUMN_4_1_NULL)
                     .autoGenerated(COLUMN_4_1_AUTO_GENERATED)
                     .isPrimaryKey(COLUMN_4_1_PRIMARY)
-                    .enumValues(COLUMN_4_1_ENUM_VALUES)
-                    .creator(USER_2)
+                    .enums(COLUMN_4_1_ENUM_VALUES)
+                    .sets(COLUMN_4_1_SET_VALUES)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_4_2_ID)
                     .ordinalPosition(COLUMN_4_2_ORDINALPOS)
-                    .cdbid(DATABASE_2_ID)
-                    .tid(TABLE_4_ID)
+                    .table(TABLE_4)
                     .name(COLUMN_4_2_NAME)
                     .internalName(COLUMN_4_2_INTERNAL_NAME)
                     .columnType(COLUMN_4_2_TYPE)
-                    .dfid(COLUMN_4_2_DATE_FORMAT)
                     .isNullAllowed(COLUMN_4_2_NULL)
                     .autoGenerated(COLUMN_4_2_AUTO_GENERATED)
                     .isPrimaryKey(COLUMN_4_2_PRIMARY)
-                    .enumValues(COLUMN_4_2_ENUM_VALUES)
-                    .creator(USER_2)
+                    .enums(COLUMN_4_2_ENUM_VALUES)
+                    .sets(COLUMN_4_2_SET_VALUES)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_4_3_ID)
                     .ordinalPosition(COLUMN_4_3_ORDINALPOS)
-                    .cdbid(DATABASE_2_ID)
-                    .tid(TABLE_4_ID)
+                    .table(TABLE_4)
                     .name(COLUMN_4_3_NAME)
                     .internalName(COLUMN_4_3_INTERNAL_NAME)
                     .columnType(COLUMN_4_3_TYPE)
-                    .dfid(COLUMN_4_3_DATE_FORMAT)
                     .isNullAllowed(COLUMN_4_3_NULL)
                     .autoGenerated(COLUMN_4_3_AUTO_GENERATED)
                     .isPrimaryKey(COLUMN_4_3_PRIMARY)
-                    .enumValues(COLUMN_4_3_ENUM_VALUES)
-                    .creator(USER_2)
+                    .enums(COLUMN_4_3_ENUM_VALUES)
+                    .sets(COLUMN_4_3_SET_VALUES)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_4_4_ID)
                     .ordinalPosition(COLUMN_4_4_ORDINALPOS)
-                    .cdbid(DATABASE_2_ID)
-                    .tid(TABLE_4_ID)
+                    .table(TABLE_4)
                     .name(COLUMN_4_4_NAME)
                     .internalName(COLUMN_4_4_INTERNAL_NAME)
                     .columnType(COLUMN_4_4_TYPE)
-                    .dfid(COLUMN_4_4_DATE_FORMAT)
                     .isNullAllowed(COLUMN_4_4_NULL)
                     .autoGenerated(COLUMN_4_4_AUTO_GENERATED)
                     .isPrimaryKey(COLUMN_4_4_PRIMARY)
-                    .enumValues(COLUMN_4_4_ENUM_VALUES)
-                    .creator(USER_2)
+                    .enums(COLUMN_4_4_ENUM_VALUES)
+                    .sets(COLUMN_4_4_SET_VALUES)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_4_5_ID)
                     .ordinalPosition(COLUMN_4_5_ORDINALPOS)
-                    .cdbid(DATABASE_2_ID)
-                    .tid(TABLE_4_ID)
+                    .table(TABLE_4)
                     .name(COLUMN_4_5_NAME)
                     .internalName(COLUMN_4_5_INTERNAL_NAME)
                     .columnType(COLUMN_4_5_TYPE)
-                    .dfid(COLUMN_4_5_DATE_FORMAT)
                     .isNullAllowed(COLUMN_4_5_NULL)
                     .autoGenerated(COLUMN_4_5_AUTO_GENERATED)
                     .isPrimaryKey(COLUMN_4_5_PRIMARY)
-                    .enumValues(COLUMN_4_5_ENUM_VALUES)
-                    .creator(USER_2)
+                    .enums(COLUMN_4_5_ENUM_VALUES)
+                    .sets(COLUMN_4_5_SET_VALUES)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_4_6_ID)
                     .ordinalPosition(COLUMN_4_6_ORDINALPOS)
-                    .cdbid(DATABASE_2_ID)
-                    .tid(TABLE_4_ID)
+                    .table(TABLE_4)
                     .name(COLUMN_4_6_NAME)
                     .internalName(COLUMN_4_6_INTERNAL_NAME)
                     .columnType(COLUMN_4_6_TYPE)
-                    .dfid(COLUMN_4_6_DATE_FORMAT)
                     .isNullAllowed(COLUMN_4_6_NULL)
                     .autoGenerated(COLUMN_4_6_AUTO_GENERATED)
                     .isPrimaryKey(COLUMN_4_6_PRIMARY)
-                    .enumValues(COLUMN_4_6_ENUM_VALUES)
-                    .creator(USER_2)
+                    .enums(COLUMN_4_6_ENUM_VALUES)
+                    .sets(COLUMN_4_6_SET_VALUES)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_4_7_ID)
                     .ordinalPosition(COLUMN_4_7_ORDINALPOS)
-                    .cdbid(DATABASE_2_ID)
-                    .tid(TABLE_4_ID)
+                    .table(TABLE_4)
                     .name(COLUMN_4_7_NAME)
                     .internalName(COLUMN_4_7_INTERNAL_NAME)
                     .columnType(COLUMN_4_7_TYPE)
-                    .dfid(COLUMN_4_7_DATE_FORMAT)
                     .isNullAllowed(COLUMN_4_7_NULL)
                     .autoGenerated(COLUMN_4_7_AUTO_GENERATED)
                     .isPrimaryKey(COLUMN_4_7_PRIMARY)
-                    .enumValues(COLUMN_4_7_ENUM_VALUES)
-                    .creator(USER_2)
+                    .enums(COLUMN_4_7_ENUM_VALUES)
+                    .sets(COLUMN_4_7_SET_VALUES)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_4_8_ID)
                     .ordinalPosition(COLUMN_4_8_ORDINALPOS)
-                    .cdbid(DATABASE_2_ID)
-                    .tid(TABLE_4_ID)
+                    .table(TABLE_4)
                     .name(COLUMN_4_8_NAME)
                     .internalName(COLUMN_4_8_INTERNAL_NAME)
                     .columnType(COLUMN_4_8_TYPE)
-                    .dfid(COLUMN_4_8_DATE_FORMAT)
                     .isNullAllowed(COLUMN_4_8_NULL)
                     .autoGenerated(COLUMN_4_8_AUTO_GENERATED)
                     .isPrimaryKey(COLUMN_4_8_PRIMARY)
-                    .enumValues(COLUMN_4_8_ENUM_VALUES)
-                    .creator(USER_2)
+                    .enums(COLUMN_4_8_ENUM_VALUES)
+                    .sets(COLUMN_4_8_SET_VALUES)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_4_9_ID)
                     .ordinalPosition(COLUMN_4_9_ORDINALPOS)
-                    .cdbid(DATABASE_2_ID)
-                    .tid(TABLE_4_ID)
+                    .table(TABLE_4)
                     .name(COLUMN_4_9_NAME)
                     .internalName(COLUMN_4_9_INTERNAL_NAME)
                     .columnType(COLUMN_4_9_TYPE)
-                    .dfid(COLUMN_4_9_DATE_FORMAT)
                     .isNullAllowed(COLUMN_4_9_NULL)
                     .autoGenerated(COLUMN_4_9_AUTO_GENERATED)
                     .isPrimaryKey(COLUMN_4_9_PRIMARY)
-                    .enumValues(COLUMN_4_9_ENUM_VALUES)
-                    .creator(USER_2)
+                    .enums(COLUMN_4_9_ENUM_VALUES)
+                    .sets(COLUMN_4_9_SET_VALUES)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_4_10_ID)
                     .ordinalPosition(COLUMN_4_10_ORDINALPOS)
-                    .cdbid(DATABASE_2_ID)
-                    .tid(TABLE_4_ID)
+                    .table(TABLE_4)
                     .name(COLUMN_4_10_NAME)
                     .internalName(COLUMN_4_10_INTERNAL_NAME)
                     .columnType(COLUMN_4_10_TYPE)
-                    .dfid(COLUMN_4_10_DATE_FORMAT)
                     .isNullAllowed(COLUMN_4_10_NULL)
                     .autoGenerated(COLUMN_4_10_AUTO_GENERATED)
                     .isPrimaryKey(COLUMN_4_10_PRIMARY)
-                    .enumValues(COLUMN_4_10_ENUM_VALUES)
-                    .creator(USER_2)
+                    .enums(COLUMN_4_10_ENUM_VALUES)
+                    .sets(COLUMN_4_10_SET_VALUES)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_4_11_ID)
                     .ordinalPosition(COLUMN_4_11_ORDINALPOS)
-                    .cdbid(DATABASE_2_ID)
-                    .tid(TABLE_4_ID)
+                    .table(TABLE_4)
                     .name(COLUMN_4_11_NAME)
                     .internalName(COLUMN_4_11_INTERNAL_NAME)
                     .columnType(COLUMN_4_11_TYPE)
-                    .dfid(COLUMN_4_11_DATE_FORMAT)
                     .isNullAllowed(COLUMN_4_11_NULL)
                     .autoGenerated(COLUMN_4_11_AUTO_GENERATED)
                     .isPrimaryKey(COLUMN_4_11_PRIMARY)
-                    .enumValues(COLUMN_4_11_ENUM_VALUES)
-                    .creator(USER_2)
+                    .enums(COLUMN_4_11_ENUM_VALUES)
+                    .sets(COLUMN_4_11_SET_VALUES)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_4_12_ID)
                     .ordinalPosition(COLUMN_4_12_ORDINALPOS)
-                    .cdbid(DATABASE_2_ID)
-                    .tid(TABLE_4_ID)
+                    .table(TABLE_4)
                     .name(COLUMN_4_12_NAME)
                     .internalName(COLUMN_4_12_INTERNAL_NAME)
                     .columnType(COLUMN_4_12_TYPE)
-                    .dfid(COLUMN_4_12_DATE_FORMAT)
                     .isNullAllowed(COLUMN_4_12_NULL)
                     .autoGenerated(COLUMN_4_12_AUTO_GENERATED)
                     .isPrimaryKey(COLUMN_4_12_PRIMARY)
-                    .enumValues(COLUMN_4_12_ENUM_VALUES)
-                    .creator(USER_2)
+                    .enums(COLUMN_4_12_ENUM_VALUES)
+                    .sets(COLUMN_4_12_SET_VALUES)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_4_13_ID)
                     .ordinalPosition(COLUMN_4_13_ORDINALPOS)
-                    .cdbid(DATABASE_2_ID)
-                    .tid(TABLE_4_ID)
+                    .table(TABLE_4)
                     .name(COLUMN_4_13_NAME)
                     .internalName(COLUMN_4_13_INTERNAL_NAME)
                     .columnType(COLUMN_4_13_TYPE)
-                    .dfid(COLUMN_4_13_DATE_FORMAT)
                     .isNullAllowed(COLUMN_4_13_NULL)
                     .autoGenerated(COLUMN_4_13_AUTO_GENERATED)
                     .isPrimaryKey(COLUMN_4_13_PRIMARY)
-                    .enumValues(COLUMN_4_13_ENUM_VALUES)
-                    .creator(USER_2)
+                    .enums(COLUMN_4_13_ENUM_VALUES)
+                    .sets(COLUMN_4_13_SET_VALUES)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_4_14_ID)
                     .ordinalPosition(COLUMN_4_14_ORDINALPOS)
-                    .cdbid(DATABASE_2_ID)
-                    .tid(TABLE_4_ID)
+                    .table(TABLE_4)
                     .name(COLUMN_4_14_NAME)
                     .internalName(COLUMN_4_14_INTERNAL_NAME)
                     .columnType(COLUMN_4_14_TYPE)
-                    .dfid(COLUMN_4_14_DATE_FORMAT)
                     .isNullAllowed(COLUMN_4_14_NULL)
                     .autoGenerated(COLUMN_4_14_AUTO_GENERATED)
                     .isPrimaryKey(COLUMN_4_14_PRIMARY)
-                    .enumValues(COLUMN_4_14_ENUM_VALUES)
-                    .creator(USER_2)
+                    .enums(COLUMN_4_14_ENUM_VALUES)
+                    .sets(COLUMN_4_14_SET_VALUES)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_4_15_ID)
                     .ordinalPosition(COLUMN_4_15_ORDINALPOS)
-                    .cdbid(DATABASE_2_ID)
-                    .tid(TABLE_4_ID)
+                    .table(TABLE_4)
                     .name(COLUMN_4_15_NAME)
                     .internalName(COLUMN_4_15_INTERNAL_NAME)
                     .columnType(COLUMN_4_15_TYPE)
-                    .dfid(COLUMN_4_15_DATE_FORMAT)
                     .isNullAllowed(COLUMN_4_15_NULL)
                     .autoGenerated(COLUMN_4_15_AUTO_GENERATED)
                     .isPrimaryKey(COLUMN_4_15_PRIMARY)
-                    .enumValues(COLUMN_4_15_ENUM_VALUES)
-                    .creator(USER_2)
+                    .enums(COLUMN_4_15_ENUM_VALUES)
+                    .sets(COLUMN_4_15_SET_VALUES)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_4_16_ID)
                     .ordinalPosition(COLUMN_4_16_ORDINALPOS)
-                    .cdbid(DATABASE_2_ID)
-                    .tid(TABLE_4_ID)
+                    .table(TABLE_4)
                     .name(COLUMN_4_16_NAME)
                     .internalName(COLUMN_4_16_INTERNAL_NAME)
                     .columnType(COLUMN_4_16_TYPE)
-                    .dfid(COLUMN_4_16_DATE_FORMAT)
                     .isNullAllowed(COLUMN_4_16_NULL)
                     .autoGenerated(COLUMN_4_16_AUTO_GENERATED)
                     .isPrimaryKey(COLUMN_4_16_PRIMARY)
-                    .enumValues(COLUMN_4_16_ENUM_VALUES)
-                    .creator(USER_2)
+                    .enums(COLUMN_4_16_ENUM_VALUES)
+                    .sets(COLUMN_4_16_SET_VALUES)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_4_17_ID)
                     .ordinalPosition(COLUMN_4_17_ORDINALPOS)
-                    .cdbid(DATABASE_2_ID)
-                    .tid(TABLE_4_ID)
+                    .table(TABLE_4)
                     .name(COLUMN_4_17_NAME)
                     .internalName(COLUMN_4_17_INTERNAL_NAME)
                     .columnType(COLUMN_4_17_TYPE)
-                    .dfid(COLUMN_4_17_DATE_FORMAT)
                     .isNullAllowed(COLUMN_4_17_NULL)
                     .autoGenerated(COLUMN_4_17_AUTO_GENERATED)
                     .isPrimaryKey(COLUMN_4_17_PRIMARY)
-                    .enumValues(COLUMN_4_17_ENUM_VALUES)
-                    .creator(USER_2)
+                    .enums(COLUMN_4_17_ENUM_VALUES)
+                    .sets(COLUMN_4_17_SET_VALUES)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_4_18_ID)
                     .ordinalPosition(COLUMN_4_18_ORDINALPOS)
-                    .cdbid(DATABASE_2_ID)
-                    .tid(TABLE_4_ID)
+                    .table(TABLE_4)
                     .name(COLUMN_4_18_NAME)
                     .internalName(COLUMN_4_18_INTERNAL_NAME)
                     .columnType(COLUMN_4_18_TYPE)
-                    .dfid(COLUMN_4_18_DATE_FORMAT)
                     .isNullAllowed(COLUMN_4_18_NULL)
                     .autoGenerated(COLUMN_4_18_AUTO_GENERATED)
                     .isPrimaryKey(COLUMN_4_18_PRIMARY)
-                    .enumValues(COLUMN_4_18_ENUM_VALUES)
-                    .creator(USER_2)
+                    .enums(COLUMN_4_18_ENUM_VALUES)
+                    .sets(COLUMN_4_18_SET_VALUES)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_4_19_ID)
                     .ordinalPosition(COLUMN_4_19_ORDINALPOS)
-                    .cdbid(DATABASE_2_ID)
-                    .tid(TABLE_4_ID)
+                    .table(TABLE_4)
                     .name(COLUMN_4_19_NAME)
                     .internalName(COLUMN_4_19_INTERNAL_NAME)
                     .columnType(COLUMN_4_19_TYPE)
-                    .dfid(COLUMN_4_19_DATE_FORMAT)
                     .isNullAllowed(COLUMN_4_19_NULL)
                     .autoGenerated(COLUMN_4_19_AUTO_GENERATED)
                     .isPrimaryKey(COLUMN_4_19_PRIMARY)
-                    .enumValues(COLUMN_4_19_ENUM_VALUES)
-                    .creator(USER_2)
+                    .enums(COLUMN_4_19_ENUM_VALUES)
+                    .sets(COLUMN_4_19_SET_VALUES)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_4_20_ID)
                     .ordinalPosition(COLUMN_4_20_ORDINALPOS)
-                    .cdbid(DATABASE_2_ID)
-                    .tid(TABLE_4_ID)
+                    .table(TABLE_4)
                     .name(COLUMN_4_20_NAME)
                     .internalName(COLUMN_4_20_INTERNAL_NAME)
                     .columnType(COLUMN_4_20_TYPE)
-                    .dfid(COLUMN_4_20_DATE_FORMAT)
                     .isNullAllowed(COLUMN_4_20_NULL)
                     .autoGenerated(COLUMN_4_20_AUTO_GENERATED)
                     .isPrimaryKey(COLUMN_4_20_PRIMARY)
-                    .enumValues(COLUMN_4_20_ENUM_VALUES)
-                    .creator(USER_2)
+                    .enums(COLUMN_4_20_ENUM_VALUES)
+                    .sets(COLUMN_4_20_SET_VALUES)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_4_21_ID)
                     .ordinalPosition(COLUMN_4_21_ORDINALPOS)
-                    .cdbid(DATABASE_2_ID)
-                    .tid(TABLE_4_ID)
+                    .table(TABLE_4)
                     .name(COLUMN_4_21_NAME)
                     .internalName(COLUMN_4_21_INTERNAL_NAME)
                     .columnType(COLUMN_4_21_TYPE)
-                    .dfid(COLUMN_4_21_DATE_FORMAT)
                     .isNullAllowed(COLUMN_4_21_NULL)
                     .autoGenerated(COLUMN_4_21_AUTO_GENERATED)
                     .isPrimaryKey(COLUMN_4_21_PRIMARY)
-                    .enumValues(COLUMN_4_21_ENUM_VALUES)
-                    .creator(USER_2)
+                    .enums(COLUMN_4_21_ENUM_VALUES)
+                    .sets(COLUMN_4_21_SET_VALUES)
                     .build());
 
     public final static Constraints TABLE_4_CONSTRAINTS = Constraints.builder()
             .uniques(List.of(Unique.builder().columns(List.of(TABLE_4_COLUMNS.get(0))).build()))
-            .build();
-
-    public final static Table TABLE_4 = Table.builder()
-            .id(TABLE_4_ID)
-            .created(Instant.now())
-            .internalName(TABLE_4_INTERNALNAME)
-            .description(TABLE_4_DESCRIPTION)
-            .name(TABLE_4_NAME)
-            .lastModified(TABLE_4_LAST_MODIFIED)
-            .tdbid(DATABASE_2_ID)
-            .queueName(TABLE_4_QUEUE_NAME)
-            .routingKey(TABLE_4_ROUTING_KEY)
-            .columns(TABLE_4_COLUMNS)
-            .constraints(TABLE_4_CONSTRAINTS)
-            .creator(USER_1)
-            .owner(USER_1)
-            .build();
-
-    public final static Table TABLE_4_SIMPLE = Table.builder()
-            .id(TABLE_4_ID)
-            .created(Instant.now())
-            .internalName(TABLE_4_INTERNALNAME)
-            .description(TABLE_4_DESCRIPTION)
-            .name(TABLE_4_NAME)
-            .lastModified(TABLE_4_LAST_MODIFIED)
-            .tdbid(DATABASE_2_ID)
-            .queueName(TABLE_4_QUEUE_NAME)
-            .routingKey(TABLE_4_ROUTING_KEY)
-            .columns(List.of() /* for jpa */)
-            .constraints(TABLE_4_CONSTRAINTS)
-            .creator(null /* for jpa */)
-            .owner(null  /* for jpa */)
             .build();
 
     public final static List<ForeignKeyCreateDto> TABLE_4_FOREIGN_KEYS_INVALID_CREATE = List.of(ForeignKeyCreateDto.builder()
@@ -3997,27 +4882,24 @@ public abstract class BaseTest {
     public final static List<ColumnCreateDto> TABLE_4_COLUMNS_INVALID_CREATE = List.of(ColumnCreateDto.builder()
             .name(COLUMN_4_2_NAME)
             .type(COLUMN_4_2_TYPE_DTO)
-            .dfid(COLUMN_4_2_DATE_FORMAT)
             .nullAllowed(COLUMN_4_2_NULL)
             .primaryKey(COLUMN_4_2_PRIMARY)
-            .enumValues(COLUMN_4_2_ENUM_VALUES_ARRAY)
+            .enums(COLUMN_4_2_ENUM_VALUES_ARR)
             .build());
 
     public final static List<ColumnCreateDto> TABLE_4_COLUMNS_CREATE = List.of(ColumnCreateDto.builder()
                     .name(COLUMN_4_1_NAME)
                     .type(COLUMN_4_1_TYPE_DTO)
-                    .dfid(COLUMN_4_1_DATE_FORMAT)
                     .nullAllowed(COLUMN_4_1_NULL)
                     .primaryKey(COLUMN_4_1_PRIMARY)
-                    .enumValues(COLUMN_4_1_ENUM_VALUES_ARRAY)
+                    .enums(COLUMN_4_2_ENUM_VALUES_ARR)
                     .build(),
             ColumnCreateDto.builder()
                     .name(COLUMN_4_2_NAME)
                     .type(COLUMN_4_2_TYPE_DTO)
-                    .dfid(COLUMN_4_2_DATE_FORMAT)
                     .nullAllowed(COLUMN_4_2_NULL)
                     .primaryKey(COLUMN_4_2_PRIMARY)
-                    .enumValues(COLUMN_4_2_ENUM_VALUES_ARRAY)
+                    .enums(COLUMN_4_2_ENUM_VALUES_ARR)
                     .build());
 
     public final static TableCreateDto TABLE_4_CREATE_DTO = TableCreateDto.builder()
@@ -4037,117 +4919,71 @@ public abstract class BaseTest {
     public final static List<TableColumn> TABLE_5_COLUMNS = List.of(TableColumn.builder()
                     .id(COLUMN_5_1_ID)
                     .ordinalPosition(COLUMN_5_1_ORDINALPOS)
-                    .cdbid(DATABASE_2_ID)
-                    .tid(TABLE_5_ID)
+                    .table(TABLE_5)
                     .name(COLUMN_5_1_NAME)
                     .internalName(COLUMN_5_1_INTERNAL_NAME)
                     .columnType(COLUMN_5_1_TYPE)
-                    .dfid(COLUMN_5_1_DATE_FORMAT)
                     .isNullAllowed(COLUMN_5_1_NULL)
                     .autoGenerated(COLUMN_5_1_AUTO_GENERATED)
                     .isPrimaryKey(COLUMN_5_1_PRIMARY)
-                    .enumValues(COLUMN_5_1_ENUM_VALUES)
-                    .creator(USER_2)
+                    .enums(COLUMN_5_1_ENUM_VALUES)
+                    .sets(COLUMN_5_1_SET_VALUES)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_5_2_ID)
                     .ordinalPosition(COLUMN_5_2_ORDINALPOS)
-                    .cdbid(DATABASE_2_ID)
-                    .tid(TABLE_5_ID)
+                    .table(TABLE_5)
                     .name(COLUMN_5_2_NAME)
                     .internalName(COLUMN_5_2_INTERNAL_NAME)
                     .columnType(COLUMN_5_2_TYPE)
-                    .dfid(COLUMN_5_2_DATE_FORMAT)
                     .isNullAllowed(COLUMN_5_2_NULL)
                     .autoGenerated(COLUMN_5_2_AUTO_GENERATED)
                     .isPrimaryKey(COLUMN_5_2_PRIMARY)
-                    .enumValues(COLUMN_5_2_ENUM_VALUES)
-                    .creator(USER_2)
+                    .enums(COLUMN_5_2_ENUM_VALUES)
+                    .sets(COLUMN_5_2_SET_VALUES)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_5_3_ID)
                     .ordinalPosition(COLUMN_5_3_ORDINALPOS)
-                    .cdbid(DATABASE_2_ID)
-                    .tid(TABLE_5_ID)
+                    .table(TABLE_5)
                     .name(COLUMN_5_3_NAME)
                     .internalName(COLUMN_5_3_INTERNAL_NAME)
                     .columnType(COLUMN_5_3_TYPE)
-                    .dfid(COLUMN_5_3_DATE_FORMAT)
                     .isNullAllowed(COLUMN_5_3_NULL)
                     .autoGenerated(COLUMN_5_3_AUTO_GENERATED)
                     .isPrimaryKey(COLUMN_5_3_PRIMARY)
-                    .enumValues(COLUMN_5_3_ENUM_VALUES)
-                    .creator(USER_2)
+                    .enums(COLUMN_5_3_ENUM_VALUES)
+                    .sets(COLUMN_5_3_SET_VALUES)
                     .build());
 
     public final static Constraints TABLE_5_CONSTRAINTS = Constraints.builder()
             .uniques(List.of(Unique.builder().columns(List.of(TABLE_5_COLUMNS.get(0))).build()))
             .build();
 
-    public final static Table TABLE_5 = Table.builder()
-            .id(TABLE_5_ID)
-            .created(Instant.now())
-            .internalName(TABLE_5_INTERNALNAME)
-            .description(TABLE_5_DESCRIPTION)
-            .name(TABLE_5_NAME)
-            .lastModified(TABLE_5_LAST_MODIFIED)
-            .tdbid(DATABASE_2_ID)
-            .queueName(TABLE_5_QUEUE_NAME)
-            .routingKey(TABLE_5_ROUTING_KEY)
-            .columns(TABLE_5_COLUMNS)
-            .constraints(TABLE_5_CONSTRAINTS)
-            .creator(USER_1)
-            .owner(USER_1)
-            .created(TABLE_5_CREATED)
-            .lastModified(TABLE_5_LAST_MODIFIED)
-            .build();
-
-    public final static Table TABLE_5_SIMPLE = Table.builder()
-            .id(TABLE_5_ID)
-            .created(Instant.now())
-            .internalName(TABLE_5_INTERNALNAME)
-            .description(TABLE_5_DESCRIPTION)
-            .name(TABLE_5_NAME)
-            .lastModified(TABLE_5_LAST_MODIFIED)
-            .tdbid(DATABASE_2_ID)
-            .queueName(TABLE_5_QUEUE_NAME)
-            .routingKey(TABLE_5_ROUTING_KEY)
-            .columns(List.of() /* for jpa */)
-            .constraints(TABLE_5_CONSTRAINTS)
-            .creator(null /* for jpa */)
-            .owner(null /* for jpa */)
-            .created(TABLE_5_CREATED)
-            .lastModified(TABLE_5_LAST_MODIFIED)
-            .build();
-
     public final static List<ColumnCreateDto> TABLE_5_COLUMNS_CREATE = List.of(
             ColumnCreateDto.builder()
                     .name(COLUMN_5_1_NAME)
                     .type(COLUMN_5_1_TYPE_DTO)
-                    .dfid(COLUMN_5_1_DATE_FORMAT)
                     .nullAllowed(COLUMN_5_1_NULL)
                     .primaryKey(COLUMN_5_1_PRIMARY)
                     .build(),
             ColumnCreateDto.builder()
                     .name(COLUMN_5_2_NAME)
                     .type(COLUMN_5_2_TYPE_DTO)
-                    .length(COLUMN_5_2_LENGTH)
-                    .dfid(COLUMN_5_2_DATE_FORMAT)
+                    .size(COLUMN_5_2_SIZE)
                     .nullAllowed(COLUMN_5_2_NULL)
                     .primaryKey(COLUMN_5_2_PRIMARY)
                     .build(),
             ColumnCreateDto.builder()
                     .name(COLUMN_5_3_NAME)
                     .type(COLUMN_5_3_TYPE_DTO)
-                    .length(COLUMN_5_3_LENGTH)
-                    .dfid(COLUMN_5_3_DATE_FORMAT)
+                    .size(COLUMN_5_3_SIZE)
                     .nullAllowed(COLUMN_5_3_NULL)
                     .primaryKey(COLUMN_5_3_PRIMARY)
                     .build(),
             ColumnCreateDto.builder()
                     .name(COLUMN_5_4_NAME)
                     .type(COLUMN_5_4_TYPE_DTO)
-                    .dfid(COLUMN_5_4_DATE_FORMAT)
                     .nullAllowed(COLUMN_5_4_NULL)
                     .primaryKey(COLUMN_5_4_PRIMARY)
                     .build());
@@ -4183,7 +5019,7 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_6_1_PRIMARY = true;
     public final static String COLUMN_6_1_NAME = "name_id";
     public final static String COLUMN_6_1_INTERNAL_NAME = "name_id";
-    public final static TableColumnType COLUMN_6_1_TYPE = TableColumnType.NUMBER;
+    public final static TableColumnType COLUMN_6_1_TYPE = TableColumnType.BIGINT;
     public final static Long COLUMN_6_1_DATE_FORMAT = null;
     public final static Boolean COLUMN_6_1_NULL = false;
     public final static Boolean COLUMN_6_1_UNIQUE = false;
@@ -4191,13 +5027,16 @@ public abstract class BaseTest {
     public final static String COLUMN_6_1_FOREIGN_KEY = null;
     public final static String COLUMN_6_1_CHECK = null;
     public final static List<String> COLUMN_6_1_ENUM_VALUES = null;
+    public final static List<String> COLUMN_6_1_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_6_1_SET_VALUES = null;
+    public final static List<String> COLUMN_6_1_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_6_2_ID = 27L;
     public final static Integer COLUMN_6_2_ORDINALPOS = 1;
     public final static Boolean COLUMN_6_2_PRIMARY = true;
     public final static String COLUMN_6_2_NAME = "zoo_id";
     public final static String COLUMN_6_2_INTERNAL_NAME = "zoo_id";
-    public final static TableColumnType COLUMN_6_2_TYPE = TableColumnType.NUMBER;
+    public final static TableColumnType COLUMN_6_2_TYPE = TableColumnType.BIGINT;
     public final static Long COLUMN_6_2_DATE_FORMAT = null;
     public final static Boolean COLUMN_6_2_NULL = false;
     public final static Boolean COLUMN_6_2_UNIQUE = false;
@@ -4205,71 +5044,36 @@ public abstract class BaseTest {
     public final static String COLUMN_6_2_FOREIGN_KEY = null;
     public final static String COLUMN_6_2_CHECK = null;
     public final static List<String> COLUMN_6_2_ENUM_VALUES = null;
+    public final static List<String> COLUMN_6_2_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_6_2_SET_VALUES = null;
+    public final static List<String> COLUMN_6_2_SET_VALUES_DTO = null;
 
     public final static List<TableColumn> TABLE_6_COLUMNS = List.of(TableColumn.builder()
                     .id(COLUMN_6_1_ID)
                     .ordinalPosition(COLUMN_6_1_ORDINALPOS)
-                    .cdbid(DATABASE_2_ID)
-                    .tid(TABLE_6_ID)
+                    .table(TABLE_6)
                     .name(COLUMN_6_1_NAME)
                     .internalName(COLUMN_6_1_INTERNAL_NAME)
                     .columnType(COLUMN_6_1_TYPE)
-                    .dfid(COLUMN_6_1_DATE_FORMAT)
                     .isNullAllowed(COLUMN_6_1_NULL)
                     .autoGenerated(COLUMN_6_1_AUTO_GENERATED)
                     .isPrimaryKey(COLUMN_6_1_PRIMARY)
-                    .enumValues(COLUMN_6_1_ENUM_VALUES)
-                    .creator(USER_2)
+                    .enums(COLUMN_6_1_ENUM_VALUES)
+                    .sets(COLUMN_6_1_SET_VALUES)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_6_2_ID)
                     .ordinalPosition(COLUMN_6_2_ORDINALPOS)
-                    .cdbid(DATABASE_2_ID)
-                    .tid(TABLE_6_ID)
+                    .table(TABLE_6)
                     .name(COLUMN_6_2_NAME)
                     .internalName(COLUMN_6_2_INTERNAL_NAME)
                     .columnType(COLUMN_6_2_TYPE)
-                    .dfid(COLUMN_6_2_DATE_FORMAT)
                     .isNullAllowed(COLUMN_6_2_NULL)
                     .autoGenerated(COLUMN_6_2_AUTO_GENERATED)
                     .isPrimaryKey(COLUMN_6_2_PRIMARY)
-                    .enumValues(COLUMN_6_2_ENUM_VALUES)
-                    .creator(USER_2)
+                    .enums(COLUMN_6_2_ENUM_VALUES)
+                    .sets(COLUMN_6_2_SET_VALUES)
                     .build());
-
-    public final static Table TABLE_6 = Table.builder()
-            .id(TABLE_6_ID)
-            .created(Instant.now())
-            .internalName(TABLE_6_INTERNAL_NAME)
-            .description(TABLE_6_DESCRIPTION)
-            .name(TABLE_6_NAME)
-            .lastModified(TABLE_6_LAST_MODIFIED)
-            .tdbid(DATABASE_2_ID)
-            .queueName(TABLE_6_QUEUE_NAME)
-            .routingKey(TABLE_6_ROUTING_KEY)
-            .columns(TABLE_6_COLUMNS)
-            .creator(USER_1)
-            .owner(USER_1)
-            .created(TABLE_6_CREATED)
-            .lastModified(TABLE_6_LAST_MODIFIED)
-            .build();
-
-    public final static Table TABLE_6_SIMPLE = Table.builder()
-            .id(TABLE_6_ID)
-            .created(Instant.now())
-            .internalName(TABLE_6_INTERNAL_NAME)
-            .description(TABLE_6_DESCRIPTION)
-            .name(TABLE_6_NAME)
-            .lastModified(TABLE_6_LAST_MODIFIED)
-            .tdbid(DATABASE_2_ID)
-            .queueName(TABLE_6_QUEUE_NAME)
-            .routingKey(TABLE_6_ROUTING_KEY)
-            .columns(List.of() /* for jpa */)
-            .creator(null /* for jpa */)
-            .owner(null /* for jpa */)
-            .created(TABLE_6_CREATED)
-            .lastModified(TABLE_6_LAST_MODIFIED)
-            .build();
 
     public final static Long VIEW_1_ID = 1L;
     public final static Boolean VIEW_1_INITIAL_VIEW = false;
@@ -4283,47 +5087,84 @@ public abstract class BaseTest {
     public final static List<TableColumn> VIEW_1_COLUMNS = List.of(TableColumn.builder()
                     .id(COLUMN_2_1_ID)
                     .ordinalPosition(COLUMN_2_1_ORDINALPOS)
-                    .cdbid(DATABASE_1_ID)
-                    .tid(TABLE_2_ID)
+                    .table(TABLE_2)
                     .name(COLUMN_2_1_NAME)
                     .internalName(COLUMN_2_1_INTERNAL_NAME)
                     .columnType(COLUMN_2_1_TYPE)
-                    .dfid(COLUMN_2_1_DATE_FORMAT)
                     .isNullAllowed(COLUMN_2_1_NULL)
                     .autoGenerated(COLUMN_2_1_AUTO_GENERATED)
                     .isPrimaryKey(COLUMN_2_1_PRIMARY)
-                    .enumValues(COLUMN_2_1_ENUM_VALUES)
-                    .creator(USER_1)
+                    .enums(COLUMN_2_1_ENUM_VALUES)
+                    .sets(COLUMN_2_1_SET_VALUES)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_2_2_ID)
                     .ordinalPosition(COLUMN_2_2_ORDINALPOS)
-                    .cdbid(DATABASE_1_ID)
-                    .tid(TABLE_2_ID)
+                    .table(TABLE_2)
                     .name(COLUMN_2_2_NAME)
                     .internalName(COLUMN_2_2_INTERNAL_NAME)
                     .columnType(COLUMN_2_2_TYPE)
-                    .dfid(COLUMN_2_2_DATE_FORMAT)
                     .isNullAllowed(COLUMN_2_2_NULL)
                     .autoGenerated(COLUMN_2_2_AUTO_GENERATED)
                     .isPrimaryKey(COLUMN_2_2_PRIMARY)
-                    .enumValues(COLUMN_2_2_ENUM_VALUES)
-                    .creator(USER_1)
+                    .enums(COLUMN_2_2_ENUM_VALUES)
+                    .sets(COLUMN_2_2_SET_VALUES)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_2_3_ID)
                     .ordinalPosition(COLUMN_2_3_ORDINALPOS)
-                    .cdbid(DATABASE_1_ID)
-                    .tid(TABLE_2_ID)
+                    .table(TABLE_2)
                     .name(COLUMN_2_3_NAME)
                     .internalName(COLUMN_2_3_INTERNAL_NAME)
                     .columnType(COLUMN_2_3_TYPE)
-                    .dfid(COLUMN_2_3_DATE_FORMAT)
                     .isNullAllowed(COLUMN_2_3_NULL)
                     .autoGenerated(COLUMN_2_3_AUTO_GENERATED)
                     .isPrimaryKey(COLUMN_2_3_PRIMARY)
-                    .enumValues(COLUMN_2_3_ENUM_VALUES)
-                    .creator(USER_1)
+                    .enums(COLUMN_2_3_ENUM_VALUES)
+                    .sets(COLUMN_2_3_SET_VALUES)
+                    .build());
+
+    public final static List<ColumnDto> VIEW_1_COLUMNS_DTO = List.of(ColumnDto.builder()
+                    .id(COLUMN_2_1_ID)
+                    .databaseId(DATABASE_1_ID)
+                    .tableId(TABLE_2_ID)
+                    .name(COLUMN_2_1_NAME)
+                    .internalName(COLUMN_2_1_INTERNAL_NAME)
+                    .columnType(COLUMN_2_1_TYPE_DTO)
+                    .dateFormat(null)
+                    .isNullAllowed(COLUMN_2_1_NULL)
+                    .autoGenerated(COLUMN_2_1_AUTO_GENERATED)
+                    .isPrimaryKey(COLUMN_2_1_PRIMARY)
+                    .enums(COLUMN_2_1_ENUM_VALUES_DTO)
+                    .sets(COLUMN_2_1_SET_VALUES_DTO)
+                    .build(),
+            ColumnDto.builder()
+                    .id(COLUMN_2_2_ID)
+                    .databaseId(DATABASE_1_ID)
+                    .tableId(TABLE_2_ID)
+                    .name(COLUMN_2_2_NAME)
+                    .internalName(COLUMN_2_2_INTERNAL_NAME)
+                    .columnType(COLUMN_2_2_TYPE_DTO)
+                    .dateFormat(null)
+                    .isNullAllowed(COLUMN_2_2_NULL)
+                    .autoGenerated(COLUMN_2_2_AUTO_GENERATED)
+                    .isPrimaryKey(COLUMN_2_2_PRIMARY)
+                    .enums(COLUMN_2_2_ENUM_VALUES_DTO)
+                    .sets(COLUMN_2_2_SET_VALUES_DTO)
+                    .build(),
+            ColumnDto.builder()
+                    .id(COLUMN_2_3_ID)
+                    .databaseId(DATABASE_1_ID)
+                    .tableId(TABLE_2_ID)
+                    .name(COLUMN_2_3_NAME)
+                    .internalName(COLUMN_2_3_INTERNAL_NAME)
+                    .columnType(COLUMN_2_3_TYPE_DTO)
+                    .dateFormat(null)
+                    .isNullAllowed(COLUMN_2_3_NULL)
+                    .autoGenerated(COLUMN_2_3_AUTO_GENERATED)
+                    .isPrimaryKey(COLUMN_2_3_PRIMARY)
+                    .enums(COLUMN_2_3_ENUM_VALUES_DTO)
+                    .sets(COLUMN_2_3_SET_VALUES_DTO)
                     .build());
 
     public final static View VIEW_1 = View.builder()
@@ -4348,6 +5189,7 @@ public abstract class BaseTest {
             .isPublic(VIEW_1_PUBLIC)
             .createdBy(USER_1_ID)
             .query(VIEW_1_QUERY)
+            .columns(VIEW_1_COLUMNS_DTO)
             .build();
 
     public final static Long VIEW_2_ID = 2L;
@@ -4362,77 +5204,68 @@ public abstract class BaseTest {
     public final static List<TableColumn> VIEW_2_COLUMNS = List.of(TableColumn.builder()
                     .id(COLUMN_1_1_ID)
                     .ordinalPosition(COLUMN_1_1_ORDINALPOS)
-                    .cdbid(DATABASE_1_ID)
-                    .tid(TABLE_1_ID)
+                    .table(TABLE_1)
                     .name(COLUMN_1_1_NAME)
                     .internalName(COLUMN_1_1_INTERNAL_NAME)
                     .columnType(COLUMN_1_1_TYPE)
-                    .dfid(COLUMN_1_1_DATE_FORMAT)
                     .isNullAllowed(COLUMN_1_1_NULL)
                     .autoGenerated(COLUMN_1_1_AUTO_GENERATED)
                     .isPrimaryKey(COLUMN_1_1_PRIMARY)
-                    .enumValues(COLUMN_1_1_ENUM_VALUES)
-                    .creator(USER_1)
+                    .enums(COLUMN_1_1_ENUM_VALUES)
+                    .sets(COLUMN_1_1_SET_VALUES)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_1_2_ID)
                     .ordinalPosition(COLUMN_1_2_ORDINALPOS)
-                    .cdbid(DATABASE_1_ID)
-                    .tid(TABLE_1_ID)
+                    .table(TABLE_1)
+                    .dateFormat(COLUMN_1_2_DATE)
                     .name(COLUMN_1_2_NAME)
                     .internalName(COLUMN_1_2_INTERNAL_NAME)
                     .columnType(COLUMN_1_2_TYPE)
-                    .dfid(COLUMN_1_2_DATE_FORMAT)
                     .isNullAllowed(COLUMN_1_2_NULL)
                     .autoGenerated(COLUMN_1_2_AUTO_GENERATED)
                     .isPrimaryKey(COLUMN_1_2_PRIMARY)
-                    .enumValues(COLUMN_1_2_ENUM_VALUES)
-                    .creator(USER_1)
+                    .enums(COLUMN_1_2_ENUM_VALUES)
+                    .sets(COLUMN_1_2_SET_VALUES)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_1_3_ID)
                     .ordinalPosition(COLUMN_1_3_ORDINALPOS)
-                    .cdbid(DATABASE_1_ID)
-                    .tid(TABLE_1_ID)
+                    .table(TABLE_1)
                     .name(COLUMN_1_3_NAME)
                     .internalName(COLUMN_1_3_INTERNAL_NAME)
                     .columnType(COLUMN_1_3_TYPE)
-                    .dfid(COLUMN_1_3_DATE_FORMAT)
                     .isNullAllowed(COLUMN_1_3_NULL)
                     .autoGenerated(COLUMN_1_3_AUTO_GENERATED)
                     .isPrimaryKey(COLUMN_1_3_PRIMARY)
-                    .enumValues(COLUMN_1_3_ENUM_VALUES)
-                    .creator(USER_1)
+                    .enums(COLUMN_1_3_ENUM_VALUES)
+                    .sets(COLUMN_1_3_SET_VALUES)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_1_4_ID)
                     .ordinalPosition(COLUMN_1_4_ORDINALPOS)
-                    .cdbid(DATABASE_1_ID)
-                    .tid(TABLE_1_ID)
+                    .table(TABLE_1)
                     .name(COLUMN_1_4_NAME)
                     .internalName(COLUMN_1_4_INTERNAL_NAME)
                     .columnType(COLUMN_1_4_TYPE)
-                    .dfid(COLUMN_1_4_DATE_FORMAT)
                     .isNullAllowed(COLUMN_1_4_NULL)
                     .autoGenerated(COLUMN_1_4_AUTO_GENERATED)
                     .isPrimaryKey(COLUMN_1_4_PRIMARY)
-                    .enumValues(COLUMN_1_4_ENUM_VALUES)
-                    .creator(USER_1)
+                    .enums(COLUMN_1_4_ENUM_VALUES)
+                    .sets(COLUMN_1_4_SET_VALUES)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_1_5_ID)
                     .ordinalPosition(COLUMN_1_5_ORDINALPOS)
-                    .cdbid(DATABASE_1_ID)
-                    .tid(TABLE_1_ID)
+                    .table(TABLE_1)
                     .name(COLUMN_1_5_NAME)
                     .internalName(COLUMN_1_5_INTERNAL_NAME)
                     .columnType(COLUMN_1_5_TYPE)
-                    .dfid(COLUMN_1_5_DATE_FORMAT)
                     .isNullAllowed(COLUMN_1_5_NULL)
                     .autoGenerated(COLUMN_1_5_AUTO_GENERATED)
                     .isPrimaryKey(COLUMN_1_5_PRIMARY)
-                    .enumValues(COLUMN_1_5_ENUM_VALUES)
-                    .creator(USER_1)
+                    .enums(COLUMN_1_5_ENUM_VALUES)
+                    .sets(COLUMN_1_5_SET_VALUES)
                     .build());
 
     public final static View VIEW_2 = View.builder()
@@ -4471,62 +5304,105 @@ public abstract class BaseTest {
     public final static List<TableColumn> VIEW_3_COLUMNS = List.of(TableColumn.builder()
                     .id(COLUMN_1_4_ID)
                     .ordinalPosition(COLUMN_1_4_ORDINALPOS)
-                    .cdbid(DATABASE_1_ID)
-                    .tid(TABLE_1_ID)
+                    .table(TABLE_1)
                     .name(COLUMN_1_4_NAME)
                     .internalName(COLUMN_1_4_INTERNAL_NAME)
                     .columnType(COLUMN_1_4_TYPE)
-                    .dfid(COLUMN_1_4_DATE_FORMAT)
                     .isNullAllowed(COLUMN_1_4_NULL)
                     .autoGenerated(COLUMN_1_4_AUTO_GENERATED)
                     .isPrimaryKey(COLUMN_1_4_PRIMARY)
-                    .enumValues(COLUMN_1_4_ENUM_VALUES)
-                    .creator(USER_1)
+                    .enums(COLUMN_1_4_ENUM_VALUES)
+                    .sets(COLUMN_1_4_SET_VALUES)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_1_5_ID)
                     .ordinalPosition(COLUMN_1_5_ORDINALPOS)
-                    .cdbid(DATABASE_1_ID)
-                    .tid(TABLE_1_ID)
+                    .table(TABLE_1)
                     .name(COLUMN_1_5_NAME)
                     .internalName(COLUMN_1_5_INTERNAL_NAME)
                     .columnType(COLUMN_1_5_TYPE)
-                    .dfid(COLUMN_1_5_DATE_FORMAT)
                     .isNullAllowed(COLUMN_1_5_NULL)
                     .autoGenerated(COLUMN_1_5_AUTO_GENERATED)
                     .isPrimaryKey(COLUMN_1_5_PRIMARY)
-                    .enumValues(COLUMN_1_5_ENUM_VALUES)
-                    .creator(USER_1)
+                    .enums(COLUMN_1_5_ENUM_VALUES)
+                    .sets(COLUMN_1_5_SET_VALUES)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_1_3_ID)
                     .ordinalPosition(COLUMN_1_3_ORDINALPOS)
-                    .cdbid(DATABASE_1_ID)
-                    .tid(TABLE_1_ID)
+                    .table(TABLE_1)
                     .name(COLUMN_1_3_NAME)
                     .internalName(COLUMN_1_3_INTERNAL_NAME)
                     .columnType(COLUMN_1_3_TYPE)
-                    .dfid(COLUMN_1_3_DATE_FORMAT)
                     .isNullAllowed(COLUMN_1_3_NULL)
                     .autoGenerated(COLUMN_1_3_AUTO_GENERATED)
                     .isPrimaryKey(COLUMN_1_3_PRIMARY)
-                    .enumValues(COLUMN_1_3_ENUM_VALUES)
-                    .creator(USER_1)
+                    .enums(COLUMN_1_3_ENUM_VALUES)
+                    .sets(COLUMN_1_3_SET_VALUES)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_1_2_ID)
                     .ordinalPosition(COLUMN_1_2_ORDINALPOS)
-                    .cdbid(DATABASE_1_ID)
-                    .tid(TABLE_1_ID)
+                    .table(TABLE_1)
+                    .dateFormat(COLUMN_1_2_DATE)
                     .name(COLUMN_1_2_NAME)
                     .internalName(COLUMN_1_2_INTERNAL_NAME)
                     .columnType(COLUMN_1_2_TYPE)
-                    .dfid(COLUMN_1_2_DATE_FORMAT)
                     .isNullAllowed(COLUMN_1_2_NULL)
                     .autoGenerated(COLUMN_1_2_AUTO_GENERATED)
                     .isPrimaryKey(COLUMN_1_2_PRIMARY)
-                    .enumValues(COLUMN_1_2_ENUM_VALUES)
-                    .creator(USER_1)
+                    .enums(COLUMN_1_2_ENUM_VALUES)
+                    .sets(COLUMN_1_2_SET_VALUES)
+                    .build());
+
+    public final static List<ColumnDto> VIEW_3_COLUMNS_DTO = List.of(ColumnDto.builder()
+                    .id(COLUMN_1_4_ID)
+                    .tableId(TABLE_1_ID)
+                    .name(COLUMN_1_4_NAME)
+                    .internalName(COLUMN_1_4_INTERNAL_NAME)
+                    .columnType(COLUMN_1_4_TYPE_DTO)
+                    .isNullAllowed(COLUMN_1_4_NULL)
+                    .autoGenerated(COLUMN_1_4_AUTO_GENERATED)
+                    .isPrimaryKey(COLUMN_1_4_PRIMARY)
+                    .enums(COLUMN_1_4_ENUM_VALUES_DTO)
+                    .sets(COLUMN_1_4_SET_VALUES_DTO)
+                    .build(),
+            ColumnDto.builder()
+                    .id(COLUMN_1_5_ID)
+                    .tableId(TABLE_1_ID)
+                    .name(COLUMN_1_5_NAME)
+                    .internalName(COLUMN_1_5_INTERNAL_NAME)
+                    .columnType(COLUMN_1_5_TYPE_DTO)
+                    .isNullAllowed(COLUMN_1_5_NULL)
+                    .autoGenerated(COLUMN_1_5_AUTO_GENERATED)
+                    .isPrimaryKey(COLUMN_1_5_PRIMARY)
+                    .enums(COLUMN_1_5_ENUM_VALUES_DTO)
+                    .sets(COLUMN_1_5_SET_VALUES_DTO)
+                    .build(),
+            ColumnDto.builder()
+                    .id(COLUMN_1_3_ID)
+                    .tableId(TABLE_1_ID)
+                    .name(COLUMN_1_3_NAME)
+                    .internalName(COLUMN_1_3_INTERNAL_NAME)
+                    .columnType(COLUMN_1_3_TYPE_DTO)
+                    .isNullAllowed(COLUMN_1_3_NULL)
+                    .autoGenerated(COLUMN_1_3_AUTO_GENERATED)
+                    .isPrimaryKey(COLUMN_1_3_PRIMARY)
+                    .enums(COLUMN_1_3_ENUM_VALUES_DTO)
+                    .sets(COLUMN_1_3_SET_VALUES_DTO)
+                    .build(),
+            ColumnDto.builder()
+                    .id(COLUMN_1_2_ID)
+                    .tableId(TABLE_1_ID)
+                    .dateFormat(IMAGE_DATE_1_DTO)
+                    .name(COLUMN_1_2_NAME)
+                    .internalName(COLUMN_1_2_INTERNAL_NAME)
+                    .columnType(COLUMN_1_2_TYPE_DTO)
+                    .isNullAllowed(COLUMN_1_2_NULL)
+                    .autoGenerated(COLUMN_1_2_AUTO_GENERATED)
+                    .isPrimaryKey(COLUMN_1_2_PRIMARY)
+                    .enums(COLUMN_1_2_ENUM_VALUES_DTO)
+                    .sets(COLUMN_1_2_SET_VALUES_DTO)
                     .build());
 
     public final static View VIEW_3 = View.builder()
@@ -4549,6 +5425,7 @@ public abstract class BaseTest {
             .internalName(VIEW_3_INTERNAL_NAME)
             .vdbid(VIEW_3_DATABASE_ID)
             .isPublic(VIEW_3_PUBLIC)
+            .columns(VIEW_3_COLUMNS_DTO)
             .query(VIEW_3_QUERY)
             .createdBy(USER_1_ID)
             .build();
@@ -4559,261 +5436,232 @@ public abstract class BaseTest {
     public final static String VIEW_4_INTERNAL_NAME = "mock_view";
     public final static Long VIEW_4_CONTAINER_ID = CONTAINER_2_ID;
     public final static Long VIEW_4_DATABASE_ID = DATABASE_2_ID;
+    public final static Database VIEW_4_DATABASE = DATABASE_2;
     public final static Long VIEW_4_TABLE_ID = TABLE_4_ID;
+    public final static Table VIEW_4_TABLE = TABLE_4;
     public final static Boolean VIEW_4_PUBLIC = true;
-    public final static String VIEW_4_QUERY = "SELECT `animal_name`, `hair`, `feathers`, `eggs`, `milk`, `airborne`, `aquatic`, `predator`, `toothed`, `backbone`, `breathes`, `venomous`, `fins`, `legs`, `tail`, `domestic`, `catsize`, `class_type` FROM `zoo` WHERE `class_type` = 1";
+    public final static String VIEW_4_QUERY = "SELECT `animal_name`, `hair`, `feathers`, `eggs`, `milk`, `airborne`, `aquatic`, `predator`, `backbone`, `breathes`, `venomous`, `fins`, `legs`, `tail`, `domestic`, `catsize`, `class_type` FROM `zoo` WHERE `class_type` = 1";
 
     public final static List<TableColumn> VIEW_4_COLUMNS = List.of(TableColumn.builder()
-                    .ordinalPosition(0)
-                    .cdbid(VIEW_4_DATABASE_ID)
-                    .tid(VIEW_4_TABLE_ID)
-                    .name("animal_name")
-                    .internalName("animal_name")
-                    .columnType(TableColumnType.STRING)
-                    .dfid(null)
-                    .isNullAllowed(null)
-                    .autoGenerated(false)
-                    .isPrimaryKey(false)
-                    .enumValues(null)
-                    .creator(USER_1)
+                    .id(COLUMN_4_2_ID)
+                    .ordinalPosition(COLUMN_4_2_ORDINALPOS)
+                    .table(VIEW_4_TABLE)
+                    .name(COLUMN_4_2_NAME)
+                    .internalName(COLUMN_4_2_INTERNAL_NAME)
+                    .columnType(COLUMN_4_2_TYPE)
+                    .isNullAllowed(COLUMN_4_2_NULL)
+                    .autoGenerated(COLUMN_4_2_AUTO_GENERATED)
+                    .isPrimaryKey(COLUMN_4_2_PRIMARY)
+                    .enums(COLUMN_4_2_ENUM_VALUES)
+                    .sets(COLUMN_4_2_SET_VALUES)
                     .build(),
             TableColumn.builder()
-                    .ordinalPosition(1)
-                    .cdbid(VIEW_4_DATABASE_ID)
-                    .tid(VIEW_4_TABLE_ID)
-                    .name("hair")
-                    .internalName("hair")
-                    .columnType(TableColumnType.BOOLEAN)
-                    .dfid(null)
-                    .isNullAllowed(null)
-                    .autoGenerated(false)
-                    .isPrimaryKey(false)
-                    .enumValues(null)
-                    .creator(USER_1)
+                    .id(COLUMN_4_3_ID)
+                    .ordinalPosition(COLUMN_4_3_ORDINALPOS)
+                    .table(VIEW_4_TABLE)
+                    .name(COLUMN_4_3_NAME)
+                    .internalName(COLUMN_4_3_INTERNAL_NAME)
+                    .columnType(COLUMN_4_3_TYPE)
+                    .isNullAllowed(COLUMN_4_3_NULL)
+                    .autoGenerated(COLUMN_4_3_AUTO_GENERATED)
+                    .isPrimaryKey(COLUMN_4_3_PRIMARY)
+                    .enums(COLUMN_4_3_ENUM_VALUES)
+                    .sets(COLUMN_4_3_SET_VALUES)
                     .build(),
             TableColumn.builder()
-                    .ordinalPosition(2)
-                    .cdbid(VIEW_4_DATABASE_ID)
-                    .tid(VIEW_4_TABLE_ID)
-                    .name("feathers")
-                    .internalName("feathers")
-                    .columnType(TableColumnType.BOOLEAN)
-                    .dfid(null)
-                    .isNullAllowed(null)
-                    .autoGenerated(false)
-                    .isPrimaryKey(false)
-                    .enumValues(null)
-                    .creator(USER_1)
+                    .id(COLUMN_4_4_ID)
+                    .ordinalPosition(COLUMN_4_4_ORDINALPOS)
+                    .table(VIEW_4_TABLE)
+                    .name(COLUMN_4_4_NAME)
+                    .internalName(COLUMN_4_4_INTERNAL_NAME)
+                    .columnType(COLUMN_4_4_TYPE)
+                    .isNullAllowed(COLUMN_4_4_NULL)
+                    .autoGenerated(COLUMN_4_4_AUTO_GENERATED)
+                    .isPrimaryKey(COLUMN_4_4_PRIMARY)
+                    .enums(COLUMN_4_4_ENUM_VALUES)
+                    .sets(COLUMN_4_4_SET_VALUES)
                     .build(),
             TableColumn.builder()
-                    .ordinalPosition(3)
-                    .cdbid(VIEW_4_DATABASE_ID)
-                    .tid(VIEW_4_TABLE_ID)
-                    .name("eggs")
-                    .internalName("eggs")
-                    .columnType(TableColumnType.BOOLEAN)
-                    .dfid(null)
-                    .isNullAllowed(null)
-                    .autoGenerated(false)
-                    .isPrimaryKey(false)
-                    .enumValues(null)
-                    .creator(USER_1)
+                    .id(COLUMN_4_6_ID)
+                    .ordinalPosition(COLUMN_4_6_ORDINALPOS)
+                    .table(VIEW_4_TABLE)
+                    .name(COLUMN_4_6_NAME)
+                    .internalName(COLUMN_4_6_INTERNAL_NAME)
+                    .columnType(COLUMN_4_6_TYPE)
+                    .isNullAllowed(COLUMN_4_6_NULL)
+                    .autoGenerated(COLUMN_4_6_AUTO_GENERATED)
+                    .isPrimaryKey(COLUMN_4_6_PRIMARY)
+                    .enums(COLUMN_4_6_ENUM_VALUES)
+                    .sets(COLUMN_4_6_SET_VALUES)
                     .build(),
             TableColumn.builder()
-                    .ordinalPosition(4)
-                    .cdbid(VIEW_4_DATABASE_ID)
-                    .tid(VIEW_4_TABLE_ID)
-                    .name("milk")
-                    .internalName("milk")
-                    .columnType(TableColumnType.BOOLEAN)
-                    .dfid(null)
-                    .isNullAllowed(null)
-                    .autoGenerated(false)
-                    .isPrimaryKey(false)
-                    .enumValues(null)
-                    .creator(USER_1)
+                    .id(COLUMN_4_7_ID)
+                    .ordinalPosition(COLUMN_4_7_ORDINALPOS)
+                    .table(VIEW_4_TABLE)
+                    .name(COLUMN_4_7_NAME)
+                    .internalName(COLUMN_4_7_INTERNAL_NAME)
+                    .columnType(COLUMN_4_7_TYPE)
+                    .isNullAllowed(COLUMN_4_7_NULL)
+                    .autoGenerated(COLUMN_4_7_AUTO_GENERATED)
+                    .isPrimaryKey(COLUMN_4_7_PRIMARY)
+                    .enums(COLUMN_4_7_ENUM_VALUES)
+                    .sets(COLUMN_4_7_SET_VALUES)
+                    .build(), 
+            TableColumn.builder()
+                    .id(COLUMN_4_9_ID)
+                    .ordinalPosition(COLUMN_4_9_ORDINALPOS)
+                    .table(VIEW_4_TABLE)
+                    .name(COLUMN_4_9_NAME)
+                    .internalName(COLUMN_4_9_INTERNAL_NAME)
+                    .columnType(COLUMN_4_9_TYPE)
+                    .isNullAllowed(COLUMN_4_9_NULL)
+                    .autoGenerated(COLUMN_4_9_AUTO_GENERATED)
+                    .isPrimaryKey(COLUMN_4_9_PRIMARY)
+                    .enums(COLUMN_4_9_ENUM_VALUES)
+                    .sets(COLUMN_4_9_SET_VALUES)
                     .build(),
             TableColumn.builder()
-                    .ordinalPosition(5)
-                    .cdbid(VIEW_4_DATABASE_ID)
-                    .tid(VIEW_4_TABLE_ID)
-                    .name("airborne")
-                    .internalName("airborne")
-                    .columnType(TableColumnType.BOOLEAN)
-                    .dfid(null)
-                    .isNullAllowed(null)
-                    .autoGenerated(false)
-                    .isPrimaryKey(false)
-                    .enumValues(null)
-                    .creator(USER_1)
+                    .id(COLUMN_4_11_ID)
+                    .ordinalPosition(COLUMN_4_11_ORDINALPOS)
+                    .table(VIEW_4_TABLE)
+                    .name(COLUMN_4_11_NAME)
+                    .internalName(COLUMN_4_11_INTERNAL_NAME)
+                    .columnType(COLUMN_4_11_TYPE)
+                    .isNullAllowed(COLUMN_4_11_NULL)
+                    .autoGenerated(COLUMN_4_11_AUTO_GENERATED)
+                    .isPrimaryKey(COLUMN_4_11_PRIMARY)
+                    .enums(COLUMN_4_11_ENUM_VALUES)
+                    .sets(COLUMN_4_11_SET_VALUES)
                     .build(),
             TableColumn.builder()
-                    .ordinalPosition(6)
-                    .cdbid(VIEW_4_DATABASE_ID)
-                    .tid(VIEW_4_TABLE_ID)
-                    .name("aquatic")
-                    .internalName("aquatic")
-                    .columnType(TableColumnType.BOOLEAN)
-                    .dfid(null)
-                    .isNullAllowed(null)
-                    .autoGenerated(false)
-                    .isPrimaryKey(false)
-                    .enumValues(null)
-                    .creator(USER_1)
+                    .id(COLUMN_4_12_ID)
+                    .ordinalPosition(COLUMN_4_12_ORDINALPOS)
+                    .table(VIEW_4_TABLE)
+                    .name(COLUMN_4_12_NAME)
+                    .internalName(COLUMN_4_12_INTERNAL_NAME)
+                    .columnType(COLUMN_4_12_TYPE)
+                    .isNullAllowed(COLUMN_4_12_NULL)
+                    .autoGenerated(COLUMN_4_12_AUTO_GENERATED)
+                    .isPrimaryKey(COLUMN_4_12_PRIMARY)
+                    .enums(COLUMN_4_12_ENUM_VALUES)
+                    .sets(COLUMN_4_12_SET_VALUES)
                     .build(),
             TableColumn.builder()
-                    .ordinalPosition(7)
-                    .cdbid(VIEW_4_DATABASE_ID)
-                    .tid(VIEW_4_TABLE_ID)
-                    .name("predator")
-                    .internalName("predator")
-                    .columnType(TableColumnType.BOOLEAN)
-                    .dfid(null)
-                    .isNullAllowed(null)
-                    .autoGenerated(false)
-                    .isPrimaryKey(false)
-                    .enumValues(null)
-                    .creator(USER_1)
+                    .id(COLUMN_4_13_ID)
+                    .ordinalPosition(COLUMN_4_13_ORDINALPOS)
+                    .table(VIEW_4_TABLE)
+                    .name(COLUMN_4_13_NAME)
+                    .internalName(COLUMN_4_13_INTERNAL_NAME)
+                    .columnType(COLUMN_4_13_TYPE)
+                    .isNullAllowed(COLUMN_4_13_NULL)
+                    .autoGenerated(COLUMN_4_13_AUTO_GENERATED)
+                    .isPrimaryKey(COLUMN_4_13_PRIMARY)
+                    .enums(COLUMN_4_13_ENUM_VALUES)
+                    .sets(COLUMN_4_13_SET_VALUES)
                     .build(),
             TableColumn.builder()
-                    .ordinalPosition(8)
-                    .cdbid(VIEW_4_DATABASE_ID)
-                    .tid(VIEW_4_TABLE_ID)
-                    .name("toothed")
-                    .internalName("toothed")
-                    .columnType(TableColumnType.BOOLEAN)
-                    .dfid(null)
-                    .isNullAllowed(null)
-                    .autoGenerated(false)
-                    .isPrimaryKey(false)
-                    .enumValues(null)
-                    .creator(USER_1)
+                    .id(COLUMN_4_14_ID)
+                    .ordinalPosition(COLUMN_4_14_ORDINALPOS)
+                    .table(VIEW_4_TABLE)
+                    .name(COLUMN_4_14_NAME)
+                    .internalName(COLUMN_4_14_INTERNAL_NAME)
+                    .columnType(COLUMN_4_14_TYPE)
+                    .isNullAllowed(COLUMN_4_14_NULL)
+                    .autoGenerated(COLUMN_4_14_AUTO_GENERATED)
+                    .isPrimaryKey(COLUMN_4_14_PRIMARY)
+                    .enums(COLUMN_4_14_ENUM_VALUES)
+                    .sets(COLUMN_4_14_SET_VALUES)
                     .build(),
             TableColumn.builder()
-                    .ordinalPosition(9)
-                    .cdbid(VIEW_4_DATABASE_ID)
-                    .tid(VIEW_4_TABLE_ID)
-                    .name("backbone")
-                    .internalName("backbone")
-                    .columnType(TableColumnType.BOOLEAN)
-                    .dfid(null)
-                    .isNullAllowed(null)
-                    .autoGenerated(false)
-                    .isPrimaryKey(false)
-                    .enumValues(null)
-                    .creator(USER_1)
+                    .id(COLUMN_4_15_ID)
+                    .ordinalPosition(COLUMN_4_15_ORDINALPOS)
+                    .table(VIEW_4_TABLE)
+                    .name(COLUMN_4_15_NAME)
+                    .internalName(COLUMN_4_15_INTERNAL_NAME)
+                    .columnType(COLUMN_4_15_TYPE)
+                    .isNullAllowed(COLUMN_4_15_NULL)
+                    .autoGenerated(COLUMN_4_15_AUTO_GENERATED)
+                    .isPrimaryKey(COLUMN_4_15_PRIMARY)
+                    .enums(COLUMN_4_15_ENUM_VALUES)
+                    .sets(COLUMN_4_15_SET_VALUES)
                     .build(),
             TableColumn.builder()
-                    .ordinalPosition(10)
-                    .cdbid(VIEW_4_DATABASE_ID)
-                    .tid(VIEW_4_TABLE_ID)
-                    .name("breathes")
-                    .internalName("breathes")
-                    .columnType(TableColumnType.BOOLEAN)
-                    .dfid(null)
-                    .isNullAllowed(null)
-                    .autoGenerated(false)
-                    .isPrimaryKey(false)
-                    .enumValues(null)
-                    .creator(USER_1)
+                    .id(COLUMN_4_16_ID)
+                    .ordinalPosition(COLUMN_4_16_ORDINALPOS)
+                    .table(VIEW_4_TABLE)
+                    .name(COLUMN_4_16_NAME)
+                    .internalName(COLUMN_4_16_INTERNAL_NAME)
+                    .columnType(COLUMN_4_16_TYPE)
+                    .isNullAllowed(COLUMN_4_16_NULL)
+                    .autoGenerated(COLUMN_4_16_AUTO_GENERATED)
+                    .isPrimaryKey(COLUMN_4_16_PRIMARY)
+                    .enums(COLUMN_4_16_ENUM_VALUES)
+                    .sets(COLUMN_4_16_SET_VALUES)
                     .build(),
             TableColumn.builder()
-                    .ordinalPosition(11)
-                    .cdbid(VIEW_4_DATABASE_ID)
-                    .tid(VIEW_4_TABLE_ID)
-                    .name("venomous")
-                    .internalName("venomous")
-                    .columnType(TableColumnType.BOOLEAN)
-                    .dfid(null)
-                    .isNullAllowed(null)
-                    .autoGenerated(false)
-                    .isPrimaryKey(false)
-                    .enumValues(null)
-                    .creator(USER_1)
+                    .id(COLUMN_4_17_ID)
+                    .ordinalPosition(COLUMN_4_17_ORDINALPOS)
+                    .table(VIEW_4_TABLE)
+                    .name(COLUMN_4_17_NAME)
+                    .internalName(COLUMN_4_17_INTERNAL_NAME)
+                    .columnType(COLUMN_4_17_TYPE)
+                    .isNullAllowed(COLUMN_4_17_NULL)
+                    .autoGenerated(COLUMN_4_17_AUTO_GENERATED)
+                    .isPrimaryKey(COLUMN_4_17_PRIMARY)
+                    .enums(COLUMN_4_17_ENUM_VALUES)
+                    .sets(COLUMN_4_17_SET_VALUES)
                     .build(),
             TableColumn.builder()
-                    .ordinalPosition(12)
-                    .cdbid(VIEW_4_DATABASE_ID)
-                    .tid(VIEW_4_TABLE_ID)
-                    .name("fins")
-                    .internalName("fins")
-                    .columnType(TableColumnType.BOOLEAN)
-                    .dfid(null)
-                    .isNullAllowed(null)
-                    .autoGenerated(false)
-                    .isPrimaryKey(false)
-                    .enumValues(null)
-                    .creator(USER_1)
+                    .id(COLUMN_4_18_ID)
+                    .ordinalPosition(COLUMN_4_18_ORDINALPOS)
+                    .table(VIEW_4_TABLE)
+                    .name(COLUMN_4_18_NAME)
+                    .internalName(COLUMN_4_18_INTERNAL_NAME)
+                    .columnType(COLUMN_4_18_TYPE)
+                    .isNullAllowed(COLUMN_4_18_NULL)
+                    .autoGenerated(COLUMN_4_18_AUTO_GENERATED)
+                    .isPrimaryKey(COLUMN_4_18_PRIMARY)
+                    .enums(COLUMN_4_18_ENUM_VALUES)
+                    .sets(COLUMN_4_18_SET_VALUES)
                     .build(),
             TableColumn.builder()
-                    .ordinalPosition(13)
-                    .cdbid(VIEW_4_DATABASE_ID)
-                    .tid(VIEW_4_TABLE_ID)
-                    .name("legs")
-                    .internalName("legs")
-                    .columnType(TableColumnType.NUMBER)
-                    .dfid(null)
-                    .isNullAllowed(null)
-                    .autoGenerated(false)
-                    .isPrimaryKey(false)
-                    .enumValues(null)
-                    .creator(USER_1)
+                    .id(COLUMN_4_19_ID)
+                    .ordinalPosition(COLUMN_4_19_ORDINALPOS)
+                    .table(VIEW_4_TABLE)
+                    .name(COLUMN_4_19_NAME)
+                    .internalName(COLUMN_4_19_INTERNAL_NAME)
+                    .columnType(COLUMN_4_19_TYPE)
+                    .isNullAllowed(COLUMN_4_19_NULL)
+                    .autoGenerated(COLUMN_4_19_AUTO_GENERATED)
+                    .isPrimaryKey(COLUMN_4_19_PRIMARY)
+                    .enums(COLUMN_4_19_ENUM_VALUES)
+                    .sets(COLUMN_4_19_SET_VALUES)
                     .build(),
             TableColumn.builder()
-                    .ordinalPosition(14)
-                    .cdbid(VIEW_4_DATABASE_ID)
-                    .tid(VIEW_4_TABLE_ID)
-                    .name("tail")
-                    .internalName("tail")
-                    .columnType(TableColumnType.BOOLEAN)
-                    .dfid(null)
-                    .isNullAllowed(null)
-                    .autoGenerated(false)
-                    .isPrimaryKey(false)
-                    .enumValues(null)
-                    .creator(USER_1)
+                    .id(COLUMN_4_20_ID)
+                    .ordinalPosition(COLUMN_4_20_ORDINALPOS)
+                    .table(VIEW_4_TABLE)
+                    .name(COLUMN_4_20_NAME)
+                    .internalName(COLUMN_4_20_INTERNAL_NAME)
+                    .columnType(COLUMN_4_20_TYPE)
+                    .isNullAllowed(COLUMN_4_20_NULL)
+                    .autoGenerated(COLUMN_4_20_AUTO_GENERATED)
+                    .isPrimaryKey(COLUMN_4_20_PRIMARY)
+                    .enums(COLUMN_4_20_ENUM_VALUES)
+                    .sets(COLUMN_4_20_SET_VALUES)
                     .build(),
             TableColumn.builder()
-                    .ordinalPosition(15)
-                    .cdbid(VIEW_4_DATABASE_ID)
-                    .tid(VIEW_4_TABLE_ID)
-                    .name("domestic")
-                    .internalName("domestic")
-                    .columnType(TableColumnType.BOOLEAN)
-                    .dfid(null)
-                    .isNullAllowed(null)
-                    .autoGenerated(false)
-                    .isPrimaryKey(false)
-                    .enumValues(null)
-                    .creator(USER_1)
-                    .build(),
-            TableColumn.builder()
-                    .ordinalPosition(16)
-                    .cdbid(VIEW_4_DATABASE_ID)
-                    .tid(VIEW_4_TABLE_ID)
-                    .name("catsize")
-                    .internalName("catsize")
-                    .columnType(TableColumnType.BOOLEAN)
-                    .dfid(null)
-                    .isNullAllowed(null)
-                    .autoGenerated(false)
-                    .isPrimaryKey(false)
-                    .enumValues(null)
-                    .creator(USER_1)
-                    .build(),
-            TableColumn.builder()
-                    .ordinalPosition(17)
-                    .cdbid(VIEW_4_DATABASE_ID)
-                    .tid(VIEW_4_TABLE_ID)
-                    .name("class_type")
-                    .internalName("class_type")
-                    .columnType(TableColumnType.NUMBER)
-                    .dfid(null)
-                    .isNullAllowed(null)
-                    .autoGenerated(false)
-                    .isPrimaryKey(false)
-                    .enumValues(null)
-                    .creator(USER_1)
+                    .id(COLUMN_4_21_ID)
+                    .ordinalPosition(COLUMN_4_21_ORDINALPOS)
+                    .table(VIEW_4_TABLE)
+                    .name(COLUMN_4_21_NAME)
+                    .internalName(COLUMN_4_21_INTERNAL_NAME)
+                    .columnType(COLUMN_4_21_TYPE)
+                    .isNullAllowed(COLUMN_4_21_NULL)
+                    .autoGenerated(COLUMN_4_21_AUTO_GENERATED)
+                    .isPrimaryKey(COLUMN_4_21_PRIMARY)
+                    .enums(COLUMN_4_21_ENUM_VALUES)
+                    .sets(COLUMN_4_21_SET_VALUES)
                     .build());
 
     public final static View VIEW_4 = View.builder()
@@ -6086,7 +6934,7 @@ public abstract class BaseTest {
             .type(IDENTIFIER_4_TYPE_DTO)
             .visibility(IDENTIFIER_4_VISIBILITY_DTO)
             .build();
-    
+
     public final static Long IDENTIFIER_5_ID = 5L;
     public final static Long IDENTIFIER_5_DATABASE_ID = DATABASE_1_ID;
     public final static String IDENTIFIER_5_DOI = null;
