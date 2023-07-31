@@ -29,6 +29,10 @@ public class IdentifierSaveDto {
     @Schema(example = "null")
     private Long queryId;
 
+    @JsonProperty("view_id")
+    @Schema(example = "null")
+    private Long viewId;
+
     @NotNull
     @Schema(example = "database")
     private IdentifierTypeDto type;

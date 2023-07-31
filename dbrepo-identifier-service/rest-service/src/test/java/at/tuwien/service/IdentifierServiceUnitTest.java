@@ -69,7 +69,7 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void findAll2_succeeds() throws IdentifierNotFoundException {
+    public void findAll2_succeeds() {
 
         /* mock */
         when(identifierRepository.findAll())
@@ -82,7 +82,7 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void findAll2_databaseId_succeeds() throws IdentifierNotFoundException {
+    public void findAll2_databaseId_succeeds() {
 
         /* mock */
         when(identifierRepository.findByDatabaseId(DATABASE_1_ID))
@@ -95,7 +95,7 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void findAll2_queryId_succeeds() throws IdentifierNotFoundException {
+    public void findAll2_queryId_succeeds() {
 
         /* mock */
         when(identifierRepository.findByQueryId(QUERY_1_ID))
@@ -108,7 +108,7 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void findAll2_databaseIdAndQueryId_succeeds() throws IdentifierNotFoundException {
+    public void findAll2_databaseIdAndQueryId_succeeds() {
 
         /* mock */
         when(identifierRepository.findByDatabaseIdAndQueryId(DATABASE_1_ID, QUERY_1_ID))
@@ -175,7 +175,7 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
     public void create_database_succeeds()
             throws DatabaseNotFoundException, UserNotFoundException, IdentifierAlreadyExistsException,
             QueryNotFoundException, IdentifierPublishingNotAllowedException, RemoteUnavailableException,
-            IdentifierRequestException {
+            IdentifierRequestException, ViewNotFoundException {
         final String bearer = "Bearer abcxyz";
 
         /* mock */

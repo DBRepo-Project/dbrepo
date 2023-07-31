@@ -173,7 +173,7 @@ export default {
       return this.roles.includes('delete-database-view') && this.view.creator.id === this.user.id
     },
     canCreatePid () {
-      if (!this.roles || !this.user || !this.view || !this.view.identifier) {
+      if (!this.roles || !this.user || !this.view || this.view.identifier) {
         return false
       }
       return this.roles.includes('create-identifier') && UserUtils.hasReadAccess(this.access)

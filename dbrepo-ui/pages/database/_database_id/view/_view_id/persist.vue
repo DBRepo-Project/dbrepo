@@ -1,6 +1,6 @@
 <template>
   <div v-if="canPersistView">
-    <Persist type="view" :database="database" :query="query" />
+    <Persist type="view" :database="database" :view="view" />
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
   </div>
 </template>
@@ -17,8 +17,8 @@ export default {
   data () {
     return {
       loading: false,
-      loadingQuery: false,
-      query: null,
+      loadingView: false,
+      view: null,
       isAuthorizationError: false,
       items: [
         { text: 'Databases', to: '/database', activeClass: '' },
@@ -27,10 +27,10 @@ export default {
           to: `/database/${this.$route.params.database_id}/info`,
           activeClass: ''
         },
-        { text: 'Queries', to: `/database/${this.$route.params.database_id}/query`, activeClass: '' },
+        { text: 'Views', to: `/database/${this.$route.params.database_id}/view`, activeClass: '' },
         {
-          text: `${this.$route.params.query_id}`,
-          to: `/database/${this.$route.params.database_id}/query/${this.$route.params.query_id}`,
+          text: `${this.$route.params.view_id}`,
+          to: `/database/${this.$route.params.database_id}/view/${this.$route.params.view_id}`,
           activeClass: ''
         }
       ]
@@ -47,38 +47,35 @@ export default {
       return this.$store.state.access
     },
     hasIdentifier () {
-      if ('identifier' in this.query && this.query.identifier) {
-        return 'id' in this.query.identifier
+      if ('identifier' in this.view && this.view.identifier) {
+        return 'id' in this.view.identifier
       }
       return false
     },
     canPersistView () {
-      if (this.loadingQuery || !this.query || this.hasIdentifier) {
+      if (this.loadingView || !this.view || this.hasIdentifier) {
         return false
       }
       return UserUtils.hasReadAccess(this.access)
     }
   },
   mounted () {
-    this.loadQuery()
+    this.loadView()
   },
   methods: {
-    loadQuery () {
-      this.loadingQuery = true
+    loadView () {
+      this.loadingView = true
       return new Promise((resolve, reject) => {
-        QueryService.findOne(this.$route.params.database_id, this.$route.params.query_id)
-          .then((query) => {
-            this.query = query
-            resolve(query)
+        QueryService.findView(this.$route.params.database_id, this.$route.params.view_id)
+          .then((view) => {
+            this.view = view
+            resolve(view)
           })
           .catch((error) => {
-            if (error.response.status === 405) {
-              this.isAuthorizationError = true
-            }
             reject(error)
           })
           .finally(() => {
-            this.loadingQuery = false
+            this.loadingView = false
           })
       })
     }

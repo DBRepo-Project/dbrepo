@@ -57,7 +57,7 @@ public interface IdentifierService {
     Identifier create(IdentifierSaveDto data, Principal principal, String authorization)
             throws IdentifierPublishingNotAllowedException, QueryNotFoundException,
             RemoteUnavailableException, IdentifierAlreadyExistsException, UserNotFoundException,
-            DatabaseNotFoundException, IdentifierRequestException;
+            DatabaseNotFoundException, IdentifierRequestException, ViewNotFoundException;
 
     /**
      * Finds an identifier by given id in the metadata database.

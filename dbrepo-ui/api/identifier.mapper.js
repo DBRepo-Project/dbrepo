@@ -27,6 +27,7 @@ class IdentifierMapper {
     return {
       database_id: data.database_id,
       query_id: data.query_id,
+      view_id: data.view_id,
       type: data.type,
       titles: data.titles.map((t) => {
         return {

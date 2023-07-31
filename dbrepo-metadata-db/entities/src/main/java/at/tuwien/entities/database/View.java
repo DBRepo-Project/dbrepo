@@ -79,6 +79,9 @@ public class View {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String query;
 
+    @Column(nullable = false, columnDefinition = "VARCHAR(255)")
+    private String queryHash;
+
     @ToString.Exclude
     @org.springframework.data.annotation.Transient
     @ManyToOne(fetch = FetchType.LAZY)

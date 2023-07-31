@@ -79,7 +79,7 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
     public Identifier create(IdentifierSaveDto data, Principal principal, String authorization)
             throws IdentifierPublishingNotAllowedException, QueryNotFoundException, RemoteUnavailableException,
             IdentifierAlreadyExistsException, UserNotFoundException, DatabaseNotFoundException,
-            IdentifierRequestException {
+            IdentifierRequestException, ViewNotFoundException {
         Identifier identifier = identifierService.create(data, principal, authorization);
         RestTemplate restTemplate = restTemplateBuilder.build();
 

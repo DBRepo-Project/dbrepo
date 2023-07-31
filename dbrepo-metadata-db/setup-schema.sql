@@ -302,6 +302,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_view`
     vName         VARCHAR(255)           NOT NULL,
     internal_name VARCHAR(255)           NOT NULL,
     Query         TEXT                   NOT NULL,
+    query_hash    VARCHAR(255)           NOT NULL,
     Public        BOOLEAN                NOT NULL,
     NumCols       INTEGER,
     NumRows       INTEGER,
@@ -353,13 +354,14 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_view_columns`
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifiers`
 (
-    id                bigint                    NOT NULL AUTO_INCREMENT,
+    id                bigint                              NOT NULL AUTO_INCREMENT,
     dbid              bigint,
     qid               bigint,
-    publisher         VARCHAR(255)              NOT NULL,
+    vid               bigint,
+    publisher         VARCHAR(255)                        NOT NULL,
     language          VARCHAR(2),
-    visibility        ENUM ('SELF', 'EVERYONE') NOT NULL default 'EVERYONE',
-    publication_year  INTEGER                   NOT NULL,
+    visibility        ENUM ('SELF', 'EVERYONE')           NOT NULL default 'EVERYONE',
+    publication_year  INTEGER                             NOT NULL,
     publication_month INTEGER,
     publication_day   INTEGER,
     identifier_type   ENUM ('DATABASE', 'SUBSET', 'VIEW') NOT NULL,
@@ -370,8 +372,8 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifiers`
     result_hash       VARCHAR(255),
     result_number     bigint,
     doi               VARCHAR(255),
-    created           timestamp                 NOT NULL DEFAULT NOW(),
-    created_by        character varying(255)    NOT NULL,
+    created           timestamp                           NOT NULL DEFAULT NOW(),
+    created_by        character varying(255)              NOT NULL,
     last_modified     timestamp,
     PRIMARY KEY (id), /* must be a single id from persistent identifier concept */
     FOREIGN KEY (dbid) REFERENCES mdb_databases (id),

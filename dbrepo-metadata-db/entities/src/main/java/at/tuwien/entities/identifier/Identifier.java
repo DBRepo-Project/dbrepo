@@ -40,13 +40,14 @@ public class Identifier implements Serializable {
     @Column(updatable = false, nullable = false)
     private Long id;
 
-    @Field(name = "database_id")
     @Column(name = "dbid", nullable = false)
     private Long databaseId;
 
-    @Field(name = "query_id")
     @Column(name = "qid")
     private Long queryId;
+
+    @Column(name = "vid")
+    private Long viewId;
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "identifier")
     @OrderBy("id")

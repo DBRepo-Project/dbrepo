@@ -15,7 +15,7 @@ import java.text.Normalizer;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
-@Mapper(componentModel = "spring", uses = {ContainerMapper.class, UserMapper.class})
+@Mapper(componentModel = "spring", uses = {ContainerMapper.class, UserMapper.class, IdentifierMapper.class})
 public interface ViewMapper {
 
     org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ViewMapper.class);

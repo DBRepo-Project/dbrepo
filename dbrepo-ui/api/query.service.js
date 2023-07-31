@@ -230,6 +230,23 @@ class QueryService {
         })
     })
   }
+
+  findView (databaseId, viewId) {
+    return new Promise((resolve, reject) => {
+      api.get(`/api/database/${databaseId}/view/${viewId}`, { headers: { Accept: 'application/json' } })
+        .then((response) => {
+          const view = response.data
+          console.debug('response view', view)
+          resolve(view)
+        })
+        .catch((error) => {
+          const { code, message } = error
+          console.error('Failed to find view', error)
+          Vue.$toast.error(`[${code}] Failed to find view: ${message}`)
+          reject(error)
+        })
+    })
+  }
 }
 
 export default new QueryService()

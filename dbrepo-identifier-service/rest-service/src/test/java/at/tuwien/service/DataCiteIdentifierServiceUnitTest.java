@@ -101,7 +101,7 @@ public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
     public void create_database_succeeds()
             throws DatabaseNotFoundException, UserNotFoundException, IdentifierAlreadyExistsException,
             QueryNotFoundException, IdentifierPublishingNotAllowedException, RemoteUnavailableException,
-            IdentifierRequestException {
+            IdentifierRequestException, ViewNotFoundException {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
         final String bearer = "Bearer abcxyz";
         final DataCiteBody<DataCiteDoi> response =
@@ -125,7 +125,7 @@ public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
     public void create_invalidMetadata_fails()
             throws IdentifierAlreadyExistsException, UserNotFoundException, QueryNotFoundException,
             DatabaseNotFoundException, RemoteUnavailableException, IdentifierPublishingNotAllowedException,
-            IdentifierRequestException {
+            IdentifierRequestException, ViewNotFoundException {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
         final String bearer = "Bearer abcxyz";
 
@@ -148,7 +148,7 @@ public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
     public void create_restClientException_fails()
             throws IdentifierAlreadyExistsException, UserNotFoundException, QueryNotFoundException,
             DatabaseNotFoundException, RemoteUnavailableException, IdentifierPublishingNotAllowedException,
-            IdentifierRequestException {
+            IdentifierRequestException, ViewNotFoundException {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
         final String bearer = "Bearer abcxyz";
 

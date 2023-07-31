@@ -133,13 +133,16 @@ public class IdentifierEndpoint {
                                                 @NotNull @RequestHeader(name = "Authorization") String authorization,
                                                 @NotNull Principal principal)
             throws IdentifierAlreadyExistsException, QueryNotFoundException, IdentifierPublishingNotAllowedException,
-            RemoteUnavailableException, UserNotFoundException, DatabaseNotFoundException, IdentifierRequestException, NotAllowedException {
+            RemoteUnavailableException, UserNotFoundException, DatabaseNotFoundException, IdentifierRequestException, NotAllowedException, ViewNotFoundException {
         log.debug("endpoint create identifier, data={}, authorization=(hidden), principal={}", data, principal);
-        if (data.getType().equals(IdentifierTypeDto.SUBSET) && data.getQueryId() == null) {
-            log.error("Identifier of type subset need to have a qid present");
-            throw new IdentifierRequestException("Identifier of type subset need to have a qid present");
-        } else if (data.getType().equals(IdentifierTypeDto.DATABASE) && data.getQueryId() != null) {
-            log.error("Identifier of type database must not have a qid present");
+        if (data.getType().equals(IdentifierTypeDto.SUBSET) && (data.getQueryId() == null || data.getViewId() != null)) {
+            log.error("Identifier of type subset need to have a qid and not a vid present");
+            throw new IdentifierRequestException("Identifier of type subset need to have a qid and not a vid present");
+        } else if (data.getType().equals(IdentifierTypeDto.DATABASE) && (data.getQueryId() != null || data.getViewId() != null)) {
+            log.error("Identifier of type database must not have a qid and not a vid present");
+            throw new IdentifierRequestException("Identifier of type database must not have a qid and not a vid present");
+        } else if (data.getType().equals(IdentifierTypeDto.VIEW) && data.getQueryId() != null) {
+            log.error("Identifier of type view must not have a qid present");
             throw new IdentifierRequestException("Identifier of type database must not have a qid present");
         }
         final User user = userService.findByUsername(principal.getName());

@@ -5,6 +5,7 @@ import at.tuwien.api.identifier.*;
 import at.tuwien.config.EndpointConfig;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.LanguageType;
+import at.tuwien.entities.database.View;
 import at.tuwien.entities.identifier.*;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
@@ -15,6 +16,7 @@ import at.tuwien.repository.mdb.IdentifierRepository;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.IdentifierService;
 import at.tuwien.service.UserService;
+import at.tuwien.service.ViewService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.springframework.core.io.InputStreamResource;
@@ -36,6 +38,7 @@ import java.util.Optional;
 public class IdentifierServiceImpl implements IdentifierService {
 
     private final UserService userService;
+    private final ViewService viewService;
     private final EndpointConfig endpointConfig;
     private final TemplateEngine templateEngine;
     private final DatabaseService databaseService;
@@ -44,11 +47,13 @@ public class IdentifierServiceImpl implements IdentifierService {
     private final IdentifierRepository identifierRepository;
     private final IdentifierIdxRepository identifierIdxRepository;
 
-    public IdentifierServiceImpl(UserService userService, EndpointConfig endpointConfig, TemplateEngine templateEngine,
-                                 DatabaseService databaseService, IdentifierMapper identifierMapper,
-                                 QueryServiceGateway queryServiceGateway, IdentifierRepository identifierRepository,
+    public IdentifierServiceImpl(UserService userService, ViewService viewService, EndpointConfig endpointConfig,
+                                 TemplateEngine templateEngine, DatabaseService databaseService,
+                                 IdentifierMapper identifierMapper, QueryServiceGateway queryServiceGateway,
+                                 IdentifierRepository identifierRepository,
                                  IdentifierIdxRepository identifierIdxRepository) {
         this.userService = userService;
+        this.viewService = viewService;
         this.endpointConfig = endpointConfig;
         this.templateEngine = templateEngine;
         this.databaseService = databaseService;
@@ -88,7 +93,7 @@ public class IdentifierServiceImpl implements IdentifierService {
     public Identifier create(IdentifierSaveDto data, Principal principal, String authorization)
             throws QueryNotFoundException, RemoteUnavailableException, IdentifierAlreadyExistsException,
             UserNotFoundException, DatabaseNotFoundException, IdentifierPublishingNotAllowedException,
-            IdentifierRequestException {
+            IdentifierRequestException, ViewNotFoundException {
         /* check */
         if (data.getType().equals(IdentifierTypeDto.DATABASE) && identifierRepository.existsByDatabaseIdAndType(data.getDatabaseId(), IdentifierType.DATABASE)) {
             log.error("Identifier already issued for database with id {}", data.getDatabaseId());
@@ -105,7 +110,7 @@ public class IdentifierServiceImpl implements IdentifierService {
         final Database database = databaseService.find(data.getDatabaseId());
         identifier.setDatabase(database);
         if (data.getType().equals(IdentifierTypeDto.SUBSET)) {
-            log.debug("identifier describes a subset");
+            log.debug("identifier type: subset");
             final QueryDto query = queryServiceGateway.find(data.getDatabaseId(), data, authorization);
             identifier.setQuery(query.getQuery());
             identifier.setQueryId(query.getId());
@@ -114,6 +119,13 @@ public class IdentifierServiceImpl implements IdentifierService {
             identifier.setExecution(query.getExecution());
             identifier.setResultNumber(query.getResultNumber());
             identifier.setResultHash(query.getResultHash());
+        } else if (data.getType().equals(IdentifierTypeDto.VIEW)) {
+            log.debug("identifier type: view");
+            final View view = viewService.findById(data.getViewId());
+            identifier.setViewId(view.getId());
+            identifier.setQuery(view.getQuery());
+            identifier.setQueryNormalized(view.getQuery());
+            identifier.setQueryHash(view.getQueryHash());
         }
         /* create in metadata database */
         final Identifier entity = saveIdentifier(identifier, data.getCreators(), data.getRelatedIdentifiers(),
@@ -283,8 +295,7 @@ public class IdentifierServiceImpl implements IdentifierService {
         return optional.orElseGet(() -> titles.get(0));
     }
 
-    public Identifier saveIdentifier(Identifier identifier,
-                                     List<CreatorSaveDto> creators,
+    public Identifier saveIdentifier(Identifier identifier, List<CreatorSaveDto> creators,
                                      List<RelatedIdentifierSaveDto> relatedIdentifiers,
                                      List<IdentifierSaveTitleDto> titles,
                                      List<IdentifierSaveDescriptionDto> descriptions,

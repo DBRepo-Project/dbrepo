@@ -493,6 +493,12 @@ export default {
       default () {
         return {}
       }
+    },
+    view: {
+      type: Object,
+      default () {
+        return {}
+      }
     }
   },
   data () {
@@ -508,6 +514,7 @@ export default {
       identifier: {
         database_id: parseInt(this.$route.params.database_id),
         query_id: parseInt(this.$route.params.query_id),
+        view_id: parseInt(this.$route.params.view_id),
         titles: [],
         descriptions: [],
         visibility: 'everyone',
@@ -795,8 +802,18 @@ export default {
     isDatabase () {
       return this.type === 'database'
     },
+    isView () {
+      return this.type === 'view'
+    },
     backTo () {
-      return `/database/${this.$route.params.database_id}` + (this.isSubset ? `/query/${this.$route.params.query_id}` : '')
+      if (this.isSubset) {
+        return `/database/${this.$route.params.database_id}/query/${this.$route.params.query_id}`
+      } else if (this.isDatabase) {
+        return `/database/${this.$route.params.database_id}/database/${this.$route.params.database_id}`
+      } else if (this.isView) {
+        return `/database/${this.$route.params.database_id}/view/${this.$route.params.view_id}`
+      }
+      return null
     },
     pageTitle () {
       return (this.isUpdate ? 'Update' : 'Create') + ' Identifier'
@@ -830,6 +847,9 @@ export default {
       this.init()
     },
     query () {
+      this.init()
+    },
+    view () {
       this.init()
     }
   },
@@ -1047,6 +1067,8 @@ export default {
         this.identifier = Object.assign(this.database.identifier, {})
       } else if (this.isSubset && this.query && 'identifier' in this.query && this.query.identifier) {
         this.identifier = Object.assign(this.query.identifier, {})
+      } else if (this.isView && this.view && 'identifier' in this.view && this.view.identifier) {
+        this.identifier = Object.assign(this.view.identifier, {})
       }
     },
     insertSelf (creator) {
