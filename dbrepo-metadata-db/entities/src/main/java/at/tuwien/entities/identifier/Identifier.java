@@ -80,7 +80,7 @@ public class Identifier implements Serializable {
     )
     private List<License> licenses;
 
-    @Column(name = "identifier_type", nullable = false, columnDefinition = "enum('SUBSET', 'DATABASE')")
+    @Column(name = "identifier_type", nullable = false, columnDefinition = "enum('SUBSET', 'DATABASE', 'VIEW')")
     @Enumerated(EnumType.STRING)
     private IdentifierType type;
 

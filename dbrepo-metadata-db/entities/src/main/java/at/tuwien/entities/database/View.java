@@ -1,12 +1,16 @@
 package at.tuwien.entities.database;
 
 import at.tuwien.entities.database.table.columns.TableColumn;
+import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.user.User;
 import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
+import jakarta.persistence.Table;
 import lombok.*;
 import net.sf.jsqlparser.statement.select.FromItem;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.elasticsearch.annotations.Field;
@@ -83,6 +87,15 @@ public class View {
     })
     private Database database;
 
+    @ToString.Exclude
+    @org.springframework.data.annotation.Transient
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumnsOrFormulas({
+            @JoinColumnOrFormula(column = @JoinColumn(name = "id", referencedColumnName = "dbid", insertable = false, updatable = false)),
+            @JoinColumnOrFormula(formula = @JoinFormula(referencedColumnName = "identifier_type", value = "'VIEW'"))
+    })
+    private Identifier identifier;
+
     /**
      * KEEP THIS FUNCTION HERE! IT WILL BREAK CODE!
      * Custom equality function implementation.
@@ -105,10 +118,10 @@ public class View {
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinTable(name = "mdb_view_columns",
             inverseJoinColumns = {
-                    @JoinColumn(name = "vid", referencedColumnName = "id"),
+                    @JoinColumn(name = "cid", referencedColumnName = "id"),
             },
             joinColumns = {
-                    @JoinColumn(name = "cid", referencedColumnName = "id"),
+                    @JoinColumn(name = "vid", referencedColumnName = "id"),
             })
     @OrderColumn(name = "position")
     private List<TableColumn> columns;

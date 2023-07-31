@@ -1,5 +1,7 @@
 package at.tuwien.api.database;
 
+import at.tuwien.api.identifier.IdentifierBriefDto;
+import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.user.UserDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -41,6 +43,8 @@ public class ViewBriefDto {
     @Field(name = "internal_name")
     @Schema(example = "air_quality")
     private String internalName;
+
+    private IdentifierBriefDto identifier;
 
     @JsonProperty("is_public")
     @Field(name = "is_public")

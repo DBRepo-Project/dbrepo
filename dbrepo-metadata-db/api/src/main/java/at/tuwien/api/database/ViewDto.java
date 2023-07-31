@@ -1,6 +1,7 @@
 package at.tuwien.api.database;
 
 import at.tuwien.api.database.table.columns.ColumnDto;
+import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.user.UserDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -44,6 +45,8 @@ public class ViewDto {
     @NotBlank
     @Schema(example = "Air Quality")
     private String name;
+
+    private IdentifierDto identifier;
 
     @NotBlank
     @Schema(example = "air_quality")

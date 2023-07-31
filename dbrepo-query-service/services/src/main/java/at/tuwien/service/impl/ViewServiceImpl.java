@@ -136,10 +136,10 @@ public class ViewServiceImpl extends HibernateConnector implements ViewService {
         /* save in metadata database */
         final View entity = View.builder()
                 .vdbid(databaseId)
+                .database(database)
                 .name(data.getName())
                 .internalName(viewMapper.nameToInternalName(data.getName()))
                 .createdBy(user.getId())
-                .database(database)
                 .query(data.getQuery())
                 .isInitialView(false)
                 .isPublic(data.getIsPublic())

@@ -10,7 +10,10 @@ public enum IdentifierTypeDto {
     DATABASE("database"),
 
     @JsonProperty("subset")
-    SUBSET("subset");
+    SUBSET("subset"),
+
+    @JsonProperty("view")
+    VIEW("view");
 
     private String name;
 

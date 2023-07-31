@@ -79,24 +79,30 @@
                   </v-radio-group>
                 </v-col>
               </v-row>
-              <v-row dense>
+              <v-row
+                v-if="isPerson(creator)"
+                dense>
                 <v-col cols="8">
                   <v-text-field
                     v-model="creator.firstname"
                     label="Given Name"
                     clearable
                     hint="e.g. John"
-                    required />
+                    required
+                    @focusout="suggestName(creator)" />
                 </v-col>
               </v-row>
-              <v-row dense>
+              <v-row
+                v-if="isPerson(creator)"
+                dense>
                 <v-col cols="8">
                   <v-text-field
                     v-model="creator.lastname"
                     label="Family Name"
                     clearable
                     hint="e.g. Doe"
-                    required />
+                    required
+                    @focusout="suggestName(creator)" />
                 </v-col>
               </v-row>
               <v-row dense>
@@ -369,7 +375,6 @@
               <v-select
                 v-model="identifier.licenses"
                 return-object
-                multiple
                 :items="licenses"
                 item-text="identifier"
                 label="Licenses *"
@@ -851,7 +856,7 @@ export default {
           creator.firstname = metadata.given_names
           creator.lastname = metadata.family_name
           creator.name_type = metadata.type
-          if (metadata.type === 'Organizational' && metadata.affiliations) {
+          if (metadata.type === 'Organization' && metadata.affiliations) {
             creator.creator_name = metadata.affiliations[0].organization_name
             creator.affiliation = null
           } else {
@@ -868,6 +873,18 @@ export default {
         .finally(() => {
           creator.name_loading = false
         })
+    },
+    suggestName (creator) {
+      if (!creator.firstname || !creator.lastname) {
+        return
+      }
+      creator.creator_name = creator.lastname + ', ' + creator.firstname
+    },
+    isPerson (creator) {
+      if (!creator || !creator.name_type) {
+        return false
+      }
+      return creator.name_type === 'Personal'
     },
     retrieveAffiliation (creator) {
       if (!creator || !creator.affiliation_identifier) {

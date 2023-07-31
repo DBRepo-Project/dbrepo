@@ -67,8 +67,8 @@ class IdentifierMapper {
       creators: data.creators.map((c) => {
         return {
           id: c.id,
-          firstname: c.firstname,
-          lastname: c.lastname,
+          firstname: c.name_type === 'Personal' ? c.firstname : null,
+          lastname: c.name_type === 'Personal' ? c.lastname : null,
           creator_name: c.creator_name,
           name_type: c.name_type,
           name_identifier: c.name_identifier,

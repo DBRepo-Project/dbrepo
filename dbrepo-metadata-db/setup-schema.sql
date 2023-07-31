@@ -344,9 +344,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_view_columns`
 (
     id       BIGINT  NOT NULL AUTO_INCREMENT,
     cid      BIGINT  NOT NULL,
-    ctid     BIGINT  NOT NULL,
     vid      BIGINT  NOT NULL,
-    vdbid    BIGINT  NOT NULL,
     position INTEGER NULL,
     PRIMARY KEY (id),
     FOREIGN KEY (vid) REFERENCES mdb_view (id),
@@ -364,7 +362,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifiers`
     publication_year  INTEGER                   NOT NULL,
     publication_month INTEGER,
     publication_day   INTEGER,
-    identifier_type   varchar(50)               NOT NULL,
+    identifier_type   ENUM ('DATABASE', 'SUBSET', 'VIEW') NOT NULL,
     query             TEXT,
     query_normalized  TEXT,
     query_hash        VARCHAR(255),

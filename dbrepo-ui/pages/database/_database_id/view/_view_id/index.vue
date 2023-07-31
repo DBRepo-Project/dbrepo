@@ -14,6 +14,9 @@
         <v-btn v-if="canDeleteView" :loading="loadingDelete" color="error" class="mb-1" @click="deleteView">
           <v-icon left>mdi-delete</v-icon> Delete
         </v-btn>
+        <v-btn v-if="canCreatePid" class="mb-1 ml-2" color="primary" :to="`/database/${$route.params.database_id}/view/${$route.params.view_id}/persist`">
+          <v-icon left>mdi-content-save-outline</v-icon> Get PID
+        </v-btn>
       </v-toolbar-title>
     </v-toolbar>
     <v-card flat tile>
@@ -113,6 +116,7 @@
 import { formatTimestampUTCLabel } from '@/utils'
 import DatabaseService from '@/api/database.service'
 import UserMapper from '@/api/user.mapper'
+import UserUtils from '@/api/user.utils'
 
 export default {
   data () {
@@ -153,6 +157,9 @@ export default {
     database () {
       return this.$store.state.database
     },
+    access () {
+      return this.$store.state.access
+    },
     views () {
       if (!this.database) {
         return []
@@ -164,6 +171,12 @@ export default {
         return false
       }
       return this.roles.includes('delete-database-view') && this.view.creator.id === this.user.id
+    },
+    canCreatePid () {
+      if (!this.roles || !this.user || !this.view || !this.view.identifier) {
+        return false
+      }
+      return this.roles.includes('create-identifier') && UserUtils.hasReadAccess(this.access)
     },
     cachedView () {
       if (!this.database) {
