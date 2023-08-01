@@ -63,7 +63,7 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
                 .thenReturn(List.of(IDENTIFIER_1));
 
         /* test */
-        final List<Identifier> response = identifierService.findAll();
+        final List<Identifier> response = identifierService.findAll(null, null, null, null);
         assertEquals(1, response.size());
         assertEquals(IDENTIFIER_1, response.get(0));
     }
@@ -76,7 +76,7 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
                 .thenReturn(List.of(IDENTIFIER_1));
 
         /* test */
-        final List<Identifier> response = identifierService.findAll(null, null, null);
+        final List<Identifier> response = identifierService.findAll(null, null, null, null);
         assertEquals(1, response.size());
         assertEquals(IDENTIFIER_1, response.get(0));
     }
@@ -85,11 +85,11 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
     public void findAll2_databaseId_succeeds() {
 
         /* mock */
-        when(identifierRepository.findByDatabaseId(DATABASE_1_ID))
+        when(identifierRepository.findAll())
                 .thenReturn(List.of(IDENTIFIER_1));
 
         /* test */
-        final List<Identifier> response = identifierService.findAll(DATABASE_1_ID, null, null);
+        final List<Identifier> response = identifierService.findAll(null, DATABASE_1_ID, null, null);
         assertEquals(1, response.size());
         assertEquals(IDENTIFIER_1, response.get(0));
     }
@@ -98,11 +98,11 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
     public void findAll2_queryId_succeeds() {
 
         /* mock */
-        when(identifierRepository.findByQueryId(QUERY_1_ID))
+        when(identifierRepository.findAll())
                 .thenReturn(List.of(IDENTIFIER_1));
 
         /* test */
-        final List<Identifier> response = identifierService.findAll(null, QUERY_1_ID, null);
+        final List<Identifier> response = identifierService.findAll(null, null, QUERY_1_ID, null);
         assertEquals(1, response.size());
         assertEquals(IDENTIFIER_1, response.get(0));
     }
@@ -111,22 +111,13 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
     public void findAll2_databaseIdAndQueryId_succeeds() {
 
         /* mock */
-        when(identifierRepository.findByDatabaseIdAndQueryId(DATABASE_1_ID, QUERY_1_ID))
+        when(identifierRepository.findAll())
                 .thenReturn(List.of(IDENTIFIER_1));
 
         /* test */
-        final List<Identifier> response = identifierService.findAll(DATABASE_1_ID, QUERY_1_ID, null);
+        final List<Identifier> response = identifierService.findAll(null, DATABASE_1_ID, QUERY_1_ID, null);
         assertEquals(1, response.size());
         assertEquals(IDENTIFIER_1, response.get(0));
-    }
-
-    @Test
-    public void findAll2_viewId_succeeds() {
-
-        /* mock */
-
-        /* test */
-        assertFalse(true);
     }
 
     @Test

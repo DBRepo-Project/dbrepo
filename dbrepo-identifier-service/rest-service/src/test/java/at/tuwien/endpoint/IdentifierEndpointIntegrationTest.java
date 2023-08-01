@@ -73,8 +73,12 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
         userRepository.save(USER_4);
         containerRepository.save(CONTAINER_1_SIMPLE);
         containerRepository.save(CONTAINER_2_SIMPLE);
+        containerRepository.save(CONTAINER_3_SIMPLE);
+        containerRepository.save(CONTAINER_4_SIMPLE);
         databaseRepository.save(DATABASE_1_SIMPLE);
         databaseRepository.save(DATABASE_2_SIMPLE);
+        databaseRepository.save(DATABASE_3_SIMPLE);
+        databaseRepository.save(DATABASE_4_SIMPLE);
     }
 
     @Test
@@ -196,14 +200,27 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    @Transactional
     @WithMockUser(username = USER_1_USERNAME)
     public void list_viewId_succeeds() {
 
         /* mock */
+        identifierRepository.saveAll(List.of(IDENTIFIER_1, IDENTIFIER_2, IDENTIFIER_3, IDENTIFIER_4, IDENTIFIER_5, IDENTIFIER_6));
 
         /* test */
-        assertFalse(true);
+        final List<IdentifierDto> reponse = generic_list(null, null, VIEW_1_ID, null);
+        assertEquals(1, reponse.size());
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME)
+    public void list_viewType_succeeds() {
+
+        /* mock */
+        identifierRepository.saveAll(List.of(IDENTIFIER_1, IDENTIFIER_2, IDENTIFIER_3, IDENTIFIER_4, IDENTIFIER_5, IDENTIFIER_6));
+
+        /* test */
+        final List<IdentifierDto> reponse = generic_list(null, null, null, IdentifierTypeDto.VIEW);
+        assertEquals(1, reponse.size());
     }
 
     @Test

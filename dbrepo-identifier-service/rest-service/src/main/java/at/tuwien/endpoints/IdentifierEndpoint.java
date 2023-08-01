@@ -74,17 +74,11 @@ public class IdentifierEndpoint {
                                                     @RequestParam(required = false) Long vid,
                                                     @RequestParam(required = false) IdentifierTypeDto type) {
         log.debug("endpoint find identifiers, dbid={}, qid={}, vid={}, type={}", dbid, qid, vid, type);
-        final List<Identifier> identifiers = identifierService.findAll(dbid, qid, vid);
-        final List<IdentifierDto> dto = identifiers.stream()
+        final List<IdentifierDto> dto = identifierService.findAll(type, dbid, qid, vid)
+                .stream()
                 .map(identifierMapper::identifierToIdentifierDto)
-                .filter(i -> {
-                    if (type != null) {
-                        return i.getType().equals(type);
-                    }
-                    return true;
-                })
                 .collect(Collectors.toList());
-        log.info("Find identifiers resulted in {} identifiers", identifiers.size());
+        log.info("Find identifiers resulted in {} identifiers", dto.size());
         return ResponseEntity.ok(dto);
     }
 

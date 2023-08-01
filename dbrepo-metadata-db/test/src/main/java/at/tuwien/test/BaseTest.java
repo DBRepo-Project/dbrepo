@@ -6685,6 +6685,7 @@ public abstract class BaseTest {
 
     public final static Identifier IDENTIFIER_3 = Identifier.builder()
             .id(IDENTIFIER_3_ID)
+            .databaseId(IDENTIFIER_3_DATABASE_ID)
             .queryId(IDENTIFIER_3_QUERY_ID)
             .descriptions(List.of(IDENTIFIER_3_DESCRIPTION_1))
             .titles(List.of(IDENTIFIER_3_TITLE_1))
@@ -7089,6 +7090,7 @@ public abstract class BaseTest {
     public final static Identifier IDENTIFIER_6 = Identifier.builder()
             .id(IDENTIFIER_6_ID)
             .databaseId(IDENTIFIER_6_DATABASE_ID)
+            .viewId(IDENTIFIER_6_VIEW_ID)
             .descriptions(List.of())
             .titles(List.of())
             .doi(IDENTIFIER_6_DOI)
@@ -7115,6 +7117,7 @@ public abstract class BaseTest {
     public final static IdentifierDto IDENTIFIER_6_DTO = IdentifierDto.builder()
             .id(IDENTIFIER_6_ID)
             .databaseId(IDENTIFIER_6_DATABASE_ID)
+            .viewId(IDENTIFIER_6_VIEW_ID)
             .descriptions(List.of())
             .titles(List.of())
             .doi(IDENTIFIER_6_DOI)

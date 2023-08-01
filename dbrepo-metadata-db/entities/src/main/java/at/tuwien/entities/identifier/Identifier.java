@@ -30,6 +30,7 @@ import java.util.List;
         @NamedQuery(name = "Identifier.findAllSubsetIdentifiers", query = "select i from Identifier i where i.type = 'SUBSET'"),
         @NamedQuery(name = "Identifier.findDatabaseIdentifier", query = "select i from Identifier i where i.databaseId = ?1 and i.type = 'DATABASE'"),
         @NamedQuery(name = "Identifier.findSubsetIdentifier", query = "select i from Identifier i where i.databaseId = ?1 and i.queryId = ?2 and i.type = 'SUBSET'"),
+        @NamedQuery(name = "Identifier.findViewIdentifier", query = "select i from Identifier i where i.databaseId = ?1 and i.viewId = ?2 and i.type = 'VIEW'"),
 })
 public class Identifier implements Serializable {
 

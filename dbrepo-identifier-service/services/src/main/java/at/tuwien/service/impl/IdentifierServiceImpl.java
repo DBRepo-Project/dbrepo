@@ -32,6 +32,7 @@ import java.security.Principal;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Slf4j
 @Service
@@ -65,31 +66,36 @@ public class IdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Identifier> findAll(Long databaseId, Long queryId, Long viewId) {
-        if (queryId != null) {
-            if (databaseId != null) {
-                return findByDatabaseIdAndQueryId(databaseId, queryId);
-            }
-            return identifierRepository.findByQueryId(queryId);
-        } else if (viewId != null) {
-            if (databaseId != null) {
-                return identifierRepository.findByDatabaseIdAndViewId(databaseId, viewId);
-            }
-            return identifierRepository.findByViewId(viewId);
+    public List<Identifier> findAll(IdentifierTypeDto type, Long databaseId, Long queryId, Long viewId) {
+        final List<Identifier> identifiers = this.identifierRepository.findAll();
+        Stream<Identifier> stream = identifiers.stream();
+        if (type != null) {
+            log.trace("filter by type: {}", type);
+            stream = stream.filter(i -> Objects.nonNull(i.getType()))
+                    .filter(i -> i.getType().equals(identifierMapper.identifierTypeDtoToIdentifierType(type)));
         }
-        return identifierRepository.findAll();
+        if (databaseId != null) {
+            log.trace("filter by database id: {}", databaseId);
+            stream = stream.filter(i -> Objects.nonNull(i.getDatabaseId()))
+                    .filter(i -> i.getDatabaseId().equals(databaseId));
+        }
+        if (queryId != null) {
+            log.trace("filter by query id: {}", queryId);
+            stream = stream.filter(i -> Objects.nonNull(i.getQueryId()))
+                    .filter(i -> i.getQueryId().equals(queryId));
+        }
+        if (viewId != null) {
+            log.trace("filter by view id: {}", viewId);
+            stream = stream.filter(i -> Objects.nonNull(i.getViewId()))
+                    .filter(i -> i.getViewId().equals(viewId));
+        }
+        return stream.toList();
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<Identifier> findByDatabaseIdAndQueryId(Long databaseId, Long queryId) {
         return identifierRepository.findByDatabaseIdAndQueryId(databaseId, queryId);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<Identifier> findAll() {
-        return identifierRepository.findAll();
     }
 
     @Override
