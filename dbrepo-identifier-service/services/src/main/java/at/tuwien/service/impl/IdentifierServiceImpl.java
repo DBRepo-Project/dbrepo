@@ -65,13 +65,17 @@ public class IdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Identifier> findAll(Long databaseId, Long queryId) {
-        if (databaseId != null && queryId != null) {
-            return findByDatabaseIdAndQueryId(databaseId, queryId);
-        } else if (databaseId == null && queryId != null) {
+    public List<Identifier> findAll(Long databaseId, Long queryId, Long viewId) {
+        if (queryId != null) {
+            if (databaseId != null) {
+                return findByDatabaseIdAndQueryId(databaseId, queryId);
+            }
             return identifierRepository.findByQueryId(queryId);
-        } else if (databaseId != null && queryId == null) {
-            return identifierRepository.findByDatabaseId(databaseId);
+        } else if (viewId != null) {
+            if (databaseId != null) {
+                return identifierRepository.findByDatabaseIdAndViewId(databaseId, viewId);
+            }
+            return identifierRepository.findByViewId(viewId);
         }
         return identifierRepository.findAll();
     }

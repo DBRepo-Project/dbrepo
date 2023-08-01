@@ -19,9 +19,10 @@ public interface IdentifierService {
      *
      * @param databaseId Optional. The database id.
      * @param queryId    Optional. The query id.
+     * @param viewId     Optional. The view id.
      * @return List of identifiers
      */
-    List<Identifier> findAll(Long databaseId, Long queryId);
+    List<Identifier> findAll(Long databaseId, Long queryId, Long viewId);
 
     /**
      * Finds all identifiers in the metadata database which are not deleted and filter by query id.

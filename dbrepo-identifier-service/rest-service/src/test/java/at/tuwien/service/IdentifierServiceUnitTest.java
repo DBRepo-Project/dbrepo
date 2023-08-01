@@ -76,7 +76,7 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
                 .thenReturn(List.of(IDENTIFIER_1));
 
         /* test */
-        final List<Identifier> response = identifierService.findAll(null, null);
+        final List<Identifier> response = identifierService.findAll(null, null, null);
         assertEquals(1, response.size());
         assertEquals(IDENTIFIER_1, response.get(0));
     }
@@ -89,7 +89,7 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
                 .thenReturn(List.of(IDENTIFIER_1));
 
         /* test */
-        final List<Identifier> response = identifierService.findAll(DATABASE_1_ID, null);
+        final List<Identifier> response = identifierService.findAll(DATABASE_1_ID, null, null);
         assertEquals(1, response.size());
         assertEquals(IDENTIFIER_1, response.get(0));
     }
@@ -102,7 +102,7 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
                 .thenReturn(List.of(IDENTIFIER_1));
 
         /* test */
-        final List<Identifier> response = identifierService.findAll(null, QUERY_1_ID);
+        final List<Identifier> response = identifierService.findAll(null, QUERY_1_ID, null);
         assertEquals(1, response.size());
         assertEquals(IDENTIFIER_1, response.get(0));
     }
@@ -115,9 +115,18 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
                 .thenReturn(List.of(IDENTIFIER_1));
 
         /* test */
-        final List<Identifier> response = identifierService.findAll(DATABASE_1_ID, QUERY_1_ID);
+        final List<Identifier> response = identifierService.findAll(DATABASE_1_ID, QUERY_1_ID, null);
         assertEquals(1, response.size());
         assertEquals(IDENTIFIER_1, response.get(0));
+    }
+
+    @Test
+    public void findAll2_viewId_succeeds() {
+
+        /* mock */
+
+        /* test */
+        assertFalse(true);
     }
 
     @Test

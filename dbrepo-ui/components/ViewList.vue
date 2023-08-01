@@ -16,7 +16,7 @@
               <pre>{{ item.query }}</pre>
             </v-list-item-subtitle>
           </v-list-item-content>
-          <v-list-item-action>
+          <v-list-item-action v-if="item.identifier">
             <v-icon color="primary">mdi-identifier</v-icon>
           </v-list-item-action>
         </v-list-item>

@@ -94,7 +94,7 @@ public class View {
     @org.springframework.data.annotation.Transient
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumnsOrFormulas({
-            @JoinColumnOrFormula(column = @JoinColumn(name = "id", referencedColumnName = "dbid", insertable = false, updatable = false)),
+            @JoinColumnOrFormula(column = @JoinColumn(name = "id", referencedColumnName = "vid", insertable = false, updatable = false)),
             @JoinColumnOrFormula(formula = @JoinFormula(referencedColumnName = "identifier_type", value = "'VIEW'"))
     })
     private Identifier identifier;

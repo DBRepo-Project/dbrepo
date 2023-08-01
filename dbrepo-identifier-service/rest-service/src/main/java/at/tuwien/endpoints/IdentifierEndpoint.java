@@ -71,9 +71,10 @@ public class IdentifierEndpoint {
     })
     public ResponseEntity<List<IdentifierDto>> list(@RequestParam(required = false) Long dbid,
                                                     @RequestParam(required = false) Long qid,
+                                                    @RequestParam(required = false) Long vid,
                                                     @RequestParam(required = false) IdentifierTypeDto type) {
-        log.debug("endpoint find identifiers, dbid={}, qid={}, type={}", dbid, qid, type);
-        final List<Identifier> identifiers = identifierService.findAll(dbid, qid);
+        log.debug("endpoint find identifiers, dbid={}, qid={}, vid={}, type={}", dbid, qid, vid, type);
+        final List<Identifier> identifiers = identifierService.findAll(dbid, qid, vid);
         final List<IdentifierDto> dto = identifiers.stream()
                 .map(identifierMapper::identifierToIdentifierDto)
                 .filter(i -> {

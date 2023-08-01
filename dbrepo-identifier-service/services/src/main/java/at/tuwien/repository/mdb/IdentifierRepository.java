@@ -27,6 +27,14 @@ public interface IdentifierRepository extends JpaRepository<Identifier, Long> {
     List<Identifier> findByQueryId(Long queryId);
 
     /**
+     * Finds identifiers by given view id.
+     *
+     * @param viewId The view id.
+     * @return List of matching identifiers.
+     */
+    List<Identifier> findByViewId(Long viewId);
+
+    /**
      * Finds identifiers by given database id and query id.
      *
      * @param databaseId The database id.
@@ -34,6 +42,15 @@ public interface IdentifierRepository extends JpaRepository<Identifier, Long> {
      * @return List of matching identifiers.
      */
     List<Identifier> findByDatabaseIdAndQueryId(Long databaseId, Long queryId);
+
+    /**
+     * Finds identifiers by given database id and view id.
+     *
+     * @param databaseId The database id.
+     * @param viewId     The view id.
+     * @return List of matching identifiers.
+     */
+    List<Identifier> findByDatabaseIdAndViewId(Long databaseId, Long viewId);
 
     /**
      * Checks if an identifier exists by given database id and identifier type.
