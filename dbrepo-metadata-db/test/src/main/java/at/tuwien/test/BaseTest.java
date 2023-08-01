@@ -5204,6 +5204,7 @@ public abstract class BaseTest {
     public final static Long VIEW_2_DATABASE_ID = DATABASE_1_ID;
     public final static Boolean VIEW_2_PUBLIC = true;
     public final static String VIEW_2_QUERY = "select `date`, `location`, `mintemp`, `rainfall` from `weather_aus` where `location` = 'Albury'";
+    public final static String VIEW_2_QUERY_HASH = "c76efcbab7e117ed286fd6c0f766178727debfeb5544633f8fbfaf2230340d17";
 
     public final static List<TableColumn> VIEW_2_COLUMNS = List.of(TableColumn.builder()
                     .id(COLUMN_1_1_ID)
@@ -5281,6 +5282,7 @@ public abstract class BaseTest {
             .isPublic(VIEW_2_PUBLIC)
             .columns(VIEW_2_COLUMNS)
             .query(VIEW_2_QUERY)
+            .queryHash(VIEW_2_QUERY_HASH)
             .creator(USER_1)
             .createdBy(USER_1_ID)
             .build();
@@ -5293,6 +5295,7 @@ public abstract class BaseTest {
             .vdbid(VIEW_2_DATABASE_ID)
             .isPublic(VIEW_2_PUBLIC)
             .query(VIEW_2_QUERY)
+            .queryHash(VIEW_2_QUERY_HASH)
             .createdBy(USER_1_ID)
             .build();
 
@@ -5304,6 +5307,7 @@ public abstract class BaseTest {
     public final static Long VIEW_3_DATABASE_ID = DATABASE_1_ID;
     public final static Boolean VIEW_3_PUBLIC = false;
     public final static String VIEW_3_QUERY = "select w.`mintemp`, w.`rainfall`, w.`location`, m.`date` from `weather_aus` w join `junit2` m on m.`location` = w.`location`";
+    public final static String VIEW_3_QUERY_HASH = "297bbacf5bf142028d0f4a1e537db03fd91b0c3be9e66ea2abc13d2984d22824";
 
     public final static List<TableColumn> VIEW_3_COLUMNS = List.of(TableColumn.builder()
                     .id(COLUMN_1_4_ID)
@@ -5418,6 +5422,7 @@ public abstract class BaseTest {
             .isPublic(VIEW_3_PUBLIC)
             .columns(VIEW_3_COLUMNS)
             .query(VIEW_3_QUERY)
+            .queryHash(VIEW_3_QUERY_HASH)
             .creator(USER_1)
             .createdBy(USER_1_ID)
             .build();
@@ -5431,6 +5436,7 @@ public abstract class BaseTest {
             .isPublic(VIEW_3_PUBLIC)
             .columns(VIEW_3_COLUMNS_DTO)
             .query(VIEW_3_QUERY)
+            .queryHash(VIEW_3_QUERY_HASH)
             .createdBy(USER_1_ID)
             .build();
 
@@ -5445,6 +5451,7 @@ public abstract class BaseTest {
     public final static Table VIEW_4_TABLE = TABLE_4;
     public final static Boolean VIEW_4_PUBLIC = true;
     public final static String VIEW_4_QUERY = "SELECT `animal_name`, `hair`, `feathers`, `eggs`, `milk`, `airborne`, `aquatic`, `predator`, `backbone`, `breathes`, `venomous`, `fins`, `legs`, `tail`, `domestic`, `catsize`, `class_type` FROM `zoo` WHERE `class_type` = 1";
+    public final static String VIEW_4_QUERY_HASH = "3561cd0bb0b0e94d6f15ae602134252a5760d09d660a71a4fb015b6991c8ba0b";
 
     public final static List<TableColumn> VIEW_4_COLUMNS = List.of(TableColumn.builder()
                     .id(COLUMN_4_2_ID)
@@ -5676,6 +5683,7 @@ public abstract class BaseTest {
             .vdbid(VIEW_4_DATABASE_ID)
             .isPublic(VIEW_4_PUBLIC)
             .query(VIEW_4_QUERY)
+            .queryHash(VIEW_4_QUERY_HASH)
             .createdBy(USER_1_ID)
             .creator(USER_1)
             .columns(VIEW_4_COLUMNS)
@@ -5689,6 +5697,7 @@ public abstract class BaseTest {
     public final static Long VIEW_5_DATABASE_ID = DATABASE_2_ID;
     public final static Boolean VIEW_5_PUBLIC = true;
     public final static String VIEW_5_QUERY = "SELECT `location`, `lat`, `lng` FROM `weather_location` WHERE `location` = 'Albury'";
+    public final static String VIEW_5_QUERY_HASH = "120f32478aaff874c25ab32eceb9f00b64cc9d422831046f2f5d43953aca01e7";
 
     public final static View VIEW_5 = View.builder()
             .id(VIEW_5_ID)
@@ -5698,6 +5707,7 @@ public abstract class BaseTest {
             .vdbid(VIEW_5_DATABASE_ID)
             .isPublic(VIEW_5_PUBLIC)
             .query(VIEW_5_QUERY)
+            .queryHash(VIEW_5_QUERY_HASH)
             .creator(USER_1)
             .createdBy(USER_1_ID)
             .build();
