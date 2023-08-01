@@ -7,6 +7,7 @@ version: "3.6"
 volumes:
   metadata-db-data:
   user-db-data:
+  upload-service-data:
   search-db-data:
   broker-service-data:
   authentication-service-data:
@@ -68,6 +69,23 @@ services:
       interval: 10s
       timeout: 5s
       retries: 12
+    logging:
+      driver: json-file
+
+  dbrepo-upload-service:
+    restart: "no"
+    container_name: dbrepo-upload-service
+    hostname: upload-service
+    image: tusproject/tusd:v1.12
+    networks:
+      core:
+    env_file:
+      - .env
+    volumes:
+      - upload-service-data:/data
+      - "/tmp:/srv/tusd-data/data"
+    ports:
+      - "1080:1080"
     logging:
       driver: json-file
 
@@ -419,8 +437,9 @@ services:
       public:
     env_file:
       - .env
-    volumes:
-      - "/tmp:/tmp"
+    depends_on:
+      dbrepo-upload-service:
+        condition: service_started
     logging:
       driver: json-file
 

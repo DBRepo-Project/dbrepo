@@ -55,6 +55,8 @@ ENV ICON="/favicon.ico"
 ENV DBREPO_CLIENT_ID="dbrepo-client"
 ENV DBREPO_CLIENT_SECRET="MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG"
 ENV GIT_HASH="${GIT_HASH_SHORT}"
+ENV UPLOAD_ENDPOINT="http://upload-service:1080/files/"
+ENV UPLOAD_PATH="/tmp/"
 
 WORKDIR /app
 

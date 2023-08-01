@@ -52,8 +52,8 @@ import java.util.stream.Collectors;
 public class QueryServiceImpl extends HibernateConnector implements QueryService {
 
     private final QueryMapper queryMapper;
-    private final TableService tableService;
     private final StoreService storeService;
+    private final TableService tableService;
     private final DatabaseService databaseService;
     private final TableColumnRepository tableColumnRepository;
 
@@ -220,17 +220,6 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         /* find */
         final String statement = queryMapper.viewToRawCountAllQuery(view);
         return executeCountNonPersistent(databaseId, statement);
-    }
-
-    @Transactional(readOnly = true)
-    public QueryResultDto findAllView(Long databaseId, Long viewId, Instant timestamp, Long page,
-                                      Long size, Principal principal) throws TableNotFoundException, DatabaseNotFoundException,
-            ImageNotSupportedException, TableMalformedException, QueryMalformedException {
-        /* find */
-        final Table table = tableService.find(databaseId, viewId);
-        /* run query */
-        String statement = queryMapper.tableToRawFindAllQuery(table, timestamp, size, page);
-        return executeNonPersistent(databaseId, statement, table.getColumns());
     }
 
     @Override

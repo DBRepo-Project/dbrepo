@@ -46,7 +46,7 @@
       v-model="editTupleDialog"
       persistent
       max-width="640">
-      <EditTuple :tuple="tuple" :edit="edit" @close="close" />
+      <EditTuple :columns="table.columns" :tuple="tuple" :edit="edit" @close="close" />
     </v-dialog>
   </div>
 </template>

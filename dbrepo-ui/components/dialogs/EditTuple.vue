@@ -54,7 +54,8 @@
               :show-size="1000"
               counter
               :label="label(column)"
-              type="file" />
+              type="file"
+              @focusout="upload(column, localTuple[column.internal_name])" />
             <v-textarea
               v-if="isTextArea(column)"
               v-model="localTuple[column.internal_name]"
@@ -131,7 +132,7 @@
 
 <script>
 import QueryService from '@/api/query.service'
-import MiddlewareService from '@/api/middleware.service'
+import UploadService from '@/api/upload.service'
 
 export default {
   props: {
@@ -142,6 +143,10 @@ export default {
     edit: {
       type: Boolean,
       default: false
+    },
+    columns: {
+      type: Array,
+      default: () => []
     }
   },
   data () {
@@ -150,8 +155,8 @@ export default {
       loading: false,
       error: false,
       menu: false,
-      columns: this.$parent.$parent.$parent.$parent.table.columns,
       localTuple: null,
+      localDisplay: null,
       bools: [
         { text: 'true', value: true },
         { text: 'false', value: false }
@@ -172,10 +177,12 @@ export default {
   watch: {
     tuple (val) {
       this.localTuple = Object.assign({}, val)
+      this.localDisplay = Object.assign({}, val)
     }
   },
   mounted () {
     this.localTuple = Object.assign({}, this.tuple)
+    this.localDisplay = Object.assign({}, this.tuple)
   },
   methods: {
     submit () {
@@ -196,7 +203,7 @@ export default {
         return `Floating point number max. ${column.size} digit${column.size !== 1 ? 's' : ''} before and max. ${column.d} digit${column.d !== 1 ? 's' : ''} after the dot`
       }
       if (this.isTimeField(column)) {
-        return `Format: ${column.date_format?.unix_format}`
+        return `Format: ${column.date_format.unix_format}`
       }
     },
     label (column) {
@@ -288,27 +295,28 @@ export default {
       this.columns.forEach((column) => {
         if (!(column.internal_name in this.localTuple)) {
           this.localTuple[column.internal_name] = null
+          this.localDisplay[column.internal_name] = null
         }
       })
-      const promises = []
-      Object.keys(this.localTuple)
-        .filter(key => this.localTuple[key] instanceof File)
-        .forEach((key) => {
-          promises.push(MiddlewareService.upload(key, this.localTuple[key]))
+      QueryService.insertTuple(this.$route.params.database_id, this.$route.params.table_id, this.localTuple)
+        .then(() => {
+          this.$toast.success('Successfully added tuple!')
+          this.$emit('close', { success: true })
         })
-      Promise.all(promises)
-        .then((values) => {
-          values.forEach((value) => {
-            if (value.length !== 1) {
-              return
-            }
-            this.localTuple[value[0].fieldname] = value[0].path
-          })
-          QueryService.insertTuple(this.$route.params.database_id, this.$route.params.table_id, this.localTuple)
-            .then(() => {
-              this.$toast.success('Successfully added tuple!')
-              this.$emit('close', { success: true })
-            })
+    },
+    upload (column, file) {
+      if (!file) {
+        return
+      }
+      UploadService.upload(file)
+        .then((file) => {
+          console.debug('uploaded file', file)
+          this.localDisplay[column.internal_name] = this.localTuple[column.internal_name]
+          this.localTuple[column.internal_name] = file.path
+        })
+        .catch((error) => {
+          console.error(`Failed to set column value: ${column.internal_name}`, error)
+          this.$toast.error(`Failed to set column value: ${column.internal_name}`)
         })
     }
   }
