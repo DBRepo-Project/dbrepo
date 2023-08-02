@@ -84,6 +84,12 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     private UserRepository userRepository;
 
     @Autowired
+    private ViewRepository viewRepository;
+
+    @Autowired
+    private TableRepository tableRepository;
+
+    @Autowired
     private RealmRepository realmRepository;
 
     @Container
@@ -117,7 +123,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     public void create_subsetRelatedIdentifiers_succeeds()
             throws DatabaseNotFoundException, UserNotFoundException, IdentifierAlreadyExistsException,
             QueryNotFoundException, IdentifierPublishingNotAllowedException, RemoteUnavailableException,
-            IdentifierRequestException {
+            IdentifierRequestException, ViewNotFoundException {
         final String bearer = "Bearer abcxyz";
 
         /* mock */
@@ -163,7 +169,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     @Test
     public void create_succeeds() throws DatabaseNotFoundException, UserNotFoundException,
             IdentifierAlreadyExistsException, QueryNotFoundException, IdentifierPublishingNotAllowedException,
-            RemoteUnavailableException, IdentifierRequestException {
+            RemoteUnavailableException, IdentifierRequestException, ViewNotFoundException {
         final String bearer = "Bearer abcxyz";
 
         /* test */
@@ -200,7 +206,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     @Test
     public void create_noRelatedTitleDescription_succeeds() throws DatabaseNotFoundException, UserNotFoundException,
             IdentifierAlreadyExistsException, QueryNotFoundException, IdentifierPublishingNotAllowedException,
-            RemoteUnavailableException, IdentifierRequestException {
+            RemoteUnavailableException, IdentifierRequestException, ViewNotFoundException {
         final String bearer = "Bearer abcxyz";
 
         /* mock */
@@ -233,7 +239,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     @Test
     public void create_subsetHasDatabaseIdentifier_succeeds() throws DatabaseNotFoundException, UserNotFoundException,
             IdentifierAlreadyExistsException, QueryNotFoundException, IdentifierPublishingNotAllowedException,
-            RemoteUnavailableException, IdentifierRequestException {
+            RemoteUnavailableException, IdentifierRequestException, ViewNotFoundException {
         final String authorization = "Bearer abcxyz";
 
         /* mock */
@@ -263,6 +269,44 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
         assertEquals(0, response.getDescriptions().size());
         /* open search database */
         assertTrue(identifierIdxRepository.existsById(IDENTIFIER_5_ID));
+    }
+
+    @Test
+    public void create_viewIdentifier_succeeds() throws DatabaseNotFoundException, UserNotFoundException,
+            IdentifierAlreadyExistsException, QueryNotFoundException, IdentifierPublishingNotAllowedException,
+            RemoteUnavailableException, IdentifierRequestException, ViewNotFoundException {
+        final String authorization = "Bearer abcxyz";
+
+        /* mock */
+        containerRepository.save(CONTAINER_3_SIMPLE);
+        containerRepository.save(CONTAINER_4_SIMPLE);
+        databaseRepository.save(DATABASE_3_SIMPLE);
+        databaseRepository.save(DATABASE_4_SIMPLE);
+        tableRepository.saveAll(List.of(TABLE_1_SIMPLE, TABLE_2_SIMPLE, TABLE_3_SIMPLE));
+        viewRepository.save(VIEW_1);
+        identifierRepository.save(IDENTIFIER_1_SIMPLE);
+        identifierRepository.save(IDENTIFIER_2_SIMPLE);
+        identifierRepository.save(IDENTIFIER_3_SIMPLE);
+        identifierRepository.save(IDENTIFIER_4_SIMPLE);
+        identifierRepository.save(IDENTIFIER_5_SIMPLE);
+        identifierIdxRepository.save(IDENTIFIER_1_DTO);
+        identifierIdxRepository.save(IDENTIFIER_2_DTO);
+        identifierIdxRepository.save(IDENTIFIER_3_DTO);
+        identifierIdxRepository.save(IDENTIFIER_4_DTO);
+        identifierIdxRepository.save(IDENTIFIER_5_DTO);
+
+        /* test */
+        final Identifier response = identifierService.create(IDENTIFIER_6_DTO_REQUEST, USER_1_PRINCIPAL, authorization);
+        assertEquals(IDENTIFIER_6_DATABASE_ID, response.getDatabaseId());
+        assertEquals(IDENTIFIER_6_DATABASE_ID, response.getDatabase().getId());
+        assertEquals(IDENTIFIER_6_QUERY, response.getQuery());
+        assertEquals(IDENTIFIER_6_QUERY_HASH, response.getQueryHash());
+        assertEquals(IDENTIFIER_6_RESULT_HASH, response.getResultHash());
+        assertEquals(0, response.getTitles().size());
+        assertEquals(0, response.getDescriptions().size());
+        assertEquals(1, response.getLicenses().size());
+        /* open search database */
+        assertTrue(identifierIdxRepository.existsById(IDENTIFIER_6_ID));
     }
 
     @Test

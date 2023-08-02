@@ -14,12 +14,16 @@
         <v-btn v-if="canDeleteView" :loading="loadingDelete" color="error" class="mb-1" @click="deleteView">
           <v-icon left>mdi-delete</v-icon> Delete
         </v-btn>
+        <v-btn v-if="canCreatePid" class="mb-1 ml-2" color="primary" :to="`/database/${$route.params.database_id}/view/${$route.params.view_id}/persist`">
+          <v-icon left>mdi-content-save-outline</v-icon> Get PID
+        </v-btn>
       </v-toolbar-title>
     </v-toolbar>
     <v-card flat tile>
       <v-card-title>
         View Information
       </v-card-title>
+      <Summary v-if="hasIdentifier" :identifier="view.identifier" />
       <v-card-text>
         <v-list dense>
           <v-list-item>
@@ -66,11 +70,10 @@
                 <v-skeleton-loader v-if="!cachedView.query" type="text" class="skeleton-large" />
                 <pre v-if="cachedView.query">{{ cachedView.query }}</pre>
               </v-list-item-content>
-              <v-list-item-title class="mt-2">
+              <v-list-item-title v-if="canViewView" class="mt-2">
                 View Creator
               </v-list-item-title>
-              <v-list-item-content>
-                <v-skeleton-loader v-if="!creator" type="text" class="skeleton-medium" />
+              <v-list-item-content v-if="canViewView">
                 <span v-if="creator">{{ creator }}</span>
               </v-list-item-content>
               <v-list-item-title class="mt-2">
@@ -113,8 +116,11 @@
 import { formatTimestampUTCLabel } from '@/utils'
 import DatabaseService from '@/api/database.service'
 import UserMapper from '@/api/user.mapper'
+import UserUtils from '@/api/user.utils'
+import Summary from '@/components/identifier/Summary.vue'
 
 export default {
+  components: { Summary },
   data () {
     return {
       items: [
@@ -124,7 +130,8 @@ export default {
         { text: `${this.$route.params.view_id}`, to: `/database/${this.$route.params.database_id}/view/${this.$route.params.view_id}`, activeClass: '' }
       ],
       view: {
-        id: null /* only loaded if user has access to view */
+        id: null /* only loaded if user has access to view */,
+        identifier: null
       },
       loadingView: true,
       loadingDelete: false,
@@ -153,6 +160,9 @@ export default {
     database () {
       return this.$store.state.database
     },
+    access () {
+      return this.$store.state.access
+    },
     views () {
       if (!this.database) {
         return []
@@ -164,6 +174,25 @@ export default {
         return false
       }
       return this.roles.includes('delete-database-view') && this.view.creator.id === this.user.id
+    },
+    canCreatePid () {
+      if (!this.roles || !this.user || !this.view || this.view.identifier) {
+        return false
+      }
+      return this.roles.includes('create-identifier') && UserUtils.hasReadAccess(this.access)
+    },
+    canViewView () {
+      if (!this.cachedView) {
+        return false
+      }
+      if (this.cachedView.is_public) {
+        return true
+      }
+      /* is private */
+      return UserUtils.hasReadAccess(this.access)
+    },
+    hasIdentifier () {
+      return this.view && this.view.identifier
     },
     cachedView () {
       if (!this.database) {
@@ -185,9 +214,19 @@ export default {
       return UserMapper.userToFullName(this.view.creator)
     }
   },
+  watch: {
+    canViewView (val) {
+      if (val) {
+        this.loadView()
+        this.loadResult(this.$route.params.view_id)
+      }
+    }
+  },
   mounted () {
-    this.loadView()
-    this.loadResult(this.$route.params.view_id)
+    if (this.canViewView) {
+      this.loadView()
+      this.loadResult(this.$route.params.view_id)
+    }
   },
   methods: {
     loadView () {

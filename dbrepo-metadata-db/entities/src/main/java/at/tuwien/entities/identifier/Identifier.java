@@ -30,6 +30,7 @@ import java.util.List;
         @NamedQuery(name = "Identifier.findAllSubsetIdentifiers", query = "select i from Identifier i where i.type = 'SUBSET'"),
         @NamedQuery(name = "Identifier.findDatabaseIdentifier", query = "select i from Identifier i where i.databaseId = ?1 and i.type = 'DATABASE'"),
         @NamedQuery(name = "Identifier.findSubsetIdentifier", query = "select i from Identifier i where i.databaseId = ?1 and i.queryId = ?2 and i.type = 'SUBSET'"),
+        @NamedQuery(name = "Identifier.findViewIdentifier", query = "select i from Identifier i where i.databaseId = ?1 and i.viewId = ?2 and i.type = 'VIEW'"),
 })
 public class Identifier implements Serializable {
 
@@ -40,13 +41,14 @@ public class Identifier implements Serializable {
     @Column(updatable = false, nullable = false)
     private Long id;
 
-    @Field(name = "database_id")
     @Column(name = "dbid", nullable = false)
     private Long databaseId;
 
-    @Field(name = "query_id")
     @Column(name = "qid")
     private Long queryId;
+
+    @Column(name = "vid")
+    private Long viewId;
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "identifier")
     @OrderBy("id")
@@ -80,7 +82,7 @@ public class Identifier implements Serializable {
     )
     private List<License> licenses;
 
-    @Column(name = "identifier_type", nullable = false, columnDefinition = "enum('SUBSET', 'DATABASE')")
+    @Column(name = "identifier_type", nullable = false, columnDefinition = "enum('SUBSET', 'DATABASE', 'VIEW')")
     @Enumerated(EnumType.STRING)
     private IdentifierType type;
 

@@ -73,8 +73,12 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
         userRepository.save(USER_4);
         containerRepository.save(CONTAINER_1_SIMPLE);
         containerRepository.save(CONTAINER_2_SIMPLE);
+        containerRepository.save(CONTAINER_3_SIMPLE);
+        containerRepository.save(CONTAINER_4_SIMPLE);
         databaseRepository.save(DATABASE_1_SIMPLE);
         databaseRepository.save(DATABASE_2_SIMPLE);
+        databaseRepository.save(DATABASE_3_SIMPLE);
+        databaseRepository.save(DATABASE_4_SIMPLE);
     }
 
     @Test
@@ -86,7 +90,7 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
         identifierRepository.save(IDENTIFIER_1);
 
         /* test */
-        final List<IdentifierDto> response = generic_list(null, null, null);
+        final List<IdentifierDto> response = generic_list(null, null, null, null);
         assertEquals(1, response.size());
         final IdentifierDto identifier = response.get(0);
         assertEquals(IDENTIFIER_1_ID, identifier.getId());
@@ -116,7 +120,7 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
         identifierRepository.save(IDENTIFIER_1);
 
         /* test */
-        final List<IdentifierDto> response = generic_list(null, null, null);
+        final List<IdentifierDto> response = generic_list(null, null, null, null);
         assertEquals(1, response.size());
         final IdentifierDto identifier = response.get(0);
         assertEquals(IDENTIFIER_1_ID, identifier.getId());
@@ -146,7 +150,7 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
         identifierRepository.save(IDENTIFIER_1);
 
         /* test */
-        final List<IdentifierDto> response = generic_list(null, null, null);
+        final List<IdentifierDto> response = generic_list(null, null, null, null);
         assertEquals(1, response.size());
         final IdentifierDto identifier = response.get(0);
         final List<IdentifierTitleDto> titles = identifier.getTitles();
@@ -175,7 +179,7 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
         identifierRepository.save(IDENTIFIER_1);
 
         /* test */
-        final List<IdentifierDto> response = generic_list(DATABASE_1_ID, null, null);
+        final List<IdentifierDto> response = generic_list(DATABASE_1_ID, null, null, null);
         assertEquals(1, response.size());
         final IdentifierDto identifier = response.get(0);
         final List<IdentifierTitleDto> titles = identifier.getTitles();
@@ -197,13 +201,37 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME)
+    public void list_viewId_succeeds() {
+
+        /* mock */
+        identifierRepository.saveAll(List.of(IDENTIFIER_1, IDENTIFIER_2, IDENTIFIER_3, IDENTIFIER_4, IDENTIFIER_5, IDENTIFIER_6));
+
+        /* test */
+        final List<IdentifierDto> reponse = generic_list(null, null, VIEW_1_ID, null);
+        assertEquals(1, reponse.size());
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME)
+    public void list_viewType_succeeds() {
+
+        /* mock */
+        identifierRepository.saveAll(List.of(IDENTIFIER_1, IDENTIFIER_2, IDENTIFIER_3, IDENTIFIER_4, IDENTIFIER_5, IDENTIFIER_6));
+
+        /* test */
+        final List<IdentifierDto> reponse = generic_list(null, null, null, IdentifierTypeDto.VIEW);
+        assertEquals(1, reponse.size());
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME)
     public void list_databaseIdAndType_succeeds() {
 
         /* mock */
         identifierRepository.save(IDENTIFIER_1);
 
         /* test */
-        final List<IdentifierDto> response = generic_list(DATABASE_1_ID, null, IdentifierTypeDto.DATABASE);
+        final List<IdentifierDto> response = generic_list(DATABASE_1_ID, null, null, IdentifierTypeDto.DATABASE);
         assertEquals(1, response.size());
         final IdentifierDto identifier = response.get(0);
         assertEquals(0, identifier.getTitles().size());
@@ -219,7 +247,7 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
         identifierRepository.save(IDENTIFIER_1);
 
         /* test */
-        final List<IdentifierDto> response = generic_list(DATABASE_1_ID, QUERY_1_ID, IdentifierTypeDto.DATABASE);
+        final List<IdentifierDto> response = generic_list(DATABASE_1_ID, QUERY_1_ID, null, IdentifierTypeDto.DATABASE);
         assertEquals(1, response.size());
         final IdentifierDto identifier = response.get(0);
         final List<IdentifierTitleDto> titles = identifier.getTitles();
@@ -269,10 +297,10 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
 
-    protected List<IdentifierDto> generic_list(Long databaseId, Long queryId, IdentifierTypeDto type) {
+    protected List<IdentifierDto> generic_list(Long databaseId, Long queryId, Long viewId, IdentifierTypeDto type) {
 
         /* test */
-        final ResponseEntity<List<IdentifierDto>> response = identifierEndpoint.list(databaseId, queryId, type);
+        final ResponseEntity<List<IdentifierDto>> response = identifierEndpoint.list(databaseId, queryId, viewId, type);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         return response.getBody();

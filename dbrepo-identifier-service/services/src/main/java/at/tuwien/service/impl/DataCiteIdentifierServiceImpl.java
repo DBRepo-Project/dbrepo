@@ -6,6 +6,7 @@ import at.tuwien.api.datacite.doi.DataCiteCreateDoi;
 import at.tuwien.api.datacite.doi.DataCiteDoi;
 import at.tuwien.api.identifier.BibliographyTypeDto;
 import at.tuwien.api.identifier.IdentifierSaveDto;
+import at.tuwien.api.identifier.IdentifierTypeDto;
 import at.tuwien.config.DataCiteConfig;
 import at.tuwien.config.EndpointConfig;
 import at.tuwien.entities.identifier.Identifier;
@@ -57,9 +58,8 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<Identifier> findAll(Long databaseId, Long queryId) {
-        return identifierService.findAll(databaseId, queryId);
+    public List<Identifier> findAll(IdentifierTypeDto type, Long databaseId, Long queryId, Long viewId) {
+        return identifierService.findAll(type, databaseId, queryId, viewId);
     }
 
     @Override
@@ -69,17 +69,11 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<Identifier> findAll() {
-        return identifierService.findAll();
-    }
-
-    @Override
     @Transactional(rollbackFor = {Exception.class})
     public Identifier create(IdentifierSaveDto data, Principal principal, String authorization)
             throws IdentifierPublishingNotAllowedException, QueryNotFoundException, RemoteUnavailableException,
             IdentifierAlreadyExistsException, UserNotFoundException, DatabaseNotFoundException,
-            IdentifierRequestException {
+            IdentifierRequestException, ViewNotFoundException {
         Identifier identifier = identifierService.create(data, principal, authorization);
         RestTemplate restTemplate = restTemplateBuilder.build();
 

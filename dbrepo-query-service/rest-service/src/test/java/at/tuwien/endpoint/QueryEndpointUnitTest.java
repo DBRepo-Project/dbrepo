@@ -135,6 +135,17 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    @WithMockUser(username = USER_4_USERNAME, authorities = {"execute-query"})
+    public void execute_publicNoAccess_succeeds() throws UserNotFoundException, QueryStoreException, SortException,
+            TableMalformedException, DatabaseConnectionException, NotAllowedException, QueryMalformedException,
+            ColumnParseException, DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException,
+            PaginationException {
+
+        /* test */
+        generic_execute(DATABASE_3_ID, QUERY_4_STATEMENT, null, null, DATABASE_3, null);
+    }
+
+    @Test
     @WithMockUser(username = USER_2_USERNAME, authorities = {"execute-query"})
     public void execute_publicRead_succeeds() throws UserNotFoundException, QueryStoreException, TableMalformedException,
             DatabaseConnectionException, QueryMalformedException, ColumnParseException, DatabaseNotFoundException,

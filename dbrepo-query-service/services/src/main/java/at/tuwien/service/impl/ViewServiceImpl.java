@@ -13,6 +13,7 @@ import at.tuwien.service.DatabaseService;
 import at.tuwien.service.QueryService;
 import at.tuwien.service.UserService;
 import at.tuwien.service.ViewService;
+import com.google.common.hash.Hashing;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.log4j.Log4j2;
 import net.sf.jsqlparser.JSQLParserException;
@@ -20,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -72,7 +74,7 @@ public class ViewServiceImpl extends HibernateConnector implements ViewService {
             optional = viewRepository.findPublicOrMineByDatabaseIdAndId(databaseId, id, principal.getName());
         }
         if (optional.isEmpty()) {
-            log.error("Failed to find view with id {} and database with id {}", id, databaseId);
+            log.error("Failed to find view with id {}", id);
             throw new ViewNotFoundException("Failed to find view with id " + id);
         }
         return optional.get();
@@ -136,11 +138,14 @@ public class ViewServiceImpl extends HibernateConnector implements ViewService {
         /* save in metadata database */
         final View entity = View.builder()
                 .vdbid(databaseId)
+                .database(database)
                 .name(data.getName())
                 .internalName(viewMapper.nameToInternalName(data.getName()))
                 .createdBy(user.getId())
-                .database(database)
                 .query(data.getQuery())
+                .queryHash(Hashing.sha256()
+                        .hashString(data.getQuery(), StandardCharsets.UTF_8)
+                        .toString())
                 .isInitialView(false)
                 .isPublic(data.getIsPublic())
                 .columns(columns)

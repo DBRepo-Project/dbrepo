@@ -52,6 +52,8 @@ public interface IdentifierMapper {
             return baseUrl + "/database/" + data.getDatabase().getId() + "/query/" + data.getQueryId();
         } else if (data.getType().equals(IdentifierType.DATABASE)) {
             return baseUrl + "/database/" + data.getDatabase().getId();
+        } else if (data.getType().equals(IdentifierType.VIEW)) {
+            return baseUrl + "/database/" + data.getDatabase().getId() + "/view/" + data.getViewId();
         } else {
             return null;
         }

@@ -33,7 +33,7 @@ class QueryService {
 
   persist (databaseId, queryId) {
     return new Promise((resolve, reject) => {
-      api.put(`/api/database/${databaseId}/query/${queryId}`, {}, { headers: { Accept: 'application/json' } })
+      api.put(`/api/database/${databaseId}/query/${queryId}`, { persist: true }, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const query = response.data
           console.debug('response query', query)
@@ -226,6 +226,23 @@ class QueryService {
           const { code, message } = error
           console.error('Failed to re-execute view count', error)
           Vue.$toast.error(`[${code}] Failed to re-execute view count: ${message}`)
+          reject(error)
+        })
+    })
+  }
+
+  findView (databaseId, viewId) {
+    return new Promise((resolve, reject) => {
+      api.get(`/api/database/${databaseId}/view/${viewId}`, { headers: { Accept: 'application/json' } })
+        .then((response) => {
+          const view = response.data
+          console.debug('response view', view)
+          resolve(view)
+        })
+        .catch((error) => {
+          const { code, message } = error
+          console.error('Failed to find view', error)
+          Vue.$toast.error(`[${code}] Failed to find view: ${message}`)
           reject(error)
         })
     })

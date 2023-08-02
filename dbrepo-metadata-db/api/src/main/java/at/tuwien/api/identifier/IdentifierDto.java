@@ -44,6 +44,11 @@ public class IdentifierDto {
     @Schema(example = "1")
     private Long queryId;
 
+    @JsonProperty("view_id")
+    @Field(name = "view_id")
+    @Schema(example = "1")
+    private Long viewId;
+
     @NotNull
     private IdentifierTypeDto type;
 
