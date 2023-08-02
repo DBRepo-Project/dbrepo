@@ -29,4 +29,7 @@ public interface DatabaseRepository extends JpaRepository<Database, Long> {
     @Query("select d from Database d where d.id = :databaseId")
     Optional<Database> findByContainerIdAndDatabaseId(@Param("databaseId") Long databaseId);
 
+    @Query(value = "select d from Database d where d.id = :databaseId")
+    Optional<Database> findByDatabaseId(@Param("databaseId") Long databaseId);
+
 }

@@ -15,4 +15,12 @@ public interface IdentifierRepository extends JpaRepository<Identifier, Long> {
 
     Optional<Identifier> findByDatabaseIdAndType(Long databaseId, IdentifierType type);
 
+    Optional<Identifier> findDatabaseIdentifier(Long databaseId);
+
+    Optional<Identifier> findSubsetIdentifier(Long databaseId, Long queryId);
+
+    List<Identifier> findAllDatabaseIdentifiers();
+
+    List<Identifier> findAllSubsetIdentifiers();
+
 }
