@@ -8,11 +8,11 @@ import at.tuwien.api.user.UserBriefDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
@@ -32,53 +32,63 @@ public class DatabaseDto {
 
     @Id
     @NotNull
+    @Field(name = "id", type = FieldType.Keyword)
     private Long id;
 
     @NotBlank
     @Schema(example = "Air Quality")
+    @Field(name = "name", type = FieldType.Keyword)
     private String name;
 
     @NotBlank
     @JsonProperty("exchange_name")
-    @Field(name = "exchange_name")
     @Schema(example = "dbrepo.air_quality")
+    @Field(name = "exchange_name", type = FieldType.Keyword)
     private String exchangeName;
 
     private IdentifierDto identifier;
 
     @NotBlank
     @JsonProperty("internal_name")
-    @Field(name = "internal_name")
     @Schema(example = "air_quality")
+    @Field(name = "internal_name", type = FieldType.Keyword)
     private String internalName;
 
     @Schema(example = "Air Quality")
+    @Field(name = "description", type = FieldType.Text)
     private String description;
 
+    @org.springframework.data.annotation.Transient
     private List<TableBriefDto> tables;
 
+    @org.springframework.data.annotation.Transient
     private List<ViewBriefDto> views;
 
     @JsonProperty("is_public")
-    @Field(name = "is_public")
     @Schema(example = "true")
+    @Field(name = "is_public", type = FieldType.Boolean)
     private Boolean isPublic;
 
+    @org.springframework.data.annotation.Transient
     private ImageDto image;
 
+    @Field(name = "container", includeInParent = true, type = FieldType.Nested)
     private ContainerDto container;
 
+    @org.springframework.data.annotation.Transient
     private List<DatabaseAccessDto> accesses;
 
     @NotNull
+    @Field(name = "creator", includeInParent = true, type = FieldType.Nested)
     private UserBriefDto creator;
 
     @NotNull
+    @Field(name = "owner", includeInParent = true, type = FieldType.Nested)
     private UserBriefDto owner;
 
     @NotNull
     @Schema(example = "2021-03-12T15:26:21Z")
-    @Field(type = FieldType.Date)
+    @Field(name = "created", type = FieldType.Keyword)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant created;
 

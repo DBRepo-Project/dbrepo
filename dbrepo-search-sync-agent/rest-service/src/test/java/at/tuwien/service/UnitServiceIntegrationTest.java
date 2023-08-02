@@ -52,7 +52,7 @@ public class UnitServiceIntegrationTest extends BaseUnitTest {
     public Timeout globalTimeout = Timeout.seconds(60);
 
     @Container
-    private static final OpensearchContainer opensearchContainer = new OpensearchContainer(DockerImageName.parse("opensearchproject/opensearch:2"));
+    private static final OpensearchContainer opensearchContainer = new OpensearchContainer(DockerImageName.parse("opensearchproject/opensearch:2.8.0"));
 
     @DynamicPropertySource
     static void elasticsearchProperties(DynamicPropertyRegistry registry) {

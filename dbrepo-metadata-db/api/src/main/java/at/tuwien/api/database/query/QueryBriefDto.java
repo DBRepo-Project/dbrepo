@@ -11,8 +11,6 @@ import lombok.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.jackson.Jacksonized;
-import org.springframework.data.elasticsearch.annotations.Field;
-import org.springframework.data.elasticsearch.annotations.FieldType;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -44,7 +42,6 @@ public class QueryBriefDto {
     private UserDto creator;
 
     @NotNull
-    @Field(type = FieldType.Date)
     @Schema(example = "2022-01-01 08:00:00.000")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")
     private Instant execution;
@@ -76,13 +73,11 @@ public class QueryBriefDto {
     private IdentifierBriefDto identifier;
 
     @NotNull
-    @Field(type = FieldType.Date)
     @Schema(example = "2021-03-12T15:26:21Z")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant created;
 
     @NotNull
-    @Field(type = FieldType.Date)
     @JsonProperty("last_modified")
     @Schema(example = "2021-03-12T15:26:21Z")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")

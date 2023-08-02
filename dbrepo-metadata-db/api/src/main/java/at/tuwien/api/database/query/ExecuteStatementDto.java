@@ -6,8 +6,6 @@ import lombok.*;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.extern.jackson.Jacksonized;
-import org.springframework.data.elasticsearch.annotations.Field;
-import org.springframework.data.elasticsearch.annotations.FieldType;
 
 import java.time.Instant;
 
@@ -24,7 +22,6 @@ public class ExecuteStatementDto {
     @Schema(example = "SELECT `id` FROM `air_quality`")
     private String statement;
 
-    @Field(type = FieldType.Date)
     @Schema(description = "Execute query for data at this timestamp", example = "2020-08-04 11:12:00")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")
     private Instant timestamp;

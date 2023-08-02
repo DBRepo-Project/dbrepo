@@ -33,6 +33,6 @@ WORKDIR /app
 
 COPY --from=build ./rest-service/target/rest-service-*.jar ./search-sync-agent.jar
 
-EXPOSE 9095
+EXPOSE 9050
 
 ENTRYPOINT ["java", "-Dlog4j2.formatMsgNoLookups=true",  "-jar", "./search-sync-agent.jar"]
