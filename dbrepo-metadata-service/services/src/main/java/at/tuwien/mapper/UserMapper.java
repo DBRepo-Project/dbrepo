@@ -34,6 +34,8 @@ public interface UserMapper {
     })
     UserBriefDto userToUserBriefDto(User data);
 
+    UserBriefDto userDtoToUserBriefDto(UserDto data);
+
     /* keep */
     @Mappings({
             @Mapping(target = "orcid", expression = "java(userToOrcid(data))")
