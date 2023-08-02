@@ -16,7 +16,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Log4j2
@@ -25,35 +24,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @MockAmqp
 @MockOpensearch
-public class ActuatorComponentTest extends BaseUnitTest {
+public class SwaggerComponentTest extends BaseUnitTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @Test
-    public void actuatorInfo_succeeds() throws Exception {
-        this.mockMvc.perform(get("/actuator/info"))
+    public void swaggerUi_succeeds() throws Exception {
+        this.mockMvc.perform(get("/swagger-ui/index.html"))
                 .andDo(print())
                 .andExpect(status().isOk());
-    }
-
-    @Test
-    public void actuatorLiveness_succeeds() throws Exception {
-        this.mockMvc.perform(get("/actuator/health/liveness"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("UP"));
-    }
-
-    @Test
-    public void actuatorReadiness_succeeds() throws Exception {
-        this.mockMvc.perform(get("/actuator/health/readiness"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("UP"));
-    }
-
-    @Test
-    public void actuatorPrometheus_succeeds() throws Exception {
-        this.mockMvc.perform(get("/actuator/prometheus"));
     }
 
 }

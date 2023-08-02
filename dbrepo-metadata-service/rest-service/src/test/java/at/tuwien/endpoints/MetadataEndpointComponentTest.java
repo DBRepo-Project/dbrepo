@@ -1,6 +1,8 @@
 package at.tuwien.endpoints;
 
 import at.tuwien.BaseUnitTest;
+import at.tuwien.annotations.MockAmqp;
+import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.config.MetadataConfig;
 import at.tuwien.repository.mdb.*;
 import at.tuwien.repository.sdb.IdentifierIdxRepository;
@@ -25,10 +27,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(SpringExtension.class)
 @AutoConfigureMockMvc
 @SpringBootTest
+@MockAmqp
+@MockOpensearch
 public class MetadataEndpointComponentTest extends BaseUnitTest {
-
-    @MockBean
-    private IdentifierIdxRepository identifierIdxRepository;
 
     @Autowired
     private MetadataConfig metadataConfig;
