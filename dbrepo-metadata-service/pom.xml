@@ -34,6 +34,7 @@
         <module>entities</module>
         <module>oai</module>
         <module>test</module>
+        <module>querystore</module>
         <module>rest-service</module>
         <module>services</module>
         <module>report</module>

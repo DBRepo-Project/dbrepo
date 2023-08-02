@@ -21,6 +21,11 @@
         </dependency>
         <dependency>
             <groupId>at.tuwien</groupId>
+            <artifactId>querystore</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>at.tuwien</groupId>
             <artifactId>api</artifactId>
             <version>${project.version}</version>
         </dependency>
