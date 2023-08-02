@@ -4,17 +4,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(code = HttpStatus.NOT_FOUND)
-public class DatabaseNotFoundException extends Exception {
+public class ConceptNotFoundException extends Exception {
 
-    public DatabaseNotFoundException(String msg) {
+    public ConceptNotFoundException(String msg) {
         super(msg);
     }
 
-    public DatabaseNotFoundException(String msg, Throwable thr) {
+    public ConceptNotFoundException(String msg, Throwable thr) {
         super(msg, thr);
     }
 
-    public DatabaseNotFoundException(Throwable thr) {
+    public ConceptNotFoundException(Throwable thr) {
         super(thr);
     }
 

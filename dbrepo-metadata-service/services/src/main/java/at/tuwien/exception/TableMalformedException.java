@@ -4,17 +4,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(code = HttpStatus.BAD_REQUEST)
-public class ImageNotSupportedException extends Exception {
+public class TableMalformedException extends Exception {
 
-    public ImageNotSupportedException(String msg) {
+    public TableMalformedException(String msg) {
         super(msg);
     }
 
-    public ImageNotSupportedException(String msg, Throwable thr) {
+    public TableMalformedException(String msg, Throwable thr) {
         super(msg, thr);
     }
 
-    public ImageNotSupportedException(Throwable thr) {
+    public TableMalformedException(Throwable thr) {
         super(thr);
     }
 

@@ -4,18 +4,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(code = HttpStatus.BAD_REQUEST)
-public class ImageNotSupportedException extends Exception {
+public class ArbitraryPrimaryKeysException extends Exception {
 
-    public ImageNotSupportedException(String msg) {
+    public ArbitraryPrimaryKeysException(String msg) {
         super(msg);
     }
 
-    public ImageNotSupportedException(String msg, Throwable thr) {
+    public ArbitraryPrimaryKeysException(String msg, Throwable thr) {
         super(msg, thr);
     }
 
-    public ImageNotSupportedException(Throwable thr) {
+    public ArbitraryPrimaryKeysException(Throwable thr) {
         super(thr);
     }
-
 }

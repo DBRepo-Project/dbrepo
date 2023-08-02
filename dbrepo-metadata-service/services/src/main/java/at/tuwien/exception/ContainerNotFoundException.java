@@ -3,19 +3,19 @@ package at.tuwien.exception;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-@ResponseStatus(code = HttpStatus.NOT_FOUND, reason = "Container not found")
+@ResponseStatus(code = HttpStatus.NOT_FOUND)
 public class ContainerNotFoundException extends Exception {
 
     public ContainerNotFoundException(String msg) {
         super(msg);
     }
 
-    public ContainerNotFoundException(String msg, Throwable e) {
-        super(msg, e);
+    public ContainerNotFoundException(String msg, Throwable thr) {
+        super(msg, thr);
     }
 
-    public ContainerNotFoundException(Throwable e) {
-        super(e);
+    public ContainerNotFoundException(Throwable thr) {
+        super(thr);
     }
 
 }

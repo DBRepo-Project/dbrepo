@@ -4,17 +4,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(code = HttpStatus.BAD_REQUEST)
-public class ImageNotSupportedException extends Exception {
+public class PaginationException extends Exception {
 
-    public ImageNotSupportedException(String msg) {
+    public PaginationException(String msg) {
         super(msg);
     }
 
-    public ImageNotSupportedException(String msg, Throwable thr) {
+    public PaginationException(String msg, Throwable thr) {
         super(msg, thr);
     }
 
-    public ImageNotSupportedException(Throwable thr) {
+    public PaginationException(Throwable thr) {
         super(thr);
     }
 
