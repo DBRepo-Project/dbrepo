@@ -102,8 +102,8 @@
 </template>
 <script>
 import TableService from '@/api/table.service'
-import MiddlewareService from '@/api/middleware.service'
 import QueryService from '@/api/query.service'
+import UploadService from '@/api/upload.service'
 const { isNonNegativeInteger } = require('@/utils')
 
 export default {
@@ -114,6 +114,7 @@ export default {
     return {
       loading: false,
       step: 1,
+      ready: false,
       validStep1: false,
       separators: [
         { key: ',', value: ',' },
@@ -185,10 +186,10 @@ export default {
     isNonNegativeInteger,
     uploadAndImport () {
       this.loading = true
-      MiddlewareService.upload('file', this.fileModel)
+      UploadService.upload(this.fileModel)
         .then((file) => {
-          this.file = file[0]
-          this.tableImport.location = `/tmp/${this.file.filename}`
+          console.debug('uploaded file', file)
+          this.tableImport.location = file.path
           QueryService.importCsv(this.$route.params.database_id, this.$route.params.table_id, this.tableImport)
             .then(() => {
               this.$toast.success('Successfully imported data')
@@ -197,9 +198,6 @@ export default {
             .finally(() => {
               this.loading = false
             })
-        })
-        .catch(() => {
-          this.loading = false
         })
     },
     submit () {

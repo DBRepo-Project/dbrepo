@@ -8,7 +8,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 
 import java.util.Date;
 import java.util.TimeZone;
@@ -27,11 +26,6 @@ public class JacksonConfig {
         objectMapper.setTimeZone(TimeZone.getTimeZone("UTC"));
         log.debug("current time is {}", objectMapper.writeValueAsString(new Date()));
         return objectMapper;
-    }
-
-    @Bean
-    public MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter() throws JsonProcessingException {
-        return new MappingJackson2HttpMessageConverter(objectMapper());
     }
 
 }

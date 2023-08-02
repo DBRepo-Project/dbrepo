@@ -27,19 +27,19 @@ import java.util.List;
 public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
 
     private final AmqpConfig amqpConfig;
+    private final Environment environment;
     private final RestTemplate restTemplate;
     private final GatewayConfig gatewayConfig;
-    private final Environment environment;
 
     private final static String VIRTUAL_SERVER = "dbrepo";
 
     @Autowired
-    public BrokerServiceGatewayImpl(AmqpConfig amqpConfig, RestTemplate restTemplate, GatewayConfig gatewayConfig,
-                                    Environment environment) {
+    public BrokerServiceGatewayImpl(AmqpConfig amqpConfig, Environment environment, RestTemplate restTemplate,
+                                    GatewayConfig gatewayConfig) {
         this.amqpConfig = amqpConfig;
+        this.environment = environment;
         this.restTemplate = restTemplate;
         this.gatewayConfig = gatewayConfig;
-        this.environment = environment;
     }
 
     @Override

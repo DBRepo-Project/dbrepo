@@ -39,6 +39,9 @@
         <template v-if="canModify" v-slot:item.selection="{ item }">
           <input v-model="selection" type="checkbox" :value="item" @click="edit = true">
         </template>
+        <template v-for="(blobColumn,idx) in blobColumns" v-slot:[blobColumn]="{ item }">
+          <a :key="`b-${idx}`" :href="item.blob">Download</a>
+        </template>
       </v-data-table>
     </v-card>
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
@@ -113,6 +116,12 @@ export default {
     },
     access () {
       return this.$store.state.access
+    },
+    blobColumns () {
+      if (!this.table || !this.table.columns) {
+        return []
+      }
+      return this.table.columns.filter(c => this.isFileField(c)).map(c => 'item.' + c.internal_name)
     },
     versionColor () {
       if (this.version === null) {
@@ -303,6 +312,9 @@ export default {
         .finally(() => {
           this.loadingData--
         })
+    },
+    isFileField (column) {
+      return ['blob', 'longblob', 'mediumblob', 'tinyblob'].includes(column.column_type)
     }
   }
 }

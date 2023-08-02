@@ -19,6 +19,7 @@ import at.tuwien.exception.QueryStoreException;
 import at.tuwien.exception.TableMalformedException;
 import at.tuwien.querystore.Query;
 import net.sf.jsqlparser.statement.select.SelectItem;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.FileUtils;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -86,7 +87,8 @@ public interface QueryMapper {
                 final String columnOrAlias = column.getAlias() != null ? column.getAlias() : column.getInternalName();
                 if (List.of(TableColumnType.BLOB, TableColumnType.TINYBLOB, TableColumnType.MEDIUMBLOB, TableColumnType.LONGBLOB).contains(column.getColumnType())) {
                     log.debug("column {} is of type blob", columnOrAlias);
-                    map.put(columnOrAlias, result.getBlob(idx[0]++));
+                    final Blob blob = result.getBlob(idx[0]++);
+                    map.put(columnOrAlias, Hex.encodeHexString(blob.getBytes(1, (int) blob.length())).toUpperCase());
                     continue;
                 }
                 final Object object = dataColumnToObject(result.getObject(idx[0]++), column);
@@ -97,7 +99,6 @@ public interface QueryMapper {
             }
             resultList.add(map);
         }
-        log.trace("mapped result list {} to result map {}", result, resultList);
         return QueryResultDto.builder()
                 .result(resultList)
                 .build();

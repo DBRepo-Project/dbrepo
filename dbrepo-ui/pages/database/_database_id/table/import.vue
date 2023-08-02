@@ -133,7 +133,7 @@
       <v-stepper-content step="3">
         <v-form ref="form" v-model="validStep3" @submit.prevent="submit">
           <v-row dense>
-            <v-col cols="4">
+            <v-col cols="8">
               <v-file-input
                 v-model="fileModel"
                 accept=".csv,.tsv"
@@ -141,15 +141,6 @@
                 persistent-hint
                 show-size
                 label="File Upload (.csv/.tsv)" />
-            </v-col>
-            <v-col cols="4">
-              <v-text-field
-                v-model="url"
-                disabled
-                accept=".csv,.tsv"
-                show-size
-                hint="e.g. http://www.wienerlinien.at/ogd_realtime/doku/ogd/wienerlinien-ogd-verbindungen.csv"
-                label="File URL (.csv/.tsv)" />
             </v-col>
           </v-row>
           <v-row dense>
@@ -194,11 +185,11 @@
 import { notEmpty, isNonNegativeInteger } from '@/utils'
 import TableSchema from '@/components/TableSchema.vue'
 import TableService from '@/api/table.service'
-import MiddlewareService from '@/api/middleware.service'
 import AnalyseService from '@/api/analyse.service'
 import DatabaseService from '@/api/database.service'
 import QueryMapper from '@/api/query.mapper'
 import TableMapper from '@/api/table.mapper'
+import UploadService from '@/api/upload.service'
 
 export default {
   name: 'TableFromCSV',
@@ -313,7 +304,7 @@ export default {
     isNonNegativeInteger,
     uploadAndAnalyse () {
       return this.upload()
-        .then(() => this.analyse())
+        .then(path => this.analyse(path))
     },
     submit () {
       this.$refs.form.validate()
@@ -321,22 +312,20 @@ export default {
     upload () {
       this.loadingUpload = true
       return new Promise((resolve, reject) => {
-        MiddlewareService.upload('file', this.fileModel)
+        UploadService.upload(this.fileModel)
           .then((file) => {
-            this.file = file[0]
-            resolve(file)
+            console.debug('uploaded file', file)
+            resolve(file.path)
           })
-          .catch((error) => {
-            reject(error)
-          })
+          .catch(error => reject(error))
           .finally(() => {
             this.loadingUpload = false
           })
       })
     },
-    analyse () {
+    analyse (path) {
       this.loadingAnalyse = true
-      AnalyseService.determineDataTypes(`/tmp/${this.file.filename}`)
+      AnalyseService.determineDataTypes(path)
         .then((analysis) => {
           const { columns } = analysis
           const dataTypes = QueryMapper.mySql8DataTypes()
@@ -353,7 +342,7 @@ export default {
                 sets: []
               }
             })
-          this.tableImport.location = `/tmp/${this.file.filename}`
+          this.tableImport.location = path
           this.step = 4
         })
         .finally(() => {

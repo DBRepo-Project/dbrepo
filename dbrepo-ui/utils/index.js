@@ -83,11 +83,11 @@ function formatTimestampUTC (str) {
   return format(new Date(date), 'yyyy-MM-dd HH:mm:ss')
 }
 
-function formatBinaryStream (bin) {
-  if (bin === null || !bin.binaryStream) {
+function formatBinaryStream (hex) {
+  if (!hex) {
     return null
   }
-  return '(binary)'
+  return 'data:application/octet-stream;base64,' + Buffer.from(hex, 'hex').toString('base64')
 }
 
 function isOrcid (orcid) {
