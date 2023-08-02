@@ -27,19 +27,31 @@ public class AmqpConfig {
     private String virtualHost;
 
     @Value("${spring.rabbitmq.username}")
-    private String ampqUsername;
+    private String amqpUsername;
 
     @Value("${spring.rabbitmq.password}")
-    private String ampqPassword;
+    private String amqpPassword;
+
+    @Value("${fda.consumers}")
+    private Integer amqpConsumers;
 
     @Bean
-    public Channel getChannel() throws IOException, TimeoutException {
+    public ConnectionFactory connectionFactory() {
         final ConnectionFactory factory = new ConnectionFactory();
         factory.setHost(ampqHost);
         factory.setPort(ampqPort);
         factory.setVirtualHost(virtualHost);
-        factory.setUsername(ampqUsername);
-        factory.setPassword(ampqPassword);
+        factory.setUsername(amqpUsername);
+        factory.setPassword(amqpPassword);
+        factory.setAutomaticRecoveryEnabled(true);
+        factory.setTopologyRecoveryEnabled(true);
+        factory.setNetworkRecoveryInterval(10000) /* attempt recovery every 10 seconds */;
+        log.debug("broker service host={}, username={}, password=(hidden)", ampqHost, amqpUsername);
+        return factory;
+    }
+
+    @Bean
+    public Channel getChannel(ConnectionFactory factory) throws IOException, TimeoutException {
         final Connection connection = factory.newConnection();
         return connection.createChannel();
     }

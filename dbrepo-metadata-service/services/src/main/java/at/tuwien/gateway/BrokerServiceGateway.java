@@ -1,13 +1,17 @@
 package at.tuwien.gateway;
 
-
+import at.tuwien.api.amqp.ConsumerDto;
 import at.tuwien.api.amqp.CreateVirtualHostDto;
 import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
 import at.tuwien.api.user.ExchangeUpdatePermissionsDto;
 import at.tuwien.exception.BrokerVirtualHostCreationException;
 import at.tuwien.exception.BrokerVirtualHostGrantException;
 
+import java.util.List;
+
 public interface BrokerServiceGateway {
+
+    List<ConsumerDto> findAllConsumers();
 
     /**
      * Create virtual host at the queue service.
