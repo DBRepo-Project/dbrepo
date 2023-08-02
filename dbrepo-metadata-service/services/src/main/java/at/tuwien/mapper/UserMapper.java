@@ -1,5 +1,6 @@
 package at.tuwien.mapper;
 
+import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.auth.TokenIntrospectDto;
 import at.tuwien.api.user.GrantedAuthorityDto;
 import at.tuwien.api.user.UserBriefDto;
@@ -15,6 +16,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring")
@@ -67,9 +69,19 @@ public interface UserMapper {
                 .build();
     }
 
+    User signupRequestDtoToUser(SignupRequestDto data);
+
     default GrantedAuthority grantedAuthorityDtoToGrantedAuthority(GrantedAuthorityDto data) {
         final GrantedAuthority authority = new SimpleGrantedAuthority(data.getAuthority());
         log.trace("mapped granted authority {} to granted authority {}", data, authority);
         return authority;
+    }
+
+    default UserAttribute tripleToUserAttribute(UUID userId, String name, String value) {
+        return UserAttribute.builder()
+                .userId(userId)
+                .name(name)
+                .value(value)
+                .build();
     }
 }
