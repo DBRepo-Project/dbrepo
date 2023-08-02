@@ -3,6 +3,7 @@ package at.tuwien.service.impl;
 import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
 import at.tuwien.config.AmqpConfig;
 import at.tuwien.entities.database.Database;
+import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.AmqpException;
 import at.tuwien.exception.BrokerVirtualHostCreationException;
@@ -10,6 +11,7 @@ import at.tuwien.exception.BrokerVirtualHostGrantException;
 import at.tuwien.gateway.BrokerServiceGateway;
 import at.tuwien.mapper.AmqpMapper;
 import at.tuwien.repository.mdb.DatabaseRepository;
+import at.tuwien.repository.mdb.TableRepository;
 import at.tuwien.service.MessageQueueService;
 import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;
@@ -33,15 +35,18 @@ public class RabbitMqServiceImpl implements MessageQueueService {
     private final AmqpConfig amqpConfig;
     private final AmqpMapper amqpMapper;
     private final DatabaseRepository databaseRepository;
+    private final TableRepository tableRepository;
     private final BrokerServiceGateway brokerServiceGateway;
 
     @Autowired
     public RabbitMqServiceImpl(Channel channel, AmqpConfig amqpConfig, AmqpMapper amqpMapper,
-                               DatabaseRepository databaseRepository, BrokerServiceGateway brokerServiceGateway) {
+                               DatabaseRepository databaseRepository, TableRepository tableRepository,
+                               BrokerServiceGateway brokerServiceGateway) {
         this.channel = channel;
         this.amqpConfig = amqpConfig;
         this.amqpMapper = amqpMapper;
         this.databaseRepository = databaseRepository;
+        this.tableRepository = tableRepository;
         this.brokerServiceGateway = brokerServiceGateway;
     }
 
@@ -54,6 +59,10 @@ public class RabbitMqServiceImpl implements MessageQueueService {
         for (Database database : databases) {
             createExchange(database, principal);
         }
+        final List<Table> tables = tableRepository.findAll();
+        for (Table table : tables) {
+            create(table);
+        }
     }
 
     @Override
@@ -65,6 +74,19 @@ public class RabbitMqServiceImpl implements MessageQueueService {
             log.error("Failed to declare exchange {}", database.getExchangeName());
             throw new AmqpException("Failed to declare exchange", e);
         }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public void create(Table table) throws AmqpException {
+        try {
+            channel.queueDeclare(table.getQueueName(), true, false, false, null);
+            channel.queueBind(table.getQueueName(), table.getDatabase().getExchangeName(), table.getRoutingKey());
+        } catch (IOException e) {
+            log.error("Failed to create queue and bind for table with id {}", table.getId());
+            throw new AmqpException("Failed to create", e);
+        }
+        log.info("Created queue for table with id {}", table.getId());
     }
 
     @Override

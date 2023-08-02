@@ -17,9 +17,19 @@ public interface AccessService {
      * @param databaseId The database id.
      * @param username   The username.
      * @return True if user has access, False otherwise.
-     * @throws AccessDeniedException The access is denied.
+     * @throws NotAllowedException The access is denied.
      */
-    DatabaseAccess find(Long databaseId, String username) throws AccessDeniedException;
+    DatabaseAccess find(Long databaseId, String username) throws NotAllowedException;
+
+    /**
+     * Checks if the user with username has access to the database with given id.
+     *
+     * @param databaseId The database id.
+     * @param username   The username.
+     * @return The access object.
+     * @throws NotAllowedException The user does not have access.
+     */
+    DatabaseAccess hasAccess(Long databaseId, String username) throws NotAllowedException;
 
     /**
      * Give somebody access to a database of container.

@@ -50,10 +50,22 @@ public class AccessServiceImpl extends HibernateConnector implements AccessServi
 
     @Override
     @Transactional(readOnly = true)
-    public DatabaseAccess find(Long databaseId, String username) throws AccessDeniedException {
+    public DatabaseAccess find(Long databaseId, String username) throws NotAllowedException {
         final Optional<DatabaseAccess> optional = databaseAccessRepository.findByDatabaseIdAndUsername(databaseId, username);
         if (optional.isEmpty()) {
-            throw new AccessDeniedException("Failed to retrieve access to database with id " + databaseId + " for user with username '" + username + "'");
+            log.error("Failed to find database access for database with id {}", databaseId);
+            throw new NotAllowedException("Failed to find database access");
+        }
+        return optional.get();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public DatabaseAccess hasAccess(Long databaseId, String username) throws NotAllowedException {
+        final Optional<DatabaseAccess> optional = databaseAccessRepository.findByDatabaseIdAndUsername(databaseId, username);
+        if (optional.isEmpty()) {
+            log.error("Failed to retrieve access, not found");
+            throw new NotAllowedException("Failed to retrieve access");
         }
         return optional.get();
     }
