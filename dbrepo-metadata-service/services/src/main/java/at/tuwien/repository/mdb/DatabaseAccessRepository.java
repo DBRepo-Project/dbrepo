@@ -21,6 +21,6 @@ public interface DatabaseAccessRepository extends JpaRepository<DatabaseAccess, 
     List<DatabaseAccess> findByHdbid(Long databaseId);
 
     @Query("select a from DatabaseAccess a where a.hdbid = :databaseId and a.user.username = :username")
-    Optional<DatabaseAccess> findByDatabaseIdAndUsername(@Param("databaseId") Long databaseId, @Param("username") String username);
+    Optional<DatabaseAccess> findByDatabaseIdAndUsername(Long databaseId, String username);
 
 }
