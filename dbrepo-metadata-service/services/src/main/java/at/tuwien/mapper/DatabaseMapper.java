@@ -67,9 +67,15 @@ public interface DatabaseMapper {
     @Mappings({
             @Mapping(target = "id", source = "id"),
             @Mapping(target = "image", source = "container.image"),
-            @Mapping(target = "created", source = "created", dateFormat = "dd-MM-yyyy HH:mm")
+            @Mapping(target = "created", source = "created", dateFormat = "dd-MM-yyyy HH:mm"),
+            @Mapping(target = "identifier.database", ignore = true)
     })
     DatabaseDto databaseToDatabaseDto(Database data);
+
+    @Mappings({
+            @Mapping(target = "identifier.database", ignore = true)
+    })
+    Database databaseDtoToDatabase(DatabaseDto data);
 
     @Mappings({
             @Mapping(target = "internalName", expression = "java(nameToInternalName(data.getName()) + \"_\" + RandomStringUtils.randomAlphabetic(4).toLowerCase())"),

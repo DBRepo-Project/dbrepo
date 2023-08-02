@@ -7,10 +7,10 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {DatabaseMapper.class})
 public interface IdentifierMapper {
 
-    org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(IdentifierMapper.class);
+    Identifier identifierDtoToIdentifier(IdentifierDto data);
 
     IdentifierBriefDto identifierToIdentifierBriefDto(Identifier data);
 
