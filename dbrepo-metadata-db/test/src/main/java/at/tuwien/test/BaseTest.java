@@ -77,6 +77,7 @@ import static java.time.temporal.ChronoUnit.MINUTES;
  * <li>View 3</li>
  * <li>Identifier 1 (Title=en, Description=en, type=database)</li>
  * <li>Identifier 5 (Title=en, Description=en, type=subset, queryId=1)</li>
+ * <li>Identifier 6 (Title=en, Description=en, type=view, viewId=1)</li>
  * </ul>
  * <p>
  * Database 2 (Private, User 2)
@@ -5083,6 +5084,7 @@ public abstract class BaseTest {
     public final static Long VIEW_1_DATABASE_ID = DATABASE_1_ID;
     public final static Boolean VIEW_1_PUBLIC = true;
     public final static String VIEW_1_QUERY = "select `location`, `lat`, `lng` from `weather_location`";
+    public final static String VIEW_1_QUERY_HASH = "dc81a6877c7c51a6a6f406e1fc2a255e44a0d49a20548596e0d583c3eb849c23";
 
     public final static List<TableColumn> VIEW_1_COLUMNS = List.of(TableColumn.builder()
                     .id(COLUMN_2_1_ID)
@@ -5175,6 +5177,7 @@ public abstract class BaseTest {
             .vdbid(VIEW_1_DATABASE_ID)
             .isPublic(VIEW_1_PUBLIC)
             .query(VIEW_1_QUERY)
+            .queryHash(VIEW_1_QUERY_HASH)
             .createdBy(USER_1_ID)
             .creator(USER_1)
             .columns(VIEW_1_COLUMNS)
@@ -5189,6 +5192,7 @@ public abstract class BaseTest {
             .isPublic(VIEW_1_PUBLIC)
             .createdBy(USER_1_ID)
             .query(VIEW_1_QUERY)
+            .queryHash(VIEW_1_QUERY_HASH)
             .columns(VIEW_1_COLUMNS_DTO)
             .build();
 
@@ -5200,6 +5204,7 @@ public abstract class BaseTest {
     public final static Long VIEW_2_DATABASE_ID = DATABASE_1_ID;
     public final static Boolean VIEW_2_PUBLIC = true;
     public final static String VIEW_2_QUERY = "select `date`, `location`, `mintemp`, `rainfall` from `weather_aus` where `location` = 'Albury'";
+    public final static String VIEW_2_QUERY_HASH = "c76efcbab7e117ed286fd6c0f766178727debfeb5544633f8fbfaf2230340d17";
 
     public final static List<TableColumn> VIEW_2_COLUMNS = List.of(TableColumn.builder()
                     .id(COLUMN_1_1_ID)
@@ -5277,6 +5282,7 @@ public abstract class BaseTest {
             .isPublic(VIEW_2_PUBLIC)
             .columns(VIEW_2_COLUMNS)
             .query(VIEW_2_QUERY)
+            .queryHash(VIEW_2_QUERY_HASH)
             .creator(USER_1)
             .createdBy(USER_1_ID)
             .build();
@@ -5289,6 +5295,7 @@ public abstract class BaseTest {
             .vdbid(VIEW_2_DATABASE_ID)
             .isPublic(VIEW_2_PUBLIC)
             .query(VIEW_2_QUERY)
+            .queryHash(VIEW_2_QUERY_HASH)
             .createdBy(USER_1_ID)
             .build();
 
@@ -5300,6 +5307,7 @@ public abstract class BaseTest {
     public final static Long VIEW_3_DATABASE_ID = DATABASE_1_ID;
     public final static Boolean VIEW_3_PUBLIC = false;
     public final static String VIEW_3_QUERY = "select w.`mintemp`, w.`rainfall`, w.`location`, m.`date` from `weather_aus` w join `junit2` m on m.`location` = w.`location`";
+    public final static String VIEW_3_QUERY_HASH = "297bbacf5bf142028d0f4a1e537db03fd91b0c3be9e66ea2abc13d2984d22824";
 
     public final static List<TableColumn> VIEW_3_COLUMNS = List.of(TableColumn.builder()
                     .id(COLUMN_1_4_ID)
@@ -5414,6 +5422,7 @@ public abstract class BaseTest {
             .isPublic(VIEW_3_PUBLIC)
             .columns(VIEW_3_COLUMNS)
             .query(VIEW_3_QUERY)
+            .queryHash(VIEW_3_QUERY_HASH)
             .creator(USER_1)
             .createdBy(USER_1_ID)
             .build();
@@ -5427,6 +5436,7 @@ public abstract class BaseTest {
             .isPublic(VIEW_3_PUBLIC)
             .columns(VIEW_3_COLUMNS_DTO)
             .query(VIEW_3_QUERY)
+            .queryHash(VIEW_3_QUERY_HASH)
             .createdBy(USER_1_ID)
             .build();
 
@@ -5441,6 +5451,7 @@ public abstract class BaseTest {
     public final static Table VIEW_4_TABLE = TABLE_4;
     public final static Boolean VIEW_4_PUBLIC = true;
     public final static String VIEW_4_QUERY = "SELECT `animal_name`, `hair`, `feathers`, `eggs`, `milk`, `airborne`, `aquatic`, `predator`, `backbone`, `breathes`, `venomous`, `fins`, `legs`, `tail`, `domestic`, `catsize`, `class_type` FROM `zoo` WHERE `class_type` = 1";
+    public final static String VIEW_4_QUERY_HASH = "3561cd0bb0b0e94d6f15ae602134252a5760d09d660a71a4fb015b6991c8ba0b";
 
     public final static List<TableColumn> VIEW_4_COLUMNS = List.of(TableColumn.builder()
                     .id(COLUMN_4_2_ID)
@@ -5672,6 +5683,7 @@ public abstract class BaseTest {
             .vdbid(VIEW_4_DATABASE_ID)
             .isPublic(VIEW_4_PUBLIC)
             .query(VIEW_4_QUERY)
+            .queryHash(VIEW_4_QUERY_HASH)
             .createdBy(USER_1_ID)
             .creator(USER_1)
             .columns(VIEW_4_COLUMNS)
@@ -5685,6 +5697,7 @@ public abstract class BaseTest {
     public final static Long VIEW_5_DATABASE_ID = DATABASE_2_ID;
     public final static Boolean VIEW_5_PUBLIC = true;
     public final static String VIEW_5_QUERY = "SELECT `location`, `lat`, `lng` FROM `weather_location` WHERE `location` = 'Albury'";
+    public final static String VIEW_5_QUERY_HASH = "120f32478aaff874c25ab32eceb9f00b64cc9d422831046f2f5d43953aca01e7";
 
     public final static View VIEW_5 = View.builder()
             .id(VIEW_5_ID)
@@ -5694,6 +5707,7 @@ public abstract class BaseTest {
             .vdbid(VIEW_5_DATABASE_ID)
             .isPublic(VIEW_5_PUBLIC)
             .query(VIEW_5_QUERY)
+            .queryHash(VIEW_5_QUERY_HASH)
             .creator(USER_1)
             .createdBy(USER_1_ID)
             .build();
@@ -6671,6 +6685,7 @@ public abstract class BaseTest {
 
     public final static Identifier IDENTIFIER_3 = Identifier.builder()
             .id(IDENTIFIER_3_ID)
+            .databaseId(IDENTIFIER_3_DATABASE_ID)
             .queryId(IDENTIFIER_3_QUERY_ID)
             .descriptions(List.of(IDENTIFIER_3_DESCRIPTION_1))
             .titles(List.of(IDENTIFIER_3_TITLE_1))
@@ -6983,6 +6998,32 @@ public abstract class BaseTest {
             .visibility(IDENTIFIER_5_VISIBILITY)
             .build();
 
+    public final static Identifier IDENTIFIER_5_SIMPLE = Identifier.builder()
+            .id(IDENTIFIER_5_ID)
+            .databaseId(IDENTIFIER_5_DATABASE_ID)
+            .descriptions(List.of() /* for jpa */)
+            .titles(List.of() /* for jpa */)
+            .doi(IDENTIFIER_5_DOI)
+            .database(DATABASE_1)
+            .created(IDENTIFIER_5_CREATED)
+            .lastModified(IDENTIFIER_5_MODIFIED)
+            .execution(IDENTIFIER_5_EXECUTION)
+            .publicationDay(IDENTIFIER_5_PUBLICATION_DAY)
+            .publicationMonth(IDENTIFIER_5_PUBLICATION_MONTH)
+            .publicationYear(IDENTIFIER_5_PUBLICATION_YEAR)
+            .queryHash(IDENTIFIER_5_QUERY_HASH)
+            .resultHash(IDENTIFIER_5_RESULT_HASH)
+            .query(IDENTIFIER_5_QUERY)
+            .queryNormalized(IDENTIFIER_5_NORMALIZED)
+            .resultNumber(IDENTIFIER_5_RESULT_NUMBER)
+            .publisher(IDENTIFIER_5_PUBLISHER)
+            .type(IDENTIFIER_5_TYPE)
+            .creator(USER_1)
+            .licenses(List.of() /* for jpa */)
+            .creators(List.of() /* for jpa */)
+            .visibility(IDENTIFIER_5_VISIBILITY)
+            .build();
+
     public final static IdentifierDto IDENTIFIER_5_DTO = IdentifierDto.builder()
             .id(IDENTIFIER_5_ID)
             .databaseId(IDENTIFIER_5_DATABASE_ID)
@@ -7020,6 +7061,98 @@ public abstract class BaseTest {
             .publisher(IDENTIFIER_5_PUBLISHER)
             .type(IDENTIFIER_5_TYPE_DTO)
             .visibility(IDENTIFIER_5_VISIBILITY_DTO)
+            .licenses(List.of(LICENSE_1_DTO))
+            .build();
+
+    public final static Long IDENTIFIER_6_ID = 6L;
+    public final static Long IDENTIFIER_6_DATABASE_ID = DATABASE_1_ID;
+    public final static Long IDENTIFIER_6_VIEW_ID = VIEW_1_ID;
+    public final static String IDENTIFIER_6_DOI = null;
+    public final static Instant IDENTIFIER_6_CREATED = Instant.ofEpochSecond(1651588352);
+    public final static Instant IDENTIFIER_6_MODIFIED = Instant.ofEpochSecond(1551588352);
+    public final static Instant IDENTIFIER_6_EXECUTION = Instant.ofEpochSecond(1551588352);
+    public final static Integer IDENTIFIER_6_PUBLICATION_DAY = 10;
+    public final static Integer IDENTIFIER_6_PUBLICATION_MONTH = 7;
+    public final static Integer IDENTIFIER_6_PUBLICATION_YEAR = 2023;
+    public final static String IDENTIFIER_6_QUERY_HASH = VIEW_1_QUERY_HASH;
+    public final static String IDENTIFIER_6_RESULT_HASH = null;
+    public final static String IDENTIFIER_6_QUERY = VIEW_1_QUERY;
+    public final static String IDENTIFIER_6_NORMALIZED = VIEW_1_QUERY;
+    public final static Long IDENTIFIER_6_RESULT_NUMBER = null;
+    public final static String IDENTIFIER_6_PUBLISHER = "Polish Government";
+    public final static IdentifierType IDENTIFIER_6_TYPE = IdentifierType.VIEW;
+    public final static IdentifierTypeDto IDENTIFIER_6_TYPE_DTO = IdentifierTypeDto.VIEW;
+    public final static UUID IDENTIFIER_6_CREATOR_ID = USER_1_ID;
+    public final static User IDENTIFIER_6_CREATOR = USER_1;
+    public final static VisibilityType IDENTIFIER_6_VISIBILITY = VisibilityType.EVERYONE;
+    public final static VisibilityTypeDto IDENTIFIER_6_VISIBILITY_DTO = VisibilityTypeDto.EVERYONE;
+
+    public final static Identifier IDENTIFIER_6 = Identifier.builder()
+            .id(IDENTIFIER_6_ID)
+            .databaseId(IDENTIFIER_6_DATABASE_ID)
+            .viewId(IDENTIFIER_6_VIEW_ID)
+            .descriptions(List.of())
+            .titles(List.of())
+            .doi(IDENTIFIER_6_DOI)
+            .database(DATABASE_1)
+            .created(IDENTIFIER_6_CREATED)
+            .lastModified(IDENTIFIER_6_MODIFIED)
+            .execution(IDENTIFIER_6_EXECUTION)
+            .publicationDay(IDENTIFIER_6_PUBLICATION_DAY)
+            .publicationMonth(IDENTIFIER_6_PUBLICATION_MONTH)
+            .publicationYear(IDENTIFIER_6_PUBLICATION_YEAR)
+            .queryHash(IDENTIFIER_6_QUERY_HASH)
+            .resultHash(IDENTIFIER_6_RESULT_HASH)
+            .query(IDENTIFIER_6_QUERY)
+            .queryNormalized(IDENTIFIER_6_NORMALIZED)
+            .resultNumber(IDENTIFIER_6_RESULT_NUMBER)
+            .publisher(IDENTIFIER_6_PUBLISHER)
+            .type(IDENTIFIER_6_TYPE)
+            .creator(USER_1)
+            .licenses(List.of(LICENSE_1))
+            .creators(List.of())
+            .visibility(IDENTIFIER_6_VISIBILITY)
+            .build();
+
+    public final static IdentifierDto IDENTIFIER_6_DTO = IdentifierDto.builder()
+            .id(IDENTIFIER_6_ID)
+            .databaseId(IDENTIFIER_6_DATABASE_ID)
+            .viewId(IDENTIFIER_6_VIEW_ID)
+            .descriptions(List.of())
+            .titles(List.of())
+            .doi(IDENTIFIER_6_DOI)
+            .database(DATABASE_1_DTO)
+            .created(IDENTIFIER_6_CREATED)
+            .lastModified(IDENTIFIER_6_MODIFIED)
+            .execution(IDENTIFIER_6_EXECUTION)
+            .publicationDay(IDENTIFIER_6_PUBLICATION_DAY)
+            .publicationMonth(IDENTIFIER_6_PUBLICATION_MONTH)
+            .publicationYear(IDENTIFIER_6_PUBLICATION_YEAR)
+            .queryHash(IDENTIFIER_6_QUERY_HASH)
+            .resultHash(IDENTIFIER_6_RESULT_HASH)
+            .query(IDENTIFIER_6_QUERY)
+            .queryNormalized(IDENTIFIER_6_NORMALIZED)
+            .resultNumber(IDENTIFIER_6_RESULT_NUMBER)
+            .publisher(IDENTIFIER_6_PUBLISHER)
+            .type(IDENTIFIER_6_TYPE_DTO)
+            .creator(USER_1_DTO)
+            .licenses(List.of(LICENSE_1_DTO))
+            .creators(List.of())
+            .visibility(IDENTIFIER_6_VISIBILITY_DTO)
+            .build();
+
+    public final static IdentifierSaveDto IDENTIFIER_6_DTO_REQUEST = IdentifierSaveDto.builder()
+            .databaseId(IDENTIFIER_6_DATABASE_ID)
+            .viewId(IDENTIFIER_6_VIEW_ID)
+            .descriptions(List.of())
+            .titles(List.of())
+            .relatedIdentifiers(List.of())
+            .publicationMonth(IDENTIFIER_6_PUBLICATION_MONTH)
+            .publicationYear(IDENTIFIER_6_PUBLICATION_YEAR)
+            .creators(List.of())
+            .publisher(IDENTIFIER_6_PUBLISHER)
+            .type(IDENTIFIER_6_TYPE_DTO)
+            .visibility(IDENTIFIER_6_VISIBILITY_DTO)
             .licenses(List.of(LICENSE_1_DTO))
             .build();
 

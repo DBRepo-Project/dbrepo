@@ -164,7 +164,8 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
     @WithMockUser(username = USER_1_USERNAME, authorities = {"create-identifier"})
     public void create_hasRoleDatabase_succeeds() throws IdentifierAlreadyExistsException,
             UserNotFoundException, QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException,
-            IdentifierPublishingNotAllowedException, IdentifierRequestException, NotAllowedException, at.tuwien.exception.AccessDeniedException {
+            IdentifierPublishingNotAllowedException, IdentifierRequestException, NotAllowedException,
+            ViewNotFoundException, at.tuwien.exception.AccessDeniedException {
 
         /* mock */
         when(accessRepository.findByHdbidAndHuserid(DATABASE_1_ID, USER_1_ID))
@@ -199,7 +200,7 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
     public void create_hasRoleReadAccessQuery_succeeds() throws IdentifierAlreadyExistsException,
             UserNotFoundException, QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException,
             IdentifierPublishingNotAllowedException, IdentifierRequestException, NotAllowedException,
-            at.tuwien.exception.AccessDeniedException {
+            at.tuwien.exception.AccessDeniedException, ViewNotFoundException {
 
         /* test */
         generic_create(DATABASE_2_ID, DATABASE_2, DATABASE_2_USER_1_READ_ACCESS, IDENTIFIER_2_DTO_REQUEST, IDENTIFIER_2, USER_2_PRINCIPAL, USER_2_ID, USER_2_USERNAME, USER_2);
@@ -269,7 +270,7 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
                                   String username, User user) throws QueryNotFoundException, RemoteUnavailableException,
             IdentifierAlreadyExistsException, UserNotFoundException, DatabaseNotFoundException,
             IdentifierPublishingNotAllowedException, IdentifierRequestException, NotAllowedException,
-            at.tuwien.exception.AccessDeniedException {
+            at.tuwien.exception.AccessDeniedException, ViewNotFoundException {
 
         /* mock */
         when(databaseRepository.findById(databaseId))

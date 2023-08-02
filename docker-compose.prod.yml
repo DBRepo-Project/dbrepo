@@ -6,7 +6,8 @@ version: "3.6"
 
 volumes:
   metadata-db-data:
-  user-db-data:
+  data-db-data:
+  upload-service-data:
   search-db-data:
   broker-service-data:
   authentication-service-data:
@@ -44,16 +45,16 @@ services:
     logging:
       driver: json-file
 
-  dbrepo-user-db:
+  dbrepo-data-db:
     restart: "no"
-    container_name: dbrepo-user-db
-    hostname: user-db
+    container_name: dbrepo-data-db
+    hostname: data-db
     image: mariadb:10.5
     networks:
       core:
     volumes:
-      - user-db-data:/var/lib/mysql
-      - "/tmp:/tmp"
+      - data-db-data:/var/lib/mysql
+      - "${SHARED_FILESYSTEM}:/tmp"
     ports:
       - "3307:3306"
       - "9101:9100"
@@ -66,6 +67,23 @@ services:
       interval: 10s
       timeout: 5s
       retries: 12
+    logging:
+      driver: json-file
+
+  dbrepo-upload-service:
+    restart: "no"
+    container_name: dbrepo-upload-service
+    hostname: upload-service
+    image: tusproject/tusd:v1.12
+    networks:
+      core:
+    env_file:
+      - .env
+    volumes:
+      - upload-service-data:/data
+      - "${SHARED_FILESYSTEM}:/srv/tusd-data/data"
+    ports:
+      - "1080:1080"
     logging:
       driver: json-file
 
@@ -153,7 +171,7 @@ services:
     env_file:
       - .env
     volumes:
-      - ${SHARED_FILESYSTEM}:/tmp
+      - "${SHARED_FILESYSTEM}:/tmp"
     healthcheck:
       test: wget -qO- localhost:9093/actuator/health/readiness | grep -q "UP" || exit 1
       interval: 10s
@@ -183,7 +201,7 @@ services:
     env_file:
       - .env
     volumes:
-      - ${SHARED_FILESYSTEM}:/tmp
+      - "${SHARED_FILESYSTEM}:/tmp"
     healthcheck:
       test: wget -qO- localhost:9094/actuator/health/readiness | grep -q "UP" || exit 1
       interval: 10s
@@ -192,9 +210,9 @@ services:
     depends_on:
       dbrepo-authentication-service:
         condition: service_healthy
-      dbrepo-broker-service:
-        condition: service_healthy
       dbrepo-search-db:
+        condition: service_healthy
+      dbrepo-broker-service:
         condition: service_healthy
     logging:
       driver: json-file
@@ -223,7 +241,7 @@ services:
       dbrepo-search-db:
         condition: service_healthy
     volumes:
-      - ${SHARED_FILESYSTEM}:/tmp
+      - "${SHARED_FILESYSTEM}:/tmp"
     logging:
       driver: json-file
 
@@ -265,7 +283,7 @@ services:
     env_file:
       - .env
     volumes:
-      - ${SHARED_FILESYSTEM}:/tmp
+      - "${SHARED_FILESYSTEM}:/tmp"
     logging:
       driver: json-file
 
@@ -307,7 +325,7 @@ services:
     env_file:
       - .env
     volumes:
-      - ${SHARED_FILESYSTEM}:/tmp
+      - "${SHARED_FILESYSTEM}:/tmp"
     healthcheck:
       test: wget -qO- localhost:9097/actuator/health/readiness | grep -q "UP" || exit 1
       interval: 10s
@@ -344,10 +362,10 @@ services:
       driver: json-file
 
   dbrepo-search-db:
-    restart: always
+    restart: "no"
     container_name: dbrepo-search-db
     hostname: search-db
-    image: opensearchproject/opensearch:2
+    image: opensearchproject/opensearch:2.8.0
     networks:
       core:
     ports:
@@ -371,6 +389,29 @@ services:
     logging:
       driver: json-file
 
+  dbrepo-search-sync-agent:
+    restart: "no"
+    container_name: dbrepo-search-sync-agent
+    hostname: search-startup-agent
+    build: ./dbrepo-search-sync-agent
+    image: dbrepo-search-sync-agent
+    networks:
+      core:
+    env_file:
+      - .env
+    healthcheck:
+      test: wget -qO- localhost:9095/actuator/health/readiness | grep -q "UP" || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    depends_on:
+      dbrepo-metadata-db:
+        condition: service_healthy
+      dbrepo-search-db:
+        condition: service_healthy
+    logging:
+      driver: json-file
+
   dbrepo-ui:
     restart: "no"
     container_name: dbrepo-ui
@@ -381,8 +422,9 @@ services:
       public:
     env_file:
       - .env
-    volumes:
-      - "/tmp:/tmp"
+    depends_on:
+      dbrepo-upload-service:
+        condition: service_started
     logging:
       driver: json-file
 
@@ -413,6 +455,8 @@ services:
       dbrepo-identifier-service:
         condition: service_healthy
       dbrepo-metadata-service:
+        condition: service_healthy
+      dbrepo-query-service:
         condition: service_healthy
       dbrepo-search-db:
         condition: service_healthy

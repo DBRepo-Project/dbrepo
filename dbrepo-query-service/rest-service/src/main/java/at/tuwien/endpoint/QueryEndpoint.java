@@ -73,9 +73,8 @@ public class QueryEndpoint {
             throw new QueryMalformedException("Failed to execute empty query");
         }
         endpointValidator.validateForbiddenStatements(data);
+        endpointValidator.validateOnlyAccessOrPublic(databaseId, principal);
         endpointValidator.validateDataParams(page, size, sortDirection, sortColumn);
-        /* has access */
-        accessService.find(databaseId, principal.getName());
         /* execute */
         final QueryResultDto result = queryService.execute(databaseId, data, principal, page, size,
                 sortDirection, sortColumn);

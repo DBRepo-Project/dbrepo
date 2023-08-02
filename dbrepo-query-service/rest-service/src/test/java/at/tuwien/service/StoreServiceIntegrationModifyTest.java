@@ -150,9 +150,25 @@ public class StoreServiceIntegrationModifyTest extends BaseUnitTest {
         /* mock */
         queryService.execute(DATABASE_1_ID, request, USER_1_PRINCIPAL, 0L, 10L, null, null);
 
+
         /* test */
         final QueryResultDto response = queryService.execute(DATABASE_1_ID, request, USER_1_PRINCIPAL, 0L, 10L, null, null);
         assertEquals(1L, response.getId()) /* no new query inserted */;
+    }
+
+    @Test
+    public void execute_notPersisted_succeeds() throws UserNotFoundException, QueryStoreException,
+            DatabaseConnectionException, TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
+            QueryMalformedException, ColumnParseException, SQLException {
+        final ExecuteStatementDto request = ExecuteStatementDto.builder()
+                .statement(QUERY_1_STATEMENT)
+                .build();
+
+
+        /* test */
+        final QueryResultDto response = queryService.execute(DATABASE_1_ID, request, USER_1_PRINCIPAL, 0L, 10L, null, null);
+        assertEquals(1L, response.getId()) /* no new query inserted */;
+        assertFalse(Boolean.parseBoolean(MariaDbConfig.listQueryStore(DATABASE_1).get(0).get("is_persisted").toString()));
     }
 
     @Test

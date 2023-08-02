@@ -1,6 +1,7 @@
 package at.tuwien.api.database;
 
 import at.tuwien.api.database.table.columns.ColumnDto;
+import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.user.UserDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -45,6 +46,8 @@ public class ViewDto {
     @Schema(example = "Air Quality")
     private String name;
 
+    private IdentifierDto identifier;
+
     @NotBlank
     @Schema(example = "air_quality")
     @Field(name = "air_quality")
@@ -64,6 +67,11 @@ public class ViewDto {
     @NotNull
     @Schema(example = "SELECT `id` FROM `air_quality` ORDER BY `value` DESC")
     private String query;
+
+    @NotNull
+    @JsonProperty("query_hash")
+    @Schema(example = "7de03e818900b6ea6d58ad0306d4a741d658c6df3d1964e89ed2395d8c7e7916")
+    private String queryHash;
 
     @NotNull
     @Field(type = FieldType.Date)

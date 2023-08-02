@@ -116,7 +116,7 @@ export default {
       return this.roles.includes('insert-table-data')
     },
     canCreateSubset () {
-      if (!this.user || !this.hasReadAccess) {
+      if (!this.user) {
         return false
       }
       return this.roles.includes('execute-query')

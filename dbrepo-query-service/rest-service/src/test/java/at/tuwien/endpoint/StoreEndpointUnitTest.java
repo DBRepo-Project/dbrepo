@@ -258,16 +258,16 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_2_USERNAME, authorities = "persist-query")
-    public void persist_foreignWriteAll_fails() {
+    public void persist_foreignWriteAll_succeeds() throws UserNotFoundException, QueryStoreException,
+            NotAllowedException, DatabaseConnectionException, QueryAlreadyPersistedException, QueryNotFoundException,
+            DatabaseNotFoundException, ImageNotSupportedException {
 
         /* mock */
         when(userRepository.findByUsername(USER_1_USERNAME))
                 .thenReturn(Optional.of(USER_1));
 
         /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            persist_generic(DATABASE_1_ID, DATABASE_1, QUERY_1_ID, QUERY_1, USER_2_USERNAME, USER_2, USER_2_PRINCIPAL, DATABASE_1_USER_2_WRITE_ALL_ACCESS);
-        });
+        persist_generic(DATABASE_1_ID, DATABASE_1, QUERY_1_ID, QUERY_1, USER_2_USERNAME, USER_2, USER_2_PRINCIPAL, DATABASE_1_USER_2_WRITE_ALL_ACCESS);
 
     }
 

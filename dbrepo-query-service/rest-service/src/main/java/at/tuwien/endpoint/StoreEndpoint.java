@@ -245,10 +245,6 @@ public class StoreEndpoint {
         /* check */
         endpointValidator.validateOnlyAccessOrPublic(databaseId, principal);
         final Query check = storeService.findOne(databaseId, queryId, principal);
-        if (!check.getCreatedBy().equals(principal.getName())) {
-            log.error("Cannot persist foreign query: created by {}", check.getCreatedBy());
-            throw new NotAllowedException("Cannot persist foreign query: created by " + check.getCreatedBy());
-        }
         if (check.getIsPersisted()) {
             log.error("Failed to persist, is already persisted");
             throw new QueryAlreadyPersistedException("Failed to persist");

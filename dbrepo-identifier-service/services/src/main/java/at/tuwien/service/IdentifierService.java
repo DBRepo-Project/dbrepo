@@ -2,6 +2,7 @@ package at.tuwien.service;
 
 import at.tuwien.api.identifier.BibliographyTypeDto;
 import at.tuwien.api.identifier.IdentifierSaveDto;
+import at.tuwien.api.identifier.IdentifierTypeDto;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.exception.*;
 import org.springframework.core.io.InputStreamResource;
@@ -19,9 +20,10 @@ public interface IdentifierService {
      *
      * @param databaseId Optional. The database id.
      * @param queryId    Optional. The query id.
+     * @param viewId     Optional. The view id.
      * @return List of identifiers
      */
-    List<Identifier> findAll(Long databaseId, Long queryId);
+    List<Identifier> findAll(IdentifierTypeDto type, Long databaseId, Long queryId, Long viewId);
 
     /**
      * Finds all identifiers in the metadata database which are not deleted and filter by query id.
@@ -31,13 +33,6 @@ public interface IdentifierService {
      * @return The identifier, if found.
      */
     List<Identifier> findByDatabaseIdAndQueryId(Long databaseId, Long queryId);
-
-    /**
-     * Finds all identifiers
-     *
-     * @return List of identifiers.
-     */
-    List<Identifier> findAll();
 
     /**
      * Creates a new identifier in the metadata database for a query or database.
@@ -57,7 +52,7 @@ public interface IdentifierService {
     Identifier create(IdentifierSaveDto data, Principal principal, String authorization)
             throws IdentifierPublishingNotAllowedException, QueryNotFoundException,
             RemoteUnavailableException, IdentifierAlreadyExistsException, UserNotFoundException,
-            DatabaseNotFoundException, IdentifierRequestException;
+            DatabaseNotFoundException, IdentifierRequestException, ViewNotFoundException;
 
     /**
      * Finds an identifier by given id in the metadata database.

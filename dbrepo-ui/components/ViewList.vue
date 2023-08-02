@@ -9,13 +9,16 @@
     <div v-for="(item,i) in views" :key="i">
       <v-divider v-if="i !== 0" class="mx-4" />
       <v-list-item-group>
-        <v-list-item two-line :to="`/database/${$route.params.database_id}/view/${item.id}`">
+        <v-list-item two-line :class="clazz(item)" :to="link(item)" :href="navigate(item)">
           <v-list-item-content>
             <v-list-item-title v-text="item.name" />
             <v-list-item-subtitle class="mt-2">
               <pre>{{ item.query }}</pre>
             </v-list-item-subtitle>
           </v-list-item-content>
+          <v-list-item-action v-if="item.identifier">
+            <v-icon color="primary">mdi-identifier</v-icon>
+          </v-list-item-action>
         </v-list-item>
       </v-list-item-group>
     </div>
@@ -98,6 +101,30 @@ export default {
         .finally(() => {
           this.loading = false
         })
+    },
+    link (viewOrIdentifier) {
+      if (viewOrIdentifier.identifier === null) {
+        return `/database/${this.$route.params.database_id}/view/${viewOrIdentifier.id}`
+      }
+      if ('view_id' in viewOrIdentifier) {
+        return null
+      }
+      return null
+    },
+    navigate (viewOrIdentifier) {
+      if (viewOrIdentifier.identifier === null) {
+        return
+      }
+      if ('query_id' in viewOrIdentifier) {
+        return `/pid/${viewOrIdentifier.id}`
+      }
+      return `/pid/${viewOrIdentifier.identifier.id}`
+    },
+    clazz (viewOrIdentifier) {
+      if ('view_id' in viewOrIdentifier || viewOrIdentifier.identifier) {
+        return 'primary--text'
+      }
+      return null
     }
   }
 }

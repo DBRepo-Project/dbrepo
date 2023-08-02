@@ -6,7 +6,7 @@ version: "3.6"
 
 volumes:
   metadata-db-data:
-  user-db-data:
+  data-db-data:
   upload-service-data:
   search-db-data:
   broker-service-data:
@@ -47,15 +47,15 @@ services:
     logging:
       driver: json-file
 
-  dbrepo-user-db:
+  dbrepo-data-db:
     restart: "no"
-    container_name: dbrepo-user-db
-    hostname: user-db
+    container_name: dbrepo-data-db
+    hostname: data-db
     image: mariadb:10.5
     networks:
       core:
     volumes:
-      - user-db-data:/var/lib/mysql
+      - data-db-data:/var/lib/mysql
       - "/tmp:/tmp"
     ports:
       - "3307:3306"

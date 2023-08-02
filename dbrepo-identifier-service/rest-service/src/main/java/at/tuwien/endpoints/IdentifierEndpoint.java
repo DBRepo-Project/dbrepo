@@ -71,19 +71,14 @@ public class IdentifierEndpoint {
     })
     public ResponseEntity<List<IdentifierDto>> list(@RequestParam(required = false) Long dbid,
                                                     @RequestParam(required = false) Long qid,
+                                                    @RequestParam(required = false) Long vid,
                                                     @RequestParam(required = false) IdentifierTypeDto type) {
-        log.debug("endpoint find identifiers, dbid={}, qid={}, type={}", dbid, qid, type);
-        final List<Identifier> identifiers = identifierService.findAll(dbid, qid);
-        final List<IdentifierDto> dto = identifiers.stream()
+        log.debug("endpoint find identifiers, dbid={}, qid={}, vid={}, type={}", dbid, qid, vid, type);
+        final List<IdentifierDto> dto = identifierService.findAll(type, dbid, qid, vid)
+                .stream()
                 .map(identifierMapper::identifierToIdentifierDto)
-                .filter(i -> {
-                    if (type != null) {
-                        return i.getType().equals(type);
-                    }
-                    return true;
-                })
                 .collect(Collectors.toList());
-        log.info("Find identifiers resulted in {} identifiers", identifiers.size());
+        log.info("Find identifiers resulted in {} identifiers", dto.size());
         return ResponseEntity.ok(dto);
     }
 
@@ -133,13 +128,16 @@ public class IdentifierEndpoint {
                                                 @NotNull @RequestHeader(name = "Authorization") String authorization,
                                                 @NotNull Principal principal)
             throws IdentifierAlreadyExistsException, QueryNotFoundException, IdentifierPublishingNotAllowedException,
-            RemoteUnavailableException, UserNotFoundException, DatabaseNotFoundException, IdentifierRequestException, NotAllowedException {
+            RemoteUnavailableException, UserNotFoundException, DatabaseNotFoundException, IdentifierRequestException, NotAllowedException, ViewNotFoundException {
         log.debug("endpoint create identifier, data={}, authorization=(hidden), principal={}", data, principal);
-        if (data.getType().equals(IdentifierTypeDto.SUBSET) && data.getQueryId() == null) {
-            log.error("Identifier of type subset need to have a qid present");
-            throw new IdentifierRequestException("Identifier of type subset need to have a qid present");
-        } else if (data.getType().equals(IdentifierTypeDto.DATABASE) && data.getQueryId() != null) {
-            log.error("Identifier of type database must not have a qid present");
+        if (data.getType().equals(IdentifierTypeDto.SUBSET) && (data.getQueryId() == null || data.getViewId() != null)) {
+            log.error("Identifier of type subset need to have a qid and not a vid present");
+            throw new IdentifierRequestException("Identifier of type subset need to have a qid and not a vid present");
+        } else if (data.getType().equals(IdentifierTypeDto.DATABASE) && (data.getQueryId() != null || data.getViewId() != null)) {
+            log.error("Identifier of type database must not have a qid and not a vid present");
+            throw new IdentifierRequestException("Identifier of type database must not have a qid and not a vid present");
+        } else if (data.getType().equals(IdentifierTypeDto.VIEW) && data.getQueryId() != null) {
+            log.error("Identifier of type view must not have a qid present");
             throw new IdentifierRequestException("Identifier of type database must not have a qid present");
         }
         final User user = userService.findByUsername(principal.getName());

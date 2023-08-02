@@ -25,15 +25,19 @@ public interface StoreMapper {
             throws QueryStoreException {
         final String statement = "{call _store_query(?, ?, ?, ?)}";
         log.trace("statement={}", statement);
-        final Instant timestamp = data.getTimestamp() == null ? Instant.now() : data.getTimestamp();
+        /* timestamp */
+        if (data.getTimestamp() == null) {
+            data.setTimestamp(Instant.now());
+            log.trace("timestamp=null, set to {}", data.getTimestamp());
+        }
         try {
             final CallableStatement ps = connection.prepareCall(statement);
             ps.setString(1, user.getUsername());
             log.trace("param 1={}", user.getUsername());
             ps.setString(2, data.getStatement());
             log.trace("param 2={}", data.getStatement());
-            ps.setTimestamp(3, Timestamp.from(timestamp));
-            log.trace("param 3={}", Timestamp.from(timestamp));
+            ps.setTimestamp(3, Timestamp.from(data.getTimestamp()));
+            log.trace("param 3={}", Timestamp.from(data.getTimestamp()));
             ps.registerOutParameter(4, Types.BIGINT);
             log.trace("out param 4={}", Types.BIGINT);
             return ps;

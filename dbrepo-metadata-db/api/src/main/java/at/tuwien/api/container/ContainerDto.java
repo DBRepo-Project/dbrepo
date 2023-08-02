@@ -32,7 +32,7 @@ public class ContainerDto {
     @NotBlank
     @JsonProperty("internal_name")
     @Field(name = "internal_name")
-    @Schema(example = "user-db")
+    @Schema(example = "data-db")
     private String internalName;
 
     @NotBlank

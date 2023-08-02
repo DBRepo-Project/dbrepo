@@ -23,7 +23,7 @@ parameters:
         example: "fda_user_db"
       dbhost: 
         type: "string" 
-        example: "fda-user-db" 
+        example: "fda-data-db" 
       dbid: 
         type: "integer" 
         example: 1 
