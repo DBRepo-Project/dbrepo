@@ -30,6 +30,11 @@ public class IdentifierServiceImpl implements IdentifierService {
     }
 
     @Override
+    public List<Identifier> findAll(Long databaseId) {
+        return identifierRepository.findByDatabaseId(databaseId);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public Identifier find(Long id) throws IdentifierNotFoundException {
         final Optional<Identifier> optional = identifierRepository.findById(id);

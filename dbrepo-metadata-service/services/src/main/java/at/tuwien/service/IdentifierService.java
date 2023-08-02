@@ -15,6 +15,14 @@ public interface IdentifierService {
     List<Identifier> findAll();
 
     /**
+     * Finds all identifiers in the metadata database for a database with given id.
+     *
+     * @param databaseId The database id.
+     * @return The list of identifiers.
+     */
+    List<Identifier> findAll(Long databaseId);
+
+    /**
      * Finds an identifier by given id.
      *
      * @param id The identifier id.

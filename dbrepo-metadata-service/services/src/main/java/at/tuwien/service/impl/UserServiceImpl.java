@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Log4j2
 @Service
@@ -25,8 +26,18 @@ public class UserServiceImpl implements UserService {
     public User findByUsername(String username) throws UserNotFoundException {
         final Optional<User> optional = userRepository.findByUsername(username);
         if (optional.isEmpty()) {
-            log.error("Failed to find user with username '{}'", username);
-            throw new UserNotFoundException("Failed to find user with username '" + username + "'");
+            log.error("Failed to retrieve user with username {}", username);
+            throw new UserNotFoundException("Failed to retrieve user");
+        }
+        return optional.get();
+    }
+
+    @Override
+    public User find(UUID id) throws UserNotFoundException {
+        final Optional<User> optional = userRepository.findById(id);
+        if (optional.isEmpty()) {
+            log.error("Failed to retrieve user with id {}", id);
+            throw new UserNotFoundException("Failed to retrieve user");
         }
         return optional.get();
     }
