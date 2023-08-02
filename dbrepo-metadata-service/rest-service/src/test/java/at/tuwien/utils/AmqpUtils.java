@@ -1,13 +1,11 @@
 package at.tuwien.utils;
 
-import at.tuwien.api.amqp.CreateUserDto;
-import at.tuwien.api.amqp.ExchangeDto;
-import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
-import at.tuwien.api.amqp.PermissionDto;
+import at.tuwien.api.amqp.*;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -17,7 +15,6 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
-import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
@@ -26,6 +23,9 @@ import java.util.stream.Collectors;
 @Log4j2
 @Service
 public class AmqpUtils {
+
+    @Value("${fda.gateway.endpoint}")
+    private String gatewayEndpoint;
 
     private final RestTemplate restTemplate;
 
@@ -94,6 +94,24 @@ public class AmqpUtils {
             log.error("Failed to set user permissions: {}", response.getStatusCode());
             throw new RuntimeException("Failed to set user permissions: {}" + response.getStatusCode());
         }
+    }
+
+    public boolean queueExists(String queue) {
+        final ResponseEntity<QueueDto[]> response = restTemplate.exchange("/api/queues/{1}/", HttpMethod.GET, new HttpEntity<>(null), QueueDto[].class, "/");
+        if (!response.getStatusCode().equals(HttpStatus.OK)) {
+            log.error("Failed to find queue, code is {}", response.getStatusCode());
+            throw new RuntimeException("Failed to find queue");
+        }
+        assert response.getBody() != null;
+        final List<String> names = Arrays.stream(response.getBody())
+                .map(QueueDto::getName)
+                .collect(Collectors.toList());
+        if (names.stream().filter(n -> n.equals(queue)).count() != 1) {
+            log.error("Failed to find queue {} in queues {}", queue, names);
+            return false;
+        }
+        log.info("Found queue {} in queues {}", queue, names);
+        return true;
     }
 
 }

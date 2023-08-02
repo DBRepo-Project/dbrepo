@@ -16,9 +16,9 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-@MockBeans({@MockBean(DatabaseIdxRepository.class)/*, @MockBean(UnitIdxRepository.class),
-        @MockBean(ConceptIdxRepository.class), @MockBean(TableIdxRepository.class), @MockBean(UserIdxRepository.class),
-        @MockBean(TableColumnIdxRepository.class), @MockBean(ViewIdxRepository.class)*/, @MockBean(IdentifierIdxRepository.class)})
+@MockBeans({@MockBean(DatabaseIdxRepository.class), @MockBean(UnitIdxRepository.class),
+        @MockBean(ConceptIdxRepository.class), @MockBean(TableIdxRepository.class), @MockBean(TableColumnIdxRepository.class),
+        /*@MockBean(UserIdxRepository.class), @MockBean(ViewIdxRepository.class),*/ @MockBean(IdentifierIdxRepository.class)})
 @EnableAutoConfiguration(exclude = {OpenSearchRestClientAutoConfiguration.class, OpenSearchRestHighLevelClientAutoConfiguration.class})
 public @interface MockOpensearch {
 }

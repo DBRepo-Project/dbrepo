@@ -8,10 +8,7 @@ import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.DatabaseMapper;
 import at.tuwien.repository.mdb.DatabaseAccessRepository;
-import at.tuwien.service.AccessService;
-import at.tuwien.service.MessageQueueService;
-import at.tuwien.service.QueryStoreService;
-import at.tuwien.service.UserService;
+import at.tuwien.service.*;
 import at.tuwien.service.impl.MariaDbServiceImpl;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
@@ -44,14 +41,14 @@ public class DatabaseEndpoint {
     private final UserService userService;
     private final AccessService accessService;
     private final DatabaseMapper databaseMapper;
-    private final MariaDbServiceImpl databaseService;
+    private final DatabaseService databaseService;
     private final QueryStoreService queryStoreService;
     private final MessageQueueService messageQueueService;
     private final DatabaseAccessRepository databaseAccessRepository;
 
     @Autowired
     public DatabaseEndpoint(DatabaseMapper databaseMapper, UserService userService,
-                            MariaDbServiceImpl databaseService, QueryStoreService queryStoreService,
+                            DatabaseService databaseService, QueryStoreService queryStoreService,
                             MessageQueueService messageQueueService, AccessService accessService,
                             DatabaseAccessRepository databaseAccessRepository) {
         this.userService = userService;
@@ -259,7 +256,7 @@ public class DatabaseEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<DatabaseDto> findById(@NotNull @PathVariable Long id, Principal principal)
-            throws DatabaseNotFoundException, AccessDeniedException {
+            throws DatabaseNotFoundException, NotAllowedException {
         log.debug("endpoint find database, id={}", id);
         final Database database = databaseService.findById(id);
         final DatabaseDto dto = databaseMapper.databaseToDatabaseDto(database);

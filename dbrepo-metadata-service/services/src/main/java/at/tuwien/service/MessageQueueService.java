@@ -63,3 +63,4 @@ public interface MessageQueueService {
      * @throws AmqpException Could not delete the exchange.
      */
     void deleteExchange(Database database) throws AmqpException;
+}

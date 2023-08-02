@@ -75,7 +75,7 @@ public class AccessEndpoint {
             accessService.find(databaseId, accessDto.getUsername());
             log.error("Failed to give access to user with username {}, already has access", accessDto.getUsername());
             throw new NotAllowedException("Failed to give access to user");
-        } catch (AccessDeniedException e) {
+        } catch (NotAllowedException e) {
             /* ignore */
         }
         accessService.create(databaseId, accessDto);
@@ -111,7 +111,7 @@ public class AccessEndpoint {
                                     @NotBlank @PathVariable("username") String username,
                                     @Valid @RequestBody DatabaseModifyAccessDto accessDto,
                                     @NotNull Principal principal)
-            throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException, AccessDeniedException,
+            throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException, NotAllowedException,
             QueryMalformedException, DatabaseMalformedException {
         log.debug("endpoint modify access to database, databaseId={}, username={}, accessDto={}, principal={}", databaseId, username, accessDto, principal);
         accessService.find(databaseId, username);
@@ -143,7 +143,7 @@ public class AccessEndpoint {
     })
     public ResponseEntity<DatabaseAccessDto> find(@NotBlank @PathVariable("id") Long databaseId,
                                                   @NotNull Principal principal) throws NotAllowedException,
-            AccessDeniedException {
+            NotAllowedException {
         log.debug("endpoint check access to database, databaseId={}, principal={}", databaseId, principal);
         final DatabaseAccess access = accessService.find(databaseId, principal.getName());
         final DatabaseAccessDto dto = databaseMapper.databaseAccessToDatabaseAccessDto(access);
@@ -183,7 +183,7 @@ public class AccessEndpoint {
     public ResponseEntity<?> revoke(@NotBlank @PathVariable("id") Long databaseId,
                                     @NotBlank @PathVariable("username") String username,
                                     @NotNull Principal principal)
-            throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException, AccessDeniedException,
+            throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException, NotAllowedException,
             QueryMalformedException, DatabaseMalformedException {
         log.debug("endpoint revoke access to database, databaseId={}, username={}, principal={}", databaseId, username, principal);
         accessService.find(databaseId, username);

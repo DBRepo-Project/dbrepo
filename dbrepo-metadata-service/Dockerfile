@@ -12,7 +12,6 @@ COPY ./oai ./oai
 COPY ./rest-service ./rest-service
 COPY ./services ./services
 COPY ./report ./report
-COPY ./test ./test
 
 # Make sure it compiles
 RUN mvn -q clean package -DskipTests

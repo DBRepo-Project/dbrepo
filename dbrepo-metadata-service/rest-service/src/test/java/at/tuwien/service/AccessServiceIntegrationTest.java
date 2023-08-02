@@ -11,8 +11,6 @@ import at.tuwien.entities.database.AccessType;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.exception.*;
 import at.tuwien.repository.mdb.*;
-import at.tuwien.repository.sdb.DatabaseIdxRepository;
-import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,7 +19,6 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.testcontainers.containers.MariaDBContainer;
@@ -175,7 +172,7 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
     @MethodSource("update_succeeds_parameters")
     protected void update_succeeds(String test, Long databaseId, AccessTypeDto accessTypeDto, AccessType access,
                                    String username) throws UserNotFoundException, NotAllowedException,
-            QueryMalformedException, DatabaseNotFoundException, DatabaseMalformedException, AccessDeniedException {
+            QueryMalformedException, DatabaseNotFoundException, DatabaseMalformedException, NotAllowedException {
         final DatabaseModifyAccessDto request = DatabaseModifyAccessDto.builder()
                 .type(accessTypeDto)
                 .build();

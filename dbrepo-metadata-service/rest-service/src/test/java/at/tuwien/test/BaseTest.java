@@ -17,7 +17,9 @@ import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.TableCreateDto;
 import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.api.database.table.TableDto;
-import at.tuwien.api.database.table.columns.*;
+import at.tuwien.api.database.table.columns.ColumnCreateDto;
+import at.tuwien.api.database.table.columns.ColumnDto;
+import at.tuwien.api.database.table.columns.ColumnTypeDto;
 import at.tuwien.api.database.table.columns.concepts.*;
 import at.tuwien.api.database.table.constraints.ConstraintsCreateDto;
 import at.tuwien.api.database.table.constraints.ConstraintsDto;
@@ -35,7 +37,10 @@ import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.entities.container.image.ContainerImageDate;
 import at.tuwien.entities.database.*;
 import at.tuwien.entities.database.table.Table;
-import at.tuwien.entities.database.table.columns.*;
+import at.tuwien.entities.database.table.columns.TableColumn;
+import at.tuwien.entities.database.table.columns.TableColumnConcept;
+import at.tuwien.entities.database.table.columns.TableColumnType;
+import at.tuwien.entities.database.table.columns.TableColumnUnit;
 import at.tuwien.entities.database.table.constraints.Constraints;
 import at.tuwien.entities.database.table.constraints.foreignKey.ForeignKey;
 import at.tuwien.entities.database.table.constraints.foreignKey.ForeignKeyReference;
@@ -6034,7 +6039,7 @@ public abstract class BaseTest {
             .titles(List.of(IDENTIFIER_1_TITLE_1, IDENTIFIER_1_TITLE_2))
             .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1))
             .doi(IDENTIFIER_1_DOI)
-            .database(DATABASE_1)
+            .database(DATABASE_1_SIMPLE)
             .created(IDENTIFIER_1_CREATED)
             .lastModified(IDENTIFIER_1_MODIFIED)
             .execution(IDENTIFIER_1_EXECUTION)

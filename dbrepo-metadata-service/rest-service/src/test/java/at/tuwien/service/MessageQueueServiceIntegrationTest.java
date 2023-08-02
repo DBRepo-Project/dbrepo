@@ -1,16 +1,14 @@
+
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.annotations.MockAmqp;
 import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.api.amqp.PermissionDto;
 import at.tuwien.exception.AmqpException;
 import at.tuwien.exception.BrokerVirtualHostCreationException;
 import at.tuwien.exception.BrokerVirtualHostGrantException;
-import at.tuwien.gateway.BrokerServiceGateway;
 import at.tuwien.repository.mdb.DatabaseRepository;
 import at.tuwien.repository.mdb.TableRepository;
-import at.tuwien.repository.sdb.DatabaseIdxRepository;
 import at.tuwien.service.impl.RabbitMqServiceImpl;
 import at.tuwien.utils.AmqpUtils;
 import com.rabbitmq.client.Channel;
@@ -29,7 +27,6 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.List;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -43,6 +40,9 @@ import static org.mockito.Mockito.when;
 public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
 
     @MockBean
+    private TableRepository tableRepository;
+
+    @MockBean
     private DatabaseRepository databaseRepository;
 
     @Autowired
@@ -50,6 +50,9 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
 
     @Autowired
     private AmqpUtils amqpUtils;
+
+    @Autowired
+    private Channel channel;
 
     @Container
     private static final RabbitMQContainer rabbitMQContainer = new RabbitMQContainer("rabbitmq:3-management-alpine")
@@ -145,11 +148,14 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
         /* mock */
         when(databaseRepository.findAll())
                 .thenReturn(List.of(DATABASE_1));
+        when(tableRepository.findAll())
+                .thenReturn(List.of(TABLE_1, TABLE_2));
 
         /* test */
         assertFalse(amqpUtils.exchangeExists(DATABASE_1_EXCHANGE));
         messageQueueService.init();
         assertTrue(amqpUtils.exchangeExists(DATABASE_1_EXCHANGE));
+        assertTrue(amqpUtils.queueExists(TABLE_1_QUEUE_NAME));
     }
 
     /* ################################################################################################### */

@@ -196,18 +196,6 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @Hidden
-    @ResponseStatus(HttpStatus.FORBIDDEN)
-    @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ApiErrorDto> handle(AccessDeniedException e, WebRequest request) {
-        final ApiErrorDto response = ApiErrorDto.builder()
-                .status(HttpStatus.FORBIDDEN)
-                .message(e.getLocalizedMessage())
-                .code("error.database.access")
-                .build();
-        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
-    }
-
-    @Hidden
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(AmqpException.class)
     public ResponseEntity<ApiErrorDto> handle(AmqpException e, WebRequest request) {
@@ -467,6 +455,54 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
                 .status(HttpStatus.NOT_FOUND)
                 .message(e.getLocalizedMessage())
                 .code("error.table.tablenotfound")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
+    @Hidden
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler({ConceptNotFoundException.class})
+    public ResponseEntity<ApiErrorDto> handle(ConceptNotFoundException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.NOT_FOUND)
+                .message(e.getLocalizedMessage())
+                .code("error.table.conceptnotfound")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
+    @Hidden
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler({SemanticEntityNotFoundException.class})
+    public ResponseEntity<ApiErrorDto> handle(SemanticEntityNotFoundException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.NOT_FOUND)
+                .message(e.getLocalizedMessage())
+                .code("error.table.semanticentitynotfound")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
+    @Hidden
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+    @ExceptionHandler({SemanticEntityPersistException.class})
+    public ResponseEntity<ApiErrorDto> handle(SemanticEntityPersistException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .message(e.getLocalizedMessage())
+                .code("error.table.semanticentitypersist")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
+    @Hidden
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler({UnitNotFoundException.class})
+    public ResponseEntity<ApiErrorDto> handle(UnitNotFoundException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.NOT_FOUND)
+                .message(e.getLocalizedMessage())
+                .code("error.table.unitnotfound")
                 .build();
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }

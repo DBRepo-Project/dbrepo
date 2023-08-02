@@ -44,7 +44,7 @@ public class AccessServiceImpl extends HibernateConnector implements AccessServi
 
     @Override
     @Transactional(readOnly = true)
-    public List<DatabaseAccess> list(Long databaseId) throws AccessDeniedException {
+    public List<DatabaseAccess> list(Long databaseId) throws NotAllowedException {
         return databaseAccessRepository.findByHdbid(databaseId);
     }
 
@@ -113,7 +113,7 @@ public class AccessServiceImpl extends HibernateConnector implements AccessServi
     @Transactional
     public void update(Long databaseId, String username, DatabaseModifyAccessDto accessDto)
             throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException, QueryMalformedException,
-            DatabaseMalformedException, AccessDeniedException {
+            DatabaseMalformedException, NotAllowedException {
         /* check */
         final Database database = databaseService.findById(databaseId);
         final Container container = database.getContainer();

@@ -14,9 +14,7 @@ import at.tuwien.exception.*;
 import at.tuwien.mapper.AccessMapper;
 import at.tuwien.repository.mdb.DatabaseRepository;
 import at.tuwien.repository.mdb.UserRepository;
-import at.tuwien.repository.sdb.DatabaseIdxRepository;
 import at.tuwien.service.AccessService;
-import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -82,7 +80,7 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"create-database-access"})
     public void create_succeeds() throws UserNotFoundException, NotAllowedException, QueryMalformedException,
-            DatabaseNotFoundException, DatabaseMalformedException, AccessDeniedException {
+            DatabaseNotFoundException, DatabaseMalformedException, NotAllowedException {
 
         /* mock */
         doNothing()
@@ -108,14 +106,14 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
     public void find_hasRoleNoAccess_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(NotAllowedException.class, () -> {
             generic_find(DATABASE_1_ID, DATABASE_1, null, USER_2_USERNAME, USER_2_ID, USER_2_PRINCIPAL);
         });
     }
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"check-database-access"})
-    public void find_hasRoleHasAccess_succeeds() throws AccessDeniedException, NotAllowedException {
+    public void find_hasRoleHasAccess_succeeds() throws NotAllowedException, NotAllowedException {
 
         /* test */
         generic_find(DATABASE_1_ID, DATABASE_1, DATABASE_1_USER_1_READ_ACCESS, USER_1_USERNAME, USER_1_ID, USER_1_PRINCIPAL);
@@ -144,7 +142,7 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(Optional.of(USER_4));
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(NotAllowedException.class, () -> {
             generic_update(DATABASE_1_ID, DATABASE_1, null, USER_4_USERNAME, USER_1_PRINCIPAL);
         });
     }
@@ -165,7 +163,7 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"update-database-access"})
-    public void update_succeeds() throws UserNotFoundException, AccessDeniedException, NotAllowedException,
+    public void update_succeeds() throws UserNotFoundException, NotAllowedException, NotAllowedException,
             QueryMalformedException, DatabaseNotFoundException, DatabaseMalformedException {
 
         /* mock */
@@ -202,7 +200,7 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"delete-database-access"})
     public void revoke_succeeds() throws UserNotFoundException, NotAllowedException,
-            QueryMalformedException, DatabaseNotFoundException, DatabaseMalformedException, AccessDeniedException {
+            QueryMalformedException, DatabaseNotFoundException, DatabaseMalformedException, NotAllowedException {
 
         /* mock */
         doNothing()
@@ -220,7 +218,7 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
     protected void generic_create(Long databaseId, Database database, DatabaseAccess access,
                                   String username, User user, Principal principal) throws UserNotFoundException,
             NotAllowedException, QueryMalformedException, DatabaseNotFoundException, DatabaseMalformedException,
-            AccessDeniedException {
+            NotAllowedException {
         final DatabaseGiveAccessDto request = DatabaseGiveAccessDto.builder()
                 .username(username)
                 .type(AccessTypeDto.READ)
@@ -237,7 +235,7 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
                     .thenReturn(access);
         } else {
             log.trace("mock no access for user with username {} for database with id {}", username, databaseId);
-            doThrow(AccessDeniedException.class)
+            doThrow(NotAllowedException.class)
                     .when(accessService)
                     .find(databaseId, username);
         }
@@ -249,7 +247,7 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
     }
 
     protected void generic_find(Long databaseId, Database database, DatabaseAccess access,
-                                String username, UUID userId, Principal principal) throws AccessDeniedException,
+                                String username, UUID userId, Principal principal) throws NotAllowedException,
             NotAllowedException {
 
         /* mock */
@@ -261,7 +259,7 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
                     .thenReturn(access);
         } else {
             log.trace("mock no access for user with username {} for database with id {}", username, databaseId);
-            doThrow(AccessDeniedException.class)
+            doThrow(NotAllowedException.class)
                     .when(accessService)
                     .find(databaseId, username);
         }
@@ -277,7 +275,7 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
     }
 
     protected void generic_update(Long databaseId, Database database, DatabaseAccess access,
-                                  String username, Principal principal) throws AccessDeniedException,
+                                  String username, Principal principal) throws NotAllowedException,
             NotAllowedException, UserNotFoundException, QueryMalformedException, DatabaseNotFoundException, DatabaseMalformedException {
         final DatabaseModifyAccessDto request = DatabaseModifyAccessDto.builder()
                 .type(AccessTypeDto.READ)
@@ -292,7 +290,7 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
                     .thenReturn(access);
         } else {
             log.trace("mock no access for user with username {} for database with id {}", username, databaseId);
-            doThrow(AccessDeniedException.class)
+            doThrow(NotAllowedException.class)
                     .when(accessService)
                     .find(databaseId, username);
         }
@@ -304,7 +302,7 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
     }
 
     protected void generic_revoke(Long databaseId, DatabaseAccess access, String username,
-                                  Principal principal) throws AccessDeniedException, NotAllowedException,
+                                  Principal principal) throws NotAllowedException, NotAllowedException,
             UserNotFoundException, QueryMalformedException, DatabaseNotFoundException, DatabaseMalformedException {
 
         /* mock */
@@ -314,7 +312,7 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
                     .thenReturn(access);
         } else {
             log.trace("mock no access for user with username {} for database with id {}", username, databaseId);
-            doThrow(AccessDeniedException.class)
+            doThrow(NotAllowedException.class)
                     .when(accessService)
                     .find(databaseId, username);
         }

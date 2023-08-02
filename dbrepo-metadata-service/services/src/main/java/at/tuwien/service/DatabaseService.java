@@ -54,14 +54,13 @@ public interface DatabaseService {
      * @throws ImageNotSupportedException   The image is not supported.
      * @throws DatabaseMalformedException   The query string is malformed.
      * @throws AmqpException                The exchange could not be deleted.
-     * @throws ContainerConnectionException The connection to the container could not be established.
      * @throws DatabaseConnectionException  The connection to the database could not be established by the database connector.
      * @throws QueryMalformedException      The mapped deletion query resulted in an invalid query statement and thus was rejected by the database engine.
      * @throws UserNotFoundException        The current user could not be loaded in the metadata database.
      */
     void delete(Long databaseId, UUID userId)
             throws DatabaseNotFoundException, ImageNotSupportedException,
-            DatabaseMalformedException, AmqpException, ContainerConnectionException,
+            DatabaseMalformedException, AmqpException,
             DatabaseConnectionException, QueryMalformedException, UserNotFoundException;
 
     /**

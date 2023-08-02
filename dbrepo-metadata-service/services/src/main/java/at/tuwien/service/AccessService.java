@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface AccessService {
 
-    List<DatabaseAccess> list(Long databaseId) throws AccessDeniedException;
+    List<DatabaseAccess> list(Long databaseId) throws NotAllowedException;
 
     /**
      * Checks if user with username has access to database with given id.
@@ -58,7 +58,8 @@ public interface AccessService {
      * @throws DatabaseMalformedException The database has an invalid state.
      */
     void update(Long databaseId, String username, DatabaseModifyAccessDto accessDto)
-            throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException, QueryMalformedException, DatabaseMalformedException, AccessDeniedException;
+            throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException, QueryMalformedException, DatabaseMalformedException,
+            NotAllowedException;
 
     /**
      * Revokes access to a database of container.

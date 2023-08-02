@@ -1,12 +1,12 @@
 package at.tuwien.config;
 
+import jakarta.persistence.EntityManager;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.persistence.EntityManager;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;

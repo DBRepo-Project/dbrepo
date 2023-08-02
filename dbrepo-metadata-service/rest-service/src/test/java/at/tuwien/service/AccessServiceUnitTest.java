@@ -7,13 +7,10 @@ import at.tuwien.api.database.AccessTypeDto;
 import at.tuwien.api.database.DatabaseModifyAccessDto;
 import at.tuwien.entities.database.AccessType;
 import at.tuwien.entities.database.DatabaseAccess;
-import at.tuwien.exception.AccessDeniedException;
 import at.tuwien.exception.NotAllowedException;
 import at.tuwien.repository.mdb.DatabaseAccessRepository;
 import at.tuwien.repository.mdb.DatabaseRepository;
 import at.tuwien.repository.mdb.UserRepository;
-import at.tuwien.repository.sdb.DatabaseIdxRepository;
-import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -49,7 +46,7 @@ public class AccessServiceUnitTest extends BaseUnitTest {
     private AccessService accessService;
 
     @Test
-    public void list_succeeds() throws AccessDeniedException {
+    public void list_succeeds() throws NotAllowedException {
 
         /* mock */
         when(databaseAccessRepository.findByHdbid(DATABASE_1_ID))
@@ -61,7 +58,7 @@ public class AccessServiceUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void list_empty_succeeds() throws AccessDeniedException {
+    public void list_empty_succeeds() throws NotAllowedException {
 
         /* mock */
         when(databaseAccessRepository.findByHdbid(DATABASE_1_ID))
@@ -73,7 +70,7 @@ public class AccessServiceUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void find_succeeds() throws AccessDeniedException {
+    public void find_succeeds() throws NotAllowedException {
 
         /* mock */
         when(databaseAccessRepository.findByDatabaseIdAndUsername(DATABASE_1_ID, USER_1_USERNAME))
@@ -92,7 +89,7 @@ public class AccessServiceUnitTest extends BaseUnitTest {
                 .thenReturn(Optional.empty());
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(NotAllowedException.class, () -> {
             accessService.find(DATABASE_1_ID, USER_1_USERNAME);
         });
     }

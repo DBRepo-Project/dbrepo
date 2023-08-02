@@ -58,6 +58,7 @@ public interface DatabaseMapper {
     @Mappings({
             @Mapping(target = "id", source = "id"),
             @Mapping(target = "engine", source = "container.image", qualifiedByName = "engineMapping"),
+            @Mapping(target = "image", source = "container.image"),
             @Mapping(target = "created", source = "created", dateFormat = "dd-MM-yyyy HH:mm"),
             @Mapping(target = "container", ignore = true),
     })

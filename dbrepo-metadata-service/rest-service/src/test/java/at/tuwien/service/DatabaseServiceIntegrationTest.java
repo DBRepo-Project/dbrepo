@@ -196,7 +196,7 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
             DatabaseNotFoundException, ImageNotSupportedException, DatabaseMalformedException, SQLException {
 
         /* mock */
-        databaseRepository.save(DATABASE_1);
+        databaseRepository.save(DATABASE_1_SIMPLE);
         MariaDbConfig.createInitDatabase(CONTAINER_1, DATABASE_1);
 
         /* test */
@@ -210,7 +210,7 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
                 .build();
 
         /* mock */
-        databaseRepository.save(DATABASE_1);
+        databaseRepository.save(DATABASE_1_SIMPLE);
 
         /* test */
         final Database response = databaseService.visibility(DATABASE_1_ID, request);
@@ -225,7 +225,7 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
 
         /* mock */
         MariaDbConfig.createInitDatabase(CONTAINER_1, DATABASE_1);
-        databaseRepository.save(DATABASE_1);
+        databaseRepository.save(DATABASE_1_SIMPLE);
 
         /* test */
         final Database response = databaseService.transfer(DATABASE_1_ID, request);
