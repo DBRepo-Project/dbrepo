@@ -16,22 +16,18 @@ public interface ContainerService {
      * @param principal The principal of the creating user.
      * @return The container object, if successful.
      * @throws ImageNotFoundException          The image of the container was not found in the metadata database.
-     * @throws DockerClientException           The docker client was unable to perform this action.
      * @throws ContainerAlreadyExistsException A container with this name already exists.
-     * @throws UserNotFoundException           The user creating the container was not found in the metadata database.
      */
     Container create(ContainerCreateRequestDto createDto, Principal principal) throws ImageNotFoundException,
-            ContainerAlreadyExistsException, UserNotFoundException;
+            ContainerAlreadyExistsException;
 
     /**
      * Removes a container by given id from the metadata database.
      *
      * @param containerId The container id.
      * @throws ContainerNotFoundException     The container was not found in the metadata database.
-     * @throws ContainerStillRunningException The container is still running and this action cannot be performed.
      */
-    void remove(Long containerId) throws ContainerNotFoundException,
-            ContainerStillRunningException, ContainerAlreadyRemovedException;
+    void remove(Long containerId) throws ContainerNotFoundException;
 
     /**
      * Finds a container with a specific id from the metadata database.

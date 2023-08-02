@@ -9,6 +9,7 @@ import at.tuwien.exception.ContainerAlreadyExistsException;
 import at.tuwien.exception.ContainerNotFoundException;
 import at.tuwien.exception.ImageNotFoundException;
 import at.tuwien.mapper.ContainerMapper;
+import at.tuwien.service.ContainerService;
 import at.tuwien.service.UserService;
 import at.tuwien.service.impl.ContainerServiceImpl;
 import io.micrometer.core.annotation.Timed;
@@ -41,14 +42,11 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/container")
 public class ContainerEndpoint {
 
-    private final UserService userService;
     private final ContainerMapper containerMapper;
-    private final ContainerServiceImpl containerService;
+    private final ContainerService containerService;
 
     @Autowired
-    public ContainerEndpoint(UserService userService, ContainerServiceImpl containerService,
-                             ContainerMapper containerMapper) {
-        this.userService = userService;
+    public ContainerEndpoint(ContainerService containerService, ContainerMapper containerMapper) {
         this.containerMapper = containerMapper;
         this.containerService = containerService;
     }

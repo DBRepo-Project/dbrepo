@@ -83,8 +83,8 @@ public class AmqpUtils {
         }
     }
 
-    public void setPermissions(String endpoint, String vhost, String username, GrantVirtualHostPermissionsDto data) {
-        final URI url = URI.create(endpoint + "/api/permissions/" + vhost + "/" + username);
+    public void setPermissions(String vhost, String username, GrantVirtualHostPermissionsDto data) {
+        final String url = "/api/permissions/" + vhost + "/" + username;
         log.debug("set user permissions: {}", url);
         log.trace("body: {}", data);
         final MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();

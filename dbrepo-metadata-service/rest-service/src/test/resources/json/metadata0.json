@@ -1,0 +1,23 @@
+{
+  "id": 4,
+  "database": {
+    "id": 4,
+    "name": "Weather AT",
+    "exchange_name": "dbrepo.weather_at",
+    "internal_name": "weather_at",
+    "description": "Weather data",
+    "is_public": true
+  },
+  "type": "database",
+  "titles": [],
+  "descriptions": [],
+  "doi": null,
+  "publisher": "Swedish Government",
+  "publication_day": 14,
+  "publication_month": 7,
+  "publication_year": 2022,
+  "licenses": [],
+  "creators": [],
+  "created": "2022-01-07T20:45:52.000+00:00",
+  "last_modified": "2018-11-07T10:59:12.000+00:00"
+}

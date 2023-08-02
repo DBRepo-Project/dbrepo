@@ -7,14 +7,12 @@ import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.identifier.IdentifierTitle;
 import at.tuwien.exception.IdentifierNotFoundException;
 import at.tuwien.repository.mdb.*;
-import at.tuwien.repository.sdb.IdentifierIdxRepository;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,22 +31,22 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class IdentifierServiceIntegrationTest extends BaseUnitTest {
 
     @Autowired
-    private ImageRepository imageRepository;
+    private RealmRepository realmRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     private ContainerRepository containerRepository;
+
+    @Autowired
+    private ImageRepository imageRepository;
 
     @Autowired
     private LicenseRepository licenseRepository;
 
     @Autowired
     private DatabaseRepository databaseRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private RealmRepository realmRepository;
 
     @Autowired
     private IdentifierRepository identifierRepository;
@@ -58,7 +56,6 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
 
     @BeforeEach
     public void beforeEach() {
-        /* metadata database */
         imageRepository.save(IMAGE_1_SIMPLE);
         realmRepository.save(REALM_DBREPO);
         licenseRepository.save(LICENSE_1);
@@ -102,6 +99,22 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
         assertThrows(IdentifierNotFoundException.class, () -> {
             identifierService.find(IDENTIFIER_2_ID);
         });
+    }
+
+    @Test
+    public void findAll_forDatabase_succeeds() {
+
+        /* test */
+        final List<Identifier> response = identifierService.findAll(DATABASE_1_ID);
+        assertEquals(1, response.size());
+    }
+
+    @Test
+    public void findAll_forDatabaseEmpty_succeeds() {
+
+        /* test */
+        final List<Identifier> response = identifierService.findAll(DATABASE_2_ID);
+        assertEquals(0, response.size());
     }
 
 }

@@ -7,16 +7,16 @@ import at.tuwien.entities.user.User;
 import at.tuwien.exception.UserNotFoundException;
 import at.tuwien.repository.mdb.RealmRepository;
 import at.tuwien.repository.mdb.UserRepository;
-import at.tuwien.repository.sdb.DatabaseIdxRepository;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -59,6 +59,23 @@ public class UserServiceIntegrationTest extends BaseUnitTest {
         /* test */
         assertThrows(UserNotFoundException.class, () -> {
             userService.findByUsername(USER_2_USERNAME);
+        });
+    }
+
+    @Test
+    public void find_succeeds() throws UserNotFoundException {
+
+        /* test */
+        final User response = userService.find(USER_1_ID);
+        assertEquals(USER_1_ID, response.getId());
+    }
+
+    @Test
+    public void find_fails() {
+
+        /* test */
+        assertThrows(UserNotFoundException.class, () -> {
+            userService.find(UUID.fromString("deadbeef-20bc-4191-acb2-77a3afcae32f"));
         });
     }
 
