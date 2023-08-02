@@ -4,32 +4,16 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <artifactId>dbrepo-metadata-service</artifactId>
         <groupId>at.tuwien</groupId>
+        <artifactId>dbrepo-metadata-service</artifactId>
         <version>1.3.0</version>
     </parent>
 
-    <artifactId>services</artifactId>
+    <artifactId>api</artifactId>
     <version>1.3.0</version>
-    <name>dbrepo-metadata-service-services</name>
+    <name>dbrepo-metadata-service-api</name>
 
-    <dependencies>
-        <dependency>
-            <groupId>at.tuwien</groupId>
-            <artifactId>api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>at.tuwien</groupId>
-            <artifactId>oai</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>at.tuwien</groupId>
-            <artifactId>entities</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-    </dependencies>
+    <dependencies/>
 
     <build>
         <plugins>
@@ -44,12 +28,6 @@
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
                             <version>${lombok.version}</version>
-                        </path>
-                        <!-- keep this order https://stackoverflow.com/questions/47676369/mapstruct-and-lombok-not-working-together#answer-65021876 -->
-                        <path>
-                            <groupId>org.mapstruct</groupId>
-                            <artifactId>mapstruct-processor</artifactId>
-                            <version>${mapstruct.version}</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>

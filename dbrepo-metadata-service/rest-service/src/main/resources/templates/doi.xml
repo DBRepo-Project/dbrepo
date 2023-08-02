@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://datacite.org/schema/kernel-4"
+          xsi:schemaLocation="http://datacite.org/schema/kernel-4 https://schema.datacite.org/meta/kernel-4.4/metadata.xsd">
+    <identifier th:attr="identifierType=${identifierType}">[[${identifier}]]</identifier>
+    <creators th:if="${not #lists.isEmpty(creators)}">
+        <creator th:each="creator: ${creators}">
+            <creatorName th:attr="nameType=${creator.nameType}">[[${creator.lastname}]], [[${creator.firstname}]]</creatorName>
+            <givenName th:if="${creator.firstname != null}">[[${creator.firstname}]]</givenName>
+            <familyName th:if="${creator.lastname != null}">[[${creator.lastname}]]</familyName>
+            <nameIdentifier th:if="${creator.nameIdentifier != null}"
+                            th:attr="schemeURI=${creator.nameIdentifierSchemeUri},nameIdentifierScheme=${creator.nameIdentifierScheme}">
+                [[${creator.nameIdentifier}]]
+            </nameIdentifier>
+            <affiliation th:if="${creator.affiliation != null}" th:attr="affiliationIdentifier=${creator.affiliationIdentifier},affiliationIdentifierScheme=${creator.affiliationIdentifierScheme},schemeURI=${creator.affiliationIdentifierSchemeUri}">[[${creator.affiliation}]]</affiliation>
+        </creator>
+    </creators>
+    <titles>
+        <title th:each="title: ${titles}" th:xmllang="${title.language}" th:attr="titleType=${title.titleType}">[[${title.title}]]</title>
+    </titles>
+    <publisher>[[${publisher}]]</publisher>
+    <publicationYear>[[${publicationYear}]]</publicationYear>
+    <dates>
+        <date dateType="Issued">[[${created}]]</date>
+        <date dateType="Available">[[${created}]]</date>
+    </dates>
+    <language th:if="${language != null}">[[${language}]]</language>
+    <resourceType resourceTypeGeneral="Dataset">Dataset</resourceType>
+    <relatedIdentifiers th:if="${not #lists.isEmpty(relatedIdentifiers)}">
+        <relatedIdentifier th:each="relatedIdentifier: ${relatedIdentifiers}"
+                           th:attr="relatedIdentifierType=${relatedIdentifier.type},relationType=${relatedIdentifier.relation}">
+            [[${relatedIdentifier.value}]]
+        </relatedIdentifier>
+    </relatedIdentifiers>
+    <rightsList th:if="${not #lists.isEmpty(licenses)}">
+        <rights th:each="license: ${licenses}" th:attr="rightsURI=${license.uri}">[[${license.identifier}]]</rights>
+    </rightsList>
+    <descriptions>
+        <description th:each="description: ${descriptions}" th:attr="descriptionType=${description.descriptionType}"
+                     th:xmllang="${description.language}">[[${description.description}]]</description>
+    </descriptions>
+    <fundingReferences th:if="${not #lists.isEmpty(funders)}">
+        <fundingReference th:each="funder: ${funders}">
+            <funderName>[[${funder.funderName}</funderName>
+            <funderIdentifier th:if="${funder.funderIdentifier != null}" th:attr="funderIdentifierType=${funder.funderIdentifierType}">[[${funder.funderIdentifier}]]</funderIdentifier>
+            <awardNumber th:if="${funder.awardNumber != null}">[[${funder.awardNumber}]]</awardNumber>
+            <awardTitle th:if="${funder.awardTitle}">[[${funder.awardTitle}]]</awardTitle>
+        </fundingReference>
+    </fundingReferences>
+    <version>1.0</version>
+</resource>
