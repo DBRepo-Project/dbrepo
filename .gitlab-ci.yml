@@ -59,6 +59,13 @@ build-database-service:
   script:
     - "make build-database-service"
 
+build-data-service:
+  stage: build-backend
+  needs:
+    - build-metadata-db
+  script:
+    - "make build-data-service"
+
 build-query-service:
   stage: build-backend
   needs:
