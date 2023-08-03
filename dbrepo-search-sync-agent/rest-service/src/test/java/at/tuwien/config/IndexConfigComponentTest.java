@@ -137,7 +137,7 @@ public class IndexConfigComponentTest extends BaseUnitTest {
         assertEquals("keyword", types.get("uri"));
         assertEquals("keyword", types.get("name"));
         assertEquals("text", types.get("description"));
-        assertEquals("keyword", types.get("created"));
+        assertEquals("date", types.get("created"));
         assertNull(types.get("columns"));
     }
 
@@ -152,7 +152,7 @@ public class IndexConfigComponentTest extends BaseUnitTest {
         assertEquals("keyword", types.get("uri"));
         assertEquals("keyword", types.get("name"));
         assertEquals("text", types.get("description"));
-        assertEquals("keyword", types.get("created"));
+        assertEquals("date", types.get("created"));
         assertNull(types.get("columns"));
     }
 
@@ -175,7 +175,7 @@ public class IndexConfigComponentTest extends BaseUnitTest {
         assertNull(types.get("accesses"));
         assertEquals("nested", types.get("creator"));
         assertEquals("nested", types.get("owner"));
-        assertEquals("keyword", types.get("created"));
+        assertEquals("date", types.get("created"));
     }
 
     @Test
@@ -198,7 +198,7 @@ public class IndexConfigComponentTest extends BaseUnitTest {
         assertEquals("nested", types.get("related_identifiers"));
         assertNull(types.get("database"));
         assertEquals("text", types.get("query_hash"));
-        assertEquals("keyword", types.get("execution"));
+        assertEquals("date", types.get("execution"));
         assertEquals("text", types.get("result_hash"));
         assertEquals("long", types.get("result_number"));
         assertEquals("keyword", types.get("visibility"));
@@ -211,7 +211,7 @@ public class IndexConfigComponentTest extends BaseUnitTest {
         assertEquals("keyword", types.get("language"));
         assertEquals("nested", types.get("licenses"));
         assertEquals("nested", types.get("creators"));
-        assertEquals("keyword", types.get("created"));
+        assertEquals("date", types.get("created"));
     }
 
     @Test
@@ -231,7 +231,7 @@ public class IndexConfigComponentTest extends BaseUnitTest {
         assertEquals("boolean", types.get("initial_view"));
         assertEquals("text", types.get("query"));
         assertEquals("keyword", types.get("query_hash"));
-        assertEquals("keyword", types.get("created"));
+        assertEquals("date", types.get("created"));
         assertNull(types.get("created_by"));
         assertEquals("nested", types.get("creator"));
         assertNull(types.get("columns"));
@@ -257,7 +257,7 @@ public class IndexConfigComponentTest extends BaseUnitTest {
         assertEquals("keyword", types.get("routing_key"));
         assertEquals("text", types.get("description"));
         assertEquals("boolean", types.get("is_public"));
-        assertEquals("keyword", types.get("created"));
+        assertEquals("date", types.get("created"));
         assertNull(types.get("columns"));
         assertEquals("nested", types.get("constraints"));
     }
