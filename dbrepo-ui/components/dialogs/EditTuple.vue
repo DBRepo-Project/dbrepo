@@ -202,8 +202,11 @@ export default {
       if (['double', 'decimal'].includes(column.column_type)) {
         return `Floating point number max. ${column.size} digit${column.size !== 1 ? 's' : ''} before and max. ${column.d} digit${column.d !== 1 ? 's' : ''} after the dot`
       }
-      if (this.isTimeField(column)) {
+      if (['date', 'datetime', 'timestamp', 'time'].includes(column.column_type)) {
         return `Format: ${column.date_format.unix_format}`
+      }
+      if (['year'].includes(column.column_type)) {
+        return 'Format: YYYY'
       }
     },
     label (column) {
@@ -234,7 +237,7 @@ export default {
       return column.column_type === 'set'
     },
     isTimeField (column) {
-      return ['date', 'datetime', 'timestamp', 'time'].includes(column.column_type)
+      return ['date', 'datetime', 'timestamp', 'time', 'year'].includes(column.column_type)
     },
     rules (column) {
       if (column.auto_generated) {

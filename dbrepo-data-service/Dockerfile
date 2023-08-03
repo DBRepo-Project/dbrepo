@@ -39,8 +39,8 @@ ENV JWT_PUBKEY="MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD
 
 WORKDIR /app
 
-COPY --from=build ./rest-service/target/rest-service-*.jar ./database-service.jar
+COPY --from=build ./rest-service/target/rest-service-*.jar ./data-service.jar
 
-EXPOSE 9092
+EXPOSE 9050
 
-ENTRYPOINT ["java", "-Dlog4j2.formatMsgNoLookups=true",    "-jar", "./database-service.jar"]
+ENTRYPOINT ["java", "-Dlog4j2.formatMsgNoLookups=true", "-jar", "./data-service.jar"]

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
 
 import java.util.List;
 
@@ -18,11 +19,13 @@ import java.util.List;
 @ToString
 public class ConstraintsDto {
 
-    List<UniqueDto> uniques;
+    @Field(name = "uniques", includeInParent = true, type = FieldType.Nested)
+    private List<UniqueDto> uniques;
 
-    @Field(name = "foreign_keys")
     @JsonProperty("foreign_keys")
-    List<ForeignKeyDto> foreignKeys;
+    @Field(name = "foreign_keys", includeInParent = true, type = FieldType.Nested)
+    private List<ForeignKeyDto> foreignKeys;
 
-    List<String> checks;
+    @Field(name = "checks", includeInParent = true, type = FieldType.Nested)
+    private List<String> checks;
 }

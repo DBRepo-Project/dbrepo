@@ -7,7 +7,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
 
 @Getter
 @Setter
@@ -18,18 +20,22 @@ import org.springframework.data.elasticsearch.annotations.Field;
 @ToString
 public class IdentifierDescriptionDto {
 
+    @Id
     @NotNull
+    @Field(name = "id", type = FieldType.Keyword)
     private Long id;
 
     @Schema(example = "Air quality reports at Stephansplatz, Vienna")
+    @Field(name = "description", type = FieldType.Text)
     private String description;
 
     @Schema(example = "en")
+    @Field(name = "language", type = FieldType.Keyword)
     private LanguageTypeDto language;
 
     @JsonProperty("type")
-    @Field(name = "type")
     @Schema(example = "Abstract")
+    @Field(name = "type", type = FieldType.Keyword)
     private DescriptionTypeDto descriptionType;
 
 }

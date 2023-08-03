@@ -93,7 +93,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     private RealmRepository realmRepository;
 
     @Container
-    private static final OpensearchContainer opensearchContainer = new OpensearchContainer(DockerImageName.parse("opensearchproject/opensearch:2"));
+    private static final OpensearchContainer opensearchContainer = new OpensearchContainer(DockerImageName.parse("opensearchproject/opensearch:2.8.0"));
 
     @DynamicPropertySource
     static void elasticsearchProperties(DynamicPropertyRegistry registry) {
