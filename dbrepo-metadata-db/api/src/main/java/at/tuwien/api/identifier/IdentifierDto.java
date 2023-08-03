@@ -89,7 +89,7 @@ public class IdentifierDto {
     private String queryHash;
 
     @NotNull
-    @Field(name = "execution", type = FieldType.Keyword)
+    @Field(name = "execution", type = FieldType.Date)
     @Schema(example = "2021-03-12T15:26:21Z")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant execution;
@@ -151,7 +151,7 @@ public class IdentifierDto {
     private List<CreatorDto> creators;
 
     @NotNull
-    @Field(type = FieldType.Keyword, name = "created")
+    @Field(name = "created", type = FieldType.Date)
     @Schema(example = "2021-03-12T15:26:21Z")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant created;
