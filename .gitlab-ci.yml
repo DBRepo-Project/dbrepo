@@ -102,11 +102,6 @@ build-search-sync-agent:
   script:
     - "make build-search-sync-agent"
 
-build-data-service:
-  stage: build-backend
-  script:
-    - "make build-data-service"
-
 test-identifier-service:
   stage: test-backend
   needs:
