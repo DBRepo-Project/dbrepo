@@ -40,4 +40,5 @@ logging:
   level:
     root: warn
     at.tuwien.: trace
+    org.opensearch.client.: trace
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug

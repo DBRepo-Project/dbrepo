@@ -3084,14 +3084,14 @@ public abstract class BaseTest {
     public final static List<String> COLUMN_5_3_SET_VALUES_DTO = null;
 
     public final static Long COLUMN_5_4_ID = 68L;
-    public final static Integer COLUMN_5_4_ORDINALPOS = 2;
+    public final static Integer COLUMN_5_4_ORDINALPOS = 3;
     public final static Boolean COLUMN_5_4_PRIMARY = false;
-    public final static String COLUMN_5_4_NAME = "ref_id";
-    public final static String COLUMN_5_4_INTERNAL_NAME = "ref_id";
-    public final static TableColumnType COLUMN_5_4_TYPE = TableColumnType.BIGINT;
-    public final static ColumnTypeDto COLUMN_5_4_TYPE_DTO = ColumnTypeDto.BIGINT;
+    public final static String COLUMN_5_4_NAME = "birth";
+    public final static String COLUMN_5_4_INTERNAL_NAME = "birth";
+    public final static TableColumnType COLUMN_5_4_TYPE = TableColumnType.YEAR;
+    public final static ColumnTypeDto COLUMN_5_4_TYPE_DTO = ColumnTypeDto.YEAR;
     public final static Long COLUMN_5_4_DATE_FORMAT = null;
-    public final static Boolean COLUMN_5_4_NULL = false;
+    public final static Boolean COLUMN_5_4_NULL = true;
     public final static Boolean COLUMN_5_4_UNIQUE = false;
     public final static Boolean COLUMN_5_4_AUTO_GENERATED = false;
     public final static String COLUMN_5_4_FOREIGN_KEY = null;
@@ -3101,7 +3101,43 @@ public abstract class BaseTest {
     public final static List<String> COLUMN_5_4_SET_VALUES = null;
     public final static List<String> COLUMN_5_4_SET_VALUES_DTO = null;
 
-    public final static Long COLUMN_8_1_ID = 69L;
+    public final static Long COLUMN_5_5_ID = 69L;
+    public final static Integer COLUMN_5_5_ORDINALPOS = 4;
+    public final static Boolean COLUMN_5_5_PRIMARY = false;
+    public final static String COLUMN_5_5_NAME = "reminder";
+    public final static String COLUMN_5_5_INTERNAL_NAME = "reminder";
+    public final static TableColumnType COLUMN_5_5_TYPE = TableColumnType.TIME;
+    public final static ColumnTypeDto COLUMN_5_5_TYPE_DTO = ColumnTypeDto.TIME;
+    public final static Long COLUMN_5_5_DATE_FORMAT = null;
+    public final static Boolean COLUMN_5_5_NULL = true;
+    public final static Boolean COLUMN_5_5_UNIQUE = false;
+    public final static Boolean COLUMN_5_5_AUTO_GENERATED = false;
+    public final static String COLUMN_5_5_FOREIGN_KEY = null;
+    public final static String COLUMN_5_5_CHECK = null;
+    public final static List<String> COLUMN_5_5_ENUM_VALUES = null;
+    public final static List<String> COLUMN_5_5_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_5_5_SET_VALUES = null;
+    public final static List<String> COLUMN_5_5_SET_VALUES_DTO = null;
+
+    public final static Long COLUMN_5_6_ID = 70L;
+    public final static Integer COLUMN_5_6_ORDINALPOS = 5;
+    public final static Boolean COLUMN_5_6_PRIMARY = false;
+    public final static String COLUMN_5_6_NAME = "ref_id";
+    public final static String COLUMN_5_6_INTERNAL_NAME = "ref_id";
+    public final static TableColumnType COLUMN_5_6_TYPE = TableColumnType.BIGINT;
+    public final static ColumnTypeDto COLUMN_5_6_TYPE_DTO = ColumnTypeDto.BIGINT;
+    public final static Long COLUMN_5_6_DATE_FORMAT = null;
+    public final static Boolean COLUMN_5_6_NULL = true;
+    public final static Boolean COLUMN_5_6_UNIQUE = false;
+    public final static Boolean COLUMN_5_6_AUTO_GENERATED = false;
+    public final static String COLUMN_5_6_FOREIGN_KEY = null;
+    public final static String COLUMN_5_6_CHECK = null;
+    public final static List<String> COLUMN_5_6_ENUM_VALUES = null;
+    public final static List<String> COLUMN_5_6_ENUM_VALUES_DTO = null;
+    public final static List<String> COLUMN_5_6_SET_VALUES = null;
+    public final static List<String> COLUMN_5_6_SET_VALUES_DTO = null;
+
+    public final static Long COLUMN_8_1_ID = 71L;
     public final static Integer COLUMN_8_1_ORDINALPOS = 0;
     public final static Boolean COLUMN_8_1_PRIMARY = true;
     public final static String COLUMN_8_1_NAME = "ID";
@@ -3119,7 +3155,7 @@ public abstract class BaseTest {
     public final static List<String> COLUMN_8_1_SET_VALUES = null;
     public final static List<String> COLUMN_8_1_SET_VALUES_DTO = null;
 
-    public final static Long COLUMN_8_2_ID = 70L;
+    public final static Long COLUMN_8_2_ID = 72L;
     public final static Integer COLUMN_8_2_ORDINALPOS = 1;
     public final static Boolean COLUMN_8_2_PRIMARY = true;
     public final static String COLUMN_8_2_NAME = "Value";
@@ -4955,6 +4991,45 @@ public abstract class BaseTest {
                     .isPrimaryKey(COLUMN_5_3_PRIMARY)
                     .enums(COLUMN_5_3_ENUM_VALUES)
                     .sets(COLUMN_5_3_SET_VALUES)
+                    .build(),
+            TableColumn.builder()
+                    .id(COLUMN_5_4_ID)
+                    .ordinalPosition(COLUMN_5_4_ORDINALPOS)
+                    .table(TABLE_5)
+                    .name(COLUMN_5_4_NAME)
+                    .internalName(COLUMN_5_4_INTERNAL_NAME)
+                    .columnType(COLUMN_5_4_TYPE)
+                    .isNullAllowed(COLUMN_5_4_NULL)
+                    .autoGenerated(COLUMN_5_4_AUTO_GENERATED)
+                    .isPrimaryKey(COLUMN_5_4_PRIMARY)
+                    .enums(COLUMN_5_4_ENUM_VALUES)
+                    .sets(COLUMN_5_4_SET_VALUES)
+                    .build(),
+            TableColumn.builder()
+                    .id(COLUMN_5_5_ID)
+                    .ordinalPosition(COLUMN_5_5_ORDINALPOS)
+                    .table(TABLE_5)
+                    .name(COLUMN_5_5_NAME)
+                    .internalName(COLUMN_5_5_INTERNAL_NAME)
+                    .columnType(COLUMN_5_5_TYPE)
+                    .isNullAllowed(COLUMN_5_5_NULL)
+                    .autoGenerated(COLUMN_5_5_AUTO_GENERATED)
+                    .isPrimaryKey(COLUMN_5_5_PRIMARY)
+                    .enums(COLUMN_5_5_ENUM_VALUES)
+                    .sets(COLUMN_5_5_SET_VALUES)
+                    .build(),
+            TableColumn.builder()
+                    .id(COLUMN_5_6_ID)
+                    .ordinalPosition(COLUMN_5_6_ORDINALPOS)
+                    .table(TABLE_5)
+                    .name(COLUMN_5_6_NAME)
+                    .internalName(COLUMN_5_6_INTERNAL_NAME)
+                    .columnType(COLUMN_5_6_TYPE)
+                    .isNullAllowed(COLUMN_5_6_NULL)
+                    .autoGenerated(COLUMN_5_6_AUTO_GENERATED)
+                    .isPrimaryKey(COLUMN_5_6_PRIMARY)
+                    .enums(COLUMN_5_6_ENUM_VALUES)
+                    .sets(COLUMN_5_6_SET_VALUES)
                     .build());
 
     public final static Constraints TABLE_5_CONSTRAINTS = Constraints.builder()
@@ -4987,6 +5062,18 @@ public abstract class BaseTest {
                     .type(COLUMN_5_4_TYPE_DTO)
                     .nullAllowed(COLUMN_5_4_NULL)
                     .primaryKey(COLUMN_5_4_PRIMARY)
+                    .build(),
+            ColumnCreateDto.builder()
+                    .name(COLUMN_5_5_NAME)
+                    .type(COLUMN_5_5_TYPE_DTO)
+                    .nullAllowed(COLUMN_5_5_NULL)
+                    .primaryKey(COLUMN_5_5_PRIMARY)
+                    .build(),
+            ColumnCreateDto.builder()
+                    .name(COLUMN_5_6_NAME)
+                    .type(COLUMN_5_6_TYPE_DTO)
+                    .nullAllowed(COLUMN_5_6_NULL)
+                    .primaryKey(COLUMN_5_6_PRIMARY)
                     .build());
 
     public final static List<List<String>> TABLE_5_UNIQUES_CREATE = List.of(
@@ -4994,7 +5081,7 @@ public abstract class BaseTest {
             List.of(COLUMN_5_2_NAME, COLUMN_5_3_NAME));
 
     public final static List<ForeignKeyCreateDto> TABLE_5_FOREIGN_KEYS_CREATE = List.of(ForeignKeyCreateDto.builder()
-            .columns(List.of(COLUMN_5_4_NAME))
+            .columns(List.of(COLUMN_5_6_NAME))
             .referencedTable(TABLE_4_NAME)
             .referencedColumns(List.of(COLUMN_4_1_NAME))
             .build());

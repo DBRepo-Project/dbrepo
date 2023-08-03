@@ -9,8 +9,6 @@ import lombok.*;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.jackson.Jacksonized;
-import org.springframework.data.elasticsearch.annotations.Field;
-import org.springframework.data.elasticsearch.annotations.FieldType;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -41,7 +39,6 @@ public class DatabaseAccessDto {
     private AccessTypeDto type;
 
     @NotNull
-    @Field(type = FieldType.Date)
     @Schema(example = "2021-03-12T15:26:21Z")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant created;
