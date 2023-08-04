@@ -27,6 +27,8 @@ MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
 ENV METADATA_DB=fda
 ENV METADATA_USERNAME=root
 ENV METADATA_PASSWORD=dbrepo
+ENV BROKER_USERNAME=fda
+ENV BROKER_PASSWORD=fda
 ENV GATEWAY_ENDPOINT=http://gateway-service
 ENV WEBSITE=http://localhost
 ENV LOG_LEVEL=debug
