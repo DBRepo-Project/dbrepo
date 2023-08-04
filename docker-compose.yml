@@ -412,7 +412,10 @@ services:
     env_file:
       - .env
     healthcheck:
-      test: curl -s http://search-db:9200 > /dev/null || exit 1
+      test: curl -s localhost:9200/_cat/indices | grep -q "user" || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 12
     environment:
       discovery.type: "single-node"
       ES_JAVA_OPTS: "-Xms4g -Xmx4g"
@@ -447,7 +450,7 @@ services:
       dbrepo-metadata-db:
         condition: service_healthy
       dbrepo-search-db:
-        condition: service_healthy
+        condition: service_started
       dbrepo-authentication-service:
         condition: service_healthy
     logging:

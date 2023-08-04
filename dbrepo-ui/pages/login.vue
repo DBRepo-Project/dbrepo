@@ -51,6 +51,9 @@
             Login
           </v-btn>
         </v-card-actions>
+        <v-card-text class="text-right">
+          <a href="/api/auth/">Admin Login</a>
+        </v-card-text>
       </v-card>
     </v-form>
   </div>

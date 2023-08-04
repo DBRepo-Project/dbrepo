@@ -101,7 +101,7 @@ import IsniIcon from '@/components/icons/IsniIcon.vue'
 import OrcidIcon from '@/components/icons/OrcidIcon.vue'
 import RorIcon from '@/components/icons/RorIcon.vue'
 import Banner from '@/components/identifier/Banner.vue'
-import { formatDateUTC } from '@/utils'
+import { formatDateUTC, formatLanguage } from '@/utils'
 
 export default {
   components: {
@@ -141,7 +141,7 @@ export default {
       return `${this.baseUrl}/pid/${this.database.identifier.id}`
     },
     identifierLang () {
-      return this.identifier.language ? this.identifier.language.toUpperCase() : null
+      return this.identifier.language ? formatLanguage(this.identifier.language.toLowerCase()) : null
     },
     licensesHeading () {
       if (!this.identifier.licenses) {
@@ -179,10 +179,10 @@ export default {
   },
   methods: {
     printTitleLang (title) {
-      return title.language ? title.language.toUpperCase() : null
+      return title.language ? formatLanguage(title.language.toLowerCase()) : null
     },
     printDescriptionLang (description) {
-      return description.language ? description.language.toUpperCase() : null
+      return description.language ? formatLanguage(description.language.toLowerCase()) : null
     },
     hasOrcid (personOrOrg) {
       return personOrOrg.name_identifier && personOrOrg.name_identifier_scheme === 'ORCID'
@@ -195,7 +195,8 @@ export default {
     },
     hasAffiliation (personOrOrg) {
       return personOrOrg.affiliation || personOrOrg.affiliation_identifier
-    }
+    },
+    formatLanguage
   }
 }
 </script>

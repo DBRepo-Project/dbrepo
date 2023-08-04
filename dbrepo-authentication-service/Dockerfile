@@ -5,6 +5,7 @@ MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
 # Enable health and metrics support
 ENV KC_HEALTH_ENABLED=true
 ENV KC_METRICS_ENABLED=true
+ENV KC_HTTP_RELATIVE_PATH=/api/auth
 
 # Configure a database vendor
 ENV KC_DB=mariadb
@@ -42,7 +43,9 @@ ENV KC_DB=mariadb
 ENV KC_DB_URL=jdbc:mariadb://metadata-db/fda
 ENV KC_DB_USERNAME=${METADATA_USERNAME}
 ENV KC_DB_PASSWORD=${METADATA_PASSWORD}
-ENV KC_HOSTNAME=localhost
+ENV KC_HOSTNAME_STRICT_HTTPS=false
+ENV KC_HOSTNAME_PATH=/api/auth
+ENV KC_HOSTNAME_ADMIN_URL=http://localhost/api/auth
 
 ENV KEYCLOAK_IMPORT=/opt/keycloak/data/import/dbrepo-realm.json
 ENV KEYCLOAK_ADMIN=fda
