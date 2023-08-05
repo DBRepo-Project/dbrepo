@@ -102,6 +102,9 @@ public interface DataCiteMapper {
 
     /* keep */
     default DataCiteNameType nameTypeToDataCiteNameType(NameType data) {
+        if (data == null) {
+            return null;
+        }
         return DataCiteNameType.valueOf(data.getName().toUpperCase());
     }
 
