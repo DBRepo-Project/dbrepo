@@ -58,6 +58,7 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Identifier> findAll(IdentifierTypeDto type, Long databaseId, Long queryId, Long viewId) {
         return identifierService.findAll(type, databaseId, queryId, viewId);
     }

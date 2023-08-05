@@ -73,6 +73,7 @@ public interface DataCiteMapper {
             @Mapping(target = "name", expression = "java(data.getLastname() + \", \" + data.getFirstname())"),
             @Mapping(target = "givenName", source = "firstname"),
             @Mapping(target = "familyName", source = "lastname"),
+            @Mapping(target = "nameType", expression = "java(nameTypeToDataCiteNameType(data.getNameType()))"),
             @Mapping(target = "affiliation", expression = "java(list(creatorToDoiCreatorAffiliation(data)))"),
             @Mapping(target = "nameIdentifier", expression = "java(list(creatorToDataCiteDoiCreatorNameIdentifier(data)))"),
     })
@@ -80,6 +81,7 @@ public interface DataCiteMapper {
 
     DataCiteDoiCreatorNameIdentifier creatorToDataCiteDoiCreatorNameIdentifier(Creator data);
 
+    /* keep */
     default String nameIdentifierSchemeTypeToUri(NameIdentifierSchemeType data) {
         switch (data) {
             case ROR -> {
@@ -96,6 +98,11 @@ public interface DataCiteMapper {
             }
         }
         return null;
+    }
+
+    /* keep */
+    default DataCiteNameType nameTypeToDataCiteNameType(NameType data) {
+        return DataCiteNameType.valueOf(data.getName().toUpperCase());
     }
 
     @Mappings({
