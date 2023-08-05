@@ -44,4 +44,24 @@ public class IdentifierServiceImpl implements IdentifierService {
         }
         return optional.get();
     }
+
+    @Override
+    public Identifier findByDatabaseIdAndQueryId(Long databaseId, Long queryId) throws IdentifierNotFoundException {
+        final Optional<Identifier> optional = identifierRepository.findSubsetIdentifier(databaseId, queryId);
+        if (optional.isEmpty()) {
+            log.error("Failed to find subset identifier with database id {} and query id {}", databaseId, queryId);
+            throw new IdentifierNotFoundException("Failed to find subset identifier with database id " + databaseId + " and query id " + queryId);
+        }
+        return optional.get();
+    }
+
+    @Override
+    public List<Identifier> findAllDatabaseIdentifiers() {
+        return identifierRepository.findAllDatabaseIdentifiers();
+    }
+
+    @Override
+    public List<Identifier> findAllSubsetIdentifiers() {
+        return identifierRepository.findAllSubsetIdentifiers();
+    }
 }

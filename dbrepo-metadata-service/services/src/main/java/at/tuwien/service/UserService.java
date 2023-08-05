@@ -4,8 +4,16 @@ import at.tuwien.entities.user.User;
 import at.tuwien.exception.UserNotFoundException;
 
 import java.util.UUID;
+import java.util.List;
 
 public interface UserService {
+
+    /**
+     * Finds all users
+     *
+     * @return The list of users.
+     */
+    List<User> findAll();
 
     /**
      * Finds a user by username.

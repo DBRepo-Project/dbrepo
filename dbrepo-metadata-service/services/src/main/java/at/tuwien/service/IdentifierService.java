@@ -30,4 +30,17 @@ public interface IdentifierService {
      * @throws IdentifierNotFoundException The identifier does not exist.
      */
     Identifier find(Long id) throws IdentifierNotFoundException;
+
+    /**
+     * Finds a user by id.
+     *
+     * @param databaseId The database id.
+     * @param queryId    The query id.
+     * @return The identifier.
+     */
+    Identifier findByDatabaseIdAndQueryId(Long databaseId, Long queryId) throws IdentifierNotFoundException;
+
+    List<Identifier> findAllDatabaseIdentifiers();
+
+    List<Identifier> findAllSubsetIdentifiers();
 }

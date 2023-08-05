@@ -14,6 +14,11 @@ import java.util.UUID;
 @Service
 public interface DatabaseService {
 
+    /**
+     * Finds all databases stored in the metadata database.
+     *
+     * @return List of databases.
+     */
     List<Database> findAll();
 
     /**

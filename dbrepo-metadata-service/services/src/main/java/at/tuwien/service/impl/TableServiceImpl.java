@@ -2,6 +2,7 @@ package at.tuwien.service.impl;
 
 import at.tuwien.api.database.table.TableCreateDto;
 import at.tuwien.api.database.table.TableCreateRawQuery;
+import at.tuwien.api.database.table.TableHistoryDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
 import at.tuwien.entities.database.Database;
@@ -9,6 +10,7 @@ import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
+import at.tuwien.mapper.QueryMapper;
 import at.tuwien.mapper.TableMapper;
 import at.tuwien.repository.mdb.TableColumnRepository;
 import at.tuwien.repository.mdb.TableRepository;
@@ -27,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.security.Principal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
@@ -36,6 +39,7 @@ import java.util.Optional;
 public class TableServiceImpl extends HibernateConnector implements TableService {
 
     private final TableMapper tableMapper;
+    private final QueryMapper queryMapper;
     private final UserService userService;
     private final DatabaseService databaseService;
     private final SemanticService semanticService;
@@ -45,11 +49,12 @@ public class TableServiceImpl extends HibernateConnector implements TableService
     private final TableColumnIdxRepository tableColumnIdxRepository;
 
     @Autowired
-    public TableServiceImpl(TableMapper tableMapper, UserService userService, SemanticService semanticService,
-                            TableRepository tableRepository, DatabaseService databaseService,
+    public TableServiceImpl(TableMapper tableMapper, QueryMapper queryMapper, UserService userService,
+                            SemanticService semanticService, TableRepository tableRepository, DatabaseService databaseService,
                             TableIdxRepository tableIdxRepository, TableColumnRepository tableColumnRepository,
                             TableColumnIdxRepository tableColumnIdxRepository) {
         this.tableMapper = tableMapper;
+        this.queryMapper = queryMapper;
         this.userService = userService;
         this.semanticService = semanticService;
         this.tableRepository = tableRepository;
@@ -57,6 +62,47 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         this.tableIdxRepository = tableIdxRepository;
         this.tableColumnRepository = tableColumnRepository;
         this.tableColumnIdxRepository = tableColumnIdxRepository;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Table find(Long databaseId, Long tableId) throws DatabaseNotFoundException, TableNotFoundException {
+        final Optional<Table> table = tableRepository.find(databaseId, tableId);
+        if (table.isEmpty()) {
+            log.error("Failed to find table with id {} in database with id {}", tableId, databaseId);
+            throw new TableNotFoundException("Failed to find table with id " + tableId + " in database with id " + databaseId);
+        }
+        return table.get();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Table> findAll() {
+        return tableRepository.findAll();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<TableHistoryDto> findHistory(Long databaseId, Long tableId, Principal principal)
+            throws DatabaseNotFoundException, TableNotFoundException, QueryStoreException, QueryMalformedException {
+        /* find */
+        final Database database = databaseService.find(databaseId);
+        final Table table = find(databaseId, tableId);
+        /* run query */
+        final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(),
+                database.getContainer(), database);
+        /* use jpa to select one */
+        try {
+            final Connection connection = dataSource.getConnection();
+            final PreparedStatement preparedStatement = queryMapper.historyRawQuery(connection, table);
+            final ResultSet resultSet = preparedStatement.executeQuery();
+            return queryMapper.resultListToTableHistoryDto(resultSet);
+        } catch (SQLException e) {
+            log.error("Failed to map table history: {}", e.getMessage());
+            throw new QueryStoreException("Failed to map table history: " + e.getMessage(), e);
+        } finally {
+            dataSource.close();
+        }
     }
 
     @Override
