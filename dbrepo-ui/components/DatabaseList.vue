@@ -19,7 +19,6 @@
         <div class="db-tags">
           <v-chip v-if="database.is_public" small color="green" outlined>Public</v-chip>
           <v-chip v-if="!database.is_public" small color="red" outlined>Private</v-chip>
-          <v-chip v-if="identifierLanguage(database)" small outlined v-text="identifierLanguage(database)" />
           <v-chip
             v-if="identifierYear(database)"
             small
@@ -31,6 +30,7 @@
             outlined
             v-text="database.identifier.publisher" />
           <v-chip v-for="(funder,i) in identifierFunders(database)" :key="`f-${i}`" small outlined v-text="funder.funder_name" />
+          <v-chip v-if="identifierLanguage(database)" small outlined v-text="identifierLanguage(database)" />
         </div>
         <div v-text="identifierDescription(database)" />
       </v-card-text>
@@ -50,6 +50,7 @@
 <script>
 import DatabaseService from '@/api/database.service'
 import DatabaseMapper from '@/api/database.mapper'
+import { formatLanguage } from '@/utils'
 
 export default {
   data () {
@@ -100,7 +101,7 @@ export default {
       if (!database || !database.identifier || !database.identifier.language) {
         return null
       }
-      return database.identifier.language.toUpperCase()
+      return formatLanguage(database.identifier.language.toLowerCase())
     },
     identifierFunders (database) {
       if (!database || !database.identifier || !database.identifier.funders) {
@@ -123,7 +124,8 @@ export default {
         return null
       }
       return `/database/${database.id}`
-    }
+    },
+    formatLanguage
   }
 }
 </script>

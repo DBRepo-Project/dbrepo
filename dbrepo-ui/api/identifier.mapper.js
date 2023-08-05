@@ -59,12 +59,7 @@ class IdentifierMapper {
       visibility: data.visibility,
       publisher: data.publisher,
       language: data.language,
-      licenses: data.licenses.map((l) => {
-        return {
-          identifier: l.identifier,
-          uri: l.uri
-        }
-      }),
+      licenses: data.licenses,
       creators: data.creators.map((c) => {
         return {
           id: c.id,
