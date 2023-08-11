@@ -4,7 +4,7 @@ TAG ?= latest
 TRIVY_VERSION ?= v0.41.0
 ELASTIC_VERSION ?= 8.7.1
 NGINX_VERSION ?= 1.25.0-alpine-slim
-HARBOR_REPO ?= s210.dl.hpc.tuwien.ac.at
+AZURE_REPO ?= dbrepo.azurecr.io
 
 all: build
 
@@ -63,129 +63,129 @@ tag: tag-identifier-service tag-container-service tag-database-service tag-query
 
 tag-analyse-service:
 	docker tag dbrepo-analyse-service:latest "dbrepo/analyse-service:${TAG}"
-	docker tag dbrepo-analyse-service:latest "${HARBOR_REPO}/dbrepo/analyse-service:${TAG}"
+	docker tag dbrepo-analyse-service:latest "${AZURE_REPO}/dbrepo/analyse-service:${TAG}"
 
 tag-authentication-service:
 	docker tag dbrepo-authentication-service:latest "dbrepo/authentication-service:${TAG}"
-	docker tag dbrepo-authentication-service:latest "${HARBOR_REPO}/dbrepo/authentication-service:${TAG}"
+	docker tag dbrepo-authentication-service:latest "${AZURE_REPO}/dbrepo/authentication-service:${TAG}"
 
 tag-metadata-db:
 	docker tag dbrepo-metadata-db:latest "dbrepo/metadata-db:${TAG}"
-	docker tag dbrepo-metadata-db:latest "${HARBOR_REPO}/dbrepo/metadata-db:${TAG}"
+	docker tag dbrepo-metadata-db:latest "${AZURE_REPO}/dbrepo/metadata-db:${TAG}"
 
 tag-ui:
 	docker tag dbrepo-ui:latest "dbrepo/ui:${TAG}"
-	docker tag dbrepo-ui:latest "${HARBOR_REPO}/dbrepo/ui:${TAG}"
+	docker tag dbrepo-ui:latest "${AZURE_REPO}/dbrepo/ui:${TAG}"
 
 tag-identifier-service:
 	docker tag dbrepo-identifier-service:latest "dbrepo/identifier-service:${TAG}"
-	docker tag dbrepo-identifier-service:latest "${HARBOR_REPO}/dbrepo/identifier-service:${TAG}"
+	docker tag dbrepo-identifier-service:latest "${AZURE_REPO}/dbrepo/identifier-service:${TAG}"
 
 tag-search-sync-agent:
 	docker tag dbrepo-search-sync-agent:latest "dbrepo/search-sync-agent:${TAG}"
-	docker tag dbrepo-search-sync-agent:latest "${HARBOR_REPO}/dbrepo/search-sync-agent:${TAG}"
+	docker tag dbrepo-search-sync-agent:latest "${AZURE_REPO}/dbrepo/search-sync-agent:${TAG}"
 
 tag-metadata-service:
 	docker tag dbrepo-metadata-service:latest "dbrepo/metadata-service:${TAG}"
-	docker tag dbrepo-metadata-service:latest "${HARBOR_REPO}/dbrepo/metadata-service:${TAG}"
+	docker tag dbrepo-metadata-service:latest "${AZURE_REPO}/dbrepo/metadata-service:${TAG}"
 
 tag-data-service:
 	docker tag dbrepo-data-service:latest "dbrepo/data-service:${TAG}"
-	docker tag dbrepo-data-service:latest "${HARBOR_REPO}/dbrepo/data-service:${TAG}"
+	docker tag dbrepo-data-service:latest "${AZURE_REPO}/dbrepo/data-service:${TAG}"
 
 tag-container-service:
 	docker tag dbrepo-container-service:latest "dbrepo/container-service:${TAG}"
-	docker tag dbrepo-container-service:latest "${HARBOR_REPO}/dbrepo/container-service:${TAG}"
+	docker tag dbrepo-container-service:latest "${AZURE_REPO}/dbrepo/container-service:${TAG}"
 
 tag-database-service:
 	docker tag dbrepo-database-service:latest "dbrepo/database-service:${TAG}"
-	docker tag dbrepo-database-service:latest "${HARBOR_REPO}/dbrepo/database-service:${TAG}"
+	docker tag dbrepo-database-service:latest "${AZURE_REPO}/dbrepo/database-service:${TAG}"
 
 tag-query-service:
 	docker tag dbrepo-query-service:latest "dbrepo/query-service:${TAG}"
-	docker tag dbrepo-query-service:latest "${HARBOR_REPO}/dbrepo/query-service:${TAG}"
+	docker tag dbrepo-query-service:latest "${AZURE_REPO}/dbrepo/query-service:${TAG}"
 
 tag-user-service:
 	docker tag dbrepo-user-service:latest "dbrepo/user-service:${TAG}"
-	docker tag dbrepo-user-service:latest "${HARBOR_REPO}/dbrepo/user-service:${TAG}"
+	docker tag dbrepo-user-service:latest "${AZURE_REPO}/dbrepo/user-service:${TAG}"
 
 tag-table-service:
 	docker tag dbrepo-table-service:latest "dbrepo/table-service:${TAG}"
-	docker tag dbrepo-table-service:latest "${HARBOR_REPO}/dbrepo/table-service:${TAG}"
+	docker tag dbrepo-table-service:latest "${AZURE_REPO}/dbrepo/table-service:${TAG}"
 
 tag-semantics-service:
 	docker tag dbrepo-semantics-service:latest "dbrepo/semantics-service:${TAG}"
-	docker tag dbrepo-semantics-service:latest "${HARBOR_REPO}/dbrepo/semantics-service:${TAG}"
+	docker tag dbrepo-semantics-service:latest "${AZURE_REPO}/dbrepo/semantics-service:${TAG}"
 
 tag-broker-service:
 	docker tag dbrepo-broker-service:latest "dbrepo/broker-service:${TAG}"
-	docker tag dbrepo-broker-service:latest "${HARBOR_REPO}/dbrepo/broker-service:${TAG}"
+	docker tag dbrepo-broker-service:latest "${AZURE_REPO}/dbrepo/broker-service:${TAG}"
 
 tag-search-db:
 	docker tag dbrepo-search-db:latest "dbrepo/search-db:${TAG}"
-	docker tag dbrepo-search-db:latest "${HARBOR_REPO}/dbrepo/search-db:${TAG}"
+	docker tag dbrepo-search-db:latest "${AZURE_REPO}/dbrepo/search-db:${TAG}"
 
 release: build-docker tag release-identifier-service release-container-service release-database-service release-query-service release-table-service release-analyse-service release-authentication-service release-metadata-db release-ui release-semantics-service release-broker-service release-metadata-service release-user-service release-search-sync-agent release-data-service
 
 release-analyse-service: tag-analyse-service
 	docker push "dbrepo/analyse-service:${TAG}"
-	docker push "${HARBOR_REPO}/dbrepo/analyse-service:${TAG}"
+	docker push "${AZURE_REPO}/dbrepo/analyse-service:${TAG}"
 
 release-authentication-service: tag-authentication-service
 	docker push "dbrepo/authentication-service:${TAG}"
-	docker push "${HARBOR_REPO}/dbrepo/authentication-service:${TAG}"
+	docker push "${AZURE_REPO}/dbrepo/authentication-service:${TAG}"
 
 release-metadata-db: tag-metadata-db
 	docker push "dbrepo/metadata-db:${TAG}"
-	docker push "${HARBOR_REPO}/dbrepo/metadata-db:${TAG}"
+	docker push "${AZURE_REPO}/dbrepo/metadata-db:${TAG}"
 
 release-ui: tag-ui
 	docker push "dbrepo/ui:${TAG}"
-	docker push "${HARBOR_REPO}/dbrepo/ui:${TAG}"
+	docker push "${AZURE_REPO}/dbrepo/ui:${TAG}"
 
 release-identifier-service: tag-identifier-service
 	docker push "dbrepo/identifier-service:${TAG}"
-	docker push "${HARBOR_REPO}/dbrepo/identifier-service:${TAG}"
+	docker push "${AZURE_REPO}/dbrepo/identifier-service:${TAG}"
 
 release-search-sync-agent: tag-search-sync-agent
 	docker push "dbrepo/search-sync-agent:${TAG}"
-	docker push "${HARBOR_REPO}/dbrepo/search-sync-agent:${TAG}"
+	docker push "${AZURE_REPO}/dbrepo/search-sync-agent:${TAG}"
 
 release-container-service: tag-container-service
 	docker push "dbrepo/container-service:${TAG}"
-	docker push "${HARBOR_REPO}/dbrepo/container-service:${TAG}"
+	docker push "${AZURE_REPO}/dbrepo/container-service:${TAG}"
 
 release-database-service: tag-database-service
 	docker push "dbrepo/database-service:${TAG}"
-	docker push "${HARBOR_REPO}/dbrepo/database-service:${TAG}"
+	docker push "${AZURE_REPO}/dbrepo/database-service:${TAG}"
 
 release-query-service: tag-query-service
 	docker push "dbrepo/query-service:${TAG}"
-	docker push "${HARBOR_REPO}/dbrepo/query-service:${TAG}"
+	docker push "${AZURE_REPO}/dbrepo/query-service:${TAG}"
 
 release-user-service: tag-user-service
 	docker push "dbrepo/user-service:${TAG}"
-	docker push "${HARBOR_REPO}/dbrepo/user-service:${TAG}"
+	docker push "${AZURE_REPO}/dbrepo/user-service:${TAG}"
 
 release-table-service: tag-table-service
 	docker push "dbrepo/table-service:${TAG}"
-	docker push "${HARBOR_REPO}/dbrepo/table-service:${TAG}"
+	docker push "${AZURE_REPO}/dbrepo/table-service:${TAG}"
 
 release-semantics-service: tag-semantics-service
 	docker push "dbrepo/semantics-service:${TAG}"
-	docker push "${HARBOR_REPO}/dbrepo/semantics-service:${TAG}"
+	docker push "${AZURE_REPO}/dbrepo/semantics-service:${TAG}"
 
 release-broker-service: tag-broker-service
 	docker push "dbrepo/broker-service:${TAG}"
-	docker push "${HARBOR_REPO}/dbrepo/broker-service:${TAG}"
+	docker push "${AZURE_REPO}/dbrepo/broker-service:${TAG}"
 
 release-metadata-service: tag-metadata-service
 	docker push "dbrepo/metadata-service:${TAG}"
-	docker push "${HARBOR_REPO}/dbrepo/metadata-service:${TAG}"
+	docker push "${AZURE_REPO}/dbrepo/metadata-service:${TAG}"
 
 release-data-service: tag-data-service
 	docker push "dbrepo/data-service:${TAG}"
-	docker push "${HARBOR_REPO}/dbrepo/data-service:${TAG}"
+	docker push "${AZURE_REPO}/dbrepo/data-service:${TAG}"
 
 test-backend: test-container-service test-database-service test-query-service test-table-service test-identifier-service test-metadata-service test-semantics-service test-analyse-service test-user-service test-search-sync-agent test-data-service
 

@@ -5,9 +5,10 @@ const tus = require('tus-js-client')
 class UploadService {
   upload (file) {
     return new Promise((resolve, reject) => {
-      const endpoint = `${location.protocol}//${location.host}/api/upload`
+      const endpoint = `${location.protocol}//${location.host}/api/upload/files`
+      console.debug('upload file to endpoint:', endpoint)
       const upload = new tus.Upload(file, {
-        endpoint: endpoint + '/files',
+        endpoint,
         retryDelays: [0, 3000, 5000, 10000, 20000],
         metadata: {
           filename: file.name,
@@ -32,13 +33,13 @@ class UploadService {
           resolve(upload)
         }
       })
-      // upload.findPreviousUploads().then(function (previousUploads) {
-      //   /* Found previous uploads so we select the first one */
-      //   if (previousUploads.length) {
-      //     upload.resumeFromPreviousUpload(previousUploads[0])
-      //   }
-      //   upload.start()
-      // })
+      upload.findPreviousUploads().then(function (previousUploads) {
+        /* Found previous uploads so we select the first one */
+        if (previousUploads.length) {
+          upload.resumeFromPreviousUpload(previousUploads[0])
+        }
+        upload.start()
+      })
     })
   }
 }

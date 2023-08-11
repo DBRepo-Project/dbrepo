@@ -15,6 +15,5 @@ config.clientSecret = process.env.DBREPO_CLIENT_SECRET || 'MUwRc7yfXSJwX8AdRMWaQ
 config.defaultPublisher = process.env.DEFAULT_PID_PUBLISHER || 'Example University'
 config.doiUrl = process.env.DOI_URL || 'https://doi.org'
 config.uploadPath = process.env.UPLOAD_PATH || '/tmp/'
-config.forceSsl = process.env.FORCE_SSL || 'false'
 
 module.exports = config
