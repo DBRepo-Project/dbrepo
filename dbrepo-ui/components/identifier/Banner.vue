@@ -15,7 +15,7 @@ export default {
   },
   computed: {
     baseUrl () {
-      return `${this.$config.baseUrl}`
+      return `${location.protocol}//${location.host}`
     },
     baseDoi () {
       return this.$config.doiUrl

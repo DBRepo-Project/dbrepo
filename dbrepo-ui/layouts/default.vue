@@ -226,6 +226,7 @@ export default {
     }
   },
   mounted () {
+    this.initEnvironment()
     this.$store.dispatch('reloadMessages')
     this.$store.dispatch('reloadOntologies')
     if (this.locale) {
@@ -307,6 +308,15 @@ export default {
     },
     retrieve () {
       this.$router.push({ path: '/search', query: { q: this.search } })
+    },
+    initEnvironment () {
+      this.$store.commit('SET_CLIENT_ID', this.$config.clientId)
+      this.$store.commit('SET_CLIENT_SECRET', this.$config.clientSecret)
+      this.$store.commit('SET_BROKER_USERNAME', this.$config.brokerUsername)
+      this.$store.commit('SET_BROKER_PASSWORD', this.$config.brokerPassword)
+      this.$store.commit('SET_SEARCH_USERNAME', this.$config.searchUsername)
+      this.$store.commit('SET_SEARCH_PASSWORD', this.$config.searchPassword)
+      this.$store.commit('SET_UPLOAD_PATH', this.$config.uploadPath)
     }
   }
 }

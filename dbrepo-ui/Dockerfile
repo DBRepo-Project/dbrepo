@@ -4,10 +4,8 @@ MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
 ARG TAG=latest
 ARG GIT_HASH_SHORT=git_hash
 
-ENV NODE_ENV=production
 ENV HOST=0.0.0.0
 ENV API=http://:80
-ENV BASE_URL=http://:80
 
 WORKDIR /app
 
@@ -44,7 +42,6 @@ EXPOSE 9100
 
 ENV BROKER_USERNAME="fda"
 ENV BROKER_PASSWORD="fda"
-ENV SEARCH="http://search-db:9200"
 ENV SHARED_FILESYSTEM="/tmp"
 ENV LOGO="/logo.png"
 ENV SEARCH_USERNAME="admin"
@@ -55,7 +52,6 @@ ENV ICON="/favicon.ico"
 ENV DBREPO_CLIENT_ID="dbrepo-client"
 ENV DBREPO_CLIENT_SECRET="MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG"
 ENV GIT_HASH="${GIT_HASH_SHORT}"
-ENV UPLOAD_ENDPOINT="http://upload-service:1080/files/"
 ENV UPLOAD_PATH="/tmp/"
 
 WORKDIR /app

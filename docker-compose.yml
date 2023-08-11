@@ -77,6 +77,8 @@ services:
     container_name: dbrepo-upload-service
     hostname: upload-service
     image: tusproject/tusd:v1.12
+    command:
+      - "--base-path=/api/upload/files/"
     networks:
       core:
     env_file:
@@ -84,8 +86,6 @@ services:
     volumes:
       - upload-service-data:/data
       - "/tmp:/srv/tusd-data/data"
-    ports:
-      - "1080:1080"
     logging:
       driver: json-file
 
@@ -485,7 +485,7 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./dbrepo.conf:/etc/nginx/conf.d/default.conf
+      - ./dbrepo-gateway-service/dbrepo.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       dbrepo-analyse-service:
         condition: service_healthy

@@ -1,11 +1,11 @@
 import Vue from 'vue'
+import store from '@/store'
 import axios from 'axios'
-import { elasticPassword } from '../config'
 
 class SearchService {
   search (query) {
     return new Promise((resolve, reject) => {
-      axios.get(`/retrieve/_all/_search?q=${query}*&terminate_after=50`, { headers: { Accept: 'application/json' }, auth: { username: 'elastic', password: elasticPassword } })
+      axios.get(`/retrieve/_all/_search?q=${query}*&terminate_after=50`, { headers: { Accept: 'application/json' }, auth: { username: store().state.searchUsername, password: store().state.searchPassword } })
         .then((response) => {
           const hits = response.data.hits.hits
           console.debug('response hits', hits)

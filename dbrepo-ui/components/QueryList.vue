@@ -91,7 +91,7 @@ export default {
   },
   computed: {
     baseUrl () {
-      return location.protocol + '//' + location.host
+      return `${location.protocol}//${location.host}`
     },
     token () {
       return this.$store.state.token

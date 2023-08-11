@@ -1,8 +1,10 @@
 import path from 'path'
 import colors from 'vuetify/es5/util/colors'
-import { api, icon, search, clientSecret, title, logo, version, defaultPublisher, doiUrl, baseUrl, clientId, uploadEndpoint, uploadPath } from './config'
+import { icon, clientSecret, title, logo, version, defaultPublisher, doiUrl, clientId, uploadPath, brokerUsername, brokerPassword, searchUsername, searchPassword } from './config'
 
 const proxy = {}
+
+const api = 'http://localhost'
 
 if (process.env.NODE_ENV === 'development') {
   proxy['/api'] = api
@@ -14,7 +16,7 @@ if (process.env.NODE_ENV === 'development') {
     }
   }
   proxy['/retrieve'] = {
-    target: search,
+    target: api + '/retrieve',
     changeOrigin: true,
     pathRewrite: {
       '^/retrieve': ''
@@ -93,9 +95,11 @@ export default {
     clientId,
     clientSecret,
     defaultPublisher,
+    brokerUsername,
+    brokerPassword,
+    searchUsername,
+    searchPassword,
     doiUrl,
-    baseUrl,
-    uploadEndpoint,
     uploadPath
   },
 

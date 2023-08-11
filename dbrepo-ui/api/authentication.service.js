@@ -3,7 +3,6 @@ import store from '@/store'
 import qs from 'qs'
 import UserMapper from '@/api/user.mapper'
 import axios from 'axios'
-import { baseURL, clientSecret, clientId } from '../config'
 
 /**
  * Service class for interaction with Authentication Service in the back end.
@@ -20,11 +19,11 @@ class AuthenticationService {
    */
   authenticatePlain (username, password) {
     const payload = {
-      client_id: clientId,
+      client_id: store().state.clientId,
+      client_secret: store().state.clientSecret,
       username,
       password,
       grant_type: 'password',
-      client_secret: clientSecret,
       scope: 'roles'
     }
     if (!username) {
@@ -50,9 +49,9 @@ class AuthenticationService {
 
   authenticateToken (refreshToken) {
     const payload = {
-      client_id: clientId,
+      client_id: store().state.clientId,
+      client_secret: store().state.clientSecret,
       grant_type: 'refresh_token',
-      client_secret: clientSecret,
       refresh_token: refreshToken
     }
     if (!refreshToken) {
@@ -75,7 +74,7 @@ class AuthenticationService {
       const instance = axios.create({
         timeout: 10000,
         params: {},
-        baseURL,
+        baseURL: `${location.protocol}//${location.host}`,
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded'
         }
@@ -95,7 +94,7 @@ class AuthenticationService {
           const { status, data } = response
           if (status === 401) {
             Vue.$toast.error('Invalid username-password combination.')
-          } else if (data?.error === 'invalid_grant') {
+          } else if (data && data.error && data.error === 'invalid_grant') {
             store().commit('SET_TOKEN', null)
             store().commit('SET_REFRESH_TOKEN', null)
             store().commit('SET_ROLES', [])
