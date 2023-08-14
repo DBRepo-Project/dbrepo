@@ -10,14 +10,12 @@ import at.tuwien.repository.mdb.ContainerRepository;
 import at.tuwien.repository.mdb.ImageRepository;
 import at.tuwien.repository.mdb.RealmRepository;
 import at.tuwien.repository.mdb.UserRepository;
-import at.tuwien.repository.sdb.DatabaseIdxRepository;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -56,6 +54,29 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
         userRepository.save(USER_1_SIMPLE);
         userRepository.save(USER_2_SIMPLE);
         imageRepository.save(IMAGE_1_SIMPLE);
+    }
+
+    @Test
+    public void find_succeeds() throws ContainerNotFoundException {
+
+        containerRepository.save(CONTAINER_1);
+
+        /* test */
+        final Container response = containerService.find(CONTAINER_1_ID);
+        assertEquals(CONTAINER_1_ID, response.getId());
+        assertEquals(CONTAINER_1_NAME, response.getName());
+        assertEquals(CONTAINER_1_INTERNALNAME, response.getInternalName());
+    }
+
+    @Test
+    public void find_fails() {
+
+        containerRepository.save(CONTAINER_1);
+
+        /* test */
+        assertThrows(ContainerNotFoundException.class, () -> {
+            containerService.find(CONTAINER_2_ID);
+        });
     }
 
     @Test

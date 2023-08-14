@@ -12,9 +12,13 @@ import org.testcontainers.images.PullPolicy;
 @Configuration
 public class MariaDbContainerConfig {
 
+    public static CustomMariaDBContainer getContainer() {
+        return CustomMariaDBContainer.getInstance();
+    }
+
     @Bean
     public CustomMariaDBContainer mariaDB() {
-        return CustomMariaDBContainer.getInstance();
+        return getContainer();
     }
 
     /**
@@ -25,7 +29,9 @@ public class MariaDbContainerConfig {
 
         private static CustomMariaDBContainer instance;
 
-        public static CustomMariaDBContainer getInstance() {
+        private boolean started = false;
+
+        public static synchronized CustomMariaDBContainer getInstance() {
             if(instance == null) {
                 instance = new CustomMariaDBContainer(BaseTest.IMAGE_1_NAME + ":" + BaseTest.IMAGE_1_VERSION);
                 instance.withImagePullPolicy(PullPolicy.alwaysPull());
@@ -33,6 +39,7 @@ public class MariaDbContainerConfig {
                 instance.withUsername(BaseTest.CONTAINER_1_PRIVILEGED_USERNAME);
                 instance.withPassword(BaseTest.CONTAINER_1_PRIVILEGED_PASSWORD);
                 instance.withInitScript("init/users.sql");
+                instance.withFileSystemBind("/tmp", "/tmp");
             }
             return instance;
         }
@@ -45,6 +52,14 @@ public class MariaDbContainerConfig {
         protected void configure() {
             super.configure();
             this.addEnv("MYSQL_USER", "test"); // MariaDB does not allow this to be root
+        }
+
+        @Override
+        public synchronized void start() {
+            if(!started) {
+                super.start();
+                started = true;
+            }
         }
 
         @Override

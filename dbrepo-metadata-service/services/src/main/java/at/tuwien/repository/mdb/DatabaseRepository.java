@@ -27,9 +27,6 @@ public interface DatabaseRepository extends JpaRepository<Database, Long> {
     Optional<Database> findPublicOrMine(@Param("databaseId") Long databaseId, @Param("username") String username);
 
     @Query("select d from Database d where d.id = :databaseId")
-    Optional<Database> findByContainerIdAndDatabaseId(@Param("databaseId") Long databaseId);
-
-    @Query(value = "select d from Database d where d.id = :databaseId")
     Optional<Database> findByDatabaseId(@Param("databaseId") Long databaseId);
 
 }

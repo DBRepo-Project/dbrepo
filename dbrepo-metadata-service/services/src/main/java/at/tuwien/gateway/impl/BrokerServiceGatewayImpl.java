@@ -41,8 +41,8 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
     private final static String VIRTUAL_SERVER = "dbrepo";
 
     @Autowired
-    public BrokerServiceGatewayImpl(AmqpConfig amqpConfig, Environment environment, RestTemplate restTemplate,
-                                    GatewayConfig gatewayConfig) {
+    public BrokerServiceGatewayImpl(AmqpConfig amqpConfig, Environment environment, GatewayConfig gatewayConfig,
+                                    @Qualifier("brokerRestTemplate") RestTemplate restTemplate) {
         this.amqpConfig = amqpConfig;
         this.environment = environment;
         this.restTemplate = restTemplate;

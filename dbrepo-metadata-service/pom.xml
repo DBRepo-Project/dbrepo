@@ -153,6 +153,12 @@
             <artifactId>java-jwt</artifactId>
             <version>${jwt.version}</version>
         </dependency>
+        <!-- Utils -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>31.1-jre</version>
+        </dependency>
         <!-- SQL Parser -->
         <dependency>
             <groupId>com.github.jsqlparser</groupId>
