@@ -26,6 +26,17 @@ public interface UserMapper {
 
     org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(UserMapper.class);
 
+    @Mappings({
+            @Mapping(target = "id", expression = "java(data.getId().toString())")
+    })
+    UserDetailsDto userBriefDtoToUserDetailsDto(UserBriefDto data);
+
+    default GrantedAuthority grantedAuthorityDtoToGrantedAuthority(GrantedAuthorityDto data) {
+        final GrantedAuthority authority = new SimpleGrantedAuthority(data.getAuthority());
+        log.trace("mapped granted authority {} to granted authority {}", data, authority);
+        return authority;
+    }
+
     /* keep */
     @Mappings({
             @Mapping(target = "id", expression = "java(data.getId().toString())")
@@ -55,12 +66,6 @@ public interface UserMapper {
         return orcid.map(UserAttribute::getValue).orElse(null);
     }
 
-    /* keep */
-    @Mappings({
-            @Mapping(target = "id", expression = "java(data.getId().toString())")
-    })
-    UserDetailsDto userBriefDtoToUserDetailsDto(UserBriefDto data);
-
     default UserDetailsDto tokenIntrospectDtoToUserDetailsDto(TokenIntrospectDto data) {
         return UserDetailsDto.builder()
                 .id(data.getSub())
@@ -72,12 +77,6 @@ public interface UserMapper {
     }
 
     User signupRequestDtoToUser(SignupRequestDto data);
-
-    default GrantedAuthority grantedAuthorityDtoToGrantedAuthority(GrantedAuthorityDto data) {
-        final GrantedAuthority authority = new SimpleGrantedAuthority(data.getAuthority());
-        log.trace("mapped granted authority {} to granted authority {}", data, authority);
-        return authority;
-    }
 
     default UserAttribute tripleToUserAttribute(UUID userId, String name, String value) {
         return UserAttribute.builder()
