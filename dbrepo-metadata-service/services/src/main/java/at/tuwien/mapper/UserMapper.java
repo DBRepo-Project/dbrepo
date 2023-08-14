@@ -6,6 +6,8 @@ import at.tuwien.api.user.GrantedAuthorityDto;
 import at.tuwien.api.user.UserBriefDto;
 import at.tuwien.api.user.UserDetailsDto;
 import at.tuwien.api.user.UserDto;
+import at.tuwien.entities.user.Group;
+import at.tuwien.entities.user.GroupMembership;
 import at.tuwien.entities.user.User;
 import at.tuwien.entities.user.UserAttribute;
 import org.mapstruct.Mapper;
@@ -79,9 +81,18 @@ public interface UserMapper {
 
     default UserAttribute tripleToUserAttribute(UUID userId, String name, String value) {
         return UserAttribute.builder()
+                .id(UUID.randomUUID())
                 .userId(userId)
                 .name(name)
                 .value(value)
                 .build();
     }
+
+    default GroupMembership userGroupToGroupMembership(User user, Group group) {
+        return GroupMembership.builder()
+                .userId(user.getId())
+                .groupId(group.getId())
+                .build();
+    }
+
 }
