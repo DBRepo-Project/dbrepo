@@ -1,7 +1,6 @@
 package at.tuwien.api.database;
 
 import at.tuwien.api.identifier.IdentifierBriefDto;
-import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.user.UserDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -12,8 +11,6 @@ import lombok.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.jackson.Jacksonized;
-import org.springframework.data.elasticsearch.annotations.Field;
-import org.springframework.data.elasticsearch.annotations.FieldType;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -31,7 +28,6 @@ public class ViewBriefDto {
     private Long id;
 
     @NotNull
-    @Field(name = "database_id")
     private Long vdbid;
 
     @NotBlank
@@ -40,19 +36,16 @@ public class ViewBriefDto {
 
     @NotBlank
     @JsonProperty("internal_name")
-    @Field(name = "internal_name")
     @Schema(example = "air_quality")
     private String internalName;
 
     private IdentifierBriefDto identifier;
 
     @JsonProperty("is_public")
-    @Field(name = "is_public")
     @Schema(example = "true")
     private Boolean isPublic;
 
     @JsonProperty("initial_view")
-    @Field(name = "initial_view")
     @Schema(example = "true", description = "True if it is the default view for the database")
     private Boolean isInitialView;
 
@@ -66,20 +59,17 @@ public class ViewBriefDto {
     private String queryHash;
 
     @NotNull
-    @Field(type = FieldType.Date)
     @Schema(example = "2021-03-12T15:26:21Z")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant created;
 
     @JsonIgnore
-    @Field(name = "created_by")
     private UUID createdBy;
 
     @NotNull
     private UserDto creator;
 
     @JsonProperty("last_modified")
-    @org.springframework.data.annotation.Transient
     @Schema(example = "2021-03-12T15:26:21Z")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant lastModified;

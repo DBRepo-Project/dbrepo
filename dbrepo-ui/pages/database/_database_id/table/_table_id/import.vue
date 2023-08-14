@@ -85,7 +85,8 @@
                 accept=".csv,.tsv"
                 hint="max. 2GB file size"
                 persistent-hint
-                show-size
+                :show-size="1000"
+                counter
                 label="CSV/TSV File" />
             </v-col>
           </v-row>

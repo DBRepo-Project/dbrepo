@@ -5,5 +5,5 @@ import org.springframework.data.elasticsearch.repository.ElasticsearchRepository
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ConceptIdxRepository extends ElasticsearchRepository<ConceptDto, String> {
+public interface ConceptIdxRepository extends ElasticsearchRepository<ConceptDto, Long> {
 }

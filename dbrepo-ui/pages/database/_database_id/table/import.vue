@@ -139,7 +139,8 @@
                 accept=".csv,.tsv"
                 hint="max. 2 GB file size"
                 persistent-hint
-                show-size
+                :show-size="1000"
+                counter
                 label="File Upload (.csv/.tsv)" />
             </v-col>
           </v-row>
@@ -317,7 +318,10 @@ export default {
             console.debug('uploaded file', file)
             resolve(file.path)
           })
-          .catch(error => reject(error))
+          .catch((error) => {
+            this.loadingUpload = false
+            reject(error)
+          })
           .finally(() => {
             this.loadingUpload = false
           })

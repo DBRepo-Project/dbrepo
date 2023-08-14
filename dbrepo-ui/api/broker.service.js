@@ -1,11 +1,11 @@
 import Vue from 'vue'
+import store from '@/store'
 import axios from 'axios'
-import { brokerUsername, brokerPassword } from '../config'
 
 class BrokerService {
   findConsumers () {
     return new Promise((resolve, reject) => {
-      const basic = btoa(`${brokerUsername}:${brokerPassword}`)
+      const basic = btoa(`${store().state.brokerUsername}:${store().state.brokerPassword}`)
       axios.get('/api/broker/consumers/dbrepo', { headers: { Authorization: 'Basic ' + basic } })
         .then((response) => {
           const consumers = response.data

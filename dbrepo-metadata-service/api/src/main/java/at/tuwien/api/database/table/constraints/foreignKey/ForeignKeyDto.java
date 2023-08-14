@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
 
 import java.util.List;
 
@@ -18,21 +19,22 @@ import java.util.List;
 @ToString
 public class ForeignKeyDto {
 
+    @org.springframework.data.annotation.Transient
     private List<ColumnDto> columns;
 
-    @Field(name = "referenced_table")
     @JsonProperty("referenced_table")
+    @org.springframework.data.annotation.Transient
     private TableBriefDto referencedTable;
 
-    @Field(name = "referenced_columns")
     @JsonProperty("referenced_columns")
+    @org.springframework.data.annotation.Transient
     private List<ColumnDto> referencedColumns;
 
-    @Field(name = "on_update")
     @JsonProperty("on_update")
+    @Field(name = "on_update", includeInParent = true, type = FieldType.Keyword)
     private ReferenceTypeDto onUpdate;
 
-    @Field(name = "on_delete")
     @JsonProperty("on_delete")
+    @Field(name = "on_delete", includeInParent = true, type = FieldType.Keyword)
     private ReferenceTypeDto onDelete;
 }

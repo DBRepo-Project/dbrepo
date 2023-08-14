@@ -32,7 +32,7 @@
           <v-icon left>mdi-cloud-upload</v-icon> Import .csv
         </v-btn>
         <DownloadButton
-          v-if="database?.identifier"
+          v-if="database && database.identifier"
           :pid="database.identifier.id"
           class="mr-2 mb-1">
           <v-icon left>mdi-code-tags</v-icon> Identifier .xml

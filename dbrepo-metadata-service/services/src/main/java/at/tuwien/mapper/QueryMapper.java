@@ -842,17 +842,12 @@ public interface QueryMapper {
             }
             case TIME -> {
                 log.trace("mapping {} to time", data);
-                return Instant.parse(String.valueOf(data));
+                return String.valueOf(data);
             }
             case YEAR -> {
-                log.trace("mapping {} to year", data);
-                Instant.now()
-                        .with(ChronoField.YEAR_OF_ERA, Long.parseLong(String.valueOf(data)))
-                        .with(ChronoField.MONTH_OF_YEAR, 0)
-                        .with(ChronoField.DAY_OF_YEAR, 0)
-                        .with(ChronoField.HOUR_OF_DAY, 0)
-                        .with(ChronoField.MINUTE_OF_DAY, 0)
-                        .with(ChronoField.SECOND_OF_DAY, 0);
+                final String tmp = String.valueOf(data);
+                log.trace("mapping {} to year", tmp);
+                return tmp.substring(0, tmp.indexOf('-'));
             }
         }
         log.warn("column type {} is not known", column.getColumnType());

@@ -28,11 +28,14 @@ ENV METADATA_USERNAME=root
 ENV METADATA_PASSWORD=dbrepo
 ENV BROKER_USERNAME=fda
 ENV BROKER_PASSWORD=fda
+ENV SEARCH_USERNAME=fda
+ENV SEARCH_PASSWORD=fda
+ENV LOG_LEVEL=debug
 
 WORKDIR /app
 
 COPY --from=build ./rest-service/target/rest-service-*.jar ./search-sync-agent.jar
 
-EXPOSE 9095
+EXPOSE 9050
 
 ENTRYPOINT ["java", "-Dlog4j2.formatMsgNoLookups=true",  "-jar", "./search-sync-agent.jar"]

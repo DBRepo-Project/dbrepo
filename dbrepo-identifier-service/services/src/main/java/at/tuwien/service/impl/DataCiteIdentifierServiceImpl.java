@@ -29,6 +29,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 
 import java.security.Principal;
+import java.util.LinkedList;
 import java.util.List;
 
 @Slf4j
@@ -58,6 +59,7 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Identifier> findAll(IdentifierTypeDto type, Long databaseId, Long queryId, Long viewId) {
         return identifierService.findAll(type, databaseId, queryId, viewId);
     }
@@ -74,7 +76,27 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
             throws IdentifierPublishingNotAllowedException, QueryNotFoundException, RemoteUnavailableException,
             IdentifierAlreadyExistsException, UserNotFoundException, DatabaseNotFoundException,
             IdentifierRequestException, ViewNotFoundException {
-        Identifier identifier = identifierService.create(data, principal, authorization);
+        final Identifier identifier = identifierService.create(data, principal, authorization);
+        /* https://stackoverflow.com/questions/55090541/spring-data-jpa-lombok-unsupportedoperationexception-during-saving */
+        if (identifier.getCreators() != null) {
+            identifier.setCreators(new LinkedList<>(identifier.getCreators()));
+        }
+        if (identifier.getTitles() != null) {
+            identifier.setTitles(new LinkedList<>(identifier.getTitles()));
+        }
+        if (identifier.getDescriptions() != null) {
+            identifier.setDescriptions(new LinkedList<>(identifier.getDescriptions()));
+        }
+        if (identifier.getFunders() != null) {
+            identifier.setFunders(new LinkedList<>(identifier.getFunders()));
+        }
+        if (identifier.getLicenses() != null) {
+            identifier.setLicenses(new LinkedList<>(identifier.getLicenses()));
+        }
+        if (identifier.getRelatedIdentifiers() != null) {
+            identifier.setRelatedIdentifiers(new LinkedList<>(identifier.getRelatedIdentifiers()));
+        }
+        /* end fix */
         RestTemplate restTemplate = restTemplateBuilder.build();
 
         HttpHeaders headers = new HttpHeaders();

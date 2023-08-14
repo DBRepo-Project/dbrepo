@@ -197,7 +197,7 @@ export default {
   },
   computed: {
     baseUrl () {
-      return location.protocol + '//' + location.host
+      return `${location.protocol}//${location.host}`
     },
     showIdentifierCard () {
       if (this.hasIdentifier) {

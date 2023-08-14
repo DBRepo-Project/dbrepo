@@ -11,8 +11,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
-import org.springframework.data.elasticsearch.annotations.Field;
-import org.springframework.data.elasticsearch.annotations.FieldType;
 
 import java.time.Instant;
 
@@ -34,7 +32,6 @@ public class DatabaseBriefDto {
 
     @NotBlank(message = "internal name is required")
     @JsonProperty("internal_name")
-    @Field(name = "internal_name")
     @Schema(example = "air_quality")
     private String internalName;
 
@@ -44,7 +41,6 @@ public class DatabaseBriefDto {
     private IdentifierBriefDto identifier;
 
     @JsonProperty("is_public")
-    @Field(name = "is_public")
     @Schema(example = "true")
     private Boolean isPublic;
 
@@ -61,7 +57,6 @@ public class DatabaseBriefDto {
     private UserBriefDto creator;
 
     @NotNull
-    @Field(type = FieldType.Date)
     @Schema(example = "2021-03-12T15:26:21Z")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant created;

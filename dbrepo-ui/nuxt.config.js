@@ -1,8 +1,10 @@
 import path from 'path'
 import colors from 'vuetify/es5/util/colors'
-import { api, icon, search, clientSecret, title, logo, version, defaultPublisher, doiUrl, baseUrl, clientId, uploadEndpoint, uploadPath } from './config'
+import { icon, clientSecret, title, logo, version, defaultPublisher, doiUrl, clientId, uploadPath, brokerUsername, brokerPassword, searchUsername, searchPassword } from './config'
 
 const proxy = {}
+
+const api = 'http://localhost'
 
 if (process.env.NODE_ENV === 'development') {
   proxy['/api'] = api
@@ -14,12 +16,24 @@ if (process.env.NODE_ENV === 'development') {
     }
   }
   proxy['/retrieve'] = {
-    target: search,
+    target: api + '/retrieve',
     changeOrigin: true,
     pathRewrite: {
       '^/retrieve': ''
     }
   }
+}
+
+const meta = [
+  { charset: 'utf-8' },
+  { name: 'viewport', content: 'width=device-width, initial-scale=1' }
+]
+
+const forceSsl = process.env.FORCE_SSL === 'true'
+
+if (forceSsl) {
+  console.info('Flag FORCE_SSL is set: http-equiv Content-Security-Policy header is set to upgrade-insecure-requests')
+  meta.push({ 'http-equiv': 'Content-Security-Policy', content: 'upgrade-insecure-requests' })
 }
 
 export default {
@@ -36,11 +50,7 @@ export default {
 
   head: {
     title,
-    meta: [
-      { charset: 'utf-8' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { hid: 'description', name: 'description', content: '' }
-    ],
+    meta,
     link: [
       { rel: 'icon', type: 'image/x-icon', href: icon }
     ]
@@ -93,9 +103,11 @@ export default {
     clientId,
     clientSecret,
     defaultPublisher,
+    brokerUsername,
+    brokerPassword,
+    searchUsername,
+    searchPassword,
     doiUrl,
-    baseUrl,
-    uploadEndpoint,
     uploadPath
   },
 

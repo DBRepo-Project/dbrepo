@@ -32,6 +32,8 @@ create table names
     id        bigint not null default nextval(`seq_names_id`),
     firstname varchar(255),
     lastname  varchar(255),
+    birth     year   null,
+    reminder  time   null,
     primary key (id),
     unique key (firstname, lastname)
 ) with system versioning;
@@ -149,12 +151,12 @@ VALUES (1, 'aardvark', 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 0, 4, 0, 0, 1, 1),
        (100, 'worm', 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 7),
        (101, 'wren', 0, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 2, 1, 0, 0, 2);
 
-INSERT INTO names (firstname, lastname)
-VALUES ('Moritz', 'Staudinger'),
-       ('Martin', 'Weise'),
-       ('Eva', 'Gergely'),
-       ('Cornelia', 'Michlits'),
-       ('Kirill', 'Stytsenko');
+INSERT INTO names (firstname, lastname, birth, reminder)
+VALUES ('Moritz', 'Staudinger', 1990, '11:22:33'),
+       ('Martin', 'Weise', 1991, null),
+       ('Eva', 'Gergely', null, null),
+       ('Cornelia', 'Michlits', null, null),
+       ('Kirill', 'Stytsenko', null, null);
 
 INSERT INTO likes (name_id, zoo_id)
 VALUES (1, 5),

@@ -20,7 +20,14 @@ const store = new Store({
     access: null,
     locale: null,
     messages: [],
-    ontologies: []
+    ontologies: [],
+    clientId: null,
+    clientSecret: null,
+    brokerUsername: null,
+    brokerPassword: null,
+    searchUsername: null,
+    searchPassword: null,
+    uploadPath: null
   },
   getters: {
     getToken: state => state.token,
@@ -32,7 +39,14 @@ const store = new Store({
     getAccess: state => state.access,
     getLocale: state => state.locale,
     getMessages: state => state.messages,
-    getOntologies: state => state.ontologies
+    getOntologies: state => state.ontologies,
+    getClientId: state => state.clientId,
+    getClientSecret: state => state.clientSecret,
+    getBrokerUsername: state => state.brokerUsername,
+    getBrokerPassword: state => state.brokerPassword,
+    getSearchUsername: state => state.searchUsername,
+    getSearchPassword: state => state.searchPassword,
+    getUploadPath: state => state.uploadPath
   },
   mutations: {
     SET_TOKEN (state, token) {
@@ -64,6 +78,27 @@ const store = new Store({
     },
     SET_ONTOLOGIES (state, ontologies) {
       state.ontologies = ontologies
+    },
+    SET_CLIENT_ID (state, clientId) {
+      state.clientId = clientId
+    },
+    SET_CLIENT_SECRET (state, clientSecret) {
+      state.clientSecret = clientSecret
+    },
+    SET_BROKER_USERNAME (state, brokerUsername) {
+      state.brokerUsername = brokerUsername
+    },
+    SET_BROKER_PASSWORD (state, brokerPassword) {
+      state.brokerPassword = brokerPassword
+    },
+    SET_SEARCH_USERNAME (state, searchUsername) {
+      state.searchUsername = searchUsername
+    },
+    SET_SEARCH_PASSWORD (state, searchPassword) {
+      state.searchPassword = searchPassword
+    },
+    SET_UPLOAD_PATH (state, uploadPath) {
+      state.uploadPath = uploadPath
     }
   },
   actions: {

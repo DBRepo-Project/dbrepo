@@ -1,10 +1,13 @@
 import axios from 'axios'
-import { baseURL } from '../config'
+
+const baseUrl = `${location.protocol}//${location.host}`
 
 const instance = axios.create({
   timeout: 10000,
   params: {},
-  baseURL
+  baseURL: baseUrl
 })
+
+console.debug('base url:', baseUrl)
 
 export default instance

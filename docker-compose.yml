@@ -77,6 +77,8 @@ services:
     container_name: dbrepo-upload-service
     hostname: upload-service
     image: tusproject/tusd:v1.12
+    command:
+      - "--base-path=/api/upload/files/"
     networks:
       core:
     env_file:
@@ -84,8 +86,31 @@ services:
     volumes:
       - upload-service-data:/data
       - "/tmp:/srv/tusd-data/data"
-    ports:
-      - "1080:1080"
+    logging:
+      driver: json-file
+
+  dbrepo-data-service:
+    restart: "no"
+    container_name: dbrepo-data-service
+    hostname: data-service
+    build: ./dbrepo-data-service
+    image: dbrepo-data-service
+    networks:
+      core:
+    env_file:
+      - .env
+    healthcheck:
+      test: wget -qO- localhost:9050/actuator/health/readiness | grep -q "UP" || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    depends_on:
+      dbrepo-metadata-db:
+        condition: service_healthy
+      dbrepo-data-db:
+        condition: service_healthy
+      dbrepo-authentication-service:
+        condition: service_healthy
     logging:
       driver: json-file
 
@@ -387,7 +412,10 @@ services:
     env_file:
       - .env
     healthcheck:
-      test: curl -s http://search-db:9200 > /dev/null || exit 1
+      test: curl -s localhost:9200/_cat/indices | grep -q "user" || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 12
     environment:
       discovery.type: "single-node"
       ES_JAVA_OPTS: "-Xms4g -Xmx4g"
@@ -414,7 +442,7 @@ services:
     env_file:
       - .env
     healthcheck:
-      test: wget -qO- localhost:9095/actuator/health/readiness | grep -q "UP" || exit 1
+      test: wget -qO- localhost:9050/actuator/health/readiness | grep -q "UP" || exit 1
       interval: 10s
       timeout: 5s
       retries: 12
@@ -422,6 +450,8 @@ services:
       dbrepo-metadata-db:
         condition: service_healthy
       dbrepo-search-db:
+        condition: service_started
+      dbrepo-authentication-service:
         condition: service_healthy
     logging:
       driver: json-file
@@ -455,7 +485,7 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./dbrepo.conf:/etc/nginx/conf.d/default.conf
+      - ./dbrepo-gateway-service/dbrepo.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       dbrepo-analyse-service:
         condition: service_healthy

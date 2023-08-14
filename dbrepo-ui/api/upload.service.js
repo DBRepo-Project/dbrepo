@@ -1,12 +1,14 @@
 import Vue from 'vue'
-import { uploadEndpoint, uploadPath } from '../config'
+import store from '@/store'
 const tus = require('tus-js-client')
 
 class UploadService {
   upload (file) {
     return new Promise((resolve, reject) => {
+      const endpoint = `${location.protocol}//${location.host}/api/upload/files`
+      console.debug('upload file to endpoint:', endpoint)
       const upload = new tus.Upload(file, {
-        endpoint: uploadEndpoint,
+        endpoint,
         retryDelays: [0, 3000, 5000, 10000, 20000],
         metadata: {
           filename: file.name,
@@ -22,7 +24,12 @@ class UploadService {
         onSuccess () {
           console.info('Download %s from %s', upload.file.name, upload.url)
           Vue.$toast.success('Successfully uploaded file')
-          upload.path = (uploadPath || '') + upload.url.replace(uploadEndpoint, '')
+          const matches = upload.url.match(/files\/([a-z0-9]+)/gi)
+          if (matches.length !== 1) {
+            console.error('Failed to match file name', matches)
+            reject(new Error('Failed to match file name'))
+          }
+          upload.path = (store().state.uploadPath || '') + matches[0].replace('files/', '')
           resolve(upload)
         }
       })

@@ -8,6 +8,7 @@ before_script:
   - "docker logout"
   - "docker logout ghcr.io"
   - "docker logout registry.hub.docker.com"
+  - "docker logout ${AZURE_REPO}"
 
 variables:
   HOSTALIASES: ./hosts
@@ -58,6 +59,13 @@ build-database-service:
   script:
     - "make build-database-service"
 
+build-data-service:
+  stage: build-backend
+  needs:
+    - build-metadata-db
+  script:
+    - "make build-data-service"
+
 build-query-service:
   stage: build-backend
   needs:
@@ -100,11 +108,6 @@ build-search-sync-agent:
   stage: build-backend
   script:
     - "make build-search-sync-agent"
-
-build-data-service:
-  stage: build-backend
-  script:
-    - "make build-data-service"
 
 test-identifier-service:
   stage: test-backend
@@ -701,6 +704,7 @@ release-latest:
   script:
     - cp .env.unix.example .env
     - docker login -p "${DOCKER_PASSWORD}" -u "${DOCKER_USERNAME}"
+    - docker login "${AZURE_REPO}" -p "${AZURE_PASSWORD}" -u "${AZURE_USERNAME}"
     - TAG=latest make release
 
 release-version:
@@ -728,4 +732,5 @@ release-version:
   script:
     - cp .env.unix.example .env
     - docker login -p "${DOCKER_PASSWORD}" -u "${DOCKER_USERNAME}"
+    - docker login "${AZURE_REPO}" -p "${AZURE_PASSWORD}" -u "${AZURE_USERNAME}"
     - TAG=1.3 make release

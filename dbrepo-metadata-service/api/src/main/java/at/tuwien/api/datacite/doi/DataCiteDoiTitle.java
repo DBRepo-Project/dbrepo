@@ -5,6 +5,8 @@ import lombok.*;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.extern.jackson.Jacksonized;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
 
 import java.io.Serializable;
 
@@ -18,8 +20,10 @@ import java.io.Serializable;
 public class DataCiteDoiTitle implements Serializable {
 
     @NotBlank
+    @Field(name="title", type = FieldType.Text)
     private String title;
 
+    @Field(name="title_type", type = FieldType.Keyword)
     private Type titleType;
 
     private String lang;

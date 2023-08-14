@@ -52,7 +52,7 @@
                   Database License
                 </v-list-item-title>
                 <v-list-item-content>
-                  <a :href="database.identifier.license.uri">{{ database.identifier.license.identifier }}</a>
+                  <a :href="database.identifier.licenses[0].uri">{{ database.identifier.licenses[0].identifier }}</a>
                 </v-list-item-content>
               </div>
             </v-list-item-content>
