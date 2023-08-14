@@ -699,4 +699,64 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
+    @Hidden
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiErrorDto> handle(AccessDeniedException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.FORBIDDEN)
+                .message(e.getLocalizedMessage())
+                .code("error.identifier.accessdenied")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
+    @Hidden
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler(IdentifierAlreadyExistsException.class)
+    public ResponseEntity<ApiErrorDto> handle(IdentifierAlreadyExistsException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.CONFLICT)
+                .message(e.getLocalizedMessage())
+                .code("error.identifier.exists")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
+    @Hidden
+    @ResponseStatus(HttpStatus.PRECONDITION_FAILED)
+    @ExceptionHandler(IdentifierAlreadyPublishedException.class)
+    public ResponseEntity<ApiErrorDto> handle(IdentifierAlreadyPublishedException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.PRECONDITION_FAILED)
+                .message(e.getLocalizedMessage())
+                .code("error.identifier.published")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
+    @Hidden
+    @ResponseStatus(HttpStatus.NOT_ACCEPTABLE)
+    @ExceptionHandler(IdentifierPublishingNotAllowedException.class)
+    public ResponseEntity<ApiErrorDto> handle(IdentifierPublishingNotAllowedException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.NOT_ACCEPTABLE)
+                .message(e.getLocalizedMessage())
+                .code("error.identifier.publish")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
+    @Hidden
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(IdentifierRequestException.class)
+    public ResponseEntity<ApiErrorDto> handle(IdentifierRequestException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.BAD_REQUEST)
+                .message(e.getLocalizedMessage())
+                .code("error.identifier.requestinvalid")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
 }
