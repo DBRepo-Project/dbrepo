@@ -687,4 +687,16 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
+    @Hidden
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(BannerMessageNotFoundException.class)
+    public ResponseEntity<ApiErrorDto> handle(BannerMessageNotFoundException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.NOT_FOUND)
+                .message(e.getLocalizedMessage())
+                .code("error.banner.notfound")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
 }
