@@ -52,6 +52,16 @@ public class ViewServiceImpl extends HibernateConnector implements ViewService {
     }
 
     @Override
+    public View findById(Long id) throws ViewNotFoundException {
+        final Optional<View> optional = viewRepository.findById(id);
+        if (optional.isEmpty()) {
+            log.error("Failed to find view with id: {}", id);
+            throw new ViewNotFoundException("Failed to find view with id: " + id);
+        }
+        return optional.get();
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public List<View> findAll(Long databaseId, Principal principal) throws UserNotFoundException {
         if (principal == null) {

@@ -23,6 +23,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Log4j2
 @Service
@@ -46,6 +47,16 @@ public class AccessServiceImpl extends HibernateConnector implements AccessServi
     @Transactional(readOnly = true)
     public List<DatabaseAccess> list(Long databaseId) throws NotAllowedException {
         return databaseAccessRepository.findByHdbid(databaseId);
+    }
+
+    @Override
+    public DatabaseAccess find(Long databaseId, UUID userId) throws AccessDeniedException {
+        final Optional<DatabaseAccess> optional = databaseAccessRepository.findByHdbidAndHuserid(databaseId, userId);
+        if (optional.isEmpty()) {
+            log.error("Failed to find access for user with id {}", userId);
+            throw new AccessDeniedException("Failed to find access");
+        }
+        return optional.get();
     }
 
     @Override

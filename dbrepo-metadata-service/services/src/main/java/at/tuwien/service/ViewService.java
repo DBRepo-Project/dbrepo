@@ -9,6 +9,8 @@ import java.util.List;
 
 public interface ViewService {
 
+    View findById(Long id) throws ViewNotFoundException;
+
     /**
      * Find all views by database id.
      *

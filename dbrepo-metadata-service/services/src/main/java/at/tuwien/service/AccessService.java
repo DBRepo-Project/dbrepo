@@ -6,10 +6,21 @@ import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.exception.*;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface AccessService {
 
     List<DatabaseAccess> list(Long databaseId) throws NotAllowedException;
+
+    /**
+     * Finds database access by given database id and user id.
+     *
+     * @param databaseId The database id.
+     * @param userId     The user id.
+     * @return The database access.
+     * @throws AccessDeniedException The access does not exist.
+     */
+    DatabaseAccess find(Long databaseId, UUID userId) throws AccessDeniedException;
 
     /**
      * Checks if user with username has access to database with given id.
