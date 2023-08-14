@@ -603,4 +603,88 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
+    @Hidden
+    @ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
+    @ExceptionHandler(ForeignUserException.class)
+    public ResponseEntity<ApiErrorDto> handle(ForeignUserException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.METHOD_NOT_ALLOWED)
+                .message(e.getLocalizedMessage())
+                .code("error.user.foreignpermission")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
+    @Hidden
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(RealmNotFoundException.class)
+    public ResponseEntity<ApiErrorDto> handle(RealmNotFoundException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.NOT_FOUND)
+                .message(e.getLocalizedMessage())
+                .code("error.user.realmnotfound")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
+    @Hidden
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ExceptionHandler(RemoteUnavailableException.class)
+    public ResponseEntity<ApiErrorDto> handle(RemoteUnavailableException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.NO_CONTENT)
+                .message(e.getLocalizedMessage())
+                .code("error.user.remoteunavailable")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
+    @Hidden
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(RoleNotFoundException.class)
+    public ResponseEntity<ApiErrorDto> handle(RoleNotFoundException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.NOT_FOUND)
+                .message(e.getLocalizedMessage())
+                .code("error.user.rolenotfound")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
+    @Hidden
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler(UserAlreadyExistsException.class)
+    public ResponseEntity<ApiErrorDto> handle(UserAlreadyExistsException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.CONFLICT)
+                .message(e.getLocalizedMessage())
+                .code("error.user.alreadyexists")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
+    @Hidden
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(UserAttributeNotFoundException.class)
+    public ResponseEntity<ApiErrorDto> handle(UserAttributeNotFoundException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.NOT_FOUND)
+                .message(e.getLocalizedMessage())
+                .code("error.user.attributenotfound")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
+    @Hidden
+    @ResponseStatus(HttpStatus.EXPECTATION_FAILED)
+    @ExceptionHandler(UserEmailAlreadyExistsException.class)
+    public ResponseEntity<ApiErrorDto> handle(UserEmailAlreadyExistsException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.EXPECTATION_FAILED)
+                .message(e.getLocalizedMessage())
+                .code("error.user.emailexists")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
 }
