@@ -7,6 +7,7 @@ import at.tuwien.api.database.table.columns.concepts.UnitSaveDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.api.semantics.EntityDto;
 import at.tuwien.api.semantics.TableColumnEntityDto;
+import at.tuwien.exception.DatabaseNotFoundException;
 import at.tuwien.exception.QueryMalformedException;
 import at.tuwien.exception.TableColumnNotFoundException;
 import at.tuwien.exception.TableNotFoundException;
@@ -161,7 +162,7 @@ public class SemanticsEndpoint {
     })
     public ResponseEntity<List<EntityDto>> analyseTable(@NotNull @PathVariable("databaseId") Long databaseId,
                                                         @NotNull @PathVariable("tableId") Long tableId)
-            throws TableNotFoundException, QueryMalformedException {
+            throws TableNotFoundException, QueryMalformedException, DatabaseNotFoundException {
         log.debug("endpoint analyse table semantics, databaseId={}, tableId={}", databaseId, tableId);
         final List<EntityDto> dtos = entityService.suggestTableSemantics(databaseId, tableId);
         log.trace("analyse table semantics resulted in dtos {}", dtos);

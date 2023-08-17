@@ -5,6 +5,7 @@ import at.tuwien.api.semantics.TableColumnEntityDto;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.semantics.Ontology;
+import at.tuwien.exception.DatabaseNotFoundException;
 import at.tuwien.exception.QueryMalformedException;
 import at.tuwien.exception.TableColumnNotFoundException;
 import at.tuwien.exception.TableNotFoundException;
@@ -15,6 +16,7 @@ import at.tuwien.repository.mdb.TableRepository;
 import at.tuwien.service.EntityService;
 import at.tuwien.service.OntologyService;
 import at.tuwien.service.QueryService;
+import at.tuwien.service.TableService;
 import lombok.extern.log4j.Log4j2;
 import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.RDFNode;
@@ -36,18 +38,18 @@ public class EntityServiceImpl implements EntityService {
     private final OntologyMapper ontologyMapper;
     private final OntologyRepository ontologyRepository;
     private final OntologyService ontologyService;
-    private final TableRepository tableRepository;
+    private final TableService tableService;
     private final TableColumnRepository tableColumnRepository;
 
     @Autowired
     public EntityServiceImpl(OntologyRepository ontologyRepository, OntologyMapper ontologyMapper,
-                             OntologyService ontologyService, TableRepository tableRepository,
+                             OntologyService ontologyService, TableService tableService,
                              TableColumnRepository tableColumnRepository) {
         this.ontologyMapper = ontologyMapper;
         this.ontologyRepository = ontologyRepository;
         this.dataset = DatasetFactory.create();
         this.ontologyService = ontologyService;
-        this.tableRepository = tableRepository;
+        this.tableService = tableService;
         this.tableColumnRepository = tableColumnRepository;
     }
 
@@ -110,8 +112,8 @@ public class EntityServiceImpl implements EntityService {
     @Override
     @Transactional(readOnly = true)
     public List<EntityDto> suggestTableSemantics(Long databaseId, Long tableId) throws TableNotFoundException,
-            QueryMalformedException {
-        final Table table = find(databaseId, tableId);
+            QueryMalformedException, DatabaseNotFoundException {
+        final Table table = tableService.find(databaseId, tableId);
         final List<EntityDto> suggestions = new LinkedList<>();
         for (Ontology ontology : ontologyService.findAll()) {
             suggestions.addAll(findByLabel(ontology, table.getName(), 3));
