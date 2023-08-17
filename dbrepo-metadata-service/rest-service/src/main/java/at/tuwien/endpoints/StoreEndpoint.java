@@ -186,11 +186,9 @@ public class StoreEndpoint {
         final QueryDto dto = queryMapper.queryToQueryDto(query);
         final User creator = userService.findByUsername(query.getCreatedBy());
         dto.setCreator(userMapper.userToUserDto(creator));
-        try {
-            final Identifier identifier = identifierService.findByDatabaseIdAndQueryId(databaseId, queryId);
-            dto.setIdentifier(identifierMapper.identifierToIdentifierDto(identifier));
-        } catch (IdentifierNotFoundException e) {
-            /* ignore */
+        final List<Identifier> identifiers = identifierService.findByDatabaseIdAndQueryId(databaseId, queryId);
+        if (!identifiers.isEmpty()) {
+            dto.setIdentifier(identifierMapper.identifierToIdentifierDto(identifiers.get(0)));
         }
         log.trace("find query resulted in query {}", dto);
         return ResponseEntity.ok(dto);

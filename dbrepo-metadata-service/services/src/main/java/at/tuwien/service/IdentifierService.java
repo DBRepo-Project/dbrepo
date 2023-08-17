@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public interface IdentifierService {
@@ -43,7 +44,7 @@ public interface IdentifierService {
      *
      * @param databaseId The database id.
      * @param queryId    The query id.
-     * @return The identifier, if found.
+     * @return The identifiers, if found.
      */
     List<Identifier> findByDatabaseIdAndQueryId(Long databaseId, Long queryId);
 

@@ -85,6 +85,23 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
+    public void find_succeeds() throws DatabaseNotFoundException {
+
+        /* test */
+        final Database response = databaseService.find(DATABASE_1_ID);
+        assertEquals(DATABASE_1_ID, response.getId());
+    }
+
+    @Test
+    public void find_fails() {
+
+        /* test */
+        assertThrows(DatabaseNotFoundException.class, () -> {
+            databaseService.find(9999L);
+        });
+    }
+
+    @Test
     public void create_succeeds() throws Exception {
 
         /* mock */

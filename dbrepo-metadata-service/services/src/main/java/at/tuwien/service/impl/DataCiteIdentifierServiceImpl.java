@@ -71,6 +71,16 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
     }
 
     @Override
+    public List<Identifier> findAllDatabaseIdentifiers() {
+        return identifierService.findAllDatabaseIdentifiers();
+    }
+
+    @Override
+    public List<Identifier> findAllSubsetIdentifiers() {
+        return identifierService.findAllSubsetIdentifiers();
+    }
+
+    @Override
     @Transactional(rollbackFor = {Exception.class})
     public Identifier create(IdentifierSaveDto data, Principal principal, String authorization)
             throws IdentifierPublishingNotAllowedException, QueryNotFoundException, RemoteUnavailableException,
@@ -137,6 +147,16 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
         }
 
         return identifier;
+    }
+
+    @Override
+    public List<Identifier> findAll() {
+        return identifierService.findAll();
+    }
+
+    @Override
+    public List<Identifier> findAll(Long databaseId) {
+        return identifierService.findAll(databaseId);
     }
 
     @Override
