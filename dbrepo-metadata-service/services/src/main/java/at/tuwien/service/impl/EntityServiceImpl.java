@@ -109,17 +109,6 @@ public class EntityServiceImpl implements EntityService {
 
     @Override
     @Transactional(readOnly = true)
-    public Table find(Long databaseId, Long tableId) throws TableNotFoundException {
-        final Optional<Table> optional = tableRepository.findByDatabaseIdAndId(databaseId, tableId);
-        if (optional.isEmpty()) {
-            log.error("Failed to find table with id {} in database with id {}", tableId, databaseId);
-            throw new TableNotFoundException("Failed to find table with id " + tableId + " in database with id " + databaseId);
-        }
-        return optional.get();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
     public List<EntityDto> suggestTableSemantics(Long databaseId, Long tableId) throws TableNotFoundException,
             QueryMalformedException {
         final Table table = find(databaseId, tableId);
