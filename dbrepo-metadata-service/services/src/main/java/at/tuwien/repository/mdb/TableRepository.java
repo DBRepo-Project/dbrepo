@@ -16,6 +16,8 @@ public interface TableRepository extends JpaRepository<Table, Long> {
     @Query(value = "select t from Table t where t.database.id = :databaseId and t.id = :tableId")
     Optional<Table> find(@Param("databaseId") Long databaseId, @Param("tableId") Long tableId);
 
+    Optional<Table> findByDatabaseIdAndId(Long databaseId, Long tableId);
+
     /**
      * Finds all tables by database.
      *
