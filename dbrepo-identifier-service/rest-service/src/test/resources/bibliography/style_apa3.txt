@@ -1,1 +1,0 @@
-M., Mustermann, M., Mustermann & M., Mustermann. (2022). Norwegian weather data. Norwegian Government. http://localhost:3000/pid/3

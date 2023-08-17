@@ -1,7 +1,0 @@
-@misc{dbrepo2022,
-  author = {},
-  title = {Sweden weather data},
-  url = {\url{http://localhost:3000/pid/4}},
-  month = {7},
-  year = {2022}
-}

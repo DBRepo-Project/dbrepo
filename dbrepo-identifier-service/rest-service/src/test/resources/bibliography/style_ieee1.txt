@@ -1,1 +1,0 @@
-[1] M. Mustermann, “Austrian weather data“, Austrian Government, 2022, Available: http://localhost:3000/pid/1.
