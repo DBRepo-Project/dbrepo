@@ -3,10 +3,7 @@ package at.tuwien.service;
 import at.tuwien.api.semantics.EntityDto;
 import at.tuwien.api.semantics.TableColumnEntityDto;
 import at.tuwien.entities.semantics.Ontology;
-import at.tuwien.exception.DatabaseNotFoundException;
-import at.tuwien.exception.QueryMalformedException;
-import at.tuwien.exception.TableColumnNotFoundException;
-import at.tuwien.exception.TableNotFoundException;
+import at.tuwien.exception.*;
 
 import java.util.List;
 
@@ -17,6 +14,9 @@ public interface EntityService {
     List<EntityDto> findByLabel(Ontology ontology, String label, Integer limit) throws QueryMalformedException;
 
     List<EntityDto> findByUri(Ontology ontology, String uri) throws QueryMalformedException;
+
+    EntityDto findOneByUri(Ontology ontology, String uri) throws QueryMalformedException,
+            SemanticEntityNotFoundException;
 
     List<EntityDto> suggestTableSemantics(Long databaseId, Long tableId) throws TableNotFoundException,
             QueryMalformedException, DatabaseNotFoundException;

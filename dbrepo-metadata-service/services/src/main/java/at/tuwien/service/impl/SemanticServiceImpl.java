@@ -6,14 +6,15 @@ import at.tuwien.entities.database.table.columns.TableColumnConcept;
 import at.tuwien.entities.database.table.columns.TableColumnUnit;
 import at.tuwien.entities.semantics.Ontology;
 import at.tuwien.exception.ConceptNotFoundException;
+import at.tuwien.exception.QueryMalformedException;
 import at.tuwien.exception.SemanticEntityNotFoundException;
 import at.tuwien.exception.UnitNotFoundException;
-import at.tuwien.gateway.SemanticServiceGateway;
 import at.tuwien.mapper.OntologyMapper;
 import at.tuwien.mapper.TableMapper;
 import at.tuwien.repository.mdb.*;
 import at.tuwien.repository.sdb.ConceptIdxRepository;
 import at.tuwien.repository.sdb.UnitIdxRepository;
+import at.tuwien.service.EntityService;
 import at.tuwien.service.SemanticService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,12 +37,12 @@ public class SemanticServiceImpl implements SemanticService {
     private final OntologyRepository ontologyRepository;
     private final TableColumnUnitRepository tableColumnUnitRepository;
     private final TableColumnConceptRepository tableColumnConceptRepository;
-    private final SemanticServiceGateway semanticServiceGateway;
+    private final EntityService entityService;
 
     @Autowired
     public SemanticServiceImpl(TableMapper tableMapper, UnitRepository unitRepository,
                                ConceptRepository conceptRepository, OntologyRepository ontologyRepository,
-                               SemanticServiceGateway semanticServiceGateway, TableColumnConceptRepository tableColumnConceptRepository,
+                               EntityService entityService, TableColumnConceptRepository tableColumnConceptRepository,
                                TableColumnUnitRepository tableColumnUnitRepository, OntologyMapper ontologyMapper,
                                UnitIdxRepository unitIdxRepository, ConceptIdxRepository conceptIdxRepository) {
         this.tableMapper = tableMapper;
@@ -53,7 +54,7 @@ public class SemanticServiceImpl implements SemanticService {
         this.conceptRepository = conceptRepository;
         this.tableColumnUnitRepository = tableColumnUnitRepository;
         this.tableColumnConceptRepository = tableColumnConceptRepository;
-        this.semanticServiceGateway = semanticServiceGateway;
+        this.entityService = entityService;
     }
 
     @Override
@@ -115,7 +116,7 @@ public class SemanticServiceImpl implements SemanticService {
     }
 
     @Override
-    public TableColumnConcept saveConcept(String uri, String authorization) throws SemanticEntityNotFoundException {
+    public TableColumnConcept saveConcept(String uri) throws QueryMalformedException, SemanticEntityNotFoundException {
         /* check compatible ontologies */
         final Ontology ontology = getCompatibleOntology(uri);
         if (ontology == null) {
@@ -124,7 +125,8 @@ public class SemanticServiceImpl implements SemanticService {
                     .build();
         }
         /* save in metadata database */
-        final TableColumnConcept concept = tableMapper.entityDtoToTableColumnConcept(semanticServiceGateway.getEntity(ontology.getId(), uri, authorization));
+        final TableColumnConcept concept = tableMapper.entityDtoToTableColumnConcept(
+                entityService.findOneByUri(ontology, uri));
         log.info("Saved concept with uri {} in metadata database", concept.getUri());
         /* save in open search database */
         conceptIdxRepository.save(tableMapper.tableColumnConceptToConceptDto(concept));
@@ -133,7 +135,7 @@ public class SemanticServiceImpl implements SemanticService {
     }
 
     @Override
-    public TableColumnUnit saveUnit(String uri, String authorization) throws SemanticEntityNotFoundException {
+    public TableColumnUnit saveUnit(String uri) throws SemanticEntityNotFoundException, QueryMalformedException {
         final Ontology ontology = getCompatibleOntology(uri);
         if (ontology == null) {
             return TableColumnUnit.builder()
@@ -141,7 +143,7 @@ public class SemanticServiceImpl implements SemanticService {
                     .build();
         }
         /* save in metadata database */
-        final TableColumnUnit unit = tableMapper.entityDtoToTableColumnUnit(semanticServiceGateway.getEntity(ontology.getId(), uri, authorization));
+        final TableColumnUnit unit = tableMapper.entityDtoToTableColumnUnit(entityService.findOneByUri(ontology, uri));
         log.info("Saved unit with uri {} in metadata database", unit.getUri());
         /* save in open search database */
         unitIdxRepository.save(tableMapper.tableColumnUnitToUnitDto(unit));

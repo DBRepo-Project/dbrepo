@@ -5,6 +5,7 @@ import at.tuwien.api.database.table.columns.concepts.UnitSaveDto;
 import at.tuwien.entities.database.table.columns.TableColumnConcept;
 import at.tuwien.entities.database.table.columns.TableColumnUnit;
 import at.tuwien.exception.ConceptNotFoundException;
+import at.tuwien.exception.QueryMalformedException;
 import at.tuwien.exception.SemanticEntityNotFoundException;
 import at.tuwien.exception.UnitNotFoundException;
 
@@ -42,19 +43,17 @@ public interface SemanticService {
      * Saves a concept with uri and authorization information for retrieving information from the semantics service.
      *
      * @param uri           The uri.
-     * @param authorization The authorization information.
      * @return The saved column concept.
      * @throws SemanticEntityNotFoundException The semantic information could not be found.
      */
-    TableColumnConcept saveConcept(String uri, String authorization) throws SemanticEntityNotFoundException;
+    TableColumnConcept saveConcept(String uri) throws SemanticEntityNotFoundException, QueryMalformedException;
 
     /**
      * Saves a unit with uri and authorization information for retrieving information from the semantics service.
      *
      * @param uri           The uri.
-     * @param authorization The authorization information.
      * @return The saved column unit.
      * @throws SemanticEntityNotFoundException The semantic information could not be found.
      */
-    TableColumnUnit saveUnit(String uri, String authorization) throws SemanticEntityNotFoundException;
+    TableColumnUnit saveUnit(String uri) throws SemanticEntityNotFoundException, QueryMalformedException;
 }

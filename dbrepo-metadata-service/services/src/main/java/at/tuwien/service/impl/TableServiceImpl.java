@@ -263,7 +263,7 @@ public class TableServiceImpl extends HibernateConnector implements TableService
     public TableColumn update(Long databaseId, Long tableId, Long columnId,
                               ColumnSemanticsUpdateDto updateDto, String authorization)
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
-            SemanticEntityNotFoundException {
+            SemanticEntityNotFoundException, QueryMalformedException {
         final Table table = findById(databaseId, tableId);
         final TableColumn column = findColumn(table, columnId);
         /* assign */
@@ -272,7 +272,7 @@ public class TableServiceImpl extends HibernateConnector implements TableService
                 column.setUnit(semanticService.findUnit(updateDto.getUnitUri()));
             } catch (UnitNotFoundException e) {
                 log.warn("Unit with uri {} not found in metadata database", updateDto.getUnitUri());
-                column.setUnit(semanticService.saveUnit(updateDto.getUnitUri(), authorization));
+                column.setUnit(semanticService.saveUnit(updateDto.getUnitUri()));
             }
         } else {
             column.setUnit(null);
@@ -283,7 +283,7 @@ public class TableServiceImpl extends HibernateConnector implements TableService
                 column.setConcept(semanticService.findConcept(updateDto.getConceptUri()));
             } catch (ConceptNotFoundException e) {
                 log.warn("Concept with uri {} not found in metadata database", updateDto.getConceptUri());
-                column.setConcept(semanticService.saveConcept(updateDto.getConceptUri(), authorization));
+                column.setConcept(semanticService.saveConcept(updateDto.getConceptUri()));
             }
         } else {
             column.setConcept(null);

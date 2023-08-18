@@ -114,5 +114,6 @@ public interface TableService {
     TableColumn update(Long databaseId, Long tableId, Long columnId,
                        ColumnSemanticsUpdateDto updateDto, String authorization)
             throws TableNotFoundException, DatabaseNotFoundException, ContainerNotFoundException,
-            TableMalformedException, SemanticEntityPersistException, SemanticEntityNotFoundException;
+            TableMalformedException, SemanticEntityPersistException, SemanticEntityNotFoundException,
+            QueryMalformedException;
 }

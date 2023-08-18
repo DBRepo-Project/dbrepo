@@ -5,10 +5,7 @@ import at.tuwien.api.semantics.TableColumnEntityDto;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.semantics.Ontology;
-import at.tuwien.exception.DatabaseNotFoundException;
-import at.tuwien.exception.QueryMalformedException;
-import at.tuwien.exception.TableColumnNotFoundException;
-import at.tuwien.exception.TableNotFoundException;
+import at.tuwien.exception.*;
 import at.tuwien.mapper.OntologyMapper;
 import at.tuwien.repository.mdb.OntologyRepository;
 import at.tuwien.repository.mdb.TableColumnRepository;
@@ -107,6 +104,17 @@ public class EntityServiceImpl implements EntityService {
             log.error("Failed to parse query: {}", e.getMessage());
             throw new QueryMalformedException("Failed to parse query: " + e.getMessage(), e);
         }
+    }
+
+    @Override
+    public EntityDto findOneByUri(Ontology ontology, String uri) throws QueryMalformedException,
+            SemanticEntityNotFoundException {
+        final List<EntityDto> results = findByUri(ontology, uri);
+        if (results.size() != 1) {
+            log.error("None or multiple entities found for uri {}", uri);
+            throw new SemanticEntityNotFoundException("None or multiple entities found for uri " + uri);
+        }
+        return results.get(0);
     }
 
     @Override
