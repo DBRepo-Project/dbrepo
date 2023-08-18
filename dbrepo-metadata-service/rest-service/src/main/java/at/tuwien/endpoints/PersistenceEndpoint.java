@@ -91,8 +91,11 @@ public class PersistenceEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<?> find(@Valid @PathVariable("pid") Long pid,
-                                  @RequestHeader(HttpHeaders.ACCEPT) String accept) throws IdentifierNotFoundException,
-            QueryNotFoundException, RemoteUnavailableException, IdentifierRequestException {
+                                  @RequestHeader(HttpHeaders.ACCEPT) String accept,
+                                  @NotNull Principal principal) throws IdentifierNotFoundException,
+            QueryNotFoundException, RemoteUnavailableException, IdentifierRequestException, UserNotFoundException,
+            QueryStoreException, TableMalformedException, DatabaseConnectionException, QueryMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException {
         log.debug("endpoint find identifier, pid={}, accept={}", pid, accept);
         final Identifier identifier = identifierService.find(pid);
         log.info("Found persistent identifier with id {}", identifier.getId());
@@ -109,7 +112,7 @@ public class PersistenceEndpoint {
                     log.trace("accept header matches csv");
                     final InputStreamResource resource2;
                     try {
-                        resource2 = identifierService.exportResource(pid);
+                        resource2 = identifierService.exportResource(pid, principal);
                         log.debug("find identifier resulted in resource {}", resource2);
                         return ResponseEntity.ok(resource2);
                     } catch (IdentifierRequestException e) {
@@ -183,10 +186,10 @@ public class PersistenceEndpoint {
     })
     public ResponseEntity<IdentifierDto> update(@NotNull @PathVariable("id") Long id,
                                                 @NotNull @Valid @RequestBody IdentifierSaveDto data,
-                                                @NotNull @RequestHeader(name = "Authorization") String authorization,
                                                 @NotNull Principal principal)
             throws IdentifierNotFoundException, IdentifierRequestException, UserNotFoundException, NotAllowedException,
-            QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException {
+            QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException, QueryStoreException,
+            DatabaseConnectionException, ImageNotSupportedException {
         log.debug("endpoint update identifier, id={}, data={}", id, data);
         final Identifier identifier = identifierService.find(id);
         final User user = userService.findByUsername(principal.getName());
@@ -199,7 +202,7 @@ public class PersistenceEndpoint {
             }
         }
         /* check */
-        final IdentifierDto dto = identifierMapper.identifierToIdentifierDto(identifierService.update(id, data, principal, authorization));
+        final IdentifierDto dto = identifierMapper.identifierToIdentifierDto(identifierService.update(id, data, principal));
         log.debug("update identifier resulted in dto={}", dto);
         return ResponseEntity.accepted()
                 .body(dto);

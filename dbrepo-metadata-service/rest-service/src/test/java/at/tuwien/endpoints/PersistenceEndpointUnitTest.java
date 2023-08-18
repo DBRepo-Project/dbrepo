@@ -70,7 +70,9 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithAnonymousUser
     public void find_json0_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierRequestException, IOException {
+            RemoteUnavailableException, IdentifierRequestException, IOException, UserNotFoundException,
+            QueryStoreException, TableMalformedException, DatabaseConnectionException, QueryMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException {
         final String accept = "application/json";
         final IdentifierDto compare = objectMapper.readValue(FileUtils.readFileToString(new File("src/test/resources/json/metadata0.json"), StandardCharsets.UTF_8), IdentifierDto.class);
 
@@ -79,7 +81,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(IDENTIFIER_4);
 
         /* test */
-        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_4_ID, accept);
+        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_4_ID, accept, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final IdentifierDto body = (IdentifierDto) response.getBody();
         assertNotNull(body);
@@ -102,7 +104,9 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithAnonymousUser
     public void find_json1_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierRequestException, IOException {
+            RemoteUnavailableException, IdentifierRequestException, IOException, UserNotFoundException,
+            QueryStoreException, TableMalformedException, DatabaseConnectionException, QueryMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException {
         final String accept = "application/json";
         final IdentifierDto compare = objectMapper.readValue(FileUtils.readFileToString(new File("src/test/resources/json/metadata1.json"), StandardCharsets.UTF_8), IdentifierDto.class);
 
@@ -111,7 +115,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(IDENTIFIER_1);
 
         /* test */
-        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_1_ID, accept);
+        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_1_ID, accept, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final IdentifierDto body = (IdentifierDto) response.getBody();
         assertNotNull(body);
@@ -154,7 +158,9 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithAnonymousUser
     public void find_csv_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierRequestException, IOException {
+            RemoteUnavailableException, IdentifierRequestException, IOException, UserNotFoundException,
+            QueryStoreException, TableMalformedException, DatabaseConnectionException, QueryMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException {
         final String accept = "text/csv";
         final InputStreamResource compare = new InputStreamResource(FileUtils.openInputStream(new File("src/test/resources/csv/keyboard.csv")));
         final InputStreamResource mock = new InputStreamResource(FileUtils.openInputStream(new File("src/test/resources/csv/keyboard.csv")));
@@ -162,11 +168,11 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
         /* mock */
         when(identifierService.find(IDENTIFIER_1_ID))
                 .thenReturn(IDENTIFIER_1);
-        when(identifierService.exportResource(IDENTIFIER_1_ID))
+        when(identifierService.exportResource(IDENTIFIER_1_ID, USER_1_PRINCIPAL))
                 .thenReturn(mock);
 
         /* test */
-        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_1_ID, accept);
+        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_1_ID, accept, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final InputStreamResource body = (InputStreamResource) response.getBody();
         assertNotNull(body);
@@ -176,7 +182,9 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     @Test
     @Disabled("not testable with xml")
     public void find_xml0_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierRequestException, IOException {
+            RemoteUnavailableException, IdentifierRequestException, IOException, UserNotFoundException,
+            QueryStoreException, TableMalformedException, DatabaseConnectionException, QueryMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException {
         final String accept = "text/xml";
         final InputStreamResource compare = new InputStreamResource(FileUtils.openInputStream(new File("src/test/resources/xml/metadata0.xml")));
 
@@ -185,7 +193,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(IDENTIFIER_1);
 
         /* test */
-        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_1_ID, accept);
+        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_1_ID, accept, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final InputStreamResource body = (InputStreamResource) response.getBody();
         assertNotNull(body);
@@ -195,7 +203,9 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     @Test
     @Disabled("not testable with xml")
     public void find_xml1_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierRequestException, IOException {
+            RemoteUnavailableException, IdentifierRequestException, IOException, UserNotFoundException,
+            QueryStoreException, TableMalformedException, DatabaseConnectionException, QueryMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException {
         final String accept = "text/xml";
         final InputStreamResource compare = new InputStreamResource(FileUtils.openInputStream(new File("src/test/resources/xml/metadata1.xml")));
 
@@ -204,7 +214,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(IDENTIFIER_1);
 
         /* test */
-        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_1_ID, accept);
+        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_1_ID, accept, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final InputStreamResource body = (InputStreamResource) response.getBody();
         assertNotNull(body);
@@ -215,7 +225,9 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithAnonymousUser
     public void find_bibliography_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierRequestException, IOException {
+            RemoteUnavailableException, IdentifierRequestException, IOException, UserNotFoundException,
+            QueryStoreException, TableMalformedException, DatabaseConnectionException, QueryMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException {
         final String accept = "text/bibliography";
         final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_apa1.txt"),
                 StandardCharsets.UTF_8);
@@ -227,7 +239,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(IDENTIFIER_1);
 
         /* test */
-        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_1_ID, accept);
+        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_1_ID, accept, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final String body = (String) response.getBody();
         assertNotNull(body);
@@ -237,7 +249,9 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithAnonymousUser
     public void find_bibliographyApa0_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierRequestException, IOException {
+            RemoteUnavailableException, IdentifierRequestException, IOException, UserNotFoundException,
+            QueryStoreException, TableMalformedException, DatabaseConnectionException, QueryMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException {
         final String accept = "text/bibliography; style=apa";
         final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_apa0.txt"),
                 StandardCharsets.UTF_8);
@@ -249,7 +263,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(IDENTIFIER_4);
 
         /* test */
-        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_4_ID, accept);
+        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_4_ID, accept, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final String body = (String) response.getBody();
         assertNotNull(body);
@@ -259,7 +273,9 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithAnonymousUser
     public void find_bibliographyApa1_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierRequestException, IOException {
+            RemoteUnavailableException, IdentifierRequestException, IOException, UserNotFoundException,
+            QueryStoreException, TableMalformedException, DatabaseConnectionException, QueryMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException {
         final String accept = "text/bibliography; style=apa";
         final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_apa1.txt"),
                 StandardCharsets.UTF_8);
@@ -271,7 +287,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(IDENTIFIER_1);
 
         /* test */
-        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_1_ID, accept);
+        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_1_ID, accept, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final String body = (String) response.getBody();
         assertNotNull(body);
@@ -281,7 +297,9 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithAnonymousUser
     public void find_bibliographyApa2_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierRequestException, IOException {
+            RemoteUnavailableException, IdentifierRequestException, IOException, UserNotFoundException,
+            QueryStoreException, TableMalformedException, DatabaseConnectionException, QueryMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException {
         final String accept = "text/bibliography; style=apa";
         final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_apa2.txt"),
                 StandardCharsets.UTF_8);
@@ -293,7 +311,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(IDENTIFIER_2);
 
         /* test */
-        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_2_ID, accept);
+        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_2_ID, accept, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final String body = (String) response.getBody();
         assertNotNull(body);
@@ -303,7 +321,9 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithAnonymousUser
     public void find_bibliographyApa3_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierRequestException, IOException {
+            RemoteUnavailableException, IdentifierRequestException, IOException, UserNotFoundException,
+            QueryStoreException, TableMalformedException, DatabaseConnectionException, QueryMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException {
         final String accept = "text/bibliography; style=apa";
         final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_apa3.txt"),
                 StandardCharsets.UTF_8);
@@ -315,7 +335,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(IDENTIFIER_3);
 
         /* test */
-        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_3_ID, accept);
+        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_3_ID, accept, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final String body = (String) response.getBody();
         assertNotNull(body);
@@ -325,7 +345,9 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithAnonymousUser
     public void find_bibliographyApa4_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierRequestException, IOException {
+            RemoteUnavailableException, IdentifierRequestException, IOException, UserNotFoundException,
+            QueryStoreException, TableMalformedException, DatabaseConnectionException, QueryMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException {
         final String accept = "text/bibliography; style=apa";
         final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_apa4.txt"),
                 StandardCharsets.UTF_8);
@@ -337,7 +359,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(IDENTIFIER_1_WITH_DOI);
 
         /* test */
-        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_1_ID, accept);
+        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_1_ID, accept, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final String body = (String) response.getBody();
         assertNotNull(body);
@@ -347,7 +369,9 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithAnonymousUser
     public void find_bibliographyIeee0_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierRequestException, IOException {
+            RemoteUnavailableException, IdentifierRequestException, IOException, UserNotFoundException,
+            QueryStoreException, TableMalformedException, DatabaseConnectionException, QueryMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException {
         final String accept = "text/bibliography; style=ieee";
         final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_ieee0.txt"),
                 StandardCharsets.UTF_8);
@@ -359,7 +383,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(IDENTIFIER_4);
 
         /* test */
-        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_4_ID, accept);
+        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_4_ID, accept, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final String body = (String) response.getBody();
         assertNotNull(body);
@@ -369,7 +393,9 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithAnonymousUser
     public void find_bibliographyIeee1_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierRequestException, IOException {
+            RemoteUnavailableException, IdentifierRequestException, IOException, UserNotFoundException,
+            QueryStoreException, TableMalformedException, DatabaseConnectionException, QueryMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException {
         final String accept = "text/bibliography; style=ieee";
         final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_ieee1.txt"),
                 StandardCharsets.UTF_8);
@@ -381,7 +407,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(IDENTIFIER_1);
 
         /* test */
-        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_1_ID, accept);
+        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_1_ID, accept, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final String body = (String) response.getBody();
         assertNotNull(body);
@@ -391,7 +417,9 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithAnonymousUser
     public void find_bibliographyIeee2_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierRequestException, IOException {
+            RemoteUnavailableException, IdentifierRequestException, IOException, UserNotFoundException,
+            QueryStoreException, TableMalformedException, DatabaseConnectionException, QueryMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException {
         final String accept = "text/bibliography; style=ieee";
         final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_ieee2.txt"),
                 StandardCharsets.UTF_8);
@@ -403,7 +431,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(IDENTIFIER_2);
 
         /* test */
-        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_2_ID, accept);
+        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_2_ID, accept, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final String body = (String) response.getBody();
         assertNotNull(body);
@@ -413,7 +441,9 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithAnonymousUser
     public void find_bibliographyIeee3_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierRequestException, IOException {
+            RemoteUnavailableException, IdentifierRequestException, IOException, UserNotFoundException,
+            QueryStoreException, TableMalformedException, DatabaseConnectionException, QueryMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException {
         final String accept = "text/bibliography; style=ieee";
         final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_ieee3.txt"),
                 StandardCharsets.UTF_8);
@@ -425,7 +455,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(IDENTIFIER_1_WITH_DOI);
 
         /* test */
-        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_1_ID, accept);
+        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_1_ID, accept, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final String body = (String) response.getBody();
         assertNotNull(body);
@@ -435,7 +465,9 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithAnonymousUser
     public void find_bibliographyBibtex0_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierRequestException, IOException {
+            RemoteUnavailableException, IdentifierRequestException, IOException, UserNotFoundException,
+            QueryStoreException, TableMalformedException, DatabaseConnectionException, QueryMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException {
         final String accept = "text/bibliography; style=bibtex";
         final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_bibtex0.txt"),
                 StandardCharsets.UTF_8);
@@ -447,7 +479,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(IDENTIFIER_4);
 
         /* test */
-        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_4_ID, accept);
+        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_4_ID, accept, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final String body = (String) response.getBody();
         assertNotNull(body);
@@ -457,7 +489,9 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithAnonymousUser
     public void find_bibliographyBibtex1_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierRequestException, IOException {
+            RemoteUnavailableException, IdentifierRequestException, IOException, UserNotFoundException,
+            QueryStoreException, TableMalformedException, DatabaseConnectionException, QueryMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException {
         final String accept = "text/bibliography; style=bibtex";
         final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_bibtex1.txt"),
                 StandardCharsets.UTF_8);
@@ -469,7 +503,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(IDENTIFIER_1);
 
         /* test */
-        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_1_ID, accept);
+        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_1_ID, accept, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final String body = (String) response.getBody();
         assertNotNull(body);
@@ -479,7 +513,9 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithAnonymousUser
     public void find_bibliographyBibtex2_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierRequestException, IOException {
+            RemoteUnavailableException, IdentifierRequestException, IOException, UserNotFoundException,
+            QueryStoreException, TableMalformedException, DatabaseConnectionException, QueryMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException {
         final String accept = "text/bibliography; style=bibtex";
         final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_bibtex2.txt"),
                 StandardCharsets.UTF_8);
@@ -491,7 +527,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(IDENTIFIER_2);
 
         /* test */
-        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_2_ID, accept);
+        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_2_ID, accept, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final String body = (String) response.getBody();
         assertNotNull(body);
@@ -501,7 +537,9 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithAnonymousUser
     public void find_bibliographyBibtex3_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierRequestException, IOException {
+            RemoteUnavailableException, IdentifierRequestException, IOException, UserNotFoundException,
+            QueryStoreException, TableMalformedException, DatabaseConnectionException, QueryMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException {
         final String accept = "text/bibliography; style=bibtex";
         final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_bibtex3.txt"),
                 StandardCharsets.UTF_8);
@@ -513,7 +551,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(IDENTIFIER_1_WITH_DOI);
 
         /* test */
-        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_1_ID, accept);
+        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_1_ID, accept, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final String body = (String) response.getBody();
         assertNotNull(body);
@@ -544,7 +582,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     @WithMockUser(username = USER_3_USERNAME, authorities = {"modify-identifier-metadata"})
     public void update_hasRoleNoAccess_succeeds() throws UserNotFoundException, NotAllowedException,
             IdentifierNotFoundException, IdentifierRequestException, QueryNotFoundException, DatabaseNotFoundException,
-            RemoteUnavailableException {
+            RemoteUnavailableException, QueryStoreException, DatabaseConnectionException, ImageNotSupportedException {
 
         /* test */
         generic_update(IDENTIFIER_3_ID, IDENTIFIER_3, IDENTIFIER_3_DTO_UPDATE_REQUEST, USER_3_USERNAME, USER_3, USER_3_PRINCIPAL);
@@ -554,7 +592,8 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     @WithMockUser(username = USER_3_USERNAME, authorities = {"modify-identifier-metadata"})
     public void update_hasRoleHasAccess_succeeds() throws IdentifierNotFoundException, IdentifierRequestException,
             UserNotFoundException, at.tuwien.exception.AccessDeniedException, NotAllowedException,
-            QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException {
+            QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException, QueryStoreException,
+            DatabaseConnectionException, ImageNotSupportedException {
 
         /* mock */
         when(accessService.find(IDENTIFIER_3_DATABASE_ID, USER_3_ID))
@@ -603,11 +642,11 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     protected void generic_update(Long id, Identifier identifier, IdentifierSaveDto data, String username, User user,
                                   Principal principal) throws IdentifierNotFoundException, IdentifierRequestException,
             UserNotFoundException, NotAllowedException, QueryNotFoundException, DatabaseNotFoundException,
-            RemoteUnavailableException {
+            RemoteUnavailableException, QueryStoreException, DatabaseConnectionException, ImageNotSupportedException {
 
         /* mock */
         if (identifier != null) {
-            when(identifierService.update(id, data, principal, "Bearer abc"))
+            when(identifierService.update(id, data, principal))
                     .thenReturn(identifier);
             when(identifierService.find(id))
                     .thenReturn(identifier);
@@ -626,7 +665,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
         }
 
         /* test */
-        final ResponseEntity<IdentifierDto> response = persistenceEndpoint.update(id, data, "Bearer abc", principal);
+        final ResponseEntity<IdentifierDto> response = persistenceEndpoint.update(id, data, principal);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
         final IdentifierDto body = response.getBody();
         assertNotNull(body);

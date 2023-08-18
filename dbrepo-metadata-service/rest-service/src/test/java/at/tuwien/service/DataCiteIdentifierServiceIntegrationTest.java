@@ -100,9 +100,9 @@ public class DataCiteIdentifierServiceIntegrationTest extends BaseUnitTest {
     public void create_database_succeeds()
             throws DatabaseNotFoundException, UserNotFoundException, IdentifierAlreadyExistsException,
             QueryNotFoundException, IdentifierPublishingNotAllowedException, RemoteUnavailableException,
-            IdentifierRequestException, ViewNotFoundException {
+            IdentifierRequestException, ViewNotFoundException, QueryStoreException, DatabaseConnectionException,
+            ImageNotSupportedException {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
-        final String bearer = "Bearer abcxyz";
         final DataCiteBody<DataCiteDoi> response =
                 new DataCiteBody<>(new DataCiteData<>(null, "dois", new DataCiteDoi(IDENTIFIER_1_DOI_NOT_NULL)));
 
@@ -113,7 +113,7 @@ public class DataCiteIdentifierServiceIntegrationTest extends BaseUnitTest {
         when(restTemplateBuilder.build()).thenReturn(restTemplate);
 
         /* test */
-        Identifier result = dataCiteIdentifierService.create(IDENTIFIER_1_DTO_REQUEST, principal, bearer);
+        Identifier result = dataCiteIdentifierService.create(IDENTIFIER_1_DTO_REQUEST, principal);
         assertTrue(identifierRepository.existsById(result.getId()));
         assertEquals(IDENTIFIER_1_DOI_NOT_NULL, result.getDoi());
     }

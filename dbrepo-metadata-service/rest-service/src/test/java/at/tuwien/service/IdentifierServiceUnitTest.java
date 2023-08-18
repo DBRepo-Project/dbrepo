@@ -179,8 +179,8 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
     public void create_database_succeeds()
             throws DatabaseNotFoundException, UserNotFoundException, IdentifierAlreadyExistsException,
             QueryNotFoundException, IdentifierPublishingNotAllowedException, RemoteUnavailableException,
-            IdentifierRequestException, ViewNotFoundException {
-        final String bearer = "Bearer abcxyz";
+            IdentifierRequestException, ViewNotFoundException, QueryStoreException, DatabaseConnectionException,
+            ImageNotSupportedException {
 
         /* mock */
         when(databaseService.find(DATABASE_1_ID))
@@ -196,13 +196,12 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
 
 
         /* test */
-        identifierService.create(IDENTIFIER_1_DTO_REQUEST, USER_1_PRINCIPAL, bearer);
+        identifierService.create(IDENTIFIER_1_DTO_REQUEST, USER_1_PRINCIPAL);
     }
 
     @Test
     public void create_existsSubset_fails()
             throws DatabaseNotFoundException {
-        final String bearer = "Bearer abcxyz";
 
         /* mock */
         when(databaseService.find(DATABASE_2_ID))
@@ -213,13 +212,12 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(IdentifierAlreadyExistsException.class, () -> {
-            identifierService.create(IDENTIFIER_2_DTO_REQUEST, USER_1_PRINCIPAL, bearer);
+            identifierService.create(IDENTIFIER_2_DTO_REQUEST, USER_1_PRINCIPAL);
         });
     }
 
     @Test
     public void create_existsDatabase_fails() throws DatabaseNotFoundException {
-        final String bearer = "Bearer abcxyz";
 
         /* mock */
         when(databaseService.find(DATABASE_1_ID))
@@ -230,7 +228,7 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(IdentifierAlreadyExistsException.class, () -> {
-            identifierService.create(IDENTIFIER_1_DTO_REQUEST, USER_1_PRINCIPAL, bearer);
+            identifierService.create(IDENTIFIER_1_DTO_REQUEST, USER_1_PRINCIPAL);
         });
     }
 
@@ -417,7 +415,7 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(IdentifierRequestException.class, () -> {
-            identifierService.exportResource(IDENTIFIER_4_ID);
+            identifierService.exportResource(IDENTIFIER_4_ID, USER_1_PRINCIPAL);
         });
     }
 

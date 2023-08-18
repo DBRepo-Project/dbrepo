@@ -280,7 +280,7 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            identifierEndpoint.create(IDENTIFIER_2_DTO_REQUEST, "ABC", USER_4_PRINCIPAL);
+            identifierEndpoint.create(IDENTIFIER_2_DTO_REQUEST, USER_4_PRINCIPAL);
         });
     }
 
@@ -295,7 +295,7 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            identifierEndpoint.create(IDENTIFIER_3_DTO_REQUEST, "ABC", USER_1_PRINCIPAL);
+            identifierEndpoint.create(IDENTIFIER_3_DTO_REQUEST, USER_1_PRINCIPAL);
         });
     }
 

@@ -9,7 +9,6 @@ import at.tuwien.entities.identifier.IdentifierDescription;
 import at.tuwien.entities.identifier.IdentifierTitle;
 import at.tuwien.entities.identifier.RelatedIdentifier;
 import at.tuwien.exception.*;
-import at.tuwien.gateway.QueryServiceGateway;
 import at.tuwien.repository.mdb.*;
 import at.tuwien.repository.sdb.IdentifierIdxRepository;
 import lombok.extern.log4j.Log4j2;
@@ -18,7 +17,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.opensearch.testcontainers.OpensearchContainer;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpEntity;
@@ -49,7 +47,7 @@ import static org.mockito.Mockito.when;
 public class IdentifierServiceIntegrationTest extends BaseUnitTest {
 
     @MockBean
-    private QueryServiceGateway queryServiceGateway;
+    private StoreService storeService;
 
     @MockBean
     private RestTemplate restTemplate;
@@ -65,12 +63,6 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
 
     @Autowired
     private IdentifierIdxRepository identifierIdxRepository;
-
-    @Autowired
-    private IdentifierTitleRepository identifierTitleRepository;
-
-    @Autowired
-    private IdentifierDescriptionRepository identifierDescriptionRepository;
 
     @Autowired
     private ContainerRepository containerRepository;
@@ -182,18 +174,19 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     public void create_subsetRelatedIdentifiers_succeeds()
             throws DatabaseNotFoundException, UserNotFoundException, IdentifierAlreadyExistsException,
             QueryNotFoundException, IdentifierPublishingNotAllowedException, RemoteUnavailableException,
-            IdentifierRequestException, ViewNotFoundException {
+            IdentifierRequestException, ViewNotFoundException, QueryStoreException, DatabaseConnectionException,
+            ImageNotSupportedException {
         final String bearer = "Bearer abcxyz";
 
         /* mock */
         when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(QueryDto.class)))
                 .thenReturn(ResponseEntity.ok(QUERY_2_DTO));
-        when(queryServiceGateway.find(DATABASE_2_ID, IDENTIFIER_2_DTO_REQUEST, bearer))
-                .thenReturn(QUERY_2_DTO);
+        when(storeService.findOne(DATABASE_2_ID, IDENTIFIER_2_QUERY_ID, USER_2_PRINCIPAL))
+                .thenReturn(QUERY_2);
         identifierRepository.save(IDENTIFIER_1_SIMPLE);
 
         /* test */
-        final Identifier response = identifierService.create(IDENTIFIER_2_DTO_REQUEST, USER_2_PRINCIPAL, bearer);
+        final Identifier response = identifierService.create(IDENTIFIER_2_DTO_REQUEST, USER_2_PRINCIPAL);
         assertEquals(IDENTIFIER_2_ID, response.getId());
         assertNotNull(response.getTitles());
         assertEquals(1, response.getTitles().size());
@@ -228,11 +221,12 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     @Test
     public void create_succeeds() throws DatabaseNotFoundException, UserNotFoundException,
             IdentifierAlreadyExistsException, QueryNotFoundException, IdentifierPublishingNotAllowedException,
-            RemoteUnavailableException, IdentifierRequestException, ViewNotFoundException {
+            RemoteUnavailableException, IdentifierRequestException, ViewNotFoundException, QueryStoreException,
+            DatabaseConnectionException, ImageNotSupportedException {
         final String bearer = "Bearer abcxyz";
 
         /* test */
-        final Identifier response = identifierService.create(IDENTIFIER_1_DTO_REQUEST, USER_1_PRINCIPAL, bearer);
+        final Identifier response = identifierService.create(IDENTIFIER_1_DTO_REQUEST, USER_1_PRINCIPAL);
         assertEquals(IDENTIFIER_1_ID, response.getId());
         assertNotNull(response.getTitles());
         final List<IdentifierTitle> titles = response.getTitles();
@@ -265,7 +259,8 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     @Test
     public void create_noRelatedTitleDescription_succeeds() throws DatabaseNotFoundException, UserNotFoundException,
             IdentifierAlreadyExistsException, QueryNotFoundException, IdentifierPublishingNotAllowedException,
-            RemoteUnavailableException, IdentifierRequestException, ViewNotFoundException {
+            RemoteUnavailableException, IdentifierRequestException, ViewNotFoundException, QueryStoreException,
+            DatabaseConnectionException, ImageNotSupportedException {
         final String bearer = "Bearer abcxyz";
 
         /* mock */
@@ -281,7 +276,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
         identifierIdxRepository.save(IDENTIFIER_3_DTO);
 
         /* test */
-        final Identifier response = identifierService.create(IDENTIFIER_4_DTO_REQUEST, USER_1_PRINCIPAL, bearer);
+        final Identifier response = identifierService.create(IDENTIFIER_4_DTO_REQUEST, USER_1_PRINCIPAL);
         assertEquals(IDENTIFIER_4_ID, response.getId());
         assertNotNull(response.getTitles());
         assertEquals(0, response.getTitles().size());
@@ -298,8 +293,8 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     @Test
     public void create_subsetHasDatabaseIdentifier_succeeds() throws DatabaseNotFoundException, UserNotFoundException,
             IdentifierAlreadyExistsException, QueryNotFoundException, IdentifierPublishingNotAllowedException,
-            RemoteUnavailableException, IdentifierRequestException, ViewNotFoundException {
-        final String authorization = "Bearer abcxyz";
+            RemoteUnavailableException, IdentifierRequestException, ViewNotFoundException, QueryStoreException,
+            DatabaseConnectionException, ImageNotSupportedException {
 
         /* mock */
         containerRepository.save(CONTAINER_3_SIMPLE);
@@ -314,11 +309,11 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
         identifierIdxRepository.save(IDENTIFIER_2_DTO);
         identifierIdxRepository.save(IDENTIFIER_3_DTO);
         identifierIdxRepository.save(IDENTIFIER_4_DTO);
-        when(queryServiceGateway.find(DATABASE_1_ID, IDENTIFIER_5_DTO_REQUEST, authorization))
-                .thenReturn(QUERY_1_DTO);
+        when(storeService.findOne(DATABASE_1_ID, QUERY_1_ID, USER_1_PRINCIPAL))
+                .thenReturn(QUERY_1);
 
         /* test */
-        final Identifier response = identifierService.create(IDENTIFIER_5_DTO_REQUEST, USER_1_PRINCIPAL, authorization);
+        final Identifier response = identifierService.create(IDENTIFIER_5_DTO_REQUEST, USER_1_PRINCIPAL);
         assertEquals(IDENTIFIER_5_DATABASE_ID, response.getDatabaseId());
         assertEquals(IDENTIFIER_5_DATABASE_ID, response.getDatabase().getId());
         assertEquals(IDENTIFIER_5_QUERY, response.getQuery());
@@ -333,7 +328,8 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     @Test
     public void create_viewIdentifier_succeeds() throws DatabaseNotFoundException, UserNotFoundException,
             IdentifierAlreadyExistsException, QueryNotFoundException, IdentifierPublishingNotAllowedException,
-            RemoteUnavailableException, IdentifierRequestException, ViewNotFoundException {
+            RemoteUnavailableException, IdentifierRequestException, ViewNotFoundException, QueryStoreException,
+            DatabaseConnectionException, ImageNotSupportedException {
         final String authorization = "Bearer abcxyz";
 
         /* mock */
@@ -355,7 +351,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
         identifierIdxRepository.save(IDENTIFIER_5_DTO);
 
         /* test */
-        final Identifier response = identifierService.create(IDENTIFIER_6_DTO_REQUEST, USER_1_PRINCIPAL, authorization);
+        final Identifier response = identifierService.create(IDENTIFIER_6_DTO_REQUEST, USER_1_PRINCIPAL);
         assertEquals(IDENTIFIER_6_DATABASE_ID, response.getDatabaseId());
         assertEquals(IDENTIFIER_6_DATABASE_ID, response.getDatabase().getId());
         assertEquals(IDENTIFIER_6_QUERY, response.getQuery());
@@ -371,13 +367,13 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     @Test
     public void update_database_succeeds() throws UserNotFoundException, QueryNotFoundException,
             DatabaseNotFoundException, RemoteUnavailableException, IdentifierRequestException,
-            IdentifierNotFoundException {
+            IdentifierNotFoundException, QueryStoreException, DatabaseConnectionException, ImageNotSupportedException {
 
         /* mock */
         identifierRepository.save(IDENTIFIER_1_SIMPLE);
 
         /* test */
-        final Identifier response = identifierService.update(IDENTIFIER_1_ID, IDENTIFIER_1_DTO_UPDATE_REQUEST, USER_1_PRINCIPAL, "Bearer abc");
+        final Identifier response = identifierService.update(IDENTIFIER_1_ID, IDENTIFIER_1_DTO_UPDATE_REQUEST, USER_1_PRINCIPAL);
         assertEquals(IDENTIFIER_1_ID, response.getId());
         assertEquals(IDENTIFIER_1_DATABASE_ID, response.getDatabaseId());
         final List<IdentifierTitle> titles = response.getTitles();
@@ -403,16 +399,16 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     @Transactional
     public void update_subset_succeeds() throws UserNotFoundException, QueryNotFoundException,
             DatabaseNotFoundException, RemoteUnavailableException, IdentifierRequestException,
-            IdentifierNotFoundException {
+            IdentifierNotFoundException, QueryStoreException, DatabaseConnectionException, ImageNotSupportedException {
 
         /* mock */
         identifierRepository.save(IDENTIFIER_1_SIMPLE);
         identifierRepository.save(IDENTIFIER_2_SIMPLE);
-        when(queryServiceGateway.find(eq(IDENTIFIER_2_DATABASE_ID), any(IdentifierSaveDto.class), anyString()))
-                .thenReturn(QUERY_2_DTO);
+        when(storeService.findOne(eq(IDENTIFIER_2_DATABASE_ID), eq(IDENTIFIER_2_QUERY_ID), any()))
+                .thenReturn(QUERY_2);
 
         /* test */
-        final Identifier response = identifierService.update(IDENTIFIER_2_ID, IDENTIFIER_2_DTO_UPDATE_REQUEST, USER_2_PRINCIPAL, "Bearer abc");
+        final Identifier response = identifierService.update(IDENTIFIER_2_ID, IDENTIFIER_2_DTO_UPDATE_REQUEST, USER_2_PRINCIPAL);
         assertEquals(IDENTIFIER_2_ID, response.getId());
         assertEquals(IDENTIFIER_2_DATABASE_ID, response.getDatabase().getId());
         assertEquals(1, response.getTitles().size());

@@ -7154,6 +7154,7 @@ public abstract class BaseTest {
             .type(IDENTIFIER_5_TYPE_DTO)
             .visibility(IDENTIFIER_5_VISIBILITY_DTO)
             .licenses(List.of(LICENSE_1_DTO))
+            .queryId(QUERY_1_ID)
             .build();
 
     public final static Long IDENTIFIER_6_ID = 6L;

@@ -1,6 +1,6 @@
 package at.tuwien.service.impl;
 
-import at.tuwien.api.database.query.QueryDto;
+import at.tuwien.ExportResource;
 import at.tuwien.api.identifier.*;
 import at.tuwien.config.EndpointConfig;
 import at.tuwien.entities.database.Database;
@@ -11,14 +11,11 @@ import at.tuwien.entities.identifier.IdentifierTitle;
 import at.tuwien.entities.identifier.IdentifierType;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
-import at.tuwien.gateway.QueryServiceGateway;
 import at.tuwien.mapper.IdentifierMapper;
+import at.tuwien.querystore.Query;
 import at.tuwien.repository.mdb.IdentifierRepository;
 import at.tuwien.repository.sdb.IdentifierIdxRepository;
-import at.tuwien.service.DatabaseService;
-import at.tuwien.service.IdentifierService;
-import at.tuwien.service.UserService;
-import at.tuwien.service.ViewService;
+import at.tuwien.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.springframework.core.io.InputStreamResource;
@@ -46,14 +43,15 @@ public class IdentifierServiceImpl implements IdentifierService {
     private final TemplateEngine templateEngine;
     private final DatabaseService databaseService;
     private final IdentifierMapper identifierMapper;
-    private final QueryServiceGateway queryServiceGateway;
+    private final QueryService queryService;
+    private final StoreService storeService;
     private final IdentifierRepository identifierRepository;
     private final IdentifierIdxRepository identifierIdxRepository;
 
     public IdentifierServiceImpl(UserService userService, ViewService viewService, EndpointConfig endpointConfig,
                                  TemplateEngine templateEngine, DatabaseService databaseService,
-                                 IdentifierMapper identifierMapper, QueryServiceGateway queryServiceGateway,
-                                 IdentifierRepository identifierRepository,
+                                 IdentifierMapper identifierMapper, QueryService queryService,
+                                 StoreService storeService, IdentifierRepository identifierRepository,
                                  IdentifierIdxRepository identifierIdxRepository) {
         this.userService = userService;
         this.viewService = viewService;
@@ -61,7 +59,8 @@ public class IdentifierServiceImpl implements IdentifierService {
         this.templateEngine = templateEngine;
         this.databaseService = databaseService;
         this.identifierMapper = identifierMapper;
-        this.queryServiceGateway = queryServiceGateway;
+        this.queryService = queryService;
+        this.storeService = storeService;
         this.identifierRepository = identifierRepository;
         this.identifierIdxRepository = identifierIdxRepository;
     }
@@ -134,10 +133,11 @@ public class IdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional
-    public Identifier create(IdentifierSaveDto data, Principal principal, String authorization)
+    public Identifier create(IdentifierSaveDto data, Principal principal)
             throws QueryNotFoundException, RemoteUnavailableException, IdentifierAlreadyExistsException,
             UserNotFoundException, DatabaseNotFoundException, IdentifierPublishingNotAllowedException,
-            IdentifierRequestException, ViewNotFoundException {
+            IdentifierRequestException, ViewNotFoundException, QueryStoreException, DatabaseConnectionException,
+            ImageNotSupportedException {
         /* check */
         if (data.getType().equals(IdentifierTypeDto.DATABASE) && identifierRepository.existsByDatabaseIdAndType(data.getDatabaseId(), IdentifierType.DATABASE)) {
             log.error("Identifier already issued for database with id {}", data.getDatabaseId());
@@ -155,12 +155,12 @@ public class IdentifierServiceImpl implements IdentifierService {
         identifier.setDatabase(database);
         if (data.getType().equals(IdentifierTypeDto.SUBSET)) {
             log.debug("identifier type: subset");
-            final QueryDto query = queryServiceGateway.find(data.getDatabaseId(), data, authorization);
+            final Query query = storeService.findOne(data.getDatabaseId(), data.getQueryId(), principal);
             identifier.setQuery(query.getQuery());
             identifier.setQueryId(query.getId());
             identifier.setQueryNormalized(query.getQueryNormalized());
             identifier.setQueryHash(query.getQueryHash());
-            identifier.setExecution(query.getExecution());
+            identifier.setExecution(query.getExecuted());
             identifier.setResultNumber(query.getResultNumber());
             identifier.setResultHash(query.getResultHash());
         } else if (data.getType().equals(IdentifierTypeDto.VIEW)) {
@@ -249,8 +249,10 @@ public class IdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional(readOnly = true)
-    public InputStreamResource exportResource(Long identifierId) throws IdentifierNotFoundException,
-            QueryNotFoundException, RemoteUnavailableException, IdentifierRequestException {
+    public InputStreamResource exportResource(Long identifierId, Principal principal) throws IdentifierNotFoundException,
+            QueryNotFoundException, IdentifierRequestException, UserNotFoundException,
+            QueryStoreException, TableMalformedException, DatabaseConnectionException, QueryMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException {
         /* check */
         final Identifier identifier = find(identifierId);
         if (identifier.getType().equals(IdentifierType.DATABASE)) {
@@ -258,17 +260,17 @@ public class IdentifierServiceImpl implements IdentifierService {
             throw new IdentifierRequestException("Failed to find identifier");
         }
         /* subset */
-        final byte[] file = queryServiceGateway.export(identifier.getDatabase().getId(), identifier.getQueryId());
-        final InputStreamResource resource = new InputStreamResource(new ByteArrayInputStream(file));
+        ExportResource exportResource = queryService.findOne(identifier.getDatabase().getId(), identifier.getQueryId(), null);
+        final InputStreamResource resource = exportResource.getResource();
         log.trace("found resource {}", resource);
         return resource;
     }
 
     @Override
     @Transactional
-    public Identifier update(Long identifierId, IdentifierSaveDto data, Principal principal, String authorization)
+    public Identifier update(Long identifierId, IdentifierSaveDto data, Principal principal)
             throws UserNotFoundException, DatabaseNotFoundException, QueryNotFoundException, RemoteUnavailableException,
-            IdentifierNotFoundException {
+            IdentifierNotFoundException, QueryStoreException, DatabaseConnectionException, ImageNotSupportedException {
         /* find doi */
         final Identifier oldIdentifier = find(identifierId);
         /* create identifier */
@@ -282,12 +284,12 @@ public class IdentifierServiceImpl implements IdentifierService {
         if (data.getType().equals(IdentifierTypeDto.SUBSET)) {
             log.debug("identifier describes a subset");
             final IdentifierSaveDto payload = identifierMapper.identifierUpdateDtoToIdentifierCreateDto(data);
-            final QueryDto query = queryServiceGateway.find(data.getDatabaseId(), payload, authorization);
+            final Query query = storeService.findOne(data.getDatabaseId(), payload.getQueryId(), principal);
             identifier.setQuery(query.getQuery());
             identifier.setQueryId(query.getId());
             identifier.setQueryNormalized(query.getQueryNormalized());
             identifier.setQueryHash(query.getQueryHash());
-            identifier.setExecution(query.getExecution());
+            identifier.setExecution(query.getExecuted());
             identifier.setResultNumber(query.getResultNumber());
             identifier.setResultHash(query.getResultHash());
         }

@@ -124,10 +124,11 @@ public class IdentifierEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<IdentifierDto> create(@NotNull @Valid @RequestBody IdentifierSaveDto data,
-                                                @NotNull @RequestHeader(name = "Authorization") String authorization,
                                                 @NotNull Principal principal)
             throws IdentifierAlreadyExistsException, QueryNotFoundException, IdentifierPublishingNotAllowedException,
-            RemoteUnavailableException, UserNotFoundException, DatabaseNotFoundException, IdentifierRequestException, NotAllowedException, ViewNotFoundException {
+            RemoteUnavailableException, UserNotFoundException, DatabaseNotFoundException, IdentifierRequestException,
+            NotAllowedException, ViewNotFoundException, QueryStoreException, DatabaseConnectionException,
+            ImageNotSupportedException {
         log.debug("endpoint create identifier, data={}, authorization=(hidden), principal={}", data, principal);
         if (data.getType().equals(IdentifierTypeDto.SUBSET) && (data.getQueryId() == null || data.getViewId() != null)) {
             log.error("Identifier of type subset need to have a qid and not a vid present");
@@ -148,7 +149,7 @@ public class IdentifierEndpoint {
                 throw new NotAllowedException("Failed to create identifier: insufficient access");
             }
         }
-        final Identifier identifier = identifierService.create(data, principal, authorization);
+        final Identifier identifier = identifierService.create(data, principal);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(identifierMapper.identifierToIdentifierDto(identifier));
     }

@@ -82,11 +82,12 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional(rollbackFor = {Exception.class})
-    public Identifier create(IdentifierSaveDto data, Principal principal, String authorization)
+    public Identifier create(IdentifierSaveDto data, Principal principal)
             throws IdentifierPublishingNotAllowedException, QueryNotFoundException, RemoteUnavailableException,
             IdentifierAlreadyExistsException, UserNotFoundException, DatabaseNotFoundException,
-            IdentifierRequestException, ViewNotFoundException {
-        final Identifier identifier = identifierService.create(data, principal, authorization);
+            IdentifierRequestException, ViewNotFoundException, QueryStoreException, DatabaseConnectionException,
+            ImageNotSupportedException {
+        final Identifier identifier = identifierService.create(data, principal);
         /* https://stackoverflow.com/questions/55090541/spring-data-jpa-lombok-unsupportedoperationexception-during-saving */
         if (identifier.getCreators() != null) {
             identifier.setCreators(new LinkedList<>(identifier.getCreators()));
@@ -180,18 +181,20 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional(readOnly = true)
-    public InputStreamResource exportResource(Long identifierId)
-            throws IdentifierNotFoundException, QueryNotFoundException, RemoteUnavailableException,
-            IdentifierRequestException {
-        return identifierService.exportResource(identifierId);
+    public InputStreamResource exportResource(Long identifierId, Principal principal)
+            throws IdentifierNotFoundException, QueryNotFoundException, FileStorageException,
+            IdentifierRequestException, UserNotFoundException, QueryStoreException, TableMalformedException,
+            DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException {
+        return identifierService.exportResource(identifierId, principal);
     }
 
     @Override
     @Transactional(rollbackFor = {Exception.class})
-    public Identifier update(Long identifierId, IdentifierSaveDto data, Principal principal, String authorization)
+    public Identifier update(Long identifierId, IdentifierSaveDto data, Principal principal)
             throws UserNotFoundException, QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException,
-            IdentifierRequestException, IdentifierNotFoundException {
-        Identifier identifier = identifierService.update(identifierId, data, principal, authorization);
+            IdentifierRequestException, IdentifierNotFoundException, QueryStoreException, DatabaseConnectionException,
+            ImageNotSupportedException {
+        Identifier identifier = identifierService.update(identifierId, data, principal);
         if (identifier.getDoi() == null) {
             return identifier;
         }

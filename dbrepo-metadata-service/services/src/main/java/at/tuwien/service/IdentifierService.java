@@ -68,7 +68,6 @@ public interface IdentifierService {
      *
      * @param data          The identifier.
      * @param principal     The authorization principal.
-     * @param authorization The authorization bearer.
      * @return The created identifier from the metadata database if successful.
      * @throws IdentifierPublishingNotAllowedException The identifier with this visibility could not be created.
      * @throws QueryNotFoundException                  The query with this id (in the data) could not be created.
@@ -78,10 +77,11 @@ public interface IdentifierService {
      * @throws UserNotFoundException                   The user was not found in the metadata database.
      * @throws DatabaseNotFoundException               The database was not found in the metadata database.
      */
-    Identifier create(IdentifierSaveDto data, Principal principal, String authorization)
+    Identifier create(IdentifierSaveDto data, Principal principal)
             throws IdentifierPublishingNotAllowedException, QueryNotFoundException,
             RemoteUnavailableException, IdentifierAlreadyExistsException, UserNotFoundException,
-            DatabaseNotFoundException, IdentifierRequestException, ViewNotFoundException;
+            DatabaseNotFoundException, IdentifierRequestException, ViewNotFoundException, QueryStoreException,
+            DatabaseConnectionException, ImageNotSupportedException;
 
     /**
      * Export metadata for a identifier
@@ -115,9 +115,10 @@ public interface IdentifierService {
      *                                     connector.
      * @throws IdentifierRequestException  The identifier does not allow for exporting.
      */
-    InputStreamResource exportResource(Long identifierId)
-            throws IdentifierNotFoundException, QueryNotFoundException, RemoteUnavailableException,
-            IdentifierRequestException;
+    InputStreamResource exportResource(Long identifierId, Principal principal)
+            throws IdentifierNotFoundException, QueryNotFoundException, FileStorageException,
+            IdentifierRequestException, UserNotFoundException, QueryStoreException, TableMalformedException,
+            DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException;
 
     /**
      * Updated the metadata (only) on the identifier for a given id in the metadata database.
@@ -127,9 +128,10 @@ public interface IdentifierService {
      * @param principal    The user principal.
      * @return The updated identifier if successful.
      */
-    Identifier update(Long identifierId, IdentifierSaveDto data, Principal principal, String authorization)
+    Identifier update(Long identifierId, IdentifierSaveDto data, Principal principal)
             throws UserNotFoundException, DatabaseNotFoundException, QueryNotFoundException, RemoteUnavailableException,
-            IdentifierRequestException, IdentifierNotFoundException;
+            IdentifierRequestException, IdentifierNotFoundException, QueryStoreException, DatabaseConnectionException,
+            ImageNotSupportedException;
 
     /**
      * Soft-deletes an identifier for a given id in the metadata database. Does not actually remove the entity from the

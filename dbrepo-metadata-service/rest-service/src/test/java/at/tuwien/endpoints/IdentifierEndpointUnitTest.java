@@ -10,7 +10,6 @@ import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
-import at.tuwien.gateway.QueryServiceGateway;
 import at.tuwien.repository.mdb.DatabaseAccessRepository;
 import at.tuwien.repository.mdb.DatabaseRepository;
 import at.tuwien.repository.mdb.IdentifierRepository;
@@ -18,6 +17,8 @@ import at.tuwien.repository.mdb.UserRepository;
 import at.tuwien.repository.sdb.IdentifierIdxRepository;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.IdentifierService;
+import at.tuwien.service.QueryService;
+import at.tuwien.service.StoreService;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -69,7 +70,10 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
     private DatabaseAccessRepository accessRepository;
 
     @MockBean
-    private QueryServiceGateway queryServiceGateway;
+    private StoreService storeService;
+
+    @MockBean
+    private QueryService queryService;
 
     @MockBean
     private IdentifierIdxRepository identifierIdxRepository;
@@ -86,7 +90,9 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithAnonymousUser
     public void find_json_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierRequestException {
+            RemoteUnavailableException, IdentifierRequestException, UserNotFoundException, QueryStoreException,
+            TableMalformedException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException,
+            ImageNotSupportedException, FileStorageException {
         final String accept = "application/json";
 
         /* mock */
@@ -94,7 +100,7 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(IDENTIFIER_1);
 
         /* test */
-        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_1_ID, accept);
+        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_1_ID, accept, null);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final IdentifierDto body = (IdentifierDto) response.getBody();
         assertNotNull(body);
@@ -113,12 +119,14 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithAnonymousUser
     public void find_xml_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierRequestException, IOException {
+            RemoteUnavailableException, IdentifierRequestException, IOException, UserNotFoundException,
+            QueryStoreException, TableMalformedException, DatabaseConnectionException, QueryMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException {
         final InputStreamResource resource = new InputStreamResource(FileUtils.openInputStream(
                 new File("src/test/resources/xml/datacite-example-dataset-v4.xml")));
 
         /* test */
-        final ResponseEntity<?> response = generic_find("text/xml", resource);
+        final ResponseEntity<?> response = generic_find("text/xml", resource, null);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final InputStreamResource body = (InputStreamResource) response.getBody();
         assertNotNull(body);
@@ -129,12 +137,14 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithAnonymousUser
     public void find_csv_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
-            RemoteUnavailableException, IOException, IdentifierRequestException {
+            RemoteUnavailableException, IOException, IdentifierRequestException, UserNotFoundException,
+            QueryStoreException, TableMalformedException, DatabaseConnectionException, QueryMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException {
         final InputStreamResource resource = new InputStreamResource(FileUtils.openInputStream(
                 new File("src/test/resources/csv/testdata.csv")));
 
         /* test */
-        final ResponseEntity<?> response = generic_find("text/csv", resource);
+        final ResponseEntity<?> response = generic_find("text/csv", resource, null);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final InputStreamResource body = (InputStreamResource) response.getBody();
         assertNotNull(body);
@@ -145,10 +155,12 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithAnonymousUser
     public void find_httpRedirect_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierRequestException {
+            RemoteUnavailableException, IdentifierRequestException, UserNotFoundException, QueryStoreException,
+            TableMalformedException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException,
+            ImageNotSupportedException, FileStorageException {
 
         /* test */
-        final ResponseEntity<?> response = generic_find(null, null);
+        final ResponseEntity<?> response = generic_find(null, null, null);
         assertEquals(HttpStatus.MOVED_PERMANENTLY, response.getStatusCode());
         assertNotNull(response.getHeaders().get("Location"));
         assertEquals(endpointConfig.getWebsiteUrl() + "/database/"
@@ -170,7 +182,8 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
     public void create_hasRoleDatabase_succeeds() throws IdentifierAlreadyExistsException,
             UserNotFoundException, QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException,
             IdentifierPublishingNotAllowedException, IdentifierRequestException, NotAllowedException,
-            ViewNotFoundException, at.tuwien.exception.AccessDeniedException {
+            ViewNotFoundException, at.tuwien.exception.AccessDeniedException, QueryStoreException,
+            DatabaseConnectionException, ImageNotSupportedException {
 
         /* mock */
         when(accessRepository.findByHdbidAndHuserid(DATABASE_1_ID, USER_1_ID))
@@ -205,7 +218,8 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
     public void create_hasRoleReadAccessQuery_succeeds() throws IdentifierAlreadyExistsException,
             UserNotFoundException, QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException,
             IdentifierPublishingNotAllowedException, IdentifierRequestException, NotAllowedException,
-            at.tuwien.exception.AccessDeniedException, ViewNotFoundException {
+            at.tuwien.exception.AccessDeniedException, ViewNotFoundException, QueryStoreException,
+            DatabaseConnectionException, ImageNotSupportedException {
 
         /* test */
         generic_create(DATABASE_2_ID, DATABASE_2, DATABASE_2_USER_1_READ_ACCESS, IDENTIFIER_2_DTO_REQUEST, IDENTIFIER_2, USER_2_PRINCIPAL, USER_2_ID, USER_2_USERNAME, USER_2);
@@ -275,7 +289,8 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
                                   String username, User user) throws QueryNotFoundException, RemoteUnavailableException,
             IdentifierAlreadyExistsException, UserNotFoundException, DatabaseNotFoundException,
             IdentifierPublishingNotAllowedException, IdentifierRequestException, NotAllowedException,
-            at.tuwien.exception.AccessDeniedException, ViewNotFoundException {
+            at.tuwien.exception.AccessDeniedException, ViewNotFoundException, QueryStoreException,
+            DatabaseConnectionException, ImageNotSupportedException {
 
         /* mock */
         when(databaseRepository.findById(databaseId))
@@ -295,16 +310,16 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
                     .when(accessService)
                     .find(databaseId, userId);
         }
-        when(queryServiceGateway.find(databaseId, data, "ABC"))
-                .thenReturn(QUERY_1_DTO);
-        when(identifierService.create(data, principal, "ABC"))
+        when(storeService.findOne(databaseId, data.getQueryId(), principal))
+                .thenReturn(QUERY_1);
+        when(identifierService.create(data, principal))
                 .thenReturn(identifier);
         when(identifierRepository.save(any(Identifier.class)))
                 .thenReturn(identifier)
                 .thenReturn(identifier);
 
         /* test */
-        final ResponseEntity<IdentifierDto> response = identifierEndpoint.create(data, "ABC", principal);
+        final ResponseEntity<IdentifierDto> response = identifierEndpoint.create(data, principal);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         final IdentifierDto body = response.getBody();
         assertNotNull(body);
@@ -315,22 +330,24 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
         assertEquals(identifier.getResultNumber(), body.getResultNumber());
     }
 
-    protected ResponseEntity<?> generic_find(String accept, InputStreamResource resource)
+    protected ResponseEntity<?> generic_find(String accept, InputStreamResource resource, Principal principal)
             throws IdentifierNotFoundException, QueryNotFoundException, RemoteUnavailableException,
-            IdentifierRequestException {
+            IdentifierRequestException, UserNotFoundException, QueryStoreException, TableMalformedException,
+            DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
+            FileStorageException {
 
         /* mock */
         when(identifierService.find(IDENTIFIER_1_ID))
                 .thenReturn(IDENTIFIER_1);
         if (resource != null) {
-            when(identifierService.exportResource(IDENTIFIER_1_ID))
+            when(identifierService.exportResource(IDENTIFIER_1_ID, principal))
                     .thenReturn(resource);
             when(identifierService.exportMetadata(IDENTIFIER_1_ID))
                     .thenReturn(resource);
         }
 
         /* test */
-        return persistenceEndpoint.find(IDENTIFIER_1_ID, accept);
+        return persistenceEndpoint.find(IDENTIFIER_1_ID, accept, principal);
     }
 
 }
