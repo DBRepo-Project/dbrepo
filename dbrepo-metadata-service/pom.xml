@@ -232,12 +232,6 @@
         </dependency>
         <!-- Testing -->
         <dependency>
-            <groupId>org.opensearch.client</groupId>
-            <artifactId>spring-data-opensearch-test-autoconfigure</artifactId>
-            <version>${opensearch-client.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
