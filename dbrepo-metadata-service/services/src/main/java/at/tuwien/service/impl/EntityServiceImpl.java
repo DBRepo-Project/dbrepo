@@ -12,7 +12,6 @@ import at.tuwien.repository.mdb.TableColumnRepository;
 import at.tuwien.repository.mdb.TableRepository;
 import at.tuwien.service.EntityService;
 import at.tuwien.service.OntologyService;
-import at.tuwien.service.QueryService;
 import at.tuwien.service.TableService;
 import lombok.extern.log4j.Log4j2;
 import org.apache.jena.query.*;
@@ -35,18 +34,18 @@ public class EntityServiceImpl implements EntityService {
     private final OntologyMapper ontologyMapper;
     private final OntologyRepository ontologyRepository;
     private final OntologyService ontologyService;
-    private final TableService tableService;
+    private final TableRepository tableRepository;
     private final TableColumnRepository tableColumnRepository;
 
     @Autowired
     public EntityServiceImpl(OntologyRepository ontologyRepository, OntologyMapper ontologyMapper,
-                             OntologyService ontologyService, TableService tableService,
+                             OntologyService ontologyService, TableRepository tableRepository,
                              TableColumnRepository tableColumnRepository) {
         this.ontologyMapper = ontologyMapper;
         this.ontologyRepository = ontologyRepository;
         this.dataset = DatasetFactory.create();
         this.ontologyService = ontologyService;
-        this.tableService = tableService;
+        this.tableRepository = tableRepository;
         this.tableColumnRepository = tableColumnRepository;
     }
 
@@ -120,11 +119,14 @@ public class EntityServiceImpl implements EntityService {
     @Override
     @Transactional(readOnly = true)
     public List<EntityDto> suggestTableSemantics(Long databaseId, Long tableId) throws TableNotFoundException,
-            QueryMalformedException, DatabaseNotFoundException {
-        final Table table = tableService.find(databaseId, tableId);
+            QueryMalformedException {
+        final Optional<Table> table = tableRepository.findByDatabaseIdAndId(databaseId, tableId);
+        if(table.isEmpty()) {
+            throw new TableNotFoundException("Failed to find table with database id " + databaseId + " and id " + tableId);
+        }
         final List<EntityDto> suggestions = new LinkedList<>();
         for (Ontology ontology : ontologyService.findAll()) {
-            suggestions.addAll(findByLabel(ontology, table.getName(), 3));
+            suggestions.addAll(findByLabel(ontology, table.get().getName(), 3));
         }
         log.debug("suggested {} semantic entities total", suggestions.size());
         return suggestions;
