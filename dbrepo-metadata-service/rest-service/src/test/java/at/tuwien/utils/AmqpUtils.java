@@ -24,9 +24,6 @@ import java.util.stream.Collectors;
 @Service
 public class AmqpUtils {
 
-    @Value("${fda.gateway.endpoint}")
-    private String gatewayEndpoint;
-
     private final RestTemplate restTemplate;
 
     @Autowired

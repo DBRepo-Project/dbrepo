@@ -33,7 +33,6 @@ import java.util.List;
 @Service
 public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
 
-    private final AmqpConfig amqpConfig;
     private final Environment environment;
     private final RestTemplate restTemplate;
     private final GatewayConfig gatewayConfig;
@@ -41,17 +40,15 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
     private final static String VIRTUAL_SERVER = "dbrepo";
 
     @Autowired
-    public BrokerServiceGatewayImpl(AmqpConfig amqpConfig, Environment environment, GatewayConfig gatewayConfig,
+    public BrokerServiceGatewayImpl(Environment environment, GatewayConfig gatewayConfig,
                                     @Qualifier("brokerRestTemplate") RestTemplate restTemplate) {
-        this.amqpConfig = amqpConfig;
         this.environment = environment;
         this.restTemplate = restTemplate;
         this.gatewayConfig = gatewayConfig;
     }
 
-    private URI parseUrl(String path) {
-        final String prefix = !Arrays.asList(environment.getActiveProfiles()).contains("junit") ? "/broker" : "";
-        final URI url = URI.create(gatewayConfig.getGatewayEndpoint() + "/api" + prefix + path);
+    private String parseUrl(String path) {
+        final String url = "/api" + path;
         log.debug("parse url: {}", url);
         return url;
     }
@@ -108,7 +105,7 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
 
     @Override
     public List<ConsumerDto> findAllConsumers() {
-        final StringBuilder urlBuilder = new StringBuilder(gatewayConfig.getGatewayEndpoint())
+        final StringBuilder urlBuilder = new StringBuilder(gatewayConfig.getBrokerEndpoint())
                 .append("/api");
         if (Arrays.stream(environment.getActiveProfiles()).noneMatch(p -> p.equals("junit"))) {
             urlBuilder.append("/broker");
@@ -118,24 +115,9 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
         log.trace("gateway broker find all consumers, virtual server={}", VIRTUAL_SERVER);
         final URI findUri = URI.create(urlBuilder.toString());
         final ResponseEntity<List<ConsumerDto>> response = restTemplate.exchange(findUri, HttpMethod.GET,
-                new HttpEntity<>(null, getHeaders()), new ParameterizedTypeReference<>() {
+                HttpEntity.EMPTY, new ParameterizedTypeReference<>() {
                 });
         return response.getBody();
-    }
-
-    /**
-     * Retrieves the authentication headers from the configuration for the broker service.
-     *
-     * @return The headers.
-     */
-    private HttpHeaders getHeaders() {
-        String auth = amqpConfig.getAmqpUsername() + ":" + amqpConfig.getAmqpPassword();
-        log.trace("set Authorization header username={}, password=(redacted)", amqpConfig.getAmqpUsername());
-        byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(Charset.defaultCharset()));
-        String authHeader = "Basic " + new String(encodedAuth);
-        return new HttpHeaders() {{
-            set("Authorization", authHeader);
-        }};
     }
 
 }

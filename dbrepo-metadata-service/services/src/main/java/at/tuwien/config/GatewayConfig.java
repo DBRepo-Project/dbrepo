@@ -13,14 +13,8 @@ import org.springframework.web.util.DefaultUriBuilderFactory;
 @Configuration
 public class GatewayConfig {
 
-    @Value("${fda.gateway.endpoint}")
-    private String gatewayEndpoint;
-
-    @Value("${fda.client_secret}")
-    private String clientSecret;
-
-    @Value("${fda.client_id}")
-    private String clientId;
+    @Value("${fda.broker.endpoint}")
+    private String brokerEndpoint;
 
     @Value("${spring.rabbitmq.username}")
     private String brokerUsername;
@@ -29,17 +23,14 @@ public class GatewayConfig {
     private String brokerPassword;
 
     @Primary
-    @Bean("gatewayRestTemplate")
-    public RestTemplate gatewayRestTemplate() {
-        final RestTemplate restTemplate = new RestTemplate();
-        restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(gatewayEndpoint));
-        return restTemplate;
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
     }
 
     @Bean("brokerRestTemplate")
     public RestTemplate brokerRestTemplate() {
         final RestTemplate restTemplate = new RestTemplate();
-        restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(gatewayEndpoint));
+        restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(brokerEndpoint));
         restTemplate.getInterceptors()
                 .add(new BasicAuthenticationInterceptor(brokerUsername, brokerPassword));
         return restTemplate;
