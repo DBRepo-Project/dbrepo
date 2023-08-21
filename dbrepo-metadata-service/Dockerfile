@@ -7,22 +7,26 @@ COPY ./api/pom.xml ./api/
 COPY ./entities/pom.xml ./entities/
 COPY ./oai/pom.xml ./oai/
 COPY ./querystore/pom.xml ./querystore/
+COPY ./report/pom.xml ./report/
+COPY ./repositories/pom.xml ./repositories/
 COPY ./rest-service/pom.xml ./rest-service/
 COPY ./services/pom.xml ./services/
-COPY ./report/pom.xml ./report/
+COPY ./test/pom.xml ./test/
 
 RUN mvn verify -B -fn
 
-COPY ./api/ ./api
+COPY ./api ./api
 COPY ./entities ./entities
 COPY ./oai ./oai
 COPY ./querystore ./querystore
+COPY ./report ./report
+COPY ./repositories ./repositories
 COPY ./rest-service ./rest-service
 COPY ./services ./services
-COPY ./report ./report
+COPY ./test ./test
 
 # Make sure it compiles
-RUN mvn clean package -DskipTests
+RUN mvn clean install -DskipTests
 
 ###### SECOND STAGE ######
 FROM openjdk:17-alpine as runtime
@@ -54,7 +58,7 @@ ENV WEBSITE=http://localhost
 
 WORKDIR /app
 
-COPY --from=build ./rest-service/target/rest-service-*.jar ./metadata-service.jar
+COPY --from=build ./rest-service/target/dbrepo-metadata-service-rest-service-*.jar ./metadata-service.jar
 
 EXPOSE 9099
 

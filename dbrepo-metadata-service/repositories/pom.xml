@@ -9,9 +9,9 @@
         <version>1.3.0</version>
     </parent>
 
-    <artifactId>dbrepo-metadata-service-services</artifactId>
+    <artifactId>dbrepo-metadata-service-repositories</artifactId>
     <version>1.3.0</version>
-    <name>dbrepo-metadata-service-services</name>
+    <name>dbrepo-metadata-service-repositories</name>
 
     <dependencies>
         <dependency>
@@ -32,11 +32,6 @@
         <dependency>
             <groupId>at.tuwien</groupId>
             <artifactId>dbrepo-metadata-service-entities</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>at.tuwien</groupId>
-            <artifactId>dbrepo-metadata-service-repositories</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

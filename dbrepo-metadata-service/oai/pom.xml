@@ -9,7 +9,7 @@
         <version>1.3.0</version>
     </parent>
 
-    <artifactId>oai</artifactId>
+    <artifactId>dbrepo-metadata-service-oai</artifactId>
     <version>1.3.0</version>
     <name>dbrepo-metadata-service-oai</name>
 

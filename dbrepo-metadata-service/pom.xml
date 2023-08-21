@@ -34,8 +34,10 @@
         <module>entities</module>
         <module>oai</module>
         <module>querystore</module>
-        <module>rest-service</module>
+        <module>test</module>
+        <module>repositories</module>
         <module>services</module>
+        <module>rest-service</module>
         <module>report</module>
     </modules>
 
@@ -137,7 +139,7 @@
             <version>${c3p0.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.hibernate</groupId>
+            <groupId>org.hibernate.orm</groupId>
             <artifactId>hibernate-c3p0</artifactId>
             <version>${c3p0-hibernate.version}</version>
         </dependency>

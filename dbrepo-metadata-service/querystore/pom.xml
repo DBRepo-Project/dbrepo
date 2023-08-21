@@ -9,7 +9,7 @@
         <version>1.3.0</version>
     </parent>
 
-    <artifactId>querystore</artifactId>
+    <artifactId>dbrepo-metadata-service-querystore</artifactId>
     <version>1.3.0</version>
     <name>dbrepo-metadata-service-querystore</name>
 

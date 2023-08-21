@@ -9,7 +9,7 @@
         <version>1.3.0</version>
     </parent>
 
-    <artifactId>entities</artifactId>
+    <artifactId>dbrepo-metadata-service-entities</artifactId>
     <version>1.3.0</version>
     <name>dbrepo-metadata-service-entity</name>
 

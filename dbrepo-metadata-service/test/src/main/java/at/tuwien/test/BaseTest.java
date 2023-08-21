@@ -54,7 +54,7 @@ import at.tuwien.entities.user.Role;
 import at.tuwien.entities.user.User;
 import at.tuwien.entities.user.UserAttribute;
 import at.tuwien.querystore.Query;
-import at.tuwien.utils.ArrayUtil;
+import at.tuwien.test.utils.ArrayUtil;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

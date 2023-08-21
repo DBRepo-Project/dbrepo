@@ -9,29 +9,34 @@
         <version>1.3.0</version>
     </parent>
 
-    <artifactId>rest-service</artifactId>
+    <artifactId>dbrepo-metadata-service-rest-service</artifactId>
     <version>1.3.0</version>
     <name>dbrepo-metadata-service-rest</name>
 
     <dependencies>
         <dependency>
             <groupId>at.tuwien</groupId>
-            <artifactId>api</artifactId>
+            <artifactId>dbrepo-metadata-service-api</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>at.tuwien</groupId>
-            <artifactId>entities</artifactId>
+            <artifactId>dbrepo-metadata-service-entities</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>at.tuwien</groupId>
-            <artifactId>querystore</artifactId>
+            <artifactId>dbrepo-metadata-service-querystore</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>at.tuwien</groupId>
-            <artifactId>services</artifactId>
+            <artifactId>dbrepo-metadata-service-services</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>at.tuwien</groupId>
+            <artifactId>dbrepo-metadata-service-test</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
