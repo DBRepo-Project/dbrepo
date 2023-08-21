@@ -89,85 +89,6 @@ services:
     logging:
       driver: json-file
 
-  dbrepo-data-service:
-    restart: "no"
-    container_name: dbrepo-data-service
-    hostname: data-service
-    build: ./dbrepo-data-service
-    image: dbrepo-data-service
-    networks:
-      core:
-    env_file:
-      - .env
-    healthcheck:
-      test: wget -qO- localhost:9050/actuator/health/readiness | grep -q "UP" || exit 1
-      interval: 10s
-      timeout: 5s
-      retries: 12
-    depends_on:
-      dbrepo-metadata-db:
-        condition: service_healthy
-      dbrepo-data-db:
-        condition: service_healthy
-      dbrepo-authentication-service:
-        condition: service_healthy
-    logging:
-      driver: json-file
-
-  dbrepo-database-service:
-    restart: "no"
-    container_name: dbrepo-database-service
-    hostname: database-service
-    build: ./dbrepo-database-service
-    image: dbrepo-database-service
-    networks:
-      core:
-    ports:
-      - "9092:9092"
-    env_file:
-      - .env
-    healthcheck:
-      test: wget -qO- localhost:9092/actuator/health/readiness | grep -q "UP" || exit 1
-      interval: 10s
-      timeout: 5s
-      retries: 12
-    depends_on:
-      dbrepo-container-service:
-        condition: service_healthy
-      dbrepo-broker-service:
-        condition: service_started
-      dbrepo-authentication-service:
-        condition: service_healthy
-      dbrepo-search-db:
-        condition: service_healthy
-    logging:
-      driver: json-file
-
-  dbrepo-container-service:
-    restart: "no"
-    container_name: dbrepo-container-service
-    hostname: container-service
-    build: ./dbrepo-container-service
-    image: dbrepo-container-service
-    networks:
-      core:
-    ports:
-      - "9091:9091"
-    env_file:
-      - .env
-    healthcheck:
-      test: wget -qO- localhost:9091/actuator/health/readiness | grep -q "UP" || exit 1
-      interval: 10s
-      timeout: 5s
-      retries: 12
-    depends_on:
-      dbrepo-authentication-service:
-        condition: service_healthy
-      dbrepo-search-db:
-        condition: service_healthy
-    logging:
-      driver: json-file
-
   dbrepo-authentication-service:
     restart: "no"
     container_name: dbrepo-authentication-service
@@ -189,95 +110,6 @@ services:
     logging:
       driver: json-file
 
-  dbrepo-query-service:
-    restart: "no"
-    container_name: dbrepo-query-service
-    hostname: query-service
-    build: ./dbrepo-query-service
-    image: dbrepo-query-service
-    networks:
-      core:
-    ports:
-      - "9093:9093"
-    env_file:
-      - .env
-    volumes:
-      - "/tmp:/tmp"
-    healthcheck:
-      test: wget -qO- localhost:9093/actuator/health/readiness | grep -q "UP" || exit 1
-      interval: 10s
-      timeout: 5s
-      retries: 12
-    depends_on:
-      dbrepo-broker-service:
-        condition: service_healthy
-      dbrepo-table-service:
-        condition: service_healthy
-      dbrepo-authentication-service:
-        condition: service_healthy
-      dbrepo-search-db:
-        condition: service_healthy
-    logging:
-      driver: json-file
-
-  dbrepo-table-service:
-    restart: "no"
-    container_name: dbrepo-table-service
-    hostname: table-service
-    build: ./dbrepo-table-service
-    image: dbrepo-table-service
-    networks:
-      core:
-    ports:
-      - "9094:9094"
-    env_file:
-      - .env
-    volumes:
-      - "/tmp:/tmp"
-    healthcheck:
-      test: wget -qO- localhost:9094/actuator/health/readiness | grep -q "UP" || exit 1
-      interval: 10s
-      timeout: 5s
-      retries: 12
-    depends_on:
-      dbrepo-authentication-service:
-        condition: service_healthy
-      dbrepo-search-db:
-        condition: service_healthy
-      dbrepo-broker-service:
-        condition: service_healthy
-    logging:
-      driver: json-file
-
-  dbrepo-identifier-service:
-    restart: "no"
-    container_name: dbrepo-identifier-service
-    hostname: identifier-service
-    build: ./dbrepo-identifier-service
-    image: dbrepo-identifier-service
-    networks:
-      core:
-    ports:
-      - "9096:9096"
-    env_file:
-      - .env
-    healthcheck:
-      test: wget -qO- localhost:9096/actuator/health/readiness | grep -q "UP" || exit 1
-      interval: 10s
-      timeout: 5s
-      retries: 12
-    depends_on:
-      dbrepo-query-service:
-        condition: service_healthy
-      dbrepo-authentication-service:
-        condition: service_healthy
-      dbrepo-search-db:
-        condition: service_healthy
-    volumes:
-      - /tmp:/tmp
-    logging:
-      driver: json-file
-
   dbrepo-metadata-service:
     restart: "no"
     container_name: dbrepo-metadata-service
@@ -288,6 +120,8 @@ services:
       core:
     env_file:
       - .env
+    volumes:
+      - "/tmp:/tmp"
     ports:
       - "9099:9099"
     healthcheck:
@@ -319,62 +153,6 @@ services:
       - .env
     volumes:
       - "/tmp:/tmp"
-    logging:
-      driver: json-file
-
-  dbrepo-user-service:
-    restart: "no"
-    container_name: dbrepo-user-service
-    hostname: user-service
-    build: ./dbrepo-user-service
-    image: dbrepo-user-service
-    networks:
-      core:
-    ports:
-      - "9098:9098"
-    env_file:
-      - .env
-    healthcheck:
-      test: wget -qO- localhost:9098/actuator/health/readiness | grep -q "UP" || exit 1
-      interval: 10s
-      timeout: 5s
-      retries: 12
-    depends_on:
-      dbrepo-metadata-db:
-        condition: service_healthy
-      dbrepo-authentication-service:
-        condition: service_healthy
-      dbrepo-search-db:
-        condition: service_healthy
-    logging:
-      driver: json-file
-
-  dbrepo-semantics-service:
-    restart: "no"
-    container_name: dbrepo-semantics-service
-    hostname: semantics-service
-    build: ./dbrepo-semantics-service
-    image: dbrepo-semantics-service
-    networks:
-      core:
-    ports:
-      - "9097:9097"
-    env_file:
-      - .env
-    volumes:
-      - "/tmp:/tmp"
-    healthcheck:
-      test: wget -qO- localhost:9097/actuator/health/readiness | grep -q "UP" || exit 1
-      interval: 10s
-      timeout: 5s
-      retries: 12
-    depends_on:
-      dbrepo-metadata-db:
-        condition: service_healthy
-      dbrepo-authentication-service:
-        condition: service_healthy
-      dbrepo-search-db:
-        condition: service_healthy
     logging:
       driver: json-file
 
@@ -493,25 +271,11 @@ services:
         condition: service_healthy
       dbrepo-broker-service:
         condition: service_healthy
-      dbrepo-container-service:
-        condition: service_healthy
-      dbrepo-database-service:
-        condition: service_healthy
-      dbrepo-identifier-service:
-        condition: service_healthy
       dbrepo-metadata-service:
-        condition: service_healthy
-      dbrepo-query-service:
         condition: service_healthy
       dbrepo-search-db:
         condition: service_healthy
-      dbrepo-semantics-service:
-        condition: service_healthy
-      dbrepo-table-service:
-        condition: service_healthy
       dbrepo-ui:
         condition: service_started
-      dbrepo-user-service:
-        condition: service_healthy
     logging:
       driver: json-file
