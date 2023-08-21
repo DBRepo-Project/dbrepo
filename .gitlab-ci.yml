@@ -33,15 +33,8 @@ stages:
   - scan-docker
   - release-docker
 
-build-metadata-db:
-  stage: build-backend
-  script:
-    - "make build-metadata-db"
-
 build-metadata-service:
   stage: build-backend
-  needs:
-    - build-metadata-db
   script:
     - "make build-metadata-service"
 
@@ -52,6 +45,8 @@ build-analyse-service:
 
 build-search-sync-agent:
   stage: build-backend
+  needs:
+    - build-metadata-service
   script:
     - "make build-search-sync-agent"
 
@@ -126,7 +121,6 @@ test-frontend:
 build-docker:
   stage: build-docker
   needs:
-    - build-metadata-db
     - build-metadata-service
     - build-analyse-service
   script:
@@ -219,26 +213,6 @@ scan-gateway-service:
     reports:
       container_scanning: ./.trivy/trivy-gateway-service-report.json
 
-scan-metadata-db:
-  stage: scan-docker
-  needs:
-    - build-docker
-  only:
-    refs:
-      - dev
-      - master
-  allow_failure: true
-  script:
-    - make scan-metadata-db
-  cache:
-    paths:
-      - .trivycache/
-  artifacts:
-    when: always
-    expire_in: 1 days
-    reports:
-      container_scanning: ./.trivy/trivy-metadata-db-report.json
-
 scan-metadata-service:
   stage: scan-docker
   needs:
@@ -326,7 +300,6 @@ release-latest:
     - scan-authentication-service
     - scan-broker-service
     - scan-gateway-service
-    - scan-metadata-db
     - scan-metadata-service
     - scan-proxy
     - scan-search-db
@@ -347,7 +320,6 @@ release-version:
     - scan-authentication-service
     - scan-broker-service
     - scan-gateway-service
-    - scan-metadata-db
     - scan-metadata-service
     - scan-proxy
     - scan-search-db

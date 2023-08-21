@@ -10,16 +10,13 @@ all: build
 
 build: build-backend build-docker
 
-build-backend: build-metadata-db build-metadata-service build-analyse-service build-search-sync-agent
+build-backend: build-metadata-service build-analyse-service build-search-sync-agent
 
-build-metadata-db:
-	mvn -f ./dbrepo-metadata-db/pom.xml clean install
-
-build-search-sync-agent: build-metadata-db
+build-search-sync-agent: build-metadata-service
 	mvn -f ./dbrepo-search-sync-agent/pom.xml clean package -DskipTests
 
-build-metadata-service: build-metadata-db
-	mvn -f ./dbrepo-metadata-service/pom.xml clean package -DskipTests
+build-metadata-service:
+	mvn -f ./dbrepo-metadata-service/pom.xml clean install -DskipTests
 
 build-analyse-service:
 	bash ./dbrepo-analyse-service/build.sh
@@ -101,10 +98,10 @@ release-metadata-service: tag-metadata-service
 
 test-backend: test-metadata-service test-analyse-service test-search-sync-agent
 
-test-search-sync-agent: build-metadata-db build-search-sync-agent
+test-search-sync-agent: build-search-sync-agent
 	mvn -f ./dbrepo-search-sync-agent/pom.xml clean test verify
 
-test-metadata-service: build-metadata-db build-metadata-service
+test-metadata-service: build-metadata-service
 	mvn -f ./dbrepo-metadata-service/pom.xml clean test verify
 
 test-analyse-service: build-analyse-service
