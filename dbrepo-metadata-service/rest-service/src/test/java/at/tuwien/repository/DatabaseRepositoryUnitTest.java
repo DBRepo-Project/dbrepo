@@ -55,13 +55,13 @@ public class DatabaseRepositoryUnitTest extends BaseUnitTest {
             return;
         }
         realmRepository.save(REALM_DBREPO);
-        userRepository.save(USER_1);
-        userRepository.save(USER_2);
-        imageRepository.save(IMAGE_1);
-        containerRepository.save(CONTAINER_1);
-        containerRepository.save(CONTAINER_2);
-        databaseRepository.save(DATABASE_1);
-        databaseRepository.save(DATABASE_2);
+        userRepository.save(USER_1_SIMPLE);
+        userRepository.save(USER_2_SIMPLE);
+        imageRepository.save(IMAGE_1_SIMPLE);
+        containerRepository.save(CONTAINER_1_SIMPLE);
+        containerRepository.save(CONTAINER_2_SIMPLE);
+        databaseRepository.save(DATABASE_1_SIMPLE);
+        databaseRepository.save(DATABASE_2_SIMPLE);
     }
 
     @Test
