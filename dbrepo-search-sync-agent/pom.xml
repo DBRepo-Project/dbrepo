@@ -79,12 +79,22 @@
         <!-- Entities and API -->
         <dependency>
             <groupId>at.tuwien</groupId>
-            <artifactId>dbrepo-metadata-db-entites</artifactId>
+            <artifactId>dbrepo-metadata-service-entities</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>at.tuwien</groupId>
-            <artifactId>dbrepo-metadata-db-api</artifactId>
+            <artifactId>dbrepo-metadata-service-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>at.tuwien</groupId>
+            <artifactId>dbrepo-metadata-service-repositories</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>at.tuwien</groupId>
+            <artifactId>dbrepo-metadata-service-test</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -189,11 +199,6 @@
             <groupId>org.jacoco</groupId>
             <artifactId>jacoco-maven-plugin</artifactId>
             <version>${jacoco.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>at.tuwien</groupId>
-            <artifactId>dbrepo-metadata-db-test</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <!-- IDE -->
         <dependency>

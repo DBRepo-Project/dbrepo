@@ -22,11 +22,10 @@ import java.util.List;
 @Service
 public class SyncServiceImpl implements SyncService {
 
-    private final UnitMapper unitMapper;
     private final UserMapper userMapper;
     private final ViewMapper viewMapper;
     private final TableMapper tableMapper;
-    private final ConceptMapper conceptMapper;
+    private final OntologyMapper ontologyMapper;
     private final DatabaseMapper databaseMapper;
     private final ViewRepository viewRepository;
     private final UnitRepository unitRepository;
@@ -47,21 +46,20 @@ public class SyncServiceImpl implements SyncService {
     private final TableColumnIdxRepository tableColumnIdxRepository;
 
     @Autowired
-    public SyncServiceImpl(UnitMapper unitMapper, UserMapper userMapper, ViewMapper viewMapper, TableMapper tableMapper,
-                       ConceptMapper conceptMapper, DatabaseMapper databaseMapper, ViewRepository viewRepository,
-                       UnitRepository unitRepository, UserRepository userRepository, TableRepository tableRepository,
-                       IdentifierMapper identifierMapper, ConceptRepository conceptRepository,
-                       UnitIdxRepository unitIdxRepository, UserIdxRepository userIdxRepository,
-                       ViewIdxRepository viewIdxRepository, DatabaseRepository databaseRepository,
-                       TableIdxRepository tableIdxRepository, IdentifierRepository identifierRepository,
-                       ConceptIdxRepository conceptIdxRepository, DatabaseIdxRepository databaseIdxRepository,
-                       TableColumnRepository tableColumnRepository, IdentifierIdxRepository identifierIdxRepository,
-                       TableColumnIdxRepository tableColumnIdxRepository) {
-        this.unitMapper = unitMapper;
+    public SyncServiceImpl(UserMapper userMapper, ViewMapper viewMapper, TableMapper tableMapper,
+                           OntologyMapper ontologyMapper, DatabaseMapper databaseMapper, ViewRepository viewRepository,
+                           UnitRepository unitRepository, UserRepository userRepository, TableRepository tableRepository,
+                           IdentifierMapper identifierMapper, ConceptRepository conceptRepository,
+                           UnitIdxRepository unitIdxRepository, UserIdxRepository userIdxRepository,
+                           ViewIdxRepository viewIdxRepository, DatabaseRepository databaseRepository,
+                           TableIdxRepository tableIdxRepository, IdentifierRepository identifierRepository,
+                           ConceptIdxRepository conceptIdxRepository, DatabaseIdxRepository databaseIdxRepository,
+                           TableColumnRepository tableColumnRepository, IdentifierIdxRepository identifierIdxRepository,
+                           TableColumnIdxRepository tableColumnIdxRepository) {
         this.userMapper = userMapper;
         this.viewMapper = viewMapper;
         this.tableMapper = tableMapper;
-        this.conceptMapper = conceptMapper;
+        this.ontologyMapper = ontologyMapper;
         this.databaseMapper = databaseMapper;
         this.viewRepository = viewRepository;
         this.unitRepository = unitRepository;
@@ -87,7 +85,7 @@ public class SyncServiceImpl implements SyncService {
         /* concepts */
         final List<ConceptDto> concepts = conceptRepository.findAll()
                 .stream()
-                .map(conceptMapper::tableColumnConceptToConceptDto)
+                .map(ontologyMapper::tableColumnConceptToConceptDto)
                 .toList();
         conceptIdxRepository.saveAll(concepts);
         log.debug("saved {} concepts to open search database", concepts.size());
@@ -122,7 +120,7 @@ public class SyncServiceImpl implements SyncService {
         /* units */
         final List<UnitDto> units = unitRepository.findAll()
                 .stream()
-                .map(unitMapper::tableColumnUnitToUnitDto)
+                .map(ontologyMapper::tableColumnUnitToUnitDto)
                 .toList();
         unitIdxRepository.saveAll(units);
         log.debug("saved {} units to open search database", units.size());
