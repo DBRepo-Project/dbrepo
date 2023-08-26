@@ -7,6 +7,7 @@ import at.tuwien.api.database.AccessTypeDto;
 import at.tuwien.api.database.DatabaseModifyAccessDto;
 import at.tuwien.entities.database.AccessType;
 import at.tuwien.entities.database.DatabaseAccess;
+import at.tuwien.exception.AccessDeniedException;
 import at.tuwien.exception.NotAllowedException;
 import at.tuwien.repository.mdb.DatabaseAccessRepository;
 import at.tuwien.repository.mdb.DatabaseRepository;
@@ -66,14 +67,14 @@ public class AccessServiceUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void find_succeeds() throws NotAllowedException {
+    public void find_succeeds() throws AccessDeniedException {
 
         /* mock */
-        when(databaseAccessRepository.findByDatabaseIdAndUsername(DATABASE_1_ID, USER_1_USERNAME))
+        when(databaseAccessRepository.findByDatabaseIdAndUserId(DATABASE_1_ID, USER_1_ID))
                 .thenReturn(Optional.of(DATABASE_1_USER_1_READ_ACCESS));
 
         /* test */
-        final DatabaseAccess response = accessService.find(DATABASE_1_ID, USER_1_USERNAME);
+        final DatabaseAccess response = accessService.find(DATABASE_1_ID, USER_1_ID);
         assertEquals(AccessType.READ, response.getType());
     }
 
@@ -81,12 +82,12 @@ public class AccessServiceUnitTest extends BaseUnitTest {
     public void find_fails() {
 
         /* mock */
-        when(databaseAccessRepository.findByDatabaseIdAndUsername(DATABASE_1_ID, USER_1_USERNAME))
+        when(databaseAccessRepository.findByDatabaseIdAndUserId(DATABASE_1_ID, USER_1_ID))
                 .thenReturn(Optional.empty());
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            accessService.find(DATABASE_1_ID, USER_1_USERNAME);
+            accessService.find(DATABASE_1_ID, USER_1_ID);
         });
     }
 

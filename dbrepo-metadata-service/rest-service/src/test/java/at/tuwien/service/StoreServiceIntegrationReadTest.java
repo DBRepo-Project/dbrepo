@@ -75,7 +75,7 @@ public class StoreServiceIntegrationReadTest extends BaseUnitTest {
             DatabaseNotFoundException, ImageNotSupportedException, TableMalformedException, ContainerNotFoundException {
 
         /* mock */
-        when(databaseRepository.findByDatabaseId(DATABASE_1_ID))
+        when(databaseRepository.findById(DATABASE_1_ID))
                 .thenReturn(Optional.of(DATABASE_1));
 
         /* test */
@@ -88,7 +88,7 @@ public class StoreServiceIntegrationReadTest extends BaseUnitTest {
             DatabaseNotFoundException, ImageNotSupportedException, TableMalformedException, ContainerNotFoundException {
 
         /* mock */
-        when(databaseRepository.findByDatabaseId(DATABASE_1_ID))
+        when(databaseRepository.findById(DATABASE_1_ID))
                 .thenReturn(Optional.of(DATABASE_1));
 
         /* test */
@@ -101,7 +101,7 @@ public class StoreServiceIntegrationReadTest extends BaseUnitTest {
             DatabaseConnectionException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException {
 
         /* mock */
-        when(databaseRepository.findByDatabaseId(DATABASE_1_ID))
+        when(databaseRepository.findById(DATABASE_1_ID))
                 .thenReturn(Optional.of(DATABASE_1));
 
         /* test */
@@ -112,7 +112,7 @@ public class StoreServiceIntegrationReadTest extends BaseUnitTest {
     public void findOne_notFound_succeeds() {
 
         /* mock */
-        when(databaseRepository.findByDatabaseId(DATABASE_1_ID))
+        when(databaseRepository.findById(DATABASE_1_ID))
                 .thenReturn(Optional.of(DATABASE_1));
 
         /* test */
@@ -126,7 +126,7 @@ public class StoreServiceIntegrationReadTest extends BaseUnitTest {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
-        when(databaseRepository.findByDatabaseId(DATABASE_1_ID))
+        when(databaseRepository.findById(DATABASE_1_ID))
                 .thenReturn(Optional.of(DATABASE_1));
 
         /* test */

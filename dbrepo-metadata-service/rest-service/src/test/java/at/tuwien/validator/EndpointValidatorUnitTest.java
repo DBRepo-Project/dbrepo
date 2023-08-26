@@ -133,7 +133,7 @@ public class EndpointValidatorUnitTest extends BaseUnitTest {
 
     @Test
     public void validateOnlyAccessOrPublic_publicAnonymous_succeeds() throws DatabaseNotFoundException,
-            NotAllowedException {
+            NotAllowedException, AccessDeniedException {
 
         /* mock */
         when(databaseService.find(DATABASE_3_ID))
@@ -158,14 +158,14 @@ public class EndpointValidatorUnitTest extends BaseUnitTest {
 
     @Test
     public void validateOnlyAccessOrPublic_privateNoAccess_fails() throws DatabaseNotFoundException,
-            NotAllowedException {
+            AccessDeniedException {
 
         /* mock */
         when(databaseService.find(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
         doThrow(NotAllowedException.class)
                 .when(accessService)
-                .find(DATABASE_1_ID, USER_1_USERNAME);
+                .find(DATABASE_1_ID, USER_1_ID);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
@@ -175,12 +175,12 @@ public class EndpointValidatorUnitTest extends BaseUnitTest {
 
     @Test
     public void validateOnlyAccessOrPublic_privateHasReadAccess_succeeds() throws DatabaseNotFoundException,
-            NotAllowedException {
+            NotAllowedException, AccessDeniedException {
 
         /* mock */
         when(databaseService.find(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
-        when(accessService.find(DATABASE_1_ID, USER_1_USERNAME))
+        when(accessService.find(DATABASE_1_ID, USER_1_ID))
                 .thenReturn(DATABASE_1_USER_1_READ_ACCESS);
 
         /* test */
@@ -189,12 +189,12 @@ public class EndpointValidatorUnitTest extends BaseUnitTest {
 
     @Test
     public void validateOnlyAccessOrPublic_privateHasWriteOwnAccess_succeeds() throws DatabaseNotFoundException,
-            NotAllowedException {
+            NotAllowedException, AccessDeniedException {
 
         /* mock */
         when(databaseService.find(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
-        when(accessService.find(DATABASE_1_ID, USER_1_USERNAME))
+        when(accessService.find(DATABASE_1_ID, USER_1_ID))
                 .thenReturn(DATABASE_1_USER_1_WRITE_OWN_ACCESS);
 
         /* test */
@@ -203,12 +203,12 @@ public class EndpointValidatorUnitTest extends BaseUnitTest {
 
     @Test
     public void validateOnlyAccessOrPublic_privateHasWriteAllAccess_succeeds() throws DatabaseNotFoundException,
-            NotAllowedException {
+            NotAllowedException, AccessDeniedException {
 
         /* mock */
         when(databaseService.find(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
-        when(accessService.find(DATABASE_1_ID, USER_1_USERNAME))
+        when(accessService.find(DATABASE_1_ID, USER_1_ID))
                 .thenReturn(DATABASE_1_USER_1_WRITE_ALL_ACCESS);
 
         /* test */
@@ -217,7 +217,7 @@ public class EndpointValidatorUnitTest extends BaseUnitTest {
 
     @Test
     public void validateOnlyAccessOrPublic2_privateAnonymousHasPublicIdentifier_succeeds() throws DatabaseNotFoundException,
-            NotAllowedException {
+            NotAllowedException, AccessDeniedException {
 
         /* mock */
         when(databaseService.find(DATABASE_1_ID))
@@ -250,7 +250,7 @@ public class EndpointValidatorUnitTest extends BaseUnitTest {
 
     @Test
     public void validateOnlyAccessOrPublic2_privateCreatorHasSelfIdentifier_succeeds() throws DatabaseNotFoundException,
-            NotAllowedException {
+            NotAllowedException, AccessDeniedException {
         final Identifier identifier = Identifier.builder()
                 .visibility(VisibilityType.SELF)
                 .createdBy(USER_1_ID)
@@ -277,12 +277,12 @@ public class EndpointValidatorUnitTest extends BaseUnitTest {
 
     @Test
     public void validateOnlyWriteOwnOrWriteAllAccess_privateHasReadAccess_fails() throws NotAllowedException,
-            TableNotFoundException, DatabaseNotFoundException {
+            TableNotFoundException, DatabaseNotFoundException, AccessDeniedException {
 
         /* mock */
         when(tableService.find(DATABASE_1_ID, TABLE_1_ID))
                 .thenReturn(TABLE_1);
-        when(accessService.find(DATABASE_1_ID, USER_1_USERNAME))
+        when(accessService.find(DATABASE_1_ID, USER_1_ID))
                 .thenReturn(DATABASE_1_USER_1_READ_ACCESS);
 
         /* test */
@@ -293,12 +293,12 @@ public class EndpointValidatorUnitTest extends BaseUnitTest {
 
     @Test
     public void validateOnlyWriteOwnOrWriteAllAccess_privateHasWriteOwnAccess_succeeds() throws NotAllowedException,
-            TableNotFoundException, DatabaseNotFoundException {
+            TableNotFoundException, DatabaseNotFoundException, AccessDeniedException {
 
         /* mock */
         when(tableService.find(DATABASE_1_ID, TABLE_1_ID))
                 .thenReturn(TABLE_1);
-        when(accessService.find(DATABASE_1_ID, USER_1_USERNAME))
+        when(accessService.find(DATABASE_1_ID, USER_1_ID))
                 .thenReturn(DATABASE_1_USER_1_WRITE_OWN_ACCESS);
 
         /* test */
@@ -307,7 +307,7 @@ public class EndpointValidatorUnitTest extends BaseUnitTest {
 
     @Test
     public void validateOnlyWriteOwnOrWriteAllAccess_privateHasWriteAllAccess_succeeds() throws NotAllowedException,
-            TableNotFoundException, DatabaseNotFoundException {
+            TableNotFoundException, DatabaseNotFoundException, AccessDeniedException {
         final Table table = Table.builder()
                 .ownedBy(USER_2_ID)
                 .build();
@@ -315,7 +315,7 @@ public class EndpointValidatorUnitTest extends BaseUnitTest {
         /* mock */
         when(tableService.find(DATABASE_1_ID, 9999L))
                 .thenReturn(table);
-        when(accessService.find(DATABASE_1_ID, USER_1_USERNAME))
+        when(accessService.find(DATABASE_1_ID, USER_1_ID))
                 .thenReturn(DATABASE_1_USER_1_WRITE_ALL_ACCESS);
 
         /* test */

@@ -149,7 +149,7 @@ public class QueueServiceIntegrationTest extends BaseUnitTest {
                 }}).build();
 
         /* mock */
-        when(databaseRepository.findByDatabaseId(DATABASE_3_ID))
+        when(databaseRepository.findById(DATABASE_3_ID))
                 .thenReturn(Optional.of(DATABASE_3));
         when(tableRepository.find(DATABASE_3_ID, TABLE_8_ID))
                 .thenReturn(Optional.of(TABLE_8));
@@ -172,7 +172,7 @@ public class QueueServiceIntegrationTest extends BaseUnitTest {
                 .build();
 
         /* mock */
-        when(databaseRepository.findByDatabaseId(DATABASE_3_ID))
+        when(databaseRepository.findById(DATABASE_3_ID))
                 .thenReturn(Optional.of(DATABASE_3));
         when(tableRepository.find(DATABASE_3_ID, TABLE_8_ID))
                 .thenReturn(Optional.of(TABLE_8));
@@ -193,7 +193,7 @@ public class QueueServiceIntegrationTest extends BaseUnitTest {
                 .build();
 
         /* mock */
-        when(databaseRepository.findByDatabaseId(DATABASE_3_ID))
+        when(databaseRepository.findById(DATABASE_3_ID))
                 .thenReturn(Optional.of(DATABASE_3));
         when(tableRepository.find(DATABASE_3_ID, TABLE_8_ID))
                 .thenReturn(Optional.of(TABLE_8));

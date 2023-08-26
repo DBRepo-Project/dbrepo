@@ -246,7 +246,7 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     protected void generic_insert(String query, Long assertQueryId) throws SQLException, QueryMalformedException {
 
         /* mock */
-        mariaDbConfig.mockGrantUserPermissions(CONTAINER_1, DATABASE_3, USER_1_USERNAME);
+        mariaDbConfig.mockGrantUserPermissions(CONTAINER_1, DATABASE_3, USER_1_USERNAME, USER_1_ID);
 
         /* test */
         final Long response = MariaDbConfig.mockSystemQueryInsert(DATABASE_3, query);
@@ -266,7 +266,7 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     protected void generic_system_insert(String username, String password) throws SQLException, QueryMalformedException {
 
         /* mock */
-        mariaDbConfig.mockGrantUserPermissions(CONTAINER_1, DATABASE_3, USER_1_USERNAME);
+        mariaDbConfig.mockGrantUserPermissions(CONTAINER_1, DATABASE_3, USER_1_USERNAME, USER_1_ID);
 
         /* test */
         final Long queryId = MariaDbConfig.mockSystemQueryInsert(DATABASE_3, QUERY_4_STATEMENT, username, password);
@@ -276,7 +276,7 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     protected void generic_user_insert(String username, String password) throws SQLException, QueryMalformedException {
 
         /* mock */
-        mariaDbConfig.mockGrantUserPermissions(CONTAINER_1, DATABASE_3, USER_1_USERNAME);
+        mariaDbConfig.mockGrantUserPermissions(CONTAINER_1, DATABASE_3, USER_1_USERNAME, USER_1_ID);
 
         /* test */
         final Long queryId = MariaDbConfig.mockUserQueryInsert(DATABASE_3, QUERY_4_STATEMENT, username, password);

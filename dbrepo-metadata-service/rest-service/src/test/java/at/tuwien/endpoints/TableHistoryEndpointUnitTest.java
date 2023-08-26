@@ -26,6 +26,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -52,8 +53,7 @@ public class TableHistoryEndpointUnitTest extends BaseUnitTest {
 
     @Test
     public void data_publicAnonymous_succeeds() throws UserNotFoundException, TableNotFoundException,
-            QueryStoreException, NotAllowedException, DatabaseConnectionException, QueryMalformedException,
-            DatabaseNotFoundException {
+            QueryStoreException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException {
 
         /* test */
         data_generic(DATABASE_1_ID, DATABASE_1, TABLE_1_ID, TABLE_1, null, null, null);
@@ -62,8 +62,7 @@ public class TableHistoryEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithAnonymousUser
     public void data_publicAnonymous2_succeeds() throws UserNotFoundException, TableNotFoundException,
-            QueryStoreException, NotAllowedException, DatabaseConnectionException, QueryMalformedException,
-            DatabaseNotFoundException {
+            QueryStoreException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException {
 
         /* test */
         data_generic(DATABASE_1_ID, DATABASE_1, TABLE_1_ID, TABLE_1, null, null, null);
@@ -72,21 +71,19 @@ public class TableHistoryEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
     public void data_publicResearcher_succeeds() throws UserNotFoundException, TableNotFoundException,
-            QueryStoreException, NotAllowedException, DatabaseConnectionException, QueryMalformedException,
-            DatabaseNotFoundException {
+            QueryStoreException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException {
 
         /* test */
-        data_generic(DATABASE_1_ID, DATABASE_1, TABLE_1_ID, TABLE_1, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_1_USER_1_READ_ACCESS);
+        data_generic(DATABASE_1_ID, DATABASE_1, TABLE_1_ID, TABLE_1, USER_1_ID, USER_1_PRINCIPAL, DATABASE_1_USER_1_READ_ACCESS);
     }
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
     public void data_privateResearcher_fails() throws UserNotFoundException, TableNotFoundException,
-            QueryStoreException, NotAllowedException, DatabaseConnectionException, QueryMalformedException,
-            DatabaseNotFoundException {
+            QueryStoreException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException {
 
         /* test */
-        data_generic(DATABASE_2_ID, DATABASE_2, TABLE_4_ID, TABLE_4, USER_1_USERNAME, USER_1_PRINCIPAL, null);
+        data_generic(DATABASE_2_ID, DATABASE_2, TABLE_4_ID, TABLE_4, USER_1_ID, USER_1_PRINCIPAL, null);
     }
 
     /* ################################################################################################### */
@@ -94,8 +91,8 @@ public class TableHistoryEndpointUnitTest extends BaseUnitTest {
     /* ################################################################################################### */
 
     protected void data_generic(Long databaseId, Database database, Long tableId, Table table,
-                                String username, Principal principal, DatabaseAccess access)
-            throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException, DatabaseConnectionException,
+                                UUID userId, Principal principal, DatabaseAccess access)
+            throws DatabaseNotFoundException, UserNotFoundException, DatabaseConnectionException,
             QueryMalformedException, QueryStoreException, TableNotFoundException {
 
         /* mock */
@@ -104,10 +101,10 @@ public class TableHistoryEndpointUnitTest extends BaseUnitTest {
         when(tableService.find(databaseId, tableId))
                 .thenReturn(table);
         if (access != null) {
-            when(databaseAccessRepository.findByDatabaseIdAndUsername(databaseId, username))
+            when(databaseAccessRepository.findByDatabaseIdAndUserId(databaseId, userId))
                     .thenReturn(Optional.of(access));
         } else {
-            when(databaseAccessRepository.findByDatabaseIdAndUsername(databaseId, username))
+            when(databaseAccessRepository.findByDatabaseIdAndUserId(databaseId, userId))
                     .thenReturn(Optional.empty());
         }
 

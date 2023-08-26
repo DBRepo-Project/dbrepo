@@ -58,7 +58,7 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            generic_create(DATABASE_1_ID, DATABASE_1, null, USER_2_USERNAME, null);
+            generic_create(DATABASE_1_ID, DATABASE_1, null, USER_2_ID, null);
         });
     }
 
@@ -68,7 +68,7 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            generic_create(DATABASE_1_ID, DATABASE_1, null, USER_4_USERNAME, USER_4_PRINCIPAL);
+            generic_create(DATABASE_1_ID, DATABASE_1, null, USER_4_ID, USER_4_PRINCIPAL);
         });
     }
 
@@ -83,7 +83,7 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
                 .create(eq(DATABASE_1_ID), any(DatabaseGiveAccessDto.class));
 
         /* test */
-        generic_create(DATABASE_1_ID, DATABASE_1, null, USER_2_USERNAME, USER_1_PRINCIPAL);
+        generic_create(DATABASE_1_ID, DATABASE_1, null, USER_2_ID, USER_1_PRINCIPAL);
     }
 
     @Test
@@ -196,12 +196,12 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
 
-    protected void generic_create(Long databaseId, Database database, DatabaseAccess access, String username,
+    protected void generic_create(Long databaseId, Database database, DatabaseAccess access, UUID userId,
                                   Principal principal) throws UserNotFoundException, QueryMalformedException,
             DatabaseNotFoundException, DatabaseMalformedException, NotAllowedException, KeycloakRemoteException,
             AccessDeniedException {
         final DatabaseGiveAccessDto request = DatabaseGiveAccessDto.builder()
-                .username(username)
+                .userId(userId)
                 .type(AccessTypeDto.READ)
                 .build();
 
@@ -209,14 +209,14 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
         when(databaseRepository.findById(databaseId))
                 .thenReturn(Optional.of(database));
         if (access != null) {
-            log.trace("mock access {} for user with username {} for database with id {}", access.getType(), username, databaseId);
-            when(accessService.find(databaseId, username))
+            log.trace("mock access {} for user with id {} for database with id {}", access.getType(), userId, databaseId);
+            when(accessService.find(databaseId, userId))
                     .thenReturn(access);
         } else {
-            log.trace("mock no access for user with username {} for database with id {}", username, databaseId);
+            log.trace("mock no access for user with id {} for database with id {}", userId, databaseId);
             doThrow(NotAllowedException.class)
                     .when(accessService)
-                    .find(databaseId, username);
+                    .find(databaseId, userId);
         }
 
         /* test */

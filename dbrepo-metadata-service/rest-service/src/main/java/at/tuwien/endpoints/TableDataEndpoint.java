@@ -56,7 +56,7 @@ public class TableDataEndpoint {
                                        @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
             ImageNotSupportedException, ContainerNotFoundException, DatabaseConnectionException, UserNotFoundException,
-            NotAllowedException {
+            NotAllowedException, AccessDeniedException {
         log.debug("endpoint insert data, databaseId={}, tableId={}, data={}, principal={}",
                 databaseId, tableId, data, principal);
         /* check */
@@ -79,7 +79,7 @@ public class TableDataEndpoint {
                                        @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
             ImageNotSupportedException, DatabaseConnectionException, QueryMalformedException,
-            UserNotFoundException, NotAllowedException {
+            UserNotFoundException, NotAllowedException, AccessDeniedException {
         log.debug("endpoint update data, databaseId={}, tableId={}, data={}, principal={}",
                 databaseId, tableId, data, principal);
         /* check */
@@ -101,7 +101,7 @@ public class TableDataEndpoint {
                                        @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
             ImageNotSupportedException, DatabaseConnectionException, QueryMalformedException, UserNotFoundException,
-            NotAllowedException {
+            NotAllowedException, AccessDeniedException {
         log.debug("endpoint delete data, databaseId={}, tableId={}, data={}, principal={}",
                 databaseId, tableId, data, principal);
         /* check */
@@ -123,7 +123,7 @@ public class TableDataEndpoint {
                                           @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
             ImageNotSupportedException, DatabaseConnectionException, QueryMalformedException, UserNotFoundException,
-            NotAllowedException {
+            NotAllowedException, AccessDeniedException {
         log.debug("endpoint insert data from csv, databaseId={}, tableId={}, data={}, principal={}",
                 databaseId, tableId, data, principal);
         /* check */
@@ -148,7 +148,7 @@ public class TableDataEndpoint {
                                                  @RequestParam(required = false) String sortColumn)
             throws TableNotFoundException, DatabaseNotFoundException, DatabaseConnectionException,
             ImageNotSupportedException, TableMalformedException, PaginationException, QueryMalformedException,
-            UserNotFoundException, SortException, NotAllowedException {
+            UserNotFoundException, SortException, NotAllowedException, AccessDeniedException {
         log.debug("endpoint find table data, databaseId={}, tableId={}, principal={}, timestamp={}, page={}, size={}, sortDirection={}, sortColumn={}",
                 databaseId, tableId, principal, timestamp, page, size, sortDirection, sortColumn);
         /* check */
@@ -176,7 +176,7 @@ public class TableDataEndpoint {
                                          @RequestParam(required = false) Instant timestamp)
             throws TableNotFoundException, DatabaseNotFoundException, DatabaseConnectionException,
             ImageNotSupportedException, TableMalformedException, QueryStoreException, QueryMalformedException,
-            UserNotFoundException, NotAllowedException {
+            UserNotFoundException, NotAllowedException, AccessDeniedException {
         log.debug("endpoint find table data, databaseId={}, tableId={}, principal={}, timestamp={}",
                 databaseId, tableId, principal, timestamp);
         /* check */

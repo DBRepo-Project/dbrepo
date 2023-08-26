@@ -1,6 +1,5 @@
 package at.tuwien.mapper;
 
-import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.database.*;
 import at.tuwien.api.user.UserDetailsDto;
 import at.tuwien.api.user.UserDto;
@@ -125,16 +124,16 @@ public interface DatabaseMapper {
         }
     }
 
-    default DatabaseGiveAccessDto databaseModifyAccessToDatabaseGiveAccessDto(String username, DatabaseModifyAccessDto data) {
+    default DatabaseGiveAccessDto databaseModifyAccessToDatabaseGiveAccessDto(UUID userId, AccessTypeDto type) {
         return DatabaseGiveAccessDto.builder()
-                .username(username)
-                .type(data.getType())
+                .userId(userId)
+                .type(type)
                 .build();
     }
 
-    default DatabaseGiveAccessDto databaseDefaultCreatorAccess(String username) {
+    default DatabaseGiveAccessDto databaseDefaultCreatorAccess(UUID userId) {
         return DatabaseGiveAccessDto.builder()
-                .username(username)
+                .userId(userId)
                 .type(AccessTypeDto.WRITE_ALL)
                 .build();
     }
@@ -165,10 +164,10 @@ public interface DatabaseMapper {
         }
     }
 
-    default PreparedStatement rawGrantUserAccessQuery(Connection connection, DatabaseGiveAccessDto data)
+    default PreparedStatement rawGrantUserAccessQuery(Connection connection, String username, AccessTypeDto type)
             throws QueryMalformedException {
         final StringBuilder statement = new StringBuilder("GRANT ");
-        switch (data.getType()) {
+        switch (type) {
             case READ:
                 statement.append("SELECT");
                 break;
@@ -178,9 +177,9 @@ public interface DatabaseMapper {
                 break;
         }
         statement.append(" ON *.* TO `")
-                .append(data.getUsername())
+                .append(username)
                 .append("`@`%`;");
-        log.debug("raw grant {} privileges statement [{}]", data.getType(), statement);
+        log.debug("raw grant {} privileges statement [{}]", type, statement);
         try {
             return connection.prepareStatement(statement.toString());
         } catch (SQLException e) {

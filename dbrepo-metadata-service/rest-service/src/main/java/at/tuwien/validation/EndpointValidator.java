@@ -47,7 +47,8 @@ public class EndpointValidator {
         this.tableService = tableService;
     }
 
-    public void validateOnlyPrivateAccess(Long databaseId, Principal principal, boolean writeAccessOnly) throws NotAllowedException, DatabaseNotFoundException {
+    public void validateOnlyPrivateAccess(Long databaseId, Principal principal, boolean writeAccessOnly)
+            throws NotAllowedException, DatabaseNotFoundException, AccessDeniedException {
         final Database database = databaseService.find(databaseId);
         if (database.getIsPublic()) {
             log.trace("database with id {} is public: no access needed", databaseId);
@@ -56,18 +57,20 @@ public class EndpointValidator {
         validateOnlyAccess(databaseId, principal, writeAccessOnly);
     }
 
-    public void validateOnlyPrivateAccess(Long databaseId, Principal principal) throws NotAllowedException, DatabaseNotFoundException {
+    public void validateOnlyPrivateAccess(Long databaseId, Principal principal) throws NotAllowedException,
+            DatabaseNotFoundException, AccessDeniedException {
         validateOnlyPrivateAccess(databaseId, principal, false);
     }
 
-    public void validateOnlyAccess(Long databaseId, Principal principal, boolean writeAccessOnly) throws NotAllowedException, DatabaseNotFoundException {
+    public void validateOnlyAccess(Long databaseId, Principal principal, boolean writeAccessOnly)
+            throws NotAllowedException, DatabaseNotFoundException, AccessDeniedException {
         if (principal == null) {
             log.error("Access not allowed: database with id {} is not public and no authorization provided", databaseId);
             throw new NotAllowedException("Access not allowed: database with id " + databaseId + " is not public and no authorization provided");
         }
         databaseService.find(databaseId);
         log.trace("principal: {}", principal.getName());
-        final DatabaseAccess access = accessService.find(databaseId, principal.getName());
+        final DatabaseAccess access = accessService.find(databaseId, UserUtil.getId(principal));
         log.trace("found access: {}", access);
         if (writeAccessOnly && !(access.getType().equals(AccessType.WRITE_OWN) || access.getType().equals(AccessType.WRITE_ALL))) {
             log.error("Access not allowed: no write access");
@@ -130,7 +133,7 @@ public class EndpointValidator {
     }
 
     public void validateOnlyOwnerOrWriteAll(Long databaseId, Long tableId, Principal principal)
-            throws DatabaseNotFoundException, NotAllowedException, TableNotFoundException {
+            throws DatabaseNotFoundException, NotAllowedException, TableNotFoundException, AccessDeniedException {
         if (principal == null) {
             log.error("Access not allowed: no authorization provided");
             throw new NotAllowedException("Access not allowed: no authorization provided");
@@ -138,7 +141,7 @@ public class EndpointValidator {
         final Table table = tableService.findById(databaseId, tableId);
         log.trace("principal: {}", principal.getName());
         log.trace("table creator: {}", table.getCreatedBy());
-        final DatabaseAccess access = accessService.find(databaseId, principal.getName());
+        final DatabaseAccess access = accessService.find(databaseId, UserUtil.getId(principal));
         log.trace("found access {}", access);
         if (access.getType().equals(AccessType.READ)) {
             log.error("Access not allowed: insufficient access (only read-access)");
@@ -226,7 +229,7 @@ public class EndpointValidator {
     }
 
     public void validateOnlyAccessOrPublic(Long databaseId, Principal principal)
-            throws DatabaseNotFoundException, NotAllowedException {
+            throws DatabaseNotFoundException, NotAllowedException, AccessDeniedException {
         final Database database = databaseService.find(databaseId);
         if (database.getIsPublic()) {
             log.trace("database with id {} is public: no access needed", databaseId);
@@ -238,12 +241,12 @@ public class EndpointValidator {
             throw new NotAllowedException("Access not allowed: database with id " + databaseId + " is not public and no authorization provided");
         }
         log.trace("principal is {}", principal);
-        final DatabaseAccess access = accessService.find(databaseId, principal.getName());
+        final DatabaseAccess access = accessService.find(databaseId, UserUtil.getId(principal));
         log.trace("found access {}", access);
     }
 
     public void validateOnlyAccessOrPublic(Long databaseId, Long queryId, Principal principal)
-            throws NotAllowedException, DatabaseNotFoundException {
+            throws NotAllowedException, DatabaseNotFoundException, AccessDeniedException {
         final Optional<Identifier> optional = identifierRepository.findSubsetIdentifier(databaseId, queryId);
         if (optional.isPresent()) {
             final Identifier identifier = optional.get();
@@ -266,14 +269,14 @@ public class EndpointValidator {
     }
 
     public void validateOnlyWriteOwnOrWriteAllAccess(Long databaseId, Long tableId, Principal principal)
-            throws DatabaseNotFoundException, TableNotFoundException, NotAllowedException {
+            throws DatabaseNotFoundException, TableNotFoundException, NotAllowedException, AccessDeniedException {
         final Table table = tableService.find(databaseId, tableId);
         if (principal == null) {
             log.error("Access not allowed: no authorization provided");
             throw new NotAllowedException("Access not allowed: no authorization provided");
         }
         log.trace("principal is {}", principal);
-        final DatabaseAccess access = accessService.find(databaseId, principal.getName());
+        final DatabaseAccess access = accessService.find(databaseId, UserUtil.getId(principal));
         log.trace("found access {}", access);
         if (access.getType().equals(AccessType.WRITE_ALL)) {
             log.debug("user {} has write-all access, skip.", principal.getName());

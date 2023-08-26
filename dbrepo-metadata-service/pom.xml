@@ -26,6 +26,11 @@
             <email>moritz.staudinger@tuwien.ac.at</email>
             <organization>TU Wien</organization>
         </developer>
+        <developer>
+            <name>Tobias Grantner</name>
+            <email>tobias.grantner@tuwien.ac.at</email>
+            <organization>TU Wien</organization>
+        </developer>
     </developers>
 
     <packaging>pom</packaging>

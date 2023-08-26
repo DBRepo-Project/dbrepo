@@ -123,10 +123,10 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
     @ParameterizedTest
     @MethodSource("create_fails_parameters")
     protected <T extends Throwable> void create_fails(String test, Class<T> expectedException,
-                                                      AccessTypeDto accessTypeDto, String username) {
+                                                      AccessTypeDto accessTypeDto, UUID userId) {
         final DatabaseGiveAccessDto request = DatabaseGiveAccessDto.builder()
                 .type(accessTypeDto)
-                .username(username)
+                .userId(userId)
                 .build();
 
         /* mock */
@@ -141,12 +141,12 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
     @ParameterizedTest
     @MethodSource("create_succeeds_parameters")
     protected <T extends Throwable> void create_succeeds(String test, AccessTypeDto accessTypeDto, AccessType access,
-                                                         String username, UUID userId) throws UserNotFoundException,
+                                                         UUID userId) throws UserNotFoundException,
             NotAllowedException, QueryMalformedException, DatabaseNotFoundException, DatabaseMalformedException,
             KeycloakRemoteException, AccessDeniedException {
         final DatabaseGiveAccessDto request = DatabaseGiveAccessDto.builder()
                 .type(accessTypeDto)
-                .username(username)
+                .userId(userId)
                 .build();
 
         /* test */

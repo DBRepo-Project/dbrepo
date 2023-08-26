@@ -64,7 +64,7 @@ public class TableEndpointIntegrationTest extends BaseUnitTest {
     @WithMockUser(username = USER_1_USERNAME, authorities = {"create-table"})
     public void create_hasRoleHasAccess_succeeds() throws UserNotFoundException, TableMalformedException, NotAllowedException,
             QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, AmqpException,
-            TableNameExistsException, ContainerNotFoundException {
+            TableNameExistsException, ContainerNotFoundException, AccessDeniedException {
 
         /* mock */
         accessRepository.save(DATABASE_1_USER_1_WRITE_OWN_ACCESS);

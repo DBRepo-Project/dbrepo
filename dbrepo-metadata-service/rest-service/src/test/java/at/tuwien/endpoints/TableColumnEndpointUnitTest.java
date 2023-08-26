@@ -33,6 +33,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.security.Principal;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doThrow;
@@ -74,7 +75,7 @@ public class TableColumnEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            generic_update(DATABASE_3_ID, TABLE_8_ID, COLUMN_1_1_ID, DATABASE_3, TABLE_8, null, COLUMN_8_2_SEMANTICS_UPDATE_DTO, USER_1_USERNAME, USER_1_PRINCIPAL, null);
+            generic_update(DATABASE_3_ID, TABLE_8_ID, COLUMN_1_1_ID, DATABASE_3, TABLE_8, null, COLUMN_8_2_SEMANTICS_UPDATE_DTO, USER_1_ID, USER_1_PRINCIPAL, null);
         });
     }
 
@@ -84,7 +85,7 @@ public class TableColumnEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            generic_update(DATABASE_3_ID, TABLE_8_ID, COLUMN_1_1_ID, DATABASE_3, TABLE_8, null, COLUMN_8_2_SEMANTICS_UPDATE_DTO, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_3_USER_1_READ_ACCESS);
+            generic_update(DATABASE_3_ID, TABLE_8_ID, COLUMN_1_1_ID, DATABASE_3, TABLE_8, null, COLUMN_8_2_SEMANTICS_UPDATE_DTO, USER_1_ID, USER_1_PRINCIPAL, DATABASE_3_USER_1_READ_ACCESS);
         });
     }
 
@@ -92,10 +93,10 @@ public class TableColumnEndpointUnitTest extends BaseUnitTest {
     @WithMockUser(username = USER_1_USERNAME, authorities = {"modify-table-column-semantics"})
     public void update_publicHasRoleHasOwnWriteAccess_succeeds() throws TableNotFoundException, NotAllowedException,
             TableMalformedException, DatabaseNotFoundException, ContainerNotFoundException,
-            SemanticEntityPersistException, SemanticEntityNotFoundException, QueryMalformedException {
+            SemanticEntityPersistException, SemanticEntityNotFoundException, QueryMalformedException, at.tuwien.exception.AccessDeniedException {
 
         /* test */
-        generic_update(DATABASE_3_ID, TABLE_8_ID, COLUMN_1_1_ID, DATABASE_3, TABLE_8, COLUMN_8_2_WITH_SEMANTICS, COLUMN_8_2_SEMANTICS_UPDATE_DTO, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_3_USER_1_WRITE_OWN_ACCESS);
+        generic_update(DATABASE_3_ID, TABLE_8_ID, COLUMN_1_1_ID, DATABASE_3, TABLE_8, COLUMN_8_2_WITH_SEMANTICS, COLUMN_8_2_SEMANTICS_UPDATE_DTO, USER_1_ID, USER_1_PRINCIPAL, DATABASE_3_USER_1_WRITE_OWN_ACCESS);
     }
 
     @Test
@@ -104,7 +105,7 @@ public class TableColumnEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            generic_update(DATABASE_3_ID, TABLE_8_ID, COLUMN_1_1_ID, DATABASE_3, TABLE_8, null, COLUMN_8_2_SEMANTICS_UPDATE_DTO, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_3_USER_2_WRITE_OWN_ACCESS);
+            generic_update(DATABASE_3_ID, TABLE_8_ID, COLUMN_1_1_ID, DATABASE_3, TABLE_8, null, COLUMN_8_2_SEMANTICS_UPDATE_DTO, USER_2_ID, USER_2_PRINCIPAL, DATABASE_3_USER_2_WRITE_OWN_ACCESS);
         });
     }
 
@@ -114,7 +115,7 @@ public class TableColumnEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
-            generic_update(DATABASE_3_ID, TABLE_8_ID, COLUMN_1_1_ID, null, TABLE_8, null, COLUMN_8_2_SEMANTICS_UPDATE_DTO, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_3_USER_1_WRITE_OWN_ACCESS);
+            generic_update(DATABASE_3_ID, TABLE_8_ID, COLUMN_1_1_ID, null, TABLE_8, null, COLUMN_8_2_SEMANTICS_UPDATE_DTO, USER_1_ID, USER_1_PRINCIPAL, DATABASE_3_USER_1_WRITE_OWN_ACCESS);
         });
     }
 
@@ -124,7 +125,7 @@ public class TableColumnEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
-            generic_update(DATABASE_3_ID, TABLE_8_ID, COLUMN_1_1_ID, DATABASE_3, null, null, COLUMN_8_2_SEMANTICS_UPDATE_DTO, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_3_USER_1_WRITE_OWN_ACCESS);
+            generic_update(DATABASE_3_ID, TABLE_8_ID, COLUMN_1_1_ID, DATABASE_3, null, null, COLUMN_8_2_SEMANTICS_UPDATE_DTO, USER_1_ID, USER_1_PRINCIPAL, DATABASE_3_USER_1_WRITE_OWN_ACCESS);
         });
     }
 
@@ -133,10 +134,10 @@ public class TableColumnEndpointUnitTest extends BaseUnitTest {
     public void update_publicHasRoleForeignHasAllWriteAccess_succeeds() throws TableNotFoundException,
             NotAllowedException, TableMalformedException, DatabaseNotFoundException,
             ContainerNotFoundException, SemanticEntityPersistException, SemanticEntityNotFoundException,
-            QueryMalformedException {
+            QueryMalformedException, at.tuwien.exception.AccessDeniedException {
 
         /* test */
-        generic_update(DATABASE_3_ID, TABLE_8_ID, COLUMN_1_1_ID, DATABASE_3, TABLE_8, COLUMN_8_2_WITH_SEMANTICS, COLUMN_8_2_SEMANTICS_UPDATE_DTO, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_3_USER_2_WRITE_ALL_ACCESS);
+        generic_update(DATABASE_3_ID, TABLE_8_ID, COLUMN_1_1_ID, DATABASE_3, TABLE_8, COLUMN_8_2_WITH_SEMANTICS, COLUMN_8_2_SEMANTICS_UPDATE_DTO, USER_2_ID, USER_2_PRINCIPAL, DATABASE_3_USER_2_WRITE_ALL_ACCESS);
     }
 
     /* ################################################################################################### */
@@ -159,7 +160,7 @@ public class TableColumnEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            generic_update(DATABASE_1_ID, TABLE_1_ID, COLUMN_1_1_ID, DATABASE_1, TABLE_1, null, COLUMN_1_4_SEMANTICS_UPDATE_DTO, USER_1_USERNAME, USER_1_PRINCIPAL, null);
+            generic_update(DATABASE_1_ID, TABLE_1_ID, COLUMN_1_1_ID, DATABASE_1, TABLE_1, null, COLUMN_1_4_SEMANTICS_UPDATE_DTO, USER_1_ID, USER_1_PRINCIPAL, null);
         });
     }
 
@@ -169,7 +170,7 @@ public class TableColumnEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            generic_update(DATABASE_1_ID, TABLE_1_ID, COLUMN_1_1_ID, DATABASE_1, TABLE_1, null, COLUMN_1_4_SEMANTICS_UPDATE_DTO, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_1_USER_1_READ_ACCESS);
+            generic_update(DATABASE_1_ID, TABLE_1_ID, COLUMN_1_1_ID, DATABASE_1, TABLE_1, null, COLUMN_1_4_SEMANTICS_UPDATE_DTO, USER_1_ID, USER_1_PRINCIPAL, DATABASE_1_USER_1_READ_ACCESS);
         });
     }
 
@@ -177,10 +178,11 @@ public class TableColumnEndpointUnitTest extends BaseUnitTest {
     @WithMockUser(username = USER_1_USERNAME, authorities = {"modify-table-column-semantics"})
     public void update_privateHasRoleHasOwnWriteAccess_succeeds() throws TableNotFoundException, NotAllowedException,
             TableMalformedException, DatabaseNotFoundException, ContainerNotFoundException,
-            SemanticEntityPersistException, SemanticEntityNotFoundException, QueryMalformedException {
+            SemanticEntityPersistException, SemanticEntityNotFoundException, QueryMalformedException,
+            at.tuwien.exception.AccessDeniedException {
 
         /* test */
-        generic_update(DATABASE_1_ID, TABLE_1_ID, COLUMN_1_1_ID, DATABASE_1, TABLE_1, COLUMN_1_4_WITH_SEMANTICS, COLUMN_1_4_SEMANTICS_UPDATE_DTO, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_1_USER_1_WRITE_OWN_ACCESS);
+        generic_update(DATABASE_1_ID, TABLE_1_ID, COLUMN_1_1_ID, DATABASE_1, TABLE_1, COLUMN_1_4_WITH_SEMANTICS, COLUMN_1_4_SEMANTICS_UPDATE_DTO, USER_1_ID, USER_1_PRINCIPAL, DATABASE_1_USER_1_WRITE_OWN_ACCESS);
     }
 
     @Test
@@ -189,7 +191,7 @@ public class TableColumnEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            generic_update(DATABASE_1_ID, TABLE_1_ID, COLUMN_1_1_ID, DATABASE_1, TABLE_1, null, COLUMN_1_4_SEMANTICS_UPDATE_DTO, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_USER_2_WRITE_OWN_ACCESS);
+            generic_update(DATABASE_1_ID, TABLE_1_ID, COLUMN_1_1_ID, DATABASE_1, TABLE_1, null, COLUMN_1_4_SEMANTICS_UPDATE_DTO, USER_2_ID, USER_2_PRINCIPAL, DATABASE_1_USER_2_WRITE_OWN_ACCESS);
         });
     }
 
@@ -199,7 +201,7 @@ public class TableColumnEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
-            generic_update(DATABASE_1_ID, TABLE_1_ID, COLUMN_1_1_ID, null, TABLE_1, null, COLUMN_1_4_SEMANTICS_UPDATE_DTO, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_1_USER_1_WRITE_OWN_ACCESS);
+            generic_update(DATABASE_1_ID, TABLE_1_ID, COLUMN_1_1_ID, null, TABLE_1, null, COLUMN_1_4_SEMANTICS_UPDATE_DTO, USER_1_ID, USER_1_PRINCIPAL, DATABASE_1_USER_1_WRITE_OWN_ACCESS);
         });
     }
 
@@ -209,7 +211,7 @@ public class TableColumnEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
-            generic_update(DATABASE_1_ID, TABLE_1_ID, COLUMN_1_1_ID, DATABASE_1, null, null, COLUMN_1_4_SEMANTICS_UPDATE_DTO, USER_1_USERNAME, USER_1_PRINCIPAL, DATABASE_1_USER_1_WRITE_OWN_ACCESS);
+            generic_update(DATABASE_1_ID, TABLE_1_ID, COLUMN_1_1_ID, DATABASE_1, null, null, COLUMN_1_4_SEMANTICS_UPDATE_DTO, USER_1_ID, USER_1_PRINCIPAL, DATABASE_1_USER_1_WRITE_OWN_ACCESS);
         });
     }
 
@@ -218,10 +220,10 @@ public class TableColumnEndpointUnitTest extends BaseUnitTest {
     public void update_privateHasRoleForeignHasAllWriteAccess_succeeds() throws TableNotFoundException,
             NotAllowedException, TableMalformedException, DatabaseNotFoundException,
             ContainerNotFoundException, SemanticEntityPersistException, SemanticEntityNotFoundException,
-            QueryMalformedException {
+            QueryMalformedException, at.tuwien.exception.AccessDeniedException {
 
         /* test */
-        generic_update(DATABASE_1_ID, TABLE_1_ID, COLUMN_1_1_ID, DATABASE_1, TABLE_1, COLUMN_1_4_WITH_SEMANTICS, COLUMN_1_4_SEMANTICS_UPDATE_DTO, USER_2_USERNAME, USER_2_PRINCIPAL, DATABASE_1_USER_2_WRITE_ALL_ACCESS);
+        generic_update(DATABASE_1_ID, TABLE_1_ID, COLUMN_1_1_ID, DATABASE_1, TABLE_1, COLUMN_1_4_WITH_SEMANTICS, COLUMN_1_4_SEMANTICS_UPDATE_DTO, USER_2_ID, USER_2_PRINCIPAL, DATABASE_1_USER_2_WRITE_ALL_ACCESS);
     }
 
     /* ################################################################################################### */
@@ -230,11 +232,11 @@ public class TableColumnEndpointUnitTest extends BaseUnitTest {
 
     protected ResponseEntity<ColumnDto> generic_update(Long databaseId, Long tableId, Long columnId,
                                                        Database database, Table table, TableColumn column,
-                                                       ColumnSemanticsUpdateDto data, String username,
+                                                       ColumnSemanticsUpdateDto data, UUID userId,
                                                        Principal principal, DatabaseAccess access)
             throws DatabaseNotFoundException, NotAllowedException, TableNotFoundException, TableMalformedException,
             ContainerNotFoundException, SemanticEntityPersistException, SemanticEntityNotFoundException,
-            QueryMalformedException {
+            QueryMalformedException, at.tuwien.exception.AccessDeniedException {
 
         /* mock */
         if (database != null) {
@@ -259,12 +261,12 @@ public class TableColumnEndpointUnitTest extends BaseUnitTest {
                     .findById(databaseId, tableId);
         }
         if (access != null) {
-            when(accessService.find(databaseId, username))
+            when(accessService.find(databaseId, userId))
                     .thenReturn(access);
         } else {
             doThrow(NotAllowedException.class)
                     .when(accessService)
-                    .find(databaseId, username);
+                    .find(databaseId, userId);
         }
 
         /* test */

@@ -32,17 +32,15 @@ import java.util.UUID;
 public class AccessServiceImpl extends HibernateConnector implements AccessService {
 
     private final UserMapper userMapper;
-    private final UserService userService;
     private final DatabaseMapper databaseMapper;
     private final DatabaseService databaseService;
     private final KeycloakGateway keycloakGateway;
     private final DatabaseAccessRepository databaseAccessRepository;
 
     @Autowired
-    public AccessServiceImpl(UserMapper userMapper, UserService userService, DatabaseMapper databaseMapper, DatabaseService databaseService,
+    public AccessServiceImpl(UserMapper userMapper, DatabaseMapper databaseMapper, DatabaseService databaseService,
                              KeycloakGateway keycloakGateway, DatabaseAccessRepository databaseAccessRepository) {
         this.userMapper = userMapper;
-        this.userService = userService;
         this.databaseMapper = databaseMapper;
         this.databaseService = databaseService;
         this.keycloakGateway = keycloakGateway;
@@ -56,30 +54,20 @@ public class AccessServiceImpl extends HibernateConnector implements AccessServi
     }
 
     @Override
-    public DatabaseAccess find(Long databaseId, UUID userId) throws AccessDeniedException {
-        final Optional<DatabaseAccess> optional = databaseAccessRepository.findByHdbidAndHuserid(databaseId, userId);
-        if (optional.isEmpty()) {
-            log.error("Failed to find access for user with id {}", userId);
-            throw new AccessDeniedException("Failed to find access");
-        }
-        return optional.get();
-    }
-
-    @Override
     @Transactional(readOnly = true)
-    public DatabaseAccess find(Long databaseId, String username) throws NotAllowedException {
-        final Optional<DatabaseAccess> optional = databaseAccessRepository.findByDatabaseIdAndUsername(databaseId, username);
+    public DatabaseAccess find(Long databaseId, UUID userId) throws AccessDeniedException {
+        final Optional<DatabaseAccess> optional = databaseAccessRepository.findByDatabaseIdAndUserId(databaseId, userId);
         if (optional.isEmpty()) {
             log.error("Failed to find database access for database with id {}", databaseId);
-            throw new NotAllowedException("Failed to find database access");
+            throw new AccessDeniedException("Failed to find database access for database with id " + databaseId);
         }
         return optional.get();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public DatabaseAccess hasAccess(Long databaseId, String username) throws NotAllowedException {
-        final Optional<DatabaseAccess> optional = databaseAccessRepository.findByDatabaseIdAndUsername(databaseId, username);
+    public DatabaseAccess hasAccess(Long databaseId, UUID userId) throws NotAllowedException {
+        final Optional<DatabaseAccess> optional = databaseAccessRepository.findByHdbidAndHuserid(databaseId, userId);
         if (optional.isEmpty()) {
             log.error("Failed to retrieve access, not found");
             throw new NotAllowedException("Failed to retrieve access");
@@ -95,9 +83,9 @@ public class AccessServiceImpl extends HibernateConnector implements AccessServi
         /* check */
         final Database database = databaseService.findById(databaseId);
         final Container container = database.getContainer();
-        final UserDto user = userMapper.keycloakUserDtoToUserDto(keycloakGateway.findByUsername(accessDto.getUsername()));
-        if (databaseAccessRepository.findByDatabaseIdAndUsername(databaseId, accessDto.getUsername()).isPresent()) {
-            log.error("Failed to give access to user with username {}, has already permission", accessDto.getUsername());
+        final UserDto user = userMapper.keycloakUserDtoToUserDto(keycloakGateway.findById(accessDto.getUserId()));
+        if (databaseAccessRepository.findByDatabaseIdAndUserId(databaseId, user.getId()).isPresent()) {
+            log.error("Failed to give access to user with id {}, has already permission", accessDto.getUserId());
             throw new NotAllowedException("Failed to give access");
         }
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(container.getImage(), container, database);
@@ -107,7 +95,7 @@ public class AccessServiceImpl extends HibernateConnector implements AccessServi
             final PreparedStatement preparedStatement1 = databaseMapper.userToRawCreateUserQuery(connection, user);
             preparedStatement1.executeUpdate();
             /* grant access */
-            final PreparedStatement preparedStatement2 = databaseMapper.rawGrantUserAccessQuery(connection, accessDto);
+            final PreparedStatement preparedStatement2 = databaseMapper.rawGrantUserAccessQuery(connection, user.getUsername(), accessDto.getType());
             preparedStatement2.executeUpdate();
             final PreparedStatement preparedStatement3 = databaseMapper.rawGrantUserProcedure(connection, user.getUsername());
             preparedStatement3.executeUpdate();
@@ -139,14 +127,14 @@ public class AccessServiceImpl extends HibernateConnector implements AccessServi
         }
         final at.tuwien.api.user.UserDto user = userMapper.keycloakUserDtoToUserDto(keycloakGateway.findById(userId));
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(container.getImage(), container, database);
-        final DatabaseGiveAccessDto giveAccess = databaseMapper.databaseModifyAccessToDatabaseGiveAccessDto(user.getUsername(), accessDto);
+        final DatabaseGiveAccessDto giveAccess = databaseMapper.databaseModifyAccessToDatabaseGiveAccessDto(userId, accessDto.getType());
         try {
             final Connection connection = dataSource.getConnection();
             /* create user if not exists */
             final PreparedStatement preparedStatement1 = databaseMapper.userToRawCreateUserQuery(connection, user);
             preparedStatement1.executeUpdate();
             /* grant access */
-            final PreparedStatement preparedStatement2 = databaseMapper.rawGrantUserAccessQuery(connection, giveAccess);
+            final PreparedStatement preparedStatement2 = databaseMapper.rawGrantUserAccessQuery(connection, user.getUsername(), accessDto.getType());
             preparedStatement2.executeUpdate();
             final PreparedStatement preparedStatement3 = databaseMapper.rawGrantUserProcedure(connection, user.getUsername());
             preparedStatement3.executeUpdate();

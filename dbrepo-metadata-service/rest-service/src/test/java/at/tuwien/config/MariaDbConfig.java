@@ -17,10 +17,7 @@ import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 
 import java.sql.*;
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -122,16 +119,16 @@ public class MariaDbConfig {
         }
     }
 
-    public void mockGrantUserPermissions(Container container, Database database, String username) throws SQLException,
+    public void mockGrantUserPermissions(Container container, Database database, String username, UUID userId) throws SQLException,
             QueryMalformedException {
         final String jdbc = "jdbc:mariadb://" + container.getHost() + ":" + container.getPort() + "/" + database.getInternalName();
         log.trace("connect to database {}", jdbc);
         try (Connection connection = DriverManager.getConnection(jdbc, container.getPrivilegedUsername(), container.getPrivilegedPassword())) {
             final DatabaseGiveAccessDto access = DatabaseGiveAccessDto.builder()
-                    .username(username)
+                    .userId(userId)
                     .type(AccessTypeDto.WRITE_ALL)
                     .build();
-            final PreparedStatement statement1 = databaseMapper.rawGrantUserAccessQuery(connection, access);
+            final PreparedStatement statement1 = databaseMapper.rawGrantUserAccessQuery(connection, username, AccessTypeDto.WRITE_ALL);
             statement1.executeUpdate();
             final PreparedStatement statement2 = databaseMapper.rawGrantUserProcedure(connection, username);
             statement2.executeUpdate();

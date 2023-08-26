@@ -42,11 +42,11 @@ public class OaiListIdentifiersParameters extends RequestParameters {
     public String getParametersString() {
         StringBuilder builder = new StringBuilder();
         appendIfNotEmpty(builder, "verb", "ListIdentifiers");
-        appendIfNotEmpty(builder, "metadataPrefix", this.getMetadataPrefix());
-        appendIfNotEmpty(builder, "from", this.getFrom());
-        appendIfNotEmpty(builder, "until", this.getUntil());
-        appendIfNotEmpty(builder, "set", this.getSet());
-        appendIfNotEmpty(builder, "resumptionToken", this.getResumptionToken());
+        appendIfNotEmpty(builder, "metadataPrefix", metadataPrefix);
+        appendIfNotEmpty(builder, "from", from);
+        appendIfNotEmpty(builder, "until", until);
+        appendIfNotEmpty(builder, "set", set);
+        appendIfNotEmpty(builder, "resumptionToken", resumptionToken);
         return builder.toString();
     }
 

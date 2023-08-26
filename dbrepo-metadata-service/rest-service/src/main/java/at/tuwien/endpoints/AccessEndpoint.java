@@ -8,6 +8,7 @@ import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.DatabaseMapper;
 import at.tuwien.service.AccessService;
+import at.tuwien.utils.UserUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -73,9 +74,9 @@ public class AccessEndpoint {
             DatabaseMalformedException, KeycloakRemoteException, AccessDeniedException {
         log.debug("endpoint give access to database, databaseId={}, accessDto={}, principal={}", databaseId, accessDto, principal);
         try {
-            accessService.find(databaseId, accessDto.getUsername());
-            log.error("Failed to give access to user with username {}, already has access", accessDto.getUsername());
-            throw new NotAllowedException("Failed to give access to user");
+            accessService.find(databaseId, accessDto.getUserId());
+            log.error("Failed to give access to user with id {}: already has access", accessDto.getUserId());
+            throw new NotAllowedException("Failed to give access to user with id " + accessDto.getUserId() + ": already has access");
         } catch (NotAllowedException e) {
             /* ignore */
         }
@@ -143,9 +144,10 @@ public class AccessEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<DatabaseAccessDto> find(@NotBlank @PathVariable("id") Long databaseId,
-                                                  @NotNull Principal principal) throws NotAllowedException {
+                                                  @NotNull Principal principal) throws NotAllowedException,
+            AccessDeniedException {
         log.debug("endpoint check access to database, databaseId={}, principal={}", databaseId, principal);
-        final DatabaseAccess access = accessService.find(databaseId, principal.getName());
+        final DatabaseAccess access = accessService.find(databaseId, UserUtil.getId(principal));
         final DatabaseAccessDto dto = databaseMapper.databaseAccessToDatabaseAccessDto(access);
         log.trace("check access resulted in dto {}", dto);
         return ResponseEntity.ok(dto);

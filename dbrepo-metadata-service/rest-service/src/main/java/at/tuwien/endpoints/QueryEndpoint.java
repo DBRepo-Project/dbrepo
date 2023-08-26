@@ -94,7 +94,7 @@ public class QueryEndpoint {
                                                     @RequestParam(required = false) String sortColumn)
             throws QueryStoreException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
             QueryMalformedException, TableMalformedException, ColumnParseException, DatabaseConnectionException,
-            SortException, PaginationException, UserNotFoundException, NotAllowedException {
+            SortException, PaginationException, UserNotFoundException, NotAllowedException, AccessDeniedException {
         log.debug("endpoint re-execute query, databaseId={}, queryId={}, principal={}, page={}, size={}, sortDirection={}, sortColumn={}",
                 databaseId, queryId, principal, page, size, sortDirection, sortColumn);
         endpointValidator.validateDataParams(page, size, sortDirection, sortColumn);
@@ -118,7 +118,7 @@ public class QueryEndpoint {
                                                Principal principal)
             throws QueryStoreException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
             QueryMalformedException, TableMalformedException, ColumnParseException, NotAllowedException,
-            DatabaseConnectionException, UserNotFoundException {
+            DatabaseConnectionException, UserNotFoundException, AccessDeniedException {
         log.debug("endpoint re-execute query count, databaseId={}, queryId={}, principal={}",
                 databaseId, queryId, principal);
         endpointValidator.validateOnlyAccessOrPublic(databaseId, queryId, principal);

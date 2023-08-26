@@ -23,24 +23,14 @@ public interface AccessService {
     DatabaseAccess find(Long databaseId, UUID userId) throws AccessDeniedException;
 
     /**
-     * Checks if user with username has access to database with given id.
-     *
-     * @param databaseId The database id.
-     * @param username   The username.
-     * @return True if user has access, False otherwise.
-     * @throws NotAllowedException The access is denied.
-     */
-    DatabaseAccess find(Long databaseId, String username) throws NotAllowedException;
-
-    /**
      * Checks if the user with username has access to the database with given id.
      *
      * @param databaseId The database id.
-     * @param username   The username.
+     * @param userId     The user id.
      * @return The access object.
      * @throws NotAllowedException The user does not have access.
      */
-    DatabaseAccess hasAccess(Long databaseId, String username) throws NotAllowedException;
+    DatabaseAccess hasAccess(Long databaseId, UUID userId) throws NotAllowedException;
 
     /**
      * Give somebody access to a database of container.
@@ -53,7 +43,9 @@ public interface AccessService {
      * @throws QueryMalformedException    The mapped access query is malformed.
      * @throws DatabaseMalformedException The database has an invalid state.
      */
-    void create(Long databaseId, DatabaseGiveAccessDto accessDto) throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException, QueryMalformedException, DatabaseMalformedException, KeycloakRemoteException, AccessDeniedException;
+    void create(Long databaseId, DatabaseGiveAccessDto accessDto) throws DatabaseNotFoundException,
+            UserNotFoundException, NotAllowedException, QueryMalformedException, DatabaseMalformedException,
+            KeycloakRemoteException, AccessDeniedException;
 
     /**
      * Update access to a database.
@@ -67,7 +59,8 @@ public interface AccessService {
      * @throws QueryMalformedException    The mapped access query is malformed.
      * @throws DatabaseMalformedException The database has an invalid state.
      */
-    void update(Long databaseId, UUID userId, DatabaseModifyAccessDto accessDto) throws DatabaseNotFoundException, UserNotFoundException, QueryMalformedException, DatabaseMalformedException,
+    void update(Long databaseId, UUID userId, DatabaseModifyAccessDto accessDto) throws DatabaseNotFoundException,
+            UserNotFoundException, QueryMalformedException, DatabaseMalformedException,
             NotAllowedException, KeycloakRemoteException, AccessDeniedException;
 
     /**
@@ -81,5 +74,7 @@ public interface AccessService {
      * @throws QueryMalformedException    The mapped access query is malformed.
      * @throws DatabaseMalformedException The database has an invalid state.
      */
-    void delete(Long databaseId, UUID userId) throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException, QueryMalformedException, DatabaseMalformedException, KeycloakRemoteException, AccessDeniedException;
+    void delete(Long databaseId, UUID userId) throws DatabaseNotFoundException, UserNotFoundException,
+            NotAllowedException, QueryMalformedException, DatabaseMalformedException, KeycloakRemoteException,
+            AccessDeniedException;
 }
