@@ -57,12 +57,6 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
     @Autowired
     private AccessService accessService;
 
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private RealmRepository realmRepository;
-
     @Container
     @Autowired
     private MariaDBContainer<?> mariaDBContainer;
@@ -70,11 +64,7 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
     @BeforeEach
     public void beforeEach() throws SQLException {
         /* metadata database */
-        realmRepository.save(REALM_DBREPO);
         imageRepository.save(IMAGE_1);
-        userRepository.save(USER_1_SIMPLE);
-        userRepository.save(USER_2_SIMPLE);
-        userRepository.save(USER_3_SIMPLE);
         containerRepository.save(CONTAINER_1_SIMPLE);
         databaseRepository.save(DATABASE_1_SIMPLE);
         MariaDbConfig.dropAllDatabases(CONTAINER_1);
@@ -151,9 +141,9 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
     @ParameterizedTest
     @MethodSource("create_succeeds_parameters")
     protected <T extends Throwable> void create_succeeds(String test, AccessTypeDto accessTypeDto, AccessType access,
-                                                         String username, UUID userId)
-            throws UserNotFoundException, NotAllowedException, QueryMalformedException, DatabaseNotFoundException,
-            DatabaseMalformedException {
+                                                         String username, UUID userId) throws UserNotFoundException,
+            NotAllowedException, QueryMalformedException, DatabaseNotFoundException, DatabaseMalformedException,
+            KeycloakRemoteException, AccessDeniedException {
         final DatabaseGiveAccessDto request = DatabaseGiveAccessDto.builder()
                 .type(accessTypeDto)
                 .username(username)
@@ -171,8 +161,9 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
     @ParameterizedTest
     @MethodSource("update_succeeds_parameters")
     protected void update_succeeds(String test, Long databaseId, AccessTypeDto accessTypeDto, AccessType access,
-                                   String username) throws UserNotFoundException, NotAllowedException,
-            QueryMalformedException, DatabaseNotFoundException, DatabaseMalformedException, NotAllowedException {
+                                   UUID userId) throws UserNotFoundException, QueryMalformedException,
+            DatabaseNotFoundException, DatabaseMalformedException, NotAllowedException, KeycloakRemoteException,
+            AccessDeniedException {
         final DatabaseModifyAccessDto request = DatabaseModifyAccessDto.builder()
                 .type(accessTypeDto)
                 .build();
@@ -181,7 +172,7 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
         databaseAccessRepository.save(DATABASE_1_USER_2_READ_ACCESS);
 
         /* test */
-        accessService.update(databaseId, username, request);
+        accessService.update(databaseId, userId, request);
         final List<DatabaseAccess> response = databaseAccessRepository.findAll();
         assertEquals(1, response.size());
         assertEquals(access, response.get(0).getType());
@@ -191,36 +182,35 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
     @ParameterizedTest
     @MethodSource("update_fails_parameters")
     protected <T extends Throwable> void update_fails(String name, Class<T> expectedException,
-                                                      Long databaseId, AccessTypeDto accessTypeDto,
-                                                      String username) {
+                                                      Long databaseId, AccessTypeDto accessTypeDto, UUID userId) {
         final DatabaseModifyAccessDto request = DatabaseModifyAccessDto.builder()
                 .type(accessTypeDto)
                 .build();
 
         /* test */
         assertThrows(expectedException, () -> {
-            accessService.update(databaseId, username, request);
+            accessService.update(databaseId, userId, request);
         });
     }
 
     @ParameterizedTest
     @MethodSource("delete_fails_parameters")
-    protected <T extends Throwable> void delete_fails(String name, Class<T> expectedException, String username) {
+    protected <T extends Throwable> void delete_fails(String name, Class<T> expectedException, UUID userId) {
 
         /* test */
         assertThrows(expectedException, () -> {
-            accessService.delete(DATABASE_1_ID, username);
+            accessService.delete(DATABASE_1_ID, userId);
         });
     }
 
     @ParameterizedTest
     @MethodSource("delete_succeeds_parameters")
-    protected <T extends Throwable> void delete_succeeds(String name, String username)
-            throws UserNotFoundException, NotAllowedException, QueryMalformedException, DatabaseNotFoundException,
-            DatabaseMalformedException {
+    protected <T extends Throwable> void delete_succeeds(String name, UUID userId) throws UserNotFoundException,
+            NotAllowedException, QueryMalformedException, DatabaseNotFoundException, DatabaseMalformedException,
+            KeycloakRemoteException, AccessDeniedException {
 
         /* test */
-        accessService.delete(DATABASE_1_ID, username);
+        accessService.delete(DATABASE_1_ID, userId);
     }
 
 }

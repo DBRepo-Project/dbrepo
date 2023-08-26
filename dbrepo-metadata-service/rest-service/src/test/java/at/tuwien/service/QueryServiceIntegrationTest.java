@@ -9,12 +9,8 @@ import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.exception.*;
-import at.tuwien.gateway.BrokerServiceGateway;
-import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.querystore.Query;
 import at.tuwien.repository.mdb.*;
-import at.tuwien.repository.sdb.ViewIdxRepository;
-import com.rabbitmq.client.Channel;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,7 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.testcontainers.containers.MariaDBContainer;
@@ -46,7 +41,6 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-
 @Log4j2
 @Testcontainers
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
@@ -61,16 +55,10 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     private DatabaseRepository databaseRepository;
 
     @Autowired
-    private RealmRepository realmRepository;
-
-    @Autowired
     private ImageRepository imageRepository;
 
     @Autowired
     private ContainerRepository containerRepository;
-
-    @Autowired
-    private UserRepository userRepository;
 
     @Autowired
     private ViewRepository viewRepository;
@@ -94,8 +82,6 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         MariaDbConfig.createInitDatabase(CONTAINER_1, DATABASE_2);
         MariaDbConfig.createInitDatabase(CONTAINER_1, DATABASE_1);
         /* metadata database */
-        realmRepository.save(REALM_DBREPO);
-        userRepository.saveAll(List.of(USER_1, USER_2));
         imageRepository.save(IMAGE_1);
         containerRepository.saveAll(List.of(CONTAINER_1_SIMPLE, CONTAINER_2_SIMPLE));
         databaseRepository.saveAll(List.of(DATABASE_1_SIMPLE, DATABASE_2_SIMPLE));
@@ -303,7 +289,8 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     @Test
     public void execute_succeeds() throws DatabaseConnectionException, TableMalformedException,
             DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException, UserNotFoundException,
-            QueryStoreException, ColumnParseException, InterruptedException {
+            QueryStoreException, ColumnParseException, InterruptedException, KeycloakRemoteException,
+            AccessDeniedException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement("SELECT n.`firstname`, n.`lastname`, n.`birth`, n.`reminder`, z.`animal_name`, z.`legs` FROM `likes` l JOIN `names` n ON l.`name_id` = n.`id` JOIN `mock_view` z ON z.`id` = l.`zoo_id`")
                 .build();
@@ -338,8 +325,9 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void execute_withoutNullField_succeeds() throws DatabaseConnectionException, TableMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException,
-            UserNotFoundException, QueryStoreException, ColumnParseException, InterruptedException {
+            DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException, UserNotFoundException,
+            QueryStoreException, ColumnParseException, InterruptedException, KeycloakRemoteException,
+            AccessDeniedException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement("SELECT `location`, `lng` FROM `weather_location` WHERE `lat` IS NULL")
                 .build();
@@ -358,8 +346,8 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void execute_withoutNullField2_succeeds() throws DatabaseConnectionException, TableMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException,
-            UserNotFoundException, QueryStoreException, ColumnParseException, InterruptedException {
+            DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException, UserNotFoundException,
+            QueryStoreException, ColumnParseException, InterruptedException, KeycloakRemoteException, AccessDeniedException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement("SELECT `location` FROM `weather_location` WHERE `lat` IS NULL")
                 .build();
@@ -378,8 +366,9 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void execute_withNullField_succeeds() throws DatabaseConnectionException, TableMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException,
-            UserNotFoundException, QueryStoreException, ColumnParseException, InterruptedException {
+            DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException, UserNotFoundException,
+            QueryStoreException, ColumnParseException, InterruptedException, KeycloakRemoteException,
+            AccessDeniedException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement("SELECT `lat`, `lng` FROM `weather_location` WHERE `lat` IS NULL")
                 .build();
@@ -394,8 +383,8 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void execute_aliases_succeeds() throws DatabaseConnectionException, TableMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException,
-            UserNotFoundException, QueryStoreException, ColumnParseException, InterruptedException {
+            DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException, UserNotFoundException,
+            QueryStoreException, ColumnParseException, InterruptedException, KeycloakRemoteException, AccessDeniedException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement("SELECT aus.location as a, loc.location from weather_aus aus, weather_location loc")
                 .build();
@@ -428,8 +417,9 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void execute_aliasesWithDatabaseName_succeeds() throws DatabaseConnectionException, TableMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException,
-            UserNotFoundException, QueryStoreException, ColumnParseException, InterruptedException {
+            DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException, UserNotFoundException,
+            QueryStoreException, ColumnParseException, InterruptedException, KeycloakRemoteException,
+            AccessDeniedException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement("SELECT aus.location as a, loc.location from weather.weather_aus aus, weather.weather_location loc")
                 .build();

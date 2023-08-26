@@ -1,8 +1,8 @@
 package at.tuwien.service;
 
+import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
-import at.tuwien.entities.user.User;
 import at.tuwien.exception.AmqpException;
 import at.tuwien.exception.BrokerVirtualHostCreationException;
 import at.tuwien.exception.BrokerVirtualHostGrantException;
@@ -42,10 +42,10 @@ public interface MessageQueueService {
     /**
      * Create user on the broker service
      *
-     * @param user The new user.
+     * @param username The username.
      * @throws BrokerVirtualHostCreationException The user could not be created.
      */
-    void createUser(User user) throws BrokerVirtualHostCreationException;
+    void createUser(String username) throws BrokerVirtualHostCreationException;
 
 
     /**
@@ -54,7 +54,7 @@ public interface MessageQueueService {
      * @param user The user.
      * @throws BrokerVirtualHostGrantException The Broker Service refused to grant the permissions.
      */
-    void updatePermissions(User user) throws BrokerVirtualHostGrantException;
+    void updatePermissions(UserDto user) throws BrokerVirtualHostGrantException;
 
     /**
      * Deletes an exchange for a database.
@@ -67,9 +67,9 @@ public interface MessageQueueService {
     /**
      * Creates a consumer on the provided queue with name and container id and database id for table id.
      *
-     * @param queueName   The queue name.
-     * @param databaseId  The database id.
-     * @param tableId     The table id.
+     * @param queueName  The queue name.
+     * @param databaseId The database id.
+     * @param tableId    The table id.
      * @throws AmqpException The consumer could not be created.
      */
     void createConsumer(String queueName, Long databaseId, Long tableId) throws AmqpException;

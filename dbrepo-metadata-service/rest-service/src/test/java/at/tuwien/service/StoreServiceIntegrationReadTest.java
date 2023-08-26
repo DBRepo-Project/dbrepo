@@ -6,13 +6,9 @@ import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.MariaDbContainerConfig;
 import at.tuwien.exception.*;
-import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.querystore.Query;
 import at.tuwien.repository.mdb.DatabaseRepository;
 import at.tuwien.repository.mdb.TableRepository;
-import at.tuwien.repository.mdb.UserRepository;
-import at.tuwien.repository.sdb.ViewIdxRepository;
-import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.BeforeAll;
@@ -51,9 +47,6 @@ public class StoreServiceIntegrationReadTest extends BaseUnitTest {
     private TableRepository tableRepository;
 
     @MockBean
-    private UserRepository userRepository;
-
-    @MockBean
     private DatabaseRepository databaseRepository;
 
     @Autowired
@@ -73,7 +66,6 @@ public class StoreServiceIntegrationReadTest extends BaseUnitTest {
     @BeforeEach
     public void beforeEach() {
         /* metadata database */
-        userRepository.save(USER_5);
         DATABASE_1.setTables(List.of(TABLE_1, TABLE_2, TABLE_3, TABLE_7));
         DATABASE_1.setViews(List.of(VIEW_3));
     }

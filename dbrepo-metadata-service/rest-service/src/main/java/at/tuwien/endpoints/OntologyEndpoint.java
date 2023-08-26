@@ -103,7 +103,8 @@ public class OntologyEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<OntologyDto> create(@NotNull @Valid @RequestBody OntologyCreateDto data,
-                                              @NotNull Principal principal) throws UserNotFoundException {
+                                              @NotNull Principal principal) throws UserNotFoundException,
+            KeycloakRemoteException, AccessDeniedException {
         log.debug("endpoint create ontology, data={}, principal={}", data, principal);
         final OntologyDto dto = ontologyMapper.ontologyToOntologyDto(ontologyService.create(data, principal));
         log.trace("create ontology resulted in dto {}", dto);

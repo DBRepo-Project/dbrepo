@@ -9,13 +9,13 @@ import at.tuwien.entities.database.View;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.identifier.IdentifierTitle;
 import at.tuwien.entities.identifier.IdentifierType;
-import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.IdentifierMapper;
 import at.tuwien.querystore.Query;
 import at.tuwien.repository.mdb.IdentifierRepository;
 import at.tuwien.repository.sdb.IdentifierIdxRepository;
 import at.tuwien.service.*;
+import at.tuwien.utils.UserUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.springframework.core.io.InputStreamResource;
@@ -25,12 +25,12 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.exceptions.TemplateInputException;
 
-import java.io.ByteArrayInputStream;
 import java.nio.charset.Charset;
 import java.security.Principal;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 @Slf4j
@@ -148,8 +148,7 @@ public class IdentifierServiceImpl implements IdentifierService {
         }
         /* create identifier */
         final Identifier identifier = identifierMapper.identifierCreateDtoToIdentifier(data);
-        final User creator = userService.findByUsername(principal.getName());
-        identifier.setCreator(creator);
+        identifier.setCreatedBy(UserUtil.getId(principal));
         identifier.setDatabaseId(data.getDatabaseId());
         final Database database = databaseService.find(data.getDatabaseId());
         identifier.setDatabase(database);
@@ -228,7 +227,6 @@ public class IdentifierServiceImpl implements IdentifierService {
             context.setVariable("identifierType", "url");
             context.setVariable("identifier", endpointConfig.getWebsiteUrl() + "/pid/" + identifier.getId());
         }
-        context.setVariable("creator", identifier.getCreator());
         context.setVariable("creators", identifier.getCreators());
         context.setVariable("title", preferTitle(identifier.getTitles()));
         context.setVariable("publisher", identifier.getPublisher());
@@ -277,8 +275,7 @@ public class IdentifierServiceImpl implements IdentifierService {
         final Identifier identifier = identifierMapper.identifierUpdateDtoToIdentifier(data);
         identifier.setId(identifierId);
         identifier.setDoi(oldIdentifier.getDoi());
-        final User creator = userService.findByUsername(principal.getName());
-        identifier.setCreator(creator);
+        identifier.setCreatedBy(UserUtil.getId(principal));
         final Database database = databaseService.find(data.getDatabaseId());
         identifier.setDatabase(database);
         if (data.getType().equals(IdentifierTypeDto.SUBSET)) {

@@ -12,7 +12,6 @@ import at.tuwien.config.EndpointConfig;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.exception.*;
 import at.tuwien.repository.mdb.*;
-import at.tuwien.repository.sdb.IdentifierIdxRepository;
 import at.tuwien.service.impl.IdentifierServiceImpl;
 import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.BeforeEach;
@@ -69,12 +68,6 @@ public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
     @Autowired
     private IdentifierRepository identifierRepository;
 
-    @Autowired
-    private RealmRepository realmRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
     @MockBean
     @Qualifier("restTemplate")
     private RestTemplate restTemplate;
@@ -90,9 +83,7 @@ public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
 
     @BeforeEach
     public void beforeEach() {
-        realmRepository.save(REALM_DBREPO);
         licenseRepository.save(LICENSE_1);
-        userRepository.save(USER_1);
         imageRepository.save(IMAGE_1);
         containerRepository.save(CONTAINER_1_SIMPLE);
         databaseRepository.save(DATABASE_1_SIMPLE);
@@ -105,7 +96,6 @@ public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
             IdentifierRequestException, ViewNotFoundException, QueryStoreException, DatabaseConnectionException,
             ImageNotSupportedException {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
-        final String bearer = "Bearer abcxyz";
         final DataCiteBody<DataCiteDoi> response =
                 new DataCiteBody<>(new DataCiteData<>(null, "dois", new DataCiteDoi(IDENTIFIER_1_DOI_NOT_NULL)));
 

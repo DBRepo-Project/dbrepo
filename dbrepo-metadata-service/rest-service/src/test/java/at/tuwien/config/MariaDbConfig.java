@@ -6,7 +6,6 @@ import at.tuwien.api.database.table.columns.ColumnTypeDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
-import at.tuwien.entities.user.User;
 import at.tuwien.exception.QueryMalformedException;
 import at.tuwien.mapper.DatabaseMapper;
 import at.tuwien.querystore.Query;
@@ -123,18 +122,18 @@ public class MariaDbConfig {
         }
     }
 
-    public void mockGrantUserPermissions(Container container, Database database, User user) throws SQLException,
+    public void mockGrantUserPermissions(Container container, Database database, String username) throws SQLException,
             QueryMalformedException {
         final String jdbc = "jdbc:mariadb://" + container.getHost() + ":" + container.getPort() + "/" + database.getInternalName();
         log.trace("connect to database {}", jdbc);
         try (Connection connection = DriverManager.getConnection(jdbc, container.getPrivilegedUsername(), container.getPrivilegedPassword())) {
             final DatabaseGiveAccessDto access = DatabaseGiveAccessDto.builder()
-                    .username(user.getUsername())
+                    .username(username)
                     .type(AccessTypeDto.WRITE_ALL)
                     .build();
             final PreparedStatement statement1 = databaseMapper.rawGrantUserAccessQuery(connection, access);
             statement1.executeUpdate();
-            final PreparedStatement statement2 = databaseMapper.rawGrantUserProcedure(connection, user);
+            final PreparedStatement statement2 = databaseMapper.rawGrantUserProcedure(connection, username);
             statement2.executeUpdate();
             final PreparedStatement statement3 = databaseMapper.rawFlushPrivileges(connection);
             statement3.executeUpdate();

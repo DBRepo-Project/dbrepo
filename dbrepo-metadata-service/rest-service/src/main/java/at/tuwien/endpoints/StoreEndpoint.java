@@ -5,8 +5,8 @@ import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.query.QueryPersistDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.api.identifier.IdentifierBriefDto;
+import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.identifier.Identifier;
-import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.IdentifierMapper;
 import at.tuwien.mapper.QueryMapper;
@@ -176,7 +176,7 @@ public class StoreEndpoint {
                                          Principal principal)
             throws DatabaseNotFoundException, ImageNotSupportedException,
             QueryStoreException, QueryNotFoundException, UserNotFoundException, NotAllowedException,
-            DatabaseConnectionException {
+            DatabaseConnectionException, KeycloakRemoteException, AccessDeniedException {
         log.debug("endpoint find query, databaseId={}, queryId={}, principal={}", databaseId,
                 queryId, principal);
         /* check */
@@ -184,8 +184,7 @@ public class StoreEndpoint {
         /* find */
         final Query query = storeService.findOne(databaseId, queryId, principal);
         final QueryDto dto = queryMapper.queryToQueryDto(query);
-        final User creator = userService.findByUsername(query.getCreatedBy());
-        dto.setCreator(userMapper.userToUserDto(creator));
+        dto.setCreator(userService.findByUsername(query.getCreatedBy()));
         final List<Identifier> identifiers = identifierService.findByDatabaseIdAndQueryId(databaseId, queryId);
         if (!identifiers.isEmpty()) {
             dto.setIdentifier(identifierMapper.identifierToIdentifierDto(identifiers.get(0)));
@@ -237,7 +236,7 @@ public class StoreEndpoint {
                                             @NotNull Principal principal)
             throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
             DatabaseConnectionException, UserNotFoundException, QueryNotFoundException,
-            QueryAlreadyPersistedException, NotAllowedException {
+            QueryAlreadyPersistedException, NotAllowedException, KeycloakRemoteException, AccessDeniedException {
         log.debug("endpoint persist query, container, databaseId={}, queryId={}, principal={}",
                 databaseId, queryId, principal);
         /* check */
@@ -252,8 +251,7 @@ public class StoreEndpoint {
         /* persist */
         final Query query = storeService.persist(databaseId, queryId, data);
         final QueryDto dto = queryMapper.queryToQueryDto(query);
-        final User creator = userService.findByUsername(query.getCreatedBy());
-        dto.setCreator(userMapper.userToUserDto(creator));
+        dto.setCreator(userService.findByUsername(query.getCreatedBy()));
         log.trace("persist query resulted in query {}", dto);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(dto);

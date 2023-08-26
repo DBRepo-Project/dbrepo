@@ -8,7 +8,6 @@ import at.tuwien.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
-import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.QueryMapper;
 import at.tuwien.mapper.TableMapper;
@@ -20,6 +19,7 @@ import at.tuwien.service.DatabaseService;
 import at.tuwien.service.SemanticService;
 import at.tuwien.service.TableService;
 import at.tuwien.service.UserService;
+import at.tuwien.utils.UserUtil;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -215,9 +215,8 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         entity.setTdbid(databaseId);
         entity.setDatabase(database);
         entity.setConstraints(null);
-        final User creator = userService.findByUsername(principal.getName());
-        entity.setCreator(creator);
-        entity.setOwner(creator);
+        entity.setCreatedBy(UserUtil.getId(principal));
+        entity.setOwnedBy(UserUtil.getId(principal));
         /* map columns */
         entity.setColumns(createDto.getColumns()
                 .stream()

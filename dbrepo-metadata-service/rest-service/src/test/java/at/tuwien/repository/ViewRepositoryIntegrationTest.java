@@ -4,11 +4,7 @@ import at.tuwien.BaseUnitTest;
 import at.tuwien.annotations.MockAmqp;
 import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.entities.database.View;
-import at.tuwien.gateway.BrokerServiceGateway;
-import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.repository.mdb.*;
-import at.tuwien.repository.sdb.ViewIdxRepository;
-import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.junit.Rule;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,7 +13,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.rules.Timeout;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -35,12 +30,6 @@ public class ViewRepositoryIntegrationTest extends BaseUnitTest {
 
     @Autowired
     private ImageRepository imageRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private RealmRepository realmRepository;
 
     @Autowired
     private ContainerRepository containerRepository;
@@ -62,8 +51,6 @@ public class ViewRepositoryIntegrationTest extends BaseUnitTest {
 
     @BeforeEach
     public void beforeEach() {
-        realmRepository.save(REALM_DBREPO);
-        userRepository.saveAll(List.of(USER_1, USER_2));
         imageRepository.save(IMAGE_1);
         containerRepository.saveAll(List.of(CONTAINER_1_SIMPLE, CONTAINER_2_SIMPLE));
         databaseRepository.saveAll(List.of(DATABASE_1_SIMPLE, DATABASE_2_SIMPLE));

@@ -10,7 +10,6 @@ import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.exception.NotAllowedException;
 import at.tuwien.repository.mdb.DatabaseAccessRepository;
 import at.tuwien.repository.mdb.DatabaseRepository;
-import at.tuwien.repository.mdb.UserRepository;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,9 +34,6 @@ public class AccessServiceUnitTest extends BaseUnitTest {
 
     @MockBean
     private DatabaseRepository databaseRepository;
-
-    @MockBean
-    private UserRepository userRepository;
 
     @MockBean
     private DatabaseAccessRepository databaseAccessRepository;
@@ -103,12 +99,10 @@ public class AccessServiceUnitTest extends BaseUnitTest {
         /* mock */
         when(databaseRepository.findById(DATABASE_1_ID))
                 .thenReturn(Optional.of(DATABASE_1));
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            accessService.update(DATABASE_1_ID, USER_1_USERNAME, request);
+            accessService.update(DATABASE_1_ID, USER_1_ID, request);
         });
     }
 

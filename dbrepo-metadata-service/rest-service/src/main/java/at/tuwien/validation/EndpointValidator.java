@@ -12,12 +12,12 @@ import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.identifier.VisibilityType;
-import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.repository.mdb.IdentifierRepository;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.TableService;
+import at.tuwien.utils.UserUtil;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -104,7 +104,7 @@ public class EndpointValidator {
         final Optional<ColumnCreateDto> optional2 = data.getColumns()
                 .stream()
                 .filter(c -> c.getType().equals(ColumnTypeDto.ENUM))
-                .filter(c -> c.getEnums() == null || c.getEnums().size() == 0)
+                .filter(c -> c.getEnums() == null || c.getEnums().isEmpty())
                 .findFirst();
         if (optional2.isPresent()) {
             throw new TableMalformedException("Validation failed: column " + optional2.get().getName() + " needs at least 1 allowed enum value");
@@ -113,7 +113,7 @@ public class EndpointValidator {
         final Optional<ColumnCreateDto> optional3 = data.getColumns()
                 .stream()
                 .filter(c -> c.getType().equals(ColumnTypeDto.SET))
-                .filter(c -> c.getEnums() == null || c.getSets().size() == 0)
+                .filter(c -> c.getEnums() == null || c.getSets().isEmpty())
                 .findFirst();
         if (optional3.isPresent()) {
             throw new TableMalformedException("Validation failed: column " + optional3.get().getName() + " needs at least 1 allowed set value");
@@ -130,21 +130,21 @@ public class EndpointValidator {
     }
 
     public void validateOnlyOwnerOrWriteAll(Long databaseId, Long tableId, Principal principal)
-            throws DatabaseNotFoundException, NotAllowedException, TableNotFoundException, ContainerNotFoundException {
+            throws DatabaseNotFoundException, NotAllowedException, TableNotFoundException {
         if (principal == null) {
             log.error("Access not allowed: no authorization provided");
             throw new NotAllowedException("Access not allowed: no authorization provided");
         }
         final Table table = tableService.findById(databaseId, tableId);
         log.trace("principal: {}", principal.getName());
-        log.trace("table creator: {}", table.getCreator().getUsername());
+        log.trace("table creator: {}", table.getCreatedBy());
         final DatabaseAccess access = accessService.find(databaseId, principal.getName());
         log.trace("found access {}", access);
         if (access.getType().equals(AccessType.READ)) {
             log.error("Access not allowed: insufficient access (only read-access)");
             throw new NotAllowedException("Access not allowed: insufficient access (only read-access)");
         }
-        if (table.getCreator().equalsPrincipal(principal) && (access.getType().equals(AccessType.WRITE_OWN) || access.getType().equals(AccessType.WRITE_ALL))) {
+        if (table.getCreatedBy().equals(UserUtil.getId(principal)) && (access.getType().equals(AccessType.WRITE_OWN) || access.getType().equals(AccessType.WRITE_ALL))) {
             log.trace("grant access: table creator with write access");
             return;
         }
@@ -152,7 +152,7 @@ public class EndpointValidator {
             log.trace("grant access: write-all access");
             return;
         }
-        log.error("Access not allowed: insufficient access (neither creator {} nor write-all access)", table.getCreator().getUsername());
+        log.error("Access not allowed: insufficient access (neither creator {} nor write-all access)", table.getCreatedBy());
         throw new NotAllowedException("Access not allowed: insufficient access (neither creator nor write-all access)");
     }
 
@@ -169,7 +169,7 @@ public class EndpointValidator {
             throw new NotAllowedException("Access not allowed: no authorization provided");
         }
         log.trace("principal: {}", principal.getName());
-        if (!User.hasRole(principal, role)) {
+        if (!UserUtil.hasRole(principal, role)) {
             log.error("Access not allowed: role {} missing", role);
             throw new NotAllowedException("Access not allowed: role " + role + " missing");
         }
@@ -218,7 +218,7 @@ public class EndpointValidator {
                         words.add(keyword);
                     }
                 });
-        if (words.size() == 0) {
+        if (words.isEmpty()) {
             return;
         }
         log.error("Query contains forbidden keyword(s): {}", words);
@@ -249,7 +249,7 @@ public class EndpointValidator {
             final Identifier identifier = optional.get();
             log.trace("found identifier for query with id {}", queryId);
             if (principal != null && identifier.getVisibility().equals(VisibilityType.SELF)) {
-                if (identifier.getCreator().getUsername().equals(principal.getName())) {
+                if (identifier.getCreatedBy().equals(UserUtil.getId(principal))) {
                     return;
                 }
                 log.error("Access not allowed: visibility is 'self' and user is not the creator");
@@ -279,7 +279,7 @@ public class EndpointValidator {
             log.debug("user {} has write-all access, skip.", principal.getName());
             return;
         }
-        if (table.getOwner().getUsername().equals(principal.getName()) && access.getType().equals(AccessType.WRITE_OWN)) {
+        if (table.getOwnedBy().equals(UserUtil.getId(principal)) && access.getType().equals(AccessType.WRITE_OWN)) {
             log.debug("user {} has write-own access to their own table, skip.", principal.getName());
             return;
         }

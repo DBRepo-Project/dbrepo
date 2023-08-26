@@ -67,6 +67,9 @@ fda:
   jwt:
     issuer: "${JWT_ISSUER}"
     public_key: "${JWT_PUBKEY}"
+  keycloak:
+    username: "${KEYCLOAK_ADMIN}"
+    password: "${KEYCLOAK_ADMIN_PASSWORD}"
   consumers: "${BROKER_CONSUMERS}"
   unsupported: "${NOT_SUPPORTED_KEYWORDS}"
   website: "${WEBSITE}"

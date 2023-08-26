@@ -9,12 +9,10 @@ import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.identifier.VisibilityType;
 import at.tuwien.exception.*;
 import at.tuwien.repository.mdb.IdentifierRepository;
-import at.tuwien.repository.sdb.ViewIdxRepository;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.TableService;
 import at.tuwien.validation.EndpointValidator;
-import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -235,7 +233,7 @@ public class EndpointValidatorUnitTest extends BaseUnitTest {
     public void validateOnlyAccessOrPublic2_privateAnonymousHasSelfIdentifier_fails() throws DatabaseNotFoundException {
         final Identifier identifier = Identifier.builder()
                 .visibility(VisibilityType.SELF)
-                .creator(USER_1)
+                .createdBy(USER_1_ID)
                 .build();
 
         /* mock */
@@ -255,7 +253,7 @@ public class EndpointValidatorUnitTest extends BaseUnitTest {
             NotAllowedException {
         final Identifier identifier = Identifier.builder()
                 .visibility(VisibilityType.SELF)
-                .creator(USER_1)
+                .createdBy(USER_1_ID)
                 .build();
 
         /* mock */
@@ -311,7 +309,7 @@ public class EndpointValidatorUnitTest extends BaseUnitTest {
     public void validateOnlyWriteOwnOrWriteAllAccess_privateHasWriteAllAccess_succeeds() throws NotAllowedException,
             TableNotFoundException, DatabaseNotFoundException {
         final Table table = Table.builder()
-                .owner(USER_2)
+                .ownedBy(USER_2_ID)
                 .build();
 
         /* mock */

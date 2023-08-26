@@ -3,7 +3,6 @@ package at.tuwien.service;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.annotations.MockAmqp;
 import at.tuwien.api.database.query.QueryDto;
-import at.tuwien.api.identifier.IdentifierSaveDto;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.identifier.IdentifierDescription;
 import at.tuwien.entities.identifier.IdentifierTitle;
@@ -74,16 +73,10 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     private ImageRepository imageRepository;
 
     @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
     private ViewRepository viewRepository;
 
     @Autowired
     private TableRepository tableRepository;
-
-    @Autowired
-    private RealmRepository realmRepository;
 
     @Container
     private static final OpensearchContainer opensearchContainer = new OpensearchContainer(DockerImageName.parse("opensearchproject/opensearch:2.8.0"));
@@ -100,12 +93,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     @BeforeEach
     public void beforeEach() {
         imageRepository.save(IMAGE_1_SIMPLE);
-        realmRepository.save(REALM_DBREPO);
         licenseRepository.save(LICENSE_1);
-        userRepository.save(USER_1_SIMPLE);
-        userRepository.save(USER_2_SIMPLE);
-        userRepository.save(USER_3_SIMPLE);
-        userRepository.save(USER_4_SIMPLE);
         containerRepository.save(CONTAINER_1_SIMPLE);
         databaseRepository.save(DATABASE_1_SIMPLE);
         containerRepository.save(CONTAINER_2_SIMPLE);
@@ -429,7 +417,6 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
 
         /* test */
         identifierService.delete(IDENTIFIER_1_ID);
-        assertTrue(userRepository.findById(IDENTIFIER_1_CREATED_BY).isPresent()) /* no cascade of delete */;
         /* open search database */
         assertFalse(identifierIdxRepository.existsById(IDENTIFIER_1_ID));
     }

@@ -1,15 +1,8 @@
 package at.tuwien.service;
 
 import at.tuwien.api.auth.SignupRequestDto;
-import at.tuwien.api.user.UserPasswordDto;
-import at.tuwien.api.user.UserThemeSetDto;
-import at.tuwien.api.user.UserUpdateDto;
-import at.tuwien.entities.user.Realm;
-import at.tuwien.entities.user.User;
-import at.tuwien.exception.UserAlreadyExistsException;
-import at.tuwien.exception.UserAttributeNotFoundException;
-import at.tuwien.exception.UserEmailAlreadyExistsException;
-import at.tuwien.exception.UserNotFoundException;
+import at.tuwien.api.user.*;
+import at.tuwien.exception.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -21,7 +14,7 @@ public interface UserService {
      *
      * @return The list of users.
      */
-    List<User> findAll();
+    List<UserBriefDto> findAll() throws KeycloakRemoteException, AccessDeniedException;
 
     /**
      * Finds a user by username.
@@ -30,7 +23,7 @@ public interface UserService {
      * @return The user, if successfully.
      * @throws UserNotFoundException The user with this username was not found in the metadata database.
      */
-    User findByUsername(String username) throws UserNotFoundException;
+    UserDto findByUsername(String username) throws UserNotFoundException, KeycloakRemoteException, AccessDeniedException;
 
     /**
      * Finds a specific user in the metadata database by given id.
@@ -39,17 +32,17 @@ public interface UserService {
      * @return The user if successful. False otherwise.
      * @throws UserNotFoundException The user was not found.
      */
-    User find(UUID id) throws UserNotFoundException;
+    UserDto find(UUID id) throws UserNotFoundException, KeycloakRemoteException, AccessDeniedException;
 
     /**
      * Creates a user in the metadata database managed by Keycloak in the given realm.
      *
      * @param data  The user data.
-     * @param realm The realm this user should be created.
      * @return The user, if successful. False otherwise.
      * @throws UserAlreadyExistsException The user already exists in the metadata database.
      */
-    User create(SignupRequestDto data, Realm realm) throws UserAlreadyExistsException;
+    UserDto create(SignupRequestDto data) throws UserAlreadyExistsException, AccessDeniedException,
+            KeycloakRemoteException, UserNotFoundException;
 
     /**
      * Updates the user information for a user with given id in the metadata database.
@@ -60,17 +53,16 @@ public interface UserService {
      * @throws UserNotFoundException          The user was not found.
      * @throws UserAttributeNotFoundException One or more user attributes for the user information were not found.
      */
-    User modify(UUID id, UserUpdateDto data) throws UserNotFoundException, UserAttributeNotFoundException;
+    UserDto modify(UUID id, UserUpdateDto data) throws UserNotFoundException, UserAttributeNotFoundException, KeycloakRemoteException, AccessDeniedException;
 
     /**
      * Updates the user password for a user with given id.
      *
      * @param id   The user id.
      * @param data The new password.
-     * @return The user if successful. False otherwise.
      * @throws UserNotFoundException The user was not found.
      */
-    User updatePassword(UUID id, UserPasswordDto data) throws UserNotFoundException;
+    void updatePassword(UUID id, UserPasswordDto data) throws UserNotFoundException, KeycloakRemoteException, AccessDeniedException;
 
     /**
      * Updates the user theme for a user with given id.
@@ -81,7 +73,7 @@ public interface UserService {
      * @throws UserNotFoundException          The user was not found.
      * @throws UserAttributeNotFoundException One or more user attributes for the user information were not found.
      */
-    User toggleTheme(UUID id, UserThemeSetDto data) throws UserNotFoundException, UserAttributeNotFoundException;
+    UserDto toggleTheme(UUID id, UserThemeSetDto data) throws UserNotFoundException, UserAttributeNotFoundException, KeycloakRemoteException, AccessDeniedException;
 
     /**
      * Validates if a user with the given username already exists in the metadata database.

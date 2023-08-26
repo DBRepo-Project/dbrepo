@@ -7,10 +7,10 @@ import at.tuwien.api.database.table.TableCsvDeleteDto;
 import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.api.database.table.TableCsvUpdateDto;
 import at.tuwien.entities.database.Database;
-import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.QueryService;
+import at.tuwien.utils.UserUtil;
 import at.tuwien.validation.EndpointValidator;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
@@ -155,7 +155,7 @@ public class TableDataEndpoint {
         endpointValidator.validateDataParams(page, size, sortDirection, sortColumn);
         endpointValidator.validateOnlyAccessOrPublic(databaseId, principal);
         final Database database = databaseService.find(databaseId);
-        if (!database.getIsPublic() && !User.hasRole(principal, "view-table-data")) {
+        if (!database.getIsPublic() && !UserUtil.hasRole(principal, "view-table-data")) {
             log.error("Failed to view table data: database with id {} is private and user has no authority", databaseId);
             throw new NotAllowedException("Failed to view table data: database with id " + databaseId + " is private and user has no authority");
         }
@@ -182,7 +182,7 @@ public class TableDataEndpoint {
         /* check */
         endpointValidator.validateOnlyAccessOrPublic(databaseId, principal);
         final Database database = databaseService.find(databaseId);
-        if (!database.getIsPublic() && !User.hasRole(principal, "view-table-data")) {
+        if (!database.getIsPublic() && !UserUtil.hasRole(principal, "view-table-data")) {
             log.error("Failed to view table data: database with id {} is private and user has no authority", databaseId);
             throw new NotAllowedException("Failed to view table data: database with id " + databaseId + " is private and user has no authority");
         }

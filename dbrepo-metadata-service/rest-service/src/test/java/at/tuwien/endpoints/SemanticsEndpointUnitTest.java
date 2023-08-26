@@ -16,8 +16,6 @@ import at.tuwien.exception.DatabaseNotFoundException;
 import at.tuwien.exception.QueryMalformedException;
 import at.tuwien.exception.TableColumnNotFoundException;
 import at.tuwien.exception.TableNotFoundException;
-import at.tuwien.repository.sdb.ConceptIdxRepository;
-import at.tuwien.repository.sdb.UnitIdxRepository;
 import at.tuwien.service.EntityService;
 import at.tuwien.service.SemanticService;
 import lombok.extern.log4j.Log4j2;

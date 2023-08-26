@@ -9,14 +9,12 @@ import at.tuwien.api.identifier.IdentifierTitleDto;
 import at.tuwien.api.identifier.IdentifierTypeDto;
 import at.tuwien.exception.NotAllowedException;
 import at.tuwien.repository.mdb.*;
-import at.tuwien.repository.sdb.IdentifierIdxRepository;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -37,8 +35,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @MockAmqp
 @MockOpensearch
 public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
-    @Autowired
-    private ViewRepository viewRepository;
+
     @Autowired
     private TableRepository tableRepository;
 
@@ -52,13 +49,7 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
     private ImageRepository imageRepository;
 
     @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
     private ContainerRepository containerRepository;
-
-    @Autowired
-    private RealmRepository realmRepository;
 
     @Autowired
     private LicenseRepository licenseRepository;
@@ -69,12 +60,7 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
     @BeforeEach
     public void beforeEach() {
         imageRepository.save(IMAGE_1);
-        realmRepository.save(REALM_DBREPO);
         licenseRepository.save(LICENSE_1);
-        userRepository.save(USER_1);
-        userRepository.save(USER_2);
-        userRepository.save(USER_3);
-        userRepository.save(USER_4);
         containerRepository.save(CONTAINER_1_SIMPLE);
         containerRepository.save(CONTAINER_2_SIMPLE);
         containerRepository.save(CONTAINER_3_SIMPLE);

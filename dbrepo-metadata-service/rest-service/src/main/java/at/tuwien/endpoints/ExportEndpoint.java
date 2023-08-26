@@ -2,10 +2,10 @@ package at.tuwien.endpoints;
 
 import at.tuwien.ExportResource;
 import at.tuwien.entities.database.Database;
-import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.QueryService;
+import at.tuwien.utils.UserUtil;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -45,8 +45,8 @@ public class ExportEndpoint {
                                                       @RequestParam(required = false) Instant timestamp,
                                                       Principal principal)
             throws TableNotFoundException, DatabaseConnectionException, TableMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, PaginationException, ContainerNotFoundException,
-            FileStorageException, QueryMalformedException, UserNotFoundException, NotAllowedException {
+            DatabaseNotFoundException, ImageNotSupportedException, PaginationException, FileStorageException,
+            QueryMalformedException, UserNotFoundException, NotAllowedException {
         log.debug("endpoint export table, id={}, tableId={}, timestamp={}, principal={}", databaseId, tableId, timestamp, principal);
         final Database database = databaseService.find(databaseId);
         if (!database.getIsPublic()) {
@@ -54,7 +54,7 @@ public class ExportEndpoint {
                 log.error("Failed to export private table: principal is null");
                 throw new NotAllowedException("Failed to export private table: principal is null");
             }
-            if (!User.hasRole(principal, "export-table-data")) {
+            if (!UserUtil.hasRole(principal, "export-table-data")) {
                 log.error("Failed to export private table: role missing");
                 throw new NotAllowedException("Failed to export private table: role missing");
             }

@@ -44,7 +44,7 @@ public interface QueryService {
     QueryResultDto execute(Long databaseId, ExecuteStatementDto statement, Principal principal, Long page, Long size,
                            SortType sortDirection, String sortColumn) throws DatabaseNotFoundException,
             ImageNotSupportedException, QueryMalformedException, QueryStoreException, ColumnParseException,
-            UserNotFoundException, TableMalformedException, DatabaseConnectionException;
+            UserNotFoundException, TableMalformedException, DatabaseConnectionException, KeycloakRemoteException, AccessDeniedException;
 
     /**
      * Re-Executes an arbitrary query on the database. We allow the user to only view the data, therefore the

@@ -8,8 +8,6 @@ import at.tuwien.entities.container.Container;
 import at.tuwien.exception.*;
 import at.tuwien.repository.mdb.ContainerRepository;
 import at.tuwien.repository.mdb.ImageRepository;
-import at.tuwien.repository.mdb.RealmRepository;
-import at.tuwien.repository.mdb.UserRepository;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,20 +37,11 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     private ImageRepository imageRepository;
 
     @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
     private ContainerService containerService;
-
-    @Autowired
-    private RealmRepository realmRepository;
 
     @BeforeEach
     public void beforeEach() {
         /* mock data */
-        realmRepository.save(REALM_DBREPO);
-        userRepository.save(USER_1_SIMPLE);
-        userRepository.save(USER_2_SIMPLE);
         imageRepository.save(IMAGE_1_SIMPLE);
     }
 
@@ -163,7 +152,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void remove_succeeds() throws ContainerStillRunningException, ContainerNotFoundException, ContainerAlreadyRemovedException {
+    public void remove_succeeds() throws ContainerNotFoundException {
 
         /* mock */
         containerRepository.save(CONTAINER_1);

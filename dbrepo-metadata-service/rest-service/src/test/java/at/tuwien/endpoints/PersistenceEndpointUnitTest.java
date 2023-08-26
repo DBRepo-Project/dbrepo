@@ -7,17 +7,13 @@ import at.tuwien.api.identifier.BibliographyTypeDto;
 import at.tuwien.api.identifier.CreatorDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.identifier.IdentifierSaveDto;
+import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.identifier.Identifier;
-import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
-import at.tuwien.repository.sdb.IdentifierIdxRepository;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.IdentifierService;
 import at.tuwien.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Disabled;
@@ -26,8 +22,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Primary;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,7 +35,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.Principal;
-import java.util.TimeZone;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -574,7 +567,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            generic_update(IDENTIFIER_3_ID, IDENTIFIER_3, IDENTIFIER_3_DTO_UPDATE_REQUEST, USER_4_USERNAME, USER_4, USER_4_PRINCIPAL);
+            generic_update(IDENTIFIER_3_ID, IDENTIFIER_3, IDENTIFIER_3_DTO_UPDATE_REQUEST, USER_4_USERNAME, USER_4_DTO, USER_4_PRINCIPAL);
         });
     }
 
@@ -582,10 +575,11 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     @WithMockUser(username = USER_3_USERNAME, authorities = {"modify-identifier-metadata"})
     public void update_hasRoleNoAccess_succeeds() throws UserNotFoundException, NotAllowedException,
             IdentifierNotFoundException, IdentifierRequestException, QueryNotFoundException, DatabaseNotFoundException,
-            RemoteUnavailableException, QueryStoreException, DatabaseConnectionException, ImageNotSupportedException {
+            RemoteUnavailableException, QueryStoreException, DatabaseConnectionException, ImageNotSupportedException,
+            KeycloakRemoteException, at.tuwien.exception.AccessDeniedException {
 
         /* test */
-        generic_update(IDENTIFIER_3_ID, IDENTIFIER_3, IDENTIFIER_3_DTO_UPDATE_REQUEST, USER_3_USERNAME, USER_3, USER_3_PRINCIPAL);
+        generic_update(IDENTIFIER_3_ID, IDENTIFIER_3, IDENTIFIER_3_DTO_UPDATE_REQUEST, USER_3_USERNAME, USER_3_DTO, USER_3_PRINCIPAL);
     }
 
     @Test
@@ -593,14 +587,14 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     public void update_hasRoleHasAccess_succeeds() throws IdentifierNotFoundException, IdentifierRequestException,
             UserNotFoundException, at.tuwien.exception.AccessDeniedException, NotAllowedException,
             QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException, QueryStoreException,
-            DatabaseConnectionException, ImageNotSupportedException {
+            DatabaseConnectionException, ImageNotSupportedException, KeycloakRemoteException {
 
         /* mock */
         when(accessService.find(IDENTIFIER_3_DATABASE_ID, USER_3_ID))
                 .thenReturn(DATABASE_3_USER_3_READ_ACCESS);
 
         /* test */
-        generic_update(IDENTIFIER_3_ID, IDENTIFIER_3, IDENTIFIER_3_DTO_UPDATE_REQUEST, USER_3_USERNAME, USER_3, USER_3_PRINCIPAL);
+        generic_update(IDENTIFIER_3_ID, IDENTIFIER_3, IDENTIFIER_3_DTO_UPDATE_REQUEST, USER_3_USERNAME, USER_3_DTO, USER_3_PRINCIPAL);
     }
 
     @Test
@@ -639,10 +633,11 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
         return IOUtils.toString(inputStream, StandardCharsets.UTF_8);
     }
 
-    protected void generic_update(Long id, Identifier identifier, IdentifierSaveDto data, String username, User user,
+    protected void generic_update(Long id, Identifier identifier, IdentifierSaveDto data, String username, UserDto user,
                                   Principal principal) throws IdentifierNotFoundException, IdentifierRequestException,
             UserNotFoundException, NotAllowedException, QueryNotFoundException, DatabaseNotFoundException,
-            RemoteUnavailableException, QueryStoreException, DatabaseConnectionException, ImageNotSupportedException {
+            RemoteUnavailableException, QueryStoreException, DatabaseConnectionException, ImageNotSupportedException,
+            KeycloakRemoteException, at.tuwien.exception.AccessDeniedException {
 
         /* mock */
         if (identifier != null) {

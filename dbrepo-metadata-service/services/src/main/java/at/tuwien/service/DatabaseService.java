@@ -86,7 +86,7 @@ public interface DatabaseService {
     Database create(DatabaseCreateDto createDto, Principal principal)
             throws ImageNotSupportedException, ContainerNotFoundException,
             DatabaseMalformedException, AmqpException, ContainerConnectionException, UserNotFoundException,
-            DatabaseNameExistsException, DatabaseConnectionException, QueryMalformedException;
+            DatabaseNameExistsException, DatabaseConnectionException, QueryMalformedException, KeycloakRemoteException, AccessDeniedException;
 
     /**
      * Updates the visibility of the database.
@@ -107,5 +107,5 @@ public interface DatabaseService {
      * @throws DatabaseNotFoundException The database was not found in the metadata database.
      * @throws UserNotFoundException     The new user was not found in the metadata database.
      */
-    Database transfer(Long databaseId, DatabaseTransferDto transferDto) throws DatabaseNotFoundException, UserNotFoundException;
+    Database transfer(Long databaseId, DatabaseTransferDto transferDto) throws DatabaseNotFoundException, UserNotFoundException, KeycloakRemoteException, AccessDeniedException;
 }

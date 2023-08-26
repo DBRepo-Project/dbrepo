@@ -2,17 +2,13 @@ package at.tuwien.repository;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.annotations.MockAmqp;
-import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.api.database.ViewCreateDto;
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.exception.*;
-import at.tuwien.gateway.BrokerServiceGateway;
-import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.repository.mdb.*;
 import at.tuwien.repository.sdb.ViewIdxRepository;
 import at.tuwien.service.ViewService;
-import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.junit.Rule;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,7 +18,6 @@ import org.junit.rules.Timeout;
 import org.opensearch.testcontainers.OpensearchContainer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -39,7 +34,6 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-
 @Log4j2
 @Testcontainers
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
@@ -49,13 +43,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class ViewIdxRepositoryIntegrationTest extends BaseUnitTest {
 
     @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
     private DatabaseRepository databaseRepository;
-
-    @Autowired
-    private RealmRepository realmRepository;
 
     @Autowired
     private ImageRepository imageRepository;
@@ -101,9 +89,7 @@ public class ViewIdxRepositoryIntegrationTest extends BaseUnitTest {
         TABLE_1.setColumns(TABLE_1_COLUMNS);
         TABLE_2.setColumns(TABLE_2_COLUMNS);
         /* metadata database */
-        realmRepository.save(REALM_DBREPO);
         imageRepository.save(IMAGE_1);
-        userRepository.save(USER_1);
         containerRepository.save(CONTAINER_1);
         databaseRepository.save(DATABASE_1_SIMPLE);
         tableRepository.saveAll(List.of(TABLE_1_SIMPLE, TABLE_2_SIMPLE));

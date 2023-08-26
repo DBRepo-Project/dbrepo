@@ -1,9 +1,9 @@
 package at.tuwien.service.impl;
 
+import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.entities.database.Database;
-import at.tuwien.entities.user.User;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
@@ -12,8 +12,8 @@ import org.springframework.stereotype.Service;
 @Service
 public abstract class HibernateConnector {
 
-    public static ComboPooledDataSource getDataSource(ContainerImage image, Container container, User user) {
-        return getDataSource(image, container, null, user.getUsername(), user.getDatabasePassword());
+    public static ComboPooledDataSource getDataSource(ContainerImage image, Container container, UserDto user) {
+        return getDataSource(image, container, null, user.getUsername(), user.getAttributes().getMariadbPassword());
     }
 
     public static ComboPooledDataSource getPrivilegedDataSource(ContainerImage image, Container container) {

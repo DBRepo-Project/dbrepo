@@ -38,9 +38,9 @@ public class UserCreateDto {
     private String email;
 
     @NotNull
-    private UserAttributesCreateDto attributes;
+    private UserAttributesDto attributes;
 
     @NotNull
-    private List<CredentialCreateDto> credentials;
+    private List<CredentialDto> credentials;
 
 }

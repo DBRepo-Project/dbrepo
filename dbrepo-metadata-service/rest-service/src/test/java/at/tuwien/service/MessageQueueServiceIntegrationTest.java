@@ -1,4 +1,3 @@
-
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
@@ -87,7 +86,7 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
     public void createUser_succeeds() throws BrokerVirtualHostCreationException {
 
         /* test */
-        messageQueueService.createUser(USER_1);
+        messageQueueService.createUser(USER_1_USERNAME);
     }
 
     @Test
@@ -169,7 +168,7 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
         amqpUtils.setPermissions(REALM_DBREPO_NAME, USER_1_USERNAME, USER_1_RABBITMQ_GRANT_DTO);
 
         /* test */
-        messageQueueService.updatePermissions(USER_1);
+        messageQueueService.updatePermissions(USER_1_DTO);
         return amqpUtils.getPermissions(USER_1_USERNAME);
     }
 

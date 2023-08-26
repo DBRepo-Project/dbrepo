@@ -3,9 +3,9 @@ package at.tuwien.service.impl;
 import at.tuwien.api.database.DatabaseCreateDto;
 import at.tuwien.api.database.DatabaseModifyVisibilityDto;
 import at.tuwien.api.database.DatabaseTransferDto;
+import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
-import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.DatabaseMapper;
 import at.tuwien.repository.mdb.DatabaseRepository;
@@ -102,7 +102,7 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
             log.error("Currently only MariaDB is supported");
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
         }
-        if (!database.getOwner().getId().equals(userId)) {
+        if (!database.getOwnedBy().equals(userId)) {
             log.error("Failed to delete database: user is not owner");
             throw new DatabaseMalformedException("Failed to delete database: user is not owner");
         }
@@ -129,14 +129,14 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
     @Override
     @Transactional
     public Database create(DatabaseCreateDto createDto, Principal principal)
-            throws ImageNotSupportedException, ContainerNotFoundException,
-            DatabaseMalformedException, AmqpException, ContainerConnectionException, UserNotFoundException,
-            DatabaseNameExistsException, DatabaseConnectionException, QueryMalformedException {
-        final User user = userService.findByUsername(principal.getName());
+            throws ImageNotSupportedException, ContainerNotFoundException, DatabaseMalformedException, AmqpException,
+            ContainerConnectionException, UserNotFoundException, DatabaseNameExistsException,
+            DatabaseConnectionException, QueryMalformedException, KeycloakRemoteException, AccessDeniedException {
+        final UserDto user = userService.findByUsername(principal.getName());
         /* start the object */
         final Database database = databaseMapper.databaseCreateDtoToDatabase(createDto);
         final Container container = containerService.find(database.getCid());
-        final User owner = userService.findByUsername(principal.getName());
+        final UserDto owner = userService.findByUsername(principal.getName());
         database.setContainer(container);
         database.setOwnedBy(owner.getId());
         database.setCreatedBy(owner.getId());
@@ -186,10 +186,10 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
     @Override
     @Transactional
     public Database transfer(Long databaseId, DatabaseTransferDto transferDto) throws DatabaseNotFoundException,
-            UserNotFoundException {
+            UserNotFoundException, KeycloakRemoteException, AccessDeniedException {
         /* check */
         final Database database = findById(databaseId);
-        final User user = userService.findByUsername(transferDto.getUsername());
+        final UserDto user = userService.findByUsername(transferDto.getUsername());
         /* update in metadata database */
         database.setOwnedBy(user.getId());
         final Database entity = databaseRepository.save(database);

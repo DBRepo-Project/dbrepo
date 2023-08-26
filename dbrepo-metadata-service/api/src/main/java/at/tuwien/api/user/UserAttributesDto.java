@@ -1,4 +1,4 @@
-package at.tuwien.api.keycloak;
+package at.tuwien.api.user;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -13,7 +13,7 @@ import lombok.extern.jackson.Jacksonized;
 @AllArgsConstructor
 @Jacksonized
 @ToString
-public class UserAttributesCreateDto {
+public class UserAttributesDto {
 
     @NotNull
     @JsonProperty("theme_dark")
@@ -25,5 +25,9 @@ public class UserAttributesCreateDto {
 
     @Schema(example = "Brown University")
     private String affiliation;
+
+    @JsonProperty("mariadb_password")
+    @Schema(example = "*CC67043C7BCFF5EEA5566BD9B1F3C74FD9A5CF5D")
+    private String mariadbPassword;
 
 }

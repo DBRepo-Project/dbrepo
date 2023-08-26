@@ -2,7 +2,6 @@ package at.tuwien.entities.database;
 
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.identifier.Identifier;
-import at.tuwien.entities.user.User;
 import jakarta.persistence.*;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.NamedQueries;
@@ -30,9 +29,9 @@ import java.util.UUID;
 @Table(name = "mdb_view")
 @NamedQueries({
         @NamedQuery(name = "View.findAllPublicByDatabaseId", query = "select v from View v where v.database.id = ?1 and v.isPublic = true"),
-        @NamedQuery(name = "View.findAllPublicOrMineByDatabaseId", query = "select v from View v where v.database.id = ?1 and (v.isPublic = true or v.creator.username = ?2)"),
+        @NamedQuery(name = "View.findAllPublicOrMineByDatabaseId", query = "select v from View v where v.database.id = ?1 and (v.isPublic = true or v.createdBy = ?2)"),
         @NamedQuery(name = "View.findPublicByDatabaseIdAndId", query = "select v from View v where v.database.id = ?1 and v.id = ?2 and v.isPublic = true"),
-        @NamedQuery(name = "View.findPublicOrMineByDatabaseIdAndId", query = "select v from View v where v.database.id = ?1 and v.id = ?2 and (v.isPublic = true or v.creator.username = ?3)")
+        @NamedQuery(name = "View.findPublicOrMineByDatabaseIdAndId", query = "select v from View v where v.database.id = ?1 and v.id = ?2 and (v.isPublic = true or v.createdBy = ?3)")
 })
 public class View {
 
@@ -47,19 +46,10 @@ public class View {
     @Column(updatable = false, nullable = false)
     private Long vdbid;
 
-    @ToString.Exclude
     @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Field(name = "created_by")
     @Column(name = "createdBy", nullable = false, columnDefinition = "VARCHAR(36)")
     private UUID createdBy;
-
-    @ToString.Exclude
-    @org.springframework.data.annotation.Transient
-    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST})
-    @JoinColumns({
-            @JoinColumn(name = "createdBy", referencedColumnName = "ID", insertable = false, updatable = false)
-    })
-    private User creator;
 
     @Column(name = "vname", nullable = false)
     private String name;

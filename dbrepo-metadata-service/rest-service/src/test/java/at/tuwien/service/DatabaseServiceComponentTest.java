@@ -9,10 +9,8 @@ import at.tuwien.config.MariaDbConfig;
 import at.tuwien.entities.database.Database;
 import at.tuwien.repository.mdb.ContainerRepository;
 import at.tuwien.repository.mdb.DatabaseRepository;
-import at.tuwien.repository.mdb.UserRepository;
 import at.tuwien.repository.sdb.DatabaseIdxRepository;
 import at.tuwien.service.impl.MariaDbServiceImpl;
-import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,9 +38,6 @@ import static org.mockito.Mockito.when;
 @MockAmqp
 @MockOpensearch
 public class DatabaseServiceComponentTest extends BaseUnitTest {
-
-    @MockBean
-    private UserRepository userRepository;
 
     @MockBean
     private ContainerRepository containerRepository;
@@ -84,8 +79,6 @@ public class DatabaseServiceComponentTest extends BaseUnitTest {
             throws Exception {
 
         /* mock */
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
         when(containerRepository.findById(CONTAINER_1_ID))
                 .thenReturn(Optional.of(CONTAINER_1));
         when(databaseRepository.save(any(Database.class)))

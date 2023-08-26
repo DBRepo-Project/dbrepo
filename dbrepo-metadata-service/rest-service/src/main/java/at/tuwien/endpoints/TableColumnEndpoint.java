@@ -4,10 +4,10 @@ import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.entities.database.table.columns.TableColumn;
-import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.TableMapper;
 import at.tuwien.service.TableService;
+import at.tuwien.utils.UserUtil;
 import at.tuwien.validation.EndpointValidator;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
@@ -86,7 +86,7 @@ public class TableColumnEndpoint {
             ContainerNotFoundException, NotAllowedException, SemanticEntityPersistException,
             SemanticEntityNotFoundException, QueryMalformedException {
         log.debug("endpoint update table, id={}, tableId={}, principal={}", id, tableId, principal);
-        if (!User.hasRole(principal, "modify-foreign-table-column-semantics")) {
+        if (!UserUtil.hasRole(principal, "modify-foreign-table-column-semantics")) {
             endpointValidator.validateOnlyAccess(id, principal, true);
             endpointValidator.validateOnlyOwnerOrWriteAll(id, tableId, principal);
         }

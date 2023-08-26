@@ -2,14 +2,15 @@ package at.tuwien.service.impl;
 
 import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.api.database.query.QueryPersistDto;
+import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.database.Database;
-import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
+import at.tuwien.gateway.KeycloakGateway;
 import at.tuwien.mapper.StoreMapper;
+import at.tuwien.mapper.UserMapper;
 import at.tuwien.querystore.Query;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.StoreService;
-import at.tuwien.service.UserService;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,15 +26,18 @@ import java.util.List;
 @Service
 public class StoreServiceImpl extends HibernateConnector implements StoreService {
 
+    private final UserMapper userMapper;
     private final StoreMapper storeMapper;
-    private final UserService userService;
     private final DatabaseService databaseService;
+    private final KeycloakGateway keycloakGateway;
 
     @Autowired
-    public StoreServiceImpl(StoreMapper storeMapper, UserService userService, DatabaseService databaseService) {
+    public StoreServiceImpl(UserMapper userMapper, StoreMapper storeMapper, DatabaseService databaseService,
+                            KeycloakGateway keycloakGateway) {
+        this.userMapper = userMapper;
         this.storeMapper = storeMapper;
-        this.userService = userService;
         this.databaseService = databaseService;
+        this.keycloakGateway = keycloakGateway;
     }
 
     @Override
@@ -98,7 +102,7 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
     @Transactional(readOnly = true)
     public Query insert(Long databaseId, ExecuteStatementDto metadata, Principal principal)
             throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
-            UserNotFoundException, DatabaseConnectionException {
+            UserNotFoundException, DatabaseConnectionException, KeycloakRemoteException, AccessDeniedException {
         /* find */
         final Database database = databaseService.find(databaseId);
         if (!database.getContainer().getImage().getName().equals("mariadb")) {
@@ -107,12 +111,8 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
         }
         log.trace("insert into database id {}, metadata {}", databaseId, metadata);
         /* user */
-        final User creator;
-        if (principal != null) {
-            creator = userService.findByUsername(principal.getName());
-        } else {
-            creator = userService.findByUsername("system");
-        }
+        final UserDto creator = userMapper.keycloakUserDtoToUserDto(
+                keycloakGateway.findByUsername(principal.getName()));
         /* save */
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(),
                 database.getContainer(), database);

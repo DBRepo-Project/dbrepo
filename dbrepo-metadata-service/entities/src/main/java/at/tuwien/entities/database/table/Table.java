@@ -3,11 +3,11 @@ package at.tuwien.entities.database.table;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.database.table.constraints.Constraints;
-import at.tuwien.entities.user.User;
 import lombok.*;
 import lombok.extern.log4j.Log4j2;
 import net.sf.jsqlparser.statement.select.FromItem;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.elasticsearch.annotations.Field;
@@ -16,6 +16,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import jakarta.persistence.*;;
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @Entity
@@ -39,19 +40,13 @@ public class Table {
     @Column(updatable = false, nullable = false)
     private Long tdbid;
 
-    @ToString.Exclude
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumns({
-            @JoinColumn(name = "createdBy", referencedColumnName = "ID", nullable = false, columnDefinition = "VARCHAR(36)", updatable = false)
-    })
-    private User creator;
+    @JdbcTypeCode(java.sql.Types.VARCHAR)
+    @Column(name = "created_by", columnDefinition = "VARCHAR(36)")
+    private UUID createdBy;
 
-    @ToString.Exclude
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumns({
-            @JoinColumn(name = "ownedBy", referencedColumnName = "ID", nullable = false, columnDefinition = "VARCHAR(36)", updatable = false)
-    })
-    private User owner;
+    @JdbcTypeCode(java.sql.Types.VARCHAR)
+    @Column(name = "owned_by", columnDefinition = "VARCHAR(36)")
+    private UUID ownedBy;
 
     @Column(name = "tname", nullable = false)
     private String name;
@@ -96,11 +91,6 @@ public class Table {
     @Field(name = "last_modified")
     @Column(columnDefinition = "TIMESTAMP")
     private Instant lastModified;
-
-    @PreRemove
-    public void preRemove() {
-        this.creator = null;
-    }
 
     /**
      * KEEP THIS FUNCTION HERE! IT WILL BREAK CODE!

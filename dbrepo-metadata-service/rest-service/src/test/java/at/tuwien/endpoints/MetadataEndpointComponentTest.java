@@ -50,21 +50,13 @@ public class MetadataEndpointComponentTest extends BaseUnitTest {
     private DatabaseRepository databaseRepository;
 
     @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private RealmRepository realmRepository;
-
-    @Autowired
     private IdentifierRepository identifierRepository;
 
     @BeforeEach
     public void beforeEach() {
         /* metadata database */
         imageRepository.save(IMAGE_1_SIMPLE);
-        realmRepository.save(REALM_DBREPO);
         licenseRepository.save(LICENSE_1);
-        userRepository.save(USER_1_SIMPLE);
         containerRepository.save(CONTAINER_1_SIMPLE);
         databaseRepository.save(DATABASE_1_SIMPLE);
         identifierRepository.save(IDENTIFIER_1);

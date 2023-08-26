@@ -180,7 +180,7 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
             throws DatabaseNotFoundException, UserNotFoundException, IdentifierAlreadyExistsException,
             QueryNotFoundException, IdentifierPublishingNotAllowedException, RemoteUnavailableException,
             IdentifierRequestException, ViewNotFoundException, QueryStoreException, DatabaseConnectionException,
-            ImageNotSupportedException {
+            ImageNotSupportedException, KeycloakRemoteException, AccessDeniedException {
 
         /* mock */
         when(databaseService.find(DATABASE_1_ID))
@@ -188,7 +188,7 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
         when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(QueryDto.class)))
                 .thenReturn(ResponseEntity.ok(QUERY_1_DTO));
         when(userService.findByUsername(USER_1_USERNAME))
-                .thenReturn(USER_1);
+                .thenReturn(USER_1_DTO);
         when(identifierRepository.save(any(Identifier.class)))
                 .thenReturn(IDENTIFIER_1);
         when(identifierIdxRepository.save(any(IdentifierDto.class)))

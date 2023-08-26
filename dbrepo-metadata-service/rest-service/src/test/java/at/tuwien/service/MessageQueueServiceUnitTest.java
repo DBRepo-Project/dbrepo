@@ -6,7 +6,6 @@ import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.exception.AmqpException;
 import at.tuwien.gateway.BrokerServiceGateway;
 import at.tuwien.repository.mdb.DatabaseRepository;
-import at.tuwien.repository.sdb.DatabaseIdxRepository;
 import at.tuwien.service.impl.RabbitMqServiceImpl;
 import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;

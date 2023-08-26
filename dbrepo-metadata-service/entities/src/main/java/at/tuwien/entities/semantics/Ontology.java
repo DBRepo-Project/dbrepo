@@ -1,6 +1,5 @@
 package at.tuwien.entities.semantics;
 
-import at.tuwien.entities.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
@@ -44,16 +43,9 @@ public class Ontology {
     @Column
     private String sparqlEndpoint;
 
-    @ToString.Exclude
     @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column(name = "createdBy", nullable = false, columnDefinition = "VARCHAR(36)")
     private UUID createdBy;
-
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
-    @JoinColumns({
-            @JoinColumn(name = "createdBy", referencedColumnName = "ID", insertable = false, updatable = false)
-    })
-    private User creator;
 
     @CreatedDate
     @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP")

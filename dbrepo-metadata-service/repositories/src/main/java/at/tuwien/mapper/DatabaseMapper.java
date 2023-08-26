@@ -1,13 +1,14 @@
 package at.tuwien.mapper;
 
+import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.database.*;
 import at.tuwien.api.user.UserDetailsDto;
+import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.entities.database.AccessType;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.database.LanguageType;
-import at.tuwien.entities.user.User;
 import at.tuwien.exception.QueryMalformedException;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.http.auth.BasicUserPrincipal;
@@ -22,6 +23,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.text.Normalizer;
 import java.util.Locale;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 @Mapper(componentModel = "spring", uses = {ContainerMapper.class, UserMapper.class, ImageMapper.class/*, IdentifierMapper.class*/}, imports = {RandomStringUtils.class})
@@ -82,10 +84,11 @@ public interface DatabaseMapper {
     })
     Database databaseCreateDtoToDatabase(DatabaseCreateDto data);
 
-    default PreparedStatement userToRawCreateUserQuery(Connection connection, User user) throws QueryMalformedException {
+    default PreparedStatement userToRawCreateUserQuery(Connection connection, UserDto data) throws QueryMalformedException {
         final StringBuilder statement = new StringBuilder("CREATE USER IF NOT EXISTS `")
-                .append(user.getUsername())
+                .append(data.getUsername())
                 .append("`@`%` IDENTIFIED BY PASSWORD '")
+                .append(data.getAttributes().getMariadbPassword())
                 .append("';");
         log.trace("statement={}", statement);
         try {
@@ -96,9 +99,9 @@ public interface DatabaseMapper {
         }
     }
 
-    default PreparedStatement userToRawDropUserQuery(Connection connection, User user) throws QueryMalformedException {
+    default PreparedStatement userToRawDropUserQuery(Connection connection, String username) throws QueryMalformedException {
         final StringBuilder statement = new StringBuilder("DROP USER IF EXISTS `")
-                .append(user.getUsername())
+                .append(username)
                 .append("`@`%`;");
         log.debug("raw drop user statement [{}]", statement);
         try {
@@ -136,9 +139,9 @@ public interface DatabaseMapper {
                 .build();
     }
 
-    default PreparedStatement rawGrantCreatorAccessQuery(Connection connection, User user) throws QueryMalformedException {
+    default PreparedStatement rawGrantCreatorAccessQuery(Connection connection, String username) throws QueryMalformedException {
         final StringBuilder statement = new StringBuilder("GRANT ALL PRIVILEGES ON *.* TO `")
-                .append(user.getUsername())
+                .append(username)
                 .append("`@`%`;");
         log.trace("statement={}", statement);
         try {
@@ -149,9 +152,9 @@ public interface DatabaseMapper {
         }
     }
 
-    default PreparedStatement rawRevokeUserAccessQuery(Connection connection, User user) throws QueryMalformedException {
+    default PreparedStatement rawRevokeUserAccessQuery(Connection connection, String username) throws QueryMalformedException {
         final StringBuilder statement = new StringBuilder("REVOKE ALL PRIVILEGES ON *.* FROM `")
-                .append(user.getUsername())
+                .append(username)
                 .append("`@`%`;");
         log.debug("raw revoke all privileges statement [{}]", statement);
         try {
@@ -186,10 +189,10 @@ public interface DatabaseMapper {
         }
     }
 
-    default PreparedStatement rawGrantUserProcedure(Connection connection, User user)
+    default PreparedStatement rawGrantUserProcedure(Connection connection, String username)
             throws QueryMalformedException {
         final StringBuilder statement = new StringBuilder("GRANT EXECUTE ON PROCEDURE `store_query` TO `")
-                .append(user.getUsername())
+                .append(username)
                 .append("`@`%`;");
         log.debug("raw grant execute user procedure privileges statement [{}]", statement);
         try {
@@ -200,10 +203,10 @@ public interface DatabaseMapper {
         }
     }
 
-    default PreparedStatement rawGrantDefaultReadonlyAccessQuery(Connection connection, User user)
+    default PreparedStatement rawGrantDefaultReadonlyAccessQuery(Connection connection, String username)
             throws QueryMalformedException {
         final StringBuilder statement = new StringBuilder("GRANT SELECT ON *.* TO `")
-                .append(user.getUsername())
+                .append(username)
                 .append("`@`%`;");
         log.trace("statement={}", statement);
         try {
@@ -245,13 +248,13 @@ public interface DatabaseMapper {
         return principal;
     }
 
-    default DatabaseAccess defaultCreatorAccess(Database database, User user) {
+    default DatabaseAccess defaultCreatorAccess(Database database, UUID userId) {
         final DatabaseAccess access = DatabaseAccess.builder()
                 .hdbid(database.getId())
-                .huserid(user.getId())
+                .huserid(userId)
                 .type(AccessType.WRITE_ALL)
                 .build();
-        log.debug("give default owner access to database with id {} to user with username {}", database.getId(), user.getUsername());
+        log.debug("give default owner access to database with id {} to user with id {}", database.getId(), userId);
         return access;
     }
 
@@ -261,18 +264,18 @@ public interface DatabaseMapper {
 
     DatabaseAccessDto databaseAccessToDatabaseAccessDto(DatabaseAccess data);
 
-    default DatabaseAccess databaseGiveAccessDtoToDatabaseAccess(Database database, User user,
+    default DatabaseAccess databaseGiveAccessDtoToDatabaseAccess(Database database, UUID id,
                                                                  DatabaseGiveAccessDto data) {
         final DatabaseAccess access = DatabaseAccess.builder()
                 .hdbid(database.getId())
-                .huserid(user.getId())
+                .huserid(id)
                 .type(accessTypeDtoToAccessType(data.getType()))
                 .build();
         log.debug("mapped database access {} to database access {}", data, access);
         return access;
     }
 
-    default DatabaseAccess databaseModifyAccessDtoToDatabaseAccess(Database database, User user,
+    default DatabaseAccess databaseModifyAccessDtoToDatabaseAccess(Database database, UserDto user,
                                                                    DatabaseModifyAccessDto data) {
         final DatabaseAccess access = DatabaseAccess.builder()
                 .hdbid(database.getId())

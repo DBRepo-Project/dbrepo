@@ -12,7 +12,7 @@ import lombok.extern.jackson.Jacksonized;
 @AllArgsConstructor
 @Jacksonized
 @ToString
-public class CredentialCreateDto {
+public class CredentialDto {
 
     @NotNull
     private CredentialTypeDto type;

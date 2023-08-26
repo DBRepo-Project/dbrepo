@@ -55,8 +55,7 @@ public class UserDto {
     private String lastname;
 
     @NotNull
-    @org.springframework.data.annotation.Transient
-    private List<UserAttributeDto> attributes;
+    private UserAttributesDto attributes;
 
     @NotNull
     @org.springframework.data.annotation.Transient

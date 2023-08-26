@@ -1,4 +1,3 @@
-
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
@@ -15,11 +14,8 @@ import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.TableMapper;
 import at.tuwien.repository.mdb.*;
-import at.tuwien.repository.sdb.ConceptIdxRepository;
 import at.tuwien.repository.sdb.TableColumnIdxRepository;
 import at.tuwien.repository.sdb.TableIdxRepository;
-import at.tuwien.repository.sdb.UnitIdxRepository;
-import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -79,12 +75,6 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
     private TableService tableService;
 
     @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private RealmRepository realmRepository;
-
-    @Autowired
     private TableMapper tableMapper;
 
     @Container
@@ -97,9 +87,6 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
         MariaDbConfig.createInitDatabase(CONTAINER_1, DATABASE_1);
         /* metadata database */
         imageRepository.save(IMAGE_1);
-        realmRepository.save(REALM_DBREPO);
-        userRepository.save(USER_1_SIMPLE);
-        userRepository.save(USER_2_SIMPLE);
         containerRepository.save(CONTAINER_1_SIMPLE);
         containerRepository.save(CONTAINER_2_SIMPLE);
         databaseRepository.save(DATABASE_1_SIMPLE);
@@ -470,7 +457,6 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
 
         /* test */
         tableService.deleteTable(DATABASE_1_ID, TABLE_1_ID);
-        assertTrue(userRepository.findById(TABLE_1_CREATED_BY).isPresent());
         assertTrue(databaseRepository.findById(TABLE_1_DATABASE_ID).isPresent());
     }
 

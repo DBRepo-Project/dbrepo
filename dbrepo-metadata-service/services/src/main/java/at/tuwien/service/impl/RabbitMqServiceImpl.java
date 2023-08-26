@@ -3,10 +3,10 @@ package at.tuwien.service.impl;
 import at.tuwien.amqp.RabbitMqConsumer;
 import at.tuwien.api.amqp.ConsumerDto;
 import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
+import at.tuwien.api.user.UserDto;
 import at.tuwien.config.AmqpConfig;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
-import at.tuwien.entities.user.User;
 import at.tuwien.exception.AmqpException;
 import at.tuwien.exception.BrokerVirtualHostCreationException;
 import at.tuwien.exception.BrokerVirtualHostGrantException;
@@ -23,7 +23,6 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import lombok.extern.log4j.Log4j2;
 import org.apache.http.auth.BasicUserPrincipal;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
@@ -40,25 +39,23 @@ public class RabbitMqServiceImpl implements MessageQueueService {
     private Channel channel;
     private final AmqpConfig amqpConfig;
     private final AmqpMapper amqpMapper;
-    private final DatabaseRepository databaseRepository;
-    private final TableRepository tableRepository;
     private final ObjectMapper objectMapper;
     private final QueryService queryService;
     private final TableService tableService;
+    private final TableRepository tableRepository;
+    private final DatabaseRepository databaseRepository;
     private final BrokerServiceGateway brokerServiceGateway;
 
-    @Autowired
-    public RabbitMqServiceImpl(Channel channel, AmqpConfig amqpConfig, AmqpMapper amqpMapper,
-                               DatabaseRepository databaseRepository, TableRepository tableRepository, ObjectMapper objectMapper,
-                               QueryService queryService, TableService tableService, BrokerServiceGateway brokerServiceGateway) {
-        this.channel = channel;
+    public RabbitMqServiceImpl(AmqpConfig amqpConfig, AmqpMapper amqpMapper, ObjectMapper objectMapper,
+                               QueryService queryService, TableService tableService, TableRepository tableRepository,
+                               DatabaseRepository databaseRepository, BrokerServiceGateway brokerServiceGateway) {
         this.amqpConfig = amqpConfig;
         this.amqpMapper = amqpMapper;
-        this.databaseRepository = databaseRepository;
-        this.tableRepository = tableRepository;
         this.objectMapper = objectMapper;
         this.queryService = queryService;
         this.tableService = tableService;
+        this.tableRepository = tableRepository;
+        this.databaseRepository = databaseRepository;
         this.brokerServiceGateway = brokerServiceGateway;
     }
 
@@ -102,12 +99,12 @@ public class RabbitMqServiceImpl implements MessageQueueService {
     }
 
     @Override
-    public void createUser(User user) throws BrokerVirtualHostCreationException {
-        brokerServiceGateway.createUser(user.getUsername());
+    public void createUser(String username) throws BrokerVirtualHostCreationException {
+        brokerServiceGateway.createUser(username);
     }
 
     @Override
-    public void updatePermissions(User user) throws BrokerVirtualHostGrantException {
+    public void updatePermissions(UserDto user) throws BrokerVirtualHostGrantException {
         final GrantVirtualHostPermissionsDto permissions = GrantVirtualHostPermissionsDto.builder()
                 .configure(amqpMapper.databaseListToPermissionString(databaseRepository.findConfigureAccess(user.getId())))
                 .write(amqpMapper.databaseListToPermissionString(databaseRepository.findWriteAccess(user.getId())))

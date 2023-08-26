@@ -4,7 +4,6 @@ import at.tuwien.api.database.ViewCreateDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.View;
 import at.tuwien.entities.database.table.columns.TableColumn;
-import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.ViewMapper;
 import at.tuwien.repository.mdb.ViewRepository;
@@ -13,6 +12,7 @@ import at.tuwien.service.DatabaseService;
 import at.tuwien.service.QueryService;
 import at.tuwien.service.UserService;
 import at.tuwien.service.ViewService;
+import at.tuwien.utils.UserUtil;
 import com.google.common.hash.Hashing;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.log4j.Log4j2;
@@ -124,7 +124,6 @@ public class ViewServiceImpl extends HibernateConnector implements ViewService {
             ViewMalformedException, UserNotFoundException {
         /* find */
         final Database database = databaseService.find(databaseId);
-        final User user = userService.findByUsername(principal.getName());
         /* create view */
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(),
                 database.getContainer(), database);
@@ -151,7 +150,7 @@ public class ViewServiceImpl extends HibernateConnector implements ViewService {
                 .database(database)
                 .name(data.getName())
                 .internalName(viewMapper.nameToInternalName(data.getName()))
-                .createdBy(user.getId())
+                .createdBy(UserUtil.getId(principal))
                 .query(data.getQuery())
                 .queryHash(Hashing.sha256()
                         .hashString(data.getQuery(), StandardCharsets.UTF_8)

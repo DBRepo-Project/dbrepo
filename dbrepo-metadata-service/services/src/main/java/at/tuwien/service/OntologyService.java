@@ -3,6 +3,8 @@ package at.tuwien.service;
 import at.tuwien.api.semantics.OntologyCreateDto;
 import at.tuwien.api.semantics.OntologyModifyDto;
 import at.tuwien.entities.semantics.Ontology;
+import at.tuwien.exception.AccessDeniedException;
+import at.tuwien.exception.KeycloakRemoteException;
 import at.tuwien.exception.OntologyNotFoundException;
 import at.tuwien.exception.UserNotFoundException;
 
@@ -14,7 +16,7 @@ public interface OntologyService {
 
     Ontology find(Long id) throws OntologyNotFoundException;
 
-    Ontology create(OntologyCreateDto data, Principal principal) throws UserNotFoundException;
+    Ontology create(OntologyCreateDto data, Principal principal) throws UserNotFoundException, KeycloakRemoteException, AccessDeniedException;
 
     Ontology update(Long id, OntologyModifyDto data) throws OntologyNotFoundException;
 

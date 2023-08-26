@@ -6,12 +6,11 @@ import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.identifier.IdentifierSaveDto;
 import at.tuwien.config.EndpointConfig;
 import at.tuwien.entities.identifier.Identifier;
-import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.IdentifierMapper;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.IdentifierService;
-import at.tuwien.service.UserService;
+import at.tuwien.utils.UserUtil;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -41,16 +40,14 @@ import java.util.regex.Pattern;
 @RequestMapping("/api/pid")
 public class PersistenceEndpoint {
 
-    private final UserService userService;
     private final AccessService accessService;
     private final EndpointConfig endpointConfig;
     private final IdentifierMapper identifierMapper;
     private final IdentifierService identifierService;
 
     @Autowired
-    public PersistenceEndpoint(UserService userService, AccessService accessService, EndpointConfig endpointConfig,
+    public PersistenceEndpoint(AccessService accessService, EndpointConfig endpointConfig,
                                IdentifierMapper identifierMapper, IdentifierService identifierService) {
-        this.userService = userService;
         this.accessService = accessService;
         this.endpointConfig = endpointConfig;
         this.identifierMapper = identifierMapper;
@@ -192,11 +189,10 @@ public class PersistenceEndpoint {
             DatabaseConnectionException, ImageNotSupportedException {
         log.debug("endpoint update identifier, id={}, data={}", id, data);
         final Identifier identifier = identifierService.find(id);
-        final User user = userService.findByUsername(principal.getName());
         try {
-            accessService.find(identifier.getDatabase().getId(), user.getId());
+            accessService.find(identifier.getDatabase().getId(), UserUtil.getId(principal));
         } catch (AccessDeniedException e) {
-            if (!User.hasRole(principal, "modify-identifier-metadata")) {
+            if (!UserUtil.hasRole(principal, "modify-identifier-metadata")) {
                 log.error("Failed to update identifier: insufficient access");
                 throw new NotAllowedException("Failed to update identifier: insufficient access");
             }

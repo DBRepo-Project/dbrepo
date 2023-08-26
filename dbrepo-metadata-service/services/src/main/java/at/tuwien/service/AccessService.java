@@ -45,44 +45,41 @@ public interface AccessService {
     /**
      * Give somebody access to a database of container.
      *
-     * @param databaseId  The database id.
-     * @param accessDto   The access.
+     * @param databaseId The database id.
+     * @param accessDto  The access.
      * @throws DatabaseNotFoundException  The database was not found in the metadata database.
      * @throws UserNotFoundException      The authenticated user was not found in the metadata database.
      * @throws NotAllowedException        The access is not allowed.
      * @throws QueryMalformedException    The mapped access query is malformed.
      * @throws DatabaseMalformedException The database has an invalid state.
      */
-    void create(Long databaseId, DatabaseGiveAccessDto accessDto)
-            throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException, QueryMalformedException, DatabaseMalformedException;
+    void create(Long databaseId, DatabaseGiveAccessDto accessDto) throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException, QueryMalformedException, DatabaseMalformedException, KeycloakRemoteException, AccessDeniedException;
 
     /**
      * Update access to a database.
      *
-     * @param databaseId  The database id.
-     * @param username    The username.
-     * @param accessDto   The updated access.
+     * @param databaseId The database id.
+     * @param userId     The user id.
+     * @param accessDto  The updated access.
      * @throws DatabaseNotFoundException  The database was not found in the metadata database.
      * @throws UserNotFoundException      The authenticated user was not found in the metadata database.
      * @throws NotAllowedException        The access is not allowed.
      * @throws QueryMalformedException    The mapped access query is malformed.
      * @throws DatabaseMalformedException The database has an invalid state.
      */
-    void update(Long databaseId, String username, DatabaseModifyAccessDto accessDto)
-            throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException, QueryMalformedException, DatabaseMalformedException,
-            NotAllowedException;
+    void update(Long databaseId, UUID userId, DatabaseModifyAccessDto accessDto) throws DatabaseNotFoundException, UserNotFoundException, QueryMalformedException, DatabaseMalformedException,
+            NotAllowedException, KeycloakRemoteException, AccessDeniedException;
 
     /**
      * Revokes access to a database of container.
      *
-     * @param databaseId  The database id.
-     * @param username    The user name.
+     * @param databaseId The database id.
+     * @param userId     The user id.
      * @throws DatabaseNotFoundException  The database was not found in the metadata database.
      * @throws UserNotFoundException      The authenticated user was not found in the metadata database.
      * @throws NotAllowedException        The access is not allowed.
      * @throws QueryMalformedException    The mapped access query is malformed.
      * @throws DatabaseMalformedException The database has an invalid state.
      */
-    void delete(Long databaseId, String username)
-            throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException, QueryMalformedException, DatabaseMalformedException;
+    void delete(Long databaseId, UUID userId) throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException, QueryMalformedException, DatabaseMalformedException, KeycloakRemoteException, AccessDeniedException;
 }

@@ -5,11 +5,9 @@ import at.tuwien.BaseUnitTest;
 import at.tuwien.annotations.MockAmqp;
 import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.api.semantics.*;
+import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.semantics.Ontology;
-import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
-import at.tuwien.repository.sdb.ConceptIdxRepository;
-import at.tuwien.repository.sdb.UnitIdxRepository;
 import at.tuwien.service.EntityService;
 import at.tuwien.service.OntologyService;
 import at.tuwien.service.UserService;
@@ -117,16 +115,17 @@ public class OntologyEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            create_generic(ONTOLOGY_1_CREATE_DTO, USER_4_PRINCIPAL, USER_4_USERNAME, USER_4, ONTOLOGY_1);
+            create_generic(ONTOLOGY_1_CREATE_DTO, USER_4_PRINCIPAL, USER_4_USERNAME, USER_4_DTO, ONTOLOGY_1);
         });
     }
 
     @Test
     @WithMockUser(username = USER_3_USERNAME, authorities = {"create-ontology"})
-    public void create_hasRole_succeeds() throws UserNotFoundException {
+    public void create_hasRole_succeeds() throws UserNotFoundException, KeycloakRemoteException,
+            at.tuwien.exception.AccessDeniedException {
 
         /* test */
-        create_generic(ONTOLOGY_1_CREATE_DTO, USER_3_PRINCIPAL, USER_3_USERNAME, USER_3, ONTOLOGY_1);
+        create_generic(ONTOLOGY_1_CREATE_DTO, USER_3_PRINCIPAL, USER_3_USERNAME, USER_3_DTO, ONTOLOGY_1);
     }
 
     @Test
@@ -314,8 +313,9 @@ public class OntologyEndpointUnitTest extends BaseUnitTest {
         assertNotNull(body);
     }
 
-    public void create_generic(OntologyCreateDto createDto, Principal principal, String username, User user, Ontology ontology)
-            throws UserNotFoundException {
+    public void create_generic(OntologyCreateDto createDto, Principal principal, String username, UserDto user,
+                               Ontology ontology) throws UserNotFoundException, KeycloakRemoteException,
+            at.tuwien.exception.AccessDeniedException {
 
         /* mock */
         if (ontology != null) {

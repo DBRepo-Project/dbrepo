@@ -11,8 +11,6 @@ import at.tuwien.config.EndpointConfig;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.exception.*;
 import at.tuwien.repository.mdb.*;
-import at.tuwien.repository.sdb.IdentifierIdxRepository;
-import at.tuwien.service.impl.IdentifierServiceImpl;
 import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -67,12 +65,6 @@ public class DataCiteIdentifierServiceIntegrationTest extends BaseUnitTest {
     @Autowired
     private IdentifierRepository identifierRepository;
 
-    @Autowired
-    private RealmRepository realmRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
     @MockBean
     @Qualifier("restTemplate")
     private RestTemplate restTemplate;
@@ -81,16 +73,11 @@ public class DataCiteIdentifierServiceIntegrationTest extends BaseUnitTest {
     private RestTemplateBuilder restTemplateBuilder;
 
     @Autowired
-    private IdentifierServiceImpl identifierService;
-
-    @Autowired
     private IdentifierService dataCiteIdentifierService;
 
     @BeforeEach
     public void beforeEach() {
-        realmRepository.save(REALM_DBREPO);
         licenseRepository.save(LICENSE_1);
-        userRepository.save(USER_1);
         imageRepository.save(IMAGE_1);
         containerRepository.save(CONTAINER_1_SIMPLE);
         databaseRepository.save(DATABASE_1_SIMPLE);

@@ -2,23 +2,20 @@ package at.tuwien.mapper;
 
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.auth.TokenIntrospectDto;
-import at.tuwien.api.user.GrantedAuthorityDto;
-import at.tuwien.api.user.UserBriefDto;
-import at.tuwien.api.user.UserDetailsDto;
+import at.tuwien.api.keycloak.*;
+import at.tuwien.api.user.*;
+import at.tuwien.api.user.UserAttributesDto;
 import at.tuwien.api.user.UserDto;
-import at.tuwien.entities.user.Group;
-import at.tuwien.entities.user.GroupMembership;
-import at.tuwien.entities.user.User;
-import at.tuwien.entities.user.UserAttribute;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring")
@@ -37,34 +34,76 @@ public interface UserMapper {
         return authority;
     }
 
+    @Mappings({
+            @Mapping(target = "attributes", expression = "java(data)")
+    })
+    UpdateAttributesDto userAttributesDtoToUpdateAttributesDto(at.tuwien.api.keycloak.UserAttributesDto data);
+
+    default UpdateCredentialsDto passwordToUpdateCredentialsDto(String password) {
+        return UpdateCredentialsDto.builder()
+                .credentials(List.of(CredentialDto.builder()
+                        .temporary(false)
+                        .type(CredentialTypeDto.PASSWORD)
+                        .value(password)
+                        .build()))
+                .build();
+    }
+
+    default at.tuwien.api.keycloak.UserAttributesDto userUpdateDtoToUserAttributesDto(UserUpdateDto data) {
+        return at.tuwien.api.keycloak.UserAttributesDto.builder()
+                .orcid(List.of(data.getOrcid()))
+                .affiliation(List.of(data.getAffiliation()))
+                .build();
+    }
+
+    default at.tuwien.api.keycloak.UserAttributesDto userThemeSetDtoToUserAttributesDto(UserThemeSetDto data) {
+        return at.tuwien.api.keycloak.UserAttributesDto.builder()
+                .themeDark(List.of(String.valueOf(data.getThemeDark())))
+                .build();
+    }
+
+    default UserCreateDto signupRequestDtoToUserCreateDto(SignupRequestDto data) {
+        return UserCreateDto.builder()
+                .username(data.getUsername())
+                .email(data.getEmail())
+                .credentials(List.of(CredentialDto.builder()
+                        .type(CredentialTypeDto.PASSWORD)
+                        .temporary(false)
+                        .value(data.getPassword())
+                        .build()))
+                .enabled(true)
+                .attributes(at.tuwien.api.keycloak.UserAttributesDto.builder()
+                        .themeDark(List.of("false"))
+                        .mariadbPassword(List.of("*" + DigestUtils.sha1Hex(DigestUtils.sha1(
+                                data.getPassword().getBytes(StandardCharsets.UTF_8))).toUpperCase()))
+                        .affiliation(List.of())
+                        .orcid(List.of())
+                        .build())
+                .build();
+    }
+
+    /* keep */
+    UserBriefDto keycloakUserDtoToUserBriefDto(at.tuwien.api.keycloak.UserDto data);
+
+    /* keep */
+    UserDto keycloakUserDtoToUserDto(at.tuwien.api.keycloak.UserDto data);
+
+    /* keep */
+    default UserAttributesDto map(at.tuwien.api.keycloak.UserAttributesDto data) {
+        return UserAttributesDto.builder()
+                .themeDark(Boolean.getBoolean(data.getThemeDark().get(0)))
+                .orcid(data.getOrcid().get(0))
+                .affiliation(data.getAffiliation().get(0))
+                .build();
+    }
+
     /* keep */
     @Mappings({
             @Mapping(target = "id", expression = "java(data.getId().toString())")
     })
     UserDetailsDto userDtoToUserDetailsDto(UserDto data);
 
-    /* keep */
-    @Mappings({
-            @Mapping(target = "orcid", expression = "java(userToOrcid(data))")
-    })
-    UserBriefDto userToUserBriefDto(User data);
-
     UserBriefDto userDtoToUserBriefDto(UserDto data);
-
-    /* keep */
-    @Mappings({
-            @Mapping(target = "orcid", expression = "java(userToOrcid(data))")
-    })
-    UserDto userToUserDto(User data);
-
-    /* keep */
-    default String userToOrcid(User data) {
-        if (data.getAttributes() == null) {
-            return null;
-        }
-        final Optional<UserAttribute> orcid = data.getAttributes().stream().filter(a -> a.getName().equals("orcid")).findFirst();
-        return orcid.map(UserAttribute::getValue).orElse(null);
-    }
 
     default UserDetailsDto tokenIntrospectDtoToUserDetailsDto(TokenIntrospectDto data) {
         return UserDetailsDto.builder()
@@ -73,24 +112,6 @@ public interface UserMapper {
                 .authorities(Arrays.stream(data.getRealmAccess().getRoles())
                         .map(SimpleGrantedAuthority::new)
                         .collect(Collectors.toList()))
-                .build();
-    }
-
-    User signupRequestDtoToUser(SignupRequestDto data);
-
-    default UserAttribute tripleToUserAttribute(UUID userId, String name, String value) {
-        return UserAttribute.builder()
-                .id(UUID.randomUUID())
-                .userId(userId)
-                .name(name)
-                .value(value)
-                .build();
-    }
-
-    default GroupMembership userGroupToGroupMembership(User user, Group group) {
-        return GroupMembership.builder()
-                .userId(user.getId())
-                .groupId(group.getId())
                 .build();
     }
 

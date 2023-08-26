@@ -7,12 +7,12 @@ import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.View;
-import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.ViewMapper;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.QueryService;
 import at.tuwien.service.ViewService;
+import at.tuwien.utils.UserUtil;
 import at.tuwien.validation.EndpointValidator;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
@@ -150,7 +150,7 @@ public class ViewEndpoint {
                 databaseId, data, principal);
         /* check */
         final Database database = databaseService.find(databaseId);
-        if (!database.getOwner().equalsPrincipal(principal)) {
+        if (!database.getOwnedBy().equals(UserUtil.getId(principal))) {
             log.error("Failed to create view: not the database owner");
             throw new NotAllowedException("Failed to create view: not the database owner");
         }
@@ -251,7 +251,7 @@ public class ViewEndpoint {
                 databaseId, viewId, principal);
         /* check */
         final Database database = databaseService.find(databaseId);
-        if (!database.getOwner().equalsPrincipal(principal)) {
+        if (!database.getOwnedBy().equals(UserUtil.getId(principal))) {
             log.error("Failed to delete view: not the database owner");
             throw new NotAllowedException("Failed to delete view: not the database owner");
         }
@@ -339,7 +339,7 @@ public class ViewEndpoint {
                 log.error("Failed to view data of private view: principal is null");
                 throw new NotAllowedException("Failed to view data of private view: principal is null");
             }
-            if (!User.hasRole(principal, "view-database-view-data")) {
+            if (!UserUtil.hasRole(principal, "view-database-view-data")) {
                 log.error("Failed to view data of private view: role missing");
                 throw new NotAllowedException("Failed to view data of private view: role missing");
             }
