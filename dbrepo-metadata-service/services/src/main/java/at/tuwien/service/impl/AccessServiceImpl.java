@@ -2,14 +2,12 @@ package at.tuwien.service.impl;
 
 import at.tuwien.api.database.DatabaseGiveAccessDto;
 import at.tuwien.api.database.DatabaseModifyAccessDto;
-import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
-import at.tuwien.gateway.KeycloakGateway;
 import at.tuwien.mapper.DatabaseMapper;
-import at.tuwien.mapper.UserMapper;
 import at.tuwien.repository.mdb.DatabaseAccessRepository;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.DatabaseService;
@@ -31,19 +29,17 @@ import java.util.UUID;
 @Service
 public class AccessServiceImpl extends HibernateConnector implements AccessService {
 
-    private final UserMapper userMapper;
+    private final UserService userService;
     private final DatabaseMapper databaseMapper;
     private final DatabaseService databaseService;
-    private final KeycloakGateway keycloakGateway;
     private final DatabaseAccessRepository databaseAccessRepository;
 
     @Autowired
-    public AccessServiceImpl(UserMapper userMapper, DatabaseMapper databaseMapper, DatabaseService databaseService,
-                             KeycloakGateway keycloakGateway, DatabaseAccessRepository databaseAccessRepository) {
-        this.userMapper = userMapper;
+    public AccessServiceImpl(UserService userService, DatabaseMapper databaseMapper, DatabaseService databaseService,
+                             DatabaseAccessRepository databaseAccessRepository) {
+        this.userService = userService;
         this.databaseMapper = databaseMapper;
         this.databaseService = databaseService;
-        this.keycloakGateway = keycloakGateway;
         this.databaseAccessRepository = databaseAccessRepository;
     }
 
@@ -83,10 +79,10 @@ public class AccessServiceImpl extends HibernateConnector implements AccessServi
         /* check */
         final Database database = databaseService.findById(databaseId);
         final Container container = database.getContainer();
-        final UserDto user = userMapper.keycloakUserDtoToUserDto(keycloakGateway.findById(accessDto.getUserId()));
+        final User user = userService.find(accessDto.getUserId());
         if (databaseAccessRepository.findByDatabaseIdAndUserId(databaseId, user.getId()).isPresent()) {
-            log.error("Failed to give access to user with id {}, has already permission", accessDto.getUserId());
-            throw new NotAllowedException("Failed to give access");
+            log.error("Failed to give access to user with id {}: has already permission", accessDto.getUserId());
+            throw new NotAllowedException("Failed to give access to user with id " + accessDto.getUserId() + ": has already permission");
         }
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(container.getImage(), container, database);
         try {
@@ -121,13 +117,12 @@ public class AccessServiceImpl extends HibernateConnector implements AccessServi
         /* check */
         final Database database = databaseService.findById(databaseId);
         final Container container = database.getContainer();
+        final User user = userService.find(userId);
         if (database.getOwnedBy().equals(userId)) {
             log.error("Failed to modify database access of user with id {}: is the owner", userId);
             throw new NotAllowedException("Failed to modify database access of user with id " + userId + ": is the owner");
         }
-        final at.tuwien.api.user.UserDto user = userMapper.keycloakUserDtoToUserDto(keycloakGateway.findById(userId));
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(container.getImage(), container, database);
-        final DatabaseGiveAccessDto giveAccess = databaseMapper.databaseModifyAccessToDatabaseGiveAccessDto(userId, accessDto.getType());
         try {
             final Connection connection = dataSource.getConnection();
             /* create user if not exists */
@@ -159,11 +154,11 @@ public class AccessServiceImpl extends HibernateConnector implements AccessServi
         /* check */
         final Database database = databaseService.findById(databaseId);
         final Container container = database.getContainer();
+        final User user = userService.find(userId);
         if (database.getOwnedBy().equals(userId)) {
             log.error("Failed to revoke database access of user with id {}: is the owner", userId);
             throw new NotAllowedException("Failed to revoke database access of user with id " + userId + ": is the owner");
         }
-        final at.tuwien.api.user.UserDto user = userMapper.keycloakUserDtoToUserDto(keycloakGateway.findById(userId));
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(container.getImage(), container);
         try {
             final Connection connection = dataSource.getConnection();

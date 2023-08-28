@@ -25,20 +25,9 @@ public class UserCreateDto {
     @Schema(example = "true")
     private Boolean enabled;
 
-    @JsonProperty("given_name")
-    @Schema(example = "Josiah")
-    private String firstname;
-
-    @JsonProperty("family_name")
-    @Schema(example = "Carberry")
-    private String lastname;
-
     @NotNull
     @Schema(example = "jcarberry@brown.edu")
     private String email;
-
-    @NotNull
-    private UserAttributesDto attributes;
 
     @NotNull
     private List<CredentialDto> credentials;

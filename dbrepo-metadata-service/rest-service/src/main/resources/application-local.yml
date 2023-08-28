@@ -47,7 +47,7 @@ logging:
     at.tuwien.: trace
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 fda:
-  privileges: ALL PRIVILEGES
+  privileges: SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE
   pid:
     base: https://example.com/pid/
   broker:

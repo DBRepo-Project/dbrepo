@@ -7,8 +7,8 @@ import at.tuwien.api.identifier.BibliographyTypeDto;
 import at.tuwien.api.identifier.CreatorDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.identifier.IdentifierSaveDto;
-import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.identifier.Identifier;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.IdentifierService;
@@ -25,7 +25,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -567,7 +566,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            generic_update(IDENTIFIER_3_ID, IDENTIFIER_3, IDENTIFIER_3_DTO_UPDATE_REQUEST, USER_4_USERNAME, USER_4_DTO, USER_4_PRINCIPAL);
+            generic_update(IDENTIFIER_3_ID, IDENTIFIER_3, IDENTIFIER_3_DTO_UPDATE_REQUEST, USER_4_USERNAME, USER_4, USER_4_PRINCIPAL);
         });
     }
 
@@ -575,11 +574,10 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     @WithMockUser(username = USER_3_USERNAME, authorities = {"modify-identifier-metadata"})
     public void update_hasRoleNoAccess_succeeds() throws UserNotFoundException, NotAllowedException,
             IdentifierNotFoundException, IdentifierRequestException, QueryNotFoundException, DatabaseNotFoundException,
-            RemoteUnavailableException, QueryStoreException, DatabaseConnectionException, ImageNotSupportedException,
-            KeycloakRemoteException, at.tuwien.exception.AccessDeniedException {
+            RemoteUnavailableException, QueryStoreException, DatabaseConnectionException, ImageNotSupportedException {
 
         /* test */
-        generic_update(IDENTIFIER_3_ID, IDENTIFIER_3, IDENTIFIER_3_DTO_UPDATE_REQUEST, USER_3_USERNAME, USER_3_DTO, USER_3_PRINCIPAL);
+        generic_update(IDENTIFIER_3_ID, IDENTIFIER_3, IDENTIFIER_3_DTO_UPDATE_REQUEST, USER_3_USERNAME, USER_3, USER_3_PRINCIPAL);
     }
 
     @Test
@@ -587,14 +585,14 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     public void update_hasRoleHasAccess_succeeds() throws IdentifierNotFoundException, IdentifierRequestException,
             UserNotFoundException, at.tuwien.exception.AccessDeniedException, NotAllowedException,
             QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException, QueryStoreException,
-            DatabaseConnectionException, ImageNotSupportedException, KeycloakRemoteException {
+            DatabaseConnectionException, ImageNotSupportedException {
 
         /* mock */
         when(accessService.find(IDENTIFIER_3_DATABASE_ID, USER_3_ID))
                 .thenReturn(DATABASE_3_USER_3_READ_ACCESS);
 
         /* test */
-        generic_update(IDENTIFIER_3_ID, IDENTIFIER_3, IDENTIFIER_3_DTO_UPDATE_REQUEST, USER_3_USERNAME, USER_3_DTO, USER_3_PRINCIPAL);
+        generic_update(IDENTIFIER_3_ID, IDENTIFIER_3, IDENTIFIER_3_DTO_UPDATE_REQUEST, USER_3_USERNAME, USER_3, USER_3_PRINCIPAL);
     }
 
     @Test
@@ -633,11 +631,10 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
         return IOUtils.toString(inputStream, StandardCharsets.UTF_8);
     }
 
-    protected void generic_update(Long id, Identifier identifier, IdentifierSaveDto data, String username, UserDto user,
+    protected void generic_update(Long id, Identifier identifier, IdentifierSaveDto data, String username, User user,
                                   Principal principal) throws IdentifierNotFoundException, IdentifierRequestException,
             UserNotFoundException, NotAllowedException, QueryNotFoundException, DatabaseNotFoundException,
-            RemoteUnavailableException, QueryStoreException, DatabaseConnectionException, ImageNotSupportedException,
-            KeycloakRemoteException, at.tuwien.exception.AccessDeniedException {
+            RemoteUnavailableException, QueryStoreException, DatabaseConnectionException, ImageNotSupportedException {
 
         /* mock */
         if (identifier != null) {

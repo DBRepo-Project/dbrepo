@@ -77,7 +77,7 @@ public class ViewRepositoryIntegrationTest extends BaseUnitTest {
     public void findAllPublicOrMineByDatabaseId_succeeds() {
 
         /* test */
-        final List<View> response = viewRepository.findAllPublicOrMineByDatabaseId(DATABASE_1_ID, USER_1_USERNAME);
+        final List<View> response = viewRepository.findAllPublicOrMineByDatabaseId(DATABASE_1_ID, USER_1_ID);
         assertEquals(3, response.size());
     }
 

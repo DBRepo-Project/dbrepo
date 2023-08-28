@@ -3,10 +3,10 @@ package at.tuwien.service.impl;
 import at.tuwien.amqp.RabbitMqConsumer;
 import at.tuwien.api.amqp.ConsumerDto;
 import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
-import at.tuwien.api.user.UserDto;
 import at.tuwien.config.AmqpConfig;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.AmqpException;
 import at.tuwien.exception.BrokerVirtualHostCreationException;
 import at.tuwien.exception.BrokerVirtualHostGrantException;
@@ -104,7 +104,7 @@ public class RabbitMqServiceImpl implements MessageQueueService {
     }
 
     @Override
-    public void updatePermissions(UserDto user) throws BrokerVirtualHostGrantException {
+    public void updatePermissions(User user) throws BrokerVirtualHostGrantException {
         final GrantVirtualHostPermissionsDto permissions = GrantVirtualHostPermissionsDto.builder()
                 .configure(amqpMapper.databaseListToPermissionString(databaseRepository.findConfigureAccess(user.getId())))
                 .write(amqpMapper.databaseListToPermissionString(databaseRepository.findWriteAccess(user.getId())))

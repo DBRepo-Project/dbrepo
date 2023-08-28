@@ -168,7 +168,7 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
         amqpUtils.setPermissions(REALM_DBREPO_NAME, USER_1_USERNAME, USER_1_RABBITMQ_GRANT_DTO);
 
         /* test */
-        messageQueueService.updatePermissions(USER_1_DTO);
+        messageQueueService.updatePermissions(USER_1);
         return amqpUtils.getPermissions(USER_1_USERNAME);
     }
 

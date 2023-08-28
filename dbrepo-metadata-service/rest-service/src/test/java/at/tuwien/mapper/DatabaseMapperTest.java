@@ -48,13 +48,10 @@ public class DatabaseMapperTest extends BaseUnitTest {
 
     @Test
     public void userToRawCreateUserQuery_fails () {
-        final UserDto request = UserDto.builder()
-                .username("mock")
-                .build();
 
         /* test */
         assertThrows(QueryMalformedException.class, () -> {
-            databaseMapper.userToRawCreateUserQuery(null, request);
+            databaseMapper.userToRawCreateUserQuery(null, USER_1);
         });
     }
 

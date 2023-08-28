@@ -1,12 +1,11 @@
-
 package at.tuwien.endpoints;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.annotations.MockAmqp;
 import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.api.semantics.*;
-import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.semantics.Ontology;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.service.EntityService;
 import at.tuwien.service.OntologyService;
@@ -22,7 +21,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -115,7 +113,7 @@ public class OntologyEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            create_generic(ONTOLOGY_1_CREATE_DTO, USER_4_PRINCIPAL, USER_4_USERNAME, USER_4_DTO, ONTOLOGY_1);
+            create_generic(ONTOLOGY_1_CREATE_DTO, USER_4_PRINCIPAL, USER_4_USERNAME, USER_4, ONTOLOGY_1);
         });
     }
 
@@ -125,7 +123,7 @@ public class OntologyEndpointUnitTest extends BaseUnitTest {
             at.tuwien.exception.AccessDeniedException {
 
         /* test */
-        create_generic(ONTOLOGY_1_CREATE_DTO, USER_3_PRINCIPAL, USER_3_USERNAME, USER_3_DTO, ONTOLOGY_1);
+        create_generic(ONTOLOGY_1_CREATE_DTO, USER_3_PRINCIPAL, USER_3_USERNAME, USER_3, ONTOLOGY_1);
     }
 
     @Test
@@ -313,7 +311,7 @@ public class OntologyEndpointUnitTest extends BaseUnitTest {
         assertNotNull(body);
     }
 
-    public void create_generic(OntologyCreateDto createDto, Principal principal, String username, UserDto user,
+    public void create_generic(OntologyCreateDto createDto, Principal principal, String username, User user,
                                Ontology ontology) throws UserNotFoundException, KeycloakRemoteException,
             at.tuwien.exception.AccessDeniedException {
 

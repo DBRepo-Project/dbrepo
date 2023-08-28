@@ -69,7 +69,7 @@ public class ViewServiceImpl extends HibernateConnector implements ViewService {
             return viewRepository.findAllPublicByDatabaseId(databaseId);
         }
         log.trace("principal is not null, list public views and mine");
-        return viewRepository.findAllPublicOrMineByDatabaseId(databaseId, principal.getName());
+        return viewRepository.findAllPublicOrMineByDatabaseId(databaseId, UserUtil.getId(principal));
     }
 
     @Override
@@ -81,7 +81,7 @@ public class ViewServiceImpl extends HibernateConnector implements ViewService {
             optional = viewRepository.findPublicByDatabaseIdAndId(databaseId, id);
         } else {
             log.trace("principal is not null, find public view or mine");
-            optional = viewRepository.findPublicOrMineByDatabaseIdAndId(databaseId, id, principal.getName());
+            optional = viewRepository.findPublicOrMineByDatabaseIdAndId(databaseId, id, UserUtil.getId(principal));
         }
         if (optional.isEmpty()) {
             log.error("Failed to find view with id {}", id);

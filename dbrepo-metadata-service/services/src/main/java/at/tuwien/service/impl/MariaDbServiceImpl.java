@@ -7,6 +7,7 @@ import at.tuwien.api.user.UserDto;
 import at.tuwien.config.QueryConfig;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.DatabaseMapper;
 import at.tuwien.repository.mdb.DatabaseRepository;
@@ -140,7 +141,7 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         /* start the object */
         final Database database = databaseMapper.databaseCreateDtoToDatabase(createDto);
         final Container container = containerService.find(database.getCid());
-        final UserDto owner = userService.findByUsername(principal.getName());
+        final User owner = userService.findByUsername(principal.getName());
         database.setContainer(container);
         database.setOwnedBy(owner.getId());
         database.setCreatedBy(owner.getId());
@@ -176,7 +177,7 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
 
     @Override
     @Transactional(readOnly = true)
-    public void updatePassword(UserDto user) throws DatabaseMalformedException, QueryMalformedException {
+    public void updatePassword(User user) throws DatabaseMalformedException, QueryMalformedException {
         /* start the object */
         final List<Database> databases = databaseRepository.findReadAccess(user.getId())
                 .stream()
@@ -219,10 +220,10 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
     @Override
     @Transactional
     public Database transfer(Long databaseId, DatabaseTransferDto transferDto) throws DatabaseNotFoundException,
-            UserNotFoundException, KeycloakRemoteException, AccessDeniedException {
+            UserNotFoundException {
         /* check */
         final Database database = findById(databaseId);
-        final UserDto user = userService.findByUsername(transferDto.getUsername());
+        final User user = userService.findByUsername(transferDto.getUsername());
         /* update in metadata database */
         database.setOwnedBy(user.getId());
         final Database entity = databaseRepository.save(database);

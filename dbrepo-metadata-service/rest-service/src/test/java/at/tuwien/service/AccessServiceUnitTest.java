@@ -86,7 +86,7 @@ public class AccessServiceUnitTest extends BaseUnitTest {
                 .thenReturn(Optional.empty());
 
         /* test */
-        assertThrows(NotAllowedException.class, () -> {
+        assertThrows(AccessDeniedException.class, () -> {
             accessService.find(DATABASE_1_ID, USER_1_ID);
         });
     }

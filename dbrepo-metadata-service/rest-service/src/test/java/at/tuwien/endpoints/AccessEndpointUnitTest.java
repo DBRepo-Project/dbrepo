@@ -57,7 +57,7 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
     public void create_anonymous_fails() {
 
         /* test */
-        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
+        assertThrows(AccessDeniedException.class, () -> {
             generic_create(DATABASE_1_ID, DATABASE_1, null, USER_2_ID, null);
         });
     }
@@ -67,7 +67,7 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
     public void create_noRoleNoAccess_fails() {
 
         /* test */
-        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
+        assertThrows(AccessDeniedException.class, () -> {
             generic_create(DATABASE_1_ID, DATABASE_1, null, USER_4_ID, USER_4_PRINCIPAL);
         });
     }
@@ -91,7 +91,7 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
     public void find_anonymous_fails() {
 
         /* test */
-        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
+        assertThrows(AccessDeniedException.class, () -> {
             generic_find(DATABASE_1_ID, DATABASE_1, null, null, null);
         });
     }
@@ -119,7 +119,7 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
     public void update_anonymous_fails() {
 
         /* test */
-        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
+        assertThrows(AccessDeniedException.class, () -> {
             generic_update(DATABASE_1_ID, DATABASE_1, null, USER_4_ID, null);
         });
     }
@@ -139,7 +139,7 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
     public void update_noRoleNoAccess_fails() {
 
         /* test */
-        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
+        assertThrows(AccessDeniedException.class, () -> {
             generic_update(DATABASE_1_ID, DATABASE_1, null, USER_4_ID, USER_4_PRINCIPAL);
         });
     }
@@ -163,7 +163,7 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
     public void revoke_anonymous_fails() {
 
         /* test */
-        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
+        assertThrows(AccessDeniedException.class, () -> {
             generic_revoke(DATABASE_1_ID, DATABASE_1_USER_1_WRITE_ALL_ACCESS, USER_2_ID, USER_1_PRINCIPAL);
         });
     }
@@ -173,7 +173,7 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
     public void revoke_noRoleNoAccess_fails() {
 
         /* test */
-        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
+        assertThrows(AccessDeniedException.class, () -> {
             generic_revoke(DATABASE_1_ID, DATABASE_1_USER_1_WRITE_ALL_ACCESS, USER_2_ID, USER_4_PRINCIPAL);
         });
     }

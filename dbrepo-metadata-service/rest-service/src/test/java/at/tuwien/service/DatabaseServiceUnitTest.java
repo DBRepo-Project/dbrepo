@@ -108,7 +108,7 @@ public class DatabaseServiceUnitTest extends BaseUnitTest {
 
         /* mock */
         when(userService.findByUsername(USER_1_USERNAME))
-                .thenReturn(USER_1_DTO);
+                .thenReturn(USER_1);
         when(containerRepository.findById(CONTAINER_1_ID))
                 .thenReturn(Optional.empty());
 

@@ -5,7 +5,6 @@ import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.query.QueryPersistDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.api.identifier.IdentifierBriefDto;
-import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.IdentifierMapper;
@@ -46,6 +45,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/database/{databaseId}/query")
 public class StoreEndpoint {
 
+    private final UserMapper userMapper;
     private final QueryMapper queryMapper;
     private final UserService userService;
     private final StoreService storeService;
@@ -55,9 +55,10 @@ public class StoreEndpoint {
     private final IdentifierService identifierService;
 
     @Autowired
-    public StoreEndpoint(QueryMapper queryMapper, UserService userService, StoreService storeService,
+    public StoreEndpoint(UserMapper userMapper, QueryMapper queryMapper, UserService userService, StoreService storeService,
                          AccessService accessService, IdentifierMapper identifierMapper,
                          EndpointValidator endpointValidator, IdentifierService identifierService) {
+        this.userMapper = userMapper;
         this.queryMapper = queryMapper;
         this.userService = userService;
         this.storeService = storeService;
@@ -184,7 +185,7 @@ public class StoreEndpoint {
         /* find */
         final Query query = storeService.findOne(databaseId, queryId, principal);
         final QueryDto dto = queryMapper.queryToQueryDto(query);
-        dto.setCreator(userService.findByUsername(query.getCreatedBy()));
+        dto.setCreator(userMapper.userToUserDto(userService.findByUsername(query.getCreatedBy())));
         final List<Identifier> identifiers = identifierService.findByDatabaseIdAndQueryId(databaseId, queryId);
         if (!identifiers.isEmpty()) {
             dto.setIdentifier(identifierMapper.identifierToIdentifierDto(identifiers.get(0)));
@@ -251,7 +252,7 @@ public class StoreEndpoint {
         /* persist */
         final Query query = storeService.persist(databaseId, queryId, data);
         final QueryDto dto = queryMapper.queryToQueryDto(query);
-        dto.setCreator(userService.findByUsername(query.getCreatedBy()));
+        dto.setCreator(userMapper.userToUserDto(userService.findByUsername(query.getCreatedBy())));
         log.trace("persist query resulted in query {}", dto);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(dto);

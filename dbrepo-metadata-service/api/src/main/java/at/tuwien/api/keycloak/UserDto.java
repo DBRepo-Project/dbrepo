@@ -1,13 +1,11 @@
 package at.tuwien.api.keycloak;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
-import java.time.Instant;
 import java.util.UUID;
 
 @Getter
@@ -27,12 +25,6 @@ public class UserDto {
     private String username;
 
     @NotNull
-    @JsonProperty("createdTimestamp")
-    @Schema(example = "1693048334898")
-    @JsonFormat(shape = JsonFormat.Shape.NUMBER, timezone = "UTC")
-    private Instant created;
-
-    @NotNull
     @Schema(example = "true")
     private Boolean enabled;
 
@@ -48,9 +40,6 @@ public class UserDto {
     @NotNull
     @Schema(example = "jcarberry@brown.edu")
     private String email;
-
-    @NotNull
-    private UserAttributesDto attributes;
 
     @NotNull
     @JsonProperty("notBefore")

@@ -4,6 +4,7 @@ import at.tuwien.api.semantics.OntologyCreateDto;
 import at.tuwien.api.semantics.OntologyModifyDto;
 import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.semantics.Ontology;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.AccessDeniedException;
 import at.tuwien.exception.KeycloakRemoteException;
 import at.tuwien.exception.OntologyNotFoundException;
@@ -54,7 +55,7 @@ public class OntologyServiceImpl implements OntologyService {
     @Override
     public Ontology create(OntologyCreateDto data, Principal principal) throws UserNotFoundException,
             KeycloakRemoteException, AccessDeniedException {
-        final UserDto user = userService.findByUsername(principal.getName());
+        final User user = userService.findByUsername(principal.getName());
         final Ontology entity = ontologyMapper.ontologyCreateDtoToOntology(data);
         entity.setCreatedBy(user.getId());
         final Ontology ontology = ontologyRepository.save(entity);

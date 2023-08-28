@@ -5,6 +5,7 @@ import at.tuwien.annotations.MockAmqp;
 import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.user.*;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.service.UserService;
 import lombok.extern.log4j.Log4j2;
@@ -17,7 +18,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -45,7 +45,7 @@ public class UserEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void findAll_anonymous_succeeds() throws KeycloakRemoteException, at.tuwien.exception.AccessDeniedException {
+    public void findAll_anonymous_succeeds() {
 
         /* test */
         findAll_generic();
@@ -53,7 +53,7 @@ public class UserEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME)
-    public void findAll_noRole_succeeds() throws KeycloakRemoteException, at.tuwien.exception.AccessDeniedException {
+    public void findAll_noRole_succeeds() {
 
         /* test */
         findAll_generic();
@@ -95,7 +95,7 @@ public class UserEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            find_generic(USER_1_ID, USER_1_DTO, null);
+            find_generic(USER_1_ID, USER_1, null);
         });
     }
 
@@ -105,7 +105,7 @@ public class UserEndpointUnitTest extends BaseUnitTest {
             at.tuwien.exception.AccessDeniedException {
 
         /* test */
-        find_generic(USER_1_ID, USER_1_DTO, USER_1_PRINCIPAL);
+        find_generic(USER_1_ID, USER_1, USER_1_PRINCIPAL);
     }
 
     @Test
@@ -114,7 +114,7 @@ public class UserEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            find_generic(USER_2_ID, USER_2_DTO, USER_1_PRINCIPAL);
+            find_generic(USER_2_ID, USER_2, USER_1_PRINCIPAL);
         });
     }
 
@@ -124,7 +124,7 @@ public class UserEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            find_generic(USER_2_ID, USER_2_DTO, USER_3_PRINCIPAL);
+            find_generic(USER_2_ID, USER_2, USER_3_PRINCIPAL);
         });
     }
 
@@ -140,7 +140,7 @@ public class UserEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            modify_generic(USER_1_ID, USER_1_DTO, null, request);
+            modify_generic(USER_1_ID, USER_1, null, request);
         });
     }
 
@@ -156,7 +156,7 @@ public class UserEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            modify_generic(USER_1_ID, USER_1_DTO, USER_4_PRINCIPAL, request);
+            modify_generic(USER_1_ID, USER_1, USER_4_PRINCIPAL, request);
         });
     }
 
@@ -172,14 +172,15 @@ public class UserEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(ForeignUserException.class, () -> {
-            modify_generic(USER_1_ID, USER_1_DTO, USER_2_PRINCIPAL, request);
+            modify_generic(USER_1_ID, USER_1, USER_2_PRINCIPAL, request);
         });
     }
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"modify-user-information"})
     public void modify_succeeds() throws UserNotFoundException, ForeignUserException, UserAttributeNotFoundException,
-            KeycloakRemoteException, at.tuwien.exception.AccessDeniedException {
+            KeycloakRemoteException, at.tuwien.exception.AccessDeniedException, QueryMalformedException,
+            DatabaseMalformedException {
         final UserUpdateDto request = UserUpdateDto.builder()
                 .firstname(USER_1_FIRSTNAME)
                 .lastname(USER_1_LASTNAME)
@@ -188,7 +189,7 @@ public class UserEndpointUnitTest extends BaseUnitTest {
                 .build();
 
         /* test */
-        modify_generic(USER_1_ID, USER_1_DTO, USER_1_PRINCIPAL, request);
+        modify_generic(USER_1_ID, USER_1, USER_1_PRINCIPAL, request);
     }
 
     @Test
@@ -200,7 +201,7 @@ public class UserEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            theme_generic(USER_1_ID, USER_1_DTO, null, request);
+            theme_generic(USER_1_ID, USER_1, null, request);
         });
     }
 
@@ -213,7 +214,7 @@ public class UserEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            theme_generic(USER_4_ID, USER_4_DTO, USER_4_PRINCIPAL, request);
+            theme_generic(USER_4_ID, USER_4, USER_4_PRINCIPAL, request);
         });
     }
 
@@ -226,20 +227,19 @@ public class UserEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(ForeignUserException.class, () -> {
-            theme_generic(USER_1_ID, USER_1_DTO, USER_2_PRINCIPAL, request);
+            theme_generic(USER_1_ID, USER_1, USER_2_PRINCIPAL, request);
         });
     }
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"modify-user-theme"})
-    public void theme_succeeds() throws UserNotFoundException, ForeignUserException, UserAttributeNotFoundException,
-            KeycloakRemoteException, at.tuwien.exception.AccessDeniedException {
+    public void theme_succeeds() throws UserNotFoundException, ForeignUserException {
         final UserThemeSetDto request = UserThemeSetDto.builder()
                 .themeDark(USER_1_THEME_DARK)
                 .build();
 
         /* test */
-        theme_generic(USER_1_ID, USER_1_DTO, USER_1_PRINCIPAL, request);
+        theme_generic(USER_1_ID, USER_1, USER_1_PRINCIPAL, request);
     }
 
     @Test
@@ -251,7 +251,7 @@ public class UserEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            password_generic(USER_1_ID, USER_1_DTO, null, request);
+            password_generic(USER_1_ID, USER_1, null, request);
         });
     }
 
@@ -264,7 +264,7 @@ public class UserEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(ForeignUserException.class, () -> {
-            password_generic(USER_1_ID, USER_1_DTO, USER_4_PRINCIPAL, request);
+            password_generic(USER_1_ID, USER_1, USER_4_PRINCIPAL, request);
         });
     }
 
@@ -277,18 +277,18 @@ public class UserEndpointUnitTest extends BaseUnitTest {
                 .build();
 
         /* test */
-        password_generic(USER_1_ID, USER_1_DTO, USER_1_PRINCIPAL, request);
+        password_generic(USER_1_ID, USER_1, USER_1_PRINCIPAL, request);
     }
 
     /* ################################################################################################### */
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
 
-    protected void findAll_generic() throws KeycloakRemoteException, at.tuwien.exception.AccessDeniedException {
+    protected void findAll_generic() {
 
         /* mock */
         when(userService.findAll())
-                .thenReturn(List.of(USER_1_BRIEF_DTO, USER_2_BRIEF_DTO));
+                .thenReturn(List.of(USER_1, USER_2));
 
         /* test */
         final ResponseEntity<List<UserBriefDto>> response = userEndpoint.findAll();
@@ -303,13 +303,13 @@ public class UserEndpointUnitTest extends BaseUnitTest {
             at.tuwien.exception.AccessDeniedException {
 
         /* test */
-        final ResponseEntity<UserDto> response = userEndpoint.create(data);
+        final ResponseEntity<UserBriefDto> response = userEndpoint.create(data);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        final UserDto body = response.getBody();
+        final UserBriefDto body = response.getBody();
         assertNotNull(body);
     }
 
-    protected void find_generic(UUID id, UserDto user, Principal principal) throws UserNotFoundException,
+    protected void find_generic(UUID id, User user, Principal principal) throws UserNotFoundException,
             NotAllowedException, KeycloakRemoteException, at.tuwien.exception.AccessDeniedException {
 
         /* mock */
@@ -329,9 +329,9 @@ public class UserEndpointUnitTest extends BaseUnitTest {
         assertNotNull(body);
     }
 
-    protected void modify_generic(UUID id, UserDto user, Principal principal, UserUpdateDto data)
+    protected void modify_generic(UUID id, User user, Principal principal, UserUpdateDto data)
             throws UserNotFoundException, ForeignUserException, UserAttributeNotFoundException, KeycloakRemoteException,
-            at.tuwien.exception.AccessDeniedException {
+            at.tuwien.exception.AccessDeniedException, QueryMalformedException, DatabaseMalformedException {
 
         /* mock */
         if (user != null) {
@@ -352,9 +352,8 @@ public class UserEndpointUnitTest extends BaseUnitTest {
         assertNotNull(body);
     }
 
-    protected void theme_generic(UUID id, UserDto user, Principal principal, UserThemeSetDto data)
-            throws UserNotFoundException, ForeignUserException, UserAttributeNotFoundException, KeycloakRemoteException,
-            at.tuwien.exception.AccessDeniedException {
+    protected void theme_generic(UUID id, User user, Principal principal, UserThemeSetDto data)
+            throws UserNotFoundException, ForeignUserException {
 
         /* mock */
         if (user != null) {
@@ -375,7 +374,7 @@ public class UserEndpointUnitTest extends BaseUnitTest {
         assertNotNull(body);
     }
 
-    protected void password_generic(UUID id, UserDto user, Principal principal, UserPasswordDto data)
+    protected void password_generic(UUID id, User user, Principal principal, UserPasswordDto data)
             throws UserNotFoundException, ForeignUserException, KeycloakRemoteException,
             at.tuwien.exception.AccessDeniedException, QueryMalformedException, DatabaseMalformedException {
 

@@ -10,6 +10,7 @@ import at.tuwien.config.MariaDbConfig;
 import at.tuwien.entities.database.AccessType;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.exception.*;
+import at.tuwien.gateway.KeycloakGateway;
 import at.tuwien.repository.mdb.*;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,6 +20,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.testcontainers.containers.MariaDBContainer;
@@ -41,6 +43,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @MockAmqp
 @MockOpensearch
 public class AccessServiceIntegrationTest extends BaseUnitTest {
+
+    @MockBean
+    private KeycloakGateway keycloakGateway;
 
     @Autowired
     private ImageRepository imageRepository;
@@ -73,46 +78,47 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
 
     public static Stream<Arguments> create_succeeds_parameters() {
         return Stream.of(
-                Arguments.arguments("general", AccessTypeDto.READ, AccessType.READ, USER_3_USERNAME, USER_3_ID)
+                Arguments.arguments("general", AccessTypeDto.READ, AccessType.READ, USER_3_ID)
         );
     }
 
     public static Stream<Arguments> create_fails_parameters() {
         return Stream.of(
-                Arguments.arguments("general", NotAllowedException.class, AccessTypeDto.READ, USER_2_USERNAME)
+                Arguments.arguments("general", NotAllowedException.class, AccessTypeDto.READ, USER_2_ID)
         );
     }
 
     public static Stream<Arguments> update_succeeds_parameters() {
         return Stream.of(
                 Arguments.arguments("same access", DATABASE_1_ID, AccessTypeDto.READ, AccessType.READ,
-                        USER_2_USERNAME, USER_2_ID),
+                        USER_2_ID),
                 Arguments.arguments("write own access", DATABASE_1_ID, AccessTypeDto.WRITE_OWN,
-                        AccessType.WRITE_OWN, USER_2_USERNAME, USER_2_ID),
+                        AccessType.WRITE_OWN, USER_2_ID),
                 Arguments.arguments("write all access", DATABASE_1_ID, AccessTypeDto.WRITE_ALL,
-                        AccessType.WRITE_ALL, USER_2_USERNAME, USER_2_ID)
+                        AccessType.WRITE_ALL, USER_2_ID)
         );
     }
 
     public static Stream<Arguments> update_fails_parameters() {
         return Stream.of(
                 Arguments.arguments("user not found", UserNotFoundException.class, DATABASE_1_ID,
-                        AccessTypeDto.READ, "l33tsp34k"),
+                        AccessTypeDto.READ, UUID.fromString("deadbeef-fc88-4abd-a289-455e34b0e80d"), null),
                 Arguments.arguments("database not found", DatabaseNotFoundException.class, DATABASE_2_ID,
-                        AccessTypeDto.READ, USER_2_USERNAME)
+                        AccessTypeDto.READ, USER_1_ID)
         );
     }
 
     public static Stream<Arguments> delete_fails_parameters() {
         return Stream.of(
-                Arguments.arguments("user not found", UserNotFoundException.class, "l33tsp34k"),
-                Arguments.arguments("is owner", NotAllowedException.class, USER_1_USERNAME)
+                Arguments.arguments("user not found", UserNotFoundException.class,
+                        UUID.fromString("deadbeef-fc88-4abd-a289-455e34b0e80d"), null),
+                Arguments.arguments("is owner", NotAllowedException.class, USER_1_ID)
         );
     }
 
     public static Stream<Arguments> delete_succeeds_parameters() {
         return Stream.of(
-                Arguments.arguments("general", USER_2_USERNAME)
+                Arguments.arguments("general", USER_2_ID)
         );
     }
 
@@ -181,8 +187,8 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
 
     @ParameterizedTest
     @MethodSource("update_fails_parameters")
-    protected <T extends Throwable> void update_fails(String name, Class<T> expectedException,
-                                                      Long databaseId, AccessTypeDto accessTypeDto, UUID userId) {
+    protected <T extends Throwable> void update_fails(String name, Class<T> expectedException, Long databaseId,
+                                                      AccessTypeDto accessTypeDto, UUID userId) {
         final DatabaseModifyAccessDto request = DatabaseModifyAccessDto.builder()
                 .type(accessTypeDto)
                 .build();
@@ -205,9 +211,9 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
 
     @ParameterizedTest
     @MethodSource("delete_succeeds_parameters")
-    protected <T extends Throwable> void delete_succeeds(String name, UUID userId) throws UserNotFoundException,
-            NotAllowedException, QueryMalformedException, DatabaseNotFoundException, DatabaseMalformedException,
-            KeycloakRemoteException, AccessDeniedException {
+    protected <T extends Throwable> void delete_succeeds(String name, UUID userId)
+            throws UserNotFoundException, NotAllowedException, QueryMalformedException, DatabaseNotFoundException,
+            DatabaseMalformedException, KeycloakRemoteException, AccessDeniedException {
 
         /* test */
         accessService.delete(DATABASE_1_ID, userId);

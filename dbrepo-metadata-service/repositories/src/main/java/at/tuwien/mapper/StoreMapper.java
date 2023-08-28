@@ -2,6 +2,7 @@ package at.tuwien.mapper;
 
 import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.api.user.UserDto;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.QueryStoreException;
 import at.tuwien.exception.TableMalformedException;
 import at.tuwien.querystore.Query;
@@ -21,7 +22,7 @@ public interface StoreMapper {
     DateTimeFormatter mariaDbFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.SSS]")
             .withZone(ZoneId.of("UTC"));
 
-    default CallableStatement queryStoreRawInsertQuery(Connection connection, UserDto user, ExecuteStatementDto data)
+    default CallableStatement queryStoreRawInsertQuery(Connection connection, User user, ExecuteStatementDto data)
             throws QueryStoreException {
         final String statement = "{call _store_query(?, ?, ?, ?)}";
         log.trace("statement={}", statement);

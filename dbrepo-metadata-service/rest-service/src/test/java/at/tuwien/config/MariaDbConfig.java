@@ -7,6 +7,7 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.QueryMalformedException;
 import at.tuwien.mapper.DatabaseMapper;
+import at.tuwien.mapper.DatabaseMapperImpl;
 import at.tuwien.querystore.Query;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,6 +69,7 @@ public class MariaDbConfig {
             statement.executeUpdate();
             statement.close();
         }
+        log.debug("created database {}", database);
     }
 
     public static void createInitDatabase(Container container, Database database) throws SQLException {
@@ -78,6 +80,7 @@ public class MariaDbConfig {
             populator.setSeparator(";\n");
             populator.populate(connection);
         }
+        log.debug("created init database {}", database.getInternalName());
     }
 
     public static void dropAllDatabases(Container container) {
@@ -103,6 +106,7 @@ public class MariaDbConfig {
         } catch (SQLException e) {
             log.error("could not drop all databases", e);
         }
+        log.debug("dropped all databases");
     }
 
     public static void dropDatabase(Container container, String database)
@@ -116,12 +120,14 @@ public class MariaDbConfig {
             statement.executeUpdate();
             statement.close();
         }
+        log.debug("dropped database {}", database);
     }
 
-    public void mockGrantUserPermissions(Container container, Database database, String username) throws SQLException,
+    public static void grantUserPermissions(Container container, Database database, String username) throws SQLException,
             QueryMalformedException {
         final String jdbc = "jdbc:mariadb://" + container.getHost() + ":" + container.getPort() + "/" + database.getInternalName();
         log.trace("connect to database {}", jdbc);
+        final DatabaseMapper databaseMapper = new DatabaseMapperImpl();
         try (Connection connection = DriverManager.getConnection(jdbc, container.getPrivilegedUsername(), container.getPrivilegedPassword())) {
             final PreparedStatement statement1 = databaseMapper.rawGrantUserAccessQuery(connection, username, AccessTypeDto.WRITE_ALL);
             statement1.executeUpdate();

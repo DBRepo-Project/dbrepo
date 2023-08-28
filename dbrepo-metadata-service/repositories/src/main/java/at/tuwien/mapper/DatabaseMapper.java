@@ -8,6 +8,7 @@ import at.tuwien.entities.database.AccessType;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.database.LanguageType;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.QueryMalformedException;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.http.auth.BasicUserPrincipal;
@@ -83,15 +84,15 @@ public interface DatabaseMapper {
     })
     Database databaseCreateDtoToDatabase(DatabaseCreateDto data);
 
-    default PreparedStatement userToRawCreateUserQuery(Connection connection, UserDto data) throws QueryMalformedException {
-        if (data.getAttributes().getMariadbPassword() == null) {
+    default PreparedStatement userToRawCreateUserQuery(Connection connection, User data) throws QueryMalformedException {
+        if (data.getMariadbPassword() == null) {
             log.error("Failed to map create user query: attribute 'mariadb_password' is empty");
             throw new QueryMalformedException("Failed to map create user query: attribute 'mariadb_password' is empty");
         }
         final StringBuilder statement = new StringBuilder("CREATE USER IF NOT EXISTS `")
                 .append(data.getUsername())
                 .append("`@`%` IDENTIFIED BY PASSWORD '")
-                .append(data.getAttributes().getMariadbPassword())
+                .append(data.getMariadbPassword())
                 .append("';");
         log.trace("statement={}", statement);
         try {
@@ -102,15 +103,15 @@ public interface DatabaseMapper {
         }
     }
 
-    default PreparedStatement userToRawUpdateUserQuery(Connection connection, UserDto data) throws QueryMalformedException {
-        if (data.getAttributes().getMariadbPassword() == null) {
+    default PreparedStatement userToRawUpdateUserQuery(Connection connection, User data) throws QueryMalformedException {
+        if (data.getMariadbPassword() == null) {
             log.error("Failed to map create user query: attribute 'mariadb_password' is empty");
             throw new QueryMalformedException("Failed to map create user query: attribute 'mariadb_password' is empty");
         }
         final StringBuilder statement = new StringBuilder("SET PASSWORD FOR `")
                 .append(data.getUsername())
                 .append("`@`%` = '")
-                .append(data.getAttributes().getMariadbPassword())
+                .append(data.getMariadbPassword())
                 .append("';");
         log.trace("statement={}", statement);
         try {
@@ -302,8 +303,7 @@ public interface DatabaseMapper {
         return access;
     }
 
-    default DatabaseAccess databaseModifyAccessDtoToDatabaseAccess(Database database, UserDto user,
-                                                                   DatabaseModifyAccessDto data) {
+    default DatabaseAccess databaseModifyAccessDtoToDatabaseAccess(Database database, User user, DatabaseModifyAccessDto data) {
         final DatabaseAccess access = DatabaseAccess.builder()
                 .hdbid(database.getId())
                 .huserid(user.getId())

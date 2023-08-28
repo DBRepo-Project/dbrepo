@@ -163,12 +163,12 @@ public class EndpointValidatorUnitTest extends BaseUnitTest {
         /* mock */
         when(databaseService.find(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
-        doThrow(NotAllowedException.class)
+        doThrow(AccessDeniedException.class)
                 .when(accessService)
                 .find(DATABASE_1_ID, USER_1_ID);
 
         /* test */
-        assertThrows(NotAllowedException.class, () -> {
+        assertThrows(AccessDeniedException.class, () -> {
             endpointValidator.validateOnlyAccessOrPublic(DATABASE_1_ID, USER_1_PRINCIPAL);
         });
     }

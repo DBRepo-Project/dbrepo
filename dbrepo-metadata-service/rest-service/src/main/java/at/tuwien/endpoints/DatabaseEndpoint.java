@@ -5,6 +5,7 @@ import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.DatabaseMapper;
 import at.tuwien.repository.mdb.DatabaseAccessRepository;
@@ -143,7 +144,7 @@ public class DatabaseEndpoint {
             BrokerVirtualHostGrantException, KeycloakRemoteException, AccessDeniedException {
         log.debug("endpoint create database, createDto={}, principal={}", createDto,
                 principal);
-        final UserDto user = userService.findByUsername(principal.getName());
+        final User user = userService.findByUsername(principal.getName());
         final Database database = databaseService.create(createDto, principal);
         messageQueueService.createUser(user.getUsername());
         messageQueueService.createExchange(database, principal);
@@ -181,10 +182,10 @@ public class DatabaseEndpoint {
     public ResponseEntity<DatabaseDto> visibility(@NotNull @PathVariable Long id,
                                                   @Valid @RequestBody DatabaseModifyVisibilityDto data,
                                                   @NotNull Principal principal) throws DatabaseNotFoundException,
-            UserNotFoundException, NotAllowedException, KeycloakRemoteException, AccessDeniedException {
+            UserNotFoundException, NotAllowedException {
         log.debug("endpoint update database, id={}, data={}, principal={}", id, data, principal);
         final Database database = databaseService.findById(id);
-        final UserDto user = userService.findByUsername(principal.getName());
+        final User user = userService.findByUsername(principal.getName());
         if (!database.getOwnedBy().equals(UserUtil.getId(principal))) {
             log.error("Failed to create database: not owner");
             throw new NotAllowedException(("Failed to create database: not owner"));
@@ -223,8 +224,8 @@ public class DatabaseEndpoint {
             UserNotFoundException, NotAllowedException, KeycloakRemoteException, AccessDeniedException {
         log.debug("endpoint update database, id={}, transferDto={}, principal={}", id, transferDto, principal);
         final Database database = databaseService.findById(id);
-        final UserDto user = userService.findByUsername(principal.getName());
-        if (!database.getOwnedBy().equals(UserUtil.getId(principal))) {
+        final User user = userService.findByUsername(principal.getName());
+        if (!database.getOwnedBy().equals(user.getId())) {
             log.error("Failed to create database: not owner");
             throw new NotAllowedException(("Failed to create database: not owner"));
         }
@@ -325,7 +326,7 @@ public class DatabaseEndpoint {
         log.debug("endpoint delete database, id={}, principal={}", id,
                 principal);
         final Database database = databaseService.findById(id);
-        final UserDto user = userService.findByUsername(principal.getName());
+        final User user = userService.findByUsername(principal.getName());
         messageQueueService.deleteExchange(database);
         databaseService.delete(id, user.getId());
         messageQueueService.updatePermissions(user);

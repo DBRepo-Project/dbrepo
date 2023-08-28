@@ -10,10 +10,13 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.exception.*;
 import at.tuwien.querystore.Query;
+import at.tuwien.repository.mdb.UserRepository;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.impl.StoreServiceImpl;
+import jakarta.persistence.Access;
 import lombok.extern.log4j.Log4j2;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +42,9 @@ import static org.mockito.Mockito.*;
 @MockAmqp
 @MockOpensearch
 public class StoreEndpointUnitTest extends BaseUnitTest {
+
+    @MockBean
+    private UserRepository userRepository;
 
     @Autowired
     private StoreEndpoint storeEndpoint;
@@ -94,12 +100,14 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
     public void findAll_privateNoAccess_fails() throws AccessDeniedException {
 
         /* mock */
-        doThrow(NotAllowedException.class)
+        doThrow(AccessDeniedException.class)
                 .when(accessService)
                 .find(DATABASE_1_ID, USER_2_ID);
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
 
         /* test */
-        assertThrows(NotAllowedException.class, () -> {
+        assertThrows(AccessDeniedException.class, () -> {
             findAll_generic(DATABASE_1_ID, DATABASE_1, USER_2_PRINCIPAL);
         });
     }
@@ -111,7 +119,7 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
             ImageNotSupportedException, ContainerNotFoundException, AccessDeniedException {
 
         /* mock */
-        doThrow(NotAllowedException.class)
+        doThrow(AccessDeniedException.class)
                 .when(accessService)
                 .find(DATABASE_3_ID, USER_2_ID);
 
@@ -139,6 +147,10 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
             DatabaseNotFoundException, ImageNotSupportedException, UserNotFoundException, NotAllowedException,
             DatabaseConnectionException, KeycloakRemoteException, AccessDeniedException {
 
+        /* mock */
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
+
         /* test */
         final QueryDto response = find_generic(DATABASE_3_ID, DATABASE_3, QUERY_4_ID, QUERY_4, null);
         assertEquals(QUERY_4_ID, response.getId());
@@ -161,6 +173,10 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
             ImageNotSupportedException, UserNotFoundException, NotAllowedException, DatabaseConnectionException,
             KeycloakRemoteException, AccessDeniedException {
 
+        /* mock */
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
+
         /* test */
         final QueryDto response = find_generic(DATABASE_1_ID, DATABASE_1, QUERY_1_ID, QUERY_1, USER_1_PRINCIPAL);
         assertEquals(QUERY_1_ID, response.getId());
@@ -172,6 +188,10 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
     public void find_noRole_succeeds() throws QueryStoreException, QueryNotFoundException, DatabaseNotFoundException,
             ImageNotSupportedException, UserNotFoundException, NotAllowedException, DatabaseConnectionException,
             KeycloakRemoteException, AccessDeniedException {
+
+        /* mock */
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
 
         /* test */
         final QueryDto response = find_generic(DATABASE_1_ID, DATABASE_1, QUERY_1_ID, QUERY_1, USER_1_PRINCIPAL);
@@ -205,6 +225,10 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
             NotAllowedException, DatabaseConnectionException, QueryAlreadyPersistedException, QueryNotFoundException,
             DatabaseNotFoundException, ImageNotSupportedException, KeycloakRemoteException, AccessDeniedException {
 
+        /* mock */
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
+
         /* test */
         final QueryDto response = persist_generic(DATABASE_1_ID, DATABASE_1, QUERY_1_ID, QUERY_1, USER_1_ID, USER_1_PRINCIPAL, DATABASE_1_USER_1_READ_ACCESS);
         assertEquals(QUERY_1_ID, response.getId());
@@ -216,6 +240,10 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
     public void persist_ownWriteOwn_succeeds() throws UserNotFoundException, QueryStoreException,
             NotAllowedException, DatabaseConnectionException, QueryAlreadyPersistedException, QueryNotFoundException,
             DatabaseNotFoundException, ImageNotSupportedException, KeycloakRemoteException, AccessDeniedException {
+
+        /* mock */
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
 
         /* test */
         final QueryDto response = persist_generic(DATABASE_1_ID, DATABASE_1, QUERY_1_ID, QUERY_1, USER_1_ID, USER_1_PRINCIPAL, DATABASE_1_USER_1_WRITE_OWN_ACCESS);
@@ -229,6 +257,10 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
             NotAllowedException, DatabaseConnectionException, QueryAlreadyPersistedException, QueryNotFoundException,
             DatabaseNotFoundException, ImageNotSupportedException, KeycloakRemoteException, AccessDeniedException {
 
+        /* mock */
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
+
         /* test */
         final QueryDto response = persist_generic(DATABASE_1_ID, DATABASE_1, QUERY_1_ID, QUERY_1, USER_1_ID, USER_1_PRINCIPAL, DATABASE_1_USER_1_WRITE_ALL_ACCESS);
         assertEquals(QUERY_1_ID, response.getId());
@@ -240,6 +272,10 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
     public void persist_foreignWriteAll_succeeds() throws UserNotFoundException, QueryStoreException,
             NotAllowedException, DatabaseConnectionException, QueryAlreadyPersistedException, QueryNotFoundException,
             DatabaseNotFoundException, ImageNotSupportedException, KeycloakRemoteException, AccessDeniedException {
+
+        /* mock */
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
 
         /* test */
         persist_generic(DATABASE_1_ID, DATABASE_1, QUERY_1_ID, QUERY_1, USER_2_ID, USER_2_PRINCIPAL, DATABASE_1_USER_2_WRITE_ALL_ACCESS);

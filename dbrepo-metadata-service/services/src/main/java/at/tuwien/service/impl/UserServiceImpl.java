@@ -2,17 +2,19 @@ package at.tuwien.service.impl;
 
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.user.*;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.KeycloakGateway;
 import at.tuwien.mapper.UserMapper;
+import at.tuwien.repository.mdb.UserRepository;
 import at.tuwien.repository.sdb.UserIdxRepository;
-import at.tuwien.service.DatabaseService;
 import at.tuwien.service.UserService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Log4j2
@@ -20,104 +22,104 @@ import java.util.UUID;
 public class UserServiceImpl implements UserService {
 
     private final UserMapper userMapper;
+    private final UserRepository userRepository;
     private final KeycloakGateway keycloakGateway;
-    private final DatabaseService databaseService;
     private final UserIdxRepository userIdxRepository;
 
     @Autowired
-    public UserServiceImpl(UserMapper userMapper, KeycloakGateway keycloakGateway, DatabaseService databaseService,
+    public UserServiceImpl(UserMapper userMapper, UserRepository userRepository, KeycloakGateway keycloakGateway,
                            UserIdxRepository userIdxRepository) {
         this.userMapper = userMapper;
+        this.userRepository = userRepository;
         this.keycloakGateway = keycloakGateway;
-        this.databaseService = databaseService;
         this.userIdxRepository = userIdxRepository;
     }
 
     @Override
-    public List<UserBriefDto> findAll() throws KeycloakRemoteException, AccessDeniedException {
-        return keycloakGateway.findAllUsers()
-                .stream()
-                .map(userMapper::keycloakUserDtoToUserBriefDto)
-                .toList();
+    public List<User> findAll() {
+        return userRepository.findAll();
     }
 
     @Override
-    public UserDto findByUsername(String username) throws UserNotFoundException, KeycloakRemoteException,
-            AccessDeniedException {
-        return userMapper.keycloakUserDtoToUserDto(keycloakGateway.findByUsername(username));
+    public User findByUsername(String username) throws UserNotFoundException {
+        final Optional<User> optional = userRepository.findByUsername(username);
+        if (optional.isEmpty()) {
+            log.error("Failed to find user with username {}: not present in metadata database", username);
+            throw new UserNotFoundException("Failed to find user with username " + username + ": not present in metadata database");
+        }
+        return optional.get();
     }
 
     @Override
-    public UserDto find(UUID id) throws UserNotFoundException, KeycloakRemoteException, AccessDeniedException {
-        return userMapper.keycloakUserDtoToUserDto(keycloakGateway.findById(id));
+    public User find(UUID id) throws UserNotFoundException {
+        final Optional<User> optional = userRepository.findById(id);
+        if (optional.isEmpty()) {
+            log.error("Failed to find user with id {}: not present in metadata database", id);
+            throw new UserNotFoundException("Failed to find user with id " + id + ": not present in metadata database");
+        }
+        return optional.get();
     }
 
     @Override
-    public UserDto create(SignupRequestDto data) throws UserAlreadyExistsException, AccessDeniedException,
+    public User create(SignupRequestDto data) throws UserAlreadyExistsException, AccessDeniedException,
             KeycloakRemoteException, UserNotFoundException {
-        /* create */
+        /* create at authentication service */
+        final User entity = User.builder()
+                .username(data.getUsername())
+                .email(data.getEmail())
+                .themeDark(true)
+                .build();
         keycloakGateway.createUser(userMapper.signupRequestDtoToUserCreateDto(data));
-        final at.tuwien.api.keycloak.UserDto keycloakUser = keycloakGateway.findByUsername(data.getUsername());
-        final UserDto userDto = userMapper.keycloakUserDtoToUserDto(keycloakUser);
+        /* create at metadata database */
+        entity.setId(keycloakGateway.findByUsername(data.getUsername()).getId());
+        final User user = userRepository.save(entity);
+        log.info("Created user with id {} in metadata database", user.getId());
         /* save in open search database */
-        userIdxRepository.save(userMapper.keycloakUserDtoToUserDto(keycloakUser));
-        log.info("Created user with id {} in open search database", userDto.getId());
-        return userDto;
-    }
-
-    @Override
-    public UserDto modify(UUID id, UserUpdateDto data) throws UserNotFoundException, UserAttributeNotFoundException,
-            KeycloakRemoteException, AccessDeniedException {
-        /* save */
-        keycloakGateway.updateUserAttributes(id, userMapper.userUpdateDtoToUserAttributesDto(data));
-        log.info("Updated user attributes for user with id {}", id);
-        /* save in open search database */
-        final UserDto user = userMapper.keycloakUserDtoToUserDto(keycloakGateway.findById(id));
-        userIdxRepository.save(user);
+        userIdxRepository.save(userMapper.userToUserDto(user));
+        log.info("Created user with id {} in open search database", user.getId());
         return user;
     }
 
     @Override
-    public void updatePassword(UUID id, UserPasswordDto data) throws KeycloakRemoteException, AccessDeniedException,
-            UserNotFoundException, QueryMalformedException, DatabaseMalformedException {
-        /* save */
+    public User modify(UUID id, UserUpdateDto data) throws UserNotFoundException {
+        final User entity = find(id);
+        entity.setFirstname(data.getFirstname());
+        entity.setLastname(data.getLastname());
+        entity.setAffiliation(data.getAffiliation());
+        entity.setOrcid(data.getOrcid());
+        final User user = userRepository.save(entity);
+        log.info("Updated user data for user with id {}", user.getId());
+        return user;
+    }
+
+    @Override
+    public void updatePassword(UUID id, UserPasswordDto data) throws KeycloakRemoteException, AccessDeniedException {
         keycloakGateway.updateUserCredentials(id, data);
-        final UserDto user = userMapper.keycloakUserDtoToUserDto(keycloakGateway.findById(id));
-        /* update in containers */
-        databaseService.updatePassword(user);
         log.info("Updated user password with id {}", id);
     }
 
     @Override
-    public UserDto toggleTheme(UUID id, UserThemeSetDto data) throws UserNotFoundException, KeycloakRemoteException,
-            AccessDeniedException {
-        /* save */
-        keycloakGateway.updateUserAttributes(id, userMapper.userThemeSetDtoToUserAttributesDto(data));
+    public User toggleTheme(UUID id, UserThemeSetDto data) throws UserNotFoundException {
+        final User entity = find(id);
+        entity.setThemeDark(data.getThemeDark());
+        final User user = userRepository.save(entity);
         log.info("Updated theme by updating attribute with id {}", id);
-        return userMapper.keycloakUserDtoToUserDto(keycloakGateway.findById(id));
+        return user;
     }
 
     @Override
     public void validateUsernameNotExists(String username) throws UserAlreadyExistsException {
-        try {
-            keycloakGateway.findByUsername(username);
-        } catch (KeycloakRemoteException | AccessDeniedException e) {
-            log.error("User with username {} already exists", username);
-            throw new UserAlreadyExistsException("User with username " + username + " already exists");
-        } catch (UserNotFoundException e) {
-            /* ignore */
+        if (userRepository.existsByUsername(username)) {
+            log.error("User with username {} already exists in metadata database", username);
+            throw new UserAlreadyExistsException("User with username " + username + " already exists in metadata database");
         }
     }
 
     @Override
     public void validateEmailNotExists(String email) throws UserEmailAlreadyExistsException {
-        try {
-            keycloakGateway.findByEmail(email);
-        } catch (KeycloakRemoteException | AccessDeniedException e) {
-            log.error("User with email {} already exists", email);
-            throw new UserEmailAlreadyExistsException("User with email " + email + " already exists");
-        } catch (UserNotFoundException e) {
-            /* ignore */
+        if (userRepository.existsByEmail(email)) {
+            log.error("User with email {} already exists in metadata database", email);
+            throw new UserEmailAlreadyExistsException("User with email " + email + " already exists in metadata database");
         }
     }
 }

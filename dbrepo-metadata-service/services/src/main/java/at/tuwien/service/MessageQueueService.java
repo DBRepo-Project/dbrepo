@@ -3,6 +3,7 @@ package at.tuwien.service;
 import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.AmqpException;
 import at.tuwien.exception.BrokerVirtualHostCreationException;
 import at.tuwien.exception.BrokerVirtualHostGrantException;
@@ -54,7 +55,7 @@ public interface MessageQueueService {
      * @param user The user.
      * @throws BrokerVirtualHostGrantException The Broker Service refused to grant the permissions.
      */
-    void updatePermissions(UserDto user) throws BrokerVirtualHostGrantException;
+    void updatePermissions(User user) throws BrokerVirtualHostGrantException;
 
     /**
      * Deletes an exchange for a database.

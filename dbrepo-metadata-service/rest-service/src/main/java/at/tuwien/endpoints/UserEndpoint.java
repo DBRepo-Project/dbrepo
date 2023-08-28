@@ -3,7 +3,10 @@ package at.tuwien.endpoints;
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.api.user.*;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
+import at.tuwien.mapper.UserMapper;
+import at.tuwien.service.DatabaseService;
 import at.tuwien.service.UserService;
 import at.tuwien.utils.UserUtil;
 import io.micrometer.core.annotation.Timed;
@@ -34,11 +37,16 @@ import java.util.UUID;
 @RequestMapping("/api/user")
 public class UserEndpoint {
 
+    private final UserMapper userMapper;
     private final UserService userService;
+    private final DatabaseService databaseService;
+
 
     @Autowired
-    public UserEndpoint(UserService userService) {
+    public UserEndpoint(UserMapper userMapper, UserService userService, DatabaseService databaseService) {
+        this.userMapper = userMapper;
         this.userService = userService;
+        this.databaseService = databaseService;
     }
 
     @GetMapping
@@ -52,9 +60,12 @@ public class UserEndpoint {
                             mediaType = "application/json",
                             array = @ArraySchema(schema = @Schema(implementation = UserBriefDto.class)))}),
     })
-    public ResponseEntity<List<UserBriefDto>> findAll() throws KeycloakRemoteException, AccessDeniedException {
+    public ResponseEntity<List<UserBriefDto>> findAll() {
         log.debug("endpoint find all users");
-        final List<UserBriefDto> users = userService.findAll();
+        final List<UserBriefDto> users = userService.findAll()
+                .stream()
+                .map(userMapper::userToUserBriefDto)
+                .toList();
         log.trace("find all users resulted in users {}", users);
         return ResponseEntity.ok(users);
     }
@@ -86,7 +97,7 @@ public class UserEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<UserDto> create(@NotNull @Valid @RequestBody SignupRequestDto data)
+    public ResponseEntity<UserBriefDto> create(@NotNull @Valid @RequestBody SignupRequestDto data)
             throws RealmNotFoundException, UserAlreadyExistsException, UserEmailAlreadyExistsException,
             UserNotFoundException, KeycloakRemoteException, AccessDeniedException {
         log.debug("endpoint create a user, data={}", data);
@@ -94,7 +105,8 @@ public class UserEndpoint {
         userService.validateUsernameNotExists(data.getUsername());
         userService.validateEmailNotExists(data.getEmail());
         /* create */
-        final UserDto dto = userService.create(data);
+        final User user = userService.create(data);
+        final UserBriefDto dto = userMapper.userToUserBriefDto(user);
         log.trace("create user resulted in dto {}", dto);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(dto);
@@ -127,8 +139,9 @@ public class UserEndpoint {
             KeycloakRemoteException, AccessDeniedException {
         log.debug("endpoint find a user, id={}, principal={}", id, principal);
         /* check */
-        final UserDto dto = userService.find(id);
-        if (id.equals(UserUtil.getId(principal))) {
+        final User user = userService.find(id);
+        final UserDto dto = userMapper.userToUserDto(user);
+        if (user.getUsername().equals(principal.getName())) {
             log.trace("find user resulted in dto {}", dto);
             return ResponseEntity.ok()
                     .body(dto);
@@ -166,7 +179,8 @@ public class UserEndpoint {
     public ResponseEntity<UserDto> modify(@NotNull @PathVariable("id") UUID id,
                                           @NotNull @Valid @RequestBody UserUpdateDto data,
                                           @NotNull Principal principal) throws UserNotFoundException,
-            ForeignUserException, UserAttributeNotFoundException, KeycloakRemoteException, AccessDeniedException {
+            ForeignUserException, UserAttributeNotFoundException, KeycloakRemoteException, AccessDeniedException,
+            QueryMalformedException, DatabaseMalformedException {
         log.debug("endpoint modify a user, id={}, data={}, principal={}", id, data, principal);
         /* check */
         if (!id.equals(UserUtil.getId(principal))) {
@@ -174,7 +188,9 @@ public class UserEndpoint {
             throw new ForeignUserException("Failed to modify user: attempting to modify other user");
         }
         /* modify */
-        final UserDto dto = userService.modify(id, data);
+        final User user = userService.modify(id, data);
+        databaseService.updatePassword(user);
+        final UserDto dto = userMapper.userToUserDto(user);
         log.trace("modify user resulted in dto {}", dto);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(dto);
@@ -204,9 +220,8 @@ public class UserEndpoint {
     })
     public ResponseEntity<UserDto> theme(@NotNull @PathVariable("id") UUID id,
                                          @NotNull @Valid @RequestBody UserThemeSetDto data,
-                                         @NotNull Principal principal)
-            throws UserNotFoundException, ForeignUserException, UserAttributeNotFoundException, KeycloakRemoteException,
-            AccessDeniedException {
+                                         @NotNull Principal principal) throws UserNotFoundException,
+            ForeignUserException {
         log.debug("endpoint modify a user theme, id={}, data={}, principal={}", id, data, principal);
         /* check */
         if (!id.equals(UserUtil.getId(principal))) {
@@ -214,7 +229,8 @@ public class UserEndpoint {
             throw new ForeignUserException("Failed to modify user: attempting to modify other user");
         }
         /* modify theme */
-        final UserDto dto = userService.toggleTheme(id, data);
+        final User user = userService.toggleTheme(id, data);
+        final UserDto dto = userMapper.userToUserDto(user);
         log.trace("modify user theme resulted in dto {}", dto);
         return ResponseEntity.accepted()
                 .body(dto);
@@ -243,8 +259,8 @@ public class UserEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<?> password(@NotNull @PathVariable("id") UUID id,
-                                            @NotNull @Valid @RequestBody UserPasswordDto data,
-                                            @NotNull Principal principal)
+                                      @NotNull @Valid @RequestBody UserPasswordDto data,
+                                      @NotNull Principal principal)
             throws UserNotFoundException, ForeignUserException, KeycloakRemoteException, AccessDeniedException,
             QueryMalformedException, DatabaseMalformedException {
         log.debug("endpoint modify a user password, id={}, data={}, principal={}", id, data, principal);

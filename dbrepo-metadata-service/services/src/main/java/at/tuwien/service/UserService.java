@@ -2,6 +2,7 @@ package at.tuwien.service;
 
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.user.*;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 
 import java.util.List;
@@ -14,7 +15,7 @@ public interface UserService {
      *
      * @return The list of users.
      */
-    List<UserBriefDto> findAll() throws KeycloakRemoteException, AccessDeniedException;
+    List<User> findAll();
 
     /**
      * Finds a user by username.
@@ -23,7 +24,7 @@ public interface UserService {
      * @return The user, if successfully.
      * @throws UserNotFoundException The user with this username was not found in the metadata database.
      */
-    UserDto findByUsername(String username) throws UserNotFoundException, KeycloakRemoteException, AccessDeniedException;
+    User findByUsername(String username) throws UserNotFoundException;
 
     /**
      * Finds a specific user in the metadata database by given id.
@@ -32,16 +33,16 @@ public interface UserService {
      * @return The user if successful. False otherwise.
      * @throws UserNotFoundException The user was not found.
      */
-    UserDto find(UUID id) throws UserNotFoundException, KeycloakRemoteException, AccessDeniedException;
+    User find(UUID id) throws UserNotFoundException;
 
     /**
      * Creates a user in the metadata database managed by Keycloak in the given realm.
      *
-     * @param data  The user data.
+     * @param data The user data.
      * @return The user, if successful. False otherwise.
      * @throws UserAlreadyExistsException The user already exists in the metadata database.
      */
-    UserDto create(SignupRequestDto data) throws UserAlreadyExistsException, AccessDeniedException,
+    User create(SignupRequestDto data) throws UserAlreadyExistsException, AccessDeniedException,
             KeycloakRemoteException, UserNotFoundException;
 
     /**
@@ -51,18 +52,16 @@ public interface UserService {
      * @param data The user information.
      * @return The user if successful. False otherwise.
      * @throws UserNotFoundException          The user was not found.
-     * @throws UserAttributeNotFoundException One or more user attributes for the user information were not found.
      */
-    UserDto modify(UUID id, UserUpdateDto data) throws UserNotFoundException, UserAttributeNotFoundException, KeycloakRemoteException, AccessDeniedException;
+    User modify(UUID id, UserUpdateDto data) throws UserNotFoundException;
 
     /**
      * Updates the user password for a user with given id.
      *
      * @param id   The user id.
      * @param data The new password.
-     * @throws UserNotFoundException The user was not found.
      */
-    void updatePassword(UUID id, UserPasswordDto data) throws UserNotFoundException, KeycloakRemoteException, AccessDeniedException, QueryMalformedException, DatabaseMalformedException;
+    void updatePassword(UUID id, UserPasswordDto data) throws KeycloakRemoteException, AccessDeniedException;
 
     /**
      * Updates the user theme for a user with given id.
@@ -71,9 +70,8 @@ public interface UserService {
      * @param data The user theme.
      * @return The user if successful. False otherwise.
      * @throws UserNotFoundException          The user was not found.
-     * @throws UserAttributeNotFoundException One or more user attributes for the user information were not found.
      */
-    UserDto toggleTheme(UUID id, UserThemeSetDto data) throws UserNotFoundException, UserAttributeNotFoundException, KeycloakRemoteException, AccessDeniedException;
+    User toggleTheme(UUID id, UserThemeSetDto data) throws UserNotFoundException;
 
     /**
      * Validates if a user with the given username already exists in the metadata database.

@@ -5,6 +5,7 @@ import at.tuwien.annotations.MockAmqp;
 import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.user.*;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
@@ -35,10 +36,10 @@ public class UserServiceIntegrationTest extends BaseUnitTest {
     private UserService userService;
 
     @Test
-    public void findByUsername_succeeds() throws UserNotFoundException, KeycloakRemoteException, AccessDeniedException {
+    public void findByUsername_succeeds() throws UserNotFoundException {
 
         /* test */
-        final UserDto response = userService.findByUsername(USER_1_USERNAME);
+        final User response = userService.findByUsername(USER_1_USERNAME);
         assertEquals(USER_1_ID, response.getId());
         assertEquals(USER_1_USERNAME, response.getUsername());
     }
@@ -56,7 +57,7 @@ public class UserServiceIntegrationTest extends BaseUnitTest {
     public void findAll_succeeds() throws KeycloakRemoteException, AccessDeniedException {
 
         /* test */
-        final List<UserBriefDto> response = userService.findAll();
+        final List<User> response = userService.findAll();
         assertEquals(1, response.size());
     }
 
@@ -70,7 +71,8 @@ public class UserServiceIntegrationTest extends BaseUnitTest {
                 .build();
 
         /* test */
-        final UserDto response = userService.create(request);
+        final User response = userService.create(request);
+        assertEquals(USER_2_USERNAME, response.getUsername());
     }
 
     @Test
@@ -103,8 +105,7 @@ public class UserServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     @Transactional
-    public void modify_succeeds() throws UserNotFoundException, UserAttributeNotFoundException, KeycloakRemoteException,
-            AccessDeniedException {
+    public void modify_succeeds() throws UserNotFoundException {
         final UserUpdateDto request = UserUpdateDto.builder()
                 .firstname(USER_1_FIRSTNAME)
                 .lastname(USER_1_LASTNAME)
@@ -113,12 +114,12 @@ public class UserServiceIntegrationTest extends BaseUnitTest {
                 .build();
 
         /* test */
-        final UserDto response = userService.modify(USER_1_ID, request);
+        final User response = userService.modify(USER_1_ID, request);
         assertEquals(USER_1_ID, response.getId());
         assertEquals(USER_1_FIRSTNAME, response.getFirstname());
         assertEquals(USER_1_LASTNAME, response.getLastname());
-        assertEquals("NASA", response.getAttributes().getAffiliation());
-        assertNull(response.getAttributes().getOrcid());
+        assertEquals("NASA", response.getAffiliation());
+        assertNull(response.getOrcid());
     }
 
     @Test
@@ -127,7 +128,7 @@ public class UserServiceIntegrationTest extends BaseUnitTest {
                 .firstname(USER_2_FIRSTNAME)
                 .lastname(USER_2_LASTNAME)
                 .affiliation(USER_2_AFFILIATION)
-                .orcid(USER_2_ORCID)
+                .orcid(USER_2_ORCID_URL)
                 .build();
 
         /* test */
@@ -137,8 +138,7 @@ public class UserServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void updatePassword_succeeds() throws UserNotFoundException, KeycloakRemoteException, AccessDeniedException,
-            QueryMalformedException, DatabaseMalformedException {
+    public void updatePassword_succeeds() throws KeycloakRemoteException, AccessDeniedException {
         final UserPasswordDto request = UserPasswordDto.builder()
                 .password(USER_1_PASSWORD)
                 .build();
@@ -161,15 +161,14 @@ public class UserServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     @Transactional
-    public void toggleTheme_succeeds() throws UserNotFoundException, UserAttributeNotFoundException,
-            KeycloakRemoteException, AccessDeniedException {
+    public void toggleTheme_succeeds() throws UserNotFoundException {
         final UserThemeSetDto request = UserThemeSetDto.builder()
                 .themeDark(true)
                 .build();
 
         /* test */
-        final UserDto response = userService.toggleTheme(USER_1_ID, request);
-        assertNotNull(response.getAttributes());
+        final User response = userService.toggleTheme(USER_1_ID, request);
+        assertTrue(response.getThemeDark());
     }
 
     @Test
@@ -185,11 +184,11 @@ public class UserServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void find_succeeds() throws UserNotFoundException, KeycloakRemoteException, AccessDeniedException {
+    public void find_succeeds() throws UserNotFoundException {
 
         /* test */
-        final UserDto user = userService.find(USER_1_ID);
-        assertEquals(USER_1_ID, user.getId());
+        final User user = userService.find(USER_1_ID);
+        assertEquals(USER_1_USERNAME, user.getUsername());
     }
 
     @Test

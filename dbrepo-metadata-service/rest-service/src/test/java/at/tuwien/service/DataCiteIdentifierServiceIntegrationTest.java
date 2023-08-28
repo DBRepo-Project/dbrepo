@@ -89,7 +89,6 @@ public class DataCiteIdentifierServiceIntegrationTest extends BaseUnitTest {
             QueryNotFoundException, IdentifierPublishingNotAllowedException, RemoteUnavailableException,
             IdentifierRequestException, ViewNotFoundException, QueryStoreException, DatabaseConnectionException,
             ImageNotSupportedException {
-        final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
         final DataCiteBody<DataCiteDoi> response =
                 new DataCiteBody<>(new DataCiteData<>(null, "dois", new DataCiteDoi(IDENTIFIER_1_DOI_NOT_NULL)));
 
@@ -100,7 +99,7 @@ public class DataCiteIdentifierServiceIntegrationTest extends BaseUnitTest {
         when(restTemplateBuilder.build()).thenReturn(restTemplate);
 
         /* test */
-        Identifier result = dataCiteIdentifierService.create(IDENTIFIER_1_DTO_REQUEST, principal);
+        Identifier result = dataCiteIdentifierService.create(IDENTIFIER_1_DTO_REQUEST, USER_1_PRINCIPAL);
         assertTrue(identifierRepository.existsById(result.getId()));
         assertEquals(IDENTIFIER_1_DOI_NOT_NULL, result.getDoi());
     }

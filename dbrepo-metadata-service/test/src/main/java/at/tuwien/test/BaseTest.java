@@ -26,6 +26,9 @@ import at.tuwien.api.database.table.constraints.ConstraintsDto;
 import at.tuwien.api.database.table.constraints.foreignKey.ForeignKeyCreateDto;
 import at.tuwien.api.database.table.constraints.unique.UniqueDto;
 import at.tuwien.api.identifier.*;
+import at.tuwien.api.keycloak.CredentialDto;
+import at.tuwien.api.keycloak.CredentialTypeDto;
+import at.tuwien.api.keycloak.UserCreateDto;
 import at.tuwien.api.maintenance.BannerMessageCreateDto;
 import at.tuwien.api.maintenance.BannerMessageTypeDto;
 import at.tuwien.api.maintenance.BannerMessageUpdateDto;
@@ -49,6 +52,7 @@ import at.tuwien.entities.identifier.*;
 import at.tuwien.entities.maintenance.BannerMessage;
 import at.tuwien.entities.maintenance.BannerMessageType;
 import at.tuwien.entities.semantics.Ontology;
+import at.tuwien.entities.user.User;
 import at.tuwien.querystore.Query;
 import at.tuwien.test.utils.ArrayUtil;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -235,6 +239,8 @@ public abstract class BaseTest {
     public final static String USER_1_TITLES_BEFORE = "Dr.";
     public final static String USER_1_TITLES_AFTER = "MSc BSc";
     public final static Boolean USER_1_VERIFIED = false;
+    public final static Boolean USER_1_TOTP = false;
+    public final static Long USER_1_NOT_BEFORE = 0L;
     public final static Boolean USER_1_ENABLED = true;
     public final static Boolean USER_1_THEME_DARK = false;
     public final static Instant USER_1_CREATED = Instant.ofEpochSecond(1677399441) /* 2023-02-26 08:17:21 (UTC) */;
@@ -259,6 +265,31 @@ public abstract class BaseTest {
             .mariadbPassword(USER_1_DATABASE_PASSWORD)
             .build();
 
+    public final static CredentialDto USER_1_KEYCLOAK_CREDENTIAL_1 = CredentialDto.builder()
+            .type(CredentialTypeDto.PASSWORD)
+            .temporary(false)
+            .value(USER_1_PASSWORD)
+            .build();
+
+    public final static UserCreateDto USER_1_KEYCLOAK_SIGNUP_REQUEST = UserCreateDto.builder()
+            .username(USER_1_USERNAME)
+            .email(USER_1_EMAIL)
+            .enabled(USER_1_ENABLED)
+            .credentials(List.of(USER_1_KEYCLOAK_CREDENTIAL_1))
+            .build();
+
+    public final static User USER_1 = User.builder()
+            .id(USER_1_ID)
+            .username(USER_1_USERNAME)
+            .email(USER_1_EMAIL)
+            .firstname(USER_1_FIRSTNAME)
+            .lastname(USER_1_LASTNAME)
+            .affiliation(USER_1_AFFILIATION)
+            .orcid(USER_1_ORCID)
+            .themeDark(USER_1_THEME_DARK)
+            .mariadbPassword(USER_1_DATABASE_PASSWORD)
+            .build();
+
     public final static UserDto USER_1_DTO = UserDto.builder()
             .id(USER_1_ID)
             .username(USER_1_USERNAME)
@@ -267,6 +298,30 @@ public abstract class BaseTest {
             .lastname(USER_1_LASTNAME)
             .emailVerified(USER_1_VERIFIED)
             .attributes(USER_1_ATTRIBUTES_DTO)
+            .build();
+
+    public final static UserUpdateDto USER_1_UPDATE_DTO = UserUpdateDto.builder()
+            .firstname(USER_1_FIRSTNAME)
+            .lastname(USER_1_LASTNAME)
+            .affiliation(USER_1_AFFILIATION)
+            .orcid(USER_1_ORCID)
+            .build();
+
+    public final static UserThemeSetDto USER_1_THEME_SET_DTO = UserThemeSetDto.builder()
+            .themeDark(USER_1_THEME_DARK)
+            .build();
+
+    public final static UserPasswordDto USER_1_PASSWORD_DTO = UserPasswordDto.builder()
+            .password(USER_1_PASSWORD)
+            .build();
+
+    public final static at.tuwien.api.keycloak.UserDto USER_1_KEYCLOAK_DTO = at.tuwien.api.keycloak.UserDto.builder()
+            .id(USER_1_ID)
+            .username(USER_1_USERNAME)
+            .email(USER_1_EMAIL)
+            .emailVerified(USER_1_VERIFIED)
+            .notBefore(USER_1_NOT_BEFORE)
+            .totp(USER_1_TOTP)
             .build();
 
     public final static UserBriefDto USER_1_BRIEF_DTO = UserBriefDto.builder()
@@ -310,12 +365,12 @@ public abstract class BaseTest {
     public final static String USER_2_FIRSTNAME = "Jane";
     public final static String USER_2_LASTNAME = "Doe";
     public final static String USER_2_AFFILIATION = "TU Wien";
-    public final static String USER_2_ORCID = "0000000292726225";
-    public final static String USER_2_ORCID_UNCOMPRESSED = "0000-0002-9272-6225";
-    public final static String USER_2_ORCID_URL = "https://orcid.org/" + USER_2_ORCID_UNCOMPRESSED;
+    public final static String USER_2_ORCID_URL = "https://orcid.org/0000-0002-9272-6225";
     public final static String USER_2_PASSWORD = "junit2";
     public final static String USER_2_DATABASE_PASSWORD = "*9AA70A8B0EEFAFCB5BED5BDEF6EE264D5DA915AE" /* junit2 */;
     public final static Boolean USER_2_VERIFIED = true;
+    public final static Boolean USER_2_TOTP = false;
+    public final static Long USER_2_NOT_BEFORE = 0L;
     public final static Boolean USER_2_ENABLED = true;
     public final static Boolean USER_2_THEME_DARK = false;
     public final static Instant USER_2_CREATED = Instant.ofEpochSecond(1677399528) /* 2023-02-26 08:18:48 (UTC) */;
@@ -324,8 +379,20 @@ public abstract class BaseTest {
 
     public final static UserAttributesDto USER_2_ATTRIBUTES_DTO = UserAttributesDto.builder()
             .themeDark(USER_2_THEME_DARK)
-            .orcid(USER_2_ORCID_UNCOMPRESSED)
+            .orcid(USER_2_ORCID_URL)
             .affiliation(USER_2_AFFILIATION)
+            .mariadbPassword(USER_2_DATABASE_PASSWORD)
+            .build();
+
+    public final static User USER_2 = User.builder()
+            .id(USER_2_ID)
+            .username(USER_2_USERNAME)
+            .email(USER_2_EMAIL)
+            .firstname(USER_2_FIRSTNAME)
+            .lastname(USER_2_LASTNAME)
+            .affiliation(USER_2_AFFILIATION)
+            .orcid(USER_2_ORCID_URL)
+            .themeDark(USER_2_THEME_DARK)
             .mariadbPassword(USER_2_DATABASE_PASSWORD)
             .build();
 
@@ -360,6 +427,15 @@ public abstract class BaseTest {
             .authorities(AUTHORITY_DEFAULT_DEVELOPER_AUTHORITIES)
             .build();
 
+    public final static at.tuwien.api.keycloak.UserDto USER_2_KEYCLOAK_DTO = at.tuwien.api.keycloak.UserDto.builder()
+            .id(USER_2_ID)
+            .username(USER_2_USERNAME)
+            .email(USER_2_EMAIL)
+            .emailVerified(USER_2_VERIFIED)
+            .notBefore(USER_2_NOT_BEFORE)
+            .totp(USER_2_TOTP)
+            .build();
+
     public final static at.tuwien.api.amqp.UserDetailsDto USER_2_DETAILS_DTO = at.tuwien.api.amqp.UserDetailsDto.builder()
             .name(USER_2_USERNAME)
             .tags(new String[]{})
@@ -373,11 +449,14 @@ public abstract class BaseTest {
     public final static String USER_3_FIRSTNAME = "System";
     public final static String USER_3_LASTNAME = "System";
     public final static String USER_3_AFFILIATION = "TU Wien";
+    public final static String USER_3_ORCID_URL = null;
     public final static String USER_3_ORCID_UNCOMPRESSED = null;
     public final static String USER_3_EMAIL = "system@example.com";
     public final static String USER_3_PASSWORD = "password";
     public final static String USER_3_DATABASE_PASSWORD = "*D65FCA043964B63E849DD6334699ECB065905DA4" /* junit3 */;
     public final static Boolean USER_3_VERIFIED = true;
+    public final static Boolean USER_3_TOTP = false;
+    public final static Long USER_3_NOT_BEFORE = 0L;
     public final static Boolean USER_3_ENABLED = true;
     public final static Boolean USER_3_THEME_DARK = false;
     public final static Instant USER_3_CREATED = Instant.ofEpochSecond(1677399559) /* 2023-02-26 08:19:19 (UTC) */;
@@ -387,6 +466,18 @@ public abstract class BaseTest {
             .themeDark(USER_3_THEME_DARK)
             .orcid(USER_3_ORCID_UNCOMPRESSED)
             .affiliation(USER_3_AFFILIATION)
+            .mariadbPassword(USER_3_DATABASE_PASSWORD)
+            .build();
+
+    public final static User USER_3 = User.builder()
+            .id(USER_3_ID)
+            .username(USER_3_USERNAME)
+            .email(USER_3_EMAIL)
+            .firstname(USER_3_FIRSTNAME)
+            .lastname(USER_3_LASTNAME)
+            .affiliation(USER_3_AFFILIATION)
+            .orcid(USER_3_ORCID_URL)
+            .themeDark(USER_3_THEME_DARK)
             .mariadbPassword(USER_3_DATABASE_PASSWORD)
             .build();
 
@@ -407,6 +498,15 @@ public abstract class BaseTest {
             .authorities(AUTHORITY_DEFAULT_DATA_STEWARD_AUTHORITIES)
             .build();
 
+    public final static at.tuwien.api.keycloak.UserDto USER_3_KEYCLOAK_DTO = at.tuwien.api.keycloak.UserDto.builder()
+            .id(USER_3_ID)
+            .username(USER_3_USERNAME)
+            .email(USER_3_EMAIL)
+            .emailVerified(USER_3_VERIFIED)
+            .notBefore(USER_3_NOT_BEFORE)
+            .totp(USER_3_TOTP)
+            .build();
+
     public final static Principal USER_3_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_3_DETAILS,
             USER_3_PASSWORD, USER_3_DETAILS.getAuthorities());
 
@@ -420,7 +520,7 @@ public abstract class BaseTest {
     public final static String USER_4_FIRSTNAME = "JUnit";
     public final static String USER_4_LASTNAME = "4";
     public final static String USER_4_AFFILIATION = "TU Wien";
-    public final static String USER_4_ORCID_UNCOMPRESSED = null;
+    public final static String USER_4_ORCID_URL = null;
     public final static String USER_4_PASSWORD = "junit4";
     public final static String USER_4_DATABASE_PASSWORD = "*C20EF5C6875857DEFA9BE6E9B62DD76AAAE51882" /* junit4 */;
     public final static String USER_4_EMAIL = "junit4@ossdip.at";
@@ -432,8 +532,20 @@ public abstract class BaseTest {
 
     public final static UserAttributesDto USER_4_ATTRIBUTES_DTO = UserAttributesDto.builder()
             .themeDark(USER_4_THEME_DARK)
-            .orcid(USER_4_ORCID_UNCOMPRESSED)
+            .orcid(USER_4_ORCID_URL)
             .affiliation(USER_4_AFFILIATION)
+            .mariadbPassword(USER_4_DATABASE_PASSWORD)
+            .build();
+
+    public final static User USER_4 = User.builder()
+            .id(USER_4_ID)
+            .username(USER_4_USERNAME)
+            .email(USER_4_EMAIL)
+            .firstname(USER_4_FIRSTNAME)
+            .lastname(USER_4_LASTNAME)
+            .affiliation(USER_4_AFFILIATION)
+            .orcid(USER_4_ORCID_URL)
+            .themeDark(USER_4_THEME_DARK)
             .mariadbPassword(USER_4_DATABASE_PASSWORD)
             .build();
 

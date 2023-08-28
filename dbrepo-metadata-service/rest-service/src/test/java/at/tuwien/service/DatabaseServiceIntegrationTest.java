@@ -4,8 +4,6 @@ import at.tuwien.BaseUnitTest;
 import at.tuwien.annotations.MockAmqp;
 import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.api.database.*;
-import at.tuwien.api.user.UserAttributesDto;
-import at.tuwien.api.user.UserDto;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
@@ -113,7 +111,7 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         when(databaseIdxRepository.save(any(DatabaseDto.class)))
                 .thenReturn(DATABASE_1_DTO);
         when(userService.findByUsername(USER_1_USERNAME))
-                .thenReturn(USER_1_DTO);
+                .thenReturn(USER_1);
 
         /* test */
         generic_create(DATABASE_1_CREATE, DATABASE_1);
@@ -129,7 +127,7 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         when(databaseIdxRepository.save(any(DatabaseDto.class)))
                 .thenReturn(DATABASE_1_DTO);
         when(userService.findByUsername(USER_1_USERNAME))
-                .thenReturn(USER_1_DTO);
+                .thenReturn(USER_1);
 
         /* test */
         generic_create(DATABASE_1_CREATE, DATABASE_1);
@@ -147,7 +145,7 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
                 .thenReturn(DATABASE_2_DTO)
                 .thenReturn(DATABASE_3_DTO);
         when(userService.findByUsername(USER_1_USERNAME))
-                .thenReturn(USER_1_DTO);
+                .thenReturn(USER_1);
 
         /* test */
         generic_create(DATABASE_2_CREATE, DATABASE_2);
@@ -165,7 +163,7 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
                 .thenReturn(DATABASE_3_DTO)
                 .thenReturn(DATABASE_2_DTO);
         when(userService.findByUsername(USER_1_USERNAME))
-                .thenReturn(USER_1_DTO);
+                .thenReturn(USER_1);
 
         /* test */
         generic_create(DATABASE_3_CREATE, DATABASE_3);
@@ -181,7 +179,7 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         when(databaseIdxRepository.save(any(DatabaseDto.class)))
                 .thenReturn(DATABASE_1_DTO);
         when(userService.findByUsername(USER_1_USERNAME))
-                .thenReturn(USER_1_DTO);
+                .thenReturn(USER_1);
         final Database database = generic_create(DATABASE_1_CREATE, DATABASE_1);
 
 
@@ -191,13 +189,6 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void updatePassword_canLogin_succeeds() throws Exception {
-        final UserDto request = UserDto.builder()
-                .id(USER_1_ID)
-                .username(USER_1_USERNAME)
-                .attributes(UserAttributesDto.builder()
-                        .mariadbPassword(USER_2_DATABASE_PASSWORD)
-                        .build())
-                .build();
 
         /* mock */
         MariaDbConfig.dropDatabase(CONTAINER_1, DATABASE_1_INTERNALNAME);
@@ -206,8 +197,8 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         when(databaseIdxRepository.save(any(DatabaseDto.class)))
                 .thenReturn(DATABASE_1_DTO);
         when(userService.findByUsername(USER_1_USERNAME))
-                .thenReturn(USER_1_DTO);
-        databaseService.updatePassword(request);
+                .thenReturn(USER_1);
+        databaseService.updatePassword(USER_1);
 
         /* test */
         assertThrows(SQLInvalidAuthorizationSpecException.class, () -> {
@@ -259,6 +250,9 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     public void create_userProcedureUser_succeeds() throws SQLException, QueryMalformedException {
 
         /* mock */
+        MariaDbConfig.dropDatabase(CONTAINER_1, DATABASE_3_INTERNALNAME);
+        MariaDbConfig.createInitDatabase(CONTAINER_1, DATABASE_3);
+        MariaDbConfig.grantUserPermissions(CONTAINER_1, DATABASE_3, "junit1");
         databaseAccessRepository.save(DATABASE_3_USER_1_WRITE_ALL_ACCESS);
 
         /* test */
@@ -291,8 +285,7 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void transfer_succeeds() throws DatabaseNotFoundException, UserNotFoundException, SQLException,
-            KeycloakRemoteException, AccessDeniedException {
+    public void transfer_succeeds() throws DatabaseNotFoundException, UserNotFoundException{
         final DatabaseTransferDto request = DatabaseTransferDto.builder()
                 .username(USER_2_USERNAME)
                 .build();
@@ -300,9 +293,9 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         /* mock */
         databaseRepository.save(DATABASE_1_SIMPLE);
         when(userService.findByUsername(USER_1_USERNAME))
-                .thenReturn(USER_1_DTO);
+                .thenReturn(USER_1);
         when(userService.findByUsername(USER_2_USERNAME))
-                .thenReturn(USER_2_DTO);
+                .thenReturn(USER_2);
 
         /* test */
         final Database response = databaseService.transfer(DATABASE_1_ID, request);
@@ -316,7 +309,7 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     protected void generic_insert(String query, Long assertQueryId) throws SQLException, QueryMalformedException {
 
         /* mock */
-        mariaDbConfig.mockGrantUserPermissions(CONTAINER_1, DATABASE_3, USER_1_USERNAME);
+        mariaDbConfig.grantUserPermissions(CONTAINER_1, DATABASE_3, USER_1_USERNAME);
 
         /* test */
         final Long response = MariaDbConfig.mockSystemQueryInsert(DATABASE_3, query);
@@ -336,7 +329,7 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     protected void generic_system_insert(String username, String password) throws SQLException, QueryMalformedException {
 
         /* mock */
-        mariaDbConfig.mockGrantUserPermissions(CONTAINER_1, DATABASE_3, USER_1_USERNAME);
+        mariaDbConfig.grantUserPermissions(CONTAINER_1, DATABASE_3, USER_1_USERNAME);
 
         /* test */
         final Long queryId = MariaDbConfig.mockSystemQueryInsert(DATABASE_3, QUERY_4_STATEMENT, username, password);
@@ -346,7 +339,7 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     protected void generic_user_insert(String username, String password) throws SQLException, QueryMalformedException {
 
         /* mock */
-        mariaDbConfig.mockGrantUserPermissions(CONTAINER_1, DATABASE_3, USER_1_USERNAME);
+        mariaDbConfig.grantUserPermissions(CONTAINER_1, DATABASE_3, USER_1_USERNAME);
 
         /* test */
         final Long queryId = MariaDbConfig.mockUserQueryInsert(DATABASE_3, QUERY_4_STATEMENT, username, password);
