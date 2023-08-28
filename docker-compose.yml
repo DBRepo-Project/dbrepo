@@ -37,7 +37,7 @@ services:
     networks:
       core:
     volumes:
-      - metadata-db-data:/var/lib/mysql
+      - metadata-db-data:/bitnami/mariadb
       - ./dbrepo-metadata-db/setup-schema_local.sql:/docker-entrypoint-initdb.d/setup-schema_local.sql
     ports:
       - "3306:3306"
