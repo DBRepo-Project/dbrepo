@@ -1,6 +1,8 @@
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
+import at.tuwien.annotations.MockAmqp;
+import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.oaipmh.OaiErrorType;
 import at.tuwien.oaipmh.OaiListIdentifiersParameters;
@@ -27,10 +29,9 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @ExtendWith(SpringExtension.class)
+@MockAmqp
+@MockOpensearch
 public class MetadataServiceIntegrationTest extends BaseUnitTest {
-
-    @MockBean
-    private IdentifierIdxRepository identifierIdxRepository;
 
     @Autowired
     private ImageRepository imageRepository;

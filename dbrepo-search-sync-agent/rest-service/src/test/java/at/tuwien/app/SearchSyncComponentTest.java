@@ -10,12 +10,8 @@ import at.tuwien.api.database.table.columns.concepts.UnitDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.user.UserDto;
 import at.tuwien.config.IndexConfig;
-import at.tuwien.entities.database.View;
-import at.tuwien.entities.database.table.Table;
-import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.repository.mdb.*;
 import at.tuwien.repository.sdb.*;
-import at.tuwien.service.ViewService;
 import lombok.extern.log4j.Log4j2;
 import org.junit.Rule;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,7 +21,6 @@ import org.junit.rules.Timeout;
 import org.opensearch.testcontainers.OpensearchContainer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -38,8 +33,6 @@ import java.util.List;
 import java.util.stream.StreamSupport;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.doCallRealMethod;
-import static org.mockito.Mockito.doNothing;
 
 
 @Log4j2

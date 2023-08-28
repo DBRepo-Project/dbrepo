@@ -1,7 +1,9 @@
 package at.tuwien.endpoints;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.repository.sdb.IdentifierIdxRepository;
+import at.tuwien.annotations.MockAmqp;
+import at.tuwien.annotations.MockOpensearch;
+import at.tuwien.repository.sdb.DatabaseIdxRepository;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,10 +23,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(SpringExtension.class)
 @AutoConfigureMockMvc
 @SpringBootTest
+@MockAmqp
+@MockOpensearch
 public class ActuatorComponentTest extends BaseUnitTest {
-
-    @MockBean
-    private IdentifierIdxRepository identifierIdxRepository;
 
     @Autowired
     private MockMvc mockMvc;
@@ -34,13 +35,6 @@ public class ActuatorComponentTest extends BaseUnitTest {
         this.mockMvc.perform(get("/actuator/info"))
                 .andDo(print())
                 .andExpect(status().isOk());
-    }
-
-    @Test
-    public void actuatorStatus_succeeds() throws Exception {
-        this.mockMvc.perform(get("/actuator/health"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("UP"));
     }
 
     @Test

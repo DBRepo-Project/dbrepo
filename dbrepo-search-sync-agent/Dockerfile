@@ -1,5 +1,5 @@
 ###### FIRST STAGE ######
-FROM dbrepo-metadata-db:latest as dependency
+FROM dbrepo-metadata-service:build as dependency
 MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
 
 ###### SECOND STAGE ######
@@ -8,7 +8,7 @@ MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
 
 COPY ./pom.xml ./
 
-RUN mvn -fn -B dependency:go-offline > /dev/null
+RUN mvn -fn -B dependency:go-offline
 
 COPY --from=dependency /root/.m2/repository/at/tuwien /root/.m2/repository/at/tuwien
 
@@ -17,7 +17,7 @@ COPY ./services ./services
 COPY ./report ./report
 
 # Make sure it compiles
-RUN mvn -q clean package -DskipTests
+RUN mvn clean package -DskipTests
 
 ###### THIRD STAGE ######
 FROM openjdk:17-alpine as runtime

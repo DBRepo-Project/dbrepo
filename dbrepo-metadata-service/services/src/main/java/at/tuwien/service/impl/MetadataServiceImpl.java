@@ -1,15 +1,23 @@
 package at.tuwien.service.impl;
 
+import at.tuwien.api.crossref.CrossrefDto;
+import at.tuwien.api.orcid.OrcidDto;
+import at.tuwien.api.ror.RorDto;
+import at.tuwien.api.user.external.ExternalMetadataDto;
+import at.tuwien.config.MetadataConfig;
+import at.tuwien.entities.identifier.Identifier;
+import at.tuwien.exception.*;
+import at.tuwien.gateway.CrossrefGateway;
+import at.tuwien.gateway.OrcidGateway;
+import at.tuwien.gateway.RorGateway;
+import at.tuwien.mapper.ExternalMapper;
+import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.oaipmh.OaiErrorType;
 import at.tuwien.oaipmh.OaiListIdentifiersParameters;
 import at.tuwien.oaipmh.OaiRecordParameters;
-import at.tuwien.config.MetadataConfig;
-import at.tuwien.entities.identifier.Identifier;
-import at.tuwien.exception.IdentifierNotFoundException;
-import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.service.IdentifierService;
 import at.tuwien.service.MetadataService;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,7 +28,7 @@ import org.thymeleaf.context.Context;
 import java.time.Instant;
 import java.util.List;
 
-@Log4j2
+@Slf4j
 @Service
 public class MetadataServiceImpl implements MetadataService {
 
@@ -28,14 +36,24 @@ public class MetadataServiceImpl implements MetadataService {
     private final TemplateEngine templateEngine;
     private final MetadataMapper metadataMapper;
     private final IdentifierService identifierService;
+    private final RorGateway rorGateway;
+    private final OrcidGateway orcidGateway;
+    private final ExternalMapper externalMapper;
+    private final CrossrefGateway crossrefGateway;
 
     @Autowired
     public MetadataServiceImpl(MetadataConfig metadataConfig, TemplateEngine templateEngine,
-                               MetadataMapper metadataMapper, IdentifierService identifierService) {
+                               MetadataMapper metadataMapper, IdentifierService identifierService,
+                               RorGateway rorGateway, OrcidGateway orcidGateway, ExternalMapper externalMapper,
+                               CrossrefGateway crossrefGateway) {
         this.metadataConfig = metadataConfig;
         this.templateEngine = templateEngine;
         this.metadataMapper = metadataMapper;
         this.identifierService = identifierService;
+        this.rorGateway = rorGateway;
+        this.orcidGateway = orcidGateway;
+        this.externalMapper = externalMapper;
+        this.crossrefGateway = crossrefGateway;
     }
 
     @Override
@@ -123,6 +141,35 @@ public class MetadataServiceImpl implements MetadataService {
         }
         context.setVariable("body", body);
         return templateEngine.process("_header.xml", context);
+    }
+
+    @Override
+    public ExternalMetadataDto findByUrl(String url) throws OrcidNotFoundException, RorNotFoundException,
+            RemoteUnavailableException, DoiNotFoundException {
+        if (url.contains("orcid.org")) {
+            final OrcidDto orcidDto = orcidGateway.findByUrl(url);
+            return externalMapper.orcidDtoToExternalMetadataDto(orcidDto);
+        } else if (url.contains("ror.org")) {
+            final int idx = url.lastIndexOf('/');
+            if (idx + 1 >= url.length()) {
+                log.error("Failed to find metadata from ROR URL: too short");
+                throw new RorNotFoundException("Failed to find metadata from ROR URL: too short");
+            }
+            final String id = url.substring(idx + 1);
+            final RorDto rorDto = rorGateway.findById(id);
+            return externalMapper.rorDtoToExternalMetadataDto(rorDto);
+        } else if (url.contains("doi.org")) {
+            final int idx = url.indexOf("doi.org/");
+            if (idx + 1 >= url.length()) {
+                log.error("Failed to find metadata from CrossRef URL: too short");
+                throw new RorNotFoundException("Failed to find metadata from CrossRef URL: too short");
+            }
+            final String id = url.substring(idx + 8);
+            final CrossrefDto crossrefDto = crossrefGateway.findById(id);
+            return externalMapper.crossrefDtoToExternalMetadataDto(crossrefDto);
+        }
+        log.error("Failed to find metadata: unsupported identifier {}", url);
+        throw new RemoteUnavailableException("Failed to find metadata: unsupported identifier " + url);
     }
 
 }

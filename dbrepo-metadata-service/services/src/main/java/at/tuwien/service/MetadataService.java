@@ -1,6 +1,7 @@
 package at.tuwien.service;
 
-import at.tuwien.exception.IdentifierNotFoundException;
+import at.tuwien.api.user.external.ExternalMetadataDto;
+import at.tuwien.exception.*;
 import at.tuwien.oaipmh.OaiErrorType;
 import at.tuwien.oaipmh.OaiListIdentifiersParameters;
 import at.tuwien.oaipmh.OaiRecordParameters;
@@ -45,4 +46,15 @@ public interface MetadataService {
      * @return The xml error.
      */
     String error(OaiErrorType type);
+
+    /**
+     * Finds creator user metadata by remote service and user identifier.
+     *
+     * @param url The user identifier.
+     * @return The user metadata.
+     * @throws OrcidNotFoundException     The provided identifier is of ORCID type and does not exist.
+     * @throws RorNotFoundException       The provided identifier is of ROR type and does not exist.
+     * @throws RemoteUnavailableException The remote service is not supported.
+     */
+    ExternalMetadataDto findByUrl(String url) throws OrcidNotFoundException, RorNotFoundException, RemoteUnavailableException, DoiNotFoundException;
 }
