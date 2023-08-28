@@ -34,8 +34,9 @@ MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
 
 ENV ADMIN_MAIL="noreply@localhost"
 ENV BASE_URL="http://localhost"
+ENV GRANT_PRIVILEGES="ALL PRIVILEGES"
 ENV BROKER_CONSUMERS=2
-ENV BROKER_ENDPOINT=http://broker-service:15672
+ENV BROKER_ENDPOINT="http://broker-service:15672"
 ENV BROKER_USERNAME=fda
 ENV CLIENT_ID="dbrepo-client"
 ENV DBREPO_CLIENT_SECRET="MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG"
@@ -54,7 +55,8 @@ ENV REPOSITORY_NAME="Example Repository"
 ENV SEARCH_USERNAME=admin
 ENV SHARED_FILESYSTEM=/tmp
 ENV USER_NETWORK=userdb
-ENV WEBSITE=http://localhost
+ENV WEBSITE="http://localhost"
+ENV KEYCLOAK_HOST="http://authentication-service:8080/api/auth"
 ENV KEYCLOAK_ADMIN=fda
 ENV KEYCLOAK_ADMIN_PASSWORD=fda
 

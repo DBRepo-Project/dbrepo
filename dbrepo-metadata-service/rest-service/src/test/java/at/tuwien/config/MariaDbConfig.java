@@ -1,7 +1,6 @@
 package at.tuwien.config;
 
 import at.tuwien.api.database.AccessTypeDto;
-import at.tuwien.api.database.DatabaseGiveAccessDto;
 import at.tuwien.api.database.table.columns.ColumnTypeDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
@@ -75,7 +74,7 @@ public class MariaDbConfig {
         final String jdbc = "jdbc:mariadb://" + container.getHost() + ":" + container.getPort();
         log.trace("connect to database {}", jdbc);
         try (Connection connection = DriverManager.getConnection(jdbc, container.getPrivilegedUsername(), container.getPrivilegedPassword())) {
-            ResourceDatabasePopulator populator = new ResourceDatabasePopulator(new ClassPathResource("init/" + database.getInternalName() + ".sql"), new ClassPathResource("init/querystore.sql"));
+            ResourceDatabasePopulator populator = new ResourceDatabasePopulator(new ClassPathResource("init/" + database.getInternalName() + ".sql"), new ClassPathResource("init/users.sql"), new ClassPathResource("init/querystore.sql"));
             populator.setSeparator(";\n");
             populator.populate(connection);
         }
@@ -119,15 +118,11 @@ public class MariaDbConfig {
         }
     }
 
-    public void mockGrantUserPermissions(Container container, Database database, String username, UUID userId) throws SQLException,
+    public void mockGrantUserPermissions(Container container, Database database, String username) throws SQLException,
             QueryMalformedException {
         final String jdbc = "jdbc:mariadb://" + container.getHost() + ":" + container.getPort() + "/" + database.getInternalName();
         log.trace("connect to database {}", jdbc);
         try (Connection connection = DriverManager.getConnection(jdbc, container.getPrivilegedUsername(), container.getPrivilegedPassword())) {
-            final DatabaseGiveAccessDto access = DatabaseGiveAccessDto.builder()
-                    .userId(userId)
-                    .type(AccessTypeDto.WRITE_ALL)
-                    .build();
             final PreparedStatement statement1 = databaseMapper.rawGrantUserAccessQuery(connection, username, AccessTypeDto.WRITE_ALL);
             statement1.executeUpdate();
             final PreparedStatement statement2 = databaseMapper.rawGrantUserProcedure(connection, username);
@@ -156,13 +151,13 @@ public class MariaDbConfig {
         }
     }
 
-    public static String getPrivileges(String hostname, String database, String user, String username, String password)
+    public static String getPrivileges(String hostname, Integer port, String database, String username, String password)
             throws Exception {
-        final String jdbc = "jdbc:mariadb://" + hostname + "/" + database;
+        final String jdbc = "jdbc:mariadb://" + hostname + ":" + port  + "/" + database;
         log.trace("connect to database {}", jdbc);
         final List<String> usernames = new LinkedList<>();
         try (Connection connection = DriverManager.getConnection(jdbc, username, password)) {
-            final String query = "SHOW GRANTS FOR `" + user + "`;";
+            final String query = "SHOW GRANTS FOR `" + username + "`;";
             log.trace("prepare statement '{}'", query);
             final PreparedStatement statement = connection.prepareStatement(query);
             final ResultSet set = statement.executeQuery();

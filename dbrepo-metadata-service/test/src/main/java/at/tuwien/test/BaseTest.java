@@ -223,7 +223,7 @@ public abstract class BaseTest {
     public final static UUID USER_1_ID = UUID.fromString("cd5bab0d-7799-4069-85fb-c5d738572a0b");
     public final static String USER_1_EMAIL = "john.doe@example.com";
     public final static String USER_1_USERNAME = "junit1";
-    public final static String USER_1_PASSWORD = "s3cr3t1nf0rm4t10n";
+    public final static String USER_1_PASSWORD = "junit1";
     public final static String USER_1_PASSWORD_ENCODED = "$2a$10$0dtdedA/RLTrFbUsvpbUw.I73AXOKeQP3t5UXj96OvnDEaDb3d3M6";
     public final static String USER_1_DATABASE_PASSWORD = "*440BA4FD1A87A0999647DB67C0EE258198B247BA" /* junit1 */;
     public final static String USER_1_FIRSTNAME = "John";
@@ -256,6 +256,7 @@ public abstract class BaseTest {
             .themeDark(USER_1_THEME_DARK)
             .orcid(USER_1_ORCID_UNCOMPRESSED)
             .affiliation(USER_1_AFFILIATION)
+            .mariadbPassword(USER_1_DATABASE_PASSWORD)
             .build();
 
     public final static UserDto USER_1_DTO = UserDto.builder()
@@ -277,6 +278,7 @@ public abstract class BaseTest {
             .build();
 
     public final static UserDetails USER_1_DETAILS = UserDetailsDto.builder()
+            .id(USER_1_ID.toString())
             .username(USER_1_USERNAME)
             .email(USER_1_EMAIL)
             .password(USER_1_PASSWORD)
@@ -311,7 +313,7 @@ public abstract class BaseTest {
     public final static String USER_2_ORCID = "0000000292726225";
     public final static String USER_2_ORCID_UNCOMPRESSED = "0000-0002-9272-6225";
     public final static String USER_2_ORCID_URL = "https://orcid.org/" + USER_2_ORCID_UNCOMPRESSED;
-    public final static String USER_2_PASSWORD = "s3cr3t1nf0rm4t10n";
+    public final static String USER_2_PASSWORD = "junit2";
     public final static String USER_2_DATABASE_PASSWORD = "*9AA70A8B0EEFAFCB5BED5BDEF6EE264D5DA915AE" /* junit2 */;
     public final static Boolean USER_2_VERIFIED = true;
     public final static Boolean USER_2_ENABLED = true;
@@ -324,6 +326,7 @@ public abstract class BaseTest {
             .themeDark(USER_2_THEME_DARK)
             .orcid(USER_2_ORCID_UNCOMPRESSED)
             .affiliation(USER_2_AFFILIATION)
+            .mariadbPassword(USER_2_DATABASE_PASSWORD)
             .build();
 
     public final static UserDto USER_2_DTO = UserDto.builder()
@@ -384,6 +387,7 @@ public abstract class BaseTest {
             .themeDark(USER_3_THEME_DARK)
             .orcid(USER_3_ORCID_UNCOMPRESSED)
             .affiliation(USER_3_AFFILIATION)
+            .mariadbPassword(USER_3_DATABASE_PASSWORD)
             .build();
 
     public final static UserDto USER_3_DTO = UserDto.builder()
@@ -396,6 +400,7 @@ public abstract class BaseTest {
             .build();
 
     public final static UserDetails USER_3_DETAILS = UserDetailsDto.builder()
+            .id(USER_3_ID.toString())
             .username(USER_3_USERNAME)
             .email(USER_3_EMAIL)
             .password(USER_3_PASSWORD)
@@ -429,6 +434,7 @@ public abstract class BaseTest {
             .themeDark(USER_4_THEME_DARK)
             .orcid(USER_4_ORCID_UNCOMPRESSED)
             .affiliation(USER_4_AFFILIATION)
+            .mariadbPassword(USER_4_DATABASE_PASSWORD)
             .build();
 
     public final static UserDto USER_4_DTO = UserDto.builder()
@@ -452,6 +458,7 @@ public abstract class BaseTest {
             .build();
 
     public final static UserDetails USER_4_DETAILS = UserDetailsDto.builder()
+            .id(USER_4_ID.toString())
             .username(USER_4_USERNAME)
             .email(USER_4_EMAIL)
             .password(USER_4_PASSWORD)
@@ -486,6 +493,7 @@ public abstract class BaseTest {
             .build();
 
     public final static UserDetails USER_5_DETAILS = UserDetailsDto.builder()
+            .id(USER_5_ID.toString())
             .username(USER_5_USERNAME)
             .email(USER_5_EMAIL)
             .password(USER_5_PASSWORD)
@@ -520,6 +528,7 @@ public abstract class BaseTest {
             .build();
 
     public final static UserDetails USER_6_DETAILS = UserDetailsDto.builder()
+            .id(USER_6_ID.toString())
             .username(USER_6_USERNAME)
             .email(USER_6_EMAIL)
             .password(USER_6_PASSWORD)

@@ -137,7 +137,8 @@ public class UserServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void updatePassword_succeeds() throws UserNotFoundException, KeycloakRemoteException, AccessDeniedException {
+    public void updatePassword_succeeds() throws UserNotFoundException, KeycloakRemoteException, AccessDeniedException,
+            QueryMalformedException, DatabaseMalformedException {
         final UserPasswordDto request = UserPasswordDto.builder()
                 .password(USER_1_PASSWORD)
                 .build();

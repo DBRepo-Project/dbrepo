@@ -62,7 +62,7 @@ public interface UserService {
      * @param data The new password.
      * @throws UserNotFoundException The user was not found.
      */
-    void updatePassword(UUID id, UserPasswordDto data) throws UserNotFoundException, KeycloakRemoteException, AccessDeniedException;
+    void updatePassword(UUID id, UserPasswordDto data) throws UserNotFoundException, KeycloakRemoteException, AccessDeniedException, QueryMalformedException, DatabaseMalformedException;
 
     /**
      * Updates the user theme for a user with given id.

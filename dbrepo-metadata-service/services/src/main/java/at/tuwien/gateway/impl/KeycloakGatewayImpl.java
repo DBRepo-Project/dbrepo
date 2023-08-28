@@ -9,6 +9,7 @@ import at.tuwien.exception.UserNotFoundException;
 import at.tuwien.gateway.KeycloakGateway;
 import at.tuwien.mapper.UserMapper;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
@@ -29,9 +30,9 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
     private final RestTemplate restTemplate;
     private final KeycloakConfig keycloakConfig;
 
-    public KeycloakGatewayImpl(UserMapper userMapper, KeycloakConfig keycloakConfig) {
+    public KeycloakGatewayImpl(UserMapper userMapper, @Qualifier("keycloakRestTemplate") RestTemplate restTemplate, KeycloakConfig keycloakConfig) {
         this.userMapper = userMapper;
-        this.restTemplate = new RestTemplate();
+        this.restTemplate = restTemplate;
         this.keycloakConfig = keycloakConfig;
     }
 
@@ -39,8 +40,8 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
         final HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         final MultiValueMap<String, String> payload = new LinkedMultiValueMap<>();
-        payload.add("username", keycloakConfig.getUsername());
-        payload.add("password", keycloakConfig.getPassword());
+        payload.add("username", keycloakConfig.getKeycloakUsername());
+        payload.add("password", keycloakConfig.getKeycloakPassword());
         payload.add("grant_type", "password");
         payload.add("client_id", "admin-cli");
         final ResponseEntity<TokenDto> response;

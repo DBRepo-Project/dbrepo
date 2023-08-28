@@ -3,6 +3,7 @@ package at.tuwien.service;
 import at.tuwien.api.database.DatabaseCreateDto;
 import at.tuwien.api.database.DatabaseModifyVisibilityDto;
 import at.tuwien.api.database.DatabaseTransferDto;
+import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
 import org.springframework.stereotype.Service;
@@ -87,6 +88,8 @@ public interface DatabaseService {
             throws ImageNotSupportedException, ContainerNotFoundException,
             DatabaseMalformedException, AmqpException, ContainerConnectionException, UserNotFoundException,
             DatabaseNameExistsException, DatabaseConnectionException, QueryMalformedException, KeycloakRemoteException, AccessDeniedException;
+
+    void updatePassword(UserDto user) throws DatabaseMalformedException, QueryMalformedException;
 
     /**
      * Updates the visibility of the database.

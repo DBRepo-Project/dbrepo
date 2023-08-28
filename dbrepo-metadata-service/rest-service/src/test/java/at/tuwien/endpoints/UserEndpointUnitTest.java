@@ -271,7 +271,7 @@ public class UserEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithMockUser(username = USER_1_USERNAME)
     public void password_succeeds() throws UserNotFoundException, ForeignUserException, KeycloakRemoteException,
-            at.tuwien.exception.AccessDeniedException {
+            at.tuwien.exception.AccessDeniedException, QueryMalformedException, DatabaseMalformedException {
         final UserPasswordDto request = UserPasswordDto.builder()
                 .password(USER_1_PASSWORD)
                 .build();
@@ -377,7 +377,7 @@ public class UserEndpointUnitTest extends BaseUnitTest {
 
     protected void password_generic(UUID id, UserDto user, Principal principal, UserPasswordDto data)
             throws UserNotFoundException, ForeignUserException, KeycloakRemoteException,
-            at.tuwien.exception.AccessDeniedException {
+            at.tuwien.exception.AccessDeniedException, QueryMalformedException, DatabaseMalformedException {
 
         /* mock */
         if (user != null) {

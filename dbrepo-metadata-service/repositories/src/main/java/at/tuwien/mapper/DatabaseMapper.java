@@ -84,9 +84,32 @@ public interface DatabaseMapper {
     Database databaseCreateDtoToDatabase(DatabaseCreateDto data);
 
     default PreparedStatement userToRawCreateUserQuery(Connection connection, UserDto data) throws QueryMalformedException {
+        if (data.getAttributes().getMariadbPassword() == null) {
+            log.error("Failed to map create user query: attribute 'mariadb_password' is empty");
+            throw new QueryMalformedException("Failed to map create user query: attribute 'mariadb_password' is empty");
+        }
         final StringBuilder statement = new StringBuilder("CREATE USER IF NOT EXISTS `")
                 .append(data.getUsername())
                 .append("`@`%` IDENTIFIED BY PASSWORD '")
+                .append(data.getAttributes().getMariadbPassword())
+                .append("';");
+        log.trace("statement={}", statement);
+        try {
+            return connection.prepareStatement(statement.toString());
+        } catch (SQLException e) {
+            log.error("Failed to prepare statement {}, reason: {}", statement, e.getMessage());
+            throw new QueryMalformedException("Failed to prepare statement", e);
+        }
+    }
+
+    default PreparedStatement userToRawUpdateUserQuery(Connection connection, UserDto data) throws QueryMalformedException {
+        if (data.getAttributes().getMariadbPassword() == null) {
+            log.error("Failed to map create user query: attribute 'mariadb_password' is empty");
+            throw new QueryMalformedException("Failed to map create user query: attribute 'mariadb_password' is empty");
+        }
+        final StringBuilder statement = new StringBuilder("SET PASSWORD FOR `")
+                .append(data.getUsername())
+                .append("`@`%` = '")
                 .append(data.getAttributes().getMariadbPassword())
                 .append("';");
         log.trace("statement={}", statement);
@@ -138,8 +161,13 @@ public interface DatabaseMapper {
                 .build();
     }
 
-    default PreparedStatement rawGrantCreatorAccessQuery(Connection connection, String username) throws QueryMalformedException {
-        final StringBuilder statement = new StringBuilder("GRANT ALL PRIVILEGES ON *.* TO `")
+    default PreparedStatement rawGrantCreatorAccessQuery(Connection connection, String databaseName, String username,
+                                                         String priviliges) throws QueryMalformedException {
+        final StringBuilder statement = new StringBuilder("GRANT ")
+                .append(priviliges)
+                .append(" ON ")
+                .append(databaseName)
+                .append(".* TO `")
                 .append(username)
                 .append("`@`%`;");
         log.trace("statement={}", statement);

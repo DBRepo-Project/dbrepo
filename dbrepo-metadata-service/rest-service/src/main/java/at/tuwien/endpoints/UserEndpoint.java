@@ -245,7 +245,8 @@ public class UserEndpoint {
     public ResponseEntity<?> password(@NotNull @PathVariable("id") UUID id,
                                             @NotNull @Valid @RequestBody UserPasswordDto data,
                                             @NotNull Principal principal)
-            throws UserNotFoundException, ForeignUserException, KeycloakRemoteException, AccessDeniedException {
+            throws UserNotFoundException, ForeignUserException, KeycloakRemoteException, AccessDeniedException,
+            QueryMalformedException, DatabaseMalformedException {
         log.debug("endpoint modify a user password, id={}, data={}, principal={}", id, data, principal);
         /* check */
         if (!id.equals(UserUtil.getId(principal))) {

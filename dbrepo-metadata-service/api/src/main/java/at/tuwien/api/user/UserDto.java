@@ -22,11 +22,13 @@ import java.util.UUID;
 @AllArgsConstructor
 @Jacksonized
 @ToString
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Document(indexName = "user")
 public class UserDto {
 
     @Id
     @NotNull
+    @EqualsAndHashCode.Include
     @Schema(example = "1ffc7b0e-9aeb-4e8b-b8f1-68f3936155b4")
     @Field(name = "id", type = FieldType.Keyword)
     private UUID id;

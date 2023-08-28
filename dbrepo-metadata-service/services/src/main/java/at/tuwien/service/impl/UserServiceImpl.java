@@ -6,6 +6,7 @@ import at.tuwien.exception.*;
 import at.tuwien.gateway.KeycloakGateway;
 import at.tuwien.mapper.UserMapper;
 import at.tuwien.repository.sdb.UserIdxRepository;
+import at.tuwien.service.DatabaseService;
 import at.tuwien.service.UserService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,13 +21,15 @@ public class UserServiceImpl implements UserService {
 
     private final UserMapper userMapper;
     private final KeycloakGateway keycloakGateway;
+    private final DatabaseService databaseService;
     private final UserIdxRepository userIdxRepository;
 
     @Autowired
-    public UserServiceImpl(UserMapper userMapper, KeycloakGateway keycloakGateway,
+    public UserServiceImpl(UserMapper userMapper, KeycloakGateway keycloakGateway, DatabaseService databaseService,
                            UserIdxRepository userIdxRepository) {
         this.userMapper = userMapper;
         this.keycloakGateway = keycloakGateway;
+        this.databaseService = databaseService;
         this.userIdxRepository = userIdxRepository;
     }
 
@@ -76,9 +79,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void updatePassword(UUID id, UserPasswordDto data) throws KeycloakRemoteException, AccessDeniedException,
-            UserNotFoundException {
+            UserNotFoundException, QueryMalformedException, DatabaseMalformedException {
         /* save */
         keycloakGateway.updateUserCredentials(id, data);
+        final UserDto user = userMapper.keycloakUserDtoToUserDto(keycloakGateway.findById(id));
+        /* update in containers */
+        databaseService.updatePassword(user);
         log.info("Updated user password with id {}", id);
     }
 

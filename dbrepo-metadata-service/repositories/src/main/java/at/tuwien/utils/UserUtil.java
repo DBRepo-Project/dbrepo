@@ -23,7 +23,7 @@ public class UserUtil {
             return null;
         }
         final Authentication authentication = (Authentication) principal;
-        final UserDetailsDto user = (UserDetailsDto) authentication.getDetails();
+        final UserDetailsDto user = (UserDetailsDto) authentication.getPrincipal();
         return UUID.fromString(user.getId());
     }
 
