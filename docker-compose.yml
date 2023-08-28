@@ -41,7 +41,7 @@ services:
     networks:
       core:
     volumes:
-      - metadata-db-data:/var/lib/mysql
+      - metadata-db-data:/bitnami/mariadb
     ports:
       - "3306:3306"
       - "9100:9100"
