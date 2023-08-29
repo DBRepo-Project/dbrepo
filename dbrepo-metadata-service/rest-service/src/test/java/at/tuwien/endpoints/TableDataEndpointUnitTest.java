@@ -65,7 +65,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     public void import_publicAnonymous_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             generic_import(DATABASE_1_ID, DATABASE_1, TABLE_1_ID, TABLE_1, null, null, null);
         });
     }
@@ -75,7 +75,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     public void import_publicNoRoleRead_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             generic_import(DATABASE_1_ID, DATABASE_1, TABLE_1_ID, TABLE_1, USER_2_ID,
                     DATABASE_1_USER_1_READ_ACCESS, USER_2_PRINCIPAL);
         });
@@ -86,7 +86,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     public void import_publicNoRoleWriteOwn_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             generic_import(DATABASE_1_ID, DATABASE_1, TABLE_1_ID, TABLE_1, USER_2_ID,
                     DATABASE_1_USER_1_WRITE_OWN_ACCESS, USER_2_PRINCIPAL);
         });
@@ -97,7 +97,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     public void import_privateAnonymous_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             generic_import(DATABASE_2_ID, DATABASE_2, TABLE_1_ID, TABLE_1, null, null, null);
         });
     }
@@ -107,7 +107,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     public void import_privateNoRoleRead_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             generic_import(DATABASE_2_ID, DATABASE_2, TABLE_1_ID, TABLE_1, USER_2_ID,
                     DATABASE_2_USER_1_READ_ACCESS, USER_2_PRINCIPAL);
         });
@@ -118,7 +118,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     public void import_privateNoRoleWriteOwn_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             generic_import(DATABASE_2_ID, DATABASE_2, TABLE_1_ID, TABLE_1, USER_2_ID,
                     DATABASE_2_USER_1_WRITE_OWN_ACCESS, USER_2_PRINCIPAL);
         });
@@ -129,7 +129,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     public void import_publicAnonymous_succeeds() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             generic_import(DATABASE_3_ID, DATABASE_3, TABLE_8_ID, TABLE_8, null, null, null);
         });
     }
@@ -138,7 +138,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     @WithMockUser(username = USER_1_USERNAME, authorities = {"insert-table-data"})
     public void import_publicWriteAll_succeeds() throws UserNotFoundException, TableNotFoundException, NotAllowedException,
             TableMalformedException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException,
-            ImageNotSupportedException, at.tuwien.exception.AccessDeniedException {
+            ImageNotSupportedException, AccessDeniedException {
 
         /* test */
         generic_import(DATABASE_3_ID, DATABASE_3, TABLE_8_ID, TABLE_8, USER_1_ID,
@@ -149,7 +149,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     @WithMockUser(username = USER_1_USERNAME, authorities = {"insert-table-data"})
     public void import_privateWriteAll_succeeds() throws UserNotFoundException, TableNotFoundException, NotAllowedException,
             TableMalformedException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException,
-            ImageNotSupportedException, at.tuwien.exception.AccessDeniedException {
+            ImageNotSupportedException, AccessDeniedException {
 
         /* test */
         generic_import(DATABASE_1_ID, DATABASE_1, TABLE_1_ID, TABLE_1, USER_1_ID,
@@ -161,7 +161,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     public void insert_publicAnonymous_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             generic_insert(DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_2_ID, null,
                     TABLE_1_CSV_DTO, null);
         });
@@ -172,7 +172,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     public void insert_publicNoRoleRead_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             generic_insert(DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_2_ID,
                     DATABASE_1_USER_1_READ_ACCESS, TABLE_1_CSV_DTO, USER_2_PRINCIPAL);
         });
@@ -183,7 +183,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     public void insert_publicNoRoleWriteOwn_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             generic_insert(DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_2_ID,
                     DATABASE_1_USER_1_WRITE_OWN_ACCESS, TABLE_1_CSV_DTO, USER_2_PRINCIPAL);
         });
@@ -194,7 +194,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     public void insert_privateAnonymous_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             generic_insert(DATABASE_2_ID, TABLE_1_ID, DATABASE_2, TABLE_1, USER_2_ID, null,
                     TABLE_1_CSV_DTO, null);
         });
@@ -205,7 +205,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     public void insert_privateNoRoleRead_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             generic_insert(DATABASE_2_ID, TABLE_1_ID, DATABASE_2, TABLE_1, USER_2_ID,
                     DATABASE_2_USER_1_READ_ACCESS, TABLE_1_CSV_DTO, USER_2_PRINCIPAL);
         });
@@ -216,7 +216,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     public void insert_privateNoRoleWriteOwn_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             generic_insert(DATABASE_2_ID, TABLE_1_ID, DATABASE_2, TABLE_1, USER_2_ID,
                     DATABASE_2_USER_1_WRITE_OWN_ACCESS, TABLE_1_CSV_DTO, USER_2_PRINCIPAL);
         });
@@ -226,7 +226,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     @WithMockUser(username = USER_1_USERNAME, authorities = {"insert-table-data"})
     public void insert_publicWriteAll_succeeds() throws UserNotFoundException, TableNotFoundException,
             NotAllowedException, TableMalformedException, DatabaseConnectionException, DatabaseNotFoundException,
-            ImageNotSupportedException, ContainerNotFoundException, at.tuwien.exception.AccessDeniedException {
+            ImageNotSupportedException, ContainerNotFoundException, AccessDeniedException {
 
         /* test */
         generic_insert(DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8, USER_1_ID,
@@ -237,7 +237,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     @WithMockUser(username = USER_1_USERNAME, authorities = {"insert-table-data"})
     public void insert_privateWriteAll_succeeds() throws UserNotFoundException, TableNotFoundException,
             NotAllowedException, TableMalformedException, DatabaseConnectionException, DatabaseNotFoundException,
-            ImageNotSupportedException, ContainerNotFoundException, at.tuwien.exception.AccessDeniedException {
+            ImageNotSupportedException, ContainerNotFoundException, AccessDeniedException {
 
         /* test */
         generic_insert(DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_1_ID, DATABASE_1_USER_1_WRITE_ALL_ACCESS, TABLE_1_CSV_DTO, USER_1_PRINCIPAL);
@@ -247,7 +247,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     @WithMockUser(username = USER_1_USERNAME, authorities = {"insert-table-data"})
     public void insert_privateDataNull_fails() throws UserNotFoundException, TableNotFoundException,
             NotAllowedException, TableMalformedException, DatabaseConnectionException, DatabaseNotFoundException,
-            ImageNotSupportedException, ContainerNotFoundException, at.tuwien.exception.AccessDeniedException {
+            ImageNotSupportedException, ContainerNotFoundException, AccessDeniedException {
 
         /* test */
         generic_insert(DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_1_ID, DATABASE_1_USER_1_WRITE_ALL_ACCESS, null, USER_1_PRINCIPAL);
@@ -344,22 +344,22 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
                         TABLE_8, null, null, null,
                         null, null, null, null, null),
                 Arguments.arguments("public read", DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8,
-                        USER_1_USERNAME,
+                        USER_1_ID,
                         DATABASE_3_USER_1_READ_ACCESS, USER_1_PRINCIPAL, null, null, null, null, null),
                 Arguments.arguments("public write-own", DATABASE_3_ID, TABLE_8_ID, DATABASE_3,
-                        TABLE_8, USER_1_USERNAME,
+                        TABLE_8, USER_1_ID,
                         DATABASE_3_USER_1_WRITE_OWN_ACCESS, USER_1_PRINCIPAL, null, null, null, null, null),
                 Arguments.arguments("public write-all", DATABASE_3_ID, TABLE_8_ID, DATABASE_3,
-                        TABLE_8, USER_1_USERNAME,
+                        TABLE_8, USER_1_ID,
                         DATABASE_3_USER_1_WRITE_ALL_ACCESS, USER_1_PRINCIPAL, null, null, null, null, null),
                 Arguments.arguments("private read", DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1,
-                        USER_1_USERNAME,
+                        USER_1_ID,
                         DATABASE_1_USER_1_READ_ACCESS, USER_1_PRINCIPAL, null, null, null, null, null),
                 Arguments.arguments("private write-own", DATABASE_1_ID, TABLE_1_ID, DATABASE_1,
-                        TABLE_1, USER_1_USERNAME,
+                        TABLE_1, USER_1_ID,
                         DATABASE_1_USER_1_WRITE_OWN_ACCESS, USER_1_PRINCIPAL, null, null, null, null, null),
                 Arguments.arguments("private write-all", DATABASE_1_ID, TABLE_1_ID, DATABASE_1,
-                        TABLE_1, USER_1_USERNAME,
+                        TABLE_1, USER_1_ID,
                         DATABASE_1_USER_1_WRITE_ALL_ACCESS, USER_1_PRINCIPAL, null, null, null, null, null)
         );
     }
@@ -372,7 +372,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
                                 SortType sortDirection, String sortColumn) throws UserNotFoundException,
             TableNotFoundException, SortException, TableMalformedException, NotAllowedException,
             DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
-            PaginationException, at.tuwien.exception.AccessDeniedException {
+            PaginationException, AccessDeniedException {
 
         /* test */
         generic_getAll(databaseId, tableId, database, table, userId, access, principal, timestamp,
@@ -411,7 +411,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
                                   UUID userId, DatabaseAccess access, Principal principal, Instant timestamp)
             throws UserNotFoundException, TableNotFoundException, QueryStoreException, TableMalformedException,
             NotAllowedException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException,
-            ImageNotSupportedException, at.tuwien.exception.AccessDeniedException {
+            ImageNotSupportedException, AccessDeniedException {
 
         /* test */
         generic_getCount(databaseId, tableId, database, table, userId, access, principal, timestamp);
@@ -426,7 +426,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
                                DatabaseAccess access, Principal principal) throws DatabaseNotFoundException,
             TableNotFoundException, NotAllowedException, UserNotFoundException, TableMalformedException,
             DatabaseConnectionException, QueryMalformedException, ImageNotSupportedException,
-            at.tuwien.exception.AccessDeniedException {
+            AccessDeniedException {
         final ImportDto request = ImportDto.builder().location("test:csv/csv_01.csv").build();
 
         /* mock */
@@ -444,7 +444,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
                                DatabaseAccess access, TableCsvDto data, Principal principal)
             throws DatabaseNotFoundException, TableNotFoundException, NotAllowedException, UserNotFoundException,
             TableMalformedException, DatabaseConnectionException, ImageNotSupportedException,
-            ContainerNotFoundException, at.tuwien.exception.AccessDeniedException {
+            ContainerNotFoundException, AccessDeniedException {
 
         /* mock */
         when(databaseService.find(databaseId)).thenReturn(database);
@@ -462,7 +462,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
                                SortType sortDirection, String sortColumn) throws UserNotFoundException,
             TableMalformedException, NotAllowedException, PaginationException, TableNotFoundException, SortException,
             DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
-            at.tuwien.exception.AccessDeniedException {
+            AccessDeniedException {
 
         /* mock */
         when(databaseService.find(databaseId)).thenReturn(database);
@@ -484,7 +484,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
                                  DatabaseAccess access, Principal principal, Instant timestamp)
             throws UserNotFoundException, TableMalformedException, NotAllowedException, TableNotFoundException,
             QueryStoreException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException,
-            ImageNotSupportedException, at.tuwien.exception.AccessDeniedException {
+            ImageNotSupportedException, AccessDeniedException {
 
         /* mock */
         when(databaseService.find(databaseId)).thenReturn(database);

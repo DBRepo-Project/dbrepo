@@ -10,9 +10,11 @@ import at.tuwien.repository.mdb.UserRepository;
 import at.tuwien.repository.sdb.UserIdxRepository;
 import at.tuwien.service.UserService;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -68,6 +70,7 @@ public class UserServiceImpl implements UserService {
                 .username(data.getUsername())
                 .email(data.getEmail())
                 .themeDark(true)
+                .mariadbPassword(getMariaDbPassword(data.getPassword()))
                 .build();
         keycloakGateway.createUser(userMapper.signupRequestDtoToUserCreateDto(data));
         /* create at metadata database */
@@ -93,8 +96,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void updatePassword(UUID id, UserPasswordDto data) throws KeycloakRemoteException, AccessDeniedException {
+    public void updatePassword(UUID id, UserPasswordDto data) throws KeycloakRemoteException, AccessDeniedException,
+            UserNotFoundException {
+        final User user = find(id);
+        user.setMariadbPassword(getMariaDbPassword(data.getPassword()));
+        userRepository.save(user);
+        log.debug("updated password in metadata database");
         keycloakGateway.updateUserCredentials(id, data);
+        log.debug("updated password in keycloak");
         log.info("Updated user password with id {}", id);
     }
 
@@ -121,5 +130,10 @@ public class UserServiceImpl implements UserService {
             log.error("User with email {} already exists in metadata database", email);
             throw new UserEmailAlreadyExistsException("User with email " + email + " already exists in metadata database");
         }
+    }
+
+    protected String getMariaDbPassword(String password) {
+        final byte[] utf8 = password.getBytes(StandardCharsets.UTF_8);
+        return "*" + DigestUtils.sha1Hex(DigestUtils.sha1(utf8)).toUpperCase();
     }
 }

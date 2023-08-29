@@ -47,7 +47,7 @@ public class KeycloakInterceptor implements ClientHttpRequestInterceptor {
         payload.add("client_id", "admin-cli");
         final ResponseEntity<TokenDto> response;
         try {
-            response = restTemplate.exchange(keycloakEndpoint + "/api/auth/realms/master/protocol/openid-connect/token",
+            response = restTemplate.exchange(keycloakEndpoint + "/realms/master/protocol/openid-connect/token",
                     HttpMethod.POST, new HttpEntity<>(payload, headers), TokenDto.class);
         } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable e) {
             log.error("Failed to obtain admin token: {}", e.getMessage());

@@ -13,6 +13,7 @@ import at.tuwien.exception.*;
 import at.tuwien.gateway.KeycloakGateway;
 import at.tuwien.repository.mdb.DatabaseAccessRepository;
 import at.tuwien.repository.mdb.IdentifierRepository;
+import at.tuwien.repository.mdb.UserRepository;
 import at.tuwien.repository.sdb.DatabaseIdxRepository;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.ContainerService;
@@ -34,6 +35,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -73,6 +75,9 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
     @MockBean
     private IdentifierRepository identifierRepository;
 
+    @MockBean
+    private UserRepository userRepository;
+
     @Autowired
     private DatabaseEndpoint databaseEndpoint;
 
@@ -86,7 +91,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
                 .build();
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             create_generic(DATABASE_1_ID, null, request, null, null);
         });
     }
@@ -101,7 +106,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
                 .build();
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             create_generic(DATABASE_3_ID, null, request, USER_4, USER_4_PRINCIPAL);
         });
     }
@@ -140,6 +145,8 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(DATABASE_1_USER_1_WRITE_ALL_ACCESS);
         when(keycloakGateway.findByUsername(USER_1_USERNAME))
                 .thenReturn(USER_1_KEYCLOAK_DTO);
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
 
         /* test */
         create_generic(DATABASE_1_ID, null, request, USER_1, USER_1_PRINCIPAL);
@@ -186,7 +193,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
                 .build();
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             visibility_generic(DATABASE_1_ID, DATABASE_1, DATABASE_1_DTO, request, null);
         });
     }
@@ -202,6 +209,8 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
         /* mock */
         when(keycloakGateway.findByUsername(USER_1_USERNAME))
                 .thenReturn(USER_1_KEYCLOAK_DTO);
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
 
         /* test */
         visibility_generic(DATABASE_1_ID, DATABASE_1, DATABASE_1_DTO, request, USER_1_PRINCIPAL);
@@ -215,7 +224,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
                 .build();
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             visibility_generic(DATABASE_1_ID, DATABASE_1, DATABASE_1_DTO, request, USER_4_PRINCIPAL);
         });
     }
@@ -227,8 +236,12 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
                 .isPublic(true)
                 .build();
 
+        /* mock */
+        when(userRepository.findByUsername(USER_2_USERNAME))
+                .thenReturn(Optional.of(USER_2));
+
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(NotAllowedException.class, () -> {
             visibility_generic(DATABASE_1_ID, DATABASE_1, DATABASE_1_DTO, request, USER_2_PRINCIPAL);
         });
     }
@@ -241,7 +254,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
                 .build();
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             databaseEndpoint.transfer(DATABASE_3_ID, request, USER_4_PRINCIPAL);
         });
     }
@@ -256,9 +269,11 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
         /* mock */
         when(databaseService.findById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
+        when(userRepository.findByUsername(USER_2_USERNAME))
+                .thenReturn(Optional.of(USER_2));
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(NotAllowedException.class, () -> {
             databaseEndpoint.transfer(DATABASE_1_ID, request, USER_2_PRINCIPAL);
         });
     }
@@ -276,6 +291,8 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(DATABASE_1);
         when(keycloakGateway.findByUsername(USER_1_USERNAME))
                 .thenReturn(USER_1_KEYCLOAK_DTO);
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
 
         /* test */
         databaseEndpoint.transfer(DATABASE_1_ID, request, USER_1_PRINCIPAL);
@@ -362,7 +379,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
     public void delete_anonymous_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             delete_generic(DATABASE_1_ID, DATABASE_1, null);
         });
     }
@@ -372,7 +389,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
     public void delete_noRole_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             delete_generic(DATABASE_1_ID, DATABASE_1, USER_1_PRINCIPAL);
         });
     }
@@ -436,7 +453,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
 
     public void visibility_generic(Long databaseId, Database database, DatabaseDto dto,
                                    DatabaseModifyVisibilityDto data, Principal principal) throws NotAllowedException,
-            DatabaseNotFoundException, UserNotFoundException, KeycloakRemoteException, AccessDeniedException {
+            DatabaseNotFoundException, UserNotFoundException {
 
         /* mock */
         if (database != null) {

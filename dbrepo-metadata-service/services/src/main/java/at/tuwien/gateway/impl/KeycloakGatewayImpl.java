@@ -5,6 +5,7 @@ import at.tuwien.api.user.UserPasswordDto;
 import at.tuwien.config.KeycloakConfig;
 import at.tuwien.exception.AccessDeniedException;
 import at.tuwien.exception.KeycloakRemoteException;
+import at.tuwien.exception.UserAlreadyExistsException;
 import at.tuwien.exception.UserNotFoundException;
 import at.tuwien.gateway.KeycloakGateway;
 import at.tuwien.mapper.UserMapper;
@@ -14,6 +15,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
@@ -44,7 +46,7 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
         payload.add("client_id", "admin-cli");
         final ResponseEntity<TokenDto> response;
         try {
-            response = restTemplate.exchange("/api/auth/realms/master/protocol/openid-connect/token",
+            response = restTemplate.exchange("/realms/master/protocol/openid-connect/token",
                     HttpMethod.POST, new HttpEntity<>(payload, headers), TokenDto.class);
         } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable e) {
             log.error("Failed to obtain admin token: {}", e.getMessage());
@@ -54,18 +56,22 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
     }
 
     @Override
-    public void createUser(UserCreateDto data) throws AccessDeniedException, KeycloakRemoteException {
+    public void createUser(UserCreateDto data) throws AccessDeniedException, KeycloakRemoteException,
+            UserAlreadyExistsException {
         /* obtain admin token */
         final HttpHeaders headers = new HttpHeaders();
         headers.set("Accept", "application/json");
         headers.set("Authorization", "Bearer " + obtainToken().getAccessToken());
         final ResponseEntity<Void> response;
         try {
-            response = restTemplate.exchange("/api/auth/admin/realms/dbrepo/users", HttpMethod.POST,
+            response = restTemplate.exchange("/admin/realms/dbrepo/users", HttpMethod.POST,
                     new HttpEntity<>(data, headers), Void.class);
         } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable e) {
             log.error("Failed to create user: {}", e.getMessage());
             throw new KeycloakRemoteException("Failed to create user: " + e.getMessage());
+        } catch (HttpClientErrorException.Conflict e) {
+            log.error("Conflict when creating user: {}", e.getMessage());
+            throw new UserAlreadyExistsException("Conflict when creating user: " + e.getMessage());
         }
         if (!response.getStatusCode().equals(HttpStatus.CREATED)) {
             log.error("Failed to create user: status {} was not expected", response.getStatusCode().value());
@@ -83,13 +89,13 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
         final UpdateCredentialsDto payload = userMapper.passwordToUpdateCredentialsDto(data.getPassword());
         final ResponseEntity<Void> response;
         try {
-            response = restTemplate.exchange("/api/auth/admin/realms/dbrepo/users/" + id, HttpMethod.PUT,
+            response = restTemplate.exchange("/admin/realms/dbrepo/users/" + id, HttpMethod.PUT,
                     new HttpEntity<>(payload, headers), Void.class);
         } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable e) {
             log.error("Failed to update user credentials: {}", e.getMessage());
             throw new KeycloakRemoteException("Failed to update user credentials: " + e.getMessage());
         }
-        if (!response.getStatusCode().equals(HttpStatus.ACCEPTED)) {
+        if (!response.getStatusCode().equals(HttpStatus.NO_CONTENT)) {
             log.error("Failed to update user credentials: status {} was not expected", response.getStatusCode().value());
             throw new KeycloakRemoteException("Failed to update user credentials: status " + response.getStatusCode().value() + "was not expected");
         }
@@ -104,7 +110,7 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
         headers.set("Authorization", "Bearer " + obtainToken().getAccessToken());
         final ResponseEntity<UserDto[]> response;
         try {
-            response = restTemplate.exchange("/api/auth/admin/realms/dbrepo/users/?username=" + username,
+            response = restTemplate.exchange("/admin/realms/dbrepo/users/?username=" + username,
                     HttpMethod.GET, new HttpEntity<>(null, headers), UserDto[].class);
         } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable e) {
             log.error("Failed to find user: {}", e.getMessage());

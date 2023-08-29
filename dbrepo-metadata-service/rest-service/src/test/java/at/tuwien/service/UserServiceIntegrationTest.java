@@ -7,23 +7,33 @@ import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.user.*;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
+import at.tuwien.repository.mdb.UserRepository;
+import dasniko.testcontainers.keycloak.KeycloakContainer;
 import lombok.extern.log4j.Log4j2;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
+import org.testcontainers.containers.MariaDBContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 
 @Log4j2
+@Testcontainers
 @EnableAutoConfiguration(exclude = RabbitAutoConfiguration.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @SpringBootTest
@@ -33,7 +43,19 @@ import static org.junit.jupiter.api.Assertions.*;
 public class UserServiceIntegrationTest extends BaseUnitTest {
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     private UserService userService;
+
+    @Container
+    @Autowired
+    private KeycloakContainer keycloakContainer;
+
+    @BeforeEach
+    public void beforeEach() {
+        userRepository.save(USER_1);
+    }
 
     @Test
     public void findByUsername_succeeds() throws UserNotFoundException {
@@ -84,7 +106,7 @@ public class UserServiceIntegrationTest extends BaseUnitTest {
                 .build();
 
         /* test */
-        assertThrows(DataIntegrityViolationException.class, () -> {
+        assertThrows(UserAlreadyExistsException.class, () -> {
             userService.create(request);
         });
     }
@@ -98,7 +120,7 @@ public class UserServiceIntegrationTest extends BaseUnitTest {
                 .build();
 
         /* test */
-        assertThrows(DataIntegrityViolationException.class, () -> {
+        assertThrows(UserAlreadyExistsException.class, () -> {
             userService.create(request);
         });
     }
@@ -138,13 +160,21 @@ public class UserServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void updatePassword_succeeds() throws KeycloakRemoteException, AccessDeniedException {
+    public void updatePassword_succeeds() throws KeycloakRemoteException, AccessDeniedException, UserNotFoundException,
+            UserAlreadyExistsException {
         final UserPasswordDto request = UserPasswordDto.builder()
-                .password(USER_1_PASSWORD)
+                .password(USER_3_PASSWORD)
                 .build();
 
+        /* mock */
+        final User user = userService.create(SignupRequestDto.builder()
+                .username(USER_3_USERNAME)
+                .password(USER_3_PASSWORD)
+                .email(USER_3_EMAIL)
+                .build());
+
         /* test */
-        userService.updatePassword(USER_1_ID, request);
+        userService.updatePassword(user.getId(), request);
     }
 
     @Test

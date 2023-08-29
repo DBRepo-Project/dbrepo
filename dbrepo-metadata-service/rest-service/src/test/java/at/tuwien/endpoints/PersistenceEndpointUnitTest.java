@@ -555,7 +555,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     public void update_anonymous_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             generic_update(IDENTIFIER_3_ID, IDENTIFIER_3, IDENTIFIER_3_DTO_UPDATE_REQUEST, null, null, null);
         });
     }
@@ -565,7 +565,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     public void update_noRole_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             generic_update(IDENTIFIER_3_ID, IDENTIFIER_3, IDENTIFIER_3_DTO_UPDATE_REQUEST, USER_4_USERNAME, USER_4, USER_4_PRINCIPAL);
         });
     }
@@ -600,7 +600,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     public void delete_anonymous_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             this.generic_delete(IDENTIFIER_1_ID, IDENTIFIER_1);
         });
     }
@@ -610,7 +610,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     public void delete_noRole_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             this.generic_delete(IDENTIFIER_1_ID, IDENTIFIER_1);
         });
     }

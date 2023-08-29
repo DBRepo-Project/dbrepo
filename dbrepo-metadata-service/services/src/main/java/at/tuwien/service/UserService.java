@@ -61,7 +61,7 @@ public interface UserService {
      * @param id   The user id.
      * @param data The new password.
      */
-    void updatePassword(UUID id, UserPasswordDto data) throws KeycloakRemoteException, AccessDeniedException;
+    void updatePassword(UUID id, UserPasswordDto data) throws KeycloakRemoteException, AccessDeniedException, UserNotFoundException;
 
     /**
      * Updates the user theme for a user with given id.

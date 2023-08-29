@@ -9,6 +9,7 @@ import at.tuwien.config.MariaDbConfig;
 import at.tuwien.entities.database.Database;
 import at.tuwien.repository.mdb.ContainerRepository;
 import at.tuwien.repository.mdb.DatabaseRepository;
+import at.tuwien.repository.mdb.UserRepository;
 import at.tuwien.repository.sdb.DatabaseIdxRepository;
 import at.tuwien.service.impl.MariaDbServiceImpl;
 import lombok.extern.log4j.Log4j2;
@@ -48,6 +49,9 @@ public class DatabaseServiceComponentTest extends BaseUnitTest {
     @MockBean
     private DatabaseIdxRepository databaseIdxRepository;
 
+    @MockBean
+    private UserRepository userRepository;
+
     @Autowired
     private MariaDbServiceImpl databaseService;
 
@@ -61,11 +65,13 @@ public class DatabaseServiceComponentTest extends BaseUnitTest {
     }
 
     @Test
-    public void create_elasticSearch_succeeds() throws Exception {
+    public void create_openSearch_succeeds() throws Exception {
 
         /* mock */
         when(databaseIdxRepository.save(any(DatabaseDto.class)))
                 .thenReturn(DATABASE_3_DTO);
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
 
         /* test */
         generic_create(DATABASE_3_CREATE, DATABASE_3);

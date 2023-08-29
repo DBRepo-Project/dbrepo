@@ -8,6 +8,7 @@ import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.KeycloakGateway;
+import at.tuwien.repository.mdb.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -30,11 +32,18 @@ public class UserServiceUnitTest extends BaseUnitTest {
     @MockBean
     private KeycloakGateway keycloakGateway;
 
+    @MockBean
+    private UserRepository userRepository;
+
     @Autowired
     private UserService userService;
 
     @Test
     public void findByUsername_succeeds() throws UserNotFoundException {
+
+        /* mock */
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
 
         /* test */
         final User response = userService.findByUsername(USER_1_USERNAME);
@@ -45,6 +54,10 @@ public class UserServiceUnitTest extends BaseUnitTest {
     @Test
     public void find_succeeds() throws UserNotFoundException {
 
+        /* mock */
+        when(userRepository.findById(USER_1_ID))
+                .thenReturn(Optional.of(USER_1));
+
         /* test */
         final User response = userService.find(USER_1_ID);
         assertEquals(USER_1_ID, response.getId());
@@ -54,9 +67,13 @@ public class UserServiceUnitTest extends BaseUnitTest {
     @Test
     public void findAll_succeeds() throws UserNotFoundException {
 
+        /* mock */
+        when(userRepository.findAll())
+                .thenReturn(List.of(USER_1, USER_2));
+
         /* test */
         final List<User> response = userService.findAll();
-        assertEquals(1, response.size());
+        assertEquals(2, response.size());
     }
 
     @Test
@@ -64,6 +81,10 @@ public class UserServiceUnitTest extends BaseUnitTest {
             UserAlreadyExistsException {
 
         /* mock */
+        when(userRepository.findById(USER_1_ID))
+                .thenReturn(Optional.of(USER_1));
+        when(userRepository.save(any(User.class)))
+                .thenReturn(USER_1);
         doNothing()
                 .when(keycloakGateway)
                 .createUser(USER_1_KEYCLOAK_SIGNUP_REQUEST);
@@ -79,6 +100,12 @@ public class UserServiceUnitTest extends BaseUnitTest {
     @Test
     public void modify_succeeds() throws UserNotFoundException {
 
+        /* mock */
+        when(userRepository.findById(USER_1_ID))
+                .thenReturn(Optional.of(USER_1));
+        when(userRepository.save(any(User.class)))
+                .thenReturn(USER_1);
+
         /* test */
         final User response = userService.modify(USER_1_ID, USER_1_UPDATE_DTO);
         assertEquals(USER_1_ID, response.getId());
@@ -88,14 +115,24 @@ public class UserServiceUnitTest extends BaseUnitTest {
     @Test
     public void modify_notExists_succeeds() {
 
+        /* mock */
+        when(userRepository.findById(USER_1_ID))
+                .thenReturn(Optional.empty());
+
         /* test */
-        assertThrows(KeycloakRemoteException.class, () -> {
+        assertThrows(UserNotFoundException.class, () -> {
             userService.modify(USER_1_ID, USER_1_UPDATE_DTO);
         });
     }
 
     @Test
     public void toggleTheme_succeeds() throws UserNotFoundException {
+
+        /* mock */
+        when(userRepository.findById(USER_1_ID))
+                .thenReturn(Optional.of(USER_1));
+        when(userRepository.save(any(User.class)))
+                .thenReturn(USER_1);
 
         /* test */
         final User response = userService.toggleTheme(USER_1_ID, USER_1_THEME_SET_DTO);
@@ -105,7 +142,7 @@ public class UserServiceUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void updatePassword_succeeds() throws KeycloakRemoteException, AccessDeniedException {
+    public void updatePassword_succeeds() throws KeycloakRemoteException, AccessDeniedException, UserNotFoundException {
 
         /* mock */
         doNothing()

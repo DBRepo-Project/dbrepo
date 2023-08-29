@@ -95,7 +95,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
     public void create_publicAnonymous_succeeds() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             create_generic(DATABASE_3_ID, DATABASE_3, null, null, null);
         });
     }
@@ -125,7 +125,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
     public void create_publicNoRole_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             create_generic(DATABASE_3_ID, DATABASE_3, USER_2_ID, USER_2_PRINCIPAL, null);
         });
     }
@@ -171,7 +171,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
     public void delete_publicAnonymous_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             delete_generic(DATABASE_3_ID, VIEW_1_ID, DATABASE_3, null, null, null);
         });
     }
@@ -191,7 +191,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
     public void delete_publicNoRole_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             delete_generic(DATABASE_3_ID, VIEW_1_ID, DATABASE_3, USER_2_ID, USER_2_PRINCIPAL, DATABASE_2_USER_1_READ_ACCESS);
         });
     }
@@ -291,7 +291,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
     public void create_privateAnonymous_succeeds() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             create_generic(DATABASE_1_ID, DATABASE_1, null, null, null);
         });
     }
@@ -321,7 +321,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
     public void create_privateNoRole_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             create_generic(DATABASE_1_ID, DATABASE_1, USER_2_ID, USER_2_PRINCIPAL, null);
         });
     }
@@ -367,7 +367,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
     public void delete_privateAnonymous_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             delete_generic(DATABASE_1_ID, VIEW_1_ID, DATABASE_1, null, null, null);
         });
     }
@@ -387,7 +387,7 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
     public void delete_privateNoRole_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             delete_generic(DATABASE_1_ID, VIEW_1_ID, DATABASE_1, USER_1_ID, USER_2_PRINCIPAL, DATABASE_2_USER_1_READ_ACCESS);
         });
     }
