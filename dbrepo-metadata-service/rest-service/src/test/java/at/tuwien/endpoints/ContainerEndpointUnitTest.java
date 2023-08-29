@@ -74,7 +74,7 @@ public class ContainerEndpointUnitTest extends BaseUnitTest {
     public void delete_anonymous_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             delete_generic(CONTAINER_1_ID, CONTAINER_1, null);
         });
     }
@@ -84,7 +84,7 @@ public class ContainerEndpointUnitTest extends BaseUnitTest {
     public void delete_noRole_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             delete_generic(CONTAINER_1_ID, CONTAINER_1, USER_4_PRINCIPAL);
         });
     }
@@ -131,7 +131,7 @@ public class ContainerEndpointUnitTest extends BaseUnitTest {
                 .build();
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             create_generic(request, null);
         });
     }
@@ -157,7 +157,7 @@ public class ContainerEndpointUnitTest extends BaseUnitTest {
                 .build();
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             create_generic(request, USER_4_PRINCIPAL);
         });
     }

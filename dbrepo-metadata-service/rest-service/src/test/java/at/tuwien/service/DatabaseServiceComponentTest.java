@@ -6,6 +6,7 @@ import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.api.database.DatabaseCreateDto;
 import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.config.MariaDbConfig;
+import at.tuwien.config.MariaDbContainerConfig;
 import at.tuwien.entities.database.Database;
 import at.tuwien.repository.mdb.ContainerRepository;
 import at.tuwien.repository.mdb.DatabaseRepository;
@@ -56,8 +57,7 @@ public class DatabaseServiceComponentTest extends BaseUnitTest {
     private MariaDbServiceImpl databaseService;
 
     @Container
-    @Autowired
-    public MariaDBContainer<?> mariaDBContainer;
+    private static MariaDBContainer<?> mariaDBContainer = MariaDbContainerConfig.getContainer();
 
     @BeforeEach
     public void beforeEach() {

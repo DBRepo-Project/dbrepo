@@ -32,6 +32,9 @@ public class MetadataServiceIntegrationTest extends BaseUnitTest {
     private ImageRepository imageRepository;
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     private ContainerRepository containerRepository;
 
     @Autowired
@@ -50,6 +53,7 @@ public class MetadataServiceIntegrationTest extends BaseUnitTest {
     public void beforeEach() {
         /* metadata database */
         imageRepository.save(IMAGE_1_SIMPLE);
+        userRepository.save(USER_1);
         licenseRepository.save(LICENSE_1);
         containerRepository.save(CONTAINER_1);
         databaseRepository.save(DATABASE_1_SIMPLE);

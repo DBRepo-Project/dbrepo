@@ -9,6 +9,7 @@ import at.tuwien.api.database.table.columns.ColumnCreateDto;
 import at.tuwien.api.database.table.columns.ColumnTypeDto;
 import at.tuwien.api.database.table.constraints.ConstraintsCreateDto;
 import at.tuwien.config.MariaDbConfig;
+import at.tuwien.config.MariaDbContainerConfig;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.exception.*;
@@ -77,9 +78,11 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
     @Autowired
     private TableMapper tableMapper;
 
-    @Container
     @Autowired
-    private MariaDBContainer<?> mariaDBContainer;
+    private UserRepository userRepository;
+
+    @Container
+    private static MariaDBContainer<?> mariaDBContainer = MariaDbContainerConfig.getContainer();
 
     @BeforeEach
     public void beforeEach() throws SQLException {
@@ -87,6 +90,8 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
         MariaDbConfig.createInitDatabase(CONTAINER_1, DATABASE_1);
         /* metadata database */
         imageRepository.save(IMAGE_1);
+        userRepository.save(USER_1);
+        userRepository.save(USER_2);
         containerRepository.save(CONTAINER_1_SIMPLE);
         containerRepository.save(CONTAINER_2_SIMPLE);
         databaseRepository.save(DATABASE_1_SIMPLE);

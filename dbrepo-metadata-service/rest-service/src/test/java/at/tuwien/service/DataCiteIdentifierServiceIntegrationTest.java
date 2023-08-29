@@ -11,7 +11,6 @@ import at.tuwien.config.EndpointConfig;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.exception.*;
 import at.tuwien.repository.mdb.*;
-import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,8 +28,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.client.RestTemplate;
-
-import java.security.Principal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -52,6 +49,9 @@ public class DataCiteIdentifierServiceIntegrationTest extends BaseUnitTest {
 
     @Autowired
     private LicenseRepository licenseRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     private ImageRepository imageRepository;
@@ -79,6 +79,7 @@ public class DataCiteIdentifierServiceIntegrationTest extends BaseUnitTest {
     public void beforeEach() {
         licenseRepository.save(LICENSE_1);
         imageRepository.save(IMAGE_1);
+        userRepository.save(USER_1);
         containerRepository.save(CONTAINER_1_SIMPLE);
         databaseRepository.save(DATABASE_1_SIMPLE);
     }

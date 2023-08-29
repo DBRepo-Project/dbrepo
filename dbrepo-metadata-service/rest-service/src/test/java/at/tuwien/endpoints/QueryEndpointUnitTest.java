@@ -117,7 +117,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
     public void execute_publicAnonymized_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             generic_execute(DATABASE_3_ID, QUERY_4_STATEMENT, null, null, DATABASE_3, null);
         });
     }
@@ -275,7 +275,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
         final Principal principal = null;
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             generic_execute(DATABASE_2_ID, QUERY_1_STATEMENT, null, principal, DATABASE_2, null);
         });
     }

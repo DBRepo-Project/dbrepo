@@ -3,6 +3,7 @@ package at.tuwien.service;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.annotations.MockAmqp;
 import at.tuwien.annotations.MockOpensearch;
+import at.tuwien.config.MariaDbContainerConfig;
 import at.tuwien.entities.database.License;
 import at.tuwien.exception.LicenseNotFoundException;
 import at.tuwien.repository.mdb.LicenseRepository;
@@ -37,8 +38,7 @@ public class LicenseServiceIntegrationTest extends BaseUnitTest {
     private LicenseService licenseService;
 
     @Container
-    @Autowired
-    public MariaDBContainer<?> mariaDBContainer;
+    private static MariaDBContainer<?> mariaDBContainer = MariaDbContainerConfig.getContainer();
 
     @BeforeEach
     public void beforeEach() {

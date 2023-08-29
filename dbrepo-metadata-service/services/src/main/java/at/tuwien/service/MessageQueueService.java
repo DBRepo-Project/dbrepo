@@ -9,7 +9,9 @@ import at.tuwien.exception.BrokerVirtualHostCreationException;
 import at.tuwien.exception.BrokerVirtualHostGrantException;
 import jakarta.annotation.PostConstruct;
 
+import java.io.IOException;
 import java.security.Principal;
+import java.util.concurrent.TimeoutException;
 
 public interface MessageQueueService {
 
@@ -19,7 +21,7 @@ public interface MessageQueueService {
      * @throws AmqpException The exchange could not be created.
      */
     @PostConstruct
-    void init() throws AmqpException;
+    void init() throws AmqpException, IOException, TimeoutException;
 
     /**
      * Creates an exchange for a database.

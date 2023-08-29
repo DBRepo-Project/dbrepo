@@ -61,6 +61,9 @@ public class ViewServicePersistenceIntegrationTest extends BaseUnitTest {
     @Autowired
     private ViewService viewService;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @Container
     private static MariaDBContainer<?> mariaDBContainer = MariaDbContainerConfig.getContainer();
 
@@ -74,6 +77,7 @@ public class ViewServicePersistenceIntegrationTest extends BaseUnitTest {
     public void beforeEach() {
         /* metadata database */
         imageRepository.save(IMAGE_1);
+        userRepository.saveAll(List.of(USER_1, USER_2));
         containerRepository.saveAll(List.of(CONTAINER_1_SIMPLE, CONTAINER_2_SIMPLE));
         databaseRepository.saveAll(List.of(DATABASE_1_SIMPLE, DATABASE_2_SIMPLE));
         tableRepository.saveAll(List.of(TABLE_1_SIMPLE, TABLE_2_SIMPLE, TABLE_3_SIMPLE, TABLE_4_SIMPLE, TABLE_5_SIMPLE, TABLE_6_SIMPLE, TABLE_7_SIMPLE));

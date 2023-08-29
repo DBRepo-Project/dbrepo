@@ -60,6 +60,9 @@ public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
     private ImageRepository imageRepository;
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     private ContainerRepository containerRepository;
 
     @Autowired
@@ -85,6 +88,7 @@ public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
     public void beforeEach() {
         licenseRepository.save(LICENSE_1);
         imageRepository.save(IMAGE_1);
+        userRepository.save(USER_1);
         containerRepository.save(CONTAINER_1_SIMPLE);
         databaseRepository.save(DATABASE_1_SIMPLE);
     }

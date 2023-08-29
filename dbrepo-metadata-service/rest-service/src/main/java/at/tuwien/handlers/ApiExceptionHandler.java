@@ -40,6 +40,18 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @Hidden
+    @ResponseStatus(HttpStatus.LOCKED)
+    @ExceptionHandler(KeycloakRemoteException.class)
+    public ResponseEntity<ApiErrorDto> handle(KeycloakRemoteException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.LOCKED)
+                .message(e.getLocalizedMessage())
+                .code("error.metadata.keycloak")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
+    @Hidden
     @ResponseStatus(HttpStatus.CONFLICT)
     @ExceptionHandler(ContainerAlreadyExistsException.class)
     public ResponseEntity<ApiErrorDto> handle(ContainerAlreadyExistsException e, WebRequest request) {

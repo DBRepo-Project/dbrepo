@@ -5,6 +5,7 @@ import at.tuwien.annotations.MockAmqp;
 import at.tuwien.api.database.ViewCreateDto;
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.config.MariaDbConfig;
+import at.tuwien.config.MariaDbContainerConfig;
 import at.tuwien.exception.*;
 import at.tuwien.repository.mdb.*;
 import at.tuwien.repository.sdb.ViewIdxRepository;
@@ -63,12 +64,14 @@ public class ViewIdxRepositoryIntegrationTest extends BaseUnitTest {
     @Autowired
     private ViewService viewService;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @Rule
     public Timeout globalTimeout = Timeout.seconds(60);
 
     @Container
-    @Autowired
-    private MariaDBContainer<?> mariaDBContainer;
+    private static MariaDBContainer<?> mariaDBContainer = MariaDbContainerConfig.getContainer();
 
     @Container
     private static final OpensearchContainer opensearchContainer = new OpensearchContainer(DockerImageName.parse("opensearchproject/opensearch:2.8.0"));
@@ -90,6 +93,7 @@ public class ViewIdxRepositoryIntegrationTest extends BaseUnitTest {
         TABLE_2.setColumns(TABLE_2_COLUMNS);
         /* metadata database */
         imageRepository.save(IMAGE_1);
+        userRepository.save(USER_1);
         containerRepository.save(CONTAINER_1);
         databaseRepository.save(DATABASE_1_SIMPLE);
         tableRepository.saveAll(List.of(TABLE_1_SIMPLE, TABLE_2_SIMPLE));

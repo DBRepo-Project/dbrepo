@@ -63,7 +63,7 @@ public class TableColumnEndpointUnitTest extends BaseUnitTest {
     public void update_publicAnonymous_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             generic_update(DATABASE_3_ID, TABLE_8_ID, COLUMN_1_1_ID, DATABASE_3, TABLE_8, null, COLUMN_8_2_SEMANTICS_UPDATE_DTO, null, null, null);
         });
     }
@@ -73,7 +73,7 @@ public class TableColumnEndpointUnitTest extends BaseUnitTest {
     public void update_publicHasRoleNoAccess_fails() {
 
         /* test */
-        assertThrows(NotAllowedException.class, () -> {
+        assertThrows(AccessDeniedException.class, () -> {
             generic_update(DATABASE_3_ID, TABLE_8_ID, COLUMN_1_1_ID, DATABASE_3, TABLE_8, null, COLUMN_8_2_SEMANTICS_UPDATE_DTO, USER_1_ID, USER_1_PRINCIPAL, null);
         });
     }
@@ -148,7 +148,7 @@ public class TableColumnEndpointUnitTest extends BaseUnitTest {
     public void update_privateAnonymous_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             generic_update(DATABASE_1_ID, TABLE_1_ID, COLUMN_1_1_ID, DATABASE_1, TABLE_1, null, COLUMN_1_4_SEMANTICS_UPDATE_DTO, null, null, null);
         });
     }
@@ -158,7 +158,7 @@ public class TableColumnEndpointUnitTest extends BaseUnitTest {
     public void update_privateHasRoleNoAccess_fails() {
 
         /* test */
-        assertThrows(NotAllowedException.class, () -> {
+        assertThrows(AccessDeniedException.class, () -> {
             generic_update(DATABASE_1_ID, TABLE_1_ID, COLUMN_1_1_ID, DATABASE_1, TABLE_1, null, COLUMN_1_4_SEMANTICS_UPDATE_DTO, USER_1_ID, USER_1_PRINCIPAL, null);
         });
     }
@@ -263,7 +263,7 @@ public class TableColumnEndpointUnitTest extends BaseUnitTest {
             when(accessService.find(databaseId, userId))
                     .thenReturn(access);
         } else {
-            doThrow(NotAllowedException.class)
+            doThrow(AccessDeniedException.class)
                     .when(accessService)
                     .find(databaseId, userId);
         }

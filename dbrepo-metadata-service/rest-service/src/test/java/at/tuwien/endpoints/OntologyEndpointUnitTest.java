@@ -102,7 +102,7 @@ public class OntologyEndpointUnitTest extends BaseUnitTest {
     public void create_anonymous_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             create_generic(ONTOLOGY_1_CREATE_DTO, null, null, null, ONTOLOGY_1);
         });
     }
@@ -112,7 +112,7 @@ public class OntologyEndpointUnitTest extends BaseUnitTest {
     public void create_noRole_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             create_generic(ONTOLOGY_1_CREATE_DTO, USER_4_PRINCIPAL, USER_4_USERNAME, USER_4, ONTOLOGY_1);
         });
     }
@@ -131,7 +131,7 @@ public class OntologyEndpointUnitTest extends BaseUnitTest {
     public void update_anonymous_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             update_generic(ONTOLOGY_1_ID, ONTOLOGY_1_MODIFY_DTO, null, ONTOLOGY_1);
         });
     }
@@ -141,7 +141,7 @@ public class OntologyEndpointUnitTest extends BaseUnitTest {
     public void update_noRole_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             update_generic(ONTOLOGY_1_ID, ONTOLOGY_1_MODIFY_DTO, USER_4_PRINCIPAL, ONTOLOGY_1);
         });
     }
@@ -169,7 +169,7 @@ public class OntologyEndpointUnitTest extends BaseUnitTest {
     public void delete_anonymous_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             delete_generic(ONTOLOGY_1_ID, ONTOLOGY_1);
         });
     }
@@ -179,7 +179,7 @@ public class OntologyEndpointUnitTest extends BaseUnitTest {
     public void delete_noRole_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             delete_generic(ONTOLOGY_1_ID, ONTOLOGY_1);
         });
     }
@@ -207,7 +207,7 @@ public class OntologyEndpointUnitTest extends BaseUnitTest {
     public void find_anonymous_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             find_generic(ONTOLOGY_2_ID, "Apache Jena", null, ONTOLOGY_2, null);
         });
     }
@@ -217,7 +217,7 @@ public class OntologyEndpointUnitTest extends BaseUnitTest {
     public void find_noRole_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             find_generic(ONTOLOGY_2_ID, "Apache Jena", null, ONTOLOGY_2, null);
         });
     }

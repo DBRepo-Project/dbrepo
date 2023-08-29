@@ -77,7 +77,7 @@ public class AccessEndpoint {
             accessService.find(databaseId, accessDto.getUserId());
             log.error("Failed to give access to user with id {}: already has access", accessDto.getUserId());
             throw new NotAllowedException("Failed to give access to user with id " + accessDto.getUserId() + ": already has access");
-        } catch (NotAllowedException e) {
+        } catch (AccessDeniedException e) {
             /* ignore */
         }
         accessService.create(databaseId, accessDto);

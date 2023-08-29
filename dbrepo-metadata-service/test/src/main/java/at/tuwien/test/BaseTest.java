@@ -615,6 +615,17 @@ public abstract class BaseTest {
     public final static Principal USER_5_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_5_DETAILS,
             USER_5_PASSWORD, USER_5_DETAILS.getAuthorities());
 
+    public final static User USER_5 = User.builder()
+            .id(USER_5_ID)
+            .username(USER_5_USERNAME)
+            .email(USER_5_EMAIL)
+            .firstname(USER_5_FIRSTNAME)
+            .lastname(USER_5_LASTNAME)
+            .affiliation(USER_5_AFFILIATION)
+            .themeDark(USER_5_THEME_DARK)
+            .mariadbPassword(USER_5_DATABASE_PASSWORD)
+            .build(); 
+
     public final static UUID USER_6_ID = UUID.fromString("28ff851d-d7bc-4422-959c-edd7a5b15630");
     public final static String USER_6_USERNAME = "system";
     public final static String USER_6_FIRSTNAME = "System";
@@ -1021,8 +1032,11 @@ public abstract class BaseTest {
             .created(DATABASE_1_CREATED)
             .lastModified(DATABASE_1_LAST_MODIFIED)
             .createdBy(DATABASE_1_CREATOR)
+            .creator(USER_1)
             .ownedBy(DATABASE_1_OWNER)
+            .owner(USER_1)
             .contactPerson(USER_1_ID)
+            .contact(USER_1)
             .tables(List.of()) /* TABLE_1, TABLE_2, TABLE_3, TABLE_7 */
             .views(List.of()) /* VIEW_2, VIEW_3 */
             .build();
@@ -1152,8 +1166,11 @@ public abstract class BaseTest {
             .created(DATABASE_2_CREATED)
             .lastModified(DATABASE_2_LAST_MODIFIED)
             .createdBy(DATABASE_2_CREATOR)
-            .contactPerson(USER_2_ID)
+            .creator(USER_2)
             .ownedBy(DATABASE_2_OWNER)
+            .owner(USER_2)
+            .contactPerson(USER_2_ID)
+            .contact(USER_2)
             .tables(List.of()) /* TABLE_4, TABLE_5, TABLE_6 */
             .views(List.of()) /* VIEW_4 */
             .build();
@@ -1266,6 +1283,8 @@ public abstract class BaseTest {
     public final static String DATABASE_3_EXCHANGE = "dbrepo." + DATABASE_3_INTERNALNAME;
     public final static Instant DATABASE_3_CREATED = Instant.ofEpochSecond(1677399792) /* 2023-02-26 08:23:12 (UTC) */;
     public final static Instant DATABASE_3_LAST_MODIFIED = Instant.ofEpochSecond(1677399792) /* 2023-02-26 08:23:12 (UTC) */;
+    public final static UUID DATABASE_3_OWNER = USER_3_ID;
+    public final static UUID DATABASE_3_CREATOR = USER_3_ID;
 
     public final static Database DATABASE_3 = Database.builder()
             .id(DATABASE_3_ID)
@@ -1280,9 +1299,12 @@ public abstract class BaseTest {
             .exchangeName(DATABASE_3_EXCHANGE)
             .created(DATABASE_3_CREATED)
             .lastModified(DATABASE_3_LAST_MODIFIED)
+            .createdBy(DATABASE_3_CREATOR)
+            .creator(USER_3)
+            .ownedBy(DATABASE_3_OWNER)
+            .owner(USER_3)
             .contactPerson(USER_3_ID)
-            .createdBy(USER_3_ID)
-            .ownedBy(USER_3_ID)
+            .contact(USER_3)
             .tables(List.of()) /* TABLE_8 */
             .views(List.of()) /* VIEW_5 */
             .build();
@@ -1394,6 +1416,8 @@ public abstract class BaseTest {
     public final static String DATABASE_4_EXCHANGE = "dbrepo." + DATABASE_4_INTERNALNAME;
     public final static Instant DATABASE_4_CREATED = Instant.ofEpochSecond(1677399813) /* 2023-02-26 08:23:33 (UTC) */;
     public final static Instant DATABASE_4_LAST_MODIFIED = Instant.ofEpochSecond(1677399813) /* 2023-02-26 08:23:33 (UTC) */;
+    public final static UUID DATABASE_4_OWNER = USER_4_ID;
+    public final static UUID DATABASE_4_CREATOR = USER_4_ID;
 
     public final static Database DATABASE_4 = Database.builder()
             .id(DATABASE_4_ID)
@@ -1408,9 +1432,12 @@ public abstract class BaseTest {
             .exchangeName(DATABASE_4_EXCHANGE)
             .created(DATABASE_4_CREATED)
             .lastModified(DATABASE_4_LAST_MODIFIED)
+            .createdBy(DATABASE_4_CREATOR)
+            .creator(USER_4)
+            .ownedBy(DATABASE_4_OWNER)
+            .owner(USER_4)
             .contactPerson(USER_4_ID)
-            .createdBy(USER_4_ID)
-            .ownedBy(USER_4_ID)
+            .contact(USER_4)
             .tables(List.of())
             .views(List.of())
             .build();

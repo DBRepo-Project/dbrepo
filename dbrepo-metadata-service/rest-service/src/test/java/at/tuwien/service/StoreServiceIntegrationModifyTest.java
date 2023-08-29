@@ -7,6 +7,7 @@ import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.api.database.query.QueryPersistDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.config.MariaDbConfig;
+import at.tuwien.config.MariaDbContainerConfig;
 import at.tuwien.exception.*;
 import at.tuwien.querystore.Query;
 import at.tuwien.repository.mdb.*;
@@ -63,9 +64,11 @@ public class StoreServiceIntegrationModifyTest extends BaseUnitTest {
     @Autowired
     private QueryService queryService;
 
-    @Container
     @Autowired
-    private MariaDBContainer<?> mariaDBContainer;
+    private UserRepository userRepository;
+
+    @Container
+    private static MariaDBContainer<?> mariaDBContainer = MariaDbContainerConfig.getContainer();
 
     @BeforeEach
     public void beforeEach() throws InterruptedException, SQLException {
@@ -76,6 +79,8 @@ public class StoreServiceIntegrationModifyTest extends BaseUnitTest {
         /* metadata database */
         imageRepository.save(IMAGE_1);
         containerRepository.save(CONTAINER_1);
+        userRepository.save(USER_1);
+        userRepository.save(USER_5);
         databaseRepository.save(DATABASE_1_SIMPLE);
         tableRepository.saveAll(List.of(TABLE_1_SIMPLE, TABLE_2_SIMPLE));
         tableColumnRepository.saveAll(TABLE_1_COLUMNS);

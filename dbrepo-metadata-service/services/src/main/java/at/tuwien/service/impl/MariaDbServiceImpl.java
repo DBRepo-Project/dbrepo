@@ -183,7 +183,7 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
                 .stream()
                 .distinct()
                 .toList();
-        log.trace("found {} distinct databases", databases.size());
+        log.debug("found {} distinct databases where access for user with id {} is present", databases.size(), user.getId());
         for (Database database : databases) {
             final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(), database.getContainer());
             try {

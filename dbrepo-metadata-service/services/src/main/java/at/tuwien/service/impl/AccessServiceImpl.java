@@ -74,8 +74,7 @@ public class AccessServiceImpl extends HibernateConnector implements AccessServi
     @Override
     @Transactional
     public void create(Long databaseId, DatabaseGiveAccessDto accessDto) throws DatabaseNotFoundException,
-            UserNotFoundException, NotAllowedException, QueryMalformedException, DatabaseMalformedException,
-            KeycloakRemoteException, AccessDeniedException {
+            UserNotFoundException, NotAllowedException, QueryMalformedException, DatabaseMalformedException {
         /* check */
         final Database database = databaseService.findById(databaseId);
         final Container container = database.getContainer();
@@ -113,7 +112,7 @@ public class AccessServiceImpl extends HibernateConnector implements AccessServi
     @Transactional
     public void update(Long databaseId, UUID userId, DatabaseModifyAccessDto accessDto)
             throws DatabaseNotFoundException, UserNotFoundException, QueryMalformedException,
-            DatabaseMalformedException, NotAllowedException, KeycloakRemoteException, AccessDeniedException {
+            DatabaseMalformedException, NotAllowedException {
         /* check */
         final Database database = databaseService.findById(databaseId);
         final Container container = database.getContainer();
@@ -150,7 +149,7 @@ public class AccessServiceImpl extends HibernateConnector implements AccessServi
     @Transactional
     public void delete(Long databaseId, UUID userId)
             throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException, QueryMalformedException,
-            DatabaseMalformedException, KeycloakRemoteException, AccessDeniedException {
+            DatabaseMalformedException {
         /* check */
         final Database database = databaseService.findById(databaseId);
         final Container container = database.getContainer();

@@ -148,6 +148,10 @@ public class UserServiceUnitTest extends BaseUnitTest {
         doNothing()
                 .when(keycloakGateway)
                 .updateUserCredentials(USER_1_ID, USER_1_PASSWORD_DTO);
+        when(userRepository.findById(USER_1_ID))
+                .thenReturn(Optional.of(USER_1));
+        when(userRepository.save(any(User.class)))
+                .thenReturn(USER_1);
 
         /* test */
         userService.updatePassword(USER_1_ID, USER_1_PASSWORD_DTO);

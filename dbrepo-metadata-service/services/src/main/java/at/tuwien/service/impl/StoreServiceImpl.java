@@ -105,7 +105,12 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
             log.error("Currently only MariaDB is supported");
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
         }
-        final User user = userService.findByUsername(principal.getName());
+        final User user;
+        if (principal == null) {
+            user = userService.findByUsername("system");
+        } else {
+            user = userService.findByUsername(principal.getName());
+        }
         /* save */
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(),
                 database.getContainer(), database);

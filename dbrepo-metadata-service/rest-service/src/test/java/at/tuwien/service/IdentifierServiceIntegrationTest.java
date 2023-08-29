@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.opensearch.testcontainers.OpensearchContainer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpEntity;
@@ -49,6 +50,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     private StoreService storeService;
 
     @MockBean
+    @Qualifier("brokerRestTemplate")
     private RestTemplate restTemplate;
 
     @Autowired
@@ -76,6 +78,9 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     private ViewRepository viewRepository;
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     private TableRepository tableRepository;
 
     @Container
@@ -93,6 +98,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     @BeforeEach
     public void beforeEach() {
         imageRepository.save(IMAGE_1_SIMPLE);
+        userRepository.saveAll(List.of(USER_1, USER_2, USER_3, USER_4));
         licenseRepository.save(LICENSE_1);
         containerRepository.save(CONTAINER_1_SIMPLE);
         databaseRepository.save(DATABASE_1_SIMPLE);
@@ -103,6 +109,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     @Test
     public void findAll_succeeds() {
 
+        /* mock */
         identifierRepository.save(IDENTIFIER_1);
 
         /* test */
@@ -114,6 +121,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     @Transactional
     public void find_succeeds() throws IdentifierNotFoundException {
 
+        /* mock */
         identifierRepository.save(IDENTIFIER_1);
 
         /* test */
@@ -143,6 +151,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     @Test
     public void findAll_forDatabase_succeeds() {
 
+        /* mock */
         identifierRepository.save(IDENTIFIER_1);
 
         /* test */
@@ -164,7 +173,6 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
             QueryNotFoundException, IdentifierPublishingNotAllowedException, RemoteUnavailableException,
             IdentifierRequestException, ViewNotFoundException, QueryStoreException, DatabaseConnectionException,
             ImageNotSupportedException {
-        final String bearer = "Bearer abcxyz";
 
         /* mock */
         when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(QueryDto.class)))
@@ -211,7 +219,6 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
             IdentifierAlreadyExistsException, QueryNotFoundException, IdentifierPublishingNotAllowedException,
             RemoteUnavailableException, IdentifierRequestException, ViewNotFoundException, QueryStoreException,
             DatabaseConnectionException, ImageNotSupportedException {
-        final String bearer = "Bearer abcxyz";
 
         /* test */
         final Identifier response = identifierService.create(IDENTIFIER_1_DTO_REQUEST, USER_1_PRINCIPAL);
@@ -249,7 +256,6 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
             IdentifierAlreadyExistsException, QueryNotFoundException, IdentifierPublishingNotAllowedException,
             RemoteUnavailableException, IdentifierRequestException, ViewNotFoundException, QueryStoreException,
             DatabaseConnectionException, ImageNotSupportedException {
-        final String bearer = "Bearer abcxyz";
 
         /* mock */
         containerRepository.save(CONTAINER_3_SIMPLE);
@@ -318,7 +324,6 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
             IdentifierAlreadyExistsException, QueryNotFoundException, IdentifierPublishingNotAllowedException,
             RemoteUnavailableException, IdentifierRequestException, ViewNotFoundException, QueryStoreException,
             DatabaseConnectionException, ImageNotSupportedException {
-        final String authorization = "Bearer abcxyz";
 
         /* mock */
         containerRepository.save(CONTAINER_3_SIMPLE);

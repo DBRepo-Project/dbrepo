@@ -13,7 +13,7 @@ import jakarta.persistence.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-@Table(name = "mdb_licenses", uniqueConstraints = {
+@jakarta.persistence.Table(name = "mdb_licenses", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"uri"})
 })
 public class License {

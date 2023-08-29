@@ -5,7 +5,9 @@ import at.tuwien.annotations.MockAmqp;
 import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.api.database.*;
 import at.tuwien.config.MariaDbConfig;
+import at.tuwien.config.MariaDbContainerConfig;
 import at.tuwien.entities.database.Database;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.KeycloakGateway;
 import at.tuwien.repository.mdb.*;
@@ -44,11 +46,8 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     @MockBean
     private DatabaseIdxRepository databaseIdxRepository;
 
-    @MockBean
-    private KeycloakGateway keycloakGateway;
-
-    @MockBean
-    private UserService userService;
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     private DatabaseAccessRepository databaseAccessRepository;
@@ -69,13 +68,13 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     private MariaDbConfig mariaDbConfig;
 
     @Container
-    @Autowired
-    private MariaDBContainer<?> mariaDBContainer;
+    private static MariaDBContainer<?> mariaDBContainer = MariaDbContainerConfig.getContainer();
 
     @BeforeEach
     public void beforeEach() throws SQLException {
         /* metadata database */
         imageRepository.save(IMAGE_1);
+        userRepository.saveAll(List.of(USER_1, USER_2, USER_3));
         containerRepository.save(CONTAINER_1_SIMPLE);
         databaseRepository.saveAll(List.of(DATABASE_1_SIMPLE, DATABASE_2_SIMPLE, DATABASE_3_SIMPLE));
         MariaDbConfig.dropAllDatabases(CONTAINER_1);
@@ -110,8 +109,6 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
                 .thenReturn(DATABASE_1_DTO);
         when(databaseIdxRepository.save(any(DatabaseDto.class)))
                 .thenReturn(DATABASE_1_DTO);
-        when(userService.findByUsername(USER_1_USERNAME))
-                .thenReturn(USER_1);
 
         /* test */
         generic_create(DATABASE_1_CREATE, DATABASE_1);
@@ -126,8 +123,6 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
                 .thenReturn(DATABASE_1_DTO);
         when(databaseIdxRepository.save(any(DatabaseDto.class)))
                 .thenReturn(DATABASE_1_DTO);
-        when(userService.findByUsername(USER_1_USERNAME))
-                .thenReturn(USER_1);
 
         /* test */
         generic_create(DATABASE_1_CREATE, DATABASE_1);
@@ -144,8 +139,6 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         when(databaseIdxRepository.save(any(DatabaseDto.class)))
                 .thenReturn(DATABASE_2_DTO)
                 .thenReturn(DATABASE_3_DTO);
-        when(userService.findByUsername(USER_1_USERNAME))
-                .thenReturn(USER_1);
 
         /* test */
         generic_create(DATABASE_2_CREATE, DATABASE_2);
@@ -162,8 +155,6 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         when(databaseIdxRepository.save(any(DatabaseDto.class)))
                 .thenReturn(DATABASE_3_DTO)
                 .thenReturn(DATABASE_2_DTO);
-        when(userService.findByUsername(USER_1_USERNAME))
-                .thenReturn(USER_1);
 
         /* test */
         generic_create(DATABASE_3_CREATE, DATABASE_3);
@@ -178,8 +169,6 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         databaseRepository.deleteAll();
         when(databaseIdxRepository.save(any(DatabaseDto.class)))
                 .thenReturn(DATABASE_1_DTO);
-        when(userService.findByUsername(USER_1_USERNAME))
-                .thenReturn(USER_1);
         final Database database = generic_create(DATABASE_1_CREATE, DATABASE_1);
 
 
@@ -191,20 +180,21 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     public void updatePassword_canLogin_succeeds() throws Exception {
 
         /* mock */
-        MariaDbConfig.dropDatabase(CONTAINER_1, DATABASE_1_INTERNALNAME);
-        MariaDbConfig.createDatabase(CONTAINER_1, DATABASE_1_INTERNALNAME);
-        databaseAccessRepository.save(DATABASE_1_USER_1_READ_ACCESS);
+        userRepository.save(USER_3);
+        databaseAccessRepository.save(DATABASE_1_USER_3_READ_ACCESS);
         when(databaseIdxRepository.save(any(DatabaseDto.class)))
                 .thenReturn(DATABASE_1_DTO);
-        when(userService.findByUsername(USER_1_USERNAME))
-                .thenReturn(USER_1);
-        databaseService.updatePassword(USER_1);
 
         /* test */
         assertThrows(SQLInvalidAuthorizationSpecException.class, () -> {
-            MariaDbConfig.getPrivileges(mariaDBContainer.getHost(), mariaDBContainer.getMappedPort(3306), DATABASE_1_INTERNALNAME, USER_1_USERNAME, USER_1_PASSWORD);
+            MariaDbConfig.getPrivileges(mariaDBContainer.getHost(), mariaDBContainer.getMappedPort(3306), USER_3_USERNAME, USER_4_PASSWORD);
         });
-        MariaDbConfig.getPrivileges(mariaDBContainer.getHost(), mariaDBContainer.getMappedPort(3306), DATABASE_1_INTERNALNAME, USER_1_USERNAME, USER_2_PASSWORD);
+        databaseService.updatePassword(User.builder()
+                        .id(USER_3_ID)
+                        .username(USER_3_USERNAME)
+                        .mariadbPassword(USER_4_DATABASE_PASSWORD)
+                .build());
+        MariaDbConfig.getPrivileges(mariaDBContainer.getHost(), mariaDBContainer.getMappedPort(3306), USER_3_USERNAME, USER_4_PASSWORD);
     }
 
     @Test
@@ -252,7 +242,7 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         /* mock */
         MariaDbConfig.dropDatabase(CONTAINER_1, DATABASE_3_INTERNALNAME);
         MariaDbConfig.createInitDatabase(CONTAINER_1, DATABASE_3);
-        MariaDbConfig.grantUserPermissions(CONTAINER_1, DATABASE_3, "junit1");
+        mariaDbConfig.grantUserPermissions(CONTAINER_1, DATABASE_3, "junit1");
         databaseAccessRepository.save(DATABASE_3_USER_1_WRITE_ALL_ACCESS);
 
         /* test */
@@ -292,10 +282,7 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
 
         /* mock */
         databaseRepository.save(DATABASE_1_SIMPLE);
-        when(userService.findByUsername(USER_1_USERNAME))
-                .thenReturn(USER_1);
-        when(userService.findByUsername(USER_2_USERNAME))
-                .thenReturn(USER_2);
+        userRepository.save(USER_2);
 
         /* test */
         final Database response = databaseService.transfer(DATABASE_1_ID, request);

@@ -30,6 +30,9 @@ public class DatabaseRepositoryUnitTest extends BaseUnitTest {
     private ImageRepository imageRepository;
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     private ContainerRepository containerRepository;
 
     @Autowired
@@ -41,6 +44,8 @@ public class DatabaseRepositoryUnitTest extends BaseUnitTest {
     @BeforeEach
     public void beforeEach() {
         imageRepository.save(IMAGE_1_SIMPLE);
+        userRepository.save(USER_1);
+        userRepository.save(USER_2);
         containerRepository.save(CONTAINER_1_SIMPLE);
         containerRepository.save(CONTAINER_2_SIMPLE);
         databaseRepository.save(DATABASE_1_SIMPLE);

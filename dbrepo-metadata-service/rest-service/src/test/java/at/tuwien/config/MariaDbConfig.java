@@ -7,7 +7,6 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.QueryMalformedException;
 import at.tuwien.mapper.DatabaseMapper;
-import at.tuwien.mapper.DatabaseMapperImpl;
 import at.tuwien.querystore.Query;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -123,11 +122,10 @@ public class MariaDbConfig {
         log.debug("dropped database {}", database);
     }
 
-    public static void grantUserPermissions(Container container, Database database, String username) throws SQLException,
+    public void grantUserPermissions(Container container, Database database, String username) throws SQLException,
             QueryMalformedException {
         final String jdbc = "jdbc:mariadb://" + container.getHost() + ":" + container.getPort() + "/" + database.getInternalName();
         log.trace("connect to database {}", jdbc);
-        final DatabaseMapper databaseMapper = new DatabaseMapperImpl();
         try (Connection connection = DriverManager.getConnection(jdbc, container.getPrivilegedUsername(), container.getPrivilegedPassword())) {
             final PreparedStatement statement1 = databaseMapper.rawGrantUserAccessQuery(connection, username, AccessTypeDto.WRITE_ALL);
             statement1.executeUpdate();
@@ -157,11 +155,15 @@ public class MariaDbConfig {
         }
     }
 
+    public static String getPrivileges(String hostname, Integer port, String username, String password)
+            throws Exception {
+        return getPrivileges(hostname, port, null, username, password);
+    }
+
     public static String getPrivileges(String hostname, Integer port, String database, String username, String password)
             throws Exception {
-        final String jdbc = "jdbc:mariadb://" + hostname + ":" + port  + "/" + database;
+        final String jdbc = "jdbc:mariadb://" + hostname + ":" + port  + (database != null ? "/" + database : "");
         log.trace("connect to database {}", jdbc);
-        final List<String> usernames = new LinkedList<>();
         try (Connection connection = DriverManager.getConnection(jdbc, username, password)) {
             final String query = "SHOW GRANTS FOR `" + username + "`;";
             log.trace("prepare statement '{}'", query);

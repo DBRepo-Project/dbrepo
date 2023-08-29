@@ -17,20 +17,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
-import org.testcontainers.containers.MariaDBContainer;
+import org.testcontainers.images.PullPolicy;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
 
 @Log4j2
 @Testcontainers
@@ -49,8 +47,17 @@ public class UserServiceIntegrationTest extends BaseUnitTest {
     private UserService userService;
 
     @Container
-    @Autowired
-    private KeycloakContainer keycloakContainer;
+    private static KeycloakContainer keycloakContainer = new KeycloakContainer("quay.io/keycloak/keycloak:21.0")
+            .withImagePullPolicy(PullPolicy.alwaysPull())
+            .withAdminUsername("fda")
+            .withAdminPassword("fda")
+            .withRealmImportFile("./dbrepo-realm.json")
+            .withEnv("KC_HOSTNAME_STRICT_HTTPS", "false");
+
+    @DynamicPropertySource
+    static void elasticsearchProperties(DynamicPropertyRegistry registry) {
+        registry.add("fda.keycloak.endpoint", () -> "http://localhost:" + keycloakContainer.getMappedPort(8080));
+    }
 
     @BeforeEach
     public void beforeEach() {

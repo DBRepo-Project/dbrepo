@@ -166,7 +166,7 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
     public void create_anonymousDatabase_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             generic_create(DATABASE_1_ID, DATABASE_1, null, IDENTIFIER_1_DTO_REQUEST, null, null, null);
         });
     }
@@ -202,7 +202,7 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
     public void create_anonymousQuery_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             generic_create(DATABASE_2_ID, DATABASE_2, null, IDENTIFIER_2_DTO_REQUEST, IDENTIFIER_2, null, null);
         });
     }

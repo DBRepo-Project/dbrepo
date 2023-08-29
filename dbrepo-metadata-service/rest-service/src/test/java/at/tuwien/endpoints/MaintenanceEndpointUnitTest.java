@@ -131,7 +131,7 @@ public class MaintenanceEndpointUnitTest extends BaseUnitTest {
     public void create_anonymous_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             create_generic(BANNER_MESSAGE_1_CREATE_DTO, BANNER_MESSAGE_1);
         });
     }
@@ -141,7 +141,7 @@ public class MaintenanceEndpointUnitTest extends BaseUnitTest {
     public void create_noRole_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             create_generic(BANNER_MESSAGE_1_CREATE_DTO, BANNER_MESSAGE_1);
         });
     }
@@ -159,7 +159,7 @@ public class MaintenanceEndpointUnitTest extends BaseUnitTest {
     public void update_anonymous_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             update_generic(BANNER_MESSAGE_1_UPDATE_DTO, BANNER_MESSAGE_1_ID, BANNER_MESSAGE_1);
         });
     }
@@ -169,7 +169,7 @@ public class MaintenanceEndpointUnitTest extends BaseUnitTest {
     public void update_noRole_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             update_generic(BANNER_MESSAGE_1_UPDATE_DTO, BANNER_MESSAGE_1_ID, BANNER_MESSAGE_1);
         });
     }
@@ -197,7 +197,7 @@ public class MaintenanceEndpointUnitTest extends BaseUnitTest {
     public void delete_anonymous_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             delete_generic(BANNER_MESSAGE_1_ID, BANNER_MESSAGE_1);
         });
     }
@@ -207,7 +207,7 @@ public class MaintenanceEndpointUnitTest extends BaseUnitTest {
     public void delete_noRole_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             delete_generic(BANNER_MESSAGE_1_ID, BANNER_MESSAGE_1);
         });
     }

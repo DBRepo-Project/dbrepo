@@ -8,6 +8,7 @@ import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.config.MariaDbConfig;
+import at.tuwien.config.MariaDbContainerConfig;
 import at.tuwien.exception.*;
 import at.tuwien.querystore.Query;
 import at.tuwien.repository.mdb.*;
@@ -50,7 +51,7 @@ import static org.mockito.Mockito.when;
 @MockOpensearch
 public class QueryServiceIntegrationTest extends BaseUnitTest {
 
-    @MockBean
+    @Autowired
     private UserRepository userRepository;
 
     @Autowired
@@ -75,8 +76,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     private QueryService queryService;
 
     @Container
-    @Autowired
-    private MariaDBContainer<?> mariaDBContainer;
+    private static MariaDBContainer<?> mariaDBContainer = MariaDbContainerConfig.getContainer();
 
     @BeforeEach
     public void beforeEach() throws SQLException {
@@ -85,6 +85,8 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         MariaDbConfig.createInitDatabase(CONTAINER_1, DATABASE_1);
         /* metadata database */
         imageRepository.save(IMAGE_1);
+        userRepository.save(USER_1);
+        userRepository.save(USER_2);
         containerRepository.saveAll(List.of(CONTAINER_1_SIMPLE, CONTAINER_2_SIMPLE));
         databaseRepository.saveAll(List.of(DATABASE_1_SIMPLE, DATABASE_2_SIMPLE));
         tableRepository.saveAll(List.of(TABLE_1_SIMPLE, TABLE_2_SIMPLE, TABLE_3_SIMPLE, TABLE_4_SIMPLE, TABLE_5_SIMPLE, TABLE_6_SIMPLE, TABLE_7_SIMPLE));
@@ -297,10 +299,6 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                 .statement("SELECT n.`firstname`, n.`lastname`, n.`birth`, n.`reminder`, z.`animal_name`, z.`legs` FROM `likes` l JOIN `names` n ON l.`name_id` = n.`id` JOIN `mock_view` z ON z.`id` = l.`zoo_id`")
                 .build();
 
-        /* mock */
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
-
         /* test */
         Thread.sleep(1000) /* wait for test container some more */;
         final QueryResultDto response = queryService.execute(DATABASE_2_ID, request, USER_1_PRINCIPAL, 0L, 100L, null, null);
@@ -338,10 +336,6 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                 .statement("SELECT `location`, `lng` FROM `weather_location` WHERE `lat` IS NULL")
                 .build();
 
-        /* mock */
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
-
         /* test */
         Thread.sleep(1000) /* wait for test container some more */;
         final QueryResultDto response = queryService.execute(DATABASE_1_ID, request, USER_1_PRINCIPAL,
@@ -361,10 +355,6 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement("SELECT `location` FROM `weather_location` WHERE `lat` IS NULL")
                 .build();
-
-        /* mock */
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
 
         /* test */
         Thread.sleep(1000) /* wait for test container some more */;
@@ -387,10 +377,6 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                 .statement("SELECT `lat`, `lng` FROM `weather_location` WHERE `lat` IS NULL")
                 .build();
 
-        /* mock */
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
-
         /* test */
         Thread.sleep(1000) /* wait for test container some more */;
         final QueryResultDto response = queryService.execute(DATABASE_1_ID, request, USER_1_PRINCIPAL,
@@ -406,10 +392,6 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement("SELECT aus.location as a, loc.location from weather_aus aus, weather_location loc")
                 .build();
-
-        /* mock */
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
 
         /* test */
         Thread.sleep(1000) /* wait for test container some more */;
@@ -448,8 +430,6 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
         /* mock */
         Thread.sleep(1000) /* wait for test container some more */;
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
 
         /* test */
         final QueryResultDto response = queryService.execute(DATABASE_1_ID, request, USER_1_PRINCIPAL,

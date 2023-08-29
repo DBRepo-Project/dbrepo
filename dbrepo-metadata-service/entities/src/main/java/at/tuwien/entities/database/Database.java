@@ -3,6 +3,7 @@ package at.tuwien.entities.database;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.identifier.Identifier;
+import at.tuwien.entities.user.User;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.*;
 import jakarta.persistence.NamedQueries;
@@ -46,13 +47,27 @@ public class Database implements Serializable {
     @Column(updatable = false, nullable = false)
     private Long id;
 
+    @ToString.Exclude
     @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column(name = "created_by", columnDefinition = "VARCHAR(36)")
     private UUID createdBy;
 
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @JoinColumns({
+            @JoinColumn(name = "created_by", referencedColumnName = "ID", insertable = false, updatable = false)
+    })
+    private User creator;
+
+    @ToString.Exclude
     @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column(name = "owned_by", columnDefinition = "VARCHAR(36)")
     private UUID ownedBy;
+
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @JoinColumns({
+            @JoinColumn(name = "owned_by", referencedColumnName = "ID", insertable = false, updatable = false)
+    })
+    private User owner;
 
     @Column(nullable = false)
     private Long cid;
@@ -76,9 +91,16 @@ public class Database implements Serializable {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @ToString.Exclude
     @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column(name = "contact_person", columnDefinition = "VARCHAR(36)")
     private UUID contactPerson;
+
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
+    @JoinColumns({
+            @JoinColumn(name = "contact_person", referencedColumnName = "ID", updatable = false, insertable = false)
+    })
+    private User contact;
 
     @ToString.Exclude
     @org.springframework.data.annotation.Transient

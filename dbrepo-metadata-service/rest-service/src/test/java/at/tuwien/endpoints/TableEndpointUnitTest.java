@@ -106,7 +106,7 @@ public class TableEndpointUnitTest extends BaseUnitTest {
     public void create_publicAnonymous_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             generic_create(DATABASE_3_ID, DATABASE_3, TABLE_4_CREATE_DTO, null, null, null);
         });
     }
@@ -126,7 +126,7 @@ public class TableEndpointUnitTest extends BaseUnitTest {
     public void create_publicHasRoleNoAccess_fails() {
 
         /* test */
-        assertThrows(NotAllowedException.class, () -> {
+        assertThrows(AccessDeniedException.class, () -> {
             generic_create(DATABASE_3_ID, DATABASE_3, TABLE_4_CREATE_DTO, USER_1_ID, USER_1_PRINCIPAL, null);
         });
     }
@@ -136,7 +136,7 @@ public class TableEndpointUnitTest extends BaseUnitTest {
     public void create_publicNoRole_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             generic_create(DATABASE_3_ID, DATABASE_3, TABLE_4_CREATE_DTO, USER_1_ID, USER_1_PRINCIPAL, DATABASE_3_USER_1_WRITE_OWN_ACCESS);
         });
     }
@@ -205,7 +205,7 @@ public class TableEndpointUnitTest extends BaseUnitTest {
     public void delete_publicAnonymous_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             generic_delete(DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_3, null);
         });
     }
@@ -244,7 +244,7 @@ public class TableEndpointUnitTest extends BaseUnitTest {
     public void delete_publicNoRole_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             generic_delete(DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8, USER_4_PRINCIPAL);
         });
     }
@@ -291,7 +291,7 @@ public class TableEndpointUnitTest extends BaseUnitTest {
     public void list_privateNoRole_fails() {
 
         /* test */
-        assertThrows(NotAllowedException.class, () -> {
+        assertThrows(AccessDeniedException.class, () -> {
             generic_list(DATABASE_1_ID, DATABASE_1, USER_4_ID, USER_4_PRINCIPAL, null);
         });
     }
@@ -301,7 +301,7 @@ public class TableEndpointUnitTest extends BaseUnitTest {
     public void create_privateAnonymous_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             generic_create(DATABASE_1_ID, DATABASE_1, TABLE_4_CREATE_DTO, null, null, null);
         });
     }
@@ -321,7 +321,7 @@ public class TableEndpointUnitTest extends BaseUnitTest {
     public void create_privateHasRoleNoAccess_fails() {
 
         /* test */
-        assertThrows(NotAllowedException.class, () -> {
+        assertThrows(AccessDeniedException.class, () -> {
             generic_create(DATABASE_1_ID, DATABASE_1, TABLE_4_CREATE_DTO, USER_1_ID, USER_1_PRINCIPAL, null);
         });
     }
@@ -331,7 +331,7 @@ public class TableEndpointUnitTest extends BaseUnitTest {
     public void create_privateNoRole_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             generic_create(DATABASE_1_ID, DATABASE_1, TABLE_4_CREATE_DTO, USER_1_ID, USER_1_PRINCIPAL, DATABASE_1_USER_1_WRITE_OWN_ACCESS);
         });
     }
@@ -399,7 +399,7 @@ public class TableEndpointUnitTest extends BaseUnitTest {
     public void delete_privateAnonymous_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             generic_delete(DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, null);
         });
     }
@@ -471,7 +471,7 @@ public class TableEndpointUnitTest extends BaseUnitTest {
             when(accessService.find(databaseId, userId))
                     .thenReturn(access);
         } else {
-            doThrow(NotAllowedException.class)
+            doThrow(AccessDeniedException.class)
                     .when(accessService)
                     .find(databaseId, userId);
         }
@@ -504,7 +504,7 @@ public class TableEndpointUnitTest extends BaseUnitTest {
             when(accessService.find(databaseId, userId))
                     .thenReturn(access);
         } else {
-            doThrow(NotAllowedException.class)
+            doThrow(AccessDeniedException.class)
                     .when(accessService)
                     .find(databaseId, userId);
         }
@@ -543,7 +543,7 @@ public class TableEndpointUnitTest extends BaseUnitTest {
             when(accessService.find(databaseId, userId))
                     .thenReturn(access);
         } else {
-            doThrow(NotAllowedException.class)
+            doThrow(AccessDeniedException.class)
                     .when(accessService)
                     .find(databaseId, userId);
         }

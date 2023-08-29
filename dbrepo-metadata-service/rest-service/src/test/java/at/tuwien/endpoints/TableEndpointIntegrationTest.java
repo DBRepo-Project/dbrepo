@@ -4,6 +4,7 @@ import at.tuwien.BaseUnitTest;
 import at.tuwien.annotations.MockAmqp;
 import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.config.MariaDbConfig;
+import at.tuwien.config.MariaDbContainerConfig;
 import at.tuwien.exception.*;
 import at.tuwien.repository.mdb.*;
 import lombok.extern.log4j.Log4j2;
@@ -46,14 +47,17 @@ public class TableEndpointIntegrationTest extends BaseUnitTest {
     @Autowired
     private TableEndpoint tableEndpoint;
 
-    @Container
     @Autowired
-    private MariaDBContainer<?> mariaDBContainer;
+    private UserRepository userRepository;
+
+    @Container
+    private static MariaDBContainer<?> mariaDBContainer = MariaDbContainerConfig.getContainer();
 
     @BeforeEach
     public void beforeEach() throws SQLException {
         /* metadata database */
         imageRepository.save(IMAGE_1);
+        userRepository.save(USER_1);
         containerRepository.save(CONTAINER_1_SIMPLE);
         databaseRepository.save(DATABASE_1_SIMPLE);
         MariaDbConfig.dropAllDatabases(CONTAINER_1);

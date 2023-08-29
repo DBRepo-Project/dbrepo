@@ -43,6 +43,9 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
     private IdentifierRepository identifierRepository;
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     private DatabaseRepository databaseRepository;
 
     @Autowired
@@ -60,15 +63,10 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
     @BeforeEach
     public void beforeEach() {
         imageRepository.save(IMAGE_1);
+        userRepository.saveAll(List.of(USER_1, USER_2, USER_3, USER_4));
         licenseRepository.save(LICENSE_1);
-        containerRepository.save(CONTAINER_1_SIMPLE);
-        containerRepository.save(CONTAINER_2_SIMPLE);
-        containerRepository.save(CONTAINER_3_SIMPLE);
-        containerRepository.save(CONTAINER_4_SIMPLE);
-        databaseRepository.save(DATABASE_1_SIMPLE);
-        databaseRepository.save(DATABASE_2_SIMPLE);
-        databaseRepository.save(DATABASE_3_SIMPLE);
-        databaseRepository.save(DATABASE_4_SIMPLE);
+        containerRepository.saveAll(List.of(CONTAINER_1_SIMPLE, CONTAINER_2_SIMPLE, CONTAINER_3_SIMPLE, CONTAINER_4_SIMPLE));
+        databaseRepository.saveAll(List.of(DATABASE_1_SIMPLE, DATABASE_2_SIMPLE, DATABASE_3_SIMPLE, DATABASE_4_SIMPLE));
         TABLE_2.setColumns(TABLE_2_COLUMNS);
         tableRepository.save(TABLE_2);
     }
@@ -265,7 +263,7 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
     public void create_noRole_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             identifierEndpoint.create(IDENTIFIER_2_DTO_REQUEST, USER_4_PRINCIPAL);
         });
     }

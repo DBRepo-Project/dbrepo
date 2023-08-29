@@ -78,7 +78,7 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
                 .build();
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             create_generic(request, null);
         });
     }
@@ -95,7 +95,7 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
                 .build();
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             create_generic(request, USER_1_PRINCIPAL);
         });
     }
@@ -112,7 +112,7 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
                 .build();
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             create_generic(request, USER_4_PRINCIPAL);
         });
     }
@@ -160,7 +160,7 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
     public void delete_anonymous_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             delete_generic(IMAGE_1_ID, IMAGE_1, null);
         });
     }
@@ -170,7 +170,7 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
     public void delete_noRole_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             delete_generic(IMAGE_1_ID, IMAGE_1, USER_1_PRINCIPAL);
         });
     }
@@ -199,7 +199,7 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
                 .build();
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             modify_generic(IMAGE_1_ID, IMAGE_1, request, null);
         });
     }
@@ -215,7 +215,7 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
                 .build();
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             modify_generic(IMAGE_1_ID, IMAGE_1, request, USER_4_PRINCIPAL);
         });
     }

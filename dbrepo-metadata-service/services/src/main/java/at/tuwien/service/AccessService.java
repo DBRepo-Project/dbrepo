@@ -44,8 +44,7 @@ public interface AccessService {
      * @throws DatabaseMalformedException The database has an invalid state.
      */
     void create(Long databaseId, DatabaseGiveAccessDto accessDto) throws DatabaseNotFoundException,
-            UserNotFoundException, NotAllowedException, QueryMalformedException, DatabaseMalformedException,
-            KeycloakRemoteException, AccessDeniedException;
+            UserNotFoundException, NotAllowedException, QueryMalformedException, DatabaseMalformedException;
 
     /**
      * Update access to a database.
@@ -61,7 +60,7 @@ public interface AccessService {
      */
     void update(Long databaseId, UUID userId, DatabaseModifyAccessDto accessDto) throws DatabaseNotFoundException,
             UserNotFoundException, QueryMalformedException, DatabaseMalformedException,
-            NotAllowedException, KeycloakRemoteException, AccessDeniedException;
+            NotAllowedException;
 
     /**
      * Revokes access to a database of container.
@@ -75,6 +74,5 @@ public interface AccessService {
      * @throws DatabaseMalformedException The database has an invalid state.
      */
     void delete(Long databaseId, UUID userId) throws DatabaseNotFoundException, UserNotFoundException,
-            NotAllowedException, QueryMalformedException, DatabaseMalformedException, KeycloakRemoteException,
-            AccessDeniedException;
+            NotAllowedException, QueryMalformedException, DatabaseMalformedException;
 }

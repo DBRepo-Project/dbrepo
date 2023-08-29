@@ -52,10 +52,14 @@ public class MetadataEndpointComponentTest extends BaseUnitTest {
     @Autowired
     private IdentifierRepository identifierRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @BeforeEach
     public void beforeEach() {
         /* metadata database */
         imageRepository.save(IMAGE_1_SIMPLE);
+        userRepository.save(USER_1);
         licenseRepository.save(LICENSE_1);
         containerRepository.save(CONTAINER_1_SIMPLE);
         databaseRepository.save(DATABASE_1_SIMPLE);

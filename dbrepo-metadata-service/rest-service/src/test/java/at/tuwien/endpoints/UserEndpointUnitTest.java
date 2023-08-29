@@ -71,7 +71,7 @@ public class UserEndpointUnitTest extends BaseUnitTest {
                 .build();
 
         /* test */
-        create_generic(request);
+        create_generic(request, USER_1);
     }
 
     @Test
@@ -84,8 +84,8 @@ public class UserEndpointUnitTest extends BaseUnitTest {
                 .build();
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
-            create_generic(request);
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
+            create_generic(request, null);
         });
     }
 
@@ -94,7 +94,7 @@ public class UserEndpointUnitTest extends BaseUnitTest {
     public void find_anonymous_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             find_generic(USER_1_ID, USER_1, null);
         });
     }
@@ -139,7 +139,7 @@ public class UserEndpointUnitTest extends BaseUnitTest {
                 .build();
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             modify_generic(USER_1_ID, USER_1, null, request);
         });
     }
@@ -155,7 +155,7 @@ public class UserEndpointUnitTest extends BaseUnitTest {
                 .build();
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             modify_generic(USER_1_ID, USER_1, USER_4_PRINCIPAL, request);
         });
     }
@@ -200,7 +200,7 @@ public class UserEndpointUnitTest extends BaseUnitTest {
                 .build();
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             theme_generic(USER_1_ID, USER_1, null, request);
         });
     }
@@ -213,7 +213,7 @@ public class UserEndpointUnitTest extends BaseUnitTest {
                 .build();
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             theme_generic(USER_4_ID, USER_4, USER_4_PRINCIPAL, request);
         });
     }
@@ -250,7 +250,7 @@ public class UserEndpointUnitTest extends BaseUnitTest {
                 .build();
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             password_generic(USER_1_ID, USER_1, null, request);
         });
     }
@@ -298,9 +298,13 @@ public class UserEndpointUnitTest extends BaseUnitTest {
         assertEquals(2, body.size());
     }
 
-    protected void create_generic(SignupRequestDto data) throws UserEmailAlreadyExistsException, RealmNotFoundException,
-            UserAlreadyExistsException, UserNotFoundException, KeycloakRemoteException,
-            at.tuwien.exception.AccessDeniedException {
+    protected void create_generic(SignupRequestDto data, User user) throws UserEmailAlreadyExistsException,
+            RealmNotFoundException, UserAlreadyExistsException, UserNotFoundException, KeycloakRemoteException,
+            AccessDeniedException {
+
+        /* mock */
+        when(userService.create(data))
+                .thenReturn(user);
 
         /* test */
         final ResponseEntity<UserBriefDto> response = userEndpoint.create(data);
