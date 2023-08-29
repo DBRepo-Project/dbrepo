@@ -3,6 +3,8 @@ package at.tuwien.service.impl;
 import at.tuwien.api.database.DatabaseCreateDto;
 import at.tuwien.api.database.DatabaseModifyVisibilityDto;
 import at.tuwien.api.database.DatabaseTransferDto;
+import at.tuwien.api.user.UserDto;
+import at.tuwien.config.QueryConfig;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.user.User;
@@ -27,10 +29,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static java.util.stream.Collectors.groupingBy;
+
 @Log4j2
 @Service
 public class MariaDbServiceImpl extends HibernateConnector implements DatabaseService {
 
+    private final QueryConfig queryConfig;
     private final UserService userService;
     private final DatabaseMapper databaseMapper;
     private final ContainerService containerService;
@@ -38,9 +43,10 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
     private final DatabaseIdxRepository databaseIdxRepository;
 
     @Autowired
-    public MariaDbServiceImpl(UserService userService, DatabaseMapper databaseMapper,
+    public MariaDbServiceImpl(QueryConfig queryConfig, UserService userService, DatabaseMapper databaseMapper,
                               ContainerService containerService, DatabaseRepository databaseRepository,
                               DatabaseIdxRepository databaseIdxRepository) {
+        this.queryConfig = queryConfig;
         this.userService = userService;
         this.databaseMapper = databaseMapper;
         this.containerService = containerService;
@@ -55,7 +61,7 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
 
     @Override
     public Database find(Long databaseId) throws DatabaseNotFoundException {
-        final Optional<Database> database = databaseRepository.findByDatabaseId(databaseId);
+        final Optional<Database> database = databaseRepository.findById(databaseId);
         if (database.isEmpty()) {
             log.error("Failed to find database with id {}", databaseId);
             throw new DatabaseNotFoundException("could not find database with this id");
@@ -102,7 +108,7 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
             log.error("Currently only MariaDB is supported");
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
         }
-        if (!database.getOwner().getId().equals(userId)) {
+        if (!database.getOwnedBy().equals(userId)) {
             log.error("Failed to delete database: user is not owner");
             throw new DatabaseMalformedException("Failed to delete database: user is not owner");
         }
@@ -129,10 +135,9 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
     @Override
     @Transactional
     public Database create(DatabaseCreateDto createDto, Principal principal)
-            throws ImageNotSupportedException, ContainerNotFoundException,
-            DatabaseMalformedException, AmqpException, ContainerConnectionException, UserNotFoundException,
-            DatabaseNameExistsException, DatabaseConnectionException, QueryMalformedException {
-        final User user = userService.findByUsername(principal.getName());
+            throws ImageNotSupportedException, ContainerNotFoundException, DatabaseMalformedException, AmqpException,
+            ContainerConnectionException, UserNotFoundException, DatabaseNameExistsException,
+            DatabaseConnectionException, QueryMalformedException, KeycloakRemoteException, AccessDeniedException {
         /* start the object */
         final Database database = databaseMapper.databaseCreateDtoToDatabase(createDto);
         final Container container = containerService.find(database.getCid());
@@ -149,15 +154,18 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
             final PreparedStatement preparedStatement1 = databaseMapper.databaseToRawCreateDatabaseQuery(connection, database);
             preparedStatement1.executeUpdate();
             /* create user */
-            final PreparedStatement preparedStatement2 = databaseMapper.userToRawCreateUserQuery(connection, user);
+            final PreparedStatement preparedStatement2 = databaseMapper.userToRawCreateUserQuery(connection, owner);
             preparedStatement2.executeUpdate();
+            /* give access */
+            final PreparedStatement preparedStatement3 = databaseMapper.rawGrantCreatorAccessQuery(connection, database.getInternalName(), principal.getName(), queryConfig.getGrantPrivileges());
+            preparedStatement3.executeUpdate();
         } catch (SQLException e) {
             log.error("Failed to create database with internal name {}, reason: {}", database.getInternalName(), e.getMessage());
             throw new DatabaseMalformedException("Failed to create database: " + e.getMessage(), e);
         } finally {
             dataSource.close();
         }
-        log.info("Created user {} on database with owner access", user.getUsername());
+        log.info("Created user {} on database with owner access", owner.getUsername());
         /* save in metadata database */
         final Database entity = databaseRepository.save(database);
         log.info("Created database with id {} in metadata database", entity.getId());
@@ -165,6 +173,32 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         databaseIdxRepository.save(databaseMapper.databaseToDatabaseDto(entity));
         log.info("Created database with id {} in open search database", entity.getId());
         return entity;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public void updatePassword(User user) throws DatabaseMalformedException, QueryMalformedException {
+        /* start the object */
+        final List<Database> databases = databaseRepository.findReadAccess(user.getId())
+                .stream()
+                .distinct()
+                .toList();
+        log.debug("found {} distinct databases where access for user with id {} is present", databases.size(), user.getId());
+        for (Database database : databases) {
+            final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(), database.getContainer());
+            try {
+                final Connection connection = dataSource.getConnection();
+                /* update password database */
+                final PreparedStatement preparedStatement = databaseMapper.userToRawUpdateUserQuery(connection, user);
+                preparedStatement.executeUpdate();
+            } catch (SQLException e) {
+                log.error("Failed to update user password in database with internal name {}: {}", database.getInternalName(), e.getMessage());
+                throw new DatabaseMalformedException("Failed to update user password in database with internal name " + database.getInternalName() + ": " + e.getMessage(), e);
+            } finally {
+                dataSource.close();
+            }
+            log.debug("updated user password in database with internal name {}", database.getInternalName());
+        }
     }
 
     @Override

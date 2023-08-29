@@ -8,11 +8,7 @@ import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.MariaDbContainerConfig;
 import at.tuwien.entities.database.View;
 import at.tuwien.exception.*;
-import at.tuwien.gateway.BrokerServiceGateway;
-import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.repository.mdb.*;
-import at.tuwien.repository.sdb.ViewIdxRepository;
-import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,7 +29,6 @@ import java.sql.SQLException;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
 
 @Log4j2
 @Testcontainers
@@ -50,16 +44,10 @@ public class ViewServicePersistenceIntegrationTest extends BaseUnitTest {
     private DatabaseRepository databaseRepository;
 
     @Autowired
-    private RealmRepository realmRepository;
-
-    @Autowired
     private ImageRepository imageRepository;
 
     @Autowired
     private ContainerRepository containerRepository;
-
-    @Autowired
-    private UserRepository userRepository;
 
     @Autowired
     private ViewRepository viewRepository;
@@ -73,6 +61,9 @@ public class ViewServicePersistenceIntegrationTest extends BaseUnitTest {
     @Autowired
     private ViewService viewService;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @Container
     private static MariaDBContainer<?> mariaDBContainer = MariaDbContainerConfig.getContainer();
 
@@ -85,9 +76,8 @@ public class ViewServicePersistenceIntegrationTest extends BaseUnitTest {
     @BeforeEach
     public void beforeEach() {
         /* metadata database */
-        realmRepository.save(REALM_DBREPO);
-        userRepository.saveAll(List.of(USER_1, USER_2));
         imageRepository.save(IMAGE_1);
+        userRepository.saveAll(List.of(USER_1, USER_2));
         containerRepository.saveAll(List.of(CONTAINER_1_SIMPLE, CONTAINER_2_SIMPLE));
         databaseRepository.saveAll(List.of(DATABASE_1_SIMPLE, DATABASE_2_SIMPLE));
         tableRepository.saveAll(List.of(TABLE_1_SIMPLE, TABLE_2_SIMPLE, TABLE_3_SIMPLE, TABLE_4_SIMPLE, TABLE_5_SIMPLE, TABLE_6_SIMPLE, TABLE_7_SIMPLE));

@@ -5,13 +5,13 @@ import at.tuwien.SortType;
 import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.entities.database.Database;
-import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.querystore.Query;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.QueryService;
 import at.tuwien.service.StoreService;
+import at.tuwien.utils.UserUtil;
 import at.tuwien.validation.EndpointValidator;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
@@ -36,18 +36,16 @@ public class QueryEndpoint {
 
     private final QueryService queryService;
     private final StoreService storeService;
-    private final AccessService accessService;
     private final DatabaseService databaseService;
     private final EndpointValidator endpointValidator;
 
     @Autowired
-    public QueryEndpoint(QueryService queryService, StoreService storeService, AccessService accessService,
-                         DatabaseService databaseService, EndpointValidator endpointValidator) {
-        this.accessService = accessService;
-        this.databaseService = databaseService;
-        this.endpointValidator = endpointValidator;
+    public QueryEndpoint(QueryService queryService, StoreService storeService, DatabaseService databaseService,
+                         EndpointValidator endpointValidator) {
         this.queryService = queryService;
         this.storeService = storeService;
+        this.databaseService = databaseService;
+        this.endpointValidator = endpointValidator;
     }
 
     @PostMapping
@@ -64,7 +62,7 @@ public class QueryEndpoint {
                                                   @RequestParam(required = false) String sortColumn)
             throws DatabaseNotFoundException, ImageNotSupportedException, QueryStoreException, QueryMalformedException,
             ColumnParseException, UserNotFoundException, TableMalformedException, DatabaseConnectionException,
-            SortException, PaginationException, NotAllowedException {
+            SortException, PaginationException, NotAllowedException, KeycloakRemoteException, AccessDeniedException {
         log.debug("endpoint execute query, databaseId={}, data={}, page={}, size={}, principal={}, sortDirection={}, sortColumn={}",
                 databaseId, data, page, size, principal, sortDirection, sortColumn);
         /* check */
@@ -96,7 +94,7 @@ public class QueryEndpoint {
                                                     @RequestParam(required = false) String sortColumn)
             throws QueryStoreException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
             QueryMalformedException, TableMalformedException, ColumnParseException, DatabaseConnectionException,
-            SortException, PaginationException, UserNotFoundException, NotAllowedException {
+            SortException, PaginationException, UserNotFoundException, NotAllowedException, AccessDeniedException {
         log.debug("endpoint re-execute query, databaseId={}, queryId={}, principal={}, page={}, size={}, sortDirection={}, sortColumn={}",
                 databaseId, queryId, principal, page, size, sortDirection, sortColumn);
         endpointValidator.validateDataParams(page, size, sortDirection, sortColumn);
@@ -120,7 +118,7 @@ public class QueryEndpoint {
                                                Principal principal)
             throws QueryStoreException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
             QueryMalformedException, TableMalformedException, ColumnParseException, NotAllowedException,
-            DatabaseConnectionException, UserNotFoundException {
+            DatabaseConnectionException, UserNotFoundException, AccessDeniedException {
         log.debug("endpoint re-execute query count, databaseId={}, queryId={}, principal={}",
                 databaseId, queryId, principal);
         endpointValidator.validateOnlyAccessOrPublic(databaseId, queryId, principal);
@@ -151,7 +149,7 @@ public class QueryEndpoint {
                 log.error("Failed to export private query: principal is null");
                 throw new NotAllowedException("Failed to export private query: principal is null");
             }
-            if (!User.hasRole(principal, "export-query-data")) {
+            if (!UserUtil.hasRole(principal, "export-query-data")) {
                 log.error("Failed to export private query: role missing");
                 throw new NotAllowedException("Failed to export private query: role missing");
             }

@@ -8,6 +8,9 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class QueryConfig {
 
+    @Value("${fda.privileges}")
+    private String grantPrivileges;
+
     @Value("${fda.unsupported}")
     private String[] notSupportedKeywords;
 

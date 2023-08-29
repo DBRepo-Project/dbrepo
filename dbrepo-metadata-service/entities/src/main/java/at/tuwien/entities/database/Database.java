@@ -33,8 +33,8 @@ import java.util.UUID;
 @NamedQueries({
         @NamedQuery(name = "Database.findReadAccess", query = "select distinct d from Database d join DatabaseAccess a on a.hdbid = d.id and a.huserid = ?1"),
         @NamedQuery(name = "Database.findWriteAccess", query = "select distinct d from Database d join DatabaseAccess a on a.hdbid = d.id and a.huserid = ?1 where a.type = 'WRITE_OWN' or a.type = 'WRITE_ALL'"),
-        @NamedQuery(name = "Database.findConfigureAccess", query = "select distinct d from Database d where d.owner.id = ?1"),
-        @NamedQuery(name = "Database.findPublicOrMine", query = "select distinct d from Database d where d.id = ?1 and (d.isPublic = true or d.owner.id = ?2)"),
+        @NamedQuery(name = "Database.findConfigureAccess", query = "select distinct d from Database d where d.ownedBy = ?1"),
+        @NamedQuery(name = "Database.findPublicOrMine", query = "select distinct d from Database d where d.id = ?1 and (d.isPublic = true or d.ownedBy = ?2)"),
         @NamedQuery(name = "Database.findPublic", query = "select distinct d from Database d where d.isPublic = true and d.id = ?1"),
 })
 @Document(indexName = "database")
@@ -72,7 +72,6 @@ public class Database implements Serializable {
     @Column(nullable = false)
     private Long cid;
 
-    @ToString.Exclude
     @org.springframework.data.annotation.Transient
     @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumns({

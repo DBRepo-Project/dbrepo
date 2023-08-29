@@ -6,15 +6,11 @@ import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.entities.container.image.ContainerImageDate;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.database.table.columns.TableColumnType;
-import at.tuwien.listener.impl.RabbitMqListenerImpl;
-import at.tuwien.repository.sdb.ViewIdxRepository;
-import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.Instant;

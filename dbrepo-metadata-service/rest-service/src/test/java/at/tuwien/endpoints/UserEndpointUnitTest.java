@@ -5,13 +5,8 @@ import at.tuwien.annotations.MockAmqp;
 import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.user.*;
-import at.tuwien.entities.user.Realm;
-import at.tuwien.entities.user.Role;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
-import at.tuwien.repository.sdb.UserIdxRepository;
-import at.tuwien.service.RealmService;
-import at.tuwien.service.RoleService;
 import at.tuwien.service.UserService;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
@@ -23,7 +18,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -33,8 +27,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @Log4j2
 @EnableAutoConfiguration(exclude = RabbitAutoConfiguration.class)
@@ -46,12 +39,6 @@ public class UserEndpointUnitTest extends BaseUnitTest {
 
     @MockBean
     private UserService userService;
-
-    @MockBean
-    private RealmService realmService;
-
-    @MockBean
-    private RoleService roleService;
 
     @Autowired
     private UserEndpoint userEndpoint;
@@ -75,7 +62,8 @@ public class UserEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithAnonymousUser
     public void create_anonymous_succeeds() throws UserNotFoundException, UserEmailAlreadyExistsException,
-            RealmNotFoundException, RoleNotFoundException, RemoteUnavailableException, UserAlreadyExistsException {
+            RealmNotFoundException, UserAlreadyExistsException, KeycloakRemoteException,
+            at.tuwien.exception.AccessDeniedException {
         final SignupRequestDto request = SignupRequestDto.builder()
                 .email(USER_1_EMAIL)
                 .username(USER_1_USERNAME)
@@ -83,22 +71,7 @@ public class UserEndpointUnitTest extends BaseUnitTest {
                 .build();
 
         /* test */
-        create_generic(USER_1, REALM_DBREPO, ROLE_DEFAULT_RESEARCHER_ROLES, request);
-    }
-
-    @Test
-    @WithAnonymousUser
-    public void create_realmNotFound_fails() {
-        final SignupRequestDto request = SignupRequestDto.builder()
-                .email(USER_1_EMAIL)
-                .username(USER_1_USERNAME)
-                .password(USER_1_PASSWORD)
-                .build();
-
-        /* test */
-        assertThrows(RealmNotFoundException.class, () -> {
-            create_generic(USER_1, null, ROLE_DEFAULT_RESEARCHER_ROLES, request);
-        });
+        create_generic(request, USER_1);
     }
 
     @Test
@@ -111,8 +84,8 @@ public class UserEndpointUnitTest extends BaseUnitTest {
                 .build();
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
-            create_generic(USER_2, REALM_DBREPO, ROLE_DEFAULT_RESEARCHER_ROLES, request);
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
+            create_generic(request, null);
         });
     }
 
@@ -121,17 +94,18 @@ public class UserEndpointUnitTest extends BaseUnitTest {
     public void find_anonymous_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
-            find_generic(USER_1_ID.toString(), USER_1, null);
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
+            find_generic(USER_1_ID, USER_1, null);
         });
     }
 
     @Test
     @WithMockUser(username = USER_1_USERNAME)
-    public void find_self_succeeds() throws UserNotFoundException, NotAllowedException {
+    public void find_self_succeeds() throws UserNotFoundException, NotAllowedException, KeycloakRemoteException,
+            at.tuwien.exception.AccessDeniedException {
 
         /* test */
-        find_generic(USER_1_ID.toString(), USER_1, USER_1_PRINCIPAL);
+        find_generic(USER_1_ID, USER_1, USER_1_PRINCIPAL);
     }
 
     @Test
@@ -140,7 +114,7 @@ public class UserEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            find_generic(USER_2_ID.toString(), USER_2, USER_1_PRINCIPAL);
+            find_generic(USER_2_ID, USER_2, USER_1_PRINCIPAL);
         });
     }
 
@@ -150,7 +124,7 @@ public class UserEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            find_generic(USER_2_ID.toString(), USER_2, USER_3_PRINCIPAL);
+            find_generic(USER_2_ID, USER_2, USER_3_PRINCIPAL);
         });
     }
 
@@ -165,8 +139,8 @@ public class UserEndpointUnitTest extends BaseUnitTest {
                 .build();
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
-            modify_generic(USER_1_ID.toString(), USER_1, null, request);
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
+            modify_generic(USER_1_ID, USER_1, null, request);
         });
     }
 
@@ -181,8 +155,8 @@ public class UserEndpointUnitTest extends BaseUnitTest {
                 .build();
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
-            modify_generic(USER_1_ID.toString(), USER_1, USER_4_PRINCIPAL, request);
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
+            modify_generic(USER_1_ID, USER_1, USER_4_PRINCIPAL, request);
         });
     }
 
@@ -198,13 +172,15 @@ public class UserEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(ForeignUserException.class, () -> {
-            modify_generic(USER_1_ID.toString(), USER_1, USER_2_PRINCIPAL, request);
+            modify_generic(USER_1_ID, USER_1, USER_2_PRINCIPAL, request);
         });
     }
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"modify-user-information"})
-    public void modify_succeeds() throws UserNotFoundException, ForeignUserException, UserAttributeNotFoundException {
+    public void modify_succeeds() throws UserNotFoundException, ForeignUserException, UserAttributeNotFoundException,
+            KeycloakRemoteException, at.tuwien.exception.AccessDeniedException, QueryMalformedException,
+            DatabaseMalformedException {
         final UserUpdateDto request = UserUpdateDto.builder()
                 .firstname(USER_1_FIRSTNAME)
                 .lastname(USER_1_LASTNAME)
@@ -213,7 +189,7 @@ public class UserEndpointUnitTest extends BaseUnitTest {
                 .build();
 
         /* test */
-        modify_generic(USER_1_ID.toString(), USER_1, USER_1_PRINCIPAL, request);
+        modify_generic(USER_1_ID, USER_1, USER_1_PRINCIPAL, request);
     }
 
     @Test
@@ -224,8 +200,8 @@ public class UserEndpointUnitTest extends BaseUnitTest {
                 .build();
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
-            theme_generic(USER_1_ID.toString(), USER_1, null, request);
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
+            theme_generic(USER_1_ID, USER_1, null, request);
         });
     }
 
@@ -237,8 +213,8 @@ public class UserEndpointUnitTest extends BaseUnitTest {
                 .build();
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
-            theme_generic(USER_4_ID.toString(), USER_4, USER_4_PRINCIPAL, request);
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
+            theme_generic(USER_4_ID, USER_4, USER_4_PRINCIPAL, request);
         });
     }
 
@@ -251,19 +227,19 @@ public class UserEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(ForeignUserException.class, () -> {
-            theme_generic(USER_1_ID.toString(), USER_1, USER_2_PRINCIPAL, request);
+            theme_generic(USER_1_ID, USER_1, USER_2_PRINCIPAL, request);
         });
     }
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"modify-user-theme"})
-    public void theme_succeeds() throws UserNotFoundException, ForeignUserException, UserAttributeNotFoundException {
+    public void theme_succeeds() throws UserNotFoundException, ForeignUserException {
         final UserThemeSetDto request = UserThemeSetDto.builder()
                 .themeDark(USER_1_THEME_DARK)
                 .build();
 
         /* test */
-        theme_generic(USER_1_ID.toString(), USER_1, USER_1_PRINCIPAL, request);
+        theme_generic(USER_1_ID, USER_1, USER_1_PRINCIPAL, request);
     }
 
     @Test
@@ -274,8 +250,8 @@ public class UserEndpointUnitTest extends BaseUnitTest {
                 .build();
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
-            password_generic(USER_1_ID.toString(), USER_1, null, request);
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
+            password_generic(USER_1_ID, USER_1, null, request);
         });
     }
 
@@ -288,19 +264,20 @@ public class UserEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(ForeignUserException.class, () -> {
-            password_generic(USER_1_ID.toString(), USER_1, USER_4_PRINCIPAL, request);
+            password_generic(USER_1_ID, USER_1, USER_4_PRINCIPAL, request);
         });
     }
 
     @Test
     @WithMockUser(username = USER_1_USERNAME)
-    public void password_succeeds() throws UserNotFoundException, ForeignUserException {
+    public void password_succeeds() throws UserNotFoundException, ForeignUserException, KeycloakRemoteException,
+            at.tuwien.exception.AccessDeniedException, QueryMalformedException, DatabaseMalformedException {
         final UserPasswordDto request = UserPasswordDto.builder()
                 .password(USER_1_PASSWORD)
                 .build();
 
         /* test */
-        password_generic(USER_1_ID.toString(), USER_1, USER_1_PRINCIPAL, request);
+        password_generic(USER_1_ID, USER_1, USER_1_PRINCIPAL, request);
     }
 
     /* ################################################################################################### */
@@ -321,35 +298,13 @@ public class UserEndpointUnitTest extends BaseUnitTest {
         assertEquals(2, body.size());
     }
 
-    protected void create_generic(User user, Realm realm, Role role, SignupRequestDto data)
-            throws UserEmailAlreadyExistsException, RealmNotFoundException, RoleNotFoundException,
-            UserAlreadyExistsException {
+    protected void create_generic(SignupRequestDto data, User user) throws UserEmailAlreadyExistsException,
+            RealmNotFoundException, UserAlreadyExistsException, UserNotFoundException, KeycloakRemoteException,
+            AccessDeniedException {
 
         /* mock */
-        if (realm != null) {
-            when(realmService.find(REALM_DBREPO_NAME))
-                    .thenReturn(realm);
-        } else {
-            doThrow(RealmNotFoundException.class)
-                    .when(realmService)
-                    .find(REALM_DBREPO_NAME);
-        }
-        if (role != null) {
-            when(roleService.find(ROLE_DEFAULT_RESEARCHER_ROLES_NAME))
-                    .thenReturn(role);
-        } else {
-            doThrow(RoleNotFoundException.class)
-                    .when(roleService)
-                    .find(ROLE_DEFAULT_REALM_DBREPO_ROLES_NAME);
-        }
-        if (user != null) {
-            when(userService.create(data, realm))
-                    .thenReturn(user);
-        } else {
-            doThrow(UserNotFoundException.class)
-                    .when(userService)
-                    .create(data, realm);
-        }
+        when(userService.create(data))
+                .thenReturn(user);
 
         /* test */
         final ResponseEntity<UserBriefDto> response = userEndpoint.create(data);
@@ -358,17 +313,17 @@ public class UserEndpointUnitTest extends BaseUnitTest {
         assertNotNull(body);
     }
 
-    protected void find_generic(String id, User user, Principal principal) throws UserNotFoundException,
-            NotAllowedException {
+    protected void find_generic(UUID id, User user, Principal principal) throws UserNotFoundException,
+            NotAllowedException, KeycloakRemoteException, at.tuwien.exception.AccessDeniedException {
 
         /* mock */
         if (user != null) {
-            when(userService.find(UUID.fromString(id)))
+            when(userService.find(id))
                     .thenReturn(user);
         } else {
             doThrow(UserNotFoundException.class)
                     .when(userService)
-                    .find(UUID.fromString(id));
+                    .find(id);
         }
 
         /* test */
@@ -378,19 +333,20 @@ public class UserEndpointUnitTest extends BaseUnitTest {
         assertNotNull(body);
     }
 
-    protected void modify_generic(String id, User user, Principal principal, UserUpdateDto data)
-            throws UserNotFoundException, ForeignUserException, UserAttributeNotFoundException {
+    protected void modify_generic(UUID id, User user, Principal principal, UserUpdateDto data)
+            throws UserNotFoundException, ForeignUserException, UserAttributeNotFoundException, KeycloakRemoteException,
+            at.tuwien.exception.AccessDeniedException, QueryMalformedException, DatabaseMalformedException {
 
         /* mock */
         if (user != null) {
-            when(userService.find(UUID.fromString(id)))
+            when(userService.find(id))
                     .thenReturn(user);
         } else {
             doThrow(UserNotFoundException.class)
                     .when(userService)
-                    .find(UUID.fromString(id));
+                    .find(id);
         }
-        when(userService.modify(UUID.fromString(id), data))
+        when(userService.modify(id, data))
                 .thenReturn(user);
 
         /* test */
@@ -400,19 +356,19 @@ public class UserEndpointUnitTest extends BaseUnitTest {
         assertNotNull(body);
     }
 
-    protected void theme_generic(String id, User user, Principal principal, UserThemeSetDto data)
-            throws UserNotFoundException, ForeignUserException, UserAttributeNotFoundException {
+    protected void theme_generic(UUID id, User user, Principal principal, UserThemeSetDto data)
+            throws UserNotFoundException, ForeignUserException {
 
         /* mock */
         if (user != null) {
-            when(userService.find(UUID.fromString(id)))
+            when(userService.find(id))
                     .thenReturn(user);
         } else {
             doThrow(UserNotFoundException.class)
                     .when(userService)
-                    .find(UUID.fromString(id));
+                    .find(id);
         }
-        when(userService.toggleTheme(UUID.fromString(id), data))
+        when(userService.toggleTheme(id, data))
                 .thenReturn(user);
 
         /* test */
@@ -422,25 +378,25 @@ public class UserEndpointUnitTest extends BaseUnitTest {
         assertNotNull(body);
     }
 
-    protected void password_generic(String id, User user, Principal principal, UserPasswordDto data)
-            throws UserNotFoundException, ForeignUserException {
+    protected void password_generic(UUID id, User user, Principal principal, UserPasswordDto data)
+            throws UserNotFoundException, ForeignUserException, KeycloakRemoteException,
+            at.tuwien.exception.AccessDeniedException, QueryMalformedException, DatabaseMalformedException {
 
         /* mock */
         if (user != null) {
-            when(userService.find(UUID.fromString(id)))
+            when(userService.find(id))
                     .thenReturn(user);
         } else {
             doThrow(UserNotFoundException.class)
                     .when(userService)
-                    .find(UUID.fromString(id));
+                    .find(id);
         }
-        when(userService.updatePassword(UUID.fromString(id), data))
-                .thenReturn(user);
+        doNothing()
+                .when(userService)
+                .updatePassword(id, data);
 
         /* test */
-        final ResponseEntity<UserDto> response = userEndpoint.password(id, data, principal);
+        final ResponseEntity<?> response = userEndpoint.password(id, data, principal);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
-        final UserDto body = response.getBody();
-        assertNotNull(body);
     }
 }

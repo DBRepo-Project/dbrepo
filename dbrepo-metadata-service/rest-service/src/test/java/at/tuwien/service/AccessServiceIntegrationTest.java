@@ -7,9 +7,11 @@ import at.tuwien.api.database.AccessTypeDto;
 import at.tuwien.api.database.DatabaseGiveAccessDto;
 import at.tuwien.api.database.DatabaseModifyAccessDto;
 import at.tuwien.config.MariaDbConfig;
+import at.tuwien.config.MariaDbContainerConfig;
 import at.tuwien.entities.database.AccessType;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.exception.*;
+import at.tuwien.gateway.KeycloakGateway;
 import at.tuwien.repository.mdb.*;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,6 +21,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.testcontainers.containers.MariaDBContainer;
@@ -42,6 +45,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @MockOpensearch
 public class AccessServiceIntegrationTest extends BaseUnitTest {
 
+    @MockBean
+    private KeycloakGateway keycloakGateway;
+
     @Autowired
     private ImageRepository imageRepository;
 
@@ -60,21 +66,14 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired
-    private RealmRepository realmRepository;
-
     @Container
-    @Autowired
-    private MariaDBContainer<?> mariaDBContainer;
+    private static MariaDBContainer<?> mariaDBContainer = MariaDbContainerConfig.getContainer();
 
     @BeforeEach
     public void beforeEach() throws SQLException {
         /* metadata database */
-        realmRepository.save(REALM_DBREPO);
         imageRepository.save(IMAGE_1);
-        userRepository.save(USER_1_SIMPLE);
-        userRepository.save(USER_2_SIMPLE);
-        userRepository.save(USER_3_SIMPLE);
+        userRepository.saveAll(List.of(USER_1, USER_2, USER_3));
         containerRepository.save(CONTAINER_1_SIMPLE);
         databaseRepository.save(DATABASE_1_SIMPLE);
         MariaDbConfig.dropAllDatabases(CONTAINER_1);
@@ -83,46 +82,47 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
 
     public static Stream<Arguments> create_succeeds_parameters() {
         return Stream.of(
-                Arguments.arguments("general", AccessTypeDto.READ, AccessType.READ, USER_3_USERNAME, USER_3_ID)
+                Arguments.arguments("general", AccessTypeDto.READ, AccessType.READ, USER_3_ID)
         );
     }
 
     public static Stream<Arguments> create_fails_parameters() {
         return Stream.of(
-                Arguments.arguments("general", NotAllowedException.class, AccessTypeDto.READ, USER_2_USERNAME)
+                Arguments.arguments("general", NotAllowedException.class, AccessTypeDto.READ, USER_2_ID)
         );
     }
 
     public static Stream<Arguments> update_succeeds_parameters() {
         return Stream.of(
                 Arguments.arguments("same access", DATABASE_1_ID, AccessTypeDto.READ, AccessType.READ,
-                        USER_2_USERNAME, USER_2_ID),
+                        USER_2_ID),
                 Arguments.arguments("write own access", DATABASE_1_ID, AccessTypeDto.WRITE_OWN,
-                        AccessType.WRITE_OWN, USER_2_USERNAME, USER_2_ID),
+                        AccessType.WRITE_OWN, USER_2_ID),
                 Arguments.arguments("write all access", DATABASE_1_ID, AccessTypeDto.WRITE_ALL,
-                        AccessType.WRITE_ALL, USER_2_USERNAME, USER_2_ID)
+                        AccessType.WRITE_ALL, USER_2_ID)
         );
     }
 
     public static Stream<Arguments> update_fails_parameters() {
         return Stream.of(
                 Arguments.arguments("user not found", UserNotFoundException.class, DATABASE_1_ID,
-                        AccessTypeDto.READ, "l33tsp34k"),
+                        AccessTypeDto.READ, UUID.fromString("deadbeef-fc88-4abd-a289-455e34b0e80d"), null),
                 Arguments.arguments("database not found", DatabaseNotFoundException.class, DATABASE_2_ID,
-                        AccessTypeDto.READ, USER_2_USERNAME)
+                        AccessTypeDto.READ, USER_1_ID)
         );
     }
 
     public static Stream<Arguments> delete_fails_parameters() {
         return Stream.of(
-                Arguments.arguments("user not found", UserNotFoundException.class, "l33tsp34k"),
-                Arguments.arguments("is owner", NotAllowedException.class, USER_1_USERNAME)
+                Arguments.arguments("user not found", UserNotFoundException.class,
+                        UUID.fromString("deadbeef-fc88-4abd-a289-455e34b0e80d"), null),
+                Arguments.arguments("is owner", NotAllowedException.class, USER_1_ID)
         );
     }
 
     public static Stream<Arguments> delete_succeeds_parameters() {
         return Stream.of(
-                Arguments.arguments("general", USER_2_USERNAME)
+                Arguments.arguments("general", USER_2_ID)
         );
     }
 
@@ -133,10 +133,10 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
     @ParameterizedTest
     @MethodSource("create_fails_parameters")
     protected <T extends Throwable> void create_fails(String test, Class<T> expectedException,
-                                                      AccessTypeDto accessTypeDto, String username) {
+                                                      AccessTypeDto accessTypeDto, UUID userId) {
         final DatabaseGiveAccessDto request = DatabaseGiveAccessDto.builder()
                 .type(accessTypeDto)
-                .username(username)
+                .userId(userId)
                 .build();
 
         /* mock */
@@ -151,12 +151,12 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
     @ParameterizedTest
     @MethodSource("create_succeeds_parameters")
     protected <T extends Throwable> void create_succeeds(String test, AccessTypeDto accessTypeDto, AccessType access,
-                                                         String username, UUID userId)
-            throws UserNotFoundException, NotAllowedException, QueryMalformedException, DatabaseNotFoundException,
-            DatabaseMalformedException {
+                                                         UUID userId) throws UserNotFoundException,
+            NotAllowedException, QueryMalformedException, DatabaseNotFoundException, DatabaseMalformedException,
+            KeycloakRemoteException, AccessDeniedException {
         final DatabaseGiveAccessDto request = DatabaseGiveAccessDto.builder()
                 .type(accessTypeDto)
-                .username(username)
+                .userId(userId)
                 .build();
 
         /* test */
@@ -171,8 +171,9 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
     @ParameterizedTest
     @MethodSource("update_succeeds_parameters")
     protected void update_succeeds(String test, Long databaseId, AccessTypeDto accessTypeDto, AccessType access,
-                                   String username) throws UserNotFoundException, NotAllowedException,
-            QueryMalformedException, DatabaseNotFoundException, DatabaseMalformedException, NotAllowedException {
+                                   UUID userId) throws UserNotFoundException, QueryMalformedException,
+            DatabaseNotFoundException, DatabaseMalformedException, NotAllowedException, KeycloakRemoteException,
+            AccessDeniedException {
         final DatabaseModifyAccessDto request = DatabaseModifyAccessDto.builder()
                 .type(accessTypeDto)
                 .build();
@@ -181,7 +182,7 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
         databaseAccessRepository.save(DATABASE_1_USER_2_READ_ACCESS);
 
         /* test */
-        accessService.update(databaseId, username, request);
+        accessService.update(databaseId, userId, request);
         final List<DatabaseAccess> response = databaseAccessRepository.findAll();
         assertEquals(1, response.size());
         assertEquals(access, response.get(0).getType());
@@ -190,37 +191,36 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
 
     @ParameterizedTest
     @MethodSource("update_fails_parameters")
-    protected <T extends Throwable> void update_fails(String name, Class<T> expectedException,
-                                                      Long databaseId, AccessTypeDto accessTypeDto,
-                                                      String username) {
+    protected <T extends Throwable> void update_fails(String name, Class<T> expectedException, Long databaseId,
+                                                      AccessTypeDto accessTypeDto, UUID userId) {
         final DatabaseModifyAccessDto request = DatabaseModifyAccessDto.builder()
                 .type(accessTypeDto)
                 .build();
 
         /* test */
         assertThrows(expectedException, () -> {
-            accessService.update(databaseId, username, request);
+            accessService.update(databaseId, userId, request);
         });
     }
 
     @ParameterizedTest
     @MethodSource("delete_fails_parameters")
-    protected <T extends Throwable> void delete_fails(String name, Class<T> expectedException, String username) {
+    protected <T extends Throwable> void delete_fails(String name, Class<T> expectedException, UUID userId) {
 
         /* test */
         assertThrows(expectedException, () -> {
-            accessService.delete(DATABASE_1_ID, username);
+            accessService.delete(DATABASE_1_ID, userId);
         });
     }
 
     @ParameterizedTest
     @MethodSource("delete_succeeds_parameters")
-    protected <T extends Throwable> void delete_succeeds(String name, String username)
+    protected <T extends Throwable> void delete_succeeds(String name, UUID userId)
             throws UserNotFoundException, NotAllowedException, QueryMalformedException, DatabaseNotFoundException,
-            DatabaseMalformedException {
+            DatabaseMalformedException, KeycloakRemoteException, AccessDeniedException {
 
         /* test */
-        accessService.delete(DATABASE_1_ID, username);
+        accessService.delete(DATABASE_1_ID, userId);
     }
 
 }

@@ -8,6 +8,7 @@ import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.DatabaseMapper;
 import at.tuwien.service.AccessService;
+import at.tuwien.utils.UserUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -25,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.UUID;
 
 @Log4j2
 @RestController
@@ -69,13 +71,13 @@ public class AccessEndpoint {
                                     @Valid @RequestBody DatabaseGiveAccessDto accessDto,
                                     @NotNull Principal principal)
             throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException, QueryMalformedException,
-            DatabaseMalformedException {
+            DatabaseMalformedException, KeycloakRemoteException, AccessDeniedException {
         log.debug("endpoint give access to database, databaseId={}, accessDto={}, principal={}", databaseId, accessDto, principal);
         try {
-            accessService.find(databaseId, accessDto.getUsername());
-            log.error("Failed to give access to user with username {}, already has access", accessDto.getUsername());
-            throw new NotAllowedException("Failed to give access to user");
-        } catch (NotAllowedException e) {
+            accessService.find(databaseId, accessDto.getUserId());
+            log.error("Failed to give access to user with id {}: already has access", accessDto.getUserId());
+            throw new NotAllowedException("Failed to give access to user with id " + accessDto.getUserId() + ": already has access");
+        } catch (AccessDeniedException e) {
             /* ignore */
         }
         accessService.create(databaseId, accessDto);
@@ -83,7 +85,7 @@ public class AccessEndpoint {
                 .build();
     }
 
-    @PutMapping("/{username}")
+    @PutMapping("/{userId}")
     @Transactional
     @PreAuthorize("hasAuthority('update-database-access')")
     @Operation(summary = "Modify access to some database", security = @SecurityRequirement(name = "bearerAuth"))
@@ -108,14 +110,14 @@ public class AccessEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<?> update(@NotBlank @PathVariable("id") Long databaseId,
-                                    @NotBlank @PathVariable("username") String username,
+                                    @NotBlank @PathVariable("userId") UUID userId,
                                     @Valid @RequestBody DatabaseModifyAccessDto accessDto,
                                     @NotNull Principal principal)
-            throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException, NotAllowedException,
-            QueryMalformedException, DatabaseMalformedException {
-        log.debug("endpoint modify access to database, databaseId={}, username={}, accessDto={}, principal={}", databaseId, username, accessDto, principal);
-        accessService.find(databaseId, username);
-        accessService.update(databaseId, username, accessDto);
+            throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException, QueryMalformedException,
+            DatabaseMalformedException, AccessDeniedException, KeycloakRemoteException {
+        log.debug("endpoint modify access to database, databaseId={}, userId={}, accessDto={}, principal={}", databaseId, userId, accessDto, principal);
+        accessService.find(databaseId, userId);
+        accessService.update(databaseId, userId, accessDto);
         return ResponseEntity.accepted()
                 .build();
     }
@@ -143,15 +145,15 @@ public class AccessEndpoint {
     })
     public ResponseEntity<DatabaseAccessDto> find(@NotBlank @PathVariable("id") Long databaseId,
                                                   @NotNull Principal principal) throws NotAllowedException,
-            NotAllowedException {
+            AccessDeniedException {
         log.debug("endpoint check access to database, databaseId={}, principal={}", databaseId, principal);
-        final DatabaseAccess access = accessService.find(databaseId, principal.getName());
+        final DatabaseAccess access = accessService.find(databaseId, UserUtil.getId(principal));
         final DatabaseAccessDto dto = databaseMapper.databaseAccessToDatabaseAccessDto(access);
         log.trace("check access resulted in dto {}", dto);
         return ResponseEntity.ok(dto);
     }
 
-    @DeleteMapping("/{username}")
+    @DeleteMapping("/{userId}")
     @Transactional
     @PreAuthorize("hasAuthority('delete-database-access')")
     @Operation(summary = "Revoke access to some database", security = @SecurityRequirement(name = "bearerAuth"))
@@ -181,13 +183,13 @@ public class AccessEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<?> revoke(@NotBlank @PathVariable("id") Long databaseId,
-                                    @NotBlank @PathVariable("username") String username,
+                                    @NotBlank @PathVariable("userId") UUID userId,
                                     @NotNull Principal principal)
-            throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException, NotAllowedException,
-            QueryMalformedException, DatabaseMalformedException {
-        log.debug("endpoint revoke access to database, databaseId={}, username={}, principal={}", databaseId, username, principal);
-        accessService.find(databaseId, username);
-        accessService.delete(databaseId, username);
+            throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException, QueryMalformedException,
+            DatabaseMalformedException, AccessDeniedException, KeycloakRemoteException {
+        log.debug("endpoint revoke access to database, databaseId={}, userId={}, principal={}", databaseId, userId, principal);
+        accessService.find(databaseId, userId);
+        accessService.delete(databaseId, userId);
         return ResponseEntity.accepted()
                 .build();
     }

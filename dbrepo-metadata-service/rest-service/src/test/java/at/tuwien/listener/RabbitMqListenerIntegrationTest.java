@@ -1,13 +1,11 @@
 package at.tuwien.listener;
 
 import at.tuwien.BaseUnitTest;
-import at.tuwien.annotations.MockAmqp;
 import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.api.amqp.ConsumerDto;
 import at.tuwien.config.AmqpConfig;
 import at.tuwien.config.RabbitMqConfig;
 import at.tuwien.repository.mdb.*;
-import at.tuwien.repository.sdb.ViewIdxRepository;
 import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
@@ -19,7 +17,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.rules.Timeout;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -34,7 +31,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
 
 @Log4j2
 @ActiveProfiles(profiles = "junit")
@@ -53,12 +49,6 @@ public class RabbitMqListenerIntegrationTest extends BaseUnitTest {
 
     @Autowired
     private ContainerRepository containerRepository;
-
-    @Autowired
-    private RealmRepository realmRepository;
-
-    @Autowired
-    private UserRepository userRepository;
 
     @Autowired
     private DatabaseRepository databaseRepository;
@@ -92,8 +82,6 @@ public class RabbitMqListenerIntegrationTest extends BaseUnitTest {
     public void beforeEach() {
         /* metadata database */
         imageRepository.save(IMAGE_1_SIMPLE);
-        realmRepository.save(REALM_DBREPO);
-        userRepository.save(USER_1_SIMPLE);
         containerRepository.save(CONTAINER_1_SIMPLE);
         databaseRepository.save(DATABASE_1_SIMPLE);
         tableRepository.save(TABLE_1_SIMPLE);

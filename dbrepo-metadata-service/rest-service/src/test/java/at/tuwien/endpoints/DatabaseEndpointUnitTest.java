@@ -4,11 +4,13 @@ import at.tuwien.BaseUnitTest;
 import at.tuwien.annotations.MockAmqp;
 import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.api.database.*;
+import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
+import at.tuwien.gateway.KeycloakGateway;
 import at.tuwien.repository.mdb.DatabaseAccessRepository;
 import at.tuwien.repository.mdb.IdentifierRepository;
 import at.tuwien.repository.mdb.UserRepository;
@@ -47,13 +49,13 @@ import static org.mockito.Mockito.*;
 public class DatabaseEndpointUnitTest extends BaseUnitTest {
 
     @MockBean
-    private UserRepository userRepository;
-
-    @MockBean
     private MessageQueueService messageQueueService;
 
     @MockBean
     private AccessService accessService;
+
+    @MockBean
+    private KeycloakGateway keycloakGateway;
 
     @MockBean
     private ContainerService containerService;
@@ -72,6 +74,9 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
 
     @MockBean
     private IdentifierRepository identifierRepository;
+
+    @MockBean
+    private UserRepository userRepository;
 
     @Autowired
     private DatabaseEndpoint databaseEndpoint;
@@ -100,10 +105,6 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
                 .isPublic(DATABASE_3_PUBLIC)
                 .build();
 
-        /* mock */
-        when(userRepository.findByUsername(USER_4_USERNAME))
-                .thenReturn(Optional.of(USER_4));
-
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             create_generic(DATABASE_3_ID, null, request, USER_4, USER_4_PRINCIPAL);
@@ -115,7 +116,8 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
     public void create_succeeds() throws UserNotFoundException, BrokerVirtualHostGrantException,
             DatabaseNameExistsException, NotAllowedException, ContainerConnectionException, DatabaseMalformedException,
             QueryStoreException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException,
-            ImageNotSupportedException, AmqpException, BrokerVirtualHostCreationException, ContainerNotFoundException {
+            ImageNotSupportedException, AmqpException, BrokerVirtualHostCreationException, ContainerNotFoundException,
+            KeycloakRemoteException, AccessDeniedException {
         final DatabaseCreateDto request = DatabaseCreateDto.builder()
                 .cid(CONTAINER_1_ID)
                 .name(DATABASE_1_NAME)
@@ -123,15 +125,13 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
                 .build();
 
         /* mock */
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
         when(containerService.find(CONTAINER_1_ID))
                 .thenReturn(CONTAINER_1);
         when(databaseService.create(request, USER_1_PRINCIPAL))
                 .thenReturn(DATABASE_1);
         doNothing()
                 .when(messageQueueService)
-                .createUser(USER_1);
+                .createUser(USER_1_USERNAME);
         doNothing()
                 .when(messageQueueService)
                 .createExchange(DATABASE_1, USER_1_PRINCIPAL);
@@ -143,6 +143,10 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
                 .create(DATABASE_1_ID, USER_1_PRINCIPAL);
         when(databaseAccessRepository.save(any(DatabaseAccess.class)))
                 .thenReturn(DATABASE_1_USER_1_WRITE_ALL_ACCESS);
+        when(keycloakGateway.findByUsername(USER_1_USERNAME))
+                .thenReturn(USER_1_KEYCLOAK_DTO);
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
 
         /* test */
         create_generic(DATABASE_1_ID, null, request, USER_1, USER_1_PRINCIPAL);
@@ -166,10 +170,6 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
         /* pre-condition */
         assertTrue(DATABASE_3_PUBLIC);
 
-        /* mock */
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
-
         /* test */
         list_generic(DATABASE_3_ID, CONTAINER_3, List.of(DATABASE_3), USER_1_PRINCIPAL);
     }
@@ -180,10 +180,6 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
 
         /* pre-condition */
         assertTrue(DATABASE_3_PUBLIC);
-
-        /* mock */
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
 
         /* test */
         list_generic(DATABASE_3_ID, CONTAINER_3, List.of(DATABASE_3), USER_1_PRINCIPAL);
@@ -205,12 +201,14 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"modify-database-visibility"})
     public void visibility_hasRole_succeeds() throws NotAllowedException, DatabaseNotFoundException,
-            UserNotFoundException {
+            UserNotFoundException, KeycloakRemoteException, AccessDeniedException {
         final DatabaseModifyVisibilityDto request = DatabaseModifyVisibilityDto.builder()
                 .isPublic(true)
                 .build();
 
         /* mock */
+        when(keycloakGateway.findByUsername(USER_1_USERNAME))
+                .thenReturn(USER_1_KEYCLOAK_DTO);
         when(userRepository.findByUsername(USER_1_USERNAME))
                 .thenReturn(Optional.of(USER_1));
 
@@ -255,10 +253,6 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
                 .username(USER_4_USERNAME)
                 .build();
 
-        /* mock */
-        when(userRepository.findByUsername(USER_4_USERNAME))
-                .thenReturn(Optional.of(USER_4));
-
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             databaseEndpoint.transfer(DATABASE_3_ID, request, USER_4_PRINCIPAL);
@@ -273,10 +267,10 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
                 .build();
 
         /* mock */
-        when(userRepository.findByUsername(USER_2_USERNAME))
-                .thenReturn(Optional.of(USER_2));
         when(databaseService.findById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
+        when(userRepository.findByUsername(USER_2_USERNAME))
+                .thenReturn(Optional.of(USER_2));
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
@@ -287,18 +281,18 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"modify-database-owner"})
     public void transfer_hasRole_succeeds() throws UserNotFoundException, DatabaseNotFoundException,
-            NotAllowedException {
+            NotAllowedException, KeycloakRemoteException, AccessDeniedException {
         final DatabaseTransferDto request = DatabaseTransferDto.builder()
                 .username(USER_4_USERNAME)
                 .build();
 
         /* mock */
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
-        when(userRepository.findByUsername(USER_4_USERNAME))
-                .thenReturn(Optional.of(USER_4));
         when(databaseService.findById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
+        when(keycloakGateway.findByUsername(USER_1_USERNAME))
+                .thenReturn(USER_1_KEYCLOAK_DTO);
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
 
         /* test */
         databaseEndpoint.transfer(DATABASE_1_ID, request, USER_1_PRINCIPAL);
@@ -306,14 +300,13 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"modify-database-owner"})
-    public void transfer_hasRoleUserNotExists_succeeds() throws DatabaseNotFoundException, UserNotFoundException {
+    public void transfer_hasRoleUserNotExists_succeeds() throws DatabaseNotFoundException, UserNotFoundException,
+            KeycloakRemoteException, AccessDeniedException {
         final DatabaseTransferDto request = DatabaseTransferDto.builder()
                 .username("foobar")
                 .build();
 
         /* mock */
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
         when(databaseService.findById(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
         doThrow(UserNotFoundException.class)
@@ -387,7 +380,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            delete_generic(DATABASE_1_ID, DATABASE_1, null, null);
+            delete_generic(DATABASE_1_ID, DATABASE_1, null);
         });
     }
 
@@ -397,7 +390,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            delete_generic(DATABASE_1_ID, DATABASE_1, USER_1_USERNAME, USER_1_PRINCIPAL);
+            delete_generic(DATABASE_1_ID, DATABASE_1, USER_1_PRINCIPAL);
         });
     }
 
@@ -406,10 +399,10 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
     @WithMockUser(username = USER_2_USERNAME, authorities = {"delete-database"})
     public void delete_hasRole_succeeds() throws UserNotFoundException, BrokerVirtualHostGrantException,
             DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
-            AmqpException, DatabaseMalformedException {
+            AmqpException, DatabaseMalformedException, KeycloakRemoteException, AccessDeniedException {
 
         /* test */
-        delete_generic(DATABASE_2_ID, DATABASE_2, USER_2_USERNAME, USER_2_PRINCIPAL);
+        delete_generic(DATABASE_2_ID, DATABASE_2, USER_2_PRINCIPAL);
     }
 
     /* ################################################################################################### */
@@ -433,11 +426,11 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
     }
 
     public void create_generic(Long databaseId, Database database, DatabaseCreateDto data, User user,
-                               Principal principal) throws UserNotFoundException,
-            DatabaseNameExistsException, NotAllowedException, ContainerConnectionException, DatabaseMalformedException,
-            QueryStoreException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException,
-            ImageNotSupportedException, AmqpException, BrokerVirtualHostCreationException, ContainerNotFoundException,
-            BrokerVirtualHostGrantException {
+                               Principal principal) throws UserNotFoundException, DatabaseNameExistsException,
+            NotAllowedException, ContainerConnectionException, DatabaseMalformedException, QueryStoreException,
+            DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
+            AmqpException, BrokerVirtualHostCreationException, ContainerNotFoundException,
+            BrokerVirtualHostGrantException, KeycloakRemoteException, AccessDeniedException {
 
         /* mock */
         doNothing()
@@ -458,9 +451,9 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
         assertNotNull(response.getBody());
     }
 
-    public void visibility_generic(Long databaseId, Database database,
-                                   DatabaseDto dto, DatabaseModifyVisibilityDto data, Principal principal)
-            throws NotAllowedException, DatabaseNotFoundException, UserNotFoundException {
+    public void visibility_generic(Long databaseId, Database database, DatabaseDto dto,
+                                   DatabaseModifyVisibilityDto data, Principal principal) throws NotAllowedException,
+            DatabaseNotFoundException, UserNotFoundException {
 
         /* mock */
         if (database != null) {
@@ -503,10 +496,10 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
         return body;
     }
 
-    public void delete_generic(Long databaseId, Database database, String username, Principal principal)
+    public void delete_generic(Long databaseId, Database database, Principal principal)
             throws DatabaseNotFoundException, UserNotFoundException, DatabaseConnectionException,
             QueryMalformedException, ImageNotSupportedException, AmqpException, DatabaseMalformedException,
-            BrokerVirtualHostGrantException {
+            BrokerVirtualHostGrantException, KeycloakRemoteException, AccessDeniedException {
 
         /* mock */
         if (database != null) {

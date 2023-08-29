@@ -2,14 +2,11 @@ package at.tuwien.mapper;
 
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.auth.TokenIntrospectDto;
-import at.tuwien.api.user.GrantedAuthorityDto;
-import at.tuwien.api.user.UserBriefDto;
-import at.tuwien.api.user.UserDetailsDto;
+import at.tuwien.api.keycloak.*;
+import at.tuwien.api.user.*;
+import at.tuwien.api.user.UserAttributesDto;
 import at.tuwien.api.user.UserDto;
-import at.tuwien.entities.user.Group;
-import at.tuwien.entities.user.GroupMembership;
 import at.tuwien.entities.user.User;
-import at.tuwien.entities.user.UserAttribute;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
@@ -17,8 +14,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.Arrays;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring")
@@ -37,6 +33,32 @@ public interface UserMapper {
         return authority;
     }
 
+    default UpdateCredentialsDto passwordToUpdateCredentialsDto(String password) {
+        return UpdateCredentialsDto.builder()
+                .credentials(List.of(CredentialDto.builder()
+                        .temporary(false)
+                        .type(CredentialTypeDto.PASSWORD)
+                        .value(password)
+                        .build()))
+                .build();
+    }
+
+    default UserCreateDto signupRequestDtoToUserCreateDto(SignupRequestDto data) {
+        return UserCreateDto.builder()
+                .username(data.getUsername())
+                .email(data.getEmail())
+                .credentials(List.of(CredentialDto.builder()
+                        .type(CredentialTypeDto.PASSWORD)
+                        .temporary(false)
+                        .value(data.getPassword())
+                        .build()))
+                .enabled(true)
+                .build();
+    }
+
+    /* keep */
+    UserBriefDto keycloakUserDtoToUserBriefDto(at.tuwien.api.keycloak.UserDto data);
+
     /* keep */
     @Mappings({
             @Mapping(target = "id", expression = "java(data.getId().toString())")
@@ -44,27 +66,18 @@ public interface UserMapper {
     UserDetailsDto userDtoToUserDetailsDto(UserDto data);
 
     /* keep */
-    @Mappings({
-            @Mapping(target = "orcid", expression = "java(userToOrcid(data))")
-    })
     UserBriefDto userToUserBriefDto(User data);
 
     UserBriefDto userDtoToUserBriefDto(UserDto data);
 
     /* keep */
     @Mappings({
-            @Mapping(target = "orcid", expression = "java(userToOrcid(data))")
+            @Mapping(target = "attributes.orcid", source = "orcid"),
+            @Mapping(target = "attributes.affiliation", source = "affiliation"),
+            @Mapping(target = "attributes.themeDark", source = "themeDark"),
+            @Mapping(target = "attributes.mariadbPassword", source = "mariadbPassword")
     })
     UserDto userToUserDto(User data);
-
-    /* keep */
-    default String userToOrcid(User data) {
-        if (data.getAttributes() == null) {
-            return null;
-        }
-        final Optional<UserAttribute> orcid = data.getAttributes().stream().filter(a -> a.getName().equals("orcid")).findFirst();
-        return orcid.map(UserAttribute::getValue).orElse(null);
-    }
 
     default UserDetailsDto tokenIntrospectDtoToUserDetailsDto(TokenIntrospectDto data) {
         return UserDetailsDto.builder()
@@ -77,21 +90,5 @@ public interface UserMapper {
     }
 
     User signupRequestDtoToUser(SignupRequestDto data);
-
-    default UserAttribute tripleToUserAttribute(UUID userId, String name, String value) {
-        return UserAttribute.builder()
-                .id(UUID.randomUUID())
-                .userId(userId)
-                .name(name)
-                .value(value)
-                .build();
-    }
-
-    default GroupMembership userGroupToGroupMembership(User user, Group group) {
-        return GroupMembership.builder()
-                .userId(user.getId())
-                .groupId(group.getId())
-                .build();
-    }
 
 }

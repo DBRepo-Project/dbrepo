@@ -1,4 +1,3 @@
-
 package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
@@ -26,7 +25,9 @@ import org.testcontainers.containers.RabbitMQContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -87,7 +88,7 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
     public void createUser_succeeds() throws BrokerVirtualHostCreationException {
 
         /* test */
-        messageQueueService.createUser(USER_1);
+        messageQueueService.createUser(USER_1_USERNAME);
     }
 
     @Test
@@ -143,7 +144,7 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void init_succeeds() throws AmqpException {
+    public void init_succeeds() throws AmqpException, IOException, TimeoutException {
 
         /* mock */
         when(databaseRepository.findAll())

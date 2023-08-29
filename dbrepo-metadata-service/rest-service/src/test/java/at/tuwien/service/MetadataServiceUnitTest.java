@@ -16,7 +16,6 @@ import at.tuwien.gateway.CrossrefGateway;
 import at.tuwien.gateway.OrcidGateway;
 import at.tuwien.gateway.RorGateway;
 import at.tuwien.repository.mdb.IdentifierRepository;
-import at.tuwien.repository.sdb.IdentifierIdxRepository;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;

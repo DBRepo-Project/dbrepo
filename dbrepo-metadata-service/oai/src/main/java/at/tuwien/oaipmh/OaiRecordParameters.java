@@ -17,8 +17,8 @@ public class OaiRecordParameters extends RequestParameters {
     public String getParametersString() {
         StringBuilder builder = new StringBuilder();
         appendIfNotEmpty(builder, "verb", "GetRecord");
-        appendIfNotEmpty(builder, "metadataPrefix", this.getMetadataPrefix());
-        appendIfNotEmpty(builder, "identifier", this.getIdentifier());
+        appendIfNotEmpty(builder, "metadataPrefix", metadataPrefix);
+        appendIfNotEmpty(builder, "identifier", identifier);
         return builder.toString();
     }
 

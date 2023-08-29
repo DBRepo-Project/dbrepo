@@ -7,10 +7,10 @@ import at.tuwien.api.database.table.TableCsvDeleteDto;
 import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.api.database.table.TableCsvUpdateDto;
 import at.tuwien.entities.database.Database;
-import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.QueryService;
+import at.tuwien.utils.UserUtil;
 import at.tuwien.validation.EndpointValidator;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
@@ -56,7 +56,7 @@ public class TableDataEndpoint {
                                        @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
             ImageNotSupportedException, ContainerNotFoundException, DatabaseConnectionException, UserNotFoundException,
-            NotAllowedException {
+            NotAllowedException, AccessDeniedException {
         log.debug("endpoint insert data, databaseId={}, tableId={}, data={}, principal={}",
                 databaseId, tableId, data, principal);
         /* check */
@@ -79,7 +79,7 @@ public class TableDataEndpoint {
                                        @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
             ImageNotSupportedException, DatabaseConnectionException, QueryMalformedException,
-            UserNotFoundException, NotAllowedException {
+            UserNotFoundException, NotAllowedException, AccessDeniedException {
         log.debug("endpoint update data, databaseId={}, tableId={}, data={}, principal={}",
                 databaseId, tableId, data, principal);
         /* check */
@@ -101,7 +101,7 @@ public class TableDataEndpoint {
                                        @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
             ImageNotSupportedException, DatabaseConnectionException, QueryMalformedException, UserNotFoundException,
-            NotAllowedException {
+            NotAllowedException, AccessDeniedException {
         log.debug("endpoint delete data, databaseId={}, tableId={}, data={}, principal={}",
                 databaseId, tableId, data, principal);
         /* check */
@@ -123,7 +123,7 @@ public class TableDataEndpoint {
                                           @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
             ImageNotSupportedException, DatabaseConnectionException, QueryMalformedException, UserNotFoundException,
-            NotAllowedException {
+            NotAllowedException, AccessDeniedException {
         log.debug("endpoint insert data from csv, databaseId={}, tableId={}, data={}, principal={}",
                 databaseId, tableId, data, principal);
         /* check */
@@ -148,14 +148,14 @@ public class TableDataEndpoint {
                                                  @RequestParam(required = false) String sortColumn)
             throws TableNotFoundException, DatabaseNotFoundException, DatabaseConnectionException,
             ImageNotSupportedException, TableMalformedException, PaginationException, QueryMalformedException,
-            UserNotFoundException, SortException, NotAllowedException {
+            UserNotFoundException, SortException, NotAllowedException, AccessDeniedException {
         log.debug("endpoint find table data, databaseId={}, tableId={}, principal={}, timestamp={}, page={}, size={}, sortDirection={}, sortColumn={}",
                 databaseId, tableId, principal, timestamp, page, size, sortDirection, sortColumn);
         /* check */
         endpointValidator.validateDataParams(page, size, sortDirection, sortColumn);
         endpointValidator.validateOnlyAccessOrPublic(databaseId, principal);
         final Database database = databaseService.find(databaseId);
-        if (!database.getIsPublic() && !User.hasRole(principal, "view-table-data")) {
+        if (!database.getIsPublic() && !UserUtil.hasRole(principal, "view-table-data")) {
             log.error("Failed to view table data: database with id {} is private and user has no authority", databaseId);
             throw new NotAllowedException("Failed to view table data: database with id " + databaseId + " is private and user has no authority");
         }
@@ -176,13 +176,13 @@ public class TableDataEndpoint {
                                          @RequestParam(required = false) Instant timestamp)
             throws TableNotFoundException, DatabaseNotFoundException, DatabaseConnectionException,
             ImageNotSupportedException, TableMalformedException, QueryStoreException, QueryMalformedException,
-            UserNotFoundException, NotAllowedException {
+            UserNotFoundException, NotAllowedException, AccessDeniedException {
         log.debug("endpoint find table data, databaseId={}, tableId={}, principal={}, timestamp={}",
                 databaseId, tableId, principal, timestamp);
         /* check */
         endpointValidator.validateOnlyAccessOrPublic(databaseId, principal);
         final Database database = databaseService.find(databaseId);
-        if (!database.getIsPublic() && !User.hasRole(principal, "view-table-data")) {
+        if (!database.getIsPublic() && !UserUtil.hasRole(principal, "view-table-data")) {
             log.error("Failed to view table data: database with id {} is private and user has no authority", databaseId);
             throw new NotAllowedException("Failed to view table data: database with id " + databaseId + " is private and user has no authority");
         }

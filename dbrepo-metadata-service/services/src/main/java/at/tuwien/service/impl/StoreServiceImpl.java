@@ -98,27 +98,25 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
     @Transactional(readOnly = true)
     public Query insert(Long databaseId, ExecuteStatementDto metadata, Principal principal)
             throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
-            UserNotFoundException, DatabaseConnectionException {
+            UserNotFoundException, DatabaseConnectionException, KeycloakRemoteException, AccessDeniedException {
         /* find */
         final Database database = databaseService.find(databaseId);
         if (!database.getContainer().getImage().getName().equals("mariadb")) {
             log.error("Currently only MariaDB is supported");
             throw new ImageNotSupportedException("Currently only MariaDB is supported");
         }
-        log.trace("insert into database id {}, metadata {}", databaseId, metadata);
-        /* user */
-        final User creator;
-        if (principal != null) {
-            creator = userService.findByUsername(principal.getName());
+        final User user;
+        if (principal == null) {
+            user = userService.findByUsername("system");
         } else {
-            creator = userService.findByUsername("system");
+            user = userService.findByUsername(principal.getName());
         }
         /* save */
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(),
                 database.getContainer(), database);
         try {
             final Connection connection = dataSource.getConnection();
-            final CallableStatement callableStatement = storeMapper.queryStoreRawInsertQuery(connection, creator, metadata);
+            final CallableStatement callableStatement = storeMapper.queryStoreRawInsertQuery(connection, user, metadata);
             callableStatement.executeUpdate();
             final Long queryId = callableStatement.getLong(4);
             callableStatement.close();

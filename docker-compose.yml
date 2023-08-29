@@ -7,6 +7,7 @@ version: "3.6"
 volumes:
   metadata-db-data:
   data-db-data:
+  auth-db-data:
   upload-service-data:
   search-db-data:
   broker-service-data:
@@ -44,6 +45,11 @@ services:
       - "9100:9100"
     env_file:
       - .env
+    healthcheck:
+      test: mysqladmin ping --user="$METADATA_USERNAME" --password="$METADATA_PASSWORD" --silent
+      interval: 10s
+      timeout: 5s
+      retries: 12
     logging:
       driver: json-file
 
@@ -55,7 +61,7 @@ services:
     networks:
       core:
     volumes:
-      - data-db-data:/var/lib/mysql
+      - data-db-data:/bitnami/mariadb
       - "/tmp:/tmp"
     ports:
       - "3307:3306"
@@ -66,6 +72,31 @@ services:
       - MARIADB_ROOT_PASSWORD=$USER_DB_PASSWORD
     healthcheck:
       test: mysqladmin ping --user="$USER_DB_USERNAME" --password="$USER_DB_PASSWORD" --silent
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    logging:
+      driver: json-file
+
+  dbrepo-auth-db:
+    restart: "no"
+    container_name: dbrepo-auth-db
+    hostname: auth-db
+    image: mariadb:10.5
+    networks:
+      core:
+    volumes:
+      - auth-db-data:/bitnami/mariadb
+    ports:
+      - "3308:3306"
+      - "9102:9100"
+    env_file:
+      - .env
+    environment:
+      - MARIADB_ROOT_PASSWORD=$AUTH_PASSWORD
+      - MARIADB_DATABASE=$AUTH_DB
+    healthcheck:
+      test: mysqladmin ping --user="$AUTH_USERNAME" --password="$AUTH_PASSWORD" --silent
       interval: 10s
       timeout: 5s
       retries: 12
@@ -190,7 +221,7 @@ services:
     env_file:
       - .env
     healthcheck:
-      test: curl -s localhost:9200/_cat/indices | grep -q "user" || exit 1
+      test: curl -s localhost:9200/_cat/indices || exit 1
       interval: 10s
       timeout: 5s
       retries: 12
@@ -199,13 +230,13 @@ services:
       ES_JAVA_OPTS: "-Xms4g -Xmx4g"
       logger.level: "WARN"
       plugins.security.disabled: "true"
-      bootstrap.memory_lock: "true"
     deploy:
       resources:
         limits:
           memory: 4G
     volumes:
       - search-db-data:/usr/share/elasticsearch/data
+      - ./dbrepo-search-db/limits.conf:/etc/security/limits.conf
     logging:
       driver: json-file
 

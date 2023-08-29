@@ -8,8 +8,8 @@ import at.tuwien.api.maintenance.BannerMessageCreateDto;
 import at.tuwien.api.maintenance.BannerMessageDto;
 import at.tuwien.api.maintenance.BannerMessageUpdateDto;
 import at.tuwien.entities.maintenance.BannerMessage;
+import at.tuwien.exception.AccessDeniedException;
 import at.tuwien.exception.BannerMessageNotFoundException;
-import at.tuwien.repository.sdb.UserIdxRepository;
 import at.tuwien.service.BannerMessageService;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
@@ -21,7 +21,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -132,7 +131,7 @@ public class MaintenanceEndpointUnitTest extends BaseUnitTest {
     public void create_anonymous_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             create_generic(BANNER_MESSAGE_1_CREATE_DTO, BANNER_MESSAGE_1);
         });
     }
@@ -142,7 +141,7 @@ public class MaintenanceEndpointUnitTest extends BaseUnitTest {
     public void create_noRole_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             create_generic(BANNER_MESSAGE_1_CREATE_DTO, BANNER_MESSAGE_1);
         });
     }
@@ -160,7 +159,7 @@ public class MaintenanceEndpointUnitTest extends BaseUnitTest {
     public void update_anonymous_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             update_generic(BANNER_MESSAGE_1_UPDATE_DTO, BANNER_MESSAGE_1_ID, BANNER_MESSAGE_1);
         });
     }
@@ -170,7 +169,7 @@ public class MaintenanceEndpointUnitTest extends BaseUnitTest {
     public void update_noRole_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             update_generic(BANNER_MESSAGE_1_UPDATE_DTO, BANNER_MESSAGE_1_ID, BANNER_MESSAGE_1);
         });
     }
@@ -198,7 +197,7 @@ public class MaintenanceEndpointUnitTest extends BaseUnitTest {
     public void delete_anonymous_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             delete_generic(BANNER_MESSAGE_1_ID, BANNER_MESSAGE_1);
         });
     }
@@ -208,7 +207,7 @@ public class MaintenanceEndpointUnitTest extends BaseUnitTest {
     public void delete_noRole_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             delete_generic(BANNER_MESSAGE_1_ID, BANNER_MESSAGE_1);
         });
     }

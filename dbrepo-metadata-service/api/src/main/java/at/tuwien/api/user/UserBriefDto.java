@@ -41,9 +41,4 @@ public class UserBriefDto {
     @Schema(example = "Carberry")
     private String lastname;
 
-    @JsonProperty("email_verified")
-    @Schema(example = "true")
-    @org.springframework.data.annotation.Transient
-    private Boolean emailVerified;
-
 }

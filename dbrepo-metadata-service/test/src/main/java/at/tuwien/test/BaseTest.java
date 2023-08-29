@@ -26,6 +26,9 @@ import at.tuwien.api.database.table.constraints.ConstraintsDto;
 import at.tuwien.api.database.table.constraints.foreignKey.ForeignKeyCreateDto;
 import at.tuwien.api.database.table.constraints.unique.UniqueDto;
 import at.tuwien.api.identifier.*;
+import at.tuwien.api.keycloak.CredentialDto;
+import at.tuwien.api.keycloak.CredentialTypeDto;
+import at.tuwien.api.keycloak.UserCreateDto;
 import at.tuwien.api.maintenance.BannerMessageCreateDto;
 import at.tuwien.api.maintenance.BannerMessageTypeDto;
 import at.tuwien.api.maintenance.BannerMessageUpdateDto;
@@ -49,10 +52,7 @@ import at.tuwien.entities.identifier.*;
 import at.tuwien.entities.maintenance.BannerMessage;
 import at.tuwien.entities.maintenance.BannerMessageType;
 import at.tuwien.entities.semantics.Ontology;
-import at.tuwien.entities.user.Realm;
-import at.tuwien.entities.user.Role;
 import at.tuwien.entities.user.User;
-import at.tuwien.entities.user.UserAttribute;
 import at.tuwien.querystore.Query;
 import at.tuwien.test.utils.ArrayUtil;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -217,40 +217,17 @@ public abstract class BaseTest {
     public final static String ROLE_DEFAULT_REALM_DBREPO_ROLES_NAME = "default-dbrepo-roles";
     public final static UUID ROLE_DEFAULT_REALM_DBREPO_ROLES_REALM_ID = REALM_DBREPO_ID;
 
-    public final static Role ROLE_DEFAULT_REALM_DBREPO_ROLES = Role.builder()
-            .id(ROLE_DEFAULT_REALM_DBREPO_ROLES_ID)
-            .name(ROLE_DEFAULT_REALM_DBREPO_ROLES_NAME)
-            .realmId(ROLE_DEFAULT_REALM_DBREPO_ROLES_REALM_ID)
-            .build();
-
-    public final static Realm REALM_DBREPO = Realm.builder()
-            .id(REALM_DBREPO_ID)
-            .name(REALM_DBREPO_NAME)
-            .enabled(REALM_DBREPO_ENABLED)
-            .defaultRole(ROLE_DEFAULT_REALM_DBREPO_ROLES_ID)
-            .build();
-
     public final static UUID ROLE_DEFAULT_RESEARCHER_ROLES_ID = UUID.fromString("c74cbbe7-3ab1-4472-9211-cc9045672682");
     public final static String ROLE_DEFAULT_RESEARCHER_ROLES_NAME = "default-researcher-roles";
     public final static UUID ROLE_DEFAULT_RESEARCHER_ROLES_REALM_ID = REALM_DBREPO_ID;
 
-    public final static Role ROLE_DEFAULT_RESEARCHER_ROLES = Role.builder()
-            .id(ROLE_DEFAULT_RESEARCHER_ROLES_ID)
-            .name(ROLE_DEFAULT_RESEARCHER_ROLES_NAME)
-            .realmId(ROLE_DEFAULT_RESEARCHER_ROLES_REALM_ID)
-            .build();
-
     public final static String USER_BROKER_USERNAME = "guest";
     public final static String USER_BROKER_PASSWORD = "guest";
-
-    public final static User USER_BROKER = User.builder()
-            .username(USER_BROKER_USERNAME)
-            .build();
 
     public final static UUID USER_1_ID = UUID.fromString("cd5bab0d-7799-4069-85fb-c5d738572a0b");
     public final static String USER_1_EMAIL = "john.doe@example.com";
     public final static String USER_1_USERNAME = "junit1";
-    public final static String USER_1_PASSWORD = "s3cr3t1nf0rm4t10n";
+    public final static String USER_1_PASSWORD = "junit1";
     public final static String USER_1_PASSWORD_ENCODED = "$2a$10$0dtdedA/RLTrFbUsvpbUw.I73AXOKeQP3t5UXj96OvnDEaDb3d3M6";
     public final static String USER_1_DATABASE_PASSWORD = "*440BA4FD1A87A0999647DB67C0EE258198B247BA" /* junit1 */;
     public final static String USER_1_FIRSTNAME = "John";
@@ -262,6 +239,8 @@ public abstract class BaseTest {
     public final static String USER_1_TITLES_BEFORE = "Dr.";
     public final static String USER_1_TITLES_AFTER = "MSc BSc";
     public final static Boolean USER_1_VERIFIED = false;
+    public final static Boolean USER_1_TOTP = false;
+    public final static Long USER_1_NOT_BEFORE = 0L;
     public final static Boolean USER_1_ENABLED = true;
     public final static Boolean USER_1_THEME_DARK = false;
     public final static Instant USER_1_CREATED = Instant.ofEpochSecond(1677399441) /* 2023-02-26 08:17:21 (UTC) */;
@@ -279,68 +258,36 @@ public abstract class BaseTest {
             .write("")
             .build();
 
-    public final static List<UserAttribute> USER_1_ATTRIBUTES = List.of(UserAttribute.builder()
-                    .id(UUID.fromString("c466a105-5bbd-4afc-87ae-751d5037d9ab"))
-                    .userId(USER_1_ID)
-                    .name("theme_dark")
-                    .value("false")
-                    .build(),
-            UserAttribute.builder()
-                    .id(UUID.fromString("0870498b-d6ac-4543-bef1-830142de96d7"))
-                    .userId(USER_1_ID)
-                    .name("orcid")
-                    .value(USER_1_ORCID_UNCOMPRESSED)
-                    .build(),
-            UserAttribute.builder()
-                    .id(UUID.fromString("42b06e7f-9df2-4b1c-bdfb-904401d6ad36"))
-                    .userId(USER_1_ID)
-                    .name("affiliation")
-                    .value(USER_1_AFFILIATION)
-                    .build());
+    public final static UserAttributesDto USER_1_ATTRIBUTES_DTO = UserAttributesDto.builder()
+            .themeDark(USER_1_THEME_DARK)
+            .orcid(USER_1_ORCID_UNCOMPRESSED)
+            .affiliation(USER_1_AFFILIATION)
+            .mariadbPassword(USER_1_DATABASE_PASSWORD)
+            .build();
 
-    public final static List<UserAttributeDto> USER_1_ATTRIBUTES_DTO = List.of(UserAttributeDto.builder()
-                    .id(UUID.fromString("c466a105-5bbd-4afc-87ae-751d5037d9ab"))
-                    .userId(USER_1_ID)
-                    .name("theme_dark")
-                    .value("false")
-                    .build(),
-            UserAttributeDto.builder()
-                    .id(UUID.fromString("0870498b-d6ac-4543-bef1-830142de96d7"))
-                    .userId(USER_1_ID)
-                    .name("orcid")
-                    .value(USER_1_ORCID_UNCOMPRESSED)
-                    .build(),
-            UserAttributeDto.builder()
-                    .id(UUID.fromString("42b06e7f-9df2-4b1c-bdfb-904401d6ad36"))
-                    .userId(USER_1_ID)
-                    .name("affiliation")
-                    .value(USER_1_AFFILIATION)
-                    .build());
+    public final static CredentialDto USER_1_KEYCLOAK_CREDENTIAL_1 = CredentialDto.builder()
+            .type(CredentialTypeDto.PASSWORD)
+            .temporary(false)
+            .value(USER_1_PASSWORD)
+            .build();
+
+    public final static UserCreateDto USER_1_KEYCLOAK_SIGNUP_REQUEST = UserCreateDto.builder()
+            .username(USER_1_USERNAME)
+            .email(USER_1_EMAIL)
+            .enabled(USER_1_ENABLED)
+            .credentials(List.of(USER_1_KEYCLOAK_CREDENTIAL_1))
+            .build();
 
     public final static User USER_1 = User.builder()
             .id(USER_1_ID)
             .username(USER_1_USERNAME)
             .email(USER_1_EMAIL)
-            .databasePassword(USER_1_DATABASE_PASSWORD)
             .firstname(USER_1_FIRSTNAME)
             .lastname(USER_1_LASTNAME)
-            .emailVerified(USER_1_VERIFIED)
-            .enabled(USER_1_ENABLED)
-            .realmId(USER_1_REALM_ID)
-            .attributes(USER_1_ATTRIBUTES)
-            .build();
-
-    public final static User USER_1_SIMPLE = User.builder()
-            .id(USER_1_ID)
-            .username(USER_1_USERNAME)
-            .email(USER_1_EMAIL)
-            .databasePassword(USER_1_DATABASE_PASSWORD)
-            .firstname(USER_1_FIRSTNAME)
-            .lastname(USER_1_LASTNAME)
-            .emailVerified(USER_1_VERIFIED)
-            .enabled(USER_1_ENABLED)
-            .realmId(USER_1_REALM_ID)
-            .attributes(List.of() /* for jpa */)
+            .affiliation(USER_1_AFFILIATION)
+            .orcid(USER_1_ORCID)
+            .themeDark(USER_1_THEME_DARK)
+            .mariadbPassword(USER_1_DATABASE_PASSWORD)
             .build();
 
     public final static UserDto USER_1_DTO = UserDto.builder()
@@ -349,8 +296,31 @@ public abstract class BaseTest {
             .email(USER_1_EMAIL)
             .firstname(USER_1_FIRSTNAME)
             .lastname(USER_1_LASTNAME)
-            .emailVerified(USER_1_VERIFIED)
             .attributes(USER_1_ATTRIBUTES_DTO)
+            .build();
+
+    public final static UserUpdateDto USER_1_UPDATE_DTO = UserUpdateDto.builder()
+            .firstname(USER_1_FIRSTNAME)
+            .lastname(USER_1_LASTNAME)
+            .affiliation(USER_1_AFFILIATION)
+            .orcid(USER_1_ORCID)
+            .build();
+
+    public final static UserThemeSetDto USER_1_THEME_SET_DTO = UserThemeSetDto.builder()
+            .themeDark(USER_1_THEME_DARK)
+            .build();
+
+    public final static UserPasswordDto USER_1_PASSWORD_DTO = UserPasswordDto.builder()
+            .password(USER_1_PASSWORD)
+            .build();
+
+    public final static at.tuwien.api.keycloak.UserDto USER_1_KEYCLOAK_DTO = at.tuwien.api.keycloak.UserDto.builder()
+            .id(USER_1_ID)
+            .username(USER_1_USERNAME)
+            .email(USER_1_EMAIL)
+            .emailVerified(USER_1_VERIFIED)
+            .notBefore(USER_1_NOT_BEFORE)
+            .totp(USER_1_TOTP)
             .build();
 
     public final static UserBriefDto USER_1_BRIEF_DTO = UserBriefDto.builder()
@@ -358,10 +328,10 @@ public abstract class BaseTest {
             .username(USER_1_USERNAME)
             .firstname(USER_1_FIRSTNAME)
             .lastname(USER_1_LASTNAME)
-            .emailVerified(USER_1_VERIFIED)
             .build();
 
     public final static UserDetails USER_1_DETAILS = UserDetailsDto.builder()
+            .id(USER_1_ID.toString())
             .username(USER_1_USERNAME)
             .email(USER_1_EMAIL)
             .password(USER_1_PASSWORD)
@@ -393,82 +363,35 @@ public abstract class BaseTest {
     public final static String USER_2_FIRSTNAME = "Jane";
     public final static String USER_2_LASTNAME = "Doe";
     public final static String USER_2_AFFILIATION = "TU Wien";
-    public final static String USER_2_ORCID = "0000000292726225";
-    public final static String USER_2_ORCID_UNCOMPRESSED = "0000-0002-9272-6225";
-    public final static String USER_2_ORCID_URL = "https://orcid.org/" + USER_2_ORCID_UNCOMPRESSED;
-    public final static String USER_2_PASSWORD = "s3cr3t1nf0rm4t10n";
+    public final static String USER_2_ORCID_URL = "https://orcid.org/0000-0002-9272-6225";
+    public final static String USER_2_PASSWORD = "junit2";
     public final static String USER_2_DATABASE_PASSWORD = "*9AA70A8B0EEFAFCB5BED5BDEF6EE264D5DA915AE" /* junit2 */;
     public final static Boolean USER_2_VERIFIED = true;
+    public final static Boolean USER_2_TOTP = false;
+    public final static Long USER_2_NOT_BEFORE = 0L;
     public final static Boolean USER_2_ENABLED = true;
     public final static Boolean USER_2_THEME_DARK = false;
     public final static Instant USER_2_CREATED = Instant.ofEpochSecond(1677399528) /* 2023-02-26 08:18:48 (UTC) */;
     public final static Instant USER_2_LAST_MODIFIED = USER_1_CREATED;
     public final static UUID USER_2_REALM_ID = REALM_DBREPO_ID;
 
-    public final static List<UserAttribute> USER_2_ATTRIBUTES = List.of(UserAttribute.builder()
-                    .id(UUID.fromString("23da2c08-cb8a-4e18-a7f0-70c30de2771e"))
-                    .userId(USER_2_ID)
-                    .name("theme_dark")
-                    .value("false")
-                    .build(),
-            UserAttribute.builder()
-                    .id(UUID.fromString("83223dfd-1c80-4132-8c74-a38994f45f4a"))
-                    .userId(USER_2_ID)
-                    .name("orcid")
-                    .value(USER_2_ORCID_UNCOMPRESSED)
-                    .build(),
-            UserAttribute.builder()
-                    .id(UUID.fromString("a29879fd-9801-4adf-bf3a-16bbff6ea207"))
-                    .userId(USER_2_ID)
-                    .name("affiliation")
-                    .value(USER_2_AFFILIATION)
-                    .build());
-
-    public final static List<UserAttributeDto> USER_2_ATTRIBUTES_DTO = List.of(UserAttributeDto.builder()
-                    .id(UUID.fromString("23da2c08-cb8a-4e18-a7f0-70c30de2771e"))
-                    .userId(USER_2_ID)
-                    .name("theme_dark")
-                    .value("false")
-                    .build(),
-            UserAttributeDto.builder()
-                    .id(UUID.fromString("83223dfd-1c80-4132-8c74-a38994f45f4a"))
-                    .userId(USER_2_ID)
-                    .name("orcid")
-                    .value(USER_2_ORCID_UNCOMPRESSED)
-                    .build(),
-            UserAttributeDto.builder()
-                    .id(UUID.fromString("a29879fd-9801-4adf-bf3a-16bbff6ea207"))
-                    .userId(USER_2_ID)
-                    .name("affiliation")
-                    .value(USER_2_AFFILIATION)
-                    .build());
+    public final static UserAttributesDto USER_2_ATTRIBUTES_DTO = UserAttributesDto.builder()
+            .themeDark(USER_2_THEME_DARK)
+            .orcid(USER_2_ORCID_URL)
+            .affiliation(USER_2_AFFILIATION)
+            .mariadbPassword(USER_2_DATABASE_PASSWORD)
+            .build();
 
     public final static User USER_2 = User.builder()
             .id(USER_2_ID)
             .username(USER_2_USERNAME)
             .email(USER_2_EMAIL)
-            .emailVerified(true)
-            .databasePassword(USER_2_DATABASE_PASSWORD)
             .firstname(USER_2_FIRSTNAME)
             .lastname(USER_2_LASTNAME)
-            .emailVerified(USER_2_VERIFIED)
-            .enabled(USER_2_ENABLED)
-            .realmId(USER_2_REALM_ID)
-            .attributes(USER_2_ATTRIBUTES)
-            .build();
-
-    public final static User USER_2_SIMPLE = User.builder()
-            .id(USER_2_ID)
-            .username(USER_2_USERNAME)
-            .email(USER_2_EMAIL)
-            .emailVerified(true)
-            .databasePassword(USER_2_DATABASE_PASSWORD)
-            .firstname(USER_2_FIRSTNAME)
-            .lastname(USER_2_LASTNAME)
-            .emailVerified(USER_2_VERIFIED)
-            .enabled(USER_2_ENABLED)
-            .realmId(USER_2_REALM_ID)
-            .attributes(List.of() /* for jpa */)
+            .affiliation(USER_2_AFFILIATION)
+            .orcid(USER_2_ORCID_URL)
+            .themeDark(USER_2_THEME_DARK)
+            .mariadbPassword(USER_2_DATABASE_PASSWORD)
             .build();
 
     public final static UserDto USER_2_DTO = UserDto.builder()
@@ -477,7 +400,6 @@ public abstract class BaseTest {
             .email(USER_2_EMAIL)
             .firstname(USER_2_FIRSTNAME)
             .lastname(USER_2_LASTNAME)
-            .emailVerified(USER_2_VERIFIED)
             .build();
 
     public final static UserBriefDto USER_2_BRIEF_DTO = UserBriefDto.builder()
@@ -485,7 +407,6 @@ public abstract class BaseTest {
             .username(USER_2_USERNAME)
             .firstname(USER_2_FIRSTNAME)
             .lastname(USER_2_LASTNAME)
-            .emailVerified(USER_2_VERIFIED)
             .build();
 
     public final static SignupRequestDto USER_2_SIGNUP_REQUEST_DTO = SignupRequestDto.builder()
@@ -502,6 +423,15 @@ public abstract class BaseTest {
             .authorities(AUTHORITY_DEFAULT_DEVELOPER_AUTHORITIES)
             .build();
 
+    public final static at.tuwien.api.keycloak.UserDto USER_2_KEYCLOAK_DTO = at.tuwien.api.keycloak.UserDto.builder()
+            .id(USER_2_ID)
+            .username(USER_2_USERNAME)
+            .email(USER_2_EMAIL)
+            .emailVerified(USER_2_VERIFIED)
+            .notBefore(USER_2_NOT_BEFORE)
+            .totp(USER_2_TOTP)
+            .build();
+
     public final static at.tuwien.api.amqp.UserDetailsDto USER_2_DETAILS_DTO = at.tuwien.api.amqp.UserDetailsDto.builder()
             .name(USER_2_USERNAME)
             .tags(new String[]{})
@@ -515,80 +445,36 @@ public abstract class BaseTest {
     public final static String USER_3_FIRSTNAME = "System";
     public final static String USER_3_LASTNAME = "System";
     public final static String USER_3_AFFILIATION = "TU Wien";
-    public final static String USER_3_ORCID = null;
+    public final static String USER_3_ORCID_URL = null;
+    public final static String USER_3_ORCID_UNCOMPRESSED = null;
     public final static String USER_3_EMAIL = "system@example.com";
     public final static String USER_3_PASSWORD = "password";
     public final static String USER_3_DATABASE_PASSWORD = "*D65FCA043964B63E849DD6334699ECB065905DA4" /* junit3 */;
     public final static Boolean USER_3_VERIFIED = true;
+    public final static Boolean USER_3_TOTP = false;
+    public final static Long USER_3_NOT_BEFORE = 0L;
     public final static Boolean USER_3_ENABLED = true;
     public final static Boolean USER_3_THEME_DARK = false;
     public final static Instant USER_3_CREATED = Instant.ofEpochSecond(1677399559) /* 2023-02-26 08:19:19 (UTC) */;
     public final static UUID USER_3_REALM_ID = REALM_DBREPO_ID;
 
-    public final static List<UserAttribute> USER_3_ATTRIBUTES = List.of(UserAttribute.builder()
-                    .id(UUID.fromString("58062219-7b99-4c0d-b00b-136b7d916c04"))
-                    .userId(USER_3_ID)
-                    .name("theme_dark")
-                    .value(USER_3_THEME_DARK.toString())
-                    .build(),
-            UserAttribute.builder()
-                    .id(UUID.fromString("384851ee-83c4-4cda-805e-be0c1bab71eb"))
-                    .userId(USER_3_ID)
-                    .name("orcid")
-                    .value(null)
-                    .build(),
-            UserAttribute.builder()
-                    .id(UUID.fromString("c2cb2357-5e34-453f-b080-ca1c97f56d4a"))
-                    .userId(USER_3_ID)
-                    .name("affiliation")
-                    .value(USER_3_AFFILIATION)
-                    .build());
-
-    public final static List<UserAttributeDto> USER_3_ATTRIBUTES_DTO = List.of(UserAttributeDto.builder()
-                    .id(UUID.fromString("58062219-7b99-4c0d-b00b-136b7d916c04"))
-                    .userId(USER_3_ID)
-                    .name("theme_dark")
-                    .value(USER_3_THEME_DARK.toString())
-                    .build(),
-            UserAttributeDto.builder()
-                    .id(UUID.fromString("384851ee-83c4-4cda-805e-be0c1bab71eb"))
-                    .userId(USER_3_ID)
-                    .name("orcid")
-                    .value(null)
-                    .build(),
-            UserAttributeDto.builder()
-                    .id(UUID.fromString("c2cb2357-5e34-453f-b080-ca1c97f56d4a"))
-                    .userId(USER_3_ID)
-                    .name("affiliation")
-                    .value(USER_3_AFFILIATION)
-                    .build());
+    public final static UserAttributesDto USER_3_ATTRIBUTES_DTO = UserAttributesDto.builder()
+            .themeDark(USER_3_THEME_DARK)
+            .orcid(USER_3_ORCID_UNCOMPRESSED)
+            .affiliation(USER_3_AFFILIATION)
+            .mariadbPassword(USER_3_DATABASE_PASSWORD)
+            .build();
 
     public final static User USER_3 = User.builder()
             .id(USER_3_ID)
             .username(USER_3_USERNAME)
             .email(USER_3_EMAIL)
-            .emailVerified(true)
-            .databasePassword(USER_3_DATABASE_PASSWORD)
             .firstname(USER_3_FIRSTNAME)
             .lastname(USER_3_LASTNAME)
-            .emailVerified(USER_3_VERIFIED)
-            .enabled(USER_3_ENABLED)
-            .realmId(USER_3_REALM_ID)
-            .attributes(USER_3_ATTRIBUTES)
-            .build();
-
-    public final static User USER_3_SIMPLE = User.builder()
-            .id(USER_3_ID)
-            .username(USER_3_USERNAME)
-            .email(USER_3_EMAIL)
-            .emailVerified(true)
-            .databasePassword(USER_3_DATABASE_PASSWORD)
-            .firstname(USER_3_FIRSTNAME)
-            .lastname(USER_3_LASTNAME)
-            .emailVerified(USER_3_VERIFIED)
-            .enabled(USER_3_ENABLED)
-            .realmId(USER_3_REALM_ID)
-            .attributes(List.of() /* for jpa */)
+            .affiliation(USER_3_AFFILIATION)
+            .orcid(USER_3_ORCID_URL)
+            .themeDark(USER_3_THEME_DARK)
+            .mariadbPassword(USER_3_DATABASE_PASSWORD)
             .build();
 
     public final static UserDto USER_3_DTO = UserDto.builder()
@@ -597,14 +483,23 @@ public abstract class BaseTest {
             .email(USER_3_EMAIL)
             .firstname(USER_3_FIRSTNAME)
             .lastname(USER_3_LASTNAME)
-            .emailVerified(USER_3_VERIFIED)
             .build();
 
     public final static UserDetails USER_3_DETAILS = UserDetailsDto.builder()
+            .id(USER_3_ID.toString())
             .username(USER_3_USERNAME)
             .email(USER_3_EMAIL)
             .password(USER_3_PASSWORD)
             .authorities(AUTHORITY_DEFAULT_DATA_STEWARD_AUTHORITIES)
+            .build();
+
+    public final static at.tuwien.api.keycloak.UserDto USER_3_KEYCLOAK_DTO = at.tuwien.api.keycloak.UserDto.builder()
+            .id(USER_3_ID)
+            .username(USER_3_USERNAME)
+            .email(USER_3_EMAIL)
+            .emailVerified(USER_3_VERIFIED)
+            .notBefore(USER_3_NOT_BEFORE)
+            .totp(USER_3_TOTP)
             .build();
 
     public final static Principal USER_3_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_3_DETAILS,
@@ -620,7 +515,7 @@ public abstract class BaseTest {
     public final static String USER_4_FIRSTNAME = "JUnit";
     public final static String USER_4_LASTNAME = "4";
     public final static String USER_4_AFFILIATION = "TU Wien";
-    public final static String USER_4_ORCID = null;
+    public final static String USER_4_ORCID_URL = null;
     public final static String USER_4_PASSWORD = "junit4";
     public final static String USER_4_DATABASE_PASSWORD = "*C20EF5C6875857DEFA9BE6E9B62DD76AAAE51882" /* junit4 */;
     public final static String USER_4_EMAIL = "junit4@ossdip.at";
@@ -630,93 +525,43 @@ public abstract class BaseTest {
     public final static Instant USER_4_CREATED = Instant.ofEpochSecond(1677399592) /* 2023-02-26 08:19:52 (UTC) */;
     public final static UUID USER_4_REALM_ID = REALM_DBREPO_ID;
 
-    public final static List<UserAttribute> USER_4_ATTRIBUTES = List.of(UserAttribute.builder()
-                    .id(UUID.fromString("58062219-7b99-4c0d-b00b-236b7d916c04"))
-                    .userId(USER_4_ID)
-                    .name("theme_dark")
-                    .value(USER_4_THEME_DARK.toString())
-                    .build(),
-            UserAttribute.builder()
-                    .id(UUID.fromString("384851ee-83c4-4cda-805e-ce0c1bab71eb"))
-                    .userId(USER_4_ID)
-                    .name("orcid")
-                    .value(null)
-                    .build(),
-            UserAttribute.builder()
-                    .id(UUID.fromString("c2cb2357-5e34-453f-b080-da1c97f56d4a"))
-                    .userId(USER_4_ID)
-                    .name("affiliation")
-                    .value(USER_4_AFFILIATION)
-                    .build());
-
-    public final static List<UserAttributeDto> USER_4_ATTRIBUTES_DTO = List.of(UserAttributeDto.builder()
-                    .id(UUID.fromString("58062219-7b99-4c0d-b00b-236b7d916c04"))
-                    .userId(USER_4_ID)
-                    .name("theme_dark")
-                    .value(USER_4_THEME_DARK.toString())
-                    .build(),
-            UserAttributeDto.builder()
-                    .id(UUID.fromString("384851ee-83c4-4cda-805e-ce0c1bab71eb"))
-                    .userId(USER_4_ID)
-                    .name("orcid")
-                    .value(null)
-                    .build(),
-            UserAttributeDto.builder()
-                    .id(UUID.fromString("c2cb2357-5e34-453f-b080-da1c97f56d4a"))
-                    .userId(USER_4_ID)
-                    .name("affiliation")
-                    .value(USER_4_AFFILIATION)
-                    .build());
+    public final static UserAttributesDto USER_4_ATTRIBUTES_DTO = UserAttributesDto.builder()
+            .themeDark(USER_4_THEME_DARK)
+            .orcid(USER_4_ORCID_URL)
+            .affiliation(USER_4_AFFILIATION)
+            .mariadbPassword(USER_4_DATABASE_PASSWORD)
+            .build();
 
     public final static User USER_4 = User.builder()
             .id(USER_4_ID)
             .username(USER_4_USERNAME)
             .email(USER_4_EMAIL)
-            .emailVerified(true)
-            .databasePassword(USER_4_DATABASE_PASSWORD)
             .firstname(USER_4_FIRSTNAME)
             .lastname(USER_4_LASTNAME)
-            .emailVerified(USER_4_VERIFIED)
-            .enabled(USER_4_ENABLED)
-            .realmId(USER_4_REALM_ID)
-            .attributes(USER_4_ATTRIBUTES)
-            .build();
-
-    public final static User USER_4_SIMPLE = User.builder()
-            .id(USER_4_ID)
-            .username(USER_4_USERNAME)
-            .email(USER_4_EMAIL)
-            .emailVerified(true)
-            .databasePassword(USER_4_DATABASE_PASSWORD)
-            .firstname(USER_4_FIRSTNAME)
-            .lastname(USER_4_LASTNAME)
-            .emailVerified(USER_4_VERIFIED)
-            .enabled(USER_4_ENABLED)
-            .realmId(USER_4_REALM_ID)
-            .attributes(List.of() /* for jpa */)
+            .affiliation(USER_4_AFFILIATION)
+            .orcid(USER_4_ORCID_URL)
+            .themeDark(USER_4_THEME_DARK)
+            .mariadbPassword(USER_4_DATABASE_PASSWORD)
             .build();
 
     public final static UserDto USER_4_DTO = UserDto.builder()
             .id(USER_4_ID)
             .username(USER_4_USERNAME)
             .email(USER_4_EMAIL)
-            .emailVerified(true)
             .firstname(USER_4_FIRSTNAME)
             .lastname(USER_4_LASTNAME)
-            .emailVerified(USER_4_VERIFIED)
             .attributes(USER_4_ATTRIBUTES_DTO)
             .build();
 
     public final static UserBriefDto USER_4_BRIEF_DTO = UserBriefDto.builder()
             .id(USER_4_ID)
             .username(USER_4_USERNAME)
-            .emailVerified(true)
             .firstname(USER_4_FIRSTNAME)
             .lastname(USER_4_LASTNAME)
-            .emailVerified(USER_4_VERIFIED)
             .build();
 
     public final static UserDetails USER_4_DETAILS = UserDetailsDto.builder()
+            .id(USER_4_ID.toString())
             .username(USER_4_USERNAME)
             .email(USER_4_EMAIL)
             .password(USER_4_PASSWORD)
@@ -741,26 +586,16 @@ public abstract class BaseTest {
     public final static Instant USER_5_CREATED = Instant.ofEpochSecond(1677399592) /* 2023-02-26 08:19:52 (UTC) */;
     public final static UUID USER_5_REALM_ID = REALM_DBREPO_ID;
 
-    public final static User USER_5 = User.builder()
-            .id(USER_5_ID)
-            .username(USER_5_USERNAME)
-            .email(USER_5_EMAIL)
-            .emailVerified(USER_5_VERIFIED)
-            .enabled(USER_5_ENABLED)
-            .databasePassword(USER_5_DATABASE_PASSWORD)
-            .realmId(USER_5_REALM_ID)
-            .build();
-
     public final static UserDto USER_5_DTO = UserDto.builder()
             .id(USER_5_ID)
             .username(USER_5_USERNAME)
             .email(USER_5_EMAIL)
             .firstname(USER_5_FIRSTNAME)
             .lastname(USER_5_LASTNAME)
-            .emailVerified(USER_5_VERIFIED)
             .build();
 
     public final static UserDetails USER_5_DETAILS = UserDetailsDto.builder()
+            .id(USER_5_ID.toString())
             .username(USER_5_USERNAME)
             .email(USER_5_EMAIL)
             .password(USER_5_PASSWORD)
@@ -769,6 +604,17 @@ public abstract class BaseTest {
 
     public final static Principal USER_5_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_5_DETAILS,
             USER_5_PASSWORD, USER_5_DETAILS.getAuthorities());
+
+    public final static User USER_5 = User.builder()
+            .id(USER_5_ID)
+            .username(USER_5_USERNAME)
+            .email(USER_5_EMAIL)
+            .firstname(USER_5_FIRSTNAME)
+            .lastname(USER_5_LASTNAME)
+            .affiliation(USER_5_AFFILIATION)
+            .themeDark(USER_5_THEME_DARK)
+            .mariadbPassword(USER_5_DATABASE_PASSWORD)
+            .build(); 
 
     public final static UUID USER_6_ID = UUID.fromString("28ff851d-d7bc-4422-959c-edd7a5b15630");
     public final static String USER_6_USERNAME = "system";
@@ -785,26 +631,16 @@ public abstract class BaseTest {
     public final static Instant USER_6_CREATED = Instant.ofEpochSecond(1677399592) /* 2023-02-26 08:19:52 (UTC) */;
     public final static UUID USER_6_REALM_ID = REALM_DBREPO_ID;
 
-    public final static User USER_6 = User.builder()
-            .id(USER_6_ID)
-            .username(USER_6_USERNAME)
-            .email(USER_6_EMAIL)
-            .emailVerified(USER_6_VERIFIED)
-            .enabled(USER_6_ENABLED)
-            .databasePassword(USER_6_DATABASE_PASSWORD)
-            .realmId(USER_6_REALM_ID)
-            .build();
-
     public final static UserDto USER_6_DTO = UserDto.builder()
             .id(USER_6_ID)
             .username(USER_6_USERNAME)
             .email(USER_6_EMAIL)
             .firstname(USER_6_FIRSTNAME)
             .lastname(USER_6_LASTNAME)
-            .emailVerified(USER_6_VERIFIED)
             .build();
 
     public final static UserDetails USER_6_DETAILS = UserDetailsDto.builder()
+            .id(USER_6_ID.toString())
             .username(USER_6_USERNAME)
             .email(USER_6_EMAIL)
             .password(USER_6_PASSWORD)
@@ -977,7 +813,6 @@ public abstract class BaseTest {
     public final static String IMAGE_2_JDBC = "mysql";
     public final static Long IMAGE_2_SIZE = 12000L;
     public final static Instant IMAGE_2_BUILT = Instant.now().minus(38, HOURS);
-
 
     public final static Long CONTAINER_1_ID = 1L;
     public final static ContainerImage CONTAINER_1_IMAGE = IMAGE_1;
@@ -1169,8 +1004,8 @@ public abstract class BaseTest {
     public final static String DATABASE_1_EXCHANGE = "dbrepo." + DATABASE_1_INTERNALNAME;
     public final static Instant DATABASE_1_CREATED = Instant.ofEpochSecond(1677399741) /* 2023-02-26 08:22:21 (UTC) */;
     public final static Instant DATABASE_1_LAST_MODIFIED = Instant.ofEpochSecond(1677399741) /* 2023-02-26 08:22:21 (UTC) */;
-    public final static User DATABASE_1_OWNER = USER_1;
-    public final static User DATABASE_1_CREATOR = USER_1;
+    public final static UUID DATABASE_1_OWNER = USER_1_ID;
+    public final static UUID DATABASE_1_CREATOR = USER_1_ID;
 
     public final static Database DATABASE_1 = Database.builder()
             .id(DATABASE_1_ID)
@@ -1185,12 +1020,12 @@ public abstract class BaseTest {
             .exchangeName(DATABASE_1_EXCHANGE)
             .created(DATABASE_1_CREATED)
             .lastModified(DATABASE_1_LAST_MODIFIED)
-            .createdBy(USER_1_ID)
-            .ownedBy(USER_1_ID)
+            .createdBy(DATABASE_1_CREATOR)
+            .creator(USER_1)
+            .ownedBy(DATABASE_1_OWNER)
+            .owner(USER_1)
             .contactPerson(USER_1_ID)
             .contact(USER_1)
-            .creator(DATABASE_1_CREATOR)
-            .owner(DATABASE_1_OWNER)
             .tables(List.of()) /* TABLE_1, TABLE_2, TABLE_3, TABLE_7 */
             .views(List.of()) /* VIEW_2, VIEW_3 */
             .build();
@@ -1211,9 +1046,6 @@ public abstract class BaseTest {
             .createdBy(USER_1_ID)
             .ownedBy(USER_1_ID)
             .contactPerson(USER_1_ID)
-            .contact(null /* for jpa */)
-            .creator(null /* for jpa */)
-            .owner(null /* for jpa */)
             .tables(List.of() /* for jpa */)
             .views(List.of() /* for jpa */)
             .build();
@@ -1242,63 +1074,54 @@ public abstract class BaseTest {
             .type(AccessType.READ)
             .hdbid(DATABASE_1_ID)
             .huserid(USER_1_ID)
-            .user(USER_1)
             .build();
 
     public final static DatabaseAccess DATABASE_1_USER_1_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_1_ID)
             .huserid(USER_1_ID)
-            .user(USER_1)
             .build();
 
     public final static DatabaseAccess DATABASE_1_USER_1_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_1_ID)
             .huserid(USER_1_ID)
-            .user(USER_1)
             .build();
 
     public final static DatabaseAccess DATABASE_1_USER_2_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_1_ID)
             .huserid(USER_2_ID)
-            .user(USER_2)
             .build();
 
     public final static DatabaseAccess DATABASE_1_USER_2_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_1_ID)
             .huserid(USER_2_ID)
-            .user(USER_2)
             .build();
 
     public final static DatabaseAccess DATABASE_1_USER_2_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_1_ID)
             .huserid(USER_2_ID)
-            .user(USER_2)
             .build();
 
     public final static DatabaseAccess DATABASE_1_USER_3_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_1_ID)
             .huserid(USER_3_ID)
-            .user(USER_3)
             .build();
 
     public final static DatabaseAccess DATABASE_1_USER_3_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_1_ID)
             .huserid(USER_3_ID)
-            .user(USER_3)
             .build();
 
     public final static DatabaseAccess DATABASE_1_USER_3_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_1_ID)
             .huserid(USER_3_ID)
-            .user(USER_3)
             .build();
 
     public final static DatabaseCreateDto DATABASE_1_CREATE = DatabaseCreateDto.builder()
@@ -1315,8 +1138,8 @@ public abstract class BaseTest {
     public final static String DATABASE_2_EXCHANGE = "dbrepo." + DATABASE_2_INTERNALNAME;
     public final static Instant DATABASE_2_CREATED = Instant.ofEpochSecond(1677399772) /* 2023-02-26 08:22:52 (UTC) */;
     public final static Instant DATABASE_2_LAST_MODIFIED = Instant.ofEpochSecond(1677399772) /* 2023-02-26 08:22:52 (UTC) */;
-    public final static User DATABASE_2_OWNER = USER_2;
-    public final static User DATABASE_2_CREATOR = USER_2;
+    public final static UUID DATABASE_2_OWNER = USER_2_ID;
+    public final static UUID DATABASE_2_CREATOR = USER_2_ID;
 
     public final static Database DATABASE_2 = Database.builder()
             .id(DATABASE_2_ID)
@@ -1331,12 +1154,12 @@ public abstract class BaseTest {
             .exchangeName(DATABASE_2_EXCHANGE)
             .created(DATABASE_2_CREATED)
             .lastModified(DATABASE_2_LAST_MODIFIED)
-            .createdBy(USER_2_ID)
+            .createdBy(DATABASE_2_CREATOR)
+            .creator(USER_2)
+            .ownedBy(DATABASE_2_OWNER)
+            .owner(USER_2)
             .contactPerson(USER_2_ID)
             .contact(USER_2)
-            .ownedBy(USER_2_ID)
-            .creator(DATABASE_2_CREATOR)
-            .owner(DATABASE_2_OWNER)
             .tables(List.of()) /* TABLE_4, TABLE_5, TABLE_6 */
             .views(List.of()) /* VIEW_4 */
             .build();
@@ -1357,9 +1180,6 @@ public abstract class BaseTest {
             .createdBy(USER_2_ID)
             .ownedBy(USER_2_ID)
             .contactPerson(USER_1_ID)
-            .contact(null /* for jpa */)
-            .creator(null /* for jpa */)
-            .owner(null /* for jpa */)
             .tables(List.of() /* for jpa */)
             .views(List.of() /* for jpa */)
             .build();
@@ -1388,63 +1208,54 @@ public abstract class BaseTest {
             .type(AccessType.READ)
             .hdbid(DATABASE_2_ID)
             .huserid(USER_1_ID)
-            .user(USER_1)
             .build();
 
     public final static DatabaseAccess DATABASE_2_USER_1_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_2_ID)
             .huserid(USER_1_ID)
-            .user(USER_1)
             .build();
 
     public final static DatabaseAccess DATABASE_2_USER_1_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_2_ID)
             .huserid(USER_1_ID)
-            .user(USER_1)
             .build();
 
     public final static DatabaseAccess DATABASE_2_USER_2_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_2_ID)
             .huserid(USER_2_ID)
-            .user(USER_2)
             .build();
 
     public final static DatabaseAccess DATABASE_2_USER_2_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_2_ID)
             .huserid(USER_2_ID)
-            .user(USER_2)
             .build();
 
     public final static DatabaseAccess DATABASE_2_USER_2_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_2_ID)
             .huserid(USER_2_ID)
-            .user(USER_2)
             .build();
 
     public final static DatabaseAccess DATABASE_2_USER_3_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_2_ID)
             .huserid(USER_3_ID)
-            .user(USER_3)
             .build();
 
     public final static DatabaseAccess DATABASE_2_USER_3_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_2_ID)
             .huserid(USER_3_ID)
-            .user(USER_3)
             .build();
 
     public final static DatabaseAccess DATABASE_2_USER_3_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_2_ID)
             .huserid(USER_3_ID)
-            .user(USER_3)
             .build();
 
     public final static DatabaseCreateDto DATABASE_2_CREATE = DatabaseCreateDto.builder()
@@ -1461,8 +1272,8 @@ public abstract class BaseTest {
     public final static String DATABASE_3_EXCHANGE = "dbrepo." + DATABASE_3_INTERNALNAME;
     public final static Instant DATABASE_3_CREATED = Instant.ofEpochSecond(1677399792) /* 2023-02-26 08:23:12 (UTC) */;
     public final static Instant DATABASE_3_LAST_MODIFIED = Instant.ofEpochSecond(1677399792) /* 2023-02-26 08:23:12 (UTC) */;
-    public final static User DATABASE_3_OWNER = USER_3;
-    public final static User DATABASE_3_CREATOR = USER_3;
+    public final static UUID DATABASE_3_OWNER = USER_3_ID;
+    public final static UUID DATABASE_3_CREATOR = USER_3_ID;
 
     public final static Database DATABASE_3 = Database.builder()
             .id(DATABASE_3_ID)
@@ -1477,12 +1288,12 @@ public abstract class BaseTest {
             .exchangeName(DATABASE_3_EXCHANGE)
             .created(DATABASE_3_CREATED)
             .lastModified(DATABASE_3_LAST_MODIFIED)
+            .createdBy(DATABASE_3_CREATOR)
+            .creator(USER_3)
+            .ownedBy(DATABASE_3_OWNER)
+            .owner(USER_3)
             .contactPerson(USER_3_ID)
             .contact(USER_3)
-            .createdBy(USER_3_ID)
-            .ownedBy(USER_3_ID)
-            .creator(DATABASE_3_CREATOR)
-            .owner(DATABASE_3_OWNER)
             .tables(List.of()) /* TABLE_8 */
             .views(List.of()) /* VIEW_5 */
             .build();
@@ -1501,11 +1312,8 @@ public abstract class BaseTest {
             .created(DATABASE_3_CREATED)
             .lastModified(DATABASE_3_LAST_MODIFIED)
             .contactPerson(USER_3_ID)
-            .contact(null /* for jpa */)
             .createdBy(USER_3_ID)
             .ownedBy(USER_3_ID)
-            .creator(null /* for jpa */)
-            .owner(null /* for jpa */)
             .tables(List.of() /* for jpa */)
             .views(List.of() /* for jpa */)
             .build();
@@ -1533,63 +1341,54 @@ public abstract class BaseTest {
             .type(AccessType.READ)
             .hdbid(DATABASE_3_ID)
             .huserid(USER_1_ID)
-            .user(USER_1)
             .build();
 
     public final static DatabaseAccess DATABASE_3_USER_1_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_3_ID)
             .huserid(USER_1_ID)
-            .user(USER_1)
             .build();
 
     public final static DatabaseAccess DATABASE_3_USER_1_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_3_ID)
             .huserid(USER_1_ID)
-            .user(USER_1)
             .build();
 
     public final static DatabaseAccess DATABASE_3_USER_2_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_3_ID)
             .huserid(USER_2_ID)
-            .user(USER_2)
             .build();
 
     public final static DatabaseAccess DATABASE_3_USER_2_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_3_ID)
             .huserid(USER_2_ID)
-            .user(USER_2)
             .build();
 
     public final static DatabaseAccess DATABASE_3_USER_2_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_3_ID)
             .huserid(USER_2_ID)
-            .user(USER_2)
             .build();
 
     public final static DatabaseAccess DATABASE_3_USER_3_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_3_ID)
             .huserid(USER_3_ID)
-            .user(USER_3)
             .build();
 
     public final static DatabaseAccess DATABASE_3_USER_3_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_3_ID)
             .huserid(USER_3_ID)
-            .user(USER_3)
             .build();
 
     public final static DatabaseAccess DATABASE_3_USER_3_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_3_ID)
             .huserid(USER_3_ID)
-            .user(USER_3)
             .build();
 
     public final static DatabaseCreateDto DATABASE_3_CREATE = DatabaseCreateDto.builder()
@@ -1606,6 +1405,8 @@ public abstract class BaseTest {
     public final static String DATABASE_4_EXCHANGE = "dbrepo." + DATABASE_4_INTERNALNAME;
     public final static Instant DATABASE_4_CREATED = Instant.ofEpochSecond(1677399813) /* 2023-02-26 08:23:33 (UTC) */;
     public final static Instant DATABASE_4_LAST_MODIFIED = Instant.ofEpochSecond(1677399813) /* 2023-02-26 08:23:33 (UTC) */;
+    public final static UUID DATABASE_4_OWNER = USER_4_ID;
+    public final static UUID DATABASE_4_CREATOR = USER_4_ID;
 
     public final static Database DATABASE_4 = Database.builder()
             .id(DATABASE_4_ID)
@@ -1620,12 +1421,12 @@ public abstract class BaseTest {
             .exchangeName(DATABASE_4_EXCHANGE)
             .created(DATABASE_4_CREATED)
             .lastModified(DATABASE_4_LAST_MODIFIED)
+            .createdBy(DATABASE_4_CREATOR)
+            .creator(USER_4)
+            .ownedBy(DATABASE_4_OWNER)
+            .owner(USER_4)
             .contactPerson(USER_4_ID)
             .contact(USER_4)
-            .createdBy(USER_4_ID)
-            .ownedBy(USER_4_ID)
-            .creator(USER_4)
-            .owner(USER_4)
             .tables(List.of())
             .views(List.of())
             .build();
@@ -1671,11 +1472,8 @@ public abstract class BaseTest {
             .created(DATABASE_4_CREATED)
             .lastModified(DATABASE_4_LAST_MODIFIED)
             .contactPerson(USER_4_ID)
-            .contact(null /* for jpa */)
             .createdBy(USER_4_ID)
             .ownedBy(USER_4_ID)
-            .creator(null /* for jpa */)
-            .owner(null /* for jpa */)
             .tables(List.of() /* for jpa */)
             .views(List.of() /* for jpa */)
             .build();
@@ -1684,63 +1482,54 @@ public abstract class BaseTest {
             .type(AccessType.READ)
             .hdbid(DATABASE_4_ID)
             .huserid(USER_1_ID)
-            .user(USER_1)
             .build();
 
     public final static DatabaseAccess DATABASE_4_USER_1_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_4_ID)
             .huserid(USER_1_ID)
-            .user(USER_1)
             .build();
 
     public final static DatabaseAccess DATABASE_4_USER_1_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_4_ID)
             .huserid(USER_1_ID)
-            .user(USER_1)
             .build();
 
     public final static DatabaseAccess DATABASE_4_USER_2_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_4_ID)
             .huserid(USER_2_ID)
-            .user(USER_2)
             .build();
 
     public final static DatabaseAccess DATABASE_4_USER_2_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_4_ID)
             .huserid(USER_2_ID)
-            .user(USER_2)
             .build();
 
     public final static DatabaseAccess DATABASE_4_USER_2_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_4_ID)
             .huserid(USER_2_ID)
-            .user(USER_2)
             .build();
 
     public final static DatabaseAccess DATABASE_4_USER_3_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_4_ID)
             .huserid(USER_3_ID)
-            .user(USER_3)
             .build();
 
     public final static DatabaseAccess DATABASE_4_USER_3_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_4_ID)
             .huserid(USER_3_ID)
-            .user(USER_3)
             .build();
 
     public final static DatabaseAccess DATABASE_4_USER_3_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_4_ID)
             .huserid(USER_3_ID)
-            .user(USER_3)
             .build();
 
     public final static Long TABLE_1_ID = 1L;
@@ -1769,9 +1558,9 @@ public abstract class BaseTest {
             .routingKey(TABLE_1_ROUTING_KEY)
             .columns(List.of() /* needs to be set in the junit tests */)
             .constraints(null /* TABLE_1_CONSTRAINTS */)
-            .creator(USER_1)
-            .owner(USER_1)
             .created(TABLE_1_CREATED)
+            .createdBy(USER_1_ID)
+            .ownedBy(USER_1_ID)
             .lastModified(TABLE_1_LAST_MODIFIED)
             .build();
 
@@ -1789,9 +1578,9 @@ public abstract class BaseTest {
             .routingKey(TABLE_1_ROUTING_KEY)
             .columns(List.of() /* needs to be set in the junit tests */)
             .constraints(null /* TABLE_1_CONSTRAINTS */)
-            .creator(USER_1)
-            .owner(USER_1)
             .created(TABLE_1_CREATED)
+            .createdBy(USER_1_ID)
+            .ownedBy(USER_1_ID)
             .lastModified(TABLE_1_LAST_MODIFIED)
             .build();
 
@@ -1821,8 +1610,8 @@ public abstract class BaseTest {
             .routingKey(TABLE_2_ROUTING_KEY)
             .columns(List.of() /* needs to be set in the junit tests */)
             .constraints(null /* TABLE_2_CONSTRAINTS */)
-            .creator(USER_1)
-            .owner(USER_1)
+            .createdBy(USER_2_ID)
+            .ownedBy(USER_2_ID)
             .created(TABLE_2_CREATED)
             .lastModified(TABLE_2_LAST_MODIFIED)
             .build();
@@ -1841,8 +1630,8 @@ public abstract class BaseTest {
             .routingKey(TABLE_2_ROUTING_KEY)
             .columns(List.of() /* for jpa */)
             .constraints(null /* TABLE_2_CONSTRAINTS */)
-            .creator(USER_1)
-            .owner(USER_1)
+            .createdBy(USER_2_ID)
+            .ownedBy(USER_2_ID)
             .created(TABLE_2_CREATED)
             .lastModified(TABLE_2_LAST_MODIFIED)
             .build();
@@ -1873,8 +1662,8 @@ public abstract class BaseTest {
             .routingKey(TABLE_3_ROUTING_KEY)
             .columns(List.of() /* needs to be set in the junit tests */)
             .constraints(null /* TABLE_3_CONSTRAINTS */)
-            .creator(USER_1)
-            .owner(USER_1)
+            .createdBy(USER_3_ID)
+            .ownedBy(USER_3_ID)
             .created(TABLE_3_CREATED)
             .lastModified(TABLE_3_LAST_MODIFIED)
             .build();
@@ -1893,8 +1682,8 @@ public abstract class BaseTest {
             .routingKey(TABLE_3_ROUTING_KEY)
             .columns(List.of() /* for jpa */)
             .constraints(null /* TABLE_3_CONSTRAINTS */)
-            .creator(USER_1)
-            .owner(USER_1)
+            .createdBy(USER_3_ID)
+            .ownedBy(USER_3_ID)
             .created(TABLE_3_CREATED)
             .lastModified(TABLE_3_LAST_MODIFIED)
             .build();
@@ -1949,8 +1738,8 @@ public abstract class BaseTest {
             .routingKey(TABLE_4_ROUTING_KEY)
             .columns(List.of() /* needs to be set in the junit tests */)
             .constraints(null) /* TABLE_4_CONSTRAINTS */
-            .creator(USER_1)
-            .owner(USER_1)
+            .createdBy(USER_1_ID)
+            .ownedBy(USER_1_ID)
             .build();
 
     public final static Table TABLE_4_SIMPLE = Table.builder()
@@ -1967,8 +1756,8 @@ public abstract class BaseTest {
             .routingKey(TABLE_4_ROUTING_KEY)
             .columns(List.of() /* for jpa */)
             .constraints(null /* for jpa */)
-            .creator(USER_1)
-            .owner(USER_1)
+            .createdBy(USER_1_ID)
+            .ownedBy(USER_1_ID)
             .build();
 
     public final static TableCsvDto TABLE_4_CSV_DTO = TableCsvDto.builder()
@@ -2001,8 +1790,8 @@ public abstract class BaseTest {
             .routingKey(TABLE_5_ROUTING_KEY)
             .columns(List.of() /* needs to be set in the junit tests */)
             .constraints(null) /* TABLE_5_CONSTRAINTS */
-            .creator(USER_1)
-            .owner(USER_1)
+            .createdBy(USER_1_ID)
+            .ownedBy(USER_1_ID)
             .created(TABLE_5_CREATED)
             .lastModified(TABLE_5_LAST_MODIFIED)
             .build();
@@ -2021,8 +1810,8 @@ public abstract class BaseTest {
             .routingKey(TABLE_5_ROUTING_KEY)
             .columns(List.of() /* for jpa */)
             .constraints(null /* for jpa */)
-            .creator(USER_1)
-            .owner(USER_1)
+            .createdBy(USER_1_ID)
+            .ownedBy(USER_1_ID)
             .created(TABLE_5_CREATED)
             .lastModified(TABLE_5_LAST_MODIFIED)
             .build();
@@ -2051,8 +1840,8 @@ public abstract class BaseTest {
             .routingKey(TABLE_6_ROUTING_KEY)
             .columns(List.of() /* needs to be set in the junit tests */)
             .constraints(null) /* TABLE_6_CONSTRAINTS */
-            .creator(USER_1)
-            .owner(USER_1)
+            .createdBy(USER_1_ID)
+            .ownedBy(USER_1_ID)
             .created(TABLE_6_CREATED)
             .lastModified(TABLE_6_LAST_MODIFIED)
             .build();
@@ -2070,8 +1859,8 @@ public abstract class BaseTest {
             .queueName(TABLE_6_QUEUE_NAME)
             .routingKey(TABLE_6_ROUTING_KEY)
             .columns(List.of() /* for jpa */)
-            .creator(USER_1)
-            .owner(USER_1)
+            .createdBy(USER_1_ID)
+            .ownedBy(USER_1_ID)
             .created(TABLE_6_CREATED)
             .lastModified(TABLE_6_LAST_MODIFIED)
             .build();
@@ -2098,8 +1887,8 @@ public abstract class BaseTest {
             .queueName(TABLE_7_QUEUE_NAME)
             .routingKey(TABLE_7_ROUTING_KEY)
             .columns(List.of() /* needs to be set in the junit tests */)
-            .creator(USER_1)
-            .owner(USER_1)
+            .createdBy(USER_1_ID)
+            .ownedBy(USER_1_ID)
             .created(TABLE_7_CREATED)
             .lastModified(TABLE_7_LAST_MODIFIED)
             .build();
@@ -2116,8 +1905,8 @@ public abstract class BaseTest {
             .queueName(TABLE_7_QUEUE_NAME)
             .routingKey(TABLE_7_ROUTING_KEY)
             .columns(List.of() /* for jpa */)
-            .creator(USER_1)
-            .owner(USER_1)
+            .createdBy(USER_1_ID)
+            .ownedBy(USER_1_ID)
             .created(TABLE_7_CREATED)
             .lastModified(TABLE_7_LAST_MODIFIED)
             .build();
@@ -2207,8 +1996,8 @@ public abstract class BaseTest {
             .queueName(TABLE_8_QUEUE_NAME)
             .routingKey(TABLE_8_ROUTING_KEY)
             .columns(List.of() /* needs to be set in the junit tests */)
-            .creator(USER_1)
-            .owner(USER_1)
+            .createdBy(USER_1_ID)
+            .ownedBy(USER_1_ID)
             .created(TABLE_8_CREATED)
             .lastModified(TABLE_8_LAST_MODIFIED)
             .build();
@@ -2225,8 +2014,8 @@ public abstract class BaseTest {
             .queueName(TABLE_8_QUEUE_NAME)
             .routingKey(TABLE_8_ROUTING_KEY)
             .columns(List.of() /* for jpa */)
-            .creator(USER_1)
-            .owner(USER_1)
+            .createdBy(USER_1_ID)
+            .ownedBy(USER_1_ID)
             .created(TABLE_8_CREATED)
             .lastModified(TABLE_8_LAST_MODIFIED)
             .build();
@@ -5271,7 +5060,6 @@ public abstract class BaseTest {
             .query(VIEW_1_QUERY)
             .queryHash(VIEW_1_QUERY_HASH)
             .createdBy(USER_1_ID)
-            .creator(USER_1)
             .columns(VIEW_1_COLUMNS)
             .build();
 
@@ -5375,7 +5163,6 @@ public abstract class BaseTest {
             .columns(VIEW_2_COLUMNS)
             .query(VIEW_2_QUERY)
             .queryHash(VIEW_2_QUERY_HASH)
-            .creator(USER_1)
             .createdBy(USER_1_ID)
             .build();
 
@@ -5515,7 +5302,6 @@ public abstract class BaseTest {
             .columns(VIEW_3_COLUMNS)
             .query(VIEW_3_QUERY)
             .queryHash(VIEW_3_QUERY_HASH)
-            .creator(USER_1)
             .createdBy(USER_1_ID)
             .build();
 
@@ -5777,7 +5563,6 @@ public abstract class BaseTest {
             .query(VIEW_4_QUERY)
             .queryHash(VIEW_4_QUERY_HASH)
             .createdBy(USER_1_ID)
-            .creator(USER_1)
             .columns(VIEW_4_COLUMNS)
             .build();
 
@@ -5800,7 +5585,6 @@ public abstract class BaseTest {
             .isPublic(VIEW_5_PUBLIC)
             .query(VIEW_5_QUERY)
             .queryHash(VIEW_5_QUERY_HASH)
-            .creator(USER_1)
             .createdBy(USER_1_ID)
             .build();
 
@@ -5916,7 +5700,6 @@ public abstract class BaseTest {
     public final static IdentifierType IDENTIFIER_1_TYPE = IdentifierType.DATABASE;
     public final static IdentifierTypeDto IDENTIFIER_1_TYPE_DTO = IdentifierTypeDto.DATABASE;
     public final static UUID IDENTIFIER_1_CREATED_BY = USER_1_ID;
-    public final static User IDENTIFIER_1_CREATOR = USER_1;
     public final static VisibilityType IDENTIFIER_1_VISIBILITY = VisibilityType.EVERYONE;
     public final static VisibilityTypeDto IDENTIFIER_1_VISIBILITY_DTO = VisibilityTypeDto.EVERYONE;
 
@@ -6139,7 +5922,7 @@ public abstract class BaseTest {
             .resultNumber(IDENTIFIER_1_RESULT_NUMBER)
             .publisher(IDENTIFIER_1_PUBLISHER)
             .type(IDENTIFIER_1_TYPE)
-            .creator(USER_1)
+            .createdBy(USER_1_ID)
             .licenses(List.of(LICENSE_1))
             .creators(List.of(IDENTIFIER_1_CREATOR_1))
             .funders(List.of(IDENTIFIER_1_FUNDER_1))
@@ -6166,7 +5949,7 @@ public abstract class BaseTest {
             .resultNumber(IDENTIFIER_1_RESULT_NUMBER)
             .publisher(IDENTIFIER_1_PUBLISHER)
             .type(IDENTIFIER_1_TYPE)
-            .creator(USER_1)
+            .createdBy(USER_1_ID)
             .licenses(List.of() /* for jpa */)
             .creators(List.of() /* for jpa */)
             .funders(List.of() /* for jpa */)
@@ -6193,7 +5976,7 @@ public abstract class BaseTest {
             .resultNumber(IDENTIFIER_1_RESULT_NUMBER)
             .publisher(IDENTIFIER_1_PUBLISHER)
             .type(IDENTIFIER_1_TYPE)
-            .creator(USER_1)
+            .createdBy(USER_1_ID)
             .licenses(List.of(LICENSE_1))
             .creators(List.of(IDENTIFIER_1_CREATOR_1))
             .funders(List.of(IDENTIFIER_1_FUNDER_1))
@@ -6322,8 +6105,6 @@ public abstract class BaseTest {
     public final static String IDENTIFIER_2_PUBLISHER = "Australian Government";
     public final static IdentifierType IDENTIFIER_2_TYPE = IdentifierType.SUBSET;
     public final static IdentifierTypeDto IDENTIFIER_2_TYPE_DTO = IdentifierTypeDto.SUBSET;
-    public final static UUID IDENTIFIER_2_CREATED_BY = USER_2_ID;
-    public final static User IDENTIFIER_2_CREATOR = USER_2;
     public final static VisibilityType IDENTIFIER_2_VISIBILITY = VisibilityType.SELF;
     public final static VisibilityTypeDto IDENTIFIER_2_VISIBILITY_DTO = VisibilityTypeDto.SELF;
 
@@ -6487,7 +6268,7 @@ public abstract class BaseTest {
             .resultNumber(IDENTIFIER_2_RESULT_NUMBER)
             .publisher(IDENTIFIER_2_PUBLISHER)
             .type(IDENTIFIER_2_TYPE)
-            .creator(USER_2)
+            .createdBy(USER_2_ID)
             .creators(List.of(IDENTIFIER_2_CREATOR_1, IDENTIFIER_2_CREATOR_2))
             .visibility(IDENTIFIER_2_VISIBILITY)
             .build();
@@ -6513,7 +6294,7 @@ public abstract class BaseTest {
             .resultNumber(IDENTIFIER_2_RESULT_NUMBER)
             .publisher(IDENTIFIER_2_PUBLISHER)
             .type(IDENTIFIER_2_TYPE)
-            .creator(USER_2)
+            .createdBy(USER_2_ID)
             .creators(List.of() /* for jpa */)
             .visibility(IDENTIFIER_2_VISIBILITY)
             .build();
@@ -6616,8 +6397,6 @@ public abstract class BaseTest {
     public final static String IDENTIFIER_3_PUBLISHER = "Norwegian Government";
     public final static IdentifierType IDENTIFIER_3_TYPE = IdentifierType.SUBSET;
     public final static IdentifierTypeDto IDENTIFIER_3_TYPE_DTO = IdentifierTypeDto.SUBSET;
-    public final static UUID IDENTIFIER_3_CREATOR_ID = USER_3_ID;
-    public final static User IDENTIFIER_3_CREATOR = USER_3;
     public final static VisibilityType IDENTIFIER_3_VISIBILITY = VisibilityType.EVERYONE;
     public final static VisibilityTypeDto IDENTIFIER_3_VISIBILITY_DTO = VisibilityTypeDto.EVERYONE;
 
@@ -6796,7 +6575,7 @@ public abstract class BaseTest {
             .resultNumber(IDENTIFIER_3_RESULT_NUMBER)
             .publisher(IDENTIFIER_3_PUBLISHER)
             .type(IDENTIFIER_3_TYPE)
-            .creator(IDENTIFIER_3_CREATOR)
+            .createdBy(USER_3_ID)
             .licenses(List.of(LICENSE_1))
             .creators(List.of(IDENTIFIER_3_CREATOR_1, IDENTIFIER_3_CREATOR_2, IDENTIFIER_3_CREATOR_3))
             .visibility(IDENTIFIER_3_VISIBILITY)
@@ -6823,7 +6602,7 @@ public abstract class BaseTest {
             .resultNumber(IDENTIFIER_3_RESULT_NUMBER)
             .publisher(IDENTIFIER_3_PUBLISHER)
             .type(IDENTIFIER_3_TYPE)
-            .creator(IDENTIFIER_3_CREATOR)
+            .createdBy(USER_3_ID)
             .licenses(List.of() /* for jpa */)
             .creators(List.of() /* for jpa */)
             .visibility(IDENTIFIER_3_VISIBILITY)
@@ -6903,8 +6682,6 @@ public abstract class BaseTest {
     public final static String IDENTIFIER_4_PUBLISHER = "Swedish Government";
     public final static IdentifierType IDENTIFIER_4_TYPE = IdentifierType.DATABASE;
     public final static IdentifierTypeDto IDENTIFIER_4_TYPE_DTO = IdentifierTypeDto.DATABASE;
-    public final static UUID IDENTIFIER_4_CREATOR_ID = USER_4_ID;
-    public final static User IDENTIFIER_4_CREATOR = USER_4;
     public final static VisibilityType IDENTIFIER_4_VISIBILITY = VisibilityType.EVERYONE;
     public final static VisibilityTypeDto IDENTIFIER_4_VISIBILITY_DTO = VisibilityTypeDto.EVERYONE;
 
@@ -6956,7 +6733,7 @@ public abstract class BaseTest {
             .resultNumber(IDENTIFIER_4_RESULT_NUMBER)
             .publisher(IDENTIFIER_4_PUBLISHER)
             .type(IDENTIFIER_4_TYPE)
-            .creator(IDENTIFIER_4_CREATOR)
+            .createdBy(USER_4_ID)
             .licenses(List.of())
             .creators(List.of())
             .funders(List.of())
@@ -6983,7 +6760,7 @@ public abstract class BaseTest {
             .resultNumber(IDENTIFIER_4_RESULT_NUMBER)
             .publisher(IDENTIFIER_4_PUBLISHER)
             .type(IDENTIFIER_4_TYPE)
-            .creator(IDENTIFIER_4_CREATOR)
+            .createdBy(USER_4_ID)
             .licenses(List.of())
             .funders(List.of())
             .creators(List.of())
@@ -7059,8 +6836,6 @@ public abstract class BaseTest {
     public final static String IDENTIFIER_5_PUBLISHER = "Swedish Government";
     public final static IdentifierType IDENTIFIER_5_TYPE = IdentifierType.SUBSET;
     public final static IdentifierTypeDto IDENTIFIER_5_TYPE_DTO = IdentifierTypeDto.SUBSET;
-    public final static UUID IDENTIFIER_5_CREATOR_ID = USER_1_ID;
-    public final static User IDENTIFIER_5_CREATOR = USER_1;
     public final static VisibilityType IDENTIFIER_5_VISIBILITY = VisibilityType.EVERYONE;
     public final static VisibilityTypeDto IDENTIFIER_5_VISIBILITY_DTO = VisibilityTypeDto.EVERYONE;
 
@@ -7084,7 +6859,7 @@ public abstract class BaseTest {
             .resultNumber(IDENTIFIER_5_RESULT_NUMBER)
             .publisher(IDENTIFIER_5_PUBLISHER)
             .type(IDENTIFIER_5_TYPE)
-            .creator(USER_1)
+            .createdBy(USER_1_ID)
             .licenses(List.of(LICENSE_1))
             .creators(List.of())
             .visibility(IDENTIFIER_5_VISIBILITY)
@@ -7110,7 +6885,7 @@ public abstract class BaseTest {
             .resultNumber(IDENTIFIER_5_RESULT_NUMBER)
             .publisher(IDENTIFIER_5_PUBLISHER)
             .type(IDENTIFIER_5_TYPE)
-            .creator(USER_1)
+            .createdBy(USER_1_ID)
             .licenses(List.of() /* for jpa */)
             .creators(List.of() /* for jpa */)
             .visibility(IDENTIFIER_5_VISIBILITY)
@@ -7175,8 +6950,6 @@ public abstract class BaseTest {
     public final static String IDENTIFIER_6_PUBLISHER = "Polish Government";
     public final static IdentifierType IDENTIFIER_6_TYPE = IdentifierType.VIEW;
     public final static IdentifierTypeDto IDENTIFIER_6_TYPE_DTO = IdentifierTypeDto.VIEW;
-    public final static UUID IDENTIFIER_6_CREATOR_ID = USER_1_ID;
-    public final static User IDENTIFIER_6_CREATOR = USER_1;
     public final static VisibilityType IDENTIFIER_6_VISIBILITY = VisibilityType.EVERYONE;
     public final static VisibilityTypeDto IDENTIFIER_6_VISIBILITY_DTO = VisibilityTypeDto.EVERYONE;
 
@@ -7201,7 +6974,7 @@ public abstract class BaseTest {
             .resultNumber(IDENTIFIER_6_RESULT_NUMBER)
             .publisher(IDENTIFIER_6_PUBLISHER)
             .type(IDENTIFIER_6_TYPE)
-            .creator(USER_1)
+            .createdBy(USER_1_ID)
             .licenses(List.of(LICENSE_1))
             .creators(List.of())
             .visibility(IDENTIFIER_6_VISIBILITY)
@@ -7228,7 +7001,7 @@ public abstract class BaseTest {
             .resultNumber(IDENTIFIER_6_RESULT_NUMBER)
             .publisher(IDENTIFIER_6_PUBLISHER)
             .type(IDENTIFIER_6_TYPE)
-            .creator(USER_1)
+            .createdBy(USER_1_ID)
             .licenses(List.of(LICENSE_1))
             .creators(List.of())
             .visibility(IDENTIFIER_6_VISIBILITY)

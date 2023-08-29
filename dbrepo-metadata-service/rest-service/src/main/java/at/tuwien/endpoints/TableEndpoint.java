@@ -75,7 +75,7 @@ public class TableEndpoint {
     })
     public ResponseEntity<List<TableBriefDto>> list(@NotNull @PathVariable("databaseId") Long databaseId,
                                                     Principal principal)
-            throws DatabaseNotFoundException, NotAllowedException {
+            throws DatabaseNotFoundException, NotAllowedException, AccessDeniedException {
         log.debug("endpoint list tables, databaseId={}, principal={}", databaseId, principal);
         endpointValidator.validateOnlyPrivateAccess(databaseId, principal);
         endpointValidator.validateOnlyPrivateHasRole(databaseId, principal, "list-tables");
@@ -134,7 +134,7 @@ public class TableEndpoint {
                                                 @NotNull Principal principal)
             throws ImageNotSupportedException, DatabaseNotFoundException, TableMalformedException, AmqpException,
             TableNameExistsException, ContainerNotFoundException, UserNotFoundException, QueryMalformedException,
-            NotAllowedException {
+            NotAllowedException, AccessDeniedException {
         log.debug("endpoint create table, databaseId={}, createDto={}, principal={}", databaseId, createDto, principal);
         endpointValidator.validateOnlyAccess(databaseId, principal, true);
         endpointValidator.validateColumnCreateConstraints(createDto);

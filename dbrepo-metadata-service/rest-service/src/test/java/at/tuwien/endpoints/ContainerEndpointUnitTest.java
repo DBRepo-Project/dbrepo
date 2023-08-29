@@ -9,8 +9,6 @@ import at.tuwien.api.container.ContainerDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.exception.*;
 import at.tuwien.repository.mdb.ImageRepository;
-import at.tuwien.repository.mdb.UserRepository;
-import at.tuwien.repository.sdb.DatabaseIdxRepository;
 import at.tuwien.service.impl.ContainerServiceImpl;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
@@ -20,14 +18,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.security.Principal;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.doNothing;
@@ -42,9 +38,6 @@ public class ContainerEndpointUnitTest extends BaseUnitTest {
 
     @MockBean
     private ContainerServiceImpl containerService;
-
-    @MockBean
-    private UserRepository userRepository;
 
     @MockBean
     private ImageRepository imageRepository;
@@ -64,10 +57,6 @@ public class ContainerEndpointUnitTest extends BaseUnitTest {
     @WithMockUser(username = USER_1_USERNAME, authorities = {"find-container"})
     public void findById_hasRole_succeeds() throws ContainerNotFoundException {
 
-        /* mock */
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
-
         /* test */
         findById_generic(CONTAINER_1_ID, CONTAINER_1);
     }
@@ -75,10 +64,6 @@ public class ContainerEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithMockUser(username = USER_4_USERNAME)
     public void findById_noRole_succeeds() throws ContainerNotFoundException {
-
-        /* mock */
-        when(userRepository.findByUsername(USER_4_USERNAME))
-                .thenReturn(Optional.of(USER_4));
 
         /* test */
         findById_generic(CONTAINER_1_ID, CONTAINER_1);
@@ -89,7 +74,7 @@ public class ContainerEndpointUnitTest extends BaseUnitTest {
     public void delete_anonymous_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             delete_generic(CONTAINER_1_ID, CONTAINER_1, null);
         });
     }
@@ -98,12 +83,8 @@ public class ContainerEndpointUnitTest extends BaseUnitTest {
     @WithMockUser(username = USER_3_USERNAME)
     public void delete_noRole_fails() {
 
-        /* mock */
-        when(userRepository.findByUsername(USER_4_USERNAME))
-                .thenReturn(Optional.of(USER_4));
-
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             delete_generic(CONTAINER_1_ID, CONTAINER_1, USER_4_PRINCIPAL);
         });
     }
@@ -112,10 +93,6 @@ public class ContainerEndpointUnitTest extends BaseUnitTest {
     @WithMockUser(username = USER_2_USERNAME, authorities = {"delete-container"})
     public void delete_hasRole_succeeds() throws ContainerStillRunningException, ContainerAlreadyRemovedException,
             ContainerNotFoundException {
-
-        /* mock */
-        when(userRepository.findByUsername(USER_2_USERNAME))
-                .thenReturn(Optional.of(USER_2));
 
         /* test */
         delete_generic(CONTAINER_1_ID, CONTAINER_1, USER_2_PRINCIPAL);
@@ -133,10 +110,6 @@ public class ContainerEndpointUnitTest extends BaseUnitTest {
     @WithMockUser(username = USER_1_USERNAME, authorities = {"find-containers"})
     public void findAll_hasRole_succeeds() {
 
-        /* mock */
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
-
         /* test */
         findAll_generic(USER_1_PRINCIPAL, null);
     }
@@ -144,10 +117,6 @@ public class ContainerEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithMockUser(username = USER_4_USERNAME)
     public void findAll_noRole_succeeds() {
-
-        /* mock */
-        when(userRepository.findByUsername(USER_4_USERNAME))
-                .thenReturn(Optional.of(USER_4));
 
         /* test */
         findAll_generic(USER_4_PRINCIPAL, null);
@@ -162,7 +131,7 @@ public class ContainerEndpointUnitTest extends BaseUnitTest {
                 .build();
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             create_generic(request, null);
         });
     }
@@ -174,10 +143,6 @@ public class ContainerEndpointUnitTest extends BaseUnitTest {
                 .name(CONTAINER_1_NAME)
                 .imageId(IMAGE_1_ID)
                 .build();
-
-        /* mock */
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
 
         /* test */
         create_generic(request, USER_1_PRINCIPAL);
@@ -191,12 +156,8 @@ public class ContainerEndpointUnitTest extends BaseUnitTest {
                 .imageId(IMAGE_1_ID)
                 .build();
 
-        /* mock */
-        when(userRepository.findByUsername(USER_4_USERNAME))
-                .thenReturn(Optional.of(USER_4));
-
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             create_generic(request, USER_4_PRINCIPAL);
         });
     }

@@ -1,4 +1,3 @@
-
 package at.tuwien.endpoints;
 
 import at.tuwien.BaseUnitTest;
@@ -8,8 +7,6 @@ import at.tuwien.api.semantics.*;
 import at.tuwien.entities.semantics.Ontology;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
-import at.tuwien.repository.sdb.ConceptIdxRepository;
-import at.tuwien.repository.sdb.UnitIdxRepository;
 import at.tuwien.service.EntityService;
 import at.tuwien.service.OntologyService;
 import at.tuwien.service.UserService;
@@ -24,7 +21,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -106,7 +102,7 @@ public class OntologyEndpointUnitTest extends BaseUnitTest {
     public void create_anonymous_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             create_generic(ONTOLOGY_1_CREATE_DTO, null, null, null, ONTOLOGY_1);
         });
     }
@@ -116,14 +112,15 @@ public class OntologyEndpointUnitTest extends BaseUnitTest {
     public void create_noRole_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             create_generic(ONTOLOGY_1_CREATE_DTO, USER_4_PRINCIPAL, USER_4_USERNAME, USER_4, ONTOLOGY_1);
         });
     }
 
     @Test
     @WithMockUser(username = USER_3_USERNAME, authorities = {"create-ontology"})
-    public void create_hasRole_succeeds() throws UserNotFoundException {
+    public void create_hasRole_succeeds() throws UserNotFoundException, KeycloakRemoteException,
+            at.tuwien.exception.AccessDeniedException {
 
         /* test */
         create_generic(ONTOLOGY_1_CREATE_DTO, USER_3_PRINCIPAL, USER_3_USERNAME, USER_3, ONTOLOGY_1);
@@ -134,7 +131,7 @@ public class OntologyEndpointUnitTest extends BaseUnitTest {
     public void update_anonymous_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             update_generic(ONTOLOGY_1_ID, ONTOLOGY_1_MODIFY_DTO, null, ONTOLOGY_1);
         });
     }
@@ -144,7 +141,7 @@ public class OntologyEndpointUnitTest extends BaseUnitTest {
     public void update_noRole_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             update_generic(ONTOLOGY_1_ID, ONTOLOGY_1_MODIFY_DTO, USER_4_PRINCIPAL, ONTOLOGY_1);
         });
     }
@@ -172,7 +169,7 @@ public class OntologyEndpointUnitTest extends BaseUnitTest {
     public void delete_anonymous_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             delete_generic(ONTOLOGY_1_ID, ONTOLOGY_1);
         });
     }
@@ -182,7 +179,7 @@ public class OntologyEndpointUnitTest extends BaseUnitTest {
     public void delete_noRole_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             delete_generic(ONTOLOGY_1_ID, ONTOLOGY_1);
         });
     }
@@ -210,7 +207,7 @@ public class OntologyEndpointUnitTest extends BaseUnitTest {
     public void find_anonymous_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             find_generic(ONTOLOGY_2_ID, "Apache Jena", null, ONTOLOGY_2, null);
         });
     }
@@ -220,7 +217,7 @@ public class OntologyEndpointUnitTest extends BaseUnitTest {
     public void find_noRole_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             find_generic(ONTOLOGY_2_ID, "Apache Jena", null, ONTOLOGY_2, null);
         });
     }
@@ -314,8 +311,9 @@ public class OntologyEndpointUnitTest extends BaseUnitTest {
         assertNotNull(body);
     }
 
-    public void create_generic(OntologyCreateDto createDto, Principal principal, String username, User user, Ontology ontology)
-            throws UserNotFoundException {
+    public void create_generic(OntologyCreateDto createDto, Principal principal, String username, User user,
+                               Ontology ontology) throws UserNotFoundException, KeycloakRemoteException,
+            at.tuwien.exception.AccessDeniedException {
 
         /* mock */
         if (ontology != null) {

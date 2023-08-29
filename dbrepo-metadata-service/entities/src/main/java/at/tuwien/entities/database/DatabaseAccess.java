@@ -1,6 +1,5 @@
 package at.tuwien.entities.database;
 
-import at.tuwien.entities.user.User;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.springframework.data.annotation.CreatedDate;
@@ -31,13 +30,6 @@ public class DatabaseAccess {
     @EqualsAndHashCode.Include
     @Column(name = "database_id", updatable = false)
     private Long hdbid;
-
-    @org.springframework.data.annotation.Transient
-    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.DETACH, CascadeType.MERGE})
-    @JoinColumns({
-            @JoinColumn(name = "user_id", referencedColumnName = "ID", updatable = false, insertable = false)
-    })
-    private User user;
 
     @Column(nullable = false, name = "access_type", columnDefinition = "enum('READ', 'WRITE_OWN', 'WRITE_ALL')")
     @Enumerated(EnumType.STRING)

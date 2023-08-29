@@ -4,13 +4,9 @@ import at.tuwien.BaseUnitTest;
 import at.tuwien.annotations.MockAmqp;
 import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.config.MariaDbConfig;
+import at.tuwien.config.MariaDbContainerConfig;
 import at.tuwien.exception.*;
 import at.tuwien.repository.mdb.*;
-import at.tuwien.repository.sdb.ConceptIdxRepository;
-import at.tuwien.repository.sdb.TableColumnIdxRepository;
-import at.tuwien.repository.sdb.TableIdxRepository;
-import at.tuwien.repository.sdb.UnitIdxRepository;
-import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.testcontainers.containers.MariaDBContainer;
@@ -47,27 +42,22 @@ public class TableEndpointIntegrationTest extends BaseUnitTest {
     private DatabaseRepository databaseRepository;
 
     @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private RealmRepository realmRepository;
-
-    @Autowired
     private DatabaseAccessRepository accessRepository;
 
     @Autowired
     private TableEndpoint tableEndpoint;
 
-    @Container
     @Autowired
-    private MariaDBContainer<?> mariaDBContainer;
+    private UserRepository userRepository;
+
+    @Container
+    private static MariaDBContainer<?> mariaDBContainer = MariaDbContainerConfig.getContainer();
 
     @BeforeEach
     public void beforeEach() throws SQLException {
         /* metadata database */
         imageRepository.save(IMAGE_1);
-        realmRepository.save(REALM_DBREPO);
-        userRepository.save(USER_1_SIMPLE);
+        userRepository.save(USER_1);
         containerRepository.save(CONTAINER_1_SIMPLE);
         databaseRepository.save(DATABASE_1_SIMPLE);
         MariaDbConfig.dropAllDatabases(CONTAINER_1);
@@ -78,7 +68,7 @@ public class TableEndpointIntegrationTest extends BaseUnitTest {
     @WithMockUser(username = USER_1_USERNAME, authorities = {"create-table"})
     public void create_hasRoleHasAccess_succeeds() throws UserNotFoundException, TableMalformedException, NotAllowedException,
             QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, AmqpException,
-            TableNameExistsException, ContainerNotFoundException {
+            TableNameExistsException, ContainerNotFoundException, AccessDeniedException {
 
         /* mock */
         accessRepository.save(DATABASE_1_USER_1_WRITE_OWN_ACCESS);

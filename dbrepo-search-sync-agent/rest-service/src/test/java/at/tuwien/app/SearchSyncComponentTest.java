@@ -46,9 +46,6 @@ public class SearchSyncComponentTest extends BaseUnitTest {
     private IndexConfig indexConfig;
 
     @Autowired
-    private RealmRepository realmRepository;
-
-    @Autowired
     private UserRepository userRepository;
 
     @Autowired
@@ -122,7 +119,6 @@ public class SearchSyncComponentTest extends BaseUnitTest {
 
     @BeforeEach
     public void beforeEach() {
-        realmRepository.save(REALM_DBREPO);
         licenseRepository.save(LICENSE_1);
         userRepository.save(USER_1);
         imageRepository.save(IMAGE_1);

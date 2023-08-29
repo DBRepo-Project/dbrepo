@@ -3,12 +3,12 @@ package at.tuwien.endpoints;
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.api.user.*;
-import at.tuwien.entities.user.Realm;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.UserMapper;
-import at.tuwien.service.RealmService;
+import at.tuwien.service.DatabaseService;
 import at.tuwien.service.UserService;
+import at.tuwien.utils.UserUtil;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -30,7 +30,6 @@ import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Log4j2
 @CrossOrigin(origins = "*")
@@ -40,13 +39,14 @@ public class UserEndpoint {
 
     private final UserMapper userMapper;
     private final UserService userService;
-    private final RealmService realmService;
+    private final DatabaseService databaseService;
+
 
     @Autowired
-    public UserEndpoint(UserMapper userMapper, UserService userService, RealmService realmService) {
+    public UserEndpoint(UserMapper userMapper, UserService userService, DatabaseService databaseService) {
         this.userMapper = userMapper;
         this.userService = userService;
-        this.realmService = realmService;
+        this.databaseService = databaseService;
     }
 
     @GetMapping
@@ -65,7 +65,7 @@ public class UserEndpoint {
         final List<UserBriefDto> users = userService.findAll()
                 .stream()
                 .map(userMapper::userToUserBriefDto)
-                .collect(Collectors.toList());
+                .toList();
         log.trace("find all users resulted in users {}", users);
         return ResponseEntity.ok(users);
     }
@@ -98,14 +98,14 @@ public class UserEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<UserBriefDto> create(@NotNull @Valid @RequestBody SignupRequestDto data)
-            throws RealmNotFoundException, UserAlreadyExistsException, UserEmailAlreadyExistsException {
+            throws RealmNotFoundException, UserAlreadyExistsException, UserEmailAlreadyExistsException,
+            UserNotFoundException, KeycloakRemoteException, AccessDeniedException {
         log.debug("endpoint create a user, data={}", data);
         /* check */
-        final Realm realm = realmService.find("dbrepo");
         userService.validateUsernameNotExists(data.getUsername());
         userService.validateEmailNotExists(data.getEmail());
         /* create */
-        final User user = userService.create(data, realm);
+        final User user = userService.create(data);
         final UserBriefDto dto = userMapper.userToUserBriefDto(user);
         log.trace("create user resulted in dto {}", dto);
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -134,24 +134,24 @@ public class UserEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<UserDto> find(@NotNull @PathVariable("id") String id,
-                                        @NotNull Principal principal)
-            throws UserNotFoundException, NotAllowedException {
+    public ResponseEntity<UserDto> find(@NotNull @PathVariable("id") UUID id,
+                                        @NotNull Principal principal) throws UserNotFoundException, NotAllowedException,
+            KeycloakRemoteException, AccessDeniedException {
         log.debug("endpoint find a user, id={}, principal={}", id, principal);
         /* check */
-        final User user = userService.find(UUID.fromString(id));
+        final User user = userService.find(id);
         final UserDto dto = userMapper.userToUserDto(user);
         if (user.getUsername().equals(principal.getName())) {
             log.trace("find user resulted in dto {}", dto);
             return ResponseEntity.ok()
                     .body(dto);
-        } else if (User.hasRole(principal, "find-user")) {
+        } else if (UserUtil.hasRole(principal, "find-user")) {
             log.trace("find user resulted in dto {}", dto);
             return ResponseEntity.ok()
                     .body(dto);
         }
         log.error("Failed to find user: no authority and not the current logged-in user");
-        throw new NotAllowedException("Failed to find user: no authority");
+        throw new NotAllowedException("Failed to find user: no authority and not the current logged-in user");
     }
 
     @PutMapping("/{id}")
@@ -176,19 +176,21 @@ public class UserEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<UserDto> modify(@NotNull @PathVariable("id") String id,
+    public ResponseEntity<UserDto> modify(@NotNull @PathVariable("id") UUID id,
                                           @NotNull @Valid @RequestBody UserUpdateDto data,
-                                          @NotNull Principal principal)
-            throws UserNotFoundException, ForeignUserException, UserAttributeNotFoundException {
+                                          @NotNull Principal principal) throws UserNotFoundException,
+            ForeignUserException, UserAttributeNotFoundException, KeycloakRemoteException, AccessDeniedException,
+            QueryMalformedException, DatabaseMalformedException {
         log.debug("endpoint modify a user, id={}, data={}, principal={}", id, data, principal);
         /* check */
-        final User user = userService.find(UUID.fromString(id));
-        if (!user.equalsPrincipal(principal)) {
+        if (!id.equals(UserUtil.getId(principal))) {
             log.error("Failed to modify user: attempting to modify other user");
             throw new ForeignUserException("Failed to modify user: attempting to modify other user");
         }
         /* modify */
-        final UserDto dto = userMapper.userToUserDto(userService.modify(user.getId(), data));
+        final User user = userService.modify(id, data);
+        databaseService.updatePassword(user);
+        final UserDto dto = userMapper.userToUserDto(user);
         log.trace("modify user resulted in dto {}", dto);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(dto);
@@ -216,19 +218,19 @@ public class UserEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<UserDto> theme(@NotNull @PathVariable("id") String id,
+    public ResponseEntity<UserDto> theme(@NotNull @PathVariable("id") UUID id,
                                          @NotNull @Valid @RequestBody UserThemeSetDto data,
-                                         @NotNull Principal principal)
-            throws UserNotFoundException, ForeignUserException, UserAttributeNotFoundException {
+                                         @NotNull Principal principal) throws UserNotFoundException,
+            ForeignUserException {
         log.debug("endpoint modify a user theme, id={}, data={}, principal={}", id, data, principal);
         /* check */
-        final User user = userService.find(UUID.fromString(id));
-        if (!user.equalsPrincipal(principal)) {
+        if (!id.equals(UserUtil.getId(principal))) {
             log.error("Failed to modify user: attempting to modify other user");
             throw new ForeignUserException("Failed to modify user: attempting to modify other user");
         }
         /* modify theme */
-        final UserDto dto = userMapper.userToUserDto(userService.toggleTheme(user.getId(), data));
+        final User user = userService.toggleTheme(id, data);
+        final UserDto dto = userMapper.userToUserDto(user);
         log.trace("modify user theme resulted in dto {}", dto);
         return ResponseEntity.accepted()
                 .body(dto);
@@ -256,22 +258,21 @@ public class UserEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<UserDto> password(@NotNull @PathVariable("id") String id,
-                                            @NotNull @Valid @RequestBody UserPasswordDto data,
-                                            @NotNull Principal principal)
-            throws UserNotFoundException, ForeignUserException {
+    public ResponseEntity<?> password(@NotNull @PathVariable("id") UUID id,
+                                      @NotNull @Valid @RequestBody UserPasswordDto data,
+                                      @NotNull Principal principal)
+            throws UserNotFoundException, ForeignUserException, KeycloakRemoteException, AccessDeniedException,
+            QueryMalformedException, DatabaseMalformedException {
         log.debug("endpoint modify a user password, id={}, data={}, principal={}", id, data, principal);
         /* check */
-        final User user = userService.find(UUID.fromString(id));
-        if (!user.equalsPrincipal(principal)) {
+        if (!id.equals(UserUtil.getId(principal))) {
             log.error("Failed to modify user: attempting to modify other user");
             throw new ForeignUserException("Failed to modify user: attempting to modify other user");
         }
         /* modify password */
-        final UserDto dto = userMapper.userToUserDto(userService.updatePassword(user.getId(), data));
-        log.trace("updated user password resulted in dto {}", dto);
+        userService.updatePassword(id, data);
         return ResponseEntity.accepted()
-                .body(dto);
+                .build();
     }
 
 }

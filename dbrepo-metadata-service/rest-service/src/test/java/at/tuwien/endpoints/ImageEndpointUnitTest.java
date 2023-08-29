@@ -9,8 +9,6 @@ import at.tuwien.api.container.image.ImageCreateDto;
 import at.tuwien.api.container.image.ImageDto;
 import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.exception.*;
-import at.tuwien.repository.mdb.UserRepository;
-import at.tuwien.repository.sdb.DatabaseIdxRepository;
 import at.tuwien.service.impl.ImageServiceImpl;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
@@ -20,7 +18,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -42,9 +39,6 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
     @MockBean
     private ImageServiceImpl imageService;
 
-    @MockBean
-    private UserRepository userRepository;
-
     @Autowired
     private ImageEndpoint imageEndpoint;
 
@@ -60,10 +54,6 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
     @WithMockUser(username = USER_1_USERNAME, authorities = {"find-image"})
     public void findAll_hasRole_succeeds() {
 
-        /* mock */
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
-
         /* test */
         findAll_generic(USER_1_PRINCIPAL);
     }
@@ -71,10 +61,6 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithMockUser(username = USER_4_USERNAME)
     public void findAll_noRole_succeeds() {
-
-        /* mock */
-        when(userRepository.findByUsername(USER_4_USERNAME))
-                .thenReturn(Optional.of(USER_4));
 
         /* test */
         findAll_generic(USER_4_PRINCIPAL);
@@ -92,7 +78,7 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
                 .build();
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             create_generic(request, null);
         });
     }
@@ -108,12 +94,8 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
                 .jdbcMethod(IMAGE_1_JDBC)
                 .build();
 
-        /* mock */
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
-
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             create_generic(request, USER_1_PRINCIPAL);
         });
     }
@@ -129,12 +111,8 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
                 .jdbcMethod(IMAGE_1_JDBC)
                 .build();
 
-        /* mock */
-        when(userRepository.findByUsername(USER_4_USERNAME))
-                .thenReturn(Optional.of(USER_4));
-
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             create_generic(request, USER_4_PRINCIPAL);
         });
     }
@@ -149,10 +127,6 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
                 .dialect(IMAGE_1_DIALECT)
                 .jdbcMethod(IMAGE_1_JDBC)
                 .build();
-
-        /* mock */
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
 
         /* test */
         assertThrows(ImageInvalidException.class, () -> {
@@ -186,7 +160,7 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
     public void delete_anonymous_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             delete_generic(IMAGE_1_ID, IMAGE_1, null);
         });
     }
@@ -195,12 +169,8 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
     @WithMockUser(username = USER_1_USERNAME)
     public void delete_noRole_fails() {
 
-        /* mock */
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
-
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             delete_generic(IMAGE_1_ID, IMAGE_1, USER_1_PRINCIPAL);
         });
     }
@@ -213,8 +183,6 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
         doNothing()
                 .when(imageService)
                 .delete(IMAGE_1_ID);
-        when(userRepository.findByUsername(USER_2_USERNAME))
-                .thenReturn(Optional.of(USER_2));
 
         /* test */
         delete_generic(IMAGE_1_ID, IMAGE_1, USER_2_PRINCIPAL);
@@ -231,7 +199,7 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
                 .build();
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             modify_generic(IMAGE_1_ID, IMAGE_1, request, null);
         });
     }
@@ -246,12 +214,8 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
                 .driverClass(IMAGE_1_DRIVER)
                 .build();
 
-        /* mock */
-        when(userRepository.findByUsername(USER_4_USERNAME))
-                .thenReturn(Optional.of(USER_4));
-
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             modify_generic(IMAGE_1_ID, IMAGE_1, request, USER_4_PRINCIPAL);
         });
     }
@@ -266,10 +230,6 @@ public class ImageEndpointUnitTest extends BaseUnitTest {
                 .jdbcMethod(IMAGE_1_JDBC)
                 .driverClass(IMAGE_1_DRIVER)
                 .build();
-
-        /* mock */
-        when(userRepository.findByUsername(USER_2_USERNAME))
-                .thenReturn(Optional.of(USER_2));
 
         /* test */
         modify_generic(IMAGE_1_ID, IMAGE_1, request, USER_2_PRINCIPAL);

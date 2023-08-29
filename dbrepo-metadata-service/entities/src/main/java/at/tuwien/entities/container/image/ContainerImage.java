@@ -63,11 +63,4 @@ public class ContainerImage {
     @Column(columnDefinition = "TIMESTAMP")
     private Instant lastModified;
 
-    @PreRemove
-    public void preRemove() {
-        this.containers.forEach(container -> {
-            container.setImage(null);
-        });
-    }
-
 }

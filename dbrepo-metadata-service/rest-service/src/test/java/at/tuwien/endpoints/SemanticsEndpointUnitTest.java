@@ -12,12 +12,7 @@ import at.tuwien.api.semantics.EntityDto;
 import at.tuwien.api.semantics.TableColumnEntityDto;
 import at.tuwien.entities.database.table.columns.TableColumnConcept;
 import at.tuwien.entities.database.table.columns.TableColumnUnit;
-import at.tuwien.exception.DatabaseNotFoundException;
-import at.tuwien.exception.QueryMalformedException;
-import at.tuwien.exception.TableColumnNotFoundException;
-import at.tuwien.exception.TableNotFoundException;
-import at.tuwien.repository.sdb.ConceptIdxRepository;
-import at.tuwien.repository.sdb.UnitIdxRepository;
+import at.tuwien.exception.*;
 import at.tuwien.service.EntityService;
 import at.tuwien.service.SemanticService;
 import lombok.extern.log4j.Log4j2;
@@ -31,7 +26,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -100,7 +94,7 @@ public class SemanticsEndpointUnitTest extends BaseUnitTest {
     public void saveConcept_anonymous_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             saveConcept_generic(COLUMN_CONCEPT_TEMPERATURE_SAVE_DTO, COLUMN_CONCEPT_TEMPERATURE);
         });
     }
@@ -110,7 +104,7 @@ public class SemanticsEndpointUnitTest extends BaseUnitTest {
     public void saveConcept_noRole_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             saveConcept_generic(COLUMN_CONCEPT_TEMPERATURE_SAVE_DTO, COLUMN_CONCEPT_TEMPERATURE);
         });
     }
@@ -128,7 +122,7 @@ public class SemanticsEndpointUnitTest extends BaseUnitTest {
     public void saveUnit_anonymous_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             saveUnit_generic(UNIT_1_SAVE_DTO, UNIT_1);
         });
     }
@@ -138,7 +132,7 @@ public class SemanticsEndpointUnitTest extends BaseUnitTest {
     public void saveUnit_noRole_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             saveUnit_generic(UNIT_1_SAVE_DTO, UNIT_1);
         });
     }
@@ -156,7 +150,7 @@ public class SemanticsEndpointUnitTest extends BaseUnitTest {
     public void analyseTable_anonymous_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             analyseTable_generic(DATABASE_1_ID, TABLE_1_ID);
         });
     }
@@ -166,7 +160,7 @@ public class SemanticsEndpointUnitTest extends BaseUnitTest {
     public void findAll_noRole_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             analyseTable_generic(DATABASE_1_ID, TABLE_1_ID);
         });
     }
@@ -184,7 +178,7 @@ public class SemanticsEndpointUnitTest extends BaseUnitTest {
     public void analyseTableColumn_anonymous_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             analyseTableColumn_generic(DATABASE_1_ID, TABLE_1_ID, COLUMN_1_1_ID);
         });
     }
@@ -194,7 +188,7 @@ public class SemanticsEndpointUnitTest extends BaseUnitTest {
     public void analyseTableColumn_noRole_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             analyseTableColumn_generic(DATABASE_1_ID, TABLE_1_ID, COLUMN_1_1_ID);
         });
     }

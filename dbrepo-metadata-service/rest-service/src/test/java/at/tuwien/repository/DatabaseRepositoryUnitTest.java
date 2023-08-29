@@ -5,18 +5,14 @@ import at.tuwien.annotations.MockAmqp;
 import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.entities.database.Database;
 import at.tuwien.repository.mdb.*;
-import at.tuwien.repository.sdb.DatabaseIdxRepository;
-import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.List;
 
@@ -31,13 +27,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class DatabaseRepositoryUnitTest extends BaseUnitTest {
 
     @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private RealmRepository realmRepository;
-
-    @Autowired
     private ImageRepository imageRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     private ContainerRepository containerRepository;
@@ -50,14 +43,9 @@ public class DatabaseRepositoryUnitTest extends BaseUnitTest {
 
     @BeforeEach
     public void beforeEach() {
-        if (realmRepository.findAll().size() != 0) {
-            log.warn("data already initialized, skip.");
-            return;
-        }
-        realmRepository.save(REALM_DBREPO);
-        userRepository.save(USER_1_SIMPLE);
-        userRepository.save(USER_2_SIMPLE);
         imageRepository.save(IMAGE_1_SIMPLE);
+        userRepository.save(USER_1);
+        userRepository.save(USER_2);
         containerRepository.save(CONTAINER_1_SIMPLE);
         containerRepository.save(CONTAINER_2_SIMPLE);
         databaseRepository.save(DATABASE_1_SIMPLE);

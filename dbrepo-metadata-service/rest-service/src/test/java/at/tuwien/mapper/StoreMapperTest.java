@@ -3,14 +3,8 @@ package at.tuwien.mapper;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.annotations.MockAmqp;
 import at.tuwien.annotations.MockOpensearch;
-import at.tuwien.listener.impl.RabbitMqListenerImpl;
-import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.Instant;
 import java.time.LocalDateTime;

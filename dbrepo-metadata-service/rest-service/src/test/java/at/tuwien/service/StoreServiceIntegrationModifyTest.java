@@ -7,13 +7,10 @@ import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.api.database.query.QueryPersistDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.config.MariaDbConfig;
+import at.tuwien.config.MariaDbContainerConfig;
 import at.tuwien.exception.*;
-import at.tuwien.gateway.BrokerServiceGateway;
-import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.querystore.Query;
 import at.tuwien.repository.mdb.*;
-import at.tuwien.repository.sdb.ViewIdxRepository;
-import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.testcontainers.containers.MariaDBContainer;
@@ -51,13 +47,7 @@ public class StoreServiceIntegrationModifyTest extends BaseUnitTest {
     private TableRepository tableRepository;
 
     @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
     private DatabaseRepository databaseRepository;
-
-    @Autowired
-    private RealmRepository realmRepository;
 
     @Autowired
     private ImageRepository imageRepository;
@@ -74,9 +64,11 @@ public class StoreServiceIntegrationModifyTest extends BaseUnitTest {
     @Autowired
     private QueryService queryService;
 
-    @Container
     @Autowired
-    private MariaDBContainer<?> mariaDBContainer;
+    private UserRepository userRepository;
+
+    @Container
+    private static MariaDBContainer<?> mariaDBContainer = MariaDbContainerConfig.getContainer();
 
     @BeforeEach
     public void beforeEach() throws InterruptedException, SQLException {
@@ -85,10 +77,10 @@ public class StoreServiceIntegrationModifyTest extends BaseUnitTest {
         TABLE_1.setColumns(TABLE_1_COLUMNS);
         TABLE_2.setColumns(TABLE_2_COLUMNS);
         /* metadata database */
-        realmRepository.save(REALM_DBREPO);
         imageRepository.save(IMAGE_1);
-        userRepository.saveAll(List.of(USER_1, USER_2, USER_3, USER_4, USER_5));
         containerRepository.save(CONTAINER_1);
+        userRepository.save(USER_1);
+        userRepository.save(USER_5);
         databaseRepository.save(DATABASE_1_SIMPLE);
         tableRepository.saveAll(List.of(TABLE_1_SIMPLE, TABLE_2_SIMPLE));
         tableColumnRepository.saveAll(TABLE_1_COLUMNS);
@@ -97,7 +89,8 @@ public class StoreServiceIntegrationModifyTest extends BaseUnitTest {
 
     @Test
     public void insert_same_succeeds() throws UserNotFoundException, QueryStoreException, DatabaseConnectionException,
-            DatabaseNotFoundException, ImageNotSupportedException, SQLException {
+            DatabaseNotFoundException, ImageNotSupportedException, SQLException, KeycloakRemoteException,
+            AccessDeniedException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement(QUERY_2_STATEMENT)
                 .build();
@@ -115,7 +108,7 @@ public class StoreServiceIntegrationModifyTest extends BaseUnitTest {
     @Test
     public void execute_different_succeeds() throws UserNotFoundException, QueryStoreException,
             DatabaseConnectionException, TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
-            QueryMalformedException, ColumnParseException {
+            QueryMalformedException, ColumnParseException, KeycloakRemoteException, AccessDeniedException {
         final ExecuteStatementDto mock = ExecuteStatementDto.builder()
                 .statement(QUERY_1_STATEMENT)
                 .build();
@@ -134,7 +127,7 @@ public class StoreServiceIntegrationModifyTest extends BaseUnitTest {
     @Test
     public void execute_same_succeeds() throws UserNotFoundException, QueryStoreException,
             DatabaseConnectionException, TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
-            QueryMalformedException, ColumnParseException {
+            QueryMalformedException, ColumnParseException, KeycloakRemoteException, AccessDeniedException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement(QUERY_1_STATEMENT)
                 .build();
@@ -151,7 +144,8 @@ public class StoreServiceIntegrationModifyTest extends BaseUnitTest {
     @Test
     public void execute_notPersisted_succeeds() throws UserNotFoundException, QueryStoreException,
             DatabaseConnectionException, TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
-            QueryMalformedException, ColumnParseException, SQLException {
+            QueryMalformedException, ColumnParseException, SQLException, KeycloakRemoteException,
+            AccessDeniedException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement(QUERY_1_STATEMENT)
                 .build();
@@ -166,7 +160,7 @@ public class StoreServiceIntegrationModifyTest extends BaseUnitTest {
     @Test
     public void execute_emptyResult_succeeds() throws UserNotFoundException, QueryStoreException,
             DatabaseConnectionException, TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
-            QueryMalformedException, ColumnParseException {
+            QueryMalformedException, ColumnParseException, KeycloakRemoteException, AccessDeniedException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement("SELECT `id`, `date`, `location`, `mintemp`, `rainfall` FROM `weather_aus` WHERE `location` = 'Vienna'")
                 .build();
@@ -179,7 +173,7 @@ public class StoreServiceIntegrationModifyTest extends BaseUnitTest {
     @Test
     public void execute_emptyResultTwice_succeeds() throws UserNotFoundException, QueryStoreException,
             DatabaseConnectionException, TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
-            QueryMalformedException, ColumnParseException {
+            QueryMalformedException, ColumnParseException, KeycloakRemoteException, AccessDeniedException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement("SELECT `id`, `date`, `location`, `mintemp`, `rainfall` FROM `weather_aus` WHERE `location` = 'Vienna'")
                 .build();
@@ -195,7 +189,8 @@ public class StoreServiceIntegrationModifyTest extends BaseUnitTest {
     @Test
     public void execute_dataChangeSameQuery_succeeds() throws UserNotFoundException, QueryStoreException,
             DatabaseConnectionException, TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
-            QueryMalformedException, ColumnParseException, SQLException {
+            QueryMalformedException, ColumnParseException, SQLException, KeycloakRemoteException,
+            AccessDeniedException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement(QUERY_1_STATEMENT)
                 .build();
@@ -271,7 +266,8 @@ public class StoreServiceIntegrationModifyTest extends BaseUnitTest {
 
     @Test
     public void insert_timestamp_succeeds() throws UserNotFoundException, QueryStoreException,
-            DatabaseConnectionException, DatabaseNotFoundException, ImageNotSupportedException {
+            DatabaseConnectionException, DatabaseNotFoundException, ImageNotSupportedException, KeycloakRemoteException,
+            AccessDeniedException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement(QUERY_1_STATEMENT)
                 .timestamp(Instant.now().plus(1, ChronoUnit.SECONDS))
@@ -283,7 +279,8 @@ public class StoreServiceIntegrationModifyTest extends BaseUnitTest {
 
     @Test
     public void insert_anonymous_succeeds() throws UserNotFoundException, QueryStoreException,
-            DatabaseConnectionException, DatabaseNotFoundException, ImageNotSupportedException {
+            DatabaseConnectionException, DatabaseNotFoundException, ImageNotSupportedException, KeycloakRemoteException,
+            AccessDeniedException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement(QUERY_1_STATEMENT)
                 .build();

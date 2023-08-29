@@ -6,13 +6,13 @@ import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.api.database.DatabaseCreateDto;
 import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.config.MariaDbConfig;
+import at.tuwien.config.MariaDbContainerConfig;
 import at.tuwien.entities.database.Database;
 import at.tuwien.repository.mdb.ContainerRepository;
 import at.tuwien.repository.mdb.DatabaseRepository;
 import at.tuwien.repository.mdb.UserRepository;
 import at.tuwien.repository.sdb.DatabaseIdxRepository;
 import at.tuwien.service.impl.MariaDbServiceImpl;
-import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,9 +42,6 @@ import static org.mockito.Mockito.when;
 public class DatabaseServiceComponentTest extends BaseUnitTest {
 
     @MockBean
-    private UserRepository userRepository;
-
-    @MockBean
     private ContainerRepository containerRepository;
 
     @MockBean
@@ -53,12 +50,14 @@ public class DatabaseServiceComponentTest extends BaseUnitTest {
     @MockBean
     private DatabaseIdxRepository databaseIdxRepository;
 
+    @MockBean
+    private UserRepository userRepository;
+
     @Autowired
     private MariaDbServiceImpl databaseService;
 
     @Container
-    @Autowired
-    public MariaDBContainer<?> mariaDBContainer;
+    private static MariaDBContainer<?> mariaDBContainer = MariaDbContainerConfig.getContainer();
 
     @BeforeEach
     public void beforeEach() {
@@ -66,11 +65,13 @@ public class DatabaseServiceComponentTest extends BaseUnitTest {
     }
 
     @Test
-    public void create_elasticSearch_succeeds() throws Exception {
+    public void create_openSearch_succeeds() throws Exception {
 
         /* mock */
         when(databaseIdxRepository.save(any(DatabaseDto.class)))
                 .thenReturn(DATABASE_3_DTO);
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
 
         /* test */
         generic_create(DATABASE_3_CREATE, DATABASE_3);
@@ -84,8 +85,6 @@ public class DatabaseServiceComponentTest extends BaseUnitTest {
             throws Exception {
 
         /* mock */
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
         when(containerRepository.findById(CONTAINER_1_ID))
                 .thenReturn(Optional.of(CONTAINER_1));
         when(databaseRepository.save(any(Database.class)))

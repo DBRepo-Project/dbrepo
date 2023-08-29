@@ -3,11 +3,11 @@ package at.tuwien.entities.identifier;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.LanguageType;
 import at.tuwien.entities.database.License;
-import at.tuwien.entities.user.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.elasticsearch.annotations.Field;
@@ -16,6 +16,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @Entity
@@ -140,11 +141,9 @@ public class Identifier implements Serializable {
     @Column
     private String doi;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumns({
-            @JoinColumn(name = "createdBy", nullable = false, columnDefinition = "VARCHAR(36)", updatable = false)
-    })
-    private User creator;
+    @JdbcTypeCode(java.sql.Types.VARCHAR)
+    @Column(name = "createdBy", nullable = false, columnDefinition = "VARCHAR(36)")
+    private UUID createdBy;
 
     @CreatedDate
     @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP")
@@ -154,11 +153,6 @@ public class Identifier implements Serializable {
     @Field(name = "last_modified")
     @Column(columnDefinition = "TIMESTAMP")
     private Instant lastModified;
-
-    @PreRemove
-    private void preRemove() {
-        this.creator = null;
-    }
 
 }
 

@@ -6,7 +6,6 @@ import at.tuwien.api.database.query.QueryPersistDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.api.identifier.IdentifierBriefDto;
 import at.tuwien.entities.identifier.Identifier;
-import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.IdentifierMapper;
 import at.tuwien.mapper.QueryMapper;
@@ -16,6 +15,7 @@ import at.tuwien.service.AccessService;
 import at.tuwien.service.IdentifierService;
 import at.tuwien.service.StoreService;
 import at.tuwien.service.UserService;
+import at.tuwien.utils.UserUtil;
 import at.tuwien.validation.EndpointValidator;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
@@ -55,8 +55,8 @@ public class StoreEndpoint {
     private final IdentifierService identifierService;
 
     @Autowired
-    public StoreEndpoint(UserMapper userMapper, QueryMapper queryMapper, UserService userService,
-                         StoreService storeService, AccessService accessService, IdentifierMapper identifierMapper,
+    public StoreEndpoint(UserMapper userMapper, QueryMapper queryMapper, UserService userService, StoreService storeService,
+                         AccessService accessService, IdentifierMapper identifierMapper,
                          EndpointValidator endpointValidator, IdentifierService identifierService) {
         this.userMapper = userMapper;
         this.queryMapper = queryMapper;
@@ -113,7 +113,8 @@ public class StoreEndpoint {
                                                        @RequestParam(value = "persisted", required = false) Boolean persisted,
                                                        Principal principal) throws QueryStoreException,
             DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException,
-            DatabaseConnectionException, TableMalformedException, UserNotFoundException, NotAllowedException {
+            DatabaseConnectionException, TableMalformedException, UserNotFoundException, NotAllowedException,
+            AccessDeniedException {
         log.debug("endpoint list queries, databaseId={}, persisted={}, principal={}",
                 databaseId, persisted, principal);
         endpointValidator.validateOnlyAccessOrPublic(databaseId, principal);
@@ -176,7 +177,7 @@ public class StoreEndpoint {
                                          Principal principal)
             throws DatabaseNotFoundException, ImageNotSupportedException,
             QueryStoreException, QueryNotFoundException, UserNotFoundException, NotAllowedException,
-            DatabaseConnectionException {
+            DatabaseConnectionException, KeycloakRemoteException, AccessDeniedException {
         log.debug("endpoint find query, databaseId={}, queryId={}, principal={}", databaseId,
                 queryId, principal);
         /* check */
@@ -184,8 +185,7 @@ public class StoreEndpoint {
         /* find */
         final Query query = storeService.findOne(databaseId, queryId, principal);
         final QueryDto dto = queryMapper.queryToQueryDto(query);
-        final User creator = userService.findByUsername(query.getCreatedBy());
-        dto.setCreator(userMapper.userToUserDto(creator));
+        dto.setCreator(userMapper.userToUserDto(userService.findByUsername(query.getCreatedBy())));
         final List<Identifier> identifiers = identifierService.findByDatabaseIdAndQueryId(databaseId, queryId);
         if (!identifiers.isEmpty()) {
             dto.setIdentifier(identifierMapper.identifierToIdentifierDto(identifiers.get(0)));
@@ -237,7 +237,7 @@ public class StoreEndpoint {
                                             @NotNull Principal principal)
             throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
             DatabaseConnectionException, UserNotFoundException, QueryNotFoundException,
-            QueryAlreadyPersistedException, NotAllowedException {
+            QueryAlreadyPersistedException, NotAllowedException, KeycloakRemoteException, AccessDeniedException {
         log.debug("endpoint persist query, container, databaseId={}, queryId={}, principal={}",
                 databaseId, queryId, principal);
         /* check */
@@ -248,12 +248,11 @@ public class StoreEndpoint {
             throw new QueryAlreadyPersistedException("Failed to persist");
         }
         /* has access */
-        accessService.find(databaseId, principal.getName());
+        accessService.find(databaseId, UserUtil.getId(principal));
         /* persist */
         final Query query = storeService.persist(databaseId, queryId, data);
         final QueryDto dto = queryMapper.queryToQueryDto(query);
-        final User creator = userService.findByUsername(query.getCreatedBy());
-        dto.setCreator(userMapper.userToUserDto(creator));
+        dto.setCreator(userMapper.userToUserDto(userService.findByUsername(query.getCreatedBy())));
         log.trace("persist query resulted in query {}", dto);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(dto);

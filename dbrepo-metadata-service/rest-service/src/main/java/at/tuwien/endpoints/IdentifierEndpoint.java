@@ -6,13 +6,13 @@ import at.tuwien.api.identifier.IdentifierSaveDto;
 import at.tuwien.api.identifier.IdentifierTypeDto;
 import at.tuwien.api.user.external.ExternalMetadataDto;
 import at.tuwien.entities.identifier.Identifier;
-import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.IdentifierMapper;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.IdentifierService;
 import at.tuwien.service.MetadataService;
 import at.tuwien.service.UserService;
+import at.tuwien.utils.UserUtil;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -140,11 +140,10 @@ public class IdentifierEndpoint {
             log.error("Identifier of type view must not have a qid present");
             throw new IdentifierRequestException("Identifier of type database must not have a qid present");
         }
-        final User user = userService.findByUsername(principal.getName());
         try {
-            accessService.find(data.getDatabaseId(), user.getId());
+            accessService.find(data.getDatabaseId(), UserUtil.getId(principal));
         } catch (AccessDeniedException e) {
-            if (!User.hasRole(principal, "create-foreign-identifier")) {
+            if (!UserUtil.hasRole(principal, "create-foreign-identifier")) {
                 log.error("Failed to create identifier: insufficient access");
                 throw new NotAllowedException("Failed to create identifier: insufficient access");
             }

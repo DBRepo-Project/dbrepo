@@ -60,6 +60,7 @@ logging:
     at.tuwien.: "${LOG_LEVEL}"
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
 fda:
+  privileges: "${GRANT_PRIVILEGES}"
   pid:
     base: "${PID_BASE}"
   broker:
@@ -67,6 +68,10 @@ fda:
   jwt:
     issuer: "${JWT_ISSUER}"
     public_key: "${JWT_PUBKEY}"
+  keycloak:
+    endpoint: "${KEYCLOAK_HOST}"
+    username: "${KEYCLOAK_ADMIN}"
+    password: "${KEYCLOAK_ADMIN_PASSWORD}"
   consumers: "${BROKER_CONSUMERS}"
   unsupported: "${NOT_SUPPORTED_KEYWORDS}"
   website: "${WEBSITE}"

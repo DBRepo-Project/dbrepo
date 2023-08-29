@@ -7,19 +7,17 @@ import at.tuwien.api.identifier.IdentifierDescriptionDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.identifier.IdentifierTitleDto;
 import at.tuwien.api.identifier.IdentifierTypeDto;
+import at.tuwien.exception.AccessDeniedException;
 import at.tuwien.exception.NotAllowedException;
 import at.tuwien.repository.mdb.*;
-import at.tuwien.repository.sdb.IdentifierIdxRepository;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
@@ -37,13 +35,15 @@ import static org.junit.jupiter.api.Assertions.*;
 @MockAmqp
 @MockOpensearch
 public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
-    @Autowired
-    private ViewRepository viewRepository;
+
     @Autowired
     private TableRepository tableRepository;
 
     @Autowired
     private IdentifierRepository identifierRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     private DatabaseRepository databaseRepository;
@@ -52,13 +52,7 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
     private ImageRepository imageRepository;
 
     @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
     private ContainerRepository containerRepository;
-
-    @Autowired
-    private RealmRepository realmRepository;
 
     @Autowired
     private LicenseRepository licenseRepository;
@@ -69,20 +63,10 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
     @BeforeEach
     public void beforeEach() {
         imageRepository.save(IMAGE_1);
-        realmRepository.save(REALM_DBREPO);
+        userRepository.saveAll(List.of(USER_1, USER_2, USER_3, USER_4));
         licenseRepository.save(LICENSE_1);
-        userRepository.save(USER_1);
-        userRepository.save(USER_2);
-        userRepository.save(USER_3);
-        userRepository.save(USER_4);
-        containerRepository.save(CONTAINER_1_SIMPLE);
-        containerRepository.save(CONTAINER_2_SIMPLE);
-        containerRepository.save(CONTAINER_3_SIMPLE);
-        containerRepository.save(CONTAINER_4_SIMPLE);
-        databaseRepository.save(DATABASE_1_SIMPLE);
-        databaseRepository.save(DATABASE_2_SIMPLE);
-        databaseRepository.save(DATABASE_3_SIMPLE);
-        databaseRepository.save(DATABASE_4_SIMPLE);
+        containerRepository.saveAll(List.of(CONTAINER_1_SIMPLE, CONTAINER_2_SIMPLE, CONTAINER_3_SIMPLE, CONTAINER_4_SIMPLE));
+        databaseRepository.saveAll(List.of(DATABASE_1_SIMPLE, DATABASE_2_SIMPLE, DATABASE_3_SIMPLE, DATABASE_4_SIMPLE));
         TABLE_2.setColumns(TABLE_2_COLUMNS);
         tableRepository.save(TABLE_2);
     }
@@ -279,7 +263,7 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
     public void create_noRole_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             identifierEndpoint.create(IDENTIFIER_2_DTO_REQUEST, USER_4_PRINCIPAL);
         });
     }

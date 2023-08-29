@@ -5,8 +5,6 @@ import at.tuwien.annotations.MockAmqp;
 import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.exception.ImageNotFoundException;
 import at.tuwien.repository.mdb.ImageRepository;
-import at.tuwien.repository.mdb.UserRepository;
-import at.tuwien.repository.sdb.DatabaseIdxRepository;
 import at.tuwien.service.impl.ImageServiceImpl;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,7 +12,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -34,12 +31,8 @@ public class PersistenceIntegrationTest extends BaseUnitTest {
     @Autowired
     private ImageRepository imageRepository;
 
-    @Autowired
-    private UserRepository userRepository;
-
     @BeforeEach
     public void beforeEach() {
-        userRepository.save(USER_1_SIMPLE);
         imageRepository.save(IMAGE_1_SIMPLE);
     }
 

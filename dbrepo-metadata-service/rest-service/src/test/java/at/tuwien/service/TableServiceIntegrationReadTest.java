@@ -5,23 +5,16 @@ import at.tuwien.annotations.MockAmqp;
 import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.api.database.table.TableHistoryDto;
 import at.tuwien.config.MariaDbConfig;
+import at.tuwien.config.MariaDbContainerConfig;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.*;
-import at.tuwien.gateway.BrokerServiceGateway;
-import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.repository.mdb.*;
-import at.tuwien.repository.sdb.*;
-import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
@@ -32,11 +25,9 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.when;
 
 @Log4j2
 @Testcontainers
@@ -57,27 +48,21 @@ public class TableServiceIntegrationReadTest extends BaseUnitTest {
     private ContainerRepository containerRepository;
 
     @Autowired
-    private RealmRepository realmRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
     private DatabaseRepository databaseRepository;
 
     @Autowired
     private TableService tableService;
 
-    @Container
     @Autowired
-    private MariaDBContainer<?> mariaDBContainer;
+    private UserRepository userRepository;
+
+    @Container
+    private static MariaDBContainer<?> mariaDBContainer = MariaDbContainerConfig.getContainer();
 
     @BeforeEach
     public void beforeEach() throws SQLException {
         imageRepository.save(IMAGE_1);
-        realmRepository.save(REALM_DBREPO);
-        userRepository.save(USER_1_SIMPLE);
-        userRepository.save(USER_2_SIMPLE);
+        userRepository.saveAll(List.of(USER_1, USER_2));
         containerRepository.save(CONTAINER_1_SIMPLE);
         containerRepository.save(CONTAINER_2_SIMPLE);
         databaseRepository.save(DATABASE_1_SIMPLE);

@@ -1,5 +1,6 @@
 package at.tuwien.service;
 
+import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.user.User;
@@ -8,7 +9,9 @@ import at.tuwien.exception.BrokerVirtualHostCreationException;
 import at.tuwien.exception.BrokerVirtualHostGrantException;
 import jakarta.annotation.PostConstruct;
 
+import java.io.IOException;
 import java.security.Principal;
+import java.util.concurrent.TimeoutException;
 
 public interface MessageQueueService {
 
@@ -18,7 +21,7 @@ public interface MessageQueueService {
      * @throws AmqpException The exchange could not be created.
      */
     @PostConstruct
-    void init() throws AmqpException;
+    void init() throws AmqpException, IOException, TimeoutException;
 
     /**
      * Creates an exchange for a database.
@@ -42,10 +45,10 @@ public interface MessageQueueService {
     /**
      * Create user on the broker service
      *
-     * @param user The new user.
+     * @param username The username.
      * @throws BrokerVirtualHostCreationException The user could not be created.
      */
-    void createUser(User user) throws BrokerVirtualHostCreationException;
+    void createUser(String username) throws BrokerVirtualHostCreationException;
 
 
     /**
@@ -67,9 +70,9 @@ public interface MessageQueueService {
     /**
      * Creates a consumer on the provided queue with name and container id and database id for table id.
      *
-     * @param queueName   The queue name.
-     * @param databaseId  The database id.
-     * @param tableId     The table id.
+     * @param queueName  The queue name.
+     * @param databaseId The database id.
+     * @param tableId    The table id.
      * @throws AmqpException The consumer could not be created.
      */
     void createConsumer(String queueName, Long databaseId, Long tableId) throws AmqpException;

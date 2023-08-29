@@ -4,18 +4,11 @@ import at.tuwien.BaseUnitTest;
 import at.tuwien.annotations.MockAmqp;
 import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.api.auth.SignupRequestDto;
-import at.tuwien.api.user.UserPasswordDto;
-import at.tuwien.api.user.UserThemeSetDto;
-import at.tuwien.api.user.UserUpdateDto;
+import at.tuwien.api.user.*;
 import at.tuwien.entities.user.User;
-import at.tuwien.entities.user.UserAttribute;
-import at.tuwien.exception.UserAlreadyExistsException;
-import at.tuwien.exception.UserAttributeNotFoundException;
-import at.tuwien.exception.UserEmailAlreadyExistsException;
-import at.tuwien.exception.UserNotFoundException;
-import at.tuwien.repository.mdb.RealmRepository;
-import at.tuwien.repository.mdb.RoleRepository;
+import at.tuwien.exception.*;
 import at.tuwien.repository.mdb.UserRepository;
+import dasniko.testcontainers.keycloak.KeycloakContainer;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,17 +17,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
+import org.testcontainers.images.PullPolicy;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @Log4j2
+@Testcontainers
 @EnableAutoConfiguration(exclude = RabbitAutoConfiguration.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @SpringBootTest
@@ -47,19 +44,24 @@ public class UserServiceIntegrationTest extends BaseUnitTest {
     private UserRepository userRepository;
 
     @Autowired
-    private RealmRepository realmRepository;
-
-    @Autowired
-    private RoleRepository roleRepository;
-
-    @Autowired
     private UserService userService;
+
+    @Container
+    private static KeycloakContainer keycloakContainer = new KeycloakContainer("quay.io/keycloak/keycloak:21.0")
+            .withImagePullPolicy(PullPolicy.alwaysPull())
+            .withAdminUsername("fda")
+            .withAdminPassword("fda")
+            .withRealmImportFile("./dbrepo-realm.json")
+            .withEnv("KC_HOSTNAME_STRICT_HTTPS", "false");
+
+    @DynamicPropertySource
+    static void elasticsearchProperties(DynamicPropertyRegistry registry) {
+        registry.add("fda.keycloak.endpoint", () -> "http://localhost:" + keycloakContainer.getMappedPort(8080));
+    }
 
     @BeforeEach
     public void beforeEach() {
-        realmRepository.save(REALM_DBREPO);
         userRepository.save(USER_1);
-        roleRepository.save(ROLE_DEFAULT_RESEARCHER_ROLES);
     }
 
     @Test
@@ -81,7 +83,7 @@ public class UserServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void findAll_succeeds() {
+    public void findAll_succeeds() throws KeycloakRemoteException, AccessDeniedException {
 
         /* test */
         final List<User> response = userService.findAll();
@@ -89,7 +91,8 @@ public class UserServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void create_succeeds() throws UserAlreadyExistsException {
+    public void create_succeeds() throws UserAlreadyExistsException, UserNotFoundException, KeycloakRemoteException,
+            AccessDeniedException {
         final SignupRequestDto request = SignupRequestDto.builder()
                 .username(USER_2_USERNAME)
                 .password(USER_2_PASSWORD)
@@ -97,8 +100,8 @@ public class UserServiceIntegrationTest extends BaseUnitTest {
                 .build();
 
         /* test */
-        final User response = userService.create(request, REALM_DBREPO);
-        assertEquals(0, response.getRoles().size());
+        final User response = userService.create(request);
+        assertEquals(USER_2_USERNAME, response.getUsername());
     }
 
     @Test
@@ -110,8 +113,8 @@ public class UserServiceIntegrationTest extends BaseUnitTest {
                 .build();
 
         /* test */
-        assertThrows(DataIntegrityViolationException.class, () -> {
-            userService.create(request, REALM_DBREPO);
+        assertThrows(UserAlreadyExistsException.class, () -> {
+            userService.create(request);
         });
     }
 
@@ -124,14 +127,14 @@ public class UserServiceIntegrationTest extends BaseUnitTest {
                 .build();
 
         /* test */
-        assertThrows(DataIntegrityViolationException.class, () -> {
-            userService.create(request, REALM_DBREPO);
+        assertThrows(UserAlreadyExistsException.class, () -> {
+            userService.create(request);
         });
     }
 
     @Test
     @Transactional
-    public void modify_succeeds() throws UserNotFoundException, UserAttributeNotFoundException {
+    public void modify_succeeds() throws UserNotFoundException {
         final UserUpdateDto request = UserUpdateDto.builder()
                 .firstname(USER_1_FIRSTNAME)
                 .lastname(USER_1_LASTNAME)
@@ -144,13 +147,8 @@ public class UserServiceIntegrationTest extends BaseUnitTest {
         assertEquals(USER_1_ID, response.getId());
         assertEquals(USER_1_FIRSTNAME, response.getFirstname());
         assertEquals(USER_1_LASTNAME, response.getLastname());
-        assertEquals(3, response.getAttributes().size());
-        final Optional<UserAttribute> affiliation = response.getAttributes().stream().filter(a -> a.getName().equals("affiliation")).findFirst();
-        assertTrue(affiliation.isPresent());
-        assertEquals("NASA", affiliation.get().getValue());
-        final Optional<UserAttribute> orcid = response.getAttributes().stream().filter(a -> a.getName().equals("orcid")).findFirst();
-        assertTrue(orcid.isPresent());
-        assertNull(orcid.get().getValue());
+        assertEquals("NASA", response.getAffiliation());
+        assertNull(response.getOrcid());
     }
 
     @Test
@@ -159,7 +157,7 @@ public class UserServiceIntegrationTest extends BaseUnitTest {
                 .firstname(USER_2_FIRSTNAME)
                 .lastname(USER_2_LASTNAME)
                 .affiliation(USER_2_AFFILIATION)
-                .orcid(USER_2_ORCID)
+                .orcid(USER_2_ORCID_URL)
                 .build();
 
         /* test */
@@ -169,14 +167,21 @@ public class UserServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void updatePassword_succeeds() throws UserNotFoundException {
+    public void updatePassword_succeeds() throws KeycloakRemoteException, AccessDeniedException, UserNotFoundException,
+            UserAlreadyExistsException {
         final UserPasswordDto request = UserPasswordDto.builder()
-                .password(USER_1_PASSWORD)
+                .password(USER_3_PASSWORD)
                 .build();
 
+        /* mock */
+        final User user = userService.create(SignupRequestDto.builder()
+                .username(USER_3_USERNAME)
+                .password(USER_3_PASSWORD)
+                .email(USER_3_EMAIL)
+                .build());
+
         /* test */
-        final User response = userService.updatePassword(USER_1_ID, request);
-        assertEquals(1, response.getCredentials().size());
+        userService.updatePassword(user.getId(), request);
     }
 
     @Test
@@ -193,15 +198,14 @@ public class UserServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     @Transactional
-    public void toggleTheme_succeeds() throws UserNotFoundException, UserAttributeNotFoundException {
+    public void toggleTheme_succeeds() throws UserNotFoundException {
         final UserThemeSetDto request = UserThemeSetDto.builder()
                 .themeDark(true)
                 .build();
 
         /* test */
         final User response = userService.toggleTheme(USER_1_ID, request);
-        assertNotNull(response.getAttributes());
-        assertEquals(3, response.getAttributes().size());
+        assertTrue(response.getThemeDark());
     }
 
     @Test
@@ -221,7 +225,7 @@ public class UserServiceIntegrationTest extends BaseUnitTest {
 
         /* test */
         final User user = userService.find(USER_1_ID);
-        assertEquals(USER_1_ID, user.getId());
+        assertEquals(USER_1_USERNAME, user.getUsername());
     }
 
     @Test

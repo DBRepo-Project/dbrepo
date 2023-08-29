@@ -3,18 +3,16 @@ package at.tuwien.service;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.annotations.MockAmqp;
 import at.tuwien.annotations.MockOpensearch;
+import at.tuwien.config.MariaDbContainerConfig;
 import at.tuwien.entities.database.License;
 import at.tuwien.exception.LicenseNotFoundException;
 import at.tuwien.repository.mdb.LicenseRepository;
-import at.tuwien.repository.sdb.DatabaseIdxRepository;
-import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.testcontainers.containers.MariaDBContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -40,8 +38,7 @@ public class LicenseServiceIntegrationTest extends BaseUnitTest {
     private LicenseService licenseService;
 
     @Container
-    @Autowired
-    public MariaDBContainer<?> mariaDBContainer;
+    private static MariaDBContainer<?> mariaDBContainer = MariaDbContainerConfig.getContainer();
 
     @BeforeEach
     public void beforeEach() {

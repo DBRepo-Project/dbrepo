@@ -4,20 +4,18 @@ import at.tuwien.BaseUnitTest;
 import at.tuwien.annotations.MockAmqp;
 import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.config.MariaDbConfig;
+import at.tuwien.config.MariaDbContainerConfig;
 import at.tuwien.exception.*;
 import at.tuwien.repository.mdb.*;
-import at.tuwien.repository.sdb.DatabaseIdxRepository;
 import at.tuwien.service.impl.HibernateConnector;
 import at.tuwien.service.impl.QueryStoreServiceImpl;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
-import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.testcontainers.containers.MariaDBContainer;
@@ -37,16 +35,13 @@ import java.sql.SQLException;
 public class QueryStoreServiceIntegrationTest extends BaseUnitTest {
 
     @Autowired
-    private RealmRepository realmRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
     private ContainerRepository containerRepository;
 
     @Autowired
     private ImageRepository imageRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     private DatabaseRepository databaseRepository;
@@ -55,15 +50,13 @@ public class QueryStoreServiceIntegrationTest extends BaseUnitTest {
     private QueryStoreServiceImpl queryStoreService;
 
     @Container
-    @Autowired
-    private MariaDBContainer<?> mariaDBContainer;
+    private static MariaDBContainer<?> mariaDBContainer = MariaDbContainerConfig.getContainer();
 
     @BeforeEach
     public void beforeEach() throws SQLException {
         /* metadata database */
-        realmRepository.save(REALM_DBREPO);
-        userRepository.save(USER_1);
         imageRepository.save(IMAGE_1);
+        userRepository.save(USER_1);
         containerRepository.save(CONTAINER_1_SIMPLE);
         databaseRepository.save(DATABASE_1_SIMPLE);
         MariaDbConfig.dropAllDatabases(CONTAINER_1);

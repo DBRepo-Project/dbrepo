@@ -21,9 +21,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
 import lombok.extern.log4j.Log4j2;
 import org.apache.http.auth.BasicUserPrincipal;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
@@ -32,33 +32,34 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 
 @Log4j2
 @Service
 public class RabbitMqServiceImpl implements MessageQueueService {
 
-    private Channel channel;
     private final AmqpConfig amqpConfig;
     private final AmqpMapper amqpMapper;
-    private final DatabaseRepository databaseRepository;
-    private final TableRepository tableRepository;
     private final ObjectMapper objectMapper;
     private final QueryService queryService;
     private final TableService tableService;
+    private final TableRepository tableRepository;
+    private final ConnectionFactory connectionFactory;
+    private final DatabaseRepository databaseRepository;
     private final BrokerServiceGateway brokerServiceGateway;
 
-    @Autowired
-    public RabbitMqServiceImpl(Channel channel, AmqpConfig amqpConfig, AmqpMapper amqpMapper,
-                               DatabaseRepository databaseRepository, TableRepository tableRepository, ObjectMapper objectMapper,
-                               QueryService queryService, TableService tableService, BrokerServiceGateway brokerServiceGateway) {
-        this.channel = channel;
+    public RabbitMqServiceImpl(AmqpConfig amqpConfig, AmqpMapper amqpMapper, ObjectMapper objectMapper,
+                               QueryService queryService, TableService tableService, TableRepository tableRepository,
+                               ConnectionFactory connectionFactory, DatabaseRepository databaseRepository,
+                               BrokerServiceGateway brokerServiceGateway) {
         this.amqpConfig = amqpConfig;
         this.amqpMapper = amqpMapper;
-        this.databaseRepository = databaseRepository;
-        this.tableRepository = tableRepository;
         this.objectMapper = objectMapper;
         this.queryService = queryService;
         this.tableService = tableService;
+        this.tableRepository = tableRepository;
+        this.connectionFactory = connectionFactory;
+        this.databaseRepository = databaseRepository;
         this.brokerServiceGateway = brokerServiceGateway;
     }
 
@@ -80,7 +81,7 @@ public class RabbitMqServiceImpl implements MessageQueueService {
     @Override
     public void createExchange(Database database, Principal principal) throws AmqpException {
         try {
-            channel.exchangeDeclare(database.getExchangeName(), BuiltinExchangeType.DIRECT, true);
+            getChannel().exchangeDeclare(database.getExchangeName(), BuiltinExchangeType.DIRECT, true);
             log.info("Declared exchange {}", database.getExchangeName());
         } catch (IOException e) {
             log.error("Failed to declare exchange {}", database.getExchangeName());
@@ -92,6 +93,7 @@ public class RabbitMqServiceImpl implements MessageQueueService {
     @Transactional(readOnly = true)
     public void create(Table table) throws AmqpException {
         try {
+            final Channel channel = getChannel();
             channel.queueDeclare(table.getQueueName(), true, false, false, null);
             channel.queueBind(table.getQueueName(), table.getDatabase().getExchangeName(), table.getRoutingKey());
         } catch (IOException e) {
@@ -102,8 +104,8 @@ public class RabbitMqServiceImpl implements MessageQueueService {
     }
 
     @Override
-    public void createUser(User user) throws BrokerVirtualHostCreationException {
-        brokerServiceGateway.createUser(user.getUsername());
+    public void createUser(String username) throws BrokerVirtualHostCreationException {
+        brokerServiceGateway.createUser(username);
     }
 
     @Override
@@ -120,7 +122,7 @@ public class RabbitMqServiceImpl implements MessageQueueService {
     @Override
     public void deleteExchange(Database database) throws AmqpException {
         try {
-            channel.exchangeDelete(database.getExchangeName());
+            getChannel().exchangeDelete(database.getExchangeName());
             log.info("Deleted exchange {}", database.getExchangeName());
         } catch (IOException e) {
             log.error("Failed to delete exchange {}", database.getExchangeName());
@@ -131,13 +133,7 @@ public class RabbitMqServiceImpl implements MessageQueueService {
     @Override
     public void createConsumer(String queueName, Long databaseId, Long tableId) throws AmqpException {
         try {
-            if (!this.channel.isOpen()) {
-                log.warn("Channel with id {} is closed", this.channel.getChannelNumber());
-                final Connection tmp = this.amqpConfig.connectionFactory().newConnection();
-                this.channel = tmp.createChannel();
-                log.info("Opened channel with id {}", this.channel.getChannelNumber());
-            }
-            final String consumerTag = this.channel.basicConsume(queueName, true, new RabbitMqConsumer(databaseId, tableId, objectMapper, queryService));
+            final String consumerTag = getChannel().basicConsume(queueName, true, new RabbitMqConsumer(databaseId, tableId, objectMapper, queryService));
             log.debug("declared consumer for queue name {} with tag {}", queueName, consumerTag);
         } catch (IOException e) {
             log.error("Failed to create consumer for table with id {}, reason: {}", tableId, e.getMessage());
@@ -160,6 +156,14 @@ public class RabbitMqServiceImpl implements MessageQueueService {
             for (long i = consumerCount; i < amqpConfig.getAmqpConsumers(); i++) {
                 createConsumer(table.getQueueName(), table.getDatabase().getId(), table.getId());
             }
+        }
+    }
+
+    protected Channel getChannel() throws IOException {
+        try {
+            return amqpConfig.getChannel(connectionFactory);
+        } catch (TimeoutException e) {
+            throw new IOException("Timeout", e);
         }
     }
 

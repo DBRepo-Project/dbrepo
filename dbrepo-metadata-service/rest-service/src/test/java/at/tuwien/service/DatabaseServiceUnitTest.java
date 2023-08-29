@@ -7,16 +7,10 @@ import at.tuwien.api.database.DatabaseCreateDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.entities.database.Database;
-import at.tuwien.exception.ContainerNotFoundException;
-import at.tuwien.exception.DatabaseNotFoundException;
-import at.tuwien.exception.ImageNotSupportedException;
-import at.tuwien.exception.UserNotFoundException;
+import at.tuwien.exception.*;
 import at.tuwien.repository.mdb.ContainerRepository;
 import at.tuwien.repository.mdb.DatabaseRepository;
-import at.tuwien.repository.sdb.DatabaseIdxRepository;
 import at.tuwien.service.impl.MariaDbServiceImpl;
-import at.tuwien.service.impl.RabbitMqServiceImpl;
-import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -106,7 +100,7 @@ public class DatabaseServiceUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void create_notFound_fails() throws UserNotFoundException {
+    public void create_notFound_fails() throws UserNotFoundException, KeycloakRemoteException, AccessDeniedException {
         final DatabaseCreateDto request = DatabaseCreateDto.builder()
                 .cid(CONTAINER_1_ID)
                 .name(DATABASE_1_NAME)
