@@ -29,7 +29,6 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-
 @Log4j2
 @Testcontainers
 @SpringBootTest
@@ -272,15 +271,10 @@ public class IndexConfigComponentTest extends BaseUnitTest {
         assertEquals("keyword", types.get("id"));
         assertEquals("keyword", types.get("username"));
         assertEquals("keyword", types.get("name"));
-        assertEquals("keyword", types.get("orcid"));
         assertEquals("keyword", types.get("firstname"));
         assertEquals("keyword", types.get("lastname"));
-        assertNull(types.get("attributes"));
-        assertNull(types.get("containers"));
-        assertNull(types.get("databases"));
-        assertNull(types.get("identifiers"));
+        assertEquals("nested", types.get("attributes"));
         assertNull(types.get("email"));
-        assertNull(types.get("email_verified"));
     }
 
     private Map<String, String> getTypes(String indexName, GetMappingsResponse data) {

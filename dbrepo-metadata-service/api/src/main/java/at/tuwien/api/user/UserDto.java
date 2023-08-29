@@ -51,6 +51,7 @@ public class UserDto {
     private String lastname;
 
     @NotNull
+    @Field(name = "attributes", includeInParent = true, type = FieldType.Nested)
     private UserAttributesDto attributes;
 
     @NotNull
