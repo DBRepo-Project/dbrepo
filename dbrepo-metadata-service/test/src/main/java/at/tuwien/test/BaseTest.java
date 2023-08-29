@@ -296,7 +296,6 @@ public abstract class BaseTest {
             .email(USER_1_EMAIL)
             .firstname(USER_1_FIRSTNAME)
             .lastname(USER_1_LASTNAME)
-            .emailVerified(USER_1_VERIFIED)
             .attributes(USER_1_ATTRIBUTES_DTO)
             .build();
 
@@ -329,7 +328,6 @@ public abstract class BaseTest {
             .username(USER_1_USERNAME)
             .firstname(USER_1_FIRSTNAME)
             .lastname(USER_1_LASTNAME)
-            .emailVerified(USER_1_VERIFIED)
             .build();
 
     public final static UserDetails USER_1_DETAILS = UserDetailsDto.builder()
@@ -402,7 +400,6 @@ public abstract class BaseTest {
             .email(USER_2_EMAIL)
             .firstname(USER_2_FIRSTNAME)
             .lastname(USER_2_LASTNAME)
-            .emailVerified(USER_2_VERIFIED)
             .build();
 
     public final static UserBriefDto USER_2_BRIEF_DTO = UserBriefDto.builder()
@@ -410,7 +407,6 @@ public abstract class BaseTest {
             .username(USER_2_USERNAME)
             .firstname(USER_2_FIRSTNAME)
             .lastname(USER_2_LASTNAME)
-            .emailVerified(USER_2_VERIFIED)
             .build();
 
     public final static SignupRequestDto USER_2_SIGNUP_REQUEST_DTO = SignupRequestDto.builder()
@@ -487,7 +483,6 @@ public abstract class BaseTest {
             .email(USER_3_EMAIL)
             .firstname(USER_3_FIRSTNAME)
             .lastname(USER_3_LASTNAME)
-            .emailVerified(USER_3_VERIFIED)
             .build();
 
     public final static UserDetails USER_3_DETAILS = UserDetailsDto.builder()
@@ -553,20 +548,16 @@ public abstract class BaseTest {
             .id(USER_4_ID)
             .username(USER_4_USERNAME)
             .email(USER_4_EMAIL)
-            .emailVerified(true)
             .firstname(USER_4_FIRSTNAME)
             .lastname(USER_4_LASTNAME)
-            .emailVerified(USER_4_VERIFIED)
             .attributes(USER_4_ATTRIBUTES_DTO)
             .build();
 
     public final static UserBriefDto USER_4_BRIEF_DTO = UserBriefDto.builder()
             .id(USER_4_ID)
             .username(USER_4_USERNAME)
-            .emailVerified(true)
             .firstname(USER_4_FIRSTNAME)
             .lastname(USER_4_LASTNAME)
-            .emailVerified(USER_4_VERIFIED)
             .build();
 
     public final static UserDetails USER_4_DETAILS = UserDetailsDto.builder()
@@ -601,7 +592,6 @@ public abstract class BaseTest {
             .email(USER_5_EMAIL)
             .firstname(USER_5_FIRSTNAME)
             .lastname(USER_5_LASTNAME)
-            .emailVerified(USER_5_VERIFIED)
             .build();
 
     public final static UserDetails USER_5_DETAILS = UserDetailsDto.builder()
@@ -647,7 +637,6 @@ public abstract class BaseTest {
             .email(USER_6_EMAIL)
             .firstname(USER_6_FIRSTNAME)
             .lastname(USER_6_LASTNAME)
-            .emailVerified(USER_6_VERIFIED)
             .build();
 
     public final static UserDetails USER_6_DETAILS = UserDetailsDto.builder()

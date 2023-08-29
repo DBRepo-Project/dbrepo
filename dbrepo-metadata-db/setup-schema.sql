@@ -1,5 +1,21 @@
 BEGIN;
 
+CREATE TABLE IF NOT EXISTS `fda`.`mdb_users`
+(
+    id               character varying(36)  NOT NULL,
+    username         character varying(255) NOT NULL,
+    firstname        character varying(255),
+    lastname         character varying(255),
+    email            character varying(255) NOT NULL,
+    orcid            character varying(255),
+    affiliation      character varying(255),
+    mariadb_password character varying(255) NOT NULL,
+    theme_dark       boolean,
+    PRIMARY KEY (id),
+    UNIQUE (username),
+    UNIQUE (email)
+) WITH SYSTEM VERSIONING;
+
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_images`
 (
     id            bigint                 NOT NULL AUTO_INCREMENT,
@@ -32,13 +48,13 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_images_date`
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_containers`
 (
     id                  bigint                 NOT NULL AUTO_INCREMENT,
-    INTERNAL_NAME       character varying(255) NOT NULL,
-    NAME                character varying(255) NOT NULL,
-    HOST                character varying(255) NOT NULL,
-    PORT                integer                NOT NULL,
+    internal_name       character varying(255) NOT NULL,
+    name                character varying(255) NOT NULL,
+    host                character varying(255) NOT NULL,
+    port                integer                NOT NULL,
     image_id            bigint                 NOT NULL,
     created             timestamp              NOT NULL DEFAULT NOW(),
-    LAST_MODIFIED       timestamp,
+    last_modified       timestamp,
     privileged_username character varying(255) NOT NULL,
     privileged_password character varying(255) NOT NULL,
     PRIMARY KEY (id),
@@ -48,18 +64,18 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_containers`
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_data`
 (
     ID           bigint NOT NULL AUTO_INCREMENT,
-    PROVENANCE   TEXT,
-    FileEncoding TEXT,
-    FileType     VARCHAR(100),
-    Version      TEXT,
-    Seperator    TEXT,
+    PROVENANCE   text,
+    FileEncoding text,
+    FileType     character varying(100),
+    Version      text,
+    Seperator    text,
     PRIMARY KEY (ID)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_licenses`
 (
     identifier character varying(255) NOT NULL,
-    uri        TEXT                   NOT NULL,
+    uri        text                   NOT NULL,
     PRIMARY KEY (identifier),
     UNIQUE (uri)
 ) WITH SYSTEM VERSIONING;
@@ -71,16 +87,19 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_databases`
     name           character varying(255) NOT NULL,
     internal_name  character varying(255) NOT NULL,
     exchange_name  character varying(255) NOT NULL,
-    description    TEXT,
+    description    text,
     engine         character varying(20),
-    is_public      BOOLEAN                NOT NULL DEFAULT TRUE,
-    created_by     character varying(255),
-    owned_by       character varying(255),
-    contact_person character varying(255),
+    is_public      boolean                NOT NULL DEFAULT TRUE,
+    created_by     character varying(36),
+    owned_by       character varying(36),
+    contact_person character varying(36),
     created        timestamp              NOT NULL DEFAULT NOW(),
     last_modified  timestamp,
     PRIMARY KEY (id),
-    FOREIGN KEY (cid) REFERENCES mdb_containers (id) /* currently we only support one-to-one */
+    FOREIGN KEY (cid) REFERENCES mdb_containers (id) /* currently we only support one-to-one */,
+    FOREIGN KEY (created_by) REFERENCES mdb_users (id),
+    FOREIGN KEY (owned_by) REFERENCES mdb_users (id),
+    FOREIGN KEY (contact_person) REFERENCES mdb_users (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_databases_subjects`
@@ -110,11 +129,13 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_tables`
     Version       TEXT,
     created       timestamp              NOT NULL DEFAULT NOW(),
     versioned     boolean                not null default true,
-    created_by    character varying(255) NOT NULL,
-    owned_by      character varying(255) NOT NULL,
+    created_by    character varying(36)  NOT NULL,
+    owned_by      character varying(36)  NOT NULL,
     last_modified timestamp,
     PRIMARY KEY (ID),
-    FOREIGN KEY (tDBID) REFERENCES mdb_databases (id)
+    FOREIGN KEY (tDBID) REFERENCES mdb_databases (id),
+    FOREIGN KEY (created_by) REFERENCES mdb_users (id),
+    FOREIGN KEY (owned_by) REFERENCES mdb_users (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns`
@@ -159,19 +180,17 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns_sets`
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns_nom`
 (
-    cDBID         bigint,
     tID           bigint,
     cID           bigint,
     maxlength     INTEGER,
     last_modified timestamp,
     created       timestamp NOT NULL DEFAULT NOW(),
-    FOREIGN KEY (cDBID, tID, cID) REFERENCES mdb_columns (cDBID, tID, ID),
-    PRIMARY KEY (cDBID, tID, cID)
+    FOREIGN KEY (tID, cID) REFERENCES mdb_columns (tID, ID),
+    PRIMARY KEY (tID, cID)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns_num`
 (
-    cDBID         bigint,
     tID           bigint,
     cID           bigint,
     SIunit        TEXT,
@@ -183,21 +202,20 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns_num`
 --    Histogram     INTEGER[],
     last_modified timestamp,
     created       timestamp NOT NULL DEFAULT NOW(),
-    FOREIGN KEY (cDBID, tID, cID) REFERENCES mdb_columns (cDBID, tID, ID),
-    PRIMARY KEY (cDBID, tID, cID)
+    FOREIGN KEY (tID, cID) REFERENCES mdb_columns (tID, ID),
+    PRIMARY KEY (tID, cID)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns_cat`
 (
-    cDBID         bigint,
     tID           bigint,
     cID           bigint,
     num_cat       INTEGER,
 --    cat_array     TEXT[],
     last_modified timestamp,
     created       timestamp NOT NULL DEFAULT NOW(),
-    FOREIGN KEY (cDBID, tID, cID) REFERENCES mdb_columns (cDBID, tID, ID),
-    PRIMARY KEY (cDBID, tID, cID)
+    FOREIGN KEY (tID, cID) REFERENCES mdb_columns (tID, ID),
+    PRIMARY KEY (tID, cID)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_constraints_foreign_key`
@@ -255,26 +273,28 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_constraints_checks`
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_concepts`
 (
-    id          bigint       NOT NULL AUTO_INCREMENT,
-    uri         text         not null,
-    name        VARCHAR(255) null,
-    description TEXT         null,
-    created     timestamp    NOT NULL DEFAULT NOW(),
-    created_by  character varying(255),
+    id          bigint                NOT NULL AUTO_INCREMENT,
+    uri         text                  not null,
+    name        VARCHAR(255)          null,
+    description TEXT                  null,
+    created     timestamp             NOT NULL DEFAULT NOW(),
+    created_by  character varying(36) NOT NULL,
     PRIMARY KEY (id),
-    UNIQUE (uri)
+    UNIQUE (uri),
+    FOREIGN KEY (created_by) REFERENCES mdb_users (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_units`
 (
-    id          bigint       NOT NULL AUTO_INCREMENT,
-    uri         text         not null,
-    name        VARCHAR(255) null,
-    description TEXT         null,
-    created     timestamp    NOT NULL DEFAULT NOW(),
-    created_by  character varying(255),
+    id          bigint                NOT NULL AUTO_INCREMENT,
+    uri         text                  not null,
+    name        VARCHAR(255)          null,
+    description TEXT                  null,
+    created     timestamp             NOT NULL DEFAULT NOW(),
+    created_by  character varying(36) NOT NULL,
     PRIMARY KEY (id),
-    UNIQUE (uri)
+    UNIQUE (uri),
+    FOREIGN KEY (created_by) REFERENCES mdb_users (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns_concepts`
@@ -297,21 +317,22 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns_units`
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_view`
 (
-    id            bigint                 NOT NULL AUTO_INCREMENT,
-    vdbid         bigint                 NOT NULL,
-    vName         VARCHAR(255)           NOT NULL,
-    internal_name VARCHAR(255)           NOT NULL,
-    Query         TEXT                   NOT NULL,
-    query_hash    VARCHAR(255)           NOT NULL,
-    Public        BOOLEAN                NOT NULL,
+    id            bigint                NOT NULL AUTO_INCREMENT,
+    vdbid         bigint                NOT NULL,
+    vName         VARCHAR(255)          NOT NULL,
+    internal_name VARCHAR(255)          NOT NULL,
+    Query         TEXT                  NOT NULL,
+    query_hash    VARCHAR(255)          NOT NULL,
+    Public        BOOLEAN               NOT NULL,
     NumCols       INTEGER,
     NumRows       INTEGER,
-    InitialView   BOOLEAN                NOT NULL,
-    created       timestamp              NOT NULL DEFAULT NOW(),
+    InitialView   BOOLEAN               NOT NULL,
+    created       timestamp             NOT NULL DEFAULT NOW(),
     last_modified timestamp,
-    created_by    character varying(255) NOT NULL,
+    created_by    character varying(36) NOT NULL,
     PRIMARY KEY (id),
-    FOREIGN KEY (vdbid) REFERENCES mdb_databases (id)
+    FOREIGN KEY (vdbid) REFERENCES mdb_databases (id),
+    FOREIGN KEY (created_by) REFERENCES mdb_users (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_banner_messages`
@@ -328,17 +349,18 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_banner_messages`
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_ontologies`
 (
-    id              bigint                 NOT NULL AUTO_INCREMENT,
-    prefix          VARCHAR(8)             NOT NULL,
-    uri             TEXT                   NOT NULL,
+    id              bigint                NOT NULL AUTO_INCREMENT,
+    prefix          VARCHAR(8)            NOT NULL,
+    uri             TEXT                  NOT NULL,
     uri_pattern     TEXT,
-    sparql_endpoint TEXT                   NULL,
+    sparql_endpoint TEXT                  NULL,
     last_modified   timestamp,
-    created         timestamp              NOT NULL DEFAULT NOW(),
-    created_by      character varying(255) NULL,
+    created         timestamp             NOT NULL DEFAULT NOW(),
+    created_by      character varying(36) NOT NULL,
     UNIQUE (prefix),
     UNIQUE (uri),
-    PRIMARY KEY (id)
+    PRIMARY KEY (id),
+    FOREIGN KEY (created_by) REFERENCES mdb_users (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_view_columns`
@@ -373,11 +395,12 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifiers`
     result_number     bigint,
     doi               VARCHAR(255),
     created           timestamp                           NOT NULL DEFAULT NOW(),
-    created_by        character varying(255)              NOT NULL,
+    created_by        character varying(36)               NOT NULL,
     last_modified     timestamp,
     PRIMARY KEY (id), /* must be a single id from persistent identifier concept */
     FOREIGN KEY (dbid) REFERENCES mdb_databases (id),
-    UNIQUE (dbid, qid)
+    UNIQUE (dbid, qid),
+    FOREIGN KEY (created_by) REFERENCES mdb_users (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifier_licenses`
@@ -462,11 +485,12 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_feed`
 (
     fDBID   bigint,
     fID     bigint,
-    fUserId character varying(255) not null,
+    fUserId character varying(36) not null,
     fDataID bigint REFERENCES mdb_data (ID),
-    created timestamp              NOT NULL DEFAULT NOW(),
+    created timestamp             NOT NULL DEFAULT NOW(),
     PRIMARY KEY (fDBID, fID, fUserId, fDataID),
-    FOREIGN KEY (fDBID, fID) REFERENCES mdb_tables (tDBID, ID)
+    FOREIGN KEY (fDBID, fID) REFERENCES mdb_tables (tDBID, ID),
+    FOREIGN KEY (fUserId) REFERENCES mdb_users (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_update`
@@ -490,11 +514,12 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_access`
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_have_access`
 (
-    user_id     character varying(255)                  NOT NULL,
+    user_id     character varying(36)                   NOT NULL,
     database_id bigint REFERENCES mdb_databases (id),
     access_type ENUM ('READ', 'WRITE_OWN', 'WRITE_ALL') NOT NULL,
     created     timestamp                               NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (user_id, database_id)
+    PRIMARY KEY (user_id, database_id),
+    FOREIGN KEY (user_id) REFERENCES mdb_users (id)
 ) WITH SYSTEM VERSIONING;
 
 COMMIT;

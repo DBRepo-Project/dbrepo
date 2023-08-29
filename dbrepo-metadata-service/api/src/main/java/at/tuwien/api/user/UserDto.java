@@ -1,6 +1,5 @@
 package at.tuwien.api.user;
 
-import at.tuwien.api.container.ContainerDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
@@ -12,7 +11,6 @@ import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
-import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -42,10 +40,6 @@ public class UserDto {
     @Field(name = "name", type = FieldType.Keyword)
     private String name;
 
-    @Schema(example = "http://orcid.org/0000-0002-1825-0097")
-    @Field(name = "orcid", type = FieldType.Keyword)
-    private String orcid;
-
     @JsonProperty("given_name")
     @Schema(example = "Josiah")
     @Field(name = "firstname", type = FieldType.Keyword)
@@ -61,25 +55,7 @@ public class UserDto {
 
     @NotNull
     @org.springframework.data.annotation.Transient
-    private List<ContainerDto> containers;
-
-    @NotNull
-    @org.springframework.data.annotation.Transient
-    private List<ContainerDto> databases;
-
-    @NotNull
-    @org.springframework.data.annotation.Transient
-    private List<ContainerDto> identifiers;
-
-    @NotNull
-    @org.springframework.data.annotation.Transient
     @Schema(example = "jcarberry@brown.edu")
     private String email;
-
-    @NotNull
-    @JsonProperty("email_verified")
-    @org.springframework.data.annotation.Transient
-    @Schema(example = "true")
-    private Boolean emailVerified;
 
 }

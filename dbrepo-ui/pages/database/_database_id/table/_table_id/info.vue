@@ -129,7 +129,7 @@ export default {
       return this.$store.state.roles
     },
     canRead () {
-      if (this.database?.is_public) {
+      if (this.database && this.database.is_public) {
         return true
       }
       if (!this.user || !this.access) {

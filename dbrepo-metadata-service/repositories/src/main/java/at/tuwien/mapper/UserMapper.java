@@ -71,6 +71,12 @@ public interface UserMapper {
     UserBriefDto userDtoToUserBriefDto(UserDto data);
 
     /* keep */
+    @Mappings({
+            @Mapping(target = "attributes.orcid", source = "orcid"),
+            @Mapping(target = "attributes.affiliation", source = "affiliation"),
+            @Mapping(target = "attributes.themeDark", source = "themeDark"),
+            @Mapping(target = "attributes.mariadbPassword", source = "mariadbPassword")
+    })
     UserDto userToUserDto(User data);
 
     default UserDetailsDto tokenIntrospectDtoToUserDetailsDto(TokenIntrospectDto data) {

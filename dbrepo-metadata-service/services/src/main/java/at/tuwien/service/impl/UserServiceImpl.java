@@ -69,7 +69,7 @@ public class UserServiceImpl implements UserService {
         final User entity = User.builder()
                 .username(data.getUsername())
                 .email(data.getEmail())
-                .themeDark(true)
+                .themeDark(false)
                 .mariadbPassword(getMariaDbPassword(data.getPassword()))
                 .build();
         keycloakGateway.createUser(userMapper.signupRequestDtoToUserCreateDto(data));

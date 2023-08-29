@@ -56,7 +56,7 @@ ENV SEARCH_USERNAME=admin
 ENV SHARED_FILESYSTEM=/tmp
 ENV USER_NETWORK=userdb
 ENV WEBSITE="http://localhost"
-ENV KEYCLOAK_HOST="http://authentication-service:8080/api/auth"
+ENV KEYCLOAK_HOST="http://authentication-service:8080"
 ENV KEYCLOAK_ADMIN=fda
 ENV KEYCLOAK_ADMIN_PASSWORD=fda
 
