@@ -9,12 +9,8 @@
       </div>
       <v-list-item class="mt-2">
         <v-list-item-content>
-          <v-list-item-subtitle>
-            {{ version }}
-          </v-list-item-subtitle>
-          <v-list-item-title class="text-h6">
-            Database Repository
-          </v-list-item-title>
+          <v-list-item-subtitle v-text="version" />
+          <v-list-item-title class="text-h6" v-text="title" />
         </v-list-item-content>
       </v-list-item>
       <v-list nav>
@@ -182,6 +178,9 @@ export default {
     version () {
       return this.$config.version
     },
+    title () {
+      return this.$config.title
+    },
     canListOntologies () {
       if (!this.roles) {
         return false
@@ -310,6 +309,8 @@ export default {
       this.$router.push({ path: '/search', query: { q: this.search } })
     },
     initEnvironment () {
+      this.$store.commit('SET_TITLE', this.$config.title)
+      this.$store.commit('SET_ICON', this.$config.icon)
       this.$store.commit('SET_CLIENT_ID', this.$config.clientId)
       this.$store.commit('SET_CLIENT_SECRET', this.$config.clientSecret)
       this.$store.commit('SET_BROKER_USERNAME', this.$config.brokerUsername)
@@ -317,6 +318,7 @@ export default {
       this.$store.commit('SET_SEARCH_USERNAME', this.$config.searchUsername)
       this.$store.commit('SET_SEARCH_PASSWORD', this.$config.searchPassword)
       this.$store.commit('SET_UPLOAD_PATH', this.$config.uploadPath)
+      console.debug('runtime config', this.$config)
     }
   }
 }

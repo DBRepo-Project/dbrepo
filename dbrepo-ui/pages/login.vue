@@ -51,11 +51,19 @@
             Login
           </v-btn>
         </v-card-actions>
-        <v-card-text class="text-right">
-          <a href="/api/auth/">Admin Login</a>
-        </v-card-text>
       </v-card>
     </v-form>
+    <v-toolbar v-if="!token" flat>
+      <v-spacer />
+      <v-toolbar-title>
+        <v-btn v-if="rabbitMqUrl" color="orange" plain :href="rabbitMqUrl">
+          <v-icon left>mdi-rabbit</v-icon> RabbitMQ
+        </v-btn>
+        <v-btn v-if="keycloakUrl" color="secondary" plain :href="keycloakUrl">
+          <v-icon left>mdi-key</v-icon> Keycloak
+        </v-btn>
+      </v-toolbar-title>
+    </v-toolbar>
   </div>
 </template>
 
@@ -82,6 +90,12 @@ export default {
     },
     user () {
       return this.$store.state.user
+    },
+    keycloakUrl () {
+      return this.$config.keycloakLoginUrl
+    },
+    rabbitMqUrl () {
+      return this.$config.brokerLoginUrl
     }
   },
   mounted () {
