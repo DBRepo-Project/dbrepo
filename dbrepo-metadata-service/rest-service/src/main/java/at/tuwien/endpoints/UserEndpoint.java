@@ -7,6 +7,7 @@ import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.UserMapper;
 import at.tuwien.service.DatabaseService;
+import at.tuwien.service.MessageQueueService;
 import at.tuwien.service.UserService;
 import at.tuwien.utils.UserUtil;
 import io.micrometer.core.annotation.Timed;
@@ -40,13 +41,16 @@ public class UserEndpoint {
     private final UserMapper userMapper;
     private final UserService userService;
     private final DatabaseService databaseService;
+    private final MessageQueueService messageQueueService;
 
 
     @Autowired
-    public UserEndpoint(UserMapper userMapper, UserService userService, DatabaseService databaseService) {
+    public UserEndpoint(UserMapper userMapper, UserService userService, DatabaseService databaseService,
+                        MessageQueueService messageQueueService) {
         this.userMapper = userMapper;
         this.userService = userService;
         this.databaseService = databaseService;
+        this.messageQueueService = messageQueueService;
     }
 
     @GetMapping
@@ -99,14 +103,14 @@ public class UserEndpoint {
     })
     public ResponseEntity<UserBriefDto> create(@NotNull @Valid @RequestBody SignupRequestDto data)
             throws RealmNotFoundException, UserAlreadyExistsException, UserEmailAlreadyExistsException,
-            UserNotFoundException, KeycloakRemoteException, AccessDeniedException {
+            UserNotFoundException, KeycloakRemoteException, AccessDeniedException, BrokerVirtualHostCreationException {
         log.debug("endpoint create a user, data={}", data);
         /* check */
         userService.validateUsernameNotExists(data.getUsername());
         userService.validateEmailNotExists(data.getEmail());
         /* create */
-        final User user = userService.create(data);
-        final UserBriefDto dto = userMapper.userToUserBriefDto(user);
+        final UserBriefDto dto = userMapper.userToUserBriefDto(userService.create(data));
+        messageQueueService.createUser(dto.getUsername());
         log.trace("create user resulted in dto {}", dto);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(dto);

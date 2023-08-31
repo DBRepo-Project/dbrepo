@@ -240,31 +240,6 @@ services:
     logging:
       driver: json-file
 
-  dbrepo-search-sync-agent:
-    restart: "no"
-    container_name: dbrepo-search-sync-agent
-    hostname: search-startup-agent
-    build: ./dbrepo-search-sync-agent
-    image: dbrepo-search-sync-agent
-    networks:
-      core:
-    env_file:
-      - .env
-    healthcheck:
-      test: wget -qO- localhost:9050/actuator/health/readiness | grep -q "UP" || exit 1
-      interval: 10s
-      timeout: 5s
-      retries: 12
-    depends_on:
-      dbrepo-metadata-db:
-        condition: service_healthy
-      dbrepo-search-db:
-        condition: service_started
-      dbrepo-authentication-service:
-        condition: service_healthy
-    logging:
-      driver: json-file
-
   dbrepo-ui:
     restart: "no"
     container_name: dbrepo-ui

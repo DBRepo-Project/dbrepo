@@ -43,7 +43,7 @@ public interface UserService {
      * @throws UserAlreadyExistsException The user already exists in the metadata database.
      */
     User create(SignupRequestDto data) throws UserAlreadyExistsException, AccessDeniedException,
-            KeycloakRemoteException, UserNotFoundException;
+            KeycloakRemoteException, UserNotFoundException, UserEmailAlreadyExistsException;
 
     /**
      * Updates the user information for a user with given id in the metadata database.

@@ -92,7 +92,7 @@ public class UserServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void create_succeeds() throws UserAlreadyExistsException, UserNotFoundException, KeycloakRemoteException,
-            AccessDeniedException {
+            AccessDeniedException, UserEmailAlreadyExistsException {
         final SignupRequestDto request = SignupRequestDto.builder()
                 .username(USER_2_USERNAME)
                 .password(USER_2_PASSWORD)
@@ -113,7 +113,7 @@ public class UserServiceIntegrationTest extends BaseUnitTest {
                 .build();
 
         /* test */
-        assertThrows(UserAlreadyExistsException.class, () -> {
+        assertThrows(UserEmailAlreadyExistsException.class, () -> {
             userService.create(request);
         });
     }
@@ -168,7 +168,7 @@ public class UserServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void updatePassword_succeeds() throws KeycloakRemoteException, AccessDeniedException, UserNotFoundException,
-            UserAlreadyExistsException {
+            UserAlreadyExistsException, UserEmailAlreadyExistsException {
         final UserPasswordDto request = UserPasswordDto.builder()
                 .password(USER_3_PASSWORD)
                 .build();

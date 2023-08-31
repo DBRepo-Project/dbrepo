@@ -146,7 +146,6 @@ public class DatabaseEndpoint {
                 principal);
         final User user = userService.findByUsername(principal.getName());
         final Database database = databaseService.create(createDto, principal);
-        messageQueueService.createUser(user.getUsername());
         messageQueueService.createExchange(database, principal);
         queryStoreService.create(database.getId(), principal);
         databaseAccessRepository.save(databaseMapper.defaultCreatorAccess(database, UserUtil.getId(principal)));

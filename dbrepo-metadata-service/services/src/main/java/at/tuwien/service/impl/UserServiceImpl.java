@@ -64,7 +64,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User create(SignupRequestDto data) throws UserAlreadyExistsException, AccessDeniedException,
-            KeycloakRemoteException, UserNotFoundException {
+            KeycloakRemoteException, UserNotFoundException, UserEmailAlreadyExistsException {
         /* create at authentication service */
         final User entity = User.builder()
                 .username(data.getUsername())
