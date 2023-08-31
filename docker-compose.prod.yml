@@ -7,6 +7,7 @@ version: "3.6"
 volumes:
   metadata-db-data:
   data-db-data:
+  auth-db-data:
   upload-service-data:
   search-db-data:
   broker-service-data:
@@ -32,16 +33,21 @@ services:
     restart: "no"
     container_name: dbrepo-metadata-db
     hostname: metadata-db
-    image: dbrepo/metadata-db:1.3
+    image: dbrepo/metadata-db:latest
     networks:
       core:
     volumes:
-      - metadata-db-data:/var/lib/mysql
+      - metadata-db-data:/bitnami/mariadb
       - ./setup-schema_local.sql:/docker-entrypoint-initdb.d/setup-schema_local.sql
     ports:
       - "3306:3306"
     env_file:
       - .env
+    healthcheck:
+      test: mysqladmin ping --user="$METADATA_USERNAME" --password="$METADATA_PASSWORD" --silent
+      interval: 10s
+      timeout: 5s
+      retries: 12
     logging:
       driver: json-file
 
@@ -53,11 +59,10 @@ services:
     networks:
       core:
     volumes:
-      - data-db-data:/var/lib/mysql
+      - data-db-data:/bitnami/mariadb
       - "${SHARED_FILESYSTEM}:/tmp"
     ports:
       - "3307:3306"
-      - "9101:9100"
     env_file:
       - .env
     environment:
@@ -70,11 +75,37 @@ services:
     logging:
       driver: json-file
 
+  dbrepo-auth-db:
+    restart: "no"
+    container_name: dbrepo-auth-db
+    hostname: auth-db
+    image: bitnami/mariadb:10.5
+    networks:
+      core:
+    volumes:
+      - auth-db-data:/bitnami/mariadb
+    ports:
+      - "3308:3306"
+    env_file:
+      - .env
+    environment:
+      - MARIADB_ROOT_PASSWORD=$AUTH_PASSWORD
+      - MARIADB_DATABASE=$AUTH_DB
+    healthcheck:
+      test: mysqladmin ping --user="$AUTH_USERNAME" --password="$AUTH_PASSWORD" --silent
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    logging:
+      driver: json-file
+
   dbrepo-upload-service:
     restart: "no"
     container_name: dbrepo-upload-service
     hostname: upload-service
     image: tusproject/tusd:v1.12
+    command:
+      - "--base-path=/api/upload/files/"
     networks:
       core:
     env_file:
@@ -82,8 +113,6 @@ services:
     volumes:
       - upload-service-data:/data
       - "${SHARED_FILESYSTEM}:/srv/tusd-data/data"
-    ports:
-      - "1080:1080"
     logging:
       driver: json-file
 
@@ -91,7 +120,7 @@ services:
     restart: "no"
     container_name: dbrepo-authentication-service
     hostname: authentication-service
-    image: dbrepo/authentication-service:1.3
+    image: dbrepo/authentication-service:latest
     networks:
       core:
     ports:
@@ -111,11 +140,13 @@ services:
     restart: "no"
     container_name: dbrepo-metadata-service
     hostname: metadata-service
-    image: dbrepo/metadata-service:1.3
+    image: dbrepo/metadata-service:latest
     networks:
       core:
     env_file:
       - .env
+    volumes:
+      - "${SHARED_FILESYSTEM}:/tmp"
     ports:
       - "9099:9099"
     healthcheck:
@@ -137,7 +168,7 @@ services:
     restart: "no"
     container_name: dbrepo-analyse-service
     hostname: analyse-service
-    image: dbrepo/analyse-service:1.3
+    image: dbrepo/analyse-service:latest
     networks:
       core:
     ports:
@@ -153,7 +184,7 @@ services:
     restart: "no"
     container_name: dbrepo-broker-service
     hostname: broker-service
-    image: dbrepo/broker-service:1.3
+    image: dbrepo/broker-service:latest
     networks:
       core:
     ports:
@@ -181,13 +212,15 @@ services:
     env_file:
       - .env
     healthcheck:
-      test: curl -s http://search-db:9200 > /dev/null || exit 1
+      test: curl -s localhost:9200/_cat/indices || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 12
     environment:
       discovery.type: "single-node"
       ES_JAVA_OPTS: "-Xms4g -Xmx4g"
       logger.level: "WARN"
       plugins.security.disabled: "true"
-      bootstrap.memory_lock: "true"
     deploy:
       resources:
         limits:
@@ -201,7 +234,7 @@ services:
     restart: "no"
     container_name: dbrepo-ui
     hostname: ui
-    image: dbrepo/ui:1.3
+    image: dbrepo/ui:latest
     networks:
       core:
       public:

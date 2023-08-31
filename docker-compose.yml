@@ -82,7 +82,7 @@ services:
     restart: "no"
     container_name: dbrepo-auth-db
     hostname: auth-db
-    image: mariadb:10.5
+    image: bitnami/mariadb:10.5
     networks:
       core:
     volumes:
