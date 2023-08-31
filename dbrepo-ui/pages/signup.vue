@@ -8,12 +8,6 @@
     <v-form ref="form" v-model="valid" @submit.prevent="submit">
       <v-card flat tile>
         <v-card-text>
-          <v-alert
-            v-if="mailVerify"
-            border="left"
-            color="info">
-            Before you can use the repository, you will need to <i>confirm</i> your email address, make sure to check your spam folder.
-          </v-alert>
           <v-row dense>
             <v-col sm="6">
               <v-text-field
@@ -108,9 +102,6 @@ export default {
     loadingColor () {
       return this.error ? 'red lighten-2' : 'primary'
     },
-    mailVerify () {
-      return this.$config.mailVerify
-    }
   },
   mounted () {
     this.loadUsers()
@@ -123,7 +114,7 @@ export default {
       this.loading = true
       UserService.create(this.createAccount)
         .then(() => {
-          this.$toast.success(`Success! ${this.mailVerify ? 'Check your inbox!' : ''}`)
+          this.$toast.success('Success!')
           this.$router.push('/login')
           this.loading = false
         })

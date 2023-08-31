@@ -17,7 +17,7 @@ import jakarta.validation.constraints.NotNull;
 public class ApiErrorDto {
 
     @NotNull(message = "http status is required")
-    @Schema(example = "STATUS")
+    @Schema(example = "NOT_FOUND")
     private HttpStatus status;
 
     @NotNull(message = "message is required")

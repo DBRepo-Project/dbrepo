@@ -78,7 +78,7 @@ public class UserServiceUnitTest extends BaseUnitTest {
 
     @Test
     public void create_succeeds() throws UserNotFoundException, KeycloakRemoteException, AccessDeniedException,
-            UserAlreadyExistsException {
+            UserAlreadyExistsException, UserEmailAlreadyExistsException {
 
         /* mock */
         when(userRepository.findById(USER_1_ID))

@@ -3,10 +3,7 @@ package at.tuwien.gateway.impl;
 import at.tuwien.api.keycloak.*;
 import at.tuwien.api.user.UserPasswordDto;
 import at.tuwien.config.KeycloakConfig;
-import at.tuwien.exception.AccessDeniedException;
-import at.tuwien.exception.KeycloakRemoteException;
-import at.tuwien.exception.UserAlreadyExistsException;
-import at.tuwien.exception.UserNotFoundException;
+import at.tuwien.exception.*;
 import at.tuwien.gateway.KeycloakGateway;
 import at.tuwien.mapper.UserMapper;
 import lombok.extern.log4j.Log4j2;
@@ -57,7 +54,7 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
 
     @Override
     public void createUser(UserCreateDto data) throws AccessDeniedException, KeycloakRemoteException,
-            UserAlreadyExistsException {
+            UserAlreadyExistsException, UserEmailAlreadyExistsException {
         /* obtain admin token */
         final HttpHeaders headers = new HttpHeaders();
         headers.set("Accept", "application/json");
@@ -70,8 +67,13 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
             log.error("Failed to create user: {}", e.getMessage());
             throw new KeycloakRemoteException("Failed to create user: " + e.getMessage());
         } catch (HttpClientErrorException.Conflict e) {
-            log.error("Conflict when creating user: {}", e.getMessage());
-            throw new UserAlreadyExistsException("Conflict when creating user: " + e.getMessage());
+            if (e.getMessage().contains("same email")) {
+                log.error("Conflict when creating user: {}", e.getMessage());
+                throw new UserEmailAlreadyExistsException("Conflict when creating user: " + e.getMessage());
+            } else {
+                log.error("Conflict when creating user: {}", e.getMessage());
+                throw new UserAlreadyExistsException("Conflict when creating user: " + e.getMessage());
+            }
         }
         if (!response.getStatusCode().equals(HttpStatus.CREATED)) {
             log.error("Failed to create user: status {} was not expected", response.getStatusCode().value());
