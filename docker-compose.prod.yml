@@ -37,7 +37,7 @@ services:
       core:
     volumes:
       - metadata-db-data:/var/lib/mysql
-      - ./dbrepo-metadata-db/setup-schema_local.sql:/docker-entrypoint-initdb.d/setup-schema_local.sql
+      - ./setup-schema_local.sql:/docker-entrypoint-initdb.d/setup-schema_local.sql
     ports:
       - "3306:3306"
     env_file:
