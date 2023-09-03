@@ -1,14 +1,15 @@
 variables:
-  DOCKER_TLS_CERTDIR: /certs
+  DOCKER_HOST: "tcp://localhost:2375/"
+  DOCKER_TLS_CERTDIR: ""
+  DOCKER_TLS_VERIFY: 0
   TAG: "${TAG:-latest}"
   TRIVY_NO_PROGRESS: "true"
   TRIVY_CACHE_DIR: ".trivycache/"
 
-image: "docker/compose:latest"
+image: maven:3-openjdk-17
 
 services:
-  - name: docker:24-dind
-  - name: mariadb:10.5
+  - docker:24-dind-rootless
 
 stages:
   - build-backend
