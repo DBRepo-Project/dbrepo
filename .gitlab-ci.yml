@@ -1,6 +1,6 @@
 variables:
   DOCKER_HOST: "tcp://localhost:2375/"
-  DOCKER_TLS_CERTDIR: ""
+  DOCKER_TLS_CERTDIR: /certs
   DOCKER_TLS_VERIFY: 0
   TAG: "${TAG:-latest}"
   TRIVY_NO_PROGRESS: "true"
