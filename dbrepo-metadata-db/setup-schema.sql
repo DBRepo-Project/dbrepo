@@ -356,11 +356,9 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_ontologies`
     sparql_endpoint TEXT                  NULL,
     last_modified   timestamp,
     created         timestamp             NOT NULL DEFAULT NOW(),
-    created_by      character varying(36) NOT NULL,
     UNIQUE (prefix),
     UNIQUE (uri(200)),
-    PRIMARY KEY (id),
-    FOREIGN KEY (created_by) REFERENCES mdb_users (id)
+    PRIMARY KEY (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_view_columns`
