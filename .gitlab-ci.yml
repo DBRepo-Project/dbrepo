@@ -6,6 +6,10 @@ variables:
 
 image: "docker/compose:latest"
 
+services:
+  - name: docker:24-dind
+  - name: mariadb:10.5
+
 stages:
   - build-backend
   - build-frontend
