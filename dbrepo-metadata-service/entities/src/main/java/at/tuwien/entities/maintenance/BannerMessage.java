@@ -34,6 +34,12 @@ public class BannerMessage {
     @Column(nullable = false)
     private String message;
 
+    @Column
+    private String link;
+
+    @Column
+    private String linkText;
+
     @Column(columnDefinition = "TIMESTAMP")
     private Instant displayStart;
 

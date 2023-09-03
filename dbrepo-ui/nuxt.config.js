@@ -140,13 +140,14 @@ export default {
     }
   },
 
+  // https://github.com/nuxt/nuxt/issues/7722
   build: {
     babel: {
       presets (env, [preset, options]) {
         return [
           ['@babel/preset-env', {
             targets: {
-              node: 'current'
+              node: '14'
             }
           }]
         ]
