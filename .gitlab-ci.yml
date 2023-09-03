@@ -1,14 +1,11 @@
 variables:
-  DOCKER_HOST: "tcp://localhost:2375/"
+  DOCKER_HOST: "${DOCKER_PORT}"
   DOCKER_TLS_CERTDIR: ""
   DOCKER_TLS_VERIFY: 0
   TAG: "${TAG:-latest}"
   TRIVY_NO_PROGRESS: "true"
   TRIVY_CACHE_DIR: ".trivycache/"
   "_JAVA_OPTIONS": "-Dlogging.level.at.tuwien.=INFO"
-
-before_script:
-  - "printenv"
 
 image: maven:3-openjdk-17
 
