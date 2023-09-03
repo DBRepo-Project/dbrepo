@@ -21,7 +21,7 @@ stages:
   - release-docker
 
 build-metadata-service:
-  image: openjdk:17-alpine
+  image: maven:3-openjdk-17
   stage: build-backend
   script:
     - "mvn -f ./dbrepo-metadata-service/pom.xml clean test verify"
@@ -33,7 +33,7 @@ build-analyse-service:
     - "mvn -f ./dbrepo-analyse-service/pom.xml clean test verify"
 
 build-search-sync-agent:
-  image: openjdk:17-alpine
+  image: maven:3-openjdk-17
   stage: build-backend
   script:
     - "mvn -f ./dbrepo-metadata-service/pom.xml clean install -DskipTests"
