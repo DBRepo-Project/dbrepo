@@ -1,26 +1,8 @@
-before_script:
-  - "docker version"
-  - "docker compose version"
-  - "docker system prune -f"
-  - "mvn --version"
-  - "python3 --version"
-  - "df / -h"
-  - "docker logout"
-  - "docker logout ghcr.io"
-  - "docker logout registry.hub.docker.com"
-  - "docker logout ${AZURE_REPO}"
-
 variables:
-  HOSTALIASES: ./hosts
   DOCKER_TLS_CERTDIR: /certs
   TAG: "${TAG:-latest}"
   TRIVY_NO_PROGRESS: "true"
   TRIVY_CACHE_DIR: ".trivycache/"
-
-cache:
-  paths:
-    - /root/.m2/repository/
-    - /root/.npm/
 
 image: "docker/compose:latest"
 
@@ -34,21 +16,23 @@ stages:
   - release-docker
 
 build-metadata-service:
+  image: openjdk:17-alpine
   stage: build-backend
   script:
-    - "make build-metadata-service"
+    - "mvn -f ./dbrepo-metadata-service/pom.xml clean test verify"
 
 build-analyse-service:
+  image: python:3.9-slim
   stage: build-backend
   script:
-    - "make build-analyse-service"
+    - "mvn -f ./dbrepo-analyse-service/pom.xml clean test verify"
 
 build-search-sync-agent:
+  image: openjdk:17-alpine
   stage: build-backend
-  needs:
-    - build-metadata-service
   script:
-    - "make build-search-sync-agent"
+    - "mvn -f ./dbrepo-metadata-service/pom.xml clean install -DskipTests"
+    - "mvn -f ./dbrepo-search-sync-agent/pom.xml clean package -DskipTests"
 
 test-metadata-service:
   stage: test-backend
