@@ -40,6 +40,9 @@ services:
     volumes:
       - metadata-db-data:/bitnami/mariadb
       - ./dbrepo-metadata-db/setup-schema_local.sql:/docker-entrypoint-initdb.d/setup-schema_local.sql
+    depends_on:
+      dbrepo-log-service:
+        condition: service_started
     ports:
       - "3306:3306"
       - "9100:9100"
@@ -51,7 +54,10 @@ services:
       timeout: 5s
       retries: 12
     logging:
-      driver: json-file
+      driver: fluentd
+      options:
+        fluentd-address: localhost:24224
+        tag: metadata-db
 
   dbrepo-data-db:
     restart: "no"
@@ -221,7 +227,7 @@ services:
     env_file:
       - .env
     healthcheck:
-      test: curl -s localhost:9200/_cat/indices || exit 1
+      test: curl -sSL localhost:9200/_cat/indices || exit 1
       interval: 10s
       timeout: 5s
       retries: 12
@@ -229,7 +235,7 @@ services:
       discovery.type: "single-node"
       ES_JAVA_OPTS: "-Xms4g -Xmx4g"
       logger.level: "WARN"
-      plugins.security.disabled: "true"
+      DISABLE_SECURITY_PLUGIN: "true"
     deploy:
       resources:
         limits:
@@ -285,3 +291,38 @@ services:
         condition: service_started
     logging:
       driver: json-file
+
+  dbrepo-log-service:
+    restart: "no"
+    container_name: dbrepo-log-service
+    hostname: log-service
+    build: ./dbrepo-log-service
+    image: dbrepo-log-service:latest
+    networks:
+      core:
+      public:
+    volumes:
+      - ./dbrepo-log-service/fluent.conf:/fluentd/etc/fluent.conf
+    ports:
+      - "24224:24224"
+      - "24224:24224/udp"
+    depends_on:
+      dbrepo-search-db:
+        condition: service_healthy
+
+  dbrepo-log-dashboard:
+    restart: "no"
+    container_name: dbrepo-log-dashboard
+    hostname: log-dashboard
+    build: ./dbrepo-log-dashboard
+    image: dbrepo-log-dashboard:latest
+    networks:
+      core:
+      public:
+    volumes:
+      - ./dbrepo-log-dashboard/config.yml:/usr/share/opensearch-dashboards/config/opensearch-security/config.yml
+    ports:
+      - "5601:5601"
+    depends_on:
+      dbrepo-search-db:
+        condition: service_healthy
