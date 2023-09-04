@@ -57,6 +57,7 @@ build-docker:
     - build-analyse-service
   script:
     - "cp .env.unix.example .env"
+    - "ls -la ${DOCKER_CERT_PATH}"
     - "docker build -t dbrepo-metadata-service:build --target build dbrepo-metadata-service"
     - "docker build -t dbrepo-search-sync-agent:build --target build dbrepo-search-sync-agent"
     - "docker compose build --parallel"
