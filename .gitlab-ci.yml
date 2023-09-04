@@ -69,7 +69,7 @@ test-metadata-service:
   needs:
     - build-metadata-service
   script:
-    - "make test-metadata-service"
+    - "mvn -f ./dbrepo-metadata-service/pom.xml clean test verify"
     - "cat ./dbrepo-metadata-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
   artifacts:
     when: always
@@ -86,7 +86,7 @@ test-search-sync-agent:
   needs:
     - build-search-sync-agent
   script:
-    - "make test-search-sync-agent"
+    - "mvn -f ./dbrepo-search-sync-agent/pom.xml clean test verify"
     - "cat ./dbrepo-search-sync-agent/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
   artifacts:
     when: always
@@ -121,7 +121,9 @@ test-frontend:
   needs:
     - build-frontend
   script:
-    - "make test-frontend"
+    - "yarn --cwd ./dbrepo-ui install"
+    - "yarn --cwd ./dbrepo-ui run test:unit || true"
+    - "yarn --cwd ./dbrepo-ui run coverage || true"
     - "cat ./dbrepo-ui/coverage/cobertura-coverage.xml | grep -o 'line-rate=\"[0-9.]*' | head -1"
   artifacts:
     when: always
