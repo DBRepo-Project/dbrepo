@@ -1,7 +1,7 @@
 variables:
-#  DOCKER_HOST: "${DOCKER_PORT}"
-#  DOCKER_TLS_CERTDIR: ""
-#  DOCKER_TLS_VERIFY: 0
+  DOCKER_HOST: "${DOCKER_PORT}"
+  DOCKER_TLS_CERTDIR: ""
+  DOCKER_TLS_VERIFY: 0
   TAG: "${TAG:-latest}"
   TRIVY_NO_PROGRESS: "true"
   TRIVY_CACHE_DIR: ".trivycache/"
@@ -31,7 +31,7 @@ build-analyse-service:
   image: python:3.9-slim
   stage: build-backend
   script:
-    - "pip3 install -r ./dbrepo-analyse-service/requirements.txt"
+    - "pip install -r ./dbrepo-analyse-service/requirements.txt"
 
 build-search-sync-agent:
   image: maven:3-openjdk-17
@@ -48,16 +48,21 @@ build-frontend:
     - "yarn --cwd ./dbrepo-ui run build"
 
 build-docker:
-  image: docker:24-dind
+  image:
+    name: gcr.io/kaniko-project/executor:v1.15.0-debug
+    entrypoint: [""]
   stage: build-docker
   needs:
     - build-metadata-service
     - build-analyse-service
   script:
-    - cp .env.unix.example .env
-    - "docker build -t dbrepo-metadata-service:build --target build dbrepo-metadata-service"
-    - "docker build -t dbrepo-search-sync-agent:build --target build dbrepo-search-sync-agent"
-    - "docker compose build --parallel"
+    - /kaniko/executor --context ./dbrepo-analyse-service --dockerfile "./dbrepo-analyse-service/Dockerfile" --no-push
+    - /kaniko/executor --context ./dbrepo-authentication-service --dockerfile "./dbrepo-authentication-service/Dockerfile" --no-push
+    - /kaniko/executor --context ./dbrepo-broker-service --dockerfile "./dbrepo-broker-service/Dockerfile" --no-push
+    - /kaniko/executor --context ./dbrepo-metadata-db --dockerfile "./dbrepo-metadata-db/Dockerfile" --no-push
+    - /kaniko/executor --context ./dbrepo-metadata-service --dockerfile "./dbrepo-metadata-service/Dockerfile" --no-push
+    - /kaniko/executor --context ./dbrepo-search-sync-agent --dockerfile "./dbrepo-search-sync-agent/Dockerfile" --no-push
+    - /kaniko/executor --context ./dbrepo-ui --dockerfile "./dbrepo-ui/Dockerfile" --no-push
 
 test-metadata-service:
   stage: test-backend
@@ -99,7 +104,7 @@ test-analyse-service:
   needs:
     - build-analyse-service
   script:
-    - "pip3 install -r ./dbrepo-analyse-service/requirements.txt"
+    - "pip install -r ./dbrepo-analyse-service/requirements.txt"
     - "cd ./dbrepo-analyse-service/ && coverage run -m pytest test/test_determine_dt.py test/test_determine_pk.py --junitxml=report.xml && coverage html && coverage report > ./coverage.txt"
     - "cat ./dbrepo-analyse-service/coverage.txt | grep -o 'TOTAL[^%]*%'"
   artifacts:
