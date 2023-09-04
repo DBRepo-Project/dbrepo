@@ -1,5 +1,5 @@
 variables:
-  DOCKER_HOST: "tcp://docker:2376
+  DOCKER_HOST: "tcp://docker:2376"
   TAG: "${TAG:-latest}"
   TRIVY_NO_PROGRESS: "true"
   TRIVY_CACHE_DIR: ".trivycache/"
