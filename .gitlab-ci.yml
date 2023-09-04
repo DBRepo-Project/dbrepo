@@ -52,12 +52,12 @@ build-docker:
     - build-metadata-service
     - build-analyse-service
   script:
-    - /kaniko/executor ${KANIKO_EXTRA_ARGS} --context=./dbrepo-analyse-service --dockerfile "./dbrepo-analyse-service/Dockerfile" --no-push
-    - /kaniko/executor ${KANIKO_EXTRA_ARGS} --context=./dbrepo-authentication-service --dockerfile "./dbrepo-authentication-service/Dockerfile" --no-push
-    - /kaniko/executor ${KANIKO_EXTRA_ARGS} --context=./dbrepo-broker-service --dockerfile "./dbrepo-broker-service/Dockerfile" --no-push
-    - /kaniko/executor ${KANIKO_EXTRA_ARGS} --context=./dbrepo-metadata-db --dockerfile "./dbrepo-metadata-db/Dockerfile" --no-push
-    - /kaniko/executor ${KANIKO_EXTRA_ARGS} --context=./dbrepo-metadata-service --dockerfile "./dbrepo-metadata-service/Dockerfile" --no-push
-    - /kaniko/executor ${KANIKO_EXTRA_ARGS} --context=./dbrepo-metadata-service --dockerfile "./dbrepo-search-sync-agent/Dockerfile" --no-push
+#    - /kaniko/executor ${KANIKO_EXTRA_ARGS} --context=./dbrepo-analyse-service --dockerfile "./dbrepo-analyse-service/Dockerfile" --no-push
+#    - /kaniko/executor ${KANIKO_EXTRA_ARGS} --context=./dbrepo-authentication-service --dockerfile "./dbrepo-authentication-service/Dockerfile" --no-push
+#    - /kaniko/executor ${KANIKO_EXTRA_ARGS} --context=./dbrepo-broker-service --dockerfile "./dbrepo-broker-service/Dockerfile" --no-push
+#    - /kaniko/executor ${KANIKO_EXTRA_ARGS} --context=./dbrepo-metadata-db --dockerfile "./dbrepo-metadata-db/Dockerfile" --no-push
+    - /kaniko/executor ${KANIKO_EXTRA_ARGS} --context=./dbrepo-metadata-service --dockerfile "./dbrepo-metadata-service/Dockerfile" --no-push --destination dbrepo-metadata-service:latest --tar-path ./dbrepo-metadata-service.tar
+    - /kaniko/executor ${KANIKO_EXTRA_ARGS} --context=tar:./dbrepo-metadata-service.tar --dockerfile "./dbrepo-search-sync-agent/Dockerfile" --no-push
     - /kaniko/executor ${KANIKO_EXTRA_ARGS} --context=./dbrepo-ui --dockerfile "./dbrepo-ui/Dockerfile" --no-push
 
 test-metadata-service:
