@@ -31,7 +31,7 @@ build-analyse-service:
   image: python:3.9-slim
   stage: build-backend
   script:
-    - "pip install -r ./dbrepo-analyse-service/requirements.txt"
+    - "pip3 install -r ./dbrepo-analyse-service/requirements.txt"
 
 build-search-sync-agent:
   image: maven:3-openjdk-17
