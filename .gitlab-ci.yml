@@ -2,10 +2,10 @@ variables:
   DOCKER_HOST: "${DOCKER_PORT}"
   DOCKER_TLS_CERTDIR: ""
   DOCKER_TLS_VERIFY: 0
+  DOCKER_CERT_PATH: "/certs/client"
   TAG: "${TAG:-latest}"
   TRIVY_NO_PROGRESS: "true"
   TRIVY_CACHE_DIR: ".trivycache/"
-  "_JAVA_OPTIONS": "-Dlogging.level.root=ERROR"
 
 image: maven:3-openjdk-17
 
@@ -67,7 +67,7 @@ test-metadata-service:
   needs:
     - build-metadata-service
   script:
-    - "mvn -f ./dbrepo-metadata-service/pom.xml clean test verify"
+    - "mvn -f ./dbrepo-metadata-service/pom.xml clean test verify -Dlogging.level.root=ERROR -Dlogging.level.at.tuwien.=DEBUG"
     - "cat ./dbrepo-metadata-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
   artifacts:
     when: always
