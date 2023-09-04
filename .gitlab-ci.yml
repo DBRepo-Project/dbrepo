@@ -5,7 +5,7 @@ variables:
   TAG: "${TAG:-latest}"
   TRIVY_NO_PROGRESS: "true"
   TRIVY_CACHE_DIR: ".trivycache/"
-  "_JAVA_OPTIONS": "-Dlogging.level.at.tuwien.=INFO"
+  "_JAVA_OPTIONS": "-Dlogging.level.root=ERROR"
 
 image: maven:3-openjdk-17
 
@@ -50,6 +50,7 @@ build-frontend:
     - "yarn --cwd ./dbrepo-ui run build"
 
 build-docker:
+  image: docker:24-dind
   stage: build-docker
   needs:
     - build-metadata-service
