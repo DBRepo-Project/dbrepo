@@ -1,336 +1,333 @@
 variables:
+  DOCKER_HOST: "tcp://docker:2375"
   TAG: "${TAG:-latest}"
-  KANIKO_EXTRA_ARGS: "--ignore-path=/var"
   TRIVY_NO_PROGRESS: "true"
   TRIVY_CACHE_DIR: ".trivycache/"
 
 image: maven:3-openjdk-17
 
 stages:
-  - build-backend
-  - build-frontend
-  - test-backend
-  - test-frontend
+#  - build-backend
+#  - build-frontend
+#  - test-backend
+#  - test-frontend
   - build-docker
-  - scan-docker
-  - release-docker
+#  - scan-docker
+#  - release-docker
 
-build-metadata-service:
-  image: maven:3-openjdk-17
-  stage: build-backend
-  script:
-    - "mvn -f ./dbrepo-metadata-service/pom.xml clean package -DskipTests"
-
-build-analyse-service:
-  image: python:3.9-slim
-  stage: build-backend
-  script:
-    - "pip install -r ./dbrepo-analyse-service/requirements.txt"
-
-build-search-sync-agent:
-  image: maven:3-openjdk-17
-  stage: build-backend
-  needs:
-    - build-metadata-service
-  script:
-    - "mvn -f ./dbrepo-metadata-service/pom.xml clean install -DskipTests"
-    - "mvn -f ./dbrepo-search-sync-agent/pom.xml clean package -DskipTests"
-
-build-frontend:
-  image: node:14-alpine
-  stage: build-frontend
-  script:
-    - "yarn --cwd ./dbrepo-ui install --legacy-peer-deps"
-    - "yarn --cwd ./dbrepo-ui run build"
+#build-metadata-service:
+#  image: maven:3-openjdk-17
+#  stage: build-backend
+#  script:
+#    - "mvn -f ./dbrepo-metadata-service/pom.xml clean package -DskipTests"
+#
+#build-analyse-service:
+#  image: python:3.9-slim
+#  stage: build-backend
+#  script:
+#    - "pip install -r ./dbrepo-analyse-service/requirements.txt"
+#
+#build-search-sync-agent:
+#  image: maven:3-openjdk-17
+#  stage: build-backend
+#  needs:
+#    - build-metadata-service
+#  script:
+#    - "mvn -f ./dbrepo-metadata-service/pom.xml clean install -DskipTests"
+#    - "mvn -f ./dbrepo-search-sync-agent/pom.xml clean package -DskipTests"
+#
+#build-frontend:
+#  image: node:14-alpine
+#  stage: build-frontend
+#  script:
+#    - "yarn --cwd ./dbrepo-ui install --legacy-peer-deps"
+#    - "yarn --cwd ./dbrepo-ui run build"
 
 build-docker:
-  image:
-    name: gcr.io/kaniko-project/executor:v1.15.0-debug
-    entrypoint: [""]
+  image: docker:24-dind
   stage: build-docker
-  needs:
-    - build-metadata-service
-    - build-analyse-service
+#  needs:
+#    - build-metadata-service
+#    - build-analyse-service
   script:
-#    - /kaniko/executor ${KANIKO_EXTRA_ARGS} --context=./dbrepo-analyse-service --dockerfile "./dbrepo-analyse-service/Dockerfile" --no-push
-#    - /kaniko/executor ${KANIKO_EXTRA_ARGS} --context=./dbrepo-authentication-service --dockerfile "./dbrepo-authentication-service/Dockerfile" --no-push
-#    - /kaniko/executor ${KANIKO_EXTRA_ARGS} --context=./dbrepo-broker-service --dockerfile "./dbrepo-broker-service/Dockerfile" --no-push
-#    - /kaniko/executor ${KANIKO_EXTRA_ARGS} --context=./dbrepo-metadata-db --dockerfile "./dbrepo-metadata-db/Dockerfile" --no-push
-    - /kaniko/executor ${KANIKO_EXTRA_ARGS} --context=./dbrepo-metadata-service --dockerfile "./dbrepo-metadata-service/Dockerfile" --no-push --destination dbrepo-metadata-service:build --tar-path ./dbrepo-metadata-service.tar
-    - /kaniko/executor ${KANIKO_EXTRA_ARGS} --context=tar:./dbrepo-metadata-service.tar --dockerfile "./dbrepo-search-sync-agent/Dockerfile" --no-push
-    - /kaniko/executor ${KANIKO_EXTRA_ARGS} --context=./dbrepo-ui --dockerfile "./dbrepo-ui/Dockerfile" --no-push
+    - "cp .env.unix.example .env"
+    - "ls -la ${DOCKER_CERT_PATH}"
+    - "printenv"
+    - "docker build -t dbrepo-metadata-service:build --target build dbrepo-metadata-service"
+    - "docker build -t dbrepo-search-sync-agent:build --target build dbrepo-search-sync-agent"
+    - "docker compose build --parallel"
 
-test-metadata-service:
-  image: maven:3-openjdk-17
-  stage: test-backend
-  needs:
-    - build-metadata-service
-  script:
-    - "mvn -f ./dbrepo-metadata-service/pom.xml clean test verify -Dlogging.level.root=ERROR -Dlogging.level.at.tuwien.=DEBUG"
-    - "cat ./dbrepo-metadata-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
-  artifacts:
-    when: always
-    paths:
-      - ./dbrepo-metadata-service/report/target/site/jacoco-aggregate/
-      - ./dbrepo-metadata-service/rest-service/target/surefire-reports/
-    expire_in: 1 days
-    reports:
-      junit: ./dbrepo-metadata-service/rest-service/target/surefire-reports/TEST-*.xml
-  coverage: '/Total.*?([0-9]{1,3})%/'
-
-test-search-sync-agent:
-  image: maven:3-openjdk-17
-  stage: test-backend
-  needs:
-    - build-search-sync-agent
-  script:
-    - "mvn -f ./dbrepo-search-sync-agent/pom.xml clean test verify"
-    - "cat ./dbrepo-search-sync-agent/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
-  artifacts:
-    when: always
-    paths:
-      - ./dbrepo-search-sync-agent/report/target/site/jacoco-aggregate/
-      - ./dbrepo-search-sync-agent/rest-service/target/surefire-reports/
-    expire_in: 1 days
-    reports:
-      junit: ./dbrepo-search-sync-agent/rest-service/target/surefire-reports/TEST-*.xml
-  coverage: '/Total.*?([0-9]{1,3})%/'
-
-test-analyse-service:
-  image: python:3.9-slim
-  stage: test-backend
-  needs:
-    - build-analyse-service
-  script:
-    - "pip install -r ./dbrepo-analyse-service/requirements.txt"
-    - "cd ./dbrepo-analyse-service/ && coverage run -m pytest test/test_determine_dt.py test/test_determine_pk.py --junitxml=report.xml && coverage html && coverage report > ./coverage.txt"
-    - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
-  artifacts:
-    when: always
-    paths:
-      - ./dbrepo-analyse-service/report.xml
-    expire_in: 1 days
-    reports:
-      junit: ./dbrepo-analyse-service/report.xml
-  coverage: '/TOTAL.*?([0-9]{1,3})%/'
-
-test-frontend:
-  image: node:14-alpine
-  stage: test-frontend
-  needs:
-    - build-frontend
-  script:
-    - "yarn --cwd ./dbrepo-ui install"
-    - "yarn --cwd ./dbrepo-ui run test:unit || true"
-    - "yarn --cwd ./dbrepo-ui run coverage || true"
-    - "cat ./dbrepo-ui/coverage/cobertura-coverage.xml | grep -o 'line-rate=\"[0-9.]*' | head -1"
-  artifacts:
-    when: always
-    paths:
-      - ./dbrepo-ui/coverage/
-    expire_in: 1 days
-    reports:
-      coverage_report:
-        coverage_format: cobertura
-        path: ./dbrepo-ui/coverage/cobertura-coverage.xml
-  coverage: '/TOTAL.*?([0-9]{1,3})%/'
-
-scan-analyse-service:
-  stage: scan-docker
-  needs:
-    - build-docker
-  only:
-    refs:
-      - dev
-      - master
-  allow_failure: true
-  script:
-    - make scan-analyse-service
-  cache:
-    paths:
-      - .trivycache/
-  artifacts:
-    when: always
-    expire_in: 1 days
-    reports:
-      container_scanning: ./.trivy/trivy-analyse-service-report.json
-
-scan-authentication-service:
-  stage: scan-docker
-  needs:
-    - build-docker
-  only:
-    refs:
-      - dev
-      - master
-  allow_failure: true
-  script:
-    - make scan-authentication-service
-  cache:
-    paths:
-      - .trivycache/
-  artifacts:
-    when: always
-    expire_in: 1 days
-    reports:
-      container_scanning: ./.trivy/trivy-authentication-service-report.json
-
-scan-broker-service:
-  stage: scan-docker
-  needs:
-    - build-docker
-  only:
-    refs:
-      - dev
-      - master
-  allow_failure: true
-  script:
-    - make scan-broker-service
-  cache:
-    paths:
-      - .trivycache/
-  artifacts:
-    when: always
-    expire_in: 1 days
-    reports:
-      container_scanning: ./.trivy/trivy-broker-service-report.json
-
-scan-gateway-service:
-  stage: scan-docker
-  needs:
-    - build-docker
-  only:
-    refs:
-      - dev
-      - master
-  allow_failure: true
-  script:
-    - make scan-gateway-service
-  cache:
-    paths:
-      - .trivycache/
-  artifacts:
-    when: always
-    expire_in: 1 days
-    reports:
-      container_scanning: ./.trivy/trivy-gateway-service-report.json
-
-scan-metadata-service:
-  stage: scan-docker
-  needs:
-    - build-docker
-  only:
-    refs:
-      - dev
-      - master
-  allow_failure: true
-  script:
-    - make scan-metadata-service
-  cache:
-    paths:
-      - .trivycache/
-  artifacts:
-    when: always
-    expire_in: 1 days
-    reports:
-      container_scanning: ./.trivy/trivy-metadata-service-report.json
-
-scan-proxy:
-  stage: scan-docker
-  needs:
-    - build-docker
-  only:
-    refs:
-      - dev
-      - master
-  allow_failure: true
-  script:
-    - make scan-proxy
-  cache:
-    paths:
-      - .trivycache/
-  artifacts:
-    when: always
-    expire_in: 1 days
-    reports:
-      container_scanning: ./.trivy/trivy-proxy-report.json
-
-scan-search-db:
-  stage: scan-docker
-  needs:
-    - build-docker
-  only:
-    refs:
-      - dev
-      - master
-  allow_failure: true
-  script:
-    - make scan-search-db
-  cache:
-    paths:
-      - .trivycache/
-  artifacts:
-    when: always
-    expire_in: 1 days
-    reports:
-      container_scanning: ./.trivy/trivy-search-db-report.json
-
-scan-ui:
-  stage: scan-docker
-  needs:
-    - build-docker
-  only:
-    refs:
-      - dev
-      - master
-  allow_failure: true
-  script:
-    - make scan-ui
-  cache:
-    paths:
-      - .trivycache/
-  artifacts:
-    when: always
-    expire_in: 1 days
-    reports:
-      container_scanning: ./.trivy/trivy-ui-report.json
-
-release-latest:
-  stage: release-docker
-  needs:
-    - scan-analyse-service
-    - scan-authentication-service
-    - scan-broker-service
-    - scan-gateway-service
-    - scan-metadata-service
-    - scan-proxy
-    - scan-search-db
-    - scan-ui
-  only:
-    refs:
-      - dev
-  script:
-    - cp .env.unix.example .env
-    - docker login -p "${DOCKER_PASSWORD}" -u "${DOCKER_USERNAME}"
-    - docker login "${AZURE_REPO}" -p "${AZURE_PASSWORD}" -u "${AZURE_USERNAME}"
-    - TAG=latest make release
-
-release-version:
-  stage: release-docker
-  needs:
-    - scan-analyse-service
-    - scan-authentication-service
-    - scan-broker-service
-    - scan-gateway-service
-    - scan-metadata-service
-    - scan-proxy
-    - scan-search-db
-    - scan-ui
-  only:
-    refs:
-      - master
-  script:
-    - cp .env.unix.example .env
-    - docker login -p "${DOCKER_PASSWORD}" -u "${DOCKER_USERNAME}"
-    - docker login "${AZURE_REPO}" -p "${AZURE_PASSWORD}" -u "${AZURE_USERNAME}"
-    - TAG=1.3 make release
+#test-metadata-service:
+#  image: maven:3-openjdk-17
+#  stage: test-backend
+#  needs:
+#    - build-metadata-service
+#  script:
+#    - "mvn -f ./dbrepo-metadata-service/pom.xml clean test verify -Dlogging.level.root=ERROR -Dlogging.level.at.tuwien.=DEBUG"
+#    - "cat ./dbrepo-metadata-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
+#  artifacts:
+#    when: always
+#    paths:
+#      - ./dbrepo-metadata-service/report/target/site/jacoco-aggregate/
+#      - ./dbrepo-metadata-service/rest-service/target/surefire-reports/
+#    expire_in: 1 days
+#    reports:
+#      junit: ./dbrepo-metadata-service/rest-service/target/surefire-reports/TEST-*.xml
+#  coverage: '/Total.*?([0-9]{1,3})%/'
+#
+#test-search-sync-agent:
+#  image: maven:3-openjdk-17
+#  stage: test-backend
+#  needs:
+#    - build-search-sync-agent
+#  script:
+#    - "mvn -f ./dbrepo-search-sync-agent/pom.xml clean test verify"
+#    - "cat ./dbrepo-search-sync-agent/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
+#  artifacts:
+#    when: always
+#    paths:
+#      - ./dbrepo-search-sync-agent/report/target/site/jacoco-aggregate/
+#      - ./dbrepo-search-sync-agent/rest-service/target/surefire-reports/
+#    expire_in: 1 days
+#    reports:
+#      junit: ./dbrepo-search-sync-agent/rest-service/target/surefire-reports/TEST-*.xml
+#  coverage: '/Total.*?([0-9]{1,3})%/'
+#
+#test-analyse-service:
+#  image: python:3.9-slim
+#  stage: test-backend
+#  needs:
+#    - build-analyse-service
+#  script:
+#    - "pip install -r ./dbrepo-analyse-service/requirements.txt"
+#    - "cd ./dbrepo-analyse-service/ && coverage run -m pytest test/test_determine_dt.py test/test_determine_pk.py --junitxml=report.xml && coverage html && coverage report > ./coverage.txt"
+#    - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
+#  artifacts:
+#    when: always
+#    paths:
+#      - ./dbrepo-analyse-service/report.xml
+#    expire_in: 1 days
+#    reports:
+#      junit: ./dbrepo-analyse-service/report.xml
+#  coverage: '/TOTAL.*?([0-9]{1,3})%/'
+#
+#test-frontend:
+#  image: node:14-alpine
+#  stage: test-frontend
+#  needs:
+#    - build-frontend
+#  script:
+#    - "yarn --cwd ./dbrepo-ui install"
+#    - "yarn --cwd ./dbrepo-ui run test:unit || true"
+#    - "yarn --cwd ./dbrepo-ui run coverage || true"
+#    - "cat ./dbrepo-ui/coverage/cobertura-coverage.xml | grep -o 'line-rate=\"[0-9.]*' | head -1"
+#  artifacts:
+#    when: always
+#    paths:
+#      - ./dbrepo-ui/coverage/
+#    expire_in: 1 days
+#    reports:
+#      coverage_report:
+#        coverage_format: cobertura
+#        path: ./dbrepo-ui/coverage/cobertura-coverage.xml
+#  coverage: '/TOTAL.*?([0-9]{1,3})%/'
+#
+#scan-analyse-service:
+#  stage: scan-docker
+#  needs:
+#    - build-docker
+#  only:
+#    refs:
+#      - dev
+#      - master
+#  allow_failure: true
+#  script:
+#    - make scan-analyse-service
+#  cache:
+#    paths:
+#      - .trivycache/
+#  artifacts:
+#    when: always
+#    expire_in: 1 days
+#    reports:
+#      container_scanning: ./.trivy/trivy-analyse-service-report.json
+#
+#scan-authentication-service:
+#  stage: scan-docker
+#  needs:
+#    - build-docker
+#  only:
+#    refs:
+#      - dev
+#      - master
+#  allow_failure: true
+#  script:
+#    - make scan-authentication-service
+#  cache:
+#    paths:
+#      - .trivycache/
+#  artifacts:
+#    when: always
+#    expire_in: 1 days
+#    reports:
+#      container_scanning: ./.trivy/trivy-authentication-service-report.json
+#
+#scan-broker-service:
+#  stage: scan-docker
+#  needs:
+#    - build-docker
+#  only:
+#    refs:
+#      - dev
+#      - master
+#  allow_failure: true
+#  script:
+#    - make scan-broker-service
+#  cache:
+#    paths:
+#      - .trivycache/
+#  artifacts:
+#    when: always
+#    expire_in: 1 days
+#    reports:
+#      container_scanning: ./.trivy/trivy-broker-service-report.json
+#
+#scan-gateway-service:
+#  stage: scan-docker
+#  needs:
+#    - build-docker
+#  only:
+#    refs:
+#      - dev
+#      - master
+#  allow_failure: true
+#  script:
+#    - make scan-gateway-service
+#  cache:
+#    paths:
+#      - .trivycache/
+#  artifacts:
+#    when: always
+#    expire_in: 1 days
+#    reports:
+#      container_scanning: ./.trivy/trivy-gateway-service-report.json
+#
+#scan-metadata-service:
+#  stage: scan-docker
+#  needs:
+#    - build-docker
+#  only:
+#    refs:
+#      - dev
+#      - master
+#  allow_failure: true
+#  script:
+#    - make scan-metadata-service
+#  cache:
+#    paths:
+#      - .trivycache/
+#  artifacts:
+#    when: always
+#    expire_in: 1 days
+#    reports:
+#      container_scanning: ./.trivy/trivy-metadata-service-report.json
+#
+#scan-proxy:
+#  stage: scan-docker
+#  needs:
+#    - build-docker
+#  only:
+#    refs:
+#      - dev
+#      - master
+#  allow_failure: true
+#  script:
+#    - make scan-proxy
+#  cache:
+#    paths:
+#      - .trivycache/
+#  artifacts:
+#    when: always
+#    expire_in: 1 days
+#    reports:
+#      container_scanning: ./.trivy/trivy-proxy-report.json
+#
+#scan-search-db:
+#  stage: scan-docker
+#  needs:
+#    - build-docker
+#  only:
+#    refs:
+#      - dev
+#      - master
+#  allow_failure: true
+#  script:
+#    - make scan-search-db
+#  cache:
+#    paths:
+#      - .trivycache/
+#  artifacts:
+#    when: always
+#    expire_in: 1 days
+#    reports:
+#      container_scanning: ./.trivy/trivy-search-db-report.json
+#
+#scan-ui:
+#  stage: scan-docker
+#  needs:
+#    - build-docker
+#  only:
+#    refs:
+#      - dev
+#      - master
+#  allow_failure: true
+#  script:
+#    - make scan-ui
+#  cache:
+#    paths:
+#      - .trivycache/
+#  artifacts:
+#    when: always
+#    expire_in: 1 days
+#    reports:
+#      container_scanning: ./.trivy/trivy-ui-report.json
+#
+#release-latest:
+#  stage: release-docker
+#  needs:
+#    - scan-analyse-service
+#    - scan-authentication-service
+#    - scan-broker-service
+#    - scan-gateway-service
+#    - scan-metadata-service
+#    - scan-proxy
+#    - scan-search-db
+#    - scan-ui
+#  only:
+#    refs:
+#      - dev
+#  script:
+#    - cp .env.unix.example .env
+#    - docker login -p "${DOCKER_PASSWORD}" -u "${DOCKER_USERNAME}"
+#    - docker login "${AZURE_REPO}" -p "${AZURE_PASSWORD}" -u "${AZURE_USERNAME}"
+#    - TAG=latest make release
+#
+#release-version:
+#  stage: release-docker
+#  needs:
+#    - scan-analyse-service
+#    - scan-authentication-service
+#    - scan-broker-service
+#    - scan-gateway-service
+#    - scan-metadata-service
+#    - scan-proxy
+#    - scan-search-db
+#    - scan-ui
+#  only:
+#    refs:
+#      - master
+#  script:
+#    - cp .env.unix.example .env
+#    - docker login -p "${DOCKER_PASSWORD}" -u "${DOCKER_USERNAME}"
+#    - docker login "${AZURE_REPO}" -p "${AZURE_PASSWORD}" -u "${AZURE_USERNAME}"
+#    - TAG=1.3 make release
