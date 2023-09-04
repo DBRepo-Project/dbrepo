@@ -1,16 +1,10 @@
 variables:
   DOCKER_HOST: "${DOCKER_PORT}"
-  DOCKER_TLS_CERTDIR: ""
-  DOCKER_TLS_VERIFY: 0
-  DOCKER_CERT_PATH: "/certs/client"
   TAG: "${TAG:-latest}"
   TRIVY_NO_PROGRESS: "true"
   TRIVY_CACHE_DIR: ".trivycache/"
 
 image: maven:3-openjdk-17
-
-services:
-  - docker:24-dind-rootless
 
 stages:
   - build-backend
@@ -50,7 +44,7 @@ build-frontend:
     - "yarn --cwd ./dbrepo-ui run build"
 
 build-docker:
-  image: docker:24-dind
+  image: docker:stable-dind
   stage: build-docker
   needs:
     - build-metadata-service
