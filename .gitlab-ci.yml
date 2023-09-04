@@ -79,6 +79,7 @@ test-search-sync-agent:
   needs:
     - build-search-sync-agent
   script:
+    - "mvn -f ./dbrepo-metadata-service/pom.xml clean install -DskipTests"
     - "mvn -f ./dbrepo-search-sync-agent/pom.xml clean test verify"
     - "cat ./dbrepo-search-sync-agent/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
   artifacts:
