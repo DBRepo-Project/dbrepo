@@ -1,7 +1,7 @@
 variables:
-  DOCKER_HOST: "${DOCKER_PORT}"
-  DOCKER_TLS_CERTDIR: ""
-  DOCKER_TLS_VERIFY: 0
+#  DOCKER_HOST: "${DOCKER_PORT}"
+#  DOCKER_TLS_CERTDIR: ""
+#  DOCKER_TLS_VERIFY: 0
   TAG: "${TAG:-latest}"
   TRIVY_NO_PROGRESS: "true"
   TRIVY_CACHE_DIR: ".trivycache/"
@@ -99,7 +99,7 @@ test-analyse-service:
   needs:
     - build-analyse-service
   script:
-    - "pip install -r ./dbrepo-analyse-service/requirements.txt"
+    - "pip3 install -r ./dbrepo-analyse-service/requirements.txt"
     - "cd ./dbrepo-analyse-service/ && coverage run -m pytest test/test_determine_dt.py test/test_determine_pk.py --junitxml=report.xml && coverage html && coverage report > ./coverage.txt"
     - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
   artifacts:
