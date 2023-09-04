@@ -36,6 +36,8 @@ build-analyse-service:
 build-search-sync-agent:
   image: maven:3-openjdk-17
   stage: build-backend
+  needs:
+    - build-metadata-service
   script:
     - "mvn -f ./dbrepo-metadata-service/pom.xml clean install -DskipTests"
     - "mvn -f ./dbrepo-search-sync-agent/pom.xml clean package -DskipTests"
@@ -106,7 +108,7 @@ test-analyse-service:
   script:
     - "pip install -r ./dbrepo-analyse-service/requirements.txt"
     - "cd ./dbrepo-analyse-service/ && coverage run -m pytest test/test_determine_dt.py test/test_determine_pk.py --junitxml=report.xml && coverage html && coverage report > ./coverage.txt"
-    - "cat ./dbrepo-analyse-service/coverage.txt | grep -o 'TOTAL[^%]*%'"
+    - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
   artifacts:
     when: always
     paths:
