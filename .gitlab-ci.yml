@@ -1,5 +1,4 @@
 variables:
-  DOCKER_HOST: "tcp://docker:2376"
   TAG: "${TAG:-latest}"
   TRIVY_NO_PROGRESS: "true"
   TRIVY_CACHE_DIR: ".trivycache/"
@@ -44,18 +43,21 @@ build-frontend:
     - "yarn --cwd ./dbrepo-ui run build"
 
 build-docker:
-  image: docker:stable-dind
+  image:
+    name: gcr.io/kaniko-project/executor:v1.15.0-debug
+    entrypoint: [""]
   stage: build-docker
   needs:
     - build-metadata-service
     - build-analyse-service
   script:
-    - "cp .env.unix.example .env"
-    - "ls -la ${DOCKER_CERT_PATH}"
-    - "printenv"
-    - "docker build -t dbrepo-metadata-service:build --target build dbrepo-metadata-service"
-    - "docker build -t dbrepo-search-sync-agent:build --target build dbrepo-search-sync-agent"
-    - "docker compose build --parallel"
+    - /kaniko/executor --context ./dbrepo-analyse-service --dockerfile "./dbrepo-analyse-service/Dockerfile" --no-push
+    - /kaniko/executor --context ./dbrepo-authentication-service --dockerfile "./dbrepo-authentication-service/Dockerfile" --no-push
+    - /kaniko/executor --context ./dbrepo-broker-service --dockerfile "./dbrepo-broker-service/Dockerfile" --no-push
+    - /kaniko/executor --context ./dbrepo-metadata-db --dockerfile "./dbrepo-metadata-db/Dockerfile" --no-push
+    - /kaniko/executor --context ./dbrepo-metadata-service --dockerfile "./dbrepo-metadata-service/Dockerfile" --no-push
+    - /kaniko/executor --context ./dbrepo-search-sync-agent --dockerfile "./dbrepo-search-sync-agent/Dockerfile" --no-push
+    - /kaniko/executor --context ./dbrepo-ui --dockerfile "./dbrepo-ui/Dockerfile" --no-push
 
 test-metadata-service:
   image: maven:3-openjdk-17
