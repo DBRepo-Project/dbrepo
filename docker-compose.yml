@@ -2,6 +2,16 @@
 # MODIFIED: 2023-06-01
 # MAINTAINER: Martin Weise <martin.weise@tuwien.ac.at>
 
+# Log to the (commented) log service by changing the logging driver to fluentd, e.g.name:
+#
+# my-service:
+#   ...
+#   logging: fluentd
+#     driver: fluentd
+#     options:
+#       host: localhost: 24224
+#       tag: my-service
+
 version: "3.6"
 
 volumes:
@@ -40,9 +50,6 @@ services:
     volumes:
       - metadata-db-data:/bitnami/mariadb
       - ./dbrepo-metadata-db/setup-schema_local.sql:/docker-entrypoint-initdb.d/setup-schema_local.sql
-    depends_on:
-      dbrepo-log-service:
-        condition: service_started
     ports:
       - "3306:3306"
       - "9100:9100"
@@ -54,11 +61,7 @@ services:
       timeout: 5s
       retries: 12
     logging:
-      driver: fluentd
-      options:
-        fluentd-address: localhost:24224
-        tag: metadata-db
-
+      driver: json-file
   dbrepo-data-db:
     restart: "no"
     container_name: dbrepo-data-db
@@ -292,37 +295,37 @@ services:
     logging:
       driver: json-file
 
-  dbrepo-log-service:
-    restart: "no"
-    container_name: dbrepo-log-service
-    hostname: log-service
-    build: ./dbrepo-log-service
-    image: dbrepo-log-service:latest
-    networks:
-      core:
-      public:
-    volumes:
-      - ./dbrepo-log-service/fluent.conf:/fluentd/etc/fluent.conf
-    ports:
-      - "24224:24224"
-      - "24224:24224/udp"
-    depends_on:
-      dbrepo-search-db:
-        condition: service_healthy
-
-  dbrepo-log-dashboard:
-    restart: "no"
-    container_name: dbrepo-log-dashboard
-    hostname: log-dashboard
-    build: ./dbrepo-log-dashboard
-    image: dbrepo-log-dashboard:latest
-    networks:
-      core:
-      public:
-    volumes:
-      - ./dbrepo-log-dashboard/config.yml:/usr/share/opensearch-dashboards/config/opensearch-security/config.yml
-    ports:
-      - "5601:5601"
-    depends_on:
-      dbrepo-search-db:
-        condition: service_healthy
+#  dbrepo-log-service:
+#    restart: "no"
+#    container_name: dbrepo-log-service
+#    hostname: log-service
+#    build: ./dbrepo-log-service
+#    image: dbrepo-log-service:latest
+#    networks:
+#      core:
+#      public:
+#    volumes:
+#      - ./dbrepo-log-service/fluent.conf:/fluentd/etc/fluent.conf
+#    ports:
+#      - "24224:24224"
+#      - "24224:24224/udp"
+#    depends_on:
+#      dbrepo-search-db:
+#        condition: service_healthy
+#
+#  dbrepo-log-dashboard:
+#    restart: "no"
+#    container_name: dbrepo-log-dashboard
+#    hostname: log-dashboard
+#    build: ./dbrepo-log-dashboard
+#    image: dbrepo-log-dashboard:latest
+#    networks:
+#      core:
+#      public:
+#    volumes:
+#      - ./dbrepo-log-dashboard/config.yml:/usr/share/opensearch-dashboards/config/opensearch-security/config.yml
+#    ports:
+#      - "5601:5601"
+#    depends_on:
+#      dbrepo-search-db:
+#        condition: service_healthy

@@ -1,10 +1,6 @@
 
 # Search Database
 
-## How to run
+## REST
 
-Increase memory for Docker to at least 4GB:
-
-```console
-sudo sysctl -w vm.max_map_count=262144
-```
+View all indices [http://localhost:9200/_cat/indices](http://localhost:9200/_cat/indices)
