@@ -33,7 +33,8 @@ services:
     restart: "no"
     container_name: dbrepo-metadata-db
     hostname: metadata-db
-    image: bitnami/mariadb:10.5
+    build: ./dbrepo-metadata-db
+    image: dbrepo-metadata-db:latest
     networks:
       core:
     volumes:
