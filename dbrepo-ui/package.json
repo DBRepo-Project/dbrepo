@@ -20,6 +20,7 @@
     "test": "yarn clean && yarn test:unit && yarn test:e2e:docker && yarn coverage"
   },
   "dependencies": {
+    "@babel/plugin-proposal-optional-chaining": "^7.21.0",
     "@babel/plugin-transform-runtime": "^7.13.9",
     "@mdi/js": "^5.8.55",
     "@nuxtjs/axios": "^5.13.6",
@@ -78,7 +79,6 @@
     "jsdom": "^16.6.0",
     "jsdom-global": "^3.0.2",
     "nyc": "^15.1.0",
-    "playwright": "^1.14.0",
     "require-extension-hooks": "^0.3.3",
     "require-extension-hooks-babel": "^1.0.0-beta.1",
     "require-extension-hooks-vue": "^3.0.0",

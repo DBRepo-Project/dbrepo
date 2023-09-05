@@ -46,7 +46,7 @@ ENV KC_DB_USERNAME=${AUTH_USERNAME}
 ENV KC_DB_PASSWORD=${AUTH_PASSWORD}
 ENV KC_HOSTNAME_STRICT_HTTPS=false
 ENV KC_HOSTNAME_PATH=/api/auth
-ENV KC_HOSTNAME_ADMIN_URL=http://localhost/api/auth
+ENV KC_HOSTNAME_ADMIN_URL=http://localhost/auth
 
 ENV KEYCLOAK_IMPORT=/opt/keycloak/data/import/dbrepo-realm.json
 ENV KEYCLOAK_ADMIN=fda

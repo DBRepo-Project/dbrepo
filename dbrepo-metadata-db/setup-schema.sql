@@ -77,7 +77,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_licenses`
     identifier character varying(255) NOT NULL,
     uri        text                   NOT NULL,
     PRIMARY KEY (identifier),
-    UNIQUE (uri)
+    UNIQUE (uri(200))
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_databases`
@@ -280,7 +280,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_concepts`
     created     timestamp             NOT NULL DEFAULT NOW(),
     created_by  character varying(36) NOT NULL,
     PRIMARY KEY (id),
-    UNIQUE (uri),
+    UNIQUE (uri(200)),
     FOREIGN KEY (created_by) REFERENCES mdb_users (id)
 ) WITH SYSTEM VERSIONING;
 
@@ -293,7 +293,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_units`
     created     timestamp             NOT NULL DEFAULT NOW(),
     created_by  character varying(36) NOT NULL,
     PRIMARY KEY (id),
-    UNIQUE (uri),
+    UNIQUE (uri(200)),
     FOREIGN KEY (created_by) REFERENCES mdb_users (id)
 ) WITH SYSTEM VERSIONING;
 
@@ -356,11 +356,9 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_ontologies`
     sparql_endpoint TEXT                  NULL,
     last_modified   timestamp,
     created         timestamp             NOT NULL DEFAULT NOW(),
-    created_by      character varying(36) NOT NULL,
     UNIQUE (prefix),
-    UNIQUE (uri),
-    PRIMARY KEY (id),
-    FOREIGN KEY (created_by) REFERENCES mdb_users (id)
+    UNIQUE (uri(200)),
+    PRIMARY KEY (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_view_columns`

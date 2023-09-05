@@ -33,8 +33,7 @@ services:
     restart: "no"
     container_name: dbrepo-metadata-db
     hostname: metadata-db
-    build: ./dbrepo-metadata-db
-    image: dbrepo-metadata-db
+    image: bitnami/mariadb:10.5
     networks:
       core:
     volumes:
@@ -57,7 +56,7 @@ services:
     restart: "no"
     container_name: dbrepo-data-db
     hostname: data-db
-    image: mariadb:10.5
+    image: bitnami/mariadb:10.5
     networks:
       core:
     volumes:
@@ -136,7 +135,7 @@ services:
     volumes:
       - authentication-service-data:/opt/keycloak/data/
     depends_on:
-      dbrepo-metadata-db:
+      dbrepo-auth-db:
         condition: service_healthy
     logging:
       driver: json-file

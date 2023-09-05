@@ -101,7 +101,7 @@ export default {
   computed: {
     loadingColor () {
       return this.error ? 'red lighten-2' : 'primary'
-    },
+    }
   },
   mounted () {
     this.loadUsers()

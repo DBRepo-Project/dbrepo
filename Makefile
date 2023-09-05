@@ -23,6 +23,7 @@ build-analyse-service:
 
 build-docker:
 	docker build -t dbrepo-metadata-service:build --target build dbrepo-metadata-service
+	docker build -t dbrepo-search-sync-agent:build --target build dbrepo-search-sync-agent
 	docker compose build --parallel
 
 build-frontend:

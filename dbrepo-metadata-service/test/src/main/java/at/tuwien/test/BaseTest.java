@@ -2038,7 +2038,6 @@ public abstract class BaseTest {
             .prefix(ONTOLOGY_1_PREFIX)
             .uri(ONTOLOGY_1_URI)
             .sparqlEndpoint(ONTOLOGY_1_SPARQL_ENDPOINT)
-            .createdBy(ONTOLOGY_1_CREATED_BY)
             .build();
 
     public final static OntologyCreateDto ONTOLOGY_1_CREATE_DTO = OntologyCreateDto.builder()
@@ -2064,7 +2063,6 @@ public abstract class BaseTest {
             .prefix(ONTOLOGY_2_PREFIX)
             .uri(ONTOLOGY_2_URI)
             .sparqlEndpoint(ONTOLOGY_2_SPARQL_ENDPOINT)
-            .createdBy(ONTOLOGY_2_CREATED_BY)
             .build();
 
     public final static OntologyCreateDto ONTOLOGY_2_CREATE_DTO = OntologyCreateDto.builder()
@@ -2084,7 +2082,6 @@ public abstract class BaseTest {
             .prefix(ONTOLOGY_3_PREFIX)
             .uri(ONTOLOGY_3_URI)
             .sparqlEndpoint(ONTOLOGY_3_SPARQL_ENDPOINT)
-            .createdBy(ONTOLOGY_3_CREATED_BY)
             .build();
 
     public final static OntologyCreateDto ONTOLOGY_3_CREATE_DTO = OntologyCreateDto.builder()
@@ -2104,7 +2101,6 @@ public abstract class BaseTest {
             .prefix(ONTOLOGY_4_PREFIX)
             .uri(ONTOLOGY_4_URI)
             .sparqlEndpoint(ONTOLOGY_4_SPARQL_ENDPOINT)
-            .createdBy(ONTOLOGY_4_CREATED_BY)
             .build();
 
     public final static OntologyCreateDto ONTOLOGY_4_CREATE_DTO = OntologyCreateDto.builder()
@@ -2124,7 +2120,6 @@ public abstract class BaseTest {
             .prefix(ONTOLOGY_5_PREFIX)
             .uri(ONTOLOGY_5_URI)
             .sparqlEndpoint(ONTOLOGY_5_SPARQL_ENDPOINT)
-            .createdBy(ONTOLOGY_5_CREATED_BY)
             .build();
 
     public final static OntologyCreateDto ONTOLOGY_5_CREATE_DTO = OntologyCreateDto.builder()

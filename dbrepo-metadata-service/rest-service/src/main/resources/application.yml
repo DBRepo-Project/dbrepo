@@ -4,7 +4,7 @@ spring:
   autoconfigure:
     exclude: org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchRestClientAutoConfiguration, org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration
   datasource:
-    url: "jdbc:mariadb://metadata-db:3306/${METADATA_DB}"
+    url: "jdbc:mariadb://${METADATA_HOST}:3306/${METADATA_DB}${METADATA_JDBC_EXTRA_ARGS}"
     driver-class-name: org.mariadb.jdbc.Driver
     username: "${METADATA_USERNAME}"
     password: "${METADATA_PASSWORD}"

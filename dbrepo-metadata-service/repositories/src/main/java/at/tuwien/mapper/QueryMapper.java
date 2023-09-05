@@ -796,17 +796,7 @@ public interface QueryMapper {
                 return date.atStartOfDay(ZoneId.of("UTC"))
                         .toInstant();
             }
-            case TIMESTAMP -> {
-                if (column.getDateFormat() == null) {
-                    log.error("Missing date format for column {} of table {}", column.getId(),
-                            column.getTable().getId());
-                    throw new IllegalArgumentException("Missing date format");
-                }
-                log.trace("mapping {} to timestamp with format '{}'", data, column.getDateFormat());
-                return Timestamp.valueOf(data.toString())
-                        .toInstant();
-            }
-            case DATETIME -> {
+            case TIMESTAMP, DATETIME -> {
                 if (column.getDateFormat() == null) {
                     log.error("Missing date format for column {} of table {}", column.getId(),
                             column.getTable().getId());

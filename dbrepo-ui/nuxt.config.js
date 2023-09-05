@@ -1,6 +1,6 @@
 import path from 'path'
 import colors from 'vuetify/es5/util/colors'
-import { icon, clientSecret, title, logo, version, defaultPublisher, doiUrl, clientId, uploadPath, brokerUsername, brokerPassword, searchUsername, searchPassword } from './config'
+import { icon, clientSecret, title, logo, version, defaultPublisher, doiUrl, clientId, uploadPath, brokerUsername, brokerPassword, searchUsername, searchPassword, brokerLoginUrl, keycloakLoginUrl } from './config'
 
 const proxy = {}
 
@@ -98,6 +98,7 @@ export default {
   proxy,
 
   publicRuntimeConfig: {
+    title,
     version,
     logo,
     clientId,
@@ -105,6 +106,8 @@ export default {
     defaultPublisher,
     brokerUsername,
     brokerPassword,
+    brokerLoginUrl,
+    keycloakLoginUrl,
     searchUsername,
     searchPassword,
     doiUrl,
@@ -137,13 +140,14 @@ export default {
     }
   },
 
+  // https://github.com/nuxt/nuxt/issues/7722
   build: {
     babel: {
       presets (env, [preset, options]) {
         return [
           ['@babel/preset-env', {
             targets: {
-              node: 'current'
+              node: '14'
             }
           }]
         ]

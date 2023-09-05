@@ -41,10 +41,11 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
         payload.add("password", keycloakConfig.getKeycloakPassword());
         payload.add("grant_type", "password");
         payload.add("client_id", "admin-cli");
+        final String url = keycloakConfig.getKeycloakEndpoint() + "/realms/master/protocol/openid-connect/token";
+        log.debug("request admin token from url {}", url);
         final ResponseEntity<TokenDto> response;
         try {
-            response = restTemplate.exchange("/realms/master/protocol/openid-connect/token",
-                    HttpMethod.POST, new HttpEntity<>(payload, headers), TokenDto.class);
+            response = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(payload, headers), TokenDto.class);
         } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable e) {
             log.error("Failed to obtain admin token: {}", e.getMessage());
             throw new AccessDeniedException("Failed to obtain admin token: " + e.getMessage());
@@ -59,10 +60,11 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
         final HttpHeaders headers = new HttpHeaders();
         headers.set("Accept", "application/json");
         headers.set("Authorization", "Bearer " + obtainToken().getAccessToken());
+        final String url = keycloakConfig.getKeycloakEndpoint() + "/admin/realms/dbrepo/users";
+        log.debug("create user at url {}", url);
         final ResponseEntity<Void> response;
         try {
-            response = restTemplate.exchange("/admin/realms/dbrepo/users", HttpMethod.POST,
-                    new HttpEntity<>(data, headers), Void.class);
+            response = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(data, headers), Void.class);
         } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable e) {
             log.error("Failed to create user: {}", e.getMessage());
             throw new KeycloakRemoteException("Failed to create user: " + e.getMessage());
@@ -89,10 +91,11 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
         headers.set("Accept", "application/json");
         headers.set("Authorization", "Bearer " + obtainToken().getAccessToken());
         final UpdateCredentialsDto payload = userMapper.passwordToUpdateCredentialsDto(data.getPassword());
+        final String url = keycloakConfig.getKeycloakEndpoint() + "/admin/realms/dbrepo/users/" + id;
+        log.debug("update user credentials at url {}", url);
         final ResponseEntity<Void> response;
         try {
-            response = restTemplate.exchange("/admin/realms/dbrepo/users/" + id, HttpMethod.PUT,
-                    new HttpEntity<>(payload, headers), Void.class);
+            response = restTemplate.exchange(url, HttpMethod.PUT, new HttpEntity<>(payload, headers), Void.class);
         } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable e) {
             log.error("Failed to update user credentials: {}", e.getMessage());
             throw new KeycloakRemoteException("Failed to update user credentials: " + e.getMessage());
@@ -110,10 +113,11 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
         final HttpHeaders headers = new HttpHeaders();
         headers.set("Accept", "application/json");
         headers.set("Authorization", "Bearer " + obtainToken().getAccessToken());
+        final String url = keycloakConfig.getKeycloakEndpoint() + "/admin/realms/dbrepo/users/?username=" + username;
+        log.debug("find user from url {}", url);
         final ResponseEntity<UserDto[]> response;
         try {
-            response = restTemplate.exchange("/admin/realms/dbrepo/users/?username=" + username,
-                    HttpMethod.GET, new HttpEntity<>(null, headers), UserDto[].class);
+            response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(null, headers), UserDto[].class);
         } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable e) {
             log.error("Failed to find user: {}", e.getMessage());
             throw new KeycloakRemoteException("Failed to find user: " + e.getMessage());
