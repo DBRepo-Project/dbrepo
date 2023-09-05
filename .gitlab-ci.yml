@@ -24,7 +24,7 @@ stages:
 build-metadata-service:
   stage: build-backend
   script:
-    - "make build-semantics-service"
+    - "make build-metadata-service"
 
 build-analyse-service:
   stage: build-backend
