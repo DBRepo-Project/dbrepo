@@ -1,25 +1,32 @@
-**Describe the bug**
+### Describe the bug
+
 A clear and concise description of what the bug is.
 
-**Is this a regression?**
+### Is this a regression?
+
 Yes/No.
 
-**To Reproduce**
+### To Reproduce
+
 Steps to reproduce the behavior:
 1. Go to '...'
 2. Click on '....'
 3. Scroll down to '....'
 4. See error
 
-**Expected behavior**
+### Expected behavior
+
 A clear and concise description of what you expected to happen.
 
-**Screenshots**
+### Screenshots
+
 If applicable, add screenshots to help explain your problem.
 
-**Environment**
+### Environment
+
  - Browser [e.g. firefox, chrome]
  - Damap version [e.g. 2.1.0]
 
-**Additional context**
+### Additional context
+
 Add any other context about the problem here.
