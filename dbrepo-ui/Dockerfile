@@ -2,7 +2,6 @@ FROM node:14-alpine as build
 MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
 
 ARG TAG=latest
-ARG GIT_HASH_SHORT=git_hash
 
 ENV HOST=0.0.0.0
 ENV API=http://:80
@@ -53,7 +52,6 @@ ENV TITLE="Database Repository"
 ENV ICON="/favicon.ico"
 ENV DBREPO_CLIENT_ID="dbrepo-client"
 ENV DBREPO_CLIENT_SECRET="MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG"
-ENV GIT_HASH="${GIT_HASH_SHORT}"
 ENV UPLOAD_PATH="/tmp/"
 ENV FORCE_SSL="false"
 
