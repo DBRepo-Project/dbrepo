@@ -24,7 +24,7 @@ build-analyse-service:
 build-docker:
 	docker build -t dbrepo-metadata-service:build --target build dbrepo-metadata-service
 	docker build ./dbrepo-log-service -t dbrepo-log-service:latest
-	docker build ./dbrepo-log-dashboard -t dbrepo-log-dashboard:latest
+	docker build ./dbrepo-log-service/dashboard -t dbrepo-log-service-dashboard:latest
 	docker compose build --parallel
 
 build-frontend:
@@ -34,7 +34,7 @@ build-frontend:
 build-clients:
 	bash ./.gitlab/swagger/generate.sh
 
-tag: tag-analyse-service tag-authentication-service tag-metadata-db tag-ui tag-broker-service tag-metadata-service tag-search-sync-agent tag-log-service tag-log-dashboard
+tag: tag-analyse-service tag-authentication-service tag-metadata-db tag-ui tag-broker-service tag-metadata-service tag-search-sync-agent tag-log-service tag-log-service-dashboard
 
 tag-analyse-service:
 	docker tag dbrepo-analyse-service:latest "dbrepo/analyse-service:${TAG}"
@@ -72,11 +72,11 @@ tag-log-service:
 	docker tag dbrepo-log-service:latest "dbrepo/log-service:${TAG}"
 	docker tag dbrepo-log-service:latest "${AZURE_REPO}/dbrepo/log-service:${TAG}"
 
-tag-log-dashboard:
-	docker tag dbrepo-log-dashboard:latest "dbrepo/log-dashboard:${TAG}"
-	docker tag dbrepo-log-dashboard:latest "${AZURE_REPO}/dbrepo/log-dashboard:${TAG}"
+tag-log-service-dashboard:
+	docker tag dbrepo-log-service-dashboard:latest "dbrepo/log-service-dashboard:${TAG}"
+	docker tag dbrepo-log-service-dashboard:latest "${AZURE_REPO}/dbrepo/log-service-dashboard:${TAG}"
 
-release: build-docker tag release-analyse-service release-authentication-service release-metadata-db release-ui release-broker-service release-metadata-service release-search-sync-agent release-log-service release-log-dashboard
+release: build-docker tag release-analyse-service release-authentication-service release-metadata-db release-ui release-broker-service release-metadata-service release-search-sync-agent release-log-service release-search-db release-log-service-dashboard
 
 release-analyse-service: tag-analyse-service
 	docker push "dbrepo/analyse-service:${TAG}"
@@ -102,6 +102,10 @@ release-broker-service: tag-broker-service
 	docker push "dbrepo/broker-service:${TAG}"
 	docker push "${AZURE_REPO}/dbrepo/broker-service:${TAG}"
 
+release-search-db: tag-search-db
+	docker push "dbrepo/search-db:${TAG}"
+	docker push "${AZURE_REPO}/dbrepo/search-db:${TAG}"
+
 release-metadata-service: tag-metadata-service
 	docker push "dbrepo/metadata-service:${TAG}"
 	docker push "${AZURE_REPO}/dbrepo/metadata-service:${TAG}"
@@ -110,9 +114,9 @@ release-log-service: tag-log-service
 	docker push "dbrepo/log-service:${TAG}"
 	docker push "${AZURE_REPO}/dbrepo/log-service:${TAG}"
 
-release-log-dashboard: tag-log-dashboard
-	docker push "dbrepo/log-dashboard:${TAG}"
-	docker push "${AZURE_REPO}/dbrepo/log-dashboard:${TAG}"
+release-log-service-dashboard: tag-log-service-dashboard
+	docker push "dbrepo/log-service-dashboard:${TAG}"
+	docker push "${AZURE_REPO}/dbrepo/log-service-dashboard:${TAG}"
 
 test-backend: test-metadata-service test-analyse-service test-search-sync-agent
 
@@ -125,7 +129,7 @@ test-metadata-service: build-metadata-service
 test-analyse-service: build-analyse-service
 	bash ./dbrepo-analyse-service/test.sh
 
-scan: scan-analyse-service scan-authentication-service scan-broker-service scan-gateway-service scan-metadata-db scan-metadata-service scan-search-db scan-ui scan-search-sync-agent scan-data-service
+scan: scan-analyse-service scan-authentication-service scan-broker-service scan-gateway-service scan-metadata-db scan-metadata-service scan-search-db scan-ui scan-search-sync-agent
 
 scan-analyse-service:
 	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-analyse-service-report.json dbrepo-analyse-service:latest
