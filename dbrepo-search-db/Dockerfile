@@ -2,7 +2,7 @@ FROM opensearchproject/opensearch:2.8.0 as runtime
 
 USER root
 
-RUN yum install -y jq
+RUN yum update -y && yum install -y jq
 
 USER opensearch
 
