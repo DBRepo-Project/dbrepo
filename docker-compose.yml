@@ -212,7 +212,8 @@ services:
     restart: "no"
     container_name: dbrepo-search-db
     hostname: search-db
-    image: opensearchproject/opensearch:2.8.0
+    build: ./dbrepo-search-db
+    image: dbrepo-search-db
     networks:
       core:
     ports:
@@ -221,7 +222,7 @@ services:
     env_file:
       - .env
     healthcheck:
-      test: curl -s localhost:9200/_cat/indices || exit 1
+      test: bash ./healthcheck.sh
       interval: 10s
       timeout: 5s
       retries: 12
@@ -236,7 +237,6 @@ services:
           memory: 4G
     volumes:
       - search-db-data:/usr/share/elasticsearch/data
-      - ./dbrepo-search-db/limits.conf:/etc/security/limits.conf
     logging:
       driver: json-file
 

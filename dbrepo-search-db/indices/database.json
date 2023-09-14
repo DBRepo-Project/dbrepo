@@ -1,0 +1,53 @@
+{
+  "aliases": {},
+  "mappings": {
+    "properties": {
+      "container": {
+        "type": "nested",
+        "include_in_parent": true,
+        "properties": {
+          "created": {
+            "type": "date",
+            "format": "date_optional_time||epoch_millis"
+          }
+        }
+      },
+      "created": {
+        "type": "date",
+        "format": "date_optional_time||epoch_millis"
+      },
+      "creator": {
+        "type": "nested",
+        "include_in_parent": true
+      },
+      "description": {
+        "type": "text"
+      },
+      "exchange_name": {
+        "type": "keyword"
+      },
+      "id": {
+        "type": "keyword"
+      },
+      "internal_name": {
+        "type": "keyword"
+      },
+      "is_public": {
+        "type": "boolean"
+      },
+      "name": {
+        "type": "keyword"
+      },
+      "owner": {
+        "type": "nested",
+        "include_in_parent": true
+      }
+    }
+  },
+  "settings": {
+    "index": {
+      "number_of_shards": "1",
+      "number_of_replicas": "1"
+    }
+  }
+}
