@@ -6,7 +6,7 @@ do
 done
 echo "[create-indices.sh] OpenSearch ready"
 for index in "user" "view" "database" "identifier" "concept" "column" "table" "unit"; do
-  RES=$(curl -sSL -X PUT "127.0.0.1:9200/$index" -H "Content-Type: application/json" --data "@indices/$index.json")
+  RES=$(curl -sSL -X PUT "127.0.0.1:9200/$index" -H "Content-Type: application/json" --data "@$index.json")
   ACK=$(echo "$RES" | jq .acknowledged)
   if [ $ACK ]; then
     echo "[create-indices.sh] Created $index index"
