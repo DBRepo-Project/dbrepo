@@ -43,8 +43,9 @@ services:
     ports:
       - "3306:3306"
       - "9100:9100"
-    env_file:
-      - .env
+    environment:
+      MARIADB_DATABASE: "${METADATA_DB:-fda}"
+      MARIADB_ROOT_PASSWORD: "${METADATA_PASSWORD:-dbrepo}"
     healthcheck:
       test: mysqladmin ping --user="$METADATA_USERNAME" --password="$METADATA_PASSWORD" --silent
       interval: 10s
@@ -66,10 +67,8 @@ services:
     ports:
       - "3307:3306"
       - "9101:9100"
-    env_file:
-      - .env
     environment:
-      - MARIADB_ROOT_PASSWORD=$USER_DB_PASSWORD
+      MARIADB_ROOT_PASSWORD: "${USER_DB_PASSWORD:-dbrepo}"
     healthcheck:
       test: mysqladmin ping --user="$USER_DB_USERNAME" --password="$USER_DB_PASSWORD" --silent
       interval: 10s
@@ -90,11 +89,9 @@ services:
     ports:
       - "3308:3306"
       - "9102:9100"
-    env_file:
-      - .env
     environment:
-      - MARIADB_ROOT_PASSWORD=$AUTH_PASSWORD
-      - MARIADB_DATABASE=$AUTH_DB
+      MARIADB_DATABASE: "${AUTH_DB:-keycloak}"
+      MARIADB_ROOT_PASSWORD: "${AUTH_PASSWORD:-dbrepo}"
     healthcheck:
       test: mysqladmin ping --user="$AUTH_USERNAME" --password="$AUTH_PASSWORD" --silent
       interval: 10s
@@ -112,8 +109,6 @@ services:
       - "--base-path=/api/upload/files/"
     networks:
       core:
-    env_file:
-      - .env
     volumes:
       - upload-service-data:/data
       - "/tmp:/srv/tusd-data/data"
@@ -131,8 +126,12 @@ services:
     ports:
       - "8443:8443"
       - "8080:8080"
-    env_file:
-      - .env
+    environment:
+      AUTH_DB: "${AUTH_DB:-keycloak}"
+      KC_DB_USERNAME: "${AUTH_USERNAME:-root}"
+      KC_DB_PASSWORD: "${AUTH_PASSWORD:-dbrepo}"
+      KEYCLOAK_ADMIN: "${KEYCLOAK_ADMIN:-fda}"
+      KEYCLOAK_ADMIN_PASSWORD: "${KEYCLOAK_ADMIN_PASSWORD:-fda}"
     volumes:
       - authentication-service-data:/opt/keycloak/data/
     depends_on:
@@ -149,12 +148,40 @@ services:
     image: dbrepo-metadata-service
     networks:
       core:
-    env_file:
-      - .env
     volumes:
       - "/tmp:/tmp"
     ports:
       - "9099:9099"
+    environment:
+      ADMIN_MAIL: "${ADMIN_MAIL:-noreply@localhost}"
+      BASE_URL: "${BASE_URL:-http://localhost}"
+      GRANT_PRIVILEGES: "${GRANT_PRIVILEGES:-SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE}"
+      BROKER_CONSUMERS: "${BROKER_CONSUMERS:-2}"
+      BROKER_ENDPOINT: "${BROKER_ENDPOINT:-http://broker-service:15672}"
+      BROKER_USERNAME: "${BROKER_USERNAME:-fda}"
+      BROKER_PASSWORD: "${BROKER_PASSWORD:-fda}"
+      DELETED_RECORD: "${DELETED_RECORD:-persistent}"
+      EARLIEST_DATESTAMP: "${EARLIEST_DATESTAMP:-2022-09-17T18:23:00Z}"
+      GRANULARITY: "${GRANULARITY:-YYYY-MM-DDThh:mm:ssZ}"
+      JWT_ISSUER: "${JWT_ISSUER:-http://localhost/realms/dbrepo}"
+      JWT_PUBKEY: "${JWT_PUBKEY:-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB}"
+      LOG_LEVEL: "${LOG_LEVEL:-debug}"
+      METADATA_DB: "${METADATA_DB:-fda}"
+      METADATA_HOST: "${METADATA_HOST:-metadata-db}"
+      METADATA_JDBC_EXTRA_ARGS: "${METADATA_JDBC_EXTRA_ARGS:-}"
+      METADATA_USERNAME: "${METADATA_USERNAME:-root}"
+      METADATA_PASSWORD: "${METADATA_PASSWORD:-dbrepo}"
+      NOT_SUPPORTED_KEYWORDS: "${NOT_SUPPORTED_KEYWORDS:-\\*,AVG,BIT_AND,BIT_OR,BIT_XOR,COUNT,COUNTDISTINCT,GROUP_CONCAT,JSON_ARRAYAGG,JSON_OBJECTAGG,MAX,MIN,STD,STDDEV,STDDEV_POP,STDDEV_SAMP,SUM,VARIANCE,VAR_POP,VAR_SAMP,--}"
+      PID_BASE: "${PID_BASE:-http://localhost/pid/}"
+      REPOSITORY_NAME: "${REPOSITORY_NAME:-Example Repository}"
+      SEARCH_USERNAME: "${SEARCH_USERNAME:-admin}"
+      SEARCH_PASSWORD: "${SEARCH_PASSWORD:-admin}"
+      SHARED_FILESYSTEM: "${SHARED_FILESYSTEM:-/tmp}"
+      USER_NETWORK: "${USER_NETWORK:-userdb}"
+      WEBSITE: "${WEBSITE:-http://localhost}"
+      KEYCLOAK_HOST: "${KEYCLOAK_HOST:-http://authentication-service:8080}"
+      KEYCLOAK_ADMIN: "${KEYCLOAK_ADMIN:-fda}"
+      KEYCLOAK_ADMIN_PASSWORD: "${KEYCLOAK_ADMIN_PASSWORD:-fda}"
     healthcheck:
       test: wget -qO- localhost:9099/actuator/health/readiness | grep -q "UP" || exit 1
       interval: 10s
@@ -180,8 +207,6 @@ services:
       core:
     ports:
       - "5000:5000"
-    env_file:
-      - .env
     volumes:
       - "/tmp:/tmp"
     logging:
@@ -198,8 +223,6 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
-    env_file:
-      - .env
     depends_on:
       dbrepo-authentication-service:
         condition: service_healthy
@@ -219,8 +242,6 @@ services:
     ports:
       - "2020:2020"
       - "9200:9200"
-    env_file:
-      - .env
     healthcheck:
       test: bash ./healthcheck.sh
       interval: 10s
@@ -249,8 +270,22 @@ services:
     networks:
       core:
       public:
-    env_file:
-      - .env
+    environment:
+      BROKER_USERNAME: "${BROKER_USERNAME:-fda}"
+      BROKER_PASSWORD: "${BROKER_PASSWORD:-fda}"
+      BROKER_LOGIN_URL: "${BROKER_LOGIN_URL:-/broker/}"
+      KEYCLOAK_LOGIN_URL: "${KEYCLOAK_LOGIN_URL:-/api/auth/}"
+      SHARED_FILESYSTEM: "${SHARED_FILESYSTEM:-/tmp}"
+      LOGO: "${LOGO:-/logo.png}"
+      SEARCH_USERNAME: "${SEARCH_USERNAME:-admin}"
+      SEARCH_PASSWORD: "${SEARCH_PASSWORD:-admin}"
+      VERSION: "${VERSION:-${TAG}}"
+      TITLE: "${TITLE:-Database Repository}"
+      ICON: "${ICON:-/favicon.ico}"
+      DBREPO_CLIENT_ID: "${DBREPO_CLIENT_ID:-dbrepo-client}"
+      DBREPO_CLIENT_SECRET: "${DBREPO_CLIENT_SECRET:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}"
+      UPLOAD_PATH: "${UPLOAD_PATH:-/tmp/}"
+      FORCE_SSL: "${FORCE_SSL:-false}"
     depends_on:
       dbrepo-upload-service:
         condition: service_started
@@ -294,8 +329,15 @@ services:
     image: dbrepo-search-sync-agent
     networks:
       core:
-    env_file:
-      - .env
+    environment:
+      METADATA_DB: ${METADATA_DB:-fda}
+      METADATA_HOST: ${METADATA_HOST:-metadata-db}
+      METADATA_JDBC_EXTRA_ARGS: ${METADATA_JDBC_EXTRA_ARGS:-}
+      METADATA_PASSWORD: ${METADATA_PASSWORD:-dbrepo}
+      METADATA_USERNAME: ${METADATA_USERNAME:-root}
+      SEARCH_USERNAME: ${SEARCH_USERNAME:-fda}
+      SEARCH_PASSWORD: ${SEARCH_PASSWORD:-fda}
+      LOG_LEVEL: ${LOG_LEVEL:-debug}
     healthcheck:
       test: wget -qO- localhost:9050/actuator/health/readiness | grep -q "UP" || exit 1
       interval: 10s
