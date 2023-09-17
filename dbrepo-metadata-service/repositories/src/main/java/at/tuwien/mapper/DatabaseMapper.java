@@ -163,9 +163,9 @@ public interface DatabaseMapper {
     }
 
     default PreparedStatement rawGrantCreatorAccessQuery(Connection connection, String databaseName, String username,
-                                                         String priviliges) throws QueryMalformedException {
+                                                         String privileges) throws QueryMalformedException {
         final StringBuilder statement = new StringBuilder("GRANT ")
-                .append(priviliges)
+                .append(privileges)
                 .append(" ON ")
                 .append(databaseName)
                 .append(".* TO `")

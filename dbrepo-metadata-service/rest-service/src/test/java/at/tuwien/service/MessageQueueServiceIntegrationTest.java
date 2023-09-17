@@ -4,6 +4,7 @@ import at.tuwien.BaseUnitTest;
 import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.api.amqp.PermissionDto;
 import at.tuwien.exception.AmqpException;
+import at.tuwien.exception.BrokerRemoteException;
 import at.tuwien.exception.BrokerVirtualHostCreationException;
 import at.tuwien.exception.BrokerVirtualHostGrantException;
 import at.tuwien.repository.mdb.DatabaseRepository;
@@ -85,14 +86,14 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void createUser_succeeds() throws BrokerVirtualHostCreationException {
+    public void createUser_succeeds() throws BrokerRemoteException {
 
         /* test */
         messageQueueService.createUser(USER_1_USERNAME);
     }
 
     @Test
-    public void updatePermissions_empty_succeeds() throws BrokerVirtualHostGrantException {
+    public void updatePermissions_empty_succeeds() throws BrokerRemoteException {
 
         /* test */
         final PermissionDto permissions = updatePermissions_generic();
@@ -104,7 +105,7 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void updatePermissions_owner_succeeds() throws BrokerVirtualHostGrantException {
+    public void updatePermissions_owner_succeeds() throws BrokerRemoteException {
 
         /* mock */
         when(databaseRepository.findConfigureAccess(USER_1_ID))
@@ -124,7 +125,7 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void updatePermissions_ownerNoAccess_succeeds() throws BrokerVirtualHostGrantException {
+    public void updatePermissions_ownerNoAccess_succeeds() throws BrokerRemoteException {
 
         /* mock */
         when(databaseRepository.findConfigureAccess(USER_1_ID))
@@ -163,7 +164,7 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
 
-    protected PermissionDto updatePermissions_generic() throws BrokerVirtualHostGrantException {
+    protected PermissionDto updatePermissions_generic() throws BrokerRemoteException {
 
         /* mock */
         amqpUtils.createUser(USER_1_USERNAME, USER_1_RABBITMQ_CREATE_DTO);

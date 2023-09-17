@@ -5,6 +5,7 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.AmqpException;
+import at.tuwien.exception.BrokerRemoteException;
 import at.tuwien.exception.BrokerVirtualHostCreationException;
 import at.tuwien.exception.BrokerVirtualHostGrantException;
 import jakarta.annotation.PostConstruct;
@@ -46,9 +47,9 @@ public interface MessageQueueService {
      * Create user on the broker service
      *
      * @param username The username.
-     * @throws BrokerVirtualHostCreationException The user could not be created.
+     * @throws BrokerRemoteException The user could not be created.
      */
-    void createUser(String username) throws BrokerVirtualHostCreationException;
+    void createUser(String username) throws BrokerRemoteException;
 
 
     /**
@@ -57,7 +58,7 @@ public interface MessageQueueService {
      * @param user The user.
      * @throws BrokerVirtualHostGrantException The Broker Service refused to grant the permissions.
      */
-    void updatePermissions(User user) throws BrokerVirtualHostGrantException;
+    void updatePermissions(User user) throws BrokerVirtualHostGrantException, BrokerRemoteException;
 
     /**
      * Deletes an exchange for a database.
@@ -82,5 +83,5 @@ public interface MessageQueueService {
      *
      * @throws AmqpException The consumer could not be created.
      */
-    void restore() throws AmqpException;
+    void restore() throws AmqpException, BrokerRemoteException;
 }

@@ -40,13 +40,25 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @Hidden
-    @ResponseStatus(HttpStatus.LOCKED)
+    @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
     @ExceptionHandler(KeycloakRemoteException.class)
     public ResponseEntity<ApiErrorDto> handle(KeycloakRemoteException e, WebRequest request) {
         final ApiErrorDto response = ApiErrorDto.builder()
-                .status(HttpStatus.LOCKED)
+                .status(HttpStatus.SERVICE_UNAVAILABLE)
                 .message(e.getLocalizedMessage())
                 .code("error.metadata.keycloak")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
+    @Hidden
+    @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
+    @ExceptionHandler(BrokerRemoteException.class)
+    public ResponseEntity<ApiErrorDto> handle(BrokerRemoteException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.SERVICE_UNAVAILABLE)
+                .message(e.getLocalizedMessage())
+                .code("error.metadata.broker")
                 .build();
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }

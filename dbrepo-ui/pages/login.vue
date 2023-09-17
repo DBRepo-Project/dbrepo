@@ -52,8 +52,12 @@
           </v-btn>
         </v-card-actions>
         <v-card-subtitle class="text-right">
-          <a v-if="rabbitMqUrl" color="orange" class="mr-1" plain :href="rabbitMqUrl">RabbitMQ Admin</a>
-          <a v-if="keycloakUrl" color="secondary" class="ml-1" plain :href="keycloakUrl">Keycloak Admin</a>
+          <a v-if="rabbitMqUrl" class="mr-1" :href="rabbitMqUrl" target="_blank">
+            RabbitMQ Admin <sup><v-icon color="primary" x-small>mdi-open-in-new</v-icon></sup>
+          </a>
+          <a v-if="keycloakUrl" class="ml-1" :href="keycloakUrl" target="_blank">
+            Keycloak Admin <sup><v-icon color="primary" x-small>mdi-open-in-new</v-icon></sup>
+          </a>
         </v-card-subtitle>
       </v-card>
     </v-form>

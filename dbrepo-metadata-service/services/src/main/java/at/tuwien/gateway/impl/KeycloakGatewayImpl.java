@@ -33,7 +33,7 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
         this.keycloakConfig = keycloakConfig;
     }
 
-    public TokenDto obtainToken() throws AccessDeniedException {
+    public TokenDto obtainToken() throws AccessDeniedException, KeycloakRemoteException {
         final HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         final MultiValueMap<String, String> payload = new LinkedMultiValueMap<>();
@@ -49,6 +49,9 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
         } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable e) {
             log.error("Failed to obtain admin token: {}", e.getMessage());
             throw new AccessDeniedException("Failed to obtain admin token: " + e.getMessage());
+        } catch (Exception e) {
+            log.error("Failed to create user: remote host answered unexpected: {}", e.getMessage());
+            throw new KeycloakRemoteException("Failed to create user: remote host answered unexpected", e);
         }
         return response.getBody();
     }
@@ -76,6 +79,9 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
                 log.error("Conflict when creating user: {}", e.getMessage());
                 throw new UserAlreadyExistsException("Conflict when creating user: " + e.getMessage());
             }
+        } catch (Exception e) {
+            log.error("Failed to create user: remote host answered unexpected: {}", e.getMessage());
+            throw new KeycloakRemoteException("Failed to create user: remote host answered unexpected", e);
         }
         if (!response.getStatusCode().equals(HttpStatus.CREATED)) {
             log.error("Failed to create user: status {} was not expected", response.getStatusCode().value());
@@ -99,6 +105,9 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
         } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable e) {
             log.error("Failed to update user credentials: {}", e.getMessage());
             throw new KeycloakRemoteException("Failed to update user credentials: " + e.getMessage());
+        } catch (Exception e) {
+            log.error("Failed to create user: remote host answered unexpected: {}", e.getMessage());
+            throw new KeycloakRemoteException("Failed to create user: remote host answered unexpected", e);
         }
         if (!response.getStatusCode().equals(HttpStatus.NO_CONTENT)) {
             log.error("Failed to update user credentials: status {} was not expected", response.getStatusCode().value());
@@ -121,6 +130,9 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
         } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable e) {
             log.error("Failed to find user: {}", e.getMessage());
             throw new KeycloakRemoteException("Failed to find user: " + e.getMessage());
+        } catch (Exception e) {
+            log.error("Failed to create user: remote host answered unexpected: {}", e.getMessage());
+            throw new KeycloakRemoteException("Failed to create user: remote host answered unexpected", e);
         }
         final UserDto[] body = response.getBody();
         if (body == null || body.length != 1) {

@@ -1,6 +1,7 @@
 package at.tuwien.listener;
 
 import at.tuwien.exception.AmqpException;
+import at.tuwien.exception.BrokerRemoteException;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import java.util.concurrent.TimeUnit;
@@ -13,5 +14,5 @@ public interface MessageQueueListener {
      * @throws AmqpException The consumer could not be created.
      */
     @Scheduled(fixedDelay = 5, initialDelay = 300, timeUnit = TimeUnit.SECONDS)
-    void updateConsumers() throws AmqpException;
+    void updateConsumers() throws AmqpException, BrokerRemoteException;
 }

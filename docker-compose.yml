@@ -224,7 +224,7 @@ services:
       - "5672:5672"
       - "15672:15672"
     healthcheck:
-      test: wget -qO- localhost:15672/api/broker | grep "RabbitMQ" || exit 1
+      test: wget -qO- localhost:15672/admin/broker | grep "RabbitMQ" || exit 1
       interval: 10s
       timeout: 5s
       retries: 12
@@ -278,8 +278,8 @@ services:
     environment:
       BROKER_USERNAME: "${BROKER_USERNAME:-fda}"
       BROKER_PASSWORD: "${BROKER_PASSWORD:-fda}"
-      BROKER_LOGIN_URL: "${BROKER_LOGIN_URL:-/broker/}"
-      KEYCLOAK_LOGIN_URL: "${KEYCLOAK_LOGIN_URL:-/api/auth/}"
+      BROKER_LOGIN_URL: "${BROKER_LOGIN_URL:-/admin/broker/}"
+      KEYCLOAK_LOGIN_URL: "${KEYCLOAK_LOGIN_URL:-/api/auth/admin/}"
       SHARED_FILESYSTEM: "${SHARED_FILESYSTEM:-/tmp}"
       LOGO: "${LOGO:-/logo.png}"
       SEARCH_USERNAME: "${SEARCH_USERNAME:-admin}"
