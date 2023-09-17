@@ -43,16 +43,18 @@ public interface BrokerServiceGateway {
      * Create user on the broker service
      *
      * @param username The new username.
-     * @throws BrokerRemoteException The Broker Service did not respond within the 3s timeout.
+     * @throws BrokerRemoteException              The Broker Service did not respond within the 3s timeout.
+     * @throws BrokerVirtualHostCreationException The user could not be created.
      */
-    void createUser(String username) throws BrokerRemoteException;
+    void createUser(String username) throws BrokerRemoteException, BrokerVirtualHostCreationException;
 
     /**
      * Grants a user permission at a virtual host in the queue service.
      *
      * @param username The username of the user.
      * @param data     The grant data.
-     * @throws BrokerRemoteException The Broker Service did not respond within the 3s timeout.
+     * @throws BrokerRemoteException           The Broker Service did not respond within the 3s timeout.
+     * @throws BrokerVirtualHostGrantException The permissions could not be granted.
      */
-    void grantPermission(String username, GrantVirtualHostPermissionsDto data) throws BrokerRemoteException;
+    void grantPermission(String username, GrantVirtualHostPermissionsDto data) throws BrokerRemoteException, BrokerVirtualHostGrantException;
 }

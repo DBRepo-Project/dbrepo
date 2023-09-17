@@ -86,14 +86,14 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void createUser_succeeds() throws BrokerRemoteException {
+    public void createUser_succeeds() throws BrokerRemoteException, BrokerVirtualHostCreationException {
 
         /* test */
         messageQueueService.createUser(USER_1_USERNAME);
     }
 
     @Test
-    public void updatePermissions_empty_succeeds() throws BrokerRemoteException {
+    public void updatePermissions_empty_succeeds() throws BrokerRemoteException, BrokerVirtualHostGrantException {
 
         /* test */
         final PermissionDto permissions = updatePermissions_generic();
@@ -105,7 +105,7 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void updatePermissions_owner_succeeds() throws BrokerRemoteException {
+    public void updatePermissions_owner_succeeds() throws BrokerRemoteException, BrokerVirtualHostGrantException {
 
         /* mock */
         when(databaseRepository.findConfigureAccess(USER_1_ID))
@@ -125,7 +125,7 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void updatePermissions_ownerNoAccess_succeeds() throws BrokerRemoteException {
+    public void updatePermissions_ownerNoAccess_succeeds() throws BrokerRemoteException, BrokerVirtualHostGrantException {
 
         /* mock */
         when(databaseRepository.findConfigureAccess(USER_1_ID))
@@ -164,7 +164,7 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
 
-    protected PermissionDto updatePermissions_generic() throws BrokerRemoteException {
+    protected PermissionDto updatePermissions_generic() throws BrokerRemoteException, BrokerVirtualHostGrantException {
 
         /* mock */
         amqpUtils.createUser(USER_1_USERNAME, USER_1_RABBITMQ_CREATE_DTO);

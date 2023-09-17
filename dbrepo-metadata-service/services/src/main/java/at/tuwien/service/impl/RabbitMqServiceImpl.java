@@ -10,6 +10,7 @@ import at.tuwien.entities.user.User;
 import at.tuwien.exception.AmqpException;
 import at.tuwien.exception.BrokerRemoteException;
 import at.tuwien.exception.BrokerVirtualHostCreationException;
+import at.tuwien.exception.BrokerVirtualHostGrantException;
 import at.tuwien.gateway.BrokerServiceGateway;
 import at.tuwien.mapper.AmqpMapper;
 import at.tuwien.repository.mdb.DatabaseRepository;
@@ -103,12 +104,12 @@ public class RabbitMqServiceImpl implements MessageQueueService {
     }
 
     @Override
-    public void createUser(String username) throws BrokerRemoteException {
+    public void createUser(String username) throws BrokerRemoteException, BrokerVirtualHostCreationException {
         brokerServiceGateway.createUser(username);
     }
 
     @Override
-    public void updatePermissions(User user) throws BrokerRemoteException {
+    public void updatePermissions(User user) throws BrokerRemoteException, BrokerVirtualHostGrantException {
         final GrantVirtualHostPermissionsDto permissions = GrantVirtualHostPermissionsDto.builder()
                 .configure(amqpMapper.databaseListToPermissionString(databaseRepository.findConfigureAccess(user.getId())))
                 .write(amqpMapper.databaseListToPermissionString(databaseRepository.findWriteAccess(user.getId())))

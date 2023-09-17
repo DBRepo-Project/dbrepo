@@ -117,7 +117,7 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         when(databaseIdxRepository.save(any(DatabaseDto.class)))
                 .thenReturn(DATABASE_1_DTO);
         when(queryConfig.getGrantPrivileges())
-                .thenCallRealMethod();
+                .thenReturn("SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE");
 
         /* test */
         generic_create(DATABASE_1_CREATE, DATABASE_1);
@@ -133,7 +133,7 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         when(databaseIdxRepository.save(any(DatabaseDto.class)))
                 .thenReturn(DATABASE_1_DTO);
         when(queryConfig.getGrantPrivileges())
-                .thenCallRealMethod();
+                .thenReturn("SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE");
 
         /* test */
         generic_create(DATABASE_1_CREATE, DATABASE_1);
@@ -151,7 +151,7 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
                 .thenReturn(DATABASE_2_DTO)
                 .thenReturn(DATABASE_3_DTO);
         when(queryConfig.getGrantPrivileges())
-                .thenCallRealMethod();
+                .thenReturn("SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE");
 
         /* test */
         generic_create(DATABASE_2_CREATE, DATABASE_2);
@@ -169,7 +169,7 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
                 .thenReturn(DATABASE_3_DTO)
                 .thenReturn(DATABASE_2_DTO);
         when(queryConfig.getGrantPrivileges())
-                .thenCallRealMethod();
+                .thenReturn("SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE");
 
         /* test */
         generic_create(DATABASE_3_CREATE, DATABASE_3);
@@ -185,7 +185,7 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         when(databaseIdxRepository.save(any(DatabaseDto.class)))
                 .thenReturn(DATABASE_1_DTO);
         when(queryConfig.getGrantPrivileges())
-                .thenCallRealMethod();
+                .thenReturn("SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE");
         final Database database = generic_create(DATABASE_1_CREATE, DATABASE_1);
 
 
@@ -202,7 +202,7 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         when(databaseIdxRepository.save(any(DatabaseDto.class)))
                 .thenReturn(DATABASE_1_DTO);
         when(queryConfig.getGrantPrivileges())
-                .thenReturn("" /* (1) */, "ALL"/* (2) */);
+                .thenReturn("" /* (1) */, "SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE"/* (2) */);
 
         /* test */
         assertThrows(DatabaseMalformedException.class, () -> {
@@ -220,7 +220,7 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         when(databaseIdxRepository.save(any(DatabaseDto.class)))
                 .thenReturn(DATABASE_1_DTO);
         when(queryConfig.getGrantPrivileges())
-                .thenCallRealMethod();
+                .thenReturn("SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE");
 
         /* test */
         assertThrows(SQLInvalidAuthorizationSpecException.class, () -> {
@@ -239,7 +239,7 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
 
         /* mock */
         when(queryConfig.getGrantPrivileges())
-                .thenCallRealMethod();
+                .thenReturn("SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE");
 
         /* test */
         generic_insert(QUERY_4_STATEMENT, 1L);
@@ -250,7 +250,7 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
 
         /* mock */
         when(queryConfig.getGrantPrivileges())
-                .thenCallRealMethod();
+                .thenReturn("SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE");
 
         /* test */
         generic_insert(QUERY_4_STATEMENT, 1L);
@@ -263,7 +263,7 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
 
         /* mock */
         when(queryConfig.getGrantPrivileges())
-                .thenCallRealMethod();
+                .thenReturn("SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE");
 
         /* test */
         generic_system_insert(CONTAINER_1_PRIVILEGED_USERNAME, CONTAINER_1_PRIVILEGED_PASSWORD);
@@ -274,7 +274,7 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
 
         /* mock */
         when(queryConfig.getGrantPrivileges())
-                .thenCallRealMethod();
+                .thenReturn("SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE");
 
         /* test */
         assertThrows(SQLException.class, () -> {
@@ -287,7 +287,7 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
 
         /* mock */
         when(queryConfig.getGrantPrivileges())
-                .thenCallRealMethod();
+                .thenReturn("SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE");
 
         /* test */
         generic_user_insert(CONTAINER_1_PRIVILEGED_USERNAME, CONTAINER_1_PRIVILEGED_PASSWORD);
@@ -302,7 +302,7 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         mariaDbConfig.grantUserPermissions(CONTAINER_1, DATABASE_3, "junit1");
         databaseAccessRepository.save(DATABASE_3_USER_1_WRITE_ALL_ACCESS);
         when(queryConfig.getGrantPrivileges())
-                .thenCallRealMethod();
+                .thenReturn("SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE");
 
         /* test */
         generic_user_insert("junit1", "junit1");

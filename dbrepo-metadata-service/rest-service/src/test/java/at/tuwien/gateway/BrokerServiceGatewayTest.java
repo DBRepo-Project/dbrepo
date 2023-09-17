@@ -107,7 +107,7 @@ public class BrokerServiceGatewayTest extends BaseUnitTest {
     }
 
     @Test
-    public void grantPermission_virtualHostNoRightsBefore_succeeds() throws BrokerRemoteException {
+    public void grantPermission_virtualHostNoRightsBefore_succeeds() throws BrokerRemoteException, BrokerVirtualHostGrantException {
         final ResponseEntity<Void> mock = ResponseEntity.status(HttpStatus.CREATED)
                 .build();
 
@@ -120,7 +120,7 @@ public class BrokerServiceGatewayTest extends BaseUnitTest {
     }
 
     @Test
-    public void grantPermission_virtualHostRightsSame_succeeds() throws BrokerRemoteException {
+    public void grantPermission_virtualHostRightsSame_succeeds() throws BrokerRemoteException, BrokerVirtualHostGrantException {
         final ResponseEntity<Void> mock = ResponseEntity.status(HttpStatus.NO_CONTENT)
                 .build();
 
@@ -148,7 +148,7 @@ public class BrokerServiceGatewayTest extends BaseUnitTest {
     }
 
     @Test
-    public void createUser_succeeds() throws BrokerRemoteException {
+    public void createUser_succeeds() throws BrokerRemoteException, BrokerVirtualHostCreationException {
         final ResponseEntity<Void> mock = ResponseEntity.status(HttpStatus.NO_CONTENT)
                 .build();
 

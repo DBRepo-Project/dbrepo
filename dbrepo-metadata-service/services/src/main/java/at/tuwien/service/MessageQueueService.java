@@ -49,7 +49,7 @@ public interface MessageQueueService {
      * @param username The username.
      * @throws BrokerRemoteException The user could not be created.
      */
-    void createUser(String username) throws BrokerRemoteException;
+    void createUser(String username) throws BrokerRemoteException, BrokerVirtualHostCreationException;
 
 
     /**

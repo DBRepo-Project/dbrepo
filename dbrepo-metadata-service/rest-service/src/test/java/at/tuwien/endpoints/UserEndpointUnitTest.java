@@ -67,7 +67,7 @@ public class UserEndpointUnitTest extends BaseUnitTest {
     @WithAnonymousUser
     public void create_anonymous_succeeds() throws UserNotFoundException, UserEmailAlreadyExistsException,
             RealmNotFoundException, UserAlreadyExistsException, KeycloakRemoteException,
-            at.tuwien.exception.AccessDeniedException, BrokerRemoteException {
+            at.tuwien.exception.AccessDeniedException, BrokerRemoteException, BrokerVirtualHostCreationException {
         final SignupRequestDto request = SignupRequestDto.builder()
                 .email(USER_1_EMAIL)
                 .username(USER_1_USERNAME)
@@ -304,7 +304,7 @@ public class UserEndpointUnitTest extends BaseUnitTest {
 
     protected void create_generic(SignupRequestDto data, User user) throws UserEmailAlreadyExistsException,
             RealmNotFoundException, UserAlreadyExistsException, UserNotFoundException, KeycloakRemoteException,
-            AccessDeniedException, BrokerRemoteException {
+            AccessDeniedException, BrokerRemoteException, BrokerVirtualHostCreationException {
 
         /* mock */
         when(userService.create(data))

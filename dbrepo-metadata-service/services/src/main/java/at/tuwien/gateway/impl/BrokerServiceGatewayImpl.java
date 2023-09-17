@@ -85,7 +85,7 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
     }
 
     @Override
-    public void createUser(String username) throws BrokerRemoteException {
+    public void createUser(String username) throws BrokerRemoteException, BrokerVirtualHostCreationException {
         final CreateUserDto data = CreateUserDto.builder()
                 .passwordHash("")
                 .tags("")
@@ -101,13 +101,14 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
         }
         if (!response.getStatusCode().equals(HttpStatus.CREATED) && !response.getStatusCode().equals(HttpStatus.NO_CONTENT)) {
             log.error("Failed to create user: {}", response.getStatusCode());
-            throw new BrokerRemoteException("Failed to create user");
+            throw new BrokerVirtualHostCreationException("Failed to create user");
         }
         log.info("Created user with username {}", username);
     }
 
     @Override
-    public void grantPermission(String username, GrantVirtualHostPermissionsDto data) throws BrokerRemoteException {
+    public void grantPermission(String username, GrantVirtualHostPermissionsDto data) throws BrokerRemoteException,
+            BrokerVirtualHostGrantException {
         final String url = "/api/permissions/dbrepo/" + username;
         log.trace("PUT {}{}", gatewayConfig.getBrokerEndpoint(), url);
         final ResponseEntity<Void> response;
@@ -119,7 +120,7 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
         }
         if (!response.getStatusCode().equals(HttpStatus.CREATED) && !response.getStatusCode().equals(HttpStatus.NO_CONTENT)) {
             log.error("Failed to grant virtual host: {}", response.getStatusCode());
-            throw new BrokerRemoteException("Failed to grant virtual host");
+            throw new BrokerVirtualHostGrantException("Failed to grant virtual host");
         }
         log.info("Grant permission for user with username {}", username);
     }

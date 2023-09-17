@@ -106,7 +106,7 @@ public class UserEndpoint {
     })
     public ResponseEntity<UserBriefDto> create(@NotNull @Valid @RequestBody SignupRequestDto data)
             throws UserAlreadyExistsException, UserEmailAlreadyExistsException, UserNotFoundException,
-            KeycloakRemoteException, AccessDeniedException, BrokerRemoteException {
+            KeycloakRemoteException, AccessDeniedException, BrokerRemoteException, BrokerVirtualHostCreationException {
         log.debug("endpoint create a user, data={}", data);
         /* check */
         userService.validateUsernameNotExists(data.getUsername());
