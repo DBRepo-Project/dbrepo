@@ -47,7 +47,7 @@ services:
       MARIADB_DATABASE: "${METADATA_DB:-fda}"
       MARIADB_ROOT_PASSWORD: "${METADATA_PASSWORD:-dbrepo}"
     healthcheck:
-      test: mysqladmin ping --user="$METADATA_USERNAME" --password="$METADATA_PASSWORD" --silent
+      test: mysqladmin ping --user="${METADATA_USERNAME:-root}" --password="${METADATA_PASSWORD:-dbrepo}" --silent
       interval: 10s
       timeout: 5s
       retries: 12
@@ -70,7 +70,7 @@ services:
     environment:
       MARIADB_ROOT_PASSWORD: "${USER_DB_PASSWORD:-dbrepo}"
     healthcheck:
-      test: mysqladmin ping --user="$USER_DB_USERNAME" --password="$USER_DB_PASSWORD" --silent
+      test: mysqladmin ping --user="${USER_DB_USERNAME:-root}" --password="${USER_DB_PASSWORD:-dbrepo}" --silent
       interval: 10s
       timeout: 5s
       retries: 12
@@ -93,7 +93,7 @@ services:
       MARIADB_DATABASE: "${AUTH_DB:-keycloak}"
       MARIADB_ROOT_PASSWORD: "${AUTH_PASSWORD:-dbrepo}"
     healthcheck:
-      test: mysqladmin ping --user="$AUTH_USERNAME" --password="$AUTH_PASSWORD" --silent
+      test: mysqladmin ping --user="${AUTH_USERNAME:-root}" --password="${AUTH_PASSWORD:-dbrepo}" --silent
       interval: 10s
       timeout: 5s
       retries: 12
