@@ -47,16 +47,12 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
         this.gatewayConfig = gatewayConfig;
     }
 
-    private String parseUrl(String path) {
-        final String url = "/api" + path;
-        log.debug("parse url: {}", url);
-        return url;
-    }
-
     @Override
     public void createVirtualHost(CreateVirtualHostDto data) throws BrokerVirtualHostCreationException {
-        final ResponseEntity<Void> response = restTemplate.exchange(parseUrl("/vhost"), HttpMethod.POST,
-                new HttpEntity<>(data), Void.class);
+        final String url = "/api/vhost";
+        log.trace("POST {}{}", gatewayConfig.getBrokerEndpoint(), url);
+        final ResponseEntity<Void> response = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(data),
+                Void.class);
         if (!response.getStatusCode().equals(HttpStatus.CREATED)) {
             log.error("Failed to create virtual host: {}", response.getStatusCode());
             throw new BrokerVirtualHostCreationException("Failed to create virtual host");
@@ -67,8 +63,10 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
     @Override
     public void grantPermission(String username, ExchangeUpdatePermissionsDto data)
             throws BrokerVirtualHostGrantException {
-        final ResponseEntity<Void> response = restTemplate.exchange(parseUrl("/topic-permissions/dbrepo/" + username), HttpMethod.PUT,
-                new HttpEntity<>(data), Void.class);
+        final String url = "/api/topic-permissions/dbrepo/" + username;
+        log.trace("PUT {}{}", gatewayConfig.getBrokerEndpoint(), url);
+        final ResponseEntity<Void> response = restTemplate.exchange(url, HttpMethod.PUT, new HttpEntity<>(data),
+                Void.class);
         if (!response.getStatusCode().equals(HttpStatus.CREATED) && !response.getStatusCode().equals(HttpStatus.NO_CONTENT)) {
             log.error("Failed to grant exchange: {}", response.getStatusCode());
             throw new BrokerVirtualHostGrantException("Failed to grant exchange");
@@ -82,8 +80,10 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
                 .passwordHash("")
                 .tags("")
                 .build();
-        final ResponseEntity<Void> response = restTemplate.exchange(parseUrl("/users/" + username), HttpMethod.PUT,
-                new HttpEntity<>(data), Void.class);
+        final String url = "/api/users/" + username;
+        log.trace("PUT {}{}", gatewayConfig.getBrokerEndpoint(), url);
+        final ResponseEntity<Void> response = restTemplate.exchange(url, HttpMethod.PUT, new HttpEntity<>(data),
+                Void.class);
         if (!response.getStatusCode().equals(HttpStatus.CREATED) && !response.getStatusCode().equals(HttpStatus.NO_CONTENT)) {
             log.error("Failed to create user: {}", response.getStatusCode());
             throw new BrokerVirtualHostCreationException("Failed to create user");
@@ -94,8 +94,10 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
     @Override
     public void grantPermission(String username, GrantVirtualHostPermissionsDto data)
             throws BrokerVirtualHostGrantException {
-        final ResponseEntity<Void> response = restTemplate.exchange(parseUrl("/permissions/dbrepo/" + username), HttpMethod.PUT,
-                new HttpEntity<>(data), Void.class);
+        final String url = "/api/permissions/dbrepo/" + username;
+        log.trace("PUT {}{}", gatewayConfig.getBrokerEndpoint(), url);
+        final ResponseEntity<Void> response = restTemplate.exchange(url, HttpMethod.PUT, new HttpEntity<>(data),
+                Void.class);
         if (!response.getStatusCode().equals(HttpStatus.CREATED) && !response.getStatusCode().equals(HttpStatus.NO_CONTENT)) {
             log.error("Failed to grant virtual host: {}", response.getStatusCode());
             throw new BrokerVirtualHostGrantException("Failed to grant virtual host");
@@ -105,16 +107,10 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
 
     @Override
     public List<ConsumerDto> findAllConsumers() {
-        final StringBuilder urlBuilder = new StringBuilder(gatewayConfig.getBrokerEndpoint())
-                .append("/api");
-        if (Arrays.stream(environment.getActiveProfiles()).noneMatch(p -> p.equals("junit"))) {
-            urlBuilder.append("/broker");
-        }
-        urlBuilder.append("/consumers/")
-                .append(VIRTUAL_SERVER);
+        final String url = "/api/consumers/" + VIRTUAL_SERVER;
         log.trace("gateway broker find all consumers, virtual server={}", VIRTUAL_SERVER);
-        final URI findUri = URI.create(urlBuilder.toString());
-        final ResponseEntity<List<ConsumerDto>> response = restTemplate.exchange(findUri, HttpMethod.GET,
+        log.trace("GET {}{}", gatewayConfig.getBrokerEndpoint(), url);
+        final ResponseEntity<List<ConsumerDto>> response = restTemplate.exchange(URI.create(url), HttpMethod.GET,
                 HttpEntity.EMPTY, new ParameterizedTypeReference<>() {
                 });
         return response.getBody();

@@ -163,6 +163,8 @@ coverage-frontend: build-frontend
 test-frontend: build-frontend
 	yarn --cwd ./dbrepo-ui install
 	yarn --cwd ./dbrepo-ui run test:unit || true
+	yarn --cwd ./dbrepo-ui playwright install
+	yarn --cwd ./dbrepo-ui run test:e2e || true
 	yarn --cwd ./dbrepo-ui run coverage || true
 
 test-clients:

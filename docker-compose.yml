@@ -223,6 +223,11 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
+    healthcheck:
+      test: wget -qO- localhost:15672/api/broker | grep "RabbitMQ" || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 12
     depends_on:
       dbrepo-authentication-service:
         condition: service_healthy

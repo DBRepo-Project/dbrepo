@@ -51,19 +51,12 @@
             Login
           </v-btn>
         </v-card-actions>
+        <v-card-subtitle class="text-right">
+          <a v-if="rabbitMqUrl" color="orange" class="mr-1" plain :href="rabbitMqUrl">RabbitMQ Admin</a>
+          <a v-if="keycloakUrl" color="secondary" class="ml-1" plain :href="keycloakUrl">Keycloak Admin</a>
+        </v-card-subtitle>
       </v-card>
     </v-form>
-    <v-toolbar v-if="!token" flat>
-      <v-spacer />
-      <v-toolbar-title>
-        <v-btn v-if="rabbitMqUrl" color="orange" plain :href="rabbitMqUrl">
-          <v-icon left>mdi-rabbit</v-icon> RabbitMQ
-        </v-btn>
-        <v-btn v-if="keycloakUrl" color="secondary" plain :href="keycloakUrl">
-          <v-icon left>mdi-key</v-icon> Keycloak
-        </v-btn>
-      </v-toolbar-title>
-    </v-toolbar>
   </div>
 </template>
 
