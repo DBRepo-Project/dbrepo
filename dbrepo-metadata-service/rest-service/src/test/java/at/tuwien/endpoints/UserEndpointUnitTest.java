@@ -7,6 +7,7 @@ import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.user.*;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
+import at.tuwien.service.AuthenticationService;
 import at.tuwien.service.MessageQueueService;
 import at.tuwien.service.UserService;
 import lombok.extern.log4j.Log4j2;
@@ -44,6 +45,9 @@ public class UserEndpointUnitTest extends BaseUnitTest {
     @MockBean
     private MessageQueueService messageQueueService;
 
+    @MockBean
+    private AuthenticationService authenticationService;
+
     @Autowired
     private UserEndpoint userEndpoint;
 
@@ -66,8 +70,8 @@ public class UserEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithAnonymousUser
     public void create_anonymous_succeeds() throws UserNotFoundException, UserEmailAlreadyExistsException,
-            RealmNotFoundException, UserAlreadyExistsException, KeycloakRemoteException,
-            at.tuwien.exception.AccessDeniedException, BrokerRemoteException, BrokerVirtualHostCreationException {
+            UserAlreadyExistsException, KeycloakRemoteException,
+            at.tuwien.exception.AccessDeniedException, BrokerRemoteException, BrokerVirtualHostModificationException {
         final SignupRequestDto request = SignupRequestDto.builder()
                 .email(USER_1_EMAIL)
                 .username(USER_1_USERNAME)
@@ -75,7 +79,7 @@ public class UserEndpointUnitTest extends BaseUnitTest {
                 .build();
 
         /* test */
-        create_generic(request, USER_1);
+        create_generic(request, USER_1, USER_1_KEYCLOAK_DTO, USER_1_ID);
     }
 
     @Test
@@ -89,7 +93,7 @@ public class UserEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            create_generic(request, null);
+            create_generic(request, null, null, null);
         });
     }
 
@@ -302,16 +306,22 @@ public class UserEndpointUnitTest extends BaseUnitTest {
         assertEquals(2, body.size());
     }
 
-    protected void create_generic(SignupRequestDto data, User user) throws UserEmailAlreadyExistsException,
-            RealmNotFoundException, UserAlreadyExistsException, UserNotFoundException, KeycloakRemoteException,
-            AccessDeniedException, BrokerRemoteException, BrokerVirtualHostCreationException {
+    protected void create_generic(SignupRequestDto data, User user, at.tuwien.api.keycloak.UserDto userDto, UUID id)
+            throws UserEmailAlreadyExistsException, UserAlreadyExistsException, UserNotFoundException,
+            KeycloakRemoteException, AccessDeniedException, BrokerRemoteException,
+            BrokerVirtualHostModificationException {
 
         /* mock */
-        when(userService.create(data))
+        when(userService.create(data, id))
                 .thenReturn(user);
         doNothing()
                 .when(messageQueueService)
                 .createUser(anyString());
+        when(authenticationService.findByUsername(data.getUsername()))
+                .thenReturn(userDto);
+        doNothing()
+                .when(authenticationService)
+                .create(any(SignupRequestDto.class));
 
         /* test */
         final ResponseEntity<UserBriefDto> response = userEndpoint.create(data);

@@ -21,6 +21,16 @@ public interface KeycloakGateway {
     void createUser(UserCreateDto data) throws AccessDeniedException, KeycloakRemoteException, UserAlreadyExistsException, UserEmailAlreadyExistsException;
 
     /**
+     * Deletes a user at the Authentication Service with given user id.
+     *
+     * @param id The user id.
+     * @throws KeycloakRemoteException The Authentication Service was not able to respond within the 3s timeout.
+     * @throws AccessDeniedException   The admin token could not be obtained.
+     * @throws UserNotFoundException   The user was not found at the Authentication Service.
+     */
+    void deleteUser(UUID id) throws KeycloakRemoteException, AccessDeniedException, UserNotFoundException;
+
+    /**
      * Update the credentials for a given user.
      *
      * @param id       The user id.

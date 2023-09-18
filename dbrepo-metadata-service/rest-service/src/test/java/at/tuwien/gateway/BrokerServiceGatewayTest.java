@@ -4,7 +4,7 @@ import at.tuwien.BaseUnitTest;
 import at.tuwien.annotations.MockAmqp;
 import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.exception.BrokerRemoteException;
-import at.tuwien.exception.BrokerVirtualHostCreationException;
+import at.tuwien.exception.BrokerVirtualHostModificationException;
 import at.tuwien.exception.BrokerVirtualHostGrantException;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
@@ -38,7 +38,7 @@ public class BrokerServiceGatewayTest extends BaseUnitTest {
     private BrokerServiceGateway brokerServiceGateway;
 
     @Test
-    public void createVirtualHost_succeeds() throws BrokerVirtualHostCreationException, BrokerRemoteException {
+    public void createVirtualHost_succeeds() throws BrokerVirtualHostModificationException, BrokerRemoteException {
         final ResponseEntity<Void> mock = ResponseEntity.status(HttpStatus.CREATED)
                 .build();
 
@@ -60,7 +60,7 @@ public class BrokerServiceGatewayTest extends BaseUnitTest {
                 .thenReturn(mock);
 
         /* test */
-        assertThrows(BrokerVirtualHostCreationException.class, () -> {
+        assertThrows(BrokerVirtualHostModificationException.class, () -> {
             brokerServiceGateway.createVirtualHost(VIRTUAL_HOST_CREATE_DTO);
         });
     }
@@ -148,7 +148,7 @@ public class BrokerServiceGatewayTest extends BaseUnitTest {
     }
 
     @Test
-    public void createUser_succeeds() throws BrokerRemoteException, BrokerVirtualHostCreationException {
+    public void createUser_succeeds() throws BrokerRemoteException, BrokerVirtualHostModificationException {
         final ResponseEntity<Void> mock = ResponseEntity.status(HttpStatus.NO_CONTENT)
                 .build();
 
@@ -170,7 +170,7 @@ public class BrokerServiceGatewayTest extends BaseUnitTest {
                 .thenReturn(mock);
 
         /* test */
-        assertThrows(BrokerVirtualHostCreationException.class, () -> {
+        assertThrows(BrokerVirtualHostModificationException.class, () -> {
             brokerServiceGateway.createUser(USER_1_USERNAME);
         });
     }

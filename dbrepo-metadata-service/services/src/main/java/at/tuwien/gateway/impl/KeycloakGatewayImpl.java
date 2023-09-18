@@ -87,6 +87,35 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
             log.error("Failed to create user: status {} was not expected", response.getStatusCode().value());
             throw new KeycloakRemoteException("Failed to create user: status " + response.getStatusCode().value() + "was not expected");
         }
+        log.info("Created user {} at authentication service", data.getUsername());
+    }
+
+    @Override
+    public void deleteUser(UUID id) throws KeycloakRemoteException, AccessDeniedException, UserNotFoundException {
+        /* obtain admin token */
+        final HttpHeaders headers = new HttpHeaders();
+        headers.set("Accept", "application/json");
+        headers.set("Authorization", "Bearer " + obtainToken().getAccessToken());
+        final String url = keycloakConfig.getKeycloakEndpoint() + "/admin/realms/dbrepo/users/" + id;
+        log.debug("delete user at url {}", url);
+        final ResponseEntity<Void> response;
+        try {
+            response = restTemplate.exchange(url, HttpMethod.DELETE, new HttpEntity<>(null, headers), Void.class);
+        } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable e) {
+            log.error("Failed to delete user: {}", e.getMessage());
+            throw new KeycloakRemoteException("Failed to delete user: " + e.getMessage());
+        } catch (HttpClientErrorException.NotFound e) {
+            log.error("User does not exist: {}", e.getMessage());
+            throw new UserNotFoundException("User does not exist: " + e.getMessage());
+        } catch (Exception e) {
+            log.error("Failed to delete user: remote host answered unexpected: {}", e.getMessage());
+            throw new KeycloakRemoteException("Failed to delete user: remote host answered unexpected", e);
+        }
+        if (!response.getStatusCode().equals(HttpStatus.NO_CONTENT)) {
+            log.error("Failed to delete user: status {} was not expected", response.getStatusCode().value());
+            throw new KeycloakRemoteException("Failed to delete user: status " + response.getStatusCode().value() + "was not expected");
+        }
+        log.info("Deleted user {} at authentication service", id);
     }
 
     @Override
@@ -113,6 +142,7 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
             log.error("Failed to update user credentials: status {} was not expected", response.getStatusCode().value());
             throw new KeycloakRemoteException("Failed to update user credentials: status " + response.getStatusCode().value() + "was not expected");
         }
+        log.info("Updated user {} password at authentication service", id);
     }
 
     @Override

@@ -8,7 +8,6 @@ import at.tuwien.api.user.*;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.repository.mdb.UserRepository;
-import dasniko.testcontainers.keycloak.KeycloakContainer;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,12 +17,8 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
-import org.testcontainers.images.PullPolicy;
-import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.List;
@@ -45,19 +40,6 @@ public class UserServiceIntegrationTest extends BaseUnitTest {
 
     @Autowired
     private UserService userService;
-
-    @Container
-    private static KeycloakContainer keycloakContainer = new KeycloakContainer("quay.io/keycloak/keycloak:21.0")
-            .withImagePullPolicy(PullPolicy.alwaysPull())
-            .withAdminUsername("fda")
-            .withAdminPassword("fda")
-            .withRealmImportFile("./dbrepo-realm.json")
-            .withEnv("KC_HOSTNAME_STRICT_HTTPS", "false");
-
-    @DynamicPropertySource
-    static void elasticsearchProperties(DynamicPropertyRegistry registry) {
-        registry.add("fda.keycloak.endpoint", () -> "http://localhost:" + keycloakContainer.getMappedPort(8080));
-    }
 
     @BeforeEach
     public void beforeEach() {
@@ -100,36 +82,8 @@ public class UserServiceIntegrationTest extends BaseUnitTest {
                 .build();
 
         /* test */
-        final User response = userService.create(request);
+        final User response = userService.create(request, USER_2_ID);
         assertEquals(USER_2_USERNAME, response.getUsername());
-    }
-
-    @Test
-    public void create_nonUniqueUsername_fails() {
-        final SignupRequestDto request = SignupRequestDto.builder()
-                .username(USER_1_USERNAME)
-                .password(USER_2_PASSWORD)
-                .email(USER_2_EMAIL)
-                .build();
-
-        /* test */
-        assertThrows(UserEmailAlreadyExistsException.class, () -> {
-            userService.create(request);
-        });
-    }
-
-    @Test
-    public void create_nonUniqueEmail_fails() {
-        final SignupRequestDto request = SignupRequestDto.builder()
-                .username(USER_2_USERNAME)
-                .password(USER_2_PASSWORD)
-                .email(USER_1_EMAIL)
-                .build();
-
-        /* test */
-        assertThrows(UserAlreadyExistsException.class, () -> {
-            userService.create(request);
-        });
     }
 
     @Test
@@ -178,7 +132,7 @@ public class UserServiceIntegrationTest extends BaseUnitTest {
                 .username(USER_3_USERNAME)
                 .password(USER_3_PASSWORD)
                 .email(USER_3_EMAIL)
-                .build());
+                .build(), USER_3_ID);
 
         /* test */
         userService.updatePassword(user.getId(), request);

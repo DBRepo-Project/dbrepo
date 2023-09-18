@@ -102,7 +102,7 @@ test-backend: test-metadata-service test-analyse-service test-search-sync-agent
 test-search-sync-agent: build-search-sync-agent
 	mvn -f ./dbrepo-search-sync-agent/pom.xml clean test verify
 
-test-metadata-service: build-metadata-service
+test-metadata-service: build-metadata-service teardown
 	mvn -f ./dbrepo-metadata-service/pom.xml clean test verify
 
 test-analyse-service: build-analyse-service

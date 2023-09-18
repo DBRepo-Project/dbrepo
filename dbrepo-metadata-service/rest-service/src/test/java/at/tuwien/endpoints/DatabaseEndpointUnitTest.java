@@ -4,7 +4,6 @@ import at.tuwien.BaseUnitTest;
 import at.tuwien.annotations.MockAmqp;
 import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.api.database.*;
-import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
@@ -116,7 +115,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
     public void create_succeeds() throws UserNotFoundException, BrokerVirtualHostGrantException,
             DatabaseNameExistsException, NotAllowedException, ContainerConnectionException, DatabaseMalformedException,
             QueryStoreException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException,
-            ImageNotSupportedException, AmqpException, BrokerVirtualHostCreationException, ContainerNotFoundException,
+            ImageNotSupportedException, AmqpException, BrokerVirtualHostModificationException, ContainerNotFoundException,
             KeycloakRemoteException, AccessDeniedException, BrokerRemoteException {
         final DatabaseCreateDto request = DatabaseCreateDto.builder()
                 .cid(CONTAINER_1_ID)
@@ -429,7 +428,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
                                Principal principal) throws UserNotFoundException, DatabaseNameExistsException,
             NotAllowedException, ContainerConnectionException, DatabaseMalformedException, QueryStoreException,
             DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
-            AmqpException, BrokerVirtualHostCreationException, ContainerNotFoundException,
+            AmqpException, BrokerVirtualHostModificationException, ContainerNotFoundException,
             BrokerVirtualHostGrantException, KeycloakRemoteException, AccessDeniedException, BrokerRemoteException {
 
         /* mock */

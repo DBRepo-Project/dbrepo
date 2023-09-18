@@ -5,7 +5,7 @@ import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.api.amqp.PermissionDto;
 import at.tuwien.exception.AmqpException;
 import at.tuwien.exception.BrokerRemoteException;
-import at.tuwien.exception.BrokerVirtualHostCreationException;
+import at.tuwien.exception.BrokerVirtualHostModificationException;
 import at.tuwien.exception.BrokerVirtualHostGrantException;
 import at.tuwien.repository.mdb.DatabaseRepository;
 import at.tuwien.repository.mdb.TableRepository;
@@ -86,7 +86,7 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void createUser_succeeds() throws BrokerRemoteException, BrokerVirtualHostCreationException {
+    public void createUser_succeeds() throws BrokerRemoteException, BrokerVirtualHostModificationException {
 
         /* test */
         messageQueueService.createUser(USER_1_USERNAME);

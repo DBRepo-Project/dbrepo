@@ -5,7 +5,7 @@ import at.tuwien.api.amqp.CreateVirtualHostDto;
 import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
 import at.tuwien.api.user.ExchangeUpdatePermissionsDto;
 import at.tuwien.exception.BrokerRemoteException;
-import at.tuwien.exception.BrokerVirtualHostCreationException;
+import at.tuwien.exception.BrokerVirtualHostModificationException;
 import at.tuwien.exception.BrokerVirtualHostGrantException;
 
 import java.util.List;
@@ -24,10 +24,10 @@ public interface BrokerServiceGateway {
      * Create virtual host at the queue service.
      *
      * @param data The virtual host.
-     * @throws BrokerVirtualHostCreationException The virtual host could not be created.
-     * @throws BrokerRemoteException              The Broker Service did not respond within the 3s timeout.
+     * @throws BrokerVirtualHostModificationException The virtual host could not be created.
+     * @throws BrokerRemoteException                  The Broker Service did not respond within the 3s timeout.
      */
-    void createVirtualHost(CreateVirtualHostDto data) throws BrokerVirtualHostCreationException, BrokerRemoteException;
+    void createVirtualHost(CreateVirtualHostDto data) throws BrokerVirtualHostModificationException, BrokerRemoteException;
 
     /**
      * Grants a user permission at a virtual host in the queue service.
@@ -40,13 +40,22 @@ public interface BrokerServiceGateway {
     void grantPermission(String username, ExchangeUpdatePermissionsDto data) throws BrokerVirtualHostGrantException, BrokerRemoteException;
 
     /**
-     * Create user on the broker service
+     * Create user on the broker service with given username.
      *
-     * @param username The new username.
-     * @throws BrokerRemoteException              The Broker Service did not respond within the 3s timeout.
-     * @throws BrokerVirtualHostCreationException The user could not be created.
+     * @param username The username.
+     * @throws BrokerRemoteException                  The Broker Service did not respond within the 3s timeout.
+     * @throws BrokerVirtualHostModificationException The user could not be created.
      */
-    void createUser(String username) throws BrokerRemoteException, BrokerVirtualHostCreationException;
+    void createUser(String username) throws BrokerRemoteException, BrokerVirtualHostModificationException;
+
+    /**
+     * Deletes a user on the broker service with given username.
+     *
+     * @param username The username.
+     * @throws BrokerRemoteException                  The Broker Service did not respond within the 3s timeout.
+     * @throws BrokerVirtualHostModificationException The user could not be deleted.
+     */
+    void deleteUser(String username) throws BrokerRemoteException, BrokerVirtualHostModificationException;
 
     /**
      * Grants a user permission at a virtual host in the queue service.

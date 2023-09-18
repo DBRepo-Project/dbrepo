@@ -9,7 +9,7 @@ import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.AmqpException;
 import at.tuwien.exception.BrokerRemoteException;
-import at.tuwien.exception.BrokerVirtualHostCreationException;
+import at.tuwien.exception.BrokerVirtualHostModificationException;
 import at.tuwien.exception.BrokerVirtualHostGrantException;
 import at.tuwien.gateway.BrokerServiceGateway;
 import at.tuwien.mapper.AmqpMapper;
@@ -104,8 +104,13 @@ public class RabbitMqServiceImpl implements MessageQueueService {
     }
 
     @Override
-    public void createUser(String username) throws BrokerRemoteException, BrokerVirtualHostCreationException {
+    public void createUser(String username) throws BrokerRemoteException, BrokerVirtualHostModificationException {
         brokerServiceGateway.createUser(username);
+    }
+
+    @Override
+    public void deleteUser(String username) throws BrokerRemoteException, BrokerVirtualHostModificationException {
+        brokerServiceGateway.deleteUser(username);
     }
 
     @Override

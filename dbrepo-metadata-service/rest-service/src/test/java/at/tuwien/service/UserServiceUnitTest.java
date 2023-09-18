@@ -92,7 +92,7 @@ public class UserServiceUnitTest extends BaseUnitTest {
                 .thenReturn(USER_1_KEYCLOAK_DTO);
 
         /* test */
-        final User response = userService.create(USER_1_SIGNUP_REQUEST_DTO);
+        final User response = userService.create(USER_1_SIGNUP_REQUEST_DTO, USER_1_ID);
         assertEquals(USER_1_ID, response.getId());
         assertEquals(USER_1_USERNAME, response.getUsername());
     }

@@ -5,21 +5,16 @@ import at.tuwien.api.amqp.CreateUserDto;
 import at.tuwien.api.amqp.CreateVirtualHostDto;
 import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
 import at.tuwien.api.user.ExchangeUpdatePermissionsDto;
-import at.tuwien.config.AmqpConfig;
 import at.tuwien.config.GatewayConfig;
 import at.tuwien.exception.BrokerRemoteException;
-import at.tuwien.exception.BrokerVirtualHostCreationException;
+import at.tuwien.exception.BrokerVirtualHostModificationException;
 import at.tuwien.exception.BrokerVirtualHostGrantException;
-import at.tuwien.exception.KeycloakRemoteException;
 import at.tuwien.gateway.BrokerServiceGateway;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.core.env.Environment;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,8 +22,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
-import java.nio.charset.Charset;
-import java.util.Arrays;
 import java.util.List;
 
 @Slf4j
@@ -48,7 +41,7 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
     }
 
     @Override
-    public void createVirtualHost(CreateVirtualHostDto data) throws BrokerVirtualHostCreationException, BrokerRemoteException {
+    public void createVirtualHost(CreateVirtualHostDto data) throws BrokerVirtualHostModificationException, BrokerRemoteException {
         final String url = "/api/vhost";
         log.trace("POST {}{}", gatewayConfig.getBrokerEndpoint(), url);
         final ResponseEntity<Void> response;
@@ -60,7 +53,7 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
         }
         if (!response.getStatusCode().equals(HttpStatus.CREATED)) {
             log.error("Failed to create virtual host: {}", response.getStatusCode());
-            throw new BrokerVirtualHostCreationException("Failed to create virtual host");
+            throw new BrokerVirtualHostModificationException("Failed to create virtual host");
         }
         log.info("Create virtual host with name {}", data.getName());
     }
@@ -85,7 +78,7 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
     }
 
     @Override
-    public void createUser(String username) throws BrokerRemoteException, BrokerVirtualHostCreationException {
+    public void createUser(String username) throws BrokerRemoteException, BrokerVirtualHostModificationException {
         final CreateUserDto data = CreateUserDto.builder()
                 .passwordHash("")
                 .tags("")
@@ -101,9 +94,27 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
         }
         if (!response.getStatusCode().equals(HttpStatus.CREATED) && !response.getStatusCode().equals(HttpStatus.NO_CONTENT)) {
             log.error("Failed to create user: {}", response.getStatusCode());
-            throw new BrokerVirtualHostCreationException("Failed to create user");
+            throw new BrokerVirtualHostModificationException("Failed to create user");
         }
         log.info("Created user with username {}", username);
+    }
+
+    @Override
+    public void deleteUser(String username) throws BrokerRemoteException, BrokerVirtualHostModificationException {
+        final String url = "/api/users/" + username;
+        log.trace("DELETE {}{}", gatewayConfig.getBrokerEndpoint(), url);
+        final ResponseEntity<Void> response;
+        try {
+            response = restTemplate.exchange(url, HttpMethod.DELETE, new HttpEntity<>(null), Void.class);
+        } catch (Exception e) {
+            log.error("Failed to delete user: remote host answered unexpected: {}", e.getMessage());
+            throw new BrokerRemoteException("Failed to delete user: remote host answered unexpected", e);
+        }
+        if (!response.getStatusCode().equals(HttpStatus.NO_CONTENT)) {
+            log.error("Failed to delete user: {}", response.getStatusCode());
+            throw new BrokerVirtualHostModificationException("Failed to create user");
+        }
+        log.info("Deleted user with username {}", username);
     }
 
     @Override

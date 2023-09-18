@@ -245,8 +245,8 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
     @Hidden
     @ResponseStatus(HttpStatus.NOT_ACCEPTABLE)
-    @ExceptionHandler(BrokerVirtualHostCreationException.class)
-    public ResponseEntity<ApiErrorDto> handle(BrokerVirtualHostCreationException e, WebRequest request) {
+    @ExceptionHandler(BrokerVirtualHostModificationException.class)
+    public ResponseEntity<ApiErrorDto> handle(BrokerVirtualHostModificationException e, WebRequest request) {
         final ApiErrorDto response = ApiErrorDto.builder()
                 .status(HttpStatus.NOT_ACCEPTABLE)
                 .message(e.getLocalizedMessage())

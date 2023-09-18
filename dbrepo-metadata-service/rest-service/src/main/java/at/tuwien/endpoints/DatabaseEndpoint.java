@@ -2,7 +2,6 @@ package at.tuwien.endpoints;
 
 import at.tuwien.api.database.*;
 import at.tuwien.api.error.ApiErrorDto;
-import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.user.User;
@@ -140,7 +139,7 @@ public class DatabaseEndpoint {
             throws ImageNotSupportedException, ContainerNotFoundException, DatabaseMalformedException,
             AmqpException, ContainerConnectionException, UserNotFoundException,
             DatabaseNotFoundException, DatabaseNameExistsException, DatabaseConnectionException,
-            QueryMalformedException, NotAllowedException, BrokerVirtualHostCreationException, QueryStoreException,
+            QueryMalformedException, NotAllowedException, BrokerVirtualHostModificationException, QueryStoreException,
             BrokerVirtualHostGrantException, KeycloakRemoteException, AccessDeniedException, BrokerRemoteException {
         log.debug("endpoint create database, createDto={}, principal={}", createDto,
                 principal);
