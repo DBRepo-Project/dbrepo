@@ -1,11 +1,11 @@
 package at.tuwien.service;
 
-import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.AmqpException;
-import at.tuwien.exception.BrokerVirtualHostCreationException;
+import at.tuwien.exception.BrokerRemoteException;
+import at.tuwien.exception.BrokerVirtualHostModificationException;
 import at.tuwien.exception.BrokerVirtualHostGrantException;
 import jakarta.annotation.PostConstruct;
 
@@ -43,13 +43,22 @@ public interface MessageQueueService {
     void create(Table table) throws AmqpException;
 
     /**
-     * Create user on the broker service
+     * Create user on the broker service with given username.
      *
      * @param username The username.
-     * @throws BrokerVirtualHostCreationException The user could not be created.
+     * @throws BrokerRemoteException                  The user could not be created.
+     * @throws BrokerVirtualHostModificationException The Broker Service did not respond within the 3s timeout.
      */
-    void createUser(String username) throws BrokerVirtualHostCreationException;
+    void createUser(String username) throws BrokerRemoteException, BrokerVirtualHostModificationException;
 
+    /**
+     * Delete a user on the broker service with given username.
+     *
+     * @param username The username.
+     * @throws BrokerRemoteException                  The user could not be deleted.
+     * @throws BrokerVirtualHostModificationException The Broker Service did not respond within the 3s timeout.
+     */
+    void deleteUser(String username) throws BrokerRemoteException, BrokerVirtualHostModificationException;
 
     /**
      * Updates the virtual host permissions in the Broker Service for a user with given principal.
@@ -57,7 +66,7 @@ public interface MessageQueueService {
      * @param user The user.
      * @throws BrokerVirtualHostGrantException The Broker Service refused to grant the permissions.
      */
-    void updatePermissions(User user) throws BrokerVirtualHostGrantException;
+    void updatePermissions(User user) throws BrokerVirtualHostGrantException, BrokerRemoteException;
 
     /**
      * Deletes an exchange for a database.
@@ -82,5 +91,5 @@ public interface MessageQueueService {
      *
      * @throws AmqpException The consumer could not be created.
      */
-    void restore() throws AmqpException;
+    void restore() throws AmqpException, BrokerRemoteException;
 }

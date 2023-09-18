@@ -6,6 +6,7 @@ import at.tuwien.api.user.*;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.UserMapper;
+import at.tuwien.service.AuthenticationService;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.MessageQueueService;
 import at.tuwien.service.UserService;
@@ -42,15 +43,16 @@ public class UserEndpoint {
     private final UserService userService;
     private final DatabaseService databaseService;
     private final MessageQueueService messageQueueService;
-
+    private final AuthenticationService authenticationService;
 
     @Autowired
     public UserEndpoint(UserMapper userMapper, UserService userService, DatabaseService databaseService,
-                        MessageQueueService messageQueueService) {
+                        MessageQueueService messageQueueService, AuthenticationService authenticationService) {
         this.userMapper = userMapper;
         this.userService = userService;
         this.databaseService = databaseService;
         this.messageQueueService = messageQueueService;
+        this.authenticationService = authenticationService;
     }
 
     @GetMapping
@@ -75,7 +77,7 @@ public class UserEndpoint {
     }
 
     @PostMapping
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     @PreAuthorize("!isAuthenticated()")
     @Timed(value = "user.create", description = "Time needed to create a user in the metadata database")
     @Operation(summary = "Create user")
@@ -85,8 +87,11 @@ public class UserEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = UserBriefDto.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Parameters are not well-formed (likely email)",
+                    content = {@Content(mediaType = "application/json")}),
             @ApiResponse(responseCode = "404",
-                    description = "Realm or default role not found",
+                    description = "default role not found",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -102,15 +107,35 @@ public class UserEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<UserBriefDto> create(@NotNull @Valid @RequestBody SignupRequestDto data)
-            throws RealmNotFoundException, UserAlreadyExistsException, UserEmailAlreadyExistsException,
-            UserNotFoundException, KeycloakRemoteException, AccessDeniedException, BrokerVirtualHostCreationException {
+            throws UserAlreadyExistsException, UserEmailAlreadyExistsException, UserNotFoundException,
+            KeycloakRemoteException, AccessDeniedException, BrokerRemoteException,
+            BrokerVirtualHostModificationException {
         log.debug("endpoint create a user, data={}", data);
         /* check */
         userService.validateUsernameNotExists(data.getUsername());
         userService.validateEmailNotExists(data.getEmail());
         /* create */
-        final UserBriefDto dto = userMapper.userToUserBriefDto(userService.create(data));
-        messageQueueService.createUser(dto.getUsername());
+        authenticationService.create(data);
+        final at.tuwien.api.keycloak.UserDto keycloakUserDto = authenticationService.findByUsername(data.getUsername());
+        try {
+            messageQueueService.createUser(data.getUsername());
+        } catch (BrokerRemoteException e) {
+            try {
+                authenticationService.delete(keycloakUserDto.getId());
+            } catch (UserNotFoundException e2) {
+                /* ignore */
+            }
+            throw new BrokerRemoteException(e);
+        } catch (BrokerVirtualHostModificationException e) {
+            try {
+                authenticationService.delete(keycloakUserDto.getId());
+            } catch (UserNotFoundException e2) {
+                /* ignore */
+            }
+            throw new BrokerVirtualHostModificationException(e);
+        }
+        final User user = userService.create(data, keycloakUserDto.getId());
+        final UserBriefDto dto = userMapper.userToUserBriefDto(user);
         log.trace("create user resulted in dto {}", dto);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(dto);
@@ -275,6 +300,7 @@ public class UserEndpoint {
         }
         /* modify password */
         userService.updatePassword(id, data);
+        authenticationService.updatePassword(id, data);
         return ResponseEntity.accepted()
                 .build();
     }

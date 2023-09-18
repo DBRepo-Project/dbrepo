@@ -100,7 +100,7 @@ public class DatabaseServiceUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void create_notFound_fails() throws UserNotFoundException, KeycloakRemoteException, AccessDeniedException {
+    public void create_notFound_fails() throws UserNotFoundException {
         final DatabaseCreateDto request = DatabaseCreateDto.builder()
                 .cid(CONTAINER_1_ID)
                 .name(DATABASE_1_NAME)

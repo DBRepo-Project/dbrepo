@@ -10,6 +10,7 @@ import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.MariaDbContainerConfig;
 import at.tuwien.config.RabbitMqConfig;
 import at.tuwien.exception.AmqpException;
+import at.tuwien.exception.BrokerRemoteException;
 import at.tuwien.gateway.BrokerServiceGateway;
 import at.tuwien.listener.impl.RabbitMqListenerImpl;
 import at.tuwien.repository.mdb.DatabaseRepository;
@@ -208,7 +209,7 @@ public class QueueServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     @Disabled("Not testable")
-    public void restore_succeeds() throws AmqpException, IOException {
+    public void restore_succeeds() throws AmqpException, IOException, BrokerRemoteException {
 
         /* mock */
         when(tableRepository.findAll())

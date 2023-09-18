@@ -13,5 +13,3 @@ RUN rabbitmq-plugins enable --offline rabbitmq_prometheus rabbitmq_mqtt rabbitmq
 
 EXPOSE 5672
 EXPOSE 15672
-
-HEALTHCHECK --interval=10s --timeout=5s --retries=12 CMD wget --spider http://localhost:15672/broker/

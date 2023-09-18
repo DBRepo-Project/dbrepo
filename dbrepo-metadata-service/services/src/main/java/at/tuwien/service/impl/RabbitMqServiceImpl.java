@@ -8,7 +8,8 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.AmqpException;
-import at.tuwien.exception.BrokerVirtualHostCreationException;
+import at.tuwien.exception.BrokerRemoteException;
+import at.tuwien.exception.BrokerVirtualHostModificationException;
 import at.tuwien.exception.BrokerVirtualHostGrantException;
 import at.tuwien.gateway.BrokerServiceGateway;
 import at.tuwien.mapper.AmqpMapper;
@@ -20,7 +21,6 @@ import at.tuwien.service.TableService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import lombok.extern.log4j.Log4j2;
 import org.apache.http.auth.BasicUserPrincipal;
@@ -104,12 +104,17 @@ public class RabbitMqServiceImpl implements MessageQueueService {
     }
 
     @Override
-    public void createUser(String username) throws BrokerVirtualHostCreationException {
+    public void createUser(String username) throws BrokerRemoteException, BrokerVirtualHostModificationException {
         brokerServiceGateway.createUser(username);
     }
 
     @Override
-    public void updatePermissions(User user) throws BrokerVirtualHostGrantException {
+    public void deleteUser(String username) throws BrokerRemoteException, BrokerVirtualHostModificationException {
+        brokerServiceGateway.deleteUser(username);
+    }
+
+    @Override
+    public void updatePermissions(User user) throws BrokerRemoteException, BrokerVirtualHostGrantException {
         final GrantVirtualHostPermissionsDto permissions = GrantVirtualHostPermissionsDto.builder()
                 .configure(amqpMapper.databaseListToPermissionString(databaseRepository.findConfigureAccess(user.getId())))
                 .write(amqpMapper.databaseListToPermissionString(databaseRepository.findWriteAccess(user.getId())))
@@ -145,7 +150,7 @@ public class RabbitMqServiceImpl implements MessageQueueService {
     }
 
     @Override
-    public void restore() throws AmqpException {
+    public void restore() throws AmqpException, BrokerRemoteException {
         final List<Table> tables = tableService.findAll();
         final List<ConsumerDto> consumers = brokerServiceGateway.findAllConsumers();
         for (Table table : tables) {

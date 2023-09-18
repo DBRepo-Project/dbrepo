@@ -2,7 +2,6 @@ package at.tuwien.endpoints;
 
 import at.tuwien.api.database.*;
 import at.tuwien.api.error.ApiErrorDto;
-import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.user.User;
@@ -84,7 +83,7 @@ public class DatabaseEndpoint {
     }
 
     @PostMapping
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     @PreAuthorize("hasAuthority('create-database')")
     @Timed(value = "database.create", description = "Time needed to create a database")
     @Operation(summary = "Create database", security = @SecurityRequirement(name = "bearerAuth"))
@@ -140,8 +139,8 @@ public class DatabaseEndpoint {
             throws ImageNotSupportedException, ContainerNotFoundException, DatabaseMalformedException,
             AmqpException, ContainerConnectionException, UserNotFoundException,
             DatabaseNotFoundException, DatabaseNameExistsException, DatabaseConnectionException,
-            QueryMalformedException, NotAllowedException, BrokerVirtualHostCreationException, QueryStoreException,
-            BrokerVirtualHostGrantException, KeycloakRemoteException, AccessDeniedException {
+            QueryMalformedException, NotAllowedException, BrokerVirtualHostModificationException, QueryStoreException,
+            BrokerVirtualHostGrantException, KeycloakRemoteException, AccessDeniedException, BrokerRemoteException {
         log.debug("endpoint create database, createDto={}, principal={}", createDto,
                 principal);
         final User user = userService.findByUsername(principal.getName());
@@ -272,7 +271,7 @@ public class DatabaseEndpoint {
     }
 
     @DeleteMapping("/{id}")
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     @PreAuthorize("hasAuthority('delete-database')")
     @Timed(value = "database.delete", description = "Time needed to delete a database")
     @Operation(summary = "Delete some database", security = @SecurityRequirement(name = "bearerAuth"))
@@ -321,7 +320,7 @@ public class DatabaseEndpoint {
     public ResponseEntity<?> delete(@NotNull @PathVariable Long id, Principal principal)
             throws DatabaseNotFoundException, ImageNotSupportedException, DatabaseMalformedException, AmqpException,
             QueryMalformedException, UserNotFoundException, BrokerVirtualHostGrantException,
-            DatabaseConnectionException, KeycloakRemoteException, AccessDeniedException {
+            DatabaseConnectionException, KeycloakRemoteException, AccessDeniedException, BrokerRemoteException {
         log.debug("endpoint delete database, id={}, principal={}", id,
                 principal);
         final Database database = databaseService.findById(id);

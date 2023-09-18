@@ -47,7 +47,7 @@ services:
       MARIADB_DATABASE: "${METADATA_DB:-fda}"
       MARIADB_ROOT_PASSWORD: "${METADATA_PASSWORD:-dbrepo}"
     healthcheck:
-      test: mysqladmin ping --user="$METADATA_USERNAME" --password="$METADATA_PASSWORD" --silent
+      test: mysqladmin ping --user="${METADATA_USERNAME:-root}" --password="${METADATA_PASSWORD:-dbrepo}" --silent
       interval: 10s
       timeout: 5s
       retries: 12
@@ -70,7 +70,7 @@ services:
     environment:
       MARIADB_ROOT_PASSWORD: "${USER_DB_PASSWORD:-dbrepo}"
     healthcheck:
-      test: mysqladmin ping --user="$USER_DB_USERNAME" --password="$USER_DB_PASSWORD" --silent
+      test: mysqladmin ping --user="${USER_DB_USERNAME:-root}" --password="${USER_DB_PASSWORD:-dbrepo}" --silent
       interval: 10s
       timeout: 5s
       retries: 12
@@ -93,7 +93,7 @@ services:
       MARIADB_DATABASE: "${AUTH_DB:-keycloak}"
       MARIADB_ROOT_PASSWORD: "${AUTH_PASSWORD:-dbrepo}"
     healthcheck:
-      test: mysqladmin ping --user="$AUTH_USERNAME" --password="$AUTH_PASSWORD" --silent
+      test: mysqladmin ping --user="${AUTH_USERNAME:-root}" --password="${AUTH_PASSWORD:-dbrepo}" --silent
       interval: 10s
       timeout: 5s
       retries: 12
@@ -157,13 +157,13 @@ services:
       BASE_URL: "${BASE_URL:-http://localhost}"
       GRANT_PRIVILEGES: "${GRANT_PRIVILEGES:-SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE}"
       BROKER_CONSUMERS: "${BROKER_CONSUMERS:-2}"
-      BROKER_ENDPOINT: "${BROKER_ENDPOINT:-http://broker-service:15672}"
+      BROKER_ENDPOINT: "${BROKER_ENDPOINT:-http://broker-service:15672/admin/broker}"
       BROKER_USERNAME: "${BROKER_USERNAME:-fda}"
       BROKER_PASSWORD: "${BROKER_PASSWORD:-fda}"
       DELETED_RECORD: "${DELETED_RECORD:-persistent}"
       EARLIEST_DATESTAMP: "${EARLIEST_DATESTAMP:-2022-09-17T18:23:00Z}"
       GRANULARITY: "${GRANULARITY:-YYYY-MM-DDThh:mm:ssZ}"
-      JWT_ISSUER: "${JWT_ISSUER:-http://localhost/realms/dbrepo}"
+      JWT_ISSUER: "${JWT_ISSUER:-http://localhost/api/auth/realms/dbrepo}"
       JWT_PUBKEY: "${JWT_PUBKEY:-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB}"
       LOG_LEVEL: "${LOG_LEVEL:-debug}"
       METADATA_DB: "${METADATA_DB:-fda}"
@@ -223,6 +223,11 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
+    healthcheck:
+      test: wget -qO- localhost:15672/admin/broker | grep "RabbitMQ" || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 12
     depends_on:
       dbrepo-authentication-service:
         condition: service_healthy
@@ -273,8 +278,8 @@ services:
     environment:
       BROKER_USERNAME: "${BROKER_USERNAME:-fda}"
       BROKER_PASSWORD: "${BROKER_PASSWORD:-fda}"
-      BROKER_LOGIN_URL: "${BROKER_LOGIN_URL:-/broker/}"
-      KEYCLOAK_LOGIN_URL: "${KEYCLOAK_LOGIN_URL:-/api/auth/}"
+      BROKER_LOGIN_URL: "${BROKER_LOGIN_URL:-/admin/broker/}"
+      KEYCLOAK_LOGIN_URL: "${KEYCLOAK_LOGIN_URL:-/api/auth/admin/}"
       SHARED_FILESYSTEM: "${SHARED_FILESYSTEM:-/tmp}"
       LOGO: "${LOGO:-/logo.png}"
       SEARCH_USERNAME: "${SEARCH_USERNAME:-admin}"

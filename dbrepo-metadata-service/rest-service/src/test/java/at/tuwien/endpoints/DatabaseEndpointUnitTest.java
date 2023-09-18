@@ -4,7 +4,6 @@ import at.tuwien.BaseUnitTest;
 import at.tuwien.annotations.MockAmqp;
 import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.api.database.*;
-import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
@@ -116,8 +115,8 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
     public void create_succeeds() throws UserNotFoundException, BrokerVirtualHostGrantException,
             DatabaseNameExistsException, NotAllowedException, ContainerConnectionException, DatabaseMalformedException,
             QueryStoreException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException,
-            ImageNotSupportedException, AmqpException, BrokerVirtualHostCreationException, ContainerNotFoundException,
-            KeycloakRemoteException, AccessDeniedException {
+            ImageNotSupportedException, AmqpException, BrokerVirtualHostModificationException, ContainerNotFoundException,
+            KeycloakRemoteException, AccessDeniedException, BrokerRemoteException {
         final DatabaseCreateDto request = DatabaseCreateDto.builder()
                 .cid(CONTAINER_1_ID)
                 .name(DATABASE_1_NAME)
@@ -399,7 +398,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
     @WithMockUser(username = USER_2_USERNAME, authorities = {"delete-database"})
     public void delete_hasRole_succeeds() throws UserNotFoundException, BrokerVirtualHostGrantException,
             DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
-            AmqpException, DatabaseMalformedException, KeycloakRemoteException, AccessDeniedException {
+            AmqpException, DatabaseMalformedException, KeycloakRemoteException, AccessDeniedException, BrokerRemoteException {
 
         /* test */
         delete_generic(DATABASE_2_ID, DATABASE_2, USER_2_PRINCIPAL);
@@ -429,8 +428,8 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
                                Principal principal) throws UserNotFoundException, DatabaseNameExistsException,
             NotAllowedException, ContainerConnectionException, DatabaseMalformedException, QueryStoreException,
             DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
-            AmqpException, BrokerVirtualHostCreationException, ContainerNotFoundException,
-            BrokerVirtualHostGrantException, KeycloakRemoteException, AccessDeniedException {
+            AmqpException, BrokerVirtualHostModificationException, ContainerNotFoundException,
+            BrokerVirtualHostGrantException, KeycloakRemoteException, AccessDeniedException, BrokerRemoteException {
 
         /* mock */
         doNothing()
@@ -499,7 +498,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
     public void delete_generic(Long databaseId, Database database, Principal principal)
             throws DatabaseNotFoundException, UserNotFoundException, DatabaseConnectionException,
             QueryMalformedException, ImageNotSupportedException, AmqpException, DatabaseMalformedException,
-            BrokerVirtualHostGrantException, KeycloakRemoteException, AccessDeniedException {
+            BrokerVirtualHostGrantException, KeycloakRemoteException, AccessDeniedException, BrokerRemoteException {
 
         /* mock */
         if (database != null) {
