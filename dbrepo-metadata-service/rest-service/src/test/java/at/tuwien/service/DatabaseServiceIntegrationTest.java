@@ -190,7 +190,7 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
 
 
         /* test */
-        MariaDbConfig.getPrivileges(mariaDBContainer.getHost(), mariaDBContainer.getMappedPort(3306), database.getInternalName(), USER_1_USERNAME, USER_1_PASSWORD);
+        MariaDbConfig.getPrivileges(mariaDBContainer.getHost(), 3308, database.getInternalName(), USER_1_USERNAME, USER_1_PASSWORD);
     }
 
     @Test
@@ -224,14 +224,14 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
 
         /* test */
         assertThrows(SQLInvalidAuthorizationSpecException.class, () -> {
-            MariaDbConfig.getPrivileges(mariaDBContainer.getHost(), mariaDBContainer.getMappedPort(3306), USER_3_USERNAME, USER_4_PASSWORD);
+            MariaDbConfig.getPrivileges(mariaDBContainer.getHost(), 3308, USER_3_USERNAME, USER_4_PASSWORD);
         });
         databaseService.updatePassword(User.builder()
                 .id(USER_3_ID)
                 .username(USER_3_USERNAME)
                 .mariadbPassword(USER_4_DATABASE_PASSWORD)
                 .build());
-        MariaDbConfig.getPrivileges(mariaDBContainer.getHost(), mariaDBContainer.getMappedPort(3306), USER_3_USERNAME, USER_4_PASSWORD);
+        MariaDbConfig.getPrivileges(mariaDBContainer.getHost(), 3308, USER_3_USERNAME, USER_4_PASSWORD);
     }
 
     @Test

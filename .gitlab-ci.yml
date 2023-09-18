@@ -124,6 +124,7 @@ test-frontend:
 
 test-default-deployment:
   stage: test-deployment
+  timeout: 5m
   needs:
     - test-frontend
   script:
@@ -135,6 +136,7 @@ test-default-deployment:
 
 test-env-deployment:
   stage: test-deployment
+  timeout: 5m
   needs:
     - test-frontend
   script:
