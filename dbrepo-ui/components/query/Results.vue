@@ -80,13 +80,6 @@ export default {
           this.loading--
         })
     },
-    buildHeaders (firstLine) {
-      return Object.keys(firstLine).map(k => ({
-        text: k,
-        value: k,
-        sortable: false
-      }))
-    },
     reExecute (id) {
       if (id === null) {
         return
@@ -136,9 +129,13 @@ export default {
       }
     },
     mapResults (data) {
-      if (data.result.length) {
-        this.result.headers = this.buildHeaders(data.result[0])
-      }
+      this.result.headers = data.headers.map((h) => {
+        return {
+          text: Object.keys(h)[0],
+          value: Object.keys(h)[0],
+          sortable: false
+        }
+      })
       console.debug('query result', data)
       this.result.rows = data.result
       if (this.total < 0 && data.result_number != null) {

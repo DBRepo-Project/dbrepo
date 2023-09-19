@@ -106,8 +106,16 @@ public interface QueryMapper {
             }
             resultList.add(map);
         }
+        final int[] idx = new int[]{0};
+        final List<Map<String, Integer>> headers = columns.stream()
+                .map(c -> (Map<String, Integer>) new LinkedHashMap<String, Integer>(){{
+                    put(c.getAlias() != null ? c.getAlias() : c.getInternalName(), idx[0]++);
+                }})
+                .toList();
+        log.debug("created ordered header list: {}", headers);
         return QueryResultDto.builder()
                 .result(resultList)
+                .headers(headers)
                 .build();
     }
 

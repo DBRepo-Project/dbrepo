@@ -66,10 +66,10 @@ public interface QueryService {
      * @throws ColumnParseException       The column mapping/parsing failed.
      * @throws QueryMalformedException    The query is malformed.
      */
-    QueryResultDto reExecute(Long databaseId, Query query, Long page, Long size,
-                             SortType sortDirection, String sortColumn, Principal principal)
-            throws QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, ColumnParseException,
-            DatabaseConnectionException, TableMalformedException, QueryStoreException, UserNotFoundException;
+    QueryResultDto reExecute(Long databaseId, Query query, Long page, Long size, SortType sortDirection,
+                             String sortColumn, Principal principal) throws QueryMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException, ColumnParseException, DatabaseConnectionException,
+            TableMalformedException, QueryStoreException, UserNotFoundException;
 
     /**
      * Re-Executes the count-statement of an arbitrary query on the database. We allow the user to only view

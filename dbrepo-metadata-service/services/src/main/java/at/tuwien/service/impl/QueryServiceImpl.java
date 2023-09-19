@@ -503,7 +503,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     }
 
     @Transactional(readOnly = true)
-    protected boolean columnMatches(TableColumn column, String tableOrView) {
+    public boolean columnMatches(TableColumn column, String tableOrView) {
         if (column.getTable().getInternalName().equals(tableOrView)) {
             /* matches table name */
             return true;
