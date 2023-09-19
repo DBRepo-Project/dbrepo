@@ -2,8 +2,6 @@
 
 TAG ?= latest
 TRIVY_VERSION ?= v0.41.0
-ELASTIC_VERSION ?= 8.7.1
-NGINX_VERSION ?= 1.25.0-alpine-slim
 AZURE_REPO ?= dbrepo.azurecr.io
 
 all: build
@@ -108,7 +106,7 @@ test-metadata-service: build-metadata-service teardown
 test-analyse-service: build-analyse-service
 	bash ./dbrepo-analyse-service/test.sh
 
-scan: scan-analyse-service scan-authentication-service scan-broker-service scan-gateway-service scan-metadata-db scan-metadata-service scan-search-db scan-ui scan-search-sync-agent scan-data-service
+scan: scan-analyse-service scan-authentication-service scan-broker-service scan-gateway-service scan-metadata-db scan-metadata-service scan-search-db scan-ui scan-search-sync-agent scan-data-db
 
 scan-analyse-service:
 	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-analyse-service-report.json dbrepo-analyse-service:latest
@@ -126,10 +124,10 @@ scan-broker-service:
 	trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-broker-service:latest
 
 scan-gateway-service:
-	docker pull "nginx:${NGINX_VERSION}"
-	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-gateway-service-report.json "nginx:${NGINX_VERSION}"
-	trivy image --insecure --exit-code 0 "nginx:${NGINX_VERSION}"
-	trivy image --insecure --exit-code 1 --severity CRITICAL "nginx:${NGINX_VERSION}"
+	docker pull "nginx:1.25.0-alpine-slim"
+	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-gateway-service-report.json "nginx:1.25.0-alpine-slim"
+	trivy image --insecure --exit-code 0 "nginx:1.25.0-alpine-slim"
+	trivy image --insecure --exit-code 1 --severity CRITICAL "nginx:1.25.0-alpine-slim"
 
 scan-metadata-db:
 	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-metadata-db-report.json dbrepo-metadata-db:latest
@@ -147,10 +145,20 @@ scan-search-sync-agent:
 	trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-search-sync-agent:latest
 
 scan-search-db:
-	docker pull "elasticsearch:${ELASTIC_VERSION}"
-	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-db-report.json "elasticsearch:${ELASTIC_VERSION}"
-	trivy image --insecure --exit-code 0 "elasticsearch:${ELASTIC_VERSION}"
-	trivy image --insecure --exit-code 1 --severity CRITICAL "elasticsearch:${ELASTIC_VERSION}"
+	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-db-report.json "dbrepo-search-db"
+	trivy image --insecure --exit-code 0 "dbrepo-search-db"
+	trivy image --insecure --exit-code 1 --severity CRITICAL "dbrepo-search-db"
+
+scan-metadata-db:
+	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-db-report.json "dbrepo-metadata-db"
+	trivy image --insecure --exit-code 0 "dbrepo-metadata-db"
+	trivy image --insecure --exit-code 1 --severity CRITICAL "dbrepo-metadata-db"
+
+scan-data-db:
+	docker pull "bitnami/mariadb:10.5"
+	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-db-report.json "bitnami/mariadb:10.5"
+	trivy image --insecure --exit-code 0 "bitnami/mariadb:10.5"
+	trivy image --insecure --exit-code 1 --severity CRITICAL "bitnami/mariadb:10.5"
 
 scan-ui:
 	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-ui-report.json dbrepo-ui:latest
