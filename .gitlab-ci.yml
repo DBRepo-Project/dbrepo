@@ -245,26 +245,6 @@ scan-metadata-service:
     reports:
       container_scanning: ./.trivy/trivy-metadata-service-report.json
 
-scan-proxy:
-  stage: scan-docker
-  needs:
-    - build-docker
-  only:
-    refs:
-      - dev
-      - master
-  allow_failure: true
-  script:
-    - make scan-proxy
-  cache:
-    paths:
-      - .trivycache/
-  artifacts:
-    when: always
-    expire_in: 1 days
-    reports:
-      container_scanning: ./.trivy/trivy-proxy-report.json
-
 scan-search-db:
   stage: scan-docker
   needs:
