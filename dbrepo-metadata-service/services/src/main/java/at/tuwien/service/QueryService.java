@@ -151,10 +151,10 @@ public interface QueryService {
      * @throws ViewMalformedException     The table is malformed.
      * @throws QueryMalformedException    The query is malformed.
      */
-    QueryResultDto viewFindAll(Long databaseId, View view,
-                               Long page, Long size, Principal principal) throws ViewNotFoundException, DatabaseNotFoundException,
-            ImageNotSupportedException, DatabaseConnectionException, ViewMalformedException, PaginationException,
-            QueryMalformedException, UserNotFoundException, TableMalformedException;
+    QueryResultDto viewFindAll(Long databaseId, View view, Long page, Long size, Principal principal)
+            throws ViewNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
+            DatabaseConnectionException, ViewMalformedException, PaginationException, QueryMalformedException,
+            UserNotFoundException, TableMalformedException;
 
     /**
      * Finds one query by database id and query id.
@@ -171,9 +171,9 @@ public interface QueryService {
      * @throws QueryNotFoundException     THe query was not found in the query store.
      * @throws QueryMalformedException    The query is malformed.
      */
-    ExportResource findOne(Long databaseId, Long queryId, Principal principal)
-            throws DatabaseNotFoundException, ImageNotSupportedException, TableMalformedException,
-            FileStorageException, QueryStoreException, QueryNotFoundException, QueryMalformedException, DatabaseConnectionException, UserNotFoundException;
+    ExportResource findOne(Long databaseId, Long queryId, Principal principal) throws DatabaseNotFoundException,
+            ImageNotSupportedException, TableMalformedException, FileStorageException, QueryStoreException,
+            QueryNotFoundException, QueryMalformedException, DatabaseConnectionException, UserNotFoundException;
 
     /**
      * Count the total tuples for a given table id within a database id at a given time.

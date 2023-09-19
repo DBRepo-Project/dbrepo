@@ -627,15 +627,10 @@ public interface QueryMapper {
         return statement.toString();
     }
 
-    default String queryToRawTimestampedQuery(String query, Database database, Instant timestamp, Boolean selection, Long page, Long size)
-            throws ImageNotSupportedException, QueryMalformedException {
-        log.trace("mapping query to timestamped query, query={}, database={}, timestamp={}, selection={}, page={}, size={}",
-                query, database, timestamp, selection, page, size);
+    default String queryToRawTimestampedQuery(String query, Instant timestamp, Boolean selection, Long page, Long size) {
+        log.trace("mapping query to timestamped query, query={}, timestamp={}, selection={}, page={}, size={}",
+                query, timestamp, selection, page, size);
         /* param check */
-        if (!database.getContainer().getImage().getName().equals("mariadb")) {
-            log.error("Currently only MariaDB is supported");
-            throw new ImageNotSupportedException("Currently only MariaDB is supported");
-        }
         if (timestamp == null) {
             log.error("Timestamp is null");
             throw new IllegalArgumentException("Please provide a timestamp before");
@@ -655,13 +650,6 @@ public interface QueryMapper {
             query = query.substring(0, query.length() - 1);
         }
         /* query check (this is enforced by the db also) */
-        if (Stream.of("count").anyMatch(query::contains)) {
-            log.error("Query contains unsupported operation, one of {}", List.of("COUNT"));
-        }
-        if (Stream.of("delete", "update", "truncate", "create", "drop").anyMatch(query::contains)) {
-            log.error("Query attempts to modify the database");
-            throw new QueryMalformedException("Query attempts to modify the database");
-        }
         final StringBuilder sb = new StringBuilder();
         if (selection) {
             /* is not a count query */

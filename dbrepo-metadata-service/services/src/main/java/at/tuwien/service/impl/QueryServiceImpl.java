@@ -71,8 +71,8 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
 
     @Override
     @Transactional(readOnly = true)
-    public QueryResultDto execute(Long databaseId, ExecuteStatementDto statement,
-                                  Principal principal, Long page, Long size, SortType sortDirection, String sortColumn)
+    public QueryResultDto execute(Long databaseId, ExecuteStatementDto statement, Principal principal, Long page,
+                                  Long size, SortType sortDirection, String sortColumn)
             throws DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException, QueryStoreException,
             ColumnParseException, UserNotFoundException, DatabaseConnectionException, TableMalformedException,
             KeycloakRemoteException, AccessDeniedException {
@@ -102,7 +102,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             log.error("Failed to map/parse columns: {}", e.getMessage());
             throw new ColumnParseException("Failed to map/parse columns: " + e.getMessage(), e);
         }
-        final String statement = queryMapper.queryToRawTimestampedQuery(query.getQuery(), database, query.getCreated(), true, page, size);
+        final String statement = queryMapper.queryToRawTimestampedQuery(query.getQuery(), query.getCreated(), true, page, size);
         final QueryResultDto dto = executeNonPersistent(databaseId, statement, columns);
         dto.setId(query.getId());
         dto.setResultNumber(query.getResultNumber());
@@ -126,7 +126,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             log.error("Failed to map/parse columns: {}", e.getMessage());
             throw new ColumnParseException("Failed to map/parse columns: " + e.getMessage(), e);
         }
-        final String statement = queryMapper.queryToRawTimestampedQuery(query.getQuery(), database, query.getCreated(), false, null, null);
+        final String statement = queryMapper.queryToRawTimestampedQuery(query.getQuery(), query.getCreated(), false, null, null);
         return executeCountNonPersistent(databaseId, statement);
     }
 
@@ -194,12 +194,10 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
 
     @Override
     @Transactional(readOnly = true)
-    public QueryResultDto viewFindAll(Long databaseId, View view,
-                                      Long page, Long size, Principal principal) throws DatabaseNotFoundException,
-            ImageNotSupportedException, QueryMalformedException, TableMalformedException {
-        /* find */
+    public QueryResultDto viewFindAll(Long databaseId, View view, Long page, Long size, Principal principal)
+            throws DatabaseNotFoundException, QueryMalformedException, TableMalformedException {
         /* run query */
-        String statement = queryMapper.viewToRawFindAllQuery(view, size, page);
+        String statement = queryMapper.queryToRawTimestampedQuery(view.getQuery(), Instant.now(), true, page, size);
         return executeNonPersistent(databaseId, statement, view.getColumns());
     }
 
