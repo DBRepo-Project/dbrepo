@@ -3,6 +3,7 @@ package at.tuwien.entities.database.table;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.database.table.constraints.Constraints;
+import at.tuwien.entities.user.User;
 import lombok.*;
 import lombok.extern.log4j.Log4j2;
 import net.sf.jsqlparser.statement.select.FromItem;
@@ -44,9 +45,26 @@ public class Table {
     @Column(name = "created_by", columnDefinition = "VARCHAR(36)")
     private UUID createdBy;
 
+    @ToString.Exclude
+    @org.springframework.data.annotation.Transient
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumns({
+            @JoinColumn(name = "created_by", referencedColumnName = "ID", insertable = false, updatable = false)
+    })
+    private User creator;
+
+
     @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column(name = "owned_by", columnDefinition = "VARCHAR(36)")
     private UUID ownedBy;
+
+    @ToString.Exclude
+    @org.springframework.data.annotation.Transient
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumns({
+            @JoinColumn(name = "owned_by", referencedColumnName = "ID", insertable = false, updatable = false)
+    })
+    private User owner;
 
     @Column(name = "tname", nullable = false)
     private String name;

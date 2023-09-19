@@ -142,13 +142,10 @@ export default {
       return this.version.substring(0, 10) + 'T' + this.version.substring(11, 19) + 'Z'
     },
     canModify () {
-      if (!this.user || !this.access || !this.table || !this.table.creator) {
+      if (!this.user || !this.access || !this.table) {
         return false
       }
-      if (this.table.creator.username === this.user.username) {
-        return true
-      }
-      if (this.access.type === 'write_own' && this.table.creator.username === this.user.username) {
+      if (this.access.type === 'write_own' && this.table.owner.id === this.user.id) {
         return true
       }
       return this.access.type === 'write_all'
