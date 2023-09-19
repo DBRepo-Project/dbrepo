@@ -460,6 +460,29 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
+    public void viewFindAll_succeeds() throws DatabaseConnectionException, TableMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException, UserNotFoundException,
+            InterruptedException, ViewMalformedException, PaginationException, ViewNotFoundException {
+
+        /* mock */
+        Thread.sleep(1000) /* wait for test container some more */;
+
+        /* test */
+        final QueryResultDto response = queryService.viewFindAll(DATABASE_1_ID, VIEW_2, 0L, 10L, USER_1_PRINCIPAL);
+        assertNotNull(response.getResult());
+        final List<Map<String, Object>> result = response.getResult();
+        assertEquals(0.6, result.get(0).get("rainfall"));
+        assertEquals("Albury", result.get(0).get("loc"));
+        assertEquals(13.4, result.get(0).get("mintemp"));
+        assertEquals(0.0, result.get(1).get("rainfall"));
+        assertEquals("Albury", result.get(1).get("loc"));
+        assertEquals(7.4, result.get(1).get("mintemp"));
+        assertEquals(0.0, result.get(2).get("rainfall"));
+        assertEquals("Albury", result.get(2).get("loc"));
+        assertEquals(12.9, result.get(2).get("mintemp"));
+    }
+
+    @Test
     public void count_emptySet_succeeds() throws DatabaseConnectionException, TableMalformedException,
             DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException, UserNotFoundException,
             QueryStoreException, QueryNotFoundException, FileStorageException, SQLException {

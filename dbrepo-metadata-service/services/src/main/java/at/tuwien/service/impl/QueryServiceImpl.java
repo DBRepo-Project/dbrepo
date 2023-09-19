@@ -148,8 +148,8 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
                 database.getContainer(), database);
         try {
             final Connection connection = dataSource.getConnection();
+            log.trace("preparing statement {}", statement);
             final PreparedStatement preparedStatement = prepareStatement(connection, statement);
-            log.trace("prepared statement {}", statement);
             final ResultSet resultSet = preparedStatement.executeQuery();
             return queryMapper.resultListToQueryResultDto(columns, resultSet);
         } catch (SQLException e) {
@@ -197,8 +197,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     public QueryResultDto viewFindAll(Long databaseId, View view, Long page, Long size, Principal principal)
             throws DatabaseNotFoundException, QueryMalformedException, TableMalformedException {
         /* run query */
-        String statement = queryMapper.queryToRawTimestampedQuery(view.getQuery(), Instant.now(), true, page, size);
-        return executeNonPersistent(databaseId, statement, view.getColumns());
+        return executeNonPersistent(databaseId, view.getQuery(), view.getColumns());
     }
 
     @Override

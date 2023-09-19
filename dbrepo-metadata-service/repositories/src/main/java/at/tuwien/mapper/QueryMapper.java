@@ -85,7 +85,13 @@ public interface QueryMapper {
             int[] idx = new int[]{1};
             final Map<String, Object> map = new HashMap<>();
             for (final TableColumn column : columns) {
-                final String columnOrAlias = column.getAlias() != null ? column.getAlias() : column.getInternalName();
+                final String columnOrAlias;
+                if (column.getAlias() != null) {
+                    log.debug("column {} has alias {}", column.getInternalName(), column.getAlias());
+                    columnOrAlias = column.getAlias();
+                } else {
+                    columnOrAlias = column.getInternalName();
+                }
                 if (List.of(TableColumnType.BLOB, TableColumnType.TINYBLOB, TableColumnType.MEDIUMBLOB, TableColumnType.LONGBLOB).contains(column.getColumnType())) {
                     log.debug("column {} is of type blob", columnOrAlias);
                     final Blob blob = result.getBlob(idx[0]++);
@@ -692,14 +698,9 @@ public interface QueryMapper {
         return columnsToRawFindAllQuery(table.getInternalName(), table.getColumns(), timestamp, size, page);
     }
 
-    default String viewToRawFindAllQuery(View view, Long size, Long page)
-            throws ImageNotSupportedException {
+    default String viewToRawFindAllQuery(View view, Long size, Long page) {
         log.trace("mapping view to find all query, view={}, size={}, page={}", view, size, page);
         /* param check */
-        if (!view.getDatabase().getContainer().getImage().getName().equals("mariadb")) {
-            log.error("Currently only MariaDB is supported");
-            throw new ImageNotSupportedException("Currently only MariaDB is supported");
-        }
         return columnsToRawFindAllQuery(view.getInternalName(), view.getColumns(), null, size, page);
     }
 
@@ -795,36 +796,36 @@ public interface QueryMapper {
                         .toInstant();
             }
             case BINARY, VARBINARY, BIT -> {
-                log.trace("mapping {} to binary", data);
+                log.trace("mapping {} -> binary", data);
                 return Long.parseLong(String.valueOf(data), 2);
             }
             case TEXT, CHAR, VARCHAR, TINYTEXT, MEDIUMTEXT, LONGTEXT, ENUM, SET -> {
-                log.trace("mapping {} to character array", data);
+                log.trace("mapping {} -> string", data);
                 return String.valueOf(data);
             }
             case BIGINT -> {
-                log.trace("mapping {} to bigint number", data);
+                log.trace("mapping {} -> biginteger", data);
                 return new BigInteger(String.valueOf(data));
             }
             case INT, TINYINT, SMALLINT, MEDIUMINT -> {
-                log.trace("mapping {} to int number", data);
+                log.trace("mapping {} -> integer", data);
                 return Integer.parseInt(String.valueOf(data));
             }
             case DECIMAL, FLOAT, DOUBLE -> {
-                log.trace("mapping {} to decimal number", data);
+                log.trace("mapping {} -> double", data);
                 return Double.valueOf(String.valueOf(data));
             }
             case BOOL -> {
-                log.trace("mapping {} to boolean", data);
+                log.trace("mapping {} -> boolean", data);
                 return Boolean.valueOf(String.valueOf(data));
             }
             case TIME -> {
-                log.trace("mapping {} to time", data);
+                log.trace("mapping {} -> time", data);
                 return String.valueOf(data);
             }
             case YEAR -> {
                 final String tmp = String.valueOf(data);
-                log.trace("mapping {} to year", tmp);
+                log.trace("mapping {} -> year", tmp);
                 return tmp.substring(0, tmp.indexOf('-'));
             }
         }

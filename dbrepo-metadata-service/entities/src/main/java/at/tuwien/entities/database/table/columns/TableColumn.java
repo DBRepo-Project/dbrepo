@@ -66,10 +66,8 @@ public class TableColumn implements Comparable<TableColumn> {
     @Column
     private Integer indexLength;
 
-    @Transient
-    @ToString.Exclude
-    @org.springframework.data.annotation.Transient
-    private transient String alias;
+    @Column
+    private String alias;
 
     @Column(name = "datatype", nullable = false)
     @Enumerated(EnumType.STRING)

@@ -47,8 +47,8 @@ export default {
       if (this.type === 'view' && this.view && this.view.columns) {
         return this.view.columns.map((c) => {
           return {
-            text: c.internal_name,
-            value: c.internal_name,
+            text: c.alias ? c.alias : c.internal_name,
+            value: c.alias ? c.alias : c.internal_name,
             sortable: false
           }
         })

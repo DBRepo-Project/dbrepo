@@ -145,6 +145,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns`
     dfID             bigint,
     cName            VARCHAR(100),
     internal_name    VARCHAR(100) NOT NULL,
+    alias            VARCHAR(100),
     Datatype         ENUM ('CHAR','VARCHAR','BINARY','VARBINARY','TINYBLOB','TINYTEXT','TEXT','BLOB','MEDIUMTEXT','MEDIUMBLOB','LONGTEXT','LONGBLOB','ENUM','SET','BIT','TINYINT','BOOL','SMALLINT','MEDIUMINT','INT','BIGINT','FLOAT','DOUBLE','DECIMAL','DATE','DATETIME','TIMESTAMP','TIME','YEAR'),
     length           INT          NULL,
     ordinal_position INTEGER      NOT NULL,
@@ -349,13 +350,13 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_banner_messages`
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_ontologies`
 (
-    id              bigint                NOT NULL AUTO_INCREMENT,
-    prefix          VARCHAR(8)            NOT NULL,
-    uri             TEXT                  NOT NULL,
+    id              bigint     NOT NULL AUTO_INCREMENT,
+    prefix          VARCHAR(8) NOT NULL,
+    uri             TEXT       NOT NULL,
     uri_pattern     TEXT,
-    sparql_endpoint TEXT                  NULL,
+    sparql_endpoint TEXT       NULL,
     last_modified   timestamp,
-    created         timestamp             NOT NULL DEFAULT NOW(),
+    created         timestamp  NOT NULL DEFAULT NOW(),
     UNIQUE (prefix),
     UNIQUE (uri(200)),
     PRIMARY KEY (id)

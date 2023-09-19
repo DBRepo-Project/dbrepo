@@ -77,7 +77,7 @@ public class ViewIdxRepositoryIntegrationTest extends BaseUnitTest {
     private static final OpensearchContainer opensearchContainer = new OpensearchContainer(DockerImageName.parse("opensearchproject/opensearch:2.8.0"));
 
     @DynamicPropertySource
-    static void elasticsearchProperties(DynamicPropertyRegistry registry) {
+    static void openSearchProperties(DynamicPropertyRegistry registry) {
         final int idx = opensearchContainer.getHttpHostAddress().lastIndexOf(':');
         registry.add("spring.opensearch.host", () -> "127.0.0.1");
         registry.add("spring.opensearch.port", () -> opensearchContainer.getHttpHostAddress().substring(idx + 1));
