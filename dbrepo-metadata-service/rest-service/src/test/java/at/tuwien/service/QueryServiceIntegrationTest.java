@@ -87,8 +87,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         MariaDbConfig.createInitDatabase(CONTAINER_1, DATABASE_1);
         /* metadata database */
         imageRepository.save(IMAGE_1);
-        userRepository.save(USER_1);
-        userRepository.save(USER_2);
+        userRepository.saveAll(List.of(USER_1, USER_2, USER_3));
         containerRepository.saveAll(List.of(CONTAINER_1_SIMPLE, CONTAINER_2_SIMPLE));
         databaseRepository.saveAll(List.of(DATABASE_1_SIMPLE, DATABASE_2_SIMPLE));
         tableRepository.saveAll(List.of(TABLE_1_SIMPLE, TABLE_2_SIMPLE, TABLE_3_SIMPLE, TABLE_4_SIMPLE, TABLE_5_SIMPLE, TABLE_6_SIMPLE, TABLE_7_SIMPLE));

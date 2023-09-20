@@ -293,7 +293,8 @@ export default {
             return row
           })
         })
-        .catch(() => {
+        .catch((error) => {
+          console.error('load data resulted in error', error)
           this.error = true
         })
         .finally(() => {

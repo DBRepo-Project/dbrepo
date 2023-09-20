@@ -79,8 +79,7 @@ public class StoreServiceIntegrationModifyTest extends BaseUnitTest {
         /* metadata database */
         imageRepository.save(IMAGE_1);
         containerRepository.save(CONTAINER_1);
-        userRepository.save(USER_1);
-        userRepository.save(USER_5);
+        userRepository.saveAll(List.of(USER_1, USER_2, USER_3, USER_4, USER_5));
         databaseRepository.save(DATABASE_1_SIMPLE);
         tableRepository.saveAll(List.of(TABLE_1_SIMPLE, TABLE_2_SIMPLE));
         tableColumnRepository.saveAll(TABLE_1_COLUMNS);

@@ -93,7 +93,7 @@ public class ViewIdxRepositoryIntegrationTest extends BaseUnitTest {
         TABLE_2.setColumns(TABLE_2_COLUMNS);
         /* metadata database */
         imageRepository.save(IMAGE_1);
-        userRepository.save(USER_1);
+        userRepository.saveAll(List.of(USER_1, USER_2));
         containerRepository.save(CONTAINER_1);
         databaseRepository.save(DATABASE_1_SIMPLE);
         tableRepository.saveAll(List.of(TABLE_1_SIMPLE, TABLE_2_SIMPLE));
