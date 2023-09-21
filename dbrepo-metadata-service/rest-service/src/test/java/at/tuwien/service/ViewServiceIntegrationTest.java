@@ -197,10 +197,10 @@ public class ViewServiceIntegrationTest extends BaseUnitTest {
         assertEquals("location", column1.getInternalName());
         assertEquals("loc", column1.getAlias());
         final TableColumn column2 = columns.get(2);
-        assertEquals("mintemp", column2.getInternalName());
+        assertEquals("rainfall", column2.getInternalName());
         assertNull(column2.getAlias());
         final TableColumn column3 = columns.get(3);
-        assertEquals("rainfall", column3.getInternalName());
+        assertEquals("mintemp", column3.getInternalName());
         assertNull(column3.getAlias());
     }
 
