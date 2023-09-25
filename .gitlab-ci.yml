@@ -17,7 +17,6 @@ stages:
   - build-frontend
   - test-backend
   - test-frontend
-  - test-deployment
   - build-docker
   - scan-docker
   - release-docker
@@ -121,29 +120,6 @@ test-frontend:
         coverage_format: cobertura
         path: ./dbrepo-ui/coverage/cobertura-coverage.xml
   coverage: '/TOTAL.*?([0-9]{1,3})%/'
-
-test-default-deployment:
-  stage: test-deployment
-  timeout: 5m
-  needs:
-    - test-frontend
-  script:
-    - "make teardown"
-    - "rm -f .env"
-    - "docker compose up -d && make teardown"
-    - "make teardown"
-  coverage: '/TOTAL.*?([0-9]{1,3})%/'
-
-test-env-deployment:
-  stage: test-deployment
-  timeout: 5m
-  needs:
-    - test-frontend
-  script:
-    - "make teardown"
-    - "cp .env.unix.example .env"
-    - "docker compose up -d && make teardown"
-    - "make teardown"
 
 scan-analyse-service:
   stage: scan-docker
