@@ -101,8 +101,8 @@ public class QueryEndpoint {
         endpointValidator.validateOnlyAccessOrPublic(databaseId, queryId, principal);
         /* execute */
         final Query query = storeService.findOne(databaseId, queryId, principal);
-        final QueryResultDto result = queryService.reExecute(databaseId, query, page, size,
-                sortDirection, sortColumn, principal);
+        final QueryResultDto result = queryService.reExecute(databaseId, query, page, size, sortDirection, sortColumn,
+                principal);
         result.setId(queryId);
         log.trace("re-execute query resulted in result {}", result);
         return ResponseEntity.status(HttpStatus.ACCEPTED)

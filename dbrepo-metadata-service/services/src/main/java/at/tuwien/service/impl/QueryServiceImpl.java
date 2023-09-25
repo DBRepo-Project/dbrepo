@@ -71,8 +71,8 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
 
     @Override
     @Transactional(readOnly = true)
-    public QueryResultDto execute(Long databaseId, ExecuteStatementDto statement,
-                                  Principal principal, Long page, Long size, SortType sortDirection, String sortColumn)
+    public QueryResultDto execute(Long databaseId, ExecuteStatementDto statement, Principal principal, Long page,
+                                  Long size, SortType sortDirection, String sortColumn)
             throws DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException, QueryStoreException,
             ColumnParseException, UserNotFoundException, DatabaseConnectionException, TableMalformedException,
             KeycloakRemoteException, AccessDeniedException {
@@ -102,7 +102,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             log.error("Failed to map/parse columns: {}", e.getMessage());
             throw new ColumnParseException("Failed to map/parse columns: " + e.getMessage(), e);
         }
-        final String statement = queryMapper.queryToRawTimestampedQuery(query.getQuery(), database, query.getCreated(), true, page, size);
+        final String statement = queryMapper.queryToRawTimestampedQuery(query.getQuery(), query.getCreated(), true, page, size);
         final QueryResultDto dto = executeNonPersistent(databaseId, statement, columns);
         dto.setId(query.getId());
         dto.setResultNumber(query.getResultNumber());
@@ -126,7 +126,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             log.error("Failed to map/parse columns: {}", e.getMessage());
             throw new ColumnParseException("Failed to map/parse columns: " + e.getMessage(), e);
         }
-        final String statement = queryMapper.queryToRawTimestampedQuery(query.getQuery(), database, query.getCreated(), false, null, null);
+        final String statement = queryMapper.queryToRawTimestampedQuery(query.getQuery(), query.getCreated(), false, null, null);
         return executeCountNonPersistent(databaseId, statement);
     }
 
@@ -148,8 +148,8 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
                 database.getContainer(), database);
         try {
             final Connection connection = dataSource.getConnection();
+            log.trace("preparing statement {}", statement);
             final PreparedStatement preparedStatement = prepareStatement(connection, statement);
-            log.trace("prepared statement {}", statement);
             final ResultSet resultSet = preparedStatement.executeQuery();
             return queryMapper.resultListToQueryResultDto(columns, resultSet);
         } catch (SQLException e) {
@@ -194,13 +194,10 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
 
     @Override
     @Transactional(readOnly = true)
-    public QueryResultDto viewFindAll(Long databaseId, View view,
-                                      Long page, Long size, Principal principal) throws DatabaseNotFoundException,
-            ImageNotSupportedException, QueryMalformedException, TableMalformedException {
-        /* find */
+    public QueryResultDto viewFindAll(Long databaseId, View view, Long page, Long size, Principal principal)
+            throws DatabaseNotFoundException, QueryMalformedException, TableMalformedException {
         /* run query */
-        String statement = queryMapper.viewToRawFindAllQuery(view, size, page);
-        return executeNonPersistent(databaseId, statement, view.getColumns());
+        return executeNonPersistent(databaseId, view.getQuery(), view.getColumns());
     }
 
     @Override
@@ -506,7 +503,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     }
 
     @Transactional(readOnly = true)
-    protected boolean columnMatches(TableColumn column, String tableOrView) {
+    public boolean columnMatches(TableColumn column, String tableOrView) {
         if (column.getTable().getInternalName().equals(tableOrView)) {
             /* matches table name */
             return true;

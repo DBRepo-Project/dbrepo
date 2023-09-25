@@ -120,7 +120,7 @@ public class SearchSyncComponentTest extends BaseUnitTest {
     @BeforeEach
     public void beforeEach() {
         licenseRepository.save(LICENSE_1);
-        userRepository.save(USER_1);
+        userRepository.saveAll(List.of(USER_1, USER_2));
         imageRepository.save(IMAGE_1);
         containerRepository.save(CONTAINER_1);
         databaseRepository.save(DATABASE_1);
@@ -159,7 +159,7 @@ public class SearchSyncComponentTest extends BaseUnitTest {
         assertEquals(1, units.size());
         final List<UserDto> users = StreamSupport.stream(userIdxRepository.findAll().spliterator(), false)
                 .toList();
-        assertEquals(1, users.size());
+        assertEquals(2, users.size());
         final List<ViewDto> views = StreamSupport.stream(viewIdxRepository.findAll().spliterator(), false)
                 .toList();
         assertEquals(1, views.size());

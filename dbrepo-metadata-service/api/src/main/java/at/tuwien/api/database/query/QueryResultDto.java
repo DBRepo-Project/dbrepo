@@ -22,6 +22,9 @@ public class QueryResultDto {
     @NotNull(message = "result set is required")
     private List<Map<String, Object>> result;
 
+    @NotNull(message = "headers is required")
+    private List<Map<String, Integer>> headers;
+
     @NotNull(message = "query id is required")
     private Long id;
 

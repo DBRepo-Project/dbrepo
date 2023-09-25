@@ -193,7 +193,7 @@ public class ViewEndpoint {
         final Database database = databaseService.find(databaseId);
         log.trace("find view for database {}", database);
         final ViewDto view = viewMapper.viewToViewDto(viewService.findById(databaseId, viewId, principal));
-        log.trace("find find resulted in view {}", view);
+        log.trace("find view resulted in view {}", view);
         return ResponseEntity.ok(view);
     }
 
@@ -345,11 +345,11 @@ public class ViewEndpoint {
             }
         }
         /* find */
-        log.trace("find view data for database {}", database);
+        log.debug("find view data for database with id {}", databaseId);
         final View view = viewService.findById(databaseId, viewId, principal);
         final QueryResultDto result = queryService.viewFindAll(databaseId, view, page, size, principal);
-        log.trace("execute view {}", view);
-        log.trace("find view data resulted in result {}", result);
+        log.trace("execute view data for view with id {}", viewId);
+        log.debug("find view data resulted in result {}", result);
         return ResponseEntity.ok()
                 .body(result);
     }
@@ -367,12 +367,12 @@ public class ViewEndpoint {
         log.debug("endpoint find view data count, databaseId={}, viewId={}, principal={}",
                 databaseId, viewId, principal);
         /* find */
-        final Database database = databaseService.find(databaseId);
-        log.trace("find view data for database {}", database);
+        databaseService.find(databaseId);
+        log.debug("find view data count for database with id {}", databaseId);
         final View view = viewService.findById(databaseId, viewId, principal);
         final Long result = queryService.viewCount(databaseId, view, principal);
-        log.trace("execute view {}", view);
-        log.trace("find view data resulted in result {}", result);
+        log.trace("execute view data count for view with id {}", viewId);
+        log.debug("find view data count resulted in result {}", result);
         return ResponseEntity.ok()
                 .body(result);
     }

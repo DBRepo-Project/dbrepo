@@ -62,7 +62,7 @@ public class TableServiceIntegrationReadTest extends BaseUnitTest {
     @BeforeEach
     public void beforeEach() throws SQLException {
         imageRepository.save(IMAGE_1);
-        userRepository.saveAll(List.of(USER_1, USER_2));
+        userRepository.saveAll(List.of(USER_1, USER_2, USER_3));
         containerRepository.save(CONTAINER_1_SIMPLE);
         containerRepository.save(CONTAINER_2_SIMPLE);
         databaseRepository.save(DATABASE_1_SIMPLE);
