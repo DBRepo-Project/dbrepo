@@ -2,4 +2,4 @@
 
 ## Dashboard
 
-Visit [http://localhost:5601](http://localhost:5601)
+Visit [http://localhost:5601/admin/dasboard](http://localhost:5601/admin/dasboard)

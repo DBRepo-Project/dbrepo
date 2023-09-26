@@ -1,4 +1,4 @@
-server.basePath: "/admin/log"
+server.basePath: "/admin/dashboard"
 server.rewriteBasePath: true
 server.name: log-dashboard
 server.host: "0.0.0.0"

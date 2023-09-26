@@ -24,7 +24,6 @@ build-analyse-service:
 build-docker:
 	docker build -t dbrepo-metadata-service:build --target build dbrepo-metadata-service
 	docker build ./dbrepo-log-service -t dbrepo-log-service:latest
-	docker build ./dbrepo-log-service/dashboard -t dbrepo-log-service-dashboard:latest
 	docker compose build --parallel
 
 build-frontend:

@@ -1,0 +1,57 @@
+---
+
+_meta:
+  type: "config"
+  config_version: 2
+
+config:
+  dynamic:
+    http:
+      # Either enables or disables anonymous authentication. When true, HTTP authenticators try to find user credentials in
+      # the HTTP request. If credentials are found, the user is authenticated. If none are found, the user is authenticated
+      # as an “anonymous” user. This user then has the username “anonymous” and one role named “anonymous_backendrole”.
+      # When you enable anonymous authentication, all defined HTTP authenticators are non-challenging. Also see The
+      # challenge setting.
+      anonymous_auth_enabled: true
+      xff:
+        enabled: false
+    authc:
+      basic_internal_auth_domain:
+        description: "Authenticate via HTTP Basic against internal users database"
+        http_enabled: true
+        transport_enabled: true
+        order: 0
+        http_authenticator:
+          type: basic
+          challenge: true
+        authentication_backend:
+          type: intern
+      jwt_auth_domain:
+        description: "Authenticate via Json Web Token"
+        # Enables or disables authentication on the REST layer. Default is true (enabled).
+        http_enabled: true
+        # Enables or disables authentication on the transport layer. Default is true (enabled).
+        transport_enabled: true
+        # Determines the order in which an authentication domain is queried with an authentication request when multiple
+        # backends are configured in combination. Once authentication succeeds, any remaining domains do not need to be
+        # queried. Its value is an integer.
+        order: 1
+        http_authenticator:
+          # https://opensearch.org/docs/latest/security/authentication-backends/openid-connect/#configure-openid-connect-integration
+          type: openid
+          challenge: false
+          config:
+            # The HTTP header that stores the token. Typically the Authorization header with the
+            # Bearer schema: Authorization: Bearer <token>. Optional. Default is Authorization.
+            jwt_header: Authorization
+            # The key in the JSON payload that stores the user’s name. If not defined, the subject registered claim is
+            # used. Most IdP providers use the preferred_username claim. Optional.
+            subject_key: client_id
+            # The key in the JSON payload that stores the user’s roles. The value of this key must be a comma-separated
+            # list of roles. Required only if you want to use roles in the JWT.
+            roles_key: roles
+            jwks_uri: https://test.dbrepo.tuwien.ac.at/api/auth/realms/dbrepo/protocol/openid-connect/certs
+        authentication_backend:
+          # No further authentication against any backend system is performed. Use noop if the HTTP authenticator has
+          # already authenticated the user completely, as in the case of JWT or client certificate authentication.
+          type: noop
