@@ -77,7 +77,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_licenses`
     identifier character varying(255) NOT NULL,
     uri        text                   NOT NULL,
     PRIMARY KEY (identifier),
-    UNIQUE (uri)
+    UNIQUE (uri(200))
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_databases`
@@ -145,6 +145,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns`
     dfID             bigint,
     cName            VARCHAR(100),
     internal_name    VARCHAR(100) NOT NULL,
+    alias            VARCHAR(100),
     Datatype         ENUM ('CHAR','VARCHAR','BINARY','VARBINARY','TINYBLOB','TINYTEXT','TEXT','BLOB','MEDIUMTEXT','MEDIUMBLOB','LONGTEXT','LONGBLOB','ENUM','SET','BIT','TINYINT','BOOL','SMALLINT','MEDIUMINT','INT','BIGINT','FLOAT','DOUBLE','DECIMAL','DATE','DATETIME','TIMESTAMP','TIME','YEAR'),
     length           INT          NULL,
     ordinal_position INTEGER      NOT NULL,
@@ -280,7 +281,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_concepts`
     created     timestamp             NOT NULL DEFAULT NOW(),
     created_by  character varying(36) NOT NULL,
     PRIMARY KEY (id),
-    UNIQUE (uri),
+    UNIQUE (uri(200)),
     FOREIGN KEY (created_by) REFERENCES mdb_users (id)
 ) WITH SYSTEM VERSIONING;
 
@@ -293,7 +294,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_units`
     created     timestamp             NOT NULL DEFAULT NOW(),
     created_by  character varying(36) NOT NULL,
     PRIMARY KEY (id),
-    UNIQUE (uri),
+    UNIQUE (uri(200)),
     FOREIGN KEY (created_by) REFERENCES mdb_users (id)
 ) WITH SYSTEM VERSIONING;
 
@@ -349,18 +350,16 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_banner_messages`
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_ontologies`
 (
-    id              bigint                NOT NULL AUTO_INCREMENT,
-    prefix          VARCHAR(8)            NOT NULL,
-    uri             TEXT                  NOT NULL,
+    id              bigint     NOT NULL AUTO_INCREMENT,
+    prefix          VARCHAR(8) NOT NULL,
+    uri             TEXT       NOT NULL,
     uri_pattern     TEXT,
-    sparql_endpoint TEXT                  NULL,
+    sparql_endpoint TEXT       NULL,
     last_modified   timestamp,
-    created         timestamp             NOT NULL DEFAULT NOW(),
-    created_by      character varying(36) NOT NULL,
+    created         timestamp  NOT NULL DEFAULT NOW(),
     UNIQUE (prefix),
-    UNIQUE (uri),
-    PRIMARY KEY (id),
-    FOREIGN KEY (created_by) REFERENCES mdb_users (id)
+    UNIQUE (uri(200)),
+    PRIMARY KEY (id)
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `fda`.`mdb_view_columns`

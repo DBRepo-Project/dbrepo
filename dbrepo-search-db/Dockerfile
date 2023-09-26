@@ -6,6 +6,11 @@ RUN yum install -y jq
 
 COPY ./limits.conf /etc/security/limits.conf
 
+WORKDIR /app
+
+COPY ./create-indices.sh ./create-indices.sh
+COPY ./docker-entrypoint.sh ./docker-entrypoint.sh
+
 WORKDIR /usr/share/opensearch
 
 RUN chmod 0700 ./config
@@ -27,3 +32,5 @@ RUN chmod 0600 ./config/root-ca*.pem
 USER opensearch
 
 ENV DISABLE_INSTALL_DEMO_CONFIG=true
+
+ENTRYPOINT [ "bash", "/app/docker-entrypoint.sh" ]

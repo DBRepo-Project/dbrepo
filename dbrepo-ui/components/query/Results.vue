@@ -47,8 +47,8 @@ export default {
       if (this.type === 'view' && this.view && this.view.columns) {
         return this.view.columns.map((c) => {
           return {
-            text: c.internal_name,
-            value: c.internal_name,
+            text: c.alias ? c.alias : c.internal_name,
+            value: c.alias ? c.alias : c.internal_name,
             sortable: false
           }
         })
@@ -79,13 +79,6 @@ export default {
         .finally(() => {
           this.loading--
         })
-    },
-    buildHeaders (firstLine) {
-      return Object.keys(firstLine).map(k => ({
-        text: k,
-        value: k,
-        sortable: false
-      }))
     },
     reExecute (id) {
       if (id === null) {
@@ -136,9 +129,13 @@ export default {
       }
     },
     mapResults (data) {
-      if (data.result.length) {
-        this.result.headers = this.buildHeaders(data.result[0])
-      }
+      this.result.headers = data.headers.map((h) => {
+        return {
+          text: Object.keys(h)[0],
+          value: Object.keys(h)[0],
+          sortable: false
+        }
+      })
       console.debug('query result', data)
       this.result.rows = data.result
       if (this.total < 0 && data.result_number != null) {

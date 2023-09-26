@@ -6,10 +6,12 @@ import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.api.database.*;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.MariaDbContainerConfig;
+import at.tuwien.config.QueryConfig;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.KeycloakGateway;
+import at.tuwien.mapper.DatabaseMapper;
 import at.tuwien.repository.mdb.*;
 import at.tuwien.repository.sdb.DatabaseIdxRepository;
 import at.tuwien.service.impl.MariaDbServiceImpl;
@@ -17,6 +19,7 @@ import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Answers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -26,13 +29,14 @@ import org.testcontainers.containers.MariaDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLInvalidAuthorizationSpecException;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @Log4j2
 @Testcontainers
@@ -45,6 +49,9 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
 
     @MockBean
     private DatabaseIdxRepository databaseIdxRepository;
+
+    @MockBean
+    private QueryConfig queryConfig;
 
     @Autowired
     private UserRepository userRepository;
@@ -109,6 +116,8 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
                 .thenReturn(DATABASE_1_DTO);
         when(databaseIdxRepository.save(any(DatabaseDto.class)))
                 .thenReturn(DATABASE_1_DTO);
+        when(queryConfig.getGrantPrivileges())
+                .thenReturn("SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE");
 
         /* test */
         generic_create(DATABASE_1_CREATE, DATABASE_1);
@@ -123,6 +132,8 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
                 .thenReturn(DATABASE_1_DTO);
         when(databaseIdxRepository.save(any(DatabaseDto.class)))
                 .thenReturn(DATABASE_1_DTO);
+        when(queryConfig.getGrantPrivileges())
+                .thenReturn("SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE");
 
         /* test */
         generic_create(DATABASE_1_CREATE, DATABASE_1);
@@ -139,6 +150,8 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         when(databaseIdxRepository.save(any(DatabaseDto.class)))
                 .thenReturn(DATABASE_2_DTO)
                 .thenReturn(DATABASE_3_DTO);
+        when(queryConfig.getGrantPrivileges())
+                .thenReturn("SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE");
 
         /* test */
         generic_create(DATABASE_2_CREATE, DATABASE_2);
@@ -155,6 +168,8 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         when(databaseIdxRepository.save(any(DatabaseDto.class)))
                 .thenReturn(DATABASE_3_DTO)
                 .thenReturn(DATABASE_2_DTO);
+        when(queryConfig.getGrantPrivileges())
+                .thenReturn("SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE");
 
         /* test */
         generic_create(DATABASE_3_CREATE, DATABASE_3);
@@ -169,11 +184,31 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         databaseRepository.deleteAll();
         when(databaseIdxRepository.save(any(DatabaseDto.class)))
                 .thenReturn(DATABASE_1_DTO);
+        when(queryConfig.getGrantPrivileges())
+                .thenReturn("SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE");
         final Database database = generic_create(DATABASE_1_CREATE, DATABASE_1);
 
 
         /* test */
-        MariaDbConfig.getPrivileges(mariaDBContainer.getHost(), mariaDBContainer.getMappedPort(3306), database.getInternalName(), USER_1_USERNAME, USER_1_PASSWORD);
+        MariaDbConfig.getPrivileges(mariaDBContainer.getHost(), 3308, database.getInternalName(), USER_1_USERNAME, USER_1_PASSWORD);
+    }
+
+    @Test
+    public void create_existsRollbackSucceeds_fails() throws Exception {
+
+        /* mock */
+        MariaDbConfig.dropDatabase(CONTAINER_1, DATABASE_1_INTERNALNAME);
+        databaseRepository.deleteAll();
+        when(databaseIdxRepository.save(any(DatabaseDto.class)))
+                .thenReturn(DATABASE_1_DTO);
+        when(queryConfig.getGrantPrivileges())
+                .thenReturn("" /* (1) */, "SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE"/* (2) */);
+
+        /* test */
+        assertThrows(DatabaseMalformedException.class, () -> {
+            databaseService.create(DATABASE_1_CREATE, USER_1_PRINCIPAL); // (1)
+        });
+        generic_create(DATABASE_1_CREATE, DATABASE_1); // (2)
     }
 
     @Test
@@ -184,21 +219,27 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         databaseAccessRepository.save(DATABASE_1_USER_3_READ_ACCESS);
         when(databaseIdxRepository.save(any(DatabaseDto.class)))
                 .thenReturn(DATABASE_1_DTO);
+        when(queryConfig.getGrantPrivileges())
+                .thenReturn("SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE");
 
         /* test */
         assertThrows(SQLInvalidAuthorizationSpecException.class, () -> {
-            MariaDbConfig.getPrivileges(mariaDBContainer.getHost(), mariaDBContainer.getMappedPort(3306), USER_3_USERNAME, USER_4_PASSWORD);
+            MariaDbConfig.getPrivileges(mariaDBContainer.getHost(), 3308, USER_3_USERNAME, USER_4_PASSWORD);
         });
         databaseService.updatePassword(User.builder()
-                        .id(USER_3_ID)
-                        .username(USER_3_USERNAME)
-                        .mariadbPassword(USER_4_DATABASE_PASSWORD)
+                .id(USER_3_ID)
+                .username(USER_3_USERNAME)
+                .mariadbPassword(USER_4_DATABASE_PASSWORD)
                 .build());
-        MariaDbConfig.getPrivileges(mariaDBContainer.getHost(), mariaDBContainer.getMappedPort(3306), USER_3_USERNAME, USER_4_PASSWORD);
+        MariaDbConfig.getPrivileges(mariaDBContainer.getHost(), 3308, USER_3_USERNAME, USER_4_PASSWORD);
     }
 
     @Test
     public void create_queryStore_succeeds() throws Exception {
+
+        /* mock */
+        when(queryConfig.getGrantPrivileges())
+                .thenReturn("SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE");
 
         /* test */
         generic_insert(QUERY_4_STATEMENT, 1L);
@@ -206,6 +247,10 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void create_queryStoreSameQueryHash_succeeds() throws Exception {
+
+        /* mock */
+        when(queryConfig.getGrantPrivileges())
+                .thenReturn("SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE");
 
         /* test */
         generic_insert(QUERY_4_STATEMENT, 1L);
@@ -216,12 +261,20 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     @Test
     public void create_systemProcedure_succeeds() throws Exception {
 
+        /* mock */
+        when(queryConfig.getGrantPrivileges())
+                .thenReturn("SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE");
+
         /* test */
         generic_system_insert(CONTAINER_1_PRIVILEGED_USERNAME, CONTAINER_1_PRIVILEGED_PASSWORD);
     }
 
     @Test
     public void create_systemProcedure_fails() {
+
+        /* mock */
+        when(queryConfig.getGrantPrivileges())
+                .thenReturn("SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE");
 
         /* test */
         assertThrows(SQLException.class, () -> {
@@ -231,6 +284,10 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void create_userProcedureRoot_succeeds() throws SQLException, QueryMalformedException {
+
+        /* mock */
+        when(queryConfig.getGrantPrivileges())
+                .thenReturn("SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE");
 
         /* test */
         generic_user_insert(CONTAINER_1_PRIVILEGED_USERNAME, CONTAINER_1_PRIVILEGED_PASSWORD);
@@ -244,6 +301,8 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         MariaDbConfig.createInitDatabase(CONTAINER_1, DATABASE_3);
         mariaDbConfig.grantUserPermissions(CONTAINER_1, DATABASE_3, "junit1");
         databaseAccessRepository.save(DATABASE_3_USER_1_WRITE_ALL_ACCESS);
+        when(queryConfig.getGrantPrivileges())
+                .thenReturn("SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE");
 
         /* test */
         generic_user_insert("junit1", "junit1");
@@ -275,7 +334,7 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void transfer_succeeds() throws DatabaseNotFoundException, UserNotFoundException{
+    public void transfer_succeeds() throws DatabaseNotFoundException, UserNotFoundException {
         final DatabaseTransferDto request = DatabaseTransferDto.builder()
                 .username(USER_2_USERNAME)
                 .build();

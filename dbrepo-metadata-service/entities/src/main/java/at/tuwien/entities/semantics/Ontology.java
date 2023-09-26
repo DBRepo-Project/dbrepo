@@ -43,10 +43,6 @@ public class Ontology {
     @Column
     private String sparqlEndpoint;
 
-    @JdbcTypeCode(java.sql.Types.VARCHAR)
-    @Column(name = "createdBy", nullable = false, columnDefinition = "VARCHAR(36)")
-    private UUID createdBy;
-
     @CreatedDate
     @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP")
     private Instant created;

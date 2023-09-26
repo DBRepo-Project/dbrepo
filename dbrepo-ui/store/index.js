@@ -11,6 +11,8 @@ Vue.use(Vuex)
 // https://github.com/hua1995116/webchat/blob/7c6544d3defd41cb7cf68306accea97800858bc3/client/src/store/index.js#L293
 const store = new Store({
   state: {
+    title: null,
+    icon: null,
     token: null,
     refreshToken: null,
     roles: [],
@@ -30,6 +32,8 @@ const store = new Store({
     uploadPath: null
   },
   getters: {
+    getTitle: state => state.title,
+    getIcon: state => state.icon,
     getToken: state => state.token,
     getRefreshToken: state => state.refreshToken,
     getRoles: state => state.roles,
@@ -49,6 +53,12 @@ const store = new Store({
     getUploadPath: state => state.uploadPath
   },
   mutations: {
+    SET_TITLE (state, title) {
+      state.title = title
+    },
+    SET_ICON (state, icon) {
+      state.icon = icon
+    },
     SET_TOKEN (state, token) {
       state.token = token
     },

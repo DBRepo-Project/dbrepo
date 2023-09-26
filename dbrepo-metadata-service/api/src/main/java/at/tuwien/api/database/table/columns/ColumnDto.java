@@ -53,6 +53,10 @@ public class ColumnDto {
     @Schema(example = "mdb_date")
     private String internalName;
 
+    @Field(name = "alias", type = FieldType.Keyword)
+    @Schema
+    private String alias;
+
     @JsonProperty("date_format")
     @Field(name = "date_format", includeInParent = true, type = FieldType.Nested)
     private ImageDateDto dateFormat;

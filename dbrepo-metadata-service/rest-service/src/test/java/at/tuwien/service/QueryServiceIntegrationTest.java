@@ -23,6 +23,8 @@ import org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.testcontainers.containers.MariaDBContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -85,8 +87,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         MariaDbConfig.createInitDatabase(CONTAINER_1, DATABASE_1);
         /* metadata database */
         imageRepository.save(IMAGE_1);
-        userRepository.save(USER_1);
-        userRepository.save(USER_2);
+        userRepository.saveAll(List.of(USER_1, USER_2, USER_3));
         containerRepository.saveAll(List.of(CONTAINER_1_SIMPLE, CONTAINER_2_SIMPLE));
         databaseRepository.saveAll(List.of(DATABASE_1_SIMPLE, DATABASE_2_SIMPLE));
         tableRepository.saveAll(List.of(TABLE_1_SIMPLE, TABLE_2_SIMPLE, TABLE_3_SIMPLE, TABLE_4_SIMPLE, TABLE_5_SIMPLE, TABLE_6_SIMPLE, TABLE_7_SIMPLE));
@@ -299,8 +300,10 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                 .statement("SELECT n.`firstname`, n.`lastname`, n.`birth`, n.`reminder`, z.`animal_name`, z.`legs` FROM `likes` l JOIN `names` n ON l.`name_id` = n.`id` JOIN `mock_view` z ON z.`id` = l.`zoo_id`")
                 .build();
 
-        /* test */
+        /* pre-condition */
         Thread.sleep(1000) /* wait for test container some more */;
+
+        /* test */
         final QueryResultDto response = queryService.execute(DATABASE_2_ID, request, USER_1_PRINCIPAL, 0L, 100L, null, null);
         assertEquals(4L, response.getResultNumber());
         assertNotNull(response.getResult());
@@ -336,8 +339,10 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                 .statement("SELECT `location`, `lng` FROM `weather_location` WHERE `lat` IS NULL")
                 .build();
 
-        /* test */
+        /* pre-condition */
         Thread.sleep(1000) /* wait for test container some more */;
+
+        /* test */
         final QueryResultDto response = queryService.execute(DATABASE_1_ID, request, USER_1_PRINCIPAL,
                 0L, 100L, null, null);
         assertEquals(1L, response.getResultNumber());
@@ -356,8 +361,10 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                 .statement("SELECT `location` FROM `weather_location` WHERE `lat` IS NULL")
                 .build();
 
-        /* test */
+        /* pre-condition */
         Thread.sleep(1000) /* wait for test container some more */;
+
+        /* test */
         final QueryResultDto response = queryService.execute(DATABASE_1_ID, request, USER_1_PRINCIPAL,
                 0L, 100L, null, null);
         assertEquals(1L, response.getResultNumber());
@@ -377,8 +384,10 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                 .statement("SELECT `lat`, `lng` FROM `weather_location` WHERE `lat` IS NULL")
                 .build();
 
-        /* test */
+        /* pre-condition */
         Thread.sleep(1000) /* wait for test container some more */;
+
+        /* test */
         final QueryResultDto response = queryService.execute(DATABASE_1_ID, request, USER_1_PRINCIPAL,
                 0L, 100L, null, null);
         assertEquals(1L, response.getResultNumber());
@@ -393,8 +402,10 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                 .statement("SELECT aus.location as a, loc.location from weather_aus aus, weather_location loc")
                 .build();
 
-        /* test */
+        /* pre-condition */
         Thread.sleep(1000) /* wait for test container some more */;
+
+        /* test */
         final QueryResultDto response = queryService.execute(DATABASE_1_ID, request, USER_1_PRINCIPAL, 0L, 100L, null, null);
         assertEquals(9L, response.getResultNumber());
         assertNotNull(response.getResult());
@@ -428,7 +439,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                 .statement("SELECT aus.location as a, loc.location from weather.weather_aus aus, weather.weather_location loc")
                 .build();
 
-        /* mock */
+        /* pre-condition */
         Thread.sleep(1000) /* wait for test container some more */;
 
         /* test */
@@ -455,6 +466,36 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         assertEquals("Vienna", result.get(7).get("location"));
         assertEquals("Albury", result.get(8).get("a"));
         assertEquals("Vienna", result.get(8).get("location"));
+    }
+
+    @Test
+    public void viewFindAll_succeeds() throws DatabaseConnectionException, TableMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException, UserNotFoundException,
+            InterruptedException, ViewMalformedException, PaginationException, ViewNotFoundException {
+
+        /* pre-condition */
+        Thread.sleep(1000) /* wait for test container some more */;
+
+        /* test */
+        final QueryResultDto response = queryService.viewFindAll(DATABASE_1_ID, VIEW_2, 0L, 10L, USER_1_PRINCIPAL);
+        assertNotNull(response.getResult());
+        final List<Map<String, Object>> result = response.getResult();
+        /* values */
+        assertEquals(0.6, result.get(0).get("rainfall"));
+        assertEquals("Albury", result.get(0).get("loc"));
+        assertEquals(13.4, result.get(0).get("mintemp"));
+        assertEquals(0.0, result.get(1).get("rainfall"));
+        assertEquals("Albury", result.get(1).get("loc"));
+        assertEquals(7.4, result.get(1).get("mintemp"));
+        assertEquals(0.0, result.get(2).get("rainfall"));
+        assertEquals("Albury", result.get(2).get("loc"));
+        assertEquals(12.9, result.get(2).get("mintemp"));
+        /* ordering */
+        final String[] keys = result.get(0).keySet().toArray(new String[0]);
+        assertEquals("date", keys[0]);
+        assertEquals("loc", keys[1]);
+        assertEquals("rainfall", keys[2]);
+        assertEquals("mintemp", keys[3]);
     }
 
     @Test

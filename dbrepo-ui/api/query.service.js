@@ -206,7 +206,8 @@ class QueryService {
           resolve(result)
         })
         .catch((error) => {
-          const { code, message } = error
+          const { code } = error
+          const { message } = error.response.data
           console.error('Failed to re-execute view', error)
           Vue.$toast.error(`[${code}] Failed to re-execute view: ${message}`)
           reject(error)
@@ -223,7 +224,8 @@ class QueryService {
           resolve(count)
         })
         .catch((error) => {
-          const { code, message } = error
+          const { code } = error
+          const { message } = error.response.data
           console.error('Failed to re-execute view count', error)
           Vue.$toast.error(`[${code}] Failed to re-execute view count: ${message}`)
           reject(error)

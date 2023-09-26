@@ -288,6 +288,7 @@ services:
       BROKER_PASSWORD: "${BROKER_PASSWORD:-fda}"
       BROKER_LOGIN_URL: "${BROKER_LOGIN_URL:-/admin/broker/}"
       KEYCLOAK_LOGIN_URL: "${KEYCLOAK_LOGIN_URL:-/api/auth/admin/}"
+      OPENSEARCH_LOGIN_URL: "${OPENSEARCH_LOGIN_URL:-/admin/dashboard/}"
       SHARED_FILESYSTEM: "${SHARED_FILESYSTEM:-/tmp}"
       LOGO: "${LOGO:-/logo.png}"
       SEARCH_USERNAME: "${SEARCH_USERNAME:-admin}"
@@ -364,8 +365,8 @@ services:
       METADATA_JDBC_EXTRA_ARGS: ${METADATA_JDBC_EXTRA_ARGS:-}
       METADATA_PASSWORD: ${METADATA_PASSWORD:-dbrepo}
       METADATA_USERNAME: ${METADATA_USERNAME:-root}
-      SEARCH_USERNAME: ${SEARCH_USERNAME:-fda}
-      SEARCH_PASSWORD: ${SEARCH_PASSWORD:-fda}
+      SEARCH_USERNAME: ${SEARCH_USERNAME:-admin}
+      SEARCH_PASSWORD: ${SEARCH_PASSWORD:-admin}
       LOG_LEVEL: ${LOG_LEVEL:-debug}
     healthcheck:
       test: wget -qO- localhost:9050/actuator/health/readiness | grep -q "UP" || exit 1

@@ -42,7 +42,7 @@ public interface UserService {
      * @return The user, if successful. False otherwise.
      * @throws UserAlreadyExistsException The user already exists in the metadata database.
      */
-    User create(SignupRequestDto data) throws UserAlreadyExistsException, AccessDeniedException,
+    User create(SignupRequestDto data, UUID id) throws UserAlreadyExistsException, AccessDeniedException,
             KeycloakRemoteException, UserNotFoundException, UserEmailAlreadyExistsException;
 
     /**
@@ -61,7 +61,7 @@ public interface UserService {
      * @param id   The user id.
      * @param data The new password.
      */
-    void updatePassword(UUID id, UserPasswordDto data) throws KeycloakRemoteException, AccessDeniedException, UserNotFoundException;
+    void updatePassword(UUID id, UserPasswordDto data) throws UserNotFoundException;
 
     /**
      * Updates the user theme for a user with given id.

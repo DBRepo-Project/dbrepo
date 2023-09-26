@@ -6,6 +6,7 @@ import at.tuwien.api.database.ViewCreateDto;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.MariaDbContainerConfig;
 import at.tuwien.entities.database.View;
+import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.exception.*;
 import at.tuwien.repository.mdb.*;
 import lombok.extern.log4j.Log4j2;
@@ -39,7 +40,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 @Log4j2
 @Testcontainers
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-@EnableAutoConfiguration(exclude= RabbitAutoConfiguration.class)
+@EnableAutoConfiguration(exclude = RabbitAutoConfiguration.class)
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 @MockAmqp
@@ -79,7 +80,7 @@ public class ViewServiceIntegrationTest extends BaseUnitTest {
     private static final OpensearchContainer opensearchContainer = new OpensearchContainer(DockerImageName.parse("opensearchproject/opensearch:2.8.0"));
 
     @DynamicPropertySource
-    static void elasticsearchProperties(DynamicPropertyRegistry registry) {
+    static void openSearchProperties(DynamicPropertyRegistry registry) {
         final int idx = opensearchContainer.getHttpHostAddress().lastIndexOf(':');
         registry.add("spring.opensearch.host", () -> "127.0.0.1");
         registry.add("spring.opensearch.port", () -> opensearchContainer.getHttpHostAddress().substring(idx + 1));
@@ -97,7 +98,7 @@ public class ViewServiceIntegrationTest extends BaseUnitTest {
     public void beforeEach() {
         /* metadata database */
         imageRepository.save(IMAGE_1);
-        userRepository.saveAll(List.of(USER_1, USER_2));
+        userRepository.saveAll(List.of(USER_1, USER_2, USER_3));
         containerRepository.saveAll(List.of(CONTAINER_1_SIMPLE, CONTAINER_2_SIMPLE));
         databaseRepository.saveAll(List.of(DATABASE_1_SIMPLE, DATABASE_2_SIMPLE));
         tableRepository.saveAll(List.of(TABLE_1_SIMPLE, TABLE_2_SIMPLE, TABLE_3_SIMPLE, TABLE_4_SIMPLE, TABLE_5_SIMPLE, TABLE_6_SIMPLE, TABLE_7_SIMPLE));
@@ -171,6 +172,36 @@ public class ViewServiceIntegrationTest extends BaseUnitTest {
         assertEquals("Vienna", row2.get("location"));
         assertNull(row2.get("lat"));
         assertNull(row2.get("lng"));
+    }
+
+    @Test
+    public void create_withAlias_succeeds() throws DatabaseNotFoundException, UserNotFoundException,
+            DatabaseConnectionException, ViewMalformedException, QueryMalformedException {
+        final ViewCreateDto request = ViewCreateDto.builder()
+                .name(VIEW_2_NAME + "_with_alias")
+                .query(VIEW_2_QUERY)
+                .isPublic(VIEW_2_PUBLIC)
+                .build();
+
+        /* test */
+        final View response = viewService.create(DATABASE_1_ID, request, USER_1_PRINCIPAL);
+        assertEquals(VIEW_2_NAME + "_with_alias", response.getName());
+        assertEquals(VIEW_2_INTERNAL_NAME + "_with_alias", response.getInternalName());
+        assertEquals(VIEW_2_QUERY, response.getQuery());
+        final List<TableColumn> columns = response.getColumns();
+        assertEquals(4, columns.size());
+        final TableColumn column0 = columns.get(0);
+        assertEquals("date", column0.getInternalName());
+        assertNull(column0.getAlias());
+        final TableColumn column1 = columns.get(1);
+        assertEquals("location", column1.getInternalName());
+        assertEquals("loc", column1.getAlias());
+        final TableColumn column2 = columns.get(2);
+        assertEquals("rainfall", column2.getInternalName());
+        assertNull(column2.getAlias());
+        final TableColumn column3 = columns.get(3);
+        assertEquals("mintemp", column3.getInternalName());
+        assertNull(column3.getAlias());
     }
 
 }

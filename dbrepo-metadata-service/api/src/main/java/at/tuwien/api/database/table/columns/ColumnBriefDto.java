@@ -37,6 +37,9 @@ public class ColumnBriefDto {
     @Schema(example = "mdb_date")
     private String internalName;
 
+    @Schema
+    private String alias;
+
     @NotNull
     @JsonProperty("column_type")
     @Schema(example = "date")

@@ -2,8 +2,6 @@
 
 TAG ?= latest
 TRIVY_VERSION ?= v0.41.0
-ELASTIC_VERSION ?= 8.7.1
-NGINX_VERSION ?= 1.25.0-alpine-slim
 AZURE_REPO ?= dbrepo.azurecr.io
 
 all: build
@@ -23,7 +21,7 @@ build-analyse-service:
 
 build-docker:
 	docker build -t dbrepo-metadata-service:build --target build dbrepo-metadata-service
-	docker build ./dbrepo-log-service -t dbrepo-log-service:latest
+	docker build -t dbrepo-search-sync-agent:build --target build dbrepo-search-sync-agent
 	docker compose build --parallel
 
 build-frontend:
@@ -33,7 +31,7 @@ build-frontend:
 build-clients:
 	bash ./.gitlab/swagger/generate.sh
 
-tag: tag-analyse-service tag-authentication-service tag-metadata-db tag-ui tag-broker-service tag-metadata-service tag-search-sync-agent tag-log-service tag-log-service-dashboard
+tag: tag-analyse-service tag-authentication-service tag-metadata-db tag-ui tag-broker-service tag-metadata-service tag-search-sync-agent
 
 tag-analyse-service:
 	docker tag dbrepo-analyse-service:latest "dbrepo/analyse-service:${TAG}"
@@ -67,15 +65,7 @@ tag-search-db:
 	docker tag dbrepo-search-db:latest "dbrepo/search-db:${TAG}"
 	docker tag dbrepo-search-db:latest "${AZURE_REPO}/dbrepo/search-db:${TAG}"
 
-tag-log-service:
-	docker tag dbrepo-log-service:latest "dbrepo/log-service:${TAG}"
-	docker tag dbrepo-log-service:latest "${AZURE_REPO}/dbrepo/log-service:${TAG}"
-
-tag-log-service-dashboard:
-	docker tag dbrepo-log-service-dashboard:latest "dbrepo/log-service-dashboard:${TAG}"
-	docker tag dbrepo-log-service-dashboard:latest "${AZURE_REPO}/dbrepo/log-service-dashboard:${TAG}"
-
-release: build-docker tag release-analyse-service release-authentication-service release-metadata-db release-ui release-broker-service release-metadata-service release-search-sync-agent release-log-service release-search-db release-log-service-dashboard
+release: build-docker tag release-analyse-service release-authentication-service release-metadata-db release-ui release-broker-service release-metadata-service release-search-sync-agent
 
 release-analyse-service: tag-analyse-service
 	docker push "dbrepo/analyse-service:${TAG}"
@@ -109,26 +99,18 @@ release-metadata-service: tag-metadata-service
 	docker push "dbrepo/metadata-service:${TAG}"
 	docker push "${AZURE_REPO}/dbrepo/metadata-service:${TAG}"
 
-release-log-service: tag-log-service
-	docker push "dbrepo/log-service:${TAG}"
-	docker push "${AZURE_REPO}/dbrepo/log-service:${TAG}"
-
-release-log-service-dashboard: tag-log-service-dashboard
-	docker push "dbrepo/log-service-dashboard:${TAG}"
-	docker push "${AZURE_REPO}/dbrepo/log-service-dashboard:${TAG}"
-
 test-backend: test-metadata-service test-analyse-service test-search-sync-agent
 
 test-search-sync-agent: build-search-sync-agent
 	mvn -f ./dbrepo-search-sync-agent/pom.xml clean test verify
 
-test-metadata-service: build-metadata-service
+test-metadata-service: build-metadata-service teardown
 	mvn -f ./dbrepo-metadata-service/pom.xml clean test verify
 
 test-analyse-service: build-analyse-service
 	bash ./dbrepo-analyse-service/test.sh
 
-scan: scan-analyse-service scan-authentication-service scan-broker-service scan-gateway-service scan-metadata-db scan-metadata-service scan-search-db scan-ui scan-search-sync-agent
+scan: scan-analyse-service scan-authentication-service scan-broker-service scan-gateway-service scan-metadata-db scan-metadata-service scan-search-db scan-ui scan-search-sync-agent scan-data-db
 
 scan-analyse-service:
 	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-analyse-service-report.json dbrepo-analyse-service:latest
@@ -146,10 +128,10 @@ scan-broker-service:
 	trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-broker-service:latest
 
 scan-gateway-service:
-	docker pull "nginx:${NGINX_VERSION}"
-	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-gateway-service-report.json "nginx:${NGINX_VERSION}"
-	trivy image --insecure --exit-code 0 "nginx:${NGINX_VERSION}"
-	trivy image --insecure --exit-code 1 --severity CRITICAL "nginx:${NGINX_VERSION}"
+	docker pull "nginx:1.25.0-alpine-slim"
+	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-gateway-service-report.json "nginx:1.25.0-alpine-slim"
+	trivy image --insecure --exit-code 0 "nginx:1.25.0-alpine-slim"
+	trivy image --insecure --exit-code 1 --severity CRITICAL "nginx:1.25.0-alpine-slim"
 
 scan-metadata-db:
 	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-metadata-db-report.json dbrepo-metadata-db:latest
@@ -167,10 +149,15 @@ scan-search-sync-agent:
 	trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-search-sync-agent:latest
 
 scan-search-db:
-	docker pull "elasticsearch:${ELASTIC_VERSION}"
-	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-db-report.json "elasticsearch:${ELASTIC_VERSION}"
-	trivy image --insecure --exit-code 0 "elasticsearch:${ELASTIC_VERSION}"
-	trivy image --insecure --exit-code 1 --severity CRITICAL "elasticsearch:${ELASTIC_VERSION}"
+	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-db-report.json "dbrepo-search-db"
+	trivy image --insecure --exit-code 0 "dbrepo-search-db"
+	trivy image --insecure --exit-code 1 --severity CRITICAL "dbrepo-search-db"
+
+scan-data-db:
+	docker pull "bitnami/mariadb:10.5"
+	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-db-report.json "bitnami/mariadb:10.5"
+	trivy image --insecure --exit-code 0 "bitnami/mariadb:10.5"
+	trivy image --insecure --exit-code 1 --severity CRITICAL "bitnami/mariadb:10.5"
 
 scan-ui:
 	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-ui-report.json dbrepo-ui:latest

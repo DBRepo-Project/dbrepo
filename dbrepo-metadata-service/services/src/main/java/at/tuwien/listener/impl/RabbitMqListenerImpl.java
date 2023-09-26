@@ -1,6 +1,7 @@
 package at.tuwien.listener.impl;
 
 import at.tuwien.exception.AmqpException;
+import at.tuwien.exception.BrokerRemoteException;
 import at.tuwien.listener.MessageQueueListener;
 import at.tuwien.service.MessageQueueService;
 import lombok.extern.log4j.Log4j2;
@@ -23,7 +24,7 @@ public class RabbitMqListenerImpl implements MessageQueueListener {
     @Override
     @Scheduled(fixedDelay = 5, initialDelay = 300, timeUnit = TimeUnit.SECONDS)
     @Transactional(readOnly = true)
-    public void updateConsumers() throws AmqpException {
+    public void updateConsumers() throws AmqpException, BrokerRemoteException {
         messageQueueService.restore();
     }
 

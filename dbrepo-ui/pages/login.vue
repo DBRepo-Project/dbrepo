@@ -51,9 +51,17 @@
             Login
           </v-btn>
         </v-card-actions>
-        <v-card-text class="text-right">
-          <a href="/api/auth/">Admin Login</a>
-        </v-card-text>
+        <v-card-subtitle class="text-right">
+          <a v-if="openSearchUrl" class="mr-1" :href="openSearchUrl" target="_blank">
+            OpenSearch Admin <sup><v-icon color="primary" x-small>mdi-open-in-new</v-icon></sup>
+          </a>
+          <a v-if="rabbitMqUrl" class="mr-1" :href="rabbitMqUrl" target="_blank">
+            RabbitMQ Admin <sup><v-icon color="primary" x-small>mdi-open-in-new</v-icon></sup>
+          </a>
+          <a v-if="keycloakUrl" class="ml-1" :href="keycloakUrl" target="_blank">
+            Keycloak Admin <sup><v-icon color="primary" x-small>mdi-open-in-new</v-icon></sup>
+          </a>
+        </v-card-subtitle>
       </v-card>
     </v-form>
   </div>
@@ -82,6 +90,15 @@ export default {
     },
     user () {
       return this.$store.state.user
+    },
+    keycloakUrl () {
+      return this.$config.keycloakLoginUrl
+    },
+    rabbitMqUrl () {
+      return this.$config.brokerLoginUrl
+    },
+    openSearchUrl () {
+      return this.$config.openSearchUrl
     }
   },
   mounted () {

@@ -32,7 +32,7 @@ public class MariaDbContainerConfig {
         private boolean started = false;
 
         public static synchronized CustomMariaDBContainer getInstance() {
-            if(instance == null) {
+            if (instance == null) {
                 instance = new CustomMariaDBContainer(BaseTest.IMAGE_1_NAME + ":" + BaseTest.IMAGE_1_VERSION);
                 instance.withImagePullPolicy(PullPolicy.alwaysPull());
                 instance.addFixedExposedPort(BaseTest.CONTAINER_1_PORT, BaseTest.IMAGE_1_PORT);
@@ -56,7 +56,8 @@ public class MariaDbContainerConfig {
 
         @Override
         public synchronized void start() {
-            if(!started) {
+            if (!started) {
+                super.stop();
                 super.start();
                 started = true;
             }

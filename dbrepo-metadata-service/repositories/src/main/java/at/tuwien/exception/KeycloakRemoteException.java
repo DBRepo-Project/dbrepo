@@ -3,7 +3,7 @@ package at.tuwien.exception;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-@ResponseStatus(code = HttpStatus.LOCKED)
+@ResponseStatus(code = HttpStatus.SERVICE_UNAVAILABLE)
 public class KeycloakRemoteException extends Exception {
 
     public KeycloakRemoteException(String msg) {

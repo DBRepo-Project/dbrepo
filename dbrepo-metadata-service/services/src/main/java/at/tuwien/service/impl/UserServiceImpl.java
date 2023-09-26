@@ -63,18 +63,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User create(SignupRequestDto data) throws UserAlreadyExistsException, AccessDeniedException,
+    public User create(SignupRequestDto data, UUID id) throws UserAlreadyExistsException, AccessDeniedException,
             KeycloakRemoteException, UserNotFoundException, UserEmailAlreadyExistsException {
         /* create at authentication service */
         final User entity = User.builder()
+                .id(id)
                 .username(data.getUsername())
                 .email(data.getEmail())
                 .themeDark(false)
                 .mariadbPassword(getMariaDbPassword(data.getPassword()))
                 .build();
-        keycloakGateway.createUser(userMapper.signupRequestDtoToUserCreateDto(data));
         /* create at metadata database */
-        entity.setId(keycloakGateway.findByUsername(data.getUsername()).getId());
         final User user = userRepository.save(entity);
         log.info("Created user with id {} in metadata database", user.getId());
         /* save in open search database */
@@ -96,14 +95,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void updatePassword(UUID id, UserPasswordDto data) throws KeycloakRemoteException, AccessDeniedException,
-            UserNotFoundException {
+    public void updatePassword(UUID id, UserPasswordDto data) throws UserNotFoundException {
         final User user = find(id);
         user.setMariadbPassword(getMariaDbPassword(data.getPassword()));
         userRepository.save(user);
-        log.debug("updated password in metadata database");
-        keycloakGateway.updateUserCredentials(id, data);
-        log.debug("updated password in keycloak");
         log.info("Updated user password with id {}", id);
     }
 

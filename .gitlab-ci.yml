@@ -1,15 +1,3 @@
-before_script:
-  - "docker version"
-  - "docker compose version"
-  - "docker system prune -f"
-  - "mvn --version"
-  - "python3 --version"
-  - "df / -h"
-  - "docker logout"
-  - "docker logout ghcr.io"
-  - "docker logout registry.hub.docker.com"
-  - "docker logout ${AZURE_REPO}"
-
 variables:
   HOSTALIASES: ./hosts
   DOCKER_TLS_CERTDIR: /certs
@@ -49,6 +37,21 @@ build-search-sync-agent:
     - build-metadata-service
   script:
     - "make build-search-sync-agent"
+
+build-frontend:
+  stage: build-frontend
+  script:
+    - "make build-frontend"
+
+build-docker:
+  image: docker:24-dind
+  stage: build-docker
+  needs:
+    - build-metadata-service
+    - build-analyse-service
+  script:
+    - "cp .env.unix.example .env"
+    - "make build-docker"
 
 test-metadata-service:
   stage: test-backend
@@ -117,21 +120,6 @@ test-frontend:
         coverage_format: cobertura
         path: ./dbrepo-ui/coverage/cobertura-coverage.xml
   coverage: '/TOTAL.*?([0-9]{1,3})%/'
-
-build-docker:
-  stage: build-docker
-  needs:
-    - build-metadata-service
-    - build-analyse-service
-  script:
-    - bash .scripts/docker-prune.sh
-    - cp .env.unix.example .env
-    - make build-docker
-
-build-frontend:
-  stage: build-frontend
-  script:
-    - make build-frontend
 
 scan-analyse-service:
   stage: scan-docker
@@ -233,26 +221,6 @@ scan-metadata-service:
     reports:
       container_scanning: ./.trivy/trivy-metadata-service-report.json
 
-scan-proxy:
-  stage: scan-docker
-  needs:
-    - build-docker
-  only:
-    refs:
-      - dev
-      - master
-  allow_failure: true
-  script:
-    - make scan-proxy
-  cache:
-    paths:
-      - .trivycache/
-  artifacts:
-    when: always
-    expire_in: 1 days
-    reports:
-      container_scanning: ./.trivy/trivy-proxy-report.json
-
 scan-search-db:
   stage: scan-docker
   needs:
@@ -272,6 +240,46 @@ scan-search-db:
     expire_in: 1 days
     reports:
       container_scanning: ./.trivy/trivy-search-db-report.json
+
+scan-data-db:
+  stage: scan-docker
+  needs:
+    - build-docker
+  only:
+    refs:
+      - dev
+      - master
+  allow_failure: true
+  script:
+    - make scan-data-db
+  cache:
+    paths:
+      - .trivycache/
+  artifacts:
+    when: always
+    expire_in: 1 days
+    reports:
+      container_scanning: ./.trivy/trivy-data-db-report.json
+
+scan-metadata-db:
+  stage: scan-docker
+  needs:
+    - build-docker
+  only:
+    refs:
+      - dev
+      - master
+  allow_failure: true
+  script:
+    - make scan-metadata-db
+  cache:
+    paths:
+      - .trivycache/
+  artifacts:
+    when: always
+    expire_in: 1 days
+    reports:
+      container_scanning: ./.trivy/trivy-metadata-db-report.json
 
 scan-ui:
   stage: scan-docker
@@ -301,7 +309,8 @@ release-latest:
     - scan-broker-service
     - scan-gateway-service
     - scan-metadata-service
-    - scan-proxy
+    - scan-metadata-db
+    - scan-data-db
     - scan-search-db
     - scan-ui
   only:
@@ -321,7 +330,8 @@ release-version:
     - scan-broker-service
     - scan-gateway-service
     - scan-metadata-service
-    - scan-proxy
+    - scan-metadata-db
+    - scan-data-db
     - scan-search-db
     - scan-ui
   only:
