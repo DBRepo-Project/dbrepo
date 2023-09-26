@@ -1,6 +1,6 @@
 import path from 'path'
 import colors from 'vuetify/es5/util/colors'
-import { icon, clientSecret, title, logo, version, defaultPublisher, doiUrl, clientId, uploadPath, brokerUsername, brokerPassword, searchUsername, searchPassword, brokerLoginUrl, keycloakLoginUrl } from './config'
+import { icon, clientSecret, title, logo, version, defaultPublisher, doiUrl, clientId, uploadPath, brokerUsername, brokerPassword, searchUsername, searchPassword, brokerLoginUrl, keycloakLoginUrl, openSearchUrl } from './config'
 
 const proxy = {}
 
@@ -108,6 +108,7 @@ export default {
     brokerPassword,
     brokerLoginUrl,
     keycloakLoginUrl,
+    openSearchUrl,
     searchUsername,
     searchPassword,
     doiUrl,

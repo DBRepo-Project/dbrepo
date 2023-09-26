@@ -52,6 +52,9 @@
           </v-btn>
         </v-card-actions>
         <v-card-subtitle class="text-right">
+          <a v-if="openSearchUrl" class="mr-1" :href="openSearchUrl" target="_blank">
+            OpenSearch Admin <sup><v-icon color="primary" x-small>mdi-open-in-new</v-icon></sup>
+          </a>
           <a v-if="rabbitMqUrl" class="mr-1" :href="rabbitMqUrl" target="_blank">
             RabbitMQ Admin <sup><v-icon color="primary" x-small>mdi-open-in-new</v-icon></sup>
           </a>
@@ -93,6 +96,9 @@ export default {
     },
     rabbitMqUrl () {
       return this.$config.brokerLoginUrl
+    },
+    openSearchUrl () {
+      return this.$config.openSearchUrl
     }
   },
   mounted () {

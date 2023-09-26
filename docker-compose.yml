@@ -2,6 +2,16 @@
 # MODIFIED: 2023-06-01
 # MAINTAINER: Martin Weise <martin.weise@tuwien.ac.at>
 
+# Log to the (commented) log service by changing the logging driver to fluentd, e.g.name:
+#
+# my-service:
+#   ...
+#   logging: fluentd
+#     driver: fluentd
+#     options:
+#       host: localhost: 24224
+#       tag: my-service
+
 version: "3.6"
 
 volumes:
@@ -34,7 +44,7 @@ services:
     container_name: dbrepo-metadata-db
     hostname: metadata-db
     build: ./dbrepo-metadata-db
-    image: dbrepo-metadata-db:latest
+    image: dbrepo-metadata-db
     networks:
       core:
     volumes:
@@ -248,15 +258,13 @@ services:
       - "2020:2020"
       - "9200:9200"
     healthcheck:
-      test: bash ./healthcheck.sh
+      test: curl -sSL localhost:9200/_plugins/_security/health | jq .status | grep UP
       interval: 10s
       timeout: 5s
       retries: 12
     environment:
-      discovery.type: "single-node"
       ES_JAVA_OPTS: "-Xms4g -Xmx4g"
       logger.level: "WARN"
-      plugins.security.disabled: "true"
     deploy:
       resources:
         limits:
@@ -280,6 +288,7 @@ services:
       BROKER_PASSWORD: "${BROKER_PASSWORD:-fda}"
       BROKER_LOGIN_URL: "${BROKER_LOGIN_URL:-/admin/broker/}"
       KEYCLOAK_LOGIN_URL: "${KEYCLOAK_LOGIN_URL:-/api/auth/admin/}"
+      OPENSEARCH_LOGIN_URL: "${OPENSEARCH_LOGIN_URL:-/admin/dashboard/}"
       SHARED_FILESYSTEM: "${SHARED_FILESYSTEM:-/tmp}"
       LOGO: "${LOGO:-/logo.png}"
       SEARCH_USERNAME: "${SEARCH_USERNAME:-admin}"
@@ -326,6 +335,22 @@ services:
     logging:
       driver: json-file
 
+  dbrepo-search-db-dashboard:
+    restart: "no"
+    container_name: dbrepo-search-db-dashboard
+    hostname: search-db-dashboard
+    image: opensearchproject/opensearch-dashboards:2.8.0
+    networks:
+      core:
+      public:
+    volumes:
+      - ./dbrepo-log-service/dashboard/opensearch_dashboards.yml:/usr/share/opensearch-dashboards/config/opensearch_dashboards.yml
+    ports:
+      - "5601:5601"
+    depends_on:
+      dbrepo-search-db:
+        condition: service_healthy
+
   dbrepo-search-sync-agent:
     restart: "no"
     container_name: dbrepo-search-sync-agent
@@ -340,8 +365,8 @@ services:
       METADATA_JDBC_EXTRA_ARGS: ${METADATA_JDBC_EXTRA_ARGS:-}
       METADATA_PASSWORD: ${METADATA_PASSWORD:-dbrepo}
       METADATA_USERNAME: ${METADATA_USERNAME:-root}
-      SEARCH_USERNAME: ${SEARCH_USERNAME:-fda}
-      SEARCH_PASSWORD: ${SEARCH_PASSWORD:-fda}
+      SEARCH_USERNAME: ${SEARCH_USERNAME:-admin}
+      SEARCH_PASSWORD: ${SEARCH_PASSWORD:-admin}
       LOG_LEVEL: ${LOG_LEVEL:-debug}
     healthcheck:
       test: wget -qO- localhost:9050/actuator/health/readiness | grep -q "UP" || exit 1

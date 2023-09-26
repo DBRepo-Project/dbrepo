@@ -6,6 +6,7 @@ config.brokerUsername = process.env.BROKER_USERNAME
 config.brokerPassword = process.env.BROKER_PASSWORD
 config.brokerLoginUrl = process.env.BROKER_LOGIN_URL
 config.keycloakLoginUrl = process.env.KEYCLOAK_LOGIN_URL
+config.openSearchUrl = process.env.OPENSEARCH_LOGIN_URL
 config.sharedFilesystem = process.env.SHARED_FILESYSTEM
 config.version = process.env.VERSION
 config.logo = process.env.LOGO
