@@ -6,8 +6,7 @@
       :value="value || content"
       lang="sql"
       theme="xcode"
-      width="600"
-      :height="height"
+      width="100%"
       @init="editorInit" />
   </div>
 </template>
@@ -33,12 +32,6 @@ export default {
     }
   },
   computed: {
-    height () {
-      return 150
-      // if (!this.disabled) { return 150 }
-      // const numLines = this.value.split('\n').length
-      // return numLines * 25
-    },
     is_dark () {
       return this.$vuetify.theme.dark
     }
@@ -56,9 +49,11 @@ export default {
   methods: {
     editorInit (editor) {
       editor.setOptions({
-        fontSize: '12pt',
+        fontSize: '14pt',
         readOnly: this.disabled,
-        behavioursEnabled: !this.disabled
+        behavioursEnabled: !this.disabled,
+        maxLines: 28,
+        minLines: 16
       })
       require('brace/ext/language_tools') // language extension prerequsite...
       require('brace/mode/html')
