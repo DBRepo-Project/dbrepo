@@ -32,7 +32,7 @@ build-frontend:
 build-clients:
 	bash ./.gitlab/swagger/generate.sh
 
-tag: tag-analyse-service tag-authentication-service tag-metadata-db tag-ui tag-broker-service tag-metadata-service tag-search-sync-agent tag-log-service
+tag: tag-analyse-service tag-authentication-service tag-metadata-db tag-ui tag-broker-service tag-metadata-service tag-search-sync-agent tag-log-service tag-search-db
 
 tag-analyse-service:
 	docker tag dbrepo-analyse-service:latest "dbrepo/analyse-service:${TAG}"
@@ -70,7 +70,7 @@ tag-log-service:
 	docker tag dbrepo-log-service:latest "dbrepo/log-service:${TAG}"
 	docker tag dbrepo-log-service:latest "${AZURE_REPO}/dbrepo/log-service:${TAG}"
 
-release: build-docker tag release-analyse-service release-authentication-service release-metadata-db release-ui release-broker-service release-metadata-service release-search-sync-agent release-log-service
+release: build-docker tag release-analyse-service release-authentication-service release-metadata-db release-ui release-broker-service release-metadata-service release-search-sync-agent release-log-service release-search-db
 
 release-analyse-service: tag-analyse-service
 	docker push "dbrepo/analyse-service:${TAG}"
