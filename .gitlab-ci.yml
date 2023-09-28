@@ -18,6 +18,7 @@ stages:
   - test-backend
   - test-frontend
   - build-docker
+  - test-deployment
   - scan-docker
   - release-docker
 
@@ -52,6 +53,13 @@ build-docker:
   script:
     - "cp .env.unix.example .env"
     - "make build-docker"
+
+test-deployment:
+  stage: build-docker
+  needs:
+    - build-docker
+  script:
+    - "curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/install.sh | sudo bash"
 
 test-metadata-service:
   stage: test-backend
