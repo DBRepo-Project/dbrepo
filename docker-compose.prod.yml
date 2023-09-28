@@ -277,7 +277,7 @@ services:
       LOGO: "${LOGO:-/logo.png}"
       SEARCH_USERNAME: "${SEARCH_USERNAME:-admin}"
       SEARCH_PASSWORD: "${SEARCH_PASSWORD:-admin}"
-      VERSION: "${VERSION:-${TAG}}"
+      VERSION: "${VERSION:-latest}"
       TITLE: "${TITLE:-Database Repository}"
       ICON: "${ICON:-/favicon.ico}"
       DBREPO_CLIENT_ID: "${DBREPO_CLIENT_ID:-dbrepo-client}"
