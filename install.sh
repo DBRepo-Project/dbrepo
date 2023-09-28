@@ -20,7 +20,7 @@ fi
 echo "[🚀] Gathering environment ..."
 curl -sSL -o docker-compose.yml https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/docker-compose.prod.yml
 curl -sSL -o dbrepo.conf https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/dbrepo-gateway-service/dbrepo.conf
-curl -sSL -o opensearch.yml https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/dbrepo-search-db/opensearch.yml
+curl -sSL -o opensearch_dashboards.yml https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/dbrepo-search-db/opensearch_dashboards.yml
 curl -sSL -o setup-schema_local.sql https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/dbrepo-metadata-db/setup-schema_local.sql
 
 echo "[📦] Pulling images ..."
