@@ -136,6 +136,11 @@ services:
     ports:
       - "8443:8443"
       - "8080:8080"
+    healthcheck:
+      test: curl -sSL 'http://0.0.0.0:8080/realms/dbrepo' | grep "dbrepo" || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 12
     environment:
       AUTH_DB: "${AUTH_DB:-keycloak}"
       KC_DB_USERNAME: "${AUTH_USERNAME:-root}"

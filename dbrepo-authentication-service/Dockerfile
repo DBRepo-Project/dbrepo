@@ -34,7 +34,8 @@ COPY ./dbrepo-realm.json /opt/keycloak/data/import/dbrepo-realm.json
 
 WORKDIR /app
 
-COPY ./healthcheck.sh ./healthcheck.sh
+COPY ./docker-entrypoint.sh ./docker-entrypoint.sh
+COPY ./disable-tls.sh ./disable-tls.sh
 
 ENV AUTH_DB=keycloak
 ENV AUTH_USERNAME=root
@@ -52,6 +53,4 @@ ENV KEYCLOAK_IMPORT=/opt/keycloak/data/import/dbrepo-realm.json
 ENV KEYCLOAK_ADMIN=fda
 ENV KEYCLOAK_ADMIN_PASSWORD=fda
 
-HEALTHCHECK --interval=10s --timeout=5s --retries=12 CMD ["bash", "/app/healthcheck.sh"]
-
-ENTRYPOINT ["/opt/keycloak/bin/kc.sh", "start-dev", "--import-realm"]
+ENTRYPOINT [ "bash", "/app/docker-entrypoint.sh" ]
