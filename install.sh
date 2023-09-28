@@ -18,6 +18,7 @@ fi
 
 # environment
 echo "[🚀] Gathering environment ..."
+curl -sSL -o .env https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/.env.unix.example
 curl -sSL -o docker-compose.yml https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/docker-compose.prod.yml
 curl -sSL -o dbrepo.conf https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/dbrepo-gateway-service/dbrepo.conf
 curl -sSL -o opensearch_dashboards.yml https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/dbrepo-search-db/opensearch_dashboards.yml
