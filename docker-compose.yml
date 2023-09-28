@@ -349,7 +349,7 @@ services:
       core:
       public:
     volumes:
-      - ./dbrepo-log-service/dashboard/opensearch_dashboards.yml:/usr/share/opensearch-dashboards/config/opensearch_dashboards.yml
+      - ./dbrepo-search-db/opensearch_dashboards.yml:/usr/share/opensearch-dashboards/config/opensearch_dashboards.yml
     ports:
       - "5601:5601"
     depends_on:

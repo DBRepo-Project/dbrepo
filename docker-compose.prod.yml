@@ -33,7 +33,7 @@ services:
     restart: "no"
     container_name: dbrepo-metadata-db
     hostname: metadata-db
-    image: dbrepo/metadata-db:latest
+    image: dbrepo.azurecr.io/dbrepo/metadata-db:latest
     networks:
       core:
     volumes:
@@ -45,7 +45,7 @@ services:
       MARIADB_DATABASE: "${METADATA_DB:-fda}"
       MARIADB_ROOT_PASSWORD: "${METADATA_PASSWORD:-dbrepo}"
     healthcheck:
-      test: mysqladmin ping --user="$METADATA_USERNAME" --password="$METADATA_PASSWORD" --silent
+      test: mysqladmin ping --user="${METADATA_USERNAME:-root}" --password="${METADATA_PASSWORD:-dbrepo}" --silent
       interval: 10s
       timeout: 5s
       retries: 12
@@ -56,7 +56,7 @@ services:
     restart: "no"
     container_name: dbrepo-data-db
     hostname: data-db
-    image: bitnami/mariadb:10.5
+    image: docker.io/bitnami/mariadb:10.5
     networks:
       core:
     volumes:
@@ -67,7 +67,7 @@ services:
     environment:
       MARIADB_ROOT_PASSWORD: "${USER_DB_PASSWORD:-dbrepo}"
     healthcheck:
-      test: mysqladmin ping --user="$USER_DB_USERNAME" --password="$USER_DB_PASSWORD" --silent
+      test: mysqladmin ping --user="${USER_DB_USERNAME:-root}" --password="${USER_DB_PASSWORD:-dbrepo}" --silent
       interval: 10s
       timeout: 5s
       retries: 12
@@ -78,7 +78,7 @@ services:
     restart: "no"
     container_name: dbrepo-auth-db
     hostname: auth-db
-    image: bitnami/mariadb:10.5
+    image: docker.io/bitnami/mariadb:10.5
     networks:
       core:
     volumes:
@@ -89,7 +89,7 @@ services:
       MARIADB_DATABASE: "${AUTH_DB:-keycloak}"
       MARIADB_ROOT_PASSWORD: "${AUTH_PASSWORD:-dbrepo}"
     healthcheck:
-      test: mysqladmin ping --user="$AUTH_USERNAME" --password="$AUTH_PASSWORD" --silent
+      test: mysqladmin ping --user="${AUTH_USERNAME:-root}" --password="${AUTH_PASSWORD:-dbrepo}" --silent
       interval: 10s
       timeout: 5s
       retries: 12
@@ -100,7 +100,7 @@ services:
     restart: "no"
     container_name: dbrepo-upload-service
     hostname: upload-service
-    image: tusproject/tusd:v1.12
+    image: docker.io/tusproject/tusd:v1.12
     command:
       - "--base-path=/api/upload/files/"
     networks:
@@ -115,12 +115,17 @@ services:
     restart: "no"
     container_name: dbrepo-authentication-service
     hostname: authentication-service
-    image: dbrepo/authentication-service:latest
+    image: dbrepo.azurecr.io/dbrepo/authentication-service:latest
     networks:
       core:
     ports:
       - "8443:8443"
       - "8080:8080"
+    healthcheck:
+      test: curl -sSL 'http://0.0.0.0:8080/realms/dbrepo' | grep "dbrepo" || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 12
     environment:
       AUTH_DB: "${AUTH_DB:-keycloak}"
       KC_DB_USERNAME: "${AUTH_USERNAME:-root}"
@@ -139,7 +144,7 @@ services:
     restart: "no"
     container_name: dbrepo-metadata-service
     hostname: metadata-service
-    image: dbrepo/metadata-service:latest
+    image: dbrepo.azurecr.io/dbrepo/metadata-service:latest
     networks:
       core:
     volumes:
@@ -151,13 +156,13 @@ services:
       BASE_URL: "${BASE_URL:-http://localhost}"
       GRANT_PRIVILEGES: "${GRANT_PRIVILEGES:-SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE}"
       BROKER_CONSUMERS: "${BROKER_CONSUMERS:-2}"
-      BROKER_ENDPOINT: "${BROKER_ENDPOINT:-http://broker-service:15672}"
+      BROKER_ENDPOINT: "${BROKER_ENDPOINT:-http://broker-service:15672/admin/broker}"
       BROKER_USERNAME: "${BROKER_USERNAME:-fda}"
       BROKER_PASSWORD: "${BROKER_PASSWORD:-fda}"
       DELETED_RECORD: "${DELETED_RECORD:-persistent}"
       EARLIEST_DATESTAMP: "${EARLIEST_DATESTAMP:-2022-09-17T18:23:00Z}"
       GRANULARITY: "${GRANULARITY:-YYYY-MM-DDThh:mm:ssZ}"
-      JWT_ISSUER: "${JWT_ISSUER:-http://localhost/realms/dbrepo}"
+      JWT_ISSUER: "${JWT_ISSUER:-http://localhost/api/auth/realms/dbrepo}"
       JWT_PUBKEY: "${JWT_PUBKEY:-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB}"
       LOG_LEVEL: "${LOG_LEVEL:-debug}"
       METADATA_DB: "${METADATA_DB:-fda}"
@@ -195,7 +200,7 @@ services:
     restart: "no"
     container_name: dbrepo-analyse-service
     hostname: analyse-service
-    image: dbrepo/analyse-service:latest
+    image: dbrepo.azurecr.io/dbrepo/analyse-service:latest
     networks:
       core:
     ports:
@@ -209,12 +214,17 @@ services:
     restart: "no"
     container_name: dbrepo-broker-service
     hostname: broker-service
-    image: dbrepo/broker-service:latest
+    image: dbrepo.azurecr.io/dbrepo/broker-service:latest
     networks:
       core:
     ports:
       - "5672:5672"
       - "15672:15672"
+    healthcheck:
+      test: wget -qO- localhost:15672/admin/broker | grep "RabbitMQ" || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 12
     depends_on:
       dbrepo-authentication-service:
         condition: service_healthy
@@ -227,21 +237,19 @@ services:
     restart: "no"
     container_name: dbrepo-search-db
     hostname: search-db
-    image: opensearchproject/opensearch:2.8.0
+    image: dbrepo.azurecr.io/dbrepo/search-db:latest
     networks:
       core:
     ports:
-      - 9200:9200
+      - "9200:9200"
     healthcheck:
-      test: curl -s localhost:9200/_cat/indices || exit 1
+      test: curl -sSL localhost:9200/_plugins/_security/health | jq .status | grep UP
       interval: 10s
       timeout: 5s
       retries: 12
     environment:
-      discovery.type: "single-node"
       ES_JAVA_OPTS: "-Xms4g -Xmx4g"
       logger.level: "WARN"
-      plugins.security.disabled: "true"
     deploy:
       resources:
         limits:
@@ -255,15 +263,16 @@ services:
     restart: "no"
     container_name: dbrepo-ui
     hostname: ui
-    image: dbrepo/ui:latest
+    image: dbrepo.azurecr.io/dbrepo/ui:latest
     networks:
       core:
       public:
     environment:
       BROKER_USERNAME: "${BROKER_USERNAME:-fda}"
       BROKER_PASSWORD: "${BROKER_PASSWORD:-fda}"
-      BROKER_LOGIN_URL: "${BROKER_LOGIN_URL:-/broker/}"
-      KEYCLOAK_LOGIN_URL: "${KEYCLOAK_LOGIN_URL:-/api/auth/}"
+      BROKER_LOGIN_URL: "${BROKER_LOGIN_URL:-/admin/broker/}"
+      KEYCLOAK_LOGIN_URL: "${KEYCLOAK_LOGIN_URL:-/api/auth/admin/}"
+      OPENSEARCH_LOGIN_URL: "${OPENSEARCH_LOGIN_URL:-/admin/dashboard/}"
       SHARED_FILESYSTEM: "${SHARED_FILESYSTEM:-/tmp}"
       LOGO: "${LOGO:-/logo.png}"
       SEARCH_USERNAME: "${SEARCH_USERNAME:-admin}"
@@ -285,7 +294,7 @@ services:
     restart: "no"
     container_name: dbrepo-gateway-service
     hostname: gateway-service
-    image: nginx:1.25-alpine-slim
+    image: docker.io/nginx:1.25-alpine-slim
     networks:
       core:
       public:
@@ -310,33 +319,20 @@ services:
     logging:
       driver: json-file
 
-  dbrepo-search-sync-agent:
+  dbrepo-search-db-dashboard:
     restart: "no"
-    container_name: dbrepo-search-sync-agent
-    hostname: search-startup-agent
-    image: dbrepo/search-sync-agent:latest
+    container_name: dbrepo-search-db-dashboard
+    hostname: search-db-dashboard
+    image: docker.io/opensearchproject/opensearch-dashboards:2.8.0
     networks:
       core:
-    environment:
-      METADATA_DB: ${METADATA_DB:-fda}
-      METADATA_HOST: ${METADATA_HOST:-metadata-db}
-      METADATA_JDBC_EXTRA_ARGS: ${METADATA_JDBC_EXTRA_ARGS:-}
-      METADATA_PASSWORD: ${METADATA_PASSWORD:-dbrepo}
-      METADATA_USERNAME: ${METADATA_USERNAME:-root}
-      SEARCH_USERNAME: ${SEARCH_USERNAME:-fda}
-      SEARCH_PASSWORD: ${SEARCH_PASSWORD:-fda}
-      LOG_LEVEL: ${LOG_LEVEL:-debug}
-    healthcheck:
-      test: wget -qO- localhost:9050/actuator/health/readiness | grep -q "UP" || exit 1
-      interval: 10s
-      timeout: 5s
-      retries: 12
+      public:
+    volumes:
+      - ./opensearch_dashboards.yml:/usr/share/opensearch-dashboards/config/opensearch_dashboards.yml
+    ports:
+      - "5601:5601"
     depends_on:
-      dbrepo-metadata-db:
-        condition: service_healthy
       dbrepo-search-db:
-        condition: service_started
-      dbrepo-authentication-service:
         condition: service_healthy
     logging:
       driver: json-file
