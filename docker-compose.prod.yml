@@ -13,20 +13,6 @@ volumes:
   broker-service-data:
   authentication-service-data:
 
-networks:
-  public:
-    name: public
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 172.31.0.0/16
-  core:
-    name: core
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 172.32.0.0/16
-
 services:
 
   dbrepo-metadata-db:
@@ -34,8 +20,6 @@ services:
     container_name: dbrepo-metadata-db
     hostname: metadata-db
     image: dbrepo.azurecr.io/dbrepo/metadata-db:latest
-    networks:
-      core:
     volumes:
       - metadata-db-data:/bitnami/mariadb
       - ./setup-schema_local.sql:/docker-entrypoint-initdb.d/setup-schema_local.sql
@@ -57,8 +41,6 @@ services:
     container_name: dbrepo-data-db
     hostname: data-db
     image: docker.io/bitnami/mariadb:10.5
-    networks:
-      core:
     volumes:
       - data-db-data:/bitnami/mariadb
       - "${SHARED_FILESYSTEM:-/tmp}:/tmp"
@@ -79,8 +61,6 @@ services:
     container_name: dbrepo-auth-db
     hostname: auth-db
     image: docker.io/bitnami/mariadb:10.5
-    networks:
-      core:
     volumes:
       - auth-db-data:/bitnami/mariadb
     ports:
@@ -103,8 +83,6 @@ services:
     image: docker.io/tusproject/tusd:v1.12
     command:
       - "--base-path=/api/upload/files/"
-    networks:
-      core:
     volumes:
       - upload-service-data:/data
       - "${SHARED_FILESYSTEM:-/tmp}:/srv/tusd-data/data"
@@ -116,8 +94,6 @@ services:
     container_name: dbrepo-authentication-service
     hostname: authentication-service
     image: dbrepo.azurecr.io/dbrepo/authentication-service:latest
-    networks:
-      core:
     ports:
       - "8443:8443"
       - "8080:8080"
@@ -145,8 +121,6 @@ services:
     container_name: dbrepo-metadata-service
     hostname: metadata-service
     image: dbrepo.azurecr.io/dbrepo/metadata-service:latest
-    networks:
-      core:
     volumes:
       - "${SHARED_FILESYSTEM:-/tmp}:/tmp"
     ports:
@@ -201,8 +175,6 @@ services:
     container_name: dbrepo-analyse-service
     hostname: analyse-service
     image: dbrepo.azurecr.io/dbrepo/analyse-service:latest
-    networks:
-      core:
     ports:
       - "5000:5000"
     volumes:
@@ -215,8 +187,6 @@ services:
     container_name: dbrepo-broker-service
     hostname: broker-service
     image: dbrepo.azurecr.io/dbrepo/broker-service:latest
-    networks:
-      core:
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -238,8 +208,6 @@ services:
     container_name: dbrepo-search-db
     hostname: search-db
     image: dbrepo.azurecr.io/dbrepo/search-db:latest
-    networks:
-      core:
     ports:
       - "9200:9200"
     healthcheck:
@@ -264,9 +232,6 @@ services:
     container_name: dbrepo-ui
     hostname: ui
     image: dbrepo.azurecr.io/dbrepo/ui:latest
-    networks:
-      core:
-      public:
     environment:
       BROKER_USERNAME: "${BROKER_USERNAME:-fda}"
       BROKER_PASSWORD: "${BROKER_PASSWORD:-fda}"
@@ -295,9 +260,6 @@ services:
     container_name: dbrepo-gateway-service
     hostname: gateway-service
     image: docker.io/nginx:1.25-alpine-slim
-    networks:
-      core:
-      public:
     ports:
       - "80:80"
       - "443:443"
@@ -324,9 +286,6 @@ services:
     container_name: dbrepo-search-db-dashboard
     hostname: search-db-dashboard
     image: docker.io/opensearchproject/opensearch-dashboards:2.8.0
-    networks:
-      core:
-      public:
     volumes:
       - ./opensearch_dashboards.yml:/usr/share/opensearch-dashboards/config/opensearch_dashboards.yml
     ports:
