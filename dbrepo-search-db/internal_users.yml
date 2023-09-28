@@ -10,5 +10,5 @@ admin:
   hash: "$2y$12$d1Gx2n13.EJMLPIB6jQwDeE4p4E6SPvUUH6aKICV1vYOuJIY5Xebq" # admin
   reserved: true
   backend_roles:
-  - "admin"
+    - "admin"
   description: "Default admin user"

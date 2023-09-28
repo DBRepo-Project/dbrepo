@@ -7,8 +7,6 @@ network.host: 0.0.0.0
 # Setting network.host to a non-loopback address enables the annoying bootstrap checks. "Single-node" mode disables them again.
 discovery.type: single-node
 
-bootstrap.memory_lock: true
-
 plugins.security.ssl.transport.pemcert_filepath: /usr/share/opensearch/config/node1.pem
 plugins.security.ssl.transport.pemkey_filepath: /usr/share/opensearch/config/node1-key.pem
 plugins.security.ssl.transport.pemtrustedcas_filepath: /usr/share/opensearch/config/root-ca.pem
@@ -21,5 +19,3 @@ plugins.security.enable_snapshot_restore_privilege: true
 plugins.security.check_snapshot_restore_write_privileges: true
 plugins.security.restapi.roles_enabled: ["all_access", "security_rest_api_access"]
 cluster.routing.allocation.disk.threshold_enabled: false
-opendistro_security.audit.config.disabled_rest_categories: NONE
-opendistro_security.audit.config.disabled_transport_categories: NONE

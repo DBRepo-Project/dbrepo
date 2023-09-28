@@ -260,16 +260,12 @@ services:
     networks:
       core:
     ports:
-      - "2020:2020"
       - "9200:9200"
     healthcheck:
       test: curl -sSL localhost:9200/_plugins/_security/health | jq .status | grep UP
       interval: 10s
       timeout: 5s
       retries: 12
-    environment:
-      ES_JAVA_OPTS: "-Xms4g -Xmx4g"
-      logger.level: "WARN"
     deploy:
       resources:
         limits:

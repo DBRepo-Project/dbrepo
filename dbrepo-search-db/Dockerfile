@@ -8,6 +8,8 @@ COPY ./limits.conf /etc/security/limits.conf
 
 WORKDIR /app
 
+COPY ./indices/* .
+
 COPY ./create-indices.sh ./create-indices.sh
 COPY ./docker-entrypoint.sh ./docker-entrypoint.sh
 
@@ -16,8 +18,8 @@ WORKDIR /usr/share/opensearch
 RUN chmod 0700 ./config
 COPY --chown=opensearch:opensearch ./opensearch.yml ./config/opensearch.yml
 COPY --chown=opensearch:opensearch ./config.yml ./config/opensearch-security/config.yml
-COPY --chown=opensearch:opensearch ./internal_users.yml ./config/opensearch-security/internal_users.yml
-RUN chmod 0600 ./config/opensearch-security/internal_users.yml
+#COPY --chown=opensearch:opensearch ./internal_users.yml ./config/opensearch-security/internal_users.yml
+#RUN chmod 0600 ./config/opensearch-security/internal_users.yml
 
 COPY --chown=opensearch:opensearch ./pem/admin.pem ./config/admin.pem
 COPY --chown=opensearch:opensearch ./pem/admin-key.pem ./config/admin-key.pem
