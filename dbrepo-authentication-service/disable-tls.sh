@@ -1,5 +1,5 @@
 #!/bin/bash
-while [ ! -f /tls_disabled ]; do
+while [ ! -f /opt/keycloak/tls_disabled ]; do
   cd /opt/keycloak/bin || exit 1
   ./kcadm.sh config credentials --server http://localhost:8080 --realm master --user "${KEYCLOAK_ADMIN}" --password "${KEYCLOAK_ADMIN_PASSWORD}"
   if [ "$?" -ne 0 ]; then
@@ -8,6 +8,6 @@ while [ ! -f /tls_disabled ]; do
     sleep 5
   else
     ./kcadm.sh update realms/master -s sslRequired=NONE
-    touch /tls_disabled
+    touch /opt/keycloak/tls_disabled
   fi
 done

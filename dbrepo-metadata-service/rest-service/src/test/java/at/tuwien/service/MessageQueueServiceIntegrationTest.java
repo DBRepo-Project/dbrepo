@@ -57,7 +57,7 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
     private Channel channel;
 
     @Container
-    private static final RabbitMQContainer rabbitMQContainer = new RabbitMQContainer("rabbitmq:3-management-alpine")
+    private static final RabbitMQContainer rabbitMQContainer = new RabbitMQContainer("bitnami/rabbitmq:3.10")
             .withVhost("dbrepo");
 
     @DynamicPropertySource

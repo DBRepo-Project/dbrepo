@@ -163,6 +163,8 @@ services:
     depends_on:
       dbrepo-authentication-service:
         condition: service_healthy
+      dbrepo-broker-service:
+        condition: service_healthy
       dbrepo-metadata-db:
         condition: service_healthy
       dbrepo-search-db:
@@ -191,7 +193,7 @@ services:
       - "5672:5672"
       - "15672:15672"
     healthcheck:
-      test: wget -qO- localhost:15672/admin/broker | grep "RabbitMQ" || exit 1
+      test: "curl -sSL localhost:15672/admin/broker/api | grep 'API' || exit 1"
       interval: 10s
       timeout: 5s
       retries: 12

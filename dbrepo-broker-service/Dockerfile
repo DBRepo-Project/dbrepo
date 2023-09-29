@@ -1,15 +1,11 @@
 ###### FIRST STAGE ######
-FROM rabbitmq:3-management-alpine as runtime
+FROM bitnami/rabbitmq:3.10 as runtime
 MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
 
 COPY ./rabbitmq.conf /etc/rabbitmq/rabbitmq.conf
+COPY ./enabled_plugins /etc/rabbitmq/enabled_plugins
 
 WORKDIR /app
 
 COPY ./cert.pem ./cert.pem
 COPY ./pubkey.pem ./pubkey.pem
-
-RUN rabbitmq-plugins enable --offline rabbitmq_prometheus rabbitmq_mqtt rabbitmq_auth_backend_oauth2 rabbitmq_auth_mechanism_ssl
-
-EXPOSE 5672
-EXPOSE 15672
