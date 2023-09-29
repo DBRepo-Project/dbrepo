@@ -1,6 +1,8 @@
 FROM python:3.9-slim
 MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
 
+RUN apt update && apt install -y curl
+
 WORKDIR /app
 
 COPY ./requirements.txt ./requirements.txt

@@ -224,6 +224,11 @@ services:
       core:
     ports:
       - "5000:5000"
+    healthcheck:
+      test: curl -sSL localhost:5000/health | grep 'UP' || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 12
     volumes:
       - "/tmp:/tmp"
     logging:

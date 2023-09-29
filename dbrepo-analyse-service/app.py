@@ -1,6 +1,7 @@
 from _csv import Error
 
 from flask import Flask, request, Response
+from json import dumps
 from determine_dt import determine_datatypes
 from determine_pk import determine_pk
 import logging
@@ -90,6 +91,13 @@ template = {
 app.json_encoder = LazyJSONEncoder
 swagger = Swagger(app, config=swagger_config, template=template)
 
+@app.route('/health', methods=["GET"], endpoint='analyze_health')
+@swag_from('as-yml/health.yml')
+def health():
+    logging.debug('endpoint health, body=%s', request)
+    res = dumps({"status": "UP", "message": "Application is up and running"})
+    return Response(res, mimetype="application/json"), 200
+
 
 @app.route('/api/analyse/determinedt', methods=["POST"], endpoint='analyze_determinedt')
 @swag_from('as-yml/determinedt.yml')
@@ -114,15 +122,15 @@ def determinedt():
         return Response(res, mimetype="application/json"), 200
     except OSError as e:
         logging.error('Failed to determine data types: %s', e)
-        res = {"success": False, "message": str(e)}
+        res = dumps({"success": False, "message": str(e)})
         return Response(res, mimetype="application/json"), 409
     except Error as e:
         logging.error('Failed to determine separator %s', e)
-        res = {"success": False, "message": str(e)}
+        res = dumps({"success": False, "message": str(e)})
         return Response(res, mimetype="application/json"), 422
     except Exception as e:
         logging.error('Failed to determine data types: %s', e)
-        res = {"success": False, "message": str(e)}
+        res = dumps({"success": False, "message": str(e)})
         return Response(res, mimetype="application/json"), 500
 
 
@@ -141,7 +149,7 @@ def determinepk():
         return Response(res, mimetype="application/json"), 200
     except Exception as e:
         logging.error('Failed to determine primary key: %s', e)
-        res = {"success": False, "message": str(e)}
+        res = dumps({"success": False, "message": str(e)})
         return Response(res, mimetype="application/json"), 500
 
 
