@@ -66,7 +66,7 @@ public class RabbitMqListenerIntegrationTest extends BaseUnitTest {
     public Timeout globalTimeout = Timeout.seconds(300);
 
     @Container
-    private static final RabbitMQContainer rabbitMQContainer = new RabbitMQContainer("bitnami/rabbitmq:3.10")
+    private static final RabbitMQContainer rabbitMQContainer = new RabbitMQContainer("rabbitmq:3-management")
             .withVhost("/");
 
     @DynamicPropertySource

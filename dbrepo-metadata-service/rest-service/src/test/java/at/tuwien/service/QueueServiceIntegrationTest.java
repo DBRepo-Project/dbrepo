@@ -89,7 +89,7 @@ public class QueueServiceIntegrationTest extends BaseUnitTest {
     private static MariaDBContainer<?> mariaDBContainer = MariaDbContainerConfig.getContainer();
 
     @Container
-    private static final RabbitMQContainer rabbitMQContainer = new RabbitMQContainer("bitnami/rabbitmq:3.10")
+    private static final RabbitMQContainer rabbitMQContainer = new RabbitMQContainer("rabbitmq:3-management")
             .withVhost("/");
 
     @DynamicPropertySource
