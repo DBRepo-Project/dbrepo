@@ -32,6 +32,8 @@ RUN mvn clean install -DskipTests
 FROM openjdk:17-alpine as runtime
 MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
 
+RUN apk --no-cache add curl bash
+
 ENV ADMIN_MAIL="noreply@localhost"
 ENV BASE_URL="http://localhost"
 ENV GRANT_PRIVILEGES="SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE"
