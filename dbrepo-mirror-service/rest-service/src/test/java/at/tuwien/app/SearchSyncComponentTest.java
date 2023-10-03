@@ -42,9 +42,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class SearchSyncComponentTest extends BaseUnitTest {
 
     @Autowired
-    private IndexConfig indexConfig;
-
-    @Autowired
     private UserRepository userRepository;
 
     @Autowired
@@ -130,8 +127,6 @@ public class SearchSyncComponentTest extends BaseUnitTest {
         viewRepository.save(VIEW_1);
         conceptRepository.save(CONCEPT_1);
         unitRepository.save(UNIT_1);
-        /* call a second time */
-        indexConfig.initIndex();
     }
 
     @Test

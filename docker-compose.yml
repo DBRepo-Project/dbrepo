@@ -390,21 +390,34 @@ services:
     logging:
       driver: json-file
 
-  dbrepo-queue-service:
+  dbrepo-data-service:
     restart: "no"
-    container_name: dbrepo-queue-service
-    hostname: queue-service
-    build: ./dbrepo-queue-service
-    image: dbrepo-queue-service
+    container_name: dbrepo-data-service
+    hostname: data-service
+    build: ./dbrepo-data-service
+    image: dbrepo-data-service
     networks:
       core:
+    ports:
+      - "9093:9093"
     environment:
       METADATA_DB: ${METADATA_DB:-fda}
       METADATA_HOST: ${METADATA_HOST:-metadata-db}
       METADATA_JDBC_EXTRA_ARGS: ${METADATA_JDBC_EXTRA_ARGS:-}
       METADATA_PASSWORD: ${METADATA_PASSWORD:-dbrepo}
       METADATA_USERNAME: ${METADATA_USERNAME:-root}
+      JWT_ISSUER: "${JWT_ISSUER:-http://localhost/api/auth/realms/dbrepo}"
+      JWT_PUBKEY: "${JWT_PUBKEY:-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB}"
       LOG_LEVEL: ${LOG_LEVEL:-debug}
+      MIN_CONCURRENT_CONSUMERS: ${MIN_CONCURRENT_CONSUMERS:-1}
+      MAX_CONCURRENT_CONSUMERS: ${MAX_CONCURRENT_CONSUMERS:-5}
+      BROKER_USERNAME: ${BROKER_USERNAME:-fda}
+      BROKER_PASSWORD: ${BROKER_PASSWORD:-fda}
+      BROKER_ENDPOINT: "${BROKER_ENDPOINT:-broker-service}"
+      BROKER_VIRTUALHOST: ${BROKER_VIRTUALHOST:-dbrepo}
+      QUEUE_NAME: ${QUEUE_NAME:-dbrepo}
+      EXCHANGE_NAME: ${EXCHANGE_NAME:-dbrepo}
+      ROUTING_KEY: "${ROUTING_KEY:-dbrepo.dbrepo.#}"
     healthcheck:
       test: wget -qO- localhost:9093/actuator/health/readiness | grep -q "UP" || exit 1
       interval: 10s

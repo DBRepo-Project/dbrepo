@@ -25,7 +25,7 @@ spring:
         jdbc:
           time_zone: UTC
   application:
-    name: mirror-service
+    name: search-sync-agent
   opensearch:
     username: "${SEARCH_USERNAME}"
     password: "${SEARCH_PASSWORD}"
@@ -47,10 +47,24 @@ management:
     livenessState:
       enabled: true
 server:
-  port: 9050
+  port: 9093
 logging:
   pattern.console: "%d %highlight(%-5level) %msg%n"
   level:
     root: warn
     at.tuwien.: "${LOG_LEVEL}"
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
+fda:
+  jwt:
+    issuer: "${JWT_ISSUER}"
+    public_key: "${JWT_PUBKEY}"
+  brokerService:
+    username: "${BROKER_USERNAME}"
+    password: "${BROKER_PASSWORD}"
+    endpoint: "${BROKER_ENDPOINT}"
+    virtualHost: "${BROKER_VIRTUALHOST}"
+  minConcurrent: "${MIN_CONCURRENT_CONSUMERS}"
+  maxConcurrent: "${MAX_CONCURRENT_CONSUMERS}"
+  queueName: "${QUEUE_NAME}"
+  exchangeName: "${EXCHANGE_NAME}"
+  routingKey: "${ROUTING_KEY}"

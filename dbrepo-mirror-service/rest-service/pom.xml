@@ -5,13 +5,13 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>at.tuwien</groupId>
-        <artifactId>dbrepo-search-sync-agent</artifactId>
+        <artifactId>dbrepo-mirror-service</artifactId>
         <version>1.3.0</version>
     </parent>
 
     <artifactId>rest-service</artifactId>
     <version>1.3.0</version>
-    <name>dbrepo-search-sync-agent-rest-service</name>
+    <name>dbrepo-mirror-service-rest-service</name>
 
     <properties>
         <jacoco.version>0.8.7</jacoco.version>
