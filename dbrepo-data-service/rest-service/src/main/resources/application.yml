@@ -65,6 +65,8 @@ fda:
     virtualHost: "${BROKER_VIRTUALHOST}"
   minConcurrent: "${MIN_CONCURRENT_CONSUMERS}"
   maxConcurrent: "${MAX_CONCURRENT_CONSUMERS}"
+  requeueRejected: ${REQUEUE_REJECTED}
   queueName: "${QUEUE_NAME}"
   exchangeName: "${EXCHANGE_NAME}"
   routingKey: "${ROUTING_KEY}"
+  connectionTimeout: ${CONNECTION_TIMEOUT}

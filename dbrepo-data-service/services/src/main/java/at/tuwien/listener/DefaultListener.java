@@ -1,5 +1,9 @@
 package at.tuwien.listener;
 
+import at.tuwien.exception.DatabaseNotFoundException;
+import at.tuwien.exception.QueryMalformedException;
+import at.tuwien.exception.TableNotFoundException;
+import at.tuwien.service.QueueService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
@@ -20,10 +24,12 @@ import java.util.Map;
 public class DefaultListener implements MessageListener {
 
     private final ObjectMapper objectMapper;
+    private final QueueService queueService;
 
     @Autowired
-    public DefaultListener(ObjectMapper objectMapper) {
+    public DefaultListener(ObjectMapper objectMapper, QueueService queueService) {
         this.objectMapper = objectMapper;
+        this.queueService = queueService;
     }
 
     @Override
@@ -31,12 +37,25 @@ public class DefaultListener implements MessageListener {
         final MessageProperties properties = message.getMessageProperties();
         final TypeReference<HashMap<String, Object>> typeRef = new TypeReference<>() {
         };
+        if (!properties.getReceivedRoutingKey().contains(".")) {
+            log.error("Failed to map database and table names from routing key: {}", properties.getReceivedRoutingKey());
+            return;
+        }
+        final String[] parts = properties.getReceivedRoutingKey().split("\\.");
+        if (parts.length != 3) {
+            log.error("Failed to map database and table names from routing key: is not 3-part");
+            return;
+        }
+        final String database = parts[1];
+        final String table = parts[2];
         final Map<String, Object> body;
         try {
             body = objectMapper.readValue(message.getBody(), typeRef);
-            log.debug("received message: routingKey={}, data={}", properties.getReceivedRoutingKey(), body);
+            queueService.insert(database, table, body);
         } catch (IOException e) {
             log.error("Failed to read object: {}", e.getMessage());
+        } catch (TableNotFoundException | QueryMalformedException | DatabaseNotFoundException e) {
+            log.error("Failed to insert tuple: {}", e.getMessage());
         }
     }
 }

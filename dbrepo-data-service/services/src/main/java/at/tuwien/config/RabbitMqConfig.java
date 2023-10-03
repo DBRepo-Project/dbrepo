@@ -1,6 +1,7 @@
 package at.tuwien.config;
 
 import at.tuwien.listener.DefaultListener;
+import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
@@ -12,6 +13,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Log4j2
+@Getter
 @Configuration
 public class RabbitMqConfig {
 
@@ -42,6 +44,12 @@ public class RabbitMqConfig {
     @Value("${fda.maxConcurrent}")
     private Integer maxConcurrent;
 
+    @Value("${fda.requeueRejected}")
+    private Boolean requeueRejected;
+
+    @Value("${fda.connectionTimeout}")
+    private Integer connectionTimeout;
+
     @Bean
     public Queue queue() {
         return new Queue(queueName, false);
@@ -61,12 +69,15 @@ public class RabbitMqConfig {
 
     @Bean
     public SimpleRabbitListenerContainerFactory getSimpleRabbitListenerContainerFactory() {
+        log.debug("container factory settings: concurrentConsumers={}, maxConcurrentConsumers={}, acknowledgeMode={}, requeueRejected={}",
+                minConcurrent, maxConcurrent, AcknowledgeMode.AUTO, requeueRejected);
         final SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
         factory.setConnectionFactory(getConnectionFactory());
         factory.setConcurrentConsumers(minConcurrent);
         factory.setMaxConcurrentConsumers(maxConcurrent);
         factory.setConsecutiveActiveTrigger(1);
-        factory.setAcknowledgeMode(AcknowledgeMode.MANUAL);
+        factory.setAcknowledgeMode(AcknowledgeMode.AUTO);
+        factory.setDefaultRequeueRejected(requeueRejected);
         return factory;
     }
 

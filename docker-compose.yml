@@ -417,7 +417,8 @@ services:
       BROKER_VIRTUALHOST: ${BROKER_VIRTUALHOST:-dbrepo}
       QUEUE_NAME: ${QUEUE_NAME:-dbrepo}
       EXCHANGE_NAME: ${EXCHANGE_NAME:-dbrepo}
-      ROUTING_KEY: "${ROUTING_KEY:-dbrepo.dbrepo.#}"
+      ROUTING_KEY: "${ROUTING_KEY:-dbrepo.#}"
+      CONNECTION_TIMEOUT: ${CONNECTION_TIMEOUT:-60000}
     healthcheck:
       test: wget -qO- localhost:9093/actuator/health/readiness | grep -q "UP" || exit 1
       interval: 10s

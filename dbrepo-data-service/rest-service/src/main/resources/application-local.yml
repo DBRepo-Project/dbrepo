@@ -53,6 +53,8 @@ fda:
     virtualHost: dbrepo
   minConcurrent: 1
   maxConcurrent: 5
+  requeueRejected: true
   queueName: default
   exchangeName: dbrepo
   routingKey: "#"
+  connectionTimeout: 60000
