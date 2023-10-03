@@ -359,12 +359,12 @@ services:
       dbrepo-search-db:
         condition: service_healthy
 
-  dbrepo-data-service:
+  dbrepo-mirror-service:
     restart: "no"
-    container_name: dbrepo-data-service
-    hostname: search-startup-agent
-    build: ./dbrepo-data-service
-    image: dbrepo-data-service
+    container_name: dbrepo-mirror-service
+    hostname: mirror-service
+    build: ./dbrepo-mirror-service
+    image: dbrepo-mirror-service
     networks:
       core:
     environment:
@@ -387,5 +387,33 @@ services:
         condition: service_healthy
       dbrepo-search-db:
         condition: service_started
+    logging:
+      driver: json-file
+
+  dbrepo-queue-service:
+    restart: "no"
+    container_name: dbrepo-queue-service
+    hostname: queue-service
+    build: ./dbrepo-queue-service
+    image: dbrepo-queue-service
+    networks:
+      core:
+    environment:
+      METADATA_DB: ${METADATA_DB:-fda}
+      METADATA_HOST: ${METADATA_HOST:-metadata-db}
+      METADATA_JDBC_EXTRA_ARGS: ${METADATA_JDBC_EXTRA_ARGS:-}
+      METADATA_PASSWORD: ${METADATA_PASSWORD:-dbrepo}
+      METADATA_USERNAME: ${METADATA_USERNAME:-root}
+      LOG_LEVEL: ${LOG_LEVEL:-debug}
+    healthcheck:
+      test: wget -qO- localhost:9093/actuator/health/readiness | grep -q "UP" || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    depends_on:
+      dbrepo-metadata-db:
+        condition: service_healthy
+      dbrepo-data-db:
+        condition: service_healthy
     logging:
       driver: json-file

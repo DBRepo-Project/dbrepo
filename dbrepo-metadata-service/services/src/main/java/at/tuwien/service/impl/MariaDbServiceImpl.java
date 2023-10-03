@@ -3,7 +3,6 @@ package at.tuwien.service.impl;
 import at.tuwien.api.database.DatabaseCreateDto;
 import at.tuwien.api.database.DatabaseModifyVisibilityDto;
 import at.tuwien.api.database.DatabaseTransferDto;
-import at.tuwien.api.user.UserDto;
 import at.tuwien.config.QueryConfig;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
@@ -28,8 +27,6 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
-import static java.util.stream.Collectors.groupingBy;
 
 @Log4j2
 @Service
