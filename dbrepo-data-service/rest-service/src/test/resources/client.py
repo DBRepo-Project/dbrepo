@@ -6,7 +6,7 @@ if len(sys.argv) != 4:
     print("USAGE: ./client PORT ROUTING_KEY MESSAGE")
     sys.exit(1)
 
-credentials = pika.PlainCredentials('fda', 'fda')
+credentials = pika.PlainCredentials('mweise', 'V0f38ad2!')
 parameters = pika.ConnectionParameters('localhost', int(sys.argv[1]), 'dbrepo', credentials)
 connection = pika.BlockingConnection(parameters)
 channel = connection.channel()

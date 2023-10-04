@@ -401,12 +401,10 @@ services:
 
   dbrepo-data-service:
     restart: "no"
-#    container_name: dbrepo-data-service
+    container_name: dbrepo-data-service
     hostname: data-service
     build: ./dbrepo-data-service
     image: dbrepo-data-service
-    deploy:
-      replicas: 2
     networks:
       core:
     environment:

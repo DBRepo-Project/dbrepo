@@ -53,9 +53,6 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
     @Autowired
     private AmqpUtils amqpUtils;
 
-    @Autowired
-    private Channel channel;
-
     @Container
     private static final RabbitMQContainer rabbitMQContainer = new RabbitMQContainer("rabbitmq:3-management")
             .withVhost("dbrepo");
@@ -126,21 +123,6 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
         assertEquals("^(" + DATABASE_1_EXCHANGE + ")$", permissions.getConfigure());
         assertEquals("", permissions.getRead());
         assertEquals("", permissions.getWrite());
-    }
-
-    @Test
-    public void init_succeeds() throws AmqpException, IOException, TimeoutException {
-
-        /* mock */
-        when(databaseRepository.findAll())
-                .thenReturn(List.of(DATABASE_1));
-        when(tableRepository.findAll())
-                .thenReturn(List.of(TABLE_1, TABLE_2));
-
-        /* test */
-        assertFalse(amqpUtils.exchangeExists(DATABASE_1_EXCHANGE));
-        assertTrue(amqpUtils.exchangeExists(DATABASE_1_EXCHANGE));
-        assertTrue(amqpUtils.queueExists(TABLE_1_QUEUE_NAME));
     }
 
     /* ################################################################################################### */

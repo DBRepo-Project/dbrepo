@@ -1001,7 +1001,7 @@ public abstract class BaseTest {
     public final static String DATABASE_1_DESCRIPTION = "Weather in Australia";
     public final static String DATABASE_1_INTERNALNAME = "weather";
     public final static Boolean DATABASE_1_PUBLIC = false;
-    public final static String DATABASE_1_EXCHANGE = "dbrepo." + DATABASE_1_INTERNALNAME;
+    public final static String DATABASE_1_EXCHANGE = "dbrepo";
     public final static Instant DATABASE_1_CREATED = Instant.ofEpochSecond(1677399741) /* 2023-02-26 08:22:21 (UTC) */;
     public final static Instant DATABASE_1_LAST_MODIFIED = Instant.ofEpochSecond(1677399741) /* 2023-02-26 08:22:21 (UTC) */;
     public final static UUID DATABASE_1_OWNER = USER_1_ID;
@@ -1135,7 +1135,7 @@ public abstract class BaseTest {
     public final static String DATABASE_2_DESCRIPTION = "Zoo data";
     public final static String DATABASE_2_INTERNALNAME = "zoo";
     public final static Boolean DATABASE_2_PUBLIC = false;
-    public final static String DATABASE_2_EXCHANGE = "dbrepo." + DATABASE_2_INTERNALNAME;
+    public final static String DATABASE_2_EXCHANGE = "dbrepo";
     public final static Instant DATABASE_2_CREATED = Instant.ofEpochSecond(1677399772) /* 2023-02-26 08:22:52 (UTC) */;
     public final static Instant DATABASE_2_LAST_MODIFIED = Instant.ofEpochSecond(1677399772) /* 2023-02-26 08:22:52 (UTC) */;
     public final static UUID DATABASE_2_OWNER = USER_2_ID;
@@ -1269,7 +1269,7 @@ public abstract class BaseTest {
     public final static String DATABASE_3_DESCRIPTION = "Musicology data";
     public final static String DATABASE_3_INTERNALNAME = "musicology";
     public final static Boolean DATABASE_3_PUBLIC = true;
-    public final static String DATABASE_3_EXCHANGE = "dbrepo." + DATABASE_3_INTERNALNAME;
+    public final static String DATABASE_3_EXCHANGE = "dbrepo";
     public final static Instant DATABASE_3_CREATED = Instant.ofEpochSecond(1677399792) /* 2023-02-26 08:23:12 (UTC) */;
     public final static Instant DATABASE_3_LAST_MODIFIED = Instant.ofEpochSecond(1677399792) /* 2023-02-26 08:23:12 (UTC) */;
     public final static UUID DATABASE_3_OWNER = USER_3_ID;
@@ -1402,7 +1402,7 @@ public abstract class BaseTest {
     public final static String DATABASE_4_DESCRIPTION = "Weather data";
     public final static Boolean DATABASE_4_PUBLIC = true;
     public final static String DATABASE_4_INTERNALNAME = "weather_at";
-    public final static String DATABASE_4_EXCHANGE = "dbrepo." + DATABASE_4_INTERNALNAME;
+    public final static String DATABASE_4_EXCHANGE = "dbrepo";
     public final static Instant DATABASE_4_CREATED = Instant.ofEpochSecond(1677399813) /* 2023-02-26 08:23:33 (UTC) */;
     public final static Instant DATABASE_4_LAST_MODIFIED = Instant.ofEpochSecond(1677399813) /* 2023-02-26 08:23:33 (UTC) */;
     public final static UUID DATABASE_4_OWNER = USER_4_ID;
@@ -1537,8 +1537,8 @@ public abstract class BaseTest {
     public final static String TABLE_1_INTERNALNAME = "weather_aus";
     public final static Boolean TABLE_1_VERSIONED = true;
     public final static String TABLE_1_DESCRIPTION = "Weather in the world";
-    public final static String TABLE_1_QUEUE_NAME = DATABASE_1_EXCHANGE + "." + TABLE_1_INTERNALNAME;
-    public final static String TABLE_1_ROUTING_KEY = TABLE_1_QUEUE_NAME;
+    public final static String TABLE_1_QUEUE_NAME = TABLE_1_INTERNALNAME;
+    public final static String TABLE_1_ROUTING_KEY = "dbrepo." + DATABASE_1_EXCHANGE + "." + TABLE_1_QUEUE_NAME;
     public final static UUID TABLE_1_CREATED_BY = USER_1_ID;
     public final static Long TABLE_1_DATABASE_ID = DATABASE_1_ID;
     public final static Instant TABLE_1_CREATED = Instant.ofEpochSecond(1677399975) /* 2023-02-26 08:26:15 (UTC) */;
@@ -1589,8 +1589,8 @@ public abstract class BaseTest {
     public final static String TABLE_2_INTERNALNAME = "weather_location";
     public final static Boolean TABLE_2_VERSIONED = true;
     public final static String TABLE_2_DESCRIPTION = "Weather location";
-    public final static String TABLE_2_QUEUE_NAME = DATABASE_1_EXCHANGE + "." + TABLE_2_INTERNALNAME;
-    public final static String TABLE_2_ROUTING_KEY = TABLE_2_QUEUE_NAME;
+    public final static String TABLE_2_QUEUE_NAME = TABLE_2_INTERNALNAME;
+    public final static String TABLE_2_ROUTING_KEY = "dbrepo." + DATABASE_1_EXCHANGE + "." + TABLE_2_QUEUE_NAME;
     public final static UUID TABLE_2_CREATED_BY = USER_1_ID;
     public final static Long TABLE_2_DATABASE_ID = DATABASE_1_ID;
     public final static Instant TABLE_2_CREATED = Instant.ofEpochSecond(1677400007) /* 2023-02-26 08:26:47 (UTC) */;
@@ -1641,8 +1641,8 @@ public abstract class BaseTest {
     public final static String TABLE_3_INTERNALNAME = "traffic_zu_rich";
     public final static Boolean TABLE_3_VERSIONED = true;
     public final static String TABLE_3_DESCRIPTION = "https://www.kaggle.com/laa283/zurich-public-transport/version/2";
-    public final static String TABLE_3_QUEUE_NAME = DATABASE_1_EXCHANGE + "." + TABLE_3_INTERNALNAME;
-    public final static String TABLE_3_ROUTING_KEY = TABLE_3_QUEUE_NAME;
+    public final static String TABLE_3_QUEUE_NAME = TABLE_3_INTERNALNAME;
+    public final static String TABLE_3_ROUTING_KEY = "dbrepo." + DATABASE_1_EXCHANGE + "." + TABLE_3_QUEUE_NAME;
     public final static UUID TABLE_3_CREATED_BY = USER_1_ID;
     public final static Long TABLE_3_DATABASE_ID = DATABASE_1_ID;
     public final static Instant TABLE_3_CREATED = Instant.ofEpochSecond(1677400031) /* 2023-02-26 08:27:11 (UTC) */;
@@ -1719,8 +1719,8 @@ public abstract class BaseTest {
     public final static String TABLE_4_INTERNALNAME = "zoo";
     public final static Boolean TABLE_4_VERSIONED = true;
     public final static String TABLE_4_DESCRIPTION = "Some Kaggle dataset";
-    public final static String TABLE_4_QUEUE_NAME = DATABASE_2_EXCHANGE + "." + TABLE_4_INTERNALNAME;
-    public final static String TABLE_4_ROUTING_KEY = TABLE_4_QUEUE_NAME;
+    public final static String TABLE_4_QUEUE_NAME = TABLE_4_INTERNALNAME;
+    public final static String TABLE_4_ROUTING_KEY = "dbrepo." + DATABASE_2_EXCHANGE + "." + TABLE_4_QUEUE_NAME;
     public final static Instant TABLE_4_CREATED = Instant.ofEpochSecond(1677400067) /* 2023-02-26 08:27:47 (UTC) */;
     public final static Instant TABLE_4_LAST_MODIFIED = Instant.ofEpochSecond(1677400067) /* 2023-02-26 08:27:47 (UTC) */;
 
@@ -1771,8 +1771,8 @@ public abstract class BaseTest {
     public final static String TABLE_5_INTERNALNAME = "names";
     public final static Boolean TABLE_5_VERSIONED = true;
     public final static String TABLE_5_DESCRIPTION = "Some names dataset";
-    public final static String TABLE_5_QUEUE_NAME = DATABASE_2_EXCHANGE + "." + TABLE_5_INTERNALNAME;
-    public final static String TABLE_5_ROUTING_KEY = TABLE_5_QUEUE_NAME;
+    public final static String TABLE_5_QUEUE_NAME = TABLE_5_INTERNALNAME;
+    public final static String TABLE_5_ROUTING_KEY = "dbrepo." + DATABASE_2_EXCHANGE + "." + TABLE_5_QUEUE_NAME;
     public final static Instant TABLE_5_CREATED = Instant.ofEpochSecond(1677400117) /* 2023-02-26 08:28:37 (UTC) */;
     public final static Instant TABLE_5_LAST_MODIFIED = Instant.ofEpochSecond(1677400117) /* 2023-02-26 08:28:37 (UTC) */;
 
@@ -1821,8 +1821,8 @@ public abstract class BaseTest {
     public final static String TABLE_6_INTERNAL_NAME = "likes";
     public final static Boolean TABLE_6_VERSIONED = true;
     public final static String TABLE_6_DESCRIPTION = "Some likes dataset";
-    public final static String TABLE_6_QUEUE_NAME = DATABASE_2_EXCHANGE + "." + TABLE_6_INTERNAL_NAME;
-    public final static String TABLE_6_ROUTING_KEY = TABLE_6_QUEUE_NAME;
+    public final static String TABLE_6_QUEUE_NAME = TABLE_6_INTERNAL_NAME;
+    public final static String TABLE_6_ROUTING_KEY = "dbrepo." + DATABASE_2_EXCHANGE + "." + TABLE_6_QUEUE_NAME;
     public final static Instant TABLE_6_CREATED = Instant.ofEpochSecond(1677400147) /* 2023-02-26 08:29:07 (UTC) */;
     public final static Instant TABLE_6_LAST_MODIFIED = Instant.ofEpochSecond(1677400147) /* 2023-02-26 08:29:07 (UTC) */;
 
@@ -1870,8 +1870,8 @@ public abstract class BaseTest {
     public final static String TABLE_7_INTERNAL_NAME = "sensor";
     public final static Boolean TABLE_7_VERSIONED = true;
     public final static String TABLE_7_DESCRIPTION = "Hello sensor";
-    public final static String TABLE_7_QUEUE_NAME = DATABASE_1_EXCHANGE + "." + TABLE_7_INTERNAL_NAME;
-    public final static String TABLE_7_ROUTING_KEY = TABLE_7_QUEUE_NAME;
+    public final static String TABLE_7_QUEUE_NAME = TABLE_7_INTERNAL_NAME;
+    public final static String TABLE_7_ROUTING_KEY = "dbrepo." + DATABASE_1_EXCHANGE + "." + TABLE_7_QUEUE_NAME;
     public final static Instant TABLE_7_CREATED = Instant.ofEpochSecond(1677400175) /* 2023-02-26 08:29:35 (UTC) */;
     public final static Instant TABLE_7_LAST_MODIFIED = Instant.ofEpochSecond(1677400175) /* 2023-02-26 08:29:35 (UTC) */;
 
@@ -1979,8 +1979,8 @@ public abstract class BaseTest {
     public final static String TABLE_8_INTERNAL_NAME = "mfcc";
     public final static Boolean TABLE_8_VERSIONED = true;
     public final static String TABLE_8_DESCRIPTION = "Hello mfcc";
-    public final static String TABLE_8_QUEUE_NAME = DATABASE_3_EXCHANGE + "." + TABLE_8_INTERNAL_NAME;
-    public final static String TABLE_8_ROUTING_KEY = TABLE_8_QUEUE_NAME;
+    public final static String TABLE_8_QUEUE_NAME = TABLE_8_INTERNAL_NAME;
+    public final static String TABLE_8_ROUTING_KEY = "dbrepo." + DATABASE_3_EXCHANGE + "." + TABLE_8_QUEUE_NAME;
     public final static Instant TABLE_8_CREATED = Instant.ofEpochSecond(1688400185) /* 2023-02-26 08:29:35 (UTC) */;
     public final static Instant TABLE_8_LAST_MODIFIED = Instant.ofEpochSecond(1688400185) /* 2023-02-26 08:29:35 (UTC) */;
 

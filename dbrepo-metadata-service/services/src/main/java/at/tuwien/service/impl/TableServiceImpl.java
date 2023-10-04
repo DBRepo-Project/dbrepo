@@ -40,7 +40,6 @@ public class TableServiceImpl extends HibernateConnector implements TableService
 
     private final TableMapper tableMapper;
     private final QueryMapper queryMapper;
-    private final UserService userService;
     private final DatabaseService databaseService;
     private final SemanticService semanticService;
     private final TableRepository tableRepository;
@@ -49,13 +48,12 @@ public class TableServiceImpl extends HibernateConnector implements TableService
     private final TableColumnIdxRepository tableColumnIdxRepository;
 
     @Autowired
-    public TableServiceImpl(TableMapper tableMapper, QueryMapper queryMapper, UserService userService,
-                            SemanticService semanticService, TableRepository tableRepository, DatabaseService databaseService,
+    public TableServiceImpl(TableMapper tableMapper, QueryMapper queryMapper, SemanticService semanticService,
+                            TableRepository tableRepository, DatabaseService databaseService,
                             TableIdxRepository tableIdxRepository, TableColumnRepository tableColumnRepository,
                             TableColumnIdxRepository tableColumnIdxRepository) {
         this.tableMapper = tableMapper;
         this.queryMapper = queryMapper;
-        this.userService = userService;
         this.semanticService = semanticService;
         this.tableRepository = tableRepository;
         this.databaseService = databaseService;
@@ -159,7 +157,7 @@ public class TableServiceImpl extends HibernateConnector implements TableService
     @Transactional
     public Table createTable(Long databaseId, TableCreateDto createDto, Principal principal)
             throws ImageNotSupportedException, DatabaseNotFoundException, TableMalformedException,
-            TableNameExistsException, UserNotFoundException, QueryMalformedException {
+            TableNameExistsException, QueryMalformedException {
         /* checks */
         if (createDto.getName().isBlank()) {
             log.error("Failed create table: table name is blank");
@@ -209,8 +207,8 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         /* map table */
         final Table entity = tableMapper.tableCreateDtoToTable(createDto);
         entity.setInternalName(tableMapper.nameToInternalName(entity.getName()));
-        entity.setQueueName(database.getExchangeName() + "." + entity.getInternalName());
-        entity.setRoutingKey(entity.getQueueName());
+        entity.setQueueName(entity.getInternalName());
+        entity.setRoutingKey("dbrepo." + database.getExchangeName() + "." + entity.getQueueName());
         entity.setIsVersioned(true);
         entity.setTdbid(databaseId);
         entity.setDatabase(database);

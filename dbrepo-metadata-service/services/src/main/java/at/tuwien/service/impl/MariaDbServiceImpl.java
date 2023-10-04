@@ -143,7 +143,7 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         database.setOwnedBy(owner.getId());
         database.setCreatedBy(owner.getId());
         database.setContactPerson(owner.getId());
-        database.setExchangeName("dbrepo." + database.getInternalName());
+        database.setExchangeName("dbrepo");
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(container.getImage(), container);
         try {
             final Connection connection = dataSource.getConnection();
