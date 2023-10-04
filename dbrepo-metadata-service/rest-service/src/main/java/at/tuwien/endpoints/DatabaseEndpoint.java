@@ -145,7 +145,6 @@ public class DatabaseEndpoint {
                 principal);
         final User user = userService.findByUsername(principal.getName());
         final Database database = databaseService.create(createDto, principal);
-        messageQueueService.createExchange(database, principal);
         queryStoreService.create(database.getId(), principal);
         databaseAccessRepository.save(databaseMapper.defaultCreatorAccess(database, UserUtil.getId(principal)));
         messageQueueService.updatePermissions(user);
@@ -325,7 +324,6 @@ public class DatabaseEndpoint {
                 principal);
         final Database database = databaseService.findById(id);
         final User user = userService.findByUsername(principal.getName());
-        messageQueueService.deleteExchange(database);
         databaseService.delete(id, user.getId());
         messageQueueService.updatePermissions(user);
         return ResponseEntity.accepted()

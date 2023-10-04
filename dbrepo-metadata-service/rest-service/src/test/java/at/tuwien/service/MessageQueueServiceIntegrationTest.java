@@ -70,22 +70,6 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void createExchange_succeeds() throws AmqpException {
-
-        /* test */
-        messageQueueService.createExchange(DATABASE_1, USER_1_PRINCIPAL);
-        assertTrue(amqpUtils.exchangeExists(DATABASE_1_EXCHANGE));
-    }
-
-    @Test
-    public void deleteExchange_succeeds() throws AmqpException {
-
-        /* test */
-        messageQueueService.deleteExchange(DATABASE_1);
-        assertFalse(amqpUtils.exchangeExists(DATABASE_1_EXCHANGE));
-    }
-
-    @Test
     public void createUser_succeeds() throws BrokerRemoteException, BrokerVirtualHostModificationException {
 
         /* test */
@@ -155,7 +139,6 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
 
         /* test */
         assertFalse(amqpUtils.exchangeExists(DATABASE_1_EXCHANGE));
-        messageQueueService.init();
         assertTrue(amqpUtils.exchangeExists(DATABASE_1_EXCHANGE));
         assertTrue(amqpUtils.queueExists(TABLE_1_QUEUE_NAME));
     }

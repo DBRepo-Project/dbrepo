@@ -29,6 +29,7 @@ spring:
     virtual-host: dbrepo
     username: fda
     password: fda
+    port: 5672
   opensearch:
     username: admin
     password: admin

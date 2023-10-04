@@ -133,9 +133,6 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
                 .createUser(USER_1_USERNAME);
         doNothing()
                 .when(messageQueueService)
-                .createExchange(DATABASE_1, USER_1_PRINCIPAL);
-        doNothing()
-                .when(messageQueueService)
                 .updatePermissions(USER_1);
         doNothing()
                 .when(queryStoreService)
@@ -432,9 +429,6 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
             BrokerVirtualHostGrantException, KeycloakRemoteException, AccessDeniedException, BrokerRemoteException {
 
         /* mock */
-        doNothing()
-                .when(messageQueueService)
-                .createExchange(database, principal);
         doNothing()
                 .when(queryStoreService)
                 .create(databaseId, principal);

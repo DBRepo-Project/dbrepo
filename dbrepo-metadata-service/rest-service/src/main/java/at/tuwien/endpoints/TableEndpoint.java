@@ -7,7 +7,6 @@ import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.TableMapper;
-import at.tuwien.service.MessageQueueService;
 import at.tuwien.service.TableService;
 import at.tuwien.validation.EndpointValidator;
 import io.micrometer.core.annotation.Timed;
@@ -40,14 +39,11 @@ public class TableEndpoint {
 
     private final TableMapper tableMapper;
     private final TableService tableService;
-    private final MessageQueueService amqpService;
     private final EndpointValidator endpointValidator;
 
     @Autowired
-    public TableEndpoint(TableMapper tableMapper, TableService tableService, MessageQueueService amqpService,
-                         EndpointValidator endpointValidator) {
+    public TableEndpoint(TableMapper tableMapper, TableService tableService, EndpointValidator endpointValidator) {
         this.tableMapper = tableMapper;
-        this.amqpService = amqpService;
         this.tableService = tableService;
         this.endpointValidator = endpointValidator;
     }
@@ -139,7 +135,6 @@ public class TableEndpoint {
         endpointValidator.validateOnlyAccess(databaseId, principal, true);
         endpointValidator.validateColumnCreateConstraints(createDto);
         final Table table = tableService.createTable(databaseId, createDto, principal);
-        amqpService.create(table);
         final TableBriefDto dto = tableMapper.tableToTableBriefDto(table);
         log.trace("create table resulted in table {}", dto);
         return ResponseEntity.status(HttpStatus.CREATED)

@@ -8,6 +8,12 @@ spring:
     driver-class-name: org.mariadb.jdbc.Driver
     username: "${METADATA_USERNAME}"
     password: "${METADATA_PASSWORD}"
+  rabbitmq:
+    host: "${BROKER_HOST}"
+    virtual-host: "${BROKER_VIRTUALHOST}"
+    password: "${BROKER_PASSWORD}"
+    username: "${BROKER_USERNAME}"
+    port: ${BROKER_PORT}
   jpa:
     show-sql: false
     database-platform: org.hibernate.dialect.MariaDBDialect
@@ -58,11 +64,6 @@ fda:
   jwt:
     issuer: "${JWT_ISSUER}"
     public_key: "${JWT_PUBKEY}"
-  brokerService:
-    username: "${BROKER_USERNAME}"
-    password: "${BROKER_PASSWORD}"
-    endpoint: "${BROKER_ENDPOINT}"
-    virtualHost: "${BROKER_VIRTUALHOST}"
   minConcurrent: "${MIN_CONCURRENT_CONSUMERS}"
   maxConcurrent: "${MAX_CONCURRENT_CONSUMERS}"
   requeueRejected: ${REQUEUE_REJECTED}

@@ -44,10 +44,16 @@
             </v-list-item-icon>
             <v-list-item-content>
               <v-list-item-title>
+                Protocol
+              </v-list-item-title>
+              <v-list-item-content>
+                AMQP
+              </v-list-item-content>
+              <v-list-item-title>
                 Exchange Type
               </v-list-item-title>
               <v-list-item-content>
-                Direct (AMQP)
+                <span v-if="exchange" v-text="exchange.type" />
               </v-list-item-content>
               <v-list-item-title class="mt-2">
                 Exchange Name
@@ -75,10 +81,14 @@
                 <v-skeleton-loader type="text" class="skeleton-medium" />
               </v-list-item-content>
               <v-list-item-title v-if="canRead" class="mt-2">
-                Consumer Count
+                Consumers
               </v-list-item-title>
-              <v-list-item-content v-if="canWriteQueues" class="amqp-consumer">
-                <span v-text="`${consumersUp}/${consumersTotal}`" />
+              <v-list-item-content v-if="!loadingConsumers" class="amqp-consumer" v-text="consumerText" />
+              <v-list-item-title v-if="canRead" class="mt-2">
+                Connection String
+              </v-list-item-title>
+              <v-list-item-content>
+                <code>{{ amqpString }}</code>
               </v-list-item-content>
             </v-list-item-content>
           </v-list-item>
@@ -109,7 +119,10 @@ export default {
         { text: `${this.$route.params.table_id}`, to: `/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}`, activeClass: '' }
       ],
       headers: [],
-      dateColumns: []
+      dateColumns: [],
+      loadingConsumers: false,
+      loadingExchange: false,
+      exchange: null
     }
   },
   computed: {
@@ -178,15 +191,27 @@ export default {
         return null
       }
       return this.version.substring(0, 10) + 'T' + this.version.substring(11, 19) + 'Z'
+    },
+    amqpString () {
+      if (!this.user) {
+        return null
+      }
+      return `amqp://${window.location.hostname}:5672/dbrepo (username=${this.user.username}, password=yourpassword)`
+    },
+    consumerText () {
+      const text = (this.consumersUp === 0 && this.consumersTotal === 0) ? 'pending' : (this.consumersUp > 0) ? 'up' : 'error'
+      return `${this.consumersUp}/${this.consumersTotal} (${text})`
     }
   },
   watch: {
     table () {
       this.consumerDetails()
+      this.findExchange()
     }
   },
   mounted () {
     this.consumerDetails()
+    this.findExchange()
   },
   methods: {
     formatCreator (creator) {
@@ -205,10 +230,23 @@ export default {
       this.loadingConsumers = true
       BrokerService.findConsumers()
         .then((consumers) => {
-          this.consumers = consumers.filter(c => c.queue.name === this.table.queue_name)
+          this.consumers = consumers
         })
         .finally(() => {
           this.loadingConsumers = false
+        })
+    },
+    findExchange () {
+      if (!this.table) {
+        return
+      }
+      this.loadingExchange = true
+      BrokerService.findExchange('dbrepo')
+        .then((exchange) => {
+          this.exchange = exchange
+        })
+        .finally(() => {
+          this.loadingExchange = false
         })
     }
   }

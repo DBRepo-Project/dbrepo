@@ -5,11 +5,9 @@ import at.tuwien.exception.*;
 import at.tuwien.repository.mdb.UserRepository;
 import at.tuwien.service.UserService;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 @Log4j2
@@ -31,10 +29,5 @@ public class UserServiceImpl implements UserService {
             throw new UserNotFoundException("Failed to find user with username " + username + ": not present in metadata database");
         }
         return optional.get();
-    }
-
-    protected String getMariaDbPassword(String password) {
-        final byte[] utf8 = password.getBytes(StandardCharsets.UTF_8);
-        return "*" + DigestUtils.sha1Hex(DigestUtils.sha1(utf8)).toUpperCase();
     }
 }

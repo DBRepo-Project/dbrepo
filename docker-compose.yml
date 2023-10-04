@@ -173,8 +173,6 @@ services:
       GRANT_PRIVILEGES: "${GRANT_PRIVILEGES:-SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE}"
       BROKER_CONSUMERS: "${BROKER_CONSUMERS:-2}"
       BROKER_ENDPOINT: "${BROKER_ENDPOINT:-http://broker-service:15672/admin/broker}"
-      BROKER_USERNAME: "${BROKER_USERNAME:-fda}"
-      BROKER_PASSWORD: "${BROKER_PASSWORD:-fda}"
       DELETED_RECORD: "${DELETED_RECORD:-persistent}"
       EARLIEST_DATESTAMP: "${EARLIEST_DATESTAMP:-2022-09-17T18:23:00Z}"
       GRANULARITY: "${GRANULARITY:-YYYY-MM-DDThh:mm:ssZ}"
@@ -197,6 +195,17 @@ services:
       KEYCLOAK_HOST: "${KEYCLOAK_HOST:-http://authentication-service:8080}"
       KEYCLOAK_ADMIN: "${KEYCLOAK_ADMIN:-fda}"
       KEYCLOAK_ADMIN_PASSWORD: "${KEYCLOAK_ADMIN_PASSWORD:-fda}"
+      MIN_CONCURRENT_CONSUMERS: ${MIN_CONCURRENT_CONSUMERS:-1}
+      MAX_CONCURRENT_CONSUMERS: ${MAX_CONCURRENT_CONSUMERS:-5}
+      BROKER_USERNAME: ${BROKER_USERNAME:-fda}
+      BROKER_PASSWORD: ${BROKER_PASSWORD:-fda}
+      BROKER_HOST: "${BROKER_HOST:-broker-service}"
+      BROKER_VIRTUALHOST: ${BROKER_VIRTUALHOST:-dbrepo}
+      REQUEUE_REJECTED: ${REQUEUE_REJECTED:-false}
+      QUEUE_NAME: ${QUEUE_NAME:-dbrepo}
+      EXCHANGE_NAME: ${EXCHANGE_NAME:-dbrepo}
+      ROUTING_KEY: "${ROUTING_KEY:-dbrepo.#}"
+      CONNECTION_TIMEOUT: ${CONNECTION_TIMEOUT:-60000}
     healthcheck:
       test: wget -qO- localhost:9099/actuator/health/readiness | grep -q "UP" || exit 1
       interval: 10s
@@ -301,7 +310,7 @@ services:
       LOGO: "${LOGO:-/logo.png}"
       SEARCH_USERNAME: "${SEARCH_USERNAME:-admin}"
       SEARCH_PASSWORD: "${SEARCH_PASSWORD:-admin}"
-      VERSION: "${VERSION:-${TAG}}"
+      VERSION: "${VERSION:-latest}"
       TITLE: "${TITLE:-Database Repository}"
       ICON: "${ICON:-/favicon.ico}"
       DBREPO_CLIENT_ID: "${DBREPO_CLIENT_ID:-dbrepo-client}"
@@ -392,14 +401,14 @@ services:
 
   dbrepo-data-service:
     restart: "no"
-    container_name: dbrepo-data-service
+#    container_name: dbrepo-data-service
     hostname: data-service
     build: ./dbrepo-data-service
     image: dbrepo-data-service
+    deploy:
+      replicas: 2
     networks:
       core:
-    ports:
-      - "9093:9093"
     environment:
       METADATA_DB: ${METADATA_DB:-fda}
       METADATA_HOST: ${METADATA_HOST:-metadata-db}
@@ -413,8 +422,9 @@ services:
       MAX_CONCURRENT_CONSUMERS: ${MAX_CONCURRENT_CONSUMERS:-5}
       BROKER_USERNAME: ${BROKER_USERNAME:-fda}
       BROKER_PASSWORD: ${BROKER_PASSWORD:-fda}
-      BROKER_ENDPOINT: "${BROKER_ENDPOINT:-broker-service}"
+      BROKER_HOST: "${BROKER_HOST:-broker-service}"
       BROKER_VIRTUALHOST: ${BROKER_VIRTUALHOST:-dbrepo}
+      REQUEUE_REJECTED: ${REQUEUE_REJECTED:-false}
       QUEUE_NAME: ${QUEUE_NAME:-dbrepo}
       EXCHANGE_NAME: ${EXCHANGE_NAME:-dbrepo}
       ROUTING_KEY: "${ROUTING_KEY:-dbrepo.#}"

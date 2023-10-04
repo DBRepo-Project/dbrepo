@@ -27,10 +27,11 @@ spring:
   application:
     name: metadata-service
   rabbitmq:
-    host: broker-service
-    virtual-host: dbrepo
-    username: "${BROKER_USERNAME}"
+    host: "${BROKER_HOST}"
+    virtual-host: "${BROKER_VIRTUALHOST}"
     password: "${BROKER_PASSWORD}"
+    username: "${BROKER_USERNAME}"
+    port: ${BROKER_PORT}
   opensearch:
     username: "${SEARCH_USERNAME}"
     password: "${SEARCH_PASSWORD}"
@@ -75,6 +76,13 @@ fda:
   consumers: "${BROKER_CONSUMERS}"
   unsupported: "${NOT_SUPPORTED_KEYWORDS}"
   website: "${WEBSITE}"
+  minConcurrent: "${MIN_CONCURRENT_CONSUMERS}"
+  maxConcurrent: "${MAX_CONCURRENT_CONSUMERS}"
+  requeueRejected: ${REQUEUE_REJECTED}
+  queueName: "${QUEUE_NAME}"
+  exchangeName: "${EXCHANGE_NAME}"
+  routingKey: "${ROUTING_KEY}"
+  connectionTimeout: ${CONNECTION_TIMEOUT}
 dbrepo:
   repository-name: "${REPOSITORY_NAME}"
   base-url: "${BASE_URL}"

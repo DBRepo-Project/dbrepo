@@ -57,10 +57,6 @@ public class QueueServiceIntegrationTest extends BaseUnitTest {
     @Container
     private static MariaDBContainer<?> mariaDBContainer = MariaDbContainerConfig.getContainer();
 
-    @Container
-    private static final RabbitMQContainer rabbitMQContainer = new RabbitMQContainer("rabbitmq:3-management")
-            .withVhost("dbrepo");
-
     @BeforeEach
     public void beforeEach() throws SQLException {
         MariaDbConfig.dropDatabase(CONTAINER_1, DATABASE_1_INTERNALNAME);
@@ -93,8 +89,8 @@ public class QueueServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void insert_onlyMandatoryFields_succeeds() throws TableNotFoundException, QueryMalformedException, DatabaseNotFoundException,
-            InterruptedException {
+    public void insert_onlyMandatoryFields_succeeds() throws TableNotFoundException, QueryMalformedException,
+            DatabaseNotFoundException, InterruptedException {
         final Map<String, Object> request = new HashMap<>() {{
             put("id", 5L);
             put("date", "2023-10-04");
