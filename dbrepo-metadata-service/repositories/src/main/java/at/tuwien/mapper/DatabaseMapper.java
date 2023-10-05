@@ -148,20 +148,6 @@ public interface DatabaseMapper {
         }
     }
 
-    default DatabaseGiveAccessDto databaseModifyAccessToDatabaseGiveAccessDto(UUID userId, AccessTypeDto type) {
-        return DatabaseGiveAccessDto.builder()
-                .userId(userId)
-                .type(type)
-                .build();
-    }
-
-    default DatabaseGiveAccessDto databaseDefaultCreatorAccess(UUID userId) {
-        return DatabaseGiveAccessDto.builder()
-                .userId(userId)
-                .type(AccessTypeDto.WRITE_ALL)
-                .build();
-    }
-
     default PreparedStatement rawGrantCreatorAccessQuery(Connection connection, String databaseName, String username,
                                                          String privileges) throws QueryMalformedException {
         final StringBuilder statement = new StringBuilder("GRANT ")

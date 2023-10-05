@@ -19,6 +19,40 @@ class DatabaseService {
     })
   }
 
+  findAllOnlyAccess () {
+    return new Promise((resolve, reject) => {
+      api.get('/api/database?filter=access', { headers: { Accept: 'application/json' } })
+        .then((response) => {
+          const databases = response.data
+          console.debug('response my databases', databases)
+          resolve(databases)
+        })
+        .catch((error) => {
+          const { code, message } = error
+          console.error('Failed to load my databases', error)
+          Vue.$toast.error(`[${code}] Failed to load my databases: ${message}`)
+          reject(error)
+        })
+    })
+  }
+
+  countAll (filter) {
+    return new Promise((resolve, reject) => {
+      api.head(`/api/database${filter ? '?filter=access' : ''}`, { headers: { Accept: 'application/json' } })
+        .then((response) => {
+          const count = response.headers.get('x-count')
+          console.debug('response count', count)
+          resolve(count)
+        })
+        .catch((error) => {
+          const { code, message } = error
+          console.error('Failed to count databases', error)
+          Vue.$toast.error(`[${code}] Failed to count databases: ${message}`)
+          reject(error)
+        })
+    })
+  }
+
   findOne (databaseId) {
     return new Promise((resolve, reject) => {
       api.get(`/api/database/${databaseId}`, { headers: { Accept: 'application/json' } })
@@ -116,9 +150,9 @@ class DatabaseService {
     })
   }
 
-  modifyAccess (databaseId, username, type) {
+  modifyAccess (databaseId, userId, type) {
     return new Promise((resolve, reject) => {
-      api.put(`/api/database/${databaseId}/access/${username}`, { type }, { headers: { Accept: 'application/json' } })
+      api.put(`/api/database/${databaseId}/access/${userId}`, { type }, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const database = response.data
           console.debug('response database', database)
@@ -133,9 +167,9 @@ class DatabaseService {
     })
   }
 
-  revokeAccess (databaseId, username) {
+  revokeAccess (databaseId, userId) {
     return new Promise((resolve, reject) => {
-      api.delete(`/api/database/${databaseId}/access/${username}`, { headers: { Accept: 'application/json' } })
+      api.delete(`/api/database/${databaseId}/access/${userId}`, { headers: { Accept: 'application/json' } })
         .then(() => resolve())
         .catch((error) => {
           const { code, message } = error
@@ -146,9 +180,9 @@ class DatabaseService {
     })
   }
 
-  giveAccess (databaseId, username, type) {
+  giveAccess (databaseId, userId, type) {
     return new Promise((resolve, reject) => {
-      api.post(`/api/database/${databaseId}/access`, { username, type }, { headers: { Accept: 'application/json' } })
+      api.post(`/api/database/${databaseId}/access/${userId}`, { type }, { headers: { Accept: 'application/json' } })
         .then(() => resolve())
         .catch((error) => {
           const { code, message } = error

@@ -59,26 +59,17 @@
                 Exchange Name
               </v-list-item-title>
               <v-list-item-content>
-                <pre v-if="database && database.exchange_name">{{ database.exchange_name }}</pre>
-                <v-skeleton-loader v-if="!table" type="text" class="skeleton-medium" />
+                <span v-if="database && database.exchange_name" v-text="database.exchange_name" />
               </v-list-item-content>
               <v-list-item-title v-if="table && table.queue_name" class="mt-2">
                 Queue Name
               </v-list-item-title>
-              <v-list-item-content v-if="table && table.queue_name">
-                <pre>{{ table.queue_name }}</pre>
-              </v-list-item-content>
-              <v-list-item-content v-if="!table">
-                <v-skeleton-loader type="text" class="skeleton-medium" />
-              </v-list-item-content>
+              <v-list-item-content v-if="table && table.queue_name" v-text="table.queue_name" />
               <v-list-item-title v-if="table && table.routing_key" class="mt-2">
                 Routing Key
               </v-list-item-title>
               <v-list-item-content v-if="table && table.routing_key">
-                <pre>{{ table.routing_key }}</pre>
-              </v-list-item-content>
-              <v-list-item-content v-if="!table">
-                <v-skeleton-loader type="text" class="skeleton-medium" />
+                <pre v-text="table.routing_key" />
               </v-list-item-content>
               <v-list-item-title v-if="canRead" class="mt-2">
                 Consumers
@@ -88,7 +79,7 @@
                 Connection String
               </v-list-item-title>
               <v-list-item-content>
-                <code>{{ amqpString }}</code>
+                <pre v-text="amqpString" />
               </v-list-item-content>
             </v-list-item-content>
           </v-list-item>

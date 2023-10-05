@@ -10,6 +10,7 @@ import at.tuwien.entities.user.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
+import org.mapstruct.Named;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
@@ -66,6 +67,10 @@ public interface UserMapper {
     UserDetailsDto userDtoToUserDetailsDto(UserDto data);
 
     /* keep */
+    @Mappings({
+            @Mapping(target = "name", expression = "java(userToFullName(data))"),
+            @Mapping(target = "qualifiedName", expression = "java(userToQualifiedName(data))"),
+    })
     UserBriefDto userToUserBriefDto(User data);
 
     UserBriefDto userDtoToUserBriefDto(UserDto data);
@@ -75,9 +80,43 @@ public interface UserMapper {
             @Mapping(target = "attributes.orcid", source = "orcid"),
             @Mapping(target = "attributes.affiliation", source = "affiliation"),
             @Mapping(target = "attributes.themeDark", source = "themeDark"),
-            @Mapping(target = "attributes.mariadbPassword", source = "mariadbPassword")
+            @Mapping(target = "attributes.mariadbPassword", source = "mariadbPassword"),
+            @Mapping(target = "name", expression = "java(userToFullName(data))"),
+            @Mapping(target = "qualifiedName", expression = "java(userToQualifiedName(data))"),
     })
     UserDto userToUserDto(User data);
+
+    /* keep */
+    @Named("userToFullName")
+    default String userToFullName(User data) {
+        final StringBuilder name = new StringBuilder();
+        if (data.getFirstname() != null) {
+            name.append(data.getFirstname());
+        }
+        if (data.getLastname() != null) {
+            name.append(!name.isEmpty() ? " " : null)
+                    .append(data.getLastname());
+        }
+        return name.isEmpty() ? null : name.toString()
+                .trim();
+    }
+
+    /* keep */
+    @Named("userToQualifiedName")
+    default String userToQualifiedName(User data) {
+        final String fullname = userToFullName(data);
+        final StringBuilder name = new StringBuilder();
+        if (fullname != null) {
+            name.append(fullname);
+        }
+        if (!name.isEmpty()) {
+            name.append(" — ");
+        }
+        name.append("@")
+                .append(data.getUsername());
+        return name.toString()
+                .trim();
+    }
 
     default UserDetailsDto tokenIntrospectDtoToUserDetailsDto(TokenIntrospectDto data) {
         return UserDetailsDto.builder()

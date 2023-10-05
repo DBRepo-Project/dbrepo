@@ -2,6 +2,7 @@
   "layout": {
     "information": "Information",
     "databases": "Datenbanken",
+    "mydatabases": "Meine Datenbanken",
     "semantics": "Semantik",
     "ontologies": "Ontologien",
     "search": "Suchen ...",
@@ -11,6 +12,7 @@
   },
   "databases": {
     "recent": "Neue Datenbanken",
+    "my": "Meine Datenbanken",
     "tooltip": {
       "private": "Privat",
       "public": "Öffentlich"

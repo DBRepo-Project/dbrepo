@@ -180,7 +180,7 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
             DatabaseConnectionException, ImageNotSupportedException {
 
         /* mock */
-        when(accessRepository.findByHdbidAndHuserid(DATABASE_1_ID, USER_1_ID))
+        when(accessRepository.findByDatabaseIdAndUserId(DATABASE_1_ID, USER_1_ID))
                 .thenReturn(Optional.of(DATABASE_1_USER_1_READ_ACCESS));
 
         /* test */

@@ -50,7 +50,7 @@ public class AccessServiceUnitTest extends BaseUnitTest {
     public void list_succeeds() throws NotAllowedException {
 
         /* mock */
-        when(databaseAccessRepository.findByHdbid(DATABASE_1_ID))
+        when(databaseAccessRepository.findByDatabaseId(DATABASE_1_ID))
                 .thenReturn(List.of(DATABASE_1_USER_1_READ_ACCESS, DATABASE_2_USER_1_READ_ACCESS));
 
         /* test */
@@ -62,7 +62,7 @@ public class AccessServiceUnitTest extends BaseUnitTest {
     public void list_empty_succeeds() throws NotAllowedException {
 
         /* mock */
-        when(databaseAccessRepository.findByHdbid(DATABASE_1_ID))
+        when(databaseAccessRepository.findByDatabaseId(DATABASE_1_ID))
                 .thenReturn(List.of());
 
         /* test */

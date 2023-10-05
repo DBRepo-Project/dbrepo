@@ -1,9 +1,6 @@
 package at.tuwien.gateway.impl;
 
-import at.tuwien.api.amqp.ConsumerDto;
-import at.tuwien.api.amqp.CreateUserDto;
-import at.tuwien.api.amqp.CreateVirtualHostDto;
-import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
+import at.tuwien.api.amqp.*;
 import at.tuwien.api.user.ExchangeUpdatePermissionsDto;
 import at.tuwien.config.GatewayConfig;
 import at.tuwien.exception.BrokerRemoteException;
@@ -71,16 +68,16 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
             throw new BrokerRemoteException("Failed to grant permissions: remote host answered unexpected", e);
         }
         if (!response.getStatusCode().equals(HttpStatus.CREATED) && !response.getStatusCode().equals(HttpStatus.NO_CONTENT)) {
-            log.error("Failed to grant exchange: {}", response.getStatusCode());
-            throw new BrokerVirtualHostGrantException("Failed to grant exchange");
+            log.error("Failed to grant topic: {}", response.getStatusCode());
+            throw new BrokerVirtualHostGrantException("Failed to grant topic");
         }
-        log.info("Grant exchange for user with username {}", username);
+        log.info("grant topic for user with username {}", username);
     }
 
     @Override
-    public void createUser(String username) throws BrokerRemoteException, BrokerVirtualHostModificationException {
+    public void createUser(String username, String password) throws BrokerRemoteException, BrokerVirtualHostModificationException {
         final CreateUserDto data = CreateUserDto.builder()
-                .passwordHash("")
+                .password(password)
                 .tags("")
                 .build();
         final String url = "/api/users/" + username;
@@ -126,14 +123,33 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
         try {
             response = restTemplate.exchange(url, HttpMethod.PUT, new HttpEntity<>(data), Void.class);
         } catch (Exception e) {
-            log.error("Failed to create permissions: remote host answered unexpected: {}", e.getMessage());
+            log.error("Failed to grant virtual host permissions: remote host answered unexpected: {}", e.getMessage());
             throw new BrokerRemoteException("Failed to create permissions: remote host answered unexpected", e);
         }
         if (!response.getStatusCode().equals(HttpStatus.CREATED) && !response.getStatusCode().equals(HttpStatus.NO_CONTENT)) {
-            log.error("Failed to grant virtual host: {}", response.getStatusCode());
-            throw new BrokerVirtualHostGrantException("Failed to grant virtual host");
+            log.error("Failed to grant virtual host permissions: {}", response.getStatusCode());
+            throw new BrokerVirtualHostGrantException("Failed to grant virtual host permissions");
         }
-        log.info("Grant permission for user with username {}", username);
+        log.trace("Grant virtual host permissions for user with username {}", username);
+    }
+
+    @Override
+    public void grantTopicPermission(String username, GrantExchangePermissionsDto data) throws BrokerRemoteException,
+            BrokerVirtualHostGrantException {
+        final String url = "/api/topic-permissions/dbrepo/" + username;
+        log.trace("PUT {}{}", gatewayConfig.getBrokerEndpoint(), url);
+        final ResponseEntity<Void> response;
+        try {
+            response = restTemplate.exchange(url, HttpMethod.PUT, new HttpEntity<>(data), Void.class);
+        } catch (Exception e) {
+            log.error("Failed to grant topic permissions: remote host answered unexpected: {}", e.getMessage());
+            throw new BrokerRemoteException("Failed to grant topic permissions: remote host answered unexpected", e);
+        }
+        if (!response.getStatusCode().equals(HttpStatus.CREATED) && !response.getStatusCode().equals(HttpStatus.NO_CONTENT)) {
+            log.error("Failed to grant topic permissions: {}", response.getStatusCode());
+            throw new BrokerVirtualHostGrantException("Failed to grant topic permissions");
+        }
+        log.trace("Grant topic permissions for user with username {}", username);
     }
 
     @Override

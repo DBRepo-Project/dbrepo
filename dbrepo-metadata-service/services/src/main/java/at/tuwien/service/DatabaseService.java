@@ -24,9 +24,17 @@ public interface DatabaseService {
     List<Database> findAll();
 
     /**
+     * Finds all databases where the user with given id has access to.
+     *
+     * @param userId The user id.
+     * @return The list of databases.
+     */
+    List<Database> findAccess(UUID userId);
+
+    /**
      * Finds a specific database for a given id in the metadata database.
      *
-     * @param databaseId  The database id.
+     * @param databaseId The database id.
      * @return The database if found.
      * @throws DatabaseNotFoundException The database was not found.
      */
@@ -57,13 +65,13 @@ public interface DatabaseService {
      *
      * @param databaseId The database id.
      * @param userId     The user id.
-     * @throws DatabaseNotFoundException    The database was not found in the metadata database.
-     * @throws ImageNotSupportedException   The image is not supported.
-     * @throws DatabaseMalformedException   The query string is malformed.
-     * @throws AmqpException                The exchange could not be deleted.
-     * @throws DatabaseConnectionException  The connection to the database could not be established by the database connector.
-     * @throws QueryMalformedException      The mapped deletion query resulted in an invalid query statement and thus was rejected by the database engine.
-     * @throws UserNotFoundException        The current user could not be loaded in the metadata database.
+     * @throws DatabaseNotFoundException   The database was not found in the metadata database.
+     * @throws ImageNotSupportedException  The image is not supported.
+     * @throws DatabaseMalformedException  The query string is malformed.
+     * @throws AmqpException               The exchange could not be deleted.
+     * @throws DatabaseConnectionException The connection to the database could not be established by the database connector.
+     * @throws QueryMalformedException     The mapped deletion query resulted in an invalid query statement and thus was rejected by the database engine.
+     * @throws UserNotFoundException       The current user could not be loaded in the metadata database.
      */
     void delete(Long databaseId, UUID userId)
             throws DatabaseNotFoundException, ImageNotSupportedException,

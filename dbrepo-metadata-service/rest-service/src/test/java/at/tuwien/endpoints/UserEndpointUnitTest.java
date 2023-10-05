@@ -316,7 +316,7 @@ public class UserEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(user);
         doNothing()
                 .when(messageQueueService)
-                .createUser(anyString());
+                .createUser(anyString(), anyString());
         when(authenticationService.findByUsername(data.getUsername()))
                 .thenReturn(userDto);
         doNothing()

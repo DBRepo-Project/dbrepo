@@ -50,21 +50,37 @@ public class AmqpUtils {
         return true;
     }
 
-    public PermissionDto getPermissions(String username) {
+    public VirtualHostPermissionDto getVirtualHostPermissions(String username) {
         final String url = "/api/users/" + username + "/permissions";
-        log.debug("get permissions: {}", url);
-        final ResponseEntity<PermissionDto[]> response = restTemplate.exchange(
-                "/api/users/" + username + "/permissions", HttpMethod.GET, null, PermissionDto[].class);
+        log.debug("get virtual host permissions: {}", url);
+        final ResponseEntity<VirtualHostPermissionDto[]> response = restTemplate.exchange(url, HttpMethod.GET, null, VirtualHostPermissionDto[].class);
         if (!response.getStatusCode().equals(HttpStatus.OK)) {
-            log.error("Failed to retrieve permissions: {}", response.getStatusCode());
-            throw new RuntimeException("Failed to retrieve permissions: {}" + response.getStatusCode());
+            log.error("Failed to retrieve virtual host  permissions: {}", response.getStatusCode());
+            throw new RuntimeException("Failed to retrieve virtual host  permissions: {}" + response.getStatusCode());
         }
         assert response.getBody() != null;
         if (response.getBody().length != 1) {
-            log.error("Failed to retrieve permissions: expecting exactly one result");
-            throw new RuntimeException("Failed to retrieve permissions: expecting exactly one result");
+            log.error("Failed to retrieve virtual host permissions: expecting exactly one result");
+            throw new RuntimeException("Failed to retrieve virtual host permissions: expecting exactly one result");
         }
-        log.trace("found permissions: {}", response.getBody()[0]);
+        log.trace("found virtual host permissions: {}", response.getBody()[0]);
+        return response.getBody()[0];
+    }
+
+    public TopicPermissionDto getTopicPermissions(String username) {
+        final String url = "/api/topic-permissions/dbrepo/" + username;
+        log.debug("get topic permissions: {}", url);
+        final ResponseEntity<TopicPermissionDto[]> response = restTemplate.exchange(url, HttpMethod.GET, null, TopicPermissionDto[].class);
+        if (!response.getStatusCode().equals(HttpStatus.OK)) {
+            log.error("Failed to retrieve topic permissions: {}", response.getStatusCode());
+            throw new RuntimeException("Failed to retrieve topic permissions: {}" + response.getStatusCode());
+        }
+        assert response.getBody() != null;
+        if (response.getBody().length != 1) {
+            log.error("Failed to retrieve topic permissions: expecting exactly one result");
+            throw new RuntimeException("Failed to retrieve topic permissions: expecting exactly one result");
+        }
+        log.trace("found topic permissions: {}", response.getBody()[0]);
         return response.getBody()[0];
     }
 
@@ -79,16 +95,29 @@ public class AmqpUtils {
         }
     }
 
-    public void setPermissions(String vhost, String username, GrantVirtualHostPermissionsDto data) {
+    public void setVirtualHostPermissions(String vhost, String username, GrantVirtualHostPermissionsDto data) {
         final String url = "/api/permissions/" + vhost + "/" + username;
-        log.debug("set user permissions: {}", url);
+        log.debug("set virtual host permissions: {}", url);
         log.trace("body: {}", data);
         final MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
         headers.add("Authentication", "Basic " + new String(Base64.encodeBase64("guest:guest".getBytes(Charset.defaultCharset()))));
         final ResponseEntity<Void> response = restTemplate.exchange(url, HttpMethod.PUT, new HttpEntity<>(data, headers), Void.class);
         if (!response.getStatusCode().equals(HttpStatus.CREATED) && !response.getStatusCode().equals(HttpStatus.NO_CONTENT)) {
-            log.error("Failed to set user permissions: {}", response.getStatusCode());
-            throw new RuntimeException("Failed to set user permissions: {}" + response.getStatusCode());
+            log.error("Failed to set virtual host permissions: {}", response.getStatusCode());
+            throw new RuntimeException("Failed to set virtual host permissions: {}" + response.getStatusCode());
+        }
+    }
+
+    public void setTopicPermissions(String vhost, String username, GrantExchangePermissionsDto data) {
+        final String url = "/api/topic-permissions/" + vhost + "/" + username;
+        log.debug("set topic permissions: {}", url);
+        log.trace("body: {}", data);
+        final MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+        headers.add("Authentication", "Basic " + new String(Base64.encodeBase64("guest:guest".getBytes(Charset.defaultCharset()))));
+        final ResponseEntity<Void> response = restTemplate.exchange(url, HttpMethod.PUT, new HttpEntity<>(data, headers), Void.class);
+        if (!response.getStatusCode().equals(HttpStatus.CREATED) && !response.getStatusCode().equals(HttpStatus.NO_CONTENT)) {
+            log.error("Failed to set topic permissions: {}", response.getStatusCode());
+            throw new RuntimeException("Failed to set topic permissions: {}" + response.getStatusCode());
         }
     }
 

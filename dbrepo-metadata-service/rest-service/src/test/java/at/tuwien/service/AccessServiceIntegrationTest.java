@@ -136,7 +136,6 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
                                                       AccessTypeDto accessTypeDto, UUID userId) {
         final DatabaseGiveAccessDto request = DatabaseGiveAccessDto.builder()
                 .type(accessTypeDto)
-                .userId(userId)
                 .build();
 
         /* mock */
@@ -144,7 +143,7 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
 
         /* test */
         assertThrows(expectedException, () -> {
-            accessService.create(DATABASE_1_ID, request);
+            accessService.create(DATABASE_1_ID, userId, request);
         });
     }
 
@@ -156,11 +155,10 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
             KeycloakRemoteException, AccessDeniedException {
         final DatabaseGiveAccessDto request = DatabaseGiveAccessDto.builder()
                 .type(accessTypeDto)
-                .userId(userId)
                 .build();
 
         /* test */
-        accessService.create(DATABASE_1_ID, request);
+        accessService.create(DATABASE_1_ID, userId, request);
         final List<DatabaseAccess> response = databaseAccessRepository.findAll();
         assertEquals(1, response.size());
         assertEquals(access, response.get(0).getType());
@@ -172,8 +170,7 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
     @MethodSource("update_succeeds_parameters")
     protected void update_succeeds(String test, Long databaseId, AccessTypeDto accessTypeDto, AccessType access,
                                    UUID userId) throws UserNotFoundException, QueryMalformedException,
-            DatabaseNotFoundException, DatabaseMalformedException, NotAllowedException, KeycloakRemoteException,
-            AccessDeniedException {
+            DatabaseNotFoundException, DatabaseMalformedException, NotAllowedException {
         final DatabaseModifyAccessDto request = DatabaseModifyAccessDto.builder()
                 .type(accessTypeDto)
                 .build();
@@ -217,7 +214,7 @@ public class AccessServiceIntegrationTest extends BaseUnitTest {
     @MethodSource("delete_succeeds_parameters")
     protected <T extends Throwable> void delete_succeeds(String name, UUID userId)
             throws UserNotFoundException, NotAllowedException, QueryMalformedException, DatabaseNotFoundException,
-            DatabaseMalformedException, KeycloakRemoteException, AccessDeniedException {
+            DatabaseMalformedException {
 
         /* test */
         accessService.delete(DATABASE_1_ID, userId);

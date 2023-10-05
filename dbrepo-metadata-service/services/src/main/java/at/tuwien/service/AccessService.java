@@ -10,7 +10,13 @@ import java.util.UUID;
 
 public interface AccessService {
 
-    List<DatabaseAccess> list(Long databaseId) throws NotAllowedException;
+    /**
+     * Loads all database access definitions for a database with id.
+     *
+     * @param databaseId The database id.
+     * @return The list of database access definitions.
+     */
+    List<DatabaseAccess> list(Long databaseId);
 
     /**
      * Finds database access by given database id and user id.
@@ -37,13 +43,14 @@ public interface AccessService {
      *
      * @param databaseId The database id.
      * @param accessDto  The access.
+     * @param userId     The user id.
      * @throws DatabaseNotFoundException  The database was not found in the metadata database.
      * @throws UserNotFoundException      The authenticated user was not found in the metadata database.
      * @throws NotAllowedException        The access is not allowed.
      * @throws QueryMalformedException    The mapped access query is malformed.
      * @throws DatabaseMalformedException The database has an invalid state.
      */
-    void create(Long databaseId, DatabaseGiveAccessDto accessDto) throws DatabaseNotFoundException,
+    void create(Long databaseId, UUID userId, DatabaseGiveAccessDto accessDto) throws DatabaseNotFoundException,
             UserNotFoundException, NotAllowedException, QueryMalformedException, DatabaseMalformedException;
 
     /**

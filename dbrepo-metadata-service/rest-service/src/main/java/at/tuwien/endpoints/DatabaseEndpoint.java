@@ -22,6 +22,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -43,20 +44,17 @@ public class DatabaseEndpoint {
     private final DatabaseMapper databaseMapper;
     private final DatabaseService databaseService;
     private final QueryStoreService queryStoreService;
-    private final MessageQueueService messageQueueService;
     private final DatabaseAccessRepository databaseAccessRepository;
 
     @Autowired
     public DatabaseEndpoint(DatabaseMapper databaseMapper, UserService userService,
                             DatabaseService databaseService, QueryStoreService queryStoreService,
-                            MessageQueueService messageQueueService, AccessService accessService,
-                            DatabaseAccessRepository databaseAccessRepository) {
+                            AccessService accessService, DatabaseAccessRepository databaseAccessRepository) {
         this.userService = userService;
         this.accessService = accessService;
         this.databaseMapper = databaseMapper;
         this.databaseService = databaseService;
         this.queryStoreService = queryStoreService;
-        this.messageQueueService = messageQueueService;
         this.databaseAccessRepository = databaseAccessRepository;
     }
 
@@ -71,15 +69,59 @@ public class DatabaseEndpoint {
                             mediaType = "application/json",
                             array = @ArraySchema(schema = @Schema(implementation = DatabaseBriefDto.class)))}),
     })
-    public ResponseEntity<List<DatabaseDto>> list(@NotNull Principal principal) {
-        log.debug("endpoint list databases, principal={}", principal);
-        List<DatabaseDto> databases;
-        databases = databaseService.findAll()
-                .stream()
-                .map(databaseMapper::databaseToDatabaseDto)
-                .collect(Collectors.toList());
-        log.trace("list databases resulted in databases {}", databases);
-        return ResponseEntity.ok(databases);
+    public ResponseEntity<List<DatabaseDto>> list(@NotNull Principal principal,
+                                                  @RequestParam(required = false) String filter)
+            throws UserNotFoundException {
+        log.debug("endpoint list databases, principal={}, filter={}", principal, filter);
+        final List<DatabaseDto> dtos;
+        if (principal != null && filter != null) {
+            final User user = userService.findByUsername(principal.getName());
+            dtos = databaseService.findAccess(user.getId())
+                    .stream()
+                    .map(databaseMapper::databaseToDatabaseDto)
+                    .collect(Collectors.toList());
+        } else {
+            dtos = databaseService.findAll()
+                    .stream()
+                    .map(databaseMapper::databaseToDatabaseDto)
+                    .collect(Collectors.toList());
+        }
+        log.trace("list databases resulted in databases {}", dtos);
+        return ResponseEntity.ok(dtos);
+    }
+
+    @RequestMapping(method = RequestMethod.HEAD)
+    @Transactional(readOnly = true)
+    @Timed(value = "database.list", description = "Time needed to count the databases")
+    @Operation(summary = "Count databases")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Count databases",
+                    content = {@Content()}),
+    })
+    public ResponseEntity<List<DatabaseDto>> count(@NotNull Principal principal,
+                                                   @RequestParam(required = false) String filter)
+            throws UserNotFoundException {
+        log.debug("endpoint list databases, principal={}, filter={}", principal, filter);
+        final List<DatabaseDto> dtos;
+        if (principal != null && filter != null) {
+            final User user = userService.findByUsername(principal.getName());
+            dtos = databaseService.findAccess(user.getId())
+                    .stream()
+                    .map(databaseMapper::databaseToDatabaseDto)
+                    .collect(Collectors.toList());
+        } else {
+            dtos = databaseService.findAll()
+                    .stream()
+                    .map(databaseMapper::databaseToDatabaseDto)
+                    .collect(Collectors.toList());
+        }
+        log.trace("list databases resulted in databases {}", dtos);
+        final HttpHeaders headers = new HttpHeaders();
+        headers.set("x-count", "" + dtos.size());
+        return ResponseEntity.status(HttpStatus.OK)
+                .headers(headers)
+                .build();
     }
 
     @PostMapping
@@ -147,7 +189,6 @@ public class DatabaseEndpoint {
         final Database database = databaseService.create(createDto, principal);
         queryStoreService.create(database.getId(), principal);
         databaseAccessRepository.save(databaseMapper.defaultCreatorAccess(database, UserUtil.getId(principal)));
-        messageQueueService.updatePermissions(user);
         final DatabaseBriefDto dto = databaseMapper.databaseToDatabaseBriefDto(database);
         log.trace("create database resulted in database {}", dto);
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -243,27 +284,24 @@ public class DatabaseEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseDto.class))}),
             @ApiResponse(responseCode = "404",
-                    description = "Database or container could not be found",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "405",
-                    description = "Database information is not permitted",
+                    description = "Database could not be found",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<DatabaseDto> findById(@NotNull @PathVariable Long id, Principal principal)
-            throws DatabaseNotFoundException, NotAllowedException {
+            throws DatabaseNotFoundException {
         log.debug("endpoint find database, id={}", id);
         final Database database = databaseService.findById(id);
         final DatabaseDto dto = databaseMapper.databaseToDatabaseDto(database);
         if (principal != null && database.getOwnedBy().equals(UserUtil.getId(principal))) {
-            /* only owner sees the access rights */ // TODO improve this by proper mapping
+            log.debug("current logged-in user is also the owner: additionally load access list");
+            /* only owner sees the access rights */
             final List<DatabaseAccess> accesses = accessService.list(id);
             dto.setAccesses(accesses.stream()
                     .map(databaseMapper::databaseAccessToDatabaseAccessDto)
                     .collect(Collectors.toList()));
+            log.debug("found {} database accesses", accesses.size());
         }
         log.trace("find database resulted in dto {}", dto);
         return ResponseEntity.ok(dto);
@@ -325,7 +363,6 @@ public class DatabaseEndpoint {
         final Database database = databaseService.findById(id);
         final User user = userService.findByUsername(principal.getName());
         databaseService.delete(id, user.getId());
-        messageQueueService.updatePermissions(user);
         return ResponseEntity.accepted()
                 .build();
     }

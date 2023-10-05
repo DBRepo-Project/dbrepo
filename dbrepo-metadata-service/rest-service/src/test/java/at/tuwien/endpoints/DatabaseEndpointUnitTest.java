@@ -26,6 +26,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.test.context.support.WithAnonymousUser;
@@ -35,6 +36,8 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -91,7 +94,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            create_generic(DATABASE_1_ID, null, request, null, null);
+            create_generic(DATABASE_1_ID, request, null, null);
         });
     }
 
@@ -106,7 +109,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            create_generic(DATABASE_3_ID, null, request, USER_4, USER_4_PRINCIPAL);
+            create_generic(DATABASE_3_ID, request, USER_4_USERNAME, USER_4_PRINCIPAL);
         });
     }
 
@@ -130,10 +133,10 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(DATABASE_1);
         doNothing()
                 .when(messageQueueService)
-                .createUser(USER_1_USERNAME);
+                .createUser(USER_1_USERNAME, USER_1_PASSWORD);
         doNothing()
                 .when(messageQueueService)
-                .updatePermissions(USER_1);
+                .setVirtualHostPermissions(USER_1_USERNAME);
         doNothing()
                 .when(queryStoreService)
                 .create(DATABASE_1_ID, USER_1_PRINCIPAL);
@@ -145,40 +148,81 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(Optional.of(USER_1));
 
         /* test */
-        create_generic(DATABASE_1_ID, null, request, USER_1, USER_1_PRINCIPAL);
+        create_generic(DATABASE_1_ID, request, USER_1_USERNAME, USER_1_PRINCIPAL);
     }
 
     @Test
     @WithAnonymousUser
-    public void list_anonymous_succeeds() {
+    public void list_anonymous_succeeds() throws UserNotFoundException {
 
         /* pre-condition */
         assertFalse(DATABASE_1_PUBLIC);
 
         /* test */
-        list_generic(DATABASE_1_ID, CONTAINER_1, List.of(DATABASE_1), null);
+        list_generic(DATABASE_1_ID, CONTAINER_1, List.of(DATABASE_1), null, null);
     }
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"list-databases"})
-    public void list_hasRole_succeeds() {
+    public void list_hasRole_succeeds() throws UserNotFoundException {
 
         /* pre-condition */
         assertTrue(DATABASE_3_PUBLIC);
 
         /* test */
-        list_generic(DATABASE_3_ID, CONTAINER_3, List.of(DATABASE_3), USER_1_PRINCIPAL);
+        list_generic(DATABASE_3_ID, CONTAINER_3, List.of(DATABASE_3), USER_1_PRINCIPAL, null);
     }
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"list-databases"})
-    public void list_hasRoleForeign_succeeds() {
+    public void list_hasRoleForeign_succeeds() throws UserNotFoundException {
 
         /* pre-condition */
         assertTrue(DATABASE_3_PUBLIC);
 
         /* test */
-        list_generic(DATABASE_3_ID, CONTAINER_3, List.of(DATABASE_3), USER_1_PRINCIPAL);
+        list_generic(DATABASE_3_ID, CONTAINER_3, List.of(DATABASE_3), USER_1_PRINCIPAL, null);
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void count_anonymous_succeeds() throws UserNotFoundException {
+
+        /* pre-condition */
+        assertFalse(DATABASE_1_PUBLIC);
+
+        /* test */
+        count_generic(DATABASE_1_ID, List.of(DATABASE_1), null, null, null);
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"list-databases"})
+    public void count_hasRole_succeeds() throws UserNotFoundException {
+
+        /* pre-condition */
+        assertTrue(DATABASE_3_PUBLIC);
+
+        /* mock */
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
+
+        /* test */
+        count_generic(DATABASE_3_ID, List.of(DATABASE_3), USER_1_PRINCIPAL, USER_1_ID, "access");
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"list-databases"})
+    public void count_hasRoleForeign_succeeds() throws UserNotFoundException {
+
+        /* pre-condition */
+        assertTrue(DATABASE_3_PUBLIC);
+
+        /* mock */
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
+
+        /* test */
+        count_generic(DATABASE_3_ID, List.of(DATABASE_3), USER_1_PRINCIPAL, USER_1_ID, "access");
     }
 
     @Test
@@ -405,7 +449,9 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
 
-    public void list_generic(Long databaseId, Container container, List<Database> databases, Principal principal) {
+    public void list_generic(Long databaseId, Container container, List<Database> databases, Principal principal,
+                             String filter)
+            throws UserNotFoundException {
 
         /* mock */
         when(identifierRepository.findByDatabaseId(databaseId))
@@ -414,14 +460,38 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(databases);
 
         /* test */
-        final ResponseEntity<List<DatabaseDto>> response = databaseEndpoint.list(principal);
+        final ResponseEntity<List<DatabaseDto>> response = databaseEndpoint.list(principal, filter);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         final List<DatabaseDto> body = response.getBody();
         assertEquals(databases.size(), body.size());
     }
 
-    public void create_generic(Long databaseId, Database database, DatabaseCreateDto data, User user,
+    public void count_generic(Long databaseId, List<Database> databases, Principal principal, UUID userId,
+                              String filter) throws UserNotFoundException {
+
+        /* mock */
+        when(identifierRepository.findByDatabaseId(databaseId))
+                .thenReturn(List.of());
+        if (principal != null) {
+            when(databaseService.findAccess(userId))
+                    .thenReturn(databases);
+        } else {
+            when(databaseService.findAll())
+                    .thenReturn(databases);
+        }
+
+        /* test */
+        final ResponseEntity<List<DatabaseDto>> response = databaseEndpoint.count(principal, filter);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNull(response.getBody());
+        final List<String> headerCount = response.getHeaders().get("x-count");
+        assertNotNull(headerCount);
+        assertEquals(headerCount.size(), 1);
+        assertEquals(headerCount.get(0), "" + databases.size());
+    }
+
+    public void create_generic(Long databaseId, DatabaseCreateDto data, String username,
                                Principal principal) throws UserNotFoundException, DatabaseNameExistsException,
             NotAllowedException, ContainerConnectionException, DatabaseMalformedException, QueryStoreException,
             DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
@@ -434,7 +504,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
                 .create(databaseId, principal);
         doNothing()
                 .when(messageQueueService)
-                .updatePermissions(user);
+                .setVirtualHostPermissions(username);
         when(databaseAccessRepository.save(any(DatabaseAccess.class)))
                 .thenReturn(DATABASE_1_USER_1_WRITE_ALL_ACCESS);
 

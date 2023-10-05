@@ -17,17 +17,20 @@ public interface DatabaseAccessRepository extends JpaRepository<DatabaseAccess, 
     void deleteByHdbidAndHuserid(Long databaseId, UUID userId);
 
     /**
-     * Finds database access by given database id and user id.
+     * Finds all database access definitions for a database with given id.
+     *
+     * @param id The database id.
+     * @return The list of database access definitions.
+     */
+    List<DatabaseAccess> findByDatabaseId(Long id);
+
+    /**
+     * Finds a specific database access definition for a database with given id and user id.
      *
      * @param databaseId The database id.
      * @param userId     The user id.
-     * @return Non-empty optional if this database access exists, empty optional otherwise.
+     * @return The access definition, if successful.
      */
-    Optional<DatabaseAccess> findByHdbidAndHuserid(Long databaseId, UUID userId);
-
-    List<DatabaseAccess> findByHdbid(Long databaseId);
-
-    @Query("select a from DatabaseAccess a where a.hdbid = :databaseId and a.huserid = :userId")
     Optional<DatabaseAccess> findByDatabaseIdAndUserId(Long databaseId, UUID userId);
 
 }

@@ -43,7 +43,7 @@ public class AccessEndpoint {
         this.databaseMapper = databaseMapper;
     }
 
-    @PostMapping
+    @PostMapping("/{userId}")
     @Transactional
     @PreAuthorize("hasAuthority('create-database-access')")
     @Operation(summary = "Give access to some database", security = @SecurityRequirement(name = "bearerAuth"))
@@ -68,19 +68,20 @@ public class AccessEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<?> create(@NotBlank @PathVariable("id") Long databaseId,
+                                    @NotBlank @PathVariable("userId") UUID userId,
                                     @Valid @RequestBody DatabaseGiveAccessDto accessDto,
                                     @NotNull Principal principal)
             throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException, QueryMalformedException,
             DatabaseMalformedException, KeycloakRemoteException, AccessDeniedException {
-        log.debug("endpoint give access to database, databaseId={}, accessDto={}, principal={}", databaseId, accessDto, principal);
+        log.debug("endpoint give access to database, databaseId={}, userId={}, accessDto={}, principal={}", databaseId, userId, accessDto, principal);
         try {
-            accessService.find(databaseId, accessDto.getUserId());
-            log.error("Failed to give access to user with id {}: already has access", accessDto.getUserId());
-            throw new NotAllowedException("Failed to give access to user with id " + accessDto.getUserId() + ": already has access");
+            accessService.find(databaseId, userId);
+            log.error("Failed to give access to user with id {}: already has access", userId);
+            throw new NotAllowedException("Failed to give access to user with id " + userId + ": already has access");
         } catch (AccessDeniedException e) {
             /* ignore */
         }
-        accessService.create(databaseId, accessDto);
+        accessService.create(databaseId, userId, accessDto);
         return ResponseEntity.accepted()
                 .build();
     }

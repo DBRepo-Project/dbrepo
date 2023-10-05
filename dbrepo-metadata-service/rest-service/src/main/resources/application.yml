@@ -73,7 +73,6 @@ fda:
     endpoint: "${KEYCLOAK_HOST}"
     username: "${KEYCLOAK_ADMIN}"
     password: "${KEYCLOAK_ADMIN_PASSWORD}"
-  consumers: "${BROKER_CONSUMERS}"
   unsupported: "${NOT_SUPPORTED_KEYWORDS}"
   website: "${WEBSITE}"
   minConcurrent: "${MIN_CONCURRENT_CONSUMERS}"

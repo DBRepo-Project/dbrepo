@@ -29,7 +29,8 @@ const store = new Store({
     brokerPassword: null,
     searchUsername: null,
     searchPassword: null,
-    uploadPath: null
+    uploadPath: null,
+    databaseCount: null
   },
   getters: {
     getTitle: state => state.title,
@@ -50,7 +51,8 @@ const store = new Store({
     getBrokerPassword: state => state.brokerPassword,
     getSearchUsername: state => state.searchUsername,
     getSearchPassword: state => state.searchPassword,
-    getUploadPath: state => state.uploadPath
+    getUploadPath: state => state.uploadPath,
+    getDatabaseCount: state => state.databaseCount
   },
   mutations: {
     SET_TITLE (state, title) {
@@ -109,6 +111,9 @@ const store = new Store({
     },
     SET_UPLOAD_PATH (state, uploadPath) {
       state.uploadPath = uploadPath
+    },
+    SET_DATABASE_COUNT (state, databaseCount) {
+      state.databaseCount = databaseCount
     }
   },
   actions: {
@@ -146,6 +151,19 @@ const store = new Store({
       SemanticService.findAllOntologies()
         .then((ontologies) => {
           commit('SET_ONTOLOGIES', ontologies)
+        })
+    },
+    reloadDatabaseCount ({ state, commit }) {
+      DatabaseService.countAll(null)
+        .then((all) => {
+          if (!state.user) {
+            commit('SET_DATABASE_COUNT', { all, my: null })
+          } else {
+            DatabaseService.countAll(true)
+              .then((my) => {
+                commit('SET_DATABASE_COUNT', { all, my })
+              })
+          }
         })
     }
   }

@@ -118,8 +118,9 @@ public class UserEndpoint {
         authenticationService.create(data);
         final at.tuwien.api.keycloak.UserDto keycloakUserDto = authenticationService.findByUsername(data.getUsername());
         try {
-            messageQueueService.createUser(data.getUsername());
-        } catch (BrokerRemoteException e) {
+            messageQueueService.createUser(data.getUsername(), data.getPassword());
+            messageQueueService.setVirtualHostPermissions(data.getUsername());
+        } catch (BrokerRemoteException | BrokerVirtualHostGrantException e) {
             try {
                 authenticationService.delete(keycloakUserDto.getId());
             } catch (UserNotFoundException e2) {

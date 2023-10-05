@@ -114,6 +114,7 @@ export default {
       this.loading = true
       try {
         this.database = await DatabaseService.create({ container_id: this.engine.id, name: this.createDatabaseDto.name, is_public: true })
+        await this.$store.dispatch('reloadDatabaseCount')
         this.$emit('close', { success: true })
         return this.database
       } finally {

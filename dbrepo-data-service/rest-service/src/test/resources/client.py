@@ -2,11 +2,11 @@
 import pika
 import sys
 
-if len(sys.argv) != 4:
-    print("USAGE: ./client PORT ROUTING_KEY MESSAGE")
+if len(sys.argv) != 6:
+    print("USAGE: ./client PORT ROUTING_KEY MESSAGE USERNAME PASSWORD")
     sys.exit(1)
 
-credentials = pika.PlainCredentials('mweise', 'V0f38ad2!')
+credentials = pika.PlainCredentials(sys.argv[4], sys.argv[5])
 parameters = pika.ConnectionParameters('localhost', int(sys.argv[1]), 'dbrepo', credentials)
 connection = pika.BlockingConnection(parameters)
 channel = connection.channel()

@@ -1,10 +1,12 @@
 package at.tuwien.entities.user;
 
+import at.tuwien.entities.database.DatabaseAccess;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -44,6 +46,14 @@ public class User {
 
     @Column
     private String affiliation;
+
+    @ToString.Exclude
+    @org.springframework.data.annotation.Transient
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumns({
+            @JoinColumn(name = "user_id", referencedColumnName = "ID", insertable = false, updatable = false)
+    })
+    private List<DatabaseAccess> accesses;
 
     @Column(name = "theme_dark", nullable = false)
     private Boolean themeDark;

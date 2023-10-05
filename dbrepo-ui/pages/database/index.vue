@@ -1,9 +1,8 @@
 <template>
   <div>
     <v-toolbar flat>
-      <v-toolbar-title>
-        {{ $t('databases.recent', { name: 'vue-i18n' }) }}
-      </v-toolbar-title>
+      <v-toolbar-title v-if="!isFiltered" v-text="$t('databases.recent', { name: 'vue-i18n' })" />
+      <v-toolbar-title v-else v-text="$t('databases.my', { name: 'vue-i18n' })" />
       <v-spacer />
       <v-toolbar-title>
         <v-btn v-if="canCreateDatabase" color="primary" name="create-database" @click.stop="createDbDialog = true">
@@ -57,13 +56,8 @@ export default {
     roles () {
       return this.$store.state.roles
     },
-    config () {
-      if (this.token === null) {
-        return {}
-      }
-      return {
-        headers: { Authorization: `Bearer ${this.token}` }
-      }
+    isFiltered () {
+      return this.$route.query.f === 'my'
     },
     canCreateDatabase () {
       if (!this.roles) {

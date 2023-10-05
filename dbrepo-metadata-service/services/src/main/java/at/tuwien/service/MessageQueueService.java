@@ -8,13 +8,14 @@ import at.tuwien.exception.BrokerVirtualHostGrantException;
 public interface MessageQueueService {
 
     /**
-     * Create user on the broker service with given username.
+     * Create user on the broker service with given username and password.
      *
      * @param username The username.
+     * @param password The password.
      * @throws BrokerRemoteException                  The user could not be created.
      * @throws BrokerVirtualHostModificationException The Broker Service did not respond within the 3s timeout.
      */
-    void createUser(String username) throws BrokerRemoteException, BrokerVirtualHostModificationException;
+    void createUser(String username, String password) throws BrokerRemoteException, BrokerVirtualHostModificationException;
 
     /**
      * Delete a user on the broker service with given username.
@@ -28,9 +29,11 @@ public interface MessageQueueService {
     /**
      * Updates the virtual host permissions in the Broker Service for a user with given principal.
      *
-     * @param user The user.
+     * @param username The username.
      * @throws BrokerVirtualHostGrantException The Broker Service refused to grant the permissions.
      */
-    void updatePermissions(User user) throws BrokerVirtualHostGrantException, BrokerRemoteException;
+    void setVirtualHostPermissions(String username) throws BrokerVirtualHostGrantException, BrokerRemoteException;
 
+    void setTopicExchangePermissions(User user) throws BrokerVirtualHostGrantException,
+            BrokerRemoteException;
 }

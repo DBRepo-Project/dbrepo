@@ -2,6 +2,7 @@ package at.tuwien.test;
 
 import at.tuwien.api.amqp.CreateUserDto;
 import at.tuwien.api.amqp.CreateVirtualHostDto;
+import at.tuwien.api.amqp.GrantExchangePermissionsDto;
 import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.container.ContainerBriefDto;
@@ -232,6 +233,7 @@ public abstract class BaseTest {
     public final static String USER_1_DATABASE_PASSWORD = "*440BA4FD1A87A0999647DB67C0EE258198B247BA" /* junit1 */;
     public final static String USER_1_FIRSTNAME = "John";
     public final static String USER_1_LASTNAME = "Doe";
+    public final static String USER_1_NAME = "John Doe";
     public final static String USER_1_AFFILIATION = "TU Graz";
     public final static String USER_1_ORCID = "000000034216302X";
     public final static String USER_1_ORCID_UNCOMPRESSED = "0000-0003-4216-302X";
@@ -248,7 +250,7 @@ public abstract class BaseTest {
     public final static UUID USER_1_REALM_ID = REALM_DBREPO_ID;
 
     public final static CreateUserDto USER_1_RABBITMQ_CREATE_DTO = CreateUserDto.builder()
-            .passwordHash("")
+            .password("")
             .tags("")
             .build();
 
@@ -362,6 +364,7 @@ public abstract class BaseTest {
     public final static String USER_2_USERNAME = "junit2";
     public final static String USER_2_FIRSTNAME = "Jane";
     public final static String USER_2_LASTNAME = "Doe";
+    public final static String USER_2_NAME = "Jane Doe";
     public final static String USER_2_AFFILIATION = "TU Wien";
     public final static String USER_2_ORCID_URL = "https://orcid.org/0000-0002-9272-6225";
     public final static String USER_2_PASSWORD = "junit2";
@@ -444,6 +447,7 @@ public abstract class BaseTest {
     public final static String USER_3_USERNAME = "junit3";
     public final static String USER_3_FIRSTNAME = "System";
     public final static String USER_3_LASTNAME = "System";
+    public final static String USER_3_NAME = "System System";
     public final static String USER_3_AFFILIATION = "TU Wien";
     public final static String USER_3_ORCID_URL = null;
     public final static String USER_3_ORCID_UNCOMPRESSED = null;
@@ -514,6 +518,7 @@ public abstract class BaseTest {
     public final static String USER_4_USERNAME = "junit4";
     public final static String USER_4_FIRSTNAME = "JUnit";
     public final static String USER_4_LASTNAME = "4";
+    public final static String USER_4_NAME = "JUnit 4";
     public final static String USER_4_AFFILIATION = "TU Wien";
     public final static String USER_4_ORCID_URL = null;
     public final static String USER_4_PASSWORD = "junit4";
@@ -575,6 +580,7 @@ public abstract class BaseTest {
     public final static String USER_5_USERNAME = "system";
     public final static String USER_5_FIRSTNAME = "System";
     public final static String USER_5_LASTNAME = "System";
+    public final static String USER_5_NAME = "System System";
     public final static String USER_5_AFFILIATION = "TU Wien";
     public final static String USER_5_ORCID = null;
     public final static String USER_5_PASSWORD = "junit5";
@@ -620,6 +626,7 @@ public abstract class BaseTest {
     public final static String USER_6_USERNAME = "system";
     public final static String USER_6_FIRSTNAME = "System";
     public final static String USER_6_LASTNAME = "System";
+    public final static String USER_6_NAME = "System System";
     public final static String USER_6_AFFILIATION = "TU Wien";
     public final static String USER_6_ORCID = null;
     public final static String USER_6_PASSWORD = "junit5";
@@ -1007,6 +1014,12 @@ public abstract class BaseTest {
     public final static UUID DATABASE_1_OWNER = USER_1_ID;
     public final static UUID DATABASE_1_CREATOR = USER_1_ID;
 
+    public final static GrantExchangePermissionsDto USER_1_RABBITMQ_GRANT_TOPIC_DTO = GrantExchangePermissionsDto.builder()
+            .exchange("dbrepo")
+            .read("^(dbrepo\\." + DATABASE_1_INTERNALNAME + "\\..)$")
+            .write("^(dbrepo\\." + DATABASE_1_INTERNALNAME + "\\..)$")
+            .build();
+
     public final static Database DATABASE_1 = Database.builder()
             .id(DATABASE_1_ID)
             .created(Instant.now().minus(1, HOURS))
@@ -1073,55 +1086,73 @@ public abstract class BaseTest {
     public final static DatabaseAccess DATABASE_1_USER_1_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_1_ID)
+            .database(DATABASE_1)
             .huserid(USER_1_ID)
+            .user(USER_1)
             .build();
 
     public final static DatabaseAccess DATABASE_1_USER_1_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_1_ID)
+            .database(DATABASE_1)
             .huserid(USER_1_ID)
+            .user(USER_1)
             .build();
 
     public final static DatabaseAccess DATABASE_1_USER_1_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_1_ID)
+            .database(DATABASE_1)
             .huserid(USER_1_ID)
+            .user(USER_1)
             .build();
 
     public final static DatabaseAccess DATABASE_1_USER_2_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_1_ID)
+            .database(DATABASE_1)
             .huserid(USER_2_ID)
+            .user(USER_2)
             .build();
 
     public final static DatabaseAccess DATABASE_1_USER_2_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_1_ID)
+            .database(DATABASE_1)
             .huserid(USER_2_ID)
+            .user(USER_2)
             .build();
 
     public final static DatabaseAccess DATABASE_1_USER_2_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_1_ID)
+            .database(DATABASE_1)
             .huserid(USER_2_ID)
+            .user(USER_2)
             .build();
 
     public final static DatabaseAccess DATABASE_1_USER_3_READ_ACCESS = DatabaseAccess.builder()
             .type(AccessType.READ)
             .hdbid(DATABASE_1_ID)
+            .database(DATABASE_1)
             .huserid(USER_3_ID)
+            .user(USER_3)
             .build();
 
     public final static DatabaseAccess DATABASE_1_USER_3_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_1_ID)
+            .database(DATABASE_1)
             .huserid(USER_3_ID)
+            .user(USER_3)
             .build();
 
     public final static DatabaseAccess DATABASE_1_USER_3_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_1_ID)
+            .database(DATABASE_1)
             .huserid(USER_3_ID)
+            .user(USER_3)
             .build();
 
     public final static DatabaseCreateDto DATABASE_1_CREATE = DatabaseCreateDto.builder()
@@ -1538,7 +1569,7 @@ public abstract class BaseTest {
     public final static Boolean TABLE_1_VERSIONED = true;
     public final static String TABLE_1_DESCRIPTION = "Weather in the world";
     public final static String TABLE_1_QUEUE_NAME = TABLE_1_INTERNALNAME;
-    public final static String TABLE_1_ROUTING_KEY = "dbrepo." + DATABASE_1_EXCHANGE + "." + TABLE_1_QUEUE_NAME;
+    public final static String TABLE_1_ROUTING_KEY = "dbrepo\\." + DATABASE_1_EXCHANGE + "\\." + TABLE_1_QUEUE_NAME;
     public final static UUID TABLE_1_CREATED_BY = USER_1_ID;
     public final static Long TABLE_1_DATABASE_ID = DATABASE_1_ID;
     public final static Instant TABLE_1_CREATED = Instant.ofEpochSecond(1677399975) /* 2023-02-26 08:26:15 (UTC) */;
@@ -1590,7 +1621,7 @@ public abstract class BaseTest {
     public final static Boolean TABLE_2_VERSIONED = true;
     public final static String TABLE_2_DESCRIPTION = "Weather location";
     public final static String TABLE_2_QUEUE_NAME = TABLE_2_INTERNALNAME;
-    public final static String TABLE_2_ROUTING_KEY = "dbrepo." + DATABASE_1_EXCHANGE + "." + TABLE_2_QUEUE_NAME;
+    public final static String TABLE_2_ROUTING_KEY = "dbrepo\\." + DATABASE_1_EXCHANGE + "\\." + TABLE_2_QUEUE_NAME;
     public final static UUID TABLE_2_CREATED_BY = USER_1_ID;
     public final static Long TABLE_2_DATABASE_ID = DATABASE_1_ID;
     public final static Instant TABLE_2_CREATED = Instant.ofEpochSecond(1677400007) /* 2023-02-26 08:26:47 (UTC) */;
@@ -1642,7 +1673,7 @@ public abstract class BaseTest {
     public final static Boolean TABLE_3_VERSIONED = true;
     public final static String TABLE_3_DESCRIPTION = "https://www.kaggle.com/laa283/zurich-public-transport/version/2";
     public final static String TABLE_3_QUEUE_NAME = TABLE_3_INTERNALNAME;
-    public final static String TABLE_3_ROUTING_KEY = "dbrepo." + DATABASE_1_EXCHANGE + "." + TABLE_3_QUEUE_NAME;
+    public final static String TABLE_3_ROUTING_KEY = "dbrepo\\." + DATABASE_1_EXCHANGE + "\\." + TABLE_3_QUEUE_NAME;
     public final static UUID TABLE_3_CREATED_BY = USER_1_ID;
     public final static Long TABLE_3_DATABASE_ID = DATABASE_1_ID;
     public final static Instant TABLE_3_CREATED = Instant.ofEpochSecond(1677400031) /* 2023-02-26 08:27:11 (UTC) */;
@@ -1720,7 +1751,7 @@ public abstract class BaseTest {
     public final static Boolean TABLE_4_VERSIONED = true;
     public final static String TABLE_4_DESCRIPTION = "Some Kaggle dataset";
     public final static String TABLE_4_QUEUE_NAME = TABLE_4_INTERNALNAME;
-    public final static String TABLE_4_ROUTING_KEY = "dbrepo." + DATABASE_2_EXCHANGE + "." + TABLE_4_QUEUE_NAME;
+    public final static String TABLE_4_ROUTING_KEY = "dbrepo\\." + DATABASE_2_EXCHANGE + "\\." + TABLE_4_QUEUE_NAME;
     public final static Instant TABLE_4_CREATED = Instant.ofEpochSecond(1677400067) /* 2023-02-26 08:27:47 (UTC) */;
     public final static Instant TABLE_4_LAST_MODIFIED = Instant.ofEpochSecond(1677400067) /* 2023-02-26 08:27:47 (UTC) */;
 
@@ -1772,7 +1803,7 @@ public abstract class BaseTest {
     public final static Boolean TABLE_5_VERSIONED = true;
     public final static String TABLE_5_DESCRIPTION = "Some names dataset";
     public final static String TABLE_5_QUEUE_NAME = TABLE_5_INTERNALNAME;
-    public final static String TABLE_5_ROUTING_KEY = "dbrepo." + DATABASE_2_EXCHANGE + "." + TABLE_5_QUEUE_NAME;
+    public final static String TABLE_5_ROUTING_KEY = "dbrepo\\." + DATABASE_2_EXCHANGE + "\\." + TABLE_5_QUEUE_NAME;
     public final static Instant TABLE_5_CREATED = Instant.ofEpochSecond(1677400117) /* 2023-02-26 08:28:37 (UTC) */;
     public final static Instant TABLE_5_LAST_MODIFIED = Instant.ofEpochSecond(1677400117) /* 2023-02-26 08:28:37 (UTC) */;
 
@@ -1822,7 +1853,7 @@ public abstract class BaseTest {
     public final static Boolean TABLE_6_VERSIONED = true;
     public final static String TABLE_6_DESCRIPTION = "Some likes dataset";
     public final static String TABLE_6_QUEUE_NAME = TABLE_6_INTERNAL_NAME;
-    public final static String TABLE_6_ROUTING_KEY = "dbrepo." + DATABASE_2_EXCHANGE + "." + TABLE_6_QUEUE_NAME;
+    public final static String TABLE_6_ROUTING_KEY = "dbrepo\\." + DATABASE_2_EXCHANGE + "\\." + TABLE_6_QUEUE_NAME;
     public final static Instant TABLE_6_CREATED = Instant.ofEpochSecond(1677400147) /* 2023-02-26 08:29:07 (UTC) */;
     public final static Instant TABLE_6_LAST_MODIFIED = Instant.ofEpochSecond(1677400147) /* 2023-02-26 08:29:07 (UTC) */;
 
@@ -1871,7 +1902,7 @@ public abstract class BaseTest {
     public final static Boolean TABLE_7_VERSIONED = true;
     public final static String TABLE_7_DESCRIPTION = "Hello sensor";
     public final static String TABLE_7_QUEUE_NAME = TABLE_7_INTERNAL_NAME;
-    public final static String TABLE_7_ROUTING_KEY = "dbrepo." + DATABASE_1_EXCHANGE + "." + TABLE_7_QUEUE_NAME;
+    public final static String TABLE_7_ROUTING_KEY = "dbrepo\\." + DATABASE_1_EXCHANGE + "\\." + TABLE_7_QUEUE_NAME;
     public final static Instant TABLE_7_CREATED = Instant.ofEpochSecond(1677400175) /* 2023-02-26 08:29:35 (UTC) */;
     public final static Instant TABLE_7_LAST_MODIFIED = Instant.ofEpochSecond(1677400175) /* 2023-02-26 08:29:35 (UTC) */;
 
@@ -1980,7 +2011,7 @@ public abstract class BaseTest {
     public final static Boolean TABLE_8_VERSIONED = true;
     public final static String TABLE_8_DESCRIPTION = "Hello mfcc";
     public final static String TABLE_8_QUEUE_NAME = TABLE_8_INTERNAL_NAME;
-    public final static String TABLE_8_ROUTING_KEY = "dbrepo." + DATABASE_3_EXCHANGE + "." + TABLE_8_QUEUE_NAME;
+    public final static String TABLE_8_ROUTING_KEY = "dbrepo\\." + DATABASE_3_EXCHANGE + "\\." + TABLE_8_QUEUE_NAME;
     public final static Instant TABLE_8_CREATED = Instant.ofEpochSecond(1688400185) /* 2023-02-26 08:29:35 (UTC) */;
     public final static Instant TABLE_8_LAST_MODIFIED = Instant.ofEpochSecond(1688400185) /* 2023-02-26 08:29:35 (UTC) */;
 

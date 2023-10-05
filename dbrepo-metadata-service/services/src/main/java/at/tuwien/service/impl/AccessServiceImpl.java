@@ -45,8 +45,8 @@ public class AccessServiceImpl extends HibernateConnector implements AccessServi
 
     @Override
     @Transactional(readOnly = true)
-    public List<DatabaseAccess> list(Long databaseId) throws NotAllowedException {
-        return databaseAccessRepository.findByHdbid(databaseId);
+    public List<DatabaseAccess> list(Long databaseId) {
+        return databaseAccessRepository.findByDatabaseId(databaseId);
     }
 
     @Override
@@ -63,7 +63,7 @@ public class AccessServiceImpl extends HibernateConnector implements AccessServi
     @Override
     @Transactional(readOnly = true)
     public DatabaseAccess hasAccess(Long databaseId, UUID userId) throws NotAllowedException {
-        final Optional<DatabaseAccess> optional = databaseAccessRepository.findByHdbidAndHuserid(databaseId, userId);
+        final Optional<DatabaseAccess> optional = databaseAccessRepository.findByDatabaseIdAndUserId(databaseId, userId);
         if (optional.isEmpty()) {
             log.error("Failed to retrieve access, not found");
             throw new NotAllowedException("Failed to retrieve access");
@@ -73,15 +73,15 @@ public class AccessServiceImpl extends HibernateConnector implements AccessServi
 
     @Override
     @Transactional
-    public void create(Long databaseId, DatabaseGiveAccessDto accessDto) throws DatabaseNotFoundException,
+    public void create(Long databaseId, UUID userId, DatabaseGiveAccessDto accessDto) throws DatabaseNotFoundException,
             UserNotFoundException, NotAllowedException, QueryMalformedException, DatabaseMalformedException {
         /* check */
         final Database database = databaseService.findById(databaseId);
         final Container container = database.getContainer();
-        final User user = userService.find(accessDto.getUserId());
+        final User user = userService.find(userId);
         if (databaseAccessRepository.findByDatabaseIdAndUserId(databaseId, user.getId()).isPresent()) {
-            log.error("Failed to give access to user with id {}: has already permission", accessDto.getUserId());
-            throw new NotAllowedException("Failed to give access to user with id " + accessDto.getUserId() + ": has already permission");
+            log.error("Failed to give access to user with id {}: has already permission", userId);
+            throw new NotAllowedException("Failed to give access to user with id " + userId + ": has already permission");
         }
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(container.getImage(), container, database);
         try {

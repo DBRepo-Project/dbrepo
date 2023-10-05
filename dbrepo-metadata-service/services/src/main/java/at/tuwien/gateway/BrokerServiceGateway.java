@@ -2,6 +2,7 @@ package at.tuwien.gateway;
 
 import at.tuwien.api.amqp.ConsumerDto;
 import at.tuwien.api.amqp.CreateVirtualHostDto;
+import at.tuwien.api.amqp.GrantExchangePermissionsDto;
 import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
 import at.tuwien.api.user.ExchangeUpdatePermissionsDto;
 import at.tuwien.exception.BrokerRemoteException;
@@ -11,6 +12,16 @@ import at.tuwien.exception.BrokerVirtualHostGrantException;
 import java.util.List;
 
 public interface BrokerServiceGateway {
+
+    /**
+     * Create topic exchange permissions at the broker service.
+     *
+     * @param data The topic exchange permissions.
+     * @throws BrokerVirtualHostGrantException The virtual host could not be created.
+     * @throws BrokerRemoteException           The Broker Service did not respond within the 3s timeout.
+     */
+    void grantTopicPermission(String username, GrantExchangePermissionsDto data) throws BrokerRemoteException,
+            BrokerVirtualHostGrantException;
 
     /**
      * Finds all active consumers on the virtual host "dbrepo".
@@ -40,13 +51,14 @@ public interface BrokerServiceGateway {
     void grantPermission(String username, ExchangeUpdatePermissionsDto data) throws BrokerVirtualHostGrantException, BrokerRemoteException;
 
     /**
-     * Create user on the broker service with given username.
+     * Create user on the broker service with given username and password.
      *
      * @param username The username.
+     * @param password The password.
      * @throws BrokerRemoteException                  The Broker Service did not respond within the 3s timeout.
      * @throws BrokerVirtualHostModificationException The user could not be created.
      */
-    void createUser(String username) throws BrokerRemoteException, BrokerVirtualHostModificationException;
+    void createUser(String username, String password) throws BrokerRemoteException, BrokerVirtualHostModificationException;
 
     /**
      * Deletes a user on the broker service with given username.

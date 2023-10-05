@@ -157,7 +157,7 @@ public class BrokerServiceGatewayTest extends BaseUnitTest {
                 .thenReturn(mock);
 
         /* test */
-        brokerServiceGateway.createUser(USER_1_USERNAME);
+        brokerServiceGateway.createUser(USER_1_USERNAME, USER_1_PASSWORD);
     }
 
     @Test
@@ -171,7 +171,7 @@ public class BrokerServiceGatewayTest extends BaseUnitTest {
 
         /* test */
         assertThrows(BrokerVirtualHostModificationException.class, () -> {
-            brokerServiceGateway.createUser(USER_1_USERNAME);
+            brokerServiceGateway.createUser(USER_1_USERNAME, USER_1_PASSWORD);
         });
     }
 

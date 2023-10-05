@@ -26,13 +26,28 @@
         </v-list-item>
         <v-list-item
           to="/database"
-          router>
+          router
+          exact>
           <v-list-item-action>
             <v-icon>mdi-database</v-icon>
           </v-list-item-action>
           <v-list-item-content>
             <v-list-item-title>{{ $t('layout.databases', { name: 'vue-i18n' }) }}</v-list-item-title>
           </v-list-item-content>
+          <v-list-item-action v-if="databaseCount" v-text="databaseCount.all" />
+        </v-list-item>
+        <v-list-item
+          v-if="user"
+          to="/database?f=my"
+          router
+          exact>
+          <v-list-item-action>
+            <v-icon>mdi-bookmark-outline</v-icon>
+          </v-list-item-action>
+          <v-list-item-content>
+            <v-list-item-title>{{ $t('layout.mydatabases', { name: 'vue-i18n' }) }}</v-list-item-title>
+          </v-list-item-content>
+          <v-list-item-action v-if="databaseCount" v-text="databaseCount.my" />
         </v-list-item>
         <v-list-item
           v-if="canListOntologies"
@@ -190,6 +205,9 @@ export default {
     },
     logo () {
       return this.$config.logo
+    },
+    databaseCount () {
+      return this.$store.state.databaseCount
     }
   },
   watch: {
@@ -208,6 +226,7 @@ export default {
     '$route.params.database_id': {
       handler (id, oldId) {
         if (id !== oldId) {
+          this.$store.dispatch('reloadDatabaseCount')
           this.loadDatabase()
           this.loadAccess()
         }
@@ -223,10 +242,22 @@ export default {
       },
       deep: true,
       immediate: true
+    },
+    user: {
+      handler () {
+        if (!this.user) {
+          return
+        }
+        DatabaseService.countAll(true)
+          .then((count) => {
+            this.databaseCountFilter = count
+          })
+      }
     }
   },
   mounted () {
     this.initEnvironment()
+    this.$store.dispatch('reloadDatabaseCount')
     this.$store.dispatch('reloadMessages')
     this.$store.dispatch('reloadOntologies')
     if (this.locale) {

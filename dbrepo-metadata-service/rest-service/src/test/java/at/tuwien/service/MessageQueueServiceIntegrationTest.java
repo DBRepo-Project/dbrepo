@@ -2,17 +2,19 @@ package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.annotations.MockOpensearch;
-import at.tuwien.api.amqp.PermissionDto;
-import at.tuwien.exception.AmqpException;
+import at.tuwien.api.amqp.GrantExchangePermissionsDto;
+import at.tuwien.api.amqp.TopicPermissionDto;
+import at.tuwien.api.amqp.VirtualHostPermissionDto;
+import at.tuwien.entities.database.DatabaseAccess;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.BrokerRemoteException;
 import at.tuwien.exception.BrokerVirtualHostModificationException;
 import at.tuwien.exception.BrokerVirtualHostGrantException;
-import at.tuwien.repository.mdb.DatabaseRepository;
-import at.tuwien.repository.mdb.TableRepository;
+import at.tuwien.repository.mdb.*;
 import at.tuwien.service.impl.RabbitMqServiceImpl;
 import at.tuwien.utils.AmqpUtils;
-import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,13 +24,13 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.RabbitMQContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.TimeoutException;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -37,15 +39,27 @@ import static org.mockito.Mockito.when;
 @Testcontainers
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @MockOpensearch
 public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
 
-    @MockBean
+    @Autowired
+    private ImageRepository imageRepository;
+
+    @Autowired
+    private ContainerRepository containerRepository;
+
+    @Autowired
+    private DatabaseRepository databaseRepository;
+
+    @Autowired
+    private DatabaseAccessRepository databaseAccessRepository;
+
+    @Autowired
     private TableRepository tableRepository;
 
-    @MockBean
-    private DatabaseRepository databaseRepository;
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     private RabbitMqServiceImpl messageQueueService;
@@ -66,62 +80,140 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
         registry.add("spring.rabbitmq.password", rabbitMQContainer::getAdminPassword);
     }
 
+    @BeforeEach
+    public void beforeEach() {
+        userRepository.saveAll(List.of(USER_1, USER_2, USER_3));
+        imageRepository.save(IMAGE_1);
+        containerRepository.save(CONTAINER_1);
+        databaseRepository.save(DATABASE_1_SIMPLE);
+        tableRepository.saveAll(List.of(TABLE_1, TABLE_2, TABLE_3, TABLE_7));
+        DATABASE_1.setTables(List.of(TABLE_1, TABLE_2, TABLE_3, TABLE_7));
+    }
+
     @Test
     public void createUser_succeeds() throws BrokerRemoteException, BrokerVirtualHostModificationException {
 
         /* test */
-        messageQueueService.createUser(USER_1_USERNAME);
+        messageQueueService.createUser(USER_2_USERNAME, USER_2_PASSWORD);
     }
 
     @Test
     public void updatePermissions_empty_succeeds() throws BrokerRemoteException, BrokerVirtualHostGrantException {
 
         /* test */
-        final PermissionDto permissions = updatePermissions_generic();
+        final VirtualHostPermissionDto permissions = setVirtualHostPermissions_generic();
         assertEquals(USER_1_USERNAME, permissions.getUser());
         assertEquals(REALM_DBREPO_NAME, permissions.getVhost());
         assertEquals("", permissions.getConfigure());
+        assertEquals(".*", permissions.getRead());
+        assertEquals(".*", permissions.getWrite());
+    }
+
+    @Test
+    public void updatePermissions_writeAll_succeeds() throws BrokerRemoteException, BrokerVirtualHostGrantException {
+
+        /* mock */
+        databaseAccessRepository.save(DATABASE_1_USER_1_WRITE_ALL_ACCESS);
+
+        /* test */
+        final VirtualHostPermissionDto permissions = setVirtualHostPermissions_generic();
+        assertEquals(USER_1_USERNAME, permissions.getUser());
+        assertEquals(REALM_DBREPO_NAME, permissions.getVhost());
+        assertEquals("", permissions.getConfigure());
+        assertEquals(".*", permissions.getRead());
+        assertEquals(".*", permissions.getWrite());
+    }
+
+    @Test
+    public void updatePermissions_writeOwn_succeeds() throws BrokerRemoteException, BrokerVirtualHostGrantException {
+
+        /* mock */
+        databaseAccessRepository.save(DATABASE_1_USER_1_WRITE_OWN_ACCESS);
+
+        /* test */
+        final VirtualHostPermissionDto permissions = setVirtualHostPermissions_generic();
+        assertEquals(USER_1_USERNAME, permissions.getUser());
+        assertEquals(REALM_DBREPO_NAME, permissions.getVhost());
+        assertEquals("", permissions.getConfigure());
+        assertEquals(".*", permissions.getRead());
+        assertEquals(".*", permissions.getWrite());
+    }
+
+    @Test
+    public void updatePermissions_read_succeeds() throws BrokerRemoteException,
+            BrokerVirtualHostGrantException {
+
+        /* mock */
+        databaseAccessRepository.save(DATABASE_1_USER_1_READ_ACCESS);
+
+        /* test */
+        final VirtualHostPermissionDto permissions = setVirtualHostPermissions_generic();
+        assertEquals(USER_1_USERNAME, permissions.getUser());
+        assertEquals(REALM_DBREPO_NAME, permissions.getVhost());
+        assertEquals("", permissions.getConfigure());
+        assertEquals(".*", permissions.getRead());
+        assertEquals(".*", permissions.getWrite());
+    }
+
+    @Test
+    @Transactional(readOnly = true)
+    public void setTopicExchangePermissions_empty_succeeds() throws BrokerRemoteException,
+            BrokerVirtualHostGrantException {
+
+        /* test */
+        final TopicPermissionDto permissions = setTopicExchangePermissions_generic(List.of());
+        assertEquals(USER_1_USERNAME, permissions.getUser());
+        assertEquals(REALM_DBREPO_NAME, permissions.getVhost());
+        assertEquals(DATABASE_1_EXCHANGE, permissions.getExchange());
         assertEquals("", permissions.getRead());
         assertEquals("", permissions.getWrite());
     }
 
     @Test
-    public void updatePermissions_owner_succeeds() throws BrokerRemoteException, BrokerVirtualHostGrantException {
+    @Transactional(readOnly = true)
+    public void setTopicExchangePermissions_writeAll_succeeds() throws BrokerRemoteException, BrokerVirtualHostGrantException {
 
         /* mock */
-        when(databaseRepository.findConfigureAccess(USER_1_ID))
-                .thenReturn(List.of(DATABASE_1));
-        when(databaseRepository.findWriteAccess(USER_1_ID))
-                .thenReturn(List.of(DATABASE_1));
-        when(databaseRepository.findReadAccess(USER_1_ID))
-                .thenReturn(List.of(DATABASE_1));
+        databaseAccessRepository.save(DATABASE_1_USER_1_WRITE_ALL_ACCESS);
 
         /* test */
-        final PermissionDto permissions = updatePermissions_generic();
+        final TopicPermissionDto permissions = setTopicExchangePermissions_generic(List.of(DATABASE_1_USER_1_WRITE_ALL_ACCESS));
         assertEquals(USER_1_USERNAME, permissions.getUser());
         assertEquals(REALM_DBREPO_NAME, permissions.getVhost());
-        assertEquals("^(" + DATABASE_1_EXCHANGE + ")$", permissions.getConfigure());
-        assertEquals("^(" + DATABASE_1_EXCHANGE + ")$", permissions.getRead());
-        assertEquals("^(" + DATABASE_1_EXCHANGE + ")$", permissions.getWrite());
+        assertEquals(DATABASE_1_EXCHANGE, permissions.getExchange());
+        assertEquals("^(dbrepo\\.weather\\..*)$", permissions.getRead());
+        assertEquals("^(dbrepo\\.weather\\..*)$", permissions.getWrite());
     }
 
     @Test
-    public void updatePermissions_ownerNoAccess_succeeds() throws BrokerRemoteException, BrokerVirtualHostGrantException {
+    @Transactional(readOnly = true)
+    public void setTopicExchangePermissions_writeOwn_succeeds() throws BrokerRemoteException, BrokerVirtualHostGrantException {
 
         /* mock */
-        when(databaseRepository.findConfigureAccess(USER_1_ID))
-                .thenReturn(List.of(DATABASE_1));
-        when(databaseRepository.findWriteAccess(USER_1_ID))
-                .thenReturn(List.of());
-        when(databaseRepository.findReadAccess(USER_1_ID))
-                .thenReturn(List.of());
+        databaseAccessRepository.save(DATABASE_1_USER_1_WRITE_OWN_ACCESS);
 
         /* test */
-        final PermissionDto permissions = updatePermissions_generic();
+        final TopicPermissionDto permissions = setTopicExchangePermissions_generic(List.of(DATABASE_1_USER_1_WRITE_OWN_ACCESS));
         assertEquals(USER_1_USERNAME, permissions.getUser());
         assertEquals(REALM_DBREPO_NAME, permissions.getVhost());
-        assertEquals("^(" + DATABASE_1_EXCHANGE + ")$", permissions.getConfigure());
-        assertEquals("", permissions.getRead());
+        assertEquals(DATABASE_1_EXCHANGE, permissions.getExchange());
+        assertEquals("^(dbrepo\\.weather\\..*)$", permissions.getRead());
+        assertEquals("^(dbrepo\\.dbrepo\\.weather_aus|dbrepo\\.dbrepo\\.sensor)$", permissions.getWrite());
+    }
+
+    @Test
+    @Transactional(readOnly = true)
+    public void setTopicExchangePermissions_read_succeeds() throws BrokerRemoteException, BrokerVirtualHostGrantException {
+
+        /* mock */
+        databaseAccessRepository.save(DATABASE_1_USER_1_READ_ACCESS);
+
+        /* test */
+        final TopicPermissionDto permissions = setTopicExchangePermissions_generic(List.of(DATABASE_1_USER_1_READ_ACCESS));
+        assertEquals(USER_1_USERNAME, permissions.getUser());
+        assertEquals(REALM_DBREPO_NAME, permissions.getVhost());
+        assertEquals(DATABASE_1_EXCHANGE, permissions.getExchange());
+        assertEquals("^(dbrepo\\.weather\\..*)$", permissions.getRead());
         assertEquals("", permissions.getWrite());
     }
 
@@ -129,15 +221,40 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
 
-    protected PermissionDto updatePermissions_generic() throws BrokerRemoteException, BrokerVirtualHostGrantException {
+    protected VirtualHostPermissionDto setVirtualHostPermissions_generic() throws BrokerRemoteException,
+            BrokerVirtualHostGrantException {
 
         /* mock */
         amqpUtils.createUser(USER_1_USERNAME, USER_1_RABBITMQ_CREATE_DTO);
-        amqpUtils.setPermissions(REALM_DBREPO_NAME, USER_1_USERNAME, USER_1_RABBITMQ_GRANT_DTO);
+        amqpUtils.setVirtualHostPermissions(REALM_DBREPO_NAME, USER_1_USERNAME, USER_1_RABBITMQ_GRANT_DTO);
 
         /* test */
-        messageQueueService.updatePermissions(USER_1);
-        return amqpUtils.getPermissions(USER_1_USERNAME);
+        messageQueueService.setVirtualHostPermissions(USER_1_USERNAME);
+        return amqpUtils.getVirtualHostPermissions(USER_1_USERNAME);
+    }
+
+    @Transactional(readOnly = true)
+    protected TopicPermissionDto setTopicExchangePermissions_generic(List<DatabaseAccess> accesses)
+            throws BrokerRemoteException, BrokerVirtualHostGrantException {
+        final GrantExchangePermissionsDto request = GrantExchangePermissionsDto.builder()
+                .exchange("dbrepo")
+                .read("")
+                .write("")
+                .build();
+        final User user1 = User.builder()
+                .id(USER_1_ID)
+                .username(USER_1_USERNAME)
+                .accesses(accesses)
+                .build();
+
+        /* mock */
+        amqpUtils.createUser(USER_1_USERNAME, USER_1_RABBITMQ_CREATE_DTO);
+        amqpUtils.setVirtualHostPermissions(REALM_DBREPO_NAME, USER_1_USERNAME, VIRTUAL_HOST_GRANT_DTO);
+        amqpUtils.setTopicPermissions(REALM_DBREPO_NAME, USER_1_USERNAME, request);
+
+        /* test */
+        messageQueueService.setTopicExchangePermissions(user1);
+        return amqpUtils.getTopicPermissions(USER_1_USERNAME);
     }
 
 }

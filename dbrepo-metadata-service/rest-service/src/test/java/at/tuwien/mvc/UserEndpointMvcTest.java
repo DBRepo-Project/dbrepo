@@ -56,7 +56,7 @@ public class UserEndpointMvcTest extends BaseUnitTest {
         /* mock */
         doNothing()
                 .when(brokerServiceGateway)
-                .createUser(USER_1_USERNAME);
+                .createUser(USER_1_USERNAME, USER_1_PASSWORD);
 
         /* test */
         this.mockMvc.perform(post("/api/user")
@@ -95,7 +95,7 @@ public class UserEndpointMvcTest extends BaseUnitTest {
                 .thenReturn(USER_1_KEYCLOAK_DTO);
         doThrow(BrokerRemoteException.class)
                 .when(brokerServiceGateway)
-                .createUser(USER_1_USERNAME);
+                .createUser(USER_1_USERNAME, USER_1_PASSWORD);
 
         /* test */
         this.mockMvc.perform(post("/api/user")
