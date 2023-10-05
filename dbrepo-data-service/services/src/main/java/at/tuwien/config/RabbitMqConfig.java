@@ -14,6 +14,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Log4j2
 @Getter
 @Configuration
@@ -57,7 +60,9 @@ public class RabbitMqConfig {
 
     @Bean
     public Queue queue() {
-        return new Queue(queueName, false);
+        final Map<String, Object> args = new HashMap<>();
+        args.put("x-queue-type", "quorum");
+        return new Queue(queueName, true, false, false, args);
     }
 
     @Bean

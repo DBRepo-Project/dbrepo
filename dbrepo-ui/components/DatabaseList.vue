@@ -12,12 +12,18 @@
       tile>
       <v-divider v-if="idx !== 0" class="mx-4" />
       <v-card-title>
-        <a :href="`/database/${database.id}`">{{ database.name }}</a>
+        <a :href="`/database/${database.id}`" v-text="formatTitle(database)" />
       </v-card-title>
       <v-card-subtitle class="db-subtitle" v-text="formatCreators(database)" />
       <v-card-text class="db-description">
         <div class="db-tags">
-          <v-chip v-if="database.is_public" small color="green" outlined>Public</v-chip>
+          <v-chip
+            v-if="database.is_public"
+            small
+            color="success"
+            outlined>
+            Public
+          </v-chip>
           <v-chip v-if="!database.is_public" small outlined>Private</v-chip>
           <v-chip
             v-if="identifierYear(database)"
@@ -29,6 +35,13 @@
             small
             outlined
             v-text="database.identifier.publisher" />
+          <v-chip
+            v-for="(license,i) in identifierLicenses(database)"
+            :key="i"
+            small
+            color="success"
+            outlined
+            v-text="license.identifier" />
           <v-chip v-for="(funder,i) in identifierFunders(database)" :key="`f-${i}`" small outlined v-text="funder.funder_name" />
           <v-chip v-if="identifierLanguage(database)" small outlined v-text="identifierLanguage(database)" />
         </div>
@@ -99,11 +112,23 @@ export default {
     hasIdentifier (database) {
       return database && database.identifier
     },
+    formatTitle (database) {
+      if (!database || !database.identifier) {
+        return null
+      }
+      return IdentifierMapper.identifierPreferEnglishTitle(database.identifier)
+    },
     identifierYear (database) {
       if (!database || !database.identifier || !database.identifier.publication_year) {
         return null
       }
       return database.identifier.publication_year
+    },
+    identifierLicenses (database) {
+      if (!database || !database.identifier) {
+        return []
+      }
+      return database.identifier.licenses
     },
     identifierDescription (database) {
       if (!database || !database.identifier) {

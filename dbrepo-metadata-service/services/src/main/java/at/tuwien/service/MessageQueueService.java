@@ -1,9 +1,9 @@
 package at.tuwien.service;
 
+import at.tuwien.api.amqp.ExchangeDto;
+import at.tuwien.api.amqp.QueueDto;
 import at.tuwien.entities.user.User;
-import at.tuwien.exception.BrokerRemoteException;
-import at.tuwien.exception.BrokerVirtualHostModificationException;
-import at.tuwien.exception.BrokerVirtualHostGrantException;
+import at.tuwien.exception.*;
 
 public interface MessageQueueService {
 
@@ -36,4 +36,8 @@ public interface MessageQueueService {
 
     void setTopicExchangePermissions(User user) throws BrokerVirtualHostGrantException,
             BrokerRemoteException;
+
+    QueueDto findQueue(String name) throws QueueNotFoundException, BrokerRemoteException;
+
+    ExchangeDto findExchange(String name) throws ExchangeNotFoundException, BrokerRemoteException;
 }

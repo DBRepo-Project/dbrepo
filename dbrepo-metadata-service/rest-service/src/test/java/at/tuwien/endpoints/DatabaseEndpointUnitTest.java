@@ -361,7 +361,8 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void findById_anonymous_succeeds() throws NotAllowedException, DatabaseNotFoundException {
+    public void findById_anonymous_succeeds() throws NotAllowedException, DatabaseNotFoundException,
+            ExchangeNotFoundException, BrokerRemoteException {
 
         /* test */
         findById_generic(DATABASE_1_ID, DATABASE_1, null);
@@ -379,7 +380,8 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"find-database"})
-    public void findById_hasRole_succeeds() throws NotAllowedException, DatabaseNotFoundException {
+    public void findById_hasRole_succeeds() throws NotAllowedException, DatabaseNotFoundException,
+            ExchangeNotFoundException, BrokerRemoteException {
 
         /* pre-condition */
         assertTrue(DATABASE_3_PUBLIC);
@@ -390,7 +392,8 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"find-database"})
-    public void findById_hasRoleForeign_succeeds() throws NotAllowedException, DatabaseNotFoundException {
+    public void findById_hasRoleForeign_succeeds() throws NotAllowedException, DatabaseNotFoundException,
+            ExchangeNotFoundException, BrokerRemoteException {
 
         /* pre-condition */
         assertTrue(DATABASE_3_PUBLIC);
@@ -401,7 +404,8 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"find-database"})
-    public void findById_ownerSeesAccessRights_succeeds() throws NotAllowedException, DatabaseNotFoundException {
+    public void findById_ownerSeesAccessRights_succeeds() throws NotAllowedException, DatabaseNotFoundException,
+            ExchangeNotFoundException, BrokerRemoteException {
 
         /* mock */
         when(accessService.list(DATABASE_1_ID))
@@ -539,7 +543,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
     }
 
     public DatabaseDto findById_generic(Long databaseId, Database database, Principal principal)
-            throws DatabaseNotFoundException, NotAllowedException {
+            throws DatabaseNotFoundException, NotAllowedException, ExchangeNotFoundException, BrokerRemoteException {
 
         /* mock */
         if (database != null) {

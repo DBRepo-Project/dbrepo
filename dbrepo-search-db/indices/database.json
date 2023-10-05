@@ -26,6 +26,9 @@
       "exchange_name": {
         "type": "keyword"
       },
+      "exchange_type": {
+        "type": "keyword"
+      },
       "id": {
         "type": "keyword"
       },

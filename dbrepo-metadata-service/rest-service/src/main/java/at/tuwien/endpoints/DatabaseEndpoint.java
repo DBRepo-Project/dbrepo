@@ -1,7 +1,9 @@
 package at.tuwien.endpoints;
 
+import at.tuwien.api.amqp.ExchangeDto;
 import at.tuwien.api.database.*;
 import at.tuwien.api.error.ApiErrorDto;
+import at.tuwien.config.RabbitMqConfig;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.user.User;
@@ -42,19 +44,24 @@ public class DatabaseEndpoint {
     private final UserService userService;
     private final AccessService accessService;
     private final DatabaseMapper databaseMapper;
+    private final RabbitMqConfig rabbitMqConfig;
     private final DatabaseService databaseService;
     private final QueryStoreService queryStoreService;
+    private final MessageQueueService messageQueueService;
     private final DatabaseAccessRepository databaseAccessRepository;
 
     @Autowired
-    public DatabaseEndpoint(DatabaseMapper databaseMapper, UserService userService,
+    public DatabaseEndpoint(DatabaseMapper databaseMapper, UserService userService, RabbitMqConfig rabbitMqConfig,
                             DatabaseService databaseService, QueryStoreService queryStoreService,
-                            AccessService accessService, DatabaseAccessRepository databaseAccessRepository) {
+                            AccessService accessService, MessageQueueService messageQueueService,
+                            DatabaseAccessRepository databaseAccessRepository) {
         this.userService = userService;
+        this.rabbitMqConfig = rabbitMqConfig;
         this.accessService = accessService;
         this.databaseMapper = databaseMapper;
         this.databaseService = databaseService;
         this.queryStoreService = queryStoreService;
+        this.messageQueueService = messageQueueService;
         this.databaseAccessRepository = databaseAccessRepository;
     }
 
@@ -290,7 +297,7 @@ public class DatabaseEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<DatabaseDto> findById(@NotNull @PathVariable Long id, Principal principal)
-            throws DatabaseNotFoundException {
+            throws DatabaseNotFoundException, ExchangeNotFoundException, BrokerRemoteException {
         log.debug("endpoint find database, id={}", id);
         final Database database = databaseService.findById(id);
         final DatabaseDto dto = databaseMapper.databaseToDatabaseDto(database);
@@ -302,6 +309,11 @@ public class DatabaseEndpoint {
                     .map(databaseMapper::databaseAccessToDatabaseAccessDto)
                     .collect(Collectors.toList()));
             log.debug("found {} database accesses", accesses.size());
+        }
+        if (principal != null) {
+            /* extra effort only when logged-in */
+            final ExchangeDto exchange = messageQueueService.findExchange(rabbitMqConfig.getExchangeName());
+            dto.setExchangeType(exchange.getType());
         }
         log.trace("find database resulted in dto {}", dto);
         return ResponseEntity.ok(dto);

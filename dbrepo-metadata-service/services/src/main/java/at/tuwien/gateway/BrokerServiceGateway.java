@@ -1,13 +1,8 @@
 package at.tuwien.gateway;
 
-import at.tuwien.api.amqp.ConsumerDto;
-import at.tuwien.api.amqp.CreateVirtualHostDto;
-import at.tuwien.api.amqp.GrantExchangePermissionsDto;
-import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
+import at.tuwien.api.amqp.*;
 import at.tuwien.api.user.ExchangeUpdatePermissionsDto;
-import at.tuwien.exception.BrokerRemoteException;
-import at.tuwien.exception.BrokerVirtualHostModificationException;
-import at.tuwien.exception.BrokerVirtualHostGrantException;
+import at.tuwien.exception.*;
 
 import java.util.List;
 
@@ -78,4 +73,24 @@ public interface BrokerServiceGateway {
      * @throws BrokerVirtualHostGrantException The permissions could not be granted.
      */
     void grantPermission(String username, GrantVirtualHostPermissionsDto data) throws BrokerRemoteException, BrokerVirtualHostGrantException;
+
+    /**
+     * Finds queue information from the broker service by name.
+     *
+     * @param name The queue name.
+     * @return The queue, if successful.
+     * @throws BrokerRemoteException  The Broker Service did not respond within the 3s timeout.
+     * @throws QueueNotFoundException The queue could not be found.
+     */
+    QueueDto findQueue(String name) throws BrokerRemoteException, QueueNotFoundException;
+
+    /**
+     * Finds exchange information from the broker service by name.
+     *
+     * @param name The exchange name.
+     * @return The queue, if successful.
+     * @throws BrokerRemoteException     The Broker Service did not respond within the 3s timeout.
+     * @throws ExchangeNotFoundException The exchange could not be found.
+     */
+    ExchangeDto findExchange(String name) throws BrokerRemoteException, ExchangeNotFoundException;
 }

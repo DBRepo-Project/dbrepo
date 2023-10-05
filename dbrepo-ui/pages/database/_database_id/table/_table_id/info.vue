@@ -49,22 +49,22 @@
               <v-list-item-content>
                 AMQP
               </v-list-item-content>
-              <v-list-item-title>
-                Exchange Type
+              <v-list-item-title class="mt-2">
+                Exchange
               </v-list-item-title>
-              <v-list-item-content>
-                <span v-if="exchange" v-text="exchange.type" />
+              <v-list-item-content v-if="database && exchange">
+                <span>
+                  <v-badge inline :content="exchange.type" color="secondary">{{ database.exchange_name }}</v-badge>
+                </span>
               </v-list-item-content>
               <v-list-item-title class="mt-2">
-                Exchange Name
+                Queue
               </v-list-item-title>
-              <v-list-item-content>
-                <span v-if="database && database.exchange_name" v-text="database.exchange_name" />
+              <v-list-item-content v-if="table && queue">
+                <span>
+                  <v-badge inline :content="queue.type" color="secondary">{{ table.queue_name }}</v-badge>
+                </span>
               </v-list-item-content>
-              <v-list-item-title v-if="table && table.queue_name" class="mt-2">
-                Queue Name
-              </v-list-item-title>
-              <v-list-item-content v-if="table && table.queue_name" v-text="table.queue_name" />
               <v-list-item-title v-if="table && table.routing_key" class="mt-2">
                 Routing Key
               </v-list-item-title>
@@ -92,7 +92,6 @@
 <script>
 import TableToolbar from '@/components/TableToolbar.vue'
 import { formatTimestampUTCLabel } from '@/utils'
-import BrokerService from '@/api/broker.service'
 import UserMapper from '@/api/user.mapper'
 
 export default {
@@ -113,7 +112,9 @@ export default {
       dateColumns: [],
       loadingConsumers: false,
       loadingExchange: false,
-      exchange: null
+      loadingQueue: false,
+      exchange: null,
+      queue: null
     }
   },
   computed: {
@@ -194,16 +195,6 @@ export default {
       return `${this.consumersUp}/${this.consumersTotal} (${text})`
     }
   },
-  watch: {
-    table () {
-      this.consumerDetails()
-      this.findExchange()
-    }
-  },
-  mounted () {
-    this.consumerDetails()
-    this.findExchange()
-  },
   methods: {
     formatCreator (creator) {
       return UserMapper.userToFullName(creator)
@@ -213,32 +204,6 @@ export default {
         return false
       }
       return table.owner.username === this.user.username
-    },
-    consumerDetails () {
-      if (!this.table) {
-        return
-      }
-      this.loadingConsumers = true
-      BrokerService.findConsumers()
-        .then((consumers) => {
-          this.consumers = consumers
-        })
-        .finally(() => {
-          this.loadingConsumers = false
-        })
-    },
-    findExchange () {
-      if (!this.table) {
-        return
-      }
-      this.loadingExchange = true
-      BrokerService.findExchange('dbrepo')
-        .then((exchange) => {
-          this.exchange = exchange
-        })
-        .finally(() => {
-          this.loadingExchange = false
-        })
     }
   }
 }

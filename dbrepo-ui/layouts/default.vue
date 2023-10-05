@@ -283,11 +283,7 @@ export default {
       if (typeof message === 'string') {
         this.$toast.warning(message)
       }
-      this.$store.commit('SET_TOKEN', null)
-      this.$store.commit('SET_REFRESH_TOKEN', null)
-      this.$store.commit('SET_ROLES', [])
-      this.$store.commit('SET_USER', null)
-      this.$store.commit('SET_ACCESS', null)
+      this.$store.dispatch('logout')
       this.$vuetify.theme.dark = false
       this.$router.push('/database')
     },
@@ -345,8 +341,6 @@ export default {
       this.$store.commit('SET_ICON', this.$config.icon)
       this.$store.commit('SET_CLIENT_ID', this.$config.clientId)
       this.$store.commit('SET_CLIENT_SECRET', this.$config.clientSecret)
-      this.$store.commit('SET_BROKER_USERNAME', this.$config.brokerUsername)
-      this.$store.commit('SET_BROKER_PASSWORD', this.$config.brokerPassword)
       this.$store.commit('SET_SEARCH_USERNAME', this.$config.searchUsername)
       this.$store.commit('SET_SEARCH_PASSWORD', this.$config.searchPassword)
       this.$store.commit('SET_UPLOAD_PATH', this.$config.uploadPath)

@@ -25,8 +25,6 @@ const store = new Store({
     ontologies: [],
     clientId: null,
     clientSecret: null,
-    brokerUsername: null,
-    brokerPassword: null,
     searchUsername: null,
     searchPassword: null,
     uploadPath: null,
@@ -47,8 +45,6 @@ const store = new Store({
     getOntologies: state => state.ontologies,
     getClientId: state => state.clientId,
     getClientSecret: state => state.clientSecret,
-    getBrokerUsername: state => state.brokerUsername,
-    getBrokerPassword: state => state.brokerPassword,
     getSearchUsername: state => state.searchUsername,
     getSearchPassword: state => state.searchPassword,
     getUploadPath: state => state.uploadPath,
@@ -96,12 +92,6 @@ const store = new Store({
     },
     SET_CLIENT_SECRET (state, clientSecret) {
       state.clientSecret = clientSecret
-    },
-    SET_BROKER_USERNAME (state, brokerUsername) {
-      state.brokerUsername = brokerUsername
-    },
-    SET_BROKER_PASSWORD (state, brokerPassword) {
-      state.brokerPassword = brokerPassword
     },
     SET_SEARCH_USERNAME (state, searchUsername) {
       state.searchUsername = searchUsername
@@ -165,6 +155,14 @@ const store = new Store({
               })
           }
         })
+    },
+    logout ({ state, commit }) {
+      commit('SET_TOKEN', null)
+      commit('SET_REFRESH_TOKEN', null)
+      commit('SET_ROLES', null)
+      commit('SET_USER', null)
+      commit('SET_DATABASE', null)
+      commit('SET_ACCESS', null)
     }
   }
 })

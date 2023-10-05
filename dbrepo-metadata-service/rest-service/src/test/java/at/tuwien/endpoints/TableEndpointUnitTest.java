@@ -12,6 +12,7 @@ import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.*;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.DatabaseService;
+import at.tuwien.service.MessageQueueService;
 import at.tuwien.service.TableService;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
@@ -51,6 +52,9 @@ public class TableEndpointUnitTest extends BaseUnitTest {
 
     @MockBean
     private TableService tableService;
+
+    @MockBean
+    private MessageQueueService messageQueueService;
 
     @Autowired
     private TableEndpoint tableEndpoint;
@@ -154,7 +158,7 @@ public class TableEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithAnonymousUser
     public void findById_publicAnonymous_succeeds() throws DatabaseNotFoundException, TableNotFoundException,
-            at.tuwien.exception.AccessDeniedException {
+            at.tuwien.exception.AccessDeniedException, QueueNotFoundException, BrokerRemoteException {
 
         /* test */
         generic_findById(DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8, null, null, null);
@@ -173,7 +177,7 @@ public class TableEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = "find-table")
     public void findById_publicHasRoleDatabaseNotFound_succeeds() throws DatabaseNotFoundException, TableNotFoundException,
-            at.tuwien.exception.AccessDeniedException {
+            at.tuwien.exception.AccessDeniedException, QueueNotFoundException, BrokerRemoteException {
 
         /* test */
         generic_findById(DATABASE_3_ID, TABLE_8_ID, null, TABLE_8, USER_1_ID, USER_1_PRINCIPAL, DATABASE_1_USER_1_READ_ACCESS);
@@ -182,7 +186,7 @@ public class TableEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = "find-table")
     public void findById_publicHasRole_succeeds() throws DatabaseNotFoundException, TableNotFoundException,
-            at.tuwien.exception.AccessDeniedException {
+            at.tuwien.exception.AccessDeniedException, QueueNotFoundException, BrokerRemoteException {
 
         /* test */
         final ResponseEntity<TableDto> response = generic_findById(DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8, USER_1_ID, USER_1_PRINCIPAL, DATABASE_1_USER_1_READ_ACCESS);
@@ -194,7 +198,7 @@ public class TableEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithMockUser(username = USER_4_USERNAME)
     public void findById_publicNoRole_succeeds() throws TableNotFoundException, DatabaseNotFoundException,
-            at.tuwien.exception.AccessDeniedException {
+            at.tuwien.exception.AccessDeniedException, QueueNotFoundException, BrokerRemoteException {
 
         /* test */
         generic_findById(DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8, USER_1_ID, USER_1_PRINCIPAL, null);
@@ -349,7 +353,7 @@ public class TableEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithAnonymousUser
     public void findById_privateAnonymous_succeeds() throws TableNotFoundException, DatabaseNotFoundException,
-            at.tuwien.exception.AccessDeniedException {
+            at.tuwien.exception.AccessDeniedException, QueueNotFoundException, BrokerRemoteException {
 
         /* test */
         generic_findById(DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, null, null, null);
@@ -368,7 +372,7 @@ public class TableEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = "find-table")
     public void findById_privateHasRoleDatabaseNotFound_succeeds() throws DatabaseNotFoundException,
-            TableNotFoundException, at.tuwien.exception.AccessDeniedException {
+            TableNotFoundException, at.tuwien.exception.AccessDeniedException, QueueNotFoundException, BrokerRemoteException {
 
         /* test */
         generic_findById(DATABASE_1_ID, TABLE_1_ID, null, TABLE_1, USER_1_ID, USER_1_PRINCIPAL, DATABASE_1_USER_1_READ_ACCESS);
@@ -377,7 +381,7 @@ public class TableEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = "find-table")
     public void findById_privateHasRole_succeeds() throws DatabaseNotFoundException, TableNotFoundException,
-            at.tuwien.exception.AccessDeniedException {
+            at.tuwien.exception.AccessDeniedException, QueueNotFoundException, BrokerRemoteException {
         /* test */
         final ResponseEntity<TableDto> response = generic_findById(DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_1_ID, USER_1_PRINCIPAL, DATABASE_1_USER_1_READ_ACCESS);
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -388,7 +392,7 @@ public class TableEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithMockUser(username = USER_4_USERNAME)
     public void findById_privateNoRole_succeeds() throws TableNotFoundException, DatabaseNotFoundException,
-            at.tuwien.exception.AccessDeniedException {
+            at.tuwien.exception.AccessDeniedException, QueueNotFoundException, BrokerRemoteException {
 
         /* test */
         generic_findById(DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_4_ID, USER_4_PRINCIPAL, null);
@@ -438,7 +442,7 @@ public class TableEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithMockUser(username = USER_4_USERNAME)
     public void delete_privateNoRole_succeeds() throws TableNotFoundException, DatabaseNotFoundException,
-            at.tuwien.exception.AccessDeniedException {
+            at.tuwien.exception.AccessDeniedException, QueueNotFoundException, BrokerRemoteException {
 
         /* test */
         generic_findById(DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_4_ID, USER_4_PRINCIPAL, null);
@@ -516,7 +520,7 @@ public class TableEndpointUnitTest extends BaseUnitTest {
     protected ResponseEntity<TableDto> generic_findById(Long databaseId, Long tableId, Database database,
                                                         Table table, UUID userId, Principal principal,
                                                         DatabaseAccess access) throws DatabaseNotFoundException,
-            TableNotFoundException, at.tuwien.exception.AccessDeniedException {
+            TableNotFoundException, at.tuwien.exception.AccessDeniedException, QueueNotFoundException, BrokerRemoteException {
 
         /* mock */
         if (table != null) {
@@ -547,6 +551,9 @@ public class TableEndpointUnitTest extends BaseUnitTest {
                     .when(accessService)
                     .find(databaseId, userId);
         }
+        doNothing()
+                .when(messageQueueService)
+                .findQueue("dbrepo");
 
         /* test */
         return tableEndpoint.findById(databaseId, tableId, principal);

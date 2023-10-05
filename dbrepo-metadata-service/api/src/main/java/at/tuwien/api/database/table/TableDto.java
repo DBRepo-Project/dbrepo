@@ -72,13 +72,18 @@ public class TableDto {
 
     @NotBlank(message = "queueName is required")
     @JsonProperty("queue_name")
-    @Schema(example = "dbrepo.air_quality")
+    @Schema(example = "air_quality")
     @Field(name = "queue_name", type = FieldType.Keyword)
     private String queueName;
 
+    @JsonProperty("queue_type")
+    @Schema(example = "quorum")
+    @Field(name = "queue_type", type = FieldType.Keyword)
+    private String queueType;
+
     @NotBlank(message = "routingKey is required")
     @JsonProperty("routing_key")
-    @Schema(example = "dbrepo.air_quality")
+    @Schema(example = "dbrepo.database.air_quality")
     @Field(name = "routing_key", type = FieldType.Keyword)
     private String routingKey;
 

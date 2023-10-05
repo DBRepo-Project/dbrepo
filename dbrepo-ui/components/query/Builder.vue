@@ -123,7 +123,7 @@
                   <v-alert
                     border="left"
                     color="info">
-                    Currently, comments and <a href="https://mariadb.com/kb/en/aggregate-functions/" target="_blank">aggregation functions</a>
+                    The star selector, comments and <a href="https://mariadb.com/kb/en/aggregate-functions/" target="_blank">aggregation functions</a>
                     <sup>
                       <v-icon dense x-small>mdi-open-in-new</v-icon>
                     </sup>

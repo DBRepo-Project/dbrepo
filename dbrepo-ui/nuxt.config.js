@@ -1,6 +1,6 @@
 import path from 'path'
 import colors from 'vuetify/es5/util/colors'
-import { icon, clientSecret, title, logo, version, defaultPublisher, doiUrl, clientId, uploadPath, brokerUsername, brokerPassword, searchUsername, searchPassword, brokerLoginUrl, keycloakLoginUrl, openSearchUrl } from './config'
+import { icon, clientSecret, title, logo, version, defaultPublisher, doiUrl, clientId, uploadPath, searchUsername, searchPassword, brokerLoginUrl, keycloakLoginUrl, openSearchUrl } from './config'
 
 const proxy = {}
 
@@ -104,8 +104,6 @@ export default {
     clientId,
     clientSecret,
     defaultPublisher,
-    brokerUsername,
-    brokerPassword,
     brokerLoginUrl,
     keycloakLoginUrl,
     openSearchUrl,
@@ -132,7 +130,7 @@ export default {
           code: colors.grey.lighten4,
           warning: colors.orange.lighten2,
           error: colors.red.base /* is used by forms */,
-          success: colors.teal.base
+          success: colors.green.base
         },
         dark: {
           anchor: colors.blue.darken2

@@ -1,16 +1,17 @@
 package at.tuwien.service.impl;
 
+import at.tuwien.api.amqp.ExchangeDto;
 import at.tuwien.api.amqp.GrantExchangePermissionsDto;
 import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
+import at.tuwien.api.amqp.QueueDto;
 import at.tuwien.entities.database.AccessType;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.user.User;
-import at.tuwien.exception.BrokerRemoteException;
-import at.tuwien.exception.BrokerVirtualHostGrantException;
-import at.tuwien.exception.BrokerVirtualHostModificationException;
+import at.tuwien.exception.*;
 import at.tuwien.gateway.BrokerServiceGateway;
 import at.tuwien.service.MessageQueueService;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,9 +21,11 @@ import java.util.stream.Collectors;
 @Service
 public class RabbitMqServiceImpl implements MessageQueueService {
 
+    private final RabbitAdmin rabbitAdmin;
     private final BrokerServiceGateway brokerServiceGateway;
 
-    public RabbitMqServiceImpl(BrokerServiceGateway brokerServiceGateway) {
+    public RabbitMqServiceImpl(RabbitAdmin rabbitAdmin, BrokerServiceGateway brokerServiceGateway) {
+        this.rabbitAdmin = rabbitAdmin;
         this.brokerServiceGateway = brokerServiceGateway;
     }
 
@@ -99,6 +102,16 @@ public class RabbitMqServiceImpl implements MessageQueueService {
         }
         log.trace("mapped databases {} to read permissions '{}'", user.getAccesses().stream().map(a -> a.getDatabase().getInternalName()).toList(), permissions);
         return permissions;
+    }
+
+    @Override
+    public QueueDto findQueue(String name) throws QueueNotFoundException, BrokerRemoteException {
+        return brokerServiceGateway.findQueue(name);
+    }
+
+    @Override
+    public ExchangeDto findExchange(String name) throws ExchangeNotFoundException, BrokerRemoteException {
+        return brokerServiceGateway.findExchange(name);
     }
 
 }

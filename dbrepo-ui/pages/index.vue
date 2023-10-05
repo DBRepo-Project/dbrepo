@@ -45,7 +45,7 @@
         </p>
         <div class="text--primary">
           This release fixes bugs related to versioning, increases tasks for developers and data stewards. It enables
-          organizations to federate identities with thei own OAuth2 identitiy provider with Keycloak.
+          organizations to federate identities with their own identity provider through Keycloak.
         </div>
       </v-card-text>
       <v-divider class="mx-4" />

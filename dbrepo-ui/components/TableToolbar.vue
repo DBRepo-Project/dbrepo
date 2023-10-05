@@ -2,7 +2,7 @@
   <div v-if="table">
     <v-toolbar flat>
       <v-toolbar-title>
-        <v-btn id="back-btn" plain class="mr-2" :to="`/database/${$route.params.database_id}/table`">
+        <v-btn id="back-btn" plain :to="`/database/${$route.params.database_id}/table`">
           <v-icon left>mdi-arrow-left</v-icon>
         </v-btn>
       </v-toolbar-title>
@@ -11,22 +11,22 @@
       </v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn v-if="canAddTuple" class="mr-2 mb-1" @click="addTuple">
+        <v-btn v-if="canAddTuple" class="mb-1" @click="addTuple">
           <v-icon left>mdi-plus</v-icon> Add
         </v-btn>
-        <v-btn v-if="canEditTuple" color="warning" class="mr-2 mb-1 black--text" @click="editTuple">
+        <v-btn v-if="canEditTuple" color="warning" class="mb-1 black--text" @click="editTuple">
           <v-icon left>mdi-pencil</v-icon> Edit
         </v-btn>
-        <v-btn v-if="canDeleteTuple" color="error" class="mr-2 mb-1" :loading="loadingDelete" @click="deleteItems">
+        <v-btn v-if="canDeleteTuple" color="error" class="mb-1" :loading="loadingDelete" @click="deleteItems">
           <v-icon left>mdi-delete</v-icon> Delete <span v-if="selection.length > 1">&nbsp;{{ selection.length }}</span>
         </v-btn>
         <v-btn v-if="canExecuteQuery" class="mb-1" :to="`/database/${$route.params.database_id}/query/create?tid=${$route.params.table_id}`" color="secondary">
           <v-icon left>mdi-wrench</v-icon> Create Subset
         </v-btn>
-        <v-btn v-if="canCreateView" class="ml-2 mb-1" :to="`/database/${$route.params.database_id}/view/create?tid=${$route.params.table_id}`" color="secondary">
+        <v-btn v-if="canCreateView" class="mb-1" :to="`/database/${$route.params.database_id}/view/create?tid=${$route.params.table_id}`" color="secondary">
           <v-icon left>mdi-view-carousel</v-icon> Create View
         </v-btn>
-        <v-btn v-if="canImportCsv" class="ml-2 mb-1" :to="`/database/${$route.params.database_id}/table/${$route.params.table_id}/import`">
+        <v-btn v-if="canImportCsv" class="mb-1" :to="`/database/${$route.params.database_id}/table/${$route.params.table_id}/import`">
           <v-icon left>mdi-cloud-upload</v-icon> Import .csv
         </v-btn>
       </v-toolbar-title>
@@ -105,7 +105,7 @@ export default {
       if (!this.roles || !this.isDataTab) {
         return false
       }
-      return UserUtils.hasWriteAccess(this.access) && this.roles.includes('insert-table-data')
+      return UserUtils.hasWriteAccess(this.table, this.access, this.user) && this.roles.includes('insert-table-data')
     },
     canEditTuple () {
       if (this.selection === null || this.selection.length !== 1) {
@@ -114,7 +114,7 @@ export default {
       if (!this.roles || !this.isDataTab) {
         return false
       }
-      return UserUtils.hasWriteAccess(this.access) && this.roles.includes('insert-table-data')
+      return UserUtils.hasWriteAccess(this.table, this.access, this.user) && this.roles.includes('insert-table-data')
     },
     canDeleteTuple () {
       if (this.selection === null || this.selection.length < 1) {
@@ -123,7 +123,7 @@ export default {
       if (!this.roles || !this.isDataTab) {
         return false
       }
-      return UserUtils.hasWriteAccess(this.access) && this.roles.includes('delete-table-data')
+      return UserUtils.hasWriteAccess(this.table, this.access, this.user) && this.roles.includes('delete-table-data')
     },
     canExecuteQuery () {
       if (!this.roles) {

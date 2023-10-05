@@ -1,12 +1,15 @@
 package at.tuwien.endpoints;
 
+import at.tuwien.api.amqp.QueueDto;
 import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.TableCreateDto;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.error.ApiErrorDto;
+import at.tuwien.config.RabbitMqConfig;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.TableMapper;
+import at.tuwien.service.MessageQueueService;
 import at.tuwien.service.TableService;
 import at.tuwien.validation.EndpointValidator;
 import io.micrometer.core.annotation.Timed;
@@ -39,13 +42,18 @@ public class TableEndpoint {
 
     private final TableMapper tableMapper;
     private final TableService tableService;
+    private final RabbitMqConfig rabbitMqConfig;
     private final EndpointValidator endpointValidator;
+    private final MessageQueueService messageQueueService;
 
     @Autowired
-    public TableEndpoint(TableMapper tableMapper, TableService tableService, EndpointValidator endpointValidator) {
+    public TableEndpoint(TableMapper tableMapper, TableService tableService, RabbitMqConfig rabbitMqConfig,
+                         EndpointValidator endpointValidator, MessageQueueService messageQueueService) {
         this.tableMapper = tableMapper;
         this.tableService = tableService;
+        this.rabbitMqConfig = rabbitMqConfig;
         this.endpointValidator = endpointValidator;
+        this.messageQueueService = messageQueueService;
     }
 
     @GetMapping
@@ -170,11 +178,16 @@ public class TableEndpoint {
     })
     public ResponseEntity<TableDto> findById(@NotNull @PathVariable("databaseId") Long databaseId,
                                              @NotNull @PathVariable("tableId") Long tableId,
-                                             Principal principal)
-            throws TableNotFoundException, DatabaseNotFoundException {
+                                             Principal principal) throws TableNotFoundException,
+            DatabaseNotFoundException, QueueNotFoundException, BrokerRemoteException {
         log.debug("endpoint find table, databaseId={}, tableId={}, principal={}", databaseId, tableId, principal);
         final Table table = tableService.findById(databaseId, tableId);
         final TableDto dto = tableMapper.tableToTableDto(table);
+        if (principal != null) {
+            /* extra effort only when logged-in */
+            final QueueDto queue = messageQueueService.findQueue(rabbitMqConfig.getQueueName());
+            dto.setQueueType(queue.getType());
+        }
         log.trace("find table resulted in table {}", dto);
         return ResponseEntity.ok(dto);
     }

@@ -2,7 +2,7 @@
   <div v-if="database">
     <v-toolbar flat>
       <v-toolbar-title>
-        <span>{{ database.name }}</span>
+        <span v-if="$vuetify.breakpoint.lgAndUp">{{ database.name }}</span>
         <v-tooltip bottom>
           <template v-slot:activator="{ on, attrs }">
             <v-icon
@@ -28,8 +28,8 @@
       </v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn v-if="canImportCsv" class="mr-2 mb-1" :to="`/database/${$route.params.database_id}/table/import`">
-          <v-icon left>mdi-cloud-upload</v-icon> Import .csv
+        <v-btn v-if="canImportCsv" class="mb-1" :to="`/database/${$route.params.database_id}/table/import`">
+          <v-icon v-if="$vuetify.breakpoint.lgAndUp" left>mdi-cloud-upload</v-icon> Import .csv
         </v-btn>
         <DownloadButton
           v-if="database && database.identifier"
@@ -38,13 +38,13 @@
           <v-icon left>mdi-code-tags</v-icon> Identifier .xml
         </DownloadButton>
         <v-btn v-if="canCreateSubset" color="secondary" class="mb-1 white--text" :to="`/database/${$route.params.database_id}/query/create`">
-          <v-icon left>mdi-wrench</v-icon> Create Subset
+          <v-icon v-if="$vuetify.breakpoint.lgAndUp" left>mdi-wrench</v-icon> Create Subset
         </v-btn>
-        <v-btn v-if="canCreateView" color="secondary" class="ml-2 mr-2 mb-1 white--text" :to="`/database/${$route.params.database_id}/view/create`">
-          <v-icon left>mdi-view-carousel-outline</v-icon> Create View
+        <v-btn v-if="canCreateView" color="secondary" class="mb-1 white--text" :to="`/database/${$route.params.database_id}/view/create`">
+          <v-icon v-if="$vuetify.breakpoint.lgAndUp" left>mdi-view-carousel-outline</v-icon> Create View
         </v-btn>
         <v-btn v-if="canCreateTable" color="primary" class="mb-1" :to="`/database/${$route.params.database_id}/table/create`">
-          <v-icon left>mdi-table-large-plus</v-icon> Create Table
+          <v-icon v-if="$vuetify.breakpoint.lgAndUp" left>mdi-table-large-plus</v-icon> Create Table
         </v-btn>
       </v-toolbar-title>
       <template v-slot:extension>
