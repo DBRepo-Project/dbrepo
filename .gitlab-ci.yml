@@ -64,7 +64,10 @@ build-docker:
 test-deployment:
   stage: build-docker
   needs:
-    - build-docker
+    - release-latest
+  only:
+    refs:
+      - dev
   script:
     - "curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/install.sh | sudo bash"
 
