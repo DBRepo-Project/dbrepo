@@ -11,6 +11,7 @@ spring:
     virtual-host: dbrepo
     password: guest
     username: guest
+    port: 5672
   jpa:
     show-sql: false
     database-platform: org.hibernate.dialect.MariaDBDialect

@@ -42,7 +42,7 @@ build-data-service:
 build-mirror-service:
   stage: build-backend
   needs:
-    - build-mirror-service
+    - build-metadata-service
   script:
     - "make build-mirror-service"
 

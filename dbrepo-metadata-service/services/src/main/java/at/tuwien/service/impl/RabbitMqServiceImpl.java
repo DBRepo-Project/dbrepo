@@ -11,7 +11,6 @@ import at.tuwien.exception.*;
 import at.tuwien.gateway.BrokerServiceGateway;
 import at.tuwien.service.MessageQueueService;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,11 +20,9 @@ import java.util.stream.Collectors;
 @Service
 public class RabbitMqServiceImpl implements MessageQueueService {
 
-    private final RabbitAdmin rabbitAdmin;
     private final BrokerServiceGateway brokerServiceGateway;
 
-    public RabbitMqServiceImpl(RabbitAdmin rabbitAdmin, BrokerServiceGateway brokerServiceGateway) {
-        this.rabbitAdmin = rabbitAdmin;
+    public RabbitMqServiceImpl(BrokerServiceGateway brokerServiceGateway) {
         this.brokerServiceGateway = brokerServiceGateway;
     }
 

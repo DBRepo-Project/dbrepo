@@ -6,7 +6,6 @@ import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
-import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -99,11 +98,6 @@ public class RabbitMqConfig {
         factory.setPassword(password);
         factory.setVirtualHost(virtualHost);
         return factory;
-    }
-
-    @Bean
-    public RabbitAdmin amqpAdmin() {
-        return new RabbitAdmin(getConnectionFactory());
     }
 
     @Bean
