@@ -62,7 +62,7 @@ build-docker:
     - "make build-docker"
 
 test-deployment:
-  stage: build-docker
+  stage: release-docker
   needs:
     - release-latest
   only:
