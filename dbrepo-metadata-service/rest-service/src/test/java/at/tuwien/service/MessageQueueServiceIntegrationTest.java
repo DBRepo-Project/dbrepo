@@ -5,6 +5,7 @@ import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.api.amqp.GrantExchangePermissionsDto;
 import at.tuwien.api.amqp.TopicPermissionDto;
 import at.tuwien.api.amqp.VirtualHostPermissionDto;
+import at.tuwien.config.CustomRabbitMqContainer;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.BrokerRemoteException;
@@ -19,10 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.RabbitMQContainer;
@@ -30,11 +28,9 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
 
 @Log4j2
 @Testcontainers
@@ -69,20 +65,9 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
     private AmqpUtils amqpUtils;
 
     @Container
-    private static final RabbitMQContainer rabbitMQContainer = new RabbitMQContainer("rabbitmq:3-management")
+    private static final RabbitMQContainer rabbitMQContainer = new CustomRabbitMqContainer("rabbitmq:3-management")
             .withUser(USER_1_USERNAME, USER_1_PASSWORD, Set.of("administrator"))
             .withVhost("dbrepo");
-
-    @DynamicPropertySource
-    static void rabbitMQProperties(DynamicPropertyRegistry registry) {
-        final String brokerEndpoint = rabbitMQContainer.getHttpUrl();
-        log.debug("rabbitMQ management URL: {}", brokerEndpoint);
-        registry.add("fda.broker.endpoint", () -> brokerEndpoint);
-        registry.add("spring.rabbitmq.host", rabbitMQContainer::getHost);
-        registry.add("spring.rabbitmq.port", rabbitMQContainer::getAmqpPort);
-        registry.add("spring.rabbitmq.username", rabbitMQContainer::getAdminUsername);
-        registry.add("spring.rabbitmq.password", rabbitMQContainer::getAdminPassword);
-    }
 
     @BeforeEach
     public void beforeEach() {
