@@ -1001,6 +1001,22 @@ public abstract class BaseTest {
             .privilegedPassword(CONTAINER_4_PRIVILEGED_PASSWORD)
             .build();
 
+    public final static String EXCHANGE_DBREPO_NAME = "dbrepo";
+    public final static Boolean EXCHANGE_DBREPO_AUTO_DELETE = true;
+    public final static Boolean EXCHANGE_DBREPO_DURABLE = true;
+    public final static Boolean EXCHANGE_DBREPO_INTERNAL = true;
+    public final static String EXCHANGE_DBREPO_TYPE = "topic";
+    public final static String EXCHANGE_DBREPO_VHOST = "dbrepo";
+
+    public final static ExchangeDto EXCHANGE_DBREPO_DTO = ExchangeDto.builder()
+            .autoDelete(EXCHANGE_DBREPO_AUTO_DELETE)
+            .type(EXCHANGE_DBREPO_TYPE)
+            .name(EXCHANGE_DBREPO_NAME)
+            .durable(EXCHANGE_DBREPO_DURABLE)
+            .vhost(EXCHANGE_DBREPO_VHOST)
+            .internal(EXCHANGE_DBREPO_INTERNAL)
+            .build();
+
     public final static Long DATABASE_1_ID = 1L;
     public final static String DATABASE_1_NAME = "Weather";
     public final static String DATABASE_1_DESCRIPTION = "Weather in Australia";

@@ -17,7 +17,7 @@ import java.util.Map;
 @Getter
 @Log4j2
 @Configuration
-public class RabbitMqConfig {
+public class RabbitConfig {
 
     @Value("${fda.queueName}")
     private String queueName;

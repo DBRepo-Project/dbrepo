@@ -3,7 +3,7 @@ package at.tuwien.gateway.impl;
 import at.tuwien.api.amqp.*;
 import at.tuwien.api.user.ExchangeUpdatePermissionsDto;
 import at.tuwien.config.GatewayConfig;
-import at.tuwien.config.RabbitMqConfig;
+import at.tuwien.config.RabbitConfig;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.BrokerServiceGateway;
 import lombok.extern.slf4j.Slf4j;
@@ -23,15 +23,15 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
 
     private final RestTemplate restTemplate;
     private final GatewayConfig gatewayConfig;
-    private final RabbitMqConfig rabbitMqConfig;
+    private final RabbitConfig rabbitConfig;
 
     @Autowired
     public BrokerServiceGatewayImpl(GatewayConfig gatewayConfig,
                                     @Qualifier("brokerRestTemplate") RestTemplate restTemplate,
-                                    RabbitMqConfig rabbitMqConfig) {
+                                    RabbitConfig rabbitMqConfig) {
         this.restTemplate = restTemplate;
         this.gatewayConfig = gatewayConfig;
-        this.rabbitMqConfig = rabbitMqConfig;
+        this.rabbitConfig = rabbitMqConfig;
     }
 
     @Override
@@ -55,7 +55,7 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
     @Override
     public void grantPermission(String username, ExchangeUpdatePermissionsDto data)
             throws BrokerVirtualHostGrantException, BrokerRemoteException {
-        final String url = "/api/topic-permissions/" + rabbitMqConfig.getVirtualHost() + "/" + username;
+        final String url = "/api/topic-permissions/" + rabbitConfig.getVirtualHost() + "/" + username;
         log.trace("PUT {}{}", gatewayConfig.getBrokerEndpoint(), url);
         final ResponseEntity<Void> response;
         try {
@@ -114,7 +114,7 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
     @Override
     public void grantPermission(String username, GrantVirtualHostPermissionsDto data) throws BrokerRemoteException,
             BrokerVirtualHostGrantException {
-        final String url = "/api/permissions/" + rabbitMqConfig.getVirtualHost() + "/" + username;
+        final String url = "/api/permissions/" + rabbitConfig.getVirtualHost() + "/" + username;
         log.trace("PUT {}{}", gatewayConfig.getBrokerEndpoint(), url);
         final ResponseEntity<Void> response;
         try {
@@ -133,7 +133,7 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
     @Override
     public void grantTopicPermission(String username, GrantExchangePermissionsDto data) throws BrokerRemoteException,
             BrokerVirtualHostGrantException {
-        final String url = "/api/topic-permissions/" + rabbitMqConfig.getVirtualHost() + "/" + username;
+        final String url = "/api/topic-permissions/" + rabbitConfig.getVirtualHost() + "/" + username;
         log.trace("PUT {}{}", gatewayConfig.getBrokerEndpoint(), url);
         final ResponseEntity<Void> response;
         try {
@@ -151,8 +151,8 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
 
     @Override
     public List<ConsumerDto> findAllConsumers() throws BrokerRemoteException {
-        final String url = "/api/consumers/" + rabbitMqConfig.getVirtualHost();
-        log.trace("gateway broker find all consumers, virtual host={}", rabbitMqConfig.getVirtualHost());
+        final String url = "/api/consumers/" + rabbitConfig.getVirtualHost();
+        log.trace("gateway broker find all consumers, virtual host={}", rabbitConfig.getVirtualHost());
         log.trace("GET {}{}", gatewayConfig.getBrokerEndpoint(), url);
         final ResponseEntity<List<ConsumerDto>> response;
         try {
@@ -168,10 +168,10 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
 
     @Override
     public QueueDto findQueue(String name) throws BrokerRemoteException, QueueNotFoundException {
-        final String url = "/api/queues/" + rabbitMqConfig.getVirtualHost() + "/" + name;
+        final String url = "/api/queues/" + rabbitConfig.getVirtualHost() + "/" + name;
         final HttpHeaders headers = new HttpHeaders();
         headers.set("Accept", "application/json");
-        log.trace("gateway broker find queue, virtual host={}, queue={}", rabbitMqConfig.getVirtualHost(), name);
+        log.trace("gateway broker find queue, virtual host={}, queue={}", rabbitConfig.getVirtualHost(), name);
         log.trace("GET {}{}", gatewayConfig.getBrokerEndpoint(), url);
         final ResponseEntity<QueueDto> response;
         try {
@@ -189,10 +189,10 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
 
     @Override
     public ExchangeDto findExchange(String name) throws BrokerRemoteException, ExchangeNotFoundException {
-        final String url = "/api/exchanges/" + rabbitMqConfig.getVirtualHost() + "/" + name;
+        final String url = "/api/exchanges/" + rabbitConfig.getVirtualHost() + "/" + name;
         final HttpHeaders headers = new HttpHeaders();
         headers.set("Accept", "application/json");
-        log.trace("gateway broker find exchange, virtual host={}, exchange={}", rabbitMqConfig.getVirtualHost(), name);
+        log.trace("gateway broker find exchange, virtual host={}, exchange={}", rabbitConfig.getVirtualHost(), name);
         log.trace("GET {}{}", gatewayConfig.getBrokerEndpoint(), url);
         final ResponseEntity<ExchangeDto> response;
         try {

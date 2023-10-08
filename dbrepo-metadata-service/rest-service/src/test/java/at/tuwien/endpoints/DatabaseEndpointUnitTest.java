@@ -543,16 +543,21 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
     }
 
     public DatabaseDto findById_generic(Long databaseId, Database database, Principal principal)
-            throws DatabaseNotFoundException, NotAllowedException, ExchangeNotFoundException, BrokerRemoteException {
+            throws DatabaseNotFoundException, ExchangeNotFoundException, BrokerRemoteException {
 
         /* mock */
         if (database != null) {
             when(databaseService.findById(databaseId))
                     .thenReturn(database);
+            when(messageQueueService.findExchange(EXCHANGE_DBREPO_NAME))
+                    .thenReturn(EXCHANGE_DBREPO_DTO);
         } else {
             doThrow(DatabaseNotFoundException.class)
                     .when(databaseService)
                     .findById(databaseId);
+            doThrow(ExchangeNotFoundException.class)
+                    .when(messageQueueService)
+                    .findExchange(EXCHANGE_DBREPO_NAME);
         }
 
         /* test */

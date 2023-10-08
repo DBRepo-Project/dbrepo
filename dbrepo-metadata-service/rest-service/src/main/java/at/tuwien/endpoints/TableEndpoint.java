@@ -5,7 +5,7 @@ import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.TableCreateDto;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.error.ApiErrorDto;
-import at.tuwien.config.RabbitMqConfig;
+import at.tuwien.config.RabbitConfig;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.TableMapper;
@@ -42,12 +42,12 @@ public class TableEndpoint {
 
     private final TableMapper tableMapper;
     private final TableService tableService;
-    private final RabbitMqConfig rabbitMqConfig;
+    private final RabbitConfig rabbitMqConfig;
     private final EndpointValidator endpointValidator;
     private final MessageQueueService messageQueueService;
 
     @Autowired
-    public TableEndpoint(TableMapper tableMapper, TableService tableService, RabbitMqConfig rabbitMqConfig,
+    public TableEndpoint(TableMapper tableMapper, TableService tableService, RabbitConfig rabbitMqConfig,
                          EndpointValidator endpointValidator, MessageQueueService messageQueueService) {
         this.tableMapper = tableMapper;
         this.tableService = tableService;

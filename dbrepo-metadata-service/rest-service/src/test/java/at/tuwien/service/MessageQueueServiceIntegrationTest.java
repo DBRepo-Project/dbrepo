@@ -31,6 +31,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -69,6 +70,7 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
 
     @Container
     private static final RabbitMQContainer rabbitMQContainer = new RabbitMQContainer("rabbitmq:3-management")
+            .withUser(USER_1_USERNAME, USER_1_PASSWORD, Set.of("administrator"))
             .withVhost("dbrepo");
 
     @DynamicPropertySource
@@ -225,7 +227,6 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
             BrokerVirtualHostGrantException {
 
         /* mock */
-        amqpUtils.createUser(USER_1_USERNAME, USER_1_RABBITMQ_CREATE_DTO);
         amqpUtils.setVirtualHostPermissions(REALM_DBREPO_NAME, USER_1_USERNAME, USER_1_RABBITMQ_GRANT_DTO);
 
         /* test */
@@ -248,7 +249,6 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
                 .build();
 
         /* mock */
-        amqpUtils.createUser(USER_1_USERNAME, USER_1_RABBITMQ_CREATE_DTO);
         amqpUtils.setVirtualHostPermissions(REALM_DBREPO_NAME, USER_1_USERNAME, VIRTUAL_HOST_GRANT_DTO);
         amqpUtils.setTopicPermissions(REALM_DBREPO_NAME, USER_1_USERNAME, request);
 

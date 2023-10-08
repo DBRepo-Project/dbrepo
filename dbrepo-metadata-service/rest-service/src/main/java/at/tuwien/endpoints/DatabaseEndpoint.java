@@ -3,7 +3,7 @@ package at.tuwien.endpoints;
 import at.tuwien.api.amqp.ExchangeDto;
 import at.tuwien.api.database.*;
 import at.tuwien.api.error.ApiErrorDto;
-import at.tuwien.config.RabbitMqConfig;
+import at.tuwien.config.RabbitConfig;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.user.User;
@@ -44,14 +44,14 @@ public class DatabaseEndpoint {
     private final UserService userService;
     private final AccessService accessService;
     private final DatabaseMapper databaseMapper;
-    private final RabbitMqConfig rabbitMqConfig;
+    private final RabbitConfig rabbitMqConfig;
     private final DatabaseService databaseService;
     private final QueryStoreService queryStoreService;
     private final MessageQueueService messageQueueService;
     private final DatabaseAccessRepository databaseAccessRepository;
 
     @Autowired
-    public DatabaseEndpoint(DatabaseMapper databaseMapper, UserService userService, RabbitMqConfig rabbitMqConfig,
+    public DatabaseEndpoint(DatabaseMapper databaseMapper, UserService userService, RabbitConfig rabbitMqConfig,
                             DatabaseService databaseService, QueryStoreService queryStoreService,
                             AccessService accessService, MessageQueueService messageQueueService,
                             DatabaseAccessRepository databaseAccessRepository) {
