@@ -76,6 +76,7 @@ test-metadata-service:
   needs:
     - build-metadata-service
   script:
+    - "docker pull rabbitmq:3-management"
     - "make test-metadata-service"
     - "cat ./dbrepo-metadata-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
   artifacts:

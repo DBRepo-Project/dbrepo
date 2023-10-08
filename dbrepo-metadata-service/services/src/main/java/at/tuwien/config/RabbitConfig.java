@@ -90,7 +90,7 @@ public class RabbitConfig {
 
     @Bean
     public ConnectionFactory getConnectionFactory() {
-        log.debug("rabbitmq endpoint: {}:{} -> {}", host, port, virtualHost);
+        log.debug("rabbitmq endpoint: amqp://{}:{}/{}", host, port, virtualHost);
         final CachingConnectionFactory factory = new CachingConnectionFactory();
         factory.setAddresses(host);
         factory.setPort(port);

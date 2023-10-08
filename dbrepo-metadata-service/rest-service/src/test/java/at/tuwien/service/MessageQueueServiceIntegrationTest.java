@@ -75,7 +75,9 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
 
     @DynamicPropertySource
     static void rabbitMQProperties(DynamicPropertyRegistry registry) {
-        registry.add("fda.broker.endpoint", rabbitMQContainer::getHttpUrl);
+        final String brokerEndpoint = rabbitMQContainer.getHttpUrl();
+        log.debug("rabbitMQ management URL: {}", brokerEndpoint);
+        registry.add("fda.broker.endpoint", () -> brokerEndpoint);
         registry.add("spring.rabbitmq.host", rabbitMQContainer::getHost);
         registry.add("spring.rabbitmq.port", rabbitMQContainer::getAmqpPort);
         registry.add("spring.rabbitmq.username", rabbitMQContainer::getAdminUsername);
