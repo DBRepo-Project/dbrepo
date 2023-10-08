@@ -1,9 +1,6 @@
 package at.tuwien.test;
 
-import at.tuwien.api.amqp.CreateUserDto;
-import at.tuwien.api.amqp.CreateVirtualHostDto;
-import at.tuwien.api.amqp.GrantExchangePermissionsDto;
-import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
+import at.tuwien.api.amqp.*;
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.container.ContainerBriefDto;
 import at.tuwien.api.container.ContainerDto;
@@ -36,6 +33,7 @@ import at.tuwien.api.maintenance.BannerMessageUpdateDto;
 import at.tuwien.api.semantics.OntologyCreateDto;
 import at.tuwien.api.semantics.OntologyModifyDto;
 import at.tuwien.api.user.*;
+import at.tuwien.api.user.UserDetailsDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.entities.container.image.ContainerImageDate;
@@ -2055,6 +2053,22 @@ public abstract class BaseTest {
             .data(new HashMap<>() {{
                 put("value", "2.1");
             }})
+            .build();
+
+    public final static String QUEUE_NAME = "dbrepo";
+    public final static String QUEUE_VHOST = "dbrepo";
+    public final static Boolean QUEUE_AUTO_DELETE = false;
+    public final static Boolean QUEUE_DURABLE = true;
+    public final static Boolean QUEUE_EXCLUSIVE = false;
+    public final static String QUEUE_TYPE = "quorum";
+
+    public final static QueueDto QUEUE_DTO = QueueDto.builder()
+            .name(QUEUE_NAME)
+            .vhost(QUEUE_VHOST)
+            .autoDelete(QUEUE_AUTO_DELETE)
+            .durable(QUEUE_DURABLE)
+            .exclusive(QUEUE_EXCLUSIVE)
+            .type(QUEUE_TYPE)
             .build();
 
     public final static Long ONTOLOGY_1_ID = 1L;

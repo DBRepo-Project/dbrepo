@@ -14,8 +14,8 @@ import org.springframework.context.annotation.Configuration;
 import java.util.HashMap;
 import java.util.Map;
 
-@Log4j2
 @Getter
+@Log4j2
 @Configuration
 public class RabbitMqConfig {
 
