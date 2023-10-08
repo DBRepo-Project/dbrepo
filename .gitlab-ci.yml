@@ -76,8 +76,7 @@ test-metadata-service:
   needs:
     - build-metadata-service
   script:
-    - "docker pull rabbitmq:3-management"
-    - "make test-metadata-service"
+    - "make clean test-metadata-service"
     - "cat ./dbrepo-metadata-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
   artifacts:
     when: always
@@ -94,7 +93,7 @@ test-data-service:
   needs:
     - build-data-service
   script:
-    - "make test-data-service"
+    - "make clean test-data-service"
     - "cat ./dbrepo-data-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
   artifacts:
     when: always
@@ -111,7 +110,7 @@ test-mirror-service:
   needs:
     - build-mirror-service
   script:
-    - "make test-mirror-service"
+    - "make clean test-mirror-service"
     - "cat ./dbrepo-mirror-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
   artifacts:
     when: always

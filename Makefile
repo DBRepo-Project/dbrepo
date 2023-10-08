@@ -6,6 +6,11 @@ AZURE_REPO ?= dbrepo.azurecr.io
 
 all: build
 
+clean:
+	docker container stop $(docker container ls -aq)
+	docker container rm $(docker container ls -aq)
+	docker volume rm $(docker volume ls -q)
+
 build: build-backend build-docker
 
 build-backend: build-metadata-service build-analyse-service build-data-service build-mirror-service
@@ -123,12 +128,15 @@ release-log-service: tag-log-service
 test-backend: test-metadata-service test-analyse-service test-data-service test-mirror-service
 
 test-data-service: build-data-service
+	docker pull mariadb:10.5
 	mvn -f ./dbrepo-data-service/pom.xml clean test verify
 
 test-mirror-service: build-mirror-service
+	docker pull opensearchproject/opensearch:2.8.0
 	mvn -f ./dbrepo-mirror-service/pom.xml clean test verify
 
-test-metadata-service: build-metadata-service teardown
+test-metadata-service: build-metadata-service
+	docker pull rabbitmq:3-management
 	mvn -f ./dbrepo-metadata-service/pom.xml clean test verify
 
 test-analyse-service: build-analyse-service
