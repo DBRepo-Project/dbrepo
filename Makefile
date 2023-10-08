@@ -7,9 +7,9 @@ AZURE_REPO ?= dbrepo.azurecr.io
 all: build
 
 clean:
-	docker container stop $(docker container ls -aq)
-	docker container rm $(docker container ls -aq)
-	docker volume rm $(docker volume ls -q)
+	docker container stop $(docker container ls -aq) || true
+	docker container rm $(docker container ls -aq) || true
+	docker volume rm $(docker volume ls -q) || true
 
 build: build-backend build-docker
 
