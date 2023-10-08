@@ -5,7 +5,6 @@ import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.api.amqp.GrantExchangePermissionsDto;
 import at.tuwien.api.amqp.TopicPermissionDto;
 import at.tuwien.api.amqp.VirtualHostPermissionDto;
-import at.tuwien.config.CustomRabbitMqContainer;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.BrokerRemoteException;
@@ -21,6 +20,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.RabbitMQContainer;
@@ -65,9 +66,18 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
     private AmqpUtils amqpUtils;
 
     @Container
-    private static final RabbitMQContainer rabbitMQContainer = new CustomRabbitMqContainer("rabbitmq:3-management")
+    private static final RabbitMQContainer rabbitContainer = new RabbitMQContainer("rabbitmq:3-management")
             .withUser(USER_1_USERNAME, USER_1_PASSWORD, Set.of("administrator"))
             .withVhost("dbrepo");
+
+    @DynamicPropertySource
+    static void rabbitProperties(DynamicPropertyRegistry registry) {
+        registry.add("fda.broker.endpoint", rabbitContainer::getHttpUrl);
+        registry.add("spring.rabbitmq.host", rabbitContainer::getHost);
+        registry.add("spring.rabbitmq.port", rabbitContainer::getAmqpPort);
+        registry.add("spring.rabbitmq.username", rabbitContainer::getAdminUsername);
+        registry.add("spring.rabbitmq.password", rabbitContainer::getAdminPassword);
+    }
 
     @BeforeEach
     public void beforeEach() {

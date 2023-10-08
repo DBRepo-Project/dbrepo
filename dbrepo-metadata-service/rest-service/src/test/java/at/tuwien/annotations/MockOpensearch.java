@@ -2,6 +2,8 @@ package at.tuwien.annotations;
 
 import at.tuwien.repository.sdb.*;
 import org.mockito.Mock;
+import org.opensearch.client.sniff.OpenSearchNodesSniffer;
+import org.opensearch.client.sniff.Sniffer;
 import org.opensearch.spring.boot.autoconfigure.OpenSearchRestClientAutoConfiguration;
 import org.opensearch.spring.boot.autoconfigure.OpenSearchRestHighLevelClientAutoConfiguration;
 import org.opensearch.spring.boot.autoconfigure.data.OpenSearchDataAutoConfiguration;
@@ -16,9 +18,9 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-@MockBeans({@MockBean(DatabaseIdxRepository.class), @MockBean(UnitIdxRepository.class),
-        @MockBean(ConceptIdxRepository.class), @MockBean(TableIdxRepository.class), @MockBean(TableColumnIdxRepository.class),
-        @MockBean(UserIdxRepository.class), @MockBean(ViewIdxRepository.class), @MockBean(IdentifierIdxRepository.class)})
+@MockBeans({@MockBean(DatabaseIdxRepository.class), @MockBean(UnitIdxRepository.class), @MockBean(ConceptIdxRepository.class),
+        @MockBean(TableIdxRepository.class), @MockBean(TableColumnIdxRepository.class), @MockBean(UserIdxRepository.class),
+        @MockBean(ViewIdxRepository.class), @MockBean(IdentifierIdxRepository.class), @MockBean(Sniffer.class)})
 @EnableAutoConfiguration(exclude = {OpenSearchRestClientAutoConfiguration.class, OpenSearchRestHighLevelClientAutoConfiguration.class})
 public @interface MockOpensearch {
 }
