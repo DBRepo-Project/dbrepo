@@ -132,7 +132,7 @@ test-data-service: build-data-service
 	mvn -f ./dbrepo-data-service/pom.xml clean test verify
 
 test-mirror-service: build-mirror-service
-	docker pull opensearchproject/opensearch:2.8.0
+	docker pull opensearchproject/opensearch:2.10.0
 	mvn -f ./dbrepo-mirror-service/pom.xml clean test verify
 
 test-metadata-service: build-metadata-service

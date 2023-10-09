@@ -88,7 +88,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
     private TableRepository tableRepository;
 
     @Container
-    private static final OpensearchContainer opensearchContainer = new OpensearchContainer(DockerImageName.parse("opensearchproject/opensearch:2.8.0"));
+    private static final OpensearchContainer opensearchContainer = new OpensearchContainer(DockerImageName.parse("opensearchproject/opensearch:2.10.0"));
 
     @DynamicPropertySource
     static void openSearchProperties(DynamicPropertyRegistry registry) {

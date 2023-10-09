@@ -289,7 +289,7 @@ services:
     restart: "no"
     container_name: dbrepo-search-db-dashboard
     hostname: search-db-dashboard
-    image: docker.io/opensearchproject/opensearch-dashboards:2.8.0
+    image: docker.io/opensearchproject/opensearch-dashboards:2.10.0
     volumes:
       - ./opensearch_dashboards.yml:/usr/share/opensearch-dashboards/config/opensearch_dashboards.yml
     ports:

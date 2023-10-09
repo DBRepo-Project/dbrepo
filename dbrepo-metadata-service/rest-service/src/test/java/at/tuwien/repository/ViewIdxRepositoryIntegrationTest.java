@@ -74,7 +74,7 @@ public class ViewIdxRepositoryIntegrationTest extends BaseUnitTest {
     private static MariaDBContainer<?> mariaDBContainer = MariaDbContainerConfig.getContainer();
 
     @Container
-    private static final OpensearchContainer opensearchContainer = new OpensearchContainer(DockerImageName.parse("opensearchproject/opensearch:2.8.0"));
+    private static final OpensearchContainer opensearchContainer = new OpensearchContainer(DockerImageName.parse("opensearchproject/opensearch:2.10.0"));
 
     @DynamicPropertySource
     static void openSearchProperties(DynamicPropertyRegistry registry) {

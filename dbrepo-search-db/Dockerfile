@@ -1,4 +1,4 @@
-FROM opensearchproject/opensearch:2.8.0 as runtime
+FROM opensearchproject/opensearch:2.10.0 as runtime
 
 USER root
 
@@ -19,7 +19,8 @@ RUN chmod 0700 ./config
 COPY --chown=opensearch:opensearch ./opensearch.yml ./config/opensearch.yml
 COPY --chown=opensearch:opensearch ./config.yml ./config/opensearch-security/config.yml
 #COPY --chown=opensearch:opensearch ./internal_users.yml ./config/opensearch-security/internal_users.yml
-#RUN chmod 0600 ./config/opensearch-security/internal_users.yml
+RUN chmod 0600 ./config/opensearch.yml
+RUN chmod 0600 ./config/opensearch-security/config.yml
 
 COPY --chown=opensearch:opensearch ./pem/admin.pem ./config/admin.pem
 COPY --chown=opensearch:opensearch ./pem/admin-key.pem ./config/admin-key.pem
