@@ -9,3 +9,4 @@ WORKDIR /app
 
 COPY ./cert.pem ./cert.pem
 COPY ./pubkey.pem ./pubkey.pem
+COPY ./definitions.json ./definitions.json

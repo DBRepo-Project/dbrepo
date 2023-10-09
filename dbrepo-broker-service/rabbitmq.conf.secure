@@ -13,6 +13,7 @@ listeners.ssl.2 = 0.0.0.0:5671
 
 # management prefix (https://www.rabbitmq.com/management.html#path-prefix)
 management.path_prefix = /admin/broker
+management.load_definitions = /app/definitions.json
 
 # logging
 log.console = true

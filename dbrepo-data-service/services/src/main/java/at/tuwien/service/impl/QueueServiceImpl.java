@@ -1,7 +1,7 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.api.CachedConnection;
-import at.tuwien.config.RabbitMqConfig;
+import at.tuwien.config.RabbitConfig;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.DatabaseNotFoundException;
 import at.tuwien.exception.QueryMalformedException;
@@ -29,12 +29,12 @@ import java.util.Map;
 public class QueueServiceImpl extends HibernateConnector implements QueueService {
 
     private final DataMapper dataMapper;
-    private final RabbitMqConfig rabbitMqConfig;
+    private final RabbitConfig rabbitMqConfig;
     private final DatabaseService databaseService;
     private final Map<String, CachedConnection> cachedConnections;
 
     @Autowired
-    public QueueServiceImpl(DataMapper dataMapper, RabbitMqConfig rabbitMqConfig, DatabaseService databaseService) {
+    public QueueServiceImpl(DataMapper dataMapper, RabbitConfig rabbitMqConfig, DatabaseService databaseService) {
         this.dataMapper = dataMapper;
         this.rabbitMqConfig = rabbitMqConfig;
         this.databaseService = databaseService;

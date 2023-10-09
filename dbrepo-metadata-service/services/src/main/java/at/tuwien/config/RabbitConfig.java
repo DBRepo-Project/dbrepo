@@ -6,14 +6,10 @@ import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
-import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Getter
 @Log4j2
@@ -57,25 +53,6 @@ public class RabbitConfig {
     private Integer connectionTimeout;
 
     @Bean
-    public Queue queue() {
-        final Map<String, Object> args = new HashMap<>();
-        args.put("x-queue-type", "quorum");
-        return new Queue(queueName, true, false, false, args);
-    }
-
-    @Bean
-    public TopicExchange exchange() {
-        return new TopicExchange(exchangeName);
-    }
-
-    @Bean
-    public Binding binding() {
-        return BindingBuilder.bind(queue())
-                .to(exchange())
-                .with(routingKey);
-    }
-
-    @Bean
     public SimpleRabbitListenerContainerFactory getSimpleRabbitListenerContainerFactory() {
         log.debug("container factory settings: concurrentConsumers={}, maxConcurrentConsumers={}, acknowledgeMode={}, requeueRejected={}",
                 minConcurrent, maxConcurrent, AcknowledgeMode.AUTO, requeueRejected);
@@ -99,15 +76,6 @@ public class RabbitConfig {
         factory.setPassword(password);
         factory.setVirtualHost(virtualHost);
         return factory;
-    }
-
-    @Bean
-    public RabbitAdmin rabbitAdmin() {
-        final RabbitAdmin rabbitAdmin = new RabbitAdmin(getConnectionFactory());
-        rabbitAdmin.declareExchange(exchange());
-        rabbitAdmin.declareQueue(queue());
-        rabbitAdmin.declareBinding(binding());
-        return rabbitAdmin;
     }
 
     @Bean

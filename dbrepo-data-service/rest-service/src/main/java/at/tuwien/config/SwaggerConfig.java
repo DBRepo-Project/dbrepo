@@ -46,7 +46,7 @@ public class SwaggerConfig {
     @Bean
     public GroupedOpenApi publicApi() {
         return GroupedOpenApi.builder()
-                .group("metadata-service")
+                .group("data-service")
                 .pathsToMatch("/api/**")
                 .build();
     }

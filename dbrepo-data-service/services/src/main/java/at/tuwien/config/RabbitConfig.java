@@ -7,20 +7,16 @@ import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
-import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.HashMap;
-import java.util.Map;
-
 @Log4j2
 @Getter
 @Configuration
-public class RabbitMqConfig {
+public class RabbitConfig {
 
     @Value("${fda.queueName}")
     private String queueName;
@@ -59,25 +55,6 @@ public class RabbitMqConfig {
     private Integer connectionTimeout;
 
     @Bean
-    public Queue queue() {
-        final Map<String, Object> args = new HashMap<>();
-        args.put("x-queue-type", "quorum");
-        return new Queue(queueName, true, false, false, args);
-    }
-
-    @Bean
-    public TopicExchange exchange() {
-        return new TopicExchange(exchangeName);
-    }
-
-    @Bean
-    public Binding binding(Queue queue, TopicExchange exchange) {
-        return BindingBuilder.bind(queue)
-                .to(exchange)
-                .with(routingKey);
-    }
-
-    @Bean
     public SimpleRabbitListenerContainerFactory getSimpleRabbitListenerContainerFactory() {
         log.debug("container factory settings: concurrentConsumers={}, maxConcurrentConsumers={}, acknowledgeMode={}, requeueRejected={}",
                 minConcurrent, maxConcurrent, AcknowledgeMode.AUTO, requeueRejected);
@@ -101,11 +78,6 @@ public class RabbitMqConfig {
         factory.setPassword(password);
         factory.setVirtualHost(virtualHost);
         return factory;
-    }
-
-    @Bean
-    public RabbitAdmin amqpAdmin() {
-        return new RabbitAdmin(getConnectionFactory());
     }
 
     @Bean

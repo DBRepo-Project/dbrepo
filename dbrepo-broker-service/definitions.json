@@ -1,0 +1,70 @@
+{
+  "bindings": [
+    {
+      "arguments": {},
+      "destination": "dbrepo",
+      "destination_type": "queue",
+      "routing_key": "dbrepo.#",
+      "source": "dbrepo",
+      "vhost": "dbrepo"
+    }
+  ],
+  "exchanges": [
+    {
+      "arguments": {},
+      "auto_delete": false,
+      "durable": true,
+      "name": "dbrepo",
+      "type": "topic",
+      "vhost": "dbrepo"
+    }
+  ],
+  "global_parameters": [],
+  "parameters": [],
+  "permissions": [
+    {
+      "configure": ".*",
+      "read": ".*",
+      "user": "fda",
+      "vhost": "dbrepo",
+      "write": ".*"
+    }
+  ],
+  "policies": [],
+  "queues": [
+    {
+      "arguments": {
+        "x-queue-type": "quorum"
+      },
+      "auto_delete": false,
+      "durable": true,
+      "name": "dbrepo",
+      "type": "quorum",
+      "vhost": "dbrepo"
+    }
+  ],
+  "rabbit_version": "3.10.25",
+  "rabbitmq_version": "3.10.25",
+  "topic_permissions": [],
+  "users": [
+    {
+      "hashing_algorithm": "rabbit_password_hashing_sha256",
+      "limits": {},
+      "name": "fda",
+      "password_hash": "7e3Pa0qgP4kvQmCecg6mfFLDWuBEtKagLcNvPcgCd1XCr3sR",
+      "tags": [
+        "administrator"
+      ]
+    }
+  ],
+  "vhosts": [
+    {
+      "limits": [],
+      "metadata": {
+        "description": "Default virtual host",
+        "tags": []
+      },
+      "name": "dbrepo"
+    }
+  ]
+}
