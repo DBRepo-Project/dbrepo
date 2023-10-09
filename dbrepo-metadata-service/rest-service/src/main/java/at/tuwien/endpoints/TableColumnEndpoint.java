@@ -86,7 +86,7 @@ public class TableColumnEndpoint {
             ContainerNotFoundException, NotAllowedException, SemanticEntityPersistException,
             SemanticEntityNotFoundException, QueryMalformedException, AccessDeniedException {
         log.debug("endpoint update table, id={}, tableId={}, principal={}", id, tableId, principal);
-        if (!UserUtil.hasRole(principal, "modify-foreign-table-column-semantics")) {
+        if (principal != null && !UserUtil.hasRole(principal, "modify-foreign-table-column-semantics")) {
             endpointValidator.validateOnlyAccess(id, principal, true);
             endpointValidator.validateOnlyOwnerOrWriteAll(id, tableId, principal);
         }

@@ -42,9 +42,14 @@ public class DatabaseDto {
 
     @NotBlank
     @JsonProperty("exchange_name")
-    @Schema(example = "dbrepo.air_quality")
+    @Schema(example = "dbrepo")
     @Field(name = "exchange_name", type = FieldType.Keyword)
     private String exchangeName;
+
+    @JsonProperty("exchange_type")
+    @Schema(example = "topic")
+    @Field(name = "exchange_type", type = FieldType.Keyword)
+    private String exchangeType;
 
     private IdentifierDto identifier;
 

@@ -6,12 +6,20 @@ AZURE_REPO ?= dbrepo.azurecr.io
 
 all: build
 
+clean:
+	docker container stop $(docker container ls -aq) || true
+	docker container rm $(docker container ls -aq) || true
+	docker volume rm $(docker volume ls -q) || true
+
 build: build-backend build-docker
 
-build-backend: build-metadata-service build-analyse-service build-search-sync-agent
+build-backend: build-metadata-service build-analyse-service build-data-service build-mirror-service
 
-build-search-sync-agent: build-metadata-service
-	mvn -f ./dbrepo-search-sync-agent/pom.xml clean package -DskipTests
+build-data-service: build-metadata-service
+	mvn -f ./dbrepo-data-service/pom.xml clean package -DskipTests
+
+build-mirror-service: build-metadata-service
+	mvn -f ./dbrepo-mirror-service/pom.xml clean package -DskipTests
 
 build-metadata-service:
 	mvn -f ./dbrepo-metadata-service/pom.xml clean install -DskipTests
@@ -21,7 +29,8 @@ build-analyse-service:
 
 build-docker:
 	docker build -t dbrepo-metadata-service:build --target build dbrepo-metadata-service
-	docker build -t dbrepo-search-sync-agent:build --target build dbrepo-search-sync-agent
+	docker build -t dbrepo-data-service:build --target build dbrepo-data-service
+	docker build -t dbrepo-mirror-service:build --target build dbrepo-mirror-service
 	docker build ./dbrepo-log-service -t dbrepo-log-service
 	docker compose build --parallel
 
@@ -32,7 +41,7 @@ build-frontend:
 build-clients:
 	bash ./.gitlab/swagger/generate.sh
 
-tag: tag-analyse-service tag-authentication-service tag-metadata-db tag-ui tag-broker-service tag-metadata-service tag-search-sync-agent tag-log-service tag-search-db
+tag: tag-analyse-service tag-authentication-service tag-metadata-db tag-ui tag-broker-service tag-metadata-service tag-data-service tag-mirror-service tag-log-service tag-search-db
 
 tag-analyse-service:
 	docker tag dbrepo-analyse-service:latest "dbrepo/analyse-service:${TAG}"
@@ -50,9 +59,13 @@ tag-ui:
 	docker tag dbrepo-ui:latest "dbrepo/ui:${TAG}"
 	docker tag dbrepo-ui:latest "${AZURE_REPO}/dbrepo/ui:${TAG}"
 
-tag-search-sync-agent:
-	docker tag dbrepo-search-sync-agent:latest "dbrepo/search-sync-agent:${TAG}"
-	docker tag dbrepo-search-sync-agent:latest "${AZURE_REPO}/dbrepo/search-sync-agent:${TAG}"
+tag-data-service:
+	docker tag dbrepo-data-service:latest "dbrepo/data-service:${TAG}"
+	docker tag dbrepo-data-service:latest "${AZURE_REPO}/dbrepo/data-service:${TAG}"
+
+tag-mirror-service:
+	docker tag dbrepo-mirror-service:latest "dbrepo/mirror-service:${TAG}"
+	docker tag dbrepo-mirror-service:latest "${AZURE_REPO}/dbrepo/mirror-service:${TAG}"
 
 tag-metadata-service:
 	docker tag dbrepo-metadata-service:latest "dbrepo/metadata-service:${TAG}"
@@ -70,7 +83,7 @@ tag-log-service:
 	docker tag dbrepo-log-service:latest "dbrepo/log-service:${TAG}"
 	docker tag dbrepo-log-service:latest "${AZURE_REPO}/dbrepo/log-service:${TAG}"
 
-release: build-docker tag release-analyse-service release-authentication-service release-metadata-db release-ui release-broker-service release-metadata-service release-search-sync-agent release-log-service release-search-db
+release: build-docker tag release-analyse-service release-authentication-service release-metadata-db release-ui release-broker-service release-metadata-service release-data-service release-log-service release-search-db
 
 release-analyse-service: tag-analyse-service
 	docker push "dbrepo/analyse-service:${TAG}"
@@ -88,9 +101,13 @@ release-ui: tag-ui
 	docker push "dbrepo/ui:${TAG}"
 	docker push "${AZURE_REPO}/dbrepo/ui:${TAG}"
 
-release-search-sync-agent: tag-search-sync-agent
-	docker push "dbrepo/search-sync-agent:${TAG}"
-	docker push "${AZURE_REPO}/dbrepo/search-sync-agent:${TAG}"
+release-data-service: tag-data-service
+	docker push "dbrepo/data-service:${TAG}"
+	docker push "${AZURE_REPO}/dbrepo/data-service:${TAG}"
+
+release-mirror-service: tag-mirror-service
+	docker push "dbrepo/mirror-service:${TAG}"
+	docker push "${AZURE_REPO}/dbrepo/mirror-service:${TAG}"
 
 release-broker-service: tag-broker-service
 	docker push "dbrepo/broker-service:${TAG}"
@@ -108,18 +125,24 @@ release-log-service: tag-log-service
 	docker push "dbrepo/log-service:${TAG}"
 	docker push "${AZURE_REPO}/dbrepo/log-service:${TAG}"
 
-test-backend: test-metadata-service test-analyse-service test-search-sync-agent
+test-backend: test-metadata-service test-analyse-service test-data-service test-mirror-service
 
-test-search-sync-agent: build-search-sync-agent
-	mvn -f ./dbrepo-search-sync-agent/pom.xml clean test verify
+test-data-service: build-data-service
+	docker pull mariadb:10.5
+	mvn -f ./dbrepo-data-service/pom.xml clean test verify
 
-test-metadata-service: build-metadata-service teardown
+test-mirror-service: build-mirror-service
+	docker pull opensearchproject/opensearch:2.8.0
+	mvn -f ./dbrepo-mirror-service/pom.xml clean test verify
+
+test-metadata-service: build-metadata-service
+	docker pull rabbitmq:3-management
 	mvn -f ./dbrepo-metadata-service/pom.xml clean test verify
 
 test-analyse-service: build-analyse-service
 	bash ./dbrepo-analyse-service/test.sh
 
-scan: scan-analyse-service scan-authentication-service scan-broker-service scan-gateway-service scan-metadata-db scan-metadata-service scan-search-db scan-ui scan-search-sync-agent scan-data-db scan-log-service
+scan: scan-analyse-service scan-authentication-service scan-broker-service scan-gateway-service scan-metadata-db scan-metadata-service scan-search-db scan-ui scan-data-service scan-data-db scan-log-service
 
 scan-analyse-service:
 	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-analyse-service-report.json dbrepo-analyse-service:latest
@@ -152,10 +175,15 @@ scan-metadata-service:
 	trivy image --insecure --exit-code 0 dbrepo-metadata-service:latest
 	trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-metadata-service:latest
 
-scan-search-sync-agent:
-	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-sync-agent-report.json dbrepo-search-sync-agent:latest
-	trivy image --insecure --exit-code 0 dbrepo-search-sync-agent:latest
-	trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-search-sync-agent:latest
+scan-data-service:
+	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-data-service-report.json dbrepo-data-service:latest
+	trivy image --insecure --exit-code 0 dbrepo-data-service:latest
+	trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-data-service:latest
+
+scan-mirror-service:
+	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-mirror-service-report.json dbrepo-mirror-service:latest
+	trivy image --insecure --exit-code 0 dbrepo-mirror-service:latest
+	trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-mirror-service:latest
 
 scan-search-db:
 	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-db-report.json "dbrepo-search-db"

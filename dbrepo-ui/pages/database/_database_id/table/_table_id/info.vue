@@ -44,41 +44,42 @@
             </v-list-item-icon>
             <v-list-item-content>
               <v-list-item-title>
-                Exchange Type
+                Protocol
               </v-list-item-title>
               <v-list-item-content>
-                Direct (AMQP)
+                AMQP
               </v-list-item-content>
               <v-list-item-title class="mt-2">
-                Exchange Name
+                Exchange
               </v-list-item-title>
-              <v-list-item-content>
-                <pre v-if="database && database.exchange_name">{{ database.exchange_name }}</pre>
-                <v-skeleton-loader v-if="!table" type="text" class="skeleton-medium" />
+              <v-list-item-content v-if="database && exchange">
+                <span>
+                  <v-badge inline :content="exchange.type" color="secondary">{{ database.exchange_name }}</v-badge>
+                </span>
               </v-list-item-content>
-              <v-list-item-title v-if="table && table.queue_name" class="mt-2">
-                Queue Name
+              <v-list-item-title class="mt-2">
+                Queue
               </v-list-item-title>
-              <v-list-item-content v-if="table && table.queue_name">
-                <pre>{{ table.queue_name }}</pre>
-              </v-list-item-content>
-              <v-list-item-content v-if="!table">
-                <v-skeleton-loader type="text" class="skeleton-medium" />
+              <v-list-item-content v-if="table && queue">
+                <span>
+                  <v-badge inline :content="queue.type" color="secondary">{{ table.queue_name }}</v-badge>
+                </span>
               </v-list-item-content>
               <v-list-item-title v-if="table && table.routing_key" class="mt-2">
                 Routing Key
               </v-list-item-title>
               <v-list-item-content v-if="table && table.routing_key">
-                <pre>{{ table.routing_key }}</pre>
-              </v-list-item-content>
-              <v-list-item-content v-if="!table">
-                <v-skeleton-loader type="text" class="skeleton-medium" />
+                <pre v-text="table.routing_key" />
               </v-list-item-content>
               <v-list-item-title v-if="canRead" class="mt-2">
-                Consumer Count
+                Consumers
               </v-list-item-title>
-              <v-list-item-content v-if="canWriteQueues" class="amqp-consumer">
-                <span v-text="`${consumersUp}/${consumersTotal}`" />
+              <v-list-item-content v-if="!loadingConsumers" class="amqp-consumer" v-text="consumerText" />
+              <v-list-item-title v-if="canRead" class="mt-2">
+                Connection String
+              </v-list-item-title>
+              <v-list-item-content>
+                <pre v-text="amqpString" />
               </v-list-item-content>
             </v-list-item-content>
           </v-list-item>
@@ -91,7 +92,6 @@
 <script>
 import TableToolbar from '@/components/TableToolbar.vue'
 import { formatTimestampUTCLabel } from '@/utils'
-import BrokerService from '@/api/broker.service'
 import UserMapper from '@/api/user.mapper'
 
 export default {
@@ -109,7 +109,12 @@ export default {
         { text: `${this.$route.params.table_id}`, to: `/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}`, activeClass: '' }
       ],
       headers: [],
-      dateColumns: []
+      dateColumns: [],
+      loadingConsumers: false,
+      loadingExchange: false,
+      loadingQueue: false,
+      exchange: null,
+      queue: null
     }
   },
   computed: {
@@ -178,15 +183,17 @@ export default {
         return null
       }
       return this.version.substring(0, 10) + 'T' + this.version.substring(11, 19) + 'Z'
+    },
+    amqpString () {
+      if (!this.user) {
+        return null
+      }
+      return `amqp://${window.location.hostname}:5672/dbrepo (username=${this.user.username}, password=yourpassword)`
+    },
+    consumerText () {
+      const text = (this.consumersUp === 0 && this.consumersTotal === 0) ? 'pending' : (this.consumersUp > 0) ? 'up' : 'error'
+      return `${this.consumersUp}/${this.consumersTotal} (${text})`
     }
-  },
-  watch: {
-    table () {
-      this.consumerDetails()
-    }
-  },
-  mounted () {
-    this.consumerDetails()
   },
   methods: {
     formatCreator (creator) {
@@ -197,19 +204,6 @@ export default {
         return false
       }
       return table.owner.username === this.user.username
-    },
-    consumerDetails () {
-      if (!this.table) {
-        return
-      }
-      this.loadingConsumers = true
-      BrokerService.findConsumers()
-        .then((consumers) => {
-          this.consumers = consumers.filter(c => c.queue.name === this.table.queue_name)
-        })
-        .finally(() => {
-          this.loadingConsumers = false
-        })
     }
   }
 }

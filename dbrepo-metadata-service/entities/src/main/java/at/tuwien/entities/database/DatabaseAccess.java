@@ -1,5 +1,6 @@
 package at.tuwien.entities.database;
 
+import at.tuwien.entities.user.User;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.springframework.data.annotation.CreatedDate;
@@ -18,6 +19,10 @@ import java.util.UUID;
 @IdClass(DatabaseAccessKey.class)
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "mdb_have_access")
+@NamedQueries({
+        @NamedQuery(name ="DatabaseAccess.findByDatabaseId", query = "select a from DatabaseAccess a where a.hdbid = ?1"),
+        @NamedQuery(name ="DatabaseAccess.findByDatabaseIdAndUserId", query = "select a from DatabaseAccess a where a.hdbid = ?1 and a.huserid = ?2")
+})
 public class DatabaseAccess {
 
     @Id
@@ -26,10 +31,24 @@ public class DatabaseAccess {
     @Column(name = "user_id", updatable = false, columnDefinition = "VARCHAR(36)")
     private UUID huserid;
 
+    @org.springframework.data.annotation.Transient
+    @ManyToOne(cascade = CascadeType.PERSIST)
+    @JoinColumns({
+            @JoinColumn(name = "user_id", referencedColumnName = "ID", insertable = false, updatable = false)
+    })
+    private User user;
+
     @Id
     @EqualsAndHashCode.Include
     @Column(name = "database_id", updatable = false)
     private Long hdbid;
+
+    @org.springframework.data.annotation.Transient
+    @ManyToOne(cascade = CascadeType.PERSIST)
+    @JoinColumns({
+            @JoinColumn(name = "database_id", referencedColumnName = "id", insertable = false, updatable = false)
+    })
+    private Database database;
 
     @Column(nullable = false, name = "access_type", columnDefinition = "enum('READ', 'WRITE_OWN', 'WRITE_ALL')")
     @Enumerated(EnumType.STRING)

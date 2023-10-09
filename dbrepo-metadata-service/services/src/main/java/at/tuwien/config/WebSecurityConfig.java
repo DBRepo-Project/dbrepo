@@ -45,6 +45,7 @@ public class WebSecurityConfig {
         );
         final OrRequestMatcher publicEndpoints = new OrRequestMatcher(
                 new AntPathRequestMatcher("/api/**", "GET"),
+                new AntPathRequestMatcher("/api/**", "HEAD"),
                 new AntPathRequestMatcher("/api/user/**", "POST")
         );
         /* enable CORS and disable CSRF */

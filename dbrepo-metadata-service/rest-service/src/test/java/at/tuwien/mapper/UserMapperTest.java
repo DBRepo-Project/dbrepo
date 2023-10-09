@@ -3,9 +3,11 @@ package at.tuwien.mapper;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.annotations.MockAmqp;
 import at.tuwien.annotations.MockOpensearch;
+import at.tuwien.api.user.UserBriefDto;
 import at.tuwien.api.user.UserDto;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -16,6 +18,9 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 @MockAmqp
 @MockOpensearch
 public class UserMapperTest extends BaseUnitTest {
+
+    @Autowired
+    private UserMapper userMapper;
 
     @Test
     public void equals_fails() {
@@ -39,6 +44,24 @@ public class UserMapperTest extends BaseUnitTest {
 
         /* test */
         assertEquals(USER_1_DTO, tmp);
+    }
+
+    @Test
+    public void userToUserBriefDto_succeeds() {
+
+        /* test */
+        final UserBriefDto response = userMapper.userToUserBriefDto(USER_1);
+        assertEquals(USER_1_NAME, response.getName());
+        assertEquals(USER_1_NAME + " — @" + USER_1_USERNAME, response.getQualifiedName());
+    }
+
+    @Test
+    public void userToUserDto_succeeds() {
+
+        /* test */
+        final UserDto response = userMapper.userToUserDto(USER_1);
+        assertEquals(USER_1_NAME, response.getName());
+        assertEquals(USER_1_NAME + " — @" + USER_1_USERNAME, response.getQualifiedName());
     }
 
 }

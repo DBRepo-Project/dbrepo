@@ -1,10 +1,8 @@
 <template>
   <div>
     <v-progress-linear v-if="loadingIdentifiers || loadingQueries" color="primary" :indeterminate="!error" />
-    <v-card v-if="queries && identifiers && queries.length === 0 && identifiers.length === 0" flat tile>
-      <v-card-text>
-        (no subsets)
-      </v-card-text>
+    <v-card v-if="!(loadingIdentifiers || loadingQueries) && queries && identifiers && queries.length === 0 && identifiers.length === 0" flat tile>
+      <v-card-text v-text="emptyText" />
     </v-card>
     <v-card v-if="isNotReachable" flat tile>
       <v-card-text>
@@ -24,7 +22,12 @@
                 </v-list-item-subtitle>
               </v-list-item-content>
               <v-list-item-action v-if="item.identifier">
-                <v-icon color="primary">mdi-identifier</v-icon>
+                <v-tooltip left>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-icon color="primary" v-bind="attrs" v-on="on">mdi-identifier</v-icon>
+                  </template>
+                  Subset has persistent identifier
+                </v-tooltip>
               </v-list-item-action>
             </v-list-item>
           </v-list-item-group>
@@ -43,7 +46,12 @@
                 </v-list-item-subtitle>
               </v-list-item-content>
               <v-list-item-action>
-                <v-icon color="primary">mdi-identifier</v-icon>
+                <v-tooltip left>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-icon color="primary" v-bind="attrs" v-on="on">mdi-identifier</v-icon>
+                  </template>
+                  Subset has persistent identifier
+                </v-tooltip>
               </v-list-item-action>
             </v-list-item>
           </v-list-item-group>
@@ -62,7 +70,12 @@
                 </v-list-item-subtitle>
               </v-list-item-content>
               <v-list-item-action>
-                <v-icon color="primary">mdi-identifier</v-icon>
+                <v-tooltip left>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-icon color="primary" v-bind="attrs" v-on="on">mdi-identifier</v-icon>
+                  </template>
+                  Subset has persistent identifier
+                </v-tooltip>
               </v-list-item-action>
             </v-list-item>
           </v-list-item-group>
@@ -96,14 +109,6 @@ export default {
     token () {
       return this.$store.state.token
     },
-    config () {
-      if (this.token === null) {
-        return {}
-      }
-      return {
-        headers: { Authorization: `Bearer ${this.token}` }
-      }
-    },
     user () {
       return this.$store.state.user
     },
@@ -112,6 +117,10 @@ export default {
     },
     creator () {
       return this.queryDetails.creator
+    },
+    emptyText () {
+      const add = this.database && this.database.is_public ? '' : ' public'
+      return `(no${add} subsets)`
     },
     isPublicOrOwner () {
       if (!this.database) {

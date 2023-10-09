@@ -340,6 +340,18 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @Hidden
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(ExchangeNotFoundException.class)
+    public ResponseEntity<ApiErrorDto> handle(ExchangeNotFoundException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.NOT_FOUND)
+                .message(e.getLocalizedMessage())
+                .code("error.exchange.notfound")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
+    @Hidden
     @ResponseStatus(HttpStatus.NOT_IMPLEMENTED)
     @ExceptionHandler(ImageNotSupportedException.class)
     public ResponseEntity<ApiErrorDto> handle(ImageNotSupportedException e, WebRequest request) {
@@ -383,6 +395,18 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
                 .status(HttpStatus.CONFLICT)
                 .message(e.getLocalizedMessage())
                 .code("error.database.querystore")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
+    @Hidden
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(QueueNotFoundException.class)
+    public ResponseEntity<ApiErrorDto> handle(QueueNotFoundException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.NOT_FOUND)
+                .message(e.getLocalizedMessage())
+                .code("error.queue.notfound")
                 .build();
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }

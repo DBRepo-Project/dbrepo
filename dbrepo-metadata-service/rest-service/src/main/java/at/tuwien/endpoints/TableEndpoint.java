@@ -1,9 +1,11 @@
 package at.tuwien.endpoints;
 
+import at.tuwien.api.amqp.QueueDto;
 import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.TableCreateDto;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.error.ApiErrorDto;
+import at.tuwien.config.RabbitConfig;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.TableMapper;
@@ -40,16 +42,18 @@ public class TableEndpoint {
 
     private final TableMapper tableMapper;
     private final TableService tableService;
-    private final MessageQueueService amqpService;
+    private final RabbitConfig rabbitMqConfig;
     private final EndpointValidator endpointValidator;
+    private final MessageQueueService messageQueueService;
 
     @Autowired
-    public TableEndpoint(TableMapper tableMapper, TableService tableService, MessageQueueService amqpService,
-                         EndpointValidator endpointValidator) {
+    public TableEndpoint(TableMapper tableMapper, TableService tableService, RabbitConfig rabbitMqConfig,
+                         EndpointValidator endpointValidator, MessageQueueService messageQueueService) {
         this.tableMapper = tableMapper;
-        this.amqpService = amqpService;
         this.tableService = tableService;
+        this.rabbitMqConfig = rabbitMqConfig;
         this.endpointValidator = endpointValidator;
+        this.messageQueueService = messageQueueService;
     }
 
     @GetMapping
@@ -139,7 +143,6 @@ public class TableEndpoint {
         endpointValidator.validateOnlyAccess(databaseId, principal, true);
         endpointValidator.validateColumnCreateConstraints(createDto);
         final Table table = tableService.createTable(databaseId, createDto, principal);
-        amqpService.create(table);
         final TableBriefDto dto = tableMapper.tableToTableBriefDto(table);
         log.trace("create table resulted in table {}", dto);
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -175,11 +178,16 @@ public class TableEndpoint {
     })
     public ResponseEntity<TableDto> findById(@NotNull @PathVariable("databaseId") Long databaseId,
                                              @NotNull @PathVariable("tableId") Long tableId,
-                                             Principal principal)
-            throws TableNotFoundException, DatabaseNotFoundException {
+                                             Principal principal) throws TableNotFoundException,
+            DatabaseNotFoundException, QueueNotFoundException, BrokerRemoteException {
         log.debug("endpoint find table, databaseId={}, tableId={}, principal={}", databaseId, tableId, principal);
         final Table table = tableService.findById(databaseId, tableId);
         final TableDto dto = tableMapper.tableToTableDto(table);
+        if (principal != null) {
+            /* extra effort only when logged-in */
+            final QueueDto queue = messageQueueService.findQueue(rabbitMqConfig.getQueueName());
+            dto.setQueueType(queue.getType());
+        }
         log.trace("find table resulted in table {}", dto);
         return ResponseEntity.ok(dto);
     }

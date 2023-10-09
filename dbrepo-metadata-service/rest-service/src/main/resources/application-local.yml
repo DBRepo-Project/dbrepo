@@ -29,6 +29,7 @@ spring:
     virtual-host: dbrepo
     username: fda
     password: fda
+    port: 5672
   opensearch:
     username: admin
     password: admin
@@ -59,9 +60,15 @@ fda:
     endpoint: "http://authentication-service:8080"
     username: fda
     password: fda
-  consumers: 2
   unsupported: \*,AVG,BIT_AND,BIT_OR,BIT_XOR,COUNT,COUNTDISTINCT,GROUP_CONCAT,JSON_ARRAYAGG,JSON_OBJECTAGG,MAX,MIN,STD,STDDEV,STDDEV_POP,STDDEV_SAMP,SUM,VARIANCE,VAR_POP,VAR_SAMP,--
   website: http://localhost
+  minConcurrent: 1
+  maxConcurrent: 5
+  requeueRejected: true
+  queueName: "dbrepo"
+  exchangeName: "dbrepo"
+  routingKey: "dbrepo.#"
+  connectionTimeout: 60000
 dbrepo:
   repository-name: TU Wien Database Repository
   base-url: https://dbrepo1.ec.tuwien.at/api/oai

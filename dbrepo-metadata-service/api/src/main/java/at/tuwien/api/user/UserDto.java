@@ -40,6 +40,11 @@ public class UserDto {
     @Field(name = "name", type = FieldType.Keyword)
     private String name;
 
+    @JsonProperty("qualified_name")
+    @Schema(example = "Josiah Carberry — @jcarberry")
+    @Field(name = "qualified_name", type = FieldType.Keyword)
+    private String qualifiedName;
+
     @JsonProperty("given_name")
     @Schema(example = "Josiah")
     @Field(name = "firstname", type = FieldType.Keyword)

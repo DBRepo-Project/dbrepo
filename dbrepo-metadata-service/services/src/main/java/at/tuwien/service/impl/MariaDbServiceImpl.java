@@ -3,7 +3,6 @@ package at.tuwien.service.impl;
 import at.tuwien.api.database.DatabaseCreateDto;
 import at.tuwien.api.database.DatabaseModifyVisibilityDto;
 import at.tuwien.api.database.DatabaseTransferDto;
-import at.tuwien.api.user.UserDto;
 import at.tuwien.config.QueryConfig;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
@@ -28,8 +27,6 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
-import static java.util.stream.Collectors.groupingBy;
 
 @Log4j2
 @Service
@@ -57,6 +54,11 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
     @Override
     public List<Database> findAll() {
         return databaseRepository.findAll();
+    }
+
+    @Override
+    public List<Database> findAccess(UUID userId) {
+        return databaseRepository.findReadAccess(userId);
     }
 
     @Override
@@ -146,7 +148,7 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         database.setOwnedBy(owner.getId());
         database.setCreatedBy(owner.getId());
         database.setContactPerson(owner.getId());
-        database.setExchangeName("dbrepo." + database.getInternalName());
+        database.setExchangeName("dbrepo");
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(container.getImage(), container);
         try {
             final Connection connection = dataSource.getConnection();

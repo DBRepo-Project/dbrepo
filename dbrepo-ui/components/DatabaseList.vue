@@ -12,13 +12,19 @@
       tile>
       <v-divider v-if="idx !== 0" class="mx-4" />
       <v-card-title>
-        <a :href="`/database/${database.id}`">{{ database.name }}</a>
+        <a :href="`/database/${database.id}`" v-text="formatTitle(database)" />
       </v-card-title>
       <v-card-subtitle class="db-subtitle" v-text="formatCreators(database)" />
       <v-card-text class="db-description">
         <div class="db-tags">
-          <v-chip v-if="database.is_public" small color="green" outlined>Public</v-chip>
-          <v-chip v-if="!database.is_public" small color="red" outlined>Private</v-chip>
+          <v-chip
+            v-if="database.is_public"
+            small
+            color="success"
+            outlined>
+            Public
+          </v-chip>
+          <v-chip v-if="!database.is_public" small outlined>Private</v-chip>
           <v-chip
             v-if="identifierYear(database)"
             small
@@ -29,6 +35,13 @@
             small
             outlined
             v-text="database.identifier.publisher" />
+          <v-chip
+            v-for="(license,i) in identifierLicenses(database)"
+            :key="i"
+            small
+            color="success"
+            outlined
+            v-text="license.identifier" />
           <v-chip v-for="(funder,i) in identifierFunders(database)" :key="`f-${i}`" small outlined v-text="funder.funder_name" />
           <v-chip v-if="identifierLanguage(database)" small outlined v-text="identifierLanguage(database)" />
         </div>
@@ -50,6 +63,7 @@
 <script>
 import DatabaseService from '@/api/database.service'
 import DatabaseMapper from '@/api/database.mapper'
+import IdentifierMapper from '@/api/identifier.mapper'
 import { formatLanguage } from '@/utils'
 
 export default {
@@ -73,6 +87,16 @@ export default {
     },
     user () {
       return this.$store.state.user
+    },
+    isFiltered () {
+      return this.$route.query.f === 'my'
+    }
+  },
+  watch: {
+    $route: {
+      handler () {
+        this.loadDatabases()
+      }
     }
   },
   mounted () {
@@ -80,10 +104,19 @@ export default {
   },
   methods: {
     formatCreators (database) {
-      return DatabaseMapper.databaseToOwner(database)
+      if (!database.identifier) {
+        return DatabaseMapper.databaseToOwner(database)
+      }
+      return IdentifierMapper.identifierToCreators(database.identifier)
     },
     hasIdentifier (database) {
       return database && database.identifier
+    },
+    formatTitle (database) {
+      if (!database || !database.identifier) {
+        return null
+      }
+      return IdentifierMapper.identifierPreferEnglishTitle(database.identifier)
     },
     identifierYear (database) {
       if (!database || !database.identifier || !database.identifier.publication_year) {
@@ -91,11 +124,17 @@ export default {
       }
       return database.identifier.publication_year
     },
+    identifierLicenses (database) {
+      if (!database || !database.identifier) {
+        return []
+      }
+      return database.identifier.licenses
+    },
     identifierDescription (database) {
       if (!database || !database.identifier) {
         return null
       }
-      return database.identifier.description
+      return IdentifierMapper.identifierPreferEnglishDescription(database.identifier)
     },
     identifierLanguage (database) {
       if (!database || !database.identifier || !database.identifier.language) {
@@ -110,14 +149,26 @@ export default {
       return database.identifier.funders
     },
     loadDatabases () {
-      this.createDbDialog = false
       this.loadingDatabases = true
-      DatabaseService.findAll() // TODO: write a findAllDatabases method
-        .then((databases) => {
-          this.databases = databases
-          console.info('Found', this.databases.length, 'database(s)')
-        })
-      this.loadingDatabases = false
+      if (this.isFiltered) {
+        DatabaseService.findAllOnlyAccess()
+          .then((databases) => {
+            this.databases = databases
+            console.info('Found', this.databases.length, 'database(s) with access')
+          })
+          .finally(() => {
+            this.loadingDatabases = false
+          })
+      } else {
+        DatabaseService.findAll()
+          .then((databases) => {
+            this.databases = databases
+            console.info('Found', this.databases.length, 'database(s)')
+          })
+          .finally(() => {
+            this.loadingDatabases = false
+          })
+      }
     },
     link (database) {
       if (!database) {

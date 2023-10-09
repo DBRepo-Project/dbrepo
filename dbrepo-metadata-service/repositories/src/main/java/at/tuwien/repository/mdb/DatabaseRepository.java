@@ -21,4 +21,6 @@ public interface DatabaseRepository extends JpaRepository<Database, Long> {
 
     Optional<Database> findPublic(Long databaseId);
 
+    Optional<Database> findByInternalName(String internalName);
+
 }

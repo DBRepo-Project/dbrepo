@@ -8,9 +8,11 @@ import org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchRestCli
 import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @EnableJpaAuditing
+@EnableScheduling
 @EnableTransactionManagement
 @EntityScan(basePackages = {"at.tuwien.entities"})
 @EnableElasticsearchRepositories(basePackages = {"at.tuwien.repository.sdb"})

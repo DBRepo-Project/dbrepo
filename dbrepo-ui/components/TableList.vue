@@ -19,6 +19,14 @@
               <span v-else>(no description)</span>
             </v-list-item-subtitle>
           </v-list-item-content>
+          <v-list-item-action>
+            <v-tooltip left>
+              <template v-slot:activator="{ on, attrs }">
+                <span v-bind="attrs" v-on="on" v-text="permissionAcronyms(item)" />
+              </template>
+              <span v-text="permissionTooltip(item)" />
+            </v-tooltip>
+          </v-list-item-action>
         </v-list-item>
       </v-list-item-group>
     </div>
@@ -38,9 +46,6 @@ export default {
       column: null,
       dialogSemantic: false,
       mode: 'unit',
-      access: {
-        type: null
-      },
       tableDetails: {
         id: null,
         internal_name: null,
@@ -87,6 +92,9 @@ export default {
     database () {
       return this.$store.state.database
     },
+    access () {
+      return this.$store.state.access
+    },
     tables () {
       if (!this.database) {
         return null
@@ -109,11 +117,10 @@ export default {
       return this.access.type === 'read' || this.access.type === 'write_own' || this.access.type === 'write_all'
     },
     canModify () {
-      if (!this.token || !this.user.username) {
-        /* not yet loaded */
+      if (!this.user || !this.access) {
         return false
       }
-      return this.database.creator.username === this.user.username
+      return this.access.type === 'write_own' || this.access.type === 'write_all'
     }
   },
   methods: {
@@ -141,6 +148,32 @@ export default {
     },
     created (created) {
       return formatTimestampUTCLabel(created)
+    },
+    permissionAcronyms (table) {
+      let acronyms = ''
+      if (this.canRead) {
+        acronyms += 'R'
+      }
+      if (!this.access) {
+        return acronyms
+      }
+      if (this.access.type === 'write_all' || (this.access.type === 'write_own' && table.owner.id === this.user.id)) {
+        acronyms += 'W'
+      }
+      return acronyms
+    },
+    permissionTooltip (table) {
+      let tooltip = ''
+      if (this.canRead) {
+        tooltip += 'You can read'
+      }
+      if (!this.access) {
+        return tooltip
+      }
+      if (this.access.type === 'write_all' || (this.access.type === 'write_own' && table.owner.id === this.user.id)) {
+        tooltip += ' and write'
+      }
+      return tooltip
     }
   }
 }

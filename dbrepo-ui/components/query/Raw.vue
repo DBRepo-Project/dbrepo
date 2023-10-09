@@ -49,7 +49,7 @@ export default {
   methods: {
     editorInit (editor) {
       editor.setOptions({
-        fontSize: '14pt',
+        fontSize: '12pt',
         readOnly: this.disabled,
         behavioursEnabled: !this.disabled,
         maxLines: 28,

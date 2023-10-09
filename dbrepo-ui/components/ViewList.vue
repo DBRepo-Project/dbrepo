@@ -2,9 +2,7 @@
   <div>
     <v-progress-linear v-if="loading" :color="loadingColor" indeterminate />
     <v-card v-if="!loading && views.length === 0" flat>
-      <v-card-text>
-        (no views)
-      </v-card-text>
+      <v-card-text v-text="emptyText" />
     </v-card>
     <div v-for="(item,i) in views" :key="i">
       <v-divider v-if="i !== 0" class="mx-4" />
@@ -17,7 +15,12 @@
             </v-list-item-subtitle>
           </v-list-item-content>
           <v-list-item-action v-if="item.identifier">
-            <v-icon color="primary">mdi-identifier</v-icon>
+            <v-tooltip left>
+              <template v-slot:activator="{ on, attrs }">
+                <v-icon color="primary" v-bind="attrs" v-on="on">mdi-identifier</v-icon>
+              </template>
+              View has persistent identifier
+            </v-tooltip>
           </v-list-item-action>
         </v-list-item>
       </v-list-item-group>
@@ -53,19 +56,15 @@ export default {
     loadingColor () {
       return this.error ? 'red lighten-2' : 'primary'
     },
-    config () {
-      if (this.token === null) {
-        return {}
-      }
-      return {
-        headers: { Authorization: `Bearer ${this.token}` }
-      }
-    },
     user () {
       return this.$store.state.user
     },
     database () {
       return this.$store.state.database
+    },
+    emptyText () {
+      const add = this.database && this.database.is_public ? '' : ' public'
+      return `(no${add} views)`
     },
     views () {
       if (!this.database) {

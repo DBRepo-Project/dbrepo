@@ -2,8 +2,6 @@ const config = {}
 
 config.title = process.env.NODE_ENV !== 'development' ? process.env.TITLE : 'Database Repository'
 config.icon = process.env.NODE_ENV !== 'development' ? process.env.ICON : '/favicon.ico'
-config.brokerUsername = process.env.NODE_ENV !== 'development' ? process.env.BROKER_USERNAME : 'fda'
-config.brokerPassword = process.env.NODE_ENV !== 'development' ? process.env.BROKER_PASSWORD : 'fda'
 config.brokerLoginUrl = process.env.NODE_ENV !== 'development' ? process.env.BROKER_LOGIN_URL : '/admin/broker/'
 config.keycloakLoginUrl = process.env.NODE_ENV !== 'development' ? process.env.KEYCLOAK_LOGIN_URL : '/api/auth/'
 config.openSearchUrl = process.env.NODE_ENV !== 'development' ? process.env.OPENSEARCH_LOGIN_URL : '/admin/dashboard/'

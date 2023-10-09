@@ -7,6 +7,7 @@ import lombok.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.jackson.Jacksonized;
 import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
 
 import java.util.UUID;
 
@@ -29,6 +30,10 @@ public class UserBriefDto {
 
     @Schema(example = "Josiah Carberry")
     private String name;
+
+    @JsonProperty("qualified_name")
+    @Schema(example = "Josiah Carberry — @jcarberry")
+    private String qualifiedName;
 
     @Schema(example = "0000-0002-1825-0097")
     private String orcid;

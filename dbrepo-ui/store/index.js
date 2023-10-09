@@ -25,11 +25,10 @@ const store = new Store({
     ontologies: [],
     clientId: null,
     clientSecret: null,
-    brokerUsername: null,
-    brokerPassword: null,
     searchUsername: null,
     searchPassword: null,
-    uploadPath: null
+    uploadPath: null,
+    databaseCount: null
   },
   getters: {
     getTitle: state => state.title,
@@ -46,11 +45,10 @@ const store = new Store({
     getOntologies: state => state.ontologies,
     getClientId: state => state.clientId,
     getClientSecret: state => state.clientSecret,
-    getBrokerUsername: state => state.brokerUsername,
-    getBrokerPassword: state => state.brokerPassword,
     getSearchUsername: state => state.searchUsername,
     getSearchPassword: state => state.searchPassword,
-    getUploadPath: state => state.uploadPath
+    getUploadPath: state => state.uploadPath,
+    getDatabaseCount: state => state.databaseCount
   },
   mutations: {
     SET_TITLE (state, title) {
@@ -95,12 +93,6 @@ const store = new Store({
     SET_CLIENT_SECRET (state, clientSecret) {
       state.clientSecret = clientSecret
     },
-    SET_BROKER_USERNAME (state, brokerUsername) {
-      state.brokerUsername = brokerUsername
-    },
-    SET_BROKER_PASSWORD (state, brokerPassword) {
-      state.brokerPassword = brokerPassword
-    },
     SET_SEARCH_USERNAME (state, searchUsername) {
       state.searchUsername = searchUsername
     },
@@ -109,6 +101,9 @@ const store = new Store({
     },
     SET_UPLOAD_PATH (state, uploadPath) {
       state.uploadPath = uploadPath
+    },
+    SET_DATABASE_COUNT (state, databaseCount) {
+      state.databaseCount = databaseCount
     }
   },
   actions: {
@@ -147,6 +142,27 @@ const store = new Store({
         .then((ontologies) => {
           commit('SET_ONTOLOGIES', ontologies)
         })
+    },
+    reloadDatabaseCount ({ state, commit }) {
+      DatabaseService.countAll(null)
+        .then((all) => {
+          if (!state.user) {
+            commit('SET_DATABASE_COUNT', { all, my: null })
+          } else {
+            DatabaseService.countAll(true)
+              .then((my) => {
+                commit('SET_DATABASE_COUNT', { all, my })
+              })
+          }
+        })
+    },
+    logout ({ state, commit }) {
+      commit('SET_TOKEN', null)
+      commit('SET_REFRESH_TOKEN', null)
+      commit('SET_ROLES', null)
+      commit('SET_USER', null)
+      commit('SET_DATABASE', null)
+      commit('SET_ACCESS', null)
     }
   }
 })

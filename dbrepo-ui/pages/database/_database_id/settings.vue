@@ -10,12 +10,12 @@
             :headers="headers"
             :items="database.accesses"
             :items-per-page="10">
-            <template v-slot:item.user="{ item }">
-              {{ item.user.username }}
+            <template v-slot:item.qualified_name="{ item }">
+              <span v-if="item && item.user" v-text="item.user.qualified_name" />
             </template>
             <template v-slot:item.action="{ item }">
               <v-btn
-                v-if="item.user.username !== user.username"
+                v-if="item && item.user && item.user.username !== user.username"
                 x-small
                 :disabled="!canModifyAccess"
                 @click="modifyAccess(item)">
@@ -52,6 +52,7 @@
               small
               color="warning"
               class="black--text"
+              :disabled="isSameVisibility"
               @click="updateDatabaseVisibility">
               Modify Visibility
             </v-btn>
@@ -65,10 +66,10 @@
               <v-col sm="6">
                 <v-select
                   id="owner"
-                  v-model="modifyOwner.username"
+                  v-model="modifyOwner.id"
                   :items="users"
                   item-text="username"
-                  item-value="username"
+                  item-value="id"
                   label="Owner"
                   name="owner" />
               </v-col>
@@ -77,6 +78,7 @@
               small
               color="warning"
               class="black--text"
+              :disabled="isSameOwner"
               @click="updateDatabaseOwner">
               Modify Ownership
             </v-btn>
@@ -119,14 +121,14 @@ export default {
         is_public: null
       },
       modifyOwner: {
-        username: null
+        id: null
       },
       visibility: [
         { text: 'Public', value: true },
         { text: 'Private', value: false }
       ],
       headers: [
-        { text: 'Username', value: 'user', sortable: false },
+        { text: 'Name', value: 'qualified_name', sortable: false },
         { text: 'Access', value: 'type', sortable: false },
         { text: 'Action', value: 'action', sortable: false }
       ],
@@ -172,10 +174,22 @@ export default {
       if (!this.database || !this.user) {
         return false
       }
-      if (this.database.owner.username === null || this.user.username === null) {
+      if (this.database.owner.id === null || this.user.id === null) {
         return false
       }
-      return this.database.owner.username === this.user.username
+      return this.database.owner.id === this.user.id
+    },
+    isSameOwner () {
+      if (!this.modifyOwner || !this.user) {
+        return false
+      }
+      return this.modifyOwner.id === this.user.id
+    },
+    isSameVisibility () {
+      if (!this.modifyVisibility || !this.database) {
+        return false
+      }
+      return this.modifyVisibility.is_public === this.database.is_public
     },
     canModifyVisibility () {
       if (!this.isOwner) {
@@ -208,16 +222,18 @@ export default {
         return
       }
       this.modifyVisibility.is_public = this.database.is_public
-      this.modifyOwner.username = this.database.owner.username
+      this.modifyOwner.id = this.database.owner.id
     }
   },
   mounted () {
-    this.loadUsers()
+    if (this.users.length === 0) {
+      this.loadUsers()
+    }
     if (!this.database) {
       return
     }
     this.modifyVisibility.is_public = this.database.is_public
-    this.modifyOwner.username = this.database.owner.username
+    this.modifyOwner.id = this.database.owner.id
   },
   methods: {
     closeDialog (event) {

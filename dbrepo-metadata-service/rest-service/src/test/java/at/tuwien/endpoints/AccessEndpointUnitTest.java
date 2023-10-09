@@ -80,7 +80,7 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
         /* mock */
         doNothing()
                 .when(accessService)
-                .create(eq(DATABASE_1_ID), any(DatabaseGiveAccessDto.class));
+                .create(eq(DATABASE_1_ID), eq(USER_2_ID), any(DatabaseGiveAccessDto.class));
 
         /* test */
         generic_create(DATABASE_1_ID, DATABASE_1, null, USER_2_ID, USER_1_PRINCIPAL);
@@ -201,7 +201,6 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
             DatabaseNotFoundException, DatabaseMalformedException, NotAllowedException, KeycloakRemoteException,
             AccessDeniedException {
         final DatabaseGiveAccessDto request = DatabaseGiveAccessDto.builder()
-                .userId(userId)
                 .type(AccessTypeDto.READ)
                 .build();
 
@@ -220,7 +219,7 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
         }
 
         /* test */
-        final ResponseEntity<?> response = accessEndpoint.create(databaseId, request, principal);
+        final ResponseEntity<?> response = accessEndpoint.create(databaseId, userId, request, principal);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
         assertNull(response.getBody());
     }

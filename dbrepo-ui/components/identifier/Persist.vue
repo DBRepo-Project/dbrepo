@@ -650,7 +650,7 @@ export default {
       return this.identifier.creators.filter(c => c.name_identifier === this.user.attributes.orcid).length === 0
     },
     visibilityHint () {
-      if (this.identifier.visibility === 'public') {
+      if (this.identifier.visibility === 'everyone') {
         return 'The result set will be open access (world-readable)'
       }
       return 'The result set will be visible only to you'

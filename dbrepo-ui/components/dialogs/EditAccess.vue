@@ -6,25 +6,11 @@
         <v-card-title v-text="title" />
         <v-card-subtitle v-if="subtitle" v-text="subtitle" />
         <v-card-text>
-          <div v-if="!isModification">
-            <v-alert
-              v-if="modify.type && modify.type !== 'revoke'"
-              border="left"
-              color="warning">
-              <strong>Dangerous operation:</strong> you are giving this user access to <strong>{{ explanation }}</strong> in your database
-            </v-alert>
-            <v-alert
-              v-if="modify.type && modify.type === 'revoke'"
-              border="left"
-              color="error">
-              <strong>Dangerous operation:</strong> you are <strong>revoking</strong> all access for this user to your database
-            </v-alert>
-          </div>
           <v-row>
             <v-col>
               <v-autocomplete
                 v-if="!isModification"
-                v-model="modify.username"
+                v-model="modify.userId"
                 :items="eligibleUsers"
                 :disabled="loadingUsers"
                 :loading="loadingUsers"
@@ -33,8 +19,8 @@
                 hide-no-data
                 hide-selected
                 hide-details
-                item-text="username"
-                item-value="username"
+                item-text="qualified_name"
+                item-value="id"
                 single-line
                 label="Username" />
             </v-col>
@@ -106,7 +92,7 @@ export default {
         { text: 'Revoke all access', value: 'revoke' }
       ],
       modify: {
-        username: null,
+        userId: null,
         type: null
       }
     }
@@ -154,18 +140,6 @@ export default {
     isModification () {
       return this.username !== null
     },
-    explanation () {
-      switch (this.modify.type) {
-        case 'read':
-          return 'read all contents and create subsets'
-        case 'write_own':
-          return 'read all contents, create subsets and write their own tables'
-        case 'write_all':
-          return 'read all contents, create subsets and write all tables'
-        default:
-          return ''
-      }
-    },
     buttonText () {
       return (this.isModification ? 'Modify' : 'Give') + ' Access'
     }
@@ -201,9 +175,9 @@ export default {
     },
     revokeAccess () {
       this.loading = true
-      DatabaseService.revokeAccess(this.$route.params.database_id, this.modify.username)
+      DatabaseService.revokeAccess(this.$route.params.database_id, this.modify.userId)
         .then(() => {
-          this.$toast.success(`Successfully revoked access of ${this.modify.username}`)
+          this.$toast.success('Successfully revoked access')
           this.$emit('close-dialog', { success: true })
         })
         .finally(() => {
@@ -212,9 +186,9 @@ export default {
     },
     modifyAccess () {
       this.loading = true
-      DatabaseService.modifyAccess(this.$route.params.database_id, this.modify.username, this.modify.type)
+      DatabaseService.modifyAccess(this.$route.params.database_id, this.modify.userId, this.modify.type)
         .then(() => {
-          this.$toast.success(`Successfully modified access of ${this.modify.username}`)
+          this.$toast.success('Successfully modified access')
           this.$emit('close-dialog', { success: true })
         })
         .finally(() => {
@@ -223,9 +197,9 @@ export default {
     },
     giveAccess () {
       this.loading = true
-      DatabaseService.giveAccess(this.$route.params.database_id, this.modify.username, this.modify.type)
+      DatabaseService.giveAccess(this.$route.params.database_id, this.modify.userId, this.modify.type)
         .then(() => {
-          this.$toast.success(`Successfully gave ${this.modify.username} access`)
+          this.$toast.success('Successfully provisioned access')
           this.$emit('close-dialog', { success: true })
         })
         .finally(() => {

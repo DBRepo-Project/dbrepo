@@ -1,6 +1,6 @@
 package at.tuwien.annotations;
 
-import at.tuwien.listener.impl.RabbitMqListenerImpl;
+import at.tuwien.listener.BrokerListener;
 import com.rabbitmq.client.Channel;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.MockBeans;
@@ -12,6 +12,6 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-@MockBeans({@MockBean(Channel.class), @MockBean(RabbitMqListenerImpl.class)})
+@MockBeans({@MockBean(Channel.class), @MockBean(BrokerListener.class)})
 public @interface MockAmqp {
 }

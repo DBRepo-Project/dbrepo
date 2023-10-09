@@ -135,7 +135,7 @@ export default {
       return this.$store.state.database
     },
     printType () {
-      return this.identifier.type === 'DATABASE' ? 'Database' : 'Subset'
+      return this.identifier.type === 'database' ? 'Database' : 'Subset'
     },
     pid () {
       return `${this.baseUrl}/pid/${this.database.identifier.id}`

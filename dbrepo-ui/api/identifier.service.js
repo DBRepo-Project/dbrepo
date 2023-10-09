@@ -29,9 +29,14 @@ class IdentifierService {
       }
       api.get(`/api/identifier/retrieve?url=${url}`, { headers: { Accept: 'application/json' } })
         .then((response) => {
-          const metadata = response.data
-          console.debug('response metadata', metadata)
-          resolve(metadata)
+          const { status, data } = response
+          if (status === 200) {
+            console.debug('response metadata', data)
+            resolve(data)
+          } else {
+            console.error('response metadata', response)
+            reject(response)
+          }
         })
         .catch((error) => {
           console.error('Failed to load metadata', error)

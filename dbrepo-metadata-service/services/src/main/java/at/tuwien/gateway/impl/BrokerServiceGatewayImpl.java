@@ -1,23 +1,16 @@
 package at.tuwien.gateway.impl;
 
-import at.tuwien.api.amqp.ConsumerDto;
-import at.tuwien.api.amqp.CreateUserDto;
-import at.tuwien.api.amqp.CreateVirtualHostDto;
-import at.tuwien.api.amqp.GrantVirtualHostPermissionsDto;
+import at.tuwien.api.amqp.*;
 import at.tuwien.api.user.ExchangeUpdatePermissionsDto;
 import at.tuwien.config.GatewayConfig;
-import at.tuwien.exception.BrokerRemoteException;
-import at.tuwien.exception.BrokerVirtualHostModificationException;
-import at.tuwien.exception.BrokerVirtualHostGrantException;
+import at.tuwien.config.RabbitConfig;
+import at.tuwien.exception.*;
 import at.tuwien.gateway.BrokerServiceGateway;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -30,14 +23,15 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
 
     private final RestTemplate restTemplate;
     private final GatewayConfig gatewayConfig;
-
-    private final static String VIRTUAL_SERVER = "dbrepo";
+    private final RabbitConfig rabbitConfig;
 
     @Autowired
     public BrokerServiceGatewayImpl(GatewayConfig gatewayConfig,
-                                    @Qualifier("brokerRestTemplate") RestTemplate restTemplate) {
+                                    @Qualifier("brokerRestTemplate") RestTemplate restTemplate,
+                                    RabbitConfig rabbitMqConfig) {
         this.restTemplate = restTemplate;
         this.gatewayConfig = gatewayConfig;
+        this.rabbitConfig = rabbitMqConfig;
     }
 
     @Override
@@ -61,7 +55,7 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
     @Override
     public void grantPermission(String username, ExchangeUpdatePermissionsDto data)
             throws BrokerVirtualHostGrantException, BrokerRemoteException {
-        final String url = "/api/topic-permissions/dbrepo/" + username;
+        final String url = "/api/topic-permissions/" + rabbitConfig.getVirtualHost() + "/" + username;
         log.trace("PUT {}{}", gatewayConfig.getBrokerEndpoint(), url);
         final ResponseEntity<Void> response;
         try {
@@ -71,16 +65,16 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
             throw new BrokerRemoteException("Failed to grant permissions: remote host answered unexpected", e);
         }
         if (!response.getStatusCode().equals(HttpStatus.CREATED) && !response.getStatusCode().equals(HttpStatus.NO_CONTENT)) {
-            log.error("Failed to grant exchange: {}", response.getStatusCode());
-            throw new BrokerVirtualHostGrantException("Failed to grant exchange");
+            log.error("Failed to grant topic: {}", response.getStatusCode());
+            throw new BrokerVirtualHostGrantException("Failed to grant topic");
         }
-        log.info("Grant exchange for user with username {}", username);
+        log.info("grant topic for user with username {}", username);
     }
 
     @Override
-    public void createUser(String username) throws BrokerRemoteException, BrokerVirtualHostModificationException {
+    public void createUser(String username, String password) throws BrokerRemoteException, BrokerVirtualHostModificationException {
         final CreateUserDto data = CreateUserDto.builder()
-                .passwordHash("")
+                .password(password)
                 .tags("")
                 .build();
         final String url = "/api/users/" + username;
@@ -120,26 +114,45 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
     @Override
     public void grantPermission(String username, GrantVirtualHostPermissionsDto data) throws BrokerRemoteException,
             BrokerVirtualHostGrantException {
-        final String url = "/api/permissions/dbrepo/" + username;
+        final String url = "/api/permissions/" + rabbitConfig.getVirtualHost() + "/" + username;
         log.trace("PUT {}{}", gatewayConfig.getBrokerEndpoint(), url);
         final ResponseEntity<Void> response;
         try {
             response = restTemplate.exchange(url, HttpMethod.PUT, new HttpEntity<>(data), Void.class);
         } catch (Exception e) {
-            log.error("Failed to create permissions: remote host answered unexpected: {}", e.getMessage());
+            log.error("Failed to grant virtual host permissions: remote host answered unexpected: {}", e.getMessage());
             throw new BrokerRemoteException("Failed to create permissions: remote host answered unexpected", e);
         }
         if (!response.getStatusCode().equals(HttpStatus.CREATED) && !response.getStatusCode().equals(HttpStatus.NO_CONTENT)) {
-            log.error("Failed to grant virtual host: {}", response.getStatusCode());
-            throw new BrokerVirtualHostGrantException("Failed to grant virtual host");
+            log.error("Failed to grant virtual host permissions: {}", response.getStatusCode());
+            throw new BrokerVirtualHostGrantException("Failed to grant virtual host permissions");
         }
-        log.info("Grant permission for user with username {}", username);
+        log.trace("Grant virtual host permissions for user with username {}", username);
+    }
+
+    @Override
+    public void grantTopicPermission(String username, GrantExchangePermissionsDto data) throws BrokerRemoteException,
+            BrokerVirtualHostGrantException {
+        final String url = "/api/topic-permissions/" + rabbitConfig.getVirtualHost() + "/" + username;
+        log.trace("PUT {}{}", gatewayConfig.getBrokerEndpoint(), url);
+        final ResponseEntity<Void> response;
+        try {
+            response = restTemplate.exchange(url, HttpMethod.PUT, new HttpEntity<>(data), Void.class);
+        } catch (Exception e) {
+            log.error("Failed to grant topic permissions: remote host answered unexpected: {}", e.getMessage());
+            throw new BrokerRemoteException("Failed to grant topic permissions: remote host answered unexpected", e);
+        }
+        if (!response.getStatusCode().equals(HttpStatus.CREATED) && !response.getStatusCode().equals(HttpStatus.NO_CONTENT)) {
+            log.error("Failed to grant topic permissions: {}", response.getStatusCode());
+            throw new BrokerVirtualHostGrantException("Failed to grant topic permissions");
+        }
+        log.trace("Grant topic permissions for user with username {}", username);
     }
 
     @Override
     public List<ConsumerDto> findAllConsumers() throws BrokerRemoteException {
-        final String url = "/api/consumers/" + VIRTUAL_SERVER;
-        log.trace("gateway broker find all consumers, virtual server={}", VIRTUAL_SERVER);
+        final String url = "/api/consumers/" + rabbitConfig.getVirtualHost();
+        log.trace("gateway broker find all consumers, virtual host={}", rabbitConfig.getVirtualHost());
         log.trace("GET {}{}", gatewayConfig.getBrokerEndpoint(), url);
         final ResponseEntity<List<ConsumerDto>> response;
         try {
@@ -149,6 +162,48 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
         } catch (Exception e) {
             log.error("Failed to find consumers: remote host answered unexpected: {}", e.getMessage());
             throw new BrokerRemoteException("Failed to find consumers: remote host answered unexpected", e);
+        }
+        return response.getBody();
+    }
+
+    @Override
+    public QueueDto findQueue(String name) throws BrokerRemoteException, QueueNotFoundException {
+        final String url = "/api/queues/" + rabbitConfig.getVirtualHost() + "/" + name;
+        final HttpHeaders headers = new HttpHeaders();
+        headers.set("Accept", "application/json");
+        log.trace("gateway broker find queue, virtual host={}, queue={}", rabbitConfig.getVirtualHost(), name);
+        log.trace("GET {}{}", gatewayConfig.getBrokerEndpoint(), url);
+        final ResponseEntity<QueueDto> response;
+        try {
+            response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(null, headers), QueueDto.class);
+        } catch (Exception e) {
+            log.error("Failed to find queue: remote host answered unexpected: {}", e.getMessage());
+            throw new BrokerRemoteException("Failed to find queue: remote host answered unexpected", e);
+        }
+        if (!response.getStatusCode().equals(HttpStatus.OK)) {
+            log.error("Failed find queue: {}", response.getStatusCode());
+            throw new QueueNotFoundException("Failed to find queue");
+        }
+        return response.getBody();
+    }
+
+    @Override
+    public ExchangeDto findExchange(String name) throws BrokerRemoteException, ExchangeNotFoundException {
+        final String url = "/api/exchanges/" + rabbitConfig.getVirtualHost() + "/" + name;
+        final HttpHeaders headers = new HttpHeaders();
+        headers.set("Accept", "application/json");
+        log.trace("gateway broker find exchange, virtual host={}, exchange={}", rabbitConfig.getVirtualHost(), name);
+        log.trace("GET {}{}", gatewayConfig.getBrokerEndpoint(), url);
+        final ResponseEntity<ExchangeDto> response;
+        try {
+            response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(null, headers), ExchangeDto.class);
+        } catch (Exception e) {
+            log.error("Failed to find exchange: remote host answered unexpected: {}", e.getMessage());
+            throw new BrokerRemoteException("Failed to find exchange: remote host answered unexpected", e);
+        }
+        if (!response.getStatusCode().equals(HttpStatus.OK)) {
+            log.error("Failed find exchange: {}", response.getStatusCode());
+            throw new ExchangeNotFoundException("Failed to find exchange");
         }
         return response.getBody();
     }

@@ -1,55 +1,21 @@
 package at.tuwien.service;
 
-import at.tuwien.entities.database.Database;
-import at.tuwien.entities.database.table.Table;
+import at.tuwien.api.amqp.ExchangeDto;
+import at.tuwien.api.amqp.QueueDto;
 import at.tuwien.entities.user.User;
-import at.tuwien.exception.AmqpException;
-import at.tuwien.exception.BrokerRemoteException;
-import at.tuwien.exception.BrokerVirtualHostModificationException;
-import at.tuwien.exception.BrokerVirtualHostGrantException;
-import jakarta.annotation.PostConstruct;
-
-import java.io.IOException;
-import java.security.Principal;
-import java.util.concurrent.TimeoutException;
+import at.tuwien.exception.*;
 
 public interface MessageQueueService {
 
     /**
-     * Initializes the exchanges on the Broker Service for each database in the metadata database.
-     *
-     * @throws AmqpException The exchange could not be created.
-     */
-    @PostConstruct
-    void init() throws AmqpException, IOException, TimeoutException;
-
-    /**
-     * Creates an exchange for a database.
-     *
-     * @param database  The database.
-     * @param principal The user.
-     * @throws AmqpException Could not create the exchange.
-     */
-    void createExchange(Database database, Principal principal) throws AmqpException;
-
-    /**
-     * Creates a queue and consumer that re-routes the insert requests to the Query Service. Therefore and due to the
-     * dependency this method cannot take any input during startup or seeding phase as it would introduce a deadlock.
-     * Seeding is solely performed by the Query Service on startup.
-     *
-     * @param table The table.
-     * @throws AmqpException The broker service did not allow to create a consumer.
-     */
-    void create(Table table) throws AmqpException;
-
-    /**
-     * Create user on the broker service with given username.
+     * Create user on the broker service with given username and password.
      *
      * @param username The username.
+     * @param password The password.
      * @throws BrokerRemoteException                  The user could not be created.
      * @throws BrokerVirtualHostModificationException The Broker Service did not respond within the 3s timeout.
      */
-    void createUser(String username) throws BrokerRemoteException, BrokerVirtualHostModificationException;
+    void createUser(String username, String password) throws BrokerRemoteException, BrokerVirtualHostModificationException;
 
     /**
      * Delete a user on the broker service with given username.
@@ -63,33 +29,15 @@ public interface MessageQueueService {
     /**
      * Updates the virtual host permissions in the Broker Service for a user with given principal.
      *
-     * @param user The user.
+     * @param username The username.
      * @throws BrokerVirtualHostGrantException The Broker Service refused to grant the permissions.
      */
-    void updatePermissions(User user) throws BrokerVirtualHostGrantException, BrokerRemoteException;
+    void setVirtualHostPermissions(String username) throws BrokerVirtualHostGrantException, BrokerRemoteException;
 
-    /**
-     * Deletes an exchange for a database.
-     *
-     * @param database The database.
-     * @throws AmqpException Could not delete the exchange.
-     */
-    void deleteExchange(Database database) throws AmqpException;
+    void setTopicExchangePermissions(User user) throws BrokerVirtualHostGrantException,
+            BrokerRemoteException;
 
-    /**
-     * Creates a consumer on the provided queue with name and container id and database id for table id.
-     *
-     * @param queueName  The queue name.
-     * @param databaseId The database id.
-     * @param tableId    The table id.
-     * @throws AmqpException The consumer could not be created.
-     */
-    void createConsumer(String queueName, Long databaseId, Long tableId) throws AmqpException;
+    QueueDto findQueue(String name) throws QueueNotFoundException, BrokerRemoteException;
 
-    /**
-     * Restores missing consumers at the Broker Service.
-     *
-     * @throws AmqpException The consumer could not be created.
-     */
-    void restore() throws AmqpException, BrokerRemoteException;
+    ExchangeDto findExchange(String name) throws ExchangeNotFoundException, BrokerRemoteException;
 }

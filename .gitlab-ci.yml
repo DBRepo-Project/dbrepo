@@ -32,12 +32,19 @@ build-analyse-service:
   script:
     - "make build-analyse-service"
 
-build-search-sync-agent:
+build-data-service:
   stage: build-backend
   needs:
     - build-metadata-service
   script:
-    - "make build-search-sync-agent"
+    - "make build-data-service"
+
+build-mirror-service:
+  stage: build-backend
+  needs:
+    - build-metadata-service
+  script:
+    - "make build-mirror-service"
 
 build-frontend:
   stage: build-frontend
@@ -55,9 +62,12 @@ build-docker:
     - "make build-docker"
 
 test-deployment:
-  stage: build-docker
+  stage: release-docker
   needs:
-    - build-docker
+    - release-latest
+  only:
+    refs:
+      - dev
   script:
     - "curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/install.sh | sudo bash"
 
@@ -66,7 +76,7 @@ test-metadata-service:
   needs:
     - build-metadata-service
   script:
-    - "make test-metadata-service"
+    - "make clean test-metadata-service"
     - "cat ./dbrepo-metadata-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
   artifacts:
     when: always
@@ -78,21 +88,38 @@ test-metadata-service:
       junit: ./dbrepo-metadata-service/rest-service/target/surefire-reports/TEST-*.xml
   coverage: '/Total.*?([0-9]{1,3})%/'
 
-test-search-sync-agent:
+test-data-service:
   stage: test-backend
   needs:
-    - build-search-sync-agent
+    - build-data-service
   script:
-    - "make test-search-sync-agent"
-    - "cat ./dbrepo-search-sync-agent/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
+    - "make clean test-data-service"
+    - "cat ./dbrepo-data-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
   artifacts:
     when: always
     paths:
-      - ./dbrepo-search-sync-agent/report/target/site/jacoco-aggregate/
-      - ./dbrepo-search-sync-agent/rest-service/target/surefire-reports/
+      - ./dbrepo-data-service/report/target/site/jacoco-aggregate/
+      - ./dbrepo-data-service/rest-service/target/surefire-reports/
     expire_in: 1 days
     reports:
-      junit: ./dbrepo-search-sync-agent/rest-service/target/surefire-reports/TEST-*.xml
+      junit: ./dbrepo-data-service/rest-service/target/surefire-reports/TEST-*.xml
+  coverage: '/Total.*?([0-9]{1,3})%/'
+
+test-mirror-service:
+  stage: test-backend
+  needs:
+    - build-mirror-service
+  script:
+    - "make clean test-mirror-service"
+    - "cat ./dbrepo-mirror-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
+  artifacts:
+    when: always
+    paths:
+      - ./dbrepo-mirror-service/report/target/site/jacoco-aggregate/
+      - ./dbrepo-mirror-service/rest-service/target/surefire-reports/
+    expire_in: 1 days
+    reports:
+      junit: ./dbrepo-mirror-service/rest-service/target/surefire-reports/TEST-*.xml
   coverage: '/Total.*?([0-9]{1,3})%/'
 
 test-analyse-service:
