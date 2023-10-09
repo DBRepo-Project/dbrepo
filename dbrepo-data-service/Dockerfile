@@ -23,6 +23,8 @@ RUN mvn clean package -DskipTests
 FROM openjdk:17-alpine as runtime
 MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
 
+RUN apk --no-cache add curl bash
+
 ENV METADATA_DB=fda
 ENV METADATA_HOST=metadata-db
 ENV METADATA_JDBC_EXTRA_ARGS=""

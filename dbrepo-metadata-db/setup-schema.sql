@@ -1,6 +1,6 @@
 BEGIN;
 
-CREATE TABLE IF NOT EXISTS `fda`.`mdb_users`
+CREATE TABLE IF NOT EXISTS `mdb_users`
 (
     id               character varying(36)  NOT NULL,
     username         character varying(255) NOT NULL,
@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_users`
     UNIQUE (email)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS `fda`.`mdb_images`
+CREATE TABLE IF NOT EXISTS `mdb_images`
 (
     id            bigint                 NOT NULL AUTO_INCREMENT,
     name          character varying(255) NOT NULL,
@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_images`
     UNIQUE (name, version)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS `fda`.`mdb_images_date`
+CREATE TABLE IF NOT EXISTS `mdb_images_date`
 (
     id              bigint                 NOT NULL AUTO_INCREMENT,
     iid             bigint                 NOT NULL,
@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_images_date`
     UNIQUE (database_format, unix_format, example)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS `fda`.`mdb_containers`
+CREATE TABLE IF NOT EXISTS `mdb_containers`
 (
     id                  bigint                 NOT NULL AUTO_INCREMENT,
     internal_name       character varying(255) NOT NULL,
@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_containers`
     FOREIGN KEY (image_id) REFERENCES mdb_images (id)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS `fda`.`mdb_data`
+CREATE TABLE IF NOT EXISTS `mdb_data`
 (
     ID           bigint NOT NULL AUTO_INCREMENT,
     PROVENANCE   text,
@@ -72,7 +72,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_data`
     PRIMARY KEY (ID)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS `fda`.`mdb_licenses`
+CREATE TABLE IF NOT EXISTS `mdb_licenses`
 (
     identifier character varying(255) NOT NULL,
     uri        text                   NOT NULL,
@@ -80,7 +80,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_licenses`
     UNIQUE (uri(200))
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS `fda`.`mdb_databases`
+CREATE TABLE IF NOT EXISTS `mdb_databases`
 (
     id             bigint                 NOT NULL AUTO_INCREMENT,
     cid            bigint                 NOT NULL,
@@ -102,14 +102,14 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_databases`
     FOREIGN KEY (contact_person) REFERENCES mdb_users (id)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS `fda`.`mdb_databases_subjects`
+CREATE TABLE IF NOT EXISTS `mdb_databases_subjects`
 (
     dbid     BIGINT                 NOT NULL,
     subjects character varying(255) NOT NULL,
     PRIMARY KEY (dbid, subjects)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS `fda`.`mdb_tables`
+CREATE TABLE IF NOT EXISTS `mdb_tables`
 (
     ID            bigint                 NOT NULL AUTO_INCREMENT,
     tDBID         bigint                 NOT NULL,
@@ -138,7 +138,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_tables`
     FOREIGN KEY (owned_by) REFERENCES mdb_users (id)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns`
+CREATE TABLE IF NOT EXISTS `mdb_columns`
 (
     ID               bigint       NOT NULL AUTO_INCREMENT,
     tID              bigint       NOT NULL,
@@ -161,7 +161,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns`
     PRIMARY KEY (ID)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns_enums`
+CREATE TABLE IF NOT EXISTS `mdb_columns_enums`
 (
     id        bigint                 NOT NULL AUTO_INCREMENT,
     column_id bigint                 NOT NULL,
@@ -170,7 +170,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns_enums`
     PRIMARY KEY (id)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns_sets`
+CREATE TABLE IF NOT EXISTS `mdb_columns_sets`
 (
     id        bigint                 NOT NULL AUTO_INCREMENT,
     column_id bigint                 NOT NULL,
@@ -179,7 +179,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns_sets`
     PRIMARY KEY (id)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns_nom`
+CREATE TABLE IF NOT EXISTS `mdb_columns_nom`
 (
     tID           bigint,
     cID           bigint,
@@ -190,7 +190,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns_nom`
     PRIMARY KEY (tID, cID)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns_num`
+CREATE TABLE IF NOT EXISTS `mdb_columns_num`
 (
     tID           bigint,
     cID           bigint,
@@ -207,7 +207,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns_num`
     PRIMARY KEY (tID, cID)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns_cat`
+CREATE TABLE IF NOT EXISTS `mdb_columns_cat`
 (
     tID           bigint,
     cID           bigint,
@@ -219,7 +219,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns_cat`
     PRIMARY KEY (tID, cID)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS `fda`.`mdb_constraints_foreign_key`
+CREATE TABLE IF NOT EXISTS `mdb_constraints_foreign_key`
 (
     fkid      BIGINT      NOT NULL AUTO_INCREMENT,
     tid       BIGINT      NOT NULL,
@@ -232,7 +232,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_constraints_foreign_key`
     FOREIGN KEY (rtid) REFERENCES mdb_tables (id)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS `fda`.`mdb_constraints_foreign_key_reference`
+CREATE TABLE IF NOT EXISTS `mdb_constraints_foreign_key_reference`
 (
     id   BIGINT NOT NULL AUTO_INCREMENT,
     fkid BIGINT NOT NULL,
@@ -244,7 +244,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_constraints_foreign_key_reference`
     FOREIGN KEY (rcid) REFERENCES mdb_columns (id)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS `fda`.`mdb_constraints_unique`
+CREATE TABLE IF NOT EXISTS `mdb_constraints_unique`
 (
     uid      BIGINT NOT NULL AUTO_INCREMENT,
     tid      BIGINT NOT NULL,
@@ -253,7 +253,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_constraints_unique`
     FOREIGN KEY (tid) REFERENCES mdb_tables (id)
 );
 
-CREATE TABLE IF NOT EXISTS `fda`.`mdb_constraints_unique_columns`
+CREATE TABLE IF NOT EXISTS `mdb_constraints_unique_columns`
 (
     id  BIGINT NOT NULL AUTO_INCREMENT,
     uid BIGINT NOT NULL,
@@ -263,7 +263,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_constraints_unique_columns`
     FOREIGN KEY (cid) REFERENCES mdb_columns (id)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS `fda`.`mdb_constraints_checks`
+CREATE TABLE IF NOT EXISTS `mdb_constraints_checks`
 (
     id     BIGINT       NOT NULL AUTO_INCREMENT,
     tid    BIGINT       NOT NULL,
@@ -272,7 +272,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_constraints_checks`
     FOREIGN KEY (tid) REFERENCES mdb_tables (id)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS `fda`.`mdb_concepts`
+CREATE TABLE IF NOT EXISTS `mdb_concepts`
 (
     id          bigint                NOT NULL AUTO_INCREMENT,
     uri         text                  not null,
@@ -285,7 +285,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_concepts`
     FOREIGN KEY (created_by) REFERENCES mdb_users (id)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS `fda`.`mdb_units`
+CREATE TABLE IF NOT EXISTS `mdb_units`
 (
     id          bigint                NOT NULL AUTO_INCREMENT,
     uri         text                  not null,
@@ -298,7 +298,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_units`
     FOREIGN KEY (created_by) REFERENCES mdb_users (id)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns_concepts`
+CREATE TABLE IF NOT EXISTS `mdb_columns_concepts`
 (
     id      bigint    NOT NULL,
     cID     bigint    NOT NULL,
@@ -307,7 +307,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns_concepts`
     FOREIGN KEY (cID) REFERENCES mdb_columns (ID)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns_units`
+CREATE TABLE IF NOT EXISTS `mdb_columns_units`
 (
     id      bigint    NOT NULL,
     cID     bigint    NOT NULL,
@@ -316,7 +316,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_columns_units`
     FOREIGN KEY (cID) REFERENCES mdb_columns (ID)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS `fda`.`mdb_view`
+CREATE TABLE IF NOT EXISTS `mdb_view`
 (
     id            bigint                NOT NULL AUTO_INCREMENT,
     vdbid         bigint                NOT NULL,
@@ -336,7 +336,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_view`
     FOREIGN KEY (created_by) REFERENCES mdb_users (id)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS `fda`.`mdb_banner_messages`
+CREATE TABLE IF NOT EXISTS `mdb_banner_messages`
 (
     id            bigint                            NOT NULL AUTO_INCREMENT,
     type          ENUM ('ERROR', 'WARNING', 'INFO') NOT NULL default 'INFO',
@@ -348,7 +348,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_banner_messages`
     PRIMARY KEY (id)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS `fda`.`mdb_ontologies`
+CREATE TABLE IF NOT EXISTS `mdb_ontologies`
 (
     id              bigint     NOT NULL AUTO_INCREMENT,
     prefix          VARCHAR(8) NOT NULL,
@@ -362,7 +362,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_ontologies`
     PRIMARY KEY (id)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS `fda`.`mdb_view_columns`
+CREATE TABLE IF NOT EXISTS `mdb_view_columns`
 (
     id       BIGINT  NOT NULL AUTO_INCREMENT,
     cid      BIGINT  NOT NULL,
@@ -373,7 +373,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_view_columns`
     FOREIGN KEY (cid) REFERENCES mdb_columns (ID)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifiers`
+CREATE TABLE IF NOT EXISTS `mdb_identifiers`
 (
     id                bigint                              NOT NULL AUTO_INCREMENT,
     dbid              bigint,
@@ -402,7 +402,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifiers`
     FOREIGN KEY (created_by) REFERENCES mdb_users (id)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifier_licenses`
+CREATE TABLE IF NOT EXISTS `mdb_identifier_licenses`
 (
     pid        bigint       NOT NULL,
     license_id VARCHAR(255) NOT NULL,
@@ -411,7 +411,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifier_licenses`
     FOREIGN KEY (license_id) REFERENCES mdb_licenses (identifier)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifier_titles`
+CREATE TABLE IF NOT EXISTS `mdb_identifier_titles`
 (
     id         bigint NOT NULL AUTO_INCREMENT,
     pid        bigint NOT NULL,
@@ -422,7 +422,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifier_titles`
     FOREIGN KEY (pid) REFERENCES mdb_identifiers (id)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifier_funders`
+CREATE TABLE IF NOT EXISTS `mdb_identifier_funders`
 (
     id                     bigint       NOT NULL AUTO_INCREMENT,
     pid                    bigint       NOT NULL,
@@ -437,7 +437,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifier_funders`
     FOREIGN KEY (pid) REFERENCES mdb_identifiers (id)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifier_descriptions`
+CREATE TABLE IF NOT EXISTS `mdb_identifier_descriptions`
 (
     id               bigint NOT NULL AUTO_INCREMENT,
     pid              bigint NOT NULL,
@@ -448,7 +448,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifier_descriptions`
     FOREIGN KEY (pid) REFERENCES mdb_identifiers (id)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS `fda`.`mdb_related_identifiers`
+CREATE TABLE IF NOT EXISTS `mdb_related_identifiers`
 (
     id       bigint       NOT NULL AUTO_INCREMENT,
     pid      bigint       NOT NULL,
@@ -460,7 +460,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_related_identifiers`
     UNIQUE (pid, value)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifier_creators`
+CREATE TABLE IF NOT EXISTS `mdb_identifier_creators`
 (
     id                                bigint       NOT NULL AUTO_INCREMENT,
     pid                               bigint       NOT NULL,
@@ -476,11 +476,10 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_identifier_creators`
     affiliation_identifier_scheme     ENUM ('ROR', 'GRID', 'ISNI'),
     affiliation_identifier_scheme_uri text,
     PRIMARY KEY (id),
-    FOREIGN KEY (pid) REFERENCES mdb_identifiers (id),
-    UNIQUE (pid, creator_name)
+    FOREIGN KEY (pid) REFERENCES mdb_identifiers (id)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS `fda`.`mdb_feed`
+CREATE TABLE IF NOT EXISTS `mdb_feed`
 (
     fDBID   bigint,
     fID     bigint,
@@ -492,7 +491,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_feed`
     FOREIGN KEY (fUserId) REFERENCES mdb_users (id)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS `fda`.`mdb_update`
+CREATE TABLE IF NOT EXISTS `mdb_update`
 (
     uUserID character varying(255) NOT NULL,
     uDBID   bigint                 NOT NULL,
@@ -501,7 +500,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_update`
     FOREIGN KEY (uDBID) REFERENCES mdb_databases (id)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS `fda`.`mdb_access`
+CREATE TABLE IF NOT EXISTS `mdb_access`
 (
     aUserID  character varying(255) NOT NULL,
     aDBID    bigint REFERENCES mdb_databases (id),
@@ -511,7 +510,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_access`
     PRIMARY KEY (aUserID, aDBID)
 ) WITH SYSTEM VERSIONING;
 
-CREATE TABLE IF NOT EXISTS `fda`.`mdb_have_access`
+CREATE TABLE IF NOT EXISTS `mdb_have_access`
 (
     user_id     character varying(36)                   NOT NULL,
     database_id bigint REFERENCES mdb_databases (id),
@@ -524,7 +523,7 @@ CREATE TABLE IF NOT EXISTS `fda`.`mdb_have_access`
 COMMIT;
 BEGIN;
 
-INSERT INTO `fda`.`mdb_licenses` (identifier, uri)
+INSERT INTO `mdb_licenses` (identifier, uri)
 VALUES ('MIT', 'https://opensource.org/licenses/MIT'),
        ('GPL-3.0-only', 'https://www.gnu.org/licenses/gpl-3.0-standalone.html'),
        ('BSD-3-Clause', 'https://opensource.org/licenses/BSD-3-Clause'),
@@ -533,16 +532,16 @@ VALUES ('MIT', 'https://opensource.org/licenses/MIT'),
        ('CC0-1.0', 'https://creativecommons.org/publicdomain/zero/1.0/legalcode'),
        ('CC-BY-4.0', 'https://creativecommons.org/licenses/by/4.0/legalcode');
 
-INSERT INTO `fda`.`mdb_images` (name, version, default_port, dialect, driver_class, jdbc_method)
+INSERT INTO `mdb_images` (name, version, default_port, dialect, driver_class, jdbc_method)
 VALUES ('mariadb', '10.5', 3306, 'org.hibernate.dialect.MariaDBDialect', 'org.mariadb.jdbc.Driver', 'mariadb');
 
-INSERT INTO `fda`.`mdb_images_date` (iid, database_format, unix_format, example, has_time)
+INSERT INTO `mdb_images_date` (iid, database_format, unix_format, example, has_time)
 VALUES (1, '%Y-%c-%d %H:%i:%S.%f', 'yyyy-MM-dd HH:mm:ss.SSSSSS', '2022-01-30 13:44:25.499', true),
        (1, '%Y-%c-%d %H:%i:%S', 'yyyy-MM-dd HH:mm:ss', '2022-01-30 13:44:25', true),
        (1, '%Y-%c-%d', 'yyyy-MM-dd', '2022-01-30', false),
        (1, '%H:%i:%S', 'HH:mm:ss', '13:44:25', true);
 
-INSERT INTO `fda`.`mdb_ontologies` (prefix, uri, uri_pattern, sparql_endpoint)
+INSERT INTO `mdb_ontologies` (prefix, uri, uri_pattern, sparql_endpoint)
 VALUES ('om', 'http://www.ontology-of-units-of-measure.org/resource/om-2/',
         'http://www.ontology-of-units-of-measure.org/resource/om-2/.*', null),
        ('wd', 'http://www.wikidata.org/', 'http://www.wikidata.org/entity/.*', 'https://query.wikidata.org/sparql'),
