@@ -113,8 +113,11 @@ export default {
       return database && database.identifier
     },
     formatTitle (database) {
-      if (!database || !database.identifier) {
+      if (!database) {
         return null
+      }
+      if (!database.identifier) {
+        return database.name
       }
       return IdentifierMapper.identifierPreferEnglishTitle(database.identifier)
     },

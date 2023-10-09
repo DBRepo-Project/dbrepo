@@ -10,8 +10,6 @@ volumes:
   auth-db-data:
   upload-service-data:
   search-db-data:
-  broker-service-data:
-  authentication-service-data:
 
 services:
 
@@ -108,8 +106,6 @@ services:
       KC_DB_PASSWORD: "${AUTH_PASSWORD:-dbrepo}"
       KEYCLOAK_ADMIN: "${KEYCLOAK_ADMIN:-fda}"
       KEYCLOAK_ADMIN_PASSWORD: "${KEYCLOAK_ADMIN_PASSWORD:-fda}"
-    volumes:
-      - authentication-service-data:/opt/keycloak/data/
     depends_on:
       dbrepo-auth-db:
         condition: service_healthy
@@ -129,10 +125,18 @@ services:
       ADMIN_MAIL: "${ADMIN_MAIL:-noreply@localhost}"
       BASE_URL: "${BASE_URL:-http://localhost}"
       GRANT_PRIVILEGES: "${GRANT_PRIVILEGES:-SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE}"
-      BROKER_CONSUMERS: "${BROKER_CONSUMERS:-2}"
+      MIN_CONCURRENT_CONSUMERS: ${MIN_CONCURRENT_CONSUMERS:-1}
+      MAX_CONCURRENT_CONSUMERS: ${MAX_CONCURRENT_CONSUMERS:-5}
+      BROKER_USERNAME: ${BROKER_USERNAME:-fda}
+      BROKER_PASSWORD: ${BROKER_PASSWORD:-fda}
       BROKER_ENDPOINT: "${BROKER_ENDPOINT:-http://broker-service:15672/admin/broker}"
-      BROKER_USERNAME: "${BROKER_USERNAME:-fda}"
-      BROKER_PASSWORD: "${BROKER_PASSWORD:-fda}"
+      BROKER_HOST: "${BROKER_HOST:-broker-service}"
+      BROKER_VIRTUALHOST: ${BROKER_VIRTUALHOST:-dbrepo}
+      REQUEUE_REJECTED: ${REQUEUE_REJECTED:-false}
+      QUEUE_NAME: ${QUEUE_NAME:-dbrepo}
+      EXCHANGE_NAME: ${EXCHANGE_NAME:-dbrepo}
+      ROUTING_KEY: "${ROUTING_KEY:-dbrepo.#}"
+      CONNECTION_TIMEOUT: ${CONNECTION_TIMEOUT:-60000}
       DELETED_RECORD: "${DELETED_RECORD:-persistent}"
       EARLIEST_DATESTAMP: "${EARLIEST_DATESTAMP:-2022-09-17T18:23:00Z}"
       GRANULARITY: "${GRANULARITY:-YYYY-MM-DDThh:mm:ssZ}"
@@ -193,15 +197,13 @@ services:
       - "5672:5672"
       - "15672:15672"
     healthcheck:
-      test: "curl -sSL localhost:15672/admin/broker/api | grep 'API' || exit 1"
+      test: rabbitmq-diagnostics -q is_running | grep 'is fully booted and running'
       interval: 10s
       timeout: 5s
       retries: 12
     depends_on:
       dbrepo-authentication-service:
         condition: service_healthy
-    volumes:
-      - broker-service-data:/var/lib/rabbitmq/
     logging:
       driver: json-file
 

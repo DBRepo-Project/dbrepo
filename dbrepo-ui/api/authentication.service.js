@@ -90,7 +90,7 @@ class AuthenticationService {
           resolve(authentication)
         }).catch((error) => {
           console.error('Failed to authenticate', error)
-          const { code, message, response } = error
+          const { response } = error
           const { status, data } = response
           if (status === 401) {
             Vue.$toast.error('Invalid username-password combination.')
@@ -103,7 +103,7 @@ class AuthenticationService {
             Vue.$toast.warning('Authentication expired.')
             this.$router.push('/login')
           } else {
-            Vue.$toast.error(`[${code}] Failed to authenticate: ${message}`)
+            /* ignore */
           }
           reject(error)
         })

@@ -14,7 +14,6 @@
               </v-list-item-title>
               <v-list-item-content>
                 <span v-if="table && table.id">{{ table.id }}</span>
-                <v-skeleton-loader v-if="!table" type="text" class="skeleton-xsmall" />
               </v-list-item-content>
               <v-list-item-title v-if="hasDescription" class="mt-2">
                 Table Description
@@ -25,16 +24,12 @@
               </v-list-item-title>
               <v-list-item-content>
                 <span v-if="table && table.creator">{{ formatCreator(table.owner) }} <span v-if="is_owner(table)" style="flex:none;">&nbsp;(you)</span></span>
-                <v-skeleton-loader v-if="!table" type="text" class="skeleton-medium" />
               </v-list-item-content>
               <v-list-item-title v-if="table && table.created" class="mt-2">
                 Table Creation
               </v-list-item-title>
               <v-list-item-content v-if="table && table.created">
                 <span>{{ createdUTC }}</span>
-              </v-list-item-content>
-              <v-list-item-content v-if="!table">
-                <v-skeleton-loader type="text" class="skeleton-medium" />
               </v-list-item-content>
             </v-list-item-content>
           </v-list-item>
@@ -52,17 +47,17 @@
               <v-list-item-title class="mt-2">
                 Exchange
               </v-list-item-title>
-              <v-list-item-content v-if="database && exchange">
+              <v-list-item-content v-if="database">
                 <span>
-                  <v-badge inline :content="exchange.type" color="secondary">{{ database.exchange_name }}</v-badge>
+                  <v-badge inline :content="database.exchange_type" color="primary">{{ database.exchange_name }}</v-badge>
                 </span>
               </v-list-item-content>
               <v-list-item-title class="mt-2">
                 Queue
               </v-list-item-title>
-              <v-list-item-content v-if="table && queue">
+              <v-list-item-content v-if="table">
                 <span>
-                  <v-badge inline :content="queue.type" color="secondary">{{ table.queue_name }}</v-badge>
+                  <v-badge inline :content="table.queue_type" color="primary">{{ table.queue_name }}</v-badge>
                 </span>
               </v-list-item-content>
               <v-list-item-title v-if="table && table.routing_key" class="mt-2">
@@ -71,10 +66,6 @@
               <v-list-item-content v-if="table && table.routing_key">
                 <pre v-text="table.routing_key" />
               </v-list-item-content>
-              <v-list-item-title v-if="canRead" class="mt-2">
-                Consumers
-              </v-list-item-title>
-              <v-list-item-content v-if="!loadingConsumers" class="amqp-consumer" v-text="consumerText" />
               <v-list-item-title v-if="canRead" class="mt-2">
                 Connection String
               </v-list-item-title>
@@ -118,9 +109,6 @@ export default {
     }
   },
   computed: {
-    token () {
-      return this.$store.state.token
-    },
     user () {
       return this.$store.state.user
     },
@@ -154,12 +142,6 @@ export default {
     hasDescription () {
       return this.table && this.table.description !== null
     },
-    consumersTotal () {
-      return this.consumers.length
-    },
-    consumersUp () {
-      return this.consumers.filter(c => c.active).length
-    },
     canWriteQueues () {
       if (!this.roles) {
         return false
@@ -189,10 +171,6 @@ export default {
         return null
       }
       return `amqp://${window.location.hostname}:5672/dbrepo (username=${this.user.username}, password=yourpassword)`
-    },
-    consumerText () {
-      const text = (this.consumersUp === 0 && this.consumersTotal === 0) ? 'pending' : (this.consumersUp > 0) ? 'up' : 'error'
-      return `${this.consumersUp}/${this.consumersTotal} (${text})`
     }
   },
   methods: {
@@ -203,7 +181,7 @@ export default {
       if (!this.user) {
         return false
       }
-      return table.owner.username === this.user.username
+      return table.owner.id === this.user.id
     }
   }
 }
@@ -211,17 +189,5 @@ export default {
 <style>
 .v-card__text {
   font-size: initial;
-}
-.skeleton-large .v-skeleton-loader__text {
-  width: 400px;
-}
-.skeleton-medium .v-skeleton-loader__text {
-  width: 200px;
-}
-.skeleton-small .v-skeleton-loader__text {
-  width: 100px;
-}
-.skeleton-xsmall .v-skeleton-loader__text {
-  width: 50px;
 }
 </style>

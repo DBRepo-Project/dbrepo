@@ -6,6 +6,7 @@ import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -68,9 +69,9 @@ public class RabbitConfig {
     }
 
     @Bean
-    public Binding binding(Queue queue, TopicExchange exchange) {
-        return BindingBuilder.bind(queue)
-                .to(exchange)
+    public Binding binding() {
+        return BindingBuilder.bind(queue())
+                .to(exchange())
                 .with(routingKey);
     }
 
@@ -98,6 +99,15 @@ public class RabbitConfig {
         factory.setPassword(password);
         factory.setVirtualHost(virtualHost);
         return factory;
+    }
+
+    @Bean
+    public RabbitAdmin rabbitAdmin() {
+        final RabbitAdmin rabbitAdmin = new RabbitAdmin(getConnectionFactory());
+        rabbitAdmin.declareExchange(exchange());
+        rabbitAdmin.declareQueue(queue());
+        rabbitAdmin.declareBinding(binding());
+        return rabbitAdmin;
     }
 
     @Bean

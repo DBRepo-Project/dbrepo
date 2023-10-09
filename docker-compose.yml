@@ -10,8 +10,6 @@ volumes:
   auth-db-data:
   upload-service-data:
   search-db-data:
-  broker-service-data:
-  authentication-service-data:
 
 services:
 
@@ -19,10 +17,11 @@ services:
     restart: "no"
     container_name: dbrepo-metadata-db
     hostname: metadata-db
-    image: dbrepo.azurecr.io/dbrepo/metadata-db:latest
+    image: dbrepo-metadata-db:latest
+    build: ./dbrepo-metadata-db
     volumes:
       - metadata-db-data:/bitnami/mariadb
-      - ./setup-schema_local.sql:/docker-entrypoint-initdb.d/setup-schema_local.sql
+      - ./dbrepo-metadata-db/setup-schema_local.sql:/docker-entrypoint-initdb.d/setup-schema_local.sql
     ports:
       - "3306:3306"
     environment:
@@ -93,7 +92,8 @@ services:
     restart: "no"
     container_name: dbrepo-authentication-service
     hostname: authentication-service
-    image: dbrepo.azurecr.io/dbrepo/authentication-service:latest
+    image: dbrepo-authentication-service:latest
+    build: ./dbrepo-authentication-service
     ports:
       - "8443:8443"
       - "8080:8080"
@@ -108,8 +108,6 @@ services:
       KC_DB_PASSWORD: "${AUTH_PASSWORD:-dbrepo}"
       KEYCLOAK_ADMIN: "${KEYCLOAK_ADMIN:-fda}"
       KEYCLOAK_ADMIN_PASSWORD: "${KEYCLOAK_ADMIN_PASSWORD:-fda}"
-    volumes:
-      - authentication-service-data:/opt/keycloak/data/
     depends_on:
       dbrepo-auth-db:
         condition: service_healthy
@@ -120,7 +118,8 @@ services:
     restart: "no"
     container_name: dbrepo-metadata-service
     hostname: metadata-service
-    image: dbrepo.azurecr.io/dbrepo/metadata-service:latest
+    image: dbrepo-metadata-service:latest
+    build: ./dbrepo-metadata-service
     volumes:
       - "${SHARED_FILESYSTEM:-/tmp}:/tmp"
     ports:
@@ -129,10 +128,18 @@ services:
       ADMIN_MAIL: "${ADMIN_MAIL:-noreply@localhost}"
       BASE_URL: "${BASE_URL:-http://localhost}"
       GRANT_PRIVILEGES: "${GRANT_PRIVILEGES:-SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE}"
-      BROKER_CONSUMERS: "${BROKER_CONSUMERS:-2}"
+      MIN_CONCURRENT_CONSUMERS: ${MIN_CONCURRENT_CONSUMERS:-1}
+      MAX_CONCURRENT_CONSUMERS: ${MAX_CONCURRENT_CONSUMERS:-5}
+      BROKER_USERNAME: ${BROKER_USERNAME:-fda}
+      BROKER_PASSWORD: ${BROKER_PASSWORD:-fda}
       BROKER_ENDPOINT: "${BROKER_ENDPOINT:-http://broker-service:15672/admin/broker}"
-      BROKER_USERNAME: "${BROKER_USERNAME:-fda}"
-      BROKER_PASSWORD: "${BROKER_PASSWORD:-fda}"
+      BROKER_HOST: "${BROKER_HOST:-broker-service}"
+      BROKER_VIRTUALHOST: ${BROKER_VIRTUALHOST:-dbrepo}
+      REQUEUE_REJECTED: ${REQUEUE_REJECTED:-false}
+      QUEUE_NAME: ${QUEUE_NAME:-dbrepo}
+      EXCHANGE_NAME: ${EXCHANGE_NAME:-dbrepo}
+      ROUTING_KEY: "${ROUTING_KEY:-dbrepo.#}"
+      CONNECTION_TIMEOUT: ${CONNECTION_TIMEOUT:-60000}
       DELETED_RECORD: "${DELETED_RECORD:-persistent}"
       EARLIEST_DATESTAMP: "${EARLIEST_DATESTAMP:-2022-09-17T18:23:00Z}"
       GRANULARITY: "${GRANULARITY:-YYYY-MM-DDThh:mm:ssZ}"
@@ -176,7 +183,8 @@ services:
     restart: "no"
     container_name: dbrepo-analyse-service
     hostname: analyse-service
-    image: dbrepo.azurecr.io/dbrepo/analyse-service:latest
+    image: dbrepo-analyse-service:latest
+    build: ./dbrepo-analyse-service
     ports:
       - "5000:5000"
     volumes:
@@ -189,19 +197,18 @@ services:
     container_name: dbrepo-broker-service
     hostname: broker-service
     image: dbrepo.azurecr.io/dbrepo/broker-service:latest
+    build: ./dbrepo-broker-service
     ports:
       - "5672:5672"
       - "15672:15672"
     healthcheck:
-      test: "curl -sSL localhost:15672/admin/broker/api | grep 'API' || exit 1"
+      test: rabbitmq-diagnostics -q is_running | grep 'is fully booted and running'
       interval: 10s
       timeout: 5s
       retries: 12
     depends_on:
       dbrepo-authentication-service:
         condition: service_healthy
-    volumes:
-      - broker-service-data:/var/lib/rabbitmq/
     logging:
       driver: json-file
 
@@ -209,7 +216,8 @@ services:
     restart: "no"
     container_name: dbrepo-search-db
     hostname: search-db
-    image: dbrepo.azurecr.io/dbrepo/search-db:latest
+    image: dbrepo-search-db:latest
+    build: ./dbrepo-search-db
     ports:
       - "9200:9200"
     healthcheck:
@@ -234,6 +242,7 @@ services:
     container_name: dbrepo-ui
     hostname: ui
     image: dbrepo.azurecr.io/dbrepo/ui:latest
+    build: ./dbrepo-ui
     environment:
       BROKER_USERNAME: "${BROKER_USERNAME:-fda}"
       BROKER_PASSWORD: "${BROKER_PASSWORD:-fda}"
@@ -266,7 +275,7 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./dbrepo.conf:/etc/nginx/conf.d/default.conf
+      - ./dbrepo-gateway-service/dbrepo.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       dbrepo-analyse-service:
         condition: service_healthy
@@ -289,7 +298,7 @@ services:
     hostname: search-db-dashboard
     image: docker.io/opensearchproject/opensearch-dashboards:2.8.0
     volumes:
-      - ./opensearch_dashboards.yml:/usr/share/opensearch-dashboards/config/opensearch_dashboards.yml
+      - ./dbrepo-search-db/opensearch_dashboards.yml:/usr/share/opensearch-dashboards/config/opensearch_dashboards.yml
     ports:
       - "5601:5601"
     depends_on:
