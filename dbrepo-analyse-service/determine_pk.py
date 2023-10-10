@@ -1,6 +1,6 @@
 import json
 import logging
-
+import os
 import pandas as pd
 import random
 from pathlib import Path
@@ -8,13 +8,14 @@ import numpy as np
 from determine_dt import determine_datatypes
 
 
-def determine_pk(filepath, seperator=','):
-    dt = json.loads(determine_datatypes(filepath, seperator))
+def determine_pk(filename, seperator=','):
+    dt = json.loads(determine_datatypes(filename, seperator))
     dt = {k.lower(): v for k, v in dt['columns'].items()}
     # {k.lower(): v for k, v in dt['columns'].items() if v != 'Numeric'}
     colnames = dt.keys()
     colindex = list(range(0, len(colnames)))
-    if Path(filepath).stat().st_size < 400000:  # precise if lower than 400kB
+    path = os.path.join(os.getenv('SHARED_FILESYSTEM', '/tmp'), filename)
+    if Path(path).stat().st_size < 400000:  # precise if lower than 400kB
         pk = {}
         j = 0
         k = 0
@@ -26,7 +27,7 @@ def determine_pk(filepath, seperator=','):
                 colindex.remove(k)
             k = k + 1
 
-        csvdata = pd.read_csv(filepath, sep=seperator)
+        csvdata = pd.read_csv(path, sep=seperator)
 
         for i in colindex:
             if pd.Series(csvdata.iloc[:, i]).is_unique and pd.Series(csvdata.iloc[:, i]).notnull().values.any():
@@ -44,10 +45,10 @@ def determine_pk(filepath, seperator=','):
                 colindex.remove(k)
             k = k + 1
 
-        p = get_sampling_percentage(filepath)
+        p = get_sampling_percentage(path)
 
         csvdata = pd.read_csv(
-            filepath,
+            filepath=path,
             sep=seperator,
             header=0,
             skiprows=lambda i: i > 0 and random.random() > p)

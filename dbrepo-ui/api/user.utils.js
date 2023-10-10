@@ -11,7 +11,7 @@ class UserUtils {
       return false
     }
     if (access.type === 'write_all') {
-      return
+      return true
     }
     return access.type === 'write_own' && table.owner.id === user.id
   }

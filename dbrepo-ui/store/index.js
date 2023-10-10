@@ -27,8 +27,8 @@ const store = new Store({
     clientSecret: null,
     searchUsername: null,
     searchPassword: null,
-    uploadPath: null,
-    databaseCount: null
+    databaseCount: null,
+    doiUrl: null
   },
   getters: {
     getTitle: state => state.title,
@@ -47,8 +47,8 @@ const store = new Store({
     getClientSecret: state => state.clientSecret,
     getSearchUsername: state => state.searchUsername,
     getSearchPassword: state => state.searchPassword,
-    getUploadPath: state => state.uploadPath,
-    getDatabaseCount: state => state.databaseCount
+    getDatabaseCount: state => state.databaseCount,
+    getDoiUrl: state => state.doiUrl
   },
   mutations: {
     SET_TITLE (state, title) {
@@ -99,11 +99,11 @@ const store = new Store({
     SET_SEARCH_PASSWORD (state, searchPassword) {
       state.searchPassword = searchPassword
     },
-    SET_UPLOAD_PATH (state, uploadPath) {
-      state.uploadPath = uploadPath
-    },
     SET_DATABASE_COUNT (state, databaseCount) {
       state.databaseCount = databaseCount
+    },
+    SET_DOI_URL (state, doiUrl) {
+      state.doiUrl = doiUrl
     }
   },
   actions: {

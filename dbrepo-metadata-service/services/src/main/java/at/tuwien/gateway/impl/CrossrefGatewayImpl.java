@@ -30,7 +30,7 @@ public class CrossrefGatewayImpl implements CrossrefGateway {
         final String url = "http://data.crossref.org/fundingdata/funder/" + id;
         final ResponseEntity<CrossrefDto> response;
         try {
-            log.trace("call CrossRef id {}", id);
+            log.trace("find crossref doi from url {}", url);
             response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(null, headers), CrossrefDto.class);
         } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable e) {
             log.error("Failed to retrieve CrossRef metadata from URL {}: {}", url, e.getMessage());

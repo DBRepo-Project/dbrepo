@@ -192,10 +192,16 @@ services:
     restart: "no"
     container_name: dbrepo-broker-service
     hostname: broker-service
-    image: dbrepo.azurecr.io/dbrepo/broker-service:latest
+    image: docker.io/bitnami/rabbitmq:3.10
     ports:
       - "5672:5672"
       - "15672:15672"
+    volumes:
+      - ./dbrepo-broker-service/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+      - ./dbrepo-broker-service/enabled_plugins:/etc/rabbitmq/enabled_plugins
+      - ./dbrepo-broker-service/cert.pem:/app/cert.pem
+      - ./dbrepo-broker-service/pubkey.pem:/app/pubkey.pem
+      - ./dbrepo-broker-service/definitions.json:/app/definitions.json
     healthcheck:
       test: rabbitmq-diagnostics -q is_running | grep 'is fully booted and running'
       interval: 10s

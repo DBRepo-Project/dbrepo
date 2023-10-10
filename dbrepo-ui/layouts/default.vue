@@ -343,7 +343,7 @@ export default {
       this.$store.commit('SET_CLIENT_SECRET', this.$config.clientSecret)
       this.$store.commit('SET_SEARCH_USERNAME', this.$config.searchUsername)
       this.$store.commit('SET_SEARCH_PASSWORD', this.$config.searchPassword)
-      this.$store.commit('SET_UPLOAD_PATH', this.$config.uploadPath)
+      this.$store.commit('SET_DOI_URL', this.$config.doiUrl)
       console.debug('runtime config', this.$config)
     }
   }

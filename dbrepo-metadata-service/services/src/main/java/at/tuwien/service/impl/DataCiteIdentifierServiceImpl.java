@@ -108,9 +108,9 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
             identifier.setRelatedIdentifiers(new LinkedList<>(identifier.getRelatedIdentifiers()));
         }
         /* end fix */
-        RestTemplate restTemplate = restTemplateBuilder.build();
+        final RestTemplate restTemplate = restTemplateBuilder.build();
 
-        HttpHeaders headers = new HttpHeaders();
+        final HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBasicAuth(dataCiteConfig.getUsername(), dataCiteConfig.getPassword());
         HttpEntity<DataCiteBody<DataCiteCreateDoi>> request = new HttpEntity<>(
@@ -124,9 +124,10 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
                         .build(),
                 headers
         );
-
+        final String url = dataCiteConfig.getUrl() + "/dois";
+        log.debug("request doi from url {}", url);
         try {
-            ResponseEntity<DataCiteBody<DataCiteDoi>> response = restTemplate.exchange("dois", HttpMethod.POST,
+            ResponseEntity<DataCiteBody<DataCiteDoi>> response = restTemplate.exchange(url, HttpMethod.POST,
                     request,
                     new ParameterizedTypeReference<>() {
                     }

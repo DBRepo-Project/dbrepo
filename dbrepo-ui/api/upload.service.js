@@ -1,5 +1,4 @@
 import Vue from 'vue'
-import store from '@/store'
 const tus = require('tus-js-client')
 
 class UploadService {
@@ -29,7 +28,7 @@ class UploadService {
             console.error('Failed to match file name', matches)
             reject(new Error('Failed to match file name'))
           }
-          upload.path = (store().state.uploadPath || '') + matches[0].replace('files/', '')
+          upload.path = matches[0].replace('files/', '')
           resolve(upload)
         }
       })

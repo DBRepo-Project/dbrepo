@@ -29,7 +29,7 @@ public class OrcidGatewayImpl implements OrcidGateway {
         headers.set("Accept", "application/json");
         final ResponseEntity<OrcidDto> response;
         try {
-            log.trace("call orcid path {}", url);
+            log.debug("find orcid from url {}", url);
             response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(null, headers), OrcidDto.class);
         } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable e) {
             log.error("Failed to retrieve ORCID metadata from URL {}: {}", url, e.getMessage());

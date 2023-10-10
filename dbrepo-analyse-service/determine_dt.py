@@ -12,16 +12,18 @@ https://github.com/okfn/messytables/
 import json
 import csv
 import logging
+import os
 
 import messytables, pandas as pd
 from messytables import CSVTableSet, type_guess, \
     headers_guess, headers_processor, offset_processor
 
 
-def determine_datatypes(path, enum=False, enum_tol=0.0001, separator=None) -> {}:
+def determine_datatypes(filename, enum=False, enum_tol=0.0001, separator=None) -> {}:
     # Use option enum=True for searching Postgres ENUM Types in CSV file. Remark
     # Enum is not SQL standard, hence, it might not be supported by all db-engines.
     # However, it can be used in Postgres and MySQL.
+    path = os.path.join(os.getenv('SHARED_FILESYSTEM', '/tmp'), filename)
     if separator is None:
         with open(path) as csvfile:
             dialect = csv.Sniffer().sniff(csvfile.readline())

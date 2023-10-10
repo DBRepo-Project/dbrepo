@@ -30,7 +30,7 @@ public class RorGatewayImpl implements RorGateway {
         final String url = "https://api.ror.org/organizations/" + id;
         final ResponseEntity<RorDto> response;
         try {
-            log.trace("call ror path {}", url);
+            log.trace("find ror from url {}", url);
             response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(null, headers), RorDto.class);
         } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable e) {
             log.error("Failed to retrieve ROR metadata from URL {}: {}", url, e.getMessage());

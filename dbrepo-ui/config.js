@@ -12,7 +12,5 @@ config.searchPassword = process.env.NODE_ENV !== 'development' ? process.env.SEA
 config.clientId = process.env.NODE_ENV !== 'development' ? process.env.DBREPO_CLIENT_ID : 'dbrepo-client'
 config.clientSecret = process.env.NODE_ENV !== 'development' ? process.env.DBREPO_CLIENT_SECRET : 'MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG'
 config.defaultPublisher = process.env.NODE_ENV !== 'development' ? process.env.DEFAULT_PID_PUBLISHER : ''
-config.doiUrl = process.env.NODE_ENV !== 'development' ? process.env.DOI_URL : ''
-config.uploadPath = process.env.NODE_ENV !== 'development' ? process.env.UPLOAD_PATH : '/tmp/'
-
+config.doiUrl = process.env.NODE_ENV !== 'development' ? process.env.DOI_URL : 'https://doi.org'
 module.exports = config

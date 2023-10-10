@@ -8,6 +8,7 @@ import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.TableCsvDeleteDto;
 import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.api.database.table.TableCsvUpdateDto;
+import at.tuwien.config.QueryConfig;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.View;
 import at.tuwien.entities.database.table.Table;
@@ -53,6 +54,7 @@ import java.util.stream.Collectors;
 @Service
 public class QueryServiceImpl extends HibernateConnector implements QueryService {
 
+    private final QueryConfig queryConfig;
     private final QueryMapper queryMapper;
     private final StoreService storeService;
     private final TableService tableService;
@@ -60,8 +62,9 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     private final TableColumnRepository tableColumnRepository;
 
     @Autowired
-    public QueryServiceImpl(QueryMapper queryMapper, TableService tableService, DatabaseService databaseService,
+    public QueryServiceImpl(QueryConfig queryConfig, QueryMapper queryMapper, TableService tableService, DatabaseService databaseService,
                             StoreService storeService, TableColumnRepository tableColumnRepository) {
+        this.queryConfig = queryConfig;
         this.queryMapper = queryMapper;
         this.tableService = tableService;
         this.storeService = storeService;
@@ -399,6 +402,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             dataSource.close();
             throw new TableMalformedException("Failed to create temporary table", e);
         }
+        data.setLocation(queryConfig.getSharedFilesystem() + File.separator + data.getLocation());
         try {
             final Connection connection = dataSource.getConnection();
             queryMapper.pathToRawInsertQuery(connection, table, data)

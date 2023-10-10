@@ -37,7 +37,7 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
     @Override
     public void createVirtualHost(CreateVirtualHostDto data) throws BrokerVirtualHostModificationException, BrokerRemoteException {
         final String url = "/api/vhost";
-        log.trace("POST {}{}", gatewayConfig.getBrokerEndpoint(), url);
+        log.debug("create virtual host in url {}{}", gatewayConfig.getBrokerEndpoint(), url);
         final ResponseEntity<Void> response;
         try {
             response = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(data), Void.class);
@@ -56,7 +56,7 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
     public void grantPermission(String username, ExchangeUpdatePermissionsDto data)
             throws BrokerVirtualHostGrantException, BrokerRemoteException {
         final String url = "/api/topic-permissions/" + rabbitConfig.getVirtualHost() + "/" + username;
-        log.trace("PUT {}{}", gatewayConfig.getBrokerEndpoint(), url);
+        log.debug("grant topic permission in url {}{}", gatewayConfig.getBrokerEndpoint(), url);
         final ResponseEntity<Void> response;
         try {
             response = restTemplate.exchange(url, HttpMethod.PUT, new HttpEntity<>(data), Void.class);
@@ -78,7 +78,7 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
                 .tags("")
                 .build();
         final String url = "/api/users/" + username;
-        log.trace("PUT {}{}", gatewayConfig.getBrokerEndpoint(), url);
+        log.debug("create user from url {}{}", gatewayConfig.getBrokerEndpoint(), url);
         final ResponseEntity<Void> response;
         try {
             response = restTemplate.exchange(url, HttpMethod.PUT, new HttpEntity<>(data), Void.class);
@@ -96,7 +96,7 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
     @Override
     public void deleteUser(String username) throws BrokerRemoteException, BrokerVirtualHostModificationException {
         final String url = "/api/users/" + username;
-        log.trace("DELETE {}{}", gatewayConfig.getBrokerEndpoint(), url);
+        log.debug("delete user from url {}{}", gatewayConfig.getBrokerEndpoint(), url);
         final ResponseEntity<Void> response;
         try {
             response = restTemplate.exchange(url, HttpMethod.DELETE, new HttpEntity<>(null), Void.class);
@@ -115,7 +115,7 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
     public void grantPermission(String username, GrantVirtualHostPermissionsDto data) throws BrokerRemoteException,
             BrokerVirtualHostGrantException {
         final String url = "/api/permissions/" + rabbitConfig.getVirtualHost() + "/" + username;
-        log.trace("PUT {}{}", gatewayConfig.getBrokerEndpoint(), url);
+        log.debug("grant virtual host permissions in url {}{}", gatewayConfig.getBrokerEndpoint(), url);
         final ResponseEntity<Void> response;
         try {
             response = restTemplate.exchange(url, HttpMethod.PUT, new HttpEntity<>(data), Void.class);
@@ -134,7 +134,7 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
     public void grantTopicPermission(String username, GrantExchangePermissionsDto data) throws BrokerRemoteException,
             BrokerVirtualHostGrantException {
         final String url = "/api/topic-permissions/" + rabbitConfig.getVirtualHost() + "/" + username;
-        log.trace("PUT {}{}", gatewayConfig.getBrokerEndpoint(), url);
+        log.debug("grant topic permissions in url {}{}", gatewayConfig.getBrokerEndpoint(), url);
         final ResponseEntity<Void> response;
         try {
             response = restTemplate.exchange(url, HttpMethod.PUT, new HttpEntity<>(data), Void.class);
@@ -153,7 +153,7 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
     public List<ConsumerDto> findAllConsumers() throws BrokerRemoteException {
         final String url = "/api/consumers/" + rabbitConfig.getVirtualHost();
         log.trace("gateway broker find all consumers, virtual host={}", rabbitConfig.getVirtualHost());
-        log.trace("GET {}{}", gatewayConfig.getBrokerEndpoint(), url);
+        log.debug("find consumers from url {}{}", gatewayConfig.getBrokerEndpoint(), url);
         final ResponseEntity<List<ConsumerDto>> response;
         try {
             response = restTemplate.exchange(URI.create(url), HttpMethod.GET, HttpEntity.EMPTY,
@@ -172,7 +172,7 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
         final HttpHeaders headers = new HttpHeaders();
         headers.set("Accept", "application/json");
         log.trace("gateway broker find queue, virtual host={}, queue={}", rabbitConfig.getVirtualHost(), name);
-        log.trace("GET {}{}", gatewayConfig.getBrokerEndpoint(), url);
+        log.debug("find queue from url {}{}", gatewayConfig.getBrokerEndpoint(), url);
         final ResponseEntity<QueueDto> response;
         try {
             response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(null, headers), QueueDto.class);
@@ -193,7 +193,7 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
         final HttpHeaders headers = new HttpHeaders();
         headers.set("Accept", "application/json");
         log.trace("gateway broker find exchange, virtual host={}, exchange={}", rabbitConfig.getVirtualHost(), name);
-        log.trace("GET {}{}", gatewayConfig.getBrokerEndpoint(), url);
+        log.debug("find exchange from url {}{}", gatewayConfig.getBrokerEndpoint(), url);
         final ResponseEntity<ExchangeDto> response;
         try {
             response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(null, headers), ExchangeDto.class);

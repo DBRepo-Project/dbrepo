@@ -120,6 +120,7 @@
                   <v-text-field
                     v-model="creator.affiliation_identifier"
                     label="Affiliation Identifier"
+                    name="affiliation-identifier"
                     :loading="creator.affiliation_loading"
                     hint="Use an affiliation identifier expressed as URL from ORCID*, ROR*, DOI*, ISNI, GND (schemes with * support automatic metadata retrieval)"
                     persistent-hint
@@ -132,6 +133,7 @@
                   <v-text-field
                     v-model="creator.affiliation"
                     label="Affiliation"
+                    name="affiliation"
                     clearable
                     hint="e.g. Brown University" />
                 </v-col>
@@ -737,8 +739,10 @@ export default {
       IdentifierService.retrieve(creator.affiliation_identifier)
         .then((metadata) => {
           creator.success = true
-          if (metadata.type === 'Organizational') {
+          if (creator.type === 'Organizational') {
             creator.creator_name = metadata.affiliations[0].organization_name
+          } else {
+            creator.affiliation = metadata.affiliations[0].organization_name
           }
           creator.affiliation_identifier_scheme = UserMapper.nameIdentifierToNameIdentifierScheme(creator.affiliation_identifier)
         })

@@ -82,6 +82,7 @@ fda:
   exchangeName: "${EXCHANGE_NAME}"
   routingKey: "${ROUTING_KEY}"
   connectionTimeout: ${CONNECTION_TIMEOUT}
+  sharedFilesystem: ${SHARED_FILESYSTEM}
 dbrepo:
   repository-name: "${REPOSITORY_NAME}"
   base-url: "${BASE_URL}"

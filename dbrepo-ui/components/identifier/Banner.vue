@@ -18,7 +18,7 @@ export default {
       return `${location.protocol}//${location.host}`
     },
     baseDoi () {
-      return this.$config.doiUrl
+      return this.$store.state.doiUrl
     },
     isDoi () {
       if (!this.identifier) {
