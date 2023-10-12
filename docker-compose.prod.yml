@@ -79,6 +79,8 @@ services:
     container_name: dbrepo-upload-service
     hostname: upload-service
     image: docker.io/tusproject/tusd:v1.12
+    ports:
+      - "1080:1080"
     command:
       - "--base-path=/api/upload/files/"
     volumes:
@@ -154,11 +156,16 @@ services:
       SEARCH_USERNAME: "${SEARCH_USERNAME:-admin}"
       SEARCH_PASSWORD: "${SEARCH_PASSWORD:-admin}"
       SHARED_FILESYSTEM: "${SHARED_FILESYSTEM:-/tmp}"
+      DELETE_AFTER_IMPORT: "${DELETE_AFTER_IMPORT:-true}"
       USER_NETWORK: "${USER_NETWORK:-userdb}"
       WEBSITE: "${WEBSITE:-http://localhost}"
       KEYCLOAK_HOST: "${KEYCLOAK_HOST:-http://authentication-service:8080}"
       KEYCLOAK_ADMIN: "${KEYCLOAK_ADMIN:-fda}"
       KEYCLOAK_ADMIN_PASSWORD: "${KEYCLOAK_ADMIN_PASSWORD:-fda}"
+      DATACITE_URL: "${DATACITE_URL:-https://api.test.datacite.org}"
+      DATACITE_PREFIX: "${DATACITE_PREFIX:-}"
+      DATACITE_USERNAME: "${DATACITE_USERNAME:-}"
+      DATACITE_PASSWORD: "${DATACITE_PASSWORD:-}"
     healthcheck:
       test: wget -qO- localhost:9099/actuator/health/readiness | grep -q "UP" || exit 1
       interval: 10s
@@ -183,8 +190,15 @@ services:
     image: dbrepo.azurecr.io/dbrepo/analyse-service:latest
     ports:
       - "5000:5000"
+    environment:
+      SHARED_FILESYSTEM: "${SHARED_FILESYSTEM:-/tmp}"
     volumes:
       - "${SHARED_FILESYSTEM:-/tmp}:/tmp"
+    healthcheck:
+      test: curl -sSL localhost:5000/health | grep 'UP' || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 12
     logging:
       driver: json-file
 
@@ -207,9 +221,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 12
-    depends_on:
-      dbrepo-authentication-service:
-        condition: service_healthy
     logging:
       driver: json-file
 
@@ -259,6 +270,7 @@ services:
       DBREPO_CLIENT_SECRET: "${DBREPO_CLIENT_SECRET:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}"
       UPLOAD_PATH: "${UPLOAD_PATH:-/tmp/}"
       FORCE_SSL: "${FORCE_SSL:-false}"
+      DOI_URL: "${DOI_URL:-https://doi.org}"
     depends_on:
       dbrepo-upload-service:
         condition: service_started
@@ -311,6 +323,8 @@ services:
     container_name: dbrepo-mirror-service
     hostname: mirror-service
     image: dbrepo.azurecr.io/dbrepo/mirror-service:latest
+    ports:
+      - "9050:9050"
     environment:
       METADATA_DB: ${METADATA_DB:-fda}
       METADATA_HOST: ${METADATA_HOST:-metadata-db}

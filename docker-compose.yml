@@ -80,6 +80,8 @@ services:
     container_name: dbrepo-upload-service
     hostname: upload-service
     image: docker.io/tusproject/tusd:v1.12
+    ports:
+      - "1080:1080"
     command:
       - "--base-path=/api/upload/files/"
     volumes:
@@ -157,6 +159,7 @@ services:
       SEARCH_USERNAME: "${SEARCH_USERNAME:-admin}"
       SEARCH_PASSWORD: "${SEARCH_PASSWORD:-admin}"
       SHARED_FILESYSTEM: "${SHARED_FILESYSTEM:-/tmp}"
+      DELETE_AFTER_IMPORT: "${DELETE_AFTER_IMPORT:-true}"
       USER_NETWORK: "${USER_NETWORK:-userdb}"
       WEBSITE: "${WEBSITE:-http://localhost}"
       KEYCLOAK_HOST: "${KEYCLOAK_HOST:-http://authentication-service:8080}"
@@ -327,6 +330,8 @@ services:
     hostname: mirror-service
     build: ./dbrepo-mirror-service
     image: dbrepo-mirror-service
+    ports:
+      - "9050:9050"
     environment:
       METADATA_DB: ${METADATA_DB:-fda}
       METADATA_HOST: ${METADATA_HOST:-metadata-db}

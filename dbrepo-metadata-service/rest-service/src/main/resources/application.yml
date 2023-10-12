@@ -83,6 +83,7 @@ fda:
   routingKey: "${ROUTING_KEY}"
   connectionTimeout: ${CONNECTION_TIMEOUT}
   sharedFilesystem: ${SHARED_FILESYSTEM}
+  deleteAfterImport: ${DELETE_AFTER_IMPORT}
 dbrepo:
   repository-name: "${REPOSITORY_NAME}"
   base-url: "${BASE_URL}"

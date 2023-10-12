@@ -59,6 +59,4 @@ WORKDIR /app
 
 COPY --from=build /app /app
 
-RUN ls -la
-
 ENTRYPOINT [ "yarn", "start" ]

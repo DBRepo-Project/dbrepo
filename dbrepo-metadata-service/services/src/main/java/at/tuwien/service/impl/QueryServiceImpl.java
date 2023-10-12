@@ -241,9 +241,15 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             final Connection connection = dataSource.getConnection();
             final PreparedStatement preparedStatement = queryMapper.tableToRawExportQuery(connection, table, timestamp, filename);
             preparedStatement.executeUpdate();
-            final File file = new File("/tmp/" + filename);
+            final String location = queryConfig.getSharedFilesystem() + File.separator + filename;
+            final File file = new File(location);
             resource = new InputStreamResource(FileUtils.openInputStream(file));
-            FileUtils.forceDelete(file);
+            if (queryConfig.getDeleteAfterImport()) {
+                log.debug("attempt to delete file: {}", location);
+                FileUtils.forceDelete(file);
+            } else {
+                log.trace("skipping deletion of file as per configuration");
+            }
         } catch (IOException | SQLException e) {
             log.error("Failed to execute query and/or export file: {}", e.getMessage());
             throw new FileStorageException("Failed to execute query and/or export file: " + e.getMessage(), e);
@@ -407,8 +413,13 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             final Connection connection = dataSource.getConnection();
             queryMapper.pathToRawInsertQuery(connection, table, data)
                     .executeUpdate();
-            final File file = new File(data.getLocation());
-            FileUtils.forceDelete(file);
+            if (queryConfig.getDeleteAfterImport()) {
+                log.debug("attempt to delete file: {}", data.getLocation());
+                final File file = new File(data.getLocation());
+                FileUtils.forceDelete(file);
+            } else {
+                log.trace("skipping deletion of file as per configuration");
+            }
             queryMapper.generateInsertFromTemporaryTableSQL(connection, table)
                     .executeUpdate();
         } catch (SQLException | IOException e) {

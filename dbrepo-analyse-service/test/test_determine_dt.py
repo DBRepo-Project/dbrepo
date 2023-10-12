@@ -6,14 +6,12 @@ Created on Mon Jan  9 08:46:04 2023
 @author: Martin Weise
 """
 import unittest
-import sys
+import os
 import json
 from _csv import Error
-
 from determine_dt import determine_datatypes
 
-sys.path.append("..")
-
+os.environ['SHARED_FILESYSTEM'] = '.'
 
 class DetermineDatatypesTest(unittest.TestCase):
     # @Test

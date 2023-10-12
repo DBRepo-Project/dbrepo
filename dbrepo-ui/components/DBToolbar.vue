@@ -7,7 +7,6 @@
           <template v-slot:activator="{ on, attrs }">
             <v-icon
               v-if="!database.is_public"
-              color="primary"
               class="mb-1"
               right
               v-bind="attrs"
@@ -17,6 +16,7 @@
             <v-icon
               v-if="database.is_public"
               class="mb-1"
+              color="success"
               right
               v-bind="attrs"
               v-on="on">

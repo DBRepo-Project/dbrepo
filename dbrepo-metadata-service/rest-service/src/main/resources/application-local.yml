@@ -70,6 +70,7 @@ fda:
   routingKey: "dbrepo.#"
   connectionTimeout: 60000
   sharedFilesystem: /tmp
+  deleteAfterImport: true
 dbrepo:
   repository-name: TU Wien Database Repository
   base-url: https://dbrepo1.ec.tuwien.at/api/oai

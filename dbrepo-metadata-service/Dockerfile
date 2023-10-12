@@ -59,6 +59,7 @@ ENV REPOSITORY_NAME="Example Repository"
 ENV SEARCH_USERNAME=admin
 ENV SEARCH_PASSWORD=admin
 ENV SHARED_FILESYSTEM=/tmp
+ENV DELETE_AFTER_IMPORT=true
 ENV USER_NETWORK=userdb
 ENV WEBSITE="http://localhost"
 ENV KEYCLOAK_HOST="http://authentication-service:8080"

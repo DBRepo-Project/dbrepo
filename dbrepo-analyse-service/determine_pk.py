@@ -48,7 +48,7 @@ def determine_pk(filename, seperator=','):
         p = get_sampling_percentage(path)
 
         csvdata = pd.read_csv(
-            filepath=path,
+            filepath_or_buffer=path,
             sep=seperator,
             header=0,
             skiprows=lambda i: i > 0 and random.random() > p)

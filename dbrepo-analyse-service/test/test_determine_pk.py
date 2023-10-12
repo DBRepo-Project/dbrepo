@@ -6,12 +6,11 @@ Created on Mon Jan  9 08:46:04 2023
 @author: Martin Weise
 """
 import unittest
-import sys
+import os
 import json
 from determine_pk import determine_pk
 
-sys.path.append("..")
-
+os.environ['SHARED_FILESYSTEM'] = '.'
 
 class DeterminePrimaryKeyTest(unittest.TestCase):
 

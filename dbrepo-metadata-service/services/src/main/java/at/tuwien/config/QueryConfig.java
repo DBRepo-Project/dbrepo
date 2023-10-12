@@ -17,4 +17,7 @@ public class QueryConfig {
     @Value("${fda.sharedFilesystem}")
     private String sharedFilesystem;
 
+    @Value("${fda.deleteAfterImport}")
+    private Boolean deleteAfterImport;
+
 }
