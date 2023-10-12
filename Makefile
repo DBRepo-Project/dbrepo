@@ -7,6 +7,8 @@ AZURE_REPO ?= dbrepo.azurecr.io
 all: build
 
 clean:
+	rm -rf ./dist || true
+	rm -f .env || true
 	docker container stop $(docker container ls -aq) || true
 	docker container rm $(docker container ls -aq) || true
 	docker volume rm $(docker volume ls -q) || true

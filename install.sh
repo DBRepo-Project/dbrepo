@@ -1,12 +1,6 @@
 #!/bin/bash
 
 # dependency
-if [ "$USER" != "root" ]; then
-  echo "This script needs sudo privileges!"
-  exit 1
-fi
-
-# dependency
 docker info > /dev/null
 if [ $? -ne 0 ]; then
   echo "Docker is not installed (or accessible in bash) on your system:"
@@ -35,8 +29,8 @@ docker compose pull
 MAX_MAP_COUNT=$(cat /proc/sys/vm/max_map_count)
 if [ "$MAX_MAP_COUNT" -lt 262144 ]; then
   echo "[🚀] Preparing environment ..."
-  echo "vm.max_map_count=262144" >> /etc/sysctl.conf
-  sysctl -p
+  sudo echo "vm.max_map_count=262144" >> /etc/sysctl.conf
+  sudo sysctl -p
 fi
 
 echo "[✨] Starting DBRepo ..."
