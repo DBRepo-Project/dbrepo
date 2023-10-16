@@ -1,7 +1,9 @@
 package at.tuwien.listener;
 
 import at.tuwien.BaseUnitTest;
+import at.tuwien.annotations.MockAmqp;
 import at.tuwien.annotations.MockOpensearch;
+import at.tuwien.config.MariaDbContainerConfig;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,6 +14,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.testcontainers.containers.MariaDBContainer;
+import org.testcontainers.containers.RabbitMQContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -22,11 +28,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Log4j2
 @SpringBootTest
 @ExtendWith({SpringExtension.class, OutputCaptureExtension.class})
+@Testcontainers
 @MockOpensearch
 public class DefaultListenerUnitTest extends BaseUnitTest {
 
     @Autowired
     private DefaultListener defaultListener;
+
+    @Container
+    private static RabbitMQContainer rabbitContainer = new RabbitMQContainer("rabbitmq:3.10");
 
     @Test
     public void onMessage_routingKeyDatabaseAndTableMissing_fails(CapturedOutput output) {
