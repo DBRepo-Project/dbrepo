@@ -341,7 +341,7 @@ services:
       SEARCH_USERNAME: ${SEARCH_USERNAME:-admin}
       SEARCH_PASSWORD: ${SEARCH_PASSWORD:-admin}
       LOG_LEVEL: ${LOG_LEVEL:-debug}
-      SYNC_RATE: ${SYNC_RATE:-60000}
+      SYNC_RATE: ${SYNC_RATE:-60}
     healthcheck:
       test: wget -qO- localhost:9050/actuator/health/readiness | grep -q "UP" || exit 1
       interval: 10s

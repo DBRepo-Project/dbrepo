@@ -54,3 +54,5 @@ logging:
     root: warn
     at.tuwien.: "${LOG_LEVEL}"
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
+fda:
+  syncRate: "${SYNC_RATE}"

@@ -15,6 +15,7 @@ import at.tuwien.service.SyncService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -81,6 +82,7 @@ public class SyncServiceImpl implements SyncService {
     }
 
     @Override
+    @Transactional
     public void start() {
         /* concepts */
         final List<ConceptDto> concepts = conceptRepository.findAll()
@@ -138,6 +140,7 @@ public class SyncServiceImpl implements SyncService {
                 .toList();
         viewIdxRepository.saveAll(views);
         log.debug("saved {} views to open search database", views.size());
+        log.info("Synchronized 8 indices");
     }
 
 }

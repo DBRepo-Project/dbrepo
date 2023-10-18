@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.util.concurrent.TimeUnit;
+
 @Component
 public class SyncScheduler {
 
@@ -15,7 +17,7 @@ public class SyncScheduler {
         this.syncService = syncService;
     }
 
-    @Scheduled(fixedRateString = "${fda.syncRate}")
+    @Scheduled(fixedRateString = "${fda.syncRate}", timeUnit = TimeUnit.SECONDS)
     public void schedule() {
         syncService.start();
     }
