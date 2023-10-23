@@ -22,12 +22,6 @@ stages:
   - scan-docker
   - release-docker
 
-build-debug:
-  image: docker:24-dind
-  stage: build-backend
-  script:
-    - "docker version"
-
 build-metadata-service:
   image: maven:3-openjdk-17
   stage: build-backend
