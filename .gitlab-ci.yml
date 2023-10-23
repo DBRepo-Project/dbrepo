@@ -127,6 +127,7 @@ test-analyse-service:
   needs:
     - build-analyse-service
   script:
+    - "pip install coverage"
     - "cd ./dbrepo-analyse-service/ && coverage run -m pytest test/test_determine_dt.py test/test_determine_pk.py --junitxml=report.xml && coverage html && coverage report > ./coverage.txt"
     - "cat ./dbrepo-analyse-service/coverage.txt | grep -o 'TOTAL[^%]*%'"
   artifacts:
