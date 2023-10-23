@@ -1,10 +1,11 @@
 variables:
   HOSTALIASES: ./hosts
-  DOCKER_TLS_CERTDIR: "/certs/client"
   TAG: "${TAG:-latest}"
   TRIVY_NO_PROGRESS: "true"
   TRIVY_CACHE_DIR: ".trivycache/"
+  DOCKER_TLS_CERTDIR: "/certs"
   DOCKER_TLS_VERIFY: 1
+  DOCKER_CERT_PATH: "$DOCKER_TLS_CERTDIR/client"
   DOCKER_HOST: "tcp://docker:2376"
 
 cache:
