@@ -4,6 +4,7 @@ variables:
   TAG: "${TAG:-latest}"
   TRIVY_NO_PROGRESS: "true"
   TRIVY_CACHE_DIR: ".trivycache/"
+  DOCKER_TLS_VERIFY: 1
   DOCKER_HOST: "tcp://docker:2376"
 
 cache:
