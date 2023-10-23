@@ -3,15 +3,7 @@ variables:
   TAG: "${TAG:-latest}"
   TRIVY_NO_PROGRESS: "true"
   TRIVY_CACHE_DIR: ".trivycache/"
-  DOCKER_HOST: "tcp://docker:2375"
-  DOCKER_CERT_PATH: ""
-  DOCKER_DRIVER: overlay2
-  DOCKER_TLS_CERTDIR: ""
-  DOCKER_TLS_VERIFY: 0
-
-services:
-   - name: docker:dind
-     alias: docker
+  DOCKER_HOST: "unix:////var/run/dind/docker.sock"
 
 cache:
   paths:
