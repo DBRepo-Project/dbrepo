@@ -1,5 +1,6 @@
 variables:
   HOSTALIASES: ./hosts
+  DOCKER_TLS_CERTDIR: ""
   TAG: "${TAG:-latest}"
   TRIVY_NO_PROGRESS: "true"
   TRIVY_CACHE_DIR: ".trivycache/"
