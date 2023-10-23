@@ -43,7 +43,7 @@ build-frontend:
 build-clients:
 	bash ./.gitlab/swagger/generate.sh
 
-tag: tag-analyse-service tag-authentication-service tag-metadata-db tag-ui tag-broker-service tag-metadata-service tag-data-service tag-mirror-service tag-log-service tag-search-db
+tag: tag-analyse-service tag-authentication-service tag-metadata-db tag-ui tag-broker-service tag-metadata-service tag-data-service tag-mirror-service tag-log-service tag-search-db tag-search-db-init
 
 tag-analyse-service:
 	docker tag dbrepo-analyse-service:latest "dbrepo/analyse-service:${TAG}"
@@ -81,11 +81,15 @@ tag-search-db:
 	docker tag dbrepo-search-db:latest "dbrepo/search-db:${TAG}"
 	docker tag dbrepo-search-db:latest "${AZURE_REPO}/dbrepo/search-db:${TAG}"
 
+tag-search-db-init:
+	docker tag dbrepo-search-db-init:latest "dbrepo/search-db-init:${TAG}"
+	docker tag dbrepo-search-db-init:latest "${AZURE_REPO}/dbrepo/search-db-init:${TAG}"
+
 tag-log-service:
 	docker tag dbrepo-log-service:latest "dbrepo/log-service:${TAG}"
 	docker tag dbrepo-log-service:latest "${AZURE_REPO}/dbrepo/log-service:${TAG}"
 
-release: build-docker tag release-analyse-service release-authentication-service release-metadata-db release-ui release-broker-service release-metadata-service release-data-service release-log-service release-search-db release-mirror-service
+release: build-docker tag release-analyse-service release-authentication-service release-metadata-db release-ui release-broker-service release-metadata-service release-data-service release-log-service release-search-db release-mirror-service release-search-db-init
 
 release-analyse-service: tag-analyse-service
 	docker push "dbrepo/analyse-service:${TAG}"
@@ -118,6 +122,10 @@ release-broker-service: tag-broker-service
 release-search-db: tag-search-db
 	docker push "dbrepo/search-db:${TAG}"
 	docker push "${AZURE_REPO}/dbrepo/search-db:${TAG}"
+
+release-search-db-init: tag-search-db-init
+	docker push "dbrepo/search-db-init:${TAG}"
+	docker push "${AZURE_REPO}/dbrepo/search-db-init:${TAG}"
 
 release-metadata-service: tag-metadata-service
 	docker push "dbrepo/metadata-service:${TAG}"

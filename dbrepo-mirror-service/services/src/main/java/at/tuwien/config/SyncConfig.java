@@ -21,12 +21,12 @@ public class SyncConfig {
     @Autowired
     public SyncConfig(SyncService syncService) {
         this.syncService = syncService;
-        log.debug("sync rate is {} second(s)", syncRate);
     }
 
     @EventListener(ApplicationStartedEvent.class)
     @Transactional
     public void init() {
+        log.debug("sync rate is {} second(s)", syncRate);
         syncService.start();
     }
 
