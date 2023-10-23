@@ -194,7 +194,7 @@ scan-search-db:
 
 scan-data-db:
 	docker pull "bitnami/mariadb:10.5"
-	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-db-report.json "bitnami/mariadb:10.5"
+	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-data-db-report.json "bitnami/mariadb:10.5"
 	trivy image --insecure --exit-code 0 "bitnami/mariadb:10.5"
 	trivy image --insecure --exit-code 1 --severity CRITICAL "bitnami/mariadb:10.5"
 
