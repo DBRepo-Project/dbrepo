@@ -28,6 +28,7 @@ build-debug:
   image: docker:24-dind
   stage: build-backend
   script:
+    - "printenv"
     - "docker version"
 
 build-metadata-service:
