@@ -5,6 +5,9 @@ variables:
   TRIVY_NO_PROGRESS: "true"
   TRIVY_CACHE_DIR: ".trivycache/"
 
+services:
+  - docker:dind
+
 cache:
   paths:
     - /root/.m2/repository/
@@ -138,9 +141,7 @@ test-analyse-service:
   script:
     - "pip install -r ./dbrepo-analyse-service/requirements.txt"
     - "cd ./dbrepo-analyse-service/ && coverage run -m pytest test/test_determine_dt.py test/test_determine_pk.py --junitxml=report.xml && coverage html && coverage report > ./coverage.txt"
-    - "ls -la .."
-    - "ls -la ."
-    - "cat ./dbrepo-analyse-service/coverage.txt | grep -o 'TOTAL[^%]*%'"
+    - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
   artifacts:
     when: always
     paths:
