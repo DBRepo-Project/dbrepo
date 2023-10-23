@@ -28,8 +28,7 @@ build-debug:
   image: docker:24-dind
   stage: build-backend
   script:
-    - "printenv"
-    - "docker version"
+    - "docker --tls --tlscacert=/certs/client/ca.pem -H docker:2376 version"
 
 build-metadata-service:
   image: maven:3-openjdk-17
