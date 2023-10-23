@@ -4,9 +4,7 @@ variables:
   TAG: "${TAG:-latest}"
   TRIVY_NO_PROGRESS: "true"
   TRIVY_CACHE_DIR: ".trivycache/"
-
-services:
-  - docker:dind
+  DOCKER_HOST: "tcp://docker:2376"
 
 cache:
   paths:
@@ -70,11 +68,11 @@ build-docker:
     - build-analyse-service
   script:
     - "cp .env.unix.example .env"
-    - "docker -H unix:///var/run/dind/docker.sock build -t dbrepo-metadata-service:build --target build dbrepo-metadata-service"
-    - "docker -H unix:///var/run/dind/docker.sock build -t dbrepo-data-service:build --target build dbrepo-data-service"
-    - "docker -H unix:///var/run/dind/docker.sock build -t dbrepo-mirror-service:build --target build dbrepo-mirror-service"
-    - "docker -H unix:///var/run/dind/docker.sock build ./dbrepo-log-service -t dbrepo-log-service"
-    - "docker -H unix:///var/run/dind/docker.sock compose build --parallel"
+    - "docker build -t dbrepo-metadata-service:build --target build dbrepo-metadata-service"
+    - "docker build -t dbrepo-data-service:build --target build dbrepo-data-service"
+    - "docker build -t dbrepo-mirror-service:build --target build dbrepo-mirror-service"
+    - "docker build ./dbrepo-log-service -t dbrepo-log-service"
+    - "docker compose build --parallel"
 
 test-metadata-service:
   image: maven:3-openjdk-17
@@ -420,8 +418,8 @@ release-latest:
       - dev
   script:
     - cp .env.unix.example .env
-    - docker -H unix:///var/run/dind/docker.sock login -p "${DOCKER_PASSWORD}" -u "${DOCKER_USERNAME}"
-    - docker -H unix:///var/run/dind/docker.sock login "${AZURE_REPO}" -p "${AZURE_PASSWORD}" -u "${AZURE_USERNAME}"
+    - docker login -p "${DOCKER_PASSWORD}" -u "${DOCKER_USERNAME}"
+    - docker login "${AZURE_REPO}" -p "${AZURE_PASSWORD}" -u "${AZURE_USERNAME}"
     - TAG=latest make release
 
 release-version:
@@ -441,6 +439,6 @@ release-version:
       - master
   script:
     - cp .env.unix.example .env
-    - docker -H unix:///var/run/dind/docker.sock login -p "${DOCKER_PASSWORD}" -u "${DOCKER_USERNAME}"
-    - docker -H unix:///var/run/dind/docker.sock login "${AZURE_REPO}" -p "${AZURE_PASSWORD}" -u "${AZURE_USERNAME}"
+    - docker login -p "${DOCKER_PASSWORD}" -u "${DOCKER_USERNAME}"
+    - docker login "${AZURE_REPO}" -p "${AZURE_PASSWORD}" -u "${AZURE_USERNAME}"
     - TAG=1.3 make release
