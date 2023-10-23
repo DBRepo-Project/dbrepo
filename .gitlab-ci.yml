@@ -23,7 +23,7 @@ stages:
   - release-docker
 
 build-metadata-service:
-  image: openjdk:17-alpine
+  image: maven:3-openjdk-17
   stage: build-backend
   script:
     - "mvn -f ./dbrepo-metadata-service/pom.xml clean install -DskipTests"
@@ -35,7 +35,7 @@ build-analyse-service:
     - "pip install -r ./dbrepo-analyse-service/requirements.txt"
 
 build-data-service:
-  image: openjdk:17-alpine
+  image: maven:3-openjdk-17
   stage: build-backend
   needs:
     - build-metadata-service
@@ -43,7 +43,7 @@ build-data-service:
     - "mvn -f ./dbrepo-data-service/pom.xml clean package -DskipTests"
 
 build-mirror-service:
-  image: openjdk:17-alpine
+  image: maven:3-openjdk-17
   stage: build-backend
   needs:
     - build-metadata-service
