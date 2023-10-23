@@ -4,6 +4,7 @@ variables:
   TRIVY_NO_PROGRESS: "true"
   TRIVY_CACHE_DIR: ".trivycache/"
   DOCKER_HOST: "unix:////var/run/dind/docker.sock"
+  TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE: "unix:////var/run/dind/docker.sock"
 
 cache:
   paths:
