@@ -3,10 +3,15 @@ variables:
   TAG: "${TAG:-latest}"
   TRIVY_NO_PROGRESS: "true"
   TRIVY_CACHE_DIR: ".trivycache/"
-  DOCKER_TLS_CERTDIR: "/certs"
-  DOCKER_TLS_VERIFY: 1
   DOCKER_CERT_PATH: "$DOCKER_TLS_CERTDIR/client"
-  DOCKER_HOST: "tcp://docker:2376"
+  DOCKER_HOST: "tcp://docker:2375"
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: ""
+  DOCKER_TLS_VERIFY: 0
+
+services:
+   - name: docker:dind
+     alias: docker
 
 cache:
   paths:
@@ -29,9 +34,6 @@ build-debug:
   image: docker:24-dind
   stage: build-backend
   script:
-    - "ls -la /certs"
-    - "ls -la /certs/client"
-    - "ls -la /etc/gitlab-runner/ssl"
     - "docker version"
 
 build-metadata-service:
