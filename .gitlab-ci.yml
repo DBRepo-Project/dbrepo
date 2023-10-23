@@ -7,6 +7,9 @@ variables:
   DOCKER_TLS_VERIFY: 0
   DOCKER_HOST: "tcp://docker:2375"
 
+before_script:
+  - "docker version"
+
 cache:
   paths:
     - /root/.m2/repository/
