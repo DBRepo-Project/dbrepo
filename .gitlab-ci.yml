@@ -31,6 +31,7 @@ build-debug:
   script:
     - "ls -la /certs"
     - "ls -la /certs/client"
+    - "ls -la /etc/gitlab-runner/ssl"
     - "docker version"
 
 build-metadata-service:
