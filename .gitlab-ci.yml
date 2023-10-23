@@ -7,9 +7,6 @@ variables:
   DOCKER_TLS_VERIFY: 0
   DOCKER_HOST: "tcp://docker:2375"
 
-before_script:
-  - "docker version"
-
 cache:
   paths:
     - /root/.m2/repository/
@@ -26,6 +23,12 @@ stages:
   - test-deployment
   - scan-docker
   - release-docker
+
+build-debug:
+  image: docker:24-dind
+  stage: build-backend
+  script:
+    - "docker version"
 
 build-metadata-service:
   image: maven:3-openjdk-17
