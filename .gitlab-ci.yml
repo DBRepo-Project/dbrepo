@@ -6,6 +6,9 @@ variables:
   DOCKER_HOST: "unix:////var/run/dind/docker.sock"
   TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE: "/var/run/dind/docker.sock"
 
+services:
+  - name: docker:dind
+
 cache:
   paths:
     - /root/.m2/repository/
