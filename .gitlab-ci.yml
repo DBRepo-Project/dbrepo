@@ -4,9 +4,6 @@ variables:
   TRIVY_NO_PROGRESS: "true"
   TRIVY_CACHE_DIR: ".trivycache/"
 
-services:
-  - name: docker:dind
-
 cache:
   paths:
     - /root/.m2/repository/
