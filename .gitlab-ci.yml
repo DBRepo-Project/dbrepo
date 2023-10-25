@@ -3,7 +3,6 @@ variables:
   TAG: "${TAG:-latest}"
   TRIVY_NO_PROGRESS: "true"
   TRIVY_CACHE_DIR: ".trivycache/"
-  TESTCONTAINERS_RYUK_DISABLED: "true"
 
 cache:
   paths:
