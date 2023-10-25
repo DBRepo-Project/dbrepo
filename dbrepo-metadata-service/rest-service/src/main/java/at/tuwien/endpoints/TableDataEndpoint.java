@@ -188,7 +188,7 @@ public class TableDataEndpoint {
         }
         /* find */
         final Long count = queryService.tableCount(databaseId, tableId, timestamp, principal);
-        log.debug("table data count is {} tuples", count);
+        log.debug("find table data count resulted in {} tuple(s)", count);
         return ResponseEntity.ok()
                 .body(count);
     }

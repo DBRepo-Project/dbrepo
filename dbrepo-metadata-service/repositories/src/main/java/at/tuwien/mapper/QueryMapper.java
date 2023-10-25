@@ -112,7 +112,7 @@ public interface QueryMapper {
                     put(c.getAlias() != null ? c.getAlias() : c.getInternalName(), idx[0]++);
                 }})
                 .toList();
-        log.debug("created ordered header list: {}", headers);
+        log.trace("created ordered header list: {}", headers);
         return QueryResultDto.builder()
                 .result(resultList)
                 .headers(headers)
