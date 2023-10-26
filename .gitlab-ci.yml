@@ -24,9 +24,6 @@ stages:
 build-metadata-service:
   image: maven:3-openjdk-17
   stage: build-backend
-  services:
-    - name: docker.io/docker:stable-dind
-      alias: docker
   script:
     - "mvn -f ./dbrepo-metadata-service/pom.xml clean install -DskipTests"
 
@@ -78,6 +75,9 @@ test-metadata-service:
   stage: test-backend
   needs:
     - build-metadata-service
+  services:
+    - name: docker.io/docker:stable-dind
+      alias: docker
   script:
     - "printenv | grep 'DOCKER_HOST'"
     - "mvn -f ./dbrepo-metadata-service/pom.xml clean install -DskipTests"
