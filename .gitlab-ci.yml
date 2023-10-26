@@ -79,6 +79,7 @@ test-metadata-service:
   needs:
     - build-metadata-service
   script:
+    - "printenv | grep 'DOCKER_HOST'"
     - "mvn -f ./dbrepo-metadata-service/pom.xml clean install -DskipTests"
     - "mvn -f ./dbrepo-metadata-service/pom.xml clean test verify"
     - "cat ./dbrepo-metadata-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
