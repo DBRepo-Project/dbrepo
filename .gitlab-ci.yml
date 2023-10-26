@@ -12,7 +12,7 @@ cache:
 image: "docker/compose:latest"
 
 stages:
-#  - build-backend
+  - build-backend
 #  - build-frontend
   - test-backend
 #  - test-frontend
@@ -21,12 +21,12 @@ stages:
 #  - scan-docker
 #  - release-docker
 
-#build-metadata-service:
-#  image: maven:3-openjdk-17
-#  stage: build-backend
-#  script:
-#    - "mvn -f ./dbrepo-metadata-service/pom.xml clean install -DskipTests"
-#
+build-metadata-service:
+  image: maven:3-openjdk-17
+  stage: build-backend
+  script:
+    - "mvn -f ./dbrepo-metadata-service/pom.xml clean install -DskipTests"
+
 #build-analyse-service:
 #  image: python:3.9-slim
 #  stage: build-backend
@@ -73,13 +73,12 @@ stages:
 test-metadata-service:
   image: maven:3-openjdk-17
   stage: test-backend
-#  needs:
-#    - build-metadata-service
+  needs:
+    - build-metadata-service
   script:
-    - 'printenv | grep "DOCKER"'
-#    - "mvn -f ./dbrepo-metadata-service/pom.xml clean install -DskipTests"
-#    - "mvn -f ./dbrepo-metadata-service/pom.xml clean test verify"
-#    - "cat ./dbrepo-metadata-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
+    - "mvn -f ./dbrepo-metadata-service/pom.xml clean install -DskipTests"
+    - "mvn -f ./dbrepo-metadata-service/pom.xml clean test verify"
+    - "cat ./dbrepo-metadata-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
   artifacts:
     when: always
     paths:
