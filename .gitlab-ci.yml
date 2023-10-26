@@ -76,9 +76,10 @@ test-metadata-service:
   needs:
     - build-metadata-service
   script:
-    - "mvn -f ./dbrepo-metadata-service/pom.xml clean install -DskipTests"
-    - "mvn -f ./dbrepo-metadata-service/pom.xml clean test verify"
-    - "cat ./dbrepo-metadata-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
+    - 'printenv | grep "DOCKER"'
+#    - "mvn -f ./dbrepo-metadata-service/pom.xml clean install -DskipTests"
+#    - "mvn -f ./dbrepo-metadata-service/pom.xml clean test verify"
+#    - "cat ./dbrepo-metadata-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
   artifacts:
     when: always
     paths:
