@@ -94,15 +94,16 @@ build-metadata-service:
 #  coverage: '/Total.*?([0-9]{1,3})%/'
 
 test-metadata-service:
-  image: maven:3-openjdk-17
+  image: alpine:3.18
   stage: test-backend
   needs:
     - build-metadata-service
   services:
-    - name: docker.io/eclipse/debian_jdk8
+    - name: docker.io/docker:stable-dind
       alias: docker
   script:
-    - "printenv"
+    - "printenv | grep 'DOCKER_HOST'"
+    - "apk add nmap"
     - "nmap -Pn -p 2375,2376 docker"
     - "nmap -Pn -p 2375,2376 localhost"
     - "nmap -Pn -p 2375,2376 127.0.0.1"
