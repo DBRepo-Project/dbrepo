@@ -99,11 +99,10 @@ test-metadata-service:
   needs:
     - build-metadata-service
   services:
-    - name: docker.io/debian
+    - name: docker.io/eclipse/debian_jdk8
       alias: docker
   script:
     - "printenv"
-    - "apt-get install -y nmap"
     - "nmap -Pn -p 2375,2376 docker"
     - "nmap -Pn -p 2375,2376 localhost"
     - "nmap -Pn -p 2375,2376 127.0.0.1"
