@@ -76,8 +76,6 @@ test-metadata-service:
   stage: test-backend
   needs:
     - build-metadata-service
-  services:
-    - name: docker.io/docker:stable-dind
   script:
     - "printenv | grep 'DOCKER_HOST'"
     - "mvn -f ./dbrepo-metadata-service/pom.xml clean install -DskipTests"
