@@ -77,7 +77,6 @@ test-metadata-service:
     - build-metadata-service
   script:
     - "mvn -f ./dbrepo-metadata-service/pom.xml clean install -DskipTests"
-    - "docker info"
     - "mvn -f ./dbrepo-metadata-service/pom.xml clean test verify"
     - "cat ./dbrepo-metadata-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
   artifacts:
@@ -97,7 +96,6 @@ test-data-service:
     - build-data-service
   script:
     - "mvn -f ./dbrepo-metadata-service/pom.xml clean install -DskipTests"
-    - "docker info"
     - "mvn -f ./dbrepo-data-service/pom.xml clean test verify"
     - "cat ./dbrepo-data-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
   artifacts:
@@ -117,7 +115,6 @@ test-mirror-service:
     - build-mirror-service
   script:
     - "mvn -f ./dbrepo-metadata-service/pom.xml clean install -DskipTests"
-    - "docker info"
     - "mvn -f ./dbrepo-mirror-service/pom.xml clean test verify"
     - "cat ./dbrepo-mirror-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
   artifacts:
