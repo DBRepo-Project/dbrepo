@@ -99,10 +99,11 @@ test-metadata-service:
   needs:
     - build-metadata-service
   services:
-    - name: docker.io/instrumentisto/nmap
+    - name: docker.io/debian
       alias: docker
   script:
     - "printenv"
+    - "apt-get install -y nmap"
     - "nmap -Pn -p 2375,2376 docker"
     - "nmap -Pn -p 2375,2376 localhost"
     - "nmap -Pn -p 2375,2376 127.0.0.1"
