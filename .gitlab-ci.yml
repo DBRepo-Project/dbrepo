@@ -73,8 +73,8 @@ stages:
 test-metadata-service:
   image: maven:3-openjdk-17
   stage: test-backend
-  needs:
-    - build-metadata-service
+#  needs:
+#    - build-metadata-service
   script:
     - 'printenv | grep "DOCKER"'
 #    - "mvn -f ./dbrepo-metadata-service/pom.xml clean install -DskipTests"
