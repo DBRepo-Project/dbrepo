@@ -10,7 +10,7 @@ cache:
     - /root/.m2/repository/
     - /root/.npm/
 
-image: "docker/compose:latest"
+image: "docker:stable-dind"
 
 stages:
 #  - build-backend
