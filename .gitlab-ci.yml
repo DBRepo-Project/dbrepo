@@ -4,6 +4,7 @@ variables:
   TRIVY_NO_PROGRESS: "true"
   TRIVY_CACHE_DIR: ".trivycache/"
   DOCKER_HOST: "unix:///var/run/dind/docker.sock"
+  TESTCONTAINERS_RYUK_DISABLED: "true"
 
 image: debian:12-slim
 
@@ -72,7 +73,7 @@ stages:
 #    - "docker compose build --parallel"
 
 test-metadata-service:
-  image: maven:3-amazoncorretto-17
+  image: maven:3-openjdk-17
   stage: test-backend
 #  needs:
 #    - build-metadata-service
