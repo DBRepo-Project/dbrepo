@@ -90,7 +90,7 @@ test('formatTimestamp_succeeds', (t) => {
 
 test('formatTimestampUTCLabel_succeeds', (t) => {
   /* test */
-  const response = formatTimestampUTCLabel('2023-02-15 10:32:21')
+  const response = formatTimestampUTCLabel('2023-02-15 09:32:21')
   t.is(response, '2023-02-15 09:32:21 (UTC)')
 })
 
@@ -108,6 +108,6 @@ test('formatTimestampUTC_fails', (t) => {
 
 test('formatTimestampUTC_succeeds', (t) => {
   /* test */
-  const response = formatTimestampUTC('2023-02-15 10:32:21')
+  const response = formatTimestampUTC('2023-02-15 09:32:21')
   t.is(response, '2023-02-15 09:32:21')
 })
