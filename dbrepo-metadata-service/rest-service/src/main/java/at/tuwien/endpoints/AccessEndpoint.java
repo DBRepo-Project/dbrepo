@@ -148,7 +148,7 @@ public class AccessEndpoint {
     public ResponseEntity<DatabaseAccessDto> find(@NotBlank @PathVariable("id") Long databaseId,
                                                   @NotNull Principal principal) throws NotAllowedException,
             AccessDeniedException {
-        log.debug("endpoint check access to database, databaseId={}, {}", databaseId, principal, PrincipalUtil.formatForDebug(principal));
+        log.debug("endpoint check access to database, databaseId={}, {}", databaseId, PrincipalUtil.formatForDebug(principal));
         final DatabaseAccess access = accessService.find(databaseId, UserUtil.getId(principal));
         final DatabaseAccessDto dto = databaseMapper.databaseAccessToDatabaseAccessDto(access);
         log.trace("check access resulted in dto {}", dto);
