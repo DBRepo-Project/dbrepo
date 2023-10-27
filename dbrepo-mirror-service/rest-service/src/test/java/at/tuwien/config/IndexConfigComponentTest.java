@@ -30,7 +30,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 @Log4j2
-@Testcontainers
+@Testcontainers(disabledWithoutDocker = true)
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 public class IndexConfigComponentTest extends BaseUnitTest {
