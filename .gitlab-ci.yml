@@ -14,7 +14,6 @@ cache:
 stages:
   - build
   - test
-  - docker
 #  - test-deployment
 #  - scan-docker
 #  - release-docker
@@ -59,7 +58,7 @@ build-frontend:
 
 build-docker:
   image: docker:24-dind
-  stage: docker
+  stage: build
   script:
     - "cp .env.unix.example .env"
     - "docker build -t dbrepo-metadata-service:build --target build dbrepo-metadata-service"
