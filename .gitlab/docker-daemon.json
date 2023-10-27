@@ -1,7 +1,0 @@
-{
-  "storage-driver": "overlay2",
-  "hosts": [
-    "tcp://docker:2375",
-    "tcp://docker:2376"
-  ]
-}
