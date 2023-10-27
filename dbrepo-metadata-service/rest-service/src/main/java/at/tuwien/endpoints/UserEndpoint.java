@@ -10,6 +10,7 @@ import at.tuwien.service.AuthenticationService;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.MessageQueueService;
 import at.tuwien.service.UserService;
+import at.tuwien.utils.PrincipalUtil;
 import at.tuwien.utils.UserUtil;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
@@ -167,7 +168,7 @@ public class UserEndpoint {
     public ResponseEntity<UserDto> find(@NotNull @PathVariable("id") UUID id,
                                         @NotNull Principal principal) throws UserNotFoundException, NotAllowedException,
             KeycloakRemoteException, AccessDeniedException {
-        log.debug("endpoint find a user, id={}, principal={}", id, principal);
+        log.debug("endpoint find a user, id={}, {}", id, PrincipalUtil.formatForDebug(principal));
         /* check */
         final User user = userService.find(id);
         final UserDto dto = userMapper.userToUserDto(user);
@@ -211,7 +212,7 @@ public class UserEndpoint {
                                           @NotNull Principal principal) throws UserNotFoundException,
             ForeignUserException, UserAttributeNotFoundException, KeycloakRemoteException, AccessDeniedException,
             QueryMalformedException, DatabaseMalformedException {
-        log.debug("endpoint modify a user, id={}, data={}, principal={}", id, data, principal);
+        log.debug("endpoint modify a user, id={}, data={}, {}", id, data, PrincipalUtil.formatForDebug(principal));
         /* check */
         if (!id.equals(UserUtil.getId(principal))) {
             log.error("Failed to modify user: attempting to modify other user");
@@ -252,7 +253,7 @@ public class UserEndpoint {
                                          @NotNull @Valid @RequestBody UserThemeSetDto data,
                                          @NotNull Principal principal) throws UserNotFoundException,
             ForeignUserException {
-        log.debug("endpoint modify a user theme, id={}, data={}, principal={}", id, data, principal);
+        log.debug("endpoint modify a user theme, id={}, data={}, {}", id, data, PrincipalUtil.formatForDebug(principal));
         /* check */
         if (!id.equals(UserUtil.getId(principal))) {
             log.error("Failed to modify user: attempting to modify other user");
@@ -293,7 +294,7 @@ public class UserEndpoint {
                                       @NotNull Principal principal)
             throws UserNotFoundException, ForeignUserException, KeycloakRemoteException, AccessDeniedException,
             QueryMalformedException, DatabaseMalformedException {
-        log.debug("endpoint modify a user password, id={}, data={}, principal={}", id, data, principal);
+        log.debug("endpoint modify a user password, id={}, data={}, {}", id, data, PrincipalUtil.formatForDebug(principal));
         /* check */
         if (!id.equals(UserUtil.getId(principal))) {
             log.error("Failed to modify user: attempting to modify other user");

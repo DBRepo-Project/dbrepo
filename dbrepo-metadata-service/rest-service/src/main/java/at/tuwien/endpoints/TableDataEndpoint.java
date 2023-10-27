@@ -10,6 +10,7 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.QueryService;
+import at.tuwien.utils.PrincipalUtil;
 import at.tuwien.utils.UserUtil;
 import at.tuwien.validation.EndpointValidator;
 import io.micrometer.core.annotation.Timed;
@@ -57,8 +58,7 @@ public class TableDataEndpoint {
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
             ImageNotSupportedException, ContainerNotFoundException, DatabaseConnectionException, UserNotFoundException,
             NotAllowedException, AccessDeniedException {
-        log.debug("endpoint insert data, databaseId={}, tableId={}, data={}, principal={}",
-                databaseId, tableId, data, principal);
+        log.debug("endpoint insert data, databaseId={}, tableId={}, data={}, {}", databaseId, tableId, data, PrincipalUtil.formatForDebug(principal));
         /* check */
         endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(databaseId, tableId, principal);
         /* insert */
@@ -80,8 +80,7 @@ public class TableDataEndpoint {
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
             ImageNotSupportedException, DatabaseConnectionException, QueryMalformedException,
             UserNotFoundException, NotAllowedException, AccessDeniedException {
-        log.debug("endpoint update data, databaseId={}, tableId={}, data={}, principal={}",
-                databaseId, tableId, data, principal);
+        log.debug("endpoint update data, databaseId={}, tableId={}, data={}, {}", databaseId, tableId, data, PrincipalUtil.formatForDebug(principal));
         /* check */
         endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(databaseId, tableId, principal);
         /* update */
@@ -102,8 +101,7 @@ public class TableDataEndpoint {
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
             ImageNotSupportedException, DatabaseConnectionException, QueryMalformedException, UserNotFoundException,
             NotAllowedException, AccessDeniedException {
-        log.debug("endpoint delete data, databaseId={}, tableId={}, data={}, principal={}",
-                databaseId, tableId, data, principal);
+        log.debug("endpoint delete data, databaseId={}, tableId={}, data={}, {}", databaseId, tableId, data, PrincipalUtil.formatForDebug(principal));
         /* check */
         endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(databaseId, tableId, principal);
         /* delete */
@@ -124,8 +122,7 @@ public class TableDataEndpoint {
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
             ImageNotSupportedException, DatabaseConnectionException, QueryMalformedException, UserNotFoundException,
             NotAllowedException, AccessDeniedException {
-        log.debug("endpoint insert data from csv, databaseId={}, tableId={}, data={}, principal={}",
-                databaseId, tableId, data, principal);
+        log.debug("endpoint insert data from csv, databaseId={}, tableId={}, data={}, {}", databaseId, tableId, data, PrincipalUtil.formatForDebug(principal));
         /* check */
         endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(databaseId, tableId, principal);
         /* insert */
@@ -149,8 +146,8 @@ public class TableDataEndpoint {
             throws TableNotFoundException, DatabaseNotFoundException, DatabaseConnectionException,
             ImageNotSupportedException, TableMalformedException, PaginationException, QueryMalformedException,
             UserNotFoundException, SortException, NotAllowedException, AccessDeniedException {
-        log.debug("endpoint find table data, databaseId={}, tableId={}, principal={}, timestamp={}, page={}, size={}, sortDirection={}, sortColumn={}",
-                databaseId, tableId, principal, timestamp, page, size, sortDirection, sortColumn);
+        log.debug("endpoint find table data, databaseId={}, tableId={}, timestamp={}, page={}, size={}, sortDirection={}, sortColumn={}, {}",
+                databaseId, tableId, timestamp, page, size, sortDirection, sortColumn, PrincipalUtil.formatForDebug(principal));
         /* check */
         endpointValidator.validateDataParams(page, size, sortDirection, sortColumn);
         endpointValidator.validateOnlyAccessOrPublic(databaseId, principal);
@@ -177,8 +174,7 @@ public class TableDataEndpoint {
             throws TableNotFoundException, DatabaseNotFoundException, DatabaseConnectionException,
             ImageNotSupportedException, TableMalformedException, QueryStoreException, QueryMalformedException,
             UserNotFoundException, NotAllowedException, AccessDeniedException {
-        log.debug("endpoint find table data, databaseId={}, tableId={}, principal={}, timestamp={}",
-                databaseId, tableId, principal, timestamp);
+        log.debug("endpoint find table data, databaseId={}, tableId={}, timestamp={}, {}", databaseId, tableId, timestamp, PrincipalUtil.formatForDebug(principal));
         /* check */
         endpointValidator.validateOnlyAccessOrPublic(databaseId, principal);
         final Database database = databaseService.find(databaseId);

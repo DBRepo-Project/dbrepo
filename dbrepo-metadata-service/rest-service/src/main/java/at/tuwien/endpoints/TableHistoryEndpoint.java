@@ -4,6 +4,7 @@ import at.tuwien.api.database.table.TableHistoryDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.exception.*;
 import at.tuwien.service.TableService;
+import at.tuwien.utils.PrincipalUtil;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -76,8 +77,7 @@ public class TableHistoryEndpoint {
                                                         @NotNull Principal principal)
             throws TableNotFoundException, QueryMalformedException, DatabaseNotFoundException,
             QueryStoreException, DatabaseConnectionException, UserNotFoundException {
-        log.debug("endpoint find all history, databaseid={}, tableId={}, principal={}",
-                databaseId, tableId, principal);
+        log.debug("endpoint find all history, databaseId={}, tableId={}, {}", databaseId, tableId, PrincipalUtil.formatForDebug(principal));
         final List<TableHistoryDto> history = tableService.findHistory(databaseId, tableId, principal);
         log.trace("find all history resulted in history {}", history);
         return ResponseEntity.ok(history);

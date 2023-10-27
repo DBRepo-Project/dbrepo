@@ -15,6 +15,7 @@ import at.tuwien.service.AccessService;
 import at.tuwien.service.IdentifierService;
 import at.tuwien.service.StoreService;
 import at.tuwien.service.UserService;
+import at.tuwien.utils.PrincipalUtil;
 import at.tuwien.utils.UserUtil;
 import at.tuwien.validation.EndpointValidator;
 import io.micrometer.core.annotation.Timed;
@@ -115,8 +116,7 @@ public class StoreEndpoint {
             DatabaseNotFoundException, ImageNotSupportedException, ContainerNotFoundException,
             DatabaseConnectionException, TableMalformedException, UserNotFoundException, NotAllowedException,
             AccessDeniedException {
-        log.debug("endpoint list queries, databaseId={}, persisted={}, principal={}",
-                databaseId, persisted, principal);
+        log.debug("endpoint list queries, databaseId={}, persisted={}, {}", databaseId, persisted, PrincipalUtil.formatForDebug(principal));
         endpointValidator.validateOnlyAccessOrPublic(databaseId, principal);
         final List<Query> queries = storeService.findAll(databaseId, persisted, principal);
         final List<IdentifierBriefDto> identifiers = identifierService.findAllSubsetIdentifiers()
@@ -178,8 +178,7 @@ public class StoreEndpoint {
             throws DatabaseNotFoundException, ImageNotSupportedException,
             QueryStoreException, QueryNotFoundException, UserNotFoundException, NotAllowedException,
             DatabaseConnectionException, KeycloakRemoteException, AccessDeniedException {
-        log.debug("endpoint find query, databaseId={}, queryId={}, principal={}", databaseId,
-                queryId, principal);
+        log.debug("endpoint find query, databaseId={}, queryId={}, {}", databaseId, queryId, PrincipalUtil.formatForDebug(principal));
         /* check */
         endpointValidator.validateOnlyAccessOrPublic(databaseId, queryId, principal);
         /* find */
@@ -237,9 +236,8 @@ public class StoreEndpoint {
                                             @NotNull Principal principal)
             throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
             DatabaseConnectionException, UserNotFoundException, QueryNotFoundException,
-            QueryAlreadyPersistedException, NotAllowedException, KeycloakRemoteException, AccessDeniedException {
-        log.debug("endpoint persist query, container, databaseId={}, queryId={}, principal={}",
-                databaseId, queryId, principal);
+            QueryAlreadyPersistedException, NotAllowedException, AccessDeniedException {
+        log.debug("endpoint persist query, container, databaseId={}, queryId={}, {}", databaseId, queryId, PrincipalUtil.formatForDebug(principal));
         /* check */
         endpointValidator.validateOnlyAccessOrPublic(databaseId, principal);
         final Query check = storeService.findOne(databaseId, queryId, principal);

@@ -12,6 +12,7 @@ import at.tuwien.mapper.ContainerMapper;
 import at.tuwien.service.ContainerService;
 import at.tuwien.service.UserService;
 import at.tuwien.service.impl.ContainerServiceImpl;
+import at.tuwien.utils.PrincipalUtil;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -63,7 +64,7 @@ public class ContainerEndpoint {
     })
     public ResponseEntity<List<ContainerBriefDto>> findAll(Principal principal,
                                                            @RequestParam(required = false) Integer limit) {
-        log.debug("endpoint find all containers, principal={}, limit={}", principal, limit);
+        log.debug("endpoint find all containers, limit={}, {}", limit, PrincipalUtil.formatForDebug(principal));
         final List<Container> containers = containerService.getAll(limit);
         final List<ContainerBriefDto> dtos = containers.stream()
                 .map(containerMapper::containerToDatabaseContainerBriefDto)
@@ -107,7 +108,7 @@ public class ContainerEndpoint {
     public ResponseEntity<ContainerBriefDto> create(@Valid @RequestBody ContainerCreateRequestDto data,
                                                     @NotNull Principal principal)
             throws ImageNotFoundException, ContainerAlreadyExistsException {
-        log.debug("endpoint create container, data={}, principal={}", data, principal);
+        log.debug("endpoint create container, data={}, {}", data, PrincipalUtil.formatForDebug(principal));
         final Container container = containerService.create(data, principal);
         final ContainerBriefDto dto = containerMapper.containerToDatabaseContainerBriefDto(container);
         log.trace("create container resulted in container {}", dto);
@@ -172,7 +173,7 @@ public class ContainerEndpoint {
     })
     public ResponseEntity<?> delete(@NotNull @PathVariable("id") Long containerId,
                                     @NotNull Principal principal) throws ContainerNotFoundException {
-        log.debug("endpoint delete container, containerId={}, principal={}", containerId, principal);
+        log.debug("endpoint delete container, containerId={}, {}", containerId, PrincipalUtil.formatForDebug(principal));
         containerService.remove(containerId);
         return ResponseEntity.accepted()
                 .build();

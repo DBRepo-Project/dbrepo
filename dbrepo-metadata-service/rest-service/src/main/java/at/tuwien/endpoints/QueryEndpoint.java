@@ -11,6 +11,7 @@ import at.tuwien.service.AccessService;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.QueryService;
 import at.tuwien.service.StoreService;
+import at.tuwien.utils.PrincipalUtil;
 import at.tuwien.utils.UserUtil;
 import at.tuwien.validation.EndpointValidator;
 import io.micrometer.core.annotation.Timed;
@@ -63,8 +64,8 @@ public class QueryEndpoint {
             throws DatabaseNotFoundException, ImageNotSupportedException, QueryStoreException, QueryMalformedException,
             ColumnParseException, UserNotFoundException, TableMalformedException, DatabaseConnectionException,
             SortException, PaginationException, NotAllowedException, KeycloakRemoteException, AccessDeniedException {
-        log.debug("endpoint execute query, databaseId={}, data={}, page={}, size={}, principal={}, sortDirection={}, sortColumn={}",
-                databaseId, data, page, size, principal, sortDirection, sortColumn);
+        log.debug("endpoint execute query, databaseId={}, data={}, page={}, size={}, sortDirection={}, sortColumn={}, {}",
+                databaseId, data, page, size, sortDirection, sortColumn, PrincipalUtil.formatForDebug(principal));
         /* check */
         if (data.getStatement() == null || data.getStatement().isBlank()) {
             log.error("Failed to execute empty query");
@@ -95,8 +96,8 @@ public class QueryEndpoint {
             throws QueryStoreException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
             QueryMalformedException, TableMalformedException, ColumnParseException, DatabaseConnectionException,
             SortException, PaginationException, UserNotFoundException, NotAllowedException, AccessDeniedException {
-        log.debug("endpoint re-execute query, databaseId={}, queryId={}, principal={}, page={}, size={}, sortDirection={}, sortColumn={}",
-                databaseId, queryId, principal, page, size, sortDirection, sortColumn);
+        log.debug("endpoint re-execute query, databaseId={}, queryId={}, page={}, size={}, sortDirection={}, sortColumn={}, {}",
+                databaseId, queryId, page, size, sortDirection, sortColumn, PrincipalUtil.formatForDebug(principal));
         endpointValidator.validateDataParams(page, size, sortDirection, sortColumn);
         endpointValidator.validateOnlyAccessOrPublic(databaseId, queryId, principal);
         /* execute */
@@ -119,8 +120,7 @@ public class QueryEndpoint {
             throws QueryStoreException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
             QueryMalformedException, TableMalformedException, ColumnParseException, NotAllowedException,
             DatabaseConnectionException, UserNotFoundException, AccessDeniedException {
-        log.debug("endpoint re-execute query count, databaseId={}, queryId={}, principal={}",
-                databaseId, queryId, principal);
+        log.debug("endpoint re-execute query count, databaseId={}, queryId={}, {}", databaseId, queryId, PrincipalUtil.formatForDebug(principal));
         endpointValidator.validateOnlyAccessOrPublic(databaseId, queryId, principal);
         /* execute */
         final Query query = storeService.findOne(databaseId, queryId, principal);
@@ -141,8 +141,7 @@ public class QueryEndpoint {
             throws QueryStoreException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
             TableMalformedException, FileStorageException, QueryMalformedException, DatabaseConnectionException,
             UserNotFoundException, NotAllowedException {
-        log.debug("endpoint export query, databaseId={}, queryId={}, accept={}, principal={}",
-                databaseId, queryId, accept, principal);
+        log.debug("endpoint export query, databaseId={}, queryId={}, accept={}, {}", databaseId, queryId, accept, PrincipalUtil.formatForDebug(principal));
         final Database database = databaseService.find(databaseId);
         if (!database.getIsPublic()) {
             if (principal == null) {

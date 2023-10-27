@@ -130,15 +130,12 @@ release-log-service: tag-log-service
 test-backend: test-metadata-service test-analyse-service test-data-service test-mirror-service
 
 test-data-service: build-data-service
-	docker pull mariadb:10.5
 	mvn -f ./dbrepo-data-service/pom.xml clean test verify
 
 test-mirror-service: build-mirror-service
-	docker pull opensearchproject/opensearch:2.10.0
 	mvn -f ./dbrepo-mirror-service/pom.xml clean test verify
 
 test-metadata-service: build-metadata-service
-	docker pull rabbitmq:3-management
 	mvn -f ./dbrepo-metadata-service/pom.xml clean test verify
 
 test-analyse-service: build-analyse-service

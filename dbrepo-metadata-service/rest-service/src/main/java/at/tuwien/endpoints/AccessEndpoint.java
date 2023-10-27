@@ -8,6 +8,7 @@ import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.DatabaseMapper;
 import at.tuwien.service.AccessService;
+import at.tuwien.utils.PrincipalUtil;
 import at.tuwien.utils.UserUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -73,7 +74,7 @@ public class AccessEndpoint {
                                     @NotNull Principal principal)
             throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException, QueryMalformedException,
             DatabaseMalformedException, KeycloakRemoteException, AccessDeniedException {
-        log.debug("endpoint give access to database, databaseId={}, userId={}, accessDto={}, principal={}", databaseId, userId, accessDto, principal);
+        log.debug("endpoint give access to database, databaseId={}, userId={}, accessDto={}, {}", databaseId, userId, accessDto, PrincipalUtil.formatForDebug(principal));
         try {
             accessService.find(databaseId, userId);
             log.error("Failed to give access to user with id {}: already has access", userId);
@@ -116,7 +117,7 @@ public class AccessEndpoint {
                                     @NotNull Principal principal)
             throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException, QueryMalformedException,
             DatabaseMalformedException, AccessDeniedException, KeycloakRemoteException {
-        log.debug("endpoint modify access to database, databaseId={}, userId={}, accessDto={}, principal={}", databaseId, userId, accessDto, principal);
+        log.debug("endpoint modify access to database, databaseId={}, userId={}, accessDto={}, {}", databaseId, userId, accessDto, PrincipalUtil.formatForDebug(principal));
         accessService.find(databaseId, userId);
         accessService.update(databaseId, userId, accessDto);
         return ResponseEntity.accepted()
@@ -147,7 +148,7 @@ public class AccessEndpoint {
     public ResponseEntity<DatabaseAccessDto> find(@NotBlank @PathVariable("id") Long databaseId,
                                                   @NotNull Principal principal) throws NotAllowedException,
             AccessDeniedException {
-        log.debug("endpoint check access to database, databaseId={}, principal={}", databaseId, principal);
+        log.debug("endpoint check access to database, databaseId={}, {}", databaseId, principal, PrincipalUtil.formatForDebug(principal));
         final DatabaseAccess access = accessService.find(databaseId, UserUtil.getId(principal));
         final DatabaseAccessDto dto = databaseMapper.databaseAccessToDatabaseAccessDto(access);
         log.trace("check access resulted in dto {}", dto);
@@ -187,8 +188,8 @@ public class AccessEndpoint {
                                     @NotBlank @PathVariable("userId") UUID userId,
                                     @NotNull Principal principal)
             throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException, QueryMalformedException,
-            DatabaseMalformedException, AccessDeniedException, KeycloakRemoteException {
-        log.debug("endpoint revoke access to database, databaseId={}, userId={}, principal={}", databaseId, userId, principal);
+            DatabaseMalformedException, AccessDeniedException {
+        log.debug("endpoint revoke access to database, databaseId={}, userId={}, {}", databaseId, userId, PrincipalUtil.formatForDebug(principal));
         accessService.find(databaseId, userId);
         accessService.delete(databaseId, userId);
         return ResponseEntity.accepted()

@@ -12,6 +12,7 @@ import at.tuwien.mapper.ViewMapper;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.QueryService;
 import at.tuwien.service.ViewService;
+import at.tuwien.utils.PrincipalUtil;
 import at.tuwien.utils.UserUtil;
 import at.tuwien.validation.EndpointValidator;
 import io.micrometer.core.annotation.Timed;
@@ -82,8 +83,7 @@ public class ViewEndpoint {
     public ResponseEntity<List<ViewBriefDto>> findAll(@NotNull @PathVariable("databaseId") Long databaseId,
                                                       Principal principal) throws DatabaseNotFoundException,
             UserNotFoundException {
-        log.debug("endpoint find all views, databaseId={}, principal={}",
-                databaseId, principal);
+        log.debug("endpoint find all views, databaseId={}, {}", databaseId, PrincipalUtil.formatForDebug(principal));
         final Database database = databaseService.find(databaseId);
         log.trace("find all views for database {}", database);
         final List<ViewBriefDto> views = viewService.findAll(databaseId, principal)
@@ -146,8 +146,7 @@ public class ViewEndpoint {
                                                @NotNull Principal principal) throws DatabaseNotFoundException,
             NotAllowedException, DatabaseConnectionException, ViewMalformedException, QueryMalformedException,
             UserNotFoundException {
-        log.debug("endpoint create view, databaseId={}, data={}, principal={}",
-                databaseId, data, principal);
+        log.debug("endpoint create view, databaseId={}, data={}, {}", databaseId, data, PrincipalUtil.formatForDebug(principal));
         /* check */
         final Database database = databaseService.find(databaseId);
         if (!database.getOwnedBy().equals(UserUtil.getId(principal))) {
@@ -188,8 +187,7 @@ public class ViewEndpoint {
                                         @NotNull @PathVariable("viewId") Long viewId,
                                         Principal principal) throws DatabaseNotFoundException,
             NotAllowedException, ViewNotFoundException, UserNotFoundException {
-        log.debug("endpoint find view, databaseId={}, viewId={}, principal={}",
-                databaseId, viewId, principal);
+        log.debug("endpoint find view, databaseId={}, viewId={}, {}", databaseId, viewId, PrincipalUtil.formatForDebug(principal));
         final Database database = databaseService.find(databaseId);
         log.trace("find view for database {}", database);
         final ViewDto view = viewMapper.viewToViewDto(viewService.findById(databaseId, viewId, principal));
@@ -247,8 +245,7 @@ public class ViewEndpoint {
                                     @NotNull Principal principal) throws DatabaseNotFoundException,
             ViewNotFoundException, UserNotFoundException, DatabaseConnectionException,
             ViewMalformedException, QueryMalformedException, NotAllowedException {
-        log.debug("endpoint delete view, databaseId={}, viewId={}, principal={}",
-                databaseId, viewId, principal);
+        log.debug("endpoint delete view, databaseId={}, viewId={}, {}", databaseId, viewId, PrincipalUtil.formatForDebug(principal));
         /* check */
         final Database database = databaseService.find(databaseId);
         if (!database.getOwnedBy().equals(UserUtil.getId(principal))) {
@@ -329,8 +326,7 @@ public class ViewEndpoint {
             throws DatabaseNotFoundException, NotAllowedException, ViewNotFoundException, PaginationException,
             QueryStoreException, DatabaseConnectionException, TableMalformedException, QueryMalformedException,
             ImageNotSupportedException, ColumnParseException, UserNotFoundException, ContainerNotFoundException, ViewMalformedException {
-        log.debug("endpoint find view data, databaseId={}, viewId={}, principal={}, page={}, size={}",
-                databaseId, viewId, principal, page, size);
+        log.debug("endpoint find view data, databaseId={}, viewId={}, page={}, size={}, {}", databaseId, viewId, page, size, PrincipalUtil.formatForDebug(principal));
         /* check */
         endpointValidator.validateDataParams(page, size);
         final Database database = databaseService.find(databaseId);
@@ -364,8 +360,7 @@ public class ViewEndpoint {
             throws DatabaseNotFoundException, ViewNotFoundException, QueryStoreException, DatabaseConnectionException,
             TableMalformedException, QueryMalformedException, ImageNotSupportedException, UserNotFoundException,
             ContainerNotFoundException {
-        log.debug("endpoint find view data count, databaseId={}, viewId={}, principal={}",
-                databaseId, viewId, principal);
+        log.debug("endpoint find view data count, databaseId={}, viewId={}, {}", databaseId, viewId, PrincipalUtil.formatForDebug(principal));
         /* find */
         databaseService.find(databaseId);
         log.debug("find view data count for database with id {}", databaseId);

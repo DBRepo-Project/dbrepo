@@ -11,6 +11,7 @@ import at.tuwien.exception.*;
 import at.tuwien.mapper.TableMapper;
 import at.tuwien.service.MessageQueueService;
 import at.tuwien.service.TableService;
+import at.tuwien.utils.PrincipalUtil;
 import at.tuwien.validation.EndpointValidator;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
@@ -80,7 +81,7 @@ public class TableEndpoint {
     public ResponseEntity<List<TableBriefDto>> list(@NotNull @PathVariable("databaseId") Long databaseId,
                                                     Principal principal)
             throws DatabaseNotFoundException, NotAllowedException, AccessDeniedException {
-        log.debug("endpoint list tables, databaseId={}, principal={}", databaseId, principal);
+        log.debug("endpoint list tables, databaseId={}, {}", databaseId, PrincipalUtil.formatForDebug(principal));
         endpointValidator.validateOnlyPrivateAccess(databaseId, principal);
         endpointValidator.validateOnlyPrivateHasRole(databaseId, principal, "list-tables");
         final List<TableBriefDto> dto = tableService.findAll(databaseId)
@@ -139,7 +140,7 @@ public class TableEndpoint {
             throws ImageNotSupportedException, DatabaseNotFoundException, TableMalformedException, AmqpException,
             TableNameExistsException, ContainerNotFoundException, UserNotFoundException, QueryMalformedException,
             NotAllowedException, AccessDeniedException {
-        log.debug("endpoint create table, databaseId={}, createDto={}, principal={}", databaseId, createDto, principal);
+        log.debug("endpoint create table, databaseId={}, createDto={}, {}", databaseId, createDto, PrincipalUtil.formatForDebug(principal));
         endpointValidator.validateOnlyAccess(databaseId, principal, true);
         endpointValidator.validateColumnCreateConstraints(createDto);
         final Table table = tableService.createTable(databaseId, createDto, principal);
@@ -180,7 +181,7 @@ public class TableEndpoint {
                                              @NotNull @PathVariable("tableId") Long tableId,
                                              Principal principal) throws TableNotFoundException,
             DatabaseNotFoundException, QueueNotFoundException, BrokerRemoteException {
-        log.debug("endpoint find table, databaseId={}, tableId={}, principal={}", databaseId, tableId, principal);
+        log.debug("endpoint find table, databaseId={}, tableId={}, {}", databaseId, tableId, PrincipalUtil.formatForDebug(principal));
         final Table table = tableService.findById(databaseId, tableId);
         final TableDto dto = tableMapper.tableToTableDto(table);
         if (principal != null) {
@@ -239,7 +240,7 @@ public class TableEndpoint {
                                        @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
             DataProcessingException, ContainerNotFoundException, TableMalformedException, QueryMalformedException {
-        log.debug("endpoint delete table, databaseId={}, tableId={}, principal={}", databaseId, tableId, principal);
+        log.debug("endpoint delete table, databaseId={}, tableId={}, {}", databaseId, tableId, PrincipalUtil.formatForDebug(principal));
         tableService.deleteTable(databaseId, tableId);
         return ResponseEntity.accepted()
                 .build();

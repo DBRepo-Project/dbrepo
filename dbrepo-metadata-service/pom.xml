@@ -344,6 +344,7 @@
                         <exclude>at/tuwien/utils/**/*</exclude>
                         <exclude>at/tuwien/config/**/*</exclude>
                         <exclude>at/tuwien/auth/**/*</exclude>
+                        <exclude>**/testcontainers.properties</exclude>
                         <exclude>**/HibernateConnector.class</exclude>
                         <exclude>**/DbrepoMetadataServiceApplication.class</exclude>
                     </excludes>

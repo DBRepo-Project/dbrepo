@@ -11,6 +11,7 @@ import at.tuwien.exception.*;
 import at.tuwien.mapper.DatabaseMapper;
 import at.tuwien.repository.mdb.DatabaseAccessRepository;
 import at.tuwien.service.*;
+import at.tuwien.utils.PrincipalUtil;
 import at.tuwien.utils.UserUtil;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
@@ -79,7 +80,7 @@ public class DatabaseEndpoint {
     public ResponseEntity<List<DatabaseDto>> list(@NotNull Principal principal,
                                                   @RequestParam(required = false) String filter)
             throws UserNotFoundException {
-        log.debug("endpoint list databases, principal={}, filter={}", principal, filter);
+        log.debug("endpoint list databases, filter={}, {}", filter, PrincipalUtil.formatForDebug(principal));
         final List<DatabaseDto> dtos;
         if (principal != null && filter != null) {
             final User user = userService.findByUsername(principal.getName());
@@ -109,7 +110,7 @@ public class DatabaseEndpoint {
     public ResponseEntity<List<DatabaseDto>> count(@NotNull Principal principal,
                                                    @RequestParam(required = false) String filter)
             throws UserNotFoundException {
-        log.debug("endpoint list databases, principal={}, filter={}", principal, filter);
+        log.debug("endpoint list databases, filter={}, {}", filter, PrincipalUtil.formatForDebug(principal));
         final List<DatabaseDto> dtos;
         if (principal != null && filter != null) {
             final User user = userService.findByUsername(principal.getName());
@@ -190,8 +191,7 @@ public class DatabaseEndpoint {
             DatabaseNotFoundException, DatabaseNameExistsException, DatabaseConnectionException,
             QueryMalformedException, NotAllowedException, BrokerVirtualHostModificationException, QueryStoreException,
             BrokerVirtualHostGrantException, KeycloakRemoteException, AccessDeniedException, BrokerRemoteException {
-        log.debug("endpoint create database, createDto={}, principal={}", createDto,
-                principal);
+        log.debug("endpoint create database, createDto={}, {}", createDto, PrincipalUtil.formatForDebug(principal));
         final User user = userService.findByUsername(principal.getName());
         final Database database = databaseService.create(createDto, principal);
         queryStoreService.create(database.getId(), principal);
@@ -228,7 +228,7 @@ public class DatabaseEndpoint {
                                                   @Valid @RequestBody DatabaseModifyVisibilityDto data,
                                                   @NotNull Principal principal) throws DatabaseNotFoundException,
             UserNotFoundException, NotAllowedException {
-        log.debug("endpoint update database, id={}, data={}, principal={}", id, data, principal);
+        log.debug("endpoint update database, id={}, data={}, {}", id, data, PrincipalUtil.formatForDebug(principal));
         final Database database = databaseService.findById(id);
         final User user = userService.findByUsername(principal.getName());
         if (!database.getOwnedBy().equals(UserUtil.getId(principal))) {
@@ -267,7 +267,7 @@ public class DatabaseEndpoint {
                                                 @Valid @RequestBody DatabaseTransferDto transferDto,
                                                 @NotNull Principal principal) throws DatabaseNotFoundException,
             UserNotFoundException, NotAllowedException, KeycloakRemoteException, AccessDeniedException {
-        log.debug("endpoint update database, id={}, transferDto={}, principal={}", id, transferDto, principal);
+        log.debug("endpoint update database, id={}, transferDto={}, {}", id, transferDto, PrincipalUtil.formatForDebug(principal));
         final Database database = databaseService.findById(id);
         final User user = userService.findByUsername(principal.getName());
         if (!database.getOwnedBy().equals(user.getId())) {
@@ -298,7 +298,7 @@ public class DatabaseEndpoint {
     })
     public ResponseEntity<DatabaseDto> findById(@NotNull @PathVariable Long id, Principal principal)
             throws DatabaseNotFoundException, ExchangeNotFoundException, BrokerRemoteException {
-        log.debug("endpoint find database, id={}", id);
+        log.debug("endpoint find database, id={}, {}", id, PrincipalUtil.formatForDebug(principal));
         final Database database = databaseService.findById(id);
         final DatabaseDto dto = databaseMapper.databaseToDatabaseDto(database);
         if (principal != null && database.getOwnedBy().equals(UserUtil.getId(principal))) {
@@ -370,9 +370,8 @@ public class DatabaseEndpoint {
             throws DatabaseNotFoundException, ImageNotSupportedException, DatabaseMalformedException, AmqpException,
             QueryMalformedException, UserNotFoundException, BrokerVirtualHostGrantException,
             DatabaseConnectionException, KeycloakRemoteException, AccessDeniedException, BrokerRemoteException {
-        log.debug("endpoint delete database, id={}, principal={}", id,
-                principal);
-        final Database database = databaseService.findById(id);
+        log.debug("endpoint delete database, id={}, {}", id, PrincipalUtil.formatForDebug(principal));
+        databaseService.findById(id);
         final User user = userService.findByUsername(principal.getName());
         databaseService.delete(id, user.getId());
         return ResponseEntity.accepted()
