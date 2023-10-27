@@ -3,7 +3,7 @@ variables:
   TAG: "${TAG:-latest}"
   TRIVY_NO_PROGRESS: "true"
   TRIVY_CACHE_DIR: ".trivycache/"
-  DOCKER_HOST: "/var/run/docker.sock"
+  DOCKER_HOST: "tcp://docker:2375"
 
 cache:
   paths:
@@ -76,6 +76,8 @@ test-metadata-service:
   stage: test-backend
 #  needs:
 #    - build-metadata-service
+  services:
+    - docker:stable-dind
   script:
     - "mvn -f ./dbrepo-metadata-service/pom.xml clean install -DskipTests"
     - "mvn -f ./dbrepo-metadata-service/pom.xml clean test verify"
