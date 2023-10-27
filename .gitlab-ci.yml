@@ -3,7 +3,7 @@ variables:
   TAG: "${TAG:-latest}"
   TRIVY_NO_PROGRESS: "true"
   TRIVY_CACHE_DIR: ".trivycache/"
-  DOCKER_HOST: "unix:///var/run/dind/docker.sock"
+  DOCKER_HOST: "tcp://docker:2375"
   TESTCONTAINERS_RYUK_DISABLED: "true"
 
 image: debian:12-slim
