@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 @Log4j2
-@Testcontainers
+@Testcontainers(disabledWithoutDocker = true)
 @ExtendWith(SpringExtension.class)
 @EnableAutoConfiguration(exclude= RabbitAutoConfiguration.class)
 @SpringBootTest

@@ -26,7 +26,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 @Log4j2
-@Testcontainers
+@Testcontainers(disabledWithoutDocker = true)
 @SpringBootTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @ExtendWith(SpringExtension.class)

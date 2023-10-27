@@ -24,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @Log4j2
-@Testcontainers
+@Testcontainers(disabledWithoutDocker = true)
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 @MockAmqp

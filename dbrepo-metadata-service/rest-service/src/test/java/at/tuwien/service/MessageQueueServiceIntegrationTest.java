@@ -34,7 +34,7 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.*;
 
 @Log4j2
-@Testcontainers
+@Testcontainers(disabledWithoutDocker = true)
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
