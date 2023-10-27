@@ -4,6 +4,7 @@ variables:
   TRIVY_NO_PROGRESS: "true"
   TRIVY_CACHE_DIR: ".trivycache/"
   DOCKER_HOST: "tcp://localhost:2375"
+  TESTCONTAINERS_HOST_OVERRIDE: "tcp://localhost:2375"
 
 cache:
   paths:
