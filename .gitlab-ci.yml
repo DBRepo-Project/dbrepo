@@ -12,30 +12,28 @@ cache:
     - /root/.npm/
 
 stages:
-  - build-backend
-  - build-frontend
-  - test-backend
-  - test-frontend
-  - build-docker
+  - build
+  - test
+  - docker
 #  - test-deployment
 #  - scan-docker
 #  - release-docker
 
 build-metadata-service:
   image: maven:3-openjdk-17
-  stage: build-backend
+  stage: build
   script:
     - "mvn -f ./dbrepo-metadata-service/pom.xml clean install -Dstyle.color=always -DskipTests"
 
 build-analyse-service:
   image: python:3.9-slim
-  stage: build-backend
+  stage: build
   script:
     - "pip install -r ./dbrepo-analyse-service/requirements.txt"
 
 build-data-service:
   image: maven:3-openjdk-17
-  stage: build-backend
+  stage: build
   needs:
     - build-metadata-service
   script:
@@ -44,7 +42,7 @@ build-data-service:
 
 build-mirror-service:
   image: maven:3-openjdk-17
-  stage: build-backend
+  stage: build
   needs:
     - build-metadata-service
   script:
@@ -53,7 +51,7 @@ build-mirror-service:
 
 build-frontend:
   image: node:14-alpine
-  stage: build-frontend
+  stage: build
   script:
     - "yarn config set network-timeout 600000 -g"
     - "yarn --cwd ./dbrepo-ui install --legacy-peer-deps"
@@ -61,7 +59,7 @@ build-frontend:
 
 build-docker:
   image: docker:24-dind
-  stage: build-docker
+  stage: docker
   script:
     - "cp .env.unix.example .env"
     - "docker build -t dbrepo-metadata-service:build --target build dbrepo-metadata-service"
@@ -72,7 +70,7 @@ build-docker:
 
 test-metadata-service:
   image: maven:3-openjdk-17
-  stage: test-backend
+  stage: test
   needs:
     - build-metadata-service
   script:
@@ -91,7 +89,7 @@ test-metadata-service:
 
 test-data-service:
   image: maven:3-openjdk-17
-  stage: test-backend
+  stage: test
   needs:
     - build-data-service
   script:
@@ -110,7 +108,7 @@ test-data-service:
 
 test-mirror-service:
   image: maven:3-openjdk-17
-  stage: test-backend
+  stage: test
   needs:
     - build-mirror-service
   script:
@@ -129,7 +127,7 @@ test-mirror-service:
 
 test-analyse-service:
   image: python:3.9-slim
-  stage: test-backend
+  stage: test
   needs:
     - build-analyse-service
   script:
@@ -147,14 +145,14 @@ test-analyse-service:
 
 test-frontend:
   image: node:14-alpine
-  stage: test-frontend
+  stage: test
   needs:
     - build-frontend
   script:
     - "yarn --cwd ./dbrepo-ui install"
     - "yarn --cwd ./dbrepo-ui run test:unit || true"
     - "yarn --cwd ./dbrepo-ui run coverage || true"
-    - "cat ./dbrepo-ui/coverage/cobertura-coverage.xml | grep -o 'line-rate=\"[0-9.]*' | head -1"
+    - "cat ./dbrepo-ui/coverage/cobertura-coverage.xml | grep -o 'line-rate=\"[0-9.]*' | head -1 || truec"
   artifacts:
     when: always
     paths:
