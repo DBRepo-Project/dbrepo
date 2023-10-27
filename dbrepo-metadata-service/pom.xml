@@ -325,7 +325,7 @@
                     <include>**/application*.yml</include>
                     <include>**/templates/*.txt</include>
                     <include>**/templates/*.xml</include>
-                    <include>**/testcontainer.properties</include>
+                    <include>**/testcontainers.properties</include>
                     <include>**/init/querystore.sql</include>
                 </includes>
             </resource>
