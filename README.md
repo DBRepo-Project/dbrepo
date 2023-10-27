@@ -22,6 +22,10 @@ $ docker compose logs -f
 
 ## Development
 
+### CI/CD
+
+Minikube cluster with 6vCPU and 28GB RAM
+
 ### Build
 
 Local development minimum requirements:

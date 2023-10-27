@@ -3,6 +3,7 @@ variables:
   TAG: "${TAG:-latest}"
   TRIVY_NO_PROGRESS: "true"
   TRIVY_CACHE_DIR: ".trivycache/"
+  DOCKER_HOST: "/var/run/docker.sock"
 
 cache:
   paths:
@@ -76,9 +77,6 @@ test-metadata-service:
 #  needs:
 #    - build-metadata-service
   script:
-    - "ls -la /var/run"
-    - "ls -la /var/run/docker"
-    - "ls -la /var/run/docker/dind"
     - "mvn -f ./dbrepo-metadata-service/pom.xml clean install -DskipTests"
     - "mvn -f ./dbrepo-metadata-service/pom.xml clean test verify"
     - "cat ./dbrepo-metadata-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
