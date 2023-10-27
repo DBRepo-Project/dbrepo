@@ -79,11 +79,9 @@ test-metadata-service:
   services:
     - docker:stable-dind
   script:
-    - "id"
-    - "cp ./.gitlab/.testcontainers.properties ~/.testcontainers.properties"
+    - "cp ./.gitlab/.testcontainers.properties /root/.testcontainers.properties"
     - "mvn -f ./dbrepo-metadata-service/pom.xml clean install -DskipTests"
     - "mvn -f ./dbrepo-metadata-service/pom.xml clean test verify"
-    - "cat ~/.testcontainers.properties"
     - "cat ./dbrepo-metadata-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
   artifacts:
     when: always
