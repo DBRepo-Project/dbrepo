@@ -72,15 +72,11 @@ stages:
 #    - "docker compose build --parallel"
 
 test-metadata-service:
-  image: maven:3-openjdk-17
+  image: maven:3-amazoncorretto-17
   stage: test-backend
 #  needs:
 #    - build-metadata-service
-  services:
-    - name: docker:stable-dind
   script:
-    - "mkdir -p /sys/fs/cgroup/systemd"
-    - "mount -t cgroup -o none,name=systemd cgroup /sys/fs/cgroup/systemd"
     - "mvn -f ./dbrepo-metadata-service/pom.xml clean install -DskipTests"
     - "mvn -f ./dbrepo-metadata-service/pom.xml clean test verify"
     - "cat ./dbrepo-metadata-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
