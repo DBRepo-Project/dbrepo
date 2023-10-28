@@ -24,7 +24,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import java.sql.SQLException;
 
 @Log4j2
-@Testcontainers(disabledWithoutDocker = true)
+@Testcontainers
 @EnableAutoConfiguration(exclude = RabbitAutoConfiguration.class)
 @SpringBootTest
 @ExtendWith(SpringExtension.class)

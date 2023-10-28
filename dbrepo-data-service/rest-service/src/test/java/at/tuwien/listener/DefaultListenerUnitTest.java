@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Log4j2
 @SpringBootTest
 @ExtendWith({SpringExtension.class, OutputCaptureExtension.class})
-@Testcontainers(disabledWithoutDocker = true)
+@Testcontainers
 @MockOpensearch
 public class DefaultListenerUnitTest extends BaseUnitTest {
 

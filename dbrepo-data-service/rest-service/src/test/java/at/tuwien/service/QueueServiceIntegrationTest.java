@@ -29,7 +29,7 @@ import java.util.stream.Stream;
 @Log4j2
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
-@Testcontainers(disabledWithoutDocker = true)
+@Testcontainers
 @MockOpensearch
 public class QueueServiceIntegrationTest extends BaseUnitTest {
 

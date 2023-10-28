@@ -34,7 +34,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 @Log4j2
-@Testcontainers(disabledWithoutDocker = true)
+@Testcontainers
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @EnableAutoConfiguration(exclude = RabbitAutoConfiguration.class)
 @ExtendWith(SpringExtension.class)
