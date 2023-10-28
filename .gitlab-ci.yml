@@ -70,6 +70,18 @@ build-docker:
     - "docker build ./dbrepo-log-service -t dbrepo-log-service"
     - "docker compose build --parallel"
 
+build-docker-debug:
+  image: alpine:3.18
+  stage: build
+  services:
+    - docker:24-dind-rootless
+  script:
+    - "apk add nmap"
+    - "nmap -Pn -p 2375 localhost"
+    - "nmap -Pn -p 2376 localhost"
+    - "nmap -Pn -p 2375 docker"
+    - "nmap -Pn -p 2376 docker"
+
 test-metadata-service:
   image: maven:3-openjdk-17
   stage: test
