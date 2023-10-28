@@ -23,39 +23,30 @@ make build
 
 ### CI/CD
 
-Minikube cluster with 6vCPU and 28GB RAM
+Minikube cluster with 6vCPU and 28GB RAM. The CI pipeline is configured as follows in the CD:
 
-### Build
-
-Local development minimum requirements:
-
-- Ubuntu 18.04 LTS (Rocky Linux is also supported)
-- Apache Maven 3.0.0
-- OpenJDK 11.0.0
-- Docker Engine 20.10.0
-- Docker Compose 1.28.0
-
-Everything is handled by compose, just build it by running:
-
-```console
-$ docker-compose build --parallel
+```toml
+[[runners]]
+  executor = "kubernetes"
+  environment = [
+    "FF_USE_LEGACY_KUBERNETES_EXECUTION_STRATEGY=false"
+  ]
+  [runners.kubernetes]
+    namespace = "{{.Release.Namespace}}"
+    privileged = true
+    allowed_services = ["docker:24-dind-rootless"]
+    [[runners.kubernetes.services]]
+      name = "docker:24-dind-rootless"
+      alias = "docker"
+    [[runners.kubernetes.volumes.empty_dir]]
+      name = "rundind"
+      mount_path = "/var/run/dind"
+      medium = "Memory"
 ```
 
-A more detailed description on how
-to get started is available at our documentation
-website: [https://www.ifs.tuwien.ac.at/infrastructures/dbrepo//getting-started/](https://www.ifs.tuwien.ac.at/infrastructures/dbrepo//getting-started/)
-
-### Run
-
-Copy and *optionally* edit the environment:
-
-```console
-$ cp .env.unix .env
-$ docker compose -f ./docker-compose.prod.yml up -d
-$ docker compose -f ./docker-compose.prod.yml logs -f 
-```
-
-Once the services are started, open [http://localhost:3000](http://localhost:3000).
+**Note** that only rootless Docker-in-Docker (dind) is allowed as service in the pipeline currently. For each job,
+a dind-sidecar `svc-0` is started that exposes the Docker socket at `/var/run/dind/docker.sock` in the `build` container
+you can freely configure how you want.
 
 ## Contribute
 
