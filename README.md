@@ -23,9 +23,12 @@ make build
 
 ### CI/CD
 
+<img src="./.gitlab/gitlab-runner.png" alt="Gitlab Runner configuration in the Cluster" width="100%" /> 
+
 Minikube cluster with 6vCPU and 28GB RAM. The CI pipeline is configured as follows in the CD:
 
 ```toml
+concurrent = 10
 [[runners]]
   executor = "kubernetes"
   environment = [
@@ -44,8 +47,15 @@ Minikube cluster with 6vCPU and 28GB RAM. The CI pipeline is configured as follo
       medium = "Memory"
 ```
 
+For each job in the CI/CD pipeline, a pod with three containers is started:
+
+1. `build` the main build container, you can *freely* specify any image with `image: xyz` as base
+2. `helper` the default helper container.
+3. `svc-0` the Docker-in-Docker sidecar (rootless executed as user `rootless`/`1000`) exposing the Docker socket to the
+   `build` container under `
+
 **Note** that only rootless Docker-in-Docker (dind) is allowed as service in the pipeline currently. For each job,
-a dind-sidecar `svc-0` is started that exposes the Docker socket at `/var/run/dind/docker.sock` in the `build` container
+a dind-sidecar container `svc-0` is started that exposes the Docker socket at `/var/run/dind/docker.sock` in the `build` container
 you can freely configure how you want.
 
 ## Contribute
