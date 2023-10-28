@@ -396,6 +396,7 @@ stages:
 
 release-latest:
   stage: release
+  image: docker:24-dind
 #  needs:
 #    - scan-analyse-service
 #    - scan-authentication-service
