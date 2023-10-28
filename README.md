@@ -2,22 +2,21 @@
 [![coverage report](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/badges/master/coverage.svg)](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/commits/master)
 [![license](.gitlab/license.svg)](https://opensource.org/licenses/Apache-2.0)
 
-# FAIR Data Austria Database Repository
+# DBRepo &mdash; A Repository for Databases
 
-## Deployment
+## tl;dr
 
-Download the Docker Compose template and the environment file:
-
-```console
-$ curl -o docker-compose.yml https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/master/docker-compose.prod.yml
-$ curl -o .env https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/master/.env.unix.example
+```shell
+docker compose up -d
+docker compose logs -f
 ```
 
-Start the Docker containers:
+## Build
 
-```console
-$ docker compose up -d
-$ docker compose logs -f
+Build DBRepo from scratch:
+
+```shell
+make build
 ```
 
 ## Development
