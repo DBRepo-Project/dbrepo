@@ -414,8 +414,8 @@ release-latest:
   script:
     - 'apk add make'
     - 'cp .env.unix.example .env'
-    - 'docker login -u "${DOCKER_USERNAME}" -p "${DOCKER_PASSWORD}"'
-    - 'docker login dbrepo.azurecr.io -u "${AZURE_USERNAME}" -p "${AZURE_PASSWORD}"'
+    - 'echo "${DOCKER_PASSWORD} | docker login -u "${DOCKER_USERNAME}" --password-stdin docker.io'
+    - 'echo "${AZURE_PASSWORD}" | docker login -u "${AZURE_USERNAME}" --password-stdin dbrepo.azurecr.io'
 #    - "TAG=latest make release"
 
 #release-version:
