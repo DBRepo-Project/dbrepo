@@ -79,7 +79,7 @@ build-docker-debug:
       command:
         - "dockerd"
         - "-H"
-        - "tcp://0.0.0.0:2375"
+        - "0.0.0.0:2375"
   script:
     - "apk add nmap"
     - "nmap -Pn -p 2375 localhost"
