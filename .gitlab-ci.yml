@@ -3,7 +3,7 @@ variables:
   TAG: "${TAG:-latest}"
   TRIVY_NO_PROGRESS: "true"
   TRIVY_CACHE_DIR: ".trivycache/"
-  DOCKER_HOST: "tcp://docker:2376"
+  DOCKER_HOST: "tcp://docker:2375"
 
 image: debian:12-slim
 
@@ -76,10 +76,9 @@ build-docker-debug:
   services:
     - name: docker:24-dind-rootless
       alias: docker
-      command:
-        - "dockerd"
-        - "-H"
-        - "0.0.0.0:2375"
+      entrypoint: [ "env", "-u", "DOCKER_HOST" ]
+      command: [ "dockerd-entrypoint.sh" ]
+
   script:
     - "apk add nmap"
     - "nmap -Pn -p 2375 localhost"
