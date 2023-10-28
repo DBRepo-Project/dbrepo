@@ -413,7 +413,7 @@ release-latest:
 #      - dev
   script:
     - "apk add make"
-    - "ifconfig | grep mtu"
+    - "ip a"
     - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin docker.io
     - echo "$AZURE_PASSWORD" | docker login --username "$AZURE_USERNAME" --password-stdin dbrepo.azurecr.io
     - TAG=latest make release
