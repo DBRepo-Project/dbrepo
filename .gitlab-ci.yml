@@ -412,6 +412,7 @@ release-latest:
 #    refs:
 #      - dev
   script:
+    - cat /etc/docker/daemon.json
     - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin https://index.docker.io/v1/
     - echo "$AZURE_PASSWORD" | docker login --username "$AZURE_USERNAME" --password-stdin dbrepo.azurecr.io
     - TAG=latest make release
