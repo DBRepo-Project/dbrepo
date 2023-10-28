@@ -398,7 +398,7 @@ release-latest:
   stage: release
   image: docker:24-dind
   variables:
-    DOCKER_OPTS: "--mtu=1400"
+    DOCKER_OPTS: "--mtu=1450"
 #  needs:
 #    - scan-analyse-service
 #    - scan-authentication-service
