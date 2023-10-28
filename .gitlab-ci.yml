@@ -396,17 +396,13 @@ scan-log-service:
 
 release-latest:
   stage: release
+  image: docker:24-dind
   needs:
-    - scan-analyse-service
-    - scan-authentication-service
-    - scan-broker-service
-    - scan-gateway-service
-    - scan-metadata-service
-    - scan-metadata-db
-    - scan-data-db
-    - scan-search-db
-    - scan-ui
-    - scan-log-service
+    - test-metadata-service
+    - test-data-service
+    - test-mirror-service
+    - test-analyse-service
+    - test-frontend
   only:
     refs:
       - dev
@@ -418,17 +414,13 @@ release-latest:
 
 release-version:
   stage: release
-  image: docker:24-dind-rootless
+  image: docker:24-dind
   needs:
-    - scan-analyse-service
-    - scan-authentication-service
-    - scan-broker-service
-    - scan-gateway-service
-    - scan-metadata-service
-    - scan-metadata-db
-    - scan-data-db
-    - scan-search-db
-    - scan-ui
+    - test-metadata-service
+    - test-data-service
+    - test-mirror-service
+    - test-analyse-service
+    - test-frontend
   only:
     refs:
       - master
