@@ -398,7 +398,7 @@ release-latest:
   stage: release
   image: docker:24-dind
   variables:
-    DOCKER_OPTS: "--mtu=1450"
+    NO_PROXY: dbrepo.azurecr.io,docker.io
 #  needs:
 #    - scan-analyse-service
 #    - scan-authentication-service
@@ -414,7 +414,8 @@ release-latest:
 #    refs:
 #      - dev
   script:
-    - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin https://index.docker.io/v1/
+    - apk add make
+    - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin docker.io
     - echo "$AZURE_PASSWORD" | docker login --username "$AZURE_USERNAME" --password-stdin dbrepo.azurecr.io
     - TAG=latest make release
 
