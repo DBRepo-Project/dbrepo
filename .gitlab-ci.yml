@@ -3,8 +3,7 @@ variables:
   TAG: "${TAG:-latest}"
   TRIVY_NO_PROGRESS: "true"
   TRIVY_CACHE_DIR: ".trivycache/"
-  DOCKER_HOST: "tcp://docker:2375"
-  DOCKER_TLS_CERTDIR: ""
+  DOCKER_HOST: "unix:///var/run/dind/docker.sock"
 
 image: debian:12-slim
 
@@ -61,11 +60,6 @@ build-frontend:
 build-docker:
   image: docker:24-dind
   stage: build
-  services:
-    - name: docker:24-dind-rootless
-      alias: docker
-      command:
-        - "--host=tcp://0.0.0.0:2375"
   script:
     - "cp .env.unix.example .env"
     - "docker build -t dbrepo-metadata-service:build --target build dbrepo-metadata-service"
