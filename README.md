@@ -31,7 +31,7 @@ We get compute resources in-kind from [dataLAB](https://www.it.tuwien.ac.at/en/s
 to run our pipeline:
 
 <p align="center">
-![Gitlab runner configuration in the cluster](.gitlab/gitlab-runner.png){ style="display: block; margin: 0 auto" }
+<img src="./.gitlab/gitlab-runner.png" alt="Gitlab runner configuration in the cluster" width="732" height="262" /><br/>
 <i><strong>Figure 1.</strong> Gitlab runner configuration in the cluster.</i>
 </p>
 
