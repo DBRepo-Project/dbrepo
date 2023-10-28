@@ -65,7 +65,7 @@ build-docker:
     - name: docker:24-dind-rootless
       alias: docker
       command:
-        - "--host=0.0.0.0:2375"
+        - "--host=tcp://0.0.0.0:2375"
   script:
     - "cp .env.unix.example .env"
     - "docker build -t dbrepo-metadata-service:build --target build dbrepo-metadata-service"
