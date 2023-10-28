@@ -412,8 +412,8 @@ release-latest:
 #    refs:
 #      - dev
   script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
-    - docker login -u $AZURE_USERNAME -p $AZURE_PASSWORD dbrepo.azurecr.io
+    - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin
+    - echo "$AZURE_PASSWORD" | docker login --username "$AZURE_USERNAME" --password-stdin dbrepo.azurecr.io
     - TAG=latest make release
 
 #release-version:
