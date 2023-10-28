@@ -412,10 +412,10 @@ release-latest:
 #    refs:
 #      - dev
   script:
-    - "apk add make"
-    - "cp .env.unix.example .env"
-    - "docker login docker.io -u \"${DOCKER_USERNAME}\" -p \"${DOCKER_PASSWORD}\""
-    - "docker login dbrepo.azurecr.io -u \"${AZURE_USERNAME}\" -p \"${AZURE_PASSWORD}\""
+    - 'apk add make'
+    - 'cp .env.unix.example .env'
+    - 'docker login docker.io -u "${DOCKER_USERNAME}" -p "${DOCKER_PASSWORD}"'
+    - 'docker login dbrepo.azurecr.io -u "${AZURE_USERNAME}" -p "${AZURE_PASSWORD}"'
 #    - "TAG=latest make release"
 
 #release-version:
