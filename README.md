@@ -19,6 +19,10 @@ Build DBRepo from scratch:
 make build
 ```
 
+## Documentation
+
+More documentation can be found online: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/
+
 ## Development
 
 ### CI/CD
@@ -26,9 +30,12 @@ make build
 We get compute resources in-kind from [dataLAB](https://www.it.tuwien.ac.at/en/services/network-and-servers/datalab)
 to run our pipeline:
 
-<img src="./.gitlab/gitlab-runner.png" alt="Gitlab Runner configuration in the Cluster" width="100%" />
+<div style="text-align:center;">
+<img src="./.gitlab/gitlab-runner.png" alt="Gitlab runner configuration in the cluster." /><br/>
+<i><strong>Figure 1.</strong> Gitlab runner configuration in the cluster.</i>
+</div>
 
-Minikube cluster with 6vCPU and 28GB RAM. The CI pipeline is configured as follows in the CD:
+Minikube cluster with 6vCPU and 28GB RAM. The CI pipeline is configured as follows in the `config.toml`:
 
 ```toml
 concurrent = 10
@@ -70,7 +77,7 @@ repository.
 Contributions are always welcome and encouraged, simply fork the repository and
 contact [Andreas Rauber](http://www.ifs.tuwien.ac.at/~andi/).
 
-# Acknowledgements
+## Acknowledgements
 
 We want to thank the following organizations:
 
@@ -80,7 +87,7 @@ We want to thank the following organizations:
 * [TU.it](https://www.it.tuwien.ac.at/en/) for their continuous support in project work, funding and compute resources 
   provided in-kind.
 
-# License
+## License
 
 This work is licensed under
 a [Creative Commons Attribution 4.0 International License](http://creativecommons.org/licenses/by/4.0/)
