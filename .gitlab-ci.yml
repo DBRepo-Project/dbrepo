@@ -412,7 +412,7 @@ release-latest:
 #    refs:
 #      - dev
   script:
-    - "ifconfig 1 mtu 1450"
+    - ifconfig -a | sed -n 's/^\([^ ]\+\).*/"\1"/p' | paste -sd ","
     - "ip a"
     - "apk add make"
     - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin docker.io
