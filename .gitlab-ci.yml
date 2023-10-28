@@ -396,7 +396,7 @@ stages:
 
 release-latest:
   stage: release
-  image: docker:24
+  image: docker:20.10.16
 #  needs:
 #    - scan-analyse-service
 #    - scan-authentication-service
