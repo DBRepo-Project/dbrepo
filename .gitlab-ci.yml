@@ -416,7 +416,7 @@ release-latest:
     - "cat /etc/systemd/system/docker.service.d/proxy.conf"
     - "apk add make"
     - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin docker.io
-    - echo "$AZURE_PASSWORD" | docker login --username "$AZURE_USERNAME" --password-stdin dbrepo.azurecr.io
+    - echo "$AZURE_PASSWORD" | docker login --username "$AZURE_USERNAME" --password-stdin https://dbrepo.azurecr.io/v1/
     - TAG=latest make release
 
 #release-version:
