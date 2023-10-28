@@ -397,8 +397,6 @@ stages:
 release-latest:
   stage: release
   image: docker:24-dind
-  variables:
-    DOCKER_HOST: localhost
 #  needs:
 #    - scan-analyse-service
 #    - scan-authentication-service
@@ -414,9 +412,8 @@ release-latest:
 #    refs:
 #      - dev
   script:
-    - echo "${DOCKER_HOST}"
-    - echo "${DOCKER_PASSWORD}" | docker login --username "${DOCKER_USERNAME}" --password-stdin docker.io
-    - echo "${AZURE_PASSWORD}" | docker login --username "${AZURE_USERNAME}" --password-stdin dbrepo.azurecr.io
+    - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD docker.io
+    - docker login -u $AZURE_USERNAME -p $AZURE_PASSWORD dbrepo.azurecr.io
     - TAG=latest make release
 
 #release-version:
