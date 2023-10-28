@@ -4,7 +4,8 @@ variables:
   TRIVY_NO_PROGRESS: "true"
   TRIVY_CACHE_DIR: ".trivycache/"
   DOCKER_HOST: "tcp://docker:2375"
-  DOCKER_TLS_CERTDIR: ""
+  DOCKER_TLS_VERIFY: 0
+  DOCKER_TLS_CERTDIR: "/certs"
 
 image: debian:12-slim
 
@@ -75,15 +76,9 @@ build-docker-debug:
   image: alpine:3.18
   stage: build
   services:
-    - name: docker:24-dind-rootless
-      alias: docker
-      command:
-        - "dockerd"
-        - "--storage-driver=overlay2"
-        - "--host=0.0.0.0:2375"
+    - docker:24-dind-rootless
   script:
     - "apk add nmap"
-    - "sleep 10"
     - "nmap -Pn -p 2375 localhost"
     - "nmap -Pn -p 2376 localhost"
     - "nmap -Pn -p 2375 docker"
