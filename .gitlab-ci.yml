@@ -58,7 +58,7 @@ build-frontend:
     - "yarn --cwd ./dbrepo-ui run build"
 
 build-docker:
-  image: docker:24-dind-rootless
+  image: docker:24-dind
   stage: build
   script:
     - "cp .env.unix.example .env"
