@@ -415,8 +415,8 @@ release-latest:
 #      - dev
   script:
     - echo "${DOCKER_HOST}"
-    - docker login -u "${DOCKER_USERNAME}" -p "${DOCKER_PASSWORD}" docker.io
-    - docker login -u "${AZURE_USERNAME}" -p "${AZURE_PASSWORD}" dbrepo.azurecr.io
+    - echo "${DOCKER_PASSWORD}" | docker login --username "${DOCKER_USERNAME}" --password-stdin docker.io
+    - echo "${AZURE_PASSWORD}" | docker login --username "${AZURE_USERNAME}" --password-stdin dbrepo.azurecr.io
     - TAG=latest make release
 
 #release-version:
