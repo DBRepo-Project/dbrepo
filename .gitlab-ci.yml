@@ -413,7 +413,7 @@ release-latest:
 #      - dev
   script:
     - "ip a"
-    - "sleep 60"
+    - "cat /etc/systemd/system/docker.service.d/proxy.conf"
     - "apk add make"
     - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin docker.io
     - echo "$AZURE_PASSWORD" | docker login --username "$AZURE_USERNAME" --password-stdin dbrepo.azurecr.io
