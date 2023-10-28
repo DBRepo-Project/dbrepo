@@ -43,7 +43,7 @@ build-frontend:
 build-clients:
 	bash ./.gitlab/swagger/generate.sh
 
-tag: tag-analyse-service tag-authentication-service tag-metadata-db tag-ui tag-broker-service tag-metadata-service tag-data-service tag-mirror-service tag-log-service tag-search-db
+tag: tag-analyse-service tag-authentication-service tag-metadata-db tag-ui tag-metadata-service tag-data-service tag-mirror-service tag-log-service tag-search-db
 
 tag-analyse-service:
 	docker tag dbrepo-analyse-service:latest "dbrepo/analyse-service:${TAG}"
@@ -73,10 +73,6 @@ tag-metadata-service:
 	docker tag dbrepo-metadata-service:latest "dbrepo/metadata-service:${TAG}"
 	docker tag dbrepo-metadata-service:latest "${AZURE_REPO}/dbrepo/metadata-service:${TAG}"
 
-tag-broker-service:
-	docker tag dbrepo-broker-service:latest "dbrepo/broker-service:${TAG}"
-	docker tag dbrepo-broker-service:latest "${AZURE_REPO}/dbrepo/broker-service:${TAG}"
-
 tag-search-db:
 	docker tag dbrepo-search-db:latest "dbrepo/search-db:${TAG}"
 	docker tag dbrepo-search-db:latest "${AZURE_REPO}/dbrepo/search-db:${TAG}"
@@ -85,7 +81,7 @@ tag-log-service:
 	docker tag dbrepo-log-service:latest "dbrepo/log-service:${TAG}"
 	docker tag dbrepo-log-service:latest "${AZURE_REPO}/dbrepo/log-service:${TAG}"
 
-release: build-docker tag release-analyse-service release-authentication-service release-metadata-db release-ui release-broker-service release-metadata-service release-data-service release-log-service release-search-db release-mirror-service
+release: build-docker tag release-analyse-service release-authentication-service release-metadata-db release-ui release-metadata-service release-data-service release-log-service release-search-db release-mirror-service
 
 release-analyse-service: tag-analyse-service
 	docker push "dbrepo/analyse-service:${TAG}"
@@ -110,10 +106,6 @@ release-data-service: tag-data-service
 release-mirror-service: tag-mirror-service
 	docker push "dbrepo/mirror-service:${TAG}"
 	docker push "${AZURE_REPO}/dbrepo/mirror-service:${TAG}"
-
-release-broker-service: tag-broker-service
-	docker push "dbrepo/broker-service:${TAG}"
-	docker push "${AZURE_REPO}/dbrepo/broker-service:${TAG}"
 
 release-search-db: tag-search-db
 	docker push "dbrepo/search-db:${TAG}"
@@ -141,7 +133,7 @@ test-metadata-service: build-metadata-service
 test-analyse-service: build-analyse-service
 	bash ./dbrepo-analyse-service/test.sh
 
-scan: scan-analyse-service scan-authentication-service scan-broker-service scan-gateway-service scan-metadata-db scan-metadata-service scan-search-db scan-ui scan-data-service scan-data-db scan-log-service scan-mirror-service
+scan: scan-analyse-service scan-authentication-service scan-broker-service scan-gateway-service scan-metadata-db scan-metadata-service scan-search-db scan-ui scan-data-service scan-data-db scan-log-service scan-mirror-service scan-search-dashboard
 
 scan-analyse-service:
 	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-analyse-service-report.json dbrepo-analyse-service:latest
@@ -154,9 +146,9 @@ scan-authentication-service:
 	trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-authentication-service:latest
 
 scan-broker-service:
-	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-broker-service-report.json dbrepo-broker-service:latest
-	trivy image --insecure --exit-code 0 dbrepo-broker-service:latest
-	trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-broker-service:latest
+	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-broker-service-report.json bitnami/rabbitmq:3.10
+	trivy image --insecure --exit-code 0 bitnami/rabbitmq:3.10
+	trivy image --insecure --exit-code 1 --severity CRITICAL bitnami/rabbitmq:3.10
 
 scan-gateway-service:
 	docker pull "nginx:1.25.0-alpine-slim"
@@ -188,6 +180,11 @@ scan-search-db:
 	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-db-report.json "dbrepo-search-db"
 	trivy image --insecure --exit-code 0 "dbrepo-search-db"
 	trivy image --insecure --exit-code 1 --severity CRITICAL "dbrepo-search-db"
+
+scan-search-dashboard:
+	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-db-report.json "opensearchproject/opensearch-dashboards:2.10.0"
+	trivy image --insecure --exit-code 0 "opensearchproject/opensearch-dashboards:2.10.0"
+	trivy image --insecure --exit-code 1 --severity CRITICAL "opensearchproject/opensearch-dashboards:2.10.0"
 
 scan-data-db:
 	docker pull "bitnami/mariadb:10.5"

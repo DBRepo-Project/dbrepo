@@ -55,6 +55,10 @@ concurrent = 10
       name = "rundind"
       mount_path = "/var/run/dind"
       medium = "Memory"
+    [[runners.kubernetes.volumes.empty_dir]]
+      name = "tmp"
+      mount_path = "/tmp"
+      medium = "Memory"
 ```
 
 For each job in the CI/CD pipeline, a pod with three containers is started:
