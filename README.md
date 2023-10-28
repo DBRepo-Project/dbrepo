@@ -30,10 +30,10 @@ More documentation can be found online: https://www.ifs.tuwien.ac.at/infrastruct
 We get compute resources in-kind from [dataLAB](https://www.it.tuwien.ac.at/en/services/network-and-servers/datalab)
 to run our pipeline:
 
-<div style="text-align:center;">
+<center>
 <img src="./.gitlab/gitlab-runner.png" alt="Gitlab runner configuration in the cluster." /><br/>
 <i><strong>Figure 1.</strong> Gitlab runner configuration in the cluster.</i>
-</div>
+</center>
 
 Minikube cluster with 6vCPU and 28GB RAM. The CI pipeline is configured as follows in the `config.toml`:
 
