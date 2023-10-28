@@ -77,12 +77,13 @@ build-docker-debug:
   services:
     - name: docker:24-dind-rootless
       alias: docker
-      entrypoint: [ "dockerd" ]
       command:
+        - "dockerd"
         - "--storage-driver=overlay2"
         - "--host=0.0.0.0:2375"
   script:
     - "apk add nmap"
+    - "sleep 10"
     - "nmap -Pn -p 2375 localhost"
     - "nmap -Pn -p 2376 localhost"
     - "nmap -Pn -p 2375 docker"
