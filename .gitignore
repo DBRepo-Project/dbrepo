@@ -8,8 +8,9 @@ target/
 ready
 
 # docs
-.docs/.swagger/dist
-.docs/.swagger/site
+.docs/.swagger/dist/
+.docs/.swagger/site/
+site/
 
 # Notebooks
 .jupyter/
