@@ -491,7 +491,7 @@ docs-swagger:
 
 docs-docs:
   stage: docs
-  image: docker.io/python:3-slim
+  image: docker.io/python:3.9-slim
   needs:
     - docs-swagger
   script:
