@@ -290,9 +290,9 @@ scan-search-db:
       - master
   allow_failure: true
   script:
-    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-db-report.json "dbrepo-search-db"
-    - trivy image --insecure --exit-code 0 "dbrepo-search-db"
-    - trivy image --insecure --exit-code 1 --severity CRITICAL "dbrepo-search-db"
+    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-db-report.json dbrepo-search-db:latest
+    - trivy image --insecure --exit-code 0 dbrepo-search-db:latest
+    - trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-search-db:latest
   cache:
     paths:
       - .trivycache/
@@ -301,6 +301,52 @@ scan-search-db:
     expire_in: 1 days
     reports:
       container_scanning: ./.trivy/trivy-search-db-report.json
+
+scan-search-dashboard:
+  image: bitnami/trivy:latest
+  stage: scan
+  needs:
+    - build-docker
+  only:
+    refs:
+      - dev
+      - master
+  allow_failure: true
+  script:
+    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-dashboard-report.json "opensearchproject/opensearch-dashboards:2.10.0"
+    - trivy image --insecure --exit-code 0 "opensearchproject/opensearch-dashboards:2.10.0"
+    - trivy image --insecure --exit-code 1 --severity CRITICAL "opensearchproject/opensearch-dashboards:2.10.0"
+  cache:
+    paths:
+      - .trivycache/
+  artifacts:
+    when: always
+    expire_in: 1 days
+    reports:
+      container_scanning: ./.trivy/trivy-search-dashboard-report.json
+
+scan-search-db-init:
+  image: bitnami/trivy:latest
+  stage: scan
+  needs:
+    - build-docker
+  only:
+    refs:
+      - dev
+      - master
+  allow_failure: true
+  script:
+    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-db-init-report.json dbrepo-search-db-init:latest
+    - trivy image --insecure --exit-code 0 dbrepo-search-db-init:latest
+    - trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-search-db-init:latest
+  cache:
+    paths:
+      - .trivycache/
+  artifacts:
+    when: always
+    expire_in: 1 days
+    reports:
+      container_scanning: ./.trivy/trivy-search-db-init-report.json
 
 scan-data-db:
   image: bitnami/trivy:latest
