@@ -481,16 +481,21 @@ stages:
 
 docs-swagger:
   stage: docs
-  image: docker.io/docker:24-dind
+  image: docker.io/alpine:3.18
+  variables:
+    SWAGGER_CODEGEN_VERSION: 2.2.1
   script:
     - "apk add bash"
-    - "docker compose up -d || docker compose down"
-    - "cd .docs/.swagger && bash ./generate.sh"
-    - "docker compose down"
+    - "cd ./.docs/.swagger && bash ./generate.sh"
+  cache:
+    paths:
+      - ./.docs/.swagger/site
 
 docs-docs:
   stage: docs
   image: docker.io/python:3-slim
+  needs:
+    - docs-swagger
   script:
     - "apt-get update && apt-get install -y git"
     - "git submodule add https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services.git"

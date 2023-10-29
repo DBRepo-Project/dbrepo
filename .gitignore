@@ -7,6 +7,10 @@ target/
 # ready
 ready
 
+# docs
+.docs/.swagger/dist
+.docs/.swagger/site
+
 # Notebooks
 .jupyter/
 .pytest_cache/

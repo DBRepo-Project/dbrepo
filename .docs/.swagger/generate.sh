@@ -1,21 +1,19 @@
 #!/bin/bash
-declare -A services
-services[5000]=analyse
-services[9050]=mirror
-services[9093]=data
-services[9099]=metadata
+# clean up
+echo "clean up ./dist ./site"
+rm -rf ./dist ./site
 
-function retrieve () {
-  if [[ "$2" == analyse ]]; then
-    echo "... retrieve json api from localhost:$1"
-    wget "http://localhost:$1/api-$2.json" -O "./.docs/.swagger/api-$2.yaml" -q
-  else
-    echo "... retrieve yaml api from localhost:$1"
-    wget "http://localhost:$1/v3/api-docs.yaml" -O "./.docs/.swagger/api-$2.yaml" -q
-  fi
-}
+# ensure target directories are present
+echo "ensure target directories ./dist ./site are present"
+mkdir -p ./dist ./site
 
-for key in "${!services[@]}"; do
-  echo "Generating ${services[$key]} API"
-  retrieve "$key" "${services[$key]}"
+# extract static site
+echo "extract static site ./dist.tar.gz"
+tar xzf ./dist.tar.gz
+for service in "analyse" "mirror" "data" "metadata" "upload"; do
+  mkdir -p ./site/$service
+  echo "extract static site ./dist -> ./site/$service"
+  cp -r ./dist/* ./site/$service
+  echo "placing ./api-$service.yaml -> ./site/$service/api.yaml"
+  cp "./api-$service.yaml" "./site/$service/api.yaml"
 done
