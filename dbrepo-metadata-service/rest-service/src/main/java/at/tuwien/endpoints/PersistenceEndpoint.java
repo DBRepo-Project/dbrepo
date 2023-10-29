@@ -199,7 +199,8 @@ public class PersistenceEndpoint {
         }
         /* check */
         final IdentifierDto dto = identifierMapper.identifierToIdentifierDto(identifierService.update(id, data, principal));
-        log.debug("update identifier resulted in dto={}", dto);
+        log.info("Update identifier with pid: {}", dto.getId());
+        log.trace("updated identifier: {}", dto);
         return ResponseEntity.accepted()
                 .body(dto);
     }
@@ -233,6 +234,7 @@ public class PersistenceEndpoint {
             throw new NotAllowedException("Failed to delete identifier: a DOI is already attached");
         }
         identifierService.delete(id);
+        log.info("Deleted identifier with pid: {}", id);
         return ResponseEntity.accepted()
                 .build();
     }

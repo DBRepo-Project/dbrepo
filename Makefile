@@ -73,10 +73,6 @@ tag-metadata-service:
 	docker tag dbrepo-metadata-service:latest "dbrepo/metadata-service:${TAG}"
 	docker tag dbrepo-metadata-service:latest "${AZURE_REPO}/dbrepo/metadata-service:${TAG}"
 
-tag-broker-service:
-	docker tag dbrepo-broker-service:latest "dbrepo/broker-service:${TAG}"
-	docker tag dbrepo-broker-service:latest "${AZURE_REPO}/dbrepo/broker-service:${TAG}"
-
 tag-search-db:
 	docker tag dbrepo-search-db:latest "dbrepo/search-db:${TAG}"
 	docker tag dbrepo-search-db:latest "${AZURE_REPO}/dbrepo/search-db:${TAG}"
@@ -115,10 +111,6 @@ release-mirror-service: tag-mirror-service
 	docker push "dbrepo/mirror-service:${TAG}"
 	docker push "${AZURE_REPO}/dbrepo/mirror-service:${TAG}"
 
-release-broker-service: tag-broker-service
-	docker push "dbrepo/broker-service:${TAG}"
-	docker push "${AZURE_REPO}/dbrepo/broker-service:${TAG}"
-
 release-search-db: tag-search-db
 	docker push "dbrepo/search-db:${TAG}"
 	docker push "${AZURE_REPO}/dbrepo/search-db:${TAG}"
@@ -138,21 +130,18 @@ release-log-service: tag-log-service
 test-backend: test-metadata-service test-analyse-service test-data-service test-mirror-service
 
 test-data-service: build-data-service
-	docker pull mariadb:10.5
 	mvn -f ./dbrepo-data-service/pom.xml clean test verify
 
 test-mirror-service: build-mirror-service
-	docker pull opensearchproject/opensearch:2.10.0
 	mvn -f ./dbrepo-mirror-service/pom.xml clean test verify
 
 test-metadata-service: build-metadata-service
-	docker pull rabbitmq:3-management
 	mvn -f ./dbrepo-metadata-service/pom.xml clean test verify
 
 test-analyse-service: build-analyse-service
 	bash ./dbrepo-analyse-service/test.sh
 
-scan: scan-analyse-service scan-authentication-service scan-broker-service scan-gateway-service scan-metadata-db scan-metadata-service scan-search-db scan-ui scan-data-service scan-data-db scan-log-service scan-mirror-service
+scan: scan-analyse-service scan-authentication-service scan-broker-service scan-gateway-service scan-metadata-db scan-metadata-service scan-search-db scan-ui scan-data-service scan-data-db scan-log-service scan-mirror-service scan-search-dashboard
 
 scan-analyse-service:
 	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-analyse-service-report.json dbrepo-analyse-service:latest
@@ -165,9 +154,9 @@ scan-authentication-service:
 	trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-authentication-service:latest
 
 scan-broker-service:
-	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-broker-service-report.json dbrepo-broker-service:latest
-	trivy image --insecure --exit-code 0 dbrepo-broker-service:latest
-	trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-broker-service:latest
+	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-broker-service-report.json bitnami/rabbitmq:3.10
+	trivy image --insecure --exit-code 0 bitnami/rabbitmq:3.10
+	trivy image --insecure --exit-code 1 --severity CRITICAL bitnami/rabbitmq:3.10
 
 scan-gateway-service:
 	docker pull "nginx:1.25.0-alpine-slim"
@@ -200,9 +189,14 @@ scan-search-db:
 	trivy image --insecure --exit-code 0 "dbrepo-search-db"
 	trivy image --insecure --exit-code 1 --severity CRITICAL "dbrepo-search-db"
 
+scan-search-dashboard:
+	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-db-report.json "opensearchproject/opensearch-dashboards:2.10.0"
+	trivy image --insecure --exit-code 0 "opensearchproject/opensearch-dashboards:2.10.0"
+	trivy image --insecure --exit-code 1 --severity CRITICAL "opensearchproject/opensearch-dashboards:2.10.0"
+
 scan-data-db:
 	docker pull "bitnami/mariadb:10.5"
-	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-db-report.json "bitnami/mariadb:10.5"
+	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-data-db-report.json "bitnami/mariadb:10.5"
 	trivy image --insecure --exit-code 0 "bitnami/mariadb:10.5"
 	trivy image --insecure --exit-code 1 --severity CRITICAL "bitnami/mariadb:10.5"
 

@@ -7,6 +7,7 @@ import at.tuwien.exception.*;
 import at.tuwien.mapper.OntologyMapper;
 import at.tuwien.service.EntityService;
 import at.tuwien.service.OntologyService;
+import at.tuwien.utils.PrincipalUtil;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -105,7 +106,7 @@ public class OntologyEndpoint {
     public ResponseEntity<OntologyDto> create(@NotNull @Valid @RequestBody OntologyCreateDto data,
                                               @NotNull Principal principal) throws UserNotFoundException,
             KeycloakRemoteException, AccessDeniedException {
-        log.debug("endpoint create ontology, data={}, principal={}", data, principal);
+        log.debug("endpoint create ontology, data={}, {}", data, PrincipalUtil.formatForDebug(principal));
         final OntologyDto dto = ontologyMapper.ontologyToOntologyDto(ontologyService.create(data, principal));
         log.trace("create ontology resulted in dto {}", dto);
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -131,7 +132,7 @@ public class OntologyEndpoint {
     public ResponseEntity<OntologyDto> update(@NotNull @PathVariable("id") Long id,
                                               @NotNull @Valid @RequestBody OntologyModifyDto data,
                                               @NotNull Principal principal) throws OntologyNotFoundException {
-        log.debug("endpoint update ontology, data={}, principal={}", data, principal);
+        log.debug("endpoint update ontology, data={}, {}", data, PrincipalUtil.formatForDebug(principal));
         final OntologyDto dto = ontologyMapper.ontologyToOntologyDto(ontologyService.update(id, data));
         log.trace("update ontology resulted in dto {}", dto);
         return ResponseEntity.accepted()

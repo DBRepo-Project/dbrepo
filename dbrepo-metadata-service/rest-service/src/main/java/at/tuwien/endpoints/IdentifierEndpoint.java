@@ -12,6 +12,7 @@ import at.tuwien.service.AccessService;
 import at.tuwien.service.IdentifierService;
 import at.tuwien.service.MetadataService;
 import at.tuwien.service.UserService;
+import at.tuwien.utils.PrincipalUtil;
 import at.tuwien.utils.UserUtil;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
@@ -41,16 +42,14 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/identifier")
 public class IdentifierEndpoint {
 
-    private final UserService userService;
     private final AccessService accessService;
     private final MetadataService metadataService;
     private final IdentifierMapper identifierMapper;
     private final IdentifierService identifierService;
 
     @Autowired
-    public IdentifierEndpoint(UserService userService, AccessService accessService, MetadataService metadataService,
+    public IdentifierEndpoint(AccessService accessService, MetadataService metadataService,
                               IdentifierMapper identifierMapper, IdentifierService identifierService) {
-        this.userService = userService;
         this.accessService = accessService;
         this.metadataService = metadataService;
         this.identifierMapper = identifierMapper;
@@ -129,7 +128,7 @@ public class IdentifierEndpoint {
             RemoteUnavailableException, UserNotFoundException, DatabaseNotFoundException, IdentifierRequestException,
             NotAllowedException, ViewNotFoundException, QueryStoreException, DatabaseConnectionException,
             ImageNotSupportedException {
-        log.debug("endpoint create identifier, data={}, authorization=(hidden), principal={}", data, principal);
+        log.debug("endpoint create identifier, data={}, {}", data, PrincipalUtil.formatForDebug(principal));
         if (data.getType().equals(IdentifierTypeDto.SUBSET) && (data.getQueryId() == null || data.getViewId() != null)) {
             log.error("Identifier of type subset need to have a qid and not a vid present");
             throw new IdentifierRequestException("Identifier of type subset need to have a qid and not a vid present");

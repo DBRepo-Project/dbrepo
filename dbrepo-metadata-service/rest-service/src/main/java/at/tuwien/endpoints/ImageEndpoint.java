@@ -12,6 +12,7 @@ import at.tuwien.exception.ImageNotFoundException;
 import at.tuwien.exception.UserNotFoundException;
 import at.tuwien.mapper.ImageMapper;
 import at.tuwien.service.impl.ImageServiceImpl;
+import at.tuwien.utils.PrincipalUtil;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -62,7 +63,7 @@ public class ImageEndpoint {
                             array = @ArraySchema(schema = @Schema(implementation = ContainerImage.class)))}),
     })
     public ResponseEntity<List<ImageBriefDto>> findAll(@NotNull Principal principal) {
-        log.debug("endpoint find all images, principal={}", principal);
+        log.debug("endpoint find all images, {}", PrincipalUtil.formatForDebug(principal));
         final List<ContainerImage> containers = imageService.getAll();
         return ResponseEntity.ok()
                 .body(containers.stream()
@@ -105,7 +106,7 @@ public class ImageEndpoint {
     public ResponseEntity<ImageDto> create(@Valid @RequestBody ImageCreateDto data,
                                            @NotNull Principal principal) throws ImageNotFoundException,
             ImageAlreadyExistsException, UserNotFoundException, ImageInvalidException {
-        log.debug("endpoint create image, data={}, principal={}", data, principal);
+        log.debug("endpoint create image, data={}, {}", data, PrincipalUtil.formatForDebug(principal));
         if (data.getDefaultPort() == null) {
             log.error("Failed to create image, default port is null");
             throw new ImageInvalidException("Failed to create image, default port is null");
@@ -163,7 +164,7 @@ public class ImageEndpoint {
                                            @RequestBody @Valid ImageChangeDto changeDto,
                                            @NotNull Principal principal)
             throws ImageNotFoundException {
-        log.debug("endpoint update image, id={}, changeDto={}, principal={}", id, changeDto, principal);
+        log.debug("endpoint update image, id={}, changeDto={}, {}", id, changeDto, PrincipalUtil.formatForDebug(principal));
         final ContainerImage image = imageService.update(id, changeDto);
         final ImageDto dto = imageMapper.containerImageToImageDto(image);
         log.trace("update image resulted in image {}", dto);
@@ -188,7 +189,7 @@ public class ImageEndpoint {
     })
     public ResponseEntity<?> delete(@NotNull @PathVariable("id") Long id,
                                     @NotNull Principal principal) throws ImageNotFoundException {
-        log.debug("endpoint delete image, id={}, principal={}", id, principal);
+        log.debug("endpoint delete image, id={}, {}", id, PrincipalUtil.formatForDebug(principal));
         imageService.find(id);
         imageService.delete(id);
         return ResponseEntity.accepted()

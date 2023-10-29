@@ -5,6 +5,7 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.QueryService;
+import at.tuwien.utils.PrincipalUtil;
 import at.tuwien.utils.UserUtil;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Operation;
@@ -47,7 +48,7 @@ public class ExportEndpoint {
             throws TableNotFoundException, DatabaseConnectionException, TableMalformedException,
             DatabaseNotFoundException, ImageNotSupportedException, PaginationException, FileStorageException,
             QueryMalformedException, UserNotFoundException, NotAllowedException {
-        log.debug("endpoint export table, id={}, tableId={}, timestamp={}, principal={}", databaseId, tableId, timestamp, principal);
+        log.debug("endpoint export table, id={}, tableId={}, timestamp={}, {}", databaseId, tableId, timestamp, PrincipalUtil.formatForDebug(principal));
         final Database database = databaseService.find(databaseId);
         if (!database.getIsPublic()) {
             if (principal == null) {

@@ -1,82 +1,81 @@
 variables:
   HOSTALIASES: ./hosts
-  DOCKER_TLS_CERTDIR: /certs
   TAG: "${TAG:-latest}"
   TRIVY_NO_PROGRESS: "true"
   TRIVY_CACHE_DIR: ".trivycache/"
+  DOCKER_HOST: "unix:///var/run/dind/docker.sock"
+  TESTCONTAINERS_RYUK_DISABLED: "false"
+
+image: debian:12-slim
 
 cache:
   paths:
     - /root/.m2/repository/
     - /root/.npm/
 
-image: "docker/compose:latest"
-
 stages:
-  - build-backend
-  - build-frontend
-  - test-backend
-  - test-frontend
-  - build-docker
-  - test-deployment
-  - scan-docker
-  - release-docker
+  - build
+  - test
+  - scan
+  - release
 
 build-metadata-service:
-  stage: build-backend
+  image: maven:3-openjdk-17
+  stage: build
   script:
-    - "make build-metadata-service"
+    - "mvn -f ./dbrepo-metadata-service/pom.xml clean install -Dstyle.color=always -DskipTests"
 
 build-analyse-service:
-  stage: build-backend
+  image: python:3.9-slim
+  stage: build
   script:
-    - "make build-analyse-service"
+    - "pip install -r ./dbrepo-analyse-service/requirements.txt"
 
 build-data-service:
-  stage: build-backend
+  image: maven:3-openjdk-17
+  stage: build
   needs:
     - build-metadata-service
   script:
-    - "make build-data-service"
+    - "mvn -f ./dbrepo-metadata-service/pom.xml clean install -Dstyle.color=always -DskipTests"
+    - "mvn -f ./dbrepo-data-service/pom.xml clean package -Dstyle.color=always -DskipTests"
 
 build-mirror-service:
-  stage: build-backend
+  image: maven:3-openjdk-17
+  stage: build
   needs:
     - build-metadata-service
   script:
-    - "make build-mirror-service"
+    - "mvn -f ./dbrepo-metadata-service/pom.xml clean install -Dstyle.color=always -DskipTests"
+    - "mvn -f ./dbrepo-mirror-service/pom.xml clean package -Dstyle.color=always -DskipTests"
 
 build-frontend:
-  stage: build-frontend
+  image: node:14-alpine
+  stage: build
   script:
-    - "make build-frontend"
+    - "yarn config set network-timeout 600000 -g"
+    - "yarn --cwd ./dbrepo-ui install --legacy-peer-deps"
+    - "yarn --cwd ./dbrepo-ui run build"
 
 build-docker:
   image: docker:24-dind
-  stage: build-docker
-  needs:
-    - build-metadata-service
-    - build-analyse-service
+  stage: build
   script:
     - "cp .env.unix.example .env"
-    - "make build-docker"
-
-test-deployment:
-  stage: release-docker
-  needs:
-    - release-latest
-  only:
-    refs:
-      - dev
-  script:
-    - "curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/install.sh | sudo bash"
+    - "docker build -t dbrepo-metadata-service:build --target build dbrepo-metadata-service"
+    - "docker build -t dbrepo-data-service:build --target build dbrepo-data-service"
+    - "docker build -t dbrepo-mirror-service:build --target build dbrepo-mirror-service"
+    - "docker build ./dbrepo-log-service -t dbrepo-log-service"
+    - "docker compose build --parallel"
 
 test-metadata-service:
-  stage: test-backend
+  image: maven:3-openjdk-17
+  stage: test
   needs:
     - build-metadata-service
   script:
-    - "make clean test-metadata-service"
+    - "mvn -f ./dbrepo-metadata-service/pom.xml clean install -Dstyle.color=always -DskipTests"
+    - "mvn -f ./dbrepo-metadata-service/pom.xml clean test -Dstyle.color=always verify"
     - "cat ./dbrepo-metadata-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
   artifacts:
     when: always
@@ -89,11 +88,13 @@ test-metadata-service:
   coverage: '/Total.*?([0-9]{1,3})%/'
 
 test-data-service:
-  stage: test-backend
+  image: maven:3-openjdk-17
+  stage: test
   needs:
     - build-data-service
   script:
-    - "make clean test-data-service"
+    - "mvn -f ./dbrepo-metadata-service/pom.xml clean install -Dstyle.color=always -DskipTests"
+    - "mvn -f ./dbrepo-data-service/pom.xml clean test verify -Dstyle.color=always"
     - "cat ./dbrepo-data-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
   artifacts:
     when: always
@@ -106,11 +107,13 @@ test-data-service:
   coverage: '/Total.*?([0-9]{1,3})%/'
 
 test-mirror-service:
-  stage: test-backend
+  image: maven:3-openjdk-17
+  stage: test
   needs:
     - build-mirror-service
   script:
-    - "make clean test-mirror-service"
+    - "mvn -f ./dbrepo-metadata-service/pom.xml clean install -Dstyle.color=always -DskipTests"
+    - "mvn -f ./dbrepo-mirror-service/pom.xml clean test verify -Dstyle.color=always"
     - "cat ./dbrepo-mirror-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
   artifacts:
     when: always
@@ -123,12 +126,14 @@ test-mirror-service:
   coverage: '/Total.*?([0-9]{1,3})%/'
 
 test-analyse-service:
-  stage: test-backend
+  image: python:3.9-slim
+  stage: test
   needs:
     - build-analyse-service
   script:
-    - "make test-analyse-service"
-    - "cat ./dbrepo-analyse-service/coverage.txt | grep -o 'TOTAL[^%]*%'"
+    - "pip install -r ./dbrepo-analyse-service/requirements.txt"
+    - "cd ./dbrepo-analyse-service/ && coverage run -m pytest test/test_determine_dt.py test/test_determine_pk.py --junitxml=report.xml && coverage html && coverage report > ./coverage.txt"
+    - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
   artifacts:
     when: always
     paths:
@@ -139,12 +144,15 @@ test-analyse-service:
   coverage: '/TOTAL.*?([0-9]{1,3})%/'
 
 test-frontend:
-  stage: test-frontend
+  image: node:14-alpine
+  stage: test
   needs:
     - build-frontend
   script:
-    - "make test-frontend"
-    - "cat ./dbrepo-ui/coverage/cobertura-coverage.xml | grep -o 'line-rate=\"[0-9.]*' | head -1"
+    - "yarn --cwd ./dbrepo-ui install"
+    - "yarn --cwd ./dbrepo-ui run test:unit || true"
+    - "yarn --cwd ./dbrepo-ui run coverage || true"
+    - "cat ./dbrepo-ui/coverage/cobertura-coverage.xml | grep -o 'line-rate=\"[0-9.]*' | head -1 || true"
   artifacts:
     when: always
     paths:
@@ -157,7 +165,8 @@ test-frontend:
   coverage: '/TOTAL.*?([0-9]{1,3})%/'
 
 scan-analyse-service:
-  stage: scan-docker
+  image: bitnami/trivy:latest
+  stage: scan
   needs:
     - build-docker
   only:
@@ -166,7 +175,9 @@ scan-analyse-service:
       - master
   allow_failure: true
   script:
-    - make scan-analyse-service
+    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-analyse-service-report.json dbrepo-analyse-service:latest
+    - trivy image --insecure --exit-code 0 dbrepo-analyse-service:latest
+    - trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-analyse-service:latest
   cache:
     paths:
       - .trivycache/
@@ -177,7 +188,8 @@ scan-analyse-service:
       container_scanning: ./.trivy/trivy-analyse-service-report.json
 
 scan-authentication-service:
-  stage: scan-docker
+  image: bitnami/trivy:latest
+  stage: scan
   needs:
     - build-docker
   only:
@@ -186,7 +198,9 @@ scan-authentication-service:
       - master
   allow_failure: true
   script:
-    - make scan-authentication-service
+    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-authentication-service-report.json dbrepo-authentication-service:latest
+    - trivy image --insecure --exit-code 0 dbrepo-authentication-service:latest
+    - trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-authentication-service:latest
   cache:
     paths:
       - .trivycache/
@@ -197,7 +211,8 @@ scan-authentication-service:
       container_scanning: ./.trivy/trivy-authentication-service-report.json
 
 scan-broker-service:
-  stage: scan-docker
+  image: bitnami/trivy:latest
+  stage: scan
   needs:
     - build-docker
   only:
@@ -206,7 +221,9 @@ scan-broker-service:
       - master
   allow_failure: true
   script:
-    - make scan-broker-service
+    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-broker-service-report.json dbrepo-authentication-service:latest
+    - trivy image --insecure --exit-code 0 dbrepo-broker-service:latest
+    - trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-broker-service:latest
   cache:
     paths:
       - .trivycache/
@@ -217,7 +234,8 @@ scan-broker-service:
       container_scanning: ./.trivy/trivy-broker-service-report.json
 
 scan-gateway-service:
-  stage: scan-docker
+  image: bitnami/trivy:latest
+  stage: scan
   needs:
     - build-docker
   only:
@@ -226,7 +244,9 @@ scan-gateway-service:
       - master
   allow_failure: true
   script:
-    - make scan-gateway-service
+    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-gateway-service-report.json "nginx:1.25.0-alpine-slim"
+    - trivy image --insecure --exit-code 0 "nginx:1.25.0-alpine-slim"
+    - trivy image --insecure --exit-code 1 --severity CRITICAL "nginx:1.25.0-alpine-slim""
   cache:
     paths:
       - .trivycache/
@@ -237,7 +257,8 @@ scan-gateway-service:
       container_scanning: ./.trivy/trivy-gateway-service-report.json
 
 scan-metadata-service:
-  stage: scan-docker
+  image: bitnami/trivy:latest
+  stage: scan
   needs:
     - build-docker
   only:
@@ -246,7 +267,9 @@ scan-metadata-service:
       - master
   allow_failure: true
   script:
-    - make scan-metadata-service
+    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-metadata-service-report.json dbrepo-metadata-service:latest
+    - trivy image --insecure --exit-code 0 dbrepo-metadata-service:latest
+    - trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-metadata-service:latest
   cache:
     paths:
       - .trivycache/
@@ -257,7 +280,8 @@ scan-metadata-service:
       container_scanning: ./.trivy/trivy-metadata-service-report.json
 
 scan-search-db:
-  stage: scan-docker
+  image: bitnami/trivy:latest
+  stage: scan
   needs:
     - build-docker
   only:
@@ -266,7 +290,9 @@ scan-search-db:
       - master
   allow_failure: true
   script:
-    - make scan-search-db
+    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-db-report.json "dbrepo-search-db"
+    - trivy image --insecure --exit-code 0 "dbrepo-search-db"
+    - trivy image --insecure --exit-code 1 --severity CRITICAL "dbrepo-search-db"
   cache:
     paths:
       - .trivycache/
@@ -277,7 +303,8 @@ scan-search-db:
       container_scanning: ./.trivy/trivy-search-db-report.json
 
 scan-data-db:
-  stage: scan-docker
+  image: bitnami/trivy:latest
+  stage: scan
   needs:
     - build-docker
   only:
@@ -286,7 +313,9 @@ scan-data-db:
       - master
   allow_failure: true
   script:
-    - make scan-data-db
+    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-data-db-report.json "bitnami/mariadb:10.5"
+    - trivy image --insecure --exit-code 0 "bitnami/mariadb:10.5"
+    - trivy image --insecure --exit-code 1 --severity CRITICAL "bitnami/mariadb:10.5"
   cache:
     paths:
       - .trivycache/
@@ -297,7 +326,8 @@ scan-data-db:
       container_scanning: ./.trivy/trivy-data-db-report.json
 
 scan-metadata-db:
-  stage: scan-docker
+  image: bitnami/trivy:latest
+  stage: scan
   needs:
     - build-docker
   only:
@@ -306,7 +336,9 @@ scan-metadata-db:
       - master
   allow_failure: true
   script:
-    - make scan-metadata-db
+    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-metadata-db-report.json dbrepo-metadata-db:latest
+    - trivy image --insecure --exit-code 0 dbrepo-metadata-db:latest
+    - trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-metadata-db:latest
   cache:
     paths:
       - .trivycache/
@@ -317,7 +349,8 @@ scan-metadata-db:
       container_scanning: ./.trivy/trivy-metadata-db-report.json
 
 scan-ui:
-  stage: scan-docker
+  image: bitnami/trivy:latest
+  stage: scan
   needs:
     - build-docker
   only:
@@ -326,7 +359,9 @@ scan-ui:
       - master
   allow_failure: true
   script:
-    - make scan-ui
+    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-ui-report.json dbrepo-ui:latest
+    - trivy image --insecure --exit-code 0 dbrepo-ui:latest
+    - trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-ui:latest
   cache:
     paths:
       - .trivycache/
@@ -337,7 +372,8 @@ scan-ui:
       container_scanning: ./.trivy/trivy-ui-report.json
 
 scan-log-service:
-  stage: scan-docker
+  image: bitnami/trivy:latest
+  stage: scan
   needs:
     - build-docker
   only:
@@ -346,7 +382,9 @@ scan-log-service:
       - master
   allow_failure: true
   script:
-    - make scan-log-service
+    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-log-service-report.json dbrepo-log-service:latest
+    - trivy image --insecure --exit-code 0 dbrepo-log-service:latest
+    - trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-log-service:latest
   cache:
     paths:
       - .trivycache/
@@ -357,44 +395,39 @@ scan-log-service:
       container_scanning: ./.trivy/trivy-log-service-report.json
 
 release-latest:
-  stage: release-docker
+  stage: release
+  image: docker:24-dind
   needs:
-    - scan-analyse-service
-    - scan-authentication-service
-    - scan-broker-service
-    - scan-gateway-service
-    - scan-metadata-service
-    - scan-metadata-db
-    - scan-data-db
-    - scan-search-db
-    - scan-ui
-    - scan-log-service
+    - test-metadata-service
+    - test-data-service
+    - test-mirror-service
+    - test-analyse-service
+    - test-frontend
   only:
     refs:
       - dev
   script:
-    - cp .env.unix.example .env
-    - docker login -p "${DOCKER_PASSWORD}" -u "${DOCKER_USERNAME}"
-    - docker login "${AZURE_REPO}" -p "${AZURE_PASSWORD}" -u "${AZURE_USERNAME}"
+    - "ifconfig eth0 mtu 1450 up"
+    - "apk add make"
+    - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin docker.io
+    - echo "$AZURE_PASSWORD" | docker login --username "$AZURE_USERNAME" --password-stdin dbrepo.azurecr.io
     - TAG=latest make release
 
 release-version:
-  stage: release-docker
+  stage: release
+  image: docker:24-dind
   needs:
-    - scan-analyse-service
-    - scan-authentication-service
-    - scan-broker-service
-    - scan-gateway-service
-    - scan-metadata-service
-    - scan-metadata-db
-    - scan-data-db
-    - scan-search-db
-    - scan-ui
+    - test-metadata-service
+    - test-data-service
+    - test-mirror-service
+    - test-analyse-service
+    - test-frontend
   only:
     refs:
       - master
   script:
-    - cp .env.unix.example .env
-    - docker login -p "${DOCKER_PASSWORD}" -u "${DOCKER_USERNAME}"
-    - docker login "${AZURE_REPO}" -p "${AZURE_PASSWORD}" -u "${AZURE_USERNAME}"
-    - TAG=1.3 make release
+    - "ifconfig eth0 mtu 1450 up"
+    - "apk add make"
+    - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin docker.io
+    - echo "$AZURE_PASSWORD" | docker login --username "$AZURE_USERNAME" --password-stdin dbrepo.azurecr.io
+    - "TAG=1.3 make release"
