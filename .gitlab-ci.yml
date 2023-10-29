@@ -497,7 +497,7 @@ docs-docs:
   needs:
     - docs-swagger
   script:
-    - "apt-get update && apt-get install -y git"
+    - "apt-get update && apt-get install -y git make"
     - "git submodule add https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services.git"
     # latest
     - "git submodule update --init"
