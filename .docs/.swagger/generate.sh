@@ -8,10 +8,10 @@ services[9099]=metadata
 function retrieve () {
   if [[ "$2" == analyse ]]; then
     echo "... retrieve json api from localhost:$1"
-    wget "http://localhost:$1/api-$2.json" -O "./api-$2.yaml" -q
+    wget "http://localhost:$1/api-$2.json" -O "./.docs/.swagger/api-$2.yaml" -q
   else
     echo "... retrieve yaml api from localhost:$1"
-    wget "http://localhost:$1/v3/api-docs.yaml" -O "./api-$2.yaml" -q
+    wget "http://localhost:$1/v3/api-docs.yaml" -O "./.docs/.swagger/api-$2.yaml" -q
   fi
 }
 
