@@ -1,0 +1,58 @@
+---
+author: Martin Weise
+hide:
+- navigation
+---
+
+# Publications
+
+## Refereed
+
+##### 2023
+
+* Weise, M., Miksa, T., Grantner, T., Taha, J., Moser, M., Tsepelakis, S., Sanchez-Solis, B. & Rauber, A. (2023).
+  Research Data Infrastructure Landscape at TU Wien. [Poster]. *Austrian-Slowenian High Performance Computing
+  Meeting*. <br />
+  \[[PDF](https://ec.tuwien.ac.at/~weise/pdf/weise2023landscape_paper.pdf)\] \[[Poster](https://ec.tuwien.ac.at/~weise/pdf/weise2023landscape_poster.pdf)\]
+
+* Weise, M., Grantner, T., Taha, J., Staudinger, M., Gergely, E., Stytsenko, K., Ganguly, R. & Rauber, A. (2023).
+  DBRepo: A Repository for Databases supporting Data Versioning, Schema Semantics and FAIR Principles, at *Open
+  Repositories Conference*, June 12-15th. (Stellenbosch, South Africa). June 12-15th, 2023.
+  DOI: [10.5281/zenodo.8075496](https://doi.org/10.5281/zenodo.8075496)<br />
+  [[PDF](https://zenodo.org/record/8075496/files/3_Martin_Weise_DBRepo.pdf?download=1)]
+
+* Weise, M., Knees, P., Hofmann, A., Ahmedaja, A., Beitane, A. & Rauber, A. (2023).
+  Connecting Ethnomusicology Data Collections Using Distributed Repositories and Linked Data Technology. *Proceedings
+  of the 3rd Conference of the ICTM National Committee for Portugal*, (Aveiro, Portugal).
+  DOI: [10.34726/4323](https://doi.org/10.34726/4323)
+
+##### 2022
+
+* Ekaputra, F. E., Weise, M., Flicker, K., Salleh, M. R., Rahman, N. A., Miksa, T., & Rauber, A. (2022). Towards A 
+  Data Repository for Educational Factories. *Proceedings of the 8th International Conference on Data and Software
+  Engineering*, pp. 149-154. DOI: [10.1109/ICoDSE56892.2022.9971958](https://doi.org/10.1109/ICoDSE56892.2022.9971958).
+
+* Weise, M., Staudinger, M., Michlits, C., Gergely, E., Stytsenko, K., Ganguly, R., & Rauber, A. (2022).
+  DBRepo: a Semantic Digital Repository for Relational Databases. *International Journal of Digital Curation*,
+  17(1), 11. DOI: [10.2218/ijdc.v17i1.825](https://doi.org/10.2218/ijdc.v17i1.825)
+
+##### 2021
+
+* Weise, M., Michlits, C., Staudinger, M., Gergely, E., Stytsenko, K., Ganguly, R. and Rauber A., 2021. FDA-DBRepo: A
+  Data Preservation Repository Supporting FAIR Principles, Data Versioning and Reproducible Queries. *Proceedings of
+  the 17th International Conference on Digital Preservation*, Beijing, China, p.34.
+  DOI: [10.17605/OSF.IO/B7NX5](http://doi.org/10.17605/OSF.IO/B7NX5)
+
+## Other
+
+* Weise, M. (2023). A Repository and Compute Environment for Sensitive Data. FAIRness for Closed Data,
+  at *EMBL Bioimaging and the European Open Science Cloud*, (Heidelberg, Germany). April, 19-20th, 2023.
+  DOI: [10.34726/3946](https://doi.org/10.34726/3946)
+
+* Staudinger, M. (2022). DBRepo: A Repository to Save Research Databases. [Online].
+  URL: [https://www.tuwien.at/en/tu-wien/news/news-articles/news/dbrepo](https://www.tuwien.at/en/tu-wien/news/news-articles/news/dbrepo)
+  accessed 2022-04-12
+
+* Gergely, E. (2021). Better Support for Research: Current Cooperation Projects. [Online].
+  URL: [https://zid.univie.ac.at/it-news/artikel/news/cluster-forschungsdaten/](https://zid.univie.ac.at/it-news/artikel/news/cluster-forschungsdaten/)
+  accessed 2022-04-12

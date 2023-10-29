@@ -1,0 +1,100 @@
+site_name: Database Repository
+repo_url: https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services
+repo_name: fda-services
+site_author: Research Unit Data Science, Technische Universit&auml;t Wien
+copyright: CC-BY 4.0 Technische Universit&auml;t Wien & Universit&auml;t Wien
+docs_dir: .docs
+nav:
+  - Home: index.md
+  - Deployment:
+    - Docker Compose: deployment-docker-compose.md
+    - Kubernetes:
+        - Helm Chart: deployment-helm.md
+        - "Special: Minikube": deployment-kubernetes-minikube.md
+        - "Special: Azure Cloud": deployment-kubernetes-azure.md
+  - System:
+    - Overview: system.md
+    - Services:
+      - Analyse Service: system-services-analyse.md
+      - Authentication Service: system-services-authentication.md
+      - Broker Service: system-services-broker.md
+      - Gateway Service: system-services-gateway.md
+      - Data Service: system-services-data.md
+      - Metadata Service: system-services-metadata.md
+      - Mirror Service: system-services-mirror.md
+      - Upload Service: system-services-upload.md
+    - Databases:
+      - Auth Database: system-databases-auth.md
+      - Data Database: system-databases-data.md
+      - Metadata Database: system-databases-metadata.md
+      - Search Database: system-databases-search.md
+    - Other:
+      - User Interface: system-other-ui.md
+      - Search Database Dashboard: system-other-search-dashboard.md
+  - Usage:
+    - Overview: usage-overview.md
+    - Authentication Service: usage-auth.md
+    - Broker Service: usage-broker.md
+    - Identifier Service: usage-identifier.md
+    - Upload Service: usage-upload.md
+  - publications.md
+  - contact.md
+extra_css:
+  - stylesheets/extra.css
+theme:
+  favicon: images/signet_white.png
+  custom_dir: .docs/overrides
+  logo: images/signet_white.png
+  font:
+    text: IBM Plex Serif
+    code: IBM Plex Mono
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.instant
+    - navigation.sections
+    - content.code.annotate
+    - content.code.copy
+  icon:
+    repo: fontawesome/brands/git-alt
+  palette:
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      font:
+        code: Roboto Mono
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      font:
+        code: Roboto Mono
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  name: material
+markdown_extensions:
+  - attr_list
+  - md_in_html
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - toc:
+      permalink: True
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+      options:
+        custom_icons:
+          - overrides/.icons
+extra:
+  homepage: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/
+  social:
+    - icon: fontawesome/brands/gitlab
+      link: https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services
