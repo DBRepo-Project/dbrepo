@@ -483,6 +483,7 @@ docs-swagger:
   stage: docs
   image: docker:24-dind
   script:
+    - "apk add bash"
     - "docker compose up -d || docker compose down"
     - "bash .docs/generate_swagger.sh || docker compose down"
     - "docker compose down || true"
