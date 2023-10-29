@@ -14,7 +14,7 @@ cache:
     - /root/.npm/
 
 stages:
-  - build
+#  - build
 #  - test
   - docs
 #  - scan
@@ -57,18 +57,18 @@ stages:
 #    - "yarn config set network-timeout 600000 -g"
 #    - "yarn --cwd ./dbrepo-ui install --legacy-peer-deps"
 #    - "yarn --cwd ./dbrepo-ui run build"
-
-build-docker:
-  image: docker.io/docker:24-dind
-  stage: build
-  script:
-    - "cp .env.unix.example .env"
-    - "docker build -t dbrepo-metadata-service:build --target build dbrepo-metadata-service"
-    - "docker build -t dbrepo-data-service:build --target build dbrepo-data-service"
-    - "docker build -t dbrepo-mirror-service:build --target build dbrepo-mirror-service"
-    - "docker build ./dbrepo-log-service -t dbrepo-log-service"
-    - "docker compose build --parallel"
-
+#
+#build-docker:
+#  image: docker.io/docker:24-dind
+#  stage: build
+#  script:
+#    - "cp .env.unix.example .env"
+#    - "docker build -t dbrepo-metadata-service:build --target build dbrepo-metadata-service"
+#    - "docker build -t dbrepo-data-service:build --target build dbrepo-data-service"
+#    - "docker build -t dbrepo-mirror-service:build --target build dbrepo-mirror-service"
+#    - "docker build ./dbrepo-log-service -t dbrepo-log-service"
+#    - "docker compose build --parallel"
+#
 #test-metadata-service:
 #  image: maven:3-openjdk-17
 #  stage: test
@@ -482,8 +482,6 @@ build-docker:
 docs-swagger:
   stage: docs
   image: docker.io/docker:24-dind
-  needs:
-    - build-docker
   script:
     - "apk add bash"
     - "docker compose up -d || docker compose down"
