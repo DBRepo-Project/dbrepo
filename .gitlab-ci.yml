@@ -16,6 +16,7 @@ cache:
 stages:
 #  - build
 #  - test
+  - api
   - docs
 #  - scan
 #  - release
@@ -479,8 +480,8 @@ stages:
 #    - echo "$AZURE_PASSWORD" | docker login --username "$AZURE_USERNAME" --password-stdin dbrepo.azurecr.io
 #    - "TAG=1.3 make release"
 
-docs-swagger-latest:
-  stage: docs
+api-latest:
+  stage: api
   image: docker.io/alpine:3.18
   # only dev
   script:
@@ -492,8 +493,8 @@ docs-swagger-latest:
     paths:
       - ./swagger/latest
 
-#docs-swagger-version:
-#  stage: docs
+#api-version:
+#  stage: api
 #  image: docker.io/alpine:3.18
 #  # only dev + master
 #  script:
@@ -507,12 +508,12 @@ docs-swagger-latest:
 #    paths:
 #      - ./swagger/1.3
 
-docs-docs-latest:
+docs-latest:
   stage: docs
   image: docker.io/python:3.9-slim
-  dependencies:
-    - docs-swagger-latest
-#    - docs-swagger-version
+  needs:
+    - api-latest
+#    - api-version
   script:
     - "apt-get update && apt-get install -y git make"
     - "pip install -r ./.docs/requirements.txt"
@@ -521,13 +522,13 @@ docs-docs-latest:
     # latest
     - "mkdocs build && cp -r ./site ./final/latest"
 
-docs-docs-version:
+docs-version:
   stage: docs
   image: docker.io/python:3.9-slim
-  dependencies:
-    - docs-swagger-latest
-#    - docs-swagger-version
-    - docs-docs-latest
+  needs:
+    - api-latest
+#    - api-version
+    - docs-latest
   script:
     - "apt-get update && apt-get install -y git make"
     - "pip install -r ./.docs/requirements.txt"
