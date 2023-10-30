@@ -527,6 +527,9 @@ release-docs:
     - docs-latest
 #    - docs-version
   script:
+    - eval $(ssh-agent -s)
+    - echo "$CI_KEY_PRIVATE" > /root/.ssh/id_rsa && chmod 0600 /root/.ssh/id_rsa
+    - echo "$CI_KEY_PUBLIC" > /root/.ssh/id_rsa.pub
     - echo "$CI_DOC_ID" > ~/.ssh/known_hosts
     - tar czfv final.tar.gz ./final
     - scp -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa final.tar.gz "$CI_DOC_USER"@$CI_DOC_IP:final.tar.gz
