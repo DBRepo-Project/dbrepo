@@ -492,27 +492,27 @@ docs-swagger-latest:
     paths:
       - ./swagger/latest
 
-docs-swagger-version:
-  stage: docs
-  image: docker.io/alpine:3.18
-  # only dev + master
-  script:
-    - "apk add bash git"
-    - "git fetch"
-    - "git checkout master"
-    - "bash .docs/.swagger/generate.sh"
-    - "mkdir -p ./swagger/1.3"
-    - "cp -r ./site/* ./swagger/1.3/"
-  cache:
-    paths:
-      - ./swagger/1.3
+#docs-swagger-version:
+#  stage: docs
+#  image: docker.io/alpine:3.18
+#  # only dev + master
+#  script:
+#    - "apk add bash git"
+#    - "git fetch"
+#    - "git checkout master"
+#    - "bash .docs/.swagger/generate.sh"
+#    - "mkdir -p ./swagger/1.3"
+#    - "cp -r ./site/* ./swagger/1.3/"
+#  cache:
+#    paths:
+#      - ./swagger/1.3
 
 docs-docs-latest:
   stage: docs
   image: docker.io/python:3.9-slim
   needs:
     - docs-swagger-latest
-    - docs-swagger-version
+#    - docs-swagger-version
   script:
     - "apt-get update && apt-get install -y git make"
     - "pip install -r ./.docs/requirements.txt"
@@ -526,7 +526,7 @@ docs-docs-version:
   image: docker.io/python:3.9-slim
   needs:
     - docs-swagger-latest
-    - docs-swagger-version
+#    - docs-swagger-version
     - docs-docs-latest
   script:
     - "apt-get update && apt-get install -y git make"
