@@ -529,5 +529,5 @@ release-docs:
   script:
     - "apk add bash sshpass"
     - "tar czfv final.tar.gz ./final"
-    - "sshpass -p $CI_DOC_PASS scp final.tar.gz $CI_DOC_USER@$CI_DOC_IP:final.tar.gz"
-    - "sshpass -p $CI_DOC_PASS ssh $CI_DOC_USER@$CI_DOC_IP 'rm -rf /system/user/ifs/infrastructures/public_html/dbrepo/*; tar xzfv ./final.tar.gz; rm -f ./final.tar.gz; cp -r ./final/* /system/user/ifs/infrastructures/public_html/dbrepo; rm -rf ./final'"
+    - "/usr/bin/sshpass -p $CI_DOC_PASS scp final.tar.gz $CI_DOC_USER@$CI_DOC_IP:final.tar.gz"
+    - "/usr/bin/sshpass -p $CI_DOC_PASS ssh $CI_DOC_USER@$CI_DOC_IP 'rm -rf /system/user/ifs/infrastructures/public_html/dbrepo/*; tar xzfv ./final.tar.gz; rm -f ./final.tar.gz; cp -r ./final/* /system/user/ifs/infrastructures/public_html/dbrepo; rm -rf ./final'"
