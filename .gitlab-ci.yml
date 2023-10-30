@@ -510,7 +510,7 @@ docs-swagger-latest:
 docs-docs-latest:
   stage: docs
   image: docker.io/python:3.9-slim
-  needs:
+  dependencies:
     - docs-swagger-latest
 #    - docs-swagger-version
   script:
@@ -524,7 +524,7 @@ docs-docs-latest:
 docs-docs-version:
   stage: docs
   image: docker.io/python:3.9-slim
-  needs:
+  dependencies:
     - docs-swagger-latest
 #    - docs-swagger-version
     - docs-docs-latest
