@@ -493,10 +493,10 @@ docs-swagger-latest:
 docs-swagger-version:
   stage: docs
   image: docker.io/alpine:3.18
-  # only master
+  # only dev + master
   script:
     - "apk add bash git"
-    - "git init"
+    - "git fetch"
     - "git checkout master"
     - "cd ./.docs/.swagger && bash ./generate.sh 1.3"
   cache:
