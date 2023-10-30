@@ -532,5 +532,5 @@ release-docs:
     - "eval $(ssh-agent -s)"
     - echo "$CI_DOC_PASS" | tr -d '\r' | ssh-add -
     - tar czfv final.tar.gz ./final
-    - scp final.tar.gz "$CI_DOC_USER"@$CI_DOC_IP:final.tar.gz
-    - ssh "$CI_DOC_USER"@"$CI_DOC_IP" 'rm -rf /system/user/ifs/infrastructures/public_html/dbrepo/*; tar xzfv ./final.tar.gz; rm -f ./final.tar.gz; cp -r ./final/* /system/user/ifs/infrastructures/public_html/dbrepo; rm -rf ./final'"
+    - scp -oHostKeyAlgorithms=+ssh-rsa final.tar.gz "$CI_DOC_USER"@$CI_DOC_IP:final.tar.gz
+    - ssh -oHostKeyAlgorithms=+ssh-rsa "$CI_DOC_USER"@"$CI_DOC_IP" 'rm -rf /system/user/ifs/infrastructures/public_html/dbrepo/*; tar xzfv ./final.tar.gz; rm -f ./final.tar.gz; cp -r ./final/* /system/user/ifs/infrastructures/public_html/dbrepo; rm -rf ./final'"
