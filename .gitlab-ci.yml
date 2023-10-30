@@ -528,6 +528,7 @@ docs-latest:
     - pip install -r ./.docs/requirements.txt
     - mkdir -p ./final
     - mkdocs build && cp -r ./site ./final/latest
+    - cp ./.docs/redirect.html ./final/index.html
     - cp -r ./swagger/latest ./final/latest/swagger
   cache:
     paths:
