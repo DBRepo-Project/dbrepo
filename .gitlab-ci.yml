@@ -496,6 +496,8 @@ docs-swagger-version:
   # only master
   script:
     - "apk add bash git"
+    - "git branch"
+    - "ls -la"
     - "git checkout master"
     - "cd ./.docs/.swagger && bash ./generate.sh 1.3"
   cache:
