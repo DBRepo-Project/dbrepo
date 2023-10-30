@@ -528,9 +528,18 @@ docs-latest:
     - "apt-get update && apt-get install -y git make"
     - "pip install -r ./.docs/requirements.txt"
     - "mkdir -p ./final"
-    - "ls -la ."
     # latest
     - "mkdocs build && cp -r ./site ./final/latest"
+    - "cp ./swagger/latest ./site/swagger"
+    - "ls -la ./site"
+  cache:
+    paths:
+      - ./site
+  artifacts:
+    when: always
+    paths:
+      - ./site
+    expire_in: 1 days
 
 docs-version:
   stage: docs
