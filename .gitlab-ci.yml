@@ -528,6 +528,7 @@ release-docs:
 #    - docs-version
   script:
     - export SSH_DEPLOY_KEY=$CI_DOC_ID
+    - echo "$CI_DOC_ID" > ~/.ssh/known_hosts
     - tar czfv final.tar.gz ./final
-    - scp -v -oHostKeyAlgorithms=+ssh-rsa final.tar.gz "$CI_DOC_USER"@$CI_DOC_IP:final.tar.gz
-    - ssh -v -oHostKeyAlgorithms=+ssh-rsa "$CI_DOC_USER"@"$CI_DOC_IP" 'rm -rf /system/user/ifs/infrastructures/public_html/dbrepo/*; tar xzfv ./final.tar.gz; rm -f ./final.tar.gz; cp -r ./final/* /system/user/ifs/infrastructures/public_html/dbrepo; rm -rf ./final'"
+    - scp -v final.tar.gz "$CI_DOC_USER"@$CI_DOC_IP:final.tar.gz
+    - ssh -v "$CI_DOC_USER"@"$CI_DOC_IP" 'rm -rf /system/user/ifs/infrastructures/public_html/dbrepo/*; tar xzfv ./final.tar.gz; rm -f ./final.tar.gz; cp -r ./final/* /system/user/ifs/infrastructures/public_html/dbrepo; rm -rf ./final'"
