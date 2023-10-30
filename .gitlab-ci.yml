@@ -522,15 +522,12 @@ docs-latest:
 
 release-docs:
   stage: release
-  image: docker.io/alpine:3.18
+  image: docker.io/finalgene/openssh:9.1
   needs:
     - docs-latest
 #    - docs-version
   script:
-    - apk add bash openssh-client
-    - mkdir -p ~/.ssh && touch ~/.ssh/config && echo "$CI_DOC_ID" > ~/.ssh/known_hosts && chmod -R 400 ~/.ssh
-    - "eval $(ssh-agent -s)"
-    - echo "$CI_DOC_PASS" | tr -d '\r' | ssh-add -
+    - export SSH_DEPLOY_KEY=$CI_DOC_ID
     - tar czfv final.tar.gz ./final
-    - scp -oHostKeyAlgorithms=+ssh-rsa final.tar.gz "$CI_DOC_USER"@$CI_DOC_IP:final.tar.gz
-    - ssh -oHostKeyAlgorithms=+ssh-rsa "$CI_DOC_USER"@"$CI_DOC_IP" 'rm -rf /system/user/ifs/infrastructures/public_html/dbrepo/*; tar xzfv ./final.tar.gz; rm -f ./final.tar.gz; cp -r ./final/* /system/user/ifs/infrastructures/public_html/dbrepo; rm -rf ./final'"
+    - scp final.tar.gz "$CI_DOC_USER"@$CI_DOC_IP:final.tar.gz
+    - ssh "$CI_DOC_USER"@"$CI_DOC_IP" 'rm -rf /system/user/ifs/infrastructures/public_html/dbrepo/*; tar xzfv ./final.tar.gz; rm -f ./final.tar.gz; cp -r ./final/* /system/user/ifs/infrastructures/public_html/dbrepo; rm -rf ./final'"
