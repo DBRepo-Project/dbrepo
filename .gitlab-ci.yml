@@ -506,7 +506,8 @@ docs-docs-latest:
   stage: docs
   image: docker.io/python:3.9-slim
   needs:
-    - docs-swagger
+    - docs-swagger-latest
+    - docs-swagger-version
   script:
     - "apt-get update && apt-get install -y git make"
     - "pip install -r ./.docs/requirements.txt"
