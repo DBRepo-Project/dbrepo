@@ -11,7 +11,7 @@ mkdir -p ./site
 # extract static site
 echo "extract static site .docs/.swagger/dist.tar.gz"
 tar xzf .docs/.swagger/dist.tar.gz
-for service in "analyse" "mirror" "data" "metadata" "upload"; do
+for service in "analyse" "container" "database" "query" "table" "identifier" "semantics" "user" "metadata"; do
   mkdir -p ./site/$service
   echo "extract static site ./dist -> ./site/$service"
   cp -r ./dist/* ./site/$service

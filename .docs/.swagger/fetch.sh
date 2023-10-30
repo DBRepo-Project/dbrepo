@@ -4,8 +4,13 @@
 
 declare -A services
 services[5000]=analyse
-services[9050]=mirror
-services[9093]=data
+services[9091]=container
+services[9092]=database
+services[9093]=query
+services[9094]=table
+services[9096]=identifier
+services[9097]=semantics
+services[9098]=user
 services[9099]=metadata
 
 function retrieve () {
