@@ -492,6 +492,9 @@ api-latest:
   cache:
     paths:
       - ./swagger/latest
+  artifacts:
+    when: always
+    expire_in: 1 days
 
 #api-version:
 #  stage: api
@@ -507,6 +510,9 @@ api-latest:
 #  cache:
 #    paths:
 #      - ./swagger/1.3
+#  artifacts:
+#    when: always
+#    expire_in: 1 days
 
 docs-latest:
   stage: docs
@@ -518,7 +524,7 @@ docs-latest:
     - "apt-get update && apt-get install -y git make"
     - "pip install -r ./.docs/requirements.txt"
     - "mkdir -p ./final"
-    - "ls -la ./swagger"
+    - "ls -la ."
     # latest
     - "mkdocs build && cp -r ./site ./final/latest"
 
