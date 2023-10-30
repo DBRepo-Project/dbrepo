@@ -483,12 +483,12 @@ stages:
 api-latest:
   stage: api
   image: docker.io/alpine:3.18
-  # only dev
+  # only dev and master
   script:
-    - "apk add bash"
-    - "bash .docs/.swagger/generate.sh"
-    - "mkdir -p ./swagger/latest"
-    - "cp -r ./site/* ./swagger/latest/"
+    - apk add bash
+    - bash .docs/.swagger/generate.sh
+    - mkdir -p ./swagger/latest
+    - cp -r ./site/* ./swagger/latest/
   cache:
     paths:
       - ./swagger/latest
@@ -498,19 +498,59 @@ api-latest:
       - ./swagger/latest
     expire_in: 1 days
 
+api-version:
+  stage: api
+  image: docker.io/alpine:3.18
+  # only dev and master
+  script:
+    - apk add bash git
+    - git fetch && git checkout master
+    - bash .docs/.swagger/generate.sh
+    - mkdir -p ./swagger/1.3
+    - cp -r ./site/* ./swagger/1.3/
+  cache:
+    paths:
+      - ./swagger/1.3
+  artifacts:
+    when: always
+    paths:
+      - ./swagger/1.3
+    expire_in: 1 days
+
 docs-latest:
   stage: docs
   image: docker.io/python:3.9-slim
   needs:
     - api-latest
-#    - api-version
+    - api-version
   script:
-    - "apt-get update && apt-get install -y git make"
-    - "pip install -r ./.docs/requirements.txt"
-    - "mkdir -p ./final"
-    - "mkdocs build && cp -r ./site ./final/latest"
-    - "cp -r ./swagger/latest ./final/latest/swagger"
-    - "ls -la ./final"
+    - apt-get update && apt-get install -y git make
+    - pip install -r ./.docs/requirements.txt
+    - mkdir -p ./final
+    - mkdocs build && cp -r ./site ./final/latest
+    - cp -r ./swagger/latest ./final/latest/swagger
+  cache:
+    paths:
+      - ./final
+  artifacts:
+    when: always
+    paths:
+      - ./final
+    expire_in: 1 days
+
+docs-version:
+  stage: docs
+  image: docker.io/python:3.9-slim
+  needs:
+    - api-latest
+    - api-version
+  script:
+    - apt-get update && apt-get install -y git make
+    - git fetch && git checkout master
+    - pip install -r ./.docs/requirements.txt
+    - mkdir -p ./final
+    - mkdocs build && cp -r ./site ./final/1.3
+    - cp -r ./swagger/1.3 ./final/1.3/swagger
   cache:
     paths:
       - ./final
@@ -525,7 +565,7 @@ release-docs:
   image: docker.io/finalgene/openssh:9.1
   needs:
     - docs-latest
-#    - docs-version
+    - docs-version
   script:
     - eval $(ssh-agent -s)
     - echo "$CI_KEY_PRIVATE" > /root/.ssh/id_rsa && chmod 0600 /root/.ssh/id_rsa
