@@ -520,7 +520,7 @@ docs-latest:
       - ./final
     expire_in: 1 days
 
-release-docs-latest:
+release-docs:
   stage: release
   image: docker.io/alpine:3.18
   needs:
@@ -531,6 +531,7 @@ release-docs-latest:
     - "mkdir -p ~/.ssh"
     - "echo $CI_DOC_ID > ~/.ssh/known_hosts"
     - "echo $CI_DOC_PASS > ~/.ssh/id_rsa"
+    - "eval $(ssh-agent -s)"
     - "ssh-add ~/.ssh/id_rsa"
     - "tar czfv final.tar.gz ./final"
     - "scp final.tar.gz $CI_DOC_USER@$CI_DOC_IP:final.tar.gz"
