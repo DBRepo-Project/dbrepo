@@ -3,6 +3,7 @@ repo_url: https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-service
 repo_name: fda-services
 site_author: Research Unit Data Science, Technische Universit&auml;t Wien
 copyright: CC-BY 4.0 Technische Universit&auml;t Wien & Universit&auml;t Wien
+docs_dir: .docs
 nav:
   - Home: index.md
   - get-started.md
@@ -14,7 +15,7 @@ extra_css:
   - stylesheets/extra.css
 theme:
   favicon: images/signet_white.png
-  custom_dir: docs/overrides
+  custom_dir: .docs/overrides
   logo: images/signet_white.png
   font:
     text: IBM Plex Serif
@@ -22,17 +23,31 @@ theme:
   features:
     - navigation.tabs
     - navigation.tabs.sticky
+    - navigation.instant
+    - navigation.sections
     - content.code.annotate
+    - content.code.copy
   icon:
     repo: fontawesome/brands/git-alt
   palette:
-    scheme: default
-    primary: custom
-    font:
-      code: Roboto Mono
-    toggle:
-      icon: material/weather-night
-      name: Switch to light mode
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      font:
+        code: Roboto Mono
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      font:
+        code: Roboto Mono
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
   name: material
 markdown_extensions:
   - attr_list
