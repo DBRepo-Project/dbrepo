@@ -520,14 +520,17 @@ docs-latest:
       - ./final
     expire_in: 1 days
 
-release-docs:
+release-docs-latest:
   stage: release
   image: docker.io/alpine:3.18
   needs:
     - docs-latest
 #    - docs-version
   script:
-    - "apk add bash sshpass"
+    - "apk add bash"
+    - "echo $CI_DOC_ID > ~/.ssh/known_hosts"
+    - "echo $CI_DOC_PASS > ~/.ssh/id_rsa"
+    - "ssh-add ~/.ssh/id_rsa"
     - "tar czfv final.tar.gz ./final"
-    - "/usr/bin/sshpass -p $CI_DOC_PASS scp final.tar.gz $CI_DOC_USER@$CI_DOC_IP:final.tar.gz"
-    - "/usr/bin/sshpass -p $CI_DOC_PASS ssh $CI_DOC_USER@$CI_DOC_IP 'rm -rf /system/user/ifs/infrastructures/public_html/dbrepo/*; tar xzfv ./final.tar.gz; rm -f ./final.tar.gz; cp -r ./final/* /system/user/ifs/infrastructures/public_html/dbrepo; rm -rf ./final'"
+    - "scp final.tar.gz $CI_DOC_USER@$CI_DOC_IP:final.tar.gz"
+    - "ssh $CI_DOC_USER@$CI_DOC_IP 'rm -rf /system/user/ifs/infrastructures/public_html/dbrepo/*; tar xzfv ./final.tar.gz; rm -f ./final.tar.gz; cp -r ./final/* /system/user/ifs/infrastructures/public_html/dbrepo; rm -rf ./final'"
