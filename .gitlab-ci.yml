@@ -168,8 +168,6 @@ test-frontend:
 scan-analyse-service:
   image: bitnami/trivy:latest
   stage: scan
-  needs:
-    - build-docker
   only:
     refs:
       - dev
@@ -191,8 +189,6 @@ scan-analyse-service:
 scan-authentication-service:
   image: bitnami/trivy:latest
   stage: scan
-  needs:
-    - build-docker
   only:
     refs:
       - dev
@@ -214,8 +210,6 @@ scan-authentication-service:
 scan-broker-service:
   image: bitnami/trivy:latest
   stage: scan
-  needs:
-    - build-docker
   only:
     refs:
       - dev
@@ -237,8 +231,6 @@ scan-broker-service:
 scan-gateway-service:
   image: bitnami/trivy:latest
   stage: scan
-  needs:
-    - build-docker
   only:
     refs:
       - dev
@@ -260,8 +252,6 @@ scan-gateway-service:
 scan-metadata-service:
   image: bitnami/trivy:latest
   stage: scan
-  needs:
-    - build-docker
   only:
     refs:
       - dev
@@ -283,8 +273,6 @@ scan-metadata-service:
 scan-search-db:
   image: bitnami/trivy:latest
   stage: scan
-  needs:
-    - build-docker
   only:
     refs:
       - dev
@@ -306,8 +294,6 @@ scan-search-db:
 scan-search-dashboard:
   image: bitnami/trivy:latest
   stage: scan
-  needs:
-    - build-docker
   only:
     refs:
       - dev
