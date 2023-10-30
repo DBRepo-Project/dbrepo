@@ -17,8 +17,8 @@ stages:
   - build
   - test
   - docs
-  - scan
   - release
+  - scan
 
 build-metadata-service:
   image: maven:3-openjdk-17
@@ -176,9 +176,9 @@ scan-analyse-service:
       - master
   allow_failure: true
   script:
-    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-analyse-service-report.json dbrepo-analyse-service:latest
-    - trivy image --insecure --exit-code 0 dbrepo-analyse-service:latest
-    - trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-analyse-service:latest
+    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-analyse-service-report.json docker.io/dbrepo/analyse-service:latest
+    - trivy image --insecure --exit-code 0 docker.io/dbrepo/analyse-service:latest
+    - trivy image --insecure --exit-code 1 --severity CRITICAL docker.io/dbrepo/analyse-service:latest
   cache:
     paths:
       - .trivycache/
@@ -199,9 +199,9 @@ scan-authentication-service:
       - master
   allow_failure: true
   script:
-    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-authentication-service-report.json dbrepo-authentication-service:latest
-    - trivy image --insecure --exit-code 0 dbrepo-authentication-service:latest
-    - trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-authentication-service:latest
+    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-authentication-service-report.json docker.io/dbrepo/authentication-service:latest
+    - trivy image --insecure --exit-code 0 docker.io/dbrepo/authentication-service:latest
+    - trivy image --insecure --exit-code 1 --severity CRITICAL docker.io/dbrepo/authentication-service:latest
   cache:
     paths:
       - .trivycache/
@@ -222,9 +222,9 @@ scan-broker-service:
       - master
   allow_failure: true
   script:
-    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-broker-service-report.json dbrepo-authentication-service:latest
-    - trivy image --insecure --exit-code 0 dbrepo-broker-service:latest
-    - trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-broker-service:latest
+    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-broker-service-report.json docker.io/dbrepo/broker-service:latest
+    - trivy image --insecure --exit-code 0 docker.io/dbrepo/broker-service:latest
+    - trivy image --insecure --exit-code 1 --severity CRITICAL docker.io/dbrepo/broker-service:latest
   cache:
     paths:
       - .trivycache/
@@ -245,9 +245,9 @@ scan-gateway-service:
       - master
   allow_failure: true
   script:
-    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-gateway-service-report.json "nginx:1.25.0-alpine-slim"
-    - trivy image --insecure --exit-code 0 "nginx:1.25.0-alpine-slim"
-    - trivy image --insecure --exit-code 1 --severity CRITICAL "nginx:1.25.0-alpine-slim""
+    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-gateway-service-report.json docker.io/nginx:1.25.0-alpine-slim
+    - trivy image --insecure --exit-code 0 docker.io/nginx:1.25.0-alpine-slim
+    - trivy image --insecure --exit-code 1 --severity CRITICAL docker.io/nginx:1.25.0-alpine-slim
   cache:
     paths:
       - .trivycache/
@@ -268,9 +268,9 @@ scan-metadata-service:
       - master
   allow_failure: true
   script:
-    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-metadata-service-report.json dbrepo-metadata-service:latest
-    - trivy image --insecure --exit-code 0 dbrepo-metadata-service:latest
-    - trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-metadata-service:latest
+    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-metadata-service-report.json docker.io/dbrepo/metadata-service:latest
+    - trivy image --insecure --exit-code 0 docker.io/dbrepo/metadata-service:latest
+    - trivy image --insecure --exit-code 1 --severity CRITICAL docker.io/dbrepo/metadata-service:latest
   cache:
     paths:
       - .trivycache/
@@ -291,9 +291,9 @@ scan-search-db:
       - master
   allow_failure: true
   script:
-    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-db-report.json dbrepo-search-db:latest
-    - trivy image --insecure --exit-code 0 dbrepo-search-db:latest
-    - trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-search-db:latest
+    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-db-report.json docker.io/dbrepo/search-db:latest
+    - trivy image --insecure --exit-code 0 docker.io/dbrepo/search-db:latest
+    - trivy image --insecure --exit-code 1 --severity CRITICAL docker.io/dbrepo/search-db:latest
   cache:
     paths:
       - .trivycache/
@@ -314,9 +314,9 @@ scan-search-dashboard:
       - master
   allow_failure: true
   script:
-    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-dashboard-report.json "opensearchproject/opensearch-dashboards:2.10.0"
-    - trivy image --insecure --exit-code 0 "opensearchproject/opensearch-dashboards:2.10.0"
-    - trivy image --insecure --exit-code 1 --severity CRITICAL "opensearchproject/opensearch-dashboards:2.10.0"
+    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-dashboard-report.json docker.io/opensearchproject/opensearch-dashboards:2.10.0
+    - trivy image --insecure --exit-code 0 docker.io/opensearchproject/opensearch-dashboards:2.10.0
+    - trivy image --insecure --exit-code 1 --severity CRITICAL docker.io/opensearchproject/opensearch-dashboards:2.10.0
   cache:
     paths:
       - .trivycache/
@@ -329,17 +329,15 @@ scan-search-dashboard:
 scan-search-db-init:
   image: bitnami/trivy:latest
   stage: scan
-  needs:
-    - build-docker
   only:
     refs:
       - dev
       - master
   allow_failure: true
   script:
-    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-db-init-report.json dbrepo-search-db-init:latest
-    - trivy image --insecure --exit-code 0 dbrepo-search-db-init:latest
-    - trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-search-db-init:latest
+    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-db-init-report.json docker.io/dbrepo/search-db-init:latest
+    - trivy image --insecure --exit-code 0 docker.io/dbrepo/search-db-init:latest
+    - trivy image --insecure --exit-code 1 --severity CRITICAL docker.io/dbrepo/search-db-init:latest
   cache:
     paths:
       - .trivycache/
@@ -352,17 +350,15 @@ scan-search-db-init:
 scan-data-db:
   image: bitnami/trivy:latest
   stage: scan
-  needs:
-    - build-docker
   only:
     refs:
       - dev
       - master
   allow_failure: true
   script:
-    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-data-db-report.json "bitnami/mariadb:10.5"
-    - trivy image --insecure --exit-code 0 "bitnami/mariadb:10.5"
-    - trivy image --insecure --exit-code 1 --severity CRITICAL "bitnami/mariadb:10.5"
+    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-data-db-report.json docker.io/bitnami/mariadb:10.5
+    - trivy image --insecure --exit-code 0 docker.io/bitnami/mariadb:10.5
+    - trivy image --insecure --exit-code 1 --severity CRITICAL docker.io/bitnami/mariadb:10.5
   cache:
     paths:
       - .trivycache/
@@ -375,17 +371,15 @@ scan-data-db:
 scan-metadata-db:
   image: bitnami/trivy:latest
   stage: scan
-  needs:
-    - build-docker
   only:
     refs:
       - dev
       - master
   allow_failure: true
   script:
-    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-metadata-db-report.json dbrepo-metadata-db:latest
-    - trivy image --insecure --exit-code 0 dbrepo-metadata-db:latest
-    - trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-metadata-db:latest
+    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-metadata-db-report.json docker.io/dbrepo/metadata-db:latest
+    - trivy image --insecure --exit-code 0 docker.io/dbrepo/metadata-db:latest
+    - trivy image --insecure --exit-code 1 --severity CRITICAL docker.io/dbrepo/metadata-db:latest
   cache:
     paths:
       - .trivycache/
@@ -398,17 +392,15 @@ scan-metadata-db:
 scan-ui:
   image: bitnami/trivy:latest
   stage: scan
-  needs:
-    - build-docker
   only:
     refs:
       - dev
       - master
   allow_failure: true
   script:
-    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-ui-report.json dbrepo-ui:latest
-    - trivy image --insecure --exit-code 0 dbrepo-ui:latest
-    - trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-ui:latest
+    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-ui-report.json docker.io/dbrepo/ui:latest
+    - trivy image --insecure --exit-code 0 docker.io/dbrepo/ui:latest
+    - trivy image --insecure --exit-code 1 --severity CRITICAL docker.io/dbrepo/ui:latest
   cache:
     paths:
       - .trivycache/
@@ -421,17 +413,15 @@ scan-ui:
 scan-log-service:
   image: bitnami/trivy:latest
   stage: scan
-  needs:
-    - build-docker
   only:
     refs:
       - dev
       - master
   allow_failure: true
   script:
-    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-log-service-report.json dbrepo-log-service:latest
-    - trivy image --insecure --exit-code 0 dbrepo-log-service:latest
-    - trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-log-service:latest
+    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-log-service-report.json docker.io/dbrepo/log-service:latest
+    - trivy image --insecure --exit-code 0 docker.io/dbrepo/log-service:latest
+    - trivy image --insecure --exit-code 1 --severity CRITICAL docker.io/dbrepo/log-service:latest
   cache:
     paths:
       - .trivycache/
