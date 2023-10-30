@@ -1,0 +1,860 @@
+openapi: 3.0.1
+info:
+  title: Database Repository Table Service API
+  description: Service that manages the tables
+  contact:
+    name: Prof. Andreas Rauber
+    email: andreas.rauber@tuwien.ac.at
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+  version: 1.2.0
+externalDocs:
+  description: Sourcecode Documentation
+  url: https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services
+servers:
+- url: http://localhost:9094
+  description: Generated server url
+- url: https://dbrepo2.tuwien.ac.at
+  description: Sandbox
+paths:
+  /api/container/{id}/database/{databaseId}/table/{tableId}/column/{columnId}:
+    put:
+      tags:
+      - table-column-endpoint
+      summary: Update a table column semantic mapping
+      operationId: update
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: databaseId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: tableId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: columnId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: Authorization
+        in: header
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ColumnSemanticsUpdateDto'
+        required: true
+      responses:
+        "404":
+          description: "Table, database, semantic concept, unit of measurement or\
+            \ container could not be found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "202":
+          description: Updated column semantics successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ColumnDto'
+        "403":
+          description: Access to the database is forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "400":
+          description: Update semantic concept query is malformed or update unit of
+            measurement query is malformed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "405":
+          description: Update column semantics not permitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ColumnDto'
+      security:
+      - bearerAuth: []
+  /api/container/{id}/database/{databaseId}/table:
+    get:
+      tags:
+      - table-endpoint
+      summary: List all tables
+      operationId: list
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: databaseId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "404":
+          description: Database could not be found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "405":
+          description: List tables not permitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "200":
+          description: List tables
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TableBriefDto'
+      security:
+      - bearerAuth: []
+    post:
+      tags:
+      - table-endpoint
+      summary: Create a table
+      operationId: create
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: databaseId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TableCreateDto'
+        required: true
+      responses:
+        "501":
+          description: Image is not supported
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "504":
+          description: Broker service failed to create queue
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "404":
+          description: "Database, container or user could not be found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "409":
+          description: Create table conflicts with existing table name
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "405":
+          description: Create table not permitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "201":
+          description: Created a new table
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TableBriefDto'
+        "400":
+          description: Create table query is malformed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+      security:
+      - bearerAuth: []
+  /api/container/{id}/database/{databaseId}/table/{tableId}:
+    get:
+      tags:
+      - table-endpoint
+      summary: Get information about table
+      operationId: findById
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: databaseId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: tableId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "405":
+          description: Find table not permitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "200":
+          description: Find table successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TableDto'
+        "403":
+          description: Access to the database is forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "404":
+          description: "Table, database or container could not be found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+      security:
+      - bearerAuth: []
+    delete:
+      tags:
+      - table-endpoint
+      summary: Delete a table
+      operationId: delete
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: databaseId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: tableId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "501":
+          description: Image is not supported
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "202":
+          description: Delete table successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TableDto'
+        "405":
+          description: Delete table not permitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "423":
+          description: Delete table resulted in an invalid state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "400":
+          description: Delete table query resulted in an invalid query statement
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "403":
+          description: Access to the database is forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "404":
+          description: "Table, database or container could not be found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+      security:
+      - bearerAuth: []
+components:
+  schemas:
+    ColumnSemanticsUpdateDto:
+      type: object
+      properties:
+        concept_uri:
+          type: string
+        unit_uri:
+          type: string
+    ApiErrorDto:
+      required:
+      - code
+      - message
+      - status
+      type: object
+      properties:
+        status:
+          type: string
+          example: STATUS
+          enum:
+          - 100 CONTINUE
+          - 101 SWITCHING_PROTOCOLS
+          - 102 PROCESSING
+          - 103 EARLY_HINTS
+          - 103 CHECKPOINT
+          - 200 OK
+          - 201 CREATED
+          - 202 ACCEPTED
+          - 203 NON_AUTHORITATIVE_INFORMATION
+          - 204 NO_CONTENT
+          - 205 RESET_CONTENT
+          - 206 PARTIAL_CONTENT
+          - 207 MULTI_STATUS
+          - 208 ALREADY_REPORTED
+          - 226 IM_USED
+          - 300 MULTIPLE_CHOICES
+          - 301 MOVED_PERMANENTLY
+          - 302 FOUND
+          - 302 MOVED_TEMPORARILY
+          - 303 SEE_OTHER
+          - 304 NOT_MODIFIED
+          - 305 USE_PROXY
+          - 307 TEMPORARY_REDIRECT
+          - 308 PERMANENT_REDIRECT
+          - 400 BAD_REQUEST
+          - 401 UNAUTHORIZED
+          - 402 PAYMENT_REQUIRED
+          - 403 FORBIDDEN
+          - 404 NOT_FOUND
+          - 405 METHOD_NOT_ALLOWED
+          - 406 NOT_ACCEPTABLE
+          - 407 PROXY_AUTHENTICATION_REQUIRED
+          - 408 REQUEST_TIMEOUT
+          - 409 CONFLICT
+          - 410 GONE
+          - 411 LENGTH_REQUIRED
+          - 412 PRECONDITION_FAILED
+          - 413 PAYLOAD_TOO_LARGE
+          - 413 REQUEST_ENTITY_TOO_LARGE
+          - 414 URI_TOO_LONG
+          - 414 REQUEST_URI_TOO_LONG
+          - 415 UNSUPPORTED_MEDIA_TYPE
+          - 416 REQUESTED_RANGE_NOT_SATISFIABLE
+          - 417 EXPECTATION_FAILED
+          - 418 I_AM_A_TEAPOT
+          - 419 INSUFFICIENT_SPACE_ON_RESOURCE
+          - 420 METHOD_FAILURE
+          - 421 DESTINATION_LOCKED
+          - 422 UNPROCESSABLE_ENTITY
+          - 423 LOCKED
+          - 424 FAILED_DEPENDENCY
+          - 425 TOO_EARLY
+          - 426 UPGRADE_REQUIRED
+          - 428 PRECONDITION_REQUIRED
+          - 429 TOO_MANY_REQUESTS
+          - 431 REQUEST_HEADER_FIELDS_TOO_LARGE
+          - 451 UNAVAILABLE_FOR_LEGAL_REASONS
+          - 500 INTERNAL_SERVER_ERROR
+          - 501 NOT_IMPLEMENTED
+          - 502 BAD_GATEWAY
+          - 503 SERVICE_UNAVAILABLE
+          - 504 GATEWAY_TIMEOUT
+          - 505 HTTP_VERSION_NOT_SUPPORTED
+          - 506 VARIANT_ALSO_NEGOTIATES
+          - 507 INSUFFICIENT_STORAGE
+          - 508 LOOP_DETECTED
+          - 509 BANDWIDTH_LIMIT_EXCEEDED
+          - 510 NOT_EXTENDED
+          - 511 NETWORK_AUTHENTICATION_REQUIRED
+        message:
+          type: string
+          example: Error message
+        code:
+          type: string
+          example: error.service.code
+    ColumnBriefDto:
+      required:
+      - column_type
+      - database_id
+      - id
+      - internal_name
+      - name
+      - table_id
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+          example: date
+        database_id:
+          type: integer
+          format: int64
+        table_id:
+          type: integer
+          format: int64
+        internal_name:
+          type: string
+          example: mdb_date
+        column_type:
+          type: string
+          example: date
+          enum:
+          - enum
+          - number
+          - decimal
+          - string
+          - text
+          - boolean
+          - date
+          - timestamp
+          - blob
+    ColumnDto:
+      required:
+      - auto_generated
+      - column_type
+      - id
+      - internal_name
+      - is_null_allowed
+      - is_primary_key
+      - is_public
+      - name
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+          example: Date
+        length:
+          type: integer
+          format: int32
+          example: 255
+        concept:
+          $ref: '#/components/schemas/ConceptDto'
+        unit:
+          $ref: '#/components/schemas/UnitDto'
+        internal_name:
+          type: string
+          example: mdb_date
+        date_format:
+          $ref: '#/components/schemas/ImageDateDto'
+        auto_generated:
+          type: boolean
+          example: false
+        is_primary_key:
+          type: boolean
+          example: true
+        index_length:
+          type: integer
+          format: int32
+        column_type:
+          type: string
+          example: string
+          enum:
+          - enum
+          - number
+          - decimal
+          - string
+          - text
+          - boolean
+          - date
+          - timestamp
+          - blob
+        is_public:
+          type: boolean
+          example: true
+        is_null_allowed:
+          type: boolean
+          example: false
+        enum_values:
+          type: array
+          items:
+            type: string
+    ConceptDto:
+      required:
+      - columns
+      - created
+      - uri
+      type: object
+      properties:
+        uri:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        created:
+          type: string
+          format: date-time
+        columns:
+          type: array
+          items:
+            $ref: '#/components/schemas/ColumnBriefDto'
+    ImageDateDto:
+      required:
+      - database_format
+      - example
+      - has_time
+      - id
+      - unix_format
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        example:
+          type: string
+          example: 30.01.2022
+        database_format:
+          type: string
+          example: '%d.%c.%Y'
+        unix_format:
+          type: string
+          example: dd.MM.YYYY
+        has_time:
+          type: boolean
+          example: false
+        created_at:
+          type: string
+          format: date-time
+    UnitDto:
+      required:
+      - columns
+      - created
+      - uri
+      type: object
+      properties:
+        uri:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        created:
+          type: string
+          format: date-time
+        columns:
+          type: array
+          items:
+            $ref: '#/components/schemas/ColumnBriefDto'
+    ColumnCreateDto:
+      required:
+      - name
+      - null_allowed
+      - primary_key
+      - type
+      type: object
+      properties:
+        name:
+          type: string
+          example: Date
+        type:
+          type: string
+          example: string
+          enum:
+          - enum
+          - number
+          - decimal
+          - string
+          - text
+          - boolean
+          - date
+          - timestamp
+          - blob
+        length:
+          type: integer
+          format: int32
+          example: 255
+        dfid:
+          type: integer
+          description: date format id
+          format: int64
+        primary_key:
+          type: boolean
+          example: false
+        index_length:
+          type: integer
+          format: int32
+        null_allowed:
+          type: boolean
+          example: true
+        enum_values:
+          type: array
+          description: "enum values, only considered when type = ENUM"
+          items:
+            type: string
+            description: "enum values, only considered when type = ENUM"
+    ConstraintsCreateDto:
+      type: object
+      properties:
+        uniques:
+          type: array
+          items:
+            type: array
+            items:
+              type: string
+        checks:
+          type: array
+          items:
+            type: string
+        foreign_keys:
+          type: array
+          items:
+            $ref: '#/components/schemas/ForeignKeyCreateDto'
+    ForeignKeyCreateDto:
+      type: object
+      properties:
+        columns:
+          type: array
+          items:
+            type: string
+        referenced_table:
+          type: string
+        referenced_columns:
+          type: array
+          items:
+            type: string
+        on_update:
+          type: string
+          enum:
+          - restrict
+          - cascade
+          - set_null
+          - no_action
+          - set_default
+        on_delete:
+          type: string
+          enum:
+          - restrict
+          - cascade
+          - set_null
+          - no_action
+          - set_default
+    TableCreateDto:
+      required:
+      - columns
+      - description
+      - name
+      type: object
+      properties:
+        name:
+          type: string
+          example: Air Quality
+        description:
+          type: string
+          example: Air Quality in Austria
+        columns:
+          type: array
+          items:
+            $ref: '#/components/schemas/ColumnCreateDto'
+        constraints:
+          $ref: '#/components/schemas/ConstraintsCreateDto'
+    TableBriefDto:
+      required:
+      - columns
+      - description
+      - id
+      - internal_name
+      - name
+      - owner
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+          example: Air Quality
+        description:
+          type: string
+          example: Air Quality in Austria
+        owner:
+          $ref: '#/components/schemas/UserBriefDto'
+        columns:
+          type: array
+          items:
+            $ref: '#/components/schemas/ColumnBriefDto'
+        internal_name:
+          type: string
+          example: air_quality
+    UserBriefDto:
+      required:
+      - id
+      - username
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 1ffc7b0e-9aeb-4e8b-b8f1-68f3936155b4
+        username:
+          type: string
+          description: Only contains lowercase characters
+          example: jcarberry
+        name:
+          type: string
+          example: Josiah Carberry
+        orcid:
+          type: string
+          example: 0000-0002-1825-0097
+        given_name:
+          type: string
+          example: Josiah
+        family_name:
+          type: string
+          example: Carberry
+        email_verified:
+          type: boolean
+          example: true
+    ConstraintsDto:
+      type: object
+      properties:
+        uniques:
+          type: array
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/ColumnDto'
+        checks:
+          type: array
+          items:
+            type: string
+        foreign_keys:
+          type: array
+          items:
+            $ref: '#/components/schemas/ForeignKeyDto'
+    ForeignKeyDto:
+      type: object
+      properties:
+        columns:
+          type: array
+          items:
+            $ref: '#/components/schemas/ColumnDto'
+        referenced_table:
+          $ref: '#/components/schemas/TableBriefDto'
+        referenced_columns:
+          type: array
+          items:
+            $ref: '#/components/schemas/ColumnDto'
+        on_update:
+          type: string
+          enum:
+          - restrict
+          - cascade
+          - set_null
+          - no_action
+          - set_default
+        on_delete:
+          type: string
+          enum:
+          - restrict
+          - cascade
+          - set_null
+          - no_action
+          - set_default
+    TableDto:
+      required:
+      - columns
+      - creator
+      - description
+      - id
+      - internal_name
+      - is_public
+      - name
+      - owner
+      - queue_name
+      - routing_key
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+          example: Air Quality
+        creator:
+          $ref: '#/components/schemas/UserBriefDto'
+        owner:
+          $ref: '#/components/schemas/UserBriefDto'
+        description:
+          type: string
+          example: Air Quality in Austria
+        created:
+          type: string
+          format: date-time
+        columns:
+          type: array
+          items:
+            $ref: '#/components/schemas/ColumnDto'
+        constraints:
+          $ref: '#/components/schemas/ConstraintsDto'
+        internal_name:
+          type: string
+          example: air_quality
+        queue_name:
+          type: string
+          example: dbrepo/air_quality/air_quality
+        routing_key:
+          type: string
+          example: dbrepo/air_quality/air_quality/1
+        is_public:
+          type: boolean
+          example: true
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

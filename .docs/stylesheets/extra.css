@@ -1,0 +1,26 @@
+:root {
+    --md-primary-fg-color: #1976d2;
+    --md-accent-fg-color: #166abc /* darken 10% */;
+    --md-primary-fg-color--dark: #135fa9 /* darken 10% */;
+}
+
+.md-main .md-content a:not(.action-button),
+.md-main .md-content a:not(.action-button) {
+    color: var(--md-typeset-color);
+    border-bottom: 2px solid var(--md-primary-fg-color);
+}
+
+.md-main .md-content a:not(.action-button):focus,
+.md-main .md-content a:not(.action-button):hover {
+    color: var(--md-typeset-color);
+    border-bottom: 2px solid var(--md-primary-fg-color--dark);
+}
+
+.md-banner {
+    background-color: var(--md-primary-fg-color--dark);
+}
+
+[data-md-component=announce] .md-banner__inner {
+    margin-top: 0.2rem;
+    margin-bottom: 0.2rem;
+}

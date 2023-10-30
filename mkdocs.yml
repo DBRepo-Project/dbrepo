@@ -1,0 +1,57 @@
+site_name: Database Repository
+repo_url: https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services
+repo_name: fda-services
+site_author: Research Unit Data Science, Technische Universit&auml;t Wien
+copyright: CC-BY 4.0 Technische Universit&auml;t Wien & Universit&auml;t Wien
+nav:
+  - Home: index.md
+  - get-started.md
+  - customization.md
+  - system.md
+  - publications.md
+  - contact.md
+extra_css:
+  - stylesheets/extra.css
+theme:
+  favicon: images/signet_white.png
+  custom_dir: docs/overrides
+  logo: images/signet_white.png
+  font:
+    text: IBM Plex Serif
+    code: IBM Plex Mono
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - content.code.annotate
+  icon:
+    repo: fontawesome/brands/git-alt
+  palette:
+    scheme: default
+    primary: custom
+    font:
+      code: Roboto Mono
+    toggle:
+      icon: material/weather-night
+      name: Switch to light mode
+  name: material
+markdown_extensions:
+  - attr_list
+  - md_in_html
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - toc:
+      permalink: True
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+      options:
+        custom_icons:
+          - overrides/.icons
+extra:
+  homepage: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/
+  social:
+    - icon: fontawesome/brands/gitlab
+      link: https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services
