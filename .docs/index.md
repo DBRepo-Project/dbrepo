@@ -15,7 +15,7 @@ constitute a major technical burden as their internal representation greatly dif
 repositories are designed for.
 
 [Get Started](/infrastructures/dbrepo/1.3/get-started){ .action-button .md-button .md-button--primary }
-[Learn More](/infrastructures/dbrepo/system){ .action-button .md-button .md-button--secondary }
+[Learn More](/infrastructures/dbrepo/1.3/system){ .action-button .md-button .md-button--secondary }
 
 ## Application Areas
 
