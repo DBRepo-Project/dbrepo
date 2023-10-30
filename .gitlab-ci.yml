@@ -528,6 +528,7 @@ release-docs-latest:
 #    - docs-version
   script:
     - "apk add bash"
+    - "mkdir -p ~/.ssh"
     - "echo $CI_DOC_ID > ~/.ssh/known_hosts"
     - "echo $CI_DOC_PASS > ~/.ssh/id_rsa"
     - "ssh-add ~/.ssh/id_rsa"
