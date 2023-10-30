@@ -517,7 +517,7 @@ docs-docs-latest:
     - "apt-get update && apt-get install -y git make"
     - "pip install -r ./.docs/requirements.txt"
     - "mkdir -p ./final"
-    - "ls -la ./site"
+    - "ls -la ./swagger"
     # latest
     - "mkdocs build && cp -r ./site ./final/latest"
 
