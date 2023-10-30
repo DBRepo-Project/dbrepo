@@ -485,8 +485,7 @@ docs-swagger-latest:
   # only dev
   script:
     - "apk add bash"
-    - "cd ./.docs/.swagger && bash ./generate.sh"
-    - "cp -r ./.docs/.swagger/site/* ./site/latest/swagger"
+    - "bash .docs/.swagger/generate.sh"
   cache:
     paths:
       - ./site/latest
@@ -499,8 +498,7 @@ docs-swagger-version:
     - "apk add bash git"
     - "git fetch"
     - "git checkout master"
-    - "cd ./.docs/.swagger && bash ./generate.sh"
-    - "cp -r ./.docs/.swagger/site/* ./site/1.3/swagger"
+    - "bash .docs/.swagger/generate.sh"
   cache:
     paths:
       - ./site/1.3
