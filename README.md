@@ -50,6 +50,7 @@ concurrent = 10
     allowed_services = ["docker:24-dind"]
     [[runners.kubernetes.services]]
       name = "docker:24-dind"
+      command = [ "--insecure-registry=docker-io-mirror:80", "--insecure-registry=gcr-io-mirror:80", "--insecure-registry=ghcr-io-mirror:80", "--insecure-registry=k8s-io-mirror:80" ]
       alias = "docker"
     [[runners.kubernetes.volumes.empty_dir]]
       name = "rundind"
