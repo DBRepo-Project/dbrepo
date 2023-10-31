@@ -12,6 +12,9 @@ ready
 .docs/.swagger/site/
 site/
 
+# temporary files
+.$*
+
 # Notebooks
 .jupyter/
 .pytest_cache/

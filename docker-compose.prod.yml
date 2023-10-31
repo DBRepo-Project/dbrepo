@@ -8,6 +8,7 @@ volumes:
   metadata-db-data:
   data-db-data:
   auth-db-data:
+  broker-service-data:
   upload-service-data:
   search-db-data:
 
@@ -216,6 +217,7 @@ services:
       - ./dist/cert.pem:/app/cert.pem
       - ./dist/pubkey.pem:/app/pubkey.pem
       - ./dist/definitions.json:/app/definitions.json
+      - broker-service-data:/bitnami/rabbitmq/mnesia
     healthcheck:
       test: rabbitmq-diagnostics -q is_running | grep 'is fully booted and running'
       interval: 10s

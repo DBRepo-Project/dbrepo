@@ -12,9 +12,34 @@ If you have [Docker](https://docs.docker.com/engine/install/) already installed 
 curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/install.sh | bash
 ```
 
+## Requirements
+
+### Hardware
+
+For this small, local, test deployment any modern hardware would suffice, we recommend a dedicated virtual machine with
+the following settings.
+
+!!! tip "Resource Consumption"
+
+    Note that most of the vCPU and RAM resources will be needed for starting the infrastructure, this is because of
+    Docker. During operation and especially idle times, the deployment will use significantly less resources.
+
+- 8 vCPU cores
+- 16GB RAM memory
+- 100GB SSD storage
+
+### Software
+
+We only test the Docker Compose deployment with the 
+official [Docker engine](https://docs.docker.com/engine/install/debian/) installed on 
+a [Debian](https://www.debian.org/)-based operating system. Other software deployments (e.g. Docker Desktop on Windows)
+are *not* recommended and not tested.
+
 ## Architecture
 
-The repository is designed as a microservice architecture to ensure scalability and the utilization of various
+### Overview
+
+The repository is designed as a service-based architecture to ensure scalability and the utilization of various
 technologies. The conceptualized microservices operate the basic database operations, data versioning as well as
 *findability*, *accessability*, *interoperability* and *reuseability* (FAIR).
 
@@ -23,35 +48,10 @@ technologies. The conceptualized microservices operate the basic database operat
 <figcaption>Architecture of the services deployed via Docker Compose</figcaption>
 </figure>
 
-Alternatively, you can also deploy DBRepo with [Helm](../deployment-helm/) in your virtual machine instead.
+### Notes
 
-## Environment Values
-
-| Key                    | Type   | Default                                                                                                                                                                                                                                                                                                                                                                                                    | Description                                                                                                                                                                                                                                                                   |
-|------------------------|--------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `DBREPO_CLIENT_ID`     | string | `dbrepo-client`                                                                                                                                                                                                                                                                                                                                                                                            | Client ID of the keycloak client for API communication.                                                                                                                                                                                                                       |
-| `DBREPO_CLIENT_SECRET` | string | `MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG`                                                                                                                                                                                                                                                                                                                                                                         | Client secret of the keycloak client, this should be changed in the admin console of keycloak.                                                                                                                                                                                |
-| `JWT_ISSUER`           | string | `http://localhost/api/auth/realms/dbrepo`                                                                                                                                                                                                                                                                                                                                                                  | The issuer in the JWT `iss` field of the (decoded) token. Public deployments with hostnames other than localhost need to change that. The issuer always has the form `<PROTOCOL>://<HOSTNAME>/api/auth/realms/dbrepo`, e.g. change PROTOCOL to https for SSL/TLS deployments. |
-| `JWT_PUBKEY`           | string | `MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB` | Public key that can verify the JWT signature, this should be changed.                                                                                                                                                                                                         |
-| `JWT_CERT`             | string | `MIICmzCCAYMCBgGG3GWyBTANBgkqhkiG9w0BAQsFADARMQ8wDQYDVQQDDAZkYnJlcG8wHhcNMjMwMzEzMTkxMzE3WhcNMzMwMzEzMTkxNDU3WjARMQ8wDQYDVQQDDAZkYnJlcG8wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCqqcdDYFZZb28M0tEJzEP77FmD/Xqioyj9zWX6VwUSOMAgmMmn8eqs9hT9T0a+q4YTo9tUW1PNbUpwprA5b4Uk04DcIajxDVMUR/PjcHytmkqwVskq9AZW/Vngdoo+8tSbuIybwe/3Vwt266hbHpDcM97a+DXcYooRl7tQWCEX7RP27wQrMD9epDQ6IgKayZg9vC9/03dsIqwH9jXQRiZlFvwiEKhX2aY7lPGBaCK414JO00K/Z49iov9TRa/IYVbSt5qwgrx6DcqsBSPwOnI6A85UGfeUEZ/7coVJiL7RvBlsllapsL9eWTbQajVh94k9Ei3sibEPbtH+U2OAM78zAgMBAAEwDQYJKoZIhvcNAQELBQADggEBAASnN1Cuif1sdfEK2kWAURSXGJCohCROLWdKFjaeHPRaEfpbFJsgxW0Yj3nwX5O3bUlOWoTyENwnXSsXMQsqnNi+At32CKaKO8+AkhAbgQL9F0B+KeJwmYv3cUj5N/LYkJjBvZBzUZ4Ugu5dcxH0k7AktLAIwimkyEnxTNolOA3UyrGGpREr8MCKWVr10RFuOpF/0CsJNNwbHXzalO9D756EUcRWZ9VSg6QVNso0YYRKTnILWDn9hcTRnqGy3SHo3anFTqQZ+BB57YbgFWy6udC0LYRB3zdp6zNti87eu/VEymiDY/mmo1AB8Tm0b6vxFz4AKcL3ax5qS6YnZ9efSzk=IJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB` | Public key that can verify the JWT signature, this should be changed.                                                                                                                                                                                                         |
-
-## Requirements
-
-### Hardware
-
-For this small, local, test deployment any modern hardware would suffice, we recommend a dedicated virtual machine with
-the following settings. Note that most of the vCPU and RAM resources will be needed for starting the infrastructure,
-this is because of Docker. During idle times, the deployment will use significantly less resources.
-
-- 4 vCPU cores
-- 16GB RAM memory
-- 100GB SSD storage
-
-### Software
-
-Install Docker Engine for your operating system. There are excellent guides available for Linux, we highly recommend
-to use a stable distribution such as [:simple-debian: Debian](https://www.debian.org/download). In the following guide
-we only consider Debian.
+Please note that we only save the state of the databases as well as the [Broker Service](../system-services-broker)
+since RabbitMQ maintains state inside the container.
 
 ## Deployment
 
@@ -142,3 +142,9 @@ docker run --rm --volumes-from $NAME -v /home/$USER/backup/.tar.gz:/backup/$NAME
 ```
 
 Future releases will be backwards compatible and will come with migration scripts.
+
+## Limitations
+
+!!! info "Alternative Deployments"
+
+    Alternatively, you can also deploy DBRepo with [Helm](../deployment-helm/) in your virtual machine instead.
