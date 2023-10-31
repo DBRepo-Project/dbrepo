@@ -58,7 +58,7 @@ since RabbitMQ maintains state inside the container.
 We maintain a rapid prototype deployment option through Docker Compose (v2.17.0 and newer). This deployment creates the
 core infrastructure and a single Docker container for all user-generated databases.
 
-    curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/install.sh | sudo bash
+    curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/install.sh | bash
 
 View the logs:
 
