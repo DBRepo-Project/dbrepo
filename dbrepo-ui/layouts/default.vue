@@ -1,5 +1,6 @@
 <template>
   <v-app>
+    <!-- Side Bar -->
     <v-navigation-drawer v-model="drawer" fixed app :permanent="$vuetify.breakpoint.lgAndUp">
       <div>
         <v-img
@@ -74,68 +75,142 @@
       </div>
     </v-navigation-drawer>
     <v-form ref="form" @submit.prevent="submit">
-      <v-app-bar fixed app>
+      <v-app-bar app extension-height="64">
         <v-app-bar-nav-icon v-if="!$vuetify.breakpoint.lgAndUp" class="mr-1" @click.stop="drawer = !drawer" />
+        <!-- Search Bar -->
         <v-text-field
           v-model="search"
           solo
           flat
           single-line
           hide-details
-          :placeholder="$t('layout.search', { name: 'vue-i18n' })" />
-        <v-btn icon class="ml-2" type="submit" name="search-submit" @click="retrieve">
-          <v-icon>mdi-magnify</v-icon>
+          append-icon="mdi-magnify"
+          :placeholder="$t('layout.search', { name: 'vue-i18n' })"
+          @click:append="retrieve" />
+        <v-btn class="ml-2" plain type="submit" name="search-advanced" @click="toggleAdvancedSearch">
+          Advanced
         </v-btn>
         <v-spacer />
-        <div v-if="!user">
-          <v-btn
-            class="mr-2"
-            color="secondary"
-            to="/login">
-            <v-icon left>mdi-login</v-icon>
-            {{ $t('layout.login', { name: 'vue-i18n' }) }}
-          </v-btn>
-          <v-btn
-            class="mr-2"
-            color="primary"
-            to="/signup">
-            <v-icon left>mdi-account-plus</v-icon>
-            {{ $t('layout.signup', { name: 'vue-i18n' }) }}
-          </v-btn>
-        </div>
-        <div v-if="user">
-          <v-btn to="/user" plain>
-            {{ user.username }}
-          </v-btn>
-          <v-menu bottom offset-y left>
-            <template v-slot:activator="{ on, attrs }">
-              <v-btn
-                icon
-                v-bind="attrs"
-                v-on="on">
-                <v-icon>mdi-dots-vertical</v-icon>
-              </v-btn>
-            </template>
-            <v-list>
-              <!--
-              <v-list-item
-                v-for="locale in []"
-                :key="locale.code"
-                :to="switchLocalePath(locale.code)">
-                <v-list-item-title>{{ locale.name }}</v-list-item-title>
-              </v-list-item>
-              -->
-              <v-list-item
-                v-if="user"
-                @click="logout">
-                {{ $t('layout.logout', { name: 'vue-i18n' }) }}
-              </v-list-item>
-            </v-list>
-          </v-menu>
-        </div>
+        <v-btn
+          v-if="!user"
+          class="mr-2"
+          color="secondary"
+          to="/login">
+          <v-icon left>mdi-login</v-icon>
+          {{ $t('layout.login', { name: 'vue-i18n' }) }}
+        </v-btn>
+        <v-btn
+          v-if="!user"
+          color="primary"
+          to="/signup">
+          <v-icon left>mdi-account-plus</v-icon>
+          {{ $t('layout.signup', { name: 'vue-i18n' }) }}
+        </v-btn>
+        <v-btn
+          v-if="user"
+          to="/user"
+          plain>
+          {{ user.username }}
+        </v-btn>
+        <v-menu v-if="user" bottom offset-y left>
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn
+              icon
+              v-bind="attrs"
+              v-on="on">
+              <v-icon>mdi-dots-vertical</v-icon>
+            </v-btn>
+          </template>
+          <v-list>
+            <!--
+            <v-list-item
+              v-for="locale in []"
+              :key="locale.code"
+              :to="switchLocalePath(locale.code)">
+              <v-list-item-title>{{ locale.name }}</v-list-item-title>
+            </v-list-item>
+            -->
+            <v-list-item
+              v-if="user"
+              @click="logout">
+              {{ $t('layout.logout', { name: 'vue-i18n' }) }}
+            </v-list-item>
+          </v-list>
+        </v-menu>
       </v-app-bar>
     </v-form>
     <v-main>
+      <!-- Advanced Search card -->
+      <v-card v-if="showAdvancedSearch" id="advanced_search" flat tile>
+        <v-card-text>
+          <v-container fluid>
+            <v-row>
+              <v-col cols="auto">
+                <v-select
+                  v-model="advancedSearchData.type"
+                  clearable
+                  :items="fieldItems"
+                  item-text="name"
+                  item-value="value"
+                  label="Type" />
+              </v-col>
+              <v-col cols="auto">
+                <v-text-field v-model="advancedSearchData.id" clearable label="ID" variant="underlined" />
+              </v-col>
+              <v-col cols="auto">
+                <v-text-field
+                  v-if="!hideFields.hideNameField"
+                  v-model="advancedSearchData.name"
+                  clearable
+                  label="Name"
+                  variant="underlined" />
+              </v-col>
+              <v-col cols="auto">
+                <v-text-field
+                  v-if="!hideFields.hideInternalNameField"
+                  v-model="advancedSearchData.internal_name"
+                  clearable
+                  label="Internal Name"
+                  variant="underlined" />
+              </v-col>
+            </v-row>
+            <v-row v-if="fieldsResponse">
+              <!-- Loop through fields of Response -->
+              <span v-for="field in fieldsResponse.fields" :key="`${field.attribute_name}`">
+                <!-- Loop through "fields" list -->
+                <template v-if="shouldRenderItem(field)">
+                  <v-col cols="auto">
+                    <v-checkbox
+                      v-if="field.type === 'boolean'"
+                      v-model="advancedSearchData[generateDynamicVModelKey(field)]"
+                      :label="generateFriendlyName(field)" />
+                    <v-text-field
+                      v-if="field.type === 'keyword' || field.type === 'text' || field.type === 'date'"
+                      v-model="advancedSearchData[generateDynamicVModelKey(field)]"
+                      type="text"
+                      :label="generateFriendlyName(field)"
+                      clearable />
+                    <v-text-field
+                      v-if="field.type === 'integer'"
+                      v-model="advancedSearchData[generateDynamicVModelKey(field)]"
+                      type="number"
+                      :label="generateFriendlyName(field)"
+                      clearable />
+                  </v-col>
+                </template>
+              </span>
+            </v-row>
+          </v-container>
+        </v-card-text>
+        <v-card-text>
+          <v-btn @click="toggleAdvancedSearch">
+            Cancel
+          </v-btn>
+          <v-btn class="ml-2" color="primary" @click="advancedSearch">
+            Search
+          </v-btn>
+        </v-card-text>
+      </v-card>
       <v-container>
         <nuxt />
       </v-container>
@@ -144,8 +219,10 @@
 </template>
 
 <script>
+import AdvancedSearchService from '@/api/advanced_search.service'
 import AuthenticationService from '@/api/authentication.service'
 import DatabaseService from '@/api/database.service'
+import EventBus from '@/api/eventBus'
 import TableService from '@/api/table.service'
 
 export default {
@@ -160,7 +237,25 @@ export default {
       loadingUser: true,
       loadingSearch: false,
       loadingDatabases: false,
-      search: null
+      search: null,
+      showAdvancedSearch: false,
+      fieldItems: [
+        { name: 'Database', value: 'database' },
+        { name: 'Table', value: 'table' },
+        { name: 'Column', value: 'column' },
+        { name: 'User', value: 'user' },
+        { name: 'Identifier', value: 'identifier' },
+        { name: 'Concept', value: 'concept' },
+        { name: 'Unit', value: 'unit' },
+        { name: 'View', value: 'view' }
+      ],
+      fieldsResponse: null,
+      advancedSearchData: {
+        name: '',
+        internal_name: '',
+        id: '',
+        type: ''
+      }
     }
   },
   computed: {
@@ -208,6 +303,13 @@ export default {
     },
     databaseCount () {
       return this.$store.state.databaseCount
+    },
+    hideFields () {
+      const selectedOption = this.advancedSearchData.type
+      return {
+        hideNameField: selectedOption === 'identifier',
+        hideInternalNameField: ['identifier', 'user', 'concept', 'unit'].includes(selectedOption)
+      }
     }
   },
   watch: {
@@ -253,6 +355,22 @@ export default {
             this.databaseCountFilter = count
           })
       }
+    },
+    'advancedSearchData.type': {
+      async handler () {
+        if (this.advancedSearchData.type) {
+          const promise = await AdvancedSearchService.getFields(this.advancedSearchData.type.toLowerCase())
+          this.fieldsResponse = JSON.parse(JSON.stringify(promise))
+          console.log('Fields Response: ', this.fieldsResponse)
+        } else {
+          // Clear form fields from advancedSearchData if fields dropdown is cleared
+          for (const key in this.advancedSearchData) {
+            delete this.advancedSearchData[key]
+          }
+          this.fieldsResponse = null // Reset fieldsResponse when type is cleared from user
+        }
+      },
+      immediate: true
     }
   },
   mounted () {
@@ -334,6 +452,7 @@ export default {
         })
     },
     retrieve () {
+      console.info('Performing Normal Search')
       this.$router.push({ path: '/search', query: { q: this.search } })
     },
     initEnvironment () {
@@ -345,6 +464,84 @@ export default {
       this.$store.commit('SET_SEARCH_PASSWORD', this.$config.searchPassword)
       this.$store.commit('SET_DOI_URL', this.$config.doiUrl)
       console.debug('runtime config', this.$config)
+    },
+    advancedSearch () {
+      console.info('Performing Advanced Search')
+      // attach free text value to the provided data
+      if (this.search) {
+        this.advancedSearchData.search_term = this.search
+      } else {
+        delete this.advancedSearchData.search_term
+      }
+      EventBus.$emit('advancedSearchButtonClicked')
+      this.$router.push({ path: '/search' })
+    },
+    toggleAdvancedSearch () {
+      this.showAdvancedSearch = !this.showAdvancedSearch
+    },
+    isAdvancedSearchEmpty () {
+      return !(
+        this.advancedSearchData.type ||
+        this.advancedSearchData.id ||
+        this.advancedSearchData.name ||
+        this.advancedSearchData.internal_name
+      )
+    },
+    dynamicFieldsMap () {
+      // Defines a mapping to narrow down the fields rendered for the advanced search
+      return {
+        database: ['created', 'description', 'is_public'],
+        table: ['created', 'description', 'is_public'],
+        column: ['column_type', 'is_primary_key', 'is_null_allowed'],
+        user: ['firstname', 'lastname', 'username'],
+        identifier: [
+          'creators.properties.creator_name', 'creators.properties.name_identifier',
+          'descriptions.properties.description', 'doi', 'funders.properties.funder_identifier',
+          'licenses', 'publication_year', 'titles.properties.title', 'visibility'
+        ],
+        view: ['is_public', 'query'],
+        concept: ['uri'],
+        unit: ['uri']
+      }
+    },
+    getLastFlattenedItem (str) {
+      // Returns substring after the last dot otherwise the string itself if no dots are contained
+      if (!str) { return '' }
+
+      // Check if string is a flattened nested object
+      return str.includes('.') ? str.split('.').slice(-1)[0] : str
+    },
+    generateFriendlyName (item) {
+      // Generates a proper name to be displayed with the dynamic component
+      if (!item) { return '' }
+
+      const specialAbbreviations = {
+        doi: 'DOI',
+        uri: 'URI'
+        // Add more abbreviations here, if needed
+      }
+      const str = this.getLastFlattenedItem(item.attribute_name)
+
+      return str.split('_').map((word) => {
+        const lowerWord = word.toLowerCase()
+        return specialAbbreviations[lowerWord] || (word.charAt(0).toUpperCase() + word.slice(1))
+      }).join(' ')
+    },
+    generateDynamicVModelKey (item) {
+      // Generates a dynamic v-model; It will be attached to the advancedSearchData object
+      if (!item) { return '' }
+
+      return `${this.advancedSearchData.type}.${item.attribute_name}`
+    },
+    shouldRenderItem (item) {
+      // Checks if item's attribute_name matches any wanted field
+      // The expected response is of a flattened format, so this method must be modified accordingly if the response is changed
+      return this.dynamicFieldsMap()[this.advancedSearchData.type].includes(item.attribute_name)
+    }
+  },
+  provide () {
+    return {
+      advancedSearchData: this.advancedSearchData
     }
   }
 }

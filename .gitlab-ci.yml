@@ -58,6 +58,13 @@ build-frontend:
     - "yarn --cwd ./dbrepo-ui install --legacy-peer-deps"
     - "yarn --cwd ./dbrepo-ui run build"
 
+build-search-service:
+  image: python:3.10-alpine
+  stage: build
+  script:
+    - "pip install pipenv"
+    - "cd dbrepo-search-service && pipenv install --system --deploy"
+
 build-docker:
   image: docker.io/docker:24-dind
   stage: build
