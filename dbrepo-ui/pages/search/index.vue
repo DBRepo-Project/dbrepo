@@ -33,8 +33,12 @@
 </template>
 
 <script>
+import AdvancedSearchService from '@/api/advanced_search.service'
+import EventBus from '@/api/eventBus'
 import SearchService from '@/api/search.service'
+
 export default {
+  inject: ['advancedSearchData'],
   data () {
     return {
       results: [],
@@ -64,6 +68,9 @@ export default {
   watch: {
     '$route.query.q': {
       handler (query) {
+        if (this.advancedSearchData) {
+          return
+        }
         this.retrieve()
       },
       deep: true,
@@ -71,14 +78,27 @@ export default {
     },
     '$route.query.t': {
       handler (type) {
+        if (this.advancedSearchData) {
+          return
+        }
         this.retrieve()
       },
       deep: true,
       immediate: true
     }
   },
+  created () {
+    EventBus.$on('advancedSearchButtonClicked', () => {
+      this.doAdvancedSearch(this.advancedSearchData)
+    })
+  },
+  beforeDestroy () {
+    EventBus.$off('advancedSearchButtonClicked')
+  },
   mounted () {
-    if (this.query) {
+    if (Object.keys(this.advancedSearchData).some(key => key !== 'search_term')) {
+      this.doAdvancedSearch(this.advancedSearchData)
+    } else if (this.query) {
       this.retrieve(this.query)
     }
   },
@@ -91,6 +111,18 @@ export default {
       SearchService.search(this.query)
         .then((hits) => {
           this.results = hits.map(h => h._source)
+        })
+        .finally(() => {
+          this.loading = false
+        })
+    },
+    doAdvancedSearch (advancedSearchData) {
+      console.log('Advanced Search Data:', advancedSearchData)
+      AdvancedSearchService.search(advancedSearchData)
+        .then((response) => {
+          const hits = response.hits.hits
+          this.results = hits.map(h => h._source)
+          console.log('Advanced Search Results', this.results)
         })
         .finally(() => {
           this.loading = false
