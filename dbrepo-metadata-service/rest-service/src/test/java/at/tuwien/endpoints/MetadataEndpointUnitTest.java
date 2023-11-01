@@ -6,7 +6,7 @@ import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.oaipmh.OaiListIdentifiersParameters;
 import at.tuwien.oaipmh.OaiRecordParameters;
 import at.tuwien.repository.mdb.*;
-import at.tuwien.repository.sdb.IdentifierIdxRepository;
+import at.tuwien.utils.XmlUtils;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -46,6 +46,7 @@ public class MetadataEndpointUnitTest extends BaseUnitTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final String body = response.getBody();
         assertNotNull(body);
+        assertTrue(XmlUtils.validateXmlResponse("http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd", body));
     }
 
     @Test
@@ -57,6 +58,7 @@ public class MetadataEndpointUnitTest extends BaseUnitTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final String body = response.getBody();
         assertNotNull(body);
+        assertTrue(XmlUtils.validateXmlResponse("http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd", body));
     }
 
     @Test
@@ -73,6 +75,7 @@ public class MetadataEndpointUnitTest extends BaseUnitTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final String body = response.getBody();
         assertNotNull(body);
+        assertTrue(XmlUtils.validateXmlResponse("http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd", body));
     }
 
     @Test
@@ -85,8 +88,10 @@ public class MetadataEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(Optional.of(IDENTIFIER_1));
 
         /* test */
-        final ResponseEntity<?> response = metadataEndpoint.getRecord(parameters);
+        final ResponseEntity<String> response = metadataEndpoint.getRecord(parameters);
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        final String body = response.getBody();
+        assertTrue(XmlUtils.validateXmlResponse("http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd", body));
     }
 
     @Test
@@ -100,8 +105,10 @@ public class MetadataEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(Optional.of(IDENTIFIER_1));
 
         /* test */
-        final ResponseEntity<?> response = metadataEndpoint.getRecord(parameters);
+        final ResponseEntity<String> response = metadataEndpoint.getRecord(parameters);
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        final String body = response.getBody();
+        assertTrue(XmlUtils.validateXmlResponse("http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd", body));
     }
 
     @Test
@@ -115,13 +122,15 @@ public class MetadataEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(Optional.of(IDENTIFIER_1));
 
         /* test */
-        final ResponseEntity<?> response = metadataEndpoint.getRecord(parameters);
+        final ResponseEntity<String> response = metadataEndpoint.getRecord(parameters);
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        final String body = response.getBody();
+        assertTrue(XmlUtils.validateXmlResponse("http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd", body));
     }
 
     @Test
     @WithAnonymousUser
-    public void getRecord_succeeds() {
+    public void getRecord_dc_succeeds() {
         final OaiRecordParameters parameters = new OaiRecordParameters();
         parameters.setMetadataPrefix("oai_dc");
         parameters.setIdentifier(Long.toString(1L));
@@ -135,6 +144,28 @@ public class MetadataEndpointUnitTest extends BaseUnitTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final String body = response.getBody();
         assertNotNull(body);
+//        assertTrue(XmlUtils.validateXmlResponse("http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd", body));
+        // TODO: currently no strict validation passes
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void getRecord_datacite_succeeds() {
+        final OaiRecordParameters parameters = new OaiRecordParameters();
+        parameters.setMetadataPrefix("oai_datacite");
+        parameters.setIdentifier(Long.toString(1L));
+
+        /* mock */
+        when(identifierRepository.findById(IDENTIFIER_1_ID))
+                .thenReturn(Optional.of(IDENTIFIER_1));
+
+        /* test */
+        final ResponseEntity<String> response = metadataEndpoint.getRecord(parameters);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        final String body = response.getBody();
+        assertNotNull(body);
+//        assertTrue(XmlUtils.validateXmlResponse("http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd", body));
+        // TODO: currently no strict validation passes
     }
 
     @Test
@@ -149,8 +180,10 @@ public class MetadataEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(Optional.of(IDENTIFIER_1));
 
         /* test */
-        final ResponseEntity<?> response = metadataEndpoint.getRecord(parameters);
+        final ResponseEntity<String> response = metadataEndpoint.getRecord(parameters);
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        final String body = response.getBody();
+        assertTrue(XmlUtils.validateXmlResponse("http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd", body));
     }
 
     @Test
@@ -166,6 +199,9 @@ public class MetadataEndpointUnitTest extends BaseUnitTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final String body = response.getBody();
         assertNotNull(body);
+        assertTrue(body.contains("oai_dc"));
+        assertTrue(body.contains("oai_datacite"));
+        assertTrue(XmlUtils.validateXmlResponse("http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd", body));
     }
 
 }

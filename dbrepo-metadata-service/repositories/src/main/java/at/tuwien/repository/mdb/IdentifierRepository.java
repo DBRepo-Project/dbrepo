@@ -65,4 +65,6 @@ public interface IdentifierRepository extends JpaRepository<Identifier, Long> {
 
     List<Identifier> findAllSubsetIdentifiers();
 
+    Optional<Identifier> findByDoi(String doi);
+
 }

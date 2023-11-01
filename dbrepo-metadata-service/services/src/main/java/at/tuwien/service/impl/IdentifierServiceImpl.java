@@ -2,7 +2,7 @@ package at.tuwien.service.impl;
 
 import at.tuwien.ExportResource;
 import at.tuwien.api.identifier.*;
-import at.tuwien.config.EndpointConfig;
+import at.tuwien.config.MetadataConfig;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.LanguageType;
 import at.tuwien.entities.database.View;
@@ -11,6 +11,7 @@ import at.tuwien.entities.identifier.IdentifierTitle;
 import at.tuwien.entities.identifier.IdentifierType;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.IdentifierMapper;
+import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.querystore.Query;
 import at.tuwien.repository.mdb.IdentifierRepository;
 import at.tuwien.repository.sdb.IdentifierIdxRepository;
@@ -30,37 +31,36 @@ import java.security.Principal;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Stream;
 
 @Slf4j
 @Service
 public class IdentifierServiceImpl implements IdentifierService {
 
-    private final UserService userService;
     private final ViewService viewService;
-    private final EndpointConfig endpointConfig;
+    private final QueryService queryService;
+    private final StoreService storeService;
+    private final MetadataConfig metadataConfig;
+    private final MetadataMapper metadataMapper;
     private final TemplateEngine templateEngine;
     private final DatabaseService databaseService;
     private final IdentifierMapper identifierMapper;
-    private final QueryService queryService;
-    private final StoreService storeService;
     private final IdentifierRepository identifierRepository;
     private final IdentifierIdxRepository identifierIdxRepository;
 
-    public IdentifierServiceImpl(UserService userService, ViewService viewService, EndpointConfig endpointConfig,
-                                 TemplateEngine templateEngine, DatabaseService databaseService,
-                                 IdentifierMapper identifierMapper, QueryService queryService,
-                                 StoreService storeService, IdentifierRepository identifierRepository,
+    public IdentifierServiceImpl(ViewService viewService, TemplateEngine templateEngine,
+                                 DatabaseService databaseService, IdentifierMapper identifierMapper,
+                                 QueryService queryService, StoreService storeService, MetadataConfig metadataConfig,
+                                 MetadataMapper metadataMapper, IdentifierRepository identifierRepository,
                                  IdentifierIdxRepository identifierIdxRepository) {
-        this.userService = userService;
         this.viewService = viewService;
-        this.endpointConfig = endpointConfig;
+        this.queryService = queryService;
+        this.storeService = storeService;
+        this.metadataConfig = metadataConfig;
+        this.metadataMapper = metadataMapper;
         this.templateEngine = templateEngine;
         this.databaseService = databaseService;
         this.identifierMapper = identifierMapper;
-        this.queryService = queryService;
-        this.storeService = storeService;
         this.identifierRepository = identifierRepository;
         this.identifierIdxRepository = identifierIdxRepository;
     }
@@ -82,7 +82,18 @@ public class IdentifierServiceImpl implements IdentifierService {
         final Optional<Identifier> optional = identifierRepository.findById(identifierId);
         if (optional.isEmpty()) {
             log.error("Identifier with id {} not existing", identifierId);
-            throw new IdentifierNotFoundException("Unable to find identifier");
+            throw new IdentifierNotFoundException("Unable to find identifier with pid: " + identifierId);
+        }
+        return optional.get();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Identifier findByDoi(String doi) throws IdentifierNotFoundException {
+        final Optional<Identifier> optional = identifierRepository.findByDoi(doi);
+        if (optional.isEmpty()) {
+            log.error("Identifier with doi {} not existing", doi);
+            throw new IdentifierNotFoundException("Unable to find identifier with doi: " + doi);
         }
         return optional.get();
     }
@@ -187,25 +198,12 @@ public class IdentifierServiceImpl implements IdentifierService {
         final Identifier identifier = find(id);
         /* context */
         final Context context = new Context();
-        if (identifier.getDoi() != null) {
-            context.setVariable("identifierType", "DOI");
-            context.setVariable("identifier", identifier.getDoi());
-        } else {
-            context.setVariable("identifierType", "PID");
-            context.setVariable("identifier", endpointConfig.getWebsiteUrl() + "/pid/" + identifier.getId());
-        }
-        context.setVariable("language", identifier.getLanguage());
-        context.setVariable("creators", identifier.getCreators());
-        context.setVariable("titles", identifier.getTitles());
-        context.setVariable("publisher", identifier.getPublisher());
-        context.setVariable("publicationYear", identifier.getPublicationYear());
-        context.setVariable("created", identifier.getCreated());
-        context.setVariable("relatedIdentifiers", identifier.getRelatedIdentifiers());
-        context.setVariable("funders", identifier.getFunders());
-        context.setVariable("descriptions", identifier.getDescriptions());
-        context.setVariable("licenses", identifier.getLicenses());
+        context.setVariable("identifier", identifier);
+        context.setVariable("identifierType", identifier.getDoi() != null ? "DOI" : "OAI");
+        context.setVariable("pid", identifier.getDoi() != null ? ("doi:" + identifier.getDoi()) : identifier.getId());
+        context.setVariable("datestamp", metadataMapper.instantToDatestamp(identifier.getCreated()));
         /* map */
-        final String body = templateEngine.process("doi.xml", context)
+        final String body = templateEngine.process("record_oai_datacite.xml", context)
                 .replaceAll("\\s+", " ");
         final InputStreamResource resource = new InputStreamResource(IOUtils.toInputStream(body, Charset.defaultCharset()));
         log.debug("mapped file stream {}", resource.getDescription());
@@ -220,18 +218,12 @@ public class IdentifierServiceImpl implements IdentifierService {
         final Identifier identifier = find(id);
         /* context */
         final Context context = new Context();
-        if (identifier.getDoi() != null) {
-            context.setVariable("identifierType", "doi");
-            context.setVariable("identifier", identifier.getDoi());
-        } else {
-            context.setVariable("identifierType", "url");
-            context.setVariable("identifier", endpointConfig.getWebsiteUrl() + "/pid/" + identifier.getId());
-        }
-        context.setVariable("creators", identifier.getCreators());
+        context.setVariable("identifier", identifier);
+        context.setVariable("identifierType", identifier.getDoi() != null ? "doi" : "url");
         context.setVariable("title", preferTitle(identifier.getTitles()));
-        context.setVariable("publisher", identifier.getPublisher());
-        context.setVariable("publicationMonth", identifier.getPublicationMonth());
-        context.setVariable("publicationYear", identifier.getPublicationYear());
+        context.setVariable("keyword", identifier.getDoi() != null ? "doi" : "howpublished");
+        context.setVariable("urlOrDoi", identifier.getDoi() != null ? identifier.getDoi() : ("\\url{" + metadataConfig.getPidBase() + identifier.getId() + "}"));
+        context.setVariable("url", identifier.getDoi() != null ? ("https://doi.org/" + identifier.getDoi()) : (metadataConfig.getPidBase() + identifier.getId()));
         /* map */
         final String template = "cite_" + style.name().toLowerCase() + ".txt";
         final String body;

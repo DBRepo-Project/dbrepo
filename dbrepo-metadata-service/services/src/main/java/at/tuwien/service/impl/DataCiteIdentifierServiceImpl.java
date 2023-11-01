@@ -169,6 +169,12 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional(readOnly = true)
+    public Identifier findByDoi(String doi) throws IdentifierNotFoundException {
+        return identifierService.findByDoi(doi);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public InputStreamResource exportMetadata(Long id) throws IdentifierNotFoundException {
         return identifierService.exportMetadata(id);
     }

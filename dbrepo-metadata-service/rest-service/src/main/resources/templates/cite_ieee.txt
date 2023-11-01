@@ -1,1 +1,1 @@
-[1] [# th:each="creator,idx: ${creators}"][# th:if="${idx.index} &gt; 0"], [/][[${creator.getIeeeName()}]][/][# th:if="${creators.size()} &gt; 0"], [/]“[[${title.getTitle()}]]“, [[${publisher}]], [[${publicationYear}]], [[${identifierType} == 'url' ? 'Available: ' : 'doi: ']][[${identifier}]].
+[1] [# th:each="creator,idx: ${identifier.creators}"][# th:if="${idx.index} &gt; 0"], [/][[${creator.getIeeeName()}]][/][# th:if="${identifier.creators.size()} &gt; 0"], [/]“[[${title.getTitle()}]]“, [[${identifier.publisher}]], [[${identifier.publicationYear}]], [[${url}]].
