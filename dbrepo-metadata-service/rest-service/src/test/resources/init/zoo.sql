@@ -1,8 +1,8 @@
 CREATE DATABASE zoo;
 USE zoo;
 
-create sequence seq_zoo_id;
-create sequence seq_names_id;
+create sequence seq_zoo_id NOCACHE;
+create sequence seq_names_id NOCACHE;
 create table zoo
 (
     id          bigint       not null default nextval(`seq_zoo_id`),

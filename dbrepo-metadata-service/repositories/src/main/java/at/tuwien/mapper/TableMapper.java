@@ -458,7 +458,7 @@ public interface TableMapper {
         }
         final StringBuilder statement = new StringBuilder("CREATE SEQUENCE `")
                 .append(tableCreateDtoToSequenceName(data))
-                .append("` START WITH 1 INCREMENT BY 1;");
+                .append("` START WITH 1 INCREMENT BY 1 NOCACHE;");
         try {
             final PreparedStatement pstmt = connection.prepareStatement(statement.toString());
             log.trace("prepared create sequence statement {}", statement);

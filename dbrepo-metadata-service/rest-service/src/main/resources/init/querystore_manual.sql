@@ -1,4 +1,4 @@
-CREATE SEQUENCE `qs_queries_seq`;
+CREATE SEQUENCE `qs_queries_seq` NOCACHE;
 CREATE TABLE `qs_queries` (
     `id`               bigint       not null primary key default nextval(`qs_queries_seq`),
     `created`          datetime     not null             default now(),

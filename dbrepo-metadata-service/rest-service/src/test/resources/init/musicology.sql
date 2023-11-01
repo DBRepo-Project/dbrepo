@@ -1,7 +1,7 @@
 CREATE DATABASE musicology;
 USE musicology;
 
-CREATE SEQUENCE seq_mfcc;
+CREATE SEQUENCE seq_mfcc NOCACHE;
 
 CREATE TABLE mfcc
 (
