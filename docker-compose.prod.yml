@@ -250,6 +250,17 @@ services:
     logging:
       driver: json-file
 
+  dbrepo-search-service:
+    restart: "no"
+    container_name: dbrepo-search-service
+    hostname: search-service
+    image: docker.io/dbrepo/search-service:latest
+    ports:
+      - "4000:4000"
+    environment:
+      FLASK_DEBUG: ${SEARCH_DEBUG_MODE:-true}
+      OPENSEARCH_HOST: ${OPENSEARCH_HOST:-dbrepo-search-db}
+
   dbrepo-ui:
     restart: "no"
     container_name: dbrepo-ui
@@ -274,6 +285,8 @@ services:
       FORCE_SSL: "${FORCE_SSL:-false}"
       DOI_URL: "${DOI_URL:-https://doi.org}"
     depends_on:
+      dbrepo-search-service:
+        condition: service_started
       dbrepo-upload-service:
         condition: service_started
     logging:
