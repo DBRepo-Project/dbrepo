@@ -4,8 +4,9 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
-# ready
+# generated
 ready
+schema.xsd
 
 # docs
 .docs/.swagger/dist/
