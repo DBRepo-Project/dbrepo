@@ -9,6 +9,7 @@ import at.tuwien.api.database.ViewDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
+import at.tuwien.entities.database.View;
 import at.tuwien.exception.*;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.DatabaseService;
@@ -31,8 +32,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @Log4j2
 @SpringBootTest
@@ -445,6 +445,36 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
         data_generic(DATABASE_1_ID, VIEW_1_ID, DATABASE_1, USER_2_ID, USER_2_PRINCIPAL, DATABASE_2_USER_1_READ_ACCESS);
     }
 
+    @Test
+    @WithAnonymousUser
+    public void count_privateAnonymous_succeeds() throws UserNotFoundException, DatabaseNotFoundException,
+            ViewNotFoundException, DatabaseConnectionException, QueryMalformedException, QueryStoreException,
+            TableMalformedException, ImageNotSupportedException, ContainerNotFoundException {
+
+        /* test */
+        count_generic(DATABASE_1_ID, VIEW_2_ID, DATABASE_1, VIEW_2, USER_2_PRINCIPAL);
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void count_privateAnonymousDatabaseNotFound_fails() {
+
+        /* test */
+        assertThrows(DatabaseNotFoundException.class, () -> {
+            count_generic(DATABASE_1_ID, VIEW_2_ID, null, VIEW_2, USER_2_PRINCIPAL);
+        });
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void count_privateAnonymousViewNotFound_fails() {
+
+        /* test */
+        assertThrows(ViewNotFoundException.class, () -> {
+            count_generic(DATABASE_1_ID, VIEW_2_ID, DATABASE_1, null, USER_2_PRINCIPAL);
+        });
+    }
+
     /* ################################################################################################### */
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
@@ -600,6 +630,38 @@ public class ViewEndpointUnitTest extends BaseUnitTest {
         assertEquals(QUERY_1_RESULT_ID, response.getBody().getId());
         assertEquals(QUERY_1_RESULT_NUMBER, response.getBody().getResultNumber());
         assertEquals(QUERY_1_RESULT_DTO, response.getBody());
+    }
+
+    protected void count_generic(Long databaseId, Long viewId, Database database, View view,
+                                 Principal principal) throws UserNotFoundException, QueryStoreException,
+            DatabaseConnectionException, TableMalformedException, QueryMalformedException, DatabaseNotFoundException,
+            ImageNotSupportedException, ContainerNotFoundException, ViewNotFoundException {
+
+        /* mock */
+        if (database != null) {
+            when(databaseService.find(databaseId))
+                    .thenReturn(database);
+        } else {
+            doThrow(DatabaseNotFoundException.class)
+                    .when(databaseService)
+                    .find(databaseId);
+        }
+        if (view != null) {
+            when(viewService.findById(databaseId, viewId, principal))
+                    .thenReturn(VIEW_1);
+        } else {
+            doThrow(ViewNotFoundException.class)
+                    .when(viewService)
+                    .findById(databaseId, viewId, principal);
+        }
+        when(queryService.viewCount(databaseId, VIEW_1, principal))
+                .thenReturn(5L);
+
+        /* test */
+        final ResponseEntity<Long> response = viewEndpoint.count(databaseId, viewId, principal);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(5L, response.getBody());
     }
 
 }

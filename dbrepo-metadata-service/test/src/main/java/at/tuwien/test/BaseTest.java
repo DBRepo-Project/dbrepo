@@ -5132,6 +5132,12 @@ public abstract class BaseTest {
             .columns(VIEW_1_COLUMNS_DTO)
             .build();
 
+    public final static ViewCreateDto VIEW_1_CREATE_DTO = ViewCreateDto.builder()
+            .isPublic(VIEW_1_PUBLIC)
+            .name(VIEW_1_NAME)
+            .query(VIEW_1_QUERY)
+            .build();
+
     public final static Long VIEW_2_ID = 2L;
     public final static Boolean VIEW_2_INITIAL_VIEW = false;
     public final static String VIEW_2_NAME = "JUnit2";
