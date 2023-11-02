@@ -93,8 +93,12 @@ public class MetadataServiceImpl implements MetadataService {
         final Identifier identifier;
         if (parameters.getIdentifier().startsWith("doi")) {
             identifier = identifierService.findByDoi(parameters.getIdentifier().substring(4));
-        } else {
+        } else if (parameters.getIdentifier().startsWith("oai")) {
             identifier = identifierService.find(Long.parseLong(parameters.getIdentifier().substring(4)));
+        } else {
+            final String prefix = parameters.getIdentifier().substring(0, 3);
+            log.error("Invalid prefix: {}", prefix);
+            throw new IdentifierNotFoundException("Invalid prefix: " + prefix);
         }
         final String templateFileName = "record_" + (parameters.getMetadataPrefix() == null ? "oai_datacite" : parameters.getMetadataPrefix()) + ".xml";
         final Context context = new Context();

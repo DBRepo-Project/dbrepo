@@ -105,7 +105,7 @@ public class MetadataServiceIntegrationTest extends BaseUnitTest {
     @Transactional
     public void getRecord_succeeds() throws IdentifierNotFoundException {
         final OaiRecordParameters parameters = new OaiRecordParameters();
-        parameters.setIdentifier(Long.toString(1L));
+        parameters.setIdentifier("oai:1");
 
         /* test */
         final String response = metadataService.getRecord(parameters);
@@ -117,9 +117,31 @@ public class MetadataServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void getRecord_fails() {
+    public void getRecord_oaiNotFound_fails() {
         final OaiRecordParameters parameters = new OaiRecordParameters();
-        parameters.setIdentifier(Long.toString(9999L));
+        parameters.setIdentifier("oai:9999");
+
+        /* test */
+        assertThrows(IdentifierNotFoundException.class, () -> {
+            metadataService.getRecord(parameters);
+        });
+    }
+
+    @Test
+    public void getRecord_doiNotFound_fails() {
+        final OaiRecordParameters parameters = new OaiRecordParameters();
+        parameters.setIdentifier("doi:10.1111/abcd-efgh");
+
+        /* test */
+        assertThrows(IdentifierNotFoundException.class, () -> {
+            metadataService.getRecord(parameters);
+        });
+    }
+
+    @Test
+    public void getRecord_prefixMalformed_fails() {
+        final OaiRecordParameters parameters = new OaiRecordParameters();
+        parameters.setIdentifier("pid:1");
 
         /* test */
         assertThrows(IdentifierNotFoundException.class, () -> {

@@ -133,7 +133,7 @@ public class MetadataEndpointUnitTest extends BaseUnitTest {
     public void getRecord_dc_succeeds() {
         final OaiRecordParameters parameters = new OaiRecordParameters();
         parameters.setMetadataPrefix("oai_dc");
-        parameters.setIdentifier(Long.toString(1L));
+        parameters.setIdentifier("oai:1");
 
         /* mock */
         when(identifierRepository.findById(IDENTIFIER_1_ID))
@@ -153,7 +153,7 @@ public class MetadataEndpointUnitTest extends BaseUnitTest {
     public void getRecord_datacite_succeeds() {
         final OaiRecordParameters parameters = new OaiRecordParameters();
         parameters.setMetadataPrefix("oai_datacite");
-        parameters.setIdentifier(Long.toString(1L));
+        parameters.setIdentifier("oai:1");
 
         /* mock */
         when(identifierRepository.findById(IDENTIFIER_1_ID))
@@ -173,7 +173,7 @@ public class MetadataEndpointUnitTest extends BaseUnitTest {
     public void getRecord_notFound_fails() {
         final OaiRecordParameters parameters = new OaiRecordParameters();
         parameters.setMetadataPrefix("oai_dc");
-        parameters.setIdentifier(Long.toString(9999L));
+        parameters.setIdentifier("oai:9999");
 
         /* mock */
         when(identifierRepository.findById(IDENTIFIER_1_ID))
