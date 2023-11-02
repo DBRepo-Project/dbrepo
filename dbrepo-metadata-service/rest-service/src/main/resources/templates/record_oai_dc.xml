@@ -1,7 +1,7 @@
 <GetRecord>
     <record>
         <header>
-            <identifier>[[${identifier}]]</identifier>
+            <identifier>[[${pid}]]</identifier>
             <datestamp>[[${datestamp}]]</datestamp>
         </header>
         <metadata>
@@ -11,11 +11,11 @@
                     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                     xmlns:dc="http://purl.org/dc/elements/1.1/"
                     xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
-                <dc:identifier>[[${identifier}]]</dc:identifier>
-                <dc:title th:each="title: ${titles}" th:xmllang="${title.language}">[[${title.title}]]</dc:title>
-                <dc:publisher>[[${publisher}]]</dc:publisher>
-                <dc:description th:each="description: ${descriptions}" th:xmllang="${description.language}">[[${description.description}]]</dc:description>
-                <dc:creator th:each="creator: ${creators}">[(${creator.getLastname()})], [(${creator.getFirstname()})]</dc:creator>
+                <dc:identifier>[[${pid}]]</dc:identifier>
+                <dc:title th:each="title: ${identifier.titles}" th:xmllang="${title.language}">[[${title.title}]]</dc:title>
+                <dc:publisher>[[${identifier.publisher}]]</dc:publisher>
+                <dc:description th:each="description: ${identifier.descriptions}" th:xmllang="${description.language}">[[${description.description}]]</dc:description>
+                <dc:creator th:each="creator: ${identifier.creators}">[[${creator.creatorName}]]</dc:creator>
             </oai_dc:dc>
         </metadata>
     </record>

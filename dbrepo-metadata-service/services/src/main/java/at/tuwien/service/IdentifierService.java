@@ -39,6 +39,8 @@ public interface IdentifierService {
      */
     Identifier find(Long id) throws IdentifierNotFoundException;
 
+    Identifier findByDoi(String doi) throws IdentifierNotFoundException;
+
     /**
      * Finds all identifiers in the metadata database which are not deleted and filter by query id.
      *
