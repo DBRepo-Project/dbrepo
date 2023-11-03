@@ -43,7 +43,7 @@ build-frontend:
 build-clients:
 	bash ./.gitlab/swagger/generate.sh
 
-tag: tag-analyse-service tag-authentication-service tag-metadata-db tag-ui tag-metadata-service tag-data-service tag-mirror-service tag-log-service tag-search-db tag-search-db-init
+tag: tag-analyse-service tag-authentication-service tag-metadata-db tag-ui tag-metadata-service tag-data-service tag-mirror-service tag-log-service tag-search-db tag-search-db-init tag-search-service
 
 tag-analyse-service:
 	docker tag dbrepo-analyse-service:latest "dbrepo/analyse-service:${TAG}"
@@ -85,7 +85,11 @@ tag-log-service:
 	docker tag dbrepo-log-service:latest "dbrepo/log-service:${TAG}"
 	docker tag dbrepo-log-service:latest "${AZURE_REPO}/dbrepo/log-service:${TAG}"
 
-release: build-docker tag release-analyse-service release-authentication-service release-metadata-db release-ui release-metadata-service release-data-service release-log-service release-search-db release-mirror-service release-search-db-init
+tag-search-service:
+	docker tag dbrepo-search-service:latest "dbrepo/search-service:${TAG}"
+	docker tag dbrepo-search-service:latest "${AZURE_REPO}/dbrepo/search-service:${TAG}"
+
+release: build-docker tag release-analyse-service release-authentication-service release-metadata-db release-ui release-metadata-service release-data-service release-log-service release-search-db release-mirror-service release-search-db-init release-search-service
 
 release-analyse-service: tag-analyse-service
 	docker push "dbrepo/analyse-service:${TAG}"
@@ -127,6 +131,10 @@ release-log-service: tag-log-service
 	docker push "dbrepo/log-service:${TAG}"
 	docker push "${AZURE_REPO}/dbrepo/log-service:${TAG}"
 
+release-search-service: tag-search-service
+	docker push "dbrepo/search-service:${TAG}"
+	docker push "${AZURE_REPO}/dbrepo/search-service:${TAG}"
+
 test-backend: test-metadata-service test-analyse-service test-data-service test-mirror-service
 
 test-data-service: build-data-service
@@ -141,7 +149,7 @@ test-metadata-service: build-metadata-service
 test-analyse-service: build-analyse-service
 	bash ./dbrepo-analyse-service/test.sh
 
-scan: scan-analyse-service scan-authentication-service scan-broker-service scan-gateway-service scan-metadata-db scan-metadata-service scan-search-db scan-ui scan-data-service scan-data-db scan-log-service scan-mirror-service scan-search-dashboard
+scan: scan-analyse-service scan-authentication-service scan-broker-service scan-gateway-service scan-metadata-db scan-metadata-service scan-search-db scan-ui scan-data-service scan-data-db scan-log-service scan-mirror-service scan-search-dashboard scan-search-service
 
 scan-analyse-service:
 	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-analyse-service-report.json dbrepo-analyse-service:latest
@@ -209,6 +217,11 @@ scan-log-service:
 	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-log-service-report.json dbrepo-log-service:latest
 	trivy image --insecure --exit-code 0 dbrepo-log-service:latest
 	trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-log-service:latest
+
+scan-search-service:
+	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-log-service-report.json dbrepo-search-service:latest
+	trivy image --insecure --exit-code 0 dbrepo-search-service:latest
+	trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-search-service:latest
 
 coverage-frontend: build-frontend
 	yarn --cwd ./dbrepo-ui run coverage || true
