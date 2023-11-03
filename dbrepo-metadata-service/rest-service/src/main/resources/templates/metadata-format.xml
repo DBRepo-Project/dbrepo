@@ -3,3 +3,8 @@
     <schema>http://www.openarchives.org/OAI/2.0/oai_dc.xsd</schema>
     <metadataNamespace>http://www.openarchives.org/OAI/2.0/oai_dc/</metadataNamespace>
 </metadataFormat>
+<metadataFormat>
+    <metadataPrefix>oai_datacite</metadataPrefix>
+    <schema>http://schema.datacite.org/oai/oai-1.1/oai.xsd</schema>
+    <metadataNamespace>http://schema.datacite.org/oai/oai-1.1/</metadataNamespace>
+</metadataFormat>

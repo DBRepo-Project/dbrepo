@@ -77,7 +77,8 @@ public class MetadataServiceImpl implements MetadataService {
         log.debug("found {} identifiers", identifiers.size());
         identifiers.forEach(identifier -> {
             final Context context = new Context();
-            context.setVariable("identifier", metadataConfig.getPidBase() + identifier.getId());
+            context.setVariable("identifier", identifier);
+            context.setVariable("pid", identifier.getDoi() != null ? ("doi:" + identifier.getDoi()) : ("oai:" + identifier.getId()));
             context.setVariable("datestamp", metadataMapper.instantToDatestamp(identifier.getCreated()));
             builder.append(templateEngine.process("identifier.xml", context));
         });
@@ -88,16 +89,24 @@ public class MetadataServiceImpl implements MetadataService {
     @Override
     @Transactional(readOnly = true)
     public String getRecord(OaiRecordParameters parameters) throws IdentifierNotFoundException {
-        final Long id = Long.parseLong(parameters.getIdentifier());
-        final Identifier identifier = identifierService.find(id);
+        /* find identifier */
+        final Identifier identifier;
+        if (parameters.getIdentifier().startsWith("doi")) {
+            identifier = identifierService.findByDoi(parameters.getIdentifier().substring(4));
+        } else if (parameters.getIdentifier().startsWith("oai")) {
+            identifier = identifierService.find(Long.parseLong(parameters.getIdentifier().substring(4)));
+        } else {
+            final String prefix = parameters.getIdentifier().substring(0, 3);
+            log.error("Invalid prefix: {}", prefix);
+            throw new IdentifierNotFoundException("Invalid prefix: " + prefix);
+        }
+        final String templateFileName = "record_" + (parameters.getMetadataPrefix() == null ? "oai_datacite" : parameters.getMetadataPrefix()) + ".xml";
         final Context context = new Context();
-        context.setVariable("identifier", identifier.getId());
-        context.setVariable("creators", identifier.getCreators());
+        context.setVariable("identifier", identifier);
+        context.setVariable("identifierType", identifier.getDoi() != null ? "DOI" : "OAI");
+        context.setVariable("pid", identifier.getDoi() != null ? ("doi:" + identifier.getDoi()) : ("oai:" + identifier.getId()));
         context.setVariable("datestamp", metadataMapper.instantToDatestamp(identifier.getCreated()));
-        context.setVariable("titles", identifier.getTitles());
-        context.setVariable("descriptions", identifier.getDescriptions());
-        context.setVariable("publisher", identifier.getPublisher());
-        final String body = parseResponse(parameters.getParametersString(), templateEngine.process("record.xml", context));
+        final String body = parseResponse(parameters.getParametersString(), templateEngine.process(templateFileName, context));
         log.trace("mapped body {}", body);
         return body;
     }

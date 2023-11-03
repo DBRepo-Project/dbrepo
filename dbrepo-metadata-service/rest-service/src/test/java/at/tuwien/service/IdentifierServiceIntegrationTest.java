@@ -196,7 +196,7 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
         assertEquals(IDENTIFIER_2_DESCRIPTION_1_DESCRIPTION, description0.getDescription());
         assertEquals(IDENTIFIER_2_DESCRIPTION_1_LANG, description0.getLanguage());
         assertEquals(IDENTIFIER_2_DESCRIPTION_1_TYPE, description0.getDescriptionType());
-        assertEquals(IDENTIFIER_2_DOI, response.getDoi());
+        assertNull(response.getDoi());
         assertEquals(IDENTIFIER_2_PUBLISHER, response.getPublisher());
         assertEquals(IDENTIFIER_2_DATABASE_ID, response.getDatabase().getId());
         assertNull(response.getLanguage());

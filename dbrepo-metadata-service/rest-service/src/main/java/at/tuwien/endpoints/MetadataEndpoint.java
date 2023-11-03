@@ -20,6 +20,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.stream.Stream;
+
 @Log4j2
 @CrossOrigin(origins = "*")
 @RestController
@@ -82,16 +85,26 @@ public class MetadataEndpoint {
     @Operation(summary = "Get the record")
     public ResponseEntity<String> getRecord(OaiRecordParameters parameters) {
         log.debug("endpoint get record, verb=GetRecord, parameters={}", parameters);
-        if (parameters.getMetadataPrefix() != null && !parameters.getMetadataPrefix().equals("oai_dc")) {
-            log.trace("metadataPrefix matches oai_dc, failed to serve this format");
+        final List<String> supportedMetadataFormats = List.of("oai_dc", "oai_datacite");
+        if (parameters.getMetadataPrefix() != null && !supportedMetadataFormats.contains(parameters.getMetadataPrefix())) {
+            log.trace("metadataPrefix does not match supported list: {}", supportedMetadataFormats);
+            log.error("Failed to get record: Format {} is not supported", parameters.getMetadataPrefix());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(metadataService.error(OaiErrorType.CANNOT_DISSEMINATE_FORMAT));
         }
-        if (parameters.getIdentifier() == null || !NumberUtils.isCreatable(parameters.getIdentifier())) {
-            log.trace("identifier is null or not a number");
+        log.trace("metadata prefix {} is supported", parameters.getMetadataPrefix());
+        final List<String> supportedIdentifierPrefixes = List.of("doi", "oai");
+        if (parameters.getIdentifier() == null) {
+            log.error("Failed to get record: Identifier is empty");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(metadataService.error(OaiErrorType.NO_RECORDS_MATCH));
+        } else if(supportedIdentifierPrefixes.stream().noneMatch(identifierPrefix -> parameters.getIdentifier().startsWith(identifierPrefix))
+                || parameters.getIdentifier().indexOf(':') > 3) {
+            log.error("Failed to get record: Identifier does not match supported prefixes {}", supportedIdentifierPrefixes);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(metadataService.error(OaiErrorType.NO_RECORDS_MATCH));
         }
+        log.trace("identifier prefix of {} is supported", parameters.getIdentifier());
         try {
             final String xml = metadataService.getRecord(parameters);
             log.trace("get record resulted in xml {}", xml);

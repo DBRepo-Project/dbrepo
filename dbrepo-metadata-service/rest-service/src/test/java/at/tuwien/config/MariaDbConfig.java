@@ -177,17 +177,6 @@ public class MariaDbConfig {
         throw new Exception("Failed to get privileges");
     }
 
-    public static void mockQuery(String hostname, String query, String username, String password)
-            throws SQLException {
-        final String jdbc = "jdbc:mariadb://" + hostname;
-        log.trace("connect to database {}", jdbc);
-        try (Connection connection = DriverManager.getConnection(jdbc, username, password)) {
-            final PreparedStatement statement = connection.prepareStatement(query);
-            statement.executeUpdate();
-            statement.close();
-        }
-    }
-
     /**
      * Inserts a query into a created database with given hostname and database name. The method uses the JDBC in-out
      * notation <a href="#{@link}">{@link https://learn.microsoft.com/en-us/sql/connect/jdbc/using-sql-escape-sequences?view=sql-server-ver16#stored-procedure-calls}</a>

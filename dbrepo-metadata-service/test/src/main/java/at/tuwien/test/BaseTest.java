@@ -5132,6 +5132,12 @@ public abstract class BaseTest {
             .columns(VIEW_1_COLUMNS_DTO)
             .build();
 
+    public final static ViewCreateDto VIEW_1_CREATE_DTO = ViewCreateDto.builder()
+            .isPublic(VIEW_1_PUBLIC)
+            .name(VIEW_1_NAME)
+            .query(VIEW_1_QUERY)
+            .build();
+
     public final static Long VIEW_2_ID = 2L;
     public final static Boolean VIEW_2_INITIAL_VIEW = false;
     public final static String VIEW_2_NAME = "JUnit2";
@@ -6134,7 +6140,7 @@ public abstract class BaseTest {
     public final static Long IDENTIFIER_2_QUERY_ID = QUERY_2_ID;
     public final static Long IDENTIFIER_2_CONTAINER_ID = CONTAINER_2_ID;
     public final static Long IDENTIFIER_2_DATABASE_ID = DATABASE_2_ID;
-    public final static String IDENTIFIER_2_DOI = null;
+    public final static String IDENTIFIER_2_DOI = "10.4225/13/50BBFCFE08A12";
     public final static Instant IDENTIFIER_2_CREATED = Instant.ofEpochSecond(1641588352);
     public final static Instant IDENTIFIER_2_MODIFIED = Instant.ofEpochSecond(1541588352);
     public final static Instant IDENTIFIER_2_EXECUTION = Instant.ofEpochSecond(1541588352);
