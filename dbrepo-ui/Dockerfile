@@ -14,10 +14,10 @@ COPY ./yarn.lock ./
 # Install yarn dependencies
 RUN yarn install --frozen-lockfile
 
-COPY ./nuxt.config.js ./
-COPY ./ava.config.cjs ./
-COPY ./babel.config.js ./
-COPY ./config.js ./
+COPY ./nuxt.config.js ./nuxt.config.js
+COPY ./ava.config.cjs ./ava.config.cjs
+COPY ./babel.config.js ./babel.config.js
+COPY ./dbrepo.config.json ./dbrepo.config.json
 COPY ./assets ./assets
 COPY ./api ./api
 COPY ./components ./components
@@ -33,30 +33,18 @@ COPY ./utils ./utils
 
 RUN yarn build
 
+COPY ./docker-entrypoint.sh ./docker-entrypoint.sh
+
 FROM node:14-alpine as runtime
 MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
 
 EXPOSE 3000
 EXPOSE 9100
 
-ENV BROKER_USERNAME="fda"
-ENV BROKER_PASSWORD="fda"
-ENV BROKER_LOGIN_URL="/admin/broker/"
-ENV KEYCLOAK_LOGIN_URL="/api/auth/"
-ENV OPENSEARCH_LOGIN_URL="/admin/dashboard/"
-ENV LOGO="/logo.png"
-ENV SEARCH_USERNAME="admin"
-ENV SEARCH_PASSWORD="admin"
-ENV VERSION="${TAG}"
-ENV TITLE="Database Repository"
-ENV ICON="/favicon.ico"
-ENV DBREPO_CLIENT_ID="dbrepo-client"
-ENV DBREPO_CLIENT_SECRET="MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG"
-ENV DEFAULT_PID_PUBLISHER=""
-ENV FORCE_SSL="false"
+ENV REBUILD=false
 
 WORKDIR /app
 
 COPY --from=build /app /app
 
-ENTRYPOINT [ "yarn", "start" ]
+ENTRYPOINT [ "/bin/sh", "./docker-entrypoint.sh" ]

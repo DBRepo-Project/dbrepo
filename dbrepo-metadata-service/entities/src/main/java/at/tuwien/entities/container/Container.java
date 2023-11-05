@@ -42,8 +42,17 @@ public class Container {
     @Column(nullable = false)
     private String host;
 
-    @Column
+    @Column(nullable = false)
     private Integer port;
+
+    @Column(nullable = false, columnDefinition = "varchar(255) default host")
+    private String uiHost;
+
+    @Column(nullable = false, columnDefinition = "integer default port")
+    private Integer uiPort;
+
+    @Column(name = "ui_additional_flags")
+    private String uiAdditionalFlags;
 
     @ToString.Exclude
     @org.springframework.data.annotation.Transient

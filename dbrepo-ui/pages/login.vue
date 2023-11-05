@@ -61,6 +61,9 @@
           <a v-if="keycloakUrl" class="ml-1" :href="keycloakUrl" target="_blank">
             Keycloak Admin <sup><v-icon color="primary" x-small>mdi-open-in-new</v-icon></sup>
           </a>
+          <a v-for="(link, i) in loginLinks" :key="i" class="ml-1" :href="link.href" :target="link.blank ? '_blank' : 'self'">
+            {{ link.text }} <sup v-if="link.blank"><v-icon color="primary" x-small>mdi-open-in-new</v-icon></sup>
+          </a>
         </v-card-subtitle>
       </v-card>
     </v-form>
@@ -91,14 +94,10 @@ export default {
     user () {
       return this.$store.state.user
     },
-    keycloakUrl () {
-      return this.$config.keycloakLoginUrl
-    },
-    rabbitMqUrl () {
-      return this.$config.brokerLoginUrl
-    },
-    openSearchUrl () {
-      return this.$config.openSearchUrl
+    loginLinks () {
+      const loginLinks = this.$config.loginLinks
+      console.debug('login links', loginLinks)
+      return loginLinks
     }
   },
   mounted () {

@@ -1,0 +1,100 @@
+{
+  "title": "Database Repository",
+  "version": "vue-dev",
+  "ssl": {
+    "force": false
+  },
+  "logo": {
+    "path": "/logo.png"
+  },
+  "icon": {
+    "path": "/favicon.ico"
+  },
+  "broker": {
+    "connection": {
+      "host": "localhost",
+      "ports": [
+        5672
+      ],
+      "extraInfo": "130.128.0.0/15"
+    }
+  },
+  "database": {
+    "connection": {
+      "extraInfo": "130.128.0.0/15"
+    }
+  },
+  "keycloak": {
+    "client": {
+      "id": "dbrepo-client",
+      "secret": "MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG"
+    }
+  },
+  "opensearch": {
+    "username": "admin",
+    "password": "admin"
+  },
+  "pid": {
+    "default": {
+      "publisher": ""
+    }
+  },
+  "doi": {
+    "url": "https://doi.org"
+  },
+  "pages": {
+    "login": {
+      "links": [
+        {
+          "text": "OpenSearch Admin",
+          "blank": true,
+          "href": "http://localhost/admin/dashboard"
+        },
+        {
+          "text": "RabbitMQ Admin",
+          "blank": true,
+          "href": "http://localhost/admin/broker"
+        },
+        {
+          "text": "Keycloak Admin",
+          "blank": true,
+          "href": "http://localhost/api/auth"
+        }
+      ]
+    },
+    "information": {
+      "links": [
+        {
+          "text": "Online Documentation",
+          "blank": true,
+          "href": "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/latest/"
+        },
+        {
+          "text": "Sourcecode Documentation",
+          "blank": true,
+          "href": "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services"
+        },
+        {
+          "text": "Docker Images",
+          "blank": true,
+          "href": "https://hub.docker.com/u/dbrepo"
+        },
+        {
+          "text": "Demo Instance (Kubernetes)",
+          "blank": true,
+          "href": "https://test.dbrepo.tuwien.ac.at/"
+        },
+        {
+          "text": "Demo Instance (Docker Compose)",
+          "blank": true,
+          "href": "https://dbrepo2.ec.tuwien.ac.at/"
+        },
+        {
+          "text": "Paper",
+          "blank": true,
+          "href": "https://doi.org/10.2218/ijdc.v17i1.825"
+        }
+      ]
+    }
+  }
+}

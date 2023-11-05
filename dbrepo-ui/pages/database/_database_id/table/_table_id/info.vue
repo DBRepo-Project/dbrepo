@@ -31,9 +31,19 @@
               <v-list-item-content v-if="table && table.created">
                 <span>{{ createdUTC }}</span>
               </v-list-item-content>
+              <v-list-item-title v-if="access && access.type" class="mt-2">
+                Table Access
+              </v-list-item-title>
+              <v-list-item-content v-if="access && access.type">
+                <span>
+                  <v-badge inline :content="brokerExtraInfo" color="primary">
+                    <span v-text="accessDescription.text" />
+                  </v-badge>
+                </span>
+              </v-list-item-content>
             </v-list-item-content>
           </v-list-item>
-          <v-list-item v-if="canWriteQueues">
+          <v-list-item v-if="canWrite && canWriteQueues">
             <v-list-item-icon>
               <v-icon>mdi-rabbit</v-icon>
             </v-list-item-icon>
@@ -49,7 +59,7 @@
               </v-list-item-title>
               <v-list-item-content v-if="database">
                 <span>
-                  <v-badge inline :content="database.exchange_type" color="primary">{{ database.exchange_name }}</v-badge>
+                  <v-badge inline :content="database.exchange_type" color="secondary">{{ database.exchange_name }}</v-badge>
                 </span>
               </v-list-item-content>
               <v-list-item-title class="mt-2">
@@ -57,7 +67,7 @@
               </v-list-item-title>
               <v-list-item-content v-if="table">
                 <span>
-                  <v-badge inline :content="table.queue_type" color="primary">{{ table.queue_name }}</v-badge>
+                  <v-badge inline :content="table.queue_type" color="secondary">{{ table.queue_name }}</v-badge>
                 </span>
               </v-list-item-content>
               <v-list-item-title v-if="table && table.routing_key" class="mt-2">
@@ -66,11 +76,16 @@
               <v-list-item-content v-if="table && table.routing_key">
                 <pre v-text="table.routing_key" />
               </v-list-item-content>
-              <v-list-item-title v-if="canRead" class="mt-2">
+              <v-list-item-title class="mt-2">
                 Connection String
               </v-list-item-title>
               <v-list-item-content>
-                <pre v-text="amqpString" />
+                <span v-for="(port, i) in brokerPorts" :key="i">
+                  <pre v-if="![5671,5672].includes(port)" class="pb-1" v-text="amqpString" />
+                  <v-badge inline :content="amqpBadgeText(port)" :color="amqpBadgeColor(port)">
+                    <pre class="pb-1" v-text="amqpString(port)" />
+                  </v-badge>
+                </span>
               </v-list-item-content>
             </v-list-item-content>
           </v-list-item>
@@ -130,6 +145,12 @@ export default {
       }
       return this.access.type === 'read' || this.access.type === 'write_own' || this.access.type === 'write_all'
     },
+    canWrite () {
+      if (!this.table || !this.user || !this.access) {
+        return false
+      }
+      return (this.access.type === 'write_own' && this.table.owner.id === this.user.id) || this.access.type === 'write_all'
+    },
     createdUTC () {
       if (this.table.created === undefined || this.table.created === null) {
         return null
@@ -166,11 +187,26 @@ export default {
       }
       return this.version.substring(0, 10) + 'T' + this.version.substring(11, 19) + 'Z'
     },
-    amqpString () {
-      if (!this.user) {
-        return null
+    brokerExtraInfo () {
+      return this.$config.brokerExtraInfo
+    },
+    brokerHost () {
+      return this.$config.brokerHost
+    },
+    brokerPorts () {
+      return this.$config.brokerPorts
+    },
+    accessDescription () {
+      if (!this.access) {
+        return
       }
-      return `amqp://${window.location.hostname}:5672/dbrepo (username=${this.user.username}, password=yourpassword)`
+      if (this.canWrite) {
+        return { text: 'You can write to this table' }
+      } else if (this.canRead) {
+        return { text: 'You can read all contents of this table' }
+      } else {
+        return { text: null }
+      }
     }
   },
   methods: {
@@ -182,6 +218,28 @@ export default {
         return false
       }
       return table.owner.id === this.user.id
+    },
+    amqpBadgeText (port) {
+      if (port === 5672) {
+        return 'insecure'
+      } else if (port === 5671) {
+        return 'secure'
+      }
+      return null
+    },
+    amqpBadgeColor (port) {
+      if (port === 5672) {
+        return 'warning'
+      } else if (port === 5671) {
+        return 'success'
+      }
+      return null
+    },
+    amqpString (port) {
+      if (!this.user) {
+        return null
+      }
+      return `amqp://${this.brokerHost}:${port}/dbrepo (username=${this.user.username}, password=yourpassword)`
     }
   }
 }

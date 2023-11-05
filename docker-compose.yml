@@ -274,23 +274,7 @@ services:
     image: dbrepo-ui
     build: ./dbrepo-ui
     environment:
-      BROKER_USERNAME: "${BROKER_USERNAME:-fda}"
-      BROKER_PASSWORD: "${BROKER_PASSWORD:-fda}"
-      BROKER_LOGIN_URL: "${BROKER_LOGIN_URL:-/admin/broker/}"
-      KEYCLOAK_LOGIN_URL: "${KEYCLOAK_LOGIN_URL:-/api/auth/admin/}"
-      OPENSEARCH_LOGIN_URL: "${OPENSEARCH_LOGIN_URL:-/admin/dashboard/}"
-      SHARED_FILESYSTEM: "${SHARED_FILESYSTEM:-/tmp}"
-      LOGO: "${LOGO:-/logo.png}"
-      SEARCH_USERNAME: "${SEARCH_USERNAME:-admin}"
-      SEARCH_PASSWORD: "${SEARCH_PASSWORD:-admin}"
-      VERSION: "${VERSION:-latest}"
-      TITLE: "${TITLE:-Database Repository}"
-      ICON: "${ICON:-/favicon.ico}"
-      DBREPO_CLIENT_ID: "${DBREPO_CLIENT_ID:-dbrepo-client}"
-      DBREPO_CLIENT_SECRET: "${DBREPO_CLIENT_SECRET:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}"
-      UPLOAD_PATH: "${UPLOAD_PATH:-/tmp/}"
-      FORCE_SSL: "${FORCE_SSL:-false}"
-      DOI_URL: "${DOI_URL:-https://doi.org}"
+      REBUILD: "${UI_REBUILD:-false}"
     depends_on:
       dbrepo-search-service:
         condition: service_started

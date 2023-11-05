@@ -4,6 +4,7 @@ import at.tuwien.api.container.image.ImageBriefDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -38,7 +39,19 @@ public class ContainerDto {
     @NotBlank
     private String host;
 
+    @NotNull
     private Integer port;
+
+    @NotBlank
+    @JsonProperty("ui_host")
+    private String uiHost;
+
+    @NotNull
+    @JsonProperty("ui_port")
+    private Integer uiPort;
+
+    @JsonProperty("ui_additional_flags")
+    private String uiAdditionalFlags;
 
     private ImageBriefDto image;
 
