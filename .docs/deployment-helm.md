@@ -31,7 +31,7 @@ The helm chart depends on four components:
 ## Configuration before the installation
 
 Define an admin user that the services can use to communicate with 
-the [authentication service](../system-services-authentication). You will need to manually create this user later after
+the [Authentication Service](../system-services-authentication). You will need to manually create this user later after
 the installation.
 
 ## Configuration after the installation
@@ -54,6 +54,10 @@ the [authentication service](../system-services-authentication) as `admin` and:
 2. Create credentials (non-temporary) for this user in the `master` realm.
 3. Assign this user the role `admin`.
 4. Delete the user `admin`.
+
+Then import the DBRepo realm by clicking the dropdown "master" > Create Realm and import 
+the [`dbrepo-realm.json`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/dbrepo-authentication-service/dbrepo-realm.json)
+by uploading the file *or* copying the contents and click "Create".
 
 ### Backup
 
