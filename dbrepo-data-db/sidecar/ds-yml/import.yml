@@ -1,0 +1,32 @@
+summary: Imports a .csv from the Upload Service
+description: |
+  Imports a specific .csv file from the Upload Service via HTTP
+consumes:
+  - application/json
+produces:
+  - application/json
+parameters:
+  - in: "body"
+    name: "body"
+    description: "Payload to import the .csv"
+    required: true
+    schema:
+      $ref: "#/components/schemas/Import"
+
+responses:
+  202:
+    description: Imported the .csv
+    content: { }
+  503:
+    description: The Upload Service could not be contacted or .csv was not found.
+tags:
+  - sidecar
+
+components:
+  schemas:
+    Import:
+      type: "object"
+      properties:
+        filepath:
+          type: "string"
+          example: "sample.csv"

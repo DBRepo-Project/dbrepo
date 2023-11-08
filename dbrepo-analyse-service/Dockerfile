@@ -13,10 +13,12 @@ ENV FLASK_RUN_HOST=0.0.0.0
 ENV PORT_APP=5000
 ENV FLASK_ENV=production
 ENV HOSTNAME=analyse-service
-ENV SHARED_FILESYSTEM=/tmp
+ENV UPLOAD_ENDPOINT=http://upload-service:1080/api/upload/files
 
 COPY ./as-yml/ ./as-yml/
 COPY ./*.py ./
+
+RUN mkdir -p /data
 
 EXPOSE $PORT_APP
 

@@ -87,7 +87,7 @@ services:
       - "--base-path=/api/upload/files/"
     volumes:
       - upload-service-data:/data
-      - "${SHARED_FILESYSTEM:-/tmp}:/srv/tusd-data/data"
+#      - "${SHARED_FILESYSTEM:-/tmp}:/srv/tusd-data/data"
     logging:
       driver: json-file
 
@@ -196,7 +196,7 @@ services:
     ports:
       - "5000:5000"
     environment:
-      SHARED_FILESYSTEM: "${SHARED_FILESYSTEM:-/tmp}"
+      UPLOAD_ENDPOINT: "${UPLOAD_ENDPOINT:-http://upload-service:1080/api/upload/files}"
     volumes:
       - "${SHARED_FILESYSTEM:-/tmp}:/tmp"
     healthcheck:
@@ -266,6 +266,25 @@ services:
     environment:
       FLASK_DEBUG: ${SEARCH_DEBUG_MODE:-true}
       OPENSEARCH_HOST: ${OPENSEARCH_HOST:-dbrepo-search-db}
+
+  dbrepo-data-db-sidecar:
+    restart: "no"
+    container_name: dbrepo-data-db-sidecar
+    hostname: data-db-sidecar
+    build: ./dbrepo-data-db/sidecar
+    image: dbrepo-data-db-sidecar:latest
+    ports:
+      - "3600:5000"
+    environment:
+      FLASK_DEBUG: ${SEARCH_DEBUG_MODE:-true}
+      UPLOAD_ENDPOINT: "${UPLOAD_ENDPOINT:-http://upload-service:1080/api/upload/files}"
+    volumes:
+      - "${SHARED_FILESYSTEM:-/tmp}:/tmp"
+    healthcheck:
+      test: curl -sSL 127.0.0.1:5000/health | jq .status | grep "UP" || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 12
 
   dbrepo-ui:
     restart: "no"

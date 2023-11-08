@@ -13,6 +13,7 @@ import json
 import csv
 import logging
 import os
+import urllib.request
 
 import messytables, pandas as pd
 from messytables import CSVTableSet, type_guess, \
@@ -23,7 +24,10 @@ def determine_datatypes(filename, enum=False, enum_tol=0.0001, separator=None) -
     # Use option enum=True for searching Postgres ENUM Types in CSV file. Remark
     # Enum is not SQL standard, hence, it might not be supported by all db-engines.
     # However, it can be used in Postgres and MySQL.
-    path = os.path.join(os.getenv('SHARED_FILESYSTEM', '/tmp'), filename)
+    path = "/data/" + filename
+    api_path = os.getenv('UPLOAD_ENDPOINT', 'http://127.0.0.1:1080/api/upload/files') + "/" + filename
+    logging.info('retrieve api_path: %s and save it to path: %s', api_path, path)
+    urllib.request.urlretrieve(api_path, path)
     if separator is None:
         with open(path) as csvfile:
             dialect = csv.Sniffer().sniff(csvfile.readline())
