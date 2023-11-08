@@ -1,6 +1,6 @@
 FROM python:3.10-alpine
 
-RUN adduser -D alpine
+RUN apk add bash curl && adduser -D alpine
 
 WORKDIR /home/alpine
 
@@ -12,6 +12,7 @@ RUN pip install pipenv && \
 
 COPY ./app ./app
 COPY ./scripts ./scripts
+COPY ./us-yml ./us-yml
 COPY config.py wsgi.py ./
 
 ENV FLASK_APP=wsgi.py
