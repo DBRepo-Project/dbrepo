@@ -282,10 +282,8 @@ CREATE TABLE IF NOT EXISTS `mdb_concepts`
     name        VARCHAR(255)          null,
     description TEXT                  null,
     created     timestamp             NOT NULL DEFAULT NOW(),
-    created_by  character varying(36) NOT NULL,
     PRIMARY KEY (id),
-    UNIQUE (uri(200)),
-    FOREIGN KEY (created_by) REFERENCES mdb_users (id)
+    UNIQUE (uri(200))
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_units`
@@ -295,10 +293,8 @@ CREATE TABLE IF NOT EXISTS `mdb_units`
     name        VARCHAR(255)          null,
     description TEXT                  null,
     created     timestamp             NOT NULL DEFAULT NOW(),
-    created_by  character varying(36) NOT NULL,
     PRIMARY KEY (id),
-    UNIQUE (uri(200)),
-    FOREIGN KEY (created_by) REFERENCES mdb_users (id)
+    UNIQUE (uri(200))
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_columns_concepts`

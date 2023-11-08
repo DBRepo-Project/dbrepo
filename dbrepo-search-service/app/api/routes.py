@@ -56,7 +56,13 @@ def general_filter(index, results):
     return results
 
 
-@api_bp.route("<string:index>", methods=["GET"], endpoint="endpoint")
+@api_bp.route("/health", methods=["GET"], endpoint="actuator_health")
+@swag_from("us-yml/get_health")  # ToDo: get the SWAG right
+def health():
+    return {"status": "UP"}
+
+
+@api_bp.route("/api/search/<string:index>", methods=["GET"], endpoint="search_get_index")
 @swag_from("us-yml")  # ToDo: get the SWAG right
 def get_index(index):
     """
@@ -87,11 +93,11 @@ def get_index(index):
     results_per_page = min(request.args.get("results_per_page", 50, type=int), 500)
     max_pages = math.ceil(len(results) / results_per_page)
     page = min(request.args.get("page", 1, type=int), max_pages)
-    results = results[(results_per_page * (page - 1)) : (results_per_page * page)]
+    results = results[(results_per_page * (page - 1)): (results_per_page * page)]
     return {"results": results, "total": total_number_of_results, "status": 200}
 
 
-@api_bp.route("<string:index>/fields", methods=["GET"], endpoint="blabla")
+@api_bp.route("/api/search/<string:index>/fields", methods=["GET"], endpoint="search_get_index_fields")
 def get_fields(index):
     """
     returns a list of attributes of the data for a specific index.
@@ -120,7 +126,7 @@ def get_fields(index):
     return {"fields": fields, "status": 200}
 
 
-@api_bp.route("", methods=["POST"], endpoint="endpoint2")
+@api_bp.route("/api/search", methods=["POST"], endpoint="search_fuzzy_search")
 def search():
     """
     Main endpoint for general searching.

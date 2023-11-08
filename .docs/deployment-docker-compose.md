@@ -58,7 +58,42 @@ since RabbitMQ maintains state inside the container.
 We maintain a rapid prototype deployment option through Docker Compose (v2.17.0 and newer). This deployment creates the
 core infrastructure and a single Docker container for all user-generated databases.
 
-    curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/install.sh | bash
+=== ":simple-linux: Linux"
+
+    Download and install [Docker Engine](https://docs.docker.com/desktop/install/linux-install/) for your Linux
+    distribution. Although the installation might work, we *do not* recommend Docker Desktop.
+    
+    Ensure the Docker daemon is running at all times:
+
+        systemctl enable docker --now
+
+    Install DBRepo with the default configuration:
+
+        curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/install.sh | bash
+
+=== ":simple-windows: Windows"
+
+    Open `cmd.exe` as administrator and install WSL2 and the Debian subsystem:
+
+        wsl --install Debian
+
+    Open `optionalfeatures` by typing into the open terminal window or searching for it and enable "Windows Subsystem 
+    for Linux":
+
+    <figure markdown>
+    ![Data ingest](images/optionalfeatures.png){ .img-border }
+       <figcaption>Enable Subsystem for Linux in Windows Features</figcaption>
+    </figure>
+
+    Install [Docker Desktop](https://docs.docker.com/desktop/install/windows-install/) on the Windows host machine.
+    Open Docker Desktop and go to settings (:fontawesome-solid-gear:) > General > Tick "Use WSL2 based engine" if not
+    already ticked.
+
+    Open the Debian container by typing "Debian" into the search, you should see a terminal window.
+
+    Install DBRepo with the default configuration from the Debian container:
+
+        curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/install.sh | bash
 
 View the logs:
 
