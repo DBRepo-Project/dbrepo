@@ -51,7 +51,7 @@ public class Container {
     @Column(nullable = false, columnDefinition = "integer default port")
     private Integer uiPort;
 
-    @Column(name = "ui_additional_flags")
+    @Column
     private String uiAdditionalFlags;
 
     @ToString.Exclude
