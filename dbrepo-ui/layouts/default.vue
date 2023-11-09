@@ -463,6 +463,11 @@ export default {
       this.$store.commit('SET_SEARCH_USERNAME', this.$config.searchUsername)
       this.$store.commit('SET_SEARCH_PASSWORD', this.$config.searchPassword)
       this.$store.commit('SET_DOI_URL', this.$config.doiUrl)
+      this.$store.commit('SET_S3_STORAGE_HOSTNAME', this.$config.s3storageHostname)
+      this.$store.commit('SET_S3_STORAGE_PORT', this.$config.s3storagePort)
+      this.$store.commit('SET_S3_ACCESS_KEY_ID', this.$config.s3accessKeyId)
+      this.$store.commit('SET_S3_SECRET_ACCESS_KEY', this.$config.s3secretAccessKey)
+      this.$store.commit('SET_FORCE_SSL', this.$config.forceSsl)
       console.debug('runtime config', this.$config)
     },
     advancedSearch () {

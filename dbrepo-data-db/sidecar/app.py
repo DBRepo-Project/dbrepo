@@ -108,9 +108,23 @@ def import_csv():
     logging.debug('endpoint import csv, body=%s', request)
     input_json = request.get_json()
     filepath = str(input_json['filepath'])
-    api = os.getenv("UPLOAD_ENDPOINT", "http://localhost:1080/api/auth/files")
+    api = os.getenv("UPLOAD_ENDPOINT", "http://localhost:1080/api/upload")
     try:
-        urllib.request.urlretrieve(api + "/" + filepath, "/tmp/" + filepath)
+        urllib.request.urlretrieve(api + "/files/" + filepath, "/tmp/" + filepath)
+    except URLError as e:
+        logging.error('Failed to import .csv: %s', e)
+        return Response(), 503
+    return Response(), 202
+
+
+@app.route("/sidecar/export/<string:filename>", methods=["PUT"], endpoint="sidecar_export")
+@swag_from("ds-yml/export.yml")
+def import_csv(filename):
+    logging.debug('endpoint export csv, filename=%s, body=%s', filename, request)
+    api = os.getenv("UPLOAD_ENDPOINT", "http://localhost:1080/api/upload")
+    try:
+        # upload
+        urllib.request.urlretrieve(api + "/files/" + filepath, "/tmp/" + filepath)
     except URLError as e:
         logging.error('Failed to import .csv: %s', e)
         return Response(), 503

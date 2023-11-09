@@ -13,7 +13,9 @@ ENV FLASK_RUN_HOST=0.0.0.0
 ENV PORT_APP=5000
 ENV FLASK_ENV=production
 ENV HOSTNAME=analyse-service
-ENV UPLOAD_ENDPOINT=http://upload-service:1080/api/upload/files
+ENV S3_STORAGE_ENDPOINT="http://storage-service:9000"
+ENV S3_ACCESS_KEY_ID="minioadmin"
+ENV S3_SECRET_ACCESS_KEY="minioadmin"
 
 COPY ./as-yml/ ./as-yml/
 COPY ./*.py ./

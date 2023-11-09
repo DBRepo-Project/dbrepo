@@ -28,7 +28,12 @@ const store = new Store({
     searchUsername: null,
     searchPassword: null,
     databaseCount: null,
-    doiUrl: null
+    doiUrl: null,
+    s3storageHostname: null,
+    s3storagePort: null,
+    s3accessKeyId: null,
+    s3secretAccessKey: null,
+    forceSsl: null
   },
   getters: {
     getTitle: state => state.title,
@@ -48,7 +53,11 @@ const store = new Store({
     getSearchUsername: state => state.searchUsername,
     getSearchPassword: state => state.searchPassword,
     getDatabaseCount: state => state.databaseCount,
-    getDoiUrl: state => state.doiUrl
+    getS3storageHostname: state => state.s3storageHostname,
+    getS3storagePort: state => state.s3storagePort,
+    getS3accessKeyId: state => state.s3accessKeyId,
+    getS3secretAccessKey: state => state.s3secretAccessKey,
+    getForceSsl: state => state.forceSsl
   },
   mutations: {
     SET_TITLE (state, title) {
@@ -104,6 +113,21 @@ const store = new Store({
     },
     SET_DOI_URL (state, doiUrl) {
       state.doiUrl = doiUrl
+    },
+    SET_S3_STORAGE_HOSTNAME (state, s3storageHostname) {
+      state.s3storageHostname = s3storageHostname
+    },
+    SET_S3_STORAGE_PORT (state, s3storagePort) {
+      state.s3storagePort = s3storagePort
+    },
+    SET_S3_ACCESS_KEY_ID (state, s3accessKeyId) {
+      state.s3accessKeyId = s3accessKeyId
+    },
+    SET_S3_SECRET_ACCESS_KEY (state, s3secretAccessKey) {
+      state.s3secretAccessKey = s3secretAccessKey
+    },
+    SET_FORCE_SSL (state, forceSsl) {
+      state.forceSsl = forceSsl
     }
   },
   actions: {

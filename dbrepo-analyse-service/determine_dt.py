@@ -13,8 +13,9 @@ import json
 import csv
 import logging
 import os
-import urllib.request
+import io
 
+import boto3
 import messytables, pandas as pd
 from messytables import CSVTableSet, type_guess, \
     headers_guess, headers_processor, offset_processor
@@ -24,18 +25,26 @@ def determine_datatypes(filename, enum=False, enum_tol=0.0001, separator=None) -
     # Use option enum=True for searching Postgres ENUM Types in CSV file. Remark
     # Enum is not SQL standard, hence, it might not be supported by all db-engines.
     # However, it can be used in Postgres and MySQL.
-    path = "/data/" + filename
-    api_path = os.getenv('UPLOAD_ENDPOINT', 'http://127.0.0.1:1080/api/upload/files') + "/" + filename
-    logging.info('retrieve api_path: %s and save it to path: %s', api_path, path)
-    urllib.request.urlretrieve(api_path, path)
+    endpoint_url = os.getenv('S3_STORAGE_ENDPOINT', 'http://localhost:9000')
+    aws_access_key_id = os.getenv('S3_ACCESS_KEY_ID', 'minioadmin')
+    aws_secret_access_key = os.getenv('S3_SECRET_ACCESS_KEY', 'minioadmin')
+    s3_client = boto3.client(service_name='s3', endpoint_url=endpoint_url, aws_access_key_id=aws_access_key_id,
+                             aws_secret_access_key=aws_secret_access_key)
+    logging.info("retrieve file from S3, endpoint_url=%s, aws_access_key_id=%s, aws_secret_access_key=(hidden)",
+                 endpoint_url, aws_access_key_id)
+    response = s3_client.get_object(Bucket='dbrepo-upload', Key=filename)
+    stream = response['Body']
     if separator is None:
-        with open(path) as csvfile:
-            dialect = csv.Sniffer().sniff(csvfile.readline())
-        separator = dialect.delimiter
-        logging.debug('determined separator: %s', separator)
+        logging.info('Attempt to guess separator for from first line')
+        with io.BytesIO(stream.read()) as fh:
+            line = fh.readline().decode('utf-8')
+            dialect = csv.Sniffer().sniff(line)
+            separator = dialect.delimiter
+            logging.info('determined separator: %s', separator)
 
     # Load a file object:
-    with open(path, 'rb') as fh:
+    with io.BytesIO(stream.read()) as fh:
+        logging.info('Analysing corpus with separator: %s', separator)
         table_set = CSVTableSet(fh, delimiter=separator)
 
         # A table set is a collection of tables:
@@ -55,7 +64,7 @@ def determine_datatypes(filename, enum=False, enum_tol=0.0001, separator=None) -
 
         # list of rows
         if enum == True:
-            rows = pd.read_csv(path, sep=separator, header=offset)
+            rows = pd.read_csv(fh, sep=separator, header=offset)
             n = len(rows)
 
         for i in range(0, (len(types))):

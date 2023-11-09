@@ -13,7 +13,7 @@ RUN pip install pipenv && \
 COPY ./ds-yml ./ds-yml
 COPY ./app.py ./app.py
 
-ENV UPLOAD_ENDPOINT="http://upload-service:1080/api/upload/files"
+ENV UPLOAD_ENDPOINT="http://upload-service:1080/api/upload"
 
 RUN chown -R alpine:alpine ./
 USER alpine

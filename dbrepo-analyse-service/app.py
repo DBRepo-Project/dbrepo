@@ -105,19 +105,20 @@ def determinedt():
     logging.debug('endpoint determine datatype, body=%s', request)
     input_json = request.get_json()
     try:
-        filepath = str(input_json['filepath'])
+        filename = str(input_json['filename'])
         enum = False
         if 'enum' in input_json:
             enum = bool(input_json['enum'])
-            print(enum)
+            logging.info("Enum is present in payload and set to %s", enum)
         enum_tol = 0.001
         if 'enum_tol' in input_json:
             enum_tol = float(input_json['enum_tol'])
-            print(enum_tol)
+            logging.info("Enum toleration is present in payload and set to %s", enum_tol)
         separator = None
         if 'separator' in input_json:
             separator = str(input_json['separator'])
-        res = determine_datatypes(filepath, enum, enum_tol, separator)
+            logging.info("Seperator is present in payload and set to %s", separator)
+        res = determine_datatypes(filename, enum, enum_tol, separator)
         logging.debug('determine datatype resulted in datatypes %s', res)
         return Response(res, mimetype="application/json"), 200
     except OSError as e:
