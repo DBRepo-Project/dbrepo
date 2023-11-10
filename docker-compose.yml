@@ -261,7 +261,7 @@ services:
     build: ./dbrepo-data-db/sidecar
     image: dbrepo-data-db-sidecar:latest
     ports:
-      - "3600:5000"
+      - "3305:3305"
     environment:
       FLASK_DEBUG: ${SEARCH_DEBUG_MODE:-true}
       S3_STORAGE_ENDPOINT: "${STORAGE_ENDPOINT:-http://storage-service:9000}"

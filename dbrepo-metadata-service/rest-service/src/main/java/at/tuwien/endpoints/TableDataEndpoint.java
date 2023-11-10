@@ -121,7 +121,7 @@ public class TableDataEndpoint {
                                           @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
             ImageNotSupportedException, DatabaseConnectionException, QueryMalformedException, UserNotFoundException,
-            NotAllowedException, AccessDeniedException {
+            NotAllowedException, AccessDeniedException, DataDbSidecarException {
         log.debug("endpoint insert data from csv, databaseId={}, tableId={}, data={}, {}", databaseId, tableId, data, PrincipalUtil.formatForDebug(principal));
         /* check */
         endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(databaseId, tableId, principal);

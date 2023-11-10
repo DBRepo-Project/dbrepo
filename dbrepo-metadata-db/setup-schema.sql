@@ -52,6 +52,8 @@ CREATE TABLE IF NOT EXISTS `mdb_containers`
     name                character varying(255) NOT NULL,
     host                character varying(255) NOT NULL,
     port                integer                NOT NULL,
+    sidecar_host        character varying(255) NOT NULL,
+    sidecar_port        integer                NOT NULL,
     image_id            bigint                 NOT NULL,
     created             timestamp              NOT NULL DEFAULT NOW(),
     last_modified       timestamp,
@@ -274,22 +276,22 @@ CREATE TABLE IF NOT EXISTS `mdb_constraints_checks`
 
 CREATE TABLE IF NOT EXISTS `mdb_concepts`
 (
-    id          bigint                NOT NULL AUTO_INCREMENT,
-    uri         text                  not null,
-    name        VARCHAR(255)          null,
-    description TEXT                  null,
-    created     timestamp             NOT NULL DEFAULT NOW(),
+    id          bigint       NOT NULL AUTO_INCREMENT,
+    uri         text         not null,
+    name        VARCHAR(255) null,
+    description TEXT         null,
+    created     timestamp    NOT NULL DEFAULT NOW(),
     PRIMARY KEY (id),
     UNIQUE (uri(200))
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_units`
 (
-    id          bigint                NOT NULL AUTO_INCREMENT,
-    uri         text                  not null,
-    name        VARCHAR(255)          null,
-    description TEXT                  null,
-    created     timestamp             NOT NULL DEFAULT NOW(),
+    id          bigint       NOT NULL AUTO_INCREMENT,
+    uri         text         not null,
+    name        VARCHAR(255) null,
+    description TEXT         null,
+    created     timestamp    NOT NULL DEFAULT NOW(),
     PRIMARY KEY (id),
     UNIQUE (uri(200))
 ) WITH SYSTEM VERSIONING;

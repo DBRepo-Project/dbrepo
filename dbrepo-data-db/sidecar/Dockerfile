@@ -22,6 +22,6 @@ ENV S3_SECRET_ACCESS_KEY="minioadmin"
 
 RUN ls -la ./clients
 
-EXPOSE 5000
+EXPOSE 3305
 
-ENTRYPOINT [ "gunicorn", "-w", "4", "-b", ":5000", "app:app" ]
+ENTRYPOINT [ "gunicorn", "-w", "4", "-b", ":3305", "app:app" ]

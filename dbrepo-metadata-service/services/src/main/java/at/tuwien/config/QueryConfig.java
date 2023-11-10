@@ -14,10 +14,4 @@ public class QueryConfig {
     @Value("${fda.unsupported}")
     private String[] notSupportedKeywords;
 
-    @Value("${fda.sharedFilesystem}")
-    private String sharedFilesystem;
-
-    @Value("${fda.deleteAfterImport}")
-    private Boolean deleteAfterImport;
-
 }

@@ -45,6 +45,12 @@ public class Container {
     @Column
     private Integer port;
 
+    @Column(nullable = false)
+    private String sidecarHost;
+
+    @Column(nullable = false)
+    private Integer sidecarPort;
+
     @ToString.Exclude
     @org.springframework.data.annotation.Transient
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)

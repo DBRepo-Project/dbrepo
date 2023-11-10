@@ -133,7 +133,7 @@ public interface QueryService {
     ExportResource tableFindAll(Long databaseId, Long tableId, Instant timestamp, Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
             DatabaseConnectionException, TableMalformedException, PaginationException,
-            FileStorageException, QueryMalformedException, UserNotFoundException;
+            FileStorageException, QueryMalformedException, UserNotFoundException, DataDbSidecarException;
 
     /**
      * Select all data known in the view id tuple and return a page of specific size.
@@ -270,7 +270,7 @@ public interface QueryService {
      * @throws QueryMalformedException    The query is malformed.
      */
     void insert(Long databaseId, Long tableId, ImportDto data, Principal principal) throws ImageNotSupportedException,
-            TableMalformedException, DatabaseNotFoundException, TableNotFoundException, DatabaseConnectionException, QueryMalformedException, UserNotFoundException;
+            TableMalformedException, DatabaseNotFoundException, TableNotFoundException, DatabaseConnectionException, QueryMalformedException, UserNotFoundException, DataDbSidecarException;
 
     /**
      * Parses the stored columns from a given query.

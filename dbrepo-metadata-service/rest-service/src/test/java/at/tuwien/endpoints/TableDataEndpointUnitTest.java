@@ -138,7 +138,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     @WithMockUser(username = USER_1_USERNAME, authorities = {"insert-table-data"})
     public void import_publicWriteAll_succeeds() throws UserNotFoundException, TableNotFoundException, NotAllowedException,
             TableMalformedException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException,
-            ImageNotSupportedException, AccessDeniedException {
+            ImageNotSupportedException, AccessDeniedException, DataDbSidecarException {
 
         /* test */
         generic_import(DATABASE_3_ID, DATABASE_3, TABLE_8_ID, TABLE_8, USER_1_ID,
@@ -149,7 +149,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     @WithMockUser(username = USER_1_USERNAME, authorities = {"insert-table-data"})
     public void import_privateWriteAll_succeeds() throws UserNotFoundException, TableNotFoundException, NotAllowedException,
             TableMalformedException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException,
-            ImageNotSupportedException, AccessDeniedException {
+            ImageNotSupportedException, AccessDeniedException, DataDbSidecarException {
 
         /* test */
         generic_import(DATABASE_1_ID, DATABASE_1, TABLE_1_ID, TABLE_1, USER_1_ID,
@@ -426,7 +426,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
                                DatabaseAccess access, Principal principal) throws DatabaseNotFoundException,
             TableNotFoundException, NotAllowedException, UserNotFoundException, TableMalformedException,
             DatabaseConnectionException, QueryMalformedException, ImageNotSupportedException,
-            AccessDeniedException {
+            AccessDeniedException, DataDbSidecarException {
         final ImportDto request = ImportDto.builder().location("test:csv/csv_01.csv").build();
 
         /* mock */
