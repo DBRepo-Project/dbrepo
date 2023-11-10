@@ -13,6 +13,7 @@ prometheus-flask-exporter = "*"
 python-dotenv = "~=1.0"
 sqlalchemy-utils = "*"
 gunicorn = "*"
+boto3 = "*"
 
 [dev-packages]
 

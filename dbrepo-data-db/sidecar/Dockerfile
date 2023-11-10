@@ -1,8 +1,8 @@
 FROM python:3.10-alpine
 
-RUN apk add bash curl jq && adduser -D alpine
+RUN apk add bash curl jq
 
-WORKDIR /home/alpine
+WORKDIR /app
 
 COPY Pipfile Pipfile.lock ./
 
@@ -10,13 +10,17 @@ RUN pip install pipenv && \
     pipenv install gunicorn && \
     pipenv install --system --deploy
 
+USER 1000
+
+COPY ./clients ./clients
 COPY ./ds-yml ./ds-yml
 COPY ./app.py ./app.py
 
-ENV UPLOAD_ENDPOINT="http://upload-service:1080/api/upload"
+ENV S3_STORAGE_ENDPOINT="http://storage-service:9000"
+ENV S3_ACCESS_KEY_ID="minioadmin"
+ENV S3_SECRET_ACCESS_KEY="minioadmin"
 
-RUN chown -R alpine:alpine ./
-USER alpine
+RUN ls -la ./clients
 
 EXPOSE 5000
 

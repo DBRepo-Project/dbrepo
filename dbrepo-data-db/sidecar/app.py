@@ -1,11 +1,11 @@
+import json
 import os
 import logging
-from urllib.error import URLError, ContentTooShortError, HTTPError
 
 from flasgger import LazyJSONEncoder, Swagger
 from flask import Flask, request, Response
 from flasgger.utils import swag_from
-import urllib.request
+from clients.minio_client import MinioClient
 from prometheus_flask_exporter import PrometheusMetrics
 
 logging.basicConfig(level=logging.DEBUG)
@@ -99,33 +99,26 @@ app.json_encoder = LazyJSONEncoder
 @app.route("/health", methods=["GET"], endpoint="actuator_health")
 @swag_from("ds-yml/health.yml")
 def health():
-    return Response({"status": "UP"}, mimetype="application/json"), 200
+    return Response(json.dumps({"status": "UP"}), mimetype="application/json"), 200
 
 
-@app.route("/sidecar/import", methods=["POST"], endpoint="sidecar_import")
+@app.route("/sidecar/import/<string:filename>", methods=["POST"], endpoint="sidecar_import")
 @swag_from("ds-yml/import.yml")
-def import_csv():
-    logging.debug('endpoint import csv, body=%s', request)
-    input_json = request.get_json()
-    filepath = str(input_json['filepath'])
-    api = os.getenv("UPLOAD_ENDPOINT", "http://localhost:1080/api/upload")
-    try:
-        urllib.request.urlretrieve(api + "/files/" + filepath, "/tmp/" + filepath)
-    except URLError as e:
-        logging.error('Failed to import .csv: %s', e)
-        return Response(), 503
-    return Response(), 202
+def import_csv(filename):
+    logging.debug('endpoint import csv, filename=%s, body=%s', filename, request)
+    minio_client = MinioClient()
+    response = minio_client.download_file(filename)
+    if response is False:
+        return Response(), 400
+    return Response(json.dumps(response)), 202
 
 
-@app.route("/sidecar/export/<string:filename>", methods=["PUT"], endpoint="sidecar_export")
+@app.route("/sidecar/export/<string:filename>", methods=["POST"], endpoint="sidecar_export")
 @swag_from("ds-yml/export.yml")
 def import_csv(filename):
     logging.debug('endpoint export csv, filename=%s, body=%s', filename, request)
-    api = os.getenv("UPLOAD_ENDPOINT", "http://localhost:1080/api/upload")
-    try:
-        # upload
-        urllib.request.urlretrieve(api + "/files/" + filepath, "/tmp/" + filepath)
-    except URLError as e:
-        logging.error('Failed to import .csv: %s', e)
-        return Response(), 503
+    minio_client = MinioClient()
+    response = minio_client.upload_file(filename)
+    if response is False:
+        return Response(), 400
     return Response(), 202

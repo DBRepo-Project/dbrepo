@@ -264,7 +264,9 @@ services:
       - "3600:5000"
     environment:
       FLASK_DEBUG: ${SEARCH_DEBUG_MODE:-true}
-      UPLOAD_ENDPOINT: "${UPLOAD_ENDPOINT:-http://upload-service:1080/api/upload/files}"
+      S3_STORAGE_ENDPOINT: "${STORAGE_ENDPOINT:-http://storage-service:9000}"
+      S3_ACCESS_KEY_ID: "${STORAGE_USERNAME:-minioadmin}"
+      S3_SECRET_ACCESS_KEY: ${STORAGE_PASSWORD:-minioadmin}
     volumes:
       - "${SHARED_FILESYSTEM:-/tmp}:/tmp"
     healthcheck:
@@ -377,9 +379,6 @@ services:
       MINIO_BROWSER_REDIRECT_URL: "${STORAGE_BASE_URL:-http://localhost/admin/storage/}"
     ports:
       - 9000:9000
-    depends_on:
-      dbrepo-authentication-service:
-        condition: service_healthy
     healthcheck:
       test: [ "CMD", "mc", "ready", "local" ]
       interval: 5s
