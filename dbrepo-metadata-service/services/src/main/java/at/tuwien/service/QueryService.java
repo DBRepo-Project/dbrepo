@@ -173,7 +173,7 @@ public interface QueryService {
      */
     ExportResource findOne(Long databaseId, Long queryId, Principal principal) throws DatabaseNotFoundException,
             ImageNotSupportedException, TableMalformedException, FileStorageException, QueryStoreException,
-            QueryNotFoundException, QueryMalformedException, DatabaseConnectionException, UserNotFoundException;
+            QueryNotFoundException, QueryMalformedException, DatabaseConnectionException, UserNotFoundException, DataDbSidecarException;
 
     /**
      * Count the total tuples for a given table id within a database id at a given time.

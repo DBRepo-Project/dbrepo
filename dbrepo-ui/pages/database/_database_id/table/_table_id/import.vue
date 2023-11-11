@@ -188,9 +188,9 @@ export default {
     uploadAndImport () {
       this.loading = true
       MiddlewareService.upload(this.fileModel)
-        .then((file) => {
-          console.debug('uploaded file', file)
-          this.tableImport.location = file.path
+        .then((metadata) => {
+          console.debug('uploaded file', metadata)
+          this.tableImport.location = metadata.originalname
           QueryService.importCsv(this.$route.params.database_id, this.$route.params.table_id, this.tableImport)
             .then((metadata) => {
               console.debug('successfully imported data', metadata)

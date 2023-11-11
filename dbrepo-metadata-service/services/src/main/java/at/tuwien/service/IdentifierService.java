@@ -120,7 +120,7 @@ public interface IdentifierService {
     InputStreamResource exportResource(Long identifierId, Principal principal)
             throws IdentifierNotFoundException, QueryNotFoundException, FileStorageException,
             IdentifierRequestException, UserNotFoundException, QueryStoreException, TableMalformedException,
-            DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException;
+            DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, DataDbSidecarException;
 
     /**
      * Updated the metadata (only) on the identifier for a given id in the metadata database.

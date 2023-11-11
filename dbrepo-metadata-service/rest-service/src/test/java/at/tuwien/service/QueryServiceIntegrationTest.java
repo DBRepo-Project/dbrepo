@@ -501,7 +501,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     @Test
     public void count_emptySet_succeeds() throws DatabaseConnectionException, TableMalformedException,
             DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException, UserNotFoundException,
-            QueryStoreException, QueryNotFoundException, FileStorageException, SQLException {
+            QueryStoreException, QueryNotFoundException, FileStorageException, SQLException, DataDbSidecarException {
         final Query query = Query.builder()
                 .id(QUERY_1_ID)
                 .query("SELECT `location`, `lat`, `lng` FROM `weather_location` WHERE `location` = \"Vienna\"")

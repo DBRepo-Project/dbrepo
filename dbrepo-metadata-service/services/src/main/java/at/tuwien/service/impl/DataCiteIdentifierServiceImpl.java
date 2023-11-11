@@ -191,7 +191,8 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
     public InputStreamResource exportResource(Long identifierId, Principal principal)
             throws IdentifierNotFoundException, QueryNotFoundException, FileStorageException,
             IdentifierRequestException, UserNotFoundException, QueryStoreException, TableMalformedException,
-            DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException {
+            DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
+            DataDbSidecarException {
         return identifierService.exportResource(identifierId, principal);
     }
 

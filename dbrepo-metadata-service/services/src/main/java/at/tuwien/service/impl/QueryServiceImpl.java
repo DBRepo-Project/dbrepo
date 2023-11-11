@@ -9,6 +9,7 @@ import at.tuwien.api.database.table.TableCsvDeleteDto;
 import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.api.database.table.TableCsvUpdateDto;
 import at.tuwien.config.QueryConfig;
+import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.View;
 import at.tuwien.entities.database.table.Table;
@@ -33,6 +34,7 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.*;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
@@ -259,10 +261,15 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         } finally {
             dataSource.close();
         }
+        return retrieveBlobAsResource(database.getContainer(), filename);
+    }
+
+    private ExportResource retrieveBlobAsResource(Container container, String filename) throws DataDbSidecarException, FileStorageException {
         /* upload from sidecar into blob storage */
-        dataDbSidecarGateway.exportFile(database.getContainer().getSidecarHost(), database.getContainer().getSidecarPort(), filename);
+        dataDbSidecarGateway.exportFile(container.getSidecarHost(), container.getSidecarPort(), filename);
         /* export file from blob storage */
-        try (InputStream stream = minioClient.getObject(GetObjectArgs.builder().bucket(BUCKET_NAME_DOWNLOAD).object(filename).build())) {
+        try {
+            final InputStream stream = minioClient.getObject(GetObjectArgs.builder().bucket(BUCKET_NAME_DOWNLOAD).object(filename).build());
             log.debug("found object with key {} in bucket {}", filename, BUCKET_NAME_DOWNLOAD);
             return ExportResource.builder()
                     .resource(new InputStreamResource(stream))
@@ -280,7 +287,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     @Transactional(readOnly = true)
     public ExportResource findOne(Long databaseId, Long queryId, Principal principal)
             throws DatabaseNotFoundException, ImageNotSupportedException, FileStorageException, QueryStoreException,
-            QueryNotFoundException, QueryMalformedException, DatabaseConnectionException, UserNotFoundException {
+            QueryNotFoundException, QueryMalformedException, DatabaseConnectionException, UserNotFoundException, DataDbSidecarException {
         final String filename = RandomStringUtils.randomAlphabetic(40) + ".csv";
         /* find */
         final Database database = databaseService.find(databaseId);
@@ -288,30 +295,17 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         /* run query */
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(),
                 database.getContainer(), database);
-        /* read file */
-        final InputStreamResource resource;
         try {
             final Connection connection = dataSource.getConnection();
             final PreparedStatement preparedStatement = queryMapper.queryToRawExportQuery(connection, query, filename);
             preparedStatement.executeUpdate();
-            final File file = new File("/tmp/" + filename);
-            resource = new InputStreamResource(FileUtils.openInputStream(file));
-            if (!FileUtils.deleteQuietly(file)) {
-                log.warn("Failed to delete exported file");
-            }
         } catch (SQLException e) {
             log.error("Failed to execute query: {}", e.getMessage());
             throw new QueryStoreException("Failed to execute query: " + e.getMessage(), e);
-        } catch (IOException e) {
-            log.error("Failed to export query: {}", e.getMessage());
-            throw new FileStorageException("Failed to export query: " + e.getMessage(), e);
         } finally {
             dataSource.close();
         }
-        return ExportResource.builder()
-                .resource(resource)
-                .filename(filename)
-                .build();
+        return retrieveBlobAsResource(database.getContainer(), filename);
     }
 
     @Override

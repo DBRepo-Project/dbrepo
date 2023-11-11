@@ -240,9 +240,9 @@ public class IdentifierServiceImpl implements IdentifierService {
     @Override
     @Transactional(readOnly = true)
     public InputStreamResource exportResource(Long identifierId, Principal principal) throws IdentifierNotFoundException,
-            QueryNotFoundException, IdentifierRequestException, UserNotFoundException,
-            QueryStoreException, TableMalformedException, DatabaseConnectionException, QueryMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException {
+            QueryNotFoundException, IdentifierRequestException, UserNotFoundException, QueryStoreException,
+            TableMalformedException, DatabaseConnectionException, QueryMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException, DataDbSidecarException {
         /* check */
         final Identifier identifier = find(identifierId);
         if (identifier.getType().equals(IdentifierType.DATABASE)) {

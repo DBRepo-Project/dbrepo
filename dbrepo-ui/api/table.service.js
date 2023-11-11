@@ -128,7 +128,7 @@ class TableService {
 
   exportDataTimestamp (databaseId, tableId, timestamp) {
     return new Promise((resolve, reject) => {
-      api.get(`/api/database/${databaseId}/table/${tableId}/export?timestamp=${timestamp}`, { responseType: 'text' })
+      api.get(`/api/database/${databaseId}/table/${tableId}/export${timestamp ? ('?timestamp=' + timestamp) : ''}`, { responseType: 'text' })
         .then((response) => {
           const data = response.data
           console.debug('response data', data)
