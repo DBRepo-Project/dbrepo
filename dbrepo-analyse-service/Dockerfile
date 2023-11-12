@@ -17,7 +17,8 @@ ENV S3_STORAGE_ENDPOINT="http://storage-service:9000"
 ENV S3_ACCESS_KEY_ID="minioadmin"
 ENV S3_SECRET_ACCESS_KEY="minioadmin"
 
-COPY ./as-yml/ ./as-yml/
+COPY ./as-yml ./as-yml
+COPY ./clients ./clients
 COPY ./*.py ./
 
 RUN mkdir -p /data

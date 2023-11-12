@@ -1,21 +1,13 @@
 # -*- coding: utf-8 -*-
 """
-Created on Fri Sep 25 21:25:09 2020
-From: 
-https://messytables.readthedocs.io/en/latest/
-
-https://github.com/okfn/messytables/
-
-@author: Co
+@author: Martin Weise
 """
-
 import json
 import csv
 import logging
-import os
 import io
+from clients.minio_client import MinioClient
 
-import boto3
 import messytables, pandas as pd
 from messytables import CSVTableSet, type_guess, \
     headers_guess, headers_processor, offset_processor
@@ -25,20 +17,18 @@ def determine_datatypes(filename, enum=False, enum_tol=0.0001, separator=None) -
     # Use option enum=True for searching Postgres ENUM Types in CSV file. Remark
     # Enum is not SQL standard, hence, it might not be supported by all db-engines.
     # However, it can be used in Postgres and MySQL.
-    endpoint_url = os.getenv('S3_STORAGE_ENDPOINT', 'http://localhost:9000')
-    aws_access_key_id = os.getenv('S3_ACCESS_KEY_ID', 'minioadmin')
-    aws_secret_access_key = os.getenv('S3_SECRET_ACCESS_KEY', 'minioadmin')
-    s3_client = boto3.client(service_name='s3', endpoint_url=endpoint_url, aws_access_key_id=aws_access_key_id,
-                             aws_secret_access_key=aws_secret_access_key)
-    logging.info("retrieve file from S3, endpoint_url=%s, aws_access_key_id=%s, aws_secret_access_key=(hidden)",
-                 endpoint_url, aws_access_key_id)
-    response = s3_client.get_object(Bucket='dbrepo-upload', Key=filename)
+    minio_client = MinioClient()
+    minio_client.file_exists('dbrepo-upload', filename)
+    response = minio_client.get_file('dbrepo-upload', filename)
     stream = response['Body']
+    if response['ContentLength'] == 0:
+        logging.warning(f'Failed to determine data types: file {filename} has empty body')
+        return json.dumps({'columns': [], 'separator': ','})
     if separator is None:
         logging.info('Attempt to guess separator for from first line')
         with io.BytesIO(stream.read()) as fh:
-            line = fh.readline().decode('utf-8')
-            dialect = csv.Sniffer().sniff(line)
+            line = next(fh)
+            dialect = csv.Sniffer().sniff(line.decode('utf-8'))
             separator = dialect.delimiter
             logging.info('determined separator: %s', separator)
 
@@ -72,14 +62,13 @@ def determine_datatypes(filename, enum=False, enum_tol=0.0001, separator=None) -
                 r[headers[i]] = "bool"
             elif type(types[i]) == messytables.types.IntegerType:
                 r[headers[i]] = "bigint"
-            elif type(types[i]) == messytables.types.FloatType:
-                r[headers[i]] = "float"
             elif type(types[i]) == messytables.types.DateType:
-                if ("S" in str(types[i])):
-                    r[headers[i]] = "timestamp"
+                if "%H" in types[i].format or "%M" in types[i].format or "%S" in types[i].format or "%Z" in types[
+                    i].format:
+                    r[headers[i]] = "timestamp"  # todo: guesses date format too, return it
                 else:
                     r[headers[i]] = "date"
-            elif type(types[i]) == messytables.types.DecimalType:
+            elif type(types[i]) == messytables.types.DecimalType or type(types[i]) == messytables.types.FloatType:
                 r[headers[i]] = "decimal"
             elif type(types[i]) == messytables.types.StringType:
                 r[headers[i]] = "varchar"
@@ -112,15 +101,3 @@ def determine_datatypes(filename, enum=False, enum_tol=0.0001, separator=None) -
         s = {'columns': r, 'separator': separator}
         logging.info('Determined data types %s', s)
     return json.dumps(s)
-
-
-"""
-Example output:
-{
-  "columns": {
-    "col1": "integer",
-    "col2": "string",
-    "col3": "string"
-  }
-}
-"""
