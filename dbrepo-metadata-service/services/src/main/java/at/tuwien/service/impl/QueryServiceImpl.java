@@ -288,7 +288,13 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     public ExportResource findOne(Long databaseId, Long queryId, Principal principal)
             throws DatabaseNotFoundException, ImageNotSupportedException, FileStorageException, QueryStoreException,
             QueryNotFoundException, QueryMalformedException, DatabaseConnectionException, UserNotFoundException, DataDbSidecarException {
-        final String filename = RandomStringUtils.randomAlphabetic(40) + ".csv";
+        return findOne(databaseId, queryId, principal, RandomStringUtils.randomAlphabetic(40) + ".csv");
+    }
+
+    @Transactional(readOnly = true)
+    public ExportResource findOne(Long databaseId, Long queryId, Principal principal, String filename)
+            throws DatabaseNotFoundException, ImageNotSupportedException, FileStorageException, QueryStoreException,
+            QueryNotFoundException, QueryMalformedException, DatabaseConnectionException, UserNotFoundException, DataDbSidecarException {
         /* find */
         final Database database = databaseService.find(databaseId);
         final Query query = storeService.findOne(databaseId, queryId, principal);

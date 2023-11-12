@@ -903,4 +903,16 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }
 
+    @Hidden
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+    @ExceptionHandler({DataDbSidecarException.class})
+    public ResponseEntity<ApiErrorDto> handle(DataDbSidecarException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .message(e.getLocalizedMessage())
+                .code("error.datadb.sidecar")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
 }

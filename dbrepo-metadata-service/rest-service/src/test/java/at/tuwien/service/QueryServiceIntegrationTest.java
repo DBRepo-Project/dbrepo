@@ -9,11 +9,17 @@ import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.MariaDbContainerConfig;
+import at.tuwien.config.MinioConfig;
 import at.tuwien.exception.*;
+import at.tuwien.gateway.DataDbSidecarGateway;
 import at.tuwien.querystore.Query;
 import at.tuwien.repository.mdb.*;
+import at.tuwien.service.impl.QueryServiceImpl;
+import io.minio.MinioClient;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,9 +33,13 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.testcontainers.containers.MariaDBContainer;
+import org.testcontainers.containers.MinIOContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.sql.SQLException;
 import java.time.Instant;
@@ -41,6 +51,9 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 @Log4j2
@@ -75,10 +88,26 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     private TableColumnRepository tableColumnRepository;
 
     @Autowired
-    private QueryService queryService;
+    private QueryServiceImpl queryService;
+
+    @Autowired
+    private MinioConfig minioConfig;
+
+    @MockBean
+    private DataDbSidecarGateway dataDbSidecarGateway;
 
     @Container
     private static MariaDBContainer<?> mariaDBContainer = MariaDbContainerConfig.getContainer();
+
+    @Container
+    private static MinIOContainer minIOContainer = new MinIOContainer("minio/minio")
+            .withUserName("minioadmin")
+            .withPassword("minioadmin");
+
+    @DynamicPropertySource
+    static void openSearchProperties(DynamicPropertyRegistry registry) {
+        registry.add("fda.minio.endpoint", () -> minIOContainer.getS3URL());
+    }
 
     @BeforeEach
     public void beforeEach() throws SQLException {
@@ -469,9 +498,8 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void viewFindAll_succeeds() throws DatabaseConnectionException, TableMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException, UserNotFoundException,
-            InterruptedException, ViewMalformedException, PaginationException, ViewNotFoundException {
+    public void viewFindAll_succeeds() throws TableMalformedException, DatabaseNotFoundException,
+            QueryMalformedException, InterruptedException {
 
         /* pre-condition */
         Thread.sleep(1000) /* wait for test container some more */;
@@ -499,9 +527,10 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void count_emptySet_succeeds() throws DatabaseConnectionException, TableMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException, UserNotFoundException,
-            QueryStoreException, QueryNotFoundException, FileStorageException, SQLException, DataDbSidecarException {
+    public void findOne_emptySet_succeeds() throws DatabaseConnectionException, DatabaseNotFoundException,
+            ImageNotSupportedException, QueryMalformedException, UserNotFoundException, QueryStoreException,
+            QueryNotFoundException, FileStorageException, SQLException, IOException {
+        final String filename = RandomStringUtils.randomAlphabetic(40) + ".csv";
         final Query query = Query.builder()
                 .id(QUERY_1_ID)
                 .query("SELECT `location`, `lat`, `lng` FROM `weather_location` WHERE `location` = \"Vienna\"")
@@ -514,12 +543,16 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                 .isPersisted(true)
                 .build();
 
-
         /* mock */
         MariaDbConfig.insertQueryStore(DATABASE_1, query, USER_1_USERNAME);
+        doNothing()
+                .when(dataDbSidecarGateway)
+                .exportFile(anyString(), anyInt(), anyString());
+        minioConfig.makeBuckets("dbrepo-upload", "dbrepo-download");
+        minioConfig.uploadFile("dbrepo-download", "./src/test/resources/csv/testdata.csv", filename);
 
         /* test */
-        final ExportResource response = queryService.findOne(DATABASE_1_ID, QUERY_1_ID, USER_1_PRINCIPAL);
+        final ExportResource response = queryService.findOne(DATABASE_1_ID, QUERY_1_ID, USER_1_PRINCIPAL, filename);
         assertNotNull(response.getFilename());
         assertNotNull(response.getResource());
     }
