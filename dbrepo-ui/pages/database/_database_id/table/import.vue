@@ -134,6 +134,19 @@
         <v-form ref="form" v-model="validStep3" @submit.prevent="submit">
           <v-row dense>
             <v-col cols="8">
+              <v-alert
+                v-if="warnAnalyseSeparator"
+                border="left"
+                color="warning">
+                We analysed your .csv/.tsv file and found that the separator you provided
+                <code>{{ tableImport.separator }}</code> is not correct, the separator
+                <code>{{ suggestedAnalyseSeparator }}</code> is more likely to be correct. If you really want to import
+                the .csv/.tsv file still, click "continue".
+              </v-alert>
+            </v-col>
+          </v-row>
+          <v-row dense>
+            <v-col cols="8">
               <v-file-input
                 v-model="fileModel"
                 accept=".csv,.tsv"
@@ -240,7 +253,7 @@ export default {
       },
       tableImport: {
         location: null,
-        quote: null,
+        quote: '"',
         false_element: null,
         true_element: null,
         null_element: null,
@@ -251,6 +264,8 @@ export default {
       loadingUpload: false,
       loadingAnalyse: false,
       loadingImage: false,
+      warnAnalyseSeparator: false,
+      suggestedAnalyseSeparator: null,
       url: null,
       columns: [],
       newTableId: 42 // FIXME ???
@@ -331,7 +346,7 @@ export default {
       this.loadingAnalyse = true
       AnalyseService.determineDataTypes(path)
         .then((analysis) => {
-          const { columns } = analysis
+          const { columns, separator } = analysis
           const dataTypes = QueryMapper.mySql8DataTypes()
           this.tableCreate.columns = Object.entries(columns)
             .map(([key, val]) => {
@@ -347,7 +362,12 @@ export default {
               }
             })
           this.tableImport.location = path
-          this.step = 4
+          if (separator !== this.tableImport.separator) {
+            this.warnAnalyseSeparator = true
+            this.suggestedAnalyseSeparator = separator
+          } else {
+            this.step = 4
+          }
         })
         .finally(() => {
           this.loadingAnalyse = false
