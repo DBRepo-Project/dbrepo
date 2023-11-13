@@ -1,0 +1,21 @@
+summary: Exports a .csv to the Storage Service
+description: |
+  Exports a specific .csv file to the Storage Service via S3
+consumes:
+  - application/json
+produces:
+  - application/json
+parameters:
+  - in: path
+    name: filename
+    description: Name of the object file to export to the Storage Service
+    required: true
+
+responses:
+  202:
+    description: Exported the .csv
+    content: { }
+  400:
+    description: The Storage Service could not be contacted or .csv was not found.
+tags:
+  - sidecar

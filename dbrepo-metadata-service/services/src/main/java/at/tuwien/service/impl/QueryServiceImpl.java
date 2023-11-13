@@ -9,11 +9,13 @@ import at.tuwien.api.database.table.TableCsvDeleteDto;
 import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.api.database.table.TableCsvUpdateDto;
 import at.tuwien.config.QueryConfig;
+import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.View;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.exception.*;
+import at.tuwien.gateway.DataDbSidecarGateway;
 import at.tuwien.mapper.QueryMapper;
 import at.tuwien.querystore.Query;
 import at.tuwien.repository.mdb.TableColumnRepository;
@@ -22,6 +24,9 @@ import at.tuwien.service.QueryService;
 import at.tuwien.service.StoreService;
 import at.tuwien.service.TableService;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
+import io.minio.GetObjectArgs;
+import io.minio.MinioClient;
+import io.minio.errors.*;
 import lombok.extern.log4j.Log4j2;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserManager;
@@ -29,6 +34,7 @@ import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.*;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
@@ -37,7 +43,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -54,21 +63,27 @@ import java.util.stream.Collectors;
 @Service
 public class QueryServiceImpl extends HibernateConnector implements QueryService {
 
-    private final QueryConfig queryConfig;
+    private final MinioClient minioClient;
     private final QueryMapper queryMapper;
     private final StoreService storeService;
     private final TableService tableService;
     private final DatabaseService databaseService;
+    private final DataDbSidecarGateway dataDbSidecarGateway;
     private final TableColumnRepository tableColumnRepository;
 
+    private static final String BUCKET_NAME_DOWNLOAD = "dbrepo-download";
+    private static final String BUCKET_NAME_UPLOAD = "dbrepo-upload";
+
     @Autowired
-    public QueryServiceImpl(QueryConfig queryConfig, QueryMapper queryMapper, TableService tableService, DatabaseService databaseService,
-                            StoreService storeService, TableColumnRepository tableColumnRepository) {
-        this.queryConfig = queryConfig;
+    public QueryServiceImpl(MinioClient minioClient, QueryMapper queryMapper, TableService tableService,
+                            DatabaseService databaseService, StoreService storeService,
+                            DataDbSidecarGateway dataDbSidecarGateway, TableColumnRepository tableColumnRepository) {
+        this.minioClient = minioClient;
         this.queryMapper = queryMapper;
         this.tableService = tableService;
         this.storeService = storeService;
         this.databaseService = databaseService;
+        this.dataDbSidecarGateway = dataDbSidecarGateway;
         this.tableColumnRepository = tableColumnRepository;
     }
 
@@ -227,7 +242,8 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     @Override
     @Transactional(readOnly = true)
     public ExportResource tableFindAll(Long databaseId, Long tableId, Instant timestamp, Principal principal)
-            throws TableNotFoundException, DatabaseNotFoundException, FileStorageException, QueryMalformedException {
+            throws TableNotFoundException, DatabaseNotFoundException, FileStorageException, QueryMalformedException,
+            DataDbSidecarException {
         final String filename = RandomStringUtils.randomAlphabetic(40) + ".csv";
         /* find */
         final Database database = databaseService.find(databaseId);
@@ -235,69 +251,67 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         /* run query */
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(),
                 database.getContainer(), database);
-        /* read file */
-        final InputStreamResource resource;
         try {
             final Connection connection = dataSource.getConnection();
             final PreparedStatement preparedStatement = queryMapper.tableToRawExportQuery(connection, table, timestamp, filename);
             preparedStatement.executeUpdate();
-            final String location = queryConfig.getSharedFilesystem() + File.separator + filename;
-            final File file = new File(location);
-            resource = new InputStreamResource(FileUtils.openInputStream(file));
-            if (queryConfig.getDeleteAfterImport()) {
-                log.debug("attempt to delete file: {}", location);
-                FileUtils.forceDelete(file);
-            } else {
-                log.trace("skipping deletion of file as per configuration");
-            }
-        } catch (IOException | SQLException e) {
+        } catch (SQLException e) {
             log.error("Failed to execute query and/or export file: {}", e.getMessage());
             throw new FileStorageException("Failed to execute query and/or export file: " + e.getMessage(), e);
         } finally {
             dataSource.close();
         }
-        return ExportResource.builder()
-                .resource(resource)
-                .filename(filename)
-                .build();
+        return retrieveBlobAsResource(database.getContainer(), filename);
+    }
+
+    private ExportResource retrieveBlobAsResource(Container container, String filename) throws DataDbSidecarException, FileStorageException {
+        /* upload from sidecar into blob storage */
+        dataDbSidecarGateway.exportFile(container.getSidecarHost(), container.getSidecarPort(), filename);
+        /* export file from blob storage */
+        try {
+            final InputStream stream = minioClient.getObject(GetObjectArgs.builder().bucket(BUCKET_NAME_DOWNLOAD).object(filename).build());
+            log.debug("found object with key {} in bucket {}", filename, BUCKET_NAME_DOWNLOAD);
+            return ExportResource.builder()
+                    .resource(new InputStreamResource(stream))
+                    .filename(filename)
+                    .build();
+        } catch (ServerException | InsufficientDataException | ErrorResponseException | IOException |
+                 NoSuchAlgorithmException | InvalidKeyException | InvalidResponseException | XmlParserException |
+                 InternalException e) {
+            log.error("Failed to find object {} in bucket {}", filename, BUCKET_NAME_DOWNLOAD);
+            throw new FileStorageException("Failed to find object " + filename + " in bucket " + BUCKET_NAME_DOWNLOAD);
+        }
     }
 
     @Override
     @Transactional(readOnly = true)
     public ExportResource findOne(Long databaseId, Long queryId, Principal principal)
             throws DatabaseNotFoundException, ImageNotSupportedException, FileStorageException, QueryStoreException,
-            QueryNotFoundException, QueryMalformedException, DatabaseConnectionException, UserNotFoundException {
-        final String filename = RandomStringUtils.randomAlphabetic(40) + ".csv";
+            QueryNotFoundException, QueryMalformedException, DatabaseConnectionException, UserNotFoundException, DataDbSidecarException {
+        return findOne(databaseId, queryId, principal, RandomStringUtils.randomAlphabetic(40) + ".csv");
+    }
+
+    @Transactional(readOnly = true)
+    public ExportResource findOne(Long databaseId, Long queryId, Principal principal, String filename)
+            throws DatabaseNotFoundException, ImageNotSupportedException, FileStorageException, QueryStoreException,
+            QueryNotFoundException, QueryMalformedException, DatabaseConnectionException, UserNotFoundException, DataDbSidecarException {
         /* find */
         final Database database = databaseService.find(databaseId);
         final Query query = storeService.findOne(databaseId, queryId, principal);
         /* run query */
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(),
                 database.getContainer(), database);
-        /* read file */
-        final InputStreamResource resource;
         try {
             final Connection connection = dataSource.getConnection();
             final PreparedStatement preparedStatement = queryMapper.queryToRawExportQuery(connection, query, filename);
             preparedStatement.executeUpdate();
-            final File file = new File("/tmp/" + filename);
-            resource = new InputStreamResource(FileUtils.openInputStream(file));
-            if (!FileUtils.deleteQuietly(file)) {
-                log.warn("Failed to delete exported file");
-            }
         } catch (SQLException e) {
             log.error("Failed to execute query: {}", e.getMessage());
             throw new QueryStoreException("Failed to execute query: " + e.getMessage(), e);
-        } catch (IOException e) {
-            log.error("Failed to export query: {}", e.getMessage());
-            throw new FileStorageException("Failed to export query: " + e.getMessage(), e);
         } finally {
             dataSource.close();
         }
-        return ExportResource.builder()
-                .resource(resource)
-                .filename(filename)
-                .build();
+        return retrieveBlobAsResource(database.getContainer(), filename);
     }
 
     @Override
@@ -382,7 +396,8 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     @Override
     @Transactional
     public void insert(Long databaseId, Long tableId, ImportDto data, Principal principal)
-            throws TableMalformedException, DatabaseNotFoundException, TableNotFoundException, QueryMalformedException {
+            throws TableMalformedException, DatabaseNotFoundException, TableNotFoundException, QueryMalformedException,
+            DataDbSidecarException {
         /* find */
         final Database database = databaseService.find(databaseId);
         final Table table = tableService.find(databaseId, tableId);
@@ -396,7 +411,6 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
                     .executeUpdate();
         } catch (SQLException e) {
             log.error("Failed to drop temporary table: {}", e.getMessage());
-            log.trace("failed to drop temporary table {}", table);
             throw new TableMalformedException("Failed to drop temporary table", e);
         }
         try {
@@ -408,21 +422,16 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             dataSource.close();
             throw new TableMalformedException("Failed to create temporary table", e);
         }
-        data.setLocation(queryConfig.getSharedFilesystem() + File.separator + data.getLocation());
+        /* import .csv from blob storage to sidecar */
+        dataDbSidecarGateway.importFile(database.getContainer().getSidecarHost(), database.getContainer().getSidecarPort(), data.getLocation());
+        /* import .csv from sidecar to database */
         try {
             final Connection connection = dataSource.getConnection();
             queryMapper.pathToRawInsertQuery(connection, table, data)
                     .executeUpdate();
-            if (queryConfig.getDeleteAfterImport()) {
-                log.debug("attempt to delete file: {}", data.getLocation());
-                final File file = new File(data.getLocation());
-                FileUtils.forceDelete(file);
-            } else {
-                log.trace("skipping deletion of file as per configuration");
-            }
             queryMapper.generateInsertFromTemporaryTableSQL(connection, table)
                     .executeUpdate();
-        } catch (SQLException | IOException e) {
+        } catch (SQLException e) {
             log.error("Failed to insert temporary table: {}", e.getMessage());
             dataSource.close();
             throw new TableMalformedException("Failed to insert temporary table", e);

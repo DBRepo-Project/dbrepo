@@ -140,7 +140,7 @@ public class QueryEndpoint {
                                     Principal principal)
             throws QueryStoreException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
             TableMalformedException, FileStorageException, QueryMalformedException, DatabaseConnectionException,
-            UserNotFoundException, NotAllowedException {
+            UserNotFoundException, NotAllowedException, DataDbSidecarException {
         log.debug("endpoint export query, databaseId={}, queryId={}, accept={}, {}", databaseId, queryId, accept, PrincipalUtil.formatForDebug(principal));
         final Database database = databaseService.find(databaseId);
         if (!database.getIsPublic()) {

@@ -61,6 +61,9 @@
           <a v-if="keycloakUrl" class="ml-1" :href="keycloakUrl" target="_blank">
             Keycloak Admin <sup><v-icon color="primary" x-small>mdi-open-in-new</v-icon></sup>
           </a>
+          <a v-if="minIoUrl" class="ml-1" :href="minIoUrl" target="_blank">
+            MinIO Admin <sup><v-icon color="primary" x-small>mdi-open-in-new</v-icon></sup>
+          </a>
         </v-card-subtitle>
       </v-card>
     </v-form>
@@ -99,6 +102,9 @@ export default {
     },
     openSearchUrl () {
       return this.$config.openSearchUrl
+    },
+    minIoUrl () {
+      return this.$config.minIoUrl
     }
   },
   mounted () {

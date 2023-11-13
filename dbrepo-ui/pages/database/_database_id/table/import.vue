@@ -203,7 +203,7 @@ import AnalyseService from '@/api/analyse.service'
 import DatabaseService from '@/api/database.service'
 import QueryMapper from '@/api/query.mapper'
 import TableMapper from '@/api/table.mapper'
-import UploadService from '@/api/upload.service'
+import MiddlewareService from '@/api/middleware.service'
 
 export default {
   name: 'TableFromCSV',
@@ -320,7 +320,7 @@ export default {
     isNonNegativeInteger,
     uploadAndAnalyse () {
       return this.upload()
-        .then(path => this.analyse(path))
+        .then(metadata => this.analyse(metadata.originalname))
     },
     submit () {
       this.$refs.form.validate()
@@ -328,10 +328,10 @@ export default {
     upload () {
       this.loadingUpload = true
       return new Promise((resolve, reject) => {
-        UploadService.upload(this.fileModel)
-          .then((file) => {
-            console.debug('uploaded file', file)
-            resolve(file.path)
+        MiddlewareService.upload(this.fileModel)
+          .then((metadata) => {
+            console.debug('uploaded file', metadata)
+            resolve(metadata)
           })
           .catch((error) => {
             this.loadingUpload = false
@@ -342,9 +342,9 @@ export default {
           })
       })
     },
-    analyse (path) {
+    analyse (filename) {
       this.loadingAnalyse = true
-      AnalyseService.determineDataTypes(path)
+      AnalyseService.determineDataTypes(filename, this.tableImport.separator)
         .then((analysis) => {
           const { columns, separator } = analysis
           const dataTypes = QueryMapper.mySql8DataTypes()
@@ -361,7 +361,7 @@ export default {
                 sets: []
               }
             })
-          this.tableImport.location = path
+          this.tableImport.location = filename
           if (separator !== this.tableImport.separator) {
             this.warnAnalyseSeparator = true
             this.suggestedAnalyseSeparator = separator

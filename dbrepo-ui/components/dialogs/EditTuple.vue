@@ -132,7 +132,7 @@
 
 <script>
 import QueryService from '@/api/query.service'
-import UploadService from '@/api/upload.service'
+import MiddlewareService from '@/api/middleware.service'
 
 export default {
   props: {
@@ -311,11 +311,11 @@ export default {
       if (!file) {
         return
       }
-      UploadService.upload(file)
-        .then((file) => {
-          console.debug('uploaded file', file)
+      MiddlewareService.upload(file)
+        .then((metadata) => {
+          console.debug('uploaded file', metadata)
           this.localDisplay[column.internal_name] = this.localTuple[column.internal_name]
-          this.localTuple[column.internal_name] = file.path
+          this.localTuple[column.internal_name] = metadata.path
         })
         .catch((error) => {
           console.error(`Failed to set column value: ${column.internal_name}`, error)

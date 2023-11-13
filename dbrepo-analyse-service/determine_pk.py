@@ -1,34 +1,40 @@
 import json
 import logging
-import os
 import pandas as pd
 import random
-from pathlib import Path
 import numpy as np
+import math
 from determine_dt import determine_datatypes
+from clients.minio_client import MinioClient
 
 
-def determine_pk(filename, seperator=','):
-    dt = json.loads(determine_datatypes(filename, seperator))
+def determine_pk(filename, separator=','):
+    dt = json.loads(determine_datatypes(filename=filename, separator=separator))
     dt = {k.lower(): v for k, v in dt['columns'].items()}
     # {k.lower(): v for k, v in dt['columns'].items() if v != 'Numeric'}
     colnames = dt.keys()
     colindex = list(range(0, len(colnames)))
-    path = os.path.join(os.getenv('SHARED_FILESYSTEM', '/tmp'), filename)
-    if Path(path).stat().st_size < 400000:  # precise if lower than 400kB
+
+    minio_client = MinioClient()
+    minio_client.file_exists('dbrepo-upload', filename)
+    response = minio_client.get_file('dbrepo-upload', filename)
+    stream = response['Body']
+    if response['ContentLength'] == 0:
+        logging.warning(f'Failed to determine primary key: file {filename} has empty body')
+        return json.dumps({'columns': [], 'separator': ','})
+    sizeInKb = math.ceil(response['ContentLength'] / 1000)
+    if sizeInKb < 400:  # precise if lower than 400kB
         pk = {}
         j = 0
         k = 0
-
+        logging.info(f'File is {sizeInKb}kb, detection is precise')
         for item in colnames:
             if item == 'id':
                 j = j + 1
                 pk.update({item: j})
                 colindex.remove(k)
             k = k + 1
-
-        csvdata = pd.read_csv(path, sep=seperator)
-
+        csvdata = pd.read_csv(stream, sep=separator)
         for i in colindex:
             if pd.Series(csvdata.iloc[:, i]).is_unique and pd.Series(csvdata.iloc[:, i]).notnull().values.any():
                 j = j + 1
@@ -37,45 +43,19 @@ def determine_pk(filename, seperator=','):
         pk = {}
         j = 0
         k = 0
-
+        logging.info(f'File is {sizeInKb}kB (larger than threshold of 400kB), detection is stochastic')
         for item in colnames:
             if item == 'id':
                 j = j + 1
                 pk.update({item: j})
                 colindex.remove(k)
             k = k + 1
-
-        p = get_sampling_percentage(path)
-
-        csvdata = pd.read_csv(
-            filepath_or_buffer=path,
-            sep=seperator,
-            header=0,
-            skiprows=lambda i: i > 0 and random.random() > p)
-
+        p = np.log10(int(response['ContentLength']))  # logarithmic scaled percentage of random inspected rows
+        csvdata = pd.read_csv(filepath_or_buffer=stream, sep=separator, header=0,
+                              skiprows=lambda k: k > 0 and random.random() > p)
         for i in colindex:
             if pd.Series(csvdata.iloc[:, i]).is_unique and pd.Series(csvdata.iloc[:, i]).notnull().values.any():
                 j = j + 1
                 pk.update({list(colnames)[i]: j})
-        logging.info('Determined primary key %s', pk)
+        logging.info(f'Determined primary key {pk}')
     return json.dumps(pk)
-
-
-def get_sampling_percentage(filepath):
-    sz = Path(filepath).stat().st_size
-    p = np.log10(sz)  # logarithmic scaled percentage of random inspected rows
-    return p
-
-
-# =============================================================================
-
-""" 
-Example output with priority ranking:
-{
-  "primary key": {
-    "cola": 3,
-    "colb": 1,
-    "colc": 2
-  }
-}
-"""

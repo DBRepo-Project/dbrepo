@@ -12,9 +12,9 @@ parameters:
   schema:
     type: "object"
     properties:
-      filepath:
+      filename:
         type: "string"
-        example : "/data/testdt08.csv"
+        example : "sample.csv"
       enum: 
         type: "boolean"
         example: true 

@@ -1,6 +1,6 @@
 import path from 'path'
 import colors from 'vuetify/es5/util/colors'
-import { icon, clientSecret, title, logo, version, defaultPublisher, doiUrl, clientId, searchUsername, searchPassword, brokerLoginUrl, keycloakLoginUrl, openSearchUrl } from './config'
+import { forceSsl, icon, clientSecret, title, logo, version, defaultPublisher, doiUrl, minIoUrl, clientId, searchUsername, searchPassword, brokerLoginUrl, keycloakLoginUrl, openSearchUrl, s3storageHostname, s3storagePort, s3accessKeyId, s3secretAccessKey } from './config'
 
 const proxy = {}
 
@@ -28,8 +28,6 @@ const meta = [
   { charset: 'utf-8' },
   { name: 'viewport', content: 'width=device-width, initial-scale=1' }
 ]
-
-const forceSsl = process.env.FORCE_SSL === 'true'
 
 if (forceSsl) {
   console.info('Flag FORCE_SSL is set: http-equiv Content-Security-Policy header is set to upgrade-insecure-requests')
@@ -109,7 +107,12 @@ export default {
     openSearchUrl,
     searchUsername,
     searchPassword,
-    doiUrl
+    doiUrl,
+    minIoUrl,
+    s3storageHostname,
+    s3storagePort,
+    s3accessKeyId,
+    s3secretAccessKey
   },
 
   serverMiddleware: [
@@ -140,6 +143,12 @@ export default {
 
   // https://github.com/nuxt/nuxt/issues/7722
   build: {
+    extend (config, { isDev, isClient }) {
+      /* AWS S3 depends on this, we need to tell it that we are a client, not a server */
+      config.node = {
+        fs: 'empty'
+      }
+    },
     babel: {
       presets (env, [preset, options]) {
         return [

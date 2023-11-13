@@ -826,7 +826,10 @@ public abstract class BaseTest {
     public final static String CONTAINER_1_INTERNALNAME = "dbrepo-userdb-u01";
     public final static String CONTAINER_1_IP = "127.0.0.1";
     public final static Boolean CONTAINER_1_RUNNING = true;
+    public final static String CONTAINER_1_HOST = "localhost";
     public final static Integer CONTAINER_1_PORT = 3308;
+    public final static String CONTAINER_1_SIDECAR_HOST = "localhost";
+    public final static Integer CONTAINER_1_SIDECAR_PORT = 33081;
     public final static String CONTAINER_1_PRIVILEGED_USERNAME = "root";
     public final static String CONTAINER_1_PRIVILEGED_PASSWORD = "dbrepo";
     public final static Instant CONTAINER_1_CREATED = Instant.ofEpochSecond(1677399629) /* 2023-02-26 08:20:29 (UTC) */;
@@ -838,8 +841,10 @@ public abstract class BaseTest {
             .imageId(IMAGE_1_ID)
             .image(CONTAINER_1_IMAGE)
             .created(CONTAINER_1_CREATED)
-            .host(CONTAINER_1_IP)
+            .host(CONTAINER_1_HOST)
             .port(CONTAINER_1_PORT)
+            .sidecarHost(CONTAINER_1_SIDECAR_HOST)
+            .sidecarPort(CONTAINER_1_SIDECAR_PORT)
             .privilegedUsername(CONTAINER_1_PRIVILEGED_USERNAME)
             .privilegedPassword(CONTAINER_1_PRIVILEGED_PASSWORD)
             .build();
@@ -851,8 +856,10 @@ public abstract class BaseTest {
             .imageId(IMAGE_1_ID)
             .image(null /* for jpa */)
             .created(CONTAINER_1_CREATED)
-            .host(CONTAINER_1_IP)
+            .host(CONTAINER_1_HOST)
             .port(CONTAINER_1_PORT)
+            .sidecarHost(CONTAINER_1_SIDECAR_HOST)
+            .sidecarPort(CONTAINER_1_SIDECAR_PORT)
             .privilegedUsername(CONTAINER_1_PRIVILEGED_USERNAME)
             .privilegedPassword(CONTAINER_1_PRIVILEGED_PASSWORD)
             .build();
@@ -863,7 +870,10 @@ public abstract class BaseTest {
             .internalName(CONTAINER_1_INTERNALNAME)
             .image(CONTAINER_1_IMAGE_BRIEF_DTO)
             .created(CONTAINER_1_CREATED)
-            .host(CONTAINER_1_IP)
+            .host(CONTAINER_1_HOST)
+            .port(CONTAINER_1_PORT)
+            .sidecarHost(CONTAINER_1_SIDECAR_HOST)
+            .sidecarPort(CONTAINER_1_SIDECAR_PORT)
             .build();
 
     public final static ContainerBriefDto CONTAINER_1_DTO_BRIEF = ContainerBriefDto.builder()
@@ -878,9 +888,12 @@ public abstract class BaseTest {
     public final static ContainerImage CONTAINER_2_IMAGE = IMAGE_1;
     public final static ImageBriefDto CONTAINER_2_IMAGE_BRIEF_DTO = IMAGE_1_BRIEF_DTO;
     public final static String CONTAINER_2_NAME = "u02";
-    public final static Integer CONTAINER_2_PORT = 3309;
     public final static String CONTAINER_2_INTERNALNAME = "dbrepo-userdb-u02";
     public final static String CONTAINER_2_IP = "172.30.0.6";
+    public final static String CONTAINER_2_HOST = "localhost";
+    public final static Integer CONTAINER_2_PORT = 3309;
+    public final static String CONTAINER_2_SIDECAR_HOST = "localhost";
+    public final static Integer CONTAINER_2_SIDECAR_PORT = 33091;
     public final static Boolean CONTAINER_2_RUNNING = true;
     public final static String CONTAINER_2_PRIVILEGED_USERNAME = "root";
     public final static String CONTAINER_2_PRIVILEGED_PASSWORD = "dbrepo";
@@ -893,8 +906,10 @@ public abstract class BaseTest {
             .imageId(IMAGE_1_ID)
             .image(CONTAINER_2_IMAGE)
             .created(CONTAINER_2_CREATED)
-            .host(CONTAINER_2_IP)
+            .host(CONTAINER_2_HOST)
             .port(CONTAINER_2_PORT)
+            .sidecarHost(CONTAINER_2_SIDECAR_HOST)
+            .sidecarPort(CONTAINER_2_SIDECAR_PORT)
             .privilegedUsername(CONTAINER_2_PRIVILEGED_USERNAME)
             .privilegedPassword(CONTAINER_2_PRIVILEGED_PASSWORD)
             .build();
@@ -906,8 +921,10 @@ public abstract class BaseTest {
             .imageId(IMAGE_1_ID)
             .image(null /* for jpa */)
             .created(CONTAINER_2_CREATED)
-            .host(CONTAINER_2_IP)
+            .host(CONTAINER_2_HOST)
             .port(CONTAINER_2_PORT)
+            .sidecarHost(CONTAINER_2_SIDECAR_HOST)
+            .sidecarPort(CONTAINER_2_SIDECAR_PORT)
             .privilegedUsername(CONTAINER_2_PRIVILEGED_USERNAME)
             .privilegedPassword(CONTAINER_2_PRIVILEGED_PASSWORD)
             .build();
@@ -918,7 +935,10 @@ public abstract class BaseTest {
             .internalName(CONTAINER_2_INTERNALNAME)
             .image(CONTAINER_2_IMAGE_BRIEF_DTO)
             .created(CONTAINER_2_CREATED)
-            .host(CONTAINER_2_IP)
+            .host(CONTAINER_2_HOST)
+            .port(CONTAINER_2_PORT)
+            .sidecarHost(CONTAINER_1_SIDECAR_HOST)
+            .sidecarPort(CONTAINER_1_SIDECAR_PORT)
             .build();
 
     public final static ContainerBriefDto CONTAINER_2_DTO_BRIEF = ContainerBriefDto.builder()
@@ -932,9 +952,12 @@ public abstract class BaseTest {
     public final static Long CONTAINER_3_ID = 3L;
     public final static ContainerImage CONTAINER_3_IMAGE = IMAGE_1;
     public final static String CONTAINER_3_NAME = "u03";
-    public final static Integer CONTAINER_3_PORT = 3310;
     public final static String CONTAINER_3_INTERNALNAME = "dbrepo-userdb-u03";
     public final static String CONTAINER_3_IP = "172.30.0.7";
+    public final static String CONTAINER_3_HOST = "localhost";
+    public final static Integer CONTAINER_3_PORT = 3310;
+    public final static String CONTAINER_3_SIDECAR_HOST = "localhost";
+    public final static Integer CONTAINER_3_SIDECAR_PORT = 33101;
     public final static String CONTAINER_3_PRIVILEGED_USERNAME = "root";
     public final static String CONTAINER_3_PRIVILEGED_PASSWORD = "dbrepo";
     public final static Instant CONTAINER_3_CREATED = Instant.ofEpochSecond(1677399672) /* 2023-02-26 08:21:12 (UTC) */;
@@ -946,8 +969,10 @@ public abstract class BaseTest {
             .imageId(IMAGE_1_ID)
             .image(CONTAINER_3_IMAGE)
             .created(CONTAINER_3_CREATED)
-            .host(CONTAINER_3_IP)
+            .host(CONTAINER_3_HOST)
             .port(CONTAINER_3_PORT)
+            .sidecarHost(CONTAINER_3_SIDECAR_HOST)
+            .sidecarPort(CONTAINER_3_SIDECAR_PORT)
             .privilegedUsername(CONTAINER_3_PRIVILEGED_USERNAME)
             .privilegedPassword(CONTAINER_3_PRIVILEGED_PASSWORD)
             .build();
@@ -959,8 +984,10 @@ public abstract class BaseTest {
             .imageId(IMAGE_1_ID)
             .image(CONTAINER_3_IMAGE)
             .created(CONTAINER_3_CREATED)
-            .host(CONTAINER_3_IP)
+            .host(CONTAINER_3_HOST)
             .port(CONTAINER_3_PORT)
+            .sidecarHost(CONTAINER_3_SIDECAR_HOST)
+            .sidecarPort(CONTAINER_3_SIDECAR_PORT)
             .privilegedUsername(CONTAINER_3_PRIVILEGED_USERNAME)
             .privilegedPassword(CONTAINER_3_PRIVILEGED_PASSWORD)
             .build();
@@ -968,9 +995,12 @@ public abstract class BaseTest {
     public final static Long CONTAINER_4_ID = 4L;
     public final static ContainerImage CONTAINER_4_IMAGE = IMAGE_1;
     public final static String CONTAINER_4_NAME = "u04";
-    public final static Integer CONTAINER_4_PORT = 3311;
     public final static String CONTAINER_4_INTERNALNAME = "dbrepo-userdb-u04";
     public final static String CONTAINER_4_IP = "172.30.0.8";
+    public final static String CONTAINER_4_HOST = "localhost";
+    public final static Integer CONTAINER_4_PORT = 3311;
+    public final static String CONTAINER_4_SIDECAR_HOST = "localhost";
+    public final static Integer CONTAINER_4_SIDECAR_PORT = 33111;
     public final static String CONTAINER_4_PRIVILEGED_USERNAME = "root";
     public final static String CONTAINER_4_PRIVILEGED_PASSWORD = "dbrepo";
     public final static Instant CONTAINER_4_CREATED = Instant.ofEpochSecond(1677399688) /* 2023-02-26 08:21:28 (UTC) */;
@@ -982,8 +1012,10 @@ public abstract class BaseTest {
             .imageId(IMAGE_1_ID)
             .image(CONTAINER_4_IMAGE)
             .created(CONTAINER_4_CREATED)
-            .host(CONTAINER_4_IP)
+            .host(CONTAINER_4_HOST)
             .port(CONTAINER_4_PORT)
+            .sidecarHost(CONTAINER_4_SIDECAR_HOST)
+            .sidecarPort(CONTAINER_4_SIDECAR_PORT)
             .privilegedUsername(CONTAINER_4_PRIVILEGED_USERNAME)
             .privilegedPassword(CONTAINER_4_PRIVILEGED_PASSWORD)
             .build();
@@ -995,8 +1027,10 @@ public abstract class BaseTest {
             .imageId(IMAGE_1_ID)
             .image(CONTAINER_4_IMAGE)
             .created(CONTAINER_4_CREATED)
-            .host(CONTAINER_4_IP)
+            .host(CONTAINER_4_HOST)
             .port(CONTAINER_4_PORT)
+            .sidecarHost(CONTAINER_4_SIDECAR_HOST)
+            .sidecarPort(CONTAINER_4_SIDECAR_PORT)
             .privilegedUsername(CONTAINER_4_PRIVILEGED_USERNAME)
             .privilegedPassword(CONTAINER_4_PRIVILEGED_PASSWORD)
             .build();

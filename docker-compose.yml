@@ -11,9 +11,9 @@ volumes:
   broker-service-data:
   upload-service-data:
   search-db-data:
+  storage-service-data:
 
 services:
-
   dbrepo-metadata-db:
     restart: "no"
     container_name: dbrepo-metadata-db
@@ -73,21 +73,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 12
-    logging:
-      driver: json-file
-
-  dbrepo-upload-service:
-    restart: "no"
-    container_name: dbrepo-upload-service
-    hostname: upload-service
-    image: docker.io/tusproject/tusd:v1.12
-    ports:
-      - "1080:1080"
-    command:
-      - "--base-path=/api/upload/files/"
-    volumes:
-      - upload-service-data:/data
-      - "${SHARED_FILESYSTEM:-/tmp}:/srv/tusd-data/data"
     logging:
       driver: json-file
 
@@ -196,7 +181,9 @@ services:
     ports:
       - "5000:5000"
     environment:
-      SHARED_FILESYSTEM: "${SHARED_FILESYSTEM:-/tmp}"
+      S3_STORAGE_ENDPOINT: "${STORAGE_ENDPOINT:-http://storage-service:9000}"
+      S3_ACCESS_KEY_ID: "${STORAGE_USERNAME:-minioadmin}"
+      S3_SECRET_ACCESS_KEY: ${STORAGE_PASSWORD:-minioadmin}
     volumes:
       - "${SHARED_FILESYSTEM:-/tmp}:/tmp"
     healthcheck:
@@ -267,6 +254,27 @@ services:
       FLASK_DEBUG: ${SEARCH_DEBUG_MODE:-true}
       OPENSEARCH_HOST: ${OPENSEARCH_HOST:-dbrepo-search-db}
 
+  dbrepo-data-db-sidecar:
+    restart: "no"
+    container_name: dbrepo-data-db-sidecar
+    hostname: data-db-sidecar
+    build: ./dbrepo-data-db/sidecar
+    image: dbrepo-data-db-sidecar:latest
+    ports:
+      - "3305:3305"
+    environment:
+      FLASK_DEBUG: ${SEARCH_DEBUG_MODE:-true}
+      S3_STORAGE_ENDPOINT: "${STORAGE_ENDPOINT:-http://storage-service:9000}"
+      S3_ACCESS_KEY_ID: "${STORAGE_USERNAME:-minioadmin}"
+      S3_SECRET_ACCESS_KEY: ${STORAGE_PASSWORD:-minioadmin}
+    volumes:
+      - "${SHARED_FILESYSTEM:-/tmp}:/tmp"
+    healthcheck:
+      test: curl -sSL 127.0.0.1:5000/health | jq .status | grep "UP" || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
   dbrepo-ui:
     restart: "no"
     container_name: dbrepo-ui
@@ -288,14 +296,17 @@ services:
       ICON: "${ICON:-/favicon.ico}"
       DBREPO_CLIENT_ID: "${DBREPO_CLIENT_ID:-dbrepo-client}"
       DBREPO_CLIENT_SECRET: "${DBREPO_CLIENT_SECRET:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}"
-      UPLOAD_PATH: "${UPLOAD_PATH:-/tmp/}"
+      S3_STORAGE_HOSTNAME: "${STORAGE_HOSTNAME:-storage-service}"
+      S3_STORAGE_PORT: "${STORAGE_PORT:-9000}"
+      S3_ACCESS_KEY_ID: "${STORAGE_USERNAME:-minioadmin}"
+      S3_SECRET_ACCESS_KEY: ${STORAGE_PASSWORD:-minioadmin}
       FORCE_SSL: "${FORCE_SSL:-false}"
       DOI_URL: "${DOI_URL:-https://doi.org}"
     depends_on:
       dbrepo-search-service:
         condition: service_started
-      dbrepo-upload-service:
-        condition: service_started
+      dbrepo-storage-service:
+        condition: service_healthy
     logging:
       driver: json-file
 
@@ -352,6 +363,29 @@ services:
     depends_on:
       dbrepo-search-db:
         condition: service_healthy
+    logging:
+      driver: json-file
+
+  dbrepo-storage-service:
+    restart: "no"
+    container_name: dbrepo-storage-service
+    hostname: storage-service
+    image: docker.io/bitnami/minio:2023-debian-11
+    environment:
+      MINIO_ROOT_USER: "${STORAGE_USERNAME:-minioadmin}"
+      MINIO_ROOT_PASSWORD: "${STORAGE_PASSWORD:-minioadmin}"
+      MINIO_DEFAULT_BUCKETS: "${STORAGE_DBREPO_BUCKET:-dbrepo-upload:upload,dbrepo-download:download}"
+      MINIO_REGION_NAME: "${STORAGE_REGION_NAME:-eu-west-1}"
+      MINIO_BROWSER_REDIRECT_URL: "${STORAGE_BASE_URL:-http://localhost/admin/storage/}"
+    ports:
+      - 9000:9000
+    healthcheck:
+      test: [ "CMD", "mc", "ready", "local" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - storage-service-data:/bitnami/minio/data
     logging:
       driver: json-file
 
