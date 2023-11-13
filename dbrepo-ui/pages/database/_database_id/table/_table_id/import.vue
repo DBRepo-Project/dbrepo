@@ -133,7 +133,7 @@ export default {
       },
       tableImport: {
         location: null,
-        quote: null,
+        quote: '"',
         false_element: null,
         true_element: null,
         null_element: null,
