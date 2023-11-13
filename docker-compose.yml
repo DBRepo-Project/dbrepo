@@ -18,7 +18,8 @@ services:
     restart: "no"
     container_name: dbrepo-metadata-db
     hostname: metadata-db
-    image: docker.io/dbrepo/metadata-db:latest
+    image: dbrepo-metadata-db:latest
+    build: ./dbrepo-metadata-db
     volumes:
       - metadata-db-data:/bitnami/mariadb
       - ./dist/setup-schema_local.sql:/docker-entrypoint-initdb.d/setup-schema_local.sql
@@ -79,7 +80,8 @@ services:
     restart: "no"
     container_name: dbrepo-authentication-service
     hostname: authentication-service
-    image: docker.io/dbrepo/authentication-service:latest
+    image: dbrepo-authentication-service:latest
+    build: ./dbrepo-authentication-service
     ports:
       - "8443:8443"
       - "8080:8080"
@@ -104,7 +106,8 @@ services:
     restart: "no"
     container_name: dbrepo-metadata-service
     hostname: metadata-service
-    image: docker.io/dbrepo/metadata-service:latest
+    image: dbrepo-metadata-service:latest
+    build: ./dbrepo-metadata-service
     volumes:
       - "${SHARED_FILESYSTEM:-/tmp}:/tmp"
     ports:
@@ -173,7 +176,8 @@ services:
     restart: "no"
     container_name: dbrepo-analyse-service
     hostname: analyse-service
-    image: docker.io/dbrepo/analyse-service:latest
+    image: dbrepo-analyse-service:latest
+    build: ./dbrepo-analyse-service
     ports:
       - "5000:5000"
     environment:
@@ -217,7 +221,8 @@ services:
     restart: "no"
     container_name: dbrepo-search-db
     hostname: search-db
-    image: docker.io/dbrepo/search-db:latest
+    image: dbrepo-search-db:latest
+    build: ./dbrepo-search-db
     ports:
       - "9200:9200"
     healthcheck:
@@ -241,7 +246,8 @@ services:
     restart: "no"
     container_name: dbrepo-search-service
     hostname: search-service
-    image: docker.io/dbrepo/search-service:latest
+    image: dbrepo-search-service:latest
+    build: ./dbrepo-search-service
     ports:
       - "4000:4000"
     environment:
@@ -252,7 +258,8 @@ services:
     restart: "no"
     container_name: dbrepo-data-db-sidecar
     hostname: data-db-sidecar
-    image: docker.io/dbrepo/data-db-sidecar:latest
+    image: dbrepo-data-db-sidecar:latest
+    build: ./dbrepo-data-db/sidecar
     ports:
       - "3305:3305"
     environment:
@@ -263,7 +270,7 @@ services:
     volumes:
       - "${SHARED_FILESYSTEM:-/tmp}:/tmp"
     healthcheck:
-      test: curl -sSL 127.0.0.1:5000/health | jq .status | grep "UP" || exit 1
+      test: curl -sSL 127.0.0.1:3305/health | jq .status | grep "UP" || exit 1
       interval: 10s
       timeout: 5s
       retries: 12
@@ -272,7 +279,8 @@ services:
     restart: "no"
     container_name: dbrepo-ui
     hostname: ui
-    image: docker.io/dbrepo/ui:latest
+    image: dbrepo-ui:latest
+    build: ./dbrepo-ui
     environment:
       BROKER_USERNAME: "${BROKER_USERNAME:-fda}"
       BROKER_PASSWORD: "${BROKER_PASSWORD:-fda}"
@@ -347,7 +355,8 @@ services:
     restart: "no"
     container_name: dbrepo-search-db-init
     hostname: search-db-init
-    image: docker.io/dbrepo/search-db-init:latest
+    image: dbrepo-search-db-init:latest
+    build: ./dbrepo-search-db/init
     environment:
       OPENSEARCH_HOST: ${SEARCH_DB_HOST:-http://search-db:9200}
       CURL_EXTRA_ARGS: ${SEARCH_DB_EXTRA_ARGS:-}
@@ -384,7 +393,8 @@ services:
     restart: "no"
     container_name: dbrepo-mirror-service
     hostname: mirror-service
-    image: docker.io/dbrepo/mirror-service:latest
+    image: dbrepo-mirror-service:latest
+    build: ./dbrepo-mirror-service
     ports:
       - "9050:9050"
     environment:
@@ -414,7 +424,8 @@ services:
     restart: "no"
     container_name: dbrepo-data-service
     hostname: data-service
-    image: docker.io/dbrepo/data-service:latest
+    image: dbrepo-data-service:latest
+    build: ./dbrepo-data-service
     ports:
       - "9093:9093"
     environment:
