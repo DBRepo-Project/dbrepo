@@ -8,8 +8,8 @@ ENV API=http://:80
 
 WORKDIR /app
 
-COPY ./package.json ./
-COPY ./yarn.lock ./
+COPY ./package.json ./package.json
+COPY ./yarn.lock ./yarn.lock
 
 # Install yarn dependencies
 RUN yarn install --frozen-lockfile

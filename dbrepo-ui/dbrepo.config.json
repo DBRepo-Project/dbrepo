@@ -16,7 +16,7 @@
       "ports": [
         5672
       ],
-      "extraInfo": "130.128.0.0/15"
+      "extraInfo": null
     }
   },
   "storage": {
@@ -30,7 +30,7 @@
   },
   "database": {
     "connection": {
-      "extraInfo": "130.128.0.0/15"
+      "extraInfo": null
     }
   },
   "keycloak": {

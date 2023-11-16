@@ -539,6 +539,11 @@ export default {
       return this.dynamicFieldsMap()[this.advancedSearchData.type].includes(item.attribute_name)
     }
   },
+  head () {
+    return {
+      title: this.$config.title
+    }
+  },
   provide () {
     return {
       advancedSearchData: this.advancedSearchData
