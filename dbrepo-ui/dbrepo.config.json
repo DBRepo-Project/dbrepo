@@ -19,6 +19,15 @@
       "extraInfo": "130.128.0.0/15"
     }
   },
+  "storage": {
+    "endpoint": "storage-service",
+    "port": 9000,
+    "useSsl": false,
+    "accessKey": {
+      "id": "minioadmin",
+      "secret": "minioadmin"
+    }
+  },
   "database": {
     "connection": {
       "extraInfo": "130.128.0.0/15"
@@ -49,6 +58,11 @@
           "text": "OpenSearch Admin",
           "blank": true,
           "href": "http://localhost/admin/dashboard"
+        },
+        {
+          "text": "Storage Admin",
+          "blank": true,
+          "href": "http://localhost/admin/storage"
         },
         {
           "text": "RabbitMQ Admin",

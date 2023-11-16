@@ -20,7 +20,7 @@ import lombok.extern.jackson.Jacksonized;
 public class ImportDto {
 
     @NotBlank(message = "location is required")
-    @Schema(example = "/tmp/file.csv")
+    @Schema(example = "file.csv")
     private String location;
 
     @Min(value = 0L)

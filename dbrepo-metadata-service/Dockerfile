@@ -58,8 +58,6 @@ ENV PID_BASE="http://localhost/pid/"
 ENV REPOSITORY_NAME="Example Repository"
 ENV SEARCH_USERNAME=admin
 ENV SEARCH_PASSWORD=admin
-ENV SHARED_FILESYSTEM=/tmp
-ENV DELETE_AFTER_IMPORT=true
 ENV USER_NETWORK=userdb
 ENV WEBSITE="http://localhost"
 ENV KEYCLOAK_HOST="http://authentication-service:8080"
@@ -76,6 +74,9 @@ ENV DATACITE_URL="https://api.test.datacite.org"
 ENV DATACITE_PREFIX=""
 ENV DATACITE_USERNAME=""
 ENV DATACITE_PASSWORD=""
+ENV S3_STORAGE_ENDPOINT="http://storage-service:9000"
+ENV S3_ACCESS_KEY_ID="minioadmin"
+ENV S3_SECRET_ACCESS_KEY="minioadmin"
 
 WORKDIR /app
 

@@ -33,18 +33,14 @@ COPY ./utils ./utils
 
 RUN yarn build
 
-COPY ./docker-entrypoint.sh ./docker-entrypoint.sh
-
 FROM node:14-alpine as runtime
 MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
 
 EXPOSE 3000
 EXPOSE 9100
 
-ENV REBUILD=false
-
 WORKDIR /app
 
 COPY --from=build /app /app
 
-ENTRYPOINT [ "/bin/sh", "./docker-entrypoint.sh" ]
+ENTRYPOINT [ "yarn", "start" ]

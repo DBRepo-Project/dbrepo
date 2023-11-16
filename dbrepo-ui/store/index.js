@@ -47,8 +47,7 @@ const store = new Store({
     getClientSecret: state => state.clientSecret,
     getSearchUsername: state => state.searchUsername,
     getSearchPassword: state => state.searchPassword,
-    getDatabaseCount: state => state.databaseCount,
-    getDoiUrl: state => state.doiUrl
+    getDatabaseCount: state => state.databaseCount
   },
   mutations: {
     SET_TITLE (state, title) {

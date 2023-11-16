@@ -105,7 +105,7 @@ class IdentifierMapper {
   }
 
   identifierPreferEnglishDescription (identifier) {
-    if (!identifier) {
+    if (!identifier || !identifier.descriptions || identifier.descriptions.length === 0) {
       return null
     }
     const filtered = identifier.descriptions.filter(d => d.language && d.language === 'en')

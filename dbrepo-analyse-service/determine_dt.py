@@ -1,18 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-Created on Fri Sep 25 21:25:09 2020
-From: 
-https://messytables.readthedocs.io/en/latest/
-
-https://github.com/okfn/messytables/
-
-@author: Co
+@author: Martin Weise
 """
-
 import json
 import csv
 import logging
-import os
+import io
+from clients.minio_client import MinioClient
 
 import messytables, pandas as pd
 from messytables import CSVTableSet, type_guess, \
@@ -23,15 +17,24 @@ def determine_datatypes(filename, enum=False, enum_tol=0.0001, separator=None) -
     # Use option enum=True for searching Postgres ENUM Types in CSV file. Remark
     # Enum is not SQL standard, hence, it might not be supported by all db-engines.
     # However, it can be used in Postgres and MySQL.
-    path = os.path.join(os.getenv('SHARED_FILESYSTEM', '/tmp'), filename)
+    minio_client = MinioClient()
+    minio_client.file_exists('dbrepo-upload', filename)
+    response = minio_client.get_file('dbrepo-upload', filename)
+    stream = response['Body']
+    if response['ContentLength'] == 0:
+        logging.warning(f'Failed to determine data types: file {filename} has empty body')
+        return json.dumps({'columns': [], 'separator': ','})
     if separator is None:
-        with open(path) as csvfile:
-            dialect = csv.Sniffer().sniff(csvfile.readline())
-        separator = dialect.delimiter
-        logging.debug('determined separator: %s', separator)
+        logging.info('Attempt to guess separator for from first line')
+        with io.BytesIO(stream.read()) as fh:
+            line = next(fh)
+            dialect = csv.Sniffer().sniff(line.decode('utf-8'))
+            separator = dialect.delimiter
+            logging.info('determined separator: %s', separator)
 
     # Load a file object:
-    with open(path, 'rb') as fh:
+    with io.BytesIO(stream.read()) as fh:
+        logging.info('Analysing corpus with separator: %s', separator)
         table_set = CSVTableSet(fh, delimiter=separator)
 
         # A table set is a collection of tables:
@@ -51,7 +54,7 @@ def determine_datatypes(filename, enum=False, enum_tol=0.0001, separator=None) -
 
         # list of rows
         if enum == True:
-            rows = pd.read_csv(path, sep=separator, header=offset)
+            rows = pd.read_csv(fh, sep=separator, header=offset)
             n = len(rows)
 
         for i in range(0, (len(types))):
@@ -59,14 +62,13 @@ def determine_datatypes(filename, enum=False, enum_tol=0.0001, separator=None) -
                 r[headers[i]] = "bool"
             elif type(types[i]) == messytables.types.IntegerType:
                 r[headers[i]] = "bigint"
-            elif type(types[i]) == messytables.types.FloatType:
-                r[headers[i]] = "float"
             elif type(types[i]) == messytables.types.DateType:
-                if ("S" in str(types[i])):
-                    r[headers[i]] = "timestamp"
+                if "%H" in types[i].format or "%M" in types[i].format or "%S" in types[i].format or "%Z" in types[
+                    i].format:
+                    r[headers[i]] = "timestamp"  # todo: guesses date format too, return it
                 else:
                     r[headers[i]] = "date"
-            elif type(types[i]) == messytables.types.DecimalType:
+            elif type(types[i]) == messytables.types.DecimalType or type(types[i]) == messytables.types.FloatType:
                 r[headers[i]] = "decimal"
             elif type(types[i]) == messytables.types.StringType:
                 r[headers[i]] = "varchar"
@@ -99,15 +101,3 @@ def determine_datatypes(filename, enum=False, enum_tol=0.0001, separator=None) -
         s = {'columns': r, 'separator': separator}
         logging.info('Determined data types %s', s)
     return json.dumps(s)
-
-
-"""
-Example output:
-{
-  "columns": {
-    "col1": "integer",
-    "col2": "string",
-    "col3": "string"
-  }
-}
-"""

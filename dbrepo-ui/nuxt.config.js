@@ -143,6 +143,12 @@ export default {
 
   // https://github.com/nuxt/nuxt/issues/7722
   build: {
+    extend (config, { isDev, isClient }) {
+      /* AWS S3 depends on this, we need to tell it that we are a client, not a server */
+      config.node = {
+        fs: 'empty'
+      }
+    },
     babel: {
       presets (env, [preset, options]) {
         return [

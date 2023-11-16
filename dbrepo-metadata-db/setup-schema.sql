@@ -51,10 +51,12 @@ CREATE TABLE IF NOT EXISTS `mdb_containers`
     internal_name       character varying(255) NOT NULL,
     name                character varying(255) NOT NULL,
     host                character varying(255) NOT NULL,
-    port                integer                NOT NULL,
+    port                integer                NOT NULL default 3306,
     ui_host             character varying(255) NOT NULL default host,
     ui_port             integer                NOT NULL default port,
     ui_additional_flags text,
+    sidecar_host        character varying(255) NOT NULL,
+    sidecar_port        integer                NOT NULL default 3305,
     image_id            bigint                 NOT NULL,
     created             timestamp              NOT NULL DEFAULT NOW(),
     last_modified       timestamp,
@@ -277,22 +279,22 @@ CREATE TABLE IF NOT EXISTS `mdb_constraints_checks`
 
 CREATE TABLE IF NOT EXISTS `mdb_concepts`
 (
-    id          bigint                NOT NULL AUTO_INCREMENT,
-    uri         text                  not null,
-    name        VARCHAR(255)          null,
-    description TEXT                  null,
-    created     timestamp             NOT NULL DEFAULT NOW(),
+    id          bigint       NOT NULL AUTO_INCREMENT,
+    uri         text         not null,
+    name        VARCHAR(255) null,
+    description TEXT         null,
+    created     timestamp    NOT NULL DEFAULT NOW(),
     PRIMARY KEY (id),
     UNIQUE (uri(200))
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_units`
 (
-    id          bigint                NOT NULL AUTO_INCREMENT,
-    uri         text                  not null,
-    name        VARCHAR(255)          null,
-    description TEXT                  null,
-    created     timestamp             NOT NULL DEFAULT NOW(),
+    id          bigint       NOT NULL AUTO_INCREMENT,
+    uri         text         not null,
+    name        VARCHAR(255) null,
+    description TEXT         null,
+    created     timestamp    NOT NULL DEFAULT NOW(),
     PRIMARY KEY (id),
     UNIQUE (uri(200))
 ) WITH SYSTEM VERSIONING;

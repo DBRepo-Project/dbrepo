@@ -52,15 +52,6 @@
           </v-btn>
         </v-card-actions>
         <v-card-subtitle class="text-right">
-          <a v-if="openSearchUrl" class="mr-1" :href="openSearchUrl" target="_blank">
-            OpenSearch Admin <sup><v-icon color="primary" x-small>mdi-open-in-new</v-icon></sup>
-          </a>
-          <a v-if="rabbitMqUrl" class="mr-1" :href="rabbitMqUrl" target="_blank">
-            RabbitMQ Admin <sup><v-icon color="primary" x-small>mdi-open-in-new</v-icon></sup>
-          </a>
-          <a v-if="keycloakUrl" class="ml-1" :href="keycloakUrl" target="_blank">
-            Keycloak Admin <sup><v-icon color="primary" x-small>mdi-open-in-new</v-icon></sup>
-          </a>
           <a v-for="(link, i) in loginLinks" :key="i" class="ml-1" :href="link.href" :target="link.blank ? '_blank' : 'self'">
             {{ link.text }} <sup v-if="link.blank"><v-icon color="primary" x-small>mdi-open-in-new</v-icon></sup>
           </a>

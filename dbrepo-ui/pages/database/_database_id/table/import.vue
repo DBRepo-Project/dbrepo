@@ -134,6 +134,19 @@
         <v-form ref="form" v-model="validStep3" @submit.prevent="submit">
           <v-row dense>
             <v-col cols="8">
+              <v-alert
+                v-if="warnAnalyseSeparator"
+                border="left"
+                color="warning">
+                We analysed your .csv/.tsv file and found that the separator you provided
+                <code>{{ tableImport.separator }}</code> is not correct, the separator
+                <code>{{ suggestedAnalyseSeparator }}</code> is more likely to be correct. If you really want to import
+                the .csv/.tsv file still, click "continue".
+              </v-alert>
+            </v-col>
+          </v-row>
+          <v-row dense>
+            <v-col cols="8">
               <v-file-input
                 v-model="fileModel"
                 accept=".csv,.tsv"
@@ -190,7 +203,7 @@ import AnalyseService from '@/api/analyse.service'
 import DatabaseService from '@/api/database.service'
 import QueryMapper from '@/api/query.mapper'
 import TableMapper from '@/api/table.mapper'
-import UploadService from '@/api/upload.service'
+import MiddlewareService from '@/api/middleware.service'
 
 export default {
   name: 'TableFromCSV',
@@ -240,7 +253,7 @@ export default {
       },
       tableImport: {
         location: null,
-        quote: null,
+        quote: '"',
         false_element: null,
         true_element: null,
         null_element: null,
@@ -251,6 +264,8 @@ export default {
       loadingUpload: false,
       loadingAnalyse: false,
       loadingImage: false,
+      warnAnalyseSeparator: false,
+      suggestedAnalyseSeparator: null,
       url: null,
       columns: [],
       newTableId: 42 // FIXME ???
@@ -305,7 +320,7 @@ export default {
     isNonNegativeInteger,
     uploadAndAnalyse () {
       return this.upload()
-        .then(path => this.analyse(path))
+        .then(metadata => this.analyse(metadata.originalname))
     },
     submit () {
       this.$refs.form.validate()
@@ -313,10 +328,10 @@ export default {
     upload () {
       this.loadingUpload = true
       return new Promise((resolve, reject) => {
-        UploadService.upload(this.fileModel)
-          .then((file) => {
-            console.debug('uploaded file', file)
-            resolve(file.path)
+        MiddlewareService.upload(this.fileModel)
+          .then((metadata) => {
+            console.debug('uploaded file', metadata)
+            resolve(metadata)
           })
           .catch((error) => {
             this.loadingUpload = false
@@ -327,11 +342,11 @@ export default {
           })
       })
     },
-    analyse (path) {
+    analyse (filename) {
       this.loadingAnalyse = true
-      AnalyseService.determineDataTypes(path)
+      AnalyseService.determineDataTypes(filename, this.tableImport.separator)
         .then((analysis) => {
-          const { columns } = analysis
+          const { columns, separator } = analysis
           const dataTypes = QueryMapper.mySql8DataTypes()
           this.tableCreate.columns = Object.entries(columns)
             .map(([key, val]) => {
@@ -346,8 +361,13 @@ export default {
                 sets: []
               }
             })
-          this.tableImport.location = path
-          this.step = 4
+          this.tableImport.location = filename
+          if (separator !== this.tableImport.separator) {
+            this.warnAnalyseSeparator = true
+            this.suggestedAnalyseSeparator = separator
+          } else {
+            this.step = 4
+          }
         })
         .finally(() => {
           this.loadingAnalyse = false

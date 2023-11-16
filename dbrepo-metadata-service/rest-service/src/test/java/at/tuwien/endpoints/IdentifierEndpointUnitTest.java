@@ -86,7 +86,7 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
     public void find_json_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
             RemoteUnavailableException, IdentifierRequestException, UserNotFoundException, QueryStoreException,
             TableMalformedException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException,
-            ImageNotSupportedException, FileStorageException {
+            ImageNotSupportedException, FileStorageException, DataDbSidecarException {
         final String accept = "application/json";
 
         /* mock */
@@ -151,7 +151,7 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
     public void find_httpRedirect_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
             RemoteUnavailableException, IdentifierRequestException, UserNotFoundException, QueryStoreException,
             TableMalformedException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException,
-            ImageNotSupportedException, FileStorageException {
+            ImageNotSupportedException, FileStorageException, DataDbSidecarException {
 
         /* test */
         final ResponseEntity<?> response = generic_find(null, null, null);
@@ -320,7 +320,7 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
             throws IdentifierNotFoundException, QueryNotFoundException, RemoteUnavailableException,
             IdentifierRequestException, UserNotFoundException, QueryStoreException, TableMalformedException,
             DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
-            FileStorageException {
+            FileStorageException, DataDbSidecarException {
 
         /* mock */
         when(identifierService.find(IDENTIFIER_1_ID))

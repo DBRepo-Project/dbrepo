@@ -84,7 +84,7 @@
                     </span>
                   </v-list-item-content>
                   <v-list-item-title v-if="access" class="mt-2">
-                    Connection String
+                    Database Connection
                   </v-list-item-title>
                   <v-list-item-content v-if="access">
                     <pre class="pb-1" v-text="jdbcString" />
@@ -93,7 +93,6 @@
                     Database Contact
                   </v-list-item-title>
                   <v-list-item-content v-if="contact">
-                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
                     <span v-if="!loading" v-text="contact" />
                   </v-list-item-content>
                 </v-list-item-content>

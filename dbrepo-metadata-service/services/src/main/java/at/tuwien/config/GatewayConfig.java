@@ -36,4 +36,12 @@ public class GatewayConfig {
         return restTemplate;
     }
 
+    @Bean("sidecarRestTemplate")
+    public RestTemplate sidecarRestTemplate() {
+        final RestTemplate restTemplate = new RestTemplate();
+        restTemplate.getInterceptors()
+                .add(new BasicAuthenticationInterceptor(brokerUsername, brokerPassword));
+        return restTemplate;
+    }
+
 }

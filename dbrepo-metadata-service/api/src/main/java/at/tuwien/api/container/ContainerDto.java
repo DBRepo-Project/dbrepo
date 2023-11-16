@@ -52,6 +52,14 @@ public class ContainerDto {
     @JsonProperty("ui_additional_flags")
     private String uiAdditionalFlags;
 
+    @NotBlank
+    @JsonProperty("sidecar_host")
+    private String sidecarHost;
+
+    @NotNull
+    @JsonProperty("sidecar_port")
+    private Integer sidecarPort;
+
     private ImageBriefDto image;
 
     @NotNull

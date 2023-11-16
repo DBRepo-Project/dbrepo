@@ -42,13 +42,19 @@ public class Container {
     @Column(nullable = false)
     private String host;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "integer default 3306")
     private Integer port;
 
     @Column(nullable = false, columnDefinition = "varchar(255) default host")
+    private String sidecarHost;
+
+    @Column(nullable = false, columnDefinition = "integer default 3305")
+    private Integer sidecarPort;
+
+    @Column(columnDefinition = "varchar(255) default host")
     private String uiHost;
 
-    @Column(nullable = false, columnDefinition = "integer default port")
+    @Column(columnDefinition = "integer default port")
     private Integer uiPort;
 
     @Column

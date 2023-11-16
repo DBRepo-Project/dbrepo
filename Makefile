@@ -43,7 +43,7 @@ build-frontend:
 build-clients:
 	bash ./.gitlab/swagger/generate.sh
 
-tag: tag-analyse-service tag-authentication-service tag-metadata-db tag-ui tag-metadata-service tag-data-service tag-mirror-service tag-log-service tag-search-db tag-search-db-init tag-search-service
+tag: tag-analyse-service tag-authentication-service tag-metadata-db tag-ui tag-metadata-service tag-data-service tag-mirror-service tag-log-service tag-search-db tag-search-db-init tag-search-service tag-data-db-sidecar
 
 tag-analyse-service:
 	docker tag dbrepo-analyse-service:latest "dbrepo/analyse-service:${TAG}"
@@ -77,6 +77,10 @@ tag-search-db:
 	docker tag dbrepo-search-db:latest "dbrepo/search-db:${TAG}"
 	docker tag dbrepo-search-db:latest "${AZURE_REPO}/dbrepo/search-db:${TAG}"
 
+tag-data-db-sidecar:
+	docker tag dbrepo-data-db-sidecar:latest "dbrepo/data-db-sidecar:${TAG}"
+	docker tag dbrepo-data-db-sidecar:latest "${AZURE_REPO}/dbrepo/data-db-sidecar:${TAG}"
+
 tag-search-db-init:
 	docker tag dbrepo-search-db-init:latest "dbrepo/search-db-init:${TAG}"
 	docker tag dbrepo-search-db-init:latest "${AZURE_REPO}/dbrepo/search-db-init:${TAG}"
@@ -89,7 +93,7 @@ tag-search-service:
 	docker tag dbrepo-search-service:latest "dbrepo/search-service:${TAG}"
 	docker tag dbrepo-search-service:latest "${AZURE_REPO}/dbrepo/search-service:${TAG}"
 
-release: build-docker tag release-analyse-service release-authentication-service release-metadata-db release-ui release-metadata-service release-data-service release-log-service release-search-db release-mirror-service release-search-db-init release-search-service
+release: build-docker tag release-analyse-service release-authentication-service release-metadata-db release-ui release-metadata-service release-data-service release-log-service release-search-db release-mirror-service release-search-db-init release-search-service release-data-db-sidecar
 
 release-analyse-service: tag-analyse-service
 	docker push "dbrepo/analyse-service:${TAG}"
@@ -122,6 +126,10 @@ release-search-db: tag-search-db
 release-search-db-init: tag-search-db-init
 	docker push "dbrepo/search-db-init:${TAG}"
 	docker push "${AZURE_REPO}/dbrepo/search-db-init:${TAG}"
+
+release-data-db-sidecar: tag-data-db-sidecar
+	docker push "dbrepo/data-db-sidecar:${TAG}"
+	docker push "${AZURE_REPO}/dbrepo/data-db-sidecar:${TAG}"
 
 release-metadata-service: tag-metadata-service
 	docker push "dbrepo/metadata-service:${TAG}"
