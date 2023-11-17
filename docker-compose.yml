@@ -22,7 +22,7 @@ services:
     build: ./dbrepo-metadata-db
     volumes:
       - metadata-db-data:/bitnami/mariadb
-      - ./dist/setup-schema_local.sql:/docker-entrypoint-initdb.d/setup-schema_local.sql
+      - ./dbrepo-metadata-db/setup-schema_local.sql:/docker-entrypoint-initdb.d/setup-schema_local.sql
     ports:
       - "3306:3306"
     environment:
@@ -203,11 +203,11 @@ services:
       - "5672:5672"
       - "15672:15672"
     volumes:
-      - ./dist/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
-      - ./dist/enabled_plugins:/etc/rabbitmq/enabled_plugins
-      - ./dist/cert.pem:/app/cert.pem
-      - ./dist/pubkey.pem:/app/pubkey.pem
-      - ./dist/definitions.json:/app/definitions.json
+      - ./dbrepo-broker-service/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+      - ./dbrepo-broker-service/enabled_plugins:/etc/rabbitmq/enabled_plugins
+      - ./dbrepo-broker-service/cert.pem:/app/cert.pem
+      - ./dbrepo-broker-service/pubkey.pem:/app/pubkey.pem
+      - ./dbrepo-broker-service/definitions.json:/app/definitions.json
       - broker-service-data:/bitnami/rabbitmq/mnesia
     healthcheck:
       test: rabbitmq-diagnostics -q is_running | grep 'is fully booted and running'
@@ -281,27 +281,6 @@ services:
     hostname: ui
     image: dbrepo-ui:latest
     build: ./dbrepo-ui
-    environment:
-      BROKER_USERNAME: "${BROKER_USERNAME:-fda}"
-      BROKER_PASSWORD: "${BROKER_PASSWORD:-fda}"
-      BROKER_LOGIN_URL: "${BROKER_LOGIN_URL:-/admin/broker/}"
-      KEYCLOAK_LOGIN_URL: "${KEYCLOAK_LOGIN_URL:-/api/auth/admin/}"
-      OPENSEARCH_LOGIN_URL: "${OPENSEARCH_LOGIN_URL:-/admin/dashboard/}"
-      SHARED_FILESYSTEM: "${SHARED_FILESYSTEM:-/tmp}"
-      LOGO: "${LOGO:-/logo.png}"
-      SEARCH_USERNAME: "${SEARCH_USERNAME:-admin}"
-      SEARCH_PASSWORD: "${SEARCH_PASSWORD:-admin}"
-      VERSION: "${VERSION:-latest}"
-      TITLE: "${TITLE:-Database Repository}"
-      ICON: "${ICON:-/favicon.ico}"
-      DBREPO_CLIENT_ID: "${DBREPO_CLIENT_ID:-dbrepo-client}"
-      DBREPO_CLIENT_SECRET: "${DBREPO_CLIENT_SECRET:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}"
-      S3_STORAGE_HOSTNAME: "${STORAGE_HOSTNAME:-storage-service}"
-      S3_STORAGE_PORT: "${STORAGE_PORT:-9000}"
-      S3_ACCESS_KEY_ID: "${STORAGE_USERNAME:-minioadmin}"
-      S3_SECRET_ACCESS_KEY: ${STORAGE_PASSWORD:-minioadmin}
-      FORCE_SSL: "${FORCE_SSL:-false}"
-      DOI_URL: "${DOI_URL:-https://doi.org}"
     depends_on:
       dbrepo-search-service:
         condition: service_started
@@ -319,7 +298,7 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./dist/dbrepo.conf:/etc/nginx/conf.d/default.conf
+      - ./dbrepo-gateway-service/dbrepo.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       dbrepo-analyse-service:
         condition: service_healthy
@@ -342,7 +321,7 @@ services:
     hostname: search-db-dashboard
     image: docker.io/opensearchproject/opensearch-dashboards:2.10.0
     volumes:
-      - ./dist/opensearch_dashboards.yml:/usr/share/opensearch-dashboards/config/opensearch_dashboards.yml
+      - ./dbrepo-search-db/opensearch_dashboards.yml:/usr/share/opensearch-dashboards/config/opensearch_dashboards.yml
     ports:
       - "5601:5601"
     depends_on:
