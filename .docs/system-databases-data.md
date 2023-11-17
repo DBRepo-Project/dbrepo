@@ -26,6 +26,18 @@ curl \
    -d '{"name": "Data Database 2", "imageId": 1, "host": "example.com", "port": 3306, "privilegedUsername": "root", "privilegedPassword": "s3cr3t" }'
 ```
 
+### Sidecar
+
+We deploy a sidecar that handles the CSV-file upload/download operations between 
+the [Storage Service](../system-services-storage) and the Data Database using a Python Flask application and 
+the [`boto3`](https://boto3.amazonaws.com/v1/documentation/api/latest/index.html) client until MariaDB supports S3
+natively.
+
+<figure markdown>
+![Sidecar architecture detailed](images/architecture-data-db.svg)
+<figcaption>Sidecar that handles the CSV-file upload/download.</figcaption>
+</figure>
+
 ### Backup
 
 Export all databases with `--skip-lock-tables` option for MariaDB Galera clusters as it is not supported currently by

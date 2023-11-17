@@ -2,7 +2,7 @@
 author: Martin Weise
 ---
 
-# UI
+# User Interface
 
 ## tl;dr
 
@@ -27,6 +27,39 @@ It provides a *user interface* (UI) for a researcher to interact with the databa
 ![UI microservice architecture detailed](images/architecture-ui.png)
 <figcaption>Architecture of the UI microservice</figcaption>
 </figure>
+
+### Example
+
+Upload a file to the `dbrepo-upload` bucket in the [Storage Service](../system-services-storage/) using the Node.js
+middleware. The request must be sent with the `Content-Type: multipart/form-data` header and the file must be placed
+in the `file` field of the form. For example:
+
+```shell
+curl -X POST \
+  -F "file=@path/to/file/gps.csv" \
+  http://<hostname>/server-middleware/upload
+```
+
+The response looks like this:
+
+```json
+{
+  "fieldname": "file",
+  "originalname": "gps.csv",
+  "encoding": "7bit",
+  "mimetype": "text/csv",
+  "buffer": {
+    "type": "Buffer",
+    "data": [
+      34,
+      73,
+      ...
+    ]
+  },
+  "size": 130279,
+  "etag": "9d23e73f4ed9f7e5afc80e696db69ebb"
+}
+```
 
 ## Limitations
 
