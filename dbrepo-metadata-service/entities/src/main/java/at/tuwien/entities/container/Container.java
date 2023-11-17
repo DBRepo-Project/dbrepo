@@ -51,6 +51,15 @@ public class Container {
     @Column(nullable = false)
     private Integer sidecarPort;
 
+    @Column
+    private String uiHost;
+
+    @Column
+    private Integer uiPort;
+
+    @Column
+    private String uiAdditionalFlags;
+
     @ToString.Exclude
     @org.springframework.data.annotation.Transient
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)

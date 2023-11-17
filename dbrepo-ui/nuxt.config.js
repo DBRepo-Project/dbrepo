@@ -1,6 +1,6 @@
 import path from 'path'
 import colors from 'vuetify/es5/util/colors'
-import { forceSsl, icon, clientSecret, title, logo, version, defaultPublisher, doiUrl, minIoUrl, clientId, searchUsername, searchPassword, brokerLoginUrl, keycloakLoginUrl, openSearchUrl, s3storageHostname, s3storagePort, s3accessKeyId, s3secretAccessKey } from './config'
+import config from './dbrepo.config.json'
 
 const proxy = {}
 
@@ -29,6 +29,8 @@ const meta = [
   { name: 'viewport', content: 'width=device-width, initial-scale=1' }
 ]
 
+const forceSsl = config.ssl.force
+
 if (forceSsl) {
   console.info('Flag FORCE_SSL is set: http-equiv Content-Security-Policy header is set to upgrade-insecure-requests')
   meta.push({ 'http-equiv': 'Content-Security-Policy', content: 'upgrade-insecure-requests' })
@@ -47,10 +49,10 @@ export default {
   },
 
   head: {
-    title,
+    title: config.title,
     meta,
     link: [
-      { rel: 'icon', type: 'image/x-icon', href: icon }
+      { rel: 'icon', type: 'image/x-icon', href: config.icon.path }
     ]
   },
 
@@ -96,23 +98,21 @@ export default {
   proxy,
 
   publicRuntimeConfig: {
-    title,
-    version,
-    logo,
-    clientId,
-    clientSecret,
-    defaultPublisher,
-    brokerLoginUrl,
-    keycloakLoginUrl,
-    openSearchUrl,
-    searchUsername,
-    searchPassword,
-    doiUrl,
-    minIoUrl,
-    s3storageHostname,
-    s3storagePort,
-    s3accessKeyId,
-    s3secretAccessKey
+    title: config.title,
+    version: config.version,
+    logo: config.logo.path,
+    clientId: config.keycloak.client.id,
+    clientSecret: config.keycloak.client.secret,
+    defaultPublisher: config.pid.default.publisher,
+    searchUsername: config.opensearch.username,
+    searchPassword: config.opensearch.password,
+    doiUrl: config.doi.url,
+    infoLinks: config.pages.information.links,
+    loginLinks: config.pages.login.links,
+    brokerHost: config.broker.connection.host,
+    brokerPorts: config.broker.connection.ports,
+    brokerExtraInfo: config.broker.connection.extraInfo,
+    databaseExtraInfo: config.database.connection.extraInfo
   },
 
   serverMiddleware: [

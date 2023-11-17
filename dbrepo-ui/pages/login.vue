@@ -52,17 +52,8 @@
           </v-btn>
         </v-card-actions>
         <v-card-subtitle class="text-right">
-          <a v-if="openSearchUrl" class="mr-1" :href="openSearchUrl" target="_blank">
-            OpenSearch Admin <sup><v-icon color="primary" x-small>mdi-open-in-new</v-icon></sup>
-          </a>
-          <a v-if="rabbitMqUrl" class="mr-1" :href="rabbitMqUrl" target="_blank">
-            RabbitMQ Admin <sup><v-icon color="primary" x-small>mdi-open-in-new</v-icon></sup>
-          </a>
-          <a v-if="keycloakUrl" class="ml-1" :href="keycloakUrl" target="_blank">
-            Keycloak Admin <sup><v-icon color="primary" x-small>mdi-open-in-new</v-icon></sup>
-          </a>
-          <a v-if="minIoUrl" class="ml-1" :href="minIoUrl" target="_blank">
-            MinIO Admin <sup><v-icon color="primary" x-small>mdi-open-in-new</v-icon></sup>
+          <a v-for="(link, i) in loginLinks" :key="i" class="ml-1" :href="link.href" :target="link.blank ? '_blank' : 'self'">
+            {{ link.text }} <sup v-if="link.blank"><v-icon color="primary" x-small>mdi-open-in-new</v-icon></sup>
           </a>
         </v-card-subtitle>
       </v-card>
@@ -94,17 +85,10 @@ export default {
     user () {
       return this.$store.state.user
     },
-    keycloakUrl () {
-      return this.$config.keycloakLoginUrl
-    },
-    rabbitMqUrl () {
-      return this.$config.brokerLoginUrl
-    },
-    openSearchUrl () {
-      return this.$config.openSearchUrl
-    },
-    minIoUrl () {
-      return this.$config.minIoUrl
+    loginLinks () {
+      const loginLinks = this.$config.loginLinks
+      console.debug('login links', loginLinks)
+      return loginLinks
     }
   },
   mounted () {

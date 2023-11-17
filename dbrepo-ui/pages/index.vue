@@ -1,25 +1,14 @@
 <template>
   <div>
     <v-card flat tile>
-      <v-card-text>
+      <v-card-text v-if="infoLinks && infoLinks.length > 0">
         <div class="mb-2">Important Links</div>
         <div class="text--primary">
           <ul>
-            <li>
-              <a href="https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/" target="_blank">Online Documentation</a>
-            </li>
-            <li>
-              <a href="https://doi.org/10.2218/ijdc.v17i1.825" target="_blank">System Description</a>
-            </li>
-            <li>
-              <a href="https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services" target="_blank">Sourcecode
-                Documentation</a>
-            </li>
-            <li>
-              <a href="https://hub.docker.com/u/dbrepo" target="_blank">Docker Images</a>
-            </li>
-            <li>
-              <a href="https://dbrepo2.ec.tuwien.ac.at/" target="_blank">Demo Instance</a>
+            <li v-for="(link, i) in infoLinks" :key="i">
+              <a :href="link.href" :target="link.blank ? '_blank' : 'self'">
+                {{ link.text }} <sup v-if="link.blank"><v-icon color="primary" x-small>mdi-open-in-new</v-icon></sup>
+              </a>
             </li>
           </ul>
         </div>
@@ -86,6 +75,12 @@
 
 <script>
 export default {
-  components: {}
+  computed: {
+    infoLinks () {
+      const infoLinks = this.$config.infoLinks
+      console.debug('info links', infoLinks)
+      return infoLinks
+    }
+  }
 }
 </script>

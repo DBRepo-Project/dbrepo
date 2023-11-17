@@ -77,14 +77,22 @@
                     Database Access
                   </v-list-item-title>
                   <v-list-item-content v-if="access && access.type">
-                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
-                    {{ accessDescription.text }}
+                    <span>
+                      <v-badge inline :content="databaseExtraInfo" color="primary">
+                        <pre v-text="accessDescription.text" />
+                      </v-badge>
+                    </span>
+                  </v-list-item-content>
+                  <v-list-item-title v-if="access" class="mt-2">
+                    Database Connection
+                  </v-list-item-title>
+                  <v-list-item-content v-if="access">
+                    <pre class="pb-1" v-text="jdbcString" />
                   </v-list-item-content>
                   <v-list-item-title v-if="contact" class="mt-2">
                     Database Contact
                   </v-list-item-title>
                   <v-list-item-content v-if="contact">
-                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
                     <span v-if="!loading" v-text="contact" />
                   </v-list-item-content>
                 </v-list-item-content>
@@ -298,6 +306,12 @@ export default {
         return false
       }
       return this.database.owner.username === this.user.username
+    },
+    jdbcString () {
+      return `jdbc://${this.database.container.ui_host}:${this.database.container.ui_port}/${this.database.internal_name}${this.database.container.ui_additional_flags} (username=${this.user.username}, password=yourpassword)`
+    },
+    databaseExtraInfo () {
+      return this.$config.databaseExtraInfo
     }
   },
   methods: {

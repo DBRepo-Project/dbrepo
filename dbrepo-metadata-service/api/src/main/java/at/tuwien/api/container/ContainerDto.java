@@ -48,6 +48,12 @@ public class ContainerDto {
     @JsonProperty("sidecar_port")
     private Integer sidecarPort;
 
+    @JsonProperty("ui_host")
+    private String uiHost;
+
+    @JsonProperty("ui_port")
+    private Integer uiPort;
+
     private ImageBriefDto image;
 
     @NotNull

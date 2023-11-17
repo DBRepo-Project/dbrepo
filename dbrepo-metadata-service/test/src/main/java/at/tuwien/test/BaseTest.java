@@ -825,6 +825,9 @@ public abstract class BaseTest {
     public final static String CONTAINER_1_NAME = "u01";
     public final static String CONTAINER_1_INTERNALNAME = "dbrepo-userdb-u01";
     public final static String CONTAINER_1_IP = "127.0.0.1";
+    public final static String CONTAINER_1_UI_HOST = "localhost";
+    public final static Integer CONTAINER_1_UI_PORT = 3306;
+    public final static String CONTAINER_1_UI_ADDITIONAL_FLAGS = "?sslMode=disable";
     public final static Boolean CONTAINER_1_RUNNING = true;
     public final static String CONTAINER_1_HOST = "localhost";
     public final static Integer CONTAINER_1_PORT = 3308;
@@ -843,6 +846,9 @@ public abstract class BaseTest {
             .created(CONTAINER_1_CREATED)
             .host(CONTAINER_1_HOST)
             .port(CONTAINER_1_PORT)
+            .uiHost(CONTAINER_1_UI_HOST)
+            .uiPort(CONTAINER_1_UI_PORT)
+            .uiAdditionalFlags(CONTAINER_1_UI_ADDITIONAL_FLAGS)
             .sidecarHost(CONTAINER_1_SIDECAR_HOST)
             .sidecarPort(CONTAINER_1_SIDECAR_PORT)
             .privilegedUsername(CONTAINER_1_PRIVILEGED_USERNAME)

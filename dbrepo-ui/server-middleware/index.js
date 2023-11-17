@@ -1,18 +1,18 @@
+import config from '../dbrepo.config.json'
 const express = require('express')
 const multer = require('multer')
 const Minio = require('minio')
-const { s3storageHostname, s3storagePort, forceSsl, s3accessKeyId, s3secretAccessKey } = require('../config')
 const { buildQuery } = require('./query')
 const app = express()
 
 app.use(express.json())
 
 const minioClient = new Minio.Client({
-  endPoint: s3storageHostname,
-  port: s3storagePort,
-  useSSL: forceSsl,
-  accessKeyId: s3accessKeyId,
-  secretAccessKey: s3secretAccessKey
+  endPoint: config.storage.endpoint,
+  port: config.storage.port,
+  useSSL: config.storage.useSsl,
+  accessKeyId: config.storage.accessKey.id,
+  secretAccessKey: config.storage.accessKey.secret
 })
 
 app.post('/query/build', (req, res) => {
