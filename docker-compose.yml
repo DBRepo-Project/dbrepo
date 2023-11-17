@@ -281,8 +281,6 @@ services:
     hostname: ui
     image: dbrepo-ui:latest
     build: ./dbrepo-ui
-    volumes:
-      - ./dbrepo.config.json:/app/dbrepo.config.json
     depends_on:
       dbrepo-search-service:
         condition: service_started

@@ -273,27 +273,8 @@ services:
     container_name: dbrepo-ui
     hostname: ui
     image: docker.io/dbrepo/ui:latest
-    environment:
-      BROKER_USERNAME: "${BROKER_USERNAME:-fda}"
-      BROKER_PASSWORD: "${BROKER_PASSWORD:-fda}"
-      BROKER_LOGIN_URL: "${BROKER_LOGIN_URL:-/admin/broker/}"
-      KEYCLOAK_LOGIN_URL: "${KEYCLOAK_LOGIN_URL:-/api/auth/admin/}"
-      OPENSEARCH_LOGIN_URL: "${OPENSEARCH_LOGIN_URL:-/admin/dashboard/}"
-      SHARED_FILESYSTEM: "${SHARED_FILESYSTEM:-/tmp}"
-      LOGO: "${LOGO:-/logo.png}"
-      SEARCH_USERNAME: "${SEARCH_USERNAME:-admin}"
-      SEARCH_PASSWORD: "${SEARCH_PASSWORD:-admin}"
-      VERSION: "${VERSION:-latest}"
-      TITLE: "${TITLE:-Database Repository}"
-      ICON: "${ICON:-/favicon.ico}"
-      DBREPO_CLIENT_ID: "${DBREPO_CLIENT_ID:-dbrepo-client}"
-      DBREPO_CLIENT_SECRET: "${DBREPO_CLIENT_SECRET:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}"
-      S3_STORAGE_HOSTNAME: "${STORAGE_HOSTNAME:-storage-service}"
-      S3_STORAGE_PORT: "${STORAGE_PORT:-9000}"
-      S3_ACCESS_KEY_ID: "${STORAGE_USERNAME:-minioadmin}"
-      S3_SECRET_ACCESS_KEY: ${STORAGE_PASSWORD:-minioadmin}
-      FORCE_SSL: "${FORCE_SSL:-false}"
-      DOI_URL: "${DOI_URL:-https://doi.org}"
+    volumes:
+      - ./dist/dbrepo.config.json:/app/dbrepo.config.json
     depends_on:
       dbrepo-search-service:
         condition: service_started
