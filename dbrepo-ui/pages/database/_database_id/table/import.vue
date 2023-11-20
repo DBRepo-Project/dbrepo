@@ -163,7 +163,7 @@
               <v-btn
                 class="mb-1"
                 :disabled="!fileModel"
-                :loading="loadingUpload || loadingAnalyse"
+                :loading="loading"
                 color="primary"
                 type="submit"
                 @click="uploadAndAnalyse">
@@ -177,7 +177,7 @@
         Table Schema
       </v-stepper-step>
       <v-stepper-content step="4">
-        <TableSchema :back="true" :error="error" :loading="loadingImage" :columns="tableCreate.columns" @close="schemaClose" />
+        <TableSchema :back="true" :error="error" :loading="loading" :columns="tableCreate.columns" @close="schemaClose" />
       </v-stepper-content>
       <v-stepper-step
         :complete="step > 5"
@@ -203,7 +203,7 @@ import AnalyseService from '@/api/analyse.service'
 import DatabaseService from '@/api/database.service'
 import QueryMapper from '@/api/query.mapper'
 import TableMapper from '@/api/table.mapper'
-import MiddlewareService from '@/api/middleware.service'
+import UploadService from '@/api/upload.service'
 
 export default {
   name: 'TableFromCSV',
@@ -261,9 +261,6 @@ export default {
         skip_lines: 1
       },
       loading: false,
-      loadingUpload: false,
-      loadingAnalyse: false,
-      loadingImage: false,
       warnAnalyseSeparator: false,
       suggestedAnalyseSeparator: null,
       url: null,
@@ -320,30 +317,40 @@ export default {
     isNonNegativeInteger,
     uploadAndAnalyse () {
       return this.upload()
-        .then(metadata => this.analyse(metadata.originalname))
+        .then((metadata) => {
+          const { s3key } = metadata
+          this.analyse(s3key)
+        })
+        .catch(() => {
+          this.loading = false
+        })
+        .finally(() => {
+          this.loading = false
+        })
     },
     submit () {
       this.$refs.form.validate()
     },
     upload () {
-      this.loadingUpload = true
+      this.loading = true
       return new Promise((resolve, reject) => {
-        MiddlewareService.upload(this.fileModel)
+        UploadService.upload(this.fileModel)
           .then((metadata) => {
             console.debug('uploaded file', metadata)
             resolve(metadata)
           })
           .catch((error) => {
-            this.loadingUpload = false
+            this.loading = false
+            this.$toast.error(`Failed to upload file: ${error}`)
             reject(error)
           })
           .finally(() => {
-            this.loadingUpload = false
+            this.loading = false
           })
       })
     },
     analyse (filename) {
-      this.loadingAnalyse = true
+      this.loading = true
       AnalyseService.determineDataTypes(filename, this.tableImport.separator)
         .then((analysis) => {
           const { columns, separator } = analysis
@@ -370,7 +377,7 @@ export default {
           }
         })
         .finally(() => {
-          this.loadingAnalyse = false
+          this.loading = false
         })
     },
     listTables () {
@@ -393,7 +400,7 @@ export default {
       this.createTable()
     },
     async loadDateFormats () {
-      this.loadingImage = true
+      this.loading = true
       try {
         const database = await DatabaseService.findOne(this.$route.params.database_id)
         this.dateFormats = database.container.image.date_formats

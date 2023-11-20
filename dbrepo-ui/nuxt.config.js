@@ -129,7 +129,7 @@ export default {
           accent: colors.amber.darken3,
           secondary: colors.blueGrey.base,
           info: colors.blue.lighten2,
-          code: colors.grey.lighten4,
+          code: colors.grey.base,
           warning: colors.orange.lighten2,
           error: colors.red.base /* is used by forms */,
           success: colors.green.base

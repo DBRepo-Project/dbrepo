@@ -1,13 +1,13 @@
 import axios from 'axios'
+import config from '../dbrepo.config.json'
 
-const baseUrl = `${location.protocol}//${location.host}`
+const protocol = config.api.useSsl ? 'https' : 'http'
+const baseUrl = `${protocol}://${config.api.endpoint}:${config.api.port}`
 
 const instance = axios.create({
   timeout: 10000,
   params: {},
   baseURL: baseUrl
 })
-
-console.debug('base url:', baseUrl)
 
 export default instance

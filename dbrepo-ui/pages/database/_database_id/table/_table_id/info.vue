@@ -36,9 +36,10 @@
               </v-list-item-title>
               <v-list-item-content v-if="access && access.type">
                 <span>
-                  <v-badge inline :content="brokerExtraInfo" color="primary">
+                  <v-badge v-if="brokerExtraInfo" inline :content="brokerExtraInfo" color="primary">
                     <span v-text="accessDescription.text" />
                   </v-badge>
+                  <span v-else v-text="accessDescription.text" />
                 </span>
               </v-list-item-content>
             </v-list-item-content>
@@ -59,7 +60,7 @@
               </v-list-item-title>
               <v-list-item-content v-if="database">
                 <span>
-                  <v-badge inline :content="database.exchange_type" color="secondary">{{ database.exchange_name }}</v-badge>
+                  <v-badge inline :content="database.exchange_type" color="code">{{ database.exchange_name }}</v-badge>
                 </span>
               </v-list-item-content>
               <v-list-item-title class="mt-2">
@@ -67,7 +68,7 @@
               </v-list-item-title>
               <v-list-item-content v-if="table">
                 <span>
-                  <v-badge inline :content="table.queue_type" color="secondary">{{ table.queue_name }}</v-badge>
+                  <v-badge inline :content="table.queue_type" color="code">{{ table.queue_name }}</v-badge>
                 </span>
               </v-list-item-content>
               <v-list-item-title v-if="table && table.routing_key" class="mt-2">

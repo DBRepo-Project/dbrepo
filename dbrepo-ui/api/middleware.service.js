@@ -18,25 +18,6 @@ class MiddlewareService {
         })
     })
   }
-
-  upload (file) {
-    return new Promise((resolve, reject) => {
-      const formData = new FormData()
-      formData.append('file', file, file.name)
-      axios.post('/server-middleware/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
-        .then((response) => {
-          const metadata = response.data
-          console.debug('response metadata', metadata)
-          resolve(metadata)
-        })
-        .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to upload file', error)
-          Vue.$toast.error(`[${code}] Failed to upload file: ${message}`)
-          reject(error)
-        })
-    })
-  }
 }
 
 export default new MiddlewareService()

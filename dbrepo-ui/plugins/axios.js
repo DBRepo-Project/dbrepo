@@ -23,7 +23,7 @@ api.interceptors.request.use((config) => {
     }
     AuthenticationService.authenticateToken(refreshToken)
       .then((authentication) => {
-        console.debug('interceptor inject authorization header for url', config.url)
+        // console.debug('interceptor inject authorization header for url', config.url)
         config.headers.Authorization = `Bearer ${authentication.access_token}`
         return config
       })
@@ -31,7 +31,7 @@ api.interceptors.request.use((config) => {
         return config
       })
   }
-  console.debug('interceptor inject authorization header for url', config.url)
+  // console.debug('interceptor inject authorization header for url', config.url)
   config.headers.Authorization = `Bearer ${token}`
   return config
 })

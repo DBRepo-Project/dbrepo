@@ -78,9 +78,10 @@
                   </v-list-item-title>
                   <v-list-item-content v-if="access && access.type">
                     <span>
-                      <v-badge inline :content="databaseExtraInfo" color="primary">
-                        <pre v-text="accessDescription.text" />
+                      <v-badge v-if="databaseExtraInfo" inline :content="databaseExtraInfo" color="primary">
+                        <span v-text="accessDescription.text" />
                       </v-badge>
+                      <span v-else v-text="accessDescription.text" />
                     </span>
                   </v-list-item-content>
                   <v-list-item-title v-if="access" class="mt-2">
@@ -308,7 +309,8 @@ export default {
       return this.database.owner.username === this.user.username
     },
     jdbcString () {
-      return `jdbc://${this.database.container.ui_host}:${this.database.container.ui_port}/${this.database.internal_name}${this.database.container.ui_additional_flags} (username=${this.user.username}, password=yourpassword)`
+      const flags = this.database.container.ui_additional_flags ? this.database.container.ui_additional_flags : ''
+      return `jdbc://${this.database.container.ui_host}:${this.database.container.ui_port}/${this.database.internal_name}${flags} (username=${this.user.username}, password=yourpassword)`
     },
     databaseExtraInfo () {
       return this.$config.databaseExtraInfo

@@ -132,7 +132,7 @@
 
 <script>
 import QueryService from '@/api/query.service'
-import MiddlewareService from '@/api/middleware.service'
+import UploadService from '@/api/upload.service'
 
 export default {
   props: {
@@ -311,11 +311,12 @@ export default {
       if (!file) {
         return
       }
-      MiddlewareService.upload(file)
+      UploadService.upload(file)
         .then((metadata) => {
           console.debug('uploaded file', metadata)
+          const { s3key } = metadata
           this.localDisplay[column.internal_name] = this.localTuple[column.internal_name]
-          this.localTuple[column.internal_name] = metadata.path
+          this.localTuple[column.internal_name] = s3key
         })
         .catch((error) => {
           console.error(`Failed to set column value: ${column.internal_name}`, error)

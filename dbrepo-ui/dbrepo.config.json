@@ -10,6 +10,11 @@
   "icon": {
     "path": "/favicon.ico"
   },
+  "api": {
+    "endpoint": "localhost",
+    "port": 80,
+    "useSsl": false
+  },
   "broker": {
     "connection": {
       "host": "localhost",
@@ -20,9 +25,6 @@
     }
   },
   "storage": {
-    "endpoint": "storage-service",
-    "port": 9000,
-    "useSsl": false,
     "accessKey": {
       "id": "minioadmin",
       "secret": "minioadmin"
