@@ -7,6 +7,11 @@ class UploadService {
     return new Promise((resolve, reject) => {
       const protocol = config.api.useSsl ? 'https' : 'http'
       const baseUrl = `${protocol}://${config.api.endpoint}:${config.api.port}`
+      if (!tus.isSupported) {
+        console.error('Your browser does not support uploads!')
+        Vue.$toast.error('Your browser does not support uploads!')
+        return
+      }
       const upload = new tus.Upload(file, {
         endpoint: `${baseUrl}/api/upload/files`,
         retryDelays: [0, 3000, 5000, 10000, 20000],

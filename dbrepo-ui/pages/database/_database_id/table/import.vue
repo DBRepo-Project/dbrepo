@@ -341,7 +341,7 @@ export default {
           })
           .catch((error) => {
             this.loading = false
-            this.$toast.error(`Failed to upload file: ${error}`)
+            this.$toast.error('Failed to upload file')
             reject(error)
           })
           .finally(() => {
