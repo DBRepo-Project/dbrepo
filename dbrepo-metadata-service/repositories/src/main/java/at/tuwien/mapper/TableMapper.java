@@ -493,17 +493,21 @@ public interface TableMapper {
                 .append(data.getInternalName())
                 .append("` AS SELECT * FROM (SELECT ");
         final int[] idx = new int[]{0};
+        final StringBuilder keys = new StringBuilder();
         data.getColumns()
                 .stream()
                 .filter(c -> Objects.nonNull(c.getIsPrimaryKey()))
                 .filter(TableColumn::getIsPrimaryKey)
-                .forEach(c -> statement.append(idx[0]++ > 0 ? "," : "")
+                .forEach(c -> keys.append(idx[0]++ > 0 ? "," : "")
                         .append("`")
                         .append(c.getInternalName())
                         .append("`"));
-        statement.append(", ROW_START AS inserted_at, IF(ROW_END > NOW(), NULL, ROW_END) AS deleted_at, COUNT(*) as total FROM `")
+        statement.append(keys)
+                .append(", ROW_START AS inserted_at, IF(ROW_END > NOW(), NULL, ROW_END) AS deleted_at, COUNT(*) as total FROM `")
                 .append(data.getInternalName())
-                .append("` FOR SYSTEM_TIME ALL GROUP BY inserted_at, deleted_at ORDER BY deleted_at DESC LIMIT 50) AS v ORDER BY v.inserted_at, v.deleted_at ASC");
+                .append("` FOR SYSTEM_TIME ALL GROUP BY ")
+                .append(keys)
+                .append(", inserted_at, deleted_at ORDER BY deleted_at DESC LIMIT 50) AS v ORDER BY v.inserted_at, v.deleted_at ASC");
         try {
             final PreparedStatement pstmt = connection.prepareStatement(statement.toString());
             log.trace("prepared create sequence statement {}", statement);
