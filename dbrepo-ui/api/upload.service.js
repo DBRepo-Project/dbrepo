@@ -1,19 +1,18 @@
 import Vue from 'vue'
-import config from '../dbrepo.config'
 const tus = require('tus-js-client')
 
 class UploadService {
   upload (file) {
     return new Promise((resolve, reject) => {
-      const protocol = config.api.useSsl ? 'https' : 'http'
-      const baseUrl = `${protocol}://${config.api.endpoint}:${config.api.port}`
+      const endpoint = `${location.protocol}//${location.host}/api/upload/files`
+      console.debug('upload endpoint', endpoint)
       if (!tus.isSupported) {
         console.error('Your browser does not support uploads!')
         Vue.$toast.error('Your browser does not support uploads!')
         return
       }
       const upload = new tus.Upload(file, {
-        endpoint: `${baseUrl}/api/upload/files`,
+        endpoint,
         retryDelays: [0, 3000, 5000, 10000, 20000],
         metadata: {
           filename: file.name,

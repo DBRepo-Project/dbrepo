@@ -55,6 +55,7 @@ class MinioClient:
     def file_exists(self, bucket, filename):
         try:
             self.client.head_object(Bucket=bucket, Key=filename)
+            logging.debug(f"file with name {filename} exists in bucket with name {bucket}")
         except ClientError as e:
             if e.response["Error"]["Code"] == "404":
                 logging.error("Failed to find key %s in bucket %s", filename, bucket)
@@ -66,6 +67,7 @@ class MinioClient:
     def bucket_exists_or_exit(self, bucket):
         try:
             self.client.head_bucket(Bucket=bucket)
+            logging.debug(f"bucket {bucket} exists.")
         except ClientError as e:
             if e.response["Error"]["Code"] == "404":
                 logging.error("Failed to find bucket %s", bucket)

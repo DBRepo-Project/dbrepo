@@ -1,8 +1,8 @@
 import axios from 'axios'
-import config from '../dbrepo.config.json'
 
-const protocol = config.api.useSsl ? 'https' : 'http'
-const baseUrl = `${protocol}://${config.api.endpoint}:${config.api.port}`
+const baseUrl = `${location.protocol}//${location.host}`
+
+console.debug('base url', baseUrl)
 
 const instance = axios.create({
   timeout: 10000,

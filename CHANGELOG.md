@@ -57,7 +57,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Metadata database to use a system-versioned MariaDB 10.5 database
+- Metadata database to use a system-versioned MariaDB 11.1.3 database
 - Query Store to use trigger for query result count and query hash as well as result hash calculation
 - Query service to allow XML/CSV export for PIDs
 - Query service to support subsets of views

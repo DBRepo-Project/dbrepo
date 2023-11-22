@@ -39,7 +39,7 @@ services:
     restart: "no"
     container_name: dbrepo-data-db
     hostname: data-db
-    image: docker.io/bitnami/mariadb:10.5
+    image: docker.io/bitnami/mariadb:11.1.3
     volumes:
       - data-db-data:/bitnami/mariadb
       - "${SHARED_FILESYSTEM:-/tmp}:/tmp"
@@ -59,7 +59,7 @@ services:
     restart: "no"
     container_name: dbrepo-auth-db
     hostname: auth-db
-    image: docker.io/bitnami/mariadb:10.5
+    image: docker.io/bitnami/mariadb:11.1.3
     volumes:
       - auth-db-data:/bitnami/mariadb
     ports:

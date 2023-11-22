@@ -4,9 +4,8 @@ import config from './dbrepo.config.json'
 
 const proxy = {}
 
-const api = 'http://localhost'
-
 if (process.env.NODE_ENV === 'development') {
+  const api = 'http://localhost'
   proxy['/api'] = api
   proxy['/pid'] = {
     target: api + '/api',

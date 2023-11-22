@@ -211,10 +211,10 @@ scan-search-dashboard:
 	trivy image --insecure --exit-code 1 --severity CRITICAL "opensearchproject/opensearch-dashboards:2.10.0"
 
 scan-data-db:
-	docker pull "bitnami/mariadb:10.5"
-	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-data-db-report.json "bitnami/mariadb:10.5"
-	trivy image --insecure --exit-code 0 "bitnami/mariadb:10.5"
-	trivy image --insecure --exit-code 1 --severity CRITICAL "bitnami/mariadb:10.5"
+	docker pull "bitnami/mariadb:11.1.3"
+	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-data-db-report.json "bitnami/mariadb:11.1.3"
+	trivy image --insecure --exit-code 0 "bitnami/mariadb:11.1.3"
+	trivy image --insecure --exit-code 1 --severity CRITICAL "bitnami/mariadb:11.1.3"
 
 scan-ui:
 	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-ui-report.json dbrepo-ui:latest

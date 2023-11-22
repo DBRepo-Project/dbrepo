@@ -349,9 +349,9 @@ scan-data-db:
       - master
   allow_failure: true
   script:
-    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-data-db-report.json docker.io/bitnami/mariadb:10.5
-    - trivy image --insecure --exit-code 0 docker.io/bitnami/mariadb:10.5
-    - trivy image --insecure --exit-code 1 --severity CRITICAL docker.io/bitnami/mariadb:10.5
+    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-data-db-report.json docker.io/bitnami/mariadb:11.1.3
+    - trivy image --insecure --exit-code 0 docker.io/bitnami/mariadb:11.1.3
+    - trivy image --insecure --exit-code 1 --severity CRITICAL docker.io/bitnami/mariadb:11.1.3
   cache:
     paths:
       - .trivycache/

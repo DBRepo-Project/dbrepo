@@ -11,13 +11,10 @@
     "path": "/favicon.ico"
   },
   "api": {
-    "endpoint": "localhost",
-    "port": 80,
     "useSsl": false
   },
   "broker": {
     "connection": {
-      "host": "localhost",
       "ports": [
         5672
       ],
@@ -25,6 +22,9 @@
     }
   },
   "storage": {
+    "endpoint": "storage-service",
+    "port": 9000,
+    "useSsl": false,
     "accessKey": {
       "id": "minioadmin",
       "secret": "minioadmin"

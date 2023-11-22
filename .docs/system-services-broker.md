@@ -21,7 +21,7 @@ It holds exchanges and topics responsible for holding AMQP messages for later co
 use [RabbitMQ](https://www.rabbitmq.com/) in the implementation. By default, the endpoint listens to the insecure port `5672` for incoming 
 AMQP tuples and insecure port `15672` for the management UI.
 
-The default configuration creates a user with administrative privileges:
+The default configuration creates a user with administrative privileges on the default virtual host `dbrepo`:
 
 * Username: `fda`
 * Password: `fda`
@@ -34,6 +34,22 @@ The Broker Service allows two ways of authentication:
 
 For detailed examples how to authenticate with the Broker Service see 
 the [usage](/usage-broker) page.
+
+The architecture of the Broker Service is very simple. There is only one durable, topic exchange `dbrepo` and one quorum
+queue `dbrepo`, connected with a binding of `dbrepo.#` which routes all tuples with routing key prefix `dbrepo.` (mind 
+the dot!) to this queue.
+
+<figure markdown>
+   ![Data ingest](images/queue-quorum.png)
+   <figcaption>Replicated quorum queue dbrepo in a cluster with three nodes</figcaption>
+</figure>
+
+The consumer takes care of writing it to the correct table in the [Data Service](../system-services-data).
+
+<figure markdown>
+   ![Data ingest](images/exchange-binding.png)
+   <figcaption>Architecture Broker Service</figcaption>
+</figure>
 
 ## Limitations
 

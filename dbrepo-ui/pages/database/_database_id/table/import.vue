@@ -272,14 +272,6 @@ export default {
     token () {
       return this.$store.state.token
     },
-    config () {
-      if (this.token === null) {
-        return {}
-      }
-      return {
-        headers: { Authorization: `Bearer ${this.token}` }
-      }
-    },
     user () {
       return this.$store.state.user
     },

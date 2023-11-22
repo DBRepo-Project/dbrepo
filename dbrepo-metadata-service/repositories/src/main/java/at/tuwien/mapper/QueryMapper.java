@@ -157,7 +157,7 @@ public interface QueryMapper {
     }
 
     default PreparedStatement pathToRawInsertQuery(Connection connection, Table table, ImportDto data) throws QueryMalformedException {
-        final StringBuilder statement = new StringBuilder("LOAD DATA LOCAL INFILE '/tmp/")
+        final StringBuilder statement = new StringBuilder("LOAD DATA INFILE '/tmp/")
                 .append(data.getLocation())
                 .append("' INTO TABLE `")
                 .append(table.getDatabase().getInternalName())
