@@ -6,6 +6,8 @@ import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.TableCreateDto;
 import at.tuwien.api.database.table.TableDto;
+import at.tuwien.api.database.table.columns.ColumnCreateDto;
+import at.tuwien.api.database.table.columns.ColumnTypeDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.database.table.Table;
@@ -152,6 +154,109 @@ public class TableEndpointUnitTest extends BaseUnitTest {
         /* test */
         assertThrows(NotAllowedException.class, () -> {
             generic_create(DATABASE_3_ID, DATABASE_3, TABLE_4_CREATE_DTO, USER_1_ID, USER_1_PRINCIPAL, DATABASE_3_USER_1_READ_ACCESS);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
+    public void create_publicDecimalColumnSizeMissing_fails() {
+        final TableCreateDto request = TableCreateDto.builder()
+                .name("Some Table")
+                .description("Some Description")
+                .columns(List.of(ColumnCreateDto.builder()
+                        .name("ID")
+                        .type(ColumnTypeDto.DECIMAL)
+                        .build()))
+                .constraints(null)
+                .build();
+
+        /* test */
+        assertThrows(TableMalformedException.class, () -> {
+            generic_create(DATABASE_3_ID, DATABASE_3, request, USER_1_ID, USER_1_PRINCIPAL, DATABASE_3_USER_1_WRITE_OWN_ACCESS);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
+    public void create_publicDecimalColumnSizeTooSmall_fails() {
+        final TableCreateDto request = TableCreateDto.builder()
+                .name("Some Table")
+                .description("Some Description")
+                .columns(List.of(ColumnCreateDto.builder()
+                        .name("ID")
+                        .type(ColumnTypeDto.DECIMAL)
+                        .size(-1)
+                        .d(0)
+                        .build()))
+                .constraints(null)
+                .build();
+
+        /* test */
+        assertThrows(TableMalformedException.class, () -> {
+            generic_create(DATABASE_3_ID, DATABASE_3, request, USER_1_ID, USER_1_PRINCIPAL, DATABASE_3_USER_1_WRITE_OWN_ACCESS);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
+    public void create_publicDecimalColumnSizeTooBig_fails() {
+        final TableCreateDto request = TableCreateDto.builder()
+                .name("Some Table")
+                .description("Some Description")
+                .columns(List.of(ColumnCreateDto.builder()
+                        .name("ID")
+                        .type(ColumnTypeDto.DECIMAL)
+                        .size(66)
+                        .d(0)
+                        .build()))
+                .constraints(null)
+                .build();
+
+        /* test */
+        assertThrows(TableMalformedException.class, () -> {
+            generic_create(DATABASE_3_ID, DATABASE_3, request, USER_1_ID, USER_1_PRINCIPAL, DATABASE_3_USER_1_WRITE_OWN_ACCESS);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
+    public void create_publicDecimalColumnDTooBig_fails() {
+        final TableCreateDto request = TableCreateDto.builder()
+                .name("Some Table")
+                .description("Some Description")
+                .columns(List.of(ColumnCreateDto.builder()
+                        .name("ID")
+                        .type(ColumnTypeDto.DECIMAL)
+                        .size(0)
+                        .d(39)
+                        .build()))
+                .constraints(null)
+                .build();
+
+        /* test */
+        assertThrows(TableMalformedException.class, () -> {
+            generic_create(DATABASE_3_ID, DATABASE_3, request, USER_1_ID, USER_1_PRINCIPAL, DATABASE_3_USER_1_WRITE_OWN_ACCESS);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"create-table"})
+    public void create_publicDecimalColumnDBiggerSize_fails() {
+        final TableCreateDto request = TableCreateDto.builder()
+                .name("Some Table")
+                .description("Some Description")
+                .columns(List.of(ColumnCreateDto.builder()
+                        .name("ID")
+                        .type(ColumnTypeDto.DECIMAL)
+                        .size(9)
+                        .d(10)
+                        .build()))
+                .constraints(null)
+                .build();
+
+        /* test */
+        assertThrows(TableMalformedException.class, () -> {
+            generic_create(DATABASE_3_ID, DATABASE_3, request, USER_1_ID, USER_1_PRINCIPAL, DATABASE_3_USER_1_WRITE_OWN_ACCESS);
         });
     }
 

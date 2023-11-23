@@ -10,6 +10,7 @@ import at.tuwien.mapper.DatabaseMapper;
 import at.tuwien.service.AccessService;
 import at.tuwien.utils.PrincipalUtil;
 import at.tuwien.utils.UserUtil;
+import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -46,6 +47,7 @@ public class AccessEndpoint {
 
     @PostMapping("/{userId}")
     @Transactional
+    @Observed(name = "dbr_access_give")
     @PreAuthorize("hasAuthority('create-database-access')")
     @Operation(summary = "Give access to some database", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
@@ -89,6 +91,7 @@ public class AccessEndpoint {
 
     @PutMapping("/{userId}")
     @Transactional
+    @Observed(name = "dbr_access_modify")
     @PreAuthorize("hasAuthority('update-database-access')")
     @Operation(summary = "Modify access to some database", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
@@ -126,6 +129,7 @@ public class AccessEndpoint {
 
     @GetMapping
     @Transactional
+    @Observed(name = "dbr_access_check")
     @PreAuthorize("hasAuthority('check-database-access')")
     @Operation(summary = "Check access to some database", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
@@ -157,6 +161,7 @@ public class AccessEndpoint {
 
     @DeleteMapping("/{userId}")
     @Transactional
+    @Observed(name = "dbr_access_delete")
     @PreAuthorize("hasAuthority('delete-database-access')")
     @Operation(summary = "Revoke access to some database", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
