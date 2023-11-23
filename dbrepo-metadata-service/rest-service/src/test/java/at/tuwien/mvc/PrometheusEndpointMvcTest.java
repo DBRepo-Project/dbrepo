@@ -24,6 +24,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
@@ -98,6 +99,18 @@ public class PrometheusEndpointMvcTest extends BaseUnitTest {
 
     @Autowired
     private TableDataEndpoint tableDataEndpoint;
+
+    @Autowired
+    private TableEndpoint tableEndpoint;
+
+    @Autowired
+    private TableHistoryEndpoint tableHistoryEndpoint;
+
+    @Autowired
+    private UserEndpoint userEndpoint;
+
+    @Autowired
+    private ViewEndpoint viewEndpoint;
 
     @TestConfiguration
     static class ObservationTestConfiguration {
@@ -636,6 +649,152 @@ public class PrometheusEndpointMvcTest extends BaseUnitTest {
 
         /* test */
         for (String metric : List.of("dbr_table_data_insert", "dbr_table_data_update", "dbr_table_data_delete", "dbr_table_data_import", "dbr_table_data_findall", "dbr_table_data_countall")) {
+            assertThat(registry)
+                    .hasObservationWithNameEqualTo(metric);
+        }
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"create-table", "delete-table"})
+    public void prometheusTableEndpoint_succeeds() {
+
+        /* mock */
+        try {
+            tableEndpoint.list(DATABASE_1_ID, USER_1_PRINCIPAL);
+        } catch (Exception e) {
+            /* ignore */
+        }
+        try {
+            tableEndpoint.create(DATABASE_1_ID, TABLE_3_CREATE_DTO, USER_1_PRINCIPAL);
+        } catch (Exception e) {
+            /* ignore */
+        }
+        try {
+            tableEndpoint.findById(DATABASE_1_ID, TABLE_1_ID, USER_1_PRINCIPAL);
+        } catch (Exception e) {
+            /* ignore */
+        }
+        try {
+            tableEndpoint.delete(DATABASE_1_ID, TABLE_1_ID, USER_1_PRINCIPAL);
+        } catch (Exception e) {
+            /* ignore */
+        }
+
+        /* test */
+        for (String metric : List.of("dbr_tables_findall", "dbr_table_create", "dbr_tables_find", "dbr_table_delete")) {
+            assertThat(registry)
+                    .hasObservationWithNameEqualTo(metric);
+        }
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME)
+    public void prometheusTableHistoryEndpoint_succeeds() {
+
+        /* mock */
+        try {
+            tableHistoryEndpoint.getAll(DATABASE_1_ID, TABLE_1_ID, USER_1_PRINCIPAL);
+        } catch (Exception e) {
+            /* ignore */
+        }
+
+        /* test */
+        assertThat(registry)
+                .hasObservationWithNameEqualTo("dbr_table_history_findall");
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"find-user", "modify-user-information", "modify-user-theme"})
+    public void prometheusUserEndpoint_succeeds() {
+
+        /* mock */
+        try {
+            userEndpoint.findAll();
+        } catch (Exception e) {
+            /* ignore */
+        }
+        try {
+            userEndpoint.find(USER_1_ID, USER_1_PRINCIPAL);
+        } catch (Exception e) {
+            /* ignore */
+        }
+        try {
+            userEndpoint.modify(USER_1_ID, USER_1_UPDATE_DTO, USER_1_PRINCIPAL);
+        } catch (Exception e) {
+            /* ignore */
+        }
+        try {
+            userEndpoint.theme(USER_1_ID, USER_1_THEME_SET_DTO, USER_1_PRINCIPAL);
+        } catch (Exception e) {
+            /* ignore */
+        }
+        try {
+            userEndpoint.password(USER_1_ID, USER_1_PASSWORD_DTO, USER_1_PRINCIPAL);
+        } catch (Exception e) {
+            /* ignore */
+        }
+
+        /* test */
+        for (String metric : List.of("dbr_users_findall", "dbr_user_find", "dbr_user_modify", "dbr_user_theme_modify", "dbr_user_password_modify")) {
+            assertThat(registry)
+                    .hasObservationWithNameEqualTo(metric);
+        }
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void prometheusUserEndpoint2_succeeds() {
+
+        /* mock */
+        try {
+            userEndpoint.create(USER_1_SIGNUP_REQUEST_DTO);
+        } catch (Exception e) {
+            /* ignore */
+        }
+
+        /* test */
+        assertThat(registry)
+                .hasObservationWithNameEqualTo("dbr_user_create");
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"create-database-view", "delete-database-view"})
+    public void prometheusViewEndpoint_succeeds() {
+
+        /* mock */
+        try {
+            viewEndpoint.findAll(DATABASE_1_ID, USER_1_PRINCIPAL);
+        } catch (Exception e) {
+            /* ignore */
+        }
+        try {
+            viewEndpoint.create(DATABASE_1_ID, VIEW_1_CREATE_DTO, USER_1_PRINCIPAL);
+        } catch (Exception e) {
+            /* ignore */
+        }
+        try {
+            viewEndpoint.find(DATABASE_1_ID, VIEW_1_ID, USER_1_PRINCIPAL);
+        } catch (Exception e) {
+            /* ignore */
+        }
+        try {
+            viewEndpoint.delete(DATABASE_1_ID, VIEW_1_ID, USER_1_PRINCIPAL);
+        } catch (Exception e) {
+            /* ignore */
+        }
+        try {
+            viewEndpoint.data(DATABASE_1_ID, VIEW_1_ID, USER_1_PRINCIPAL, null, null);
+        } catch (Exception e) {
+            /* ignore */
+        }
+        try {
+            viewEndpoint.count(DATABASE_1_ID, VIEW_1_ID, USER_1_PRINCIPAL);
+        } catch (Exception e) {
+            /* ignore */
+        }
+
+        /* test */
+        for (String metric : List.of("dbr_views_findall", "dbr_view_create", "dbr_view_find", "dbr_view_delete", "dbr_view_data_findall", "dbr_view_data_count")) {
             assertThat(registry)
                     .hasObservationWithNameEqualTo(metric);
         }

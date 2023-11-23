@@ -72,9 +72,7 @@ public interface QueryMapper {
         String nowhitespace = WHITESPACE.matcher(data).replaceAll("_");
         String normalized = Normalizer.normalize(nowhitespace, Normalizer.Form.NFD);
         String slug = NONLATIN.matcher(normalized).replaceAll("");
-        final String name = slug.toLowerCase(Locale.ENGLISH);
-        log.trace("mapped name {} to name {}", data, name);
-        return name;
+        return slug.toLowerCase(Locale.ENGLISH);
     }
 
     default QueryResultDto resultListToQueryResultDto(List<TableColumn> columns, ResultSet result) throws SQLException {

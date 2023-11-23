@@ -158,11 +158,6 @@ public class TableServiceImpl extends HibernateConnector implements TableService
     public Table createTable(Long databaseId, TableCreateDto createDto, Principal principal)
             throws ImageNotSupportedException, DatabaseNotFoundException, TableMalformedException,
             TableNameExistsException, QueryMalformedException {
-        /* checks */
-        if (createDto.getName().isBlank()) {
-            log.error("Failed create table: table name is blank");
-            throw new TableMalformedException("Failed create table: table name is blank");
-        }
         /* find */
         final Database database = databaseService.find(databaseId);
         if (!database.getContainer().getImage().getName().equals("mariadb")) {
@@ -177,27 +172,11 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         }
         /* run query */
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(), database.getContainer(), database);
-        final TableCreateRawQuery query;
         try {
             final Connection connection = dataSource.getConnection();
-            query = tableMapper.tableToCreateTableRawQuery(connection, createDto);
-            if (query.getGenerated()) {
-                /* in case the id column needs to be generated, we need to generate the sequence too */
-                final PreparedStatement preparedStatement10 = tableMapper.tableToCreateSequenceRawQuery(connection, database, createDto);
-                preparedStatement10.executeUpdate();
-                log.debug("created id sequence");
-            }
-            final PreparedStatement preparedStatement11 = query.getPreparedStatement();
-            preparedStatement11.executeUpdate();
+            final PreparedStatement  preparedStatement = tableMapper.tableToCreateTableRawQuery(connection, createDto);
+            preparedStatement.executeUpdate();
         } catch (Exception e) {
-            try {
-                final Connection connection = dataSource.getConnection();
-                final PreparedStatement preparedStatement11 = tableMapper.tableToDropSequenceRawQuery(connection, database, createDto);
-                preparedStatement11.executeUpdate();
-                log.debug("successfully rolled back creation of id sequence");
-            } catch (SQLException ex) {
-                log.error("Failed to rollback creation of id sequence");
-            }
             log.error("Failed to create table, reason: {}", e.getMessage());
             throw new TableMalformedException("Failed to create table", e);
         } finally {
@@ -219,7 +198,7 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         entity.setColumns(createDto.getColumns()
                 .stream()
                 .map(column -> tableMapper.columnCreateDtoToTableColumn(column, database.getContainer().getImage()))
-                .map(column -> tableMapper.tableColumnToTableColumn(entity, column, query))
+                .map(column -> tableMapper.tableColumnToTableColumn(entity, column))
                 .toList());
         /* set the ordinal position for the columns */
         entity.getColumns()
