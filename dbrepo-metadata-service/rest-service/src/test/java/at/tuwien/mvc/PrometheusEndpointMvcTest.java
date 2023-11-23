@@ -5,6 +5,12 @@ import at.tuwien.annotations.MockAmqp;
 import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.api.container.ContainerCreateRequestDto;
 import at.tuwien.api.database.*;
+import at.tuwien.api.database.query.ExecuteStatementDto;
+import at.tuwien.api.database.query.ImportDto;
+import at.tuwien.api.database.query.QueryPersistDto;
+import at.tuwien.api.database.table.TableCsvDeleteDto;
+import at.tuwien.api.database.table.TableCsvDto;
+import at.tuwien.api.database.table.TableCsvUpdateDto;
 import at.tuwien.config.MetricsConfig;
 import at.tuwien.endpoints.*;
 import io.micrometer.observation.tck.TestObservationRegistry;
@@ -68,6 +74,30 @@ public class PrometheusEndpointMvcTest extends BaseUnitTest {
 
     @Autowired
     private MaintenanceEndpoint maintenanceEndpoint;
+
+    @Autowired
+    private MetadataEndpoint metadataEndpoint;
+
+    @Autowired
+    private OntologyEndpoint ontologyEndpoint;
+
+    @Autowired
+    private PersistenceEndpoint persistenceEndpoint;
+
+    @Autowired
+    private QueryEndpoint queryEndpoint;
+
+    @Autowired
+    private SemanticsEndpoint semanticsEndpoint;
+
+    @Autowired
+    private StoreEndpoint storeEndpoint;
+
+    @Autowired
+    private TableColumnEndpoint tableColumnEndpoint;
+
+    @Autowired
+    private TableDataEndpoint tableDataEndpoint;
 
     @TestConfiguration
     static class ObservationTestConfiguration {
@@ -339,6 +369,273 @@ public class PrometheusEndpointMvcTest extends BaseUnitTest {
 
         /* test */
         for (String metric : List.of("dbr_maintenance_findall", "dbr_maintenance_find", "dbr_maintenance_findactive", "dbr_maintenance_create", "dbr_maintenance_update", "dbr_maintenance_delete")) {
+            assertThat(registry)
+                    .hasObservationWithNameEqualTo(metric);
+        }
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME)
+    public void prometheusMetadataEndpoint_succeeds() {
+
+        /* mock */
+        try {
+            metadataEndpoint.identify();
+        } catch (Exception e) {
+            /* ignore */
+        }
+        try {
+            metadataEndpoint.listIdentifiers(null);
+        } catch (Exception e) {
+            /* ignore */
+        }
+        try {
+            metadataEndpoint.getRecord(null);
+        } catch (Exception e) {
+            /* ignore */
+        }
+        try {
+            metadataEndpoint.listMetadataFormats();
+        } catch (Exception e) {
+            /* ignore */
+        }
+
+        /* test */
+        for (String metric : List.of("dbr_oai_identify", "dbr_oai_identifiers_list", "dbr_oai_record_get", "dbr_oai_metadataformats_list")) {
+            assertThat(registry)
+                    .hasObservationWithNameEqualTo(metric);
+        }
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"create-ontology", "update-ontology", "delete-ontology", "execute-semantic-query"})
+    public void prometheusOntologyEndpoint_succeeds() {
+
+        /* mock */
+        try {
+            ontologyEndpoint.findAll();
+        } catch (Exception e) {
+            /* ignore */
+        }
+        try {
+            ontologyEndpoint.find(ONTOLOGY_1_ID);
+        } catch (Exception e) {
+            /* ignore */
+        }
+        try {
+            ontologyEndpoint.create(ONTOLOGY_1_CREATE_DTO, USER_1_PRINCIPAL);
+        } catch (Exception e) {
+            /* ignore */
+        }
+        try {
+            ontologyEndpoint.update(ONTOLOGY_1_ID, ONTOLOGY_1_MODIFY_DTO, USER_1_PRINCIPAL);
+        } catch (Exception e) {
+            /* ignore */
+        }
+        try {
+            ontologyEndpoint.delete(ONTOLOGY_1_ID);
+        } catch (Exception e) {
+            /* ignore */
+        }
+        try {
+            ontologyEndpoint.find(ONTOLOGY_1_ID, "thing", null);
+        } catch (Exception e) {
+            /* ignore */
+        }
+
+        /* test */
+        for (String metric : List.of("dbr_ontologies_findall", "dbr_ontologies_find", "dbr_ontologies_create", "dbr_ontologies_update", "dbr_ontologies_delete", "dbr_ontologies_entities_find")) {
+            assertThat(registry)
+                    .hasObservationWithNameEqualTo(metric);
+        }
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"modify-identifier-metadata", "delete-identifier"})
+    public void prometheusPersistenceEndpoint_succeeds() {
+
+        /* mock */
+        try {
+            persistenceEndpoint.find(IDENTIFIER_1_ID, null, USER_1_PRINCIPAL);
+        } catch (Exception e) {
+            /* ignore */
+        }
+        try {
+            persistenceEndpoint.update(IDENTIFIER_1_ID, IDENTIFIER_1_DTO_REQUEST, USER_1_PRINCIPAL);
+        } catch (Exception e) {
+            /* ignore */
+        }
+        try {
+            persistenceEndpoint.delete(IDENTIFIER_1_ID);
+        } catch (Exception e) {
+            /* ignore */
+        }
+
+        /* test */
+        for (String metric : List.of("dbr_pid_find", "dbr_pid_update", "dbr_pid_delete")) {
+            assertThat(registry)
+                    .hasObservationWithNameEqualTo(metric);
+        }
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"execute-query"})
+    public void prometheusQueryEndpoint_succeeds() {
+
+        /* mock */
+        try {
+            queryEndpoint.execute(DATABASE_1_ID, ExecuteStatementDto.builder().statement("SELECT 1").build(), null, null, USER_1_PRINCIPAL, null, null);
+        } catch (Exception e) {
+            /* ignore */
+        }
+        try {
+            queryEndpoint.reExecute(DATABASE_1_ID, QUERY_1_ID, USER_1_PRINCIPAL, null, null, null, null);
+        } catch (Exception e) {
+            /* ignore */
+        }
+        try {
+            queryEndpoint.reExecuteCount(DATABASE_1_ID, QUERY_1_ID, USER_1_PRINCIPAL);
+        } catch (Exception e) {
+            /* ignore */
+        }
+        try {
+            queryEndpoint.export(DATABASE_1_ID, QUERY_1_ID, null, USER_1_PRINCIPAL);
+        } catch (Exception e) {
+            /* ignore */
+        }
+
+        /* test */
+        for (String metric : List.of("dbr_query_execute", "dbr_query_reexecute", "dbr_query_reexecute_count", "dbr_query_export")) {
+            assertThat(registry)
+                    .hasObservationWithNameEqualTo(metric);
+        }
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"create-semantic-concept", "create-semantic-unit", "table-semantic-analyse"})
+    public void prometheusSemanticsEndpoint_succeeds() {
+
+        /* mock */
+        try {
+            semanticsEndpoint.findAllConcepts();
+        } catch (Exception e) {
+            /* ignore */
+        }
+        try {
+            semanticsEndpoint.saveConcept(COLUMN_CONCEPT_FAIR_DATA_SAVE_DTO);
+        } catch (Exception e) {
+            /* ignore */
+        }
+        try {
+            semanticsEndpoint.findAllUnits();
+        } catch (Exception e) {
+            /* ignore */
+        }
+        try {
+            semanticsEndpoint.saveUnit(UNIT_1_SAVE_DTO);
+        } catch (Exception e) {
+            /* ignore */
+        }
+        try {
+            semanticsEndpoint.analyseTable(DATABASE_1_ID, TABLE_1_ID);
+        } catch (Exception e) {
+            /* ignore */
+        }
+        try {
+            semanticsEndpoint.analyseTableColumn(DATABASE_1_ID, TABLE_1_ID, COLUMN_1_1_ID);
+        } catch (Exception e) {
+            /* ignore */
+        }
+
+        /* test */
+        for (String metric : List.of("dbr_semantic_concepts_findall", "dbr_semantic_concepts_save", "dbr_semantic_units_findall", "dbr_semantic_units_save", "dbr_semantic_table_analyse", "dbr_semantic_column_analyse")) {
+            assertThat(registry)
+                    .hasObservationWithNameEqualTo(metric);
+        }
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"persist-query"})
+    public void prometheusStoreEndpoint_succeeds() {
+
+        /* mock */
+        try {
+            storeEndpoint.findAll(DATABASE_1_ID, true, USER_1_PRINCIPAL);
+        } catch (Exception e) {
+            /* ignore */
+        }
+        try {
+            storeEndpoint.find(DATABASE_1_ID, QUERY_1_ID, USER_1_PRINCIPAL);
+        } catch (Exception e) {
+            /* ignore */
+        }
+        try {
+            storeEndpoint.persist(DATABASE_1_ID, QUERY_1_ID, QueryPersistDto.builder().persist(true).build(), USER_1_PRINCIPAL);
+        } catch (Exception e) {
+            /* ignore */
+        }
+
+        /* test */
+        for (String metric : List.of("dbr_queries_findall", "dbr_queries_find", "dbr_query_persist")) {
+            assertThat(registry)
+                    .hasObservationWithNameEqualTo(metric);
+        }
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"modify-table-column-semantics", "modify-foreign-table-column-semantics"})
+    public void prometheusTableColumnEndpoint_succeeds() {
+
+        /* mock */
+        try {
+            tableColumnEndpoint.update(DATABASE_1_ID, TABLE_1_ID, COLUMN_1_4_ID, COLUMN_1_4_SEMANTICS_UPDATE_DTO, USER_1_PRINCIPAL, "s3cr3t");
+        } catch (Exception e) {
+            /* ignore */
+        }
+
+        /* test */
+        assertThat(registry)
+                .hasObservationWithNameEqualTo("dbr_semantics_column_save");
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"insert-table-data", "delete-table-data"})
+    public void prometheusTableDataEndpoint_succeeds() {
+
+        /* mock */
+        try {
+            tableDataEndpoint.insert(DATABASE_1_ID, TABLE_1_ID, TableCsvDto.builder().build(), USER_1_PRINCIPAL);
+        } catch (Exception e) {
+            /* ignore */
+        }
+        try {
+            tableDataEndpoint.update(DATABASE_1_ID, TABLE_1_ID, TableCsvUpdateDto.builder().build(), USER_1_PRINCIPAL);
+        } catch (Exception e) {
+            /* ignore */
+        }
+        try {
+            tableDataEndpoint.delete(DATABASE_1_ID, TABLE_1_ID, TableCsvDeleteDto.builder().build(), USER_1_PRINCIPAL);
+        } catch (Exception e) {
+            /* ignore */
+        }
+        try {
+            tableDataEndpoint.importCsv(DATABASE_1_ID, TABLE_1_ID, ImportDto.builder().build(), USER_1_PRINCIPAL);
+        } catch (Exception e) {
+            /* ignore */
+        }
+        try {
+            tableDataEndpoint.getAll(DATABASE_1_ID, TABLE_1_ID, USER_1_PRINCIPAL, null, null, null, null, null);
+        } catch (Exception e) {
+            /* ignore */
+        }
+        try {
+            tableDataEndpoint.getCount(DATABASE_1_ID, TABLE_1_ID, USER_1_PRINCIPAL, null);
+        } catch (Exception e) {
+            /* ignore */
+        }
+
+        /* test */
+        for (String metric : List.of("dbr_table_data_insert", "dbr_table_data_update", "dbr_table_data_delete", "dbr_table_data_import", "dbr_table_data_findall", "dbr_table_data_countall")) {
             assertThat(registry)
                     .hasObservationWithNameEqualTo(metric);
         }

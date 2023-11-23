@@ -14,6 +14,7 @@ import at.tuwien.utils.PrincipalUtil;
 import at.tuwien.utils.UserUtil;
 import at.tuwien.validation.EndpointValidator;
 import io.micrometer.core.annotation.Timed;
+import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
@@ -48,7 +49,7 @@ public class TableDataEndpoint {
 
     @PostMapping
     @Transactional
-    @Timed(value = "data.insert", description = "Time needed to insert data into a table")
+    @Observed(name = "dbr_table_data_insert")
     @PreAuthorize("hasAuthority('insert-table-data')")
     @Operation(summary = "Insert data", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<Void> insert(@NotNull @PathVariable("databaseId") Long databaseId,
@@ -71,7 +72,7 @@ public class TableDataEndpoint {
     @Transactional
     @Deprecated
     @PreAuthorize("hasAuthority('insert-table-data')")
-    @Timed(value = "data.update", description = "Time needed to update data in a table")
+    @Observed(name = "dbr_table_data_update")
     @Operation(summary = "Update data", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<Void> update(@NotNull @PathVariable("databaseId") Long databaseId,
                                        @NotNull @PathVariable("tableId") Long tableId,
@@ -92,7 +93,7 @@ public class TableDataEndpoint {
     @DeleteMapping
     @Transactional
     @PreAuthorize("hasAuthority('delete-table-data')")
-    @Timed(value = "data.delete", description = "Time needed to delete data into a table")
+    @Observed(name = "dbr_table_data_delete")
     @Operation(summary = "Delete data", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<Void> delete(@NotNull @PathVariable("databaseId") Long databaseId,
                                        @NotNull @PathVariable("tableId") Long tableId,
@@ -113,7 +114,7 @@ public class TableDataEndpoint {
     @PostMapping("/import")
     @Transactional
     @PreAuthorize("hasAuthority('insert-table-data')")
-    @Timed(value = "data.insertbulk", description = "Time needed to insert data from .csv into a table")
+    @Observed(name = "dbr_table_data_import")
     @Operation(summary = "Insert data from csv", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<Void> importCsv(@NotNull @PathVariable("databaseId") Long databaseId,
                                           @NotNull @PathVariable("tableId") Long tableId,
@@ -133,7 +134,7 @@ public class TableDataEndpoint {
 
     @RequestMapping(method = {RequestMethod.GET, RequestMethod.HEAD})
     @Transactional(readOnly = true)
-    @Timed(value = "data.all", description = "Time needed to find all data from a table")
+    @Observed(name = "dbr_table_data_findall")
     @Operation(summary = "Find data", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<QueryResultDto> getAll(@NotNull @PathVariable("databaseId") Long databaseId,
                                                  @NotNull @PathVariable("tableId") Long tableId,
@@ -165,7 +166,7 @@ public class TableDataEndpoint {
 
     @GetMapping("/count")
     @Transactional(readOnly = true)
-    @Timed(value = "data.all.count", description = "Time needed to get count of all data from a table")
+    @Observed(name = "dbr_table_data_countall")
     @Operation(summary = "Find data", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<Long> getCount(@NotNull @PathVariable("databaseId") Long databaseId,
                                          @NotNull @PathVariable("tableId") Long tableId,
