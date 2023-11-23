@@ -14,6 +14,7 @@ import at.tuwien.service.*;
 import at.tuwien.utils.PrincipalUtil;
 import at.tuwien.utils.UserUtil;
 import io.micrometer.core.annotation.Timed;
+import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -68,7 +69,7 @@ public class DatabaseEndpoint {
 
     @GetMapping
     @Transactional(readOnly = true)
-    @Timed(value = "database.list", description = "Time needed to list the databases")
+    @Observed(name = "dbr_database_findall")
     @Operation(summary = "List databases")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -100,7 +101,7 @@ public class DatabaseEndpoint {
 
     @RequestMapping(method = RequestMethod.HEAD)
     @Transactional(readOnly = true)
-    @Timed(value = "database.list", description = "Time needed to count the databases")
+    @Observed(name = "dbr_database_count")
     @Operation(summary = "Count databases")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -135,7 +136,7 @@ public class DatabaseEndpoint {
     @PostMapping
     @Transactional(rollbackFor = Exception.class)
     @PreAuthorize("hasAuthority('create-database')")
-    @Timed(value = "database.create", description = "Time needed to create a database")
+    @Observed(name = "dbr_database_create")
     @Operation(summary = "Create database", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",
@@ -205,7 +206,7 @@ public class DatabaseEndpoint {
     @PutMapping("/{id}/visibility")
     @Transactional
     @PreAuthorize("hasAuthority('modify-database-visibility')")
-    @Timed(value = "database.visibility", description = "Time needed to modify a database visibility")
+    @Observed(name = "dbr_database_visibility")
     @Operation(summary = "Update database", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
@@ -244,7 +245,7 @@ public class DatabaseEndpoint {
     @PutMapping("/{id}/transfer")
     @Transactional
     @PreAuthorize("hasAuthority('modify-database-owner')")
-    @Timed(value = "database.transfer", description = "Time needed to transfer a database ownership")
+    @Observed(name = "dbr_database_transfer")
     @Operation(summary = "Transfer database", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
@@ -282,7 +283,7 @@ public class DatabaseEndpoint {
 
     @GetMapping("/{id}")
     @Transactional(readOnly = true)
-    @Timed(value = "database.find", description = "Time needed to find a database")
+    @Observed(name = "dbr_database_find")
     @Operation(summary = "Find some database", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -322,7 +323,7 @@ public class DatabaseEndpoint {
     @DeleteMapping("/{id}")
     @Transactional(rollbackFor = Exception.class)
     @PreAuthorize("hasAuthority('delete-database')")
-    @Timed(value = "database.delete", description = "Time needed to delete a database")
+    @Observed(name = "dbr_database_delete")
     @Operation(summary = "Delete some database", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",

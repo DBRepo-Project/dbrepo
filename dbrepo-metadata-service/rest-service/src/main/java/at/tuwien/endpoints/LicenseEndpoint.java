@@ -4,6 +4,7 @@ import at.tuwien.api.database.LicenseDto;
 import at.tuwien.mapper.LicenseMapper;
 import at.tuwien.service.LicenseService;
 import io.micrometer.core.annotation.Timed;
+import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -40,7 +41,7 @@ public class LicenseEndpoint {
 
     @GetMapping("/license")
     @Transactional(readOnly = true)
-    @Timed(value = "license.list", description = "Time needed to list the licenses")
+    @Observed(name = "dbr_license_findall")
     @Operation(summary = "Get all licenses")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",

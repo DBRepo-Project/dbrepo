@@ -4,10 +4,7 @@ import at.tuwien.api.amqp.*;
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.container.ContainerBriefDto;
 import at.tuwien.api.container.ContainerDto;
-import at.tuwien.api.container.image.ImageBriefDto;
-import at.tuwien.api.container.image.ImageCreateDto;
-import at.tuwien.api.container.image.ImageDateDto;
-import at.tuwien.api.container.image.ImageDto;
+import at.tuwien.api.container.image.*;
 import at.tuwien.api.database.*;
 import at.tuwien.api.database.query.QueryBriefDto;
 import at.tuwien.api.database.query.QueryDto;
@@ -692,6 +689,14 @@ public abstract class BaseTest {
             .registry(IMAGE_1_REGISTRY)
             .name(IMAGE_1_NAME)
             .version(IMAGE_1_VERSION)
+            .dialect(IMAGE_1_DIALECT)
+            .jdbcMethod(IMAGE_1_JDBC)
+            .driverClass(IMAGE_1_DRIVER)
+            .defaultPort(IMAGE_1_PORT)
+            .build();
+
+    public final static ImageChangeDto IMAGE_1_CHANGE_DTO = ImageChangeDto.builder()
+            .registry(IMAGE_1_REGISTRY)
             .dialect(IMAGE_1_DIALECT)
             .jdbcMethod(IMAGE_1_JDBC)
             .driverClass(IMAGE_1_DRIVER)
