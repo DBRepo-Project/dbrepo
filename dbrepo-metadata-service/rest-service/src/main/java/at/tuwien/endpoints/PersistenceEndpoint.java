@@ -12,6 +12,7 @@ import at.tuwien.service.AccessService;
 import at.tuwien.service.IdentifierService;
 import at.tuwien.utils.UserUtil;
 import io.micrometer.core.annotation.Timed;
+import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -56,7 +57,7 @@ public class PersistenceEndpoint {
 
     @GetMapping("/{pid}")
     @Transactional(readOnly = true)
-    @Timed(value = "pid.find", description = "Time needed to find a persisted identifier")
+    @Observed(name = "dbr_pid_find")
     @Operation(summary = "Find some identifier")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -151,7 +152,7 @@ public class PersistenceEndpoint {
 
     @PutMapping("/{id}")
     @Transactional
-    @Timed(value = "identifier.update", description = "Time needed to update an identifier")
+    @Observed(name = "dbr_pid_update")
     @PreAuthorize("hasAuthority('modify-identifier-metadata')")
     @Operation(summary = "Update some identifier", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
@@ -207,7 +208,7 @@ public class PersistenceEndpoint {
 
     @DeleteMapping("/{id}")
     @Transactional
-    @Timed(value = "identifier.delete", description = "Time needed to delete an identifier")
+    @Observed(name = "dbr_pid_delete")
     @PreAuthorize("hasAuthority('delete-identifier')")
     @Operation(summary = "Delete some identifier", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {

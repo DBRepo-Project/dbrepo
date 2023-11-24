@@ -19,6 +19,7 @@ import at.tuwien.utils.PrincipalUtil;
 import at.tuwien.utils.UserUtil;
 import at.tuwien.validation.EndpointValidator;
 import io.micrometer.core.annotation.Timed;
+import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -71,7 +72,7 @@ public class StoreEndpoint {
 
     @GetMapping
     @Transactional(readOnly = true)
-    @Timed(value = "store.list", description = "Time needed to list queries from the query store")
+    @Observed(name = "dbr_queries_findall")
     @Operation(summary = "Find queries", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -138,7 +139,7 @@ public class StoreEndpoint {
 
     @GetMapping("/{queryId}")
     @Transactional(readOnly = true)
-    @Timed(value = "store.find", description = "Time needed to find a query from the query store")
+    @Observed(name = "dbr_queries_find")
     @Operation(summary = "Find some query", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -196,7 +197,7 @@ public class StoreEndpoint {
     @PutMapping("/{queryId}")
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority('persist-query')")
-    @Timed(value = "store.persist", description = "Time needed to persist a query in the query store")
+    @Observed(name = "dbr_query_persist")
     @Operation(summary = "Persist some query", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",

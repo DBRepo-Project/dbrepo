@@ -7,6 +7,7 @@ import at.tuwien.api.maintenance.BannerMessageUpdateDto;
 import at.tuwien.exception.BannerMessageNotFoundException;
 import at.tuwien.mapper.BannerMessageMapper;
 import at.tuwien.service.BannerMessageService;
+import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -40,6 +41,7 @@ public class MaintenanceEndpoint {
     }
 
     @GetMapping("/message")
+    @Observed(name = "dbr_maintenance_findall")
     @Operation(summary = "Find maintenance messages")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -59,6 +61,7 @@ public class MaintenanceEndpoint {
     }
 
     @GetMapping("/message/{id}")
+    @Observed(name = "dbr_maintenance_find")
     @Operation(summary = "Find one maintenance message")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -76,6 +79,7 @@ public class MaintenanceEndpoint {
     }
 
     @GetMapping("/message/active")
+    @Observed(name = "dbr_maintenance_findactive")
     @Operation(summary = "Find active maintenance messages")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -95,6 +99,7 @@ public class MaintenanceEndpoint {
     }
 
     @PostMapping("/message")
+    @Observed(name = "dbr_maintenance_create")
     @Operation(summary = "Create maintenance message")
     @PreAuthorize("hasAuthority('create-maintenance-message')")
     @ApiResponses(value = {
@@ -113,6 +118,7 @@ public class MaintenanceEndpoint {
     }
 
     @PutMapping("/message/{id}")
+    @Observed(name = "dbr_maintenance_update")
     @Operation(summary = "Update maintenance message")
     @PreAuthorize("hasAuthority('update-maintenance-message')")
     @ApiResponses(value = {
@@ -138,6 +144,7 @@ public class MaintenanceEndpoint {
     }
 
     @DeleteMapping("/message/{id}")
+    @Observed(name = "dbr_maintenance_delete")
     @Operation(summary = "Delete maintenance message")
     @PreAuthorize("hasAuthority('delete-maintenance-message')")
     @ApiResponses(value = {

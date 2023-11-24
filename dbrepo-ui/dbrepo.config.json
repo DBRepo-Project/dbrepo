@@ -59,22 +59,22 @@
         {
           "text": "OpenSearch Admin",
           "blank": true,
-          "href": "http://localhost/admin/dashboard"
+          "href": "http://localhost/admin/dashboard/"
         },
         {
           "text": "Storage Admin",
           "blank": true,
-          "href": "http://localhost/admin/storage"
+          "href": "http://localhost/admin/storage/"
         },
         {
           "text": "RabbitMQ Admin",
           "blank": true,
-          "href": "http://localhost/admin/broker"
+          "href": "http://localhost/admin/broker/"
         },
         {
           "text": "Keycloak Admin",
           "blank": true,
-          "href": "http://localhost/api/auth"
+          "href": "http://localhost/api/auth/"
         }
       ]
     },

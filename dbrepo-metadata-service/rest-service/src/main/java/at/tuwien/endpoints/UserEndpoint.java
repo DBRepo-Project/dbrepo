@@ -13,6 +13,7 @@ import at.tuwien.service.UserService;
 import at.tuwien.utils.PrincipalUtil;
 import at.tuwien.utils.UserUtil;
 import io.micrometer.core.annotation.Timed;
+import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -58,7 +59,7 @@ public class UserEndpoint {
 
     @GetMapping
     @Transactional(readOnly = true)
-    @Timed(value = "user.list", description = "Time needed to list all users in the metadata database")
+    @Observed(name = "dbr_users_findall")
     @Operation(summary = "Find all users")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -80,7 +81,7 @@ public class UserEndpoint {
     @PostMapping
     @Transactional(rollbackFor = Exception.class)
     @PreAuthorize("!isAuthenticated()")
-    @Timed(value = "user.create", description = "Time needed to create a user in the metadata database")
+    @Observed(name = "dbr_user_create")
     @Operation(summary = "Create user")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",
@@ -146,7 +147,7 @@ public class UserEndpoint {
     @GetMapping("/{id}")
     @Transactional
     @PreAuthorize("isAuthenticated() or hasAuthority('find-user')")
-    @Timed(value = "user.info", description = "Time needed to get information of a user in the metadata database")
+    @Observed(name = "dbr_user_find")
     @Operation(summary = "Get a user info", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -188,7 +189,7 @@ public class UserEndpoint {
     @PutMapping("/{id}")
     @Transactional
     @PreAuthorize("hasAuthority('modify-user-information')")
-    @Timed(value = "user.modify", description = "Time needed to modify a user in the metadata database")
+    @Observed(name = "dbr_user_modify")
     @Operation(summary = "Modify user information", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
@@ -230,7 +231,7 @@ public class UserEndpoint {
     @PutMapping("/{id}/theme")
     @Transactional
     @PreAuthorize("hasAuthority('modify-user-theme')")
-    @Timed(value = "user.theme", description = "Time needed to modify a user theme in the metadata database")
+    @Observed(name = "dbr_user_theme_modify")
     @Operation(summary = "Modify user theme", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
@@ -270,7 +271,7 @@ public class UserEndpoint {
     @PutMapping("/{id}/password")
     @Transactional
     @PreAuthorize("isAuthenticated()")
-    @Timed(value = "user.password", description = "Time needed to modify a user password in the metadata database")
+    @Observed(name = "dbr_user_password_modify")
     @Operation(summary = "Modify user password", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",

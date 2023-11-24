@@ -92,16 +92,36 @@ public class EndpointValidator {
                 .filter(c -> needSize.contains(c.getType()))
                 .findFirst();
         if (optional0.isPresent()) {
+            log.error("Validation failed: column {} needs size parameter", optional0.get().getName() );
             throw new TableMalformedException("Validation failed: column " + optional0.get().getName() + " needs size parameter");
         }
         /* check size and d */
         final Optional<ColumnCreateDto> optional1 = data.getColumns()
                 .stream()
-                .filter(c -> Objects.isNull(c.getSize()) || Objects.isNull(c.getD()))
                 .filter(c -> needSizeAndD.contains(c.getType()))
+                .filter(c -> Objects.isNull(c.getSize()) || Objects.isNull(c.getD()))
                 .findFirst();
         if (optional1.isPresent()) {
+            log.error("Validation failed: column {} needs size and d parameter", optional1.get().getName());
             throw new TableMalformedException("Validation failed: column " + optional1.get().getName() + " needs size and d parameter");
+        }
+        final Optional<ColumnCreateDto> optional1a = data.getColumns()
+                .stream()
+                .filter(c -> needSizeAndD.contains(c.getType()))
+                .filter(c -> c.getSize() > 65 || c.getD() > 38)
+                .findFirst();
+        if (optional1a.isPresent()) {
+            log.error("Validation failed: column {} needs size (max 65) and d (max 30)", optional1a.get().getName());
+            throw new TableMalformedException("Validation failed: column " + optional1a.get().getName() + " needs size (max 65) and d (max 30)");
+        }
+        final Optional<ColumnCreateDto> optional1b = data.getColumns()
+                .stream()
+                .filter(c -> needSizeAndD.contains(c.getType()))
+                .filter(c -> c.getSize() < c.getD())
+                .findFirst();
+        if (optional1b.isPresent()) {
+            log.error("Validation failed: column {} needs size >= d", optional1b.get().getName());
+            throw new TableMalformedException("Validation failed: column " + optional1b.get().getName() + " needs size >= d");
         }
         /* check enum */
         final Optional<ColumnCreateDto> optional2 = data.getColumns()
@@ -110,6 +130,7 @@ public class EndpointValidator {
                 .filter(c -> c.getEnums() == null || c.getEnums().isEmpty())
                 .findFirst();
         if (optional2.isPresent()) {
+            log.error("Validation failed: column {} needs at least 1 allowed enum value", optional2.get().getName());
             throw new TableMalformedException("Validation failed: column " + optional2.get().getName() + " needs at least 1 allowed enum value");
         }
         /* check set */
@@ -119,6 +140,7 @@ public class EndpointValidator {
                 .filter(c -> c.getEnums() == null || c.getSets().isEmpty())
                 .findFirst();
         if (optional3.isPresent()) {
+            log.error("Validation failed: column {} needs at least 1 allowed set value", optional3.get().getName());
             throw new TableMalformedException("Validation failed: column " + optional3.get().getName() + " needs at least 1 allowed set value");
         }
         /* check date */
@@ -128,6 +150,7 @@ public class EndpointValidator {
                 .filter(c -> Objects.isNull(c.getDfid()))
                 .findFirst();
         if (optional4.isPresent()) {
+            log.error("Validation failed: column {} needs a format", optional4.get().getName());
             throw new TableMalformedException("Validation failed: column " + optional4.get().getName() + " needs a format");
         }
     }

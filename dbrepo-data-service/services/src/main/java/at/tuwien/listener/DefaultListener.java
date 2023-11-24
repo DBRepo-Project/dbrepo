@@ -6,6 +6,7 @@ import at.tuwien.exception.TableNotFoundException;
 import at.tuwien.service.QueueService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.micrometer.observation.annotation.Observed;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageListener;
@@ -15,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,6 +35,7 @@ public class DefaultListener implements MessageListener {
     }
 
     @Override
+    @Observed(name = "dbr_message_receive")
     public void onMessage(Message message) {
         final MessageProperties properties = message.getMessageProperties();
         final TypeReference<HashMap<String, Object>> typeRef = new TypeReference<>() {
@@ -46,6 +49,7 @@ public class DefaultListener implements MessageListener {
             log.error("Failed to map database and table names from routing key: is not 3-part");
             return;
         }
+        log.trace("received message with id {} and content length: {} bytes", message.getMessageProperties().getMessageId(), message.getMessageProperties().getContentLength());
         final String database = parts[1];
         final String table = parts[2];
         final Map<String, Object> body;
@@ -54,7 +58,7 @@ public class DefaultListener implements MessageListener {
             queueService.insert(database, table, body);
         } catch (IOException e) {
             log.error("Failed to read object: {}", e.getMessage());
-        } catch (TableNotFoundException | QueryMalformedException | DatabaseNotFoundException e) {
+        } catch (TableNotFoundException | QueryMalformedException | DatabaseNotFoundException | SQLException e) {
             log.error("Failed to insert tuple: {}", e.getMessage());
         }
     }

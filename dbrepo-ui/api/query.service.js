@@ -11,7 +11,9 @@ class QueryService {
           resolve(queries)
         })
         .catch((error) => {
+          const { code, message } = error.response.data
           console.error('Failed to load queries', error)
+          Vue.$toast.error(`[${code}] Failed to load queries: ${message}`)
           reject(error)
         })
     })
@@ -25,7 +27,9 @@ class QueryService {
           console.debug('response query', query)
           resolve(query)
         }).catch((error) => {
+          const { code, message } = error.response.data
           console.error('Failed to load query', error)
+          Vue.$toast.error(`[${code}] Failed to load query: ${message}`)
           reject(error)
         })
     })
@@ -40,7 +44,7 @@ class QueryService {
           resolve(query)
         })
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to persist query', error)
           Vue.$toast.error(`[${code}] Failed to persist query: ${message}`)
           reject(error)
@@ -57,7 +61,7 @@ class QueryService {
           resolve(table)
         })
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to import csv to table', error)
           Vue.$toast.error(`[${code}] Failed to import csv to table: ${message}`)
           reject(error)
@@ -74,16 +78,14 @@ class QueryService {
           resolve(tuple)
         })
         .catch((error) => {
-          const { response } = error
-          const { status, data } = response
-          const { message } = data
+          const { status } = error
+          const { code, message } = error.response.data
           if (status === 423) {
             console.error('Database failed to accept tuple', error)
-            Vue.$toast.error(message)
           } else {
             console.error('Failed to insert tuple', error)
-            Vue.$toast.error(message)
           }
+          Vue.$toast.error(`[${code}] Failed to insert tuple: ${message}`)
           reject(error)
         })
     })
@@ -98,15 +100,14 @@ class QueryService {
           resolve(tuple)
         })
         .catch((error) => {
-          const { code, message, response } = error
-          const { status } = response
+          const { status } = error
+          const { code, message } = error.response.data
           if (status === 423) {
             console.error('Database failed to accept tuple', error)
-            Vue.$toast.error(`Database failed to accept tuple: ${message}`)
           } else {
             console.error('Failed to update tuple', error)
-            Vue.$toast.error(`[${code}] Failed to update tuple: ${message}`)
           }
+          Vue.$toast.error(`[${code}] Failed to update tuple: ${message}`)
           reject(error)
         })
     })
@@ -121,7 +122,7 @@ class QueryService {
           resolve(subset)
         })
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to export query', error)
           Vue.$toast.error(`[${code}] Failed to export query: ${message}`)
           reject(error)
@@ -138,7 +139,7 @@ class QueryService {
           resolve(metadata)
         })
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to export metadata', error)
           Vue.$toast.error(`[${code}] Failed to export metadata: ${message}`)
           reject(error)
@@ -155,7 +156,7 @@ class QueryService {
           resolve(result)
         })
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to execute statement', error)
           Vue.$toast.error(`[${code}] Failed to execute statement: ${message}`)
           reject(error)
@@ -172,7 +173,7 @@ class QueryService {
           resolve(result)
         })
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to re-execute query', error)
           Vue.$toast.error(`[${code}] Failed to re-execute query: ${message}`)
           reject(error)
@@ -189,7 +190,7 @@ class QueryService {
           resolve(count)
         })
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to re-execute query count', error)
           Vue.$toast.error(`[${code}] Failed to re-execute query count: ${message}`)
           reject(error)
@@ -206,8 +207,7 @@ class QueryService {
           resolve(result)
         })
         .catch((error) => {
-          const { code } = error
-          const { message } = error.response.data
+          const { code, message } = error.response.data
           console.error('Failed to re-execute view', error)
           Vue.$toast.error(`[${code}] Failed to re-execute view: ${message}`)
           reject(error)
@@ -224,8 +224,7 @@ class QueryService {
           resolve(count)
         })
         .catch((error) => {
-          const { code } = error
-          const { message } = error.response.data
+          const { code, message } = error.response.data
           console.error('Failed to re-execute view count', error)
           Vue.$toast.error(`[${code}] Failed to re-execute view count: ${message}`)
           reject(error)
@@ -242,7 +241,7 @@ class QueryService {
           resolve(view)
         })
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to find view', error)
           Vue.$toast.error(`[${code}] Failed to find view: ${message}`)
           reject(error)

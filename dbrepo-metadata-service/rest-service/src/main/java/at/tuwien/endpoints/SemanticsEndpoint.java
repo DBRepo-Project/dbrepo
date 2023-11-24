@@ -16,6 +16,7 @@ import at.tuwien.mapper.SemanticMapper;
 import at.tuwien.service.EntityService;
 import at.tuwien.service.SemanticService;
 import io.micrometer.core.annotation.Timed;
+import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -56,7 +57,7 @@ public class SemanticsEndpoint {
 
     @GetMapping("/concept")
     @Transactional(readOnly = true)
-    @Timed(value = "semantics.concept.list", description = "Time needed to find all semantic concepts")
+    @Observed(name = "dbr_semantic_concepts_findall")
     @Operation(summary = "List semantic concepts")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -79,7 +80,7 @@ public class SemanticsEndpoint {
     @PostMapping("/concept")
     @Transactional
     @PreAuthorize("hasAuthority('create-semantic-concept')")
-    @Timed(value = "semantics.concept.save", description = "Time needed to save a semantic concept")
+    @Observed(name = "dbr_semantic_concepts_save")
     @Operation(summary = "Create or update a semantic concept", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
@@ -88,7 +89,7 @@ public class SemanticsEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ConceptDto.class))}),
     })
-    public ResponseEntity<ConceptDto> saveUnit(@NotNull @Valid @RequestBody ConceptSaveDto data) {
+    public ResponseEntity<ConceptDto> saveConcept(@NotNull @Valid @RequestBody ConceptSaveDto data) {
         log.debug("endpoint save concept, data={}", data);
         final ConceptDto dto = ontologyMapper.tableColumnConceptToConceptDto(semanticService.saveConcept(data));
         log.trace("save concept resulted in dto {}", dto);
@@ -98,7 +99,7 @@ public class SemanticsEndpoint {
 
     @GetMapping("/unit")
     @Transactional(readOnly = true)
-    @Timed(value = "semantics.concept.list", description = "Time needed to find all semantic units")
+    @Observed(name = "dbr_semantic_units_findall")
     @Operation(summary = "List semantic units")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -121,7 +122,7 @@ public class SemanticsEndpoint {
     @PostMapping("/unit")
     @Transactional
     @PreAuthorize("hasAuthority('create-semantic-unit')")
-    @Timed(value = "semantics.unit.save", description = "Time needed to save a semantic unit")
+    @Observed(name = "dbr_semantic_units_save")
     @Operation(summary = "Save a semantic unit", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
@@ -141,7 +142,7 @@ public class SemanticsEndpoint {
     @GetMapping("/database/{databaseId}/table/{tableId}")
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority('table-semantic-analyse')")
-    @Timed(value = "semantics.table.analyse", description = "Time needed to analyse table semantics")
+    @Observed(name = "dbr_semantic_table_analyse")
     @Operation(summary = "Suggest table semantics", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -173,7 +174,7 @@ public class SemanticsEndpoint {
     @GetMapping("/database/{databaseId}/table/{tableId}/column/{columnId}")
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority('table-semantic-analyse')")
-    @Timed(value = "semantics.table.columnanalyse", description = "Time needed to analyse table column semantics")
+    @Observed(name = "dbr_semantic_column_analyse")
     @Operation(summary = "Suggest table column semantics", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",

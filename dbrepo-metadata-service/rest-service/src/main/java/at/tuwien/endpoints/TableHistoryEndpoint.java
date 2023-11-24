@@ -6,6 +6,7 @@ import at.tuwien.exception.*;
 import at.tuwien.service.TableService;
 import at.tuwien.utils.PrincipalUtil;
 import io.micrometer.core.annotation.Timed;
+import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -38,7 +39,7 @@ public class TableHistoryEndpoint {
 
     @RequestMapping(method = {RequestMethod.GET, RequestMethod.HEAD})
     @Transactional(readOnly = true)
-    @Timed(value = "history.list", description = "Time needed to retrieve table history")
+    @Observed(name = "dbr_table_history_findall")
     @Operation(summary = "Find all history", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",

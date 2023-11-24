@@ -15,6 +15,7 @@ prometheus-flask-exporter = "~=0.22"
 python-dotenv = "~=1.0"
 sqlalchemy-utils = "*"
 testcontainers-opensearch = "*"
+pytest = "*"
 
 [dev-packages]
 

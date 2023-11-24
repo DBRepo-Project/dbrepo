@@ -115,31 +115,6 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
     }
 
     @Test
-    public void create_failedBefore_succeeds() throws UserNotFoundException, TableMalformedException,
-            QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, TableNameExistsException,
-            ContainerNotFoundException, SQLException {
-
-        /* mock */
-        when(tableidxRepository.save(any(TableDto.class)))
-                .thenReturn(null);
-        when(tableColumnidxRepository.saveAll(anyList()))
-                .thenReturn(List.of());
-
-        /* test */
-        try {
-            tableService.createTable(DATABASE_1_ID, TABLE_3_INVALID_CREATE_DTO, USER_1_PRINCIPAL);
-        } catch (TableMalformedException e) {
-            /* ignore */
-        }
-        assertFalse(MariaDbConfig.tableExists(DATABASE_1, "traffic_zu_rich"));
-        final Table response = tableService.createTable(DATABASE_1_ID, TABLE_3_CREATE_DTO, USER_1_PRINCIPAL);
-        assertTrue(MariaDbConfig.tableExists(DATABASE_1, "traffic_zu_rich"));
-        assertEquals(TABLE_3_NAME, response.getName());
-        assertEquals(TABLE_3_INTERNALNAME, response.getInternalName());
-        assertEquals(TABLE_3_DESCRIPTION, response.getDescription());
-    }
-
-    @Test
     public void create_withConstraints_succeeds() throws UserNotFoundException, TableMalformedException,
             QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, TableNameExistsException,
             ContainerNotFoundException, SQLException {

@@ -10,6 +10,7 @@ import at.tuwien.service.QueryService;
 import at.tuwien.utils.PrincipalUtil;
 import at.tuwien.utils.UserUtil;
 import io.micrometer.core.annotation.Timed;
+import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -45,7 +46,7 @@ public class ExportEndpoint {
 
     @GetMapping
     @Transactional(readOnly = true)
-    @Timed(value = "table.export", description = "Time needed to export table data")
+    @Observed(name = "dbr_table_export")
     @Operation(summary = "Export table", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",

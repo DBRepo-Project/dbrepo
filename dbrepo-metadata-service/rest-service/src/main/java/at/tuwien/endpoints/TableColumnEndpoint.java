@@ -11,6 +11,7 @@ import at.tuwien.utils.PrincipalUtil;
 import at.tuwien.utils.UserUtil;
 import at.tuwien.validation.EndpointValidator;
 import io.micrometer.core.annotation.Timed;
+import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -48,7 +49,7 @@ public class TableColumnEndpoint {
     @PutMapping
     @Transactional
     @PreAuthorize("hasAuthority('modify-table-column-semantics') or hasAuthority('modify-foreign-table-column-semantics')")
-    @Timed(value = "semantics.column_update", description = "Time needed to update a table column semantic mapping")
+    @Observed(name = "dbr_semantics_column_save")
     @Operation(summary = "Update a table column semantic mapping", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",

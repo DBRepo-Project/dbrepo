@@ -15,6 +15,7 @@ import at.tuwien.service.UserService;
 import at.tuwien.utils.PrincipalUtil;
 import at.tuwien.utils.UserUtil;
 import io.micrometer.core.annotation.Timed;
+import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -58,7 +59,7 @@ public class IdentifierEndpoint {
 
     @GetMapping
     @Transactional(readOnly = true)
-    @Timed(value = "identifier.list", description = "Time needed to list the identifiers")
+    @Observed(name = "dbr_identifier_findall")
     @Operation(summary = "Find identifiers")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -82,7 +83,7 @@ public class IdentifierEndpoint {
 
     @PostMapping
     @Transactional
-    @Timed(value = "identifier.create", description = "Time needed to create an identifier")
+    @Observed(name = "dbr_identifier_create")
     @PreAuthorize("hasAuthority('create-identifier') or hasAuthority('create-foreign-identifier')")
     @Operation(summary = "Create identifier", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
@@ -153,7 +154,7 @@ public class IdentifierEndpoint {
     }
 
     @GetMapping("/retrieve")
-    @Timed(value = "identifier.retrieve", description = "Retrieve person or organization metadata from identifier")
+    @Observed(name = "dbr_identifier_retrieve")
     @Operation(summary = "Retrieve metadata from identifier")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -162,7 +163,7 @@ public class IdentifierEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = IdentifierDto.class))}),
     })
-    public ResponseEntity<ExternalMetadataDto> create(@NotNull @Valid @RequestParam String url)
+    public ResponseEntity<ExternalMetadataDto> retrieve(@NotNull @Valid @RequestParam String url)
             throws OrcidNotFoundException, RorNotFoundException, RemoteUnavailableException, DoiNotFoundException {
         return ResponseEntity.ok(metadataService.findByUrl(url));
     }

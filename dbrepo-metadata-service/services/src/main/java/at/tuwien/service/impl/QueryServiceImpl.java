@@ -401,40 +401,17 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         /* find */
         final Database database = databaseService.find(databaseId);
         final Table table = tableService.find(databaseId, tableId);
-        /* preparing the statements */
-        final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(),
-                database.getContainer(), database);
-        /* Create a temporary table, insert there, transfer with update on duplicate key and lastly drops the temporary table */
-        try {
-            final Connection connection = dataSource.getConnection();
-            queryMapper.dropTemporaryTableSQL(connection, table)
-                    .executeUpdate();
-        } catch (SQLException e) {
-            log.error("Failed to drop temporary table: {}", e.getMessage());
-            throw new TableMalformedException("Failed to drop temporary table", e);
-        }
-        try {
-            final Connection connection = dataSource.getConnection();
-            queryMapper.generateTemporaryTableSQL(connection, table)
-                    .executeUpdate();
-        } catch (SQLException e) {
-            log.error("Failed to create temporary table: {}", e.getMessage());
-            dataSource.close();
-            throw new TableMalformedException("Failed to create temporary table", e);
-        }
         /* import .csv from blob storage to sidecar */
         dataDbSidecarGateway.importFile(database.getContainer().getSidecarHost(), database.getContainer().getSidecarPort(), data.getLocation());
         /* import .csv from sidecar to database */
+        final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(),
+                database.getContainer(), database);
         try {
             final Connection connection = dataSource.getConnection();
-            queryMapper.pathToRawInsertQuery(connection, table, data)
-                    .executeUpdate();
-            queryMapper.generateInsertFromTemporaryTableSQL(connection, table)
-                    .executeUpdate();
+            queryMapper.importCsvQuery(connection, table, data);
         } catch (SQLException e) {
-            log.error("Failed to insert temporary table: {}", e.getMessage());
-            dataSource.close();
-            throw new TableMalformedException("Failed to insert temporary table", e);
+            log.error("Failed to import .csv: {}", e.getMessage());
+            throw new TableMalformedException("Failed to import .csv", e);
         } finally {
             dataSource.close();
         }

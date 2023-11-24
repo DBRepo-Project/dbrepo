@@ -9,6 +9,7 @@ import at.tuwien.service.EntityService;
 import at.tuwien.service.OntologyService;
 import at.tuwien.utils.PrincipalUtil;
 import io.micrometer.core.annotation.Timed;
+import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -46,7 +47,7 @@ public class OntologyEndpoint {
     }
 
     @GetMapping
-    @Timed(value = "semantics.ontology.list", description = "Time needed to list ontologies")
+    @Observed(name = "dbr_ontologies_findall")
     @Operation(summary = "List all ontologies")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -66,7 +67,7 @@ public class OntologyEndpoint {
     }
 
     @GetMapping("/{id}")
-    @Timed(value = "semantics.ontology.find", description = "Time needed to find a specific ontology")
+    @Observed(name = "dbr_ontologies_find")
     @Operation(summary = "Find one ontology")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -89,7 +90,7 @@ public class OntologyEndpoint {
 
     @PostMapping
     @PreAuthorize("hasAuthority('create-ontology')")
-    @Timed(value = "semantics.ontology.create", description = "Time needed to register a new ontology")
+    @Observed(name = "dbr_ontologies_create")
     @Operation(summary = "Register a new ontology", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",
@@ -115,7 +116,7 @@ public class OntologyEndpoint {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('update-ontology')")
-    @Timed(value = "semantics.ontology.update", description = "Time needed to update a new ontology")
+    @Observed(name = "dbr_ontologies_update")
     @Operation(summary = "Update an ontology", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
@@ -141,7 +142,7 @@ public class OntologyEndpoint {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('delete-ontology')")
-    @Timed(value = "semantics.ontology.delete", description = "Time needed to delete an ontology")
+    @Observed(name = "dbr_ontologies_delete")
     @Operation(summary = "Delete an ontology", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
@@ -163,7 +164,7 @@ public class OntologyEndpoint {
 
     @GetMapping("/{id}/entity")
     @PreAuthorize("hasAuthority('execute-semantic-query')")
-    @Timed(value = "semantics.find", description = "Time needed to find entities")
+    @Observed(name = "dbr_ontologies_entities_find")
     @Operation(summary = "Find entities", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
