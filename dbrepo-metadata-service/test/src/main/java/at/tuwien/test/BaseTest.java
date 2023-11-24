@@ -814,16 +814,6 @@ public abstract class BaseTest {
             .version(IMAGE_1_VERSION)
             .build();
 
-    public final static Long IMAGE_2_ID = 2L;
-    public final static String IMAGE_2_NAME = "mariadb";
-    public final static String IMAGE_2_VERSION = "8.0";
-    public final static Integer IMAGE_2_PORT = 3306;
-    public final static String IMAGE_2_DIALECT = "org.hibernate.dialect.MySQLDialect";
-    public final static String IMAGE_2_DRIVER = "com.mysql.jdbc.Driver";
-    public final static String IMAGE_2_JDBC = "mysql";
-    public final static Long IMAGE_2_SIZE = 12000L;
-    public final static Instant IMAGE_2_BUILT = Instant.now().minus(38, HOURS);
-
     public final static Long CONTAINER_1_ID = 1L;
     public final static ContainerImage CONTAINER_1_IMAGE = IMAGE_1;
     public final static ImageBriefDto CONTAINER_1_IMAGE_BRIEF_DTO = IMAGE_1_BRIEF_DTO;
