@@ -117,8 +117,16 @@ public interface QueryMapper {
                 .build();
     }
 
-    default PreparedStatement generateTemporaryTableSQL(Connection connection, Table table) throws QueryMalformedException {
-        final StringBuilder statement = new StringBuilder("CREATE TABLE `")
+    default void importCsvQuery(Connection connection, Table table, ImportDto csv) throws SQLException {
+        final Statement statement = connection.createStatement();
+        final StringBuilder query0 = new StringBuilder("DROP TABLE IF EXISTS `")
+                .append(table.getDatabase().getInternalName())
+                .append("`.`")
+                .append(table.getInternalName())
+                .append("_temporary`;");
+        log.trace("mapped drop temporary table statement: {}", query0);
+        statement.execute(query0.toString());
+        final StringBuilder query1 = new StringBuilder("CREATE TABLE `")
                 .append(table.getDatabase().getInternalName())
                 .append("`.`")
                 .append(table.getInternalName())
@@ -128,33 +136,18 @@ public interface QueryMapper {
                 .append("`.`")
                 .append(table.getInternalName())
                 .append("`;");
-        try {
-            final PreparedStatement pstmt = connection.prepareStatement(statement.toString());
-            log.trace("mapped create table {} to prepared statement {}", table.getName(), pstmt);
-            return pstmt;
-        } catch (SQLException e) {
-            log.error("Failed to prepare statement {}, reason: {}", statement, e.getMessage());
-            throw new QueryMalformedException("Failed to prepare statement", e);
-        }
+        log.trace("mapped create temporary table statement: {}", query1);
+        statement.execute(query1.toString());
+        final String query2 = pathToRawInsertQuery(table, csv);
+        log.trace("mapped import csv statement: {}", query2);
+        statement.execute(query2.toString());
+        final String query3 = generateInsertFromTemporaryTableSQL(table);
+        log.trace("mapped import table statement: {}", query3);
+        statement.execute(query3.toString());
+
     }
 
-    default PreparedStatement dropTemporaryTableSQL(Connection connection, Table table) throws QueryMalformedException {
-        final StringBuilder statement = new StringBuilder("DROP TABLE IF EXISTS `")
-                .append(table.getDatabase().getInternalName())
-                .append("`.`")
-                .append(table.getInternalName())
-                .append("_temporary`;");
-        try {
-            final PreparedStatement pstmt = connection.prepareStatement(statement.toString());
-            log.trace("mapped drop temporary table {} to prepared statement {}", table.getName(), pstmt);
-            return pstmt;
-        } catch (SQLException e) {
-            log.error("Failed to prepare statement {}, reason: {}", statement, e.getMessage());
-            throw new QueryMalformedException("Failed to prepare statement", e);
-        }
-    }
-
-    default PreparedStatement pathToRawInsertQuery(Connection connection, Table table, ImportDto data) throws QueryMalformedException {
+    default String pathToRawInsertQuery(Table table, ImportDto data) {
         final StringBuilder statement = new StringBuilder("LOAD DATA INFILE '/tmp/")
                 .append(data.getLocation())
                 .append("' INTO TABLE `")
@@ -202,14 +195,7 @@ public interface QueryMapper {
         statement.append(")")
                 .append(set.length() != 0 ? (" SET " + set) : "")
                 .append(";");
-        try {
-            final PreparedStatement pstmt = connection.prepareStatement(statement.toString());
-            log.trace("mapped drop temporary table {} to prepared statement {}", table.getName(), pstmt);
-            return pstmt;
-        } catch (SQLException e) {
-            log.error("Failed to prepare statement {}, reason: {}", statement, e.getMessage());
-            throw new QueryMalformedException("Failed to prepare statement", e);
-        }
+        return statement.toString();
     }
 
     default void columnToBoolSet(ImportDto data, TableColumn column, StringBuilder set) {
@@ -869,8 +855,7 @@ public interface QueryMapper {
         return "`" + item.substring(idx + 1) + "`";
     }
 
-    default PreparedStatement generateInsertFromTemporaryTableSQL(Connection connection, Table table)
-            throws QueryMalformedException {
+    default String generateInsertFromTemporaryTableSQL(Table table) {
         final StringBuilder statement = new StringBuilder("INSERT INTO `")
                 .append(table.getDatabase().getInternalName())
                 .append("`.`")
@@ -898,14 +883,7 @@ public interface QueryMapper {
                     .append("`),");
         statement.deleteCharAt(statement.length() - 1);
         statement.append(";");
-        try {
-            final PreparedStatement pstmt = connection.prepareStatement(statement.toString());
-            log.trace("mapped generate insert from temporary table {} to prepared statement {}", statement, pstmt);
-            return pstmt;
-        } catch (SQLException e) {
-            log.error("Failed to prepare statement {}, reason: {}", statement, e.getMessage());
-            throw new QueryMalformedException("Failed to prepare statement", e);
-        }
+        return statement.toString();
     }
 
     default void prepareStatementWithColumnTypeObject(PreparedStatement ps, TableColumnType columnType, int idx, Object value) throws SQLException {

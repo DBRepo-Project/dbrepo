@@ -240,13 +240,11 @@ export default {
       return ['date', 'datetime', 'timestamp', 'time', 'year'].includes(column.column_type)
     },
     rules (column) {
-      if (column.auto_generated) {
+      if (column.auto_generated || column.is_null_allowed) {
         return []
       }
       const rules = []
-      if (!column.is_null_allowed) {
-        rules.push(v => !!v || 'Required')
-      }
+      rules.push(v => !!v || 'Required')
       if (column.column_type === 'char') {
         rules.push(v => !(!v || v.length !== column.size) || `Must be exactly ${column.size} character${column.size !== 1 ? 's' : ''}`)
       }

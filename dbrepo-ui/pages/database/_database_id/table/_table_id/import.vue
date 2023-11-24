@@ -24,6 +24,7 @@
                 item-text="key"
                 item-value="value"
                 required
+                clearable
                 hint="Character separating the values"
                 label="Separator *" />
             </v-col>
@@ -35,6 +36,7 @@
                 :rules="[v => isNonNegativeInteger(v) || $t('Greater or equal to zero')]"
                 type="number"
                 required
+                clearable
                 hint="Skip n lines from the top. These may include comments or the header of column names."
                 label="Number of lines to skip *"
                 placeholder="e.g. 0" />
@@ -47,6 +49,7 @@
                 :items="quotes"
                 item-text="key"
                 item-value="value"
+                clearable
                 hint="Character quoting the values"
                 label="Value quotes" />
             </v-col>
@@ -57,6 +60,7 @@
                 v-model="tableImport.null_element"
                 hint="Representation of 'no value present'"
                 placeholder="e.g. NA"
+                clearable
                 label="NULL Element" />
             </v-col>
           </v-row>
@@ -65,6 +69,7 @@
               <v-text-field
                 v-model="tableImport.true_element"
                 label="True Element"
+                clearable
                 hint="Representation of boolean 'true'"
                 placeholder="e.g. 1, true, YES" />
             </v-col>
@@ -74,6 +79,7 @@
               <v-text-field
                 v-model="tableImport.false_element"
                 label="False Element"
+                clearable
                 hint="Representation of boolean 'false'"
                 placeholder="e.g. 0, false, NO" />
             </v-col>
@@ -85,6 +91,7 @@
                 accept=".csv,.tsv"
                 hint="max. 2GB file size"
                 persistent-hint
+                clearable
                 :show-size="1000"
                 counter
                 label="CSV/TSV File" />
