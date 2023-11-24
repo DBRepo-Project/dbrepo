@@ -136,7 +136,7 @@ export default {
         quote: '"',
         false_element: null,
         true_element: null,
-        null_element: null,
+        null_element: 'NA',
         separator: ',',
         skip_lines: 1
       },

@@ -16,7 +16,7 @@ class TableService {
           resolve(tables)
         })
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to load tables', error)
           Vue.$toast.error(`[${code}] Failed to load tables: ${message}`)
           reject(error)
@@ -33,7 +33,7 @@ class TableService {
           resolve(table)
         })
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to load table', error)
           Vue.$toast.error(`[${code}] Failed to load table: ${message}`)
           reject(error)
@@ -50,7 +50,7 @@ class TableService {
           resolve(column)
         })
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to update column', error)
           Vue.$toast.error(`[${code}] Failed to update column: ${message}`)
           reject(error)
@@ -63,7 +63,7 @@ class TableService {
       api.post(`/api/database/${databaseId}/table/${tableId}/data/import`, data, { headers: { Accept: 'application/json' } })
         .then(() => resolve())
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to import table data', error)
           Vue.$toast.error(`[${code}] Failed to import table data: ${message}`)
           reject(error)
@@ -80,7 +80,7 @@ class TableService {
           resolve(data)
         })
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to load table data', error)
           Vue.$toast.error(`[${code}] Failed to load table data: ${message}`)
           reject(error)
@@ -97,7 +97,7 @@ class TableService {
           resolve(count)
         })
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to load table count', error)
           Vue.$toast.error(`[${code}] Failed to load table count: ${message}`)
           reject(error)
@@ -114,7 +114,7 @@ class TableService {
           resolve(history)
         })
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to load table history', error)
           Vue.$toast.error(`[${code}] Failed to load table history: ${message}`)
           reject(error)
@@ -135,7 +135,7 @@ class TableService {
           resolve(data)
         })
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to export table data', error)
           Vue.$toast.error(`[${code}] Failed to export table data: ${message}`)
           reject(error)
@@ -152,7 +152,7 @@ class TableService {
           resolve(table)
         })
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to create table', error)
           Vue.$toast.error(`[${code}] Failed to create table: ${message}`)
           reject(error)
@@ -165,7 +165,7 @@ class TableService {
       api.delete(`/api/database/${databaseId}/table/${tableId}/data`, { headers: { Accept: 'application/json' }, data })
         .then(() => resolve())
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to delete table tuple', error)
           Vue.$toast.error(`[${code}] Failed to delete table tuple: ${message}`)
           reject(error)

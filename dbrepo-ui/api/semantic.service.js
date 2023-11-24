@@ -11,7 +11,7 @@ class SemanticService {
           resolve(ontologies)
         })
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to load ontologies', error)
           Vue.$toast.error(`[${code}] Failed to load ontologies: ${message}`)
           reject(error)
@@ -28,7 +28,7 @@ class SemanticService {
           resolve(concepts)
         })
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to load concepts', error)
           Vue.$toast.error(`[${code}] Failed to load concepts: ${message}`)
           reject(error)
@@ -45,7 +45,7 @@ class SemanticService {
           resolve(concept)
         })
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to update concept', error)
           Vue.$toast.error(`[${code}] Failed to update concept: ${message}`)
           reject(error)
@@ -62,7 +62,7 @@ class SemanticService {
           resolve(units)
         })
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to load units', error)
           Vue.$toast.error(`[${code}] Failed to load units: ${message}`)
           reject(error)
@@ -79,7 +79,7 @@ class SemanticService {
           resolve(unit)
         })
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to update unit', error)
           Vue.$toast.error(`[${code}] Failed to update unit: ${message}`)
           reject(error)
@@ -96,7 +96,7 @@ class SemanticService {
           resolve(ontology)
         })
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to load ontology', error)
           Vue.$toast.error(`[${code}] Failed to load ontology: ${message}`)
           reject(error)
@@ -113,7 +113,7 @@ class SemanticService {
           resolve(ontology)
         })
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to register ontology', error)
           Vue.$toast.error(`[${code}] Failed to register ontology: ${message}`)
           reject(error)
@@ -130,7 +130,7 @@ class SemanticService {
           resolve(ontology)
         })
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to update ontology', error)
           Vue.$toast.error(`[${code}] Failed to update ontology: ${message}`)
           reject(error)
@@ -143,7 +143,7 @@ class SemanticService {
       api.delete(`/api/semantic/ontology/${id}`, { headers: { Accept: 'application/json' } })
         .then(() => resolve())
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to delete ontology', error)
           Vue.$toast.error(`[${code}] Failed to delete ontology: ${message}`)
           reject(error)
@@ -160,7 +160,7 @@ class SemanticService {
           resolve(semantics)
         })
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to load table column semantics', error)
           Vue.$toast.error(`[${code}] Failed to load table column semantics: ${message}`)
           reject(error)

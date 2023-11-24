@@ -172,10 +172,10 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         }
         /* run query */
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(), database.getContainer(), database);
+        final Boolean generatedSequence;
         try {
             final Connection connection = dataSource.getConnection();
-            final PreparedStatement  preparedStatement = tableMapper.tableToCreateTableRawQuery(connection, createDto);
-            preparedStatement.executeUpdate();
+            generatedSequence = tableMapper.tableToCreateTableRawQuery(connection, createDto);
         } catch (Exception e) {
             log.error("Failed to create table, reason: {}", e.getMessage());
             throw new TableMalformedException("Failed to create table", e);
@@ -198,7 +198,7 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         entity.setColumns(createDto.getColumns()
                 .stream()
                 .map(column -> tableMapper.columnCreateDtoToTableColumn(column, database.getContainer().getImage()))
-                .map(column -> tableMapper.tableColumnToTableColumn(entity, column))
+                .map(column -> tableMapper.tableColumnToTableColumn(entity, column, generatedSequence))
                 .toList());
         /* set the ordinal position for the columns */
         entity.getColumns()

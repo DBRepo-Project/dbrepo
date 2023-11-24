@@ -11,7 +11,7 @@ class MetadataService {
           resolve(messages)
         })
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to load messages', error)
           Vue.$toast.error(`[${code}] Failed to load messages: ${message}`)
           reject(error)
@@ -28,7 +28,7 @@ class MetadataService {
           resolve(messages)
         })
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to create message', error)
           Vue.$toast.error(`[${code}] Failed to create message: ${message}`)
           reject(error)
@@ -45,7 +45,7 @@ class MetadataService {
           resolve(messages)
         })
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to find message', error)
           Vue.$toast.error(`[${code}] Failed to find message: ${message}`)
           reject(error)
@@ -62,7 +62,7 @@ class MetadataService {
           resolve(messages)
         })
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to update message', error)
           Vue.$toast.error(`[${code}] Failed to update message: ${message}`)
           reject(error)
@@ -75,7 +75,7 @@ class MetadataService {
       api.delete(`/api/maintenance/message/${id}`, { headers: { Accept: 'application/json' } })
         .then(() => resolve())
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to delete message', error)
           Vue.$toast.error(`[${code}] Failed to delete message: ${message}`)
           reject(error)
@@ -92,7 +92,7 @@ class MetadataService {
           resolve(messages)
         })
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to load active messages', error)
           Vue.$toast.error(`[${code}] Failed to load active messages: ${message}`)
           reject(error)
