@@ -22,7 +22,7 @@
           </p>
           <ul>
             <li v-for="(item,idx) in ontologies" :key="idx">
-              <a :href="item.uri" target="_blank" v-text="item.uri" />
+              <a :href="item.uri" target="_blank" v-text="item.uri_pattern" />
             </li>
           </ul>
         </v-alert>
