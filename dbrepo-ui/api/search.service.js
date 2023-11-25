@@ -6,8 +6,9 @@ class SearchService {
     return new Promise((resolve, reject) => {
       axios.get(`/api/search/${type}/fields`, { headers: { Accept: 'application/json' } })
         .then((response) => {
-          const jsonResponse = response.data
-          resolve(jsonResponse)
+          const json = response.data
+          console.debug('fields result', json)
+          resolve(json)
         })
         .catch((error) => {
           const { code, message } = error
@@ -18,13 +19,15 @@ class SearchService {
     })
   }
 
-  search (type, searchTerm, keyValuePairs) {
+  search (searchData) {
+    // transform values to what the search API expects
+    const searchTerm = searchData.search_term
+    delete searchData.search_term
+    searchData = Object.fromEntries(Object.entries(searchData).filter(([_, v]) => v != null)) // https://stackoverflow.com/questions/286141/remove-blank-attributes-from-an-object-in-javascript
     const payload = {
-      type,
       search_term: searchTerm,
-      field_value_pairs: { ...keyValuePairs }
+      field_value_pairs: { ...searchData }
     }
-
     return new Promise((resolve, reject) => {
       axios.post('/api/search', payload, { headers: { Accept: 'application/json' } })
         .then((response) => {
