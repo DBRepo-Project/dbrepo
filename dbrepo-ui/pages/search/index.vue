@@ -2,6 +2,12 @@
   <div>
     <v-toolbar flat>
       <v-toolbar-title v-text="header" />
+      <v-spacer />
+      <v-toolbar-title>
+        <v-btn v-if="canCreateDatabase" color="primary" name="create-database" @click.stop="createDbDialog = true">
+          <v-icon left>mdi-plus</v-icon> Database
+        </v-btn>
+      </v-toolbar-title>
     </v-toolbar>
     <v-progress-linear v-if="loading" color="primary" />
     <v-card
@@ -29,22 +35,36 @@
         </div>
       </v-card-text>
     </v-card>
+    <v-dialog
+      v-model="createDbDialog"
+      persistent
+      max-width="640">
+      <CreateDB @close="closed" />
+    </v-dialog>
   </div>
 </template>
 
 <script>
 import EventBus from '@/api/eventBus'
 import SearchService from '@/api/search.service'
+import CreateDB from '@/components/dialogs/CreateDB'
 
 export default {
+  components: {
+    CreateDB
+  },
   inject: ['advancedSearchData'],
   data () {
     return {
       results: [],
-      loading: false
+      loading: false,
+      createDbDialog: null
     }
   },
   computed: {
+    roles () {
+      return this.$store.state.roles
+    },
     query () {
       if (!this.$route.query || !this.$route.query.q) {
         return null
@@ -62,6 +82,12 @@ export default {
         return `${this.results.length} results`
       }
       return `${this.results.length} result`
+    },
+    canCreateDatabase () {
+      if (!this.roles) {
+        return false
+      }
+      return this.roles.includes('create-database')
     }
   },
   watch: {
@@ -229,11 +255,11 @@ export default {
       if (this.isDatabase(item)) {
         return `/database/${item.id}`
       } else if (this.isTable(item)) {
-        return `/database/${item.databaseId}/table/${item.id}`
+        return `/database/${item.database_id}/table/${item.id}`
       } else if (this.isView(item)) {
-        return `/database/${item.vdbid}/view/${item.id}`
+        return `/database/${item.database_id}/view/${item.id}`
       } else if (this.isColumn(item)) {
-        return `/database/${item.cdbid}/table/${item.tid}`
+        return `/database/${item.database_id}/table/${item.table_id}`
       } else if (this.isIdentifier(item)) {
         return `/pid/${item.id}`
       } else if (this.isConcept(item) || this.isUnit(item)) {
@@ -270,6 +296,12 @@ export default {
         tags.push({ text: 'Concept' })
       }
       return tags
+    },
+    closed (event) {
+      this.createDbDialog = false
+      if (event.success) {
+        this.$router.push('/database?f=my')
+      }
     }
   }
 }

@@ -245,6 +245,7 @@ public class IndexConfigComponentTest extends BaseUnitTest {
                 .getMapping(new GetMappingsRequest().indices("table"), RequestOptions.DEFAULT);
         final Map<String, String> types = getTypes("table", response);
         assertEquals("keyword", types.get("id"));
+        assertEquals("keyword", types.get("database_id"));
         assertNull(types.get("database"));
         assertEquals("keyword", types.get("name"));
         assertEquals("keyword", types.get("internal_name"));

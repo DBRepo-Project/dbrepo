@@ -197,6 +197,8 @@ def general_search(search_term=None, t1=None, t2=None, fieldValuePairs=None):
         "_source": [
             "_class",
             "id",
+            "table_id",
+            "database_id",
             "name",
             "identifier.*",
             "column_type",

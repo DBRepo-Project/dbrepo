@@ -13,6 +13,7 @@ import lombok.extern.jackson.Jacksonized;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
@@ -35,6 +36,10 @@ public class TableDto {
     @NotNull
     @Field(name = "id", type = FieldType.Keyword)
     private Long id;
+
+    @NotNull
+    @Field(name = "database_id", type = FieldType.Keyword)
+    private Long tdbid;
 
     @NotNull
     @org.springframework.data.annotation.Transient

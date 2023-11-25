@@ -26,6 +26,17 @@
           </v-list-item-content>
         </v-list-item>
         <v-list-item
+          to="/search"
+          router
+          exact>
+          <v-list-item-action>
+            <v-icon>mdi-magnify</v-icon>
+          </v-list-item-action>
+          <v-list-item-content>
+            <v-list-item-title>{{ $t('layout.search', { name: 'vue-i18n' }) }}</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item
           to="/database"
           router
           exact>
@@ -85,7 +96,7 @@
           single-line
           hide-details
           append-icon="mdi-magnify"
-          :placeholder="$t('layout.search', { name: 'vue-i18n' })"
+          :placeholder="$t('search.fuzzy.placeholder', { name: 'vue-i18n' })"
           @click:append="retrieve" />
         <v-btn class="ml-2" plain type="submit" name="search-advanced" @click="toggleAdvancedSearch">
           Advanced
@@ -363,17 +374,6 @@ export default {
       },
       deep: true,
       immediate: true
-    },
-    user: {
-      handler () {
-        if (!this.user) {
-          return
-        }
-        DatabaseService.countAll(true)
-          .then((count) => {
-            this.databaseCountFilter = count
-          })
-      }
     },
     'advancedSearchData.type': {
       handler (newType, oldType) {
