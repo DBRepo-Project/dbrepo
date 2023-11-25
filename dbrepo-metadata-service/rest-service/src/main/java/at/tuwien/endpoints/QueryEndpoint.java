@@ -15,6 +15,7 @@ import at.tuwien.utils.PrincipalUtil;
 import at.tuwien.utils.UserUtil;
 import at.tuwien.validation.EndpointValidator;
 import io.micrometer.core.annotation.Timed;
+import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
@@ -51,7 +52,7 @@ public class QueryEndpoint {
 
     @PostMapping
     @Transactional(readOnly = true)
-    @Timed(value = "query.execute", description = "Time needed to execute a query")
+    @Observed(name = "dbr_query_execute")
     @PreAuthorize("hasAuthority('execute-query')")
     @Operation(summary = "Execute query", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<QueryResultDto> execute(@NotNull @PathVariable("databaseId") Long databaseId,
@@ -84,7 +85,7 @@ public class QueryEndpoint {
 
     @GetMapping("/{queryId}/data")
     @Transactional(readOnly = true)
-    @Timed(value = "query.reexecute", description = "Time needed to re-execute a query")
+    @Observed(name = "dbr_query_reexecute")
     @Operation(summary = "Re-execute some query", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<QueryResultDto> reExecute(@NotNull @PathVariable("databaseId") Long databaseId,
                                                     @NotNull @PathVariable("queryId") Long queryId,
@@ -112,7 +113,7 @@ public class QueryEndpoint {
 
     @GetMapping("/{queryId}/data/count")
     @Transactional(readOnly = true)
-    @Timed(value = "query.reexecute.count", description = "Time needed to re-execute a query")
+    @Observed(name = "dbr_query_reexecute_count")
     @Operation(summary = "Re-execute some query", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<Long> reExecuteCount(@NotNull @PathVariable("databaseId") Long databaseId,
                                                @NotNull @PathVariable("queryId") Long queryId,
@@ -132,7 +133,7 @@ public class QueryEndpoint {
 
     @GetMapping("/{queryId}/export")
     @Transactional(readOnly = true)
-    @Timed(value = "query.export", description = "Time needed to export query data")
+    @Observed(name = "dbr_query_export")
     @Operation(summary = "Exports some query", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> export(@NotNull @PathVariable("databaseId") Long databaseId,
                                     @NotNull @PathVariable("queryId") Long queryId,

@@ -8,37 +8,43 @@ run the tests via 'pytest' or 'pipenv run pytest'
  * enter the port number manually (you prolly have to do that twice if you start it for the first time)
  * run the tests via 'pytest' or 'pipenv run pytest'
 """
-import requests
-def send_request(path, data):
-    url = f"http://localhost:4000/api/search{path}"
-    response = requests.post(url, json=data)
-    if response.status_code == 200:
-        return response.json()
-    else:
-        raise Exception(response.json())
+import unittest
+from requests import post
 
 
-def test_textsearch():
-    print("search for entries that contain the word 'measurement data'")
-    data = {"search_term": "measurement data"}
-    result = send_request("", data)
-    docIDs = [hit["_source"]["docID"] for hit in result["hits"]["hits"]]
-    assert docIDs == [2]
+class DetermineDatatypesTest(unittest.TestCase):
 
+    # @Test
+    def test_textsearch(self):
+        print("search for entries that contain the word 'measurement data'")
+        response = post(f"http://localhost:4000/api/search", json={
+            "search_term": "measurement data"
+        })
+        if response.status_code != 200:
+            self.fail("Invalid response code")
+        docIDs = [hit["_source"]["docID"] for hit in response.json()["hits"]["hits"]]
+        assert docIDs == [2]
 
-def test_timerange():
-    print("search for entries that have been created between January and September of 2023")
-    data = {"t1":"2023-01-01",
-                  "t2":"2023-09-09"}
-    result = send_request("", data)
-    docIDs = [hit["_source"]["docID"] for hit in result["hits"]["hits"]]
-    assert docIDs == [1, 2]
+    # @Test
+    def test_timerange(self):
+        print("search for entries that have been created between January and September of 2023")
+        response = post(f"http://localhost:4000/api/search", json={
+            "t1": "2023-01-01",
+            "t2": "2023-09-09"
+        })
+        if response.status_code != 200:
+            self.fail("Invalid response code")
+        docIDs = [hit["_source"]["docID"] for hit in response.json()["hits"]["hits"]]
+        assert docIDs == [1, 2]
 
-
-def test_keywords():
-    print("Search for entries form the user 'max")
-    data = {"field": "author", "value": "max"}
-    result = send_request("", data)
-    docIDs = [hit["_source"]["docID"] for hit in result["hits"]["hits"]]
-    assert docIDs == [2]
-
+    # @Test
+    def test_keywords(self):
+        print("Search for entries form the user 'max")
+        response = post(f"http://localhost:4000/api/search", json={
+            "field": "author",
+            "value": "max"
+        })
+        if response.status_code != 200:
+            self.fail("Invalid response code")
+        docIDs = [hit["_source"]["docID"] for hit in response.json()["hits"]["hits"]]
+        assert docIDs == [2]

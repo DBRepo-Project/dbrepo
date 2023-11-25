@@ -4,10 +4,7 @@ import at.tuwien.api.amqp.*;
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.container.ContainerBriefDto;
 import at.tuwien.api.container.ContainerDto;
-import at.tuwien.api.container.image.ImageBriefDto;
-import at.tuwien.api.container.image.ImageCreateDto;
-import at.tuwien.api.container.image.ImageDateDto;
-import at.tuwien.api.container.image.ImageDto;
+import at.tuwien.api.container.image.*;
 import at.tuwien.api.database.*;
 import at.tuwien.api.database.query.QueryBriefDto;
 import at.tuwien.api.database.query.QueryDto;
@@ -698,6 +695,14 @@ public abstract class BaseTest {
             .defaultPort(IMAGE_1_PORT)
             .build();
 
+    public final static ImageChangeDto IMAGE_1_CHANGE_DTO = ImageChangeDto.builder()
+            .registry(IMAGE_1_REGISTRY)
+            .dialect(IMAGE_1_DIALECT)
+            .jdbcMethod(IMAGE_1_JDBC)
+            .driverClass(IMAGE_1_DRIVER)
+            .defaultPort(IMAGE_1_PORT)
+            .build();
+
     public final static Long IMAGE_DATE_2_ID = 2L;
     public final static Long IMAGE_DATE_2_IMAGE_ID = IMAGE_1_ID;
     public final static String IMAGE_DATE_2_UNIX_FORMAT = "dd.MM.yy";
@@ -808,16 +813,6 @@ public abstract class BaseTest {
             .name(IMAGE_1_NAME)
             .version(IMAGE_1_VERSION)
             .build();
-
-    public final static Long IMAGE_2_ID = 2L;
-    public final static String IMAGE_2_NAME = "mariadb";
-    public final static String IMAGE_2_VERSION = "8.0";
-    public final static Integer IMAGE_2_PORT = 3306;
-    public final static String IMAGE_2_DIALECT = "org.hibernate.dialect.MySQLDialect";
-    public final static String IMAGE_2_DRIVER = "com.mysql.jdbc.Driver";
-    public final static String IMAGE_2_JDBC = "mysql";
-    public final static Long IMAGE_2_SIZE = 12000L;
-    public final static Instant IMAGE_2_BUILT = Instant.now().minus(38, HOURS);
 
     public final static Long CONTAINER_1_ID = 1L;
     public final static ContainerImage CONTAINER_1_IMAGE = IMAGE_1;

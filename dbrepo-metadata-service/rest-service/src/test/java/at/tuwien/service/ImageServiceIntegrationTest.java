@@ -48,12 +48,12 @@ public class ImageServiceIntegrationTest extends BaseUnitTest {
     @Test
     public void create_succeeds() throws ImageAlreadyExistsException {
         final ImageCreateDto request = ImageCreateDto.builder()
-                .name(IMAGE_2_NAME)
-                .version(IMAGE_2_VERSION)
-                .jdbcMethod(IMAGE_2_JDBC)
-                .dialect(IMAGE_2_DIALECT)
-                .driverClass(IMAGE_2_DRIVER)
-                .defaultPort(IMAGE_2_PORT)
+                .name(IMAGE_1_NAME)
+                .version("11.1.3")
+                .jdbcMethod(IMAGE_1_JDBC)
+                .dialect(IMAGE_1_DIALECT)
+                .driverClass(IMAGE_1_DRIVER)
+                .defaultPort(IMAGE_1_PORT)
                 .build();
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 

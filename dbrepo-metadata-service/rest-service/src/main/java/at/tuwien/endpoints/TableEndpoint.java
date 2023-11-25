@@ -14,6 +14,7 @@ import at.tuwien.service.TableService;
 import at.tuwien.utils.PrincipalUtil;
 import at.tuwien.validation.EndpointValidator;
 import io.micrometer.core.annotation.Timed;
+import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -59,7 +60,7 @@ public class TableEndpoint {
 
     @GetMapping
     @Transactional(readOnly = true)
-    @Timed(value = "table.list", description = "Time needed to list the tables")
+    @Observed(name = "dbr_tables_findall")
     @Operation(summary = "List all tables", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -95,7 +96,7 @@ public class TableEndpoint {
     @PostMapping
     @Transactional
     @PreAuthorize("hasAuthority('create-table')")
-    @Timed(value = "table.create", description = "Time needed to create a table")
+    @Observed(name = "dbr_table_create")
     @Operation(summary = "Create a table", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",
@@ -141,6 +142,11 @@ public class TableEndpoint {
             TableNameExistsException, ContainerNotFoundException, UserNotFoundException, QueryMalformedException,
             NotAllowedException, AccessDeniedException {
         log.debug("endpoint create table, databaseId={}, createDto={}, {}", databaseId, createDto, PrincipalUtil.formatForDebug(principal));
+        /* checks */
+        if (createDto.getName().isBlank()) {
+            log.error("Failed create table: table name is blank");
+            throw new TableMalformedException("Failed create table: table name is blank");
+        }
         endpointValidator.validateOnlyAccess(databaseId, principal, true);
         endpointValidator.validateColumnCreateConstraints(createDto);
         final Table table = tableService.createTable(databaseId, createDto, principal);
@@ -153,7 +159,7 @@ public class TableEndpoint {
 
     @GetMapping("/{tableId}")
     @Transactional(readOnly = true)
-    @Timed(value = "table.find", description = "Time needed to find a table")
+    @Observed(name = "dbr_tables_find")
     @Operation(summary = "Get information about table", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -196,7 +202,7 @@ public class TableEndpoint {
     @DeleteMapping("/{tableId}")
     @Transactional
     @PreAuthorize("hasAuthority('delete-table')")
-    @Timed(value = "table.delete", description = "Time needed to delete a table")
+    @Observed(name = "dbr_table_delete")
     @Operation(summary = "Delete a table", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",

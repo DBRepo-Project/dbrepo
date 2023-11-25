@@ -16,6 +16,7 @@ import at.tuwien.utils.PrincipalUtil;
 import at.tuwien.utils.UserUtil;
 import at.tuwien.validation.EndpointValidator;
 import io.micrometer.core.annotation.Timed;
+import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -61,7 +62,7 @@ public class ViewEndpoint {
 
     @GetMapping
     @Transactional(readOnly = true)
-    @Timed(value = "view.list", description = "Time needed to list all views in a database")
+    @Observed(name = "dbr_views_findall")
     @Operation(summary = "Find all views", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -97,7 +98,7 @@ public class ViewEndpoint {
     @PostMapping
     @Transactional
     @PreAuthorize("hasAuthority('create-database-view')")
-    @Timed(value = "view.create", description = "Time needed to create a view")
+    @Observed(name = "dbr_view_create")
     @Operation(summary = "Create a view", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",
@@ -164,7 +165,7 @@ public class ViewEndpoint {
 
     @GetMapping("/{viewId}")
     @Transactional(readOnly = true)
-    @Timed(value = "view.find", description = "Time needed to find a view")
+    @Observed(name = "dbr_view_find")
     @Operation(summary = "Find one view", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -198,7 +199,7 @@ public class ViewEndpoint {
     @DeleteMapping("/{viewId}")
     @Transactional
     @PreAuthorize("hasAuthority('delete-database-view')")
-    @Timed(value = "view.delete", description = "Time needed to delete a view")
+    @Observed(name = "dbr_view_delete")
     @Operation(summary = "Delete one view", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -259,7 +260,7 @@ public class ViewEndpoint {
 
     @GetMapping("/{viewId}/data")
     @Transactional(readOnly = true)
-    @Timed(value = "view.data", description = "Time needed to retrieve data from a view")
+    @Observed(name = "dbr_view_data_findall")
     @Operation(summary = "Find view data", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -352,7 +353,7 @@ public class ViewEndpoint {
 
     @GetMapping("/{viewId}/data/count")
     @Transactional(readOnly = true)
-    @Timed(value = "view.data.count", description = "Time needed to retrieve data count from a view")
+    @Observed(name = "dbr_view_data_count")
     @Operation(summary = "Find view data count", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<Long> count(@NotNull @PathVariable("databaseId") Long databaseId,
                                       @NotNull @PathVariable("viewId") Long viewId,

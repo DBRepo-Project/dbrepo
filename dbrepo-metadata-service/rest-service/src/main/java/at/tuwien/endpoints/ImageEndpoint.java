@@ -14,6 +14,7 @@ import at.tuwien.mapper.ImageMapper;
 import at.tuwien.service.impl.ImageServiceImpl;
 import at.tuwien.utils.PrincipalUtil;
 import io.micrometer.core.annotation.Timed;
+import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -53,7 +54,7 @@ public class ImageEndpoint {
 
     @GetMapping
     @Transactional(readOnly = true)
-    @Timed(value = "image.list", description = "Time needed to list the container images")
+    @Observed(name = "dbr_image_findall")
     @Operation(summary = "Find all images")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -73,7 +74,7 @@ public class ImageEndpoint {
 
     @PostMapping
     @Transactional
-    @Timed(value = "image.create", description = "Time needed to create a container image")
+    @Observed(name = "dbr_image_create")
     @PreAuthorize("hasAuthority('create-image')")
     @Operation(summary = "Create image", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
@@ -120,7 +121,7 @@ public class ImageEndpoint {
 
     @GetMapping("/{id}")
     @Transactional(readOnly = true)
-    @Timed(value = "image.find", description = "Time needed to find a container image")
+    @Observed(name = "dbr_image_find")
     @Operation(summary = "Find some image")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -145,7 +146,7 @@ public class ImageEndpoint {
 
     @PutMapping("/{id}")
     @Transactional
-    @Timed(value = "image.update", description = "Time needed to update a container image")
+    @Observed(name = "dbr_image_update")
     @PreAuthorize("hasAuthority('modify-image')")
     @Operation(summary = "Update some image", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
@@ -174,7 +175,7 @@ public class ImageEndpoint {
 
     @DeleteMapping("/{id}")
     @Transactional
-    @Timed(value = "image.delete", description = "Time needed to delete a container image")
+    @Observed(name = "dbr_image_delete")
     @PreAuthorize("hasAuthority('delete-image')")
     @Operation(summary = "Delete some image", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {

@@ -11,7 +11,7 @@ class ContainerService {
           resolve(containers)
         })
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to load containers', error)
           Vue.$toast.error(`[${code}] Failed to load containers: ${message}`)
           reject(error)
@@ -28,7 +28,7 @@ class ContainerService {
           resolve(container)
         })
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to load container', error)
           Vue.$toast.error(`[${code}] Failed to load container: ${message}`)
           reject(error)
@@ -45,7 +45,7 @@ class ContainerService {
           resolve(image)
         })
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to load image', error)
           Vue.$toast.error(`[${code}] Failed to load image: ${message}`)
           reject(error)

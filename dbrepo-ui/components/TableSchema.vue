@@ -55,6 +55,7 @@
               type="number"
               required
               :rules="[v => (v !== null && v !== '') || $t('Required')]"
+              :error-messages="sizeErrorMessages(c)"
               label="size *" />
           </v-col>
           <v-col cols="1" :hidden="defaultD(c) === false">
@@ -63,6 +64,7 @@
               type="number"
               required
               :rules="[v => (v !== null && v !== '') || $t('Required')]"
+              :error-messages="dErrorMessages(c)"
               label="d *" />
           </v-col>
           <v-col v-if="hasDate(c)" cols="1">
@@ -287,6 +289,24 @@ export default {
         }
         return df.has_time
       })
+    },
+    sizeErrorMessages (column) {
+      if (column.size < column.d) {
+        return ['Size needs to be bigger or equal to d']
+      }
+      if (column.size < 0) {
+        return ['Size must be positive']
+      }
+      return []
+    },
+    dErrorMessages (column) {
+      if (column.size < column.d) {
+        return ['D needs to be smaller or equal to size']
+      }
+      if (column.d < 0) {
+        return ['D must be positive']
+      }
+      return []
     }
   }
 }

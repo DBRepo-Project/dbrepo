@@ -12,7 +12,9 @@ class IdentifierService {
           resolve(identifiers)
         })
         .catch((error) => {
+          const { code, message } = error.response.data
           console.error('Failed to load identifiers', error)
+          Vue.$toast.error(`[${code}] Failed to load identifiers: ${message}`)
           reject(error)
         })
     })
@@ -39,7 +41,9 @@ class IdentifierService {
           }
         })
         .catch((error) => {
-          console.error('Failed to load metadata', error)
+          const { code, message } = error.response.data
+          console.error('Failed to load identifier metadata', error)
+          Vue.$toast.error(`[${code}] Failed to load identifier metadata: ${message}`)
           reject(error)
         })
     })
@@ -54,7 +58,7 @@ class IdentifierService {
           resolve(identifier)
         })
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to load identifier', error)
           Vue.$toast.error(`[${code}] Failed to load identifier: ${message}`)
           reject(error)
@@ -71,7 +75,7 @@ class IdentifierService {
           resolve(identifier)
         })
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to create identifier', error)
           Vue.$toast.error(`[${code}] Failed to create identifier: ${message}`)
           reject(error)
@@ -88,7 +92,7 @@ class IdentifierService {
           resolve(identifier)
         })
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to update identifier', error)
           Vue.$toast.error(`[${code}] Failed to update identifier: ${message}`)
           reject(error)
@@ -105,7 +109,7 @@ class IdentifierService {
           resolve(identifier)
         })
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to export identifier', error)
           Vue.$toast.error(`[${code}] Failed to export identifier: ${message}`)
           reject(error)
@@ -118,7 +122,7 @@ class IdentifierService {
       api.delete(`/api/pid/${pid}`, { headers: { Accept: 'application/json' } })
         .then(() => resolve())
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to delete identifier', error)
           Vue.$toast.error(`[${code}] Failed to delete identifier: ${message}`)
           reject(error)

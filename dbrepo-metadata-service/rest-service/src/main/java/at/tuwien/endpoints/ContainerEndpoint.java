@@ -14,6 +14,7 @@ import at.tuwien.service.UserService;
 import at.tuwien.service.impl.ContainerServiceImpl;
 import at.tuwien.utils.PrincipalUtil;
 import io.micrometer.core.annotation.Timed;
+import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -54,6 +55,7 @@ public class ContainerEndpoint {
 
     @GetMapping
     @Transactional(readOnly = true)
+    @Observed(name = "dbr_container_findall")
     @Operation(summary = "Find all containers")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -76,6 +78,7 @@ public class ContainerEndpoint {
 
     @PostMapping
     @Transactional
+    @Observed(name = "dbr_container_create")
     @PreAuthorize("hasAuthority('create-container')")
     @Operation(summary = "Create container", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
@@ -118,6 +121,7 @@ public class ContainerEndpoint {
 
     @GetMapping("/{id}")
     @Transactional(readOnly = true)
+    @Observed(name = "dbr_container_find")
     @Operation(summary = "Find some container")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -153,7 +157,7 @@ public class ContainerEndpoint {
 
     @DeleteMapping("/{id}")
     @Transactional
-    @Timed(value = "container.delete", description = "Time needed to delete the container")
+    @Observed(name = "dbr_container_delete")
     @PreAuthorize("hasAuthority('delete-container')")
     @Operation(summary = "Delete some container", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {

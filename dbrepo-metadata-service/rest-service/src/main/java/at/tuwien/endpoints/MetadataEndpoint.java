@@ -6,6 +6,7 @@ import at.tuwien.oaipmh.OaiListIdentifiersParameters;
 import at.tuwien.oaipmh.OaiRecordParameters;
 import at.tuwien.service.MetadataService;
 import io.micrometer.core.annotation.Timed;
+import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -43,7 +44,7 @@ public class MetadataEndpoint {
             @ExampleObject(value = "GetRecord"),
             @ExampleObject(value = "ListMetadataFormats"),
     })
-    @Timed(value = "repository.identify", description = "Time needed to identify the repository")
+    @Observed(name = "dbr_oai_identify")
     @Operation(summary = "Identify the repository")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -56,7 +57,7 @@ public class MetadataEndpoint {
     }
 
     @GetMapping(params = "verb=Identify", produces = "text/xml;charset=UTF-8")
-    @Timed(value = "repository.identify", description = "Time needed to identify the repository")
+    @Observed(name = "dbr_oai_identify")
     @Operation(summary = "Identify the repository")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -71,7 +72,7 @@ public class MetadataEndpoint {
     }
 
     @GetMapping(params = "verb=ListIdentifiers", produces = "text/xml;charset=UTF-8")
-    @Timed(value = "identifiers.list", description = "Time needed to list the identifiers")
+    @Observed(name = "dbr_oai_identifiers_list")
     @Operation(summary = "List the identifiers")
     public ResponseEntity<String> listIdentifiers(OaiListIdentifiersParameters parameters) {
         log.debug("endpoint list identifiers, verb=ListIdentifiers, parameters={}", parameters);
@@ -81,7 +82,7 @@ public class MetadataEndpoint {
     }
 
     @GetMapping(params = "verb=GetRecord", produces = "text/xml;charset=UTF-8")
-    @Timed(value = "record.find", description = "Time needed to find a record")
+    @Observed(name = "dbr_oai_record_get")
     @Operation(summary = "Get the record")
     public ResponseEntity<String> getRecord(OaiRecordParameters parameters) {
         log.debug("endpoint get record, verb=GetRecord, parameters={}", parameters);
@@ -116,7 +117,7 @@ public class MetadataEndpoint {
     }
 
     @GetMapping(params = "verb=ListMetadataFormats", produces = "text/xml;charset=UTF-8")
-    @Timed(value = "formats.list", description = "Time needed to list the metadata formats")
+    @Observed(name = "dbr_oai_metadataformats_list")
     @Operation(summary = "List the metadata formats")
     public ResponseEntity<String> listMetadataFormats() {
         log.debug("endpoint list metadata formats, verb=ListMetadataFormats");

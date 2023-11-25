@@ -109,7 +109,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
     public void create_notFound_fails() {
         final ContainerCreateRequestDto request = ContainerCreateRequestDto.builder()
                 .name(CONTAINER_3_NAME)
-                .imageId(IMAGE_2_ID)
+                .imageId(9999L)
                 .build();
 
         /* test */

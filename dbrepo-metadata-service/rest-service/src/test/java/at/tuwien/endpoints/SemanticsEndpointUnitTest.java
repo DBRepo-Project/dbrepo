@@ -246,7 +246,7 @@ public class SemanticsEndpointUnitTest extends BaseUnitTest {
         }
 
         /* test */
-        final ResponseEntity<ConceptDto> response = semanticsEndpoint.saveUnit(saveDto);
+        final ResponseEntity<ConceptDto> response = semanticsEndpoint.saveConcept(saveDto);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
         final ConceptDto body = response.getBody();
         assertNotNull(body);

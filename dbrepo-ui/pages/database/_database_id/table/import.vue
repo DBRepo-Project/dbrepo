@@ -57,6 +57,7 @@
                 item-text="key"
                 item-value="value"
                 required
+                clearable
                 hint="Character separating the values"
                 label="Separator *" />
             </v-col>
@@ -69,6 +70,7 @@
                   v => isNonNegativeInteger(v) || $t('Greater or equal to zero')]"
                 type="number"
                 required
+                clearable
                 hint="Skip n lines from the top. These may include comments or the header of column names."
                 label="Number of lines to skip *"
                 placeholder="e.g. 0" />
@@ -81,6 +83,7 @@
                 :items="quotes"
                 item-text="key"
                 item-value="value"
+                clearable
                 hint="Character quoting the values"
                 label="Value quotes" />
             </v-col>
@@ -91,6 +94,7 @@
                 v-model="tableImport.null_element"
                 hint="Representation of 'no value present'"
                 placeholder="e.g. NA"
+                clearable
                 label="NULL Element" />
             </v-col>
           </v-row>
@@ -99,6 +103,7 @@
               <v-text-field
                 v-model="tableImport.true_element"
                 label="True Element"
+                clearable
                 hint="Representation of boolean 'true'"
                 placeholder="e.g. 1, true, YES" />
             </v-col>
@@ -108,6 +113,7 @@
               <v-text-field
                 v-model="tableImport.false_element"
                 label="False Element"
+                clearable
                 hint="Representation of boolean 'false'"
                 placeholder="e.g. 0, false, NO" />
             </v-col>
@@ -256,7 +262,7 @@ export default {
         quote: '"',
         false_element: null,
         true_element: null,
-        null_element: null,
+        null_element: 'NA',
         separator: ',',
         skip_lines: 1
       },
@@ -329,6 +335,7 @@ export default {
         UploadService.upload(this.fileModel)
           .then((metadata) => {
             console.debug('uploaded file', metadata)
+            this.loading = false
             resolve(metadata)
           })
           .catch((error) => {

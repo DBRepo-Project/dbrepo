@@ -12,7 +12,7 @@ class UserService {
           resolve(users)
         })
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to load users', error)
           Vue.$toast.error(`[${code}] Failed to load users: ${message}`)
           reject(error)
@@ -28,7 +28,7 @@ class UserService {
           console.debug('response user', response.data, 'mapped user', user)
           resolve(user)
         }).catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to load user', error)
           Vue.$toast.error(`[${code}] Failed to load user: ${message}`)
           reject(error)
@@ -44,7 +44,7 @@ class UserService {
           console.debug('response user', response.data, 'mapped user', user)
           resolve(user)
         }).catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to update user information', error)
           Vue.$toast.error(`[${code}] Failed to update user information: ${message}`)
           reject(error)
@@ -60,8 +60,8 @@ class UserService {
           console.debug('response user', user)
           resolve(user)
         }).catch((error) => {
-          const { code, message, response } = error
-          const { status } = response
+          const { status } = error
+          const { code, message } = error.response.data
           if (status === 417) {
             Vue.$toast.error('This e-mail address is already taken')
           } else if (status === 409) {
@@ -83,7 +83,7 @@ class UserService {
       api.put(`/api/user/${id}/password`, { password }, { headers: { Accept: 'application/json' } })
         .then(() => resolve())
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to update user password', error)
           Vue.$toast.error(`[${code}] Failed to update user password: ${message}`)
           reject(error)
@@ -96,7 +96,7 @@ class UserService {
       api.put(`/api/user/${id}/theme`, { theme_dark: themeDark }, { headers: { Accept: 'application/json' } })
         .then(() => resolve())
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to update user theme', error)
           Vue.$toast.error(`[${code}] Failed to update user theme: ${message}`)
           reject(error)

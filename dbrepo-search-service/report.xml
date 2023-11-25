@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="10.993" timestamp="2023-11-24T19:16:41.702399" hostname="medusa"><testcase classname="test.test_opensearch_client.DetermineDatatypesTest" name="test_textsearch" time="10.673"><failure message="RuntimeError: Working outside of application context.&#10;&#10;This typically means that you attempted to use functionality that needed&#10;the current application. To solve this, set up an application context&#10;with app.app_context(). See the documentation for more information.">self = &lt;test.test_opensearch_client.DetermineDatatypesTest testMethod=test_textsearch&gt;
+
+    def test_textsearch(self):
+        print("search for entries that contain the word 'measurement data'")
+&gt;       docIDs = opensearch_client.query_index_by_term_opensearch("", "measurement data", "contains")
+
+test/test_opensearch_client.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+app/opensearch_client.py:78: in query_index_by_term_opensearch
+    response = current_app.opensearch_client.search(
+../../../.local/lib/python3.9/site-packages/werkzeug/local.py:311: in __get__
+    obj = instance._get_current_object()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _get_current_object() -&gt; T:
+        try:
+            obj = local.get()
+        except LookupError:
+&gt;           raise RuntimeError(unbound_message) from None
+E           RuntimeError: Working outside of application context.
+E           
+E           This typically means that you attempted to use functionality that needed
+E           the current application. To solve this, set up an application context
+E           with app.app_context(). See the documentation for more information.
+
+../../../.local/lib/python3.9/site-packages/werkzeug/local.py:508: RuntimeError</failure></testcase></testsuite></testsuites>
