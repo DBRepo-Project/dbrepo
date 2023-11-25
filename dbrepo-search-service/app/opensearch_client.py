@@ -1,9 +1,8 @@
 """
 The opensearch_client.py is used by the different API endpoints in routes.py to handle requests  to the opensearch db
 """
-import json
 import logging
-
+import re
 from flask import current_app
 from collections.abc import MutableMapping
 
@@ -127,7 +126,7 @@ def general_search(search_term=None, t1=None, t2=None, fieldValuePairs=None):
     searchable_indices = ["database", "user", "table", "column", "identifier", "view", "concept", "unit"]
     index = searchable_indices
     field_list = [
-        "name",
+        "table.name",
         "identifier.titles.title",
         "identifier.descriptions.description",
         "identifier.publisher",
@@ -137,13 +136,19 @@ def general_search(search_term=None, t1=None, t2=None, fieldValuePairs=None):
         "column.column_type",
         "column.is_null_allowed",
         "column.is_primary_key",
+        "unit.uri",
+        "unit.name",
+        "unit.description",
+        "concept.uri",
+        "concept.name",
+        "concept.description",
         "funders",
         "title",
         "description",
         "creator.username",
-        "concept.name",
-        "concept.uri",
         "author",
+        "name",
+        "uri",
         "database.*",
         "internal_name",
         "is_public",
@@ -151,14 +156,23 @@ def general_search(search_term=None, t1=None, t2=None, fieldValuePairs=None):
     queries = []
     if search_term is not None:
         logging.debug('query has search_term present')
-        text_query = {
-            "multi_match": {
-                "fields": field_list,
-                "query": search_term,
-                "fuzziness": "AUTO",
+        fuzzy_body = {
+            "query": {
+                "multi_match": {
+                    "query": search_term,
+                    "fuzziness": "AUTO",
+                    "fuzzy_transpositions": True,
+                    "minimum_should_match": 3
+                }
             }
         }
-        queries.append(text_query)
+        logging.debug('search body: %s', fuzzy_body)
+        response = current_app.opensearch_client.search(
+            index=index,
+            body=fuzzy_body
+        )
+        response["status"] = 200
+        return response
     if t1 and t2 is not None:
         logging.debug('query has time range present')
         time_range_query = {
@@ -170,28 +184,27 @@ def general_search(search_term=None, t1=None, t2=None, fieldValuePairs=None):
             }
         }
         queries.append(time_range_query)
-    if fieldValuePairs is not None:
+    if fieldValuePairs is not None and len(fieldValuePairs) > 0:
         logging.debug('query has fieldValuePairs present')
         musts = []
-        for field, value in fieldValuePairs.items():
-            if field == "type" and value in searchable_indices:
+        for key, value in fieldValuePairs.items():
+            if key == "type" and value in searchable_indices:
                 logging.debug("search for specific index: %s", value)
                 index = value
                 continue
-            if field in field_list:
-                if field.startswith(index) and "." in field:
-                    new_field = field[field.index(".") + 1:len(field)]
+            if key in field_list:
+                if re.match(f"{key}\\.", key):
+                    new_field = key[key.index(".") + 1:len(key)]
                     logging.debug(
-                        f"field name {field} starts with index name {index}: flattened field name to {new_field}")
-                    field = new_field
+                        f"field name {key} starts with index name {index}: flattened field name to {new_field}")
+                    key = new_field
                 musts.append({
                     "match": {
-                        field: {"query": value, "minimum_should_match": "90%"}
+                        key: {"query": value, "minimum_should_match": "90%"}
                     }
                 })
         specific_query = {"bool": {"must": musts}}
         queries.append(specific_query)
-    logging.debug("queries: %s", queries)
     body = {
         "query": {"bool": {"must": queries}},
         "_source": [

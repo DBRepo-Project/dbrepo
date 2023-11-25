@@ -23,7 +23,7 @@ class SearchService {
     // transform values to what the search API expects
     const searchTerm = searchData.search_term
     delete searchData.search_term
-    searchData = Object.fromEntries(Object.entries(searchData).filter(([_, v]) => v != null)) // https://stackoverflow.com/questions/286141/remove-blank-attributes-from-an-object-in-javascript
+    searchData = Object.fromEntries(Object.entries(searchData).filter(([_, v]) => v != null && v !== '')) // https://stackoverflow.com/questions/286141/remove-blank-attributes-from-an-object-in-javascript
     const payload = {
       search_term: searchTerm,
       field_value_pairs: { ...searchData }

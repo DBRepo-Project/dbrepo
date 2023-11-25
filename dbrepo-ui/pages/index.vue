@@ -1,6 +1,10 @@
 <template>
   <div>
+    <v-toolbar flat>
+      <v-toolbar-title v-text="$t('databases.recent', { name: 'vue-i18n' })" />
+    </v-toolbar>
     <v-card flat tile>
+      <v-divider class="mx-4" />
       <v-card-text v-if="infoLinks && infoLinks.length > 0">
         <div class="mb-2">Important Links</div>
         <div class="text--primary">
@@ -13,11 +17,7 @@
           </ul>
         </div>
       </v-card-text>
-      <v-divider class="mx-4" />
     </v-card>
-    <v-toolbar flat>
-      <v-toolbar-title v-text="$t('databases.recent', { name: 'vue-i18n' })" />
-    </v-toolbar>
     <DatabaseList ref="databases" />
   </div>
 </template>

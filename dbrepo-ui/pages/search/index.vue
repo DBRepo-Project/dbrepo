@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-toolbar flat>
+    <v-toolbar flat tile>
       <v-toolbar-title v-text="header" />
       <v-spacer />
       <v-toolbar-title>
@@ -9,7 +9,9 @@
         </v-btn>
       </v-toolbar-title>
     </v-toolbar>
-    <v-progress-linear v-if="loading" color="primary" />
+    <v-card flat tile>
+      <AdvancedSearch ref="adv" @search-result="onSearchResult" />
+    </v-card>
     <v-card
       v-for="(result, idx) in results"
       :key="idx"
@@ -45,15 +47,15 @@
 </template>
 
 <script>
-import EventBus from '@/api/eventBus'
 import SearchService from '@/api/search.service'
 import CreateDB from '@/components/dialogs/CreateDB'
+import AdvancedSearch from '@/components/search/AdvancedSearch'
 
 export default {
   components: {
-    CreateDB
+    CreateDB,
+    AdvancedSearch
   },
-  inject: ['advancedSearchData'],
   data () {
     return {
       results: [],
@@ -92,39 +94,14 @@ export default {
   },
   watch: {
     '$route.query.q': {
-      handler (query) {
-        if (this.advancedSearchData) {
-          return
-        }
+      handler () {
         this.retrieve()
-      },
-      deep: true,
-      immediate: true
-    },
-    '$route.query.t': {
-      handler (type) {
-        if (this.advancedSearchData) {
-          return
-        }
-        this.retrieve()
-      },
-      deep: true,
-      immediate: true
+      }
     }
   },
-  created () {
-    EventBus.$on('advancedSearchButtonClicked', () => {
-      this.doAdvancedSearch(this.advancedSearchData)
-    })
-  },
-  beforeDestroy () {
-    EventBus.$off('advancedSearchButtonClicked')
-  },
   mounted () {
-    if (Object.keys(this.advancedSearchData).some(key => key !== 'search_term')) {
-      this.doAdvancedSearch(this.advancedSearchData)
-    } else if (this.query) {
-      this.retrieve(this.query)
+    if (this.query) {
+      this.retrieve()
     }
   },
   methods: {
@@ -133,19 +110,9 @@ export default {
         return
       }
       this.loading = true
-      SearchService.search(this.query)
+      SearchService.search({ search_term: this.query })
         .then((hits) => {
           this.results = hits.map(h => h._source)
-        })
-        .finally(() => {
-          this.loading = false
-        })
-    },
-    doAdvancedSearch (advancedSearchData) {
-      console.debug('advanced search data:', advancedSearchData)
-      SearchService.search(advancedSearchData)
-        .then((response) => {
-          this.results = response.map(h => h._source)
         })
         .finally(() => {
           this.loading = false
@@ -302,6 +269,9 @@ export default {
       if (event.success) {
         this.$router.push('/database?f=my')
       }
+    },
+    onSearchResult (results) {
+      this.results = results
     }
   }
 }
