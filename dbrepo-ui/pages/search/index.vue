@@ -137,6 +137,24 @@ export default {
       }
       return item.exchangeName !== undefined
     },
+    isConcept (item) {
+      if (!item) {
+        return false
+      }
+      if ('_class' in item) {
+        return /at.tuwien.api.database.table.columns.concepts.ConceptDto/.test(item._class)
+      }
+      return false
+    },
+    isUnit (item) {
+      if (!item) {
+        return false
+      }
+      if ('_class' in item) {
+        return /at.tuwien.api.database.table.columns.concepts.UnitDto/.test(item._class)
+      }
+      return false
+    },
     isTable (item) {
       if (!item) {
         return false
@@ -188,7 +206,7 @@ export default {
       return false
     },
     title (item) {
-      if (this.isDatabase(item) || this.isTable(item) || this.isColumn(item) || this.isView(item)) {
+      if (this.isDatabase(item) || this.isTable(item) || this.isColumn(item) || this.isView(item) || this.isConcept(item) || this.isUnit(item)) {
         return item.name
       } else if (this.isIdentifier(item)) {
         return item.title
@@ -196,16 +214,12 @@ export default {
       return null
     },
     description (item) {
-      if (this.isDatabase(item)) {
-        return item.description
-      } else if (this.isTable(item)) {
+      if (this.isDatabase(item) || this.isTable(item) || this.isIdentifier(item) || this.isConcept(item) || this.isUnit(item)) {
         return item.description
       } else if (this.isColumn(item)) {
         return null
       } else if (this.isView(item)) {
         return item.query
-      } else if (this.isIdentifier(item)) {
-        return item.description
       }
       return false
     },
