@@ -107,7 +107,7 @@ public class Database implements Serializable {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumnsOrFormulas({
             @JoinColumnOrFormula(column = @JoinColumn(name = "id", referencedColumnName = "dbid", insertable = false, updatable = false)),
-            @JoinColumnOrFormula(formula = @JoinFormula(referencedColumnName = "identifier_type", value = "'DATABASE'"))
+            @JoinColumnOrFormula(formula = @JoinFormula(referencedColumnName = "identifier_type", value = "'database'"))
     })
     private Identifier identifier;
 

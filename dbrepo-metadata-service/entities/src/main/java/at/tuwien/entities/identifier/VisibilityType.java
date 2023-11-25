@@ -4,8 +4,20 @@ import lombok.Getter;
 import lombok.ToString;
 
 @Getter
-@ToString
 public enum VisibilityType {
-    EVERYONE,
-    SELF;
+
+    EVERYONE("everyone"),
+
+    SELF("self");
+
+    private String name;
+
+    VisibilityType(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public String toString() {
+        return this.name;
+    }
 }

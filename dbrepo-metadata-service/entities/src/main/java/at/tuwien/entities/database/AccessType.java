@@ -4,9 +4,22 @@ import lombok.Getter;
 import lombok.ToString;
 
 @Getter
-@ToString
 public enum AccessType {
-    READ,
-    WRITE_OWN,
-    WRITE_ALL;
+
+    READ("read"),
+
+    WRITE_OWN("write_own"),
+
+    WRITE_ALL("write_all");
+
+    private String name;
+
+    AccessType(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public String toString() {
+        return this.name;
+    }
 }

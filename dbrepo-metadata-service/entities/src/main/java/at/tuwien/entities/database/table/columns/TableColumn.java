@@ -1,5 +1,6 @@
 package at.tuwien.entities.database.table.columns;
 
+import at.tuwien.converters.TableColumnTypeConverter;
 import at.tuwien.entities.container.image.ContainerImageDate;
 import at.tuwien.entities.database.View;
 import at.tuwien.entities.database.table.Table;
@@ -10,6 +11,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import jakarta.persistence.*;
+
 import java.time.Instant;
 import java.util.List;
 
@@ -69,8 +71,8 @@ public class TableColumn implements Comparable<TableColumn> {
     @Column
     private String alias;
 
-    @Column(name = "datatype", nullable = false)
-    @Enumerated(EnumType.STRING)
+    @Column(name = "datatype", nullable = false, columnDefinition = "ENUM('char','varchar','binary','varbinary','tinyblob','tinytext','text','blob','mediumtext','mediumblob','longtext','longblob','enum','set','bit','tinyint','bool','smallint','mediumint','int','bigint','float','double','decimal','date','datetime','timestamp','time','year')")
+    @Convert(converter = TableColumnTypeConverter.class)
     private TableColumnType columnType;
 
     @Column

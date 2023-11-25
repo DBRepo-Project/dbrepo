@@ -1,5 +1,6 @@
 package at.tuwien.entities.database;
 
+import at.tuwien.converters.AccessTypeConverter;
 import at.tuwien.entities.user.User;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -50,8 +51,8 @@ public class DatabaseAccess {
     })
     private Database database;
 
-    @Column(nullable = false, name = "access_type", columnDefinition = "enum('READ', 'WRITE_OWN', 'WRITE_ALL')")
-    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, name = "access_type", columnDefinition = "enum('read', 'write_own', 'write_all')")
+    @Convert(converter = AccessTypeConverter.class)
     private AccessType type;
 
     @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP")

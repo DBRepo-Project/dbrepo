@@ -111,7 +111,7 @@ def get_fields_for_index(index):
     return fields_list
 
 
-def general_search(search_term=None, t1=None, t2=None, fieldValuePairs=None):
+def general_search(type=None, search_term=None, t1=None, t2=None, fieldValuePairs=None):
     """
     Main method for seaching stuff in the opensearch db
 
@@ -134,6 +134,9 @@ def general_search(search_term=None, t1=None, t2=None, fieldValuePairs=None):
         "identifier.creators.*.firstname",
         "identifier.creators.*.lastname",
         "identifier.creators.*.creator_name",
+        "column.column_type",
+        "column.is_null_allowed",
+        "column.is_primary_key",
         "funders",
         "title",
         "description",
@@ -143,9 +146,12 @@ def general_search(search_term=None, t1=None, t2=None, fieldValuePairs=None):
         "author",
         "database.*",
         "internal_name",
-        "public",
+        "is_public",
     ]
     queries = []
+    if type is not None:
+        logging.debug("search for specific index: %s", type)
+        index = type
     if search_term is not None:
         logging.debug('query has search_term present')
         text_query = {
@@ -171,11 +177,12 @@ def general_search(search_term=None, t1=None, t2=None, fieldValuePairs=None):
         logging.debug('query has fieldValuePairs present')
         musts = []
         for field, value in fieldValuePairs.items():
-            if field == "type" and value in searchable_indices:
-                logging.debug("search for specific index: %s", value)
-                index = value
-                continue
             if field in field_list:
+                if field.startswith(index) and "." in field:
+                    new_field = field[field.index(".") + 1:len(field)]
+                    logging.debug(
+                        f"field name {field} starts with index name {index}: flattened field name to {new_field}")
+                    field = new_field
                 musts.append({
                     "match": {
                         field: {"query": value, "minimum_should_match": "90%"}
@@ -195,11 +202,13 @@ def general_search(search_term=None, t1=None, t2=None, fieldValuePairs=None):
             "description",
             "title",
             "type",
+            "uri",
             "username",
             "is_public",
             "created",
             "_score",
             "concept",
+            "unit",
             "author",
             "docID",
             "creator.*",

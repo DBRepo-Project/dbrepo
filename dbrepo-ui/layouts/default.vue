@@ -147,7 +147,7 @@
             <v-row>
               <v-col cols="auto">
                 <v-select
-                  v-model="advancedSearchData.type"
+                  v-model="advancedSearchType"
                   clearable
                   :items="fieldItems"
                   item-text="name"
@@ -180,16 +180,27 @@
                 <!-- Loop through "fields" list -->
                 <template v-if="shouldRenderItem(field)">
                   <v-col cols="auto">
-                    <v-checkbox
+                    <v-select
                       v-if="field.type === 'boolean'"
                       v-model="advancedSearchData[generateDynamicVModelKey(field)]"
+                      clearable
+                      :items="booleanItems"
+                      item-text="name"
+                      item-value="value"
                       :label="generateFriendlyName(field)" />
                     <v-text-field
-                      v-if="field.type === 'keyword' || field.type === 'text' || field.type === 'date'"
+                      v-if="(field.type === 'keyword' && field.attribute_name !== 'column_type') || field.type === 'text' || field.type === 'date'"
                       v-model="advancedSearchData[generateDynamicVModelKey(field)]"
                       type="text"
                       :label="generateFriendlyName(field)"
                       clearable />
+                    <v-select
+                      v-if="field.type === 'keyword' && field.attribute_name === 'column_type'"
+                      v-model="advancedSearchData[generateDynamicVModelKey(field)]"
+                      :items="columnTypes"
+                      item-value="value"
+                      clearable
+                      :label="generateFriendlyName(field)" />
                     <v-text-field
                       v-if="field.type === 'integer'"
                       v-model="advancedSearchData[generateDynamicVModelKey(field)]"
@@ -203,11 +214,11 @@
           </v-container>
         </v-card-text>
         <v-card-text>
-          <v-btn @click="toggleAdvancedSearch">
-            Cancel
-          </v-btn>
-          <v-btn class="ml-2" color="primary" @click="advancedSearch">
+          <v-btn class="mr-2" color="primary" small @click="advancedSearch">
             Search
+          </v-btn>
+          <v-btn small @click="toggleAdvancedSearch">
+            Cancel
           </v-btn>
         </v-card-text>
       </v-card>
@@ -219,11 +230,12 @@
 </template>
 
 <script>
-import AdvancedSearchService from '@/api/advanced_search.service'
+import SearchService from '@/api/search.service'
 import AuthenticationService from '@/api/authentication.service'
 import DatabaseService from '@/api/database.service'
 import EventBus from '@/api/eventBus'
 import TableService from '@/api/table.service'
+import QueryMapper from '@/api/query.mapper'
 
 export default {
   data () {
@@ -239,6 +251,10 @@ export default {
       loadingDatabases: false,
       search: null,
       showAdvancedSearch: false,
+      columnTypes: QueryMapper.mySql8DataTypes().map((datatype) => {
+        datatype.value = datatype.value.toUpperCase()
+        return datatype
+      }),
       fieldItems: [
         { name: 'Database', value: 'database' },
         { name: 'Table', value: 'table' },
@@ -249,7 +265,12 @@ export default {
         { name: 'Unit', value: 'unit' },
         { name: 'View', value: 'view' }
       ],
+      booleanItems: [
+        { name: 'True', value: true },
+        { name: 'False', value: false }
+      ],
       fieldsResponse: null,
+      advancedSearchType: null,
       advancedSearchData: {
         name: '',
         internal_name: '',
@@ -305,7 +326,7 @@ export default {
       return this.$store.state.databaseCount
     },
     hideFields () {
-      const selectedOption = this.advancedSearchData.type
+      const selectedOption = this.advancedSearchType
       return {
         hideNameField: selectedOption === 'identifier',
         hideInternalNameField: ['identifier', 'user', 'concept', 'unit'].includes(selectedOption)
@@ -356,10 +377,10 @@ export default {
           })
       }
     },
-    'advancedSearchData.type': {
+    advancedSearchType: {
       async handler () {
-        if (this.advancedSearchData.type) {
-          const promise = await AdvancedSearchService.getFields(this.advancedSearchData.type.toLowerCase())
+        if (this.advancedSearchType) {
+          const promise = await SearchService.getFields(this.advancedSearchType.toLowerCase())
           this.fieldsResponse = JSON.parse(JSON.stringify(promise))
           console.log('Fields Response: ', this.fieldsResponse)
         } else {
@@ -452,7 +473,7 @@ export default {
         })
     },
     retrieve () {
-      console.info('Performing Normal Search')
+      console.debug('performing fuzzy search')
       this.$router.push({ path: '/search', query: { q: this.search } })
     },
     initEnvironment () {
@@ -466,8 +487,6 @@ export default {
       console.debug('runtime config', this.$config)
     },
     advancedSearch () {
-      console.info('Performing Advanced Search')
-      // attach free text value to the provided data
       if (this.search) {
         this.advancedSearchData.search_term = this.search
       } else {
@@ -481,7 +500,7 @@ export default {
     },
     isAdvancedSearchEmpty () {
       return !(
-        this.advancedSearchData.type ||
+        this.advancedSearchType ||
         this.advancedSearchData.id ||
         this.advancedSearchData.name ||
         this.advancedSearchData.internal_name
@@ -531,12 +550,12 @@ export default {
       // Generates a dynamic v-model; It will be attached to the advancedSearchData object
       if (!item) { return '' }
 
-      return `${this.advancedSearchData.type}.${item.attribute_name}`
+      return `${this.advancedSearchType}.${item.attribute_name}`
     },
     shouldRenderItem (item) {
       // Checks if item's attribute_name matches any wanted field
       // The expected response is of a flattened format, so this method must be modified accordingly if the response is changed
-      return this.dynamicFieldsMap()[this.advancedSearchData.type].includes(item.attribute_name)
+      return this.dynamicFieldsMap()[this.advancedSearchType].includes(item.attribute_name)
     }
   },
   head () {
@@ -546,7 +565,8 @@ export default {
   },
   provide () {
     return {
-      advancedSearchData: this.advancedSearchData
+      advancedSearchData: this.advancedSearchData,
+      advancedSearchType: this.advancedSearchType
     }
   }
 }

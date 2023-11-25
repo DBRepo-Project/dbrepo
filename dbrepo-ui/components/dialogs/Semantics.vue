@@ -192,12 +192,16 @@ export default {
       this.loadingSave = true
       TableService.updateColumn(this.database.id, this.tableId, this.column.id, payload)
         .then(() => {
+          this.recommendation = null
+          this.$refs.form.reset()
           this.$emit('close', {
             success: true,
             action: 'assign'
           })
         })
         .finally(() => {
+          this.recommendation = null
+          this.$refs.form.reset()
           this.loadingSave = false
         })
     },
@@ -213,20 +217,19 @@ export default {
     },
     isUri (str) {
       if (!str) {
-        return true
+        return false
       }
-      return str.match(/https?:\/\//g)
+      return str.startsWith('http')
     },
     init () {
+      this.uri = null
       if (this.column.unit && this.mode === 'unit') {
         this.uri = this.column.unit.uri
         return
       }
       if (this.column.concept && this.mode === 'concept') {
         this.uri = this.column.concept.uri
-        return
       }
-      this.uri = null
     },
     submit () {
       this.$refs.form.validate()

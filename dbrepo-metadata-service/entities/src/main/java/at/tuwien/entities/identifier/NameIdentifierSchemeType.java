@@ -5,8 +5,23 @@ import lombok.Getter;
 
 @Getter
 public enum NameIdentifierSchemeType {
-    ORCID,
-    ROR,
-    ISNI,
-    GRID
+
+    ORCID("orcid"),
+
+    ROR("ror"),
+
+    ISNI("isni"),
+
+    GRID("grid");
+
+    private String name;
+
+    NameIdentifierSchemeType(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public String toString() {
+        return this.name;
+    }
 }

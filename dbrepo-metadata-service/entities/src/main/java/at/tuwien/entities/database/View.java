@@ -85,7 +85,7 @@ public class View {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumnsOrFormulas({
             @JoinColumnOrFormula(column = @JoinColumn(name = "id", referencedColumnName = "vid", insertable = false, updatable = false)),
-            @JoinColumnOrFormula(formula = @JoinFormula(referencedColumnName = "identifier_type", value = "'VIEW'"))
+            @JoinColumnOrFormula(formula = @JoinFormula(referencedColumnName = "identifier_type", value = "'view'"))
     })
     private Identifier identifier;
 
