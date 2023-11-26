@@ -68,6 +68,13 @@
               type="number"
               :label="generateFriendlyName(field)"
               clearable />
+            <v-autocomplete
+              v-if="field.attribute_name === 'licenses'"
+              v-model="advancedSearchData[generateDynamicVModelKey(field)]"
+              :items="fetchLicenses()"
+              :label="generateFriendlyName(field)"
+              clearable
+              multiple />
           </v-col>
         </v-row>
         <p v-if="isColumnFilter" class="mt-4">
@@ -291,6 +298,13 @@ export default {
       // Checks if item's attribute_name matches any wanted field
       // The expected response is of a flattened format, so this method must be modified accordingly if the response is changed
       return this.dynamicFieldsMap()[this.advancedSearchData.type].includes(item.attribute_name)
+    },
+    fetchLicenses () {
+      // Licenses is a nested object in the backend, but without any values.
+      // Instead, we define our custom license generator with a controlled vocabulary.
+      return [
+        'Apache-2.0', 'BSD-3-Clause', 'BSD-4-Clause', 'CC-BY-4.0', 'CC0-1.0', 'GPL-3.0-only', 'MIT'
+      ]
     }
   }
 }
