@@ -50,6 +50,7 @@
 import SearchService from '@/api/search.service'
 import CreateDB from '@/components/dialogs/CreateDB'
 import AdvancedSearch from '@/components/search/AdvancedSearch'
+import IdentifierMapper from '@/api/identifier.mapper'
 
 export default {
   components: {
@@ -202,15 +203,17 @@ export default {
       if (this.isDatabase(item) || this.isTable(item) || this.isColumn(item) || this.isView(item) || this.isConcept(item) || this.isUnit(item)) {
         return item.name
       } else if (this.isIdentifier(item)) {
-        return item.title
+        return IdentifierMapper.identifierPreferEnglishTitle(item)
       } else if (this.isUser(item)) {
         return item.username
       }
       return null
     },
     description (item) {
-      if (this.isDatabase(item) || this.isTable(item) || this.isIdentifier(item) || this.isConcept(item) || this.isUnit(item)) {
+      if (this.isDatabase(item) || this.isTable(item) || this.isConcept(item) || this.isUnit(item)) {
         return item.description
+      } else if (this.isIdentifier(item)) {
+        return IdentifierMapper.identifierPreferEnglishDescription(item)
       } else if (this.isColumn(item)) {
         return null
       } else if (this.isView(item)) {
