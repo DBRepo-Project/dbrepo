@@ -345,6 +345,7 @@
                 <filtering>true</filtering>
                 <includes>
                     <include>**/application*.yml</include>
+                    <include>**/rdf/*</include>
                     <include>**/templates/*.txt</include>
                     <include>**/templates/*.xml</include>
                     <include>**/init/querystore.sql</include>

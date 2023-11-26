@@ -27,4 +27,8 @@ public class OntologyModifyDto {
     @Schema(example = "Ontology SPARQL endpoint")
     private String sparqlEndpoint;
 
+    @JsonProperty("rdf_path")
+    @Schema(example = "rdf/om-2.0.rdf")
+    private String rdfPath;
+
 }

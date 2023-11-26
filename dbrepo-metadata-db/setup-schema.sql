@@ -356,6 +356,7 @@ CREATE TABLE IF NOT EXISTS `mdb_ontologies`
     uri             TEXT       NOT NULL,
     uri_pattern     TEXT,
     sparql_endpoint TEXT       NULL,
+    rdf_path        TEXT       NULL,
     last_modified   timestamp,
     created         timestamp  NOT NULL DEFAULT NOW(),
     UNIQUE (prefix),
@@ -542,19 +543,19 @@ VALUES (1, '%Y-%c-%d %H:%i:%S.%f', 'yyyy-MM-dd HH:mm:ss.SSSSSS', '2022-01-30 13:
        (1, '%Y-%c-%d', 'yyyy-MM-dd', '2022-01-30', false),
        (1, '%H:%i:%S', 'HH:mm:ss', '13:44:25', true);
 
-INSERT INTO `mdb_ontologies` (prefix, uri, uri_pattern, sparql_endpoint)
+INSERT INTO `mdb_ontologies` (prefix, uri, uri_pattern, sparql_endpoint, rdf_path)
 VALUES ('om', 'http://www.ontology-of-units-of-measure.org/resource/om-2/',
-        'http://www.ontology-of-units-of-measure.org/resource/om-2/.*', null),
-       ('wd', 'http://www.wikidata.org/', 'http://www.wikidata.org/entity/.*', 'https://query.wikidata.org/sparql'),
-       ('mo', 'http://purl.org/ontology/mo/', 'http://purl.org/ontology/mo/.*', null),
-       ('dc', 'http://purl.org/dc/elements/1.1/', null, null),
-       ('xsd', 'http://www.w3.org/2001/XMLSchema#', null, null),
-       ('tl', 'http://purl.org/NET/c4dm/timeline.owl#', null, null),
-       ('foaf', 'http://xmlns.com/foaf/0.1/', null, null),
-       ('schema', 'http://schema.org/', null, null),
-       ('rdf', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#', null, null),
-       ('rdfs', 'http://www.w3.org/2000/01/rdf-schema#', null, null),
-       ('owl', 'http://www.w3.org/2002/07/owl#', null, null),
-       ('prov', 'http://www.w3.org/ns/prov#', null, null),
-       ('db', 'http://dbpedia.org', 'http://dbpedia.org/ontology/.*', 'http://dbpedia.org/sparql');
+        'http://www.ontology-of-units-of-measure.org/resource/om-2/.*', null, 'rdf/om-2.0.rdf'),
+       ('wd', 'http://www.wikidata.org/', 'http://www.wikidata.org/entity/.*', 'https://query.wikidata.org/sparql', null),
+       ('mo', 'http://purl.org/ontology/mo/', 'http://purl.org/ontology/mo/.*', null, null),
+       ('dc', 'http://purl.org/dc/elements/1.1/', null, null, null),
+       ('xsd', 'http://www.w3.org/2001/XMLSchema#', null, null, null),
+       ('tl', 'http://purl.org/NET/c4dm/timeline.owl#', null, null, null),
+       ('foaf', 'http://xmlns.com/foaf/0.1/', null, null, null),
+       ('schema', 'http://schema.org/', null, null, null),
+       ('rdf', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#', null, null, null),
+       ('rdfs', 'http://www.w3.org/2000/01/rdf-schema#', null, null, null),
+       ('owl', 'http://www.w3.org/2002/07/owl#', null, null, null),
+       ('prov', 'http://www.w3.org/ns/prov#', null, null, null),
+       ('db', 'http://dbpedia.org', 'http://dbpedia.org/ontology/.*', 'http://dbpedia.org/sparql', null);
 COMMIT;

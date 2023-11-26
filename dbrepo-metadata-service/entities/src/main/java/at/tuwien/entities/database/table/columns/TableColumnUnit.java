@@ -21,6 +21,7 @@ import java.util.List;
         @UniqueConstraint(columnNames = {"uri"})
 })
 @NamedQueries({
+        @NamedQuery(name = "TableColumnUnit.findAll", query = "select u from TableColumnUnit u order by u.name, u.uri asc"),
         @NamedQuery(name = "TableColumnUnit.findByUri", query = "select u from TableColumnUnit u where u.uri = ?1")
 })
 public class TableColumnUnit {

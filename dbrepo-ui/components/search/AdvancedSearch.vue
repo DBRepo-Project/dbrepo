@@ -96,6 +96,7 @@
           <v-col cols="3">
             <v-text-field
               v-model="advancedSearchData['t1']"
+              :disabled="!(advancedSearchData['concept.uri'] && advancedSearchData['unit.uri'])"
               clearable
               type="number"
               label="Start Value" />
@@ -103,6 +104,7 @@
           <v-col cols="3">
             <v-text-field
               v-model="advancedSearchData['t2']"
+              :disabled="!(advancedSearchData['concept.uri'] && advancedSearchData['unit.uri'])"
               clearable
               type="number"
               label="End Value" />
