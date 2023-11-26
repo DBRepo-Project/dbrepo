@@ -1,6 +1,5 @@
 package at.tuwien.entities.identifier;
 
-import at.tuwien.converters.IdentifierFunderTypeConverter;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
@@ -35,8 +34,8 @@ public class IdentifierFunder implements Serializable {
     private String funderIdentifier;
 
     @Field(name = "funder_identifier_type")
-    @Column(name="funder_identifier_type", columnDefinition = "enum('crossref_funder_id', 'ror', 'gnd', 'isni', 'other')")
-    @Convert(converter = IdentifierFunderTypeConverter.class)
+    @Column(name="funder_identifier_type", columnDefinition = "enum('CROSSREF_FUNDER_ID', 'ROR', 'GND', 'ISNI', 'OTHER')")
+    @Enumerated(EnumType.STRING)
     private IdentifierFunderType funderIdentifierType;
 
     @Field(name = "scheme_uri")

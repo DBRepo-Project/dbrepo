@@ -23,7 +23,6 @@ public class JacksonConfig {
         objectMapper.registerModule(new Jdk8Module());
         objectMapper.registerModule(new JavaTimeModule());
         objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-        objectMapper.configure(EnumFeature.WRITE_ENUMS_TO_LOWERCASE, true);
         objectMapper.setTimeZone(TimeZone.getTimeZone("UTC"));
         log.debug("current time is {}", objectMapper.writeValueAsString(new Date()));
         return objectMapper;

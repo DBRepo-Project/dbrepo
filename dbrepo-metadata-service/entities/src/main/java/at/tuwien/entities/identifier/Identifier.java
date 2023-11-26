@@ -1,7 +1,5 @@
 package at.tuwien.entities.identifier;
 
-import at.tuwien.converters.IdentifierIdentifierTypeConverter;
-import at.tuwien.converters.IdentifierVisibilityTypeConverter;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.LanguageType;
 import at.tuwien.entities.database.License;
@@ -29,11 +27,11 @@ import java.util.UUID;
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "mdb_identifiers")
 @NamedQueries({
-        @NamedQuery(name = "Identifier.findAllDatabaseIdentifiers", query = "select i from Identifier i where i.type = 'database'"),
-        @NamedQuery(name = "Identifier.findAllSubsetIdentifiers", query = "select i from Identifier i where i.type = 'subset'"),
-        @NamedQuery(name = "Identifier.findDatabaseIdentifier", query = "select i from Identifier i where i.databaseId = ?1 and i.type = 'database'"),
-        @NamedQuery(name = "Identifier.findSubsetIdentifier", query = "select i from Identifier i where i.databaseId = ?1 and i.queryId = ?2 and i.type = 'subset'"),
-        @NamedQuery(name = "Identifier.findViewIdentifier", query = "select i from Identifier i where i.databaseId = ?1 and i.viewId = ?2 and i.type = 'view'"),
+        @NamedQuery(name = "Identifier.findAllDatabaseIdentifiers", query = "select i from Identifier i where i.type = 'DATABASE'"),
+        @NamedQuery(name = "Identifier.findAllSubsetIdentifiers", query = "select i from Identifier i where i.type = 'SUBSET'"),
+        @NamedQuery(name = "Identifier.findDatabaseIdentifier", query = "select i from Identifier i where i.databaseId = ?1 and i.type = 'DATABASE'"),
+        @NamedQuery(name = "Identifier.findSubsetIdentifier", query = "select i from Identifier i where i.databaseId = ?1 and i.queryId = ?2 and i.type = 'SUBSET'"),
+        @NamedQuery(name = "Identifier.findViewIdentifier", query = "select i from Identifier i where i.databaseId = ?1 and i.viewId = ?2 and i.type = 'VIEW'"),
 })
 public class Identifier implements Serializable {
 
@@ -85,8 +83,8 @@ public class Identifier implements Serializable {
     )
     private List<License> licenses;
 
-    @Column(name = "identifier_type", nullable = false, columnDefinition = "enum('subset', 'database', 'view')")
-    @Convert(converter = IdentifierIdentifierTypeConverter.class)
+    @Column(name = "identifier_type", nullable = false, columnDefinition = "enum('SUBSET', 'DATABASE', 'VIEW')")
+    @Enumerated(EnumType.STRING)
     private IdentifierType type;
 
     @Column(columnDefinition = "TEXT")
@@ -123,8 +121,8 @@ public class Identifier implements Serializable {
     @Column
     private Integer publicationDay;
 
-    @Column(nullable = false, columnDefinition = "enum('everyone', 'self')")
-    @Convert(converter = IdentifierVisibilityTypeConverter.class)
+    @Column(nullable = false, columnDefinition = "enum('EVERYONE', 'SELF')")
+    @Enumerated(EnumType.STRING)
     private VisibilityType visibility;
 
     @ToString.Exclude

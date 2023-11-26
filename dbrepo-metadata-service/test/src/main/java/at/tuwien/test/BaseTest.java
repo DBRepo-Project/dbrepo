@@ -27,6 +27,16 @@ import at.tuwien.api.keycloak.UserCreateDto;
 import at.tuwien.api.maintenance.BannerMessageCreateDto;
 import at.tuwien.api.maintenance.BannerMessageTypeDto;
 import at.tuwien.api.maintenance.BannerMessageUpdateDto;
+import at.tuwien.api.orcid.OrcidDto;
+import at.tuwien.api.orcid.activities.OrcidActivitiesSummaryDto;
+import at.tuwien.api.orcid.activities.employments.OrcidEmploymentsDto;
+import at.tuwien.api.orcid.activities.employments.affiliation.OrcidAffiliationGroupDto;
+import at.tuwien.api.orcid.activities.employments.affiliation.group.OrcidEmploymentSummaryDto;
+import at.tuwien.api.orcid.activities.employments.affiliation.group.summary.OrcidSummaryDto;
+import at.tuwien.api.orcid.activities.employments.affiliation.group.summary.organization.OrcidOrganizationDto;
+import at.tuwien.api.orcid.person.OrcidPersonDto;
+import at.tuwien.api.orcid.person.name.OrcidNameDto;
+import at.tuwien.api.orcid.person.name.OrcidValueDto;
 import at.tuwien.api.semantics.OntologyCreateDto;
 import at.tuwien.api.semantics.OntologyModifyDto;
 import at.tuwien.api.user.*;
@@ -5727,6 +5737,36 @@ public abstract class BaseTest {
     public final static String CREATOR_1_NAME = CREATOR_1_LASTNAME + ", " + CREATOR_1_FIRSTNAME;
     public final static Instant CREATOR_1_CREATED = Instant.ofEpochSecond(1641588352);
     public final static Instant CREATOR_1_MODIFIED = Instant.ofEpochSecond(1541588352);
+
+    public final static OrcidDto ORCID_1_DTO = OrcidDto.builder()
+            .person(OrcidPersonDto.builder()
+                    .name(OrcidNameDto.builder()
+                            .givenNames(OrcidValueDto.builder()
+                                    .value(USER_1_FIRSTNAME)
+                                    .build())
+                            .familyName(OrcidValueDto.builder()
+                                    .value(USER_1_LASTNAME)
+                                    .build())
+                            .build())
+                    .build())
+            .activitiesSummary(OrcidActivitiesSummaryDto.builder()
+                    .employments(OrcidEmploymentsDto.builder()
+                            .affiliationGroup(new OrcidAffiliationGroupDto[]{
+                                    OrcidAffiliationGroupDto.builder()
+                                            .summaries(new OrcidEmploymentSummaryDto[]{
+                                                    OrcidEmploymentSummaryDto.builder()
+                                                            .employmentSummary(OrcidSummaryDto.builder()
+                                                                    .organization(OrcidOrganizationDto.builder()
+                                                                            .name(USER_1_AFFILIATION)
+                                                                            .build())
+                                                                    .build())
+                                                            .build()
+                                            })
+                                            .build()
+                            })
+                            .build())
+                    .build())
+            .build();
 
     public final static Long CREATOR_2_ID = 2L;
     public final static Long CREATOR_2_QUERY_ID = 1L;

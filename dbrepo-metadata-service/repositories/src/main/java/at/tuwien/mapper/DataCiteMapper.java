@@ -108,7 +108,7 @@ public interface DataCiteMapper {
         if (data == null) {
             return null;
         }
-        return DataCiteNameType.valueOf(data.getName().toUpperCase());
+        return DataCiteNameType.valueOf(data.toString());
     }
 
     @Mappings({

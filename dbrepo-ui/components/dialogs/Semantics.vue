@@ -160,6 +160,7 @@ export default {
   },
   watch: {
     column () {
+      this.recommendations = []
       this.init()
     },
     recommendation (index) {
@@ -171,6 +172,7 @@ export default {
     }
   },
   mounted () {
+    this.recommendations = []
     this.init()
   },
   methods: {

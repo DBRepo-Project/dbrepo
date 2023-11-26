@@ -1,6 +1,5 @@
 package at.tuwien.entities.maintenance;
 
-import at.tuwien.converters.BannerMessageTypeConverter;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
@@ -28,8 +27,8 @@ public class BannerMessage {
     @Column(updatable = false, nullable = false)
     private Long id;
 
-    @Column(nullable = false, columnDefinition = "enum('error', 'warning', 'info')")
-    @Convert(converter = BannerMessageTypeConverter.class)
+    @Column(nullable = false, columnDefinition = "enum('ERROR','WARNING','INFO')")
+    @Enumerated(EnumType.STRING)
     private BannerMessageType type;
 
     @Column(nullable = false)

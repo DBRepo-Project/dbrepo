@@ -70,11 +70,11 @@
               clearable />
           </v-col>
         </v-row>
-        <p v-if="isColumnFilter" class="mt-4">
+        <p v-if="isEligibleConceptOrUnitSearch" class="mt-4">
           If you select a <code>concept</code> and <code>unit</code>, you can search across columns regardless of their
           unit of measurement.
         </p>
-        <v-row v-if="isColumnFilter" dense>
+        <v-row v-if="isEligibleConceptOrUnitSearch" dense>
           <v-col cols="3">
             <v-select
               v-model="advancedSearchData['concept.uri']"
@@ -167,8 +167,8 @@ export default {
         hideInternalNameField: ['identifier', 'user', 'concept', 'unit'].includes(selectedOption)
       }
     },
-    isColumnFilter () {
-      return this.advancedSearchData.type === 'column'
+    isEligibleConceptOrUnitSearch () {
+      return ['column'].includes(this.advancedSearchData.type)
     }
   },
   watch: {
@@ -251,7 +251,7 @@ export default {
         identifier: [
           'creators.properties.creator_name', 'creators.properties.name_identifier',
           'descriptions.properties.description', 'doi', 'funders.properties.funder_identifier',
-          'licenses', 'publication_year', 'titles.properties.title', 'visibility'
+          'publication_year', 'titles.properties.title', 'visibility'
         ],
         view: ['is_public', 'query'],
         concept: ['uri'],

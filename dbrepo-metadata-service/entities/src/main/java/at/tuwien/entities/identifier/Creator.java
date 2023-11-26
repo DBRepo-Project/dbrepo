@@ -1,8 +1,5 @@
 package at.tuwien.entities.identifier;
 
-import at.tuwien.converters.IdentifierAffiliationIdentifierSchemeTypeConverter;
-import at.tuwien.converters.IdentifierNameIdentifierSchemeTypeConverter;
-import at.tuwien.converters.IdentifierNameTypeConverter;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -35,15 +32,15 @@ public class Creator {
     @Column(name = "creator_name", nullable = false)
     private String creatorName;
 
-    @Column(columnDefinition = "enum('personal', 'organizational')")
-    @Convert(converter = IdentifierNameTypeConverter.class)
+    @Column(columnDefinition = "enum('PERSONAL', 'ORGANIZATIONAL')")
+    @Enumerated(EnumType.STRING)
     private NameType nameType;
 
     @Column
     private String nameIdentifier;
 
-    @Column(columnDefinition = "enum('ror', 'grid', 'isni', 'orcid')")
-    @Convert(converter = IdentifierNameIdentifierSchemeTypeConverter.class)
+    @Column(columnDefinition = "enum('ROR', 'GRID', 'ISNI', 'ORCID')")
+    @Enumerated(EnumType.STRING)
     private NameIdentifierSchemeType nameIdentifierScheme;
 
     @Column
@@ -55,8 +52,8 @@ public class Creator {
     @Column
     private String affiliationIdentifier;
 
-    @Column(columnDefinition = "enum('ror', 'grid', 'isni')")
-    @Convert(converter = IdentifierAffiliationIdentifierSchemeTypeConverter.class)
+    @Column(columnDefinition = "enum('ROR', 'GRID', 'ISNI')")
+    @Enumerated(EnumType.STRING)
     private AffiliationIdentifierSchemeType affiliationIdentifierScheme;
 
     private String affiliationIdentifierSchemeUri;
