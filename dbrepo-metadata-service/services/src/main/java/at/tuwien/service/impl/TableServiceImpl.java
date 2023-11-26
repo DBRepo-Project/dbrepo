@@ -246,24 +246,26 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         if (updateDto.getUnitUri() != null) {
             try {
                 column.setUnit(semanticService.findUnit(updateDto.getUnitUri()));
+                log.debug("Found unit with uri {} in metadata database", updateDto.getUnitUri());
             } catch (UnitNotFoundException e) {
-                log.warn("Unit with uri {} not found in metadata database", updateDto.getUnitUri());
                 column.setUnit(semanticService.saveUnit(updateDto.getUnitUri()));
+                log.info("Unit with uri {} was created in metadata database", updateDto.getUnitUri());
             }
         } else {
             column.setUnit(null);
-            log.debug("remove unit of column, column={}", column);
+            log.debug("remove unit of column with id={}", columnId);
         }
         if (updateDto.getConceptUri() != null) {
             try {
                 column.setConcept(semanticService.findConcept(updateDto.getConceptUri()));
+                log.debug("Found concept with uri {} in metadata database", updateDto.getConceptUri());
             } catch (ConceptNotFoundException e) {
-                log.warn("Concept with uri {} not found in metadata database", updateDto.getConceptUri());
                 column.setConcept(semanticService.saveConcept(updateDto.getConceptUri()));
+                log.info("Concept with uri {} was created in metadata database", updateDto.getConceptUri());
             }
         } else {
             column.setConcept(null);
-            log.debug("remove ColumnConcept of column, column={}", column);
+            log.debug("remove ColumnConcept of column with id={}", columnId);
         }
         /* update in metadata database */
         final TableColumn out = tableColumnRepository.save(column);

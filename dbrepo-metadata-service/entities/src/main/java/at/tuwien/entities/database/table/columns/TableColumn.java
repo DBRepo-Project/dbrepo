@@ -88,13 +88,13 @@ public class TableColumn implements Comparable<TableColumn> {
     @CreatedDate
     private Instant created;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     @JoinTable(name = "mdb_columns_concepts",
             joinColumns = @JoinColumn(name = "cid", referencedColumnName = "id", nullable = false),
             inverseJoinColumns = @JoinColumn(name = "id", referencedColumnName = "id"))
     private TableColumnConcept concept;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     @JoinTable(name = "mdb_columns_units",
             joinColumns = @JoinColumn(name = "cid", referencedColumnName = "id", nullable = false),
             inverseJoinColumns = @JoinColumn(name = "id", referencedColumnName = "id"))

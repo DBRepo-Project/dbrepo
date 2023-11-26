@@ -13,8 +13,13 @@ const instance = axios.create({
 
 function displayError (error, warning) {
   const { code, message } = error.response.data
+  if (code && message) {
+    console.error(warning, error)
+    Vue.$toast.error(`[${code}] ${warning}: ${message}`)
+    return
+  }
   console.error(warning, error)
-  Vue.$toast.error(`[${code}] ${warning}: ${message}`)
+  Vue.$toast.error(`[${error.code}] ${warning}: ${error.message}`)
 }
 
 export default instance

@@ -125,13 +125,13 @@ public class SemanticServiceImpl implements SemanticService {
                     .build();
         }
         /* save in metadata database */
-        final TableColumnConcept concept = tableMapper.entityDtoToTableColumnConcept(
-                entityService.findOneByUri(ontology, uri));
-        log.info("Saved concept with uri {} in metadata database", concept.getUri());
+        final TableColumnConcept concept = tableMapper.entityDtoToTableColumnConcept(entityService.findOneByUri(ontology, uri));
+        final TableColumnConcept entity = tableColumnConceptRepository.save(concept);
+        log.info("Saved concept with uri {} in metadata database", entity.getUri());
         /* save in open search database */
-        conceptIdxRepository.save(tableMapper.tableColumnConceptToConceptDto(concept));
-        log.info("Saved concept with uri {} in open search database", concept.getUri());
-        return concept;
+        conceptIdxRepository.save(tableMapper.tableColumnConceptToConceptDto(entity));
+        log.info("Saved concept with uri {} in open search database", entity.getUri());
+        return entity;
     }
 
     @Override
@@ -144,11 +144,12 @@ public class SemanticServiceImpl implements SemanticService {
         }
         /* save in metadata database */
         final TableColumnUnit unit = tableMapper.entityDtoToTableColumnUnit(entityService.findOneByUri(ontology, uri));
-        log.info("Saved unit with uri {} in metadata database", unit.getUri());
+        final TableColumnUnit entity = tableColumnUnitRepository.save(unit);
+        log.info("Saved unit with uri {} in metadata database", entity.getUri());
         /* save in open search database */
-        unitIdxRepository.save(tableMapper.tableColumnUnitToUnitDto(unit));
-        log.info("Saved unit with uri {} in open search database", unit.getUri());
-        return unit;
+        unitIdxRepository.save(tableMapper.tableColumnUnitToUnitDto(entity));
+        log.info("Saved unit with uri {} in open search database", entity.getUri());
+        return entity;
     }
 
     private Ontology getCompatibleOntology(String uri) {

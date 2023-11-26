@@ -304,7 +304,7 @@ CREATE TABLE IF NOT EXISTS `mdb_columns_concepts`
     id      bigint    NOT NULL,
     cID     bigint    NOT NULL,
     created timestamp NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (id),
+    PRIMARY KEY (id, cid),
     FOREIGN KEY (cID) REFERENCES mdb_columns (ID)
 ) WITH SYSTEM VERSIONING;
 
@@ -313,7 +313,7 @@ CREATE TABLE IF NOT EXISTS `mdb_columns_units`
     id      bigint    NOT NULL,
     cID     bigint    NOT NULL,
     created timestamp NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (id),
+    PRIMARY KEY (id, cID),
     FOREIGN KEY (cID) REFERENCES mdb_columns (ID)
 ) WITH SYSTEM VERSIONING;
 

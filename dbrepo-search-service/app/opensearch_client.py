@@ -173,8 +173,19 @@ def general_search(search_term=None, t1=None, t2=None, fieldValuePairs=None):
         )
         response["status"] = 200
         return response
-    if t1 and t2 is not None:
-        logging.debug('query has time range present')
+    if t1 is not None:
+        logging.debug(f"query has start value {t1} present")
+        time_range_query = {
+            "range": {
+                "created": {
+                    "gte": t1,
+                    "lte": t2,
+                }
+            }
+        }
+        queries.append(time_range_query)
+    if t1 is not None and t2 is not None:
+        logging.debug(f"query has start value {t1} and end value {t2} present")
         time_range_query = {
             "range": {
                 "created": {

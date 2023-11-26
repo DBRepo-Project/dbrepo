@@ -47,9 +47,9 @@ public class TableColumnUnit {
     private Instant created;
 
     @ToString.Exclude
-    @OneToMany(fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE})
     @org.springframework.data.annotation.Transient
-    @JoinTable(name = "mdb_columns_concepts",
+    @JoinTable(name = "mdb_columns_units",
             inverseJoinColumns = {
                     @JoinColumn(name = "cid", referencedColumnName = "id", insertable = false, updatable = false)
             },

@@ -154,8 +154,6 @@ def search():
     search_term = req_body.get("search_term")
     t1 = req_body.get("t1")
     t2 = req_body.get("t2")
-    field = req_body.get("field")
-    value = req_body.get("value")
     fieldValuePairs = req_body.get("field_value_pairs")
     response = general_search(search_term, t1, t2, fieldValuePairs)
     return response, 200

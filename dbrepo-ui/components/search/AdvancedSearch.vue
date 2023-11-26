@@ -13,6 +13,7 @@
               label="Type" />
           </v-col>
         </v-row>
+        <p>The following fields are <code>AND</code> connected and depend on the type above.</p>
         <v-row dense>
           <v-col cols="3">
             <v-text-field
@@ -69,6 +70,44 @@
               clearable />
           </v-col>
         </v-row>
+        <p v-if="isColumnFilter" class="mt-4">
+          If you select a <code>concept</code> and <code>unit</code>, you can search across columns regardless of their
+          unit of measurement.
+        </p>
+        <v-row v-if="isColumnFilter" dense>
+          <v-col cols="3">
+            <v-select
+              v-model="advancedSearchData['concept.uri']"
+              clearable
+              :items="concepts"
+              item-text="name"
+              item-value="uri"
+              label="Concept" />
+          </v-col>
+          <v-col cols="3">
+            <v-select
+              v-model="advancedSearchData['unit.uri']"
+              clearable
+              :items="units"
+              item-text="name"
+              item-value="uri"
+              label="Unit" />
+          </v-col>
+          <v-col cols="3">
+            <v-text-field
+              v-model="advancedSearchData['t1']"
+              clearable
+              type="number"
+              label="Start Value" />
+          </v-col>
+          <v-col cols="3">
+            <v-text-field
+              v-model="advancedSearchData['t2']"
+              clearable
+              type="number"
+              label="End Value" />
+          </v-col>
+        </v-row>
         <v-row dense>
           <v-btn class="mr-2" color="primary" :loading="loading" small @click="advancedSearch">
             Search
@@ -81,6 +120,8 @@
 <script>
 import SearchService from '@/api/search.service'
 import QueryMapper from '@/api/query.mapper'
+import SemanticService from '@/api/semantic.service'
+import SemanticMapper from '@/api/semantic.mapper'
 
 export default {
   data () {
@@ -88,6 +129,8 @@ export default {
       loading: false,
       loadingFields: false,
       showAdvancedSearch: false,
+      concepts: [],
+      units: [],
       columnTypes: QueryMapper.mySql8DataTypes().map((datatype) => {
         datatype.value = datatype.value.toUpperCase()
         return datatype
@@ -123,6 +166,9 @@ export default {
         hideNameField: selectedOption === 'identifier',
         hideInternalNameField: ['identifier', 'user', 'concept', 'unit'].includes(selectedOption)
       }
+    },
+    isColumnFilter () {
+      return this.advancedSearchData.type === 'column'
     }
   },
   watch: {
@@ -131,7 +177,6 @@ export default {
         if (!newType) {
           return
         }
-        console.debug('switched advanced search type to', newType)
         this.resetAdvancedSearchFields()
         this.loadingFields = true
         SearchService.getFields(newType)
@@ -149,6 +194,14 @@ export default {
   },
   mounted () {
     this.advancedSearch()
+    SemanticService.findAllConcepts()
+      .then((response) => {
+        this.concepts = SemanticMapper.mapConcepts(response)
+      })
+    SemanticService.findAllUnits()
+      .then((response) => {
+        this.units = SemanticMapper.mapUnits(response)
+      })
   },
   methods: {
     /* Removes all advanced search fields when switching the type */
@@ -163,6 +216,12 @@ export default {
         this.advancedSearchData.search_term = this.search
       } else {
         delete this.advancedSearchData.search_term
+      }
+      if ('t1' in this.advancedSearchData && this.advancedSearchData.t1) {
+        this.advancedSearchData.t1 = Number(this.advancedSearchData.t1)
+      }
+      if ('t2' in this.advancedSearchData && this.advancedSearchData.t2) {
+        this.advancedSearchData.t2 = Number(this.advancedSearchData.t2)
       }
       this.loading = true
       SearchService.search(this.advancedSearchData)
