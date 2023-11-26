@@ -20,12 +20,14 @@ import at.tuwien.service.SemanticService;
 import at.tuwien.service.TableService;
 import at.tuwien.service.UserService;
 import at.tuwien.utils.UserUtil;
+import ch.qos.logback.core.testUtil.RandomUtil;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.security.Principal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -33,6 +35,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Log4j2
 @Service
@@ -244,6 +248,25 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         final TableColumn column = findColumn(table, columnId);
         /* assign */
         if (updateDto.getUnitUri() != null) {
+            // FIXME BEGIN democode
+            if (updateDto.getConceptUri().equals("http://www.wikidata.org/entity/Q11466")) {
+                if (updateDto.getUnitUri().equals("http://www.ontology-of-units-of-measure.org/resource/om-2/degreeFahrenheit")) {
+                    column.setValMin(BigDecimal.valueOf(ThreadLocalRandom.current().nextDouble(32, 68))) /* 0-20 */;
+                    column.setValMax(BigDecimal.valueOf(ThreadLocalRandom.current().nextDouble(67, 104)).add(column.getValMin())) /* 20-40 */;
+                    column.setMean(BigDecimal.valueOf(ThreadLocalRandom.current().nextDouble(32, 104)));
+                    column.setMedian(BigDecimal.valueOf(ThreadLocalRandom.current().nextDouble(32, 104)));
+                    column.setStdDev(BigDecimal.valueOf(ThreadLocalRandom.current().nextDouble(0, 20)));
+                    log.warn("Faked demo statistical values (deg. Fahrenheit) for column with id {}", columnId);
+                } else if (updateDto.getUnitUri().equals("http://www.ontology-of-units-of-measure.org/resource/om-2/degreeCelsius")) {
+                    column.setValMin(BigDecimal.valueOf(ThreadLocalRandom.current().nextDouble(0, 20))) /* 0-20 */;
+                    column.setValMax(BigDecimal.valueOf(ThreadLocalRandom.current().nextDouble(20, 40)).add(column.getValMin())) /* 20-40 */;
+                    column.setMean(BigDecimal.valueOf(ThreadLocalRandom.current().nextDouble(0, 40)));
+                    column.setMedian(BigDecimal.valueOf(ThreadLocalRandom.current().nextDouble(0, 40)));
+                    column.setStdDev(BigDecimal.valueOf(ThreadLocalRandom.current().nextDouble(0, 10)));
+                    log.warn("Faked demo statistical values (deg. Celsius) for column with id {}", columnId);
+                }
+            }
+            // FIXME END democode
             try {
                 column.setUnit(semanticService.findUnit(updateDto.getUnitUri()));
                 log.debug("Found unit with uri {} in metadata database", updateDto.getUnitUri());

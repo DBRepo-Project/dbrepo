@@ -173,31 +173,21 @@ def general_search(search_term=None, t1=None, t2=None, fieldValuePairs=None):
         )
         response["status"] = 200
         return response
-    if t1 is not None:
-        logging.debug(f"query has start value {t1} present")
-        time_range_query = {
-            "range": {
-                "created": {
-                    "gte": t1,
-                    "lte": t2,
-                }
-            }
-        }
-        queries.append(time_range_query)
-    if t1 is not None and t2 is not None:
-        logging.debug(f"query has start value {t1} and end value {t2} present")
-        time_range_query = {
-            "range": {
-                "created": {
-                    "gte": t1,
-                    "lte": t2,
-                }
-            }
-        }
-        queries.append(time_range_query)
     if fieldValuePairs is not None and len(fieldValuePairs) > 0:
-        logging.debug('query has fieldValuePairs present')
+        logging.debug('query has field_value_pairs present')
         musts = []
+        is_range_open_end = False
+        is_range_open_begin = False
+        is_range_query = False
+        if t1 is not None and t2 is None:
+            is_range_open_begin = True
+            logging.debug(f"query has only start value {t1} present")
+        if t1 is None and t2 is not None:
+            is_range_open_end = True
+            logging.debug(f"query has only end value {t2} present")
+        if t1 is not None and t2 is not None:
+            is_range_query = True
+            logging.debug(f"query has start value {t1} and end value {t2} present")
         for key, value in fieldValuePairs.items():
             if key == "type" and value in searchable_indices:
                 logging.debug("search for specific index: %s", value)
@@ -209,11 +199,49 @@ def general_search(search_term=None, t1=None, t2=None, fieldValuePairs=None):
                     logging.debug(
                         f"field name {key} starts with index name {index}: flattened field name to {new_field}")
                     key = new_field
-                musts.append({
-                    "match": {
-                        key: {"query": value, "minimum_should_match": "90%"}
-                    }
-                })
+                if is_range_open_end and re.match(f"unit\\.", key):
+                    logging.debug(f"omit key={key} because query type=open end range and key is somewhat unit")
+                    logging.info(f"add match-query for range ),{t2}]")
+                    musts.append({
+                        "range": {
+                            "val_max": {
+                                "lte": t2
+                            }
+                        }
+                    })
+                elif is_range_open_begin and re.match(f"unit\\.", key):
+                    logging.debug(f"omit key={key} because query type=open begin range and key is somewhat unit")
+                    logging.info(f"add match-query for range [{t1},(")
+                    musts.append({
+                        "range": {
+                            "val_min": {
+                                "gte": t1
+                            }
+                        }
+                    })
+                elif is_range_query and re.match(f"unit\\.", key):
+                    logging.debug(f"omit key={key} because query type=full range and key is somewhat unit")
+                    logging.info(f"add match-query for range [{t1},{t2}]")
+                    musts.append({
+                        "range": {
+                            "val_min": {
+                                "gte": t1
+                            }
+                        }
+                    })
+                    musts.append({
+                        "range": {
+                            "val_max": {
+                                "lte": t2
+                            }
+                        }
+                    })
+                else:
+                    musts.append({
+                        "match": {
+                            key: {"query": value, "minimum_should_match": "90%"}
+                        }
+                    })
         specific_query = {"bool": {"must": musts}}
         queries.append(specific_query)
     body = {

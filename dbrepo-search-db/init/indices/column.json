@@ -33,6 +33,21 @@
       "d": {
         "type": "integer"
       },
+      "val_min": {
+        "type": "double"
+      },
+      "val_max": {
+        "type": "double"
+      },
+      "mean": {
+        "type": "double"
+      },
+      "median": {
+        "type": "double"
+      },
+      "std_dev": {
+        "type": "double"
+      },
       "database_id": {
         "type": "keyword"
       },

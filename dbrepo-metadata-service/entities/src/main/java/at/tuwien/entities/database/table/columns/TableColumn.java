@@ -12,6 +12,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
@@ -115,6 +116,21 @@ public class TableColumn implements Comparable<TableColumn> {
 
     @Column
     private Integer d;
+
+    @Column(name = "val_min")
+    private BigDecimal valMin;
+
+    @Column(name = "val_max")
+    private BigDecimal valMax;
+
+    @Column
+    private BigDecimal mean;
+
+    @Column
+    private BigDecimal median;
+
+    @Column(name = "std_dev")
+    private BigDecimal stdDev;
 
     @LastModifiedDate
     @Column(columnDefinition = "TIMESTAMP")

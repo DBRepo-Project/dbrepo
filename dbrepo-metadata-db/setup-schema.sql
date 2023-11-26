@@ -160,6 +160,11 @@ CREATE TABLE IF NOT EXISTS `mdb_columns`
     d                INT,
     auto_generated   BOOLEAN               DEFAULT false,
     is_null_allowed  BOOLEAN      NOT NULL DEFAULT true,
+    val_min          NUMERIC      NULL,
+    val_max          NUMERIC      NULL,
+    mean             NUMERIC      NULL,
+    median           NUMERIC      NULL,
+    std_dev          Numeric      NULL,
     created          timestamp    NOT NULL DEFAULT NOW(),
     last_modified    timestamp,
     FOREIGN KEY (tID) REFERENCES mdb_tables (ID),
@@ -189,23 +194,6 @@ CREATE TABLE IF NOT EXISTS `mdb_columns_nom`
     tID           bigint,
     cID           bigint,
     maxlength     INTEGER,
-    last_modified timestamp,
-    created       timestamp NOT NULL DEFAULT NOW(),
-    FOREIGN KEY (tID, cID) REFERENCES mdb_columns (tID, ID),
-    PRIMARY KEY (tID, cID)
-) WITH SYSTEM VERSIONING;
-
-CREATE TABLE IF NOT EXISTS `mdb_columns_num`
-(
-    tID           bigint,
-    cID           bigint,
-    SIunit        TEXT,
-    MaxVal        NUMERIC,
-    MinVal        NUMERIC,
-    Mean          NUMERIC,
-    Median        NUMERIC,
-    Sd            Numeric,
-    --    Histogram     INTEGER[],
     last_modified timestamp,
     created       timestamp NOT NULL DEFAULT NOW(),
     FOREIGN KEY (tID, cID) REFERENCES mdb_columns (tID, ID),
@@ -546,7 +534,8 @@ VALUES (1, '%Y-%c-%d %H:%i:%S.%f', 'yyyy-MM-dd HH:mm:ss.SSSSSS', '2022-01-30 13:
 INSERT INTO `mdb_ontologies` (prefix, uri, uri_pattern, sparql_endpoint, rdf_path)
 VALUES ('om', 'http://www.ontology-of-units-of-measure.org/resource/om-2/',
         'http://www.ontology-of-units-of-measure.org/resource/om-2/.*', null, 'rdf/om-2.0.rdf'),
-       ('wd', 'http://www.wikidata.org/', 'http://www.wikidata.org/entity/.*', 'https://query.wikidata.org/sparql', null),
+       ('wd', 'http://www.wikidata.org/', 'http://www.wikidata.org/entity/.*', 'https://query.wikidata.org/sparql',
+        null),
        ('mo', 'http://purl.org/ontology/mo/', 'http://purl.org/ontology/mo/.*', null, null),
        ('dc', 'http://purl.org/dc/elements/1.1/', null, null, null),
        ('xsd', 'http://www.w3.org/2001/XMLSchema#', null, null, null),

@@ -180,6 +180,7 @@ export default {
           return
         }
         this.resetAdvancedSearchFields()
+        this.$emit('search-result', [])
         this.loadingFields = true
         SearchService.getFields(newType)
           .then((response) => {

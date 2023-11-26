@@ -153,7 +153,11 @@ def search():
     logging.debug('search request body: %s', req_body)
     search_term = req_body.get("search_term")
     t1 = req_body.get("t1")
+    if not str(t1).isdigit():
+        t1 = None
     t2 = req_body.get("t2")
+    if not str(t2).isdigit():
+        t2 = None
     fieldValuePairs = req_body.get("field_value_pairs")
     response = general_search(search_term, t1, t2, fieldValuePairs)
     return response, 200
