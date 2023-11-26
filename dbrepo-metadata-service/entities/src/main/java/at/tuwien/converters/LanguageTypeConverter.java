@@ -8,13 +8,19 @@ import jakarta.persistence.Converter;
 public class LanguageTypeConverter implements AttributeConverter<LanguageType, String> {
 
     @Override
-    public String convertToDatabaseColumn(LanguageType columnType) {
-        return columnType.name()
+    public String convertToDatabaseColumn(LanguageType languageType) {
+        if (languageType == null) {
+            return null;
+        }
+        return languageType.name()
                 .toLowerCase();
     }
 
     @Override
-    public LanguageType convertToEntityAttribute(String columnType) {
-        return LanguageType.valueOf(columnType.toUpperCase());
+    public LanguageType convertToEntityAttribute(String languageType) {
+        if (languageType == null) {
+            return null;
+        }
+        return LanguageType.valueOf(languageType.toUpperCase());
     }
 }

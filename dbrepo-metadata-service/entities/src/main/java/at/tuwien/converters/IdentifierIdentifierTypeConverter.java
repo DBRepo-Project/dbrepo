@@ -8,13 +8,19 @@ import jakarta.persistence.Converter;
 public class IdentifierIdentifierTypeConverter implements AttributeConverter<IdentifierType, String> {
 
     @Override
-    public String convertToDatabaseColumn(IdentifierType columnType) {
-        return columnType.name()
+    public String convertToDatabaseColumn(IdentifierType identifierType) {
+        if (identifierType == null) {
+            return null;
+        }
+        return identifierType.name()
                 .toLowerCase();
     }
 
     @Override
-    public IdentifierType convertToEntityAttribute(String columnType) {
-        return IdentifierType.valueOf(columnType.toUpperCase());
+    public IdentifierType convertToEntityAttribute(String identifierType) {
+        if (identifierType == null) {
+            return null;
+        }
+        return IdentifierType.valueOf(identifierType.toUpperCase());
     }
 }

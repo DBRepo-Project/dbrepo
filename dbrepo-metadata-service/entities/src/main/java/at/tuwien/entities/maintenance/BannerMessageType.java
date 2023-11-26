@@ -1,13 +1,24 @@
-
 package at.tuwien.entities.maintenance;
 
 import lombok.Getter;
-import lombok.ToString;
 
 @Getter
-@ToString
 public enum BannerMessageType {
-    WARNING,
-    ERROR,
-    INFO;
+
+    WARNING("warning"),
+
+    ERROR("error"),
+
+    INFO("info");
+
+    private String name;
+
+    BannerMessageType(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public String toString() {
+        return this.name;
+    }
 }

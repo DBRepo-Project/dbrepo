@@ -8,13 +8,19 @@ import jakarta.persistence.Converter;
 public class TableColumnTypeConverter implements AttributeConverter<TableColumnType, String> {
 
     @Override
-    public String convertToDatabaseColumn(TableColumnType columnType) {
-        return columnType.name()
+    public String convertToDatabaseColumn(TableColumnType tableColumnType) {
+        if (tableColumnType == null) {
+            return null;
+        }
+        return tableColumnType.name()
                 .toLowerCase();
     }
 
     @Override
-    public TableColumnType convertToEntityAttribute(String columnType) {
-        return TableColumnType.valueOf(columnType.toUpperCase());
+    public TableColumnType convertToEntityAttribute(String tableColumnType) {
+        if (tableColumnType == null) {
+            return null;
+        }
+        return TableColumnType.valueOf(tableColumnType.toUpperCase());
     }
 }
