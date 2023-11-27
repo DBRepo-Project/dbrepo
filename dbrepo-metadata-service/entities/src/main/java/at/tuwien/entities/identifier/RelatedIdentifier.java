@@ -29,11 +29,11 @@ public class RelatedIdentifier {
     @Column(nullable = false)
     private String value;
 
-    @Column
+    @Column(columnDefinition = "enum('DOI','URL','URN','ARK','arXiv','bibcode','EAN13','EISSN','Handle','IGSN','ISBN','ISTC','LISSN','LSID','PMID','PURL','UPC','w3id')")
     @Enumerated(EnumType.STRING)
     private RelatedType type;
 
-    @Column
+    @Column(columnDefinition = "enum('IsCitedBy','Cites','IsSupplementTo','IsSupplementedBy','IsContinuedBy','Continues','IsDescribedBy','Describes','HasMetadata','IsMetadataFor','HasVersion','IsVersionOf','IsNewVersionOf','IsPreviousVersionOf','IsPartOf','HasPart','IsPublishedIn','IsReferencedBy','References','IsDocumentedBy','Documents','IsCompiledBy','Compiles','IsVariantFormOf','IsOriginalFormOf','IsIdenticalTo','IsReviewedBy','Reviews','IsDerivedFrom','IsSourceOf','IsRequiredBy','Requires','IsObsoletedBy','Obsoletes')")
     @Enumerated(EnumType.STRING)
     private RelationType relation;
 

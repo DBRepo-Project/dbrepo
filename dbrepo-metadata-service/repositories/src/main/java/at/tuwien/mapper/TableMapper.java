@@ -59,7 +59,6 @@ public interface TableMapper {
     TableBriefDto tableToTableBriefDto(Table data);
 
     @Mappings({
-            @Mapping(source = "id", target = "id"),
             @Mapping(target = "name", expression = "java(data.getName())"),
             @Mapping(target = "internalName", expression = "java(data.getInternalName())"),
             @Mapping(target = "queueName", expression = "java(data.getQueueName())"),

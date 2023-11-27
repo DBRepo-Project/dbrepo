@@ -80,6 +80,9 @@
       "id": {
         "type": "keyword"
       },
+      "database_id": {
+        "type": "keyword"
+      },
       "internal_name": {
         "type": "keyword"
       },

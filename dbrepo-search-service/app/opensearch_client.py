@@ -1,9 +1,8 @@
 """
 The opensearch_client.py is used by the different API endpoints in routes.py to handle requests  to the opensearch db
 """
-import json
 import logging
-
+import re
 from flask import current_app
 from collections.abc import MutableMapping
 
@@ -127,79 +126,150 @@ def general_search(search_term=None, t1=None, t2=None, fieldValuePairs=None):
     searchable_indices = ["database", "user", "table", "column", "identifier", "view", "concept", "unit"]
     index = searchable_indices
     field_list = [
-        "name",
+        "table.name",
         "identifier.titles.title",
         "identifier.descriptions.description",
         "identifier.publisher",
         "identifier.creators.*.firstname",
         "identifier.creators.*.lastname",
         "identifier.creators.*.creator_name",
+        "column.column_type",
+        "column.is_null_allowed",
+        "column.is_primary_key",
+        "unit.uri",
+        "unit.name",
+        "unit.description",
+        "concept.uri",
+        "concept.name",
+        "concept.description",
         "funders",
         "title",
         "description",
         "creator.username",
-        "concept.name",
-        "concept.uri",
         "author",
+        "name",
+        "uri",
         "database.*",
         "internal_name",
-        "public",
+        "is_public",
     ]
     queries = []
     if search_term is not None:
         logging.debug('query has search_term present')
-        text_query = {
-            "multi_match": {
-                "fields": field_list,
-                "query": search_term,
-                "fuzziness": "AUTO",
-            }
-        }
-        queries.append(text_query)
-    if t1 and t2 is not None:
-        logging.debug('query has time range present')
-        time_range_query = {
-            "range": {
-                "created": {
-                    "gte": t1,
-                    "lte": t2,
+        fuzzy_body = {
+            "query": {
+                "multi_match": {
+                    "query": search_term,
+                    "fuzziness": "AUTO",
+                    "fuzzy_transpositions": True,
+                    "minimum_should_match": 3
                 }
             }
         }
-        queries.append(time_range_query)
-    if fieldValuePairs is not None:
-        logging.debug('query has fieldValuePairs present')
+        logging.debug('search body: %s', fuzzy_body)
+        response = current_app.opensearch_client.search(
+            index=index,
+            body=fuzzy_body
+        )
+        response["status"] = 200
+        return response
+    if fieldValuePairs is not None and len(fieldValuePairs) > 0:
+        logging.debug('query has field_value_pairs present')
         musts = []
-        for field, value in fieldValuePairs.items():
-            if field == "type" and value in searchable_indices:
+        is_range_open_end = False
+        is_range_open_begin = False
+        is_range_query = False
+        if t1 is not None and t2 is None:
+            is_range_open_begin = True
+            logging.debug(f"query has only start value {t1} present")
+        if t1 is None and t2 is not None:
+            is_range_open_end = True
+            logging.debug(f"query has only end value {t2} present")
+        if t1 is not None and t2 is not None:
+            is_range_query = True
+            logging.debug(f"query has start value {t1} and end value {t2} present")
+        for key, value in fieldValuePairs.items():
+            if key == "type" and value in searchable_indices:
                 logging.debug("search for specific index: %s", value)
                 index = value
                 continue
-            if field in field_list:
-                musts.append({
-                    "match": {
-                        field: {"query": value, "minimum_should_match": "90%"}
-                    }
-                })
+            if key in field_list:
+                if re.match(f"{key}\\.", key):
+                    new_field = key[key.index(".") + 1:len(key)]
+                    logging.debug(
+                        f"field name {key} starts with index name {index}: flattened field name to {new_field}")
+                    key = new_field
+                if is_range_open_end and re.match(f"unit\\.", key):
+                    logging.debug(f"omit key={key} because query type=open end range and key is somewhat unit")
+                    logging.info(f"add match-query for range ),{t2}]")
+                    musts.append({
+                        "range": {
+                            "val_max": {
+                                "lte": t2
+                            }
+                        }
+                    })
+                elif is_range_open_begin and re.match(f"unit\\.", key):
+                    logging.debug(f"omit key={key} because query type=open begin range and key is somewhat unit")
+                    logging.info(f"add match-query for range [{t1},(")
+                    musts.append({
+                        "range": {
+                            "val_min": {
+                                "gte": t1
+                            }
+                        }
+                    })
+                elif is_range_query and re.match(f"unit\\.", key):
+                    logging.debug(f"omit key={key} because query type=full range and key is somewhat unit")
+                    logging.info(f"add match-query for range [{t1},{t2}]")
+                    musts.append({
+                        "range": {
+                            "val_min": {
+                                "gte": t1
+                            }
+                        }
+                    })
+                    musts.append({
+                        "range": {
+                            "val_max": {
+                                "lte": t2
+                            }
+                        }
+                    })
+                else:
+                    musts.append({
+                        "match": {
+                            key: {"query": value, "minimum_should_match": "90%"}
+                        }
+                    })
         specific_query = {"bool": {"must": musts}}
         queries.append(specific_query)
-    logging.debug("queries: %s", queries)
     body = {
         "query": {"bool": {"must": queries}},
         "_source": [
             "_class",
             "id",
+            "table_id",
+            "database_id",
             "name",
             "identifier.*",
             "column_type",
             "description",
+            "titles",
+            "descriptions",
+            "funders",
+            "licenses",
+            "creators",
+            "visibility",
             "title",
             "type",
+            "uri",
             "username",
             "is_public",
             "created",
             "_score",
             "concept",
+            "unit",
             "author",
             "docID",
             "creator.*",

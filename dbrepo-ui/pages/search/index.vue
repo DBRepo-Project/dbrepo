@@ -1,51 +1,73 @@
 <template>
   <div>
-    <v-toolbar flat>
+    <v-toolbar flat tile>
       <v-toolbar-title v-text="header" />
+      <v-spacer />
+      <v-toolbar-title>
+        <v-btn v-if="canCreateDatabase" color="primary" name="create-database" @click.stop="createDbDialog = true">
+          <v-icon left>mdi-plus</v-icon> Database
+        </v-btn>
+      </v-toolbar-title>
     </v-toolbar>
-    <v-progress-linear v-if="loading" color="primary" />
+    <v-card flat tile>
+      <AdvancedSearch ref="adv" @search-result="onSearchResult" />
+    </v-card>
     <v-card
       v-for="(result, idx) in results"
       :key="idx"
-      :to="link(result)"
+      :to="link(result) && link(result).startsWith('http') ? null : link(result)"
+      :href="link(result) && link(result).startsWith('http') ? link(result): null"
       flat
       tile>
       <v-divider class="mx-4" />
       <v-card-title>
-        <a :href="link(result)">{{ title(result) }}</a>
+        <a v-if="link(result)" :href="link(result)">{{ title(result) }}</a>
+        <span v-else>{{ title(result) }}</span>
       </v-card-title>
       <v-card-subtitle class="search-subtitle" v-text="description(result)" />
-      <v-card-text class="search-description">
+      <v-card-text v-if="tags(result).length > 0" class="search-description">
         <div class="search-tags">
-          <v-chip v-if="isPublic(result) === true" small color="green" outlined>Public</v-chip>
-          <v-chip v-if="isPublic(result) === false" small color="red" outlined>Private</v-chip>
-          <v-chip v-if="isTable(result)" small outlined>Table</v-chip>
-          <v-chip v-if="isColumn(result)" small outlined>Column</v-chip>
-          <v-chip v-if="isView(result)" small outlined>View</v-chip>
-          <v-chip v-if="isIdentifier(result)" small outlined>Identifier</v-chip>
-          <v-chip v-if="isDatabase(result) || (isIdentifier(result) && result.type === 'DATABASE')" small outlined>Database</v-chip>
-          <v-chip v-if="isIdentifier(result) && result.type === 'SUBSET'" small outlined>Subset</v-chip>
-          <v-chip v-if="isIdentifier(result) && result.publicationYear" small outlined>{{ result.publicationYear }}</v-chip>
+          <v-chip
+            v-for="(tag, i) in tags(result)"
+            :key="i"
+            small
+            :color="tag.color"
+            outlined
+            v-text="tag.text" />
         </div>
       </v-card-text>
     </v-card>
+    <v-dialog
+      v-model="createDbDialog"
+      persistent
+      max-width="640">
+      <CreateDB @close="closed" />
+    </v-dialog>
   </div>
 </template>
 
 <script>
-import AdvancedSearchService from '@/api/advanced_search.service'
-import EventBus from '@/api/eventBus'
 import SearchService from '@/api/search.service'
+import CreateDB from '@/components/dialogs/CreateDB'
+import AdvancedSearch from '@/components/search/AdvancedSearch'
+import IdentifierMapper from '@/api/identifier.mapper'
 
 export default {
-  inject: ['advancedSearchData'],
+  components: {
+    CreateDB,
+    AdvancedSearch
+  },
   data () {
     return {
       results: [],
-      loading: false
+      loading: false,
+      createDbDialog: null
     }
   },
   computed: {
+    roles () {
+      return this.$store.state.roles
+    },
     query () {
       if (!this.$route.query || !this.$route.query.q) {
         return null
@@ -63,43 +85,24 @@ export default {
         return `${this.results.length} results`
       }
       return `${this.results.length} result`
+    },
+    canCreateDatabase () {
+      if (!this.roles) {
+        return false
+      }
+      return this.roles.includes('create-database')
     }
   },
   watch: {
     '$route.query.q': {
-      handler (query) {
-        if (this.advancedSearchData) {
-          return
-        }
+      handler () {
         this.retrieve()
-      },
-      deep: true,
-      immediate: true
-    },
-    '$route.query.t': {
-      handler (type) {
-        if (this.advancedSearchData) {
-          return
-        }
-        this.retrieve()
-      },
-      deep: true,
-      immediate: true
+      }
     }
   },
-  created () {
-    EventBus.$on('advancedSearchButtonClicked', () => {
-      this.doAdvancedSearch(this.advancedSearchData)
-    })
-  },
-  beforeDestroy () {
-    EventBus.$off('advancedSearchButtonClicked')
-  },
   mounted () {
-    if (Object.keys(this.advancedSearchData).some(key => key !== 'search_term')) {
-      this.doAdvancedSearch(this.advancedSearchData)
-    } else if (this.query) {
-      this.retrieve(this.query)
+    if (this.query) {
+      this.retrieve()
     }
   },
   methods: {
@@ -108,21 +111,9 @@ export default {
         return
       }
       this.loading = true
-      SearchService.search(this.query)
+      SearchService.search({ search_term: this.query })
         .then((hits) => {
           this.results = hits.map(h => h._source)
-        })
-        .finally(() => {
-          this.loading = false
-        })
-    },
-    doAdvancedSearch (advancedSearchData) {
-      console.log('Advanced Search Data:', advancedSearchData)
-      AdvancedSearchService.search(advancedSearchData)
-        .then((response) => {
-          const hits = response.hits.hits
-          this.results = hits.map(h => h._source)
-          console.log('Advanced Search Results', this.results)
         })
         .finally(() => {
           this.loading = false
@@ -136,6 +127,24 @@ export default {
         return /at.tuwien.api.database.DatabaseDto/.test(item._class)
       }
       return item.exchangeName !== undefined
+    },
+    isConcept (item) {
+      if (!item) {
+        return false
+      }
+      if ('_class' in item) {
+        return /at.tuwien.api.database.table.columns.concepts.ConceptDto/.test(item._class)
+      }
+      return false
+    },
+    isUnit (item) {
+      if (!item) {
+        return false
+      }
+      if ('_class' in item) {
+        return /at.tuwien.api.database.table.columns.concepts.UnitDto/.test(item._class)
+      }
+      return false
     },
     isTable (item) {
       if (!item) {
@@ -151,7 +160,16 @@ export default {
         return false
       }
       if ('_class' in item) {
-        return /at.tuwien.entities.database.table.columns.TableColumn/.test(item._class)
+        return /at.tuwien.api.database.table.columns.ColumnDto/.test(item._class)
+      }
+      return false
+    },
+    isUser (item) {
+      if (!item) {
+        return false
+      }
+      if ('_class' in item) {
+        return /at.tuwien.api.user.UserDto/.test(item._class)
       }
       return false
     },
@@ -174,58 +192,89 @@ export default {
       return false
     },
     isPublic (item) {
-      if (this.isDatabase(item)) {
-        return item.isPublic
-      } else if (this.isTable(item)) {
-        return item.isPublic
-      } else if (this.isColumn(item)) {
-        return item.isPublic
-      } else if (this.isView(item)) {
-        return item.isPublic
+      if (this.isDatabase(item) || this.isTable(item) || this.isColumn(item) || this.isView(item)) {
+        return item.is_public
       } else if (this.isIdentifier(item)) {
         return item.visibility === 'EVERYONE'
       }
-      return false
+      return null
     },
     title (item) {
-      if (this.isDatabase(item) || this.isTable(item) || this.isColumn(item) || this.isView(item)) {
+      if (this.isDatabase(item) || this.isTable(item) || this.isColumn(item) || this.isView(item) || this.isConcept(item) || this.isUnit(item)) {
         return item.name
       } else if (this.isIdentifier(item)) {
-        return item.title
+        return IdentifierMapper.identifierPreferEnglishTitle(item)
+      } else if (this.isUser(item)) {
+        return item.username
       }
       return null
     },
     description (item) {
-      if (this.isDatabase(item)) {
+      if (this.isDatabase(item) || this.isTable(item) || this.isConcept(item) || this.isUnit(item)) {
         return item.description
-      } else if (this.isTable(item)) {
-        return item.description
+      } else if (this.isIdentifier(item)) {
+        return IdentifierMapper.identifierPreferEnglishDescription(item)
       } else if (this.isColumn(item)) {
         return null
       } else if (this.isView(item)) {
         return item.query
-      } else if (this.isIdentifier(item)) {
-        return item.description
       }
-      return false
+      return null
     },
     link (item) {
       if (this.isDatabase(item)) {
         return `/database/${item.id}`
-      }
-      if (this.isTable(item)) {
-        return `/database/${item.databaseId}/table/${item.id}`
-      }
-      if (this.isView(item)) {
-        return `/database/${item.vdbid}/view/${item.id}`
-      }
-      if (this.isColumn(item)) {
-        return `/database/${item.cdbid}/table/${item.tid}`
-      }
-      if (this.isIdentifier(item)) {
+      } else if (this.isTable(item)) {
+        return `/database/${item.database_id}/table/${item.id}`
+      } else if (this.isView(item)) {
+        return `/database/${item.database_id}/view/${item.id}`
+      } else if (this.isColumn(item)) {
+        return `/database/${item.database_id}/table/${item.table_id}`
+      } else if (this.isIdentifier(item)) {
         return `/pid/${item.id}`
+      } else if (this.isConcept(item) || this.isUnit(item)) {
+        return item.uri
       }
-      return '/'
+      return null
+    },
+    tags (item) {
+      const tags = []
+      if (this.isPublic(item) === true || this.isPublic(item) === false) {
+        tags.push({ color: this.isPublic(item) ? 'green' : 'red', text: this.isPublic(item) ? 'Public' : 'Private' })
+      }
+      if (this.isDatabase(item)) {
+        tags.push({ text: 'Database' })
+      } else if (this.isTable(item)) {
+        tags.push({ text: 'Table' })
+      } else if (this.isColumn(item)) {
+        tags.push({ text: 'Column' })
+        if ('concept' in item) {
+          const conceptName = ('name' in item.concept) ? item.concept.name : 'Concept'
+          tags.push({ color: 'green', text: conceptName })
+        }
+        if ('unit' in item) {
+          const unitName = ('name' in item.unit) ? item.unit.name : 'Unit'
+          tags.push({ color: 'green', text: unitName })
+        }
+      } else if (this.isView(item)) {
+        tags.push({ text: 'View' })
+      } else if (this.isIdentifier(item)) {
+        tags.push({ text: 'Identifier' })
+      } else if (this.isUnit(item)) {
+        tags.push({ text: 'Unit' })
+      } else if (this.isConcept(item)) {
+        tags.push({ text: 'Concept' })
+      }
+      return tags
+    },
+    closed (event) {
+      this.createDbDialog = false
+      if (event.success) {
+        this.$router.push('/database?f=my')
+      }
+    },
+    onSearchResult (results) {
+      this.results = results
     }
   }
 }

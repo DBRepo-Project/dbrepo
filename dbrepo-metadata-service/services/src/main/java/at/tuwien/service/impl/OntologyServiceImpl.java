@@ -61,6 +61,7 @@ public class OntologyServiceImpl implements OntologyService {
         entity.setPrefix(data.getPrefix());
         entity.setUri(data.getUri());
         entity.setSparqlEndpoint(data.getSparqlEndpoint());
+        entity.setRdfPath(data.getRdfPath());
         final Ontology ontology = ontologyRepository.save(entity);
         log.info("Update ontology with id {}", ontology.getId());
         return ontology;

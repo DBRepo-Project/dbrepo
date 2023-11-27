@@ -1,5 +1,4 @@
-import Vue from 'vue'
-import api from '@/api'
+import api, { displayError } from '@/api'
 
 class DatabaseService {
   findAll () {
@@ -11,9 +10,7 @@ class DatabaseService {
           resolve(databases)
         })
         .catch((error) => {
-          const { code, message } = error.response.data
-          console.error('Failed to load databases', error)
-          Vue.$toast.error(`[${code}] Failed to load databases: ${message}`)
+          displayError(error, 'Failed to load databases')
           reject(error)
         })
     })
@@ -28,9 +25,7 @@ class DatabaseService {
           resolve(databases)
         })
         .catch((error) => {
-          const { code, message } = error.response.data
-          console.error('Failed to load my databases', error)
-          Vue.$toast.error(`[${code}] Failed to load my databases: ${message}`)
+          displayError(error, 'Failed to load my databases')
           reject(error)
         })
     })
@@ -45,9 +40,7 @@ class DatabaseService {
           resolve(count)
         })
         .catch((error) => {
-          const { code, message } = error.response.data
-          console.error('Failed to count databases', error)
-          Vue.$toast.error(`[${code}] Failed to count databases: ${message}`)
+          displayError(error, 'Failed to count databases')
           reject(error)
         })
     })
@@ -61,9 +54,7 @@ class DatabaseService {
           console.debug('response database', database)
           resolve(database)
         }).catch((error) => {
-          const { code, message } = error.response.data
-          console.error('Failed to load database', error)
-          Vue.$toast.error(`[${code}] Failed to load database: ${message}`)
+          displayError(error, 'Failed to load database')
           reject(error)
         })
     })
@@ -77,9 +68,7 @@ class DatabaseService {
           console.debug('response database', database)
           resolve(database)
         }).catch((error) => {
-          const { code, message } = error.response.data
-          console.error('Failed to create database', error)
-          Vue.$toast.error(`[${code}] Failed to create database: ${message}`)
+          displayError(error, 'Failed to create database')
           reject(error)
         })
     })
@@ -90,9 +79,7 @@ class DatabaseService {
       api.delete(`/api/database/${databaseId}`, { headers: { Accept: 'application/json' } })
         .then(() => resolve())
         .catch((error) => {
-          const { code, message } = error.response.data
-          console.error('Failed to delete database', error)
-          Vue.$toast.error(`[${code}] Failed to delete database: ${message}`)
+          displayError(error, 'Failed to delete database')
           reject(error)
         })
     })
@@ -106,9 +93,7 @@ class DatabaseService {
           console.debug('response database', database)
           resolve(database)
         }).catch((error) => {
-          const { code, message } = error.response.data
-          console.error('Failed to modify database visibility', error)
-          Vue.$toast.error(`[${code}] Failed to modify database visibility: ${message}`)
+          displayError(error, 'Failed to modify database visibility')
           reject(error)
         })
     })
@@ -122,9 +107,7 @@ class DatabaseService {
           console.debug('response database', database)
           resolve(database)
         }).catch((error) => {
-          const { code, message } = error.response.data
-          console.error('Failed to modify database owner', error)
-          Vue.$toast.error(`[${code}] Failed to modify database owner: ${message}`)
+          displayError(error, 'Failed to modify database owner')
           reject(error)
         })
     })
@@ -140,10 +123,8 @@ class DatabaseService {
         })
         .catch((error) => {
           const { status } = error
-          const { code, message } = error.response.data
           if (status !== 401 && status !== 403 && status !== 405) { /* ignore no access errors */
-            console.error('Failed to check database access', error)
-            Vue.$toast.error(`[${code}] Failed to check database access: ${message}`)
+            displayError(error, 'Failed to check database access')
             reject(error)
           }
         })
@@ -159,9 +140,7 @@ class DatabaseService {
           resolve(database)
         })
         .catch((error) => {
-          const { code, message } = error.response.data
-          console.error('Failed to modify database access', error)
-          Vue.$toast.error(`[${code}] Failed to modify database access: ${message}`)
+          displayError(error, 'Failed to modify database access')
           reject(error)
         })
     })
@@ -172,9 +151,7 @@ class DatabaseService {
       api.delete(`/api/database/${databaseId}/access/${userId}`, { headers: { Accept: 'application/json' } })
         .then(() => resolve())
         .catch((error) => {
-          const { code, message } = error.response.data
-          console.error('Failed to revoke database access', error)
-          Vue.$toast.error(`[${code}] Failed to revoke database access: ${message}`)
+          displayError(error, 'Failed to revoke database access')
           reject(error)
         })
     })
@@ -185,9 +162,7 @@ class DatabaseService {
       api.post(`/api/database/${databaseId}/access/${userId}`, { type }, { headers: { Accept: 'application/json' } })
         .then(() => resolve())
         .catch((error) => {
-          const { code, message } = error.response.data
-          console.error('Failed to give database access', error)
-          Vue.$toast.error(`[${code}] Failed to give database access: ${message}`)
+          displayError(error, 'Failed to give database access')
           reject(error)
         })
     })
@@ -202,9 +177,7 @@ class DatabaseService {
           resolve(licenses)
         })
         .catch((error) => {
-          const { code, message } = error.response.data
-          console.error('Failed to load licenses', error)
-          Vue.$toast.error(`[${code}] Failed to load licenses: ${message}`)
+          displayError(error, 'Failed to load licenses')
           reject(error)
         })
     })
@@ -219,9 +192,7 @@ class DatabaseService {
           resolve(view)
         })
         .catch((error) => {
-          const { code, message } = error.response.data
-          console.error('Failed to find view', error)
-          Vue.$toast.error(`[${code}] Failed to find view: ${message}`)
+          displayError(error, 'Failed to find view')
           reject(error)
         })
     })
@@ -236,9 +207,7 @@ class DatabaseService {
           resolve(view)
         })
         .catch((error) => {
-          const { code, message } = error.response.data
-          console.error('Failed to delete view', error)
-          Vue.$toast.error(`[${code}] Failed to delete view: ${message}`)
+          displayError(error, 'Failed to create view')
           reject(error)
         })
     })
@@ -249,9 +218,7 @@ class DatabaseService {
       api.delete(`/api/database/${databaseId}/view/${viewId}`, { headers: { Accept: 'application/json' } })
         .then(() => resolve())
         .catch((error) => {
-          const { code, message } = error.response.data
-          console.error('Failed to delete view', error)
-          Vue.$toast.error(`[${code}] Failed to delete view: ${message}`)
+          displayError(error, 'Failed to delete view')
           reject(error)
         })
     })

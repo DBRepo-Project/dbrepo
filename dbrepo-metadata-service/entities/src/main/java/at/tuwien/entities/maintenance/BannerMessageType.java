@@ -1,4 +1,3 @@
-
 package at.tuwien.entities.maintenance;
 
 import lombok.Getter;

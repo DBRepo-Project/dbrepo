@@ -1,15 +1,43 @@
 import Vue from 'vue'
-import store from '@/store'
 import axios from 'axios'
 
 class SearchService {
-  search (query) {
+  getFields (type) {
     return new Promise((resolve, reject) => {
-      axios.get(`/retrieve/_all/_search?q=${query}*&terminate_after=50`, { headers: { Accept: 'application/json' }, auth: { username: store().state.searchUsername, password: store().state.searchPassword } })
+      axios.get(`/api/search/${type}/fields`, { headers: { Accept: 'application/json' } })
         .then((response) => {
-          const hits = response.data.hits.hits
-          console.debug('response hits', hits)
-          resolve(hits)
+          const json = response.data
+          console.debug('fields result', json)
+          resolve(json)
+        })
+        .catch((error) => {
+          const { code, message } = error
+          console.error(`Failed to load ${type} fields`, error)
+          Vue.$toast.error(`[${code}] Failed to load ${type} fields: ${message}`)
+          reject(error)
+        })
+    })
+  }
+
+  search (searchData) {
+    // transform values to what the search API expects
+    const searchTerm = searchData.search_term
+    delete searchData.search_term
+    const t1 = searchData.t1
+    const t2 = searchData.t2
+    searchData = Object.fromEntries(Object.entries(searchData).filter(([_, v]) => v != null && v !== '')) // https://stackoverflow.com/questions/286141/remove-blank-attributes-from-an-object-in-javascript
+    const payload = {
+      t1,
+      t2,
+      search_term: searchTerm,
+      field_value_pairs: { ...searchData }
+    }
+    return new Promise((resolve, reject) => {
+      axios.post('/api/search', payload, { headers: { Accept: 'application/json' } })
+        .then((response) => {
+          const { hits } = response.data
+          console.debug('advanced search response', hits.hits)
+          resolve(hits.hits)
         })
         .catch((error) => {
           const { code, message } = error

@@ -10,6 +10,8 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import jakarta.persistence.*;
+
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
@@ -69,7 +71,7 @@ public class TableColumn implements Comparable<TableColumn> {
     @Column
     private String alias;
 
-    @Column(name = "datatype", nullable = false)
+    @Column(name = "datatype", nullable = false, columnDefinition = "ENUM('CHAR','VARCHAR','BINARY','VARBINARY','TINYBLOB','TINYTEXT','TEXT','BLOB','MEDIUMTEXT','MEDIUMBLOB','LONGTEXT','LONGBLOB','ENUM','SET','BIT','TINYINT','BOOL','SMALLINT','MEDIUMINT','INT','BIGINT','FLOAT','DOUBLE','DECIMAL','DATE','DATETIME','TIMESTAMP','TIME','YEAR')")
     @Enumerated(EnumType.STRING)
     private TableColumnType columnType;
 
@@ -86,13 +88,13 @@ public class TableColumn implements Comparable<TableColumn> {
     @CreatedDate
     private Instant created;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     @JoinTable(name = "mdb_columns_concepts",
             joinColumns = @JoinColumn(name = "cid", referencedColumnName = "id", nullable = false),
             inverseJoinColumns = @JoinColumn(name = "id", referencedColumnName = "id"))
     private TableColumnConcept concept;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     @JoinTable(name = "mdb_columns_units",
             joinColumns = @JoinColumn(name = "cid", referencedColumnName = "id", nullable = false),
             inverseJoinColumns = @JoinColumn(name = "id", referencedColumnName = "id"))
@@ -113,6 +115,21 @@ public class TableColumn implements Comparable<TableColumn> {
 
     @Column
     private Integer d;
+
+    @Column(name = "val_min")
+    private BigDecimal valMin;
+
+    @Column(name = "val_max")
+    private BigDecimal valMax;
+
+    @Column
+    private BigDecimal mean;
+
+    @Column
+    private BigDecimal median;
+
+    @Column(name = "std_dev")
+    private BigDecimal stdDev;
 
     @LastModifiedDate
     @Column(columnDefinition = "TIMESTAMP")

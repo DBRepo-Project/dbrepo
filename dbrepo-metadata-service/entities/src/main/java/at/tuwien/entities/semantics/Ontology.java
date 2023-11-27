@@ -43,6 +43,9 @@ public class Ontology {
     @Column
     private String sparqlEndpoint;
 
+    @Column
+    private String rdfPath;
+
     @CreatedDate
     @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP")
     private Instant created;

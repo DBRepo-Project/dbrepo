@@ -21,6 +21,7 @@ import java.util.List;
         @UniqueConstraint(columnNames = {"uri"})
 })
 @NamedQueries({
+        @NamedQuery(name = "TableColumnConcept.findAll", query = "select c from TableColumnConcept c order by c.name, c.uri asc"),
         @NamedQuery(name = "TableColumnConcept.findByUri", query = "select c from TableColumnConcept c where c.uri = ?1")
 })
 public class TableColumnConcept {
@@ -47,7 +48,7 @@ public class TableColumnConcept {
     private Instant created;
 
     @ToString.Exclude
-    @OneToMany(fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE})
     @org.springframework.data.annotation.Transient
     @JoinTable(name = "mdb_columns_concepts",
             inverseJoinColumns = {

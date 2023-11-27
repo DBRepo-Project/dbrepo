@@ -11,8 +11,6 @@ import lombok.extern.jackson.Jacksonized;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Jacksonized
-@ToString
 public class ExternalMetadataDto {
 
     @Schema(example = "Josiah")

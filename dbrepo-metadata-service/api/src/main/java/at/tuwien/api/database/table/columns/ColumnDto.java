@@ -6,6 +6,7 @@ import at.tuwien.api.database.table.columns.concepts.UnitDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -15,6 +16,7 @@ import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Getter
@@ -90,6 +92,26 @@ public class ColumnDto {
     @Schema(example = "0")
     @Field(name = "d", type = FieldType.Integer)
     private Integer d;
+
+    @Schema(example = "0")
+    @Field(name = "val_min", type = FieldType.Double)
+    private BigDecimal valMin;
+
+    @Schema(example = "100")
+    @Field(name = "val_max", type = FieldType.Double)
+    private BigDecimal valMax;
+
+    @Schema(example = "45.4")
+    @Field(name = "mean", type = FieldType.Double)
+    private BigDecimal mean;
+
+    @Schema(example = "51")
+    @Field(name = "median", type = FieldType.Double)
+    private BigDecimal median;
+
+    @Schema(example = "5.32")
+    @Field(name = "std_dev", type = FieldType.Double)
+    private BigDecimal stdDev;
 
     @Field(name = "concept", includeInParent = true, type = FieldType.Nested)
     private ConceptDto concept;

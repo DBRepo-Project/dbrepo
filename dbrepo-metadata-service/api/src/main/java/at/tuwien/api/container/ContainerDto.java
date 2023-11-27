@@ -26,34 +26,42 @@ public class ContainerDto {
     private Long id;
 
     @NotBlank
+    @Field(name = "name", type = FieldType.Keyword)
     @Schema(example = "Air Quality")
     private String name;
 
     @NotBlank
     @JsonProperty("internal_name")
-    @Field(name = "internal_name")
+    @Field(name = "internal_name", type = FieldType.Keyword)
     @Schema(example = "data-db")
     private String internalName;
 
     @NotBlank
+    @Field(name = "host", type = FieldType.Keyword)
     private String host;
 
+    @Field(name = "port", type = FieldType.Keyword)
     private Integer port;
 
     @NotBlank
     @JsonProperty("sidecar_host")
+    @Field(name = "sidecar_host", type = FieldType.Keyword)
     private String sidecarHost;
 
     @NotNull
     @JsonProperty("sidecar_port")
+    @Field(name = "sidecar_port", type = FieldType.Keyword)
     private Integer sidecarPort;
 
     @JsonProperty("ui_host")
+    @Field(name = "ui_host", type = FieldType.Keyword)
     private String uiHost;
 
     @JsonProperty("ui_port")
+    @Field(name = "ui_port", type = FieldType.Keyword)
     private Integer uiPort;
 
+    @Field(name = "image", includeInParent = true, type = FieldType.Nested)
     private ImageBriefDto image;
 
     @NotNull

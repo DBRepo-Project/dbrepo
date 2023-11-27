@@ -23,13 +23,13 @@ public interface OntologyMapper {
     org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(OntologyMapper.class);
 
     @Mappings({
-            @Mapping(target = "rdf", expression = "java(true)"),
+            @Mapping(target = "rdf", expression = "java(data.getRdfPath() != null)"),
             @Mapping(target = "sparql", expression = "java(data.getSparqlEndpoint() != null)")
     })
     OntologyDto ontologyToOntologyDto(Ontology data);
 
     @Mappings({
-            @Mapping(target = "rdf", expression = "java(true)"),
+            @Mapping(target = "rdf", expression = "java(data.getRdfPath() != null)"),
             @Mapping(target = "sparql", expression = "java(data.getSparqlEndpoint() != null)")
     })
     OntologyBriefDto ontologyToOntologyBriefDto(Ontology data);

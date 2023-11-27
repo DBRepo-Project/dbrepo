@@ -16,6 +16,7 @@ import at.tuwien.service.TableService;
 import lombok.extern.log4j.Log4j2;
 import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RiotException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -60,6 +61,10 @@ public class EntityServiceImpl implements EntityService {
         final String statement = ontologyMapper.ontologyToFindByLabelQuery(ontologies, ontology, label, limit);
         log.trace("execute sparql query:\n{}", statement);
         final List<EntityDto> results = new LinkedList<>();
+        if (ontology.getSparqlEndpoint() == null && ontology.getRdfPath() != null) {
+            log.debug("load RDF model from path {}", ontology.getRdfPath());
+            this.dataset.setDefaultModel(RDFDataMgr.loadModel(ontology.getRdfPath()));
+        }
         try (QueryExecution execution = QueryExecutionFactory.create(statement, this.dataset.getDefaultModel())) {
             final Iterator<QuerySolution> resultSet = execution.execSelect();
             while (resultSet.hasNext()) {

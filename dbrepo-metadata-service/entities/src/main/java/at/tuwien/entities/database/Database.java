@@ -31,6 +31,7 @@ import java.util.UUID;
         @UniqueConstraint(columnNames = {"cid", "internalName"})
 })
 @NamedQueries({
+        @NamedQuery(name = "Database.findAll", query = "select d from Database d order by d.created desc"),
         @NamedQuery(name = "Database.findReadAccess", query = "select distinct d from Database d join DatabaseAccess a on a.hdbid = d.id and a.huserid = ?1"),
         @NamedQuery(name = "Database.findWriteAccess", query = "select distinct d from Database d join DatabaseAccess a on a.hdbid = d.id and a.huserid = ?1 where a.type = 'WRITE_OWN' or a.type = 'WRITE_ALL'"),
         @NamedQuery(name = "Database.findConfigureAccess", query = "select distinct d from Database d where d.ownedBy = ?1"),
