@@ -93,10 +93,6 @@ public class ColumnDto {
     @Field(name = "d", type = FieldType.Integer)
     private Integer d;
 
-    @Schema(example = "KELVIN")
-    @Field(name = "base_unit", type = FieldType.Keyword)
-    private String baseUnit;
-
     @Schema(example = "0")
     @Field(name = "val_min", type = FieldType.Double)
     private BigDecimal valMin;
