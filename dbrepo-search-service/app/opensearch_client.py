@@ -1,10 +1,17 @@
 """
 The opensearch_client.py is used by the different API endpoints in routes.py to handle requests  to the opensearch db
 """
+import json
 import logging
 import re
 from flask import current_app
 from collections.abc import MutableMapping
+
+from omlib.dimension import Dimension
+from omlib.measure import om
+from omlib.constants import SI, OM_IDS
+from omlib.omconstants import OM
+from omlib.unit import Unit
 
 
 def flatten_dict(
@@ -123,42 +130,9 @@ def general_search(search_term=None, t1=None, t2=None, fieldValuePairs=None):
     :param value: the value the specified field should match
     :return:
     """
+    logging.info(f"Performing general search")
     searchable_indices = ["database", "user", "table", "column", "identifier", "view", "concept", "unit"]
     index = searchable_indices
-    # field_list = [
-    #     "id",
-    #     "internal_name",
-    #     "table.name",
-    #     "database.is_public",
-    #     "database.container.image.name",
-    #     "database.container.image.version",
-    #     "table.description",
-    #     "identifier.titles.title",
-    #     "identifier.descriptions.description",
-    #     "identifier.publisher",
-    #     "identifier.creators.*.firstname",
-    #     "identifier.creators.*.lastname",
-    #     "identifier.creators.*.creator_name",
-    #     "column.column_type",
-    #     "column.is_null_allowed",
-    #     "column.is_primary_key",
-    #     "unit.uri",
-    #     "unit.name",
-    #     "unit.description",
-    #     "concept.uri",
-    #     "concept.name",
-    #     "concept.description",
-    #     "funders",
-    #     "title",
-    #     "description",
-    #     "creator.username",
-    #     "author",
-    #     "name",
-    #     "uri",
-    #     "database.*",
-    #     "internal_name",
-    #     "is_public",
-    # ]
     queries = []
     if search_term is not None:
         logging.debug('query has search_term present')
@@ -195,6 +169,7 @@ def general_search(search_term=None, t1=None, t2=None, fieldValuePairs=None):
             is_range_query = True
             logging.debug(f"query has start value {t1} and end value {t2} present")
         for key, value in fieldValuePairs.items():
+            logging.debug(f"current key={key}, value={value}")
             if key == "type" and value in searchable_indices:
                 logging.debug("search for specific index: %s", value)
                 index = value
@@ -231,7 +206,8 @@ def general_search(search_term=None, t1=None, t2=None, fieldValuePairs=None):
                     }
                 })
             elif is_range_query and re.match(f"unit\.", key):
-                logging.debug(f"omit key={key} because query type=full range and key is somewhat unit")
+                logging.debug(
+                    f"omit key={key} because query type=full range and key is somewhat unit")
                 logging.info(f"add match-query for range [{t1},{t2}]")
                 musts.append({
                     "range": {
@@ -249,7 +225,7 @@ def general_search(search_term=None, t1=None, t2=None, fieldValuePairs=None):
                 })
             else:
                 precision = "90%"
-                if key in ["attributes.orcid", "creators.name_identifier"]:
+                if key in ["attributes.orcid", "creators.name_identifier", "concept.uri"]:
                     precision = "100%"
                     logging.debug(f"key {key} needs precision of 100%")
                 musts.append({
@@ -261,36 +237,6 @@ def general_search(search_term=None, t1=None, t2=None, fieldValuePairs=None):
         queries.append(specific_query)
     body = {
         "query": {"bool": {"must": queries}}
-        # "_source": [
-        #     "_class",
-        #     "id",
-        #     "table_id",
-        #     "database_id",
-        #     "name",
-        #     "identifier.*",
-        #     "column_type",
-        #     "description",
-        #     "titles",
-        #     "descriptions",
-        #     "funders",
-        #     "licenses",
-        #     "creators",
-        #     "visibility",
-        #     "title",
-        #     "type",
-        #     "uri",
-        #     "username",
-        #     "is_public",
-        #     "created",
-        #     "_score",
-        #     "concept",
-        #     "unit",
-        #     "author",
-        #     "docID",
-        #     "creator.*",
-        #     "owner.*",
-        #     "details.*",
-        # ],
     }
     logging.debug('search index: %s', index)
     logging.debug('search body: %s', body)
@@ -300,4 +246,112 @@ def general_search(search_term=None, t1=None, t2=None, fieldValuePairs=None):
     )
     response["status"] = 200
     # response = [hit["_source"] for hit in response["hits"]["hits"]]
+    return response
+
+
+def flatten(mylist):
+    return [item for sublist in mylist for item in sublist]
+
+
+def unit_uri_to_unit(uri):
+    base_identifier = uri[len(OM_IDS.NAMESPACE):].replace("-", "")
+    return getattr(OM, base_identifier)
+
+
+def unit_independent_search(t1=None, t2=None, field_value_pairs=None):
+    """
+    Main method for seaching stuff in the opensearch db
+
+    all parameters are optional
+
+    :param t1: start value
+    :param t2: end value
+    :param field_value_pairs: the key-value pairs
+    :return:
+    """
+    logging.info(f"Performing unit-independent search")
+    searches = []
+    response = current_app.opensearch_client.search(
+        index="column",
+        body={
+            "size": 0,
+            "aggs": {
+                "units": {
+                    "terms": {"field": "unit.uri", "size": 500}
+                }
+            }
+        }
+    )
+    unit_uris = [hit["key"] for hit in response["aggregations"]["units"]["buckets"]]
+    logging.debug(f"found {len(unit_uris)} unit(s) in column index")
+    base_unit = unit_uri_to_unit(field_value_pairs["unit.uri"])
+    for unit_uri in unit_uris:
+        gte = t1
+        lte = t2
+        if unit_uri != field_value_pairs["unit.uri"]:
+            target_unit = unit_uri_to_unit(unit_uri)
+            if not Unit.can_convert(base_unit, target_unit):
+                logging.error(f"Cannot convert unit {field_value_pairs['unit.uri']} to target unit {unit_uri}")
+                continue
+            gte = om(t1, base_unit).convert(target_unit)
+            lte = om(t2, base_unit).convert(target_unit)
+            logging.debug(
+                f"converted original range [{t1},{t2}] for base unit {base_unit} to mapped range [{gte},{lte}] for target unit={target_unit}")
+        searches.append({'index': 'column'})
+        searches.append({
+            "query": {
+                "bool": {
+                    "must": [
+                        {
+                            "match": {
+                                "concept.uri": {
+                                    "query": field_value_pairs["concept.uri"]
+                                }
+                            }
+                        },
+                        {
+                            "range": {
+                                "val_min": {
+                                    "gte": gte
+                                }
+                            }
+                        },
+                        {
+                            "range": {
+                                "val_max": {
+                                    "lte": lte
+                                }
+                            }
+                        },
+                        {
+                            "match": {
+                                "unit.uri": {
+                                    "query": unit_uri
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        })
+    # searches.append({'index': 'column'})
+    # searches.append({
+    #     "query": {
+    #         "match_all": {}
+    #     }
+    # })
+    logging.debug('searches: %s', searches)
+    body = ''
+    for search in searches:
+        body += '%s \n' % json.dumps(search)
+    responses = current_app.opensearch_client.msearch(
+        body=body
+    )
+    response = {
+        "hits": {
+            "hits": flatten([hits["hits"]["hits"] for hits in responses["responses"]])
+        },
+        "took": responses["took"],
+        "status": 200
+    }
     return response

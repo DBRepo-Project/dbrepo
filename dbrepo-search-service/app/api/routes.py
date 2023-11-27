@@ -158,6 +158,9 @@ def search():
     t2 = req_body.get("t2")
     if not str(t2).isdigit():
         t2 = None
-    fieldValuePairs = req_body.get("field_value_pairs")
-    response = general_search(search_term, t1, t2, fieldValuePairs)
+    field_value_pairs = req_body.get("field_value_pairs")
+    if t1 is not None and t2 is not None and "unit.uri" in field_value_pairs and "concept.uri" in field_value_pairs:
+        response = unit_independent_search(t1, t2, field_value_pairs)
+    else:
+        response = general_search(search_term, t1, t2, field_value_pairs)
     return response, 200
