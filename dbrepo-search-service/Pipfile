@@ -16,6 +16,7 @@ python-dotenv = "~=1.0"
 sqlalchemy-utils = "*"
 testcontainers-opensearch = "*"
 pytest = "*"
+rdflib = "*"
 
 [dev-packages]
 

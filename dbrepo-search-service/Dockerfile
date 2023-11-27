@@ -11,6 +11,7 @@ RUN pip install pipenv && \
     pipenv install --system --deploy
 
 COPY ./app ./app
+COPY ./omlib ./omlib
 COPY ./scripts ./scripts
 COPY ./us-yml ./us-yml
 COPY config.py wsgi.py ./

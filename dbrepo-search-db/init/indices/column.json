@@ -36,6 +36,9 @@
       "val_min": {
         "type": "double"
       },
+      "base_unit": {
+        "type": "keyword"
+      },
       "val_max": {
         "type": "double"
       },

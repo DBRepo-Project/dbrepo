@@ -7,6 +7,12 @@ import re
 from flask import current_app
 from collections.abc import MutableMapping
 
+from omlib.dimension import Dimension
+from omlib.measure import om
+from omlib.constants import SI, OM_IDS
+from omlib.omconstants import OM
+from omlib.unit import Unit
+
 
 def flatten_dict(
         d: MutableMapping, parent_key: str = "", sep: str = "."
@@ -247,6 +253,11 @@ def flatten(mylist):
     return [item for sublist in mylist for item in sublist]
 
 
+def unit_uri_to_unit(uri):
+    base_identifier = uri[len(OM_IDS.NAMESPACE):].replace("-", "")
+    return getattr(OM, base_identifier)
+
+
 def unit_independent_search(t1=None, t2=None, field_value_pairs=None):
     """
     Main method for seaching stuff in the opensearch db
@@ -273,13 +284,19 @@ def unit_independent_search(t1=None, t2=None, field_value_pairs=None):
     )
     unit_uris = [hit["key"] for hit in response["aggregations"]["units"]["buckets"]]
     logging.debug(f"found {len(unit_uris)} unit(s) in column index")
+    base_unit = unit_uri_to_unit(field_value_pairs["unit.uri"])
     for unit_uri in unit_uris:
         gte = t1
         lte = t2
         if unit_uri != field_value_pairs["unit.uri"]:
-            gte = -100
-            lte = 100
-            logging.debug(f"converted original range [{t1},{t2}] -> mapped range [{gte},{lte}] for unit_uri={unit_uri}")
+            target_unit = unit_uri_to_unit(unit_uri)
+            if not Unit.can_convert(base_unit, target_unit):
+                logging.error(f"Cannot convert unit {field_value_pairs['unit.uri']} to target unit {unit_uri}")
+                continue
+            gte = om(t1, base_unit).convert(target_unit)
+            lte = om(t2, base_unit).convert(target_unit)
+            logging.debug(
+                f"converted original range [{t1},{t2}] for base unit {base_unit} to mapped range [{gte},{lte}] for target unit={target_unit}")
         searches.append({'index': 'column'})
         searches.append({
             "query": {

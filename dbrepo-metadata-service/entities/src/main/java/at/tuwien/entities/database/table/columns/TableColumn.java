@@ -116,6 +116,9 @@ public class TableColumn implements Comparable<TableColumn> {
     @Column
     private Integer d;
 
+    @Column(name = "base_unit")
+    private String baseUnit;
+
     @Column(name = "val_min")
     private BigDecimal valMin;
 

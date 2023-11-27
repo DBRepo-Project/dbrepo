@@ -160,6 +160,7 @@ CREATE TABLE IF NOT EXISTS `mdb_columns`
     d                INT,
     auto_generated   BOOLEAN               DEFAULT false,
     is_null_allowed  BOOLEAN      NOT NULL DEFAULT true,
+    base_unit        VARCHAR(100) NULL,
     val_min          NUMERIC      NULL,
     val_max          NUMERIC      NULL,
     mean             NUMERIC      NULL,
