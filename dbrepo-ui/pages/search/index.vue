@@ -218,6 +218,8 @@ export default {
         return null
       } else if (this.isView(item)) {
         return item.query
+      } else if (this.isUser(item)) {
+        return item.name
       }
       return null
     },
@@ -264,6 +266,11 @@ export default {
         tags.push({ text: 'Unit' })
       } else if (this.isConcept(item)) {
         tags.push({ text: 'Concept' })
+      } else if (this.isUser(item)) {
+        tags.push({ text: 'User' })
+        if ('orcid' in item.attributes && item.attributes.orcid) {
+          tags.push({ text: 'ORCID', color: 'green' })
+        }
       }
       return tags
     },

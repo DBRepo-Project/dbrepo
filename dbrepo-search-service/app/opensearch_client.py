@@ -125,34 +125,40 @@ def general_search(search_term=None, t1=None, t2=None, fieldValuePairs=None):
     """
     searchable_indices = ["database", "user", "table", "column", "identifier", "view", "concept", "unit"]
     index = searchable_indices
-    field_list = [
-        "table.name",
-        "identifier.titles.title",
-        "identifier.descriptions.description",
-        "identifier.publisher",
-        "identifier.creators.*.firstname",
-        "identifier.creators.*.lastname",
-        "identifier.creators.*.creator_name",
-        "column.column_type",
-        "column.is_null_allowed",
-        "column.is_primary_key",
-        "unit.uri",
-        "unit.name",
-        "unit.description",
-        "concept.uri",
-        "concept.name",
-        "concept.description",
-        "funders",
-        "title",
-        "description",
-        "creator.username",
-        "author",
-        "name",
-        "uri",
-        "database.*",
-        "internal_name",
-        "is_public",
-    ]
+    # field_list = [
+    #     "id",
+    #     "internal_name",
+    #     "table.name",
+    #     "database.is_public",
+    #     "database.container.image.name",
+    #     "database.container.image.version",
+    #     "table.description",
+    #     "identifier.titles.title",
+    #     "identifier.descriptions.description",
+    #     "identifier.publisher",
+    #     "identifier.creators.*.firstname",
+    #     "identifier.creators.*.lastname",
+    #     "identifier.creators.*.creator_name",
+    #     "column.column_type",
+    #     "column.is_null_allowed",
+    #     "column.is_primary_key",
+    #     "unit.uri",
+    #     "unit.name",
+    #     "unit.description",
+    #     "concept.uri",
+    #     "concept.name",
+    #     "concept.description",
+    #     "funders",
+    #     "title",
+    #     "description",
+    #     "creator.username",
+    #     "author",
+    #     "name",
+    #     "uri",
+    #     "database.*",
+    #     "internal_name",
+    #     "is_public",
+    # ]
     queries = []
     if search_term is not None:
         logging.debug('query has search_term present')
@@ -193,89 +199,98 @@ def general_search(search_term=None, t1=None, t2=None, fieldValuePairs=None):
                 logging.debug("search for specific index: %s", value)
                 index = value
                 continue
-            if key in field_list:
-                if re.match(f"{key}\\.", key):
-                    new_field = key[key.index(".") + 1:len(key)]
-                    logging.debug(
-                        f"field name {key} starts with index name {index}: flattened field name to {new_field}")
-                    key = new_field
-                if is_range_open_end and re.match(f"unit\\.", key):
-                    logging.debug(f"omit key={key} because query type=open end range and key is somewhat unit")
-                    logging.info(f"add match-query for range ),{t2}]")
-                    musts.append({
-                        "range": {
-                            "val_max": {
-                                "lte": t2
-                            }
+            # if key in field_list:
+            if re.match(f"{index}\.", key):
+                new_field = key[key.index(".") + 1:len(key)]
+                logging.debug(
+                    f"field name {key} starts with index name {index}: flattened field name to {new_field}")
+                key = new_field
+            if re.match(".*properties\..*", key):
+                new_field = key.replace("properties.", "")
+                logging.debug(
+                    f"field name {key} contains properties keyword: flattened field name to {new_field}")
+                key = new_field
+            if is_range_open_end and re.match(f"unit\.", key):
+                logging.debug(f"omit key={key} because query type=open end range and key is somewhat unit")
+                logging.info(f"add match-query for range ),{t2}]")
+                musts.append({
+                    "range": {
+                        "val_max": {
+                            "lte": t2
                         }
-                    })
-                elif is_range_open_begin and re.match(f"unit\\.", key):
-                    logging.debug(f"omit key={key} because query type=open begin range and key is somewhat unit")
-                    logging.info(f"add match-query for range [{t1},(")
-                    musts.append({
-                        "range": {
-                            "val_min": {
-                                "gte": t1
-                            }
+                    }
+                })
+            elif is_range_open_begin and re.match(f"unit\.", key):
+                logging.debug(f"omit key={key} because query type=open begin range and key is somewhat unit")
+                logging.info(f"add match-query for range [{t1},(")
+                musts.append({
+                    "range": {
+                        "val_min": {
+                            "gte": t1
                         }
-                    })
-                elif is_range_query and re.match(f"unit\\.", key):
-                    logging.debug(f"omit key={key} because query type=full range and key is somewhat unit")
-                    logging.info(f"add match-query for range [{t1},{t2}]")
-                    musts.append({
-                        "range": {
-                            "val_min": {
-                                "gte": t1
-                            }
+                    }
+                })
+            elif is_range_query and re.match(f"unit\.", key):
+                logging.debug(f"omit key={key} because query type=full range and key is somewhat unit")
+                logging.info(f"add match-query for range [{t1},{t2}]")
+                musts.append({
+                    "range": {
+                        "val_min": {
+                            "gte": t1
                         }
-                    })
-                    musts.append({
-                        "range": {
-                            "val_max": {
-                                "lte": t2
-                            }
+                    }
+                })
+                musts.append({
+                    "range": {
+                        "val_max": {
+                            "lte": t2
                         }
-                    })
-                else:
-                    musts.append({
-                        "match": {
-                            key: {"query": value, "minimum_should_match": "90%"}
-                        }
-                    })
+                    }
+                })
+            else:
+                precision = "90%"
+                if key in ["attributes.orcid", "creators.name_identifier"]:
+                    precision = "100%"
+                    logging.debug(f"key {key} needs precision of 100%")
+                musts.append({
+                    "match": {
+                        key: {"query": value, "minimum_should_match": precision}
+                    }
+                })
         specific_query = {"bool": {"must": musts}}
         queries.append(specific_query)
     body = {
-        "query": {"bool": {"must": queries}},
-        "_source": [
-            "_class",
-            "id",
-            "table_id",
-            "database_id",
-            "name",
-            "identifier.*",
-            "column_type",
-            "description",
-            "titles",
-            "descriptions",
-            "funders",
-            "licenses",
-            "creators",
-            "visibility",
-            "title",
-            "type",
-            "uri",
-            "username",
-            "is_public",
-            "created",
-            "_score",
-            "concept",
-            "unit",
-            "author",
-            "docID",
-            "creator.*",
-            "owner.*",
-            "details.*",
-        ],
+        "query": {"bool": {"must": queries}}
+        # "_source": [
+        #     "_class",
+        #     "id",
+        #     "table_id",
+        #     "database_id",
+        #     "name",
+        #     "identifier.*",
+        #     "column_type",
+        #     "description",
+        #     "titles",
+        #     "descriptions",
+        #     "funders",
+        #     "licenses",
+        #     "creators",
+        #     "visibility",
+        #     "title",
+        #     "type",
+        #     "uri",
+        #     "username",
+        #     "is_public",
+        #     "created",
+        #     "_score",
+        #     "concept",
+        #     "unit",
+        #     "author",
+        #     "docID",
+        #     "creator.*",
+        #     "owner.*",
+        #     "details.*",
+        # ],
     }
     logging.debug('search index: %s', index)
     logging.debug('search body: %s', body)

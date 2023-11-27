@@ -2,124 +2,132 @@
   <div>
     <v-card flat tile>
       <v-card-text class="pt-0 pl-4 pb-6 pr-4">
-        <v-row dense>
-          <v-col cols="3">
-            <v-select
-              v-model="advancedSearchData.type"
-              :items="fieldItems"
-              item-text="name"
-              item-value="value"
-              solo
-              label="Type" />
-          </v-col>
-        </v-row>
-        <p>The following fields are <code>AND</code> connected and depend on the type above.</p>
-        <v-row dense>
-          <v-col cols="3">
-            <v-text-field
-              v-model="advancedSearchData.id"
-              clearable
-              label="ID" />
-          </v-col>
-          <v-col cols="3">
-            <v-text-field
-              v-if="!hideFields.hideNameField"
-              v-model="advancedSearchData.name"
-              clearable
-              label="Name" />
-          </v-col>
-          <v-col cols="3">
-            <v-text-field
-              v-if="!hideFields.hideInternalNameField"
-              v-model="advancedSearchData.internal_name"
-              clearable
-              label="Internal Name" />
-          </v-col>
-        </v-row>
-        <v-row v-if="loadingFields" dense>
-          <v-progress-circular color="primary" indeterminate />
-        </v-row>
-        <v-row v-if="!loadingFields && renderedFields" dense>
-          <v-col v-for="field in renderedFields" :key="`f-${field.attribute_name}`" cols="3">
-            <v-select
-              v-if="field.type === 'boolean'"
-              v-model="advancedSearchData[generateDynamicVModelKey(field)]"
-              clearable
-              :items="booleanItems"
-              item-text="name"
-              item-value="value"
-              :label="generateFriendlyName(field)" />
-            <v-text-field
-              v-if="(field.type === 'keyword' && field.attribute_name !== 'column_type') || field.type === 'text' || field.type === 'date'"
-              v-model="advancedSearchData[generateDynamicVModelKey(field)]"
-              type="text"
-              :label="generateFriendlyName(field)"
-              clearable />
-            <v-select
-              v-if="field.type === 'keyword' && field.attribute_name === 'column_type'"
-              v-model="advancedSearchData[generateDynamicVModelKey(field)]"
-              :items="columnTypes"
-              item-value="value"
-              clearable
-              :label="generateFriendlyName(field)" />
-            <v-text-field
-              v-if="field.type === 'integer'"
-              v-model="advancedSearchData[generateDynamicVModelKey(field)]"
-              type="number"
-              :label="generateFriendlyName(field)"
-              clearable />
-            <v-autocomplete
-              v-if="field.attribute_name === 'licenses'"
-              v-model="advancedSearchData[generateDynamicVModelKey(field)]"
-              :items="fetchLicenses()"
-              :label="generateFriendlyName(field)"
-              clearable
-              multiple />
-          </v-col>
-        </v-row>
-        <p v-if="isEligibleConceptOrUnitSearch" class="mt-4">
-          If you select a <code>concept</code> and <code>unit</code>, you can search across columns regardless of their
-          unit of measurement.
-        </p>
-        <v-row v-if="isEligibleConceptOrUnitSearch" dense>
-          <v-col cols="3">
-            <v-select
-              v-model="advancedSearchData['concept.uri']"
-              clearable
-              :items="concepts"
-              item-text="name"
-              item-value="uri"
-              label="Concept" />
-          </v-col>
-          <v-col cols="3">
-            <v-select
-              v-model="advancedSearchData['unit.uri']"
-              clearable
-              :items="units"
-              item-text="name"
-              item-value="uri"
-              label="Unit" />
-          </v-col>
-          <v-col cols="3">
-            <v-text-field
-              v-model="advancedSearchData['t1']"
-              clearable
-              type="number"
-              label="Start Value" />
-          </v-col>
-          <v-col cols="3">
-            <v-text-field
-              v-model="advancedSearchData['t2']"
-              clearable
-              type="number"
-              label="End Value" />
-          </v-col>
-        </v-row>
-        <v-row dense>
-          <v-btn class="mr-2" color="primary" :loading="loading" small @click="advancedSearch">
-            Search
-          </v-btn>
-        </v-row>
+        <v-form ref="form" v-model="valid" autocomplete="off" @submit.prevent="submit">
+          <v-row dense>
+            <v-col cols="3">
+              <v-select
+                v-model="advancedSearchData.type"
+                :items="fieldItems"
+                item-text="name"
+                item-value="value"
+                solo
+                label="Type" />
+            </v-col>
+          </v-row>
+          <p>The following fields are <code>AND</code> connected and depend on the type above.</p>
+          <v-row dense>
+            <v-col cols="3">
+              <v-text-field
+                v-model="advancedSearchData.id"
+                clearable
+                label="ID" />
+            </v-col>
+            <v-col cols="3">
+              <v-text-field
+                v-if="!hideFields.hideNameField"
+                v-model="advancedSearchData.name"
+                clearable
+                label="Name" />
+            </v-col>
+            <v-col cols="3">
+              <v-text-field
+                v-if="!hideFields.hideInternalNameField"
+                v-model="advancedSearchData.internal_name"
+                clearable
+                label="Internal Name" />
+            </v-col>
+          </v-row>
+          <v-row v-if="loadingFields" dense>
+            <v-progress-circular color="primary" indeterminate />
+          </v-row>
+          <v-row v-if="!loadingFields && renderedFields" dense>
+            <v-col v-for="field in renderedFields" :key="`f-${field.attribute_name}`" cols="3">
+              <v-select
+                v-if="field.type === 'boolean'"
+                v-model="advancedSearchData[generateDynamicVModelKey(field)]"
+                clearable
+                :items="booleanItems"
+                item-text="name"
+                item-value="value"
+                :label="generateFriendlyName(field)" />
+              <v-text-field
+                v-if="(field.type === 'keyword' && field.attribute_name !== 'column_type') || field.type === 'text' || field.type === 'date'"
+                v-model="advancedSearchData[generateDynamicVModelKey(field)]"
+                type="text"
+                :label="generateFriendlyName(field)"
+                clearable />
+              <v-select
+                v-if="field.type === 'keyword' && field.attribute_name === 'column_type'"
+                v-model="advancedSearchData[generateDynamicVModelKey(field)]"
+                :items="columnTypes"
+                item-value="value"
+                clearable
+                :label="generateFriendlyName(field)" />
+              <v-text-field
+                v-if="field.type === 'integer'"
+                v-model="advancedSearchData[generateDynamicVModelKey(field)]"
+                type="number"
+                :label="generateFriendlyName(field)"
+                clearable />
+              <v-autocomplete
+                v-if="field.attribute_name === 'licenses'"
+                v-model="advancedSearchData[generateDynamicVModelKey(field)]"
+                :items="fetchLicenses()"
+                :label="generateFriendlyName(field)"
+                clearable
+                multiple />
+            </v-col>
+          </v-row>
+          <p v-if="isEligibleConceptOrUnitSearch" class="mt-4">
+            If you select a <code>concept</code> and <code>unit</code>, you can search across columns regardless of their
+            unit of measurement.
+          </p>
+          <v-row v-if="isEligibleConceptOrUnitSearch" dense>
+            <v-col cols="3">
+              <v-select
+                v-model="advancedSearchData['concept.uri']"
+                clearable
+                :items="concepts"
+                item-text="name"
+                item-value="uri"
+                label="Concept" />
+            </v-col>
+            <v-col cols="3">
+              <v-select
+                v-model="advancedSearchData['unit.uri']"
+                clearable
+                :items="units"
+                item-text="name"
+                item-value="uri"
+                label="Unit" />
+            </v-col>
+            <v-col cols="3">
+              <v-text-field
+                v-model="advancedSearchData['t1']"
+                clearable
+                type="number"
+                label="Start Value" />
+            </v-col>
+            <v-col cols="3">
+              <v-text-field
+                v-model="advancedSearchData['t2']"
+                clearable
+                type="number"
+                label="End Value" />
+            </v-col>
+          </v-row>
+          <v-row dense>
+            <v-btn
+              type="submit"
+              class="mr-2"
+              color="primary"
+              :loading="loading"
+              small
+              @click="advancedSearch">
+              Search
+            </v-btn>
+          </v-row>
+        </v-form>
       </v-card-text>
     </v-card>
   </div>
@@ -133,6 +141,7 @@ import SemanticMapper from '@/api/semantic.mapper'
 export default {
   data () {
     return {
+      valid: false,
       loading: false,
       loadingFields: false,
       showAdvancedSearch: false,
@@ -212,6 +221,9 @@ export default {
       })
   },
   methods: {
+    submit () {
+      this.$refs.form.validate()
+    },
     /* Removes all advanced search fields when switching the type */
     resetAdvancedSearchFields () {
       Object.keys(this.advancedSearchData)
@@ -251,14 +263,14 @@ export default {
     dynamicFieldsMap () {
       // Defines a mapping to narrow down the fields rendered for the advanced search
       return {
-        database: ['created', 'description', 'is_public'],
-        table: ['created', 'description', 'is_public'],
+        database: ['is_public'],
+        table: ['description', 'is_public'],
         column: ['column_type', 'is_primary_key', 'is_null_allowed'],
-        user: ['firstname', 'lastname', 'username'],
+        user: ['firstname', 'lastname', 'username', 'attributes.properties.orcid'],
         identifier: [
           'creators.properties.creator_name', 'creators.properties.name_identifier',
           'descriptions.properties.description', 'doi', 'funders.properties.funder_identifier',
-          'publication_year', 'titles.properties.title', 'visibility'
+          'publication_year', 'titles.properties.title'
         ],
         view: ['is_public', 'query'],
         concept: ['uri'],

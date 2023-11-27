@@ -28,6 +28,9 @@
       },
       "username": {
         "type": "keyword"
+      },
+      "qualified_name": {
+        "type": "keyword"
       }
     }
   },

@@ -89,8 +89,12 @@ public class UserServiceImpl implements UserService {
         entity.setLastname(data.getLastname());
         entity.setAffiliation(data.getAffiliation());
         entity.setOrcid(data.getOrcid());
+        /* create at metadata database */
         final User user = userRepository.save(entity);
         log.info("Updated user data for user with id {}", user.getId());
+        /* save in open search database */
+        userIdxRepository.save(userMapper.userToUserDto(user));
+        log.info("Created user with id {} in open search database", user.getId());
         return user;
     }
 
