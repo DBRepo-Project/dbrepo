@@ -21,16 +21,19 @@ class SearchService {
 
   search (searchData) {
     // transform values to what the search API expects
-    const searchTerm = searchData.search_term
-    delete searchData.search_term
-    const t1 = searchData.t1
-    const t2 = searchData.t2
-    searchData = Object.fromEntries(Object.entries(searchData).filter(([_, v]) => v != null && v !== '')) // https://stackoverflow.com/questions/286141/remove-blank-attributes-from-an-object-in-javascript
+    let localSearchData = Object.assign({}, searchData)
+    const searchTerm = localSearchData.search_term
+    delete localSearchData.search_term
+    const t1 = localSearchData.t1
+    delete localSearchData.t1
+    const t2 = localSearchData.t2
+    delete localSearchData.t2
+    localSearchData = Object.fromEntries(Object.entries(localSearchData).filter(([_, v]) => v != null && v !== '')) // https://stackoverflow.com/questions/286141/remove-blank-attributes-from-an-object-in-javascript
     const payload = {
       t1,
       t2,
       search_term: searchTerm,
-      field_value_pairs: { ...searchData }
+      field_value_pairs: { ...localSearchData }
     }
     return new Promise((resolve, reject) => {
       axios.post('/api/search', payload, { headers: { Accept: 'application/json' } })
