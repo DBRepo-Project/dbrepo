@@ -665,7 +665,7 @@ public abstract class BaseTest {
     public final static Long IMAGE_1_ID = 1L;
     public final static String IMAGE_1_REGISTRY = "docker.io/library";
     public final static String IMAGE_1_NAME = "mariadb";
-    public final static String IMAGE_1_VERSION = "10.5";
+    public final static String IMAGE_1_VERSION = "11.1.3";
     public final static String IMAGE_1_DIALECT = "org.hibernate.dialect.MariaDBDialect";
     public final static String IMAGE_1_DRIVER = "org.mariadb.jdbc.Driver";
     public final static String IMAGE_1_JDBC = "mariadb";

@@ -459,6 +459,7 @@ public interface TableMapper {
     }
 
     default PreparedStatement tableToCreateHistoryViewRawQuery(Connection connection, Table data) throws QueryMalformedException {
+        final StringBuilder keys = new StringBuilder();
         final StringBuilder statement = new StringBuilder("CREATE VIEW `hs_")
                 .append(data.getInternalName())
                 .append("` AS SELECT * FROM (SELECT ");
@@ -467,13 +468,16 @@ public interface TableMapper {
                 .stream()
                 .filter(c -> Objects.nonNull(c.getIsPrimaryKey()))
                 .filter(TableColumn::getIsPrimaryKey)
-                .forEach(c -> statement.append(idx[0]++ > 0 ? "," : "")
+                .forEach(c -> keys.append(idx[0]++ > 0 ? "," : "")
                         .append("`")
                         .append(c.getInternalName())
                         .append("`"));
-        statement.append(", ROW_START AS inserted_at, IF(ROW_END > NOW(), NULL, ROW_END) AS deleted_at, COUNT(*) as total FROM `")
+        statement.append(keys)
+                .append(", ROW_START AS inserted_at, IF(ROW_END > NOW(), NULL, ROW_END) AS deleted_at, COUNT(*) as total FROM `")
                 .append(data.getInternalName())
-                .append("` FOR SYSTEM_TIME ALL GROUP BY inserted_at, deleted_at ORDER BY deleted_at DESC LIMIT 50) AS v ORDER BY v.inserted_at, v.deleted_at ASC");
+                .append("` FOR SYSTEM_TIME ALL GROUP BY ")
+                .append(keys)
+                .append(", inserted_at, deleted_at ORDER BY deleted_at DESC LIMIT 50) AS v ORDER BY v.inserted_at, v.deleted_at ASC");
         try {
             final PreparedStatement pstmt = connection.prepareStatement(statement.toString());
             log.trace("prepared create sequence statement {}", statement);
