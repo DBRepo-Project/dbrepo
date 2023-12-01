@@ -180,7 +180,7 @@ public class TableServiceImpl extends HibernateConnector implements TableService
             final Connection connection = dataSource.getConnection();
             generatedSequence = tableMapper.tableToCreateTableRawQuery(connection, createDto);
         } catch (Exception e) {
-            log.error("Failed to create table, reason: {}", e.getMessage());
+            log.error("Failed to create table: {}", e.getMessage());
             throw new TableMalformedException("Failed to create table", e);
         } finally {
             dataSource.close();

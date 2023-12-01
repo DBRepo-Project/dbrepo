@@ -5291,8 +5291,8 @@ public abstract class BaseTest {
     public final static Long VIEW_3_CONTAINER_ID = CONTAINER_1_ID;
     public final static Long VIEW_3_DATABASE_ID = DATABASE_1_ID;
     public final static Boolean VIEW_3_PUBLIC = false;
-    public final static String VIEW_3_QUERY = "select w.`mintemp`, w.`rainfall`, w.`location`, m.`date` from `weather_aus` w join `junit2` m on m.`location` = w.`location`";
-    public final static String VIEW_3_QUERY_HASH = "297bbacf5bf142028d0f4a1e537db03fd91b0c3be9e66ea2abc13d2984d22824";
+    public final static String VIEW_3_QUERY = "select w.`mintemp`, w.`rainfall`, w.`location`, m.`date` from `weather_aus` w join `junit2` m on m.`location` = w.`location` and m.`date` = w.`date`";
+    public final static String VIEW_3_QUERY_HASH = "bbbaa56a5206b3dc3e6cf9301b0db9344eb6f19b100c7b88550ffb597a0bd255";
 
     public final static List<TableColumn> VIEW_3_COLUMNS = List.of(TableColumn.builder()
                     .id(COLUMN_1_4_ID)

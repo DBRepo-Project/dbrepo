@@ -135,12 +135,11 @@ public class ViewServiceIntegrationTest extends BaseUnitTest {
         assertEquals("7.4", resultSet.get(1).get("mintemp"));
         assertEquals("0", resultSet.get(1).get("rainfall"));
         assertEquals("Albury", resultSet.get(1).get("location"));
-        assertEquals("2008-12-01", resultSet.get(1).get("date"));
+        assertEquals("2008-12-02", resultSet.get(1).get("date"));
         assertEquals("12.9", resultSet.get(2).get("mintemp"));
         assertEquals("0", resultSet.get(2).get("rainfall"));
         assertEquals("Albury", resultSet.get(2).get("location"));
-        assertEquals("2008-12-01", resultSet.get(2).get("date"));
-        /* more result checks omitted */
+        assertEquals("2008-12-03", resultSet.get(2).get("date"));
     }
 
     @Test
