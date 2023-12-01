@@ -1651,6 +1651,7 @@ public abstract class BaseTest {
             .created(TABLE_1_CREATED)
             .createdBy(USER_1_ID)
             .ownedBy(USER_1_ID)
+            .owner(USER_1)
             .lastModified(TABLE_1_LAST_MODIFIED)
             .build();
 
@@ -1702,6 +1703,7 @@ public abstract class BaseTest {
             .constraints(null /* TABLE_2_CONSTRAINTS */)
             .createdBy(USER_2_ID)
             .ownedBy(USER_2_ID)
+            .owner(USER_2)
             .created(TABLE_2_CREATED)
             .lastModified(TABLE_2_LAST_MODIFIED)
             .build();
@@ -1754,6 +1756,7 @@ public abstract class BaseTest {
             .constraints(null /* TABLE_3_CONSTRAINTS */)
             .createdBy(USER_3_ID)
             .ownedBy(USER_3_ID)
+            .owner(USER_3)
             .created(TABLE_3_CREATED)
             .lastModified(TABLE_3_LAST_MODIFIED)
             .build();
@@ -1830,6 +1833,7 @@ public abstract class BaseTest {
             .constraints(null) /* TABLE_4_CONSTRAINTS */
             .createdBy(USER_1_ID)
             .ownedBy(USER_1_ID)
+            .owner(USER_1)
             .build();
 
     public final static Table TABLE_4_SIMPLE = Table.builder()
@@ -1882,6 +1886,7 @@ public abstract class BaseTest {
             .constraints(null) /* TABLE_5_CONSTRAINTS */
             .createdBy(USER_1_ID)
             .ownedBy(USER_1_ID)
+            .owner(USER_1)
             .created(TABLE_5_CREATED)
             .lastModified(TABLE_5_LAST_MODIFIED)
             .build();
@@ -1932,6 +1937,7 @@ public abstract class BaseTest {
             .constraints(null) /* TABLE_6_CONSTRAINTS */
             .createdBy(USER_1_ID)
             .ownedBy(USER_1_ID)
+            .owner(USER_1)
             .created(TABLE_6_CREATED)
             .lastModified(TABLE_6_LAST_MODIFIED)
             .build();
@@ -1979,6 +1985,7 @@ public abstract class BaseTest {
             .columns(List.of() /* needs to be set in the junit tests */)
             .createdBy(USER_1_ID)
             .ownedBy(USER_1_ID)
+            .owner(USER_1)
             .created(TABLE_7_CREATED)
             .lastModified(TABLE_7_LAST_MODIFIED)
             .build();
@@ -2088,6 +2095,7 @@ public abstract class BaseTest {
             .columns(List.of() /* needs to be set in the junit tests */)
             .createdBy(USER_1_ID)
             .ownedBy(USER_1_ID)
+            .owner(USER_1)
             .created(TABLE_8_CREATED)
             .lastModified(TABLE_8_LAST_MODIFIED)
             .build();

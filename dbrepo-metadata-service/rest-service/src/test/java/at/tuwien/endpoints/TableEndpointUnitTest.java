@@ -321,7 +321,12 @@ public class TableEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = "delete-table")
-    public void delete_publicHasRoleTableNotFound_fails() {
+    public void delete_publicHasRoleTableNotFound_fails() throws TableNotFoundException, DatabaseNotFoundException {
+
+        /* mock */
+        doThrow(TableNotFoundException.class)
+                .when(tableService)
+                .find(DATABASE_3_ID, TABLE_8_ID);
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
@@ -331,17 +336,13 @@ public class TableEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = "delete-table")
-    public void delete_publiceHasRoleDatabaseNotFound_fails() {
+    public void delete_publicHasRole_succeeds() throws DatabaseNotFoundException, NotAllowedException,
+            TableNotFoundException, TableMalformedException, QueryMalformedException, ImageNotSupportedException,
+            ContainerNotFoundException, DataProcessingException {
 
-        /* test */
-        assertThrows(DatabaseNotFoundException.class, () -> {
-            generic_delete(DATABASE_3_ID, TABLE_8_ID, null, TABLE_8, USER_1_PRINCIPAL);
-        });
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME, authorities = "delete-table")
-    public void delete_publicHasRole_succeeds() throws DatabaseNotFoundException, NotAllowedException, TableNotFoundException, TableMalformedException, QueryMalformedException, ImageNotSupportedException, ContainerNotFoundException, DataProcessingException {
+        /* mock */
+        when(tableService.find(DATABASE_3_ID, TABLE_8_ID))
+                .thenReturn(TABLE_8);
 
         /* test */
         final ResponseEntity<?> response = generic_delete(DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8, USER_1_PRINCIPAL);
@@ -515,7 +516,11 @@ public class TableEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = "delete-table")
-    public void delete_privateHasRoleTableNotFound_fails() {
+    public void delete_privateHasRoleTableNotFound_fails() throws TableNotFoundException, DatabaseNotFoundException {
+
+        doThrow(TableNotFoundException.class)
+                .when(tableService)
+                .find(DATABASE_1_ID, TABLE_1_ID);
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
@@ -525,7 +530,11 @@ public class TableEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = "delete-table")
-    public void delete_privateHasRoleDatabaseNotFound_fails() {
+    public void delete_privateHasRoleDatabaseNotFound_fails() throws TableNotFoundException, DatabaseNotFoundException {
+
+        /* mock */
+        when(tableService.find(DATABASE_1_ID, TABLE_1_ID))
+                .thenReturn(TABLE_1);
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
@@ -538,6 +547,10 @@ public class TableEndpointUnitTest extends BaseUnitTest {
     public void delete_privateHasRole_succeeds() throws DatabaseNotFoundException, NotAllowedException,
             TableNotFoundException, TableMalformedException, QueryMalformedException, ImageNotSupportedException,
             ContainerNotFoundException, DataProcessingException {
+
+        /* mock */
+        when(tableService.find(DATABASE_1_ID, TABLE_1_ID))
+                .thenReturn(TABLE_1);
 
         /* test */
         final ResponseEntity<?> response = generic_delete(DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_1_PRINCIPAL);
