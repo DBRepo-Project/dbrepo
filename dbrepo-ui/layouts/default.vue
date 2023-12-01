@@ -95,6 +95,7 @@
           flat
           single-line
           hide-details
+          clearable
           append-icon="mdi-magnify"
           :placeholder="$t('search.fuzzy.placeholder', { name: 'vue-i18n' })"
           @click:append="retrieve" />

@@ -7,7 +7,6 @@ import re
 from flask import current_app
 from collections.abc import MutableMapping
 
-from omlib.dimension import Dimension
 from omlib.measure import om
 from omlib.constants import SI, OM_IDS
 from omlib.omconstants import OM
@@ -117,25 +116,25 @@ def get_fields_for_index(index):
     return fields_list
 
 
-def general_search(search_term=None, t1=None, t2=None, fieldValuePairs=None):
+def general_search(index=None, indices=[], search_term=None, t1=None, t2=None, field_value_pairs=None):
     """
     Main method for seaching stuff in the opensearch db
 
     all parameters are optional
 
-    :param search_term: the term you want to search for (no wildcards are allowed)
-    :param t1: beginn time period
-    :param t2:  end time period
-    :param field: name of the field you want to look at
-    :param value: the value the specified field should match
-    :return:
+    :param index: The index to be searched. Optional.
+    :param indices: The available indices to be searched.
+    :param search_term: The search term. Optional.
+    :param t1: The start range value. Optional.
+    :param t2: The end range value. Optional.
+    :param field_value_pairs: The key-value pair of properties that need to match. Optional.
+    :return: The object of results and HTTP status code. e.g. { "hits": { "hits": [] } }, 200
     """
-    logging.info(f"Performing general search")
-    searchable_indices = ["database", "user", "table", "column", "identifier", "view", "concept", "unit"]
-    index = searchable_indices
     queries = []
-    if search_term is not None:
-        logging.debug('query has search_term present')
+    if search_term is None:
+        logging.info(f"Performing general search")
+    else:
+        logging.info(f"Performing fuzzy search")
         fuzzy_body = {
             "query": {
                 "multi_match": {
@@ -146,14 +145,16 @@ def general_search(search_term=None, t1=None, t2=None, fieldValuePairs=None):
                 }
             }
         }
-        logging.debug('search body: %s', fuzzy_body)
+        logging.debug(f'search body: {fuzzy_body}')
+        index = ','.join(indices)
+        logging.debug(f'search index: {index}')
         response = current_app.opensearch_client.search(
             index=index,
             body=fuzzy_body
         )
-        response["status"] = 200
+        logging.info(f"Found {len(response['hits']['hits'])} result(s)")
         return response
-    if fieldValuePairs is not None and len(fieldValuePairs) > 0:
+    if field_value_pairs is not None and len(field_value_pairs) > 0:
         logging.debug('query has field_value_pairs present')
         musts = []
         is_range_open_end = False
@@ -168,12 +169,8 @@ def general_search(search_term=None, t1=None, t2=None, fieldValuePairs=None):
         if t1 is not None and t2 is not None:
             is_range_query = True
             logging.debug(f"query has start value {t1} and end value {t2} present")
-        for key, value in fieldValuePairs.items():
+        for key, value in field_value_pairs.items():
             logging.debug(f"current key={key}, value={value}")
-            if key == "type" and value in searchable_indices:
-                logging.debug("search for specific index: %s", value)
-                index = value
-                continue
             # if key in field_list:
             if re.match(f"{index}\.", key):
                 new_field = key[key.index(".") + 1:len(key)]
@@ -242,10 +239,8 @@ def general_search(search_term=None, t1=None, t2=None, fieldValuePairs=None):
     logging.debug('search body: %s', body)
     response = current_app.opensearch_client.search(
         index=index,
-        body=body
+        body=json.dumps(body)
     )
-    response["status"] = 200
-    # response = [hit["_source"] for hit in response["hits"]["hits"]]
     return response
 
 
@@ -271,16 +266,17 @@ def unit_independent_search(t1=None, t2=None, field_value_pairs=None):
     """
     logging.info(f"Performing unit-independent search")
     searches = []
-    response = current_app.opensearch_client.search(
-        index="column",
-        body={
-            "size": 0,
-            "aggs": {
-                "units": {
-                    "terms": {"field": "unit.uri", "size": 500}
-                }
+    body = {
+        "size": 0,
+        "aggs": {
+            "units": {
+                "terms": {"field": "unit.uri", "size": 500}
             }
         }
+    }
+    response = current_app.opensearch_client.search(
+        index="column",
+        body=json.dumps(body)
     )
     unit_uris = [hit["key"] for hit in response["aggregations"]["units"]["buckets"]]
     logging.debug(f"found {len(unit_uris)} unit(s) in column index")
@@ -334,24 +330,17 @@ def unit_independent_search(t1=None, t2=None, field_value_pairs=None):
                 }
             }
         })
-    # searches.append({'index': 'column'})
-    # searches.append({
-    #     "query": {
-    #         "match_all": {}
-    #     }
-    # })
     logging.debug('searches: %s', searches)
     body = ''
     for search in searches:
         body += '%s \n' % json.dumps(search)
     responses = current_app.opensearch_client.msearch(
-        body=body
+        body=json.dumps(body)
     )
     response = {
         "hits": {
             "hits": flatten([hits["hits"]["hits"] for hits in responses["responses"]])
         },
-        "took": responses["took"],
-        "status": 200
+        "took": responses["took"]
     }
     return response

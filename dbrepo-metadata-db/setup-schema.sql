@@ -167,7 +167,7 @@ CREATE TABLE IF NOT EXISTS `mdb_columns`
     std_dev          Numeric      NULL,
     created          timestamp    NOT NULL DEFAULT NOW(),
     last_modified    timestamp,
-    FOREIGN KEY (tID) REFERENCES mdb_tables (ID),
+    FOREIGN KEY (tID) REFERENCES mdb_tables (ID) ON DELETE CASCADE,
     PRIMARY KEY (ID)
 ) WITH SYSTEM VERSIONING;
 

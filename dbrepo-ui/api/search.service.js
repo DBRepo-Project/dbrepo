@@ -19,7 +19,7 @@ class SearchService {
     })
   }
 
-  search (searchData) {
+  search (index, searchData) {
     // transform values to what the search API expects
     let localSearchData = Object.assign({}, searchData)
     const searchTerm = localSearchData.search_term
@@ -36,7 +36,7 @@ class SearchService {
       field_value_pairs: { ...localSearchData }
     }
     return new Promise((resolve, reject) => {
-      axios.post('/api/search', payload, { headers: { Accept: 'application/json' } })
+      axios.post(`/api/search${index ? `/${index}` : ''}`, payload, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const { hits } = response.data
           console.debug('advanced search response', hits.hits)

@@ -160,6 +160,21 @@ class TableService {
     })
   }
 
+  delete (databaseId, tableId) {
+    return new Promise((resolve, reject) => {
+      api.delete(`/api/database/${databaseId}/table/${tableId}`, { headers: { Accept: 'application/json' } })
+        .then(() => {
+          resolve()
+        })
+        .catch((error) => {
+          const { code, message } = error.response.data
+          console.error('Failed to delete table', error)
+          Vue.$toast.error(`[${code}] Failed to delete table: ${message}`)
+          reject(error)
+        })
+    })
+  }
+
   deleteTuple (databaseId, tableId, data) {
     return new Promise((resolve, reject) => {
       api.delete(`/api/database/${databaseId}/table/${tableId}/data`, { headers: { Accept: 'application/json' }, data })

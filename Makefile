@@ -2,7 +2,8 @@
 
 TAG ?= latest
 TRIVY_VERSION ?= v0.41.0
-AZURE_REPO ?= dbrepo.azurecr.io
+REPOSITORY_URL ?= docker.io/dbrepo
+REPOSITORY2_URL ?= s210.dl.hpc.tuwien.ac.at/dbrepo
 
 all: build
 
@@ -46,102 +47,102 @@ build-clients:
 tag: tag-analyse-service tag-authentication-service tag-metadata-db tag-ui tag-metadata-service tag-data-service tag-mirror-service tag-log-service tag-search-db tag-search-db-init tag-search-service tag-data-db-sidecar
 
 tag-analyse-service:
-	docker tag dbrepo-analyse-service:latest "dbrepo/analyse-service:${TAG}"
-	docker tag dbrepo-analyse-service:latest "${AZURE_REPO}/dbrepo/analyse-service:${TAG}"
+	docker tag dbrepo-analyse-service:latest "${REPOSITORY_URL}/analyse-service:${TAG}"
+	docker tag dbrepo-analyse-service:latest "${REPOSITORY2_URL}/analyse-service:${TAG}"
 
 tag-authentication-service:
-	docker tag dbrepo-authentication-service:latest "dbrepo/authentication-service:${TAG}"
-	docker tag dbrepo-authentication-service:latest "${AZURE_REPO}/dbrepo/authentication-service:${TAG}"
+	docker tag dbrepo-authentication-service:latest "${REPOSITORY_URL}/authentication-service:${TAG}"
+	docker tag dbrepo-authentication-service:latest "${REPOSITORY2_URL}/authentication-service:${TAG}"
 
 tag-metadata-db:
-	docker tag dbrepo-metadata-db:latest "dbrepo/metadata-db:${TAG}"
-	docker tag dbrepo-metadata-db:latest "${AZURE_REPO}/dbrepo/metadata-db:${TAG}"
+	docker tag dbrepo-metadata-db:latest "${REPOSITORY_URL}/metadata-db:${TAG}"
+	docker tag dbrepo-metadata-db:latest "${REPOSITORY2_URL}/metadata-db:${TAG}"
 
 tag-ui:
-	docker tag dbrepo-ui:latest "dbrepo/ui:${TAG}"
-	docker tag dbrepo-ui:latest "${AZURE_REPO}/dbrepo/ui:${TAG}"
+	docker tag dbrepo-ui:latest "${REPOSITORY_URL}/ui:${TAG}"
+	docker tag dbrepo-ui:latest "${REPOSITORY2_URL}/ui:${TAG}"
 
 tag-data-service:
-	docker tag dbrepo-data-service:latest "dbrepo/data-service:${TAG}"
-	docker tag dbrepo-data-service:latest "${AZURE_REPO}/dbrepo/data-service:${TAG}"
+	docker tag dbrepo-data-service:latest "${REPOSITORY_URL}/data-service:${TAG}"
+	docker tag dbrepo-data-service:latest "${REPOSITORY2_URL}/data-service:${TAG}"
 
 tag-mirror-service:
-	docker tag dbrepo-mirror-service:latest "dbrepo/mirror-service:${TAG}"
-	docker tag dbrepo-mirror-service:latest "${AZURE_REPO}/dbrepo/mirror-service:${TAG}"
+	docker tag dbrepo-mirror-service:latest "${REPOSITORY_URL}/mirror-service:${TAG}"
+	docker tag dbrepo-mirror-service:latest "${REPOSITORY2_URL}/mirror-service:${TAG}"
 
 tag-metadata-service:
-	docker tag dbrepo-metadata-service:latest "dbrepo/metadata-service:${TAG}"
-	docker tag dbrepo-metadata-service:latest "${AZURE_REPO}/dbrepo/metadata-service:${TAG}"
+	docker tag dbrepo-metadata-service:latest "${REPOSITORY_URL}/metadata-service:${TAG}"
+	docker tag dbrepo-metadata-service:latest "${REPOSITORY2_URL}/metadata-service:${TAG}"
 
 tag-search-db:
-	docker tag dbrepo-search-db:latest "dbrepo/search-db:${TAG}"
-	docker tag dbrepo-search-db:latest "${AZURE_REPO}/dbrepo/search-db:${TAG}"
+	docker tag dbrepo-search-db:latest "${REPOSITORY_URL}/search-db:${TAG}"
+	docker tag dbrepo-search-db:latest "${REPOSITORY2_URL}/search-db:${TAG}"
 
 tag-data-db-sidecar:
-	docker tag dbrepo-data-db-sidecar:latest "dbrepo/data-db-sidecar:${TAG}"
-	docker tag dbrepo-data-db-sidecar:latest "${AZURE_REPO}/dbrepo/data-db-sidecar:${TAG}"
+	docker tag dbrepo-data-db-sidecar:latest "${REPOSITORY_URL}/data-db-sidecar:${TAG}"
+	docker tag dbrepo-data-db-sidecar:latest "${REPOSITORY2_URL}/data-db-sidecar:${TAG}"
 
 tag-search-db-init:
-	docker tag dbrepo-search-db-init:latest "dbrepo/search-db-init:${TAG}"
-	docker tag dbrepo-search-db-init:latest "${AZURE_REPO}/dbrepo/search-db-init:${TAG}"
+	docker tag dbrepo-search-db-init:latest "${REPOSITORY_URL}/search-db-init:${TAG}"
+	docker tag dbrepo-search-db-init:latest "${REPOSITORY2_URL}/search-db-init:${TAG}"
 
 tag-log-service:
-	docker tag dbrepo-log-service:latest "dbrepo/log-service:${TAG}"
-	docker tag dbrepo-log-service:latest "${AZURE_REPO}/dbrepo/log-service:${TAG}"
+	docker tag dbrepo-log-service:latest "${REPOSITORY_URL}/log-service:${TAG}"
+	docker tag dbrepo-log-service:latest "${REPOSITORY2_URL}/log-service:${TAG}"
 
 tag-search-service:
-	docker tag dbrepo-search-service:latest "dbrepo/search-service:${TAG}"
-	docker tag dbrepo-search-service:latest "${AZURE_REPO}/dbrepo/search-service:${TAG}"
+	docker tag dbrepo-search-service:latest "${REPOSITORY_URL}/search-service:${TAG}"
+	docker tag dbrepo-search-service:latest "${REPOSITORY2_URL}/search-service:${TAG}"
 
 release: build-docker tag release-analyse-service release-authentication-service release-metadata-db release-ui release-metadata-service release-data-service release-log-service release-search-db release-mirror-service release-search-db-init release-search-service release-data-db-sidecar
 
 release-analyse-service: tag-analyse-service
-	docker push "dbrepo/analyse-service:${TAG}"
-	docker push "${AZURE_REPO}/dbrepo/analyse-service:${TAG}"
+	docker push "${REPOSITORY_URL}/analyse-service:${TAG}"
+	docker push "${REPOSITORY2_URL}/analyse-service:${TAG}"
 
 release-authentication-service: tag-authentication-service
-	docker push "dbrepo/authentication-service:${TAG}"
-	docker push "${AZURE_REPO}/dbrepo/authentication-service:${TAG}"
+	docker push "${REPOSITORY_URL}/authentication-service:${TAG}"
+	docker push "${REPOSITORY2_URL}/authentication-service:${TAG}"
 
 release-metadata-db: tag-metadata-db
-	docker push "dbrepo/metadata-db:${TAG}"
-	docker push "${AZURE_REPO}/dbrepo/metadata-db:${TAG}"
+	docker push "${REPOSITORY_URL}/metadata-db:${TAG}"
+	docker push "${REPOSITORY2_URL}/metadata-db:${TAG}"
 
 release-ui: tag-ui
-	docker push "dbrepo/ui:${TAG}"
-	docker push "${AZURE_REPO}/dbrepo/ui:${TAG}"
+	docker push "${REPOSITORY_URL}/ui:${TAG}"
+	docker push "${REPOSITORY2_URL}/ui:${TAG}"
 
 release-data-service: tag-data-service
-	docker push "dbrepo/data-service:${TAG}"
-	docker push "${AZURE_REPO}/dbrepo/data-service:${TAG}"
+	docker push "${REPOSITORY_URL}/data-service:${TAG}"
+	docker push "${REPOSITORY2_URL}/data-service:${TAG}"
 
 release-mirror-service: tag-mirror-service
-	docker push "dbrepo/mirror-service:${TAG}"
-	docker push "${AZURE_REPO}/dbrepo/mirror-service:${TAG}"
+	docker push "${REPOSITORY_URL}/mirror-service:${TAG}"
+	docker push "${REPOSITORY2_URL}/mirror-service:${TAG}"
 
 release-search-db: tag-search-db
-	docker push "dbrepo/search-db:${TAG}"
-	docker push "${AZURE_REPO}/dbrepo/search-db:${TAG}"
+	docker push "${REPOSITORY_URL}/search-db:${TAG}"
+	docker push "${REPOSITORY2_URL}/search-db:${TAG}"
 
 release-search-db-init: tag-search-db-init
-	docker push "dbrepo/search-db-init:${TAG}"
-	docker push "${AZURE_REPO}/dbrepo/search-db-init:${TAG}"
+	docker push "${REPOSITORY_URL}/search-db-init:${TAG}"
+	docker push "${REPOSITORY2_URL}/search-db-init:${TAG}"
 
 release-data-db-sidecar: tag-data-db-sidecar
-	docker push "dbrepo/data-db-sidecar:${TAG}"
-	docker push "${AZURE_REPO}/dbrepo/data-db-sidecar:${TAG}"
+	docker push "${REPOSITORY_URL}/data-db-sidecar:${TAG}"
+	docker push "${REPOSITORY2_URL}/data-db-sidecar:${TAG}"
 
 release-metadata-service: tag-metadata-service
-	docker push "dbrepo/metadata-service:${TAG}"
-	docker push "${AZURE_REPO}/dbrepo/metadata-service:${TAG}"
+	docker push "${REPOSITORY_URL}/metadata-service:${TAG}"
+	docker push "${REPOSITORY2_URL}/metadata-service:${TAG}"
 
 release-log-service: tag-log-service
-	docker push "dbrepo/log-service:${TAG}"
-	docker push "${AZURE_REPO}/dbrepo/log-service:${TAG}"
+	docker push "${REPOSITORY_URL}/log-service:${TAG}"
+	docker push "${REPOSITORY2_URL}/log-service:${TAG}"
 
 release-search-service: tag-search-service
-	docker push "dbrepo/search-service:${TAG}"
-	docker push "${AZURE_REPO}/dbrepo/search-service:${TAG}"
+	docker push "${REPOSITORY_URL}/search-service:${TAG}"
+	docker push "${REPOSITORY2_URL}/search-service:${TAG}"
 
 test-backend: test-metadata-service test-analyse-service test-data-service test-mirror-service
 

@@ -96,22 +96,22 @@ export default {
   watch: {
     '$route.query.q': {
       handler () {
-        this.retrieve()
+        this.generalSearch()
       }
     }
   },
   mounted () {
     if (this.query) {
-      this.retrieve()
+      this.generalSearch()
     }
   },
   methods: {
-    retrieve () {
+    generalSearch () {
       if (this.loading) {
         return
       }
       this.loading = true
-      SearchService.search({ search_term: this.query })
+      SearchService.search(null, { search_term: this.query })
         .then((hits) => {
           this.results = hits.map(h => h._source)
         })

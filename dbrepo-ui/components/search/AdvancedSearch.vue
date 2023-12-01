@@ -1,12 +1,12 @@
 <template>
   <div>
-    <v-card flat tile>
+    <v-card v-if="isAdvancedSearch" flat tile>
       <v-card-text class="pt-0 pl-4 pb-6 pr-4">
         <v-form ref="form" v-model="valid" autocomplete="off" @submit.prevent="submit">
           <v-row dense>
             <v-col cols="3">
               <v-select
-                v-model="advancedSearchData.type"
+                v-model="index"
                 :items="fieldItems"
                 item-text="name"
                 item-value="value"
@@ -141,6 +141,7 @@ import SemanticMapper from '@/api/semantic.mapper'
 export default {
   data () {
     return {
+      index: 'database',
       valid: false,
       loading: false,
       loadingFields: false,
@@ -170,25 +171,27 @@ export default {
       advancedSearchData: {
         name: null,
         internal_name: null,
-        id: null,
-        type: 'database'
+        id: null
       }
     }
   },
   computed: {
     hideFields () {
-      const selectedOption = this.advancedSearchData.type
+      const selectedOption = this.index
       return {
         hideNameField: selectedOption === 'identifier',
         hideInternalNameField: ['identifier', 'user', 'concept', 'unit'].includes(selectedOption)
       }
     },
     isEligibleConceptOrUnitSearch () {
-      return ['column'].includes(this.advancedSearchData.type)
+      return ['column'].includes(this.index)
+    },
+    isAdvancedSearch () {
+      return !this.$route.query.q
     }
   },
   watch: {
-    'advancedSearchData.type': {
+    index: {
       handler (newType, oldType) {
         if (!newType) {
           return
@@ -244,7 +247,7 @@ export default {
         this.advancedSearchData.t2 = Number(this.advancedSearchData.t2)
       }
       this.loading = true
-      SearchService.search(this.advancedSearchData)
+      SearchService.search(this.index, this.advancedSearchData)
         .then((response) => {
           this.$emit('search-result', response.map(h => h._source))
         })
@@ -254,7 +257,6 @@ export default {
     },
     isAdvancedSearchEmpty () {
       return !(
-        this.advancedSearchData.type ||
         this.advancedSearchData.id ||
         this.advancedSearchData.name ||
         this.advancedSearchData.internal_name
@@ -304,12 +306,12 @@ export default {
       // Generates a dynamic v-model; It will be attached to the advancedSearchData object
       if (!item) { return '' }
 
-      return `${this.advancedSearchData.type}.${item.attribute_name}`
+      return `${this.index}.${item.attribute_name}`
     },
     shouldRenderItem (item) {
       // Checks if item's attribute_name matches any wanted field
       // The expected response is of a flattened format, so this method must be modified accordingly if the response is changed
-      return this.dynamicFieldsMap()[this.advancedSearchData.type].includes(item.attribute_name)
+      return this.dynamicFieldsMap()[this.index].includes(item.attribute_name)
     },
     fetchLicenses () {
       // Licenses is a nested object in the backend, but without any values.

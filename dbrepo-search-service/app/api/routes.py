@@ -2,7 +2,8 @@
 """
 This file defines the endpoints for the dbrepo-search-service.
 """
-import logging
+import os
+from ast import literal_eval
 
 from flask import request
 
@@ -11,16 +12,11 @@ from app.api import api_bp
 from flasgger.utils import swag_from
 from app.opensearch_client import *
 import math
-from opensearchpy import OpenSearch
 
-host = "localhost"
-port = 9200
-auth = ("admin", "admin")
-client = OpenSearch(
-    hosts=[{"host": host, "port": port}],
-    http_compress=True,  # enables gzip compression for request bodies
-    http_auth=auth,
-)
+available_indices = literal_eval(
+    os.getenv("COLLECTION", "['database','table','column','identifier','unit','concept','user','view']"))
+
+logging.info(f"Available collection loaded as: {available_indices}")
 
 
 def general_filter(index, results):
@@ -70,21 +66,10 @@ def get_index(index):
     :param index: desired index
     :return: list of the results
     """
-    logging.info('Searching for index: %s', index)
-    available_indices = [
-        "table",
-        "user",
-        "database",
-        "column",
-        "identifier",
-        "concept",
-        "unit",
-        "view",
-    ]
+    logging.info(f'Searching for index: {index}')
     if index not in available_indices:
         return {
             "results": {},
-            "status": 404,
         }, 404  # ToDo: replace with better error handling
     results = query_index_by_term_opensearch(index, "*", "contains")
     results = general_filter(index, results)
@@ -104,54 +89,54 @@ def get_fields(index):
     :param index:
     :return:
     """
-    logging.info('Getting fields for index: %s', index)
-    available_indices = [
-        "table",
-        "user",
-        "database",
-        "column",
-        "identifier",
-        "concept",
-        "unit",
-        "view",
-    ]
+    logging.info(f'Searching for index: {index}')
     if index not in available_indices:
         return {
             "results": {},
-            "status": 404,
-        }, 404  # ToDo: replace with better error handling
-    fields = []
+        }, 404
     fields = get_fields_for_index(index)
-    logging.debug('get fields for index %s resulted in fields: %s', index, fields)
+    logging.debug(f'get fields for index {index} resulted in {len(fields)} field(s)')
     return {"fields": fields, "status": 200}
 
 
 @api_bp.route("/api/search", methods=["POST"], endpoint="search_fuzzy_search")
-def search():
+def post_fuzzy_search():
     """
-    Main endpoint for general searching.
-
-    There are three ways of  searching:
-    *  if you specify 'search_term' in the request json, all entries that have relevant fields matching the 'search_term' are returned.
-         No wildcards are allowed, although fuzzy search is enabled (meaning, there are also matches when 1 or two characters differ)
-    * if you specify 't1' and/or 't2' entries that are newer than timestamp 't1' and entries that are younger than timestamp 't2' are returned.
-        the timestamp has to have the format YYYY-MM-DD
-    * if 'field' and 'value' are specified, only entries where the 'field' matches the 'value' are returned.
-        For example, if  the 'field' is 'creator.orcid' and the 'value' is '0000-0002-6778-0887',
-        only entries created by the person with this specific orcid id are returned.
-    If there are multiple parameters specified, they are combined via an AND-conjunction, so you can e.g. search for entries that match a certain keyword,
-    were created in a certain time period, by a specific person.
+    Main endpoint for fuzzy searching.
     :return:
     """
     if request.content_type != "application/json":
         return {
-            "status": 415,
             "message": "Unsupported Media Type",
             "suggested_content_types": ["application/json"],
         }, 415
     req_body = request.json
-    logging.debug('search request body: %s', req_body)
+    logging.debug(f"search request body: {req_body}")
     search_term = req_body.get("search_term")
+    response = general_search(None, available_indices, search_term, None, None, None)
+    return response, 200
+
+
+@api_bp.route("/api/search/<string:index>", methods=["POST"], endpoint="search_general_search")
+def post_general_search(index):
+    """
+    Main endpoint for fuzzy searching.
+    :return:
+    """
+    if request.content_type != "application/json":
+        return {
+            "message": "Unsupported Media Type",
+            "suggested_content_types": ["application/json"],
+        }, 415
+    req_body = request.json
+    logging.info(f'Searching for index: {index}')
+    logging.debug(f"search request body: {req_body}")
+    search_term = req_body.get("search_term")
+    if index is not None and index not in available_indices:
+        logging.error(f"Index {index} is not in list of searchable indices: {available_indices}")
+        return {
+            "results": {},
+        }, 404
     t1 = req_body.get("t1")
     if not str(t1).isdigit():
         t1 = None
@@ -162,5 +147,5 @@ def search():
     if t1 is not None and t2 is not None and "unit.uri" in field_value_pairs and "concept.uri" in field_value_pairs:
         response = unit_independent_search(t1, t2, field_value_pairs)
     else:
-        response = general_search(search_term, t1, t2, field_value_pairs)
+        response = general_search(index, available_indices, search_term, t1, t2, field_value_pairs)
     return response, 200

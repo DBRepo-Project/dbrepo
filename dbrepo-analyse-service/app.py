@@ -1,3 +1,4 @@
+import os
 from _csv import Error
 
 from flask import Flask, request, Response
@@ -11,7 +12,9 @@ from flasgger import LazyJSONEncoder
 from gevent.pywsgi import WSGIServer
 from prometheus_flask_exporter import PrometheusMetrics
 
-logging.basicConfig(level=logging.DEBUG)
+log_level = os.getenv('LOG_LEVEL', 'INFO')
+
+logging.basicConfig(level=logging.getLevelName(log_level))
 
 from logging.config import dictConfig
 
@@ -26,7 +29,7 @@ dictConfig({
         'formatter': 'default'
     }},
     'root': {
-        'level': 'INFO',
+        'level': log_level,
         'handlers': ['wsgi']
     }
 })
