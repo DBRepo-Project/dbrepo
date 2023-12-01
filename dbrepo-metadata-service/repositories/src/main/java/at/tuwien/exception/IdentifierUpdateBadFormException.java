@@ -11,7 +11,7 @@ public class IdentifierUpdateBadFormException extends Exception {
     }
 
     public IdentifierUpdateBadFormException(String msg, Throwable thr) {
-        super(msg, thr);
+        super(msg + ": " + thr.getLocalizedMessage(), thr);
     }
 
     public IdentifierUpdateBadFormException(Throwable thr) {

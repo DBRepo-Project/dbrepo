@@ -11,7 +11,7 @@ public class TableMalformedException extends Exception {
     }
 
     public TableMalformedException(String msg, Throwable thr) {
-        super(msg, thr);
+        super(msg + ": " + thr.getLocalizedMessage(), thr);
     }
 
     public TableMalformedException(Throwable thr) {

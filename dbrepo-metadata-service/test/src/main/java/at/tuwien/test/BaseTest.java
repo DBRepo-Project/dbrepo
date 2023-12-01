@@ -160,10 +160,10 @@ public abstract class BaseTest {
     public final static String[] ESCALATED_QUERY_HANDLING = new String[]{"escalated-query-handling"};
 
     public final static String[] DEFAULT_TABLE_HANDLING = new String[]{"default-table-handling",
-            "list-tables", "create-table", "modify-table-column-semantics", "find-table"};
+            "list-tables", "create-table", "modify-table-column-semantics", "find-table", "delete-table"};
 
     public final static String[] ESCALATED_TABLE_HANDLING = new String[]{"escalated-table-handling",
-            "delete-table"};
+            "delete-foreign-table"};
 
     public final static String[] DEFAULT_USER_HANDLING = new String[]{"default-user-handling", "modify-user-theme",
             "modify-user-information"};
@@ -3518,7 +3518,10 @@ public abstract class BaseTest {
                             ForeignKeyReference.builder().column(TABLE_1_COLUMNS.get(2)).referencedColumn(TABLE_1_COLUMNS.get(0)).build())
                     ).build()
             ))
-            .uniques(List.of(Unique.builder().columns(List.of(TABLE_1_COLUMNS.get(1))).build()))
+            .uniques(List.of(Unique.builder().columns(List.of(
+                    TABLE_1_COLUMNS.get(0),
+                    TABLE_1_COLUMNS.get(1)
+            )).build()))
             .checks(Set.of("`mintemp` > 0"))
             .build();
 

@@ -11,7 +11,7 @@ public class TupleDeleteException extends Exception {
     }
 
     public TupleDeleteException(String msg, Throwable thr) {
-        super(msg, thr);
+        super(msg + ": " + thr.getLocalizedMessage(), thr);
     }
 
     public TupleDeleteException(Throwable thr) { super(thr);

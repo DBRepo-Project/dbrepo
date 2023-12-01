@@ -11,7 +11,7 @@ public class DataProcessingException extends Exception {
     }
 
     public DataProcessingException(String msg, Throwable thr) {
-        super(msg, thr);
+        super(msg + ": " + thr.getLocalizedMessage(), thr);
     }
 
     public DataProcessingException(Throwable thr) {

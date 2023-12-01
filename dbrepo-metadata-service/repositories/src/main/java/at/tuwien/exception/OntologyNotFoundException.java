@@ -11,7 +11,7 @@ public class OntologyNotFoundException extends Exception {
     }
 
     public OntologyNotFoundException(String msg, Throwable thr) {
-        super(msg, thr);
+        super(msg + ": " + thr.getLocalizedMessage(), thr);
     }
 
     public OntologyNotFoundException(Throwable thr) {

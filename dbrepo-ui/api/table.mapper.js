@@ -39,6 +39,16 @@ class TableMapper {
       }
     })
   }
+
+  tableNameToInternalName (name) {
+    return name.toString()
+      .normalize('NFKD')
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, '-')
+      .replace(/[^\w-]+/g, '')
+      .replace(/--+/g, '_')
+  }
 }
 
 export default new TableMapper()

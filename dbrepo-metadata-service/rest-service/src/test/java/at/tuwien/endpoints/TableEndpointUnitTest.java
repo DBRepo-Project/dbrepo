@@ -350,6 +350,35 @@ public class TableEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = "delete-table")
+    public void delete_privateHasRoleForeignTable_fails() throws DatabaseNotFoundException, TableNotFoundException {
+
+        /* mock */
+        when(tableService.find(DATABASE_1_ID, TABLE_2_ID))
+                .thenReturn(TABLE_2);
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            generic_delete(DATABASE_1_ID, TABLE_2_ID, DATABASE_1, TABLE_2, USER_1_PRINCIPAL);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_2_USERNAME, authorities = "delete-foreign-table")
+    public void delete_privateHasRoleForeignTable_succeeds() throws DatabaseNotFoundException, TableNotFoundException,
+            NotAllowedException, TableMalformedException, QueryMalformedException, ImageNotSupportedException,
+            ContainerNotFoundException, DataProcessingException {
+
+        /* mock */
+        when(tableService.find(DATABASE_1_ID, TABLE_1_ID))
+                .thenReturn(TABLE_1);
+
+        /* test */
+        final ResponseEntity<?> response = generic_delete(DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_2_PRINCIPAL);
+        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
+    }
+
+    @Test
     @WithMockUser(username = USER_4_USERNAME)
     public void delete_publicNoRole_fails() {
 

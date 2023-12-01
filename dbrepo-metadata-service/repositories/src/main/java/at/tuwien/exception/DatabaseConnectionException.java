@@ -11,7 +11,7 @@ public class DatabaseConnectionException extends Exception {
     }
 
     public DatabaseConnectionException(String msg, Throwable thr) {
-        super(msg, thr);
+        super(msg + ": " + thr.getLocalizedMessage(), thr);
     }
 
     public DatabaseConnectionException(Throwable thr) {

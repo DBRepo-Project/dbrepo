@@ -13,7 +13,7 @@ public class DataDbSidecarException extends IOException {
     }
 
     public DataDbSidecarException(String msg, Throwable thr) {
-        super(msg, thr);
+        super(msg + ": " + thr.getLocalizedMessage(), thr);
     }
 
     public DataDbSidecarException(Throwable thr) {

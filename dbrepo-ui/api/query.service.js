@@ -1,5 +1,4 @@
-import Vue from 'vue'
-import api from '@/api'
+import api, { displayError } from '@/api'
 
 class QueryService {
   findAll (databaseId, persisted) {
@@ -11,9 +10,7 @@ class QueryService {
           resolve(queries)
         })
         .catch((error) => {
-          const { code, message } = error.response.data
-          console.error('Failed to load queries', error)
-          Vue.$toast.error(`[${code}] Failed to load queries: ${message}`)
+          displayError('Failed to load queries', error)
           reject(error)
         })
     })
@@ -27,9 +24,7 @@ class QueryService {
           console.debug('response query', query)
           resolve(query)
         }).catch((error) => {
-          const { code, message } = error.response.data
-          console.error('Failed to load query', error)
-          Vue.$toast.error(`[${code}] Failed to load query: ${message}`)
+          displayError('Failed to load query', error)
           reject(error)
         })
     })
@@ -44,9 +39,7 @@ class QueryService {
           resolve(query)
         })
         .catch((error) => {
-          const { code, message } = error.response.data
-          console.error('Failed to persist query', error)
-          Vue.$toast.error(`[${code}] Failed to persist query: ${message}`)
+          displayError('Failed to persist query', error)
           reject(error)
         })
     })
@@ -61,9 +54,7 @@ class QueryService {
           resolve(table)
         })
         .catch((error) => {
-          const { code, message } = error.response.data
-          console.error('Failed to import csv to table', error)
-          Vue.$toast.error(`[${code}] Failed to import csv to table: ${message}`)
+          displayError('Failed to import csv to table', error)
           reject(error)
         })
     })
@@ -78,14 +69,7 @@ class QueryService {
           resolve(tuple)
         })
         .catch((error) => {
-          const { status } = error
-          const { code, message } = error.response.data
-          if (status === 423) {
-            console.error('Database failed to accept tuple', error)
-          } else {
-            console.error('Failed to insert tuple', error)
-          }
-          Vue.$toast.error(`[${code}] Failed to insert tuple: ${message}`)
+          displayError('Failed to insert tuple', error)
           reject(error)
         })
     })
@@ -100,14 +84,7 @@ class QueryService {
           resolve(tuple)
         })
         .catch((error) => {
-          const { status } = error
-          const { code, message } = error.response.data
-          if (status === 423) {
-            console.error('Database failed to accept tuple', error)
-          } else {
-            console.error('Failed to update tuple', error)
-          }
-          Vue.$toast.error(`[${code}] Failed to update tuple: ${message}`)
+          displayError('Failed to update tuple', error)
           reject(error)
         })
     })
@@ -122,9 +99,7 @@ class QueryService {
           resolve(subset)
         })
         .catch((error) => {
-          const { code, message } = error.response.data
-          console.error('Failed to export query', error)
-          Vue.$toast.error(`[${code}] Failed to export query: ${message}`)
+          displayError('Failed to export subset', error)
           reject(error)
         })
     })
@@ -139,9 +114,7 @@ class QueryService {
           resolve(metadata)
         })
         .catch((error) => {
-          const { code, message } = error.response.data
-          console.error('Failed to export metadata', error)
-          Vue.$toast.error(`[${code}] Failed to export metadata: ${message}`)
+          displayError('Failed to export metadata', error)
           reject(error)
         })
     })
@@ -156,9 +129,7 @@ class QueryService {
           resolve(result)
         })
         .catch((error) => {
-          const { code, message } = error.response.data
-          console.error('Failed to execute statement', error)
-          Vue.$toast.error(`[${code}] Failed to execute statement: ${message}`)
+          displayError('Failed to execute query', error)
           reject(error)
         })
     })
@@ -173,9 +144,7 @@ class QueryService {
           resolve(result)
         })
         .catch((error) => {
-          const { code, message } = error.response.data
-          console.error('Failed to re-execute query', error)
-          Vue.$toast.error(`[${code}] Failed to re-execute query: ${message}`)
+          displayError('Failed to re-execute query', error)
           reject(error)
         })
     })
@@ -190,9 +159,7 @@ class QueryService {
           resolve(count)
         })
         .catch((error) => {
-          const { code, message } = error.response.data
-          console.error('Failed to re-execute query count', error)
-          Vue.$toast.error(`[${code}] Failed to re-execute query count: ${message}`)
+          displayError('Failed to re-execute query and count results', error)
           reject(error)
         })
     })
@@ -207,9 +174,7 @@ class QueryService {
           resolve(result)
         })
         .catch((error) => {
-          const { code, message } = error.response.data
-          console.error('Failed to re-execute view', error)
-          Vue.$toast.error(`[${code}] Failed to re-execute view: ${message}`)
+          displayError('Failed to re-execute view', error)
           reject(error)
         })
     })
@@ -224,9 +189,7 @@ class QueryService {
           resolve(count)
         })
         .catch((error) => {
-          const { code, message } = error.response.data
-          console.error('Failed to re-execute view count', error)
-          Vue.$toast.error(`[${code}] Failed to re-execute view count: ${message}`)
+          displayError('Failed to re-execute view and count results', error)
           reject(error)
         })
     })
@@ -241,9 +204,7 @@ class QueryService {
           resolve(view)
         })
         .catch((error) => {
-          const { code, message } = error.response.data
-          console.error('Failed to find view', error)
-          Vue.$toast.error(`[${code}] Failed to find view: ${message}`)
+          displayError('Failed to find view', error)
           reject(error)
         })
     })

@@ -10,12 +10,12 @@ public class ImageAlreadyExistsException extends Exception {
         super(msg);
     }
 
-    public ImageAlreadyExistsException(String msg, Throwable e) {
-        super(msg, e);
+    public ImageAlreadyExistsException(String msg, Throwable thr) {
+        super(msg + ": " + thr.getLocalizedMessage(), thr);
     }
 
-    public ImageAlreadyExistsException(Throwable e) {
-        super(e);
+    public ImageAlreadyExistsException(Throwable thr) {
+        super(thr);
     }
 
 }

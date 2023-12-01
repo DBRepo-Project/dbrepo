@@ -11,7 +11,7 @@ public class IdentifierAlreadyExistsException extends Exception {
     }
 
     public IdentifierAlreadyExistsException(String msg, Throwable thr) {
-        super(msg, thr);
+        super(msg + ": " + thr.getLocalizedMessage(), thr);
     }
 
     public IdentifierAlreadyExistsException(Throwable thr) {

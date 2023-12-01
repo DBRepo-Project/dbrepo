@@ -13,7 +13,7 @@ public class AccessDeniedException extends IOException {
     }
 
     public AccessDeniedException(String msg, Throwable thr) {
-        super(msg, thr);
+        super(msg + ": " + thr.getLocalizedMessage(), thr);
     }
 
     public AccessDeniedException(Throwable thr) {

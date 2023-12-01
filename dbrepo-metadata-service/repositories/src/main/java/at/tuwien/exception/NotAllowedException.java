@@ -11,7 +11,7 @@ public class NotAllowedException extends Exception {
     }
 
     public NotAllowedException(String msg, Throwable thr) {
-        super(msg, thr);
+        super(msg + ": " + thr.getLocalizedMessage(), thr);
     }
 
     public NotAllowedException(Throwable thr) {

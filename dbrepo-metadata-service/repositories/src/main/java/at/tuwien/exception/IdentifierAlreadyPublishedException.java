@@ -11,7 +11,7 @@ public class IdentifierAlreadyPublishedException extends Exception {
     }
 
     public IdentifierAlreadyPublishedException(String msg, Throwable thr) {
-        super(msg, thr);
+        super(msg + ": " + thr.getLocalizedMessage(), thr);
     }
 
     public IdentifierAlreadyPublishedException(Throwable thr) {

@@ -53,7 +53,6 @@
     </v-dialog>
     <v-dialog
       v-model="dropTableDialog"
-      persistent
       max-width="640">
       <DropTable @close="closed" />
     </v-dialog>

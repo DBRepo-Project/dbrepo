@@ -11,7 +11,7 @@ public class QueryNotFoundException extends Exception {
     }
 
     public QueryNotFoundException(String msg, Throwable thr) {
-        super(msg, thr);
+        super(msg + ": " + thr.getLocalizedMessage(), thr);
     }
 
     public QueryNotFoundException(Throwable thr) {

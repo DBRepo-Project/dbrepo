@@ -11,7 +11,7 @@ public class PersistenceException extends Exception {
    }
 
    public PersistenceException(String msg, Throwable thr) {
-       super(msg, thr);
+       super(msg + ": " + thr.getLocalizedMessage(), thr);
    }
 
     public PersistenceException(Throwable thr) {

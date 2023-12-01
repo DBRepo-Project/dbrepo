@@ -1,19 +1,16 @@
-import Vue from 'vue'
-import axios from 'axios'
+import api, { displayError } from '@/api/index'
 
 class SearchService {
   getFields (type) {
     return new Promise((resolve, reject) => {
-      axios.get(`/api/search/${type}/fields`, { headers: { Accept: 'application/json' } })
+      api.get(`/api/search/${type}/fields`, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const json = response.data
           console.debug('fields result', json)
           resolve(json)
         })
         .catch((error) => {
-          const { code, message } = error
-          console.error(`Failed to load ${type} fields`, error)
-          Vue.$toast.error(`[${code}] Failed to load ${type} fields: ${message}`)
+          displayError('Failed to load fields', error)
           reject(error)
         })
     })
@@ -36,16 +33,14 @@ class SearchService {
       field_value_pairs: { ...localSearchData }
     }
     return new Promise((resolve, reject) => {
-      axios.post(`/api/search${index ? `/${index}` : ''}`, payload, { headers: { Accept: 'application/json' } })
+      api.post(`/api/search${index ? `/${index}` : ''}`, payload, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const { hits } = response.data
           console.debug('advanced search response', hits.hits)
           resolve(hits.hits)
         })
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to load search results', error)
-          Vue.$toast.error(`[${code}] Failed to load search results: ${message}`)
+          displayError('Failed to load search results', error)
           reject(error)
         })
     })

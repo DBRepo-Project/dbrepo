@@ -11,7 +11,7 @@ public class AmqpException extends Exception {
     }
 
     public AmqpException(String msg, Throwable thr) {
-        super(msg, thr);
+        super(msg + ": " + thr.getLocalizedMessage(), thr);
     }
 
     public AmqpException(Throwable thr) {

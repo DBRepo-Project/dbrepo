@@ -11,7 +11,7 @@ public class IdentifierNotFoundException extends Exception {
     }
 
     public IdentifierNotFoundException(String msg, Throwable thr) {
-        super(msg, thr);
+        super(msg + ": " + thr.getLocalizedMessage(), thr);
     }
 
     public IdentifierNotFoundException(Throwable thr) {

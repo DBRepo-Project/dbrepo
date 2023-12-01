@@ -11,7 +11,7 @@ public class FileStorageException extends Exception {
     }
 
     public FileStorageException(String msg, Throwable thr) {
-        super(msg, thr);
+        super(msg + ": " + thr.getLocalizedMessage(), thr);
     }
 
     public FileStorageException(Throwable thr) {

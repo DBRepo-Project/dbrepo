@@ -11,7 +11,7 @@ public class SemanticEntityNotFoundException extends Exception {
     }
 
     public SemanticEntityNotFoundException(String msg, Throwable thr) {
-        super(msg, thr);
+        super(msg + ": " + thr.getLocalizedMessage(), thr);
     }
 
     public SemanticEntityNotFoundException(Throwable thr) {

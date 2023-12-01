@@ -1,5 +1,4 @@
-import Vue from 'vue'
-import api from '@/api'
+import api, { displayError } from '@/api'
 
 class ContainerService {
   findAll (limit = 100) {
@@ -11,9 +10,7 @@ class ContainerService {
           resolve(containers)
         })
         .catch((error) => {
-          const { code, message } = error.response.data
-          console.error('Failed to load containers', error)
-          Vue.$toast.error(`[${code}] Failed to load containers: ${message}`)
+          displayError('Failed to load container', error)
           reject(error)
         })
     })
@@ -28,9 +25,7 @@ class ContainerService {
           resolve(container)
         })
         .catch((error) => {
-          const { code, message } = error.response.data
-          console.error('Failed to load container', error)
-          Vue.$toast.error(`[${code}] Failed to load container: ${message}`)
+          displayError('Failed to load container', error)
           reject(error)
         })
     })
@@ -45,9 +40,7 @@ class ContainerService {
           resolve(image)
         })
         .catch((error) => {
-          const { code, message } = error.response.data
-          console.error('Failed to load image', error)
-          Vue.$toast.error(`[${code}] Failed to load image: ${message}`)
+          displayError('Failed to load image', error)
           reject(error)
         })
     })

@@ -11,7 +11,7 @@ public class BannerMessageNotFoundException extends Exception {
     }
 
     public BannerMessageNotFoundException(String msg, Throwable thr) {
-        super(msg, thr);
+        super(msg + ": " + thr.getLocalizedMessage(), thr);
     }
 
     public BannerMessageNotFoundException(Throwable thr) {

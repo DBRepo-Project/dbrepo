@@ -11,7 +11,7 @@ public class IdentifierPublishingNotAllowedException extends Exception {
     }
 
     public IdentifierPublishingNotAllowedException(String msg, Throwable thr) {
-        super(msg, thr);
+        super(msg + ": " + thr.getLocalizedMessage(), thr);
     }
 
     public IdentifierPublishingNotAllowedException(Throwable thr) {

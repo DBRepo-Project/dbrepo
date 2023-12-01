@@ -13,7 +13,7 @@ public class DatabaseMalformedException extends IOException {
     }
 
     public DatabaseMalformedException(String msg, Throwable thr) {
-        super(msg, thr);
+        super(msg + ": " + thr.getLocalizedMessage(), thr);
     }
 
     public DatabaseMalformedException(Throwable thr) {

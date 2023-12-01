@@ -11,7 +11,7 @@ public class BrokerVirtualHostModificationException extends Exception {
     }
 
     public BrokerVirtualHostModificationException(String msg, Throwable thr) {
-        super(msg, thr);
+        super(msg + ": " + thr.getLocalizedMessage(), thr);
     }
 
     public BrokerVirtualHostModificationException(Throwable thr) {

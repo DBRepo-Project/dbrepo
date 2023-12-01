@@ -11,7 +11,7 @@ public class FilterBadRequestException extends Exception {
     }
 
     public FilterBadRequestException(String msg, Throwable thr) {
-        super(msg, thr);
+        super(msg + ": " + thr.getLocalizedMessage(), thr);
     }
 
     public FilterBadRequestException(Throwable thr) {

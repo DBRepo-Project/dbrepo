@@ -221,7 +221,7 @@ CREATE TABLE IF NOT EXISTS `mdb_constraints_foreign_key`
     on_delete VARCHAR(50) NULL,
     position  INT         NULL,
     PRIMARY KEY (fkid),
-    FOREIGN KEY (tid) REFERENCES mdb_tables (id),
+    FOREIGN KEY (tid) REFERENCES mdb_tables (id) ON DELETE CASCADE,
     FOREIGN KEY (rtid) REFERENCES mdb_tables (id)
 ) WITH SYSTEM VERSIONING;
 
@@ -243,7 +243,7 @@ CREATE TABLE IF NOT EXISTS `mdb_constraints_unique`
     tid      BIGINT NOT NULL,
     position INT    NULL,
     PRIMARY KEY (uid),
-    FOREIGN KEY (tid) REFERENCES mdb_tables (id)
+    FOREIGN KEY (tid) REFERENCES mdb_tables (id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS `mdb_constraints_unique_columns`
@@ -253,7 +253,7 @@ CREATE TABLE IF NOT EXISTS `mdb_constraints_unique_columns`
     cid BIGINT NOT NULL,
     PRIMARY KEY (id),
     FOREIGN KEY (uid) REFERENCES mdb_constraints_unique (uid),
-    FOREIGN KEY (cid) REFERENCES mdb_columns (id)
+    FOREIGN KEY (cid) REFERENCES mdb_columns (id) ON DELETE CASCADE
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_constraints_checks`
@@ -262,7 +262,7 @@ CREATE TABLE IF NOT EXISTS `mdb_constraints_checks`
     tid    BIGINT       NOT NULL,
     checks VARCHAR(255) NOT NULL,
     PRIMARY KEY (id),
-    FOREIGN KEY (tid) REFERENCES mdb_tables (id)
+    FOREIGN KEY (tid) REFERENCES mdb_tables (id) ON DELETE CASCADE
 ) WITH SYSTEM VERSIONING;
 
 CREATE TABLE IF NOT EXISTS `mdb_concepts`

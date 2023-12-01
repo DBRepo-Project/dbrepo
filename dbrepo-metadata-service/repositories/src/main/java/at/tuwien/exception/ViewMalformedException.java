@@ -11,7 +11,7 @@ public class ViewMalformedException extends Exception {
     }
 
     public ViewMalformedException(String msg, Throwable thr) {
-        super(msg, thr);
+        super(msg + ": " + thr.getLocalizedMessage(), thr);
     }
 
     public ViewMalformedException(Throwable thr) {
