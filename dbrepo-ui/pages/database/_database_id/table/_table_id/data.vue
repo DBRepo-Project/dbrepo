@@ -8,7 +8,7 @@
       </v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn class="mr-2" :loading="downloadLoading" @click.stop="download">
+        <v-btn :loading="downloadLoading" @click.stop="download">
           <v-icon left>mdi-download</v-icon> Download csv
         </v-btn>
         <v-btn @click="pick">

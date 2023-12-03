@@ -11,7 +11,7 @@ public class RemoteUnavailableException extends Exception {
     }
 
     public RemoteUnavailableException(String msg, Throwable thr) {
-        super(msg, thr);
+        super(msg + ": " + thr.getLocalizedMessage(), thr);
     }
 
     public RemoteUnavailableException(Throwable thr) {

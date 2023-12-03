@@ -91,6 +91,7 @@ public ResponseEntity<DatabaseBriefDto> create(@NotNull Long containerId,
 | `find-tables`                   | Can list a specific table in a database              |
 | `list-tables`                   | Can list all tables                                  |
 | `modify-table-column-semantics` | Can modify the column semantics of a specific column |
+| `delete-table`                  | Can delete tables owned by the user in a database    |
 
 ### Default Query Handling
 
@@ -168,9 +169,9 @@ public ResponseEntity<DatabaseBriefDto> create(@NotNull Long containerId,
 
 ### Escalated Table Handling
 
-| Name           | Description                          |
-|----------------|--------------------------------------|
-| `delete-table` | Can delete any table in any database |
+| Name                   | Description                          |
+|------------------------|--------------------------------------|
+| `delete-foreign-table` | Can delete any table in any database |
 
 ### Escalated Query Handling
 

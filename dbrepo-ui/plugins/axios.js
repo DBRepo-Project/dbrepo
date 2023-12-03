@@ -11,20 +11,26 @@ api.interceptors.request.use((config) => {
     return config
   }
   const { exp } = jwtDecode(token)
-  if (new Date(exp) <= new Date()) {
+  let accessTokenExpiryDate = new Date(exp * 1000)
+  if (accessTokenExpiryDate <= Date.now()) {
     /* token expired */
+    console.warn('access token has expired:', accessTokenExpiryDate)
     const refreshToken = store().state.refreshToken
-    const { exp2 } = jwtDecode(refreshToken)
-    if (new Date(exp2) <= new Date()) {
+    const refreshTokenExpiryDate = new Date(jwtDecode(refreshToken).exp * 1000)
+    if (refreshTokenExpiryDate <= Date.now()) {
       /* refresh token expired */
+      console.error('Refresh token expired')
       store().commit('SET_TOKEN', null)
       store().commit('SET_REFRESH_TOKEN', null)
-      console.warn('Refresh token expired')
+      return config
     }
     AuthenticationService.authenticateToken(refreshToken)
-      .then((authentication) => {
-        // console.debug('interceptor inject authorization header for url', config.url)
-        config.headers.Authorization = `Bearer ${authentication.access_token}`
+      .then((response) => {
+        accessTokenExpiryDate = new Date(jwtDecode(response.access_token).exp * 1000)
+        console.info('Successfully requested a new access token')
+        console.debug('new access token expires:', accessTokenExpiryDate)
+        console.debug('attach access token to intercepted request:', config.url)
+        config.headers.Authorization = `Bearer ${response.access_token}`
         return config
       })
       .finally(() => {

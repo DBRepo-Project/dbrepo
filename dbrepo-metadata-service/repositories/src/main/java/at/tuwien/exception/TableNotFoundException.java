@@ -11,7 +11,7 @@ public class TableNotFoundException extends Exception {
     }
 
     public TableNotFoundException(String msg, Throwable thr) {
-        super(msg, thr);
+        super(msg + ": " + thr.getLocalizedMessage(), thr);
     }
 
     public TableNotFoundException(Throwable thr) {

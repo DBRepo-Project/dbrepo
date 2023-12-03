@@ -12,6 +12,7 @@ import at.tuwien.mapper.TableMapper;
 import at.tuwien.service.MessageQueueService;
 import at.tuwien.service.TableService;
 import at.tuwien.utils.PrincipalUtil;
+import at.tuwien.utils.UserUtil;
 import at.tuwien.validation.EndpointValidator;
 import io.micrometer.core.annotation.Timed;
 import io.micrometer.observation.annotation.Observed;
@@ -201,7 +202,7 @@ public class TableEndpoint {
 
     @DeleteMapping("/{tableId}")
     @Transactional
-    @PreAuthorize("hasAuthority('delete-table')")
+    @PreAuthorize("hasAuthority('delete-table') or hasAuthority('delete-foreign-table')")
     @Observed(name = "dbr_table_delete")
     @Operation(summary = "Delete a table", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
@@ -245,8 +246,14 @@ public class TableEndpoint {
                                        @NotNull @PathVariable("tableId") Long tableId,
                                        @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
-            DataProcessingException, ContainerNotFoundException, TableMalformedException, QueryMalformedException {
+            DataProcessingException, ContainerNotFoundException, TableMalformedException, QueryMalformedException,
+            NotAllowedException {
         log.debug("endpoint delete table, databaseId={}, tableId={}, {}", databaseId, tableId, PrincipalUtil.formatForDebug(principal));
+        final Table table = tableService.find(databaseId, tableId);
+        if (!table.getOwner().getUsername().equals(principal.getName()) && !UserUtil.hasRole(principal, "delete-foreign-table")) {
+            log.error("Failed to delete table: not owned by you");
+            throw new NotAllowedException("Failed to delete table: not owned by you");
+        }
         tableService.deleteTable(databaseId, tableId);
         return ResponseEntity.accepted()
                 .build();

@@ -41,6 +41,19 @@ class TableService {
     })
   }
 
+  findByName (databaseId, name) {
+    return new Promise((resolve, reject) => {
+      this.findAll(databaseId)
+        .then((tables) => {
+          const filter = tables.filter(t => t.name === name)
+          if (filter.length === 1) {
+            resolve(filter[0])
+          }
+          reject(new Error('Failed to find table with name ' + name + ' in database with id ' + databaseId))
+        })
+    })
+  }
+
   updateColumn (databaseId, tableId, columnId, data) {
     return new Promise((resolve, reject) => {
       api.put(`/api/database/${databaseId}/table/${tableId}/column/${columnId}`, data, { headers: { Accept: 'application/json' } })
@@ -155,6 +168,22 @@ class TableService {
           const { code, message } = error.response.data
           console.error('Failed to create table', error)
           Vue.$toast.error(`[${code}] Failed to create table: ${message}`)
+          reject(error)
+        })
+    })
+  }
+
+  delete (databaseId, tableId) {
+    return new Promise((resolve, reject) => {
+      api.delete(`/api/database/${databaseId}/table/${tableId}`, { headers: { Accept: 'application/json' } })
+        .then(() => {
+          console.info('Deleted table with id', tableId)
+          resolve()
+        })
+        .catch((error) => {
+          const { code, message } = error.response.data
+          console.error('Failed to delete table', error)
+          Vue.$toast.error(`[${code}] Failed to delete table: ${message}`)
           reject(error)
         })
     })

@@ -1,5 +1,5 @@
-import Vue from 'vue'
 import axios from 'axios'
+import { displayError } from '@/api/index'
 
 class MiddlewareService {
   buildQuery (data) {
@@ -11,9 +11,7 @@ class MiddlewareService {
           resolve(file)
         })
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to build query', error)
-          Vue.$toast.error(`[${code}] Failed to build query: ${message}`)
+          displayError('Failed to build query', error)
           reject(error)
         })
     })

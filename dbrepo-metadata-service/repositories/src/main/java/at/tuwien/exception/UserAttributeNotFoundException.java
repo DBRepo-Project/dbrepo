@@ -11,7 +11,7 @@ public class UserAttributeNotFoundException extends Exception {
     }
 
     public UserAttributeNotFoundException(String msg, Throwable thr) {
-        super(msg, thr);
+        super(msg + ": " + thr.getLocalizedMessage(), thr);
     }
 
     public UserAttributeNotFoundException(Throwable thr) {

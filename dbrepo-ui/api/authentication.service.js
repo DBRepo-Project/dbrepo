@@ -91,19 +91,9 @@ class AuthenticationService {
         }).catch((error) => {
           console.error('Failed to authenticate', error)
           const { response } = error
-          const { status, data } = response
+          const { status } = response
           if (status === 401) {
             Vue.$toast.error('Invalid username-password combination.')
-          } else if (data && data.error && data.error === 'invalid_grant') {
-            store().commit('SET_TOKEN', null)
-            store().commit('SET_REFRESH_TOKEN', null)
-            store().commit('SET_ROLES', [])
-            store().commit('SET_USER', null)
-            this.$vuetify.theme.dark = false
-            Vue.$toast.warning('Authentication expired.')
-            this.$router.push('/login')
-          } else {
-            /* ignore */
           }
           reject(error)
         })

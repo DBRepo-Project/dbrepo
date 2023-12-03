@@ -11,7 +11,7 @@ public class QueryMalformedException extends Exception {
     }
 
     public QueryMalformedException(String msg, Throwable thr) {
-        super(msg, thr);
+        super(msg + ": " + thr.getLocalizedMessage(), thr);
     }
 
     public QueryMalformedException(Throwable thr) {

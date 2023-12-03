@@ -11,7 +11,7 @@ public class ImageNotSupportedException extends Exception {
     }
 
     public ImageNotSupportedException(String msg, Throwable thr) {
-        super(msg, thr);
+        super(msg + ": " + thr.getLocalizedMessage(), thr);
     }
 
     public ImageNotSupportedException(Throwable thr) {

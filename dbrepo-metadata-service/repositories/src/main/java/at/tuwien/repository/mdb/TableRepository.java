@@ -26,6 +26,8 @@ public interface TableRepository extends JpaRepository<Table, Long> {
      */
     List<Table> findByDatabaseOrderByCreatedDesc(Database database);
 
+    List<Table> findByInternalName(String internalName);
+
     /**
      * Finds a table with given database and internal name.
      *

@@ -11,7 +11,7 @@ public class BrokerRemoteException extends Exception {
     }
 
     public BrokerRemoteException(String msg, Throwable thr) {
-        super(msg, thr);
+        super(msg + ": " + thr.getLocalizedMessage(), thr);
     }
 
     public BrokerRemoteException(Throwable thr) {

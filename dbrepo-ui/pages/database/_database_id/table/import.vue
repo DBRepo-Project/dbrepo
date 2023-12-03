@@ -183,7 +183,7 @@
         Table Schema
       </v-stepper-step>
       <v-stepper-content step="4">
-        <TableSchema :back="true" :error="error" :loading="loading" :columns="tableCreate.columns" @close="schemaClose" />
+        <TableSchema ref="schema" :back="true" :columns="tableCreate.columns" @close="schemaClose" />
       </v-stepper-content>
       <v-stepper-step
         :complete="step > 5"
@@ -251,7 +251,7 @@ export default {
         required: value => !!value || 'Required'
       },
       dateFormats: [],
-      tableNames: [],
+      tables: [],
       tableCreate: {
         name: null,
         description: null,
@@ -284,6 +284,9 @@ export default {
     roles () {
       return this.$store.state.roles
     },
+    database () {
+      return this.$store.state.database
+    },
     validTableName () {
       if (this.tableCreate.name === null) {
         return true
@@ -291,13 +294,13 @@ export default {
       if (this.tableCreate.name.length < 3) {
         return true
       }
-      return !this.tableNames.includes(this.tableCreate.name.toString()
-        .normalize('NFKD')
-        .toLowerCase()
-        .trim()
-        .replace(/\s+/g, '-')
-        .replace(/[^\w-]+/g, '')
-        .replace(/--+/g, '_'))
+      if (!this.database || !('tables' in this.database)) {
+        return false
+      }
+      return !this.database
+        .tables
+        .map(t => t.internal_name)
+        .includes(TableMapper.tableNameToInternalName(this.tableCreate.name))
     },
     canInsertTableData () {
       if (!this.roles) {
@@ -308,7 +311,6 @@ export default {
   },
   mounted () {
     this.loadDateFormats()
-    this.listTables()
   },
   methods: {
     notEmpty,
@@ -379,16 +381,6 @@ export default {
           this.loading = false
         })
     },
-    listTables () {
-      this.loading = true
-      TableService.findAll(this.$route.params.database_id)
-        .then((tables) => {
-          this.tableNames = tables.map(t => t.internal_name)
-        })
-        .finally(() => {
-          this.loading = false
-        })
-    },
     schemaClose (event) {
       console.debug('schema closed', event)
       if (!event.success) {
@@ -396,7 +388,7 @@ export default {
         return
       }
       this.validStep4 = true
-      this.createTable()
+      this.createEmptyTableAndImport()
     },
     async loadDateFormats () {
       this.loading = true
@@ -404,10 +396,10 @@ export default {
         const database = await DatabaseService.findOne(this.$route.params.database_id)
         this.dateFormats = database.container.image.date_formats
       } finally {
-        this.localLoading = false
+        this.loading = false
       }
     },
-    createTable () {
+    createEmptyTableAndImport () {
       /* make enum values to array */
       const validColumns = this.tableCreate.columns.map((column) => {
         // validate `id` column: must be a PK
@@ -420,6 +412,24 @@ export default {
       // bail out if there is a problem with one of the columns
       if (!validColumns.every(Boolean)) { return }
       const table = TableMapper.tableCreateToTableCreateDto(this.tableCreate)
+      // check if table already exists (e.g. due to previous fail to import)
+      TableService.findByName(this.$route.params.database_id, this.tableCreate.name)
+        .then((table) => {
+          console.warn('There exists already a table with name', this.tableCreate.name, 'in database: attempt to delete table with id', table.id)
+          TableService.delete(this.$route.params.database_id, table.id)
+            .then(() => {
+              this.$store.dispatch('reloadDatabase')
+            })
+        })
+        .catch(() => {
+          /* ignore, table does not (yet) exist */
+        })
+        .finally(() => {
+          // finally create the table and import csv
+          this.createTableAndImport(table)
+        })
+    },
+    createTableAndImport (table) {
       TableService.create(this.$route.params.database_id, table)
         .then((table) => {
           this.newTableId = table.id
@@ -429,11 +439,17 @@ export default {
               await this.$store.dispatch('reloadDatabase')
               this.step = 5
             })
+            .catch(() => {
+              this.$refs.schema.loading = false
+            })
             .finally(() => {
               this.loading = false
             })
         })
         .catch(() => {
+          this.$refs.schema.loading = false
+        })
+        .finally(() => {
           this.loading = false
         })
     }

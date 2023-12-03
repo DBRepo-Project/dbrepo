@@ -11,7 +11,7 @@ public class QueryStoreException extends Exception {
     }
 
     public QueryStoreException(String msg, Throwable thr) {
-        super(msg, thr);
+        super(msg + ": " + thr.getLocalizedMessage(), thr);
     }
 
     public QueryStoreException(Throwable thr) { super(thr);

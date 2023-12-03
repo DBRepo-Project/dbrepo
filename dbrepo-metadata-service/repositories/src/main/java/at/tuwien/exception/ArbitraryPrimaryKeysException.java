@@ -11,7 +11,7 @@ public class ArbitraryPrimaryKeysException extends Exception {
     }
 
     public ArbitraryPrimaryKeysException(String msg, Throwable thr) {
-        super(msg, thr);
+        super(msg + ": " + thr.getLocalizedMessage(), thr);
     }
 
     public ArbitraryPrimaryKeysException(Throwable thr) {

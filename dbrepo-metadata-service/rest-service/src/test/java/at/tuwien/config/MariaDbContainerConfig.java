@@ -1,6 +1,7 @@
 package at.tuwien.config;
 
 import at.tuwien.test.BaseTest;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.testcontainers.containers.MariaDBContainer;
@@ -33,7 +34,7 @@ public class MariaDbContainerConfig {
 
         public static synchronized CustomMariaDBContainer getInstance() {
             if (instance == null) {
-                instance = new CustomMariaDBContainer(BaseTest.IMAGE_1_NAME + ":" + BaseTest.IMAGE_1_VERSION);
+                instance = new CustomMariaDBContainer("mariadb:11.1.3");
                 instance.withImagePullPolicy(PullPolicy.alwaysPull());
                 instance.addFixedExposedPort(BaseTest.CONTAINER_1_PORT, BaseTest.IMAGE_1_PORT);
                 instance.withUsername(BaseTest.CONTAINER_1_PRIVILEGED_USERNAME);

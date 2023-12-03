@@ -49,7 +49,7 @@ public class ImageServiceIntegrationTest extends BaseUnitTest {
     public void create_succeeds() throws ImageAlreadyExistsException {
         final ImageCreateDto request = ImageCreateDto.builder()
                 .name(IMAGE_1_NAME)
-                .version("11.1.3")
+                .version("11.1.4") // new tag
                 .jdbcMethod(IMAGE_1_JDBC)
                 .dialect(IMAGE_1_DIALECT)
                 .driverClass(IMAGE_1_DRIVER)

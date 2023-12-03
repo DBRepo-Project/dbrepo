@@ -11,7 +11,7 @@ public class IdentifierRequestException extends Exception {
     }
 
     public IdentifierRequestException(String msg, Throwable thr) {
-        super(msg, thr);
+        super(msg + ": " + thr.getLocalizedMessage(), thr);
     }
 
     public IdentifierRequestException(Throwable thr) {

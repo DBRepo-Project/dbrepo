@@ -11,7 +11,7 @@ public class RealmNotFoundException extends Exception {
     }
 
     public RealmNotFoundException(String msg, Throwable thr) {
-        super(msg, thr);
+        super(msg + ": " + thr.getLocalizedMessage(), thr);
     }
 
     public RealmNotFoundException(Throwable thr) {

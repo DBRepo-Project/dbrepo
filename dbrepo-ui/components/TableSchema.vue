@@ -109,7 +109,7 @@
         <v-btn v-if="back" class="mt-10 mr-2 mb-1" @click="stepBack()">
           Back
         </v-btn>
-        <v-btn color="primary" :loading="localLoading" class="mt-10 mb-1" @click="submit">
+        <v-btn color="primary" :loading="loading" class="mt-10 mb-1" @click="submit">
           Continue
         </v-btn>
       </div>
@@ -134,23 +134,11 @@ export default {
       default () {
         return false
       }
-    },
-    error: {
-      type: Boolean,
-      default () {
-        return false
-      }
-    },
-    loading: {
-      type: Boolean,
-      default () {
-        return false
-      }
     }
   },
   data () {
     return {
-      localLoading: false,
+      loading: false,
       dateFormats: [],
       valid: true,
       finished: false,
@@ -163,13 +151,7 @@ export default {
       return this.columns.filter(c => c.primary_key).length === 0
     }
   },
-  watch: {
-    loading () {
-      this.localLoading = this.loading
-    }
-  },
   mounted () {
-    this.localLoading = this.loading
     this.loadDateFormats()
   },
   methods: {
@@ -194,12 +176,12 @@ export default {
         const database = await DatabaseService.findOne(this.$route.params.database_id)
         this.dateFormats = database.image.date_formats
       } finally {
-        this.localLoading = false
+        this.loading = false
       }
     },
     submit () {
       this.finished = true
-      this.localLoading = true
+      this.loading = true
       this.$emit('close', { success: true })
     },
     setOthers (column) {

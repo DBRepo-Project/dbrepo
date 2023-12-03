@@ -11,7 +11,7 @@ public class ContainerNotFoundException extends Exception {
     }
 
     public ContainerNotFoundException(String msg, Throwable thr) {
-        super(msg, thr);
+        super(msg + ": " + thr.getLocalizedMessage(), thr);
     }
 
     public ContainerNotFoundException(Throwable thr) {

@@ -10,12 +10,12 @@ public class ImageInvalidException extends Exception {
         super(msg);
     }
 
-    public ImageInvalidException(String msg, Throwable e) {
-        super(msg, e);
+    public ImageInvalidException(String msg, Throwable thr) {
+        super(msg + ": " + thr.getLocalizedMessage(), thr);
     }
 
-    public ImageInvalidException(Throwable e) {
-        super(e);
+    public ImageInvalidException(Throwable thr) {
+        super(thr);
     }
 
 }

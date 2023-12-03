@@ -11,7 +11,7 @@ public class ColumnParseException extends Exception {
     }
 
     public ColumnParseException(String msg, Throwable thr) {
-        super(msg, thr);
+        super(msg + ": " + thr.getLocalizedMessage(), thr);
     }
 
     public ColumnParseException(Throwable thr) {

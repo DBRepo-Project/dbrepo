@@ -13,7 +13,7 @@ public class BrokerMalformedException extends IOException {
     }
 
     public BrokerMalformedException(String msg, Throwable thr) {
-        super(msg, thr);
+        super(msg + ": " + thr.getLocalizedMessage(), thr);
     }
 
     public BrokerMalformedException(Throwable thr) {

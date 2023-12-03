@@ -10,12 +10,12 @@ public class ContainerStillRunningException extends Exception {
         super(msg);
     }
 
-    public ContainerStillRunningException(String msg, Throwable e) {
-        super(msg, e);
+    public ContainerStillRunningException(String msg, Throwable thr) {
+        super(msg + ": " + thr.getLocalizedMessage(), thr);
     }
 
-    public ContainerStillRunningException(Throwable e) {
-        super(e);
+    public ContainerStillRunningException(Throwable thr) {
+        super(thr);
     }
 
 }

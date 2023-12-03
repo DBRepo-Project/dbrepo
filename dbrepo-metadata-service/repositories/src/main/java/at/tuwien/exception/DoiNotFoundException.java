@@ -11,7 +11,7 @@ public class DoiNotFoundException extends Exception {
     }
 
     public DoiNotFoundException(String msg, Throwable thr) {
-        super(msg, thr);
+        super(msg + ": " + thr.getLocalizedMessage(), thr);
     }
 
     public DoiNotFoundException(Throwable thr) {

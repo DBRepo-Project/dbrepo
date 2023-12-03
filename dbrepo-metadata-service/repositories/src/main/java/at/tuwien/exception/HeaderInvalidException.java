@@ -11,7 +11,7 @@ public class HeaderInvalidException extends Exception {
     }
 
     public HeaderInvalidException(String msg, Throwable thr) {
-        super(msg, thr);
+        super(msg + ": " + thr.getLocalizedMessage(), thr);
     }
 
     public HeaderInvalidException(Throwable thr) {

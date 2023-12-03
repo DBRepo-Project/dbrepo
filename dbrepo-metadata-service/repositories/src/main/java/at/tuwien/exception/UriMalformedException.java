@@ -11,7 +11,7 @@ public class UriMalformedException extends Exception {
     }
 
     public UriMalformedException(String msg, Throwable thr) {
-        super(msg, thr);
+        super(msg + ": " + thr.getLocalizedMessage(), thr);
     }
 
     public UriMalformedException(Throwable thr) {

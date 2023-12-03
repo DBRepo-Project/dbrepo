@@ -11,7 +11,7 @@ public class SemanticEntityPersistException extends Exception {
     }
 
     public SemanticEntityPersistException(String msg, Throwable thr) {
-        super(msg, thr);
+        super(msg + ": " + thr.getLocalizedMessage(), thr);
     }
 
     public SemanticEntityPersistException(Throwable thr) {

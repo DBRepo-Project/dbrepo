@@ -11,7 +11,7 @@ public class SortException extends Exception {
     }
 
     public SortException(String msg, Throwable thr) {
-        super(msg, thr);
+        super(msg + ": " + thr.getLocalizedMessage(), thr);
     }
 
     public SortException(Throwable thr) {

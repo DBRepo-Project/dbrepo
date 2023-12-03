@@ -128,11 +128,10 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(), database.getContainer(), database);
         try {
             final Connection connection = dataSource.getConnection();
-            final PreparedStatement preparedStatement = tableMapper.tableToDropTableRawQuery(connection, table);
-            preparedStatement.executeUpdate();
+            tableMapper.tableToDropTableRawQuery(connection, table);
         } catch (SQLException e) {
-            log.error("Failed to delete table {}, reason: {}", table, e.getMessage());
-            throw new TableMalformedException("Failed to delete table", e);
+            log.error("Failed to drop table: {}", e.getMessage());
+            throw new TableMalformedException("Failed to drop table", e);
         } finally {
             dataSource.close();
         }
@@ -181,7 +180,7 @@ public class TableServiceImpl extends HibernateConnector implements TableService
             final Connection connection = dataSource.getConnection();
             generatedSequence = tableMapper.tableToCreateTableRawQuery(connection, createDto);
         } catch (Exception e) {
-            log.error("Failed to create table, reason: {}", e.getMessage());
+            log.error("Failed to create table: {}", e.getMessage());
             throw new TableMalformedException("Failed to create table", e);
         } finally {
             dataSource.close();

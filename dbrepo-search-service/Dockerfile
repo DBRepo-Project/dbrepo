@@ -17,6 +17,12 @@ COPY ./us-yml ./us-yml
 COPY config.py wsgi.py ./
 
 ENV FLASK_APP=wsgi.py
+ENV COLLECTION="['database','table','column','identifier','unit','concept','user','view']"
+ENV OPENSEARCH_HOST=localhost
+ENV OPENSEARCH_PORT=9200
+ENV OPENSEARCH_USERNAME=admin
+ENV OPENSEARCH_PASSWORD=admin
+ENV LOG_LEVEL=INFO
 
 RUN chown -R alpine:alpine ./
 USER alpine

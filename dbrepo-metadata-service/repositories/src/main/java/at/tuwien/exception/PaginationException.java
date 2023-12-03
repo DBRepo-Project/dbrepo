@@ -11,7 +11,7 @@ public class PaginationException extends Exception {
     }
 
     public PaginationException(String msg, Throwable thr) {
-        super(msg, thr);
+        super(msg + ": " + thr.getLocalizedMessage(), thr);
     }
 
     public PaginationException(Throwable thr) {

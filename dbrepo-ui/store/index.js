@@ -10,6 +10,7 @@ Vue.use(Vuex)
 
 // https://github.com/hua1995116/webchat/blob/7c6544d3defd41cb7cf68306accea97800858bc3/client/src/store/index.js#L293
 const store = new Store({
+  // changes to the state information here *NEED* to be manually propagated to @/plugins/vuex-persist.js to be stored in the web-browser
   state: {
     title: null,
     icon: null,
@@ -158,7 +159,7 @@ const store = new Store({
     logout ({ state, commit }) {
       commit('SET_TOKEN', null)
       commit('SET_REFRESH_TOKEN', null)
-      commit('SET_ROLES', null)
+      commit('SET_ROLES', [])
       commit('SET_USER', null)
       commit('SET_DATABASE', null)
       commit('SET_ACCESS', null)

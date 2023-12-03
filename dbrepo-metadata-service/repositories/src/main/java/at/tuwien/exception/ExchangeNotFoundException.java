@@ -11,7 +11,7 @@ public class ExchangeNotFoundException extends Exception {
     }
 
     public ExchangeNotFoundException(String msg, Throwable thr) {
-        super(msg, thr);
+        super(msg + ": " + thr.getLocalizedMessage(), thr);
     }
 
     public ExchangeNotFoundException(Throwable thr) {

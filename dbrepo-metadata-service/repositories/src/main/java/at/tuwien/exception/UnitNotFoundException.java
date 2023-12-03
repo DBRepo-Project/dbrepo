@@ -11,7 +11,7 @@ public class UnitNotFoundException extends Exception {
     }
 
     public UnitNotFoundException(String msg, Throwable thr) {
-        super(msg, thr);
+        super(msg + ": " + thr.getLocalizedMessage(), thr);
     }
 
     public UnitNotFoundException(Throwable thr) {

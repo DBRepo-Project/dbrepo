@@ -1,5 +1,4 @@
-import Vue from 'vue'
-import api from '@/api'
+import api, { displayError } from '@/api'
 
 class AnalyseService {
   determineDataTypes (filename, separator) {
@@ -15,9 +14,7 @@ class AnalyseService {
           resolve(analysis)
         })
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to load analysis', error)
-          Vue.$toast.error(`[${code}] Failed to load analysis: ${message}`)
+          displayError('Failed to load analysis', error)
           reject(error)
         })
     })

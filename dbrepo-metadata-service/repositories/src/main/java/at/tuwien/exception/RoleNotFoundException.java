@@ -11,7 +11,7 @@ public class RoleNotFoundException extends Exception {
     }
 
     public RoleNotFoundException(String msg, Throwable thr) {
-        super(msg, thr);
+        super(msg + ": " + thr.getLocalizedMessage(), thr);
     }
 
     public RoleNotFoundException(Throwable thr) {

@@ -95,6 +95,7 @@
           flat
           single-line
           hide-details
+          clearable
           append-icon="mdi-magnify"
           :placeholder="$t('search.fuzzy.placeholder', { name: 'vue-i18n' })"
           @click:append="retrieve" />
@@ -148,7 +149,6 @@
 </template>
 
 <script>
-import AuthenticationService from '@/api/authentication.service'
 import DatabaseService from '@/api/database.service'
 import TableService from '@/api/table.service'
 
@@ -170,12 +170,6 @@ export default {
   computed: {
     availableLocales () {
       return this.$i18n.locales.filter(i => i.code !== this.$i18n.locale)
-    },
-    token () {
-      return this.$store.state.token
-    },
-    refreshToken () {
-      return this.$store.state.refreshToken
     },
     user () {
       return this.$store.state.user
@@ -218,13 +212,6 @@ export default {
     '$i18n.locale': {
       handler () {
         this.$store.commit('SET_LOCALE', this.$i18n.locale)
-      }
-    },
-    $route: {
-      handler () {
-        if (this.refreshToken) {
-          AuthenticationService.authenticateToken(this.refreshToken)
-        }
       }
     },
     '$route.params.database_id': {
@@ -311,9 +298,6 @@ export default {
     },
     loadAccess () {
       if (!this.$route.params.database_id) {
-        return
-      }
-      if (!this.token) {
         return
       }
       this.loading = true

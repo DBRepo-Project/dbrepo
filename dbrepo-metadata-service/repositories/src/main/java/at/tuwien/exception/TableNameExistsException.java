@@ -11,7 +11,7 @@ public class TableNameExistsException extends Exception {
     }
 
     public TableNameExistsException(String msg, Throwable thr) {
-        super(msg, thr);
+        super(msg + ": " + thr.getLocalizedMessage(), thr);
     }
 
     public TableNameExistsException(Throwable thr) {

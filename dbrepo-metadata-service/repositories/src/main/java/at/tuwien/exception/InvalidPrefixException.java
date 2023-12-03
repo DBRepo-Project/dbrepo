@@ -11,7 +11,7 @@ public class InvalidPrefixException extends Exception {
     }
 
     public InvalidPrefixException(String msg, Throwable thr) {
-        super(msg, thr);
+        super(msg + ": " + thr.getLocalizedMessage(), thr);
     }
 
     public InvalidPrefixException(Throwable thr) {

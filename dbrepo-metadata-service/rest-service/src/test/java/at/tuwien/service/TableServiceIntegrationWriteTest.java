@@ -97,6 +97,9 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
         databaseRepository.save(DATABASE_1_SIMPLE);
         tableRepository.save(TABLE_1_SIMPLE);
         tableRepository.save(TABLE_2_SIMPLE);
+        /* missing pointers */
+        TABLE_1.setConstraints(TABLE_1_CONSTRAINTS);
+        TABLE_2.setConstraints(TABLE_2_CONSTRAINTS);
     }
 
     @Test

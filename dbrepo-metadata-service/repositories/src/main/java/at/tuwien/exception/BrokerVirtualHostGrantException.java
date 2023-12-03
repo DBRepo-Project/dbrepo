@@ -11,7 +11,7 @@ public class BrokerVirtualHostGrantException extends Exception {
     }
 
     public BrokerVirtualHostGrantException(String msg, Throwable thr) {
-        super(msg, thr);
+        super(msg + ": " + thr.getLocalizedMessage(), thr);
     }
 
     public BrokerVirtualHostGrantException(Throwable thr) {

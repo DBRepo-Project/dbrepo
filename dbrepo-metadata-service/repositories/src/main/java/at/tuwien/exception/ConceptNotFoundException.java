@@ -11,7 +11,7 @@ public class ConceptNotFoundException extends Exception {
     }
 
     public ConceptNotFoundException(String msg, Throwable thr) {
-        super(msg, thr);
+        super(msg + ": " + thr.getLocalizedMessage(), thr);
     }
 
     public ConceptNotFoundException(Throwable thr) {

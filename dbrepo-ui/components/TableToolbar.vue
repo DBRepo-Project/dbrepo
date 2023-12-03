@@ -29,6 +29,9 @@
         <v-btn v-if="canImportCsv" class="mb-1" :to="`/database/${$route.params.database_id}/table/${$route.params.table_id}/import`">
           <v-icon left>mdi-cloud-upload</v-icon> Import .csv
         </v-btn>
+        <v-btn v-if="canDropTable" class="mb-1" color="error" @click="dropTableDialog = true">
+          <v-icon left>mdi-delete</v-icon> Drop Table
+        </v-btn>
       </v-toolbar-title>
     </v-toolbar>
     <v-tabs v-model="tab" color="primary">
@@ -48,6 +51,11 @@
       max-width="640">
       <EditTuple :columns="table.columns" :tuple="tuple" :edit="edit" @close="close" />
     </v-dialog>
+    <v-dialog
+      v-model="dropTableDialog"
+      max-width="640">
+      <DropTable @close="closed" />
+    </v-dialog>
   </div>
 </template>
 
@@ -56,10 +64,13 @@ import EditTuple from '@/components/dialogs/EditTuple'
 import TableService from '@/api/table.service'
 import UserUtils from '@/api/user.utils'
 import DatabaseUtils from '@/api/database.utils'
+import TableUtils from '@/api/table.utils'
+import DropTable from '@/components/dialogs/DropTable'
 
 export default {
   components: {
-    EditTuple
+    EditTuple,
+    DropTable
   },
   props: {
     selection: {
@@ -76,7 +87,8 @@ export default {
       loadingDelete: false,
       error: false,
       edit: false,
-      editTupleDialog: false
+      editTupleDialog: false,
+      dropTableDialog: false
     }
   },
   computed: {
@@ -130,6 +142,12 @@ export default {
         return false
       }
       return UserUtils.hasReadAccess(this.access) && this.roles.includes('execute-query')
+    },
+    canDropTable () {
+      if (!this.roles || !this.table) {
+        return false
+      }
+      return TableUtils.isOwner(this.table, this.user) || this.roles.includes('drop-foreign-table')
     },
     canCreateView () {
       if (!this.user) {
@@ -219,6 +237,12 @@ export default {
       } else {
         this.$emit('modified', { success: false, action: 'close' })
       }
+    },
+    async closed (event) {
+      console.debug('closed drop table dialog', event)
+      this.dropTableDialog = false
+      await this.$store.dispatch('reloadDatabase')
+      await this.$router.push(`/database/${this.$route.params.database_id}/table`)
     }
   }
 }

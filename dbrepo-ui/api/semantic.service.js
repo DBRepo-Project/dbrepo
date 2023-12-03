@@ -10,7 +10,7 @@ class SemanticService {
           resolve(ontologies)
         })
         .catch((error) => {
-          displayError(error, 'Failed to load ontologies')
+          displayError('Failed to load ontologies', error)
           reject(error)
         })
     })
@@ -25,7 +25,7 @@ class SemanticService {
           resolve(concepts)
         })
         .catch((error) => {
-          displayError(error, 'Failed to load concepts')
+          displayError('Failed to load concepts', error)
           reject(error)
         })
     })
@@ -40,7 +40,7 @@ class SemanticService {
           resolve(concept)
         })
         .catch((error) => {
-          displayError(error, 'Failed to update concept')
+          displayError('Failed to update concept', error)
           reject(error)
         })
     })
@@ -55,7 +55,7 @@ class SemanticService {
           resolve(units)
         })
         .catch((error) => {
-          displayError(error, 'Failed to load units')
+          displayError('Failed to load units', error)
           reject(error)
         })
     })
@@ -70,7 +70,7 @@ class SemanticService {
           resolve(unit)
         })
         .catch((error) => {
-          displayError(error, 'Failed to update unit')
+          displayError('Failed to update unit', error)
           reject(error)
         })
     })
@@ -85,7 +85,7 @@ class SemanticService {
           resolve(ontology)
         })
         .catch((error) => {
-          displayError(error, 'Failed to find ontology')
+          displayError('Failed to find ontology', error)
           reject(error)
         })
     })
@@ -100,7 +100,7 @@ class SemanticService {
           resolve(ontology)
         })
         .catch((error) => {
-          displayError(error, 'Failed to register ontology')
+          displayError('Failed to register ontology', error)
           reject(error)
         })
     })
@@ -115,7 +115,7 @@ class SemanticService {
           resolve(ontology)
         })
         .catch((error) => {
-          displayError(error, 'Failed to update ontology')
+          displayError('Failed to update ontology', error)
           reject(error)
         })
     })
@@ -126,7 +126,7 @@ class SemanticService {
       api.delete(`/api/semantic/ontology/${id}`, { headers: { Accept: 'application/json' } })
         .then(() => resolve())
         .catch((error) => {
-          displayError(error, 'Failed to unregister ontology')
+          displayError('Failed to unregister ontology', error)
           reject(error)
         })
     })
@@ -141,7 +141,7 @@ class SemanticService {
           resolve(semantics)
         })
         .catch((error) => {
-          displayError(error, 'Failed to suggest table column semantic')
+          displayError('Failed to suggest table column semantic', error)
           reject(error)
         })
     })

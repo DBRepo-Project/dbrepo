@@ -160,10 +160,10 @@ public abstract class BaseTest {
     public final static String[] ESCALATED_QUERY_HANDLING = new String[]{"escalated-query-handling"};
 
     public final static String[] DEFAULT_TABLE_HANDLING = new String[]{"default-table-handling",
-            "list-tables", "create-table", "modify-table-column-semantics", "find-table"};
+            "list-tables", "create-table", "modify-table-column-semantics", "find-table", "delete-table"};
 
     public final static String[] ESCALATED_TABLE_HANDLING = new String[]{"escalated-table-handling",
-            "delete-table"};
+            "delete-foreign-table"};
 
     public final static String[] DEFAULT_USER_HANDLING = new String[]{"default-user-handling", "modify-user-theme",
             "modify-user-information"};
@@ -665,7 +665,7 @@ public abstract class BaseTest {
     public final static Long IMAGE_1_ID = 1L;
     public final static String IMAGE_1_REGISTRY = "docker.io/library";
     public final static String IMAGE_1_NAME = "mariadb";
-    public final static String IMAGE_1_VERSION = "10.5";
+    public final static String IMAGE_1_VERSION = "11.1.3";
     public final static String IMAGE_1_DIALECT = "org.hibernate.dialect.MariaDBDialect";
     public final static String IMAGE_1_DRIVER = "org.mariadb.jdbc.Driver";
     public final static String IMAGE_1_JDBC = "mariadb";
@@ -1651,6 +1651,7 @@ public abstract class BaseTest {
             .created(TABLE_1_CREATED)
             .createdBy(USER_1_ID)
             .ownedBy(USER_1_ID)
+            .owner(USER_1)
             .lastModified(TABLE_1_LAST_MODIFIED)
             .build();
 
@@ -1702,6 +1703,7 @@ public abstract class BaseTest {
             .constraints(null /* TABLE_2_CONSTRAINTS */)
             .createdBy(USER_2_ID)
             .ownedBy(USER_2_ID)
+            .owner(USER_2)
             .created(TABLE_2_CREATED)
             .lastModified(TABLE_2_LAST_MODIFIED)
             .build();
@@ -1754,6 +1756,7 @@ public abstract class BaseTest {
             .constraints(null /* TABLE_3_CONSTRAINTS */)
             .createdBy(USER_3_ID)
             .ownedBy(USER_3_ID)
+            .owner(USER_3)
             .created(TABLE_3_CREATED)
             .lastModified(TABLE_3_LAST_MODIFIED)
             .build();
@@ -1830,6 +1833,7 @@ public abstract class BaseTest {
             .constraints(null) /* TABLE_4_CONSTRAINTS */
             .createdBy(USER_1_ID)
             .ownedBy(USER_1_ID)
+            .owner(USER_1)
             .build();
 
     public final static Table TABLE_4_SIMPLE = Table.builder()
@@ -1882,6 +1886,7 @@ public abstract class BaseTest {
             .constraints(null) /* TABLE_5_CONSTRAINTS */
             .createdBy(USER_1_ID)
             .ownedBy(USER_1_ID)
+            .owner(USER_1)
             .created(TABLE_5_CREATED)
             .lastModified(TABLE_5_LAST_MODIFIED)
             .build();
@@ -1932,6 +1937,7 @@ public abstract class BaseTest {
             .constraints(null) /* TABLE_6_CONSTRAINTS */
             .createdBy(USER_1_ID)
             .ownedBy(USER_1_ID)
+            .owner(USER_1)
             .created(TABLE_6_CREATED)
             .lastModified(TABLE_6_LAST_MODIFIED)
             .build();
@@ -1979,6 +1985,7 @@ public abstract class BaseTest {
             .columns(List.of() /* needs to be set in the junit tests */)
             .createdBy(USER_1_ID)
             .ownedBy(USER_1_ID)
+            .owner(USER_1)
             .created(TABLE_7_CREATED)
             .lastModified(TABLE_7_LAST_MODIFIED)
             .build();
@@ -2088,6 +2095,7 @@ public abstract class BaseTest {
             .columns(List.of() /* needs to be set in the junit tests */)
             .createdBy(USER_1_ID)
             .ownedBy(USER_1_ID)
+            .owner(USER_1)
             .created(TABLE_8_CREATED)
             .lastModified(TABLE_8_LAST_MODIFIED)
             .build();
@@ -3510,7 +3518,10 @@ public abstract class BaseTest {
                             ForeignKeyReference.builder().column(TABLE_1_COLUMNS.get(2)).referencedColumn(TABLE_1_COLUMNS.get(0)).build())
                     ).build()
             ))
-            .uniques(List.of(Unique.builder().columns(List.of(TABLE_1_COLUMNS.get(1))).build()))
+            .uniques(List.of(Unique.builder().columns(List.of(
+                    TABLE_1_COLUMNS.get(0),
+                    TABLE_1_COLUMNS.get(1)
+            )).build()))
             .checks(Set.of("`mintemp` > 0"))
             .build();
 
@@ -5280,8 +5291,8 @@ public abstract class BaseTest {
     public final static Long VIEW_3_CONTAINER_ID = CONTAINER_1_ID;
     public final static Long VIEW_3_DATABASE_ID = DATABASE_1_ID;
     public final static Boolean VIEW_3_PUBLIC = false;
-    public final static String VIEW_3_QUERY = "select w.`mintemp`, w.`rainfall`, w.`location`, m.`date` from `weather_aus` w join `junit2` m on m.`location` = w.`location`";
-    public final static String VIEW_3_QUERY_HASH = "297bbacf5bf142028d0f4a1e537db03fd91b0c3be9e66ea2abc13d2984d22824";
+    public final static String VIEW_3_QUERY = "select w.`mintemp`, w.`rainfall`, w.`location`, m.`date` from `weather_aus` w join `junit2` m on m.`location` = w.`location` and m.`date` = w.`date`";
+    public final static String VIEW_3_QUERY_HASH = "bbbaa56a5206b3dc3e6cf9301b0db9344eb6f19b100c7b88550ffb597a0bd255";
 
     public final static List<TableColumn> VIEW_3_COLUMNS = List.of(TableColumn.builder()
                     .id(COLUMN_1_4_ID)
