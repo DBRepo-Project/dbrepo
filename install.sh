@@ -23,6 +23,7 @@ curl -sSL -o ./dist/definitions.json https://gitlab.phaidra.org/fair-data-austri
 curl -sSL -o ./dist/dbrepo.conf https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/dbrepo-gateway-service/dbrepo.conf
 curl -sSL -o ./dist/opensearch_dashboards.yml https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/dbrepo-search-db/opensearch_dashboards.yml
 curl -sSL -o ./dist/dbrepo.config.json https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/dbrepo-ui/dbrepo.config.json
+curl -sSL -o ./dist/s3_config.json https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/dbrepo-storage-service/s3_config.json
 
 echo "[📦] Pulling images ..."
 docker compose pull

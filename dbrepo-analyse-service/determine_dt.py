@@ -6,7 +6,7 @@ import json
 import csv
 import logging
 import io
-from clients.minio_client import MinioClient
+from clients.s3_client import S3Client
 
 import messytables, pandas as pd
 from messytables import CSVTableSet, type_guess, \
@@ -17,9 +17,9 @@ def determine_datatypes(filename, enum=False, enum_tol=0.0001, separator=None) -
     # Use option enum=True for searching Postgres ENUM Types in CSV file. Remark
     # Enum is not SQL standard, hence, it might not be supported by all db-engines.
     # However, it can be used in Postgres and MySQL.
-    minio_client = MinioClient()
-    minio_client.file_exists('dbrepo-upload', filename)
-    response = minio_client.get_file('dbrepo-upload', filename)
+    s3_client = S3Client()
+    s3_client.file_exists('dbrepo-upload', filename)
+    response = s3_client.get_file('dbrepo-upload', filename)
     stream = response['Body']
     if response['ContentLength'] == 0:
         logging.warning(f'Failed to determine data types: file {filename} has empty body')

@@ -9,16 +9,16 @@ import unittest
 
 from botocore.exceptions import ClientError
 
-from clients.minio_client import MinioClient
+from clients.s3_client import S3Client
 
 
-class MinioClientTest(unittest.TestCase):
+class S3ClientTest(unittest.TestCase):
 
     # @Test
     def test_upload_file_succeeds(self):
 
         # test
-        response = MinioClient().upload_file(filename="testdt01.csv", path="./data/")
+        response = S3Client().upload_file(filename="testdt01.csv", path="./data/")
         self.assertTrue(response)
 
     # @Test
@@ -26,7 +26,7 @@ class MinioClientTest(unittest.TestCase):
 
         # test
         try:
-            MinioClient().upload_file(filename="testdt06.csv", path="./data/")
+            S3Client().upload_file(filename="testdt06.csv", path="./data/")
         except FileNotFoundError:
             pass
         except Exception:
@@ -38,10 +38,10 @@ class MinioClientTest(unittest.TestCase):
     def test_download_file_succeeds(self):
 
         # mock
-        MinioClient().upload_file(filename="testdt01.csv", path="./data/", bucket="dbrepo-upload")
+        S3Client().upload_file(filename="testdt01.csv", path="./data/", bucket="dbrepo-upload")
 
         # test
-        response = MinioClient().download_file(filename="testdt01.csv")
+        response = S3Client().download_file(filename="testdt01.csv")
         self.assertTrue(response)
 
     # @Test
@@ -49,7 +49,7 @@ class MinioClientTest(unittest.TestCase):
 
         # test
         try:
-            MinioClient().download_file(filename="testdt01.csv")
+            S3Client().download_file(filename="testdt01.csv")
         except ClientError:
             pass
         except Exception:
@@ -61,10 +61,10 @@ class MinioClientTest(unittest.TestCase):
     def test_get_file_succeeds(self):
 
         # mock
-        MinioClient().upload_file(filename="testdt01.csv", path="./data/", bucket="dbrepo-upload")
+        S3Client().upload_file(filename="testdt01.csv", path="./data/", bucket="dbrepo-upload")
 
         # test
-        response = MinioClient().get_file(bucket="dbrepo-upload", filename="testdt01.csv")
+        response = S3Client().get_file(bucket="dbrepo-upload", filename="testdt01.csv")
         self.assertIsNotNone(response)
 
     # @Test
@@ -72,7 +72,7 @@ class MinioClientTest(unittest.TestCase):
 
         # test
         try:
-            MinioClient().get_file(bucket="dbrepo-upload", filename="idonotexist.csv")
+            S3Client().get_file(bucket="dbrepo-upload", filename="idonotexist.csv")
         except ClientError:
             pass
         except Exception:
@@ -84,7 +84,7 @@ class MinioClientTest(unittest.TestCase):
     def test_bucket_exists_succeeds(self):
 
         # test
-        response = MinioClient().bucket_exists_or_exit("dbrepo-upload")
+        response = S3Client().bucket_exists_or_exit("dbrepo-upload")
         self.assertIsNotNone(response)
 
     # @Test
@@ -92,7 +92,7 @@ class MinioClientTest(unittest.TestCase):
 
         # test
         try:
-            MinioClient().bucket_exists_or_exit("idnonotexist")
+            S3Client().bucket_exists_or_exit("idnonotexist")
         except FileNotFoundError:
             pass
         except Exception:
@@ -105,7 +105,7 @@ class MinioClientTest(unittest.TestCase):
 
         # test
         try:
-            MinioClient().bucket_exists_or_exit("idnonotexist")
+            S3Client().bucket_exists_or_exit("idnonotexist")
         except FileNotFoundError:
             pass
         except Exception:

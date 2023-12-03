@@ -39,7 +39,7 @@ services:
     restart: "no"
     container_name: dbrepo-data-db
     hostname: data-db
-    image: docker.io/bitnami/mariadb:11.1.3
+    image: docker.io/bitnami/mariadb-galera:11.1.3-debian-11-r0
     volumes:
       - data-db-data:/bitnami/mariadb
       - "${SHARED_FILESYSTEM:-/tmp}:/tmp"
@@ -47,6 +47,7 @@ services:
       - "3307:3306"
     environment:
       MARIADB_ROOT_PASSWORD: "${USER_DB_PASSWORD:-dbrepo}"
+      MARIADB_GALERA_MARIABACKUP_PASSWORD: "${USER_DB_BACKUP_PASSWORD:-dbrepo}"
     healthcheck:
       test: mysqladmin ping --user="${USER_DB_USERNAME:-root}" --password="${USER_DB_PASSWORD:-dbrepo}" --silent
       interval: 10s
@@ -178,8 +179,8 @@ services:
       - "5000:5000"
     environment:
       S3_STORAGE_ENDPOINT: "${STORAGE_ENDPOINT:-http://storage-service:9000}"
-      S3_ACCESS_KEY_ID: "${STORAGE_USERNAME:-minioadmin}"
-      S3_SECRET_ACCESS_KEY: "${STORAGE_PASSWORD:-minioadmin}"
+      S3_ACCESS_KEY_ID: "${STORAGE_USERNAME:-seaweedfsadmin}"
+      S3_SECRET_ACCESS_KEY: "${STORAGE_PASSWORD:-seaweedfsadmin}"
     volumes:
       - "${SHARED_FILESYSTEM:-/tmp}:/tmp"
     healthcheck:
@@ -258,8 +259,8 @@ services:
     environment:
       FLASK_DEBUG: ${SEARCH_DEBUG_MODE:-true}
       S3_STORAGE_ENDPOINT: "${STORAGE_ENDPOINT:-http://storage-service:9000}"
-      S3_ACCESS_KEY_ID: "${STORAGE_USERNAME:-minioadmin}"
-      S3_SECRET_ACCESS_KEY: ${STORAGE_PASSWORD:-minioadmin}
+      S3_ACCESS_KEY_ID: "${STORAGE_USERNAME:-seaweedfsadmin}"
+      S3_SECRET_ACCESS_KEY: ${STORAGE_PASSWORD:-seaweedfsadmin}
     volumes:
       - "${SHARED_FILESYSTEM:-/tmp}:/tmp"
     healthcheck:
@@ -342,22 +343,18 @@ services:
     restart: "no"
     container_name: dbrepo-storage-service
     hostname: storage-service
-    image: docker.io/bitnami/minio:2023-debian-11
-    environment:
-      MINIO_ROOT_USER: "${STORAGE_USERNAME:-minioadmin}"
-      MINIO_ROOT_PASSWORD: "${STORAGE_PASSWORD:-minioadmin}"
-      MINIO_DEFAULT_BUCKETS: "${STORAGE_DBREPO_BUCKET:-dbrepo-upload:upload,dbrepo-download:download}"
-      MINIO_REGION_NAME: "${STORAGE_REGION_NAME:-eu-west-1}"
-      MINIO_BROWSER_REDIRECT_URL: "${STORAGE_BASE_URL:-http://localhost/admin/storage/}"
+    image: docker.io/dbrepo/storage-service:latest
+    build: ./dbrepo-storage-service
     ports:
       - 9000:9000
-    healthcheck:
-      test: [ "CMD", "mc", "ready", "local" ]
-      interval: 5s
-      timeout: 5s
-      retries: 5
     volumes:
-      - storage-service-data:/bitnami/minio/data
+      - ./dist/s3_config.json:/app/s3_config.json
+      - storage-service-data:/data
+    healthcheck:
+      test: curl -sSL 127.0.0.1:9000 || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 12
     logging:
       driver: json-file
 
@@ -373,9 +370,9 @@ services:
       - "-s3-endpoint=${STORAGE_ENDPOINT:-http://storage-service:9000}"
       - "-s3-bucket=dbrepo-upload"
     environment:
-      AWS_ACCESS_KEY_ID: "${STORAGE_USERNAME:-minioadmin}"
-      AWS_SECRET_ACCESS_KEY: "${STORAGE_PASSWORD:-minioadmin}"
-      AWS_REGION: "${STORAGE_REGION_NAME:-eu-west-1}"
+      AWS_ACCESS_KEY_ID: "${STORAGE_USERNAME:-seaweedfsadmin}"
+      AWS_SECRET_ACCESS_KEY: "${STORAGE_PASSWORD:-seaweedfsadmin}"
+      AWS_REGION: "${STORAGE_REGION_NAME:-default}"
     depends_on:
       dbrepo-storage-service:
         condition: service_healthy

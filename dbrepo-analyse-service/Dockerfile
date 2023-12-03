@@ -15,8 +15,8 @@ ENV FLASK_ENV=production
 ENV HOSTNAME=analyse-service
 ENV LOG_LEVEL=INFO
 ENV S3_STORAGE_ENDPOINT="http://storage-service:9000"
-ENV S3_ACCESS_KEY_ID="minioadmin"
-ENV S3_SECRET_ACCESS_KEY="minioadmin"
+ENV S3_ACCESS_KEY_ID="seaweedfsadmin"
+ENV S3_SECRET_ACCESS_KEY="seaweedfsadmin"
 
 COPY ./as-yml ./as-yml
 COPY ./clients ./clients
