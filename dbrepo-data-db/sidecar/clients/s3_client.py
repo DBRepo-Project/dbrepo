@@ -6,14 +6,14 @@ import sys
 from botocore.exceptions import ClientError
 
 
-class MinioClient:
+class S3Client:
 
     def __init__(self):
         endpoint_url = os.getenv('S3_STORAGE_ENDPOINT', 'http://localhost:9000')
-        aws_access_key_id = os.getenv('S3_ACCESS_KEY_ID', 'minioadmin')
-        aws_secret_access_key = os.getenv('S3_SECRET_ACCESS_KEY', 'minioadmin')
-        logging.info("retrieve file from S3, endpoint_url=%s, aws_access_key_id=%s, aws_secret_access_key=(hidden)",
-                     endpoint_url, aws_access_key_id)
+        aws_access_key_id = os.getenv('S3_ACCESS_KEY_ID', 'seaweedfsadmin')
+        aws_secret_access_key = os.getenv('S3_SECRET_ACCESS_KEY', 'seaweedfsadmin')
+        logging.info(
+            f"retrieve file from S3, endpoint_url={endpoint_url}, aws_access_key_id={aws_access_key_id}, aws_secret_access_key=(hidden)")
         self.client = boto3.client(service_name='s3', endpoint_url=endpoint_url, aws_access_key_id=aws_access_key_id,
                                    aws_secret_access_key=aws_secret_access_key)
         self.bucket_exists_or_exit("dbrepo-upload")
@@ -29,7 +29,7 @@ class MinioClient:
         filepath = os.path.join("/tmp/", filename)
         try:
             self.client.upload_file(filepath, "dbrepo-download", filename)
-            logging.info("Uploaded .csv %s with key %s", filepath, filename)
+            logging.info(f"Uploaded .csv {filepath} with key {filename} into bucket dbrepo-download")
             return True
         except ClientError as e:
             logging.error(e)
@@ -46,7 +46,7 @@ class MinioClient:
         filepath = os.path.join("/tmp/", filename)
         try:
             self.client.download_file("dbrepo-upload", filename, filepath)
-            logging.info("Downloaded .csv with key %s into %s", filename, filepath)
+            logging.info(f"Downloaded .csv with key {filename} into {filepath} from bucket dbrepo-upload")
             return True
         except ClientError as e:
             logging.error(e)
@@ -58,10 +58,10 @@ class MinioClient:
             logging.debug(f"file with name {filename} exists in bucket with name {bucket}")
         except ClientError as e:
             if e.response["Error"]["Code"] == "404":
-                logging.error("Failed to find key %s in bucket %s", filename, bucket)
+                logging.error(f"Failed to find key {filename} in bucket {bucket}")
             else:
-                logging.error("Unexpected error when finding key %s in bucket %s: %s", filename, bucket,
-                              e.response["Error"]["Code"])
+                logging.error(
+                    f"Unexpected error when finding key {filename} in bucket {bucket}: {e.response['Error']['Code']}")
             raise e
 
     def bucket_exists_or_exit(self, bucket):
@@ -70,8 +70,7 @@ class MinioClient:
             logging.debug(f"bucket {bucket} exists.")
         except ClientError as e:
             if e.response["Error"]["Code"] == "404":
-                logging.error("Failed to find bucket %s", bucket)
+                logging.error(f"Failed to find bucket {bucket}")
             else:
-                logging.error("Unexpected error when finding bucket %s: %s", bucket,
-                              e.response["Error"]["Code"])
+                logging.error(f"Unexpected error when finding bucket {bucket}: {e.response['Error']['Code']}")
             sys.exit(1)

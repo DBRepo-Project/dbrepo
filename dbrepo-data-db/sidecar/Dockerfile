@@ -19,8 +19,8 @@ COPY --chown=1001 ./ds-yml ./ds-yml
 COPY --chown=1001 ./app.py ./app.py
 
 ENV S3_STORAGE_ENDPOINT="http://storage-service:9000"
-ENV S3_ACCESS_KEY_ID="minioadmin"
-ENV S3_SECRET_ACCESS_KEY="minioadmin"
+ENV S3_ACCESS_KEY_ID="seaweedfsadmin"
+ENV S3_SECRET_ACCESS_KEY="seaweedfsadmin"
 
 EXPOSE 3305
 
