@@ -36,14 +36,19 @@ The default configuration creates two buckets `dbrepo-upload`, `dbrepo-download`
 Upload a CSV-file into the `dbrepo-upload` bucket with the AWS CLI:
 
 ```console
-$ aws --endpoint-url http://<hostname>:9000 s3 cp /path/to/file.csv s3://dbrepo-upload/
+$ aws --endpoint-url http://<hostname>:9000 \
+    s3 \
+    cp /path/to/file.csv \
+    s3://dbrepo-upload/
 upload: /path/to/file.csv to s3://dbrepo-upload/file.csv
 ```
 
 You can list the buckets:
 
 ```console
-$ aws --endpoint-url http://<hostname>:9000 s3 ls
+$ aws --endpoint-url http://<hostname>:9000 \
+    s3 \
+    ls
 2023-12-03 16:23:15 dbrepo-download
 2023-12-03 16:28:05 dbrepo-upload
 ```
@@ -51,7 +56,10 @@ $ aws --endpoint-url http://<hostname>:9000 s3 ls
 And list the files in the bucket `dbrepo-upload` with:
 
 ```console
-$ aws --endpoint-url http://<hostname>:9000 s3 ls dbrepo-upload
+$ aws --endpoint-url http://<hostname>:9000 \
+    s3 \
+    ls \
+    dbrepo-upload
 2023-12-03 16:28:05     535219 file.csv
 ```
 

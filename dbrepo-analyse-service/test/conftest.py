@@ -6,8 +6,6 @@ import logging
 from minio.deleteobjects import DeleteObject
 from testcontainers.minio import MinioContainer
 
-from clients.minio_client import MinioClient
-
 
 @pytest.fixture(scope="session")
 def session(request):
@@ -16,9 +14,9 @@ def session(request):
     :param request: /
     :return: The minIO container
     """
-    logging.debug("[fixture] creating minIO container")
-    container = MinioContainer(access_key="minioadmin", secret_key="minioadmin")
-    logging.debug("[fixture] starting minIO container")
+    logging.debug("[fixture] creating container")
+    container = MinioContainer(access_key="seaweedfsadmin", secret_key="seaweedfsadmin")
+    logging.debug("[fixture] starting container")
     container.start()
     # set the environment for the client
     endpoint = 'http://' + container.get_container_host_ip() + ':' + container.get_exposed_port(9000)
