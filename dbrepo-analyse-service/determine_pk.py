@@ -5,7 +5,7 @@ import random
 import numpy as np
 import math
 from determine_dt import determine_datatypes
-from clients.minio_client import MinioClient
+from clients.s3_client import S3Client
 
 
 def determine_pk(filename, separator=','):
@@ -15,9 +15,9 @@ def determine_pk(filename, separator=','):
     colnames = dt.keys()
     colindex = list(range(0, len(colnames)))
 
-    minio_client = MinioClient()
-    minio_client.file_exists('dbrepo-upload', filename)
-    response = minio_client.get_file('dbrepo-upload', filename)
+    s3_client = S3Client()
+    s3_client.file_exists('dbrepo-upload', filename)
+    response = s3_client.get_file('dbrepo-upload', filename)
     stream = response['Body']
     if response['ContentLength'] == 0:
         logging.warning(f'Failed to determine primary key: file {filename} has empty body')

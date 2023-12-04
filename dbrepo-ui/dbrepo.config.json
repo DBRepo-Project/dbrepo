@@ -62,11 +62,6 @@
           "href": "http://localhost/admin/dashboard/"
         },
         {
-          "text": "Storage Admin",
-          "blank": true,
-          "href": "http://localhost/admin/storage/"
-        },
-        {
           "text": "RabbitMQ Admin",
           "blank": true,
           "href": "http://localhost/admin/broker/"

@@ -5,7 +5,7 @@ import logging
 from flasgger import LazyJSONEncoder, Swagger
 from flask import Flask, request, Response
 from flasgger.utils import swag_from
-from clients.minio_client import MinioClient
+from clients.s3_client import S3Client
 from prometheus_flask_exporter import PrometheusMetrics
 
 logging.basicConfig(level=logging.DEBUG)
@@ -106,8 +106,8 @@ def health():
 @swag_from("ds-yml/import.yml")
 def import_csv(filename):
     logging.debug('endpoint import csv, filename=%s, body=%s', filename, request)
-    minio_client = MinioClient()
-    response = minio_client.download_file(filename)
+    s3_client = S3Client()
+    response = s3_client.download_file(filename)
     if response is False:
         return Response(), 400
     return Response(json.dumps(response)), 202
@@ -117,8 +117,8 @@ def import_csv(filename):
 @swag_from("ds-yml/export.yml")
 def import_csv(filename):
     logging.debug('endpoint export csv, filename=%s, body=%s', filename, request)
-    minio_client = MinioClient()
-    response = minio_client.upload_file(filename)
+    s3_client = S3Client()
+    response = s3_client.upload_file(filename)
     if response is False:
         return Response(), 400
     return Response(), 202

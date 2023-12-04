@@ -5,12 +5,12 @@ import logging
 from botocore.exceptions import ClientError
 
 
-class MinioClient:
+class S3Client:
 
     def __init__(self):
         endpoint_url = os.getenv('S3_STORAGE_ENDPOINT', 'http://localhost:9000')
-        aws_access_key_id = os.getenv('S3_ACCESS_KEY_ID', 'minioadmin')
-        aws_secret_access_key = os.getenv('S3_SECRET_ACCESS_KEY', 'minioadmin')
+        aws_access_key_id = os.getenv('S3_ACCESS_KEY_ID', 'seaweedfsadmin')
+        aws_secret_access_key = os.getenv('S3_SECRET_ACCESS_KEY', 'seaweedfsadmin')
         logging.info("retrieve file from S3, endpoint_url=%s, aws_access_key_id=%s, aws_secret_access_key=(hidden)",
                      endpoint_url, aws_access_key_id)
         self.client = boto3.client(service_name='s3', endpoint_url=endpoint_url, aws_access_key_id=aws_access_key_id,
