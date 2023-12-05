@@ -94,6 +94,10 @@ tag-search-service:
 	docker tag dbrepo-search-service:latest "${REPOSITORY_URL}/search-service:${TAG}"
 	docker tag dbrepo-search-service:latest "${REPOSITORY2_URL}/search-service:${TAG}"
 
+tag-storage-service-init:
+	docker tag dbrepo-storage-service-init:latest "${REPOSITORY_URL}/storage-service-init:${TAG}"
+	docker tag dbrepo-storage-service-init:latest "${REPOSITORY2_URL}/storage-service-init:${TAG}"
+
 release: build-docker tag release-analyse-service release-authentication-service release-metadata-db release-ui release-metadata-service release-data-service release-log-service release-search-db release-mirror-service release-search-db-init release-search-service release-data-db-sidecar
 
 release-analyse-service: tag-analyse-service
@@ -143,6 +147,10 @@ release-log-service: tag-log-service
 release-search-service: tag-search-service
 	docker push "${REPOSITORY_URL}/search-service:${TAG}"
 	docker push "${REPOSITORY2_URL}/search-service:${TAG}"
+
+release-storage-service-init: tag-storage-service-init
+	docker push "${REPOSITORY_URL}/storage-service-init:${TAG}"
+	docker push "${REPOSITORY2_URL}/storage-service-init:${TAG}"
 
 test-backend: test-metadata-service test-analyse-service test-data-service test-mirror-service
 

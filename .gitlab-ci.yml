@@ -424,6 +424,48 @@ scan-log-service:
     reports:
       container_scanning: ./.trivy/trivy-log-service-report.json
 
+scan-storage-service:
+  image: bitnami/trivy:latest
+  stage: scan
+  only:
+    refs:
+      - dev
+      - master
+  allow_failure: true
+  script:
+    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-storage-service-report.json docker.io/chrislusf/seaweedfs:3.59
+    - trivy image --insecure --exit-code 0 docker.io/chrislusf/seaweedfs:3.59
+    - trivy image --insecure --exit-code 1 --severity CRITICAL docker.io/chrislusf/seaweedfs:3.59
+  cache:
+    paths:
+      - .trivycache/
+  artifacts:
+    when: always
+    expire_in: 1 days
+    reports:
+      container_scanning: ./.trivy/trivy-storage-service-report.json
+
+scan-storage-service-init:
+  image: bitnami/trivy:latest
+  stage: scan
+  only:
+    refs:
+      - dev
+      - master
+  allow_failure: true
+  script:
+    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-storage-service-init-report.json docker.io/dbrepo/storage-service-init:latest
+    - trivy image --insecure --exit-code 0 docker.io/dbrepo/storage-service-init:latest
+    - trivy image --insecure --exit-code 1 --severity CRITICAL docker.io/dbrepo/storage-service-init:latest
+  cache:
+    paths:
+      - .trivycache/
+  artifacts:
+    when: always
+    expire_in: 1 days
+    reports:
+      container_scanning: ./.trivy/trivy-storage-service-init-report.json
+
 release-latest:
   stage: release
   image: docker:24-dind
