@@ -352,18 +352,32 @@ services:
     restart: "no"
     container_name: dbrepo-storage-service
     hostname: storage-service
-    image: dbrepo-storage-service:latest
-    build: ./dbrepo-storage-service
+    image: docker.io/chrislusf/seaweedfs:3.59
+    command: [ "server", "-dir=/data", "-s3", "-s3.port=9000", "-s3.config=/app/s3_config.json", "-metricsPort=9091" ]
     ports:
       - 9000:9000
     volumes:
       - ./dbrepo-storage-service/s3_config.json:/app/s3_config.json
       - storage-service-data:/data
     healthcheck:
-      test: curl -sSL 127.0.0.1:9000 || exit 1
+      test: echo "cluster.check" | weed shell | grep "checking master.*ok" || exit 1
       interval: 10s
       timeout: 5s
       retries: 12
+    logging:
+      driver: json-file
+
+  dbrepo-storage-service-init:
+    restart: "no"
+    container_name: dbrepo-storage-service-init
+    hostname: storage-service-init
+    image: dbrepo-storage-service-init:latest
+    build: ./dbrepo-storage-service/init
+    environment:
+      SEAWEEDFS_ENDPOINT: "${STORAGE_SEAWEEDFS_ENDPOINT:-storage-service:9333}"
+    depends_on:
+      dbrepo-storage-service:
+        condition: service_healthy
     logging:
       driver: json-file
 
