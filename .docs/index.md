@@ -23,12 +23,6 @@ We present a database repository system that allows researchers to ingest data i
 through common interfaces, provides efficient access to arbitrary subsets of data even when the underlying data store is
 evolving, allows reproducing of query results and supports findable-, accessible-, interoperable- and reusable data.
 
-## Community
-
-These institutions use DBRepo and integrated it into their repository infrastructure
-
-<img src="images/logos.png" width="100%" alt="Logos of TU Darmstadt, TU Wien, University Malaya" />
-
 ## More Information
 
 - Demonstration instance [https://dbrepo1.ec.tuwien.ac.at](https://dbrepo1.ec.tuwien.ac.at)

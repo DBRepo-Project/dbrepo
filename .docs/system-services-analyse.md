@@ -38,32 +38,7 @@ the [Storage Service](../system-services-storage), analysis for data types and p
 
 ### Examples
 
-Given a [CSV-file](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-datasets/-/raw/master/gps.csv) 
-containing GPS-data `gps.csv` already uploaded in the `dbrepo-upload` bucket of the Storage Service with key `gps.csv`:
-
-```shell
-curl -X POST \
-  -d '{"filename":"gps.csv","separator":","}'
-  http://<hostname>:5000/api/analyse/determinedt
-```
-
-This results in the response:
-
-```json
-{
-    "columns": {
-        "ID": "bigint",
-        "KEY": "varchar",
-        "OBJECTID": "bigint",
-        "LBEZEICHNUNG": "varchar",
-        "LTYP": "bigint",
-        "LTYPTXT": "varchar",
-        "LAT": "decimal",
-        "LNG": "decimal"
-    },
-    "separator": ","
-}
-```
+See the [usage page](../usage-analyse).
 
 ## Limitations
 

@@ -31,10 +31,13 @@ nav:
       - Search Database Dashboard: system-other-search-dashboard.md
   - Usage:
     - Overview: usage-overview.md
-    - Authentication Service: usage-auth.md
-    - Broker Service: usage-broker.md
-    - Identifier Service: usage-identifier.md
-    - Upload Service: usage-upload.md
+    - Services:
+      - Analyse Service: usage-analyse.md
+      - Authentication Service: usage-auth.md
+      - Broker Service: usage-broker.md
+      - Identifier Service: usage-identifier.md
+      - Upload Service: usage-upload.md
+      - Storage Service: usage-storage.md
   - publications.md
   - contact.md
 extra_css:
