@@ -362,8 +362,7 @@ services:
     restart: "no"
     container_name: dbrepo-storage-service-init
     hostname: storage-service-init
-    image: dbrepo-storage-service-init:latest
-    build: ./dbrepo-storage-service/init
+    image: docker.io/dbrepo/storage-service-init:latest
     environment:
       SEAWEEDFS_ENDPOINT: "${STORAGE_SEAWEEDFS_ENDPOINT:-storage-service:9333}"
     depends_on:
