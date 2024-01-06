@@ -10,8 +10,6 @@ import at.tuwien.entities.database.AccessType;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.database.table.Table;
-import at.tuwien.entities.identifier.Identifier;
-import at.tuwien.entities.identifier.VisibilityType;
 import at.tuwien.exception.*;
 import at.tuwien.repository.mdb.IdentifierRepository;
 import at.tuwien.service.AccessService;
@@ -161,7 +159,7 @@ public class EndpointValidator {
             log.error("Access not allowed: no authorization provided");
             throw new NotAllowedException("Access not allowed: no authorization provided");
         }
-        final Table table = tableService.findById(databaseId, tableId);
+        final Table table = tableService.find(databaseId, tableId);
         log.trace("principal: {}", principal.getName());
         log.trace("table creator: {}", table.getCreatedBy());
         final DatabaseAccess access = accessService.find(databaseId, UserUtil.getId(principal));
@@ -266,29 +264,6 @@ public class EndpointValidator {
         log.trace("principal is {}", principal);
         final DatabaseAccess access = accessService.find(databaseId, UserUtil.getId(principal));
         log.trace("found access {}", access);
-    }
-
-    public void validateOnlyAccessOrPublic(Long databaseId, Long queryId, Principal principal)
-            throws NotAllowedException, DatabaseNotFoundException, AccessDeniedException {
-        final Optional<Identifier> optional = identifierRepository.findSubsetIdentifier(databaseId, queryId);
-        if (optional.isPresent()) {
-            final Identifier identifier = optional.get();
-            log.trace("found identifier for query with id {}", queryId);
-            if (principal != null && identifier.getVisibility().equals(VisibilityType.SELF)) {
-                if (identifier.getCreatedBy().equals(UserUtil.getId(principal))) {
-                    return;
-                }
-                log.error("Access not allowed: visibility is 'self' and user is not the creator");
-                throw new NotAllowedException("Access not allowed: visibility is 'self' and you are not the creator");
-            }
-            if (!identifier.getVisibility().equals(VisibilityType.EVERYONE)) {
-                log.error("Access not allowed: visibility is not 'everyone'");
-                throw new NotAllowedException("Access not allowed: visibility is not 'everyone'");
-            }
-            log.trace("identifier is public, validation passed");
-            return;
-        }
-        validateOnlyAccessOrPublic(databaseId, principal);
     }
 
     public void validateOnlyWriteOwnOrWriteAllAccess(Long databaseId, Long tableId, Principal principal)

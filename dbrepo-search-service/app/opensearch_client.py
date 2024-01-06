@@ -13,6 +13,39 @@ from omlib.omconstants import OM
 from omlib.unit import Unit
 
 
+def key_to_attr_name(key: str) -> str:
+    """
+    Maps an attribute key to a machine-readable representation
+    :param key: The attribute key
+    :return: The machine-readable representation of the attribute key
+    """
+    parts = []
+    previous = None
+    for part in key.split(".")[1:-1]:  # remove the first and last sub-item database.xxx.yyy.zzz.type -> xxx.yyy.zzz
+        if part == "mappings" or part == "mapping":  # remove the mapping sub-item(s)
+            continue
+        if part == previous:  # remove redundant sub-item(s)
+            continue
+        previous = part
+        parts.append(part)
+    return ".".join(parts)
+
+
+def attr_name_to_attr_friendly_name(key: str) -> str:
+    """
+    Maps an attribute key to a human-readable representation
+    :param key: The attribute key
+    :return: The human-readable representation of the attribute key
+    """
+    with open('friendly_names_overrides.json') as json_data:
+        d = json.load(json_data)
+        for json_key in d.keys():
+            if json_key == key:
+                logging.debug(f"friendly name exists for key {json_key}")
+                return d[json_key]
+    return ''.join(key.replace('_', ' ').title().split('.')[-1:])
+
+
 def flatten_dict(
         d: MutableMapping, parent_key: str = "", sep: str = "."
 ) -> MutableMapping:
@@ -26,48 +59,7 @@ def flatten_dict(
     return dict(items)
 
 
-def create_friendly_name(attribute_name):
-    """
-    replaces the attribute names so they are more human readable for the front end
-
-    :todo: extend special_attribute_names
-    :param attribute_name:
-    :return:
-    """
-    special_attribute_names = {
-        "creator.properties.username": "Username (creator)",
-        "owner.properties.username": "Username (owner)",
-        "owner.properties.id": "Id (owner)",
-        "creator.properties.id": "Id (creator)",
-    }
-    if attribute_name not in special_attribute_names:
-        friendly_name = attribute_name.split(".")[-1]
-        friendly_name = friendly_name.replace("_", " ").strip()
-        friendly_name = friendly_name.capitalize()
-        return friendly_name
-    else:
-        return special_attribute_names[attribute_name]
-
-
-def get_keys(d, parent_key=""):
-    # currently not in use, probably obsolete?
-    keys = []
-    for key, value in d.items():
-        new_key = f"{parent_key}.{key}" if parent_key else key
-        if isinstance(value, dict):
-            if "type" in value.keys():
-                keys.append(
-                    {
-                        "attribute_name": new_key,
-                        "data_type": value["type"],
-                    }
-                )
-            else:
-                keys.extend(get_keys(value, new_key))
-    return keys
-
-
-def query_index_by_term_opensearch(index, term, mode):
+def query_index_by_term_opensearch(term, mode):
     """
     old code, is effectively replaced by general_search() now
 
@@ -81,7 +73,7 @@ def query_index_by_term_opensearch(index, term, mode):
         query_str = f"*{term}*"
 
     response = current_app.opensearch_client.search(
-        index=index,
+        index="database",
         body={
             "query": {
                 "query_string": {
@@ -95,35 +87,45 @@ def query_index_by_term_opensearch(index, term, mode):
     return results
 
 
-def get_fields_for_index(index):
+def get_fields_for_index(type: str):
     """
     returns a list of attributes of the data for a specific index.
-    :param index: the index of interest
+    :param type: The search type
     :return: list of fields
     """
-    logging.debug('request fields for index: %s', index)
-    fields = current_app.opensearch_client.indices.get_mapping(index)
-    fields = fields[index]["mappings"]["properties"]
-    logging.debug('fields: %s', fields)
+    fields = {
+        "database": "*",
+        "table": "tables.*",
+        "column": "tables.columns.*",
+        "concept": "tables.columns.concept.*",
+        "unit": "tables.columns.unit.*",
+        "identifier": "identifier.*",
+        "view": "views.*",
+        "user": "creator.*",
+    }
+    logging.debug(f'requesting field(s) {fields[type]} for filter: {type}')
+    fields = current_app.opensearch_client.indices.get_field_mapping(fields[type])
     fields_list = []
     fd = flatten_dict(fields)
     for key in fd.keys():
+        if not key.startswith('database'):
+            continue
         entry = {}
         if key.split(".")[-1] == "type":
-            entry["attribute_name"] = ".".join(key.split(".")[:-1])
+            entry["attr_name"] = key_to_attr_name(key)
+            entry["attr_friendly_name"] = attr_name_to_attr_friendly_name(entry["attr_name"])
             entry["type"] = fd[key]
             fields_list.append(entry)
     return fields_list
 
 
-def general_search(index=None, indices=[], search_term=None, t1=None, t2=None, field_value_pairs=None):
+def general_search(type=None, search_term=None, t1=None, t2=None, field_value_pairs=None):
     """
     Main method for seaching stuff in the opensearch db
 
     all parameters are optional
 
-    :param index: The index to be searched. Optional.
-    :param indices: The available indices to be searched.
+    :param type: The index to be searched. Optional.
     :param search_term: The search term. Optional.
     :param t1: The start range value. Optional.
     :param t2: The end range value. Optional.
@@ -146,17 +148,15 @@ def general_search(index=None, indices=[], search_term=None, t1=None, t2=None, f
             }
         }
         logging.debug(f'search body: {fuzzy_body}')
-        index = ','.join(indices)
-        logging.debug(f'search index: {index}')
         response = current_app.opensearch_client.search(
-            index=index,
+            index="database",
             body=fuzzy_body
         )
         logging.info(f"Found {len(response['hits']['hits'])} result(s)")
         return response
+    musts = []
     if field_value_pairs is not None and len(field_value_pairs) > 0:
         logging.debug('query has field_value_pairs present')
-        musts = []
         is_range_open_end = False
         is_range_open_begin = False
         is_range_query = False
@@ -170,18 +170,6 @@ def general_search(index=None, indices=[], search_term=None, t1=None, t2=None, f
             is_range_query = True
             logging.debug(f"query has start value {t1} and end value {t2} present")
         for key, value in field_value_pairs.items():
-            logging.debug(f"current key={key}, value={value}")
-            # if key in field_list:
-            if re.match(f"{index}\.", key):
-                new_field = key[key.index(".") + 1:len(key)]
-                logging.debug(
-                    f"field name {key} starts with index name {index}: flattened field name to {new_field}")
-                key = new_field
-            if re.match(".*properties\..*", key):
-                new_field = key.replace("properties.", "")
-                logging.debug(
-                    f"field name {key} contains properties keyword: flattened field name to {new_field}")
-                key = new_field
             if is_range_open_end and re.match(f"unit\.", key):
                 logging.debug(f"omit key={key} because query type=open end range and key is somewhat unit")
                 logging.info(f"add match-query for range ),{t2}]")
@@ -221,27 +209,37 @@ def general_search(index=None, indices=[], search_term=None, t1=None, t2=None, f
                     }
                 })
             else:
-                precision = "90%"
-                if key in ["attributes.orcid", "creators.name_identifier", "concept.uri"]:
-                    precision = "100%"
-                    logging.debug(f"key {key} needs precision of 100%")
-                musts.append({
-                    "match": {
-                        key: {"query": value, "minimum_should_match": precision}
-                    }
-                })
-        specific_query = {"bool": {"must": musts}}
-        queries.append(specific_query)
+                if '.' in key:
+                    logging.debug(f'key {key} is nested: use nested query')
+                    index = key.split('.')[0]
+                    musts.append({
+                        "nested": {
+                            "path": index,
+                            "query": {
+                                "term": {
+                                    key: value
+                                }
+                            }
+                        }
+                    })
+                else:
+                    logging.debug(f'key {key} is flat: use bool query')
+                    musts.append({
+                        "match": {
+                            key: {"query": value, "minimum_should_match": "90%"}
+                        }
+                    })
     body = {
-        "query": {"bool": {"must": queries}}
+        "query": {"bool": {"must": musts}}
     }
-    logging.debug('search index: %s', index)
-    logging.debug('search body: %s', body)
+    logging.debug(f'search in index database for type: {type}')
+    logging.debug(f'search body: {body}')
     response = current_app.opensearch_client.search(
-        index=index,
+        index="database",
         body=json.dumps(body)
     )
-    return response
+    results = [hit["_source"] for hit in response["hits"]["hits"]]
+    return results
 
 
 def flatten(mylist):
@@ -255,7 +253,7 @@ def unit_uri_to_unit(uri):
 
 def unit_independent_search(t1=None, t2=None, field_value_pairs=None):
     """
-    Main method for seaching stuff in the opensearch db
+    Main method for searching stuff in the opensearch db
 
     all parameters are optional
 

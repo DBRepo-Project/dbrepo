@@ -8,7 +8,6 @@ import at.tuwien.mapper.OntologyMapper;
 import at.tuwien.service.EntityService;
 import at.tuwien.service.OntologyService;
 import at.tuwien.utils.PrincipalUtil;
-import io.micrometer.core.annotation.Timed;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -187,12 +186,17 @@ public class OntologyEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "422",
+                    description = "Ontology does not have rdf or sparql endpoint",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<List<EntityDto>> find(@NotNull @PathVariable("id") Long id,
                                                 @RequestParam(name = "label", required = false) String label,
                                                 @RequestParam(name = "uri", required = false) String uri)
             throws OntologyNotFoundException, QueryMalformedException, UriMalformedException,
-            FilterBadRequestException {
+            FilterBadRequestException, OntologyInvalidException {
         log.debug("endpoint find entities by uri, id={}, label={}, uri={}", id, label, uri);
         final Ontology ontology = ontologyService.find(id);
         /* check */

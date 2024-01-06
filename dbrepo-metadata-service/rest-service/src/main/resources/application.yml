@@ -66,10 +66,12 @@ fda:
     base: "${PID_BASE}"
   broker:
     endpoint: "${BROKER_ENDPOINT}"
-  minio:
+  s3:
     endpoint: "${S3_STORAGE_ENDPOINT}"
     accessKeyId: "${S3_ACCESS_KEY_ID}"
     secretAccessKey: "${S3_SECRET_ACCESS_KEY}"
+    importBucket: "${S3_IMPORT_BUCKET}"
+    exportBucket: "${S3_EXPORT_BUCKET}"
   jwt:
     issuer: "${JWT_ISSUER}"
     public_key: "${JWT_PUBKEY}"
@@ -86,6 +88,9 @@ fda:
   exchangeName: "${EXCHANGE_NAME}"
   routingKey: "${ROUTING_KEY}"
   connectionTimeout: ${CONNECTION_TIMEOUT}
+  mirrorRate: "${MIRROR_RATE}"
+  obtainMetadataRate: "${OBTAIN_METADATA_RATE}"
+  deleteStaleQueriesRate: "${DELETE_STALE_QUERIES_RATE}"
 dbrepo:
   repository-name: "${REPOSITORY_NAME}"
   base-url: "${BASE_URL}"

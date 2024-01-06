@@ -32,28 +32,28 @@ import java.util.List;
 @Service
 public class MetadataServiceImpl implements MetadataService {
 
-    private final MetadataConfig metadataConfig;
-    private final TemplateEngine templateEngine;
-    private final MetadataMapper metadataMapper;
-    private final IdentifierService identifierService;
     private final RorGateway rorGateway;
     private final OrcidGateway orcidGateway;
     private final ExternalMapper externalMapper;
+    private final MetadataConfig metadataConfig;
+    private final MetadataMapper metadataMapper;
+    private final TemplateEngine templateEngine;
     private final CrossrefGateway crossrefGateway;
+    private final IdentifierService identifierService;
 
     @Autowired
-    public MetadataServiceImpl(MetadataConfig metadataConfig, TemplateEngine templateEngine,
-                               MetadataMapper metadataMapper, IdentifierService identifierService,
-                               RorGateway rorGateway, OrcidGateway orcidGateway, ExternalMapper externalMapper,
-                               CrossrefGateway crossrefGateway) {
-        this.metadataConfig = metadataConfig;
-        this.templateEngine = templateEngine;
-        this.metadataMapper = metadataMapper;
-        this.identifierService = identifierService;
+    public MetadataServiceImpl(RorGateway rorGateway, OrcidGateway orcidGateway, ExternalMapper externalMapper,
+                               MetadataConfig metadataConfig, MetadataMapper metadataMapper,
+                               TemplateEngine templateEngine, CrossrefGateway crossrefGateway,
+                               IdentifierService identifierService) {
         this.rorGateway = rorGateway;
         this.orcidGateway = orcidGateway;
         this.externalMapper = externalMapper;
+        this.metadataConfig = metadataConfig;
+        this.metadataMapper = metadataMapper;
+        this.templateEngine = templateEngine;
         this.crossrefGateway = crossrefGateway;
+        this.identifierService = identifierService;
     }
 
     @Override

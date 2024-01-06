@@ -4,15 +4,16 @@ import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.user.User;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.*;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
+import jakarta.persistence.OrderBy;
 import lombok.*;
 import org.hibernate.annotations.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.io.Serializable;
@@ -32,13 +33,14 @@ import java.util.UUID;
 })
 @NamedQueries({
         @NamedQuery(name = "Database.findAll", query = "select d from Database d order by d.created desc"),
+        @NamedQuery(name = "Database.findByInternalName", query = "select d from Database d where d.internalName = ?1"),
+        @NamedQuery(name = "Database.findAllOnlyIds", query = "select d.id from Database d order by d.created desc"),
         @NamedQuery(name = "Database.findReadAccess", query = "select distinct d from Database d join DatabaseAccess a on a.hdbid = d.id and a.huserid = ?1"),
         @NamedQuery(name = "Database.findWriteAccess", query = "select distinct d from Database d join DatabaseAccess a on a.hdbid = d.id and a.huserid = ?1 where a.type = 'WRITE_OWN' or a.type = 'WRITE_ALL'"),
         @NamedQuery(name = "Database.findConfigureAccess", query = "select distinct d from Database d where d.ownedBy = ?1"),
         @NamedQuery(name = "Database.findPublicOrMine", query = "select distinct d from Database d where d.id = ?1 and (d.isPublic = true or d.ownedBy = ?2)"),
         @NamedQuery(name = "Database.findPublic", query = "select distinct d from Database d where d.isPublic = true and d.id = ?1"),
 })
-@Document(indexName = "database")
 public class Database implements Serializable {
 
     @Id
@@ -73,8 +75,7 @@ public class Database implements Serializable {
     @Column(nullable = false)
     private Long cid;
 
-    @org.springframework.data.annotation.Transient
-    @ManyToOne(cascade = CascadeType.PERSIST)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
             @JoinColumn(name = "cid", referencedColumnName = "id", insertable = false, updatable = false)
     })
@@ -104,35 +105,35 @@ public class Database implements Serializable {
     private User contact;
 
     @ToString.Exclude
-    @org.springframework.data.annotation.Transient
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumnsOrFormulas({
-            @JoinColumnOrFormula(column = @JoinColumn(name = "id", referencedColumnName = "dbid", insertable = false, updatable = false)),
-            @JoinColumnOrFormula(formula = @JoinFormula(referencedColumnName = "identifier_type", value = "'DATABASE'"))
-    })
-    private Identifier identifier;
+    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "database")
+    @Where(clause = "identifier_type='DATABASE'")
+    @OrderBy("id DESC")
+    private List<Identifier> identifiers;
 
     @ToString.Exclude
-    @org.springframework.data.annotation.Transient
-    @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumns({
-            @JoinColumn(name = "tdbid", referencedColumnName = "id", insertable = false, updatable = false)
-    })
+    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "database")
+    @Where(clause = "identifier_type='SUBSET'")
+    @OrderBy("id DESC")
+    private List<Identifier> subsets;
+
+    @ToString.Exclude
+    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "database", orphanRemoval = true)
     private List<Table> tables;
 
     @ToString.Exclude
-    @org.springframework.data.annotation.Transient
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumns({
-            @JoinColumn(name = "vdbid", referencedColumnName = "id", insertable = false, updatable = false)
-    })
+    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "database", orphanRemoval = true)
     private List<View> views;
+
+    @ToString.Exclude
+    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "database", orphanRemoval = true)
+    private List<DatabaseAccess> accesses;
 
     @Column(nullable = false)
     private Boolean isPublic;
 
     @CreatedDate
-    @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP")
+    @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP default NOW()")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant created;
 
     @LastModifiedDate

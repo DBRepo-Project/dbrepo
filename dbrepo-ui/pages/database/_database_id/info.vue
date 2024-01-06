@@ -1,40 +1,15 @@
 <template>
   <div v-if="database">
-    <DBToolbar />
-    <v-progress-linear v-if="loading" />
+    <DatabaseToolbar />
     <v-tabs-items v-model="tab">
       <v-tab-item>
-        <Summary v-if="showIdentifierCard" :identifier="identifier" />
-        <v-card flat tile>
-          <v-card-title v-if="!showIdentifierCard && (canCreateIdentifier || canDeleteIdentifier)">Identifier</v-card-title>
-          <v-card-text v-if="canCreateIdentifier || canDeleteIdentifier">
-            <v-card-actions>
-              <v-btn
-                v-if="canCreateIdentifier"
-                small
-                :to="`/database/${$route.params.database_id}/persist`"
-                color="primary">
-                Get Database PID
-              </v-btn>
-              <v-btn
-                v-if="canEditIdentifier"
-                small
-                :to="`/database/${$route.params.database_id}/persist`"
-                color="secondary">
-                Edit Database PID
-              </v-btn>
-              <v-btn
-                v-if="canDeleteIdentifier && hasIdentifier"
-                small
-                :loading="loadingDelete"
-                color="error"
-                @click="deleteDialog = true">
-                Delete Database PID
-              </v-btn>
-            </v-card-actions>
+        <Summary v-if="hasIdentifier" :identifier="identifier" />
+        <v-card v-if="hasIdentifier" flat tile>
+          <v-card-text>
+            <Select :identifiers="identifiers" :identifier="identifier" />
           </v-card-text>
         </v-card>
-        <v-divider v-if="hasIdentifier || canCreateIdentifier || canDeleteIdentifier" />
+        <v-divider v-if="hasIdentifier" />
         <v-card flat tile>
           <v-card-title>Database</v-card-title>
           <v-card-text>
@@ -143,37 +118,29 @@
         </v-card>
       </v-tab-item>
     </v-tabs-items>
-    <v-dialog
-      v-model="deleteDialog"
-      persistent
-      max-width="480">
-      <DeleteIdentifier :identifier="identifier" @close="closeDeleteDialog" />
-    </v-dialog>
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
   </div>
 </template>
 
 <script>
-import DBToolbar from '@/components/DBToolbar.vue'
+import DatabaseToolbar from '@/components/DatabaseToolbar'
 import { formatTimestampUTCLabel } from '@/utils'
 import DatabaseMapper from '@/api/database.mapper'
-import Summary from '@/components/identifier/Summary.vue'
-import DeleteIdentifier from '@/components/dialogs/DeleteIdentifier.vue'
+import Summary from '@/components/identifier/Summary'
+import Select from '@/components/identifier/Select'
 
 export default {
   components: {
-    DeleteIdentifier,
-    DBToolbar,
-    Summary
+    DatabaseToolbar,
+    Summary,
+    Select
   },
   data () {
     return {
       loading: false,
-      loadingDelete: false,
       loadingStart: false,
       loadingStop: false,
       editDialog: false,
-      deleteDialog: false,
       items: [
         { text: 'Databases', to: '/database', activeClass: '' },
         {
@@ -200,20 +167,26 @@ export default {
       }
       return this.database.identifier.publisher
     },
-    token () {
-      return this.$store.state.token
-    },
     user () {
       return this.$store.state.user
     },
     roles () {
       return this.$store.state.roles
     },
-    identifier () {
+    identifiers () {
       if (!this.database) {
-        return null
+        return []
       }
-      return this.database.identifier
+      return this.database.identifiers
+    },
+    identifier () {
+      if (this.pid) {
+        const filter = this.identifiers.filter(i => i.id === Number(this.pid))
+        if (filter.length > 0) {
+          return filter[0]
+        }
+      }
+      return this.identifiers[0]
     },
     access () {
       return this.$store.state.access
@@ -222,7 +195,7 @@ export default {
       return this.$store.state.database
     },
     pid () {
-      return `${this.baseUrl}/pid/${this.database.identifier.id}`
+      return this.$route.query.pid
     },
     createdUTC () {
       return formatTimestampUTCLabel(this.database.created)
@@ -242,30 +215,6 @@ export default {
     image_version () {
       return this.database.container.image.version
     },
-    showIdentifierCard () {
-      return this.hasIdentifier
-    },
-    canCreateIdentifier () {
-      if (!this.roles || this.hasIdentifier) {
-        return false
-      }
-      if (this.roles.includes('create-foreign-identifier')) {
-        return true
-      }
-      return this.roles.includes('create-identifier') && this.isOwner
-    },
-    canEditIdentifier () {
-      if (!this.roles || !this.hasIdentifier) {
-        return false
-      }
-      return this.roles.includes('modify-identifier-metadata')
-    },
-    canDeleteIdentifier () {
-      if (!this.user || this.hasDoi) {
-        return false
-      }
-      return this.roles.includes('delete-identifier')
-    },
     contact () {
       return DatabaseMapper.databaseToContact(this.database)
     },
@@ -276,16 +225,7 @@ export default {
       return this.database.creator.email_verified
     },
     hasIdentifier () {
-      if ('identifier' in this.database && this.database.identifier) {
-        return 'id' in this.database.identifier
-      }
-      return false
-    },
-    hasDoi () {
-      if (!this.hasIdentifier || !('doi' in this.database.identifier)) {
-        return false
-      }
-      return this.database.identifier.doi !== null
+      return this.identifiers.length > 0
     },
     accessDescription () {
       if (!this.access) {
@@ -302,26 +242,12 @@ export default {
           return { text: null, class: null }
       }
     },
-    isOwner () {
-      if (!this.database || !this.user) {
-        return false
-      }
-      return this.database.owner.username === this.user.username
-    },
     jdbcString () {
       const flags = this.database.container.ui_additional_flags ? this.database.container.ui_additional_flags : ''
       return `jdbc://${this.database.container.ui_host}:${this.database.container.ui_port}/${this.database.internal_name}${flags} (username=${this.user.username}, password=yourpassword)`
     },
     databaseExtraInfo () {
       return this.$config.databaseExtraInfo
-    }
-  },
-  methods: {
-    async closeDeleteDialog (event) {
-      if (event.action === 'deleted') {
-        await this.$store.dispatch('reloadDatabase')
-      }
-      this.deleteDialog = false
     }
   }
 }
@@ -336,10 +262,7 @@ export default {
 #back-btn::before {
   opacity: 0;
 }
-.skeleton-small .v-skeleton-loader__text {
-  width: 100px;
-}
-.skeleton-large .v-skeleton-loader__text {
-  width: 400px;
+.current-identifier {
+  background: #1976d2;
 }
 </style>

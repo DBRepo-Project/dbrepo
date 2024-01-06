@@ -6,6 +6,7 @@ import at.tuwien.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.exception.*;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
 import java.util.List;
@@ -23,8 +24,11 @@ public interface TableService {
      */
     Table find(Long databaseId, Long tableId) throws DatabaseNotFoundException, TableNotFoundException;
 
+    @Transactional(readOnly = true)
+    Table find(Long databaseId, String internalName) throws DatabaseNotFoundException, TableNotFoundException;
+
     /**
-     * Finds all tables in the metdata database.
+     * Finds all tables in the metadata database.
      *
      * @return The list of tables.
      */
@@ -53,33 +57,6 @@ public interface TableService {
      */
     List<Table> findAll(Long databaseId) throws DatabaseNotFoundException;
 
-    /**
-     * Deletes a table for a fiven database-table id pair.
-     *
-     * @param databaseId The database id.
-     * @param tableId    The table id.
-     * @throws TableNotFoundException     The table was not found in the metadata database.
-     * @throws DatabaseNotFoundException  The database was not found in the metadata database.
-     * @throws ImageNotSupportedException The image is not supported.
-     * @throws DataProcessingException    The deletion did not work.
-     */
-    void deleteTable(Long databaseId, Long tableId)
-            throws TableNotFoundException, DatabaseNotFoundException,
-            ImageNotSupportedException, DataProcessingException, ContainerNotFoundException, TableMalformedException,
-            QueryMalformedException;
-
-    /**
-     * Find a table by database-table id pair
-     *
-     * @param databaseId The database id.
-     * @param tableId    The table id.
-     * @return The table.
-     * @throws TableNotFoundException    The table was not found in the metadata database.
-     * @throws DatabaseNotFoundException The database was not found in the metadata database.
-     */
-    Table findById(Long databaseId, Long tableId)
-            throws TableNotFoundException, DatabaseNotFoundException;
-
 
     /**
      * Creates a table for a database id with given schema as data
@@ -93,10 +70,12 @@ public interface TableService {
      * @throws TableNameExistsException   The table name exists already in this database.
      * @throws ContainerNotFoundException The container was not found.
      * @throws TableMalformedException    The table seems malformed by the mapper.
+     * @throws QueryMalformedException    The query to create the table is malformed.
      */
     Table createTable(Long databaseId, TableCreateDto createDto, Principal principal)
             throws ImageNotSupportedException, DatabaseNotFoundException, TableMalformedException,
-            TableNameExistsException, ContainerNotFoundException, UserNotFoundException, QueryMalformedException;
+            TableNameExistsException, ContainerNotFoundException, UserNotFoundException, QueryMalformedException,
+            TableNotFoundException;
 
 
     /**
@@ -111,10 +90,25 @@ public interface TableService {
      * @throws DatabaseNotFoundException  The database was not found in the metadata database.
      * @throws ContainerNotFoundException The container was not found.
      * @throws TableMalformedException    The table seems malformed by the mapper.
+     * @throws QueryMalformedException    The query to update the table is malformed.
      */
-    TableColumn update(Long databaseId, Long tableId, Long columnId,
-                       ColumnSemanticsUpdateDto updateDto, String authorization)
-            throws TableNotFoundException, DatabaseNotFoundException, ContainerNotFoundException,
-            TableMalformedException, SemanticEntityPersistException, SemanticEntityNotFoundException,
-            QueryMalformedException;
+    TableColumn update(Long databaseId, Long tableId, Long columnId, ColumnSemanticsUpdateDto updateDto,
+                       String authorization) throws TableNotFoundException, DatabaseNotFoundException,
+            ContainerNotFoundException, TableMalformedException, SemanticEntityPersistException,
+            SemanticEntityNotFoundException, QueryMalformedException;
+
+    /**
+     * Deletes a table from the database in the metadata database and data database.
+     *
+     * @param databaseId The database id.
+     * @param tableId    The table id.
+     * @throws TableNotFoundException     The table was not found in the metadata database.
+     * @throws DatabaseNotFoundException  The database was not found in the metadata database.
+     * @throws ImageNotSupportedException The image is not supported.
+     * @throws TableMalformedException    The table seems malformed by the mapper.
+     * @throws QueryMalformedException    The query to delete the table is malformed.
+     */
+    void deleteTable(Long databaseId, Long tableId)
+            throws TableNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
+            TableMalformedException, QueryMalformedException;
 }

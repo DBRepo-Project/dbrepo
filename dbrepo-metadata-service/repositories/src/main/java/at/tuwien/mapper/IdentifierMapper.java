@@ -7,7 +7,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 import org.mapstruct.Named;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {DatabaseMapper.class})
 public interface IdentifierMapper {
 
     Identifier identifierDtoToIdentifier(IdentifierDto data);
@@ -15,7 +15,7 @@ public interface IdentifierMapper {
     IdentifierBriefDto identifierToIdentifierBriefDto(Identifier data);
 
     @Mappings({
-            @Mapping(target = "database.identifier", ignore = true),
+            @Mapping(target = "database.identifiers", ignore = true),
     })
     IdentifierDto identifierToIdentifierDto(Identifier data);
 
@@ -51,11 +51,13 @@ public interface IdentifierMapper {
 
     default String identifierToLocationUrl(String baseUrl, Identifier data) {
         if (data.getType().equals(IdentifierType.SUBSET)) {
-            return baseUrl + "/database/" + data.getDatabase().getId() + "/query/" + data.getQueryId();
+            return baseUrl + "/database/" + data.getDatabase().getId() + "/query/" + data.getQueryId()+ "/info?pid=" + data.getId();
         } else if (data.getType().equals(IdentifierType.DATABASE)) {
-            return baseUrl + "/database/" + data.getDatabase().getId();
+            return baseUrl + "/database/" + data.getDatabase().getId() + "/info?pid=" + data.getId();
         } else if (data.getType().equals(IdentifierType.VIEW)) {
-            return baseUrl + "/database/" + data.getDatabase().getId() + "/view/" + data.getViewId();
+            return baseUrl + "/database/" + data.getDatabase().getId() + "/view/" + data.getViewId()+ "/info?pid=" + data.getId();
+        } else if (data.getType().equals(IdentifierType.TABLE)) {
+            return baseUrl + "/database/" + data.getDatabase().getId() + "/table/" + data.getTableId()+ "/info?pid=" + data.getId();
         } else {
             return null;
         }

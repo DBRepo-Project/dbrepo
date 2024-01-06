@@ -50,6 +50,7 @@ BEGIN
         WHERE NOT EXISTS (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` = @hash);
         SET queryId = (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` = @hash);
     END IF;
+    DROP TABLE IF EXISTS `_tmp`;
 END; $$
 
 DELIMITER $$
@@ -72,6 +73,7 @@ BEGIN
         WHERE NOT EXISTS (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` = @hash);
         SET queryId = (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` = @hash);
     END IF;
+    DROP TABLE IF EXISTS `_tmp`;
 END; $$
 
 DELIMITER ;

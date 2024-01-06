@@ -3,7 +3,6 @@ package at.tuwien.service;
 import at.tuwien.api.database.DatabaseCreateDto;
 import at.tuwien.api.database.DatabaseModifyVisibilityDto;
 import at.tuwien.api.database.DatabaseTransferDto;
-import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
@@ -60,25 +59,6 @@ public interface DatabaseService {
     Database findById(Long databaseId) throws DatabaseNotFoundException;
 
     /**
-     * Deletes a database with given id in the metadata database. Side effects: does only mark the database as deleted,
-     * does not actually delete it.
-     *
-     * @param databaseId The database id.
-     * @param userId     The user id.
-     * @throws DatabaseNotFoundException   The database was not found in the metadata database.
-     * @throws ImageNotSupportedException  The image is not supported.
-     * @throws DatabaseMalformedException  The query string is malformed.
-     * @throws AmqpException               The exchange could not be deleted.
-     * @throws DatabaseConnectionException The connection to the database could not be established by the database connector.
-     * @throws QueryMalformedException     The mapped deletion query resulted in an invalid query statement and thus was rejected by the database engine.
-     * @throws UserNotFoundException       The current user could not be loaded in the metadata database.
-     */
-    void delete(Long databaseId, UUID userId)
-            throws DatabaseNotFoundException, ImageNotSupportedException,
-            DatabaseMalformedException, AmqpException,
-            DatabaseConnectionException, QueryMalformedException, UserNotFoundException;
-
-    /**
      * Creates a new database with minimal metadata in the metadata database and creates a new database on the container.
      *
      * @param createDto The metadata.
@@ -93,12 +73,18 @@ public interface DatabaseService {
      * @throws DatabaseConnectionException  The connection to the database could not be established by the database connector.
      * @throws QueryMalformedException      The mapped creation query resulted in an invalid query statement and thus was rejected by the database engine.
      */
-    Database create(DatabaseCreateDto createDto, Principal principal)
-            throws ImageNotSupportedException, ContainerNotFoundException,
-            DatabaseMalformedException, AmqpException, ContainerConnectionException, UserNotFoundException,
-            DatabaseNameExistsException, DatabaseConnectionException, QueryMalformedException, KeycloakRemoteException, AccessDeniedException;
+    Database create(DatabaseCreateDto createDto, Principal principal) throws ImageNotSupportedException,
+            ContainerNotFoundException, DatabaseMalformedException, AmqpException, ContainerConnectionException,
+            UserNotFoundException, DatabaseNameExistsException, DatabaseConnectionException, QueryMalformedException,
+            KeycloakRemoteException, AccessDeniedException;
 
-    void updatePassword(User user) throws DatabaseMalformedException, QueryMalformedException;
+    /**
+     * Updates the user's password.
+     *
+     * @param user The user.
+     * @throws QueryMalformedException The mapped query is malformed.
+     */
+    void updatePassword(User user) throws QueryMalformedException;
 
     /**
      * Updates the visibility of the database.
@@ -119,5 +105,19 @@ public interface DatabaseService {
      * @throws DatabaseNotFoundException The database was not found in the metadata database.
      * @throws UserNotFoundException     The new user was not found in the metadata database.
      */
-    Database transfer(Long databaseId, DatabaseTransferDto transferDto) throws DatabaseNotFoundException, UserNotFoundException, KeycloakRemoteException, AccessDeniedException;
+    Database transfer(Long databaseId, DatabaseTransferDto transferDto) throws DatabaseNotFoundException,
+            UserNotFoundException;
+
+    /**
+     * Obtain metadata from database with given id to read table and view information (schema) and write it to the metadata database for management by DBRepo.
+     *
+     * @param databaseId The database id.
+     * @return The updated database.
+     * @throws DatabaseNotFoundException  The database was not found in the metadata database.
+     * @throws QueryMalformedException    The inspect query (table/view) is malformed and has syntax issues.
+     * @throws DatabaseUnchangedException The metadata database is up-to-date and knows about all tables/views in the data database(s).
+     * @throws ColumnParseException       The columns could not be automatically parsed from the views.
+     */
+    Database obtainMetadata(Long databaseId) throws DatabaseNotFoundException, QueryMalformedException,
+            DatabaseUnchangedException, ColumnParseException, TableNotFoundException;
 }

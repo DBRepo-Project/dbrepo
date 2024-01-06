@@ -6,7 +6,7 @@
           <v-row dense>
             <v-col cols="3">
               <v-select
-                v-model="index"
+                v-model="searchType"
                 :items="fieldItems"
                 item-text="name"
                 item-value="value"
@@ -14,7 +14,7 @@
                 label="Type" />
             </v-col>
           </v-row>
-          <p>The following fields are <code>AND</code> connected and depend on the type above.</p>
+          <p>The following fields are <code>AND</code> connected.</p>
           <v-row dense>
             <v-col cols="3">
               <v-text-field
@@ -41,41 +41,62 @@
             <v-progress-circular color="primary" indeterminate />
           </v-row>
           <v-row v-if="!loadingFields && renderedFields" dense>
-            <v-col v-for="field in renderedFields" :key="`f-${field.attribute_name}`" cols="3">
+            <v-col v-for="field in renderedFields" :key="`f-${field.attr_name}`" cols="3">
               <v-select
                 v-if="field.type === 'boolean'"
-                v-model="advancedSearchData[generateDynamicVModelKey(field)]"
+                v-model="advancedSearchData[field.attr_name]"
                 clearable
                 :items="booleanItems"
                 item-text="name"
                 item-value="value"
-                :label="generateFriendlyName(field)" />
+                :label="field.attr_friendly_name" />
               <v-text-field
-                v-if="(field.type === 'keyword' && field.attribute_name !== 'column_type') || field.type === 'text' || field.type === 'date'"
-                v-model="advancedSearchData[generateDynamicVModelKey(field)]"
+                v-if="(field.type === 'keyword' && field.attr_name !== 'column_type') || field.type === 'text' || field.type === 'date'"
+                v-model="advancedSearchData[field.attr_name]"
                 type="text"
-                :label="generateFriendlyName(field)"
+                :label="field.attr_friendly_name"
                 clearable />
               <v-select
-                v-if="field.type === 'keyword' && field.attribute_name === 'column_type'"
-                v-model="advancedSearchData[generateDynamicVModelKey(field)]"
+                v-if="field.type === 'keyword' && field.attr_name === 'column_type'"
+                v-model="advancedSearchData[field.attr_name]"
                 :items="columnTypes"
                 item-value="value"
                 clearable
-                :label="generateFriendlyName(field)" />
+                :label="field.attr_friendly_name" />
               <v-text-field
-                v-if="field.type === 'integer'"
-                v-model="advancedSearchData[generateDynamicVModelKey(field)]"
+                v-if="field.type.startsWith('integer') || field.type.startsWith('long') || field.type.startsWith('double')"
+                v-model="advancedSearchData[field.attr_name]"
                 type="number"
-                :label="generateFriendlyName(field)"
+                :label="field.attr_friendly_name"
                 clearable />
               <v-autocomplete
-                v-if="field.attribute_name === 'licenses'"
-                v-model="advancedSearchData[generateDynamicVModelKey(field)]"
-                :items="fetchLicenses()"
-                :label="generateFriendlyName(field)"
+                v-if="field.attr_name === 'licenses'"
+                v-model="advancedSearchData[field.attr_name]"
+                :items="fetchLicenses"
+                :label="field.attr_friendly_name"
                 clearable
                 multiple />
+            </v-col>
+          </v-row>
+          <p v-if="isEligibleYearRangeSearch" class="mt-4">
+            Specify your custom publication year range:
+          </p>
+          <v-row v-if="isEligibleYearRangeSearch" dense>
+            <v-col cols="3">
+              <v-text-field
+                v-model="advancedSearchData['t1']"
+                type="number"
+                label="Start Year"
+                required
+                :rules="[v => !!v || $t('Required')]"
+                clearable />
+            </v-col>
+            <v-col cols="3">
+              <v-text-field
+                v-model="advancedSearchData['t2']"
+                type="number"
+                label="End Year"
+                clearable />
             </v-col>
           </v-row>
           <p v-if="isEligibleConceptOrUnitSearch" class="mt-4">
@@ -122,6 +143,7 @@
               class="mr-2"
               color="primary"
               :loading="loading"
+              :disabled="!valid"
               small
               @click="advancedSearch">
               Search
@@ -141,17 +163,35 @@ import SemanticMapper from '@/api/semantic.mapper'
 export default {
   data () {
     return {
-      index: 'database',
+      searchType: 'database',
       valid: false,
       loading: false,
       loadingFields: false,
       showAdvancedSearch: false,
       concepts: [],
       units: [],
+      yearFrom: null,
+      yearFromItems: [
+        { name: `Since ${new Date().getFullYear()}`, value: new Date().getFullYear() },
+        { name: `Since ${new Date().getFullYear() - 1}`, value: new Date().getFullYear() - 1 },
+        { name: `Since ${new Date().getFullYear() - 2}`, value: new Date().getFullYear() - 2 },
+        { name: `Since ${new Date().getFullYear() - 3}`, value: new Date().getFullYear() - 3 },
+        { name: 'Custom', value: 'custom' }
+      ],
       columnTypes: QueryMapper.mySql8DataTypes().map((datatype) => {
         datatype.value = datatype.value.toUpperCase()
         return datatype
       }),
+      dynamicFields: {
+        database: ['is_public', 'owner.attributes.orcid', 'owner.username', 'identifier.publication_year'],
+        table: [],
+        column: [],
+        user: ['creator.firstname', 'creator.lastname', 'creator.username', 'creator.orcid'],
+        identifier: [],
+        view: [],
+        concept: ['tables.columns.concept.uri'],
+        unit: ['tables.columns.unit.uri']
+      },
       fieldItems: [
         { name: 'Database', value: 'database' },
         { name: 'Table', value: 'table' },
@@ -177,42 +217,53 @@ export default {
   },
   computed: {
     hideFields () {
-      const selectedOption = this.index
+      const selectedOption = this.searchType
       return {
         hideNameField: selectedOption === 'identifier',
         hideInternalNameField: ['identifier', 'user', 'concept', 'unit'].includes(selectedOption)
       }
     },
     isEligibleConceptOrUnitSearch () {
-      return ['column'].includes(this.index)
+      return ['column'].includes(this.searchType)
+    },
+    isEligibleYearRangeSearch () {
+      return this.searchType === 'database' && this.yearFrom === 'custom'
     },
     isAdvancedSearch () {
       return !this.$route.query.q
+    },
+    type () {
+      if (!this.$route.query || !this.$route.query.t) {
+        return null
+      }
+      return this.$route.query.t
     }
   },
   watch: {
-    index: {
+    $route: {
+      handler () {
+        this.initFieldsFromRoute()
+      }
+    },
+    type: {
+      handler () {
+        this.initFieldsFromRoute()
+      }
+    },
+    searchType: {
       handler (newType, oldType) {
         if (!newType) {
           return
         }
-        this.resetAdvancedSearchFields()
-        this.$emit('search-result', [])
-        this.loadingFields = true
-        SearchService.getFields(newType)
-          .then((response) => {
-            this.loadingFields = false
-            const { fields } = response
-            this.renderedFields = fields.filter(field => this.shouldRenderItem(field))
-          })
-          .finally(() => {
-            this.loadingFields = false
-          })
+        this.initSearch(newType)
+        this.advancedSearch()
       },
       immediate: true
     }
   },
   mounted () {
+    this.initFieldsFromRoute()
+    this.initSearch(this.searchType)
     this.advancedSearch()
     SemanticService.findAllConcepts()
       .then((response) => {
@@ -230,8 +281,12 @@ export default {
     /* Removes all advanced search fields when switching the type */
     resetAdvancedSearchFields () {
       Object.keys(this.advancedSearchData)
-        .filter(k => !['name', 'internal_name', 'id', 'type'].includes(k))
-        .forEach(k => delete this.advancedSearchData[k])
+        .filter(k => !['name', 'internal_name', 'id'].includes(k))
+        .filter(k => !Object.keys(this.$route.query).includes(k))
+        .forEach((k) => {
+          console.debug('delete advanced search key', k)
+          delete this.advancedSearchData[k]
+        })
     },
     advancedSearch () {
       console.debug('performing advanced search')
@@ -247,71 +302,24 @@ export default {
         this.advancedSearchData.t2 = Number(this.advancedSearchData.t2)
       }
       this.loading = true
-      SearchService.search(this.index, this.advancedSearchData)
+      SearchService.search(this.searchType, this.advancedSearchData)
         .then((response) => {
-          this.$emit('search-result', response.map(h => h._source))
+          this.$emit('search-result', response)
         })
         .finally(() => {
           this.loading = false
         })
     },
-    isAdvancedSearchEmpty () {
-      return !(
-        this.advancedSearchData.id ||
-        this.advancedSearchData.name ||
-        this.advancedSearchData.internal_name
-      )
-    },
-    dynamicFieldsMap () {
-      // Defines a mapping to narrow down the fields rendered for the advanced search
-      return {
-        database: ['is_public'],
-        table: ['description', 'is_public'],
-        column: ['column_type', 'is_primary_key', 'is_null_allowed'],
-        user: ['firstname', 'lastname', 'username', 'attributes.properties.orcid'],
-        identifier: [
-          'creators.properties.creator_name', 'creators.properties.name_identifier',
-          'descriptions.properties.description', 'doi', 'funders.properties.funder_identifier',
-          'publication_year', 'titles.properties.title'
-        ],
-        view: ['is_public', 'query'],
-        concept: ['uri'],
-        unit: ['uri']
-      }
-    },
-    getLastFlattenedItem (str) {
-      // Returns substring after the last dot otherwise the string itself if no dots are contained
-      if (!str) { return '' }
-
-      // Check if string is a flattened nested object
-      return str.includes('.') ? str.split('.').slice(-1)[0] : str
-    },
-    generateFriendlyName (item) {
-      // Generates a proper name to be displayed with the dynamic component
-      if (!item) { return '' }
-
-      const specialAbbreviations = {
-        doi: 'DOI',
-        uri: 'URI'
-        // Add more abbreviations here, if needed
-      }
-      const str = this.getLastFlattenedItem(item.attribute_name)
-
-      return str.split('_').map((word) => {
-        const lowerWord = word.toLowerCase()
-        return specialAbbreviations[lowerWord] || (word.charAt(0).toUpperCase() + word.slice(1))
-      }).join(' ')
-    },
-    generateDynamicVModelKey (item) {
-      // Generates a dynamic v-model; It will be attached to the advancedSearchData object
-      if (!item) { return '' }
-
-      return `${this.index}.${item.attribute_name}`
-    },
     shouldRenderItem (item) {
-      // Checks if item's attribute_name matches any wanted field
+      // Checks if item's attr_name matches any wanted field
       // The expected response is of a flattened format, so this method must be modified accordingly if the response is changed
-      return this.dynamicFieldsMap()[this.index].includes(item.attribute_name)
+      const possibleFields = this.dynamicFields[this.searchType]
+      const shouldBeRendered = possibleFields.map(tuple => tuple).includes(item.attr_name)
+      if (shouldBeRendered) {
+        const attr = item.attr_name.substr(item.attr_name.lastIndexOf('.'), item.attr_name.length)
+        console.debug('attribute', attr, 'should be rendered')
+      }
+      return shouldBeRendered
     },
     fetchLicenses () {
       // Licenses is a nested object in the backend, but without any values.
@@ -319,6 +327,36 @@ export default {
       return [
         'Apache-2.0', 'BSD-3-Clause', 'BSD-4-Clause', 'CC-BY-4.0', 'CC0-1.0', 'GPL-3.0-only', 'MIT'
       ]
+    },
+    initSearch (searchType) {
+      this.resetAdvancedSearchFields()
+      this.$emit('search-result', [])
+      this.loadingFields = true
+      SearchService.getFields(searchType)
+        .then((response) => {
+          this.loadingFields = false
+          this.renderedFields = response.filter(field => this.shouldRenderItem(field))
+          this.renderedFields.forEach((field) => {
+            const filter = this.dynamicFields[this.searchType].filter(tuple => tuple.key === field.attr_name)
+            if (filter.length > 0) {
+              field.attr_friendly_name = filter[0].name
+            }
+          })
+        })
+        .finally(() => {
+          this.loadingFields = false
+        })
+    },
+    initFieldsFromRoute () {
+      if (this.type) {
+        this.searchType = this.type
+        console.debug('type', this.type, 'is present: set search type to', this.searchType)
+      }
+      const keys = Object.keys(this.$route.query).filter(key => key !== 't').filter(key => this.dynamicFields[this.searchType].filter(dkey => key === dkey))
+      keys.forEach((key) => {
+        this.advancedSearchData[key] = this.$route.query[key]
+        console.debug('set advanced search field with key', key, 'to value', this.$route.query[key])
+      })
     }
   }
 }

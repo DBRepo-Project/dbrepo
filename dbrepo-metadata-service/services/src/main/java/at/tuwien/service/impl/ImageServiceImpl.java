@@ -46,7 +46,7 @@ public class ImageServiceImpl implements ImageService {
         final Optional<ContainerImage> image = imageRepository.findById(imageId);
         if (image.isEmpty()) {
             log.error("Failed to find image with id {} in metadata database", imageId);
-            throw new ImageNotFoundException("Failed to find image");
+            throw new ImageNotFoundException("Failed to find image with id " + imageId + " in metadata database");
         }
         return image.get();
     }
@@ -56,9 +56,9 @@ public class ImageServiceImpl implements ImageService {
     public ContainerImage create(ImageCreateDto createDto, Principal principal) throws ImageAlreadyExistsException {
         final ContainerImage image = imageMapper.createImageDtoToContainerImage(createDto);
         if (imageRepository.findByNameAndVersion(createDto.getName(), createDto.getVersion()).isPresent()) {
-            log.error("Failed to create image {}:{}, it already exists in the metadata database",
+            log.error("Failed to create image {}:{}: exists in the metadata database",
                     createDto.getName(), createDto.getVersion());
-            throw new ImageAlreadyExistsException("Failed to create image " + createDto.getName() + ":" + createDto.getVersion());
+            throw new ImageAlreadyExistsException("Failed to create image " + createDto.getName() + ":" + createDto.getVersion() + ": exists in the metadata database");
         }
         final ContainerImage dto;
         try {
@@ -67,8 +67,7 @@ public class ImageServiceImpl implements ImageService {
             log.error("Failed to create image: {}", e.getMessage());
             throw new ImageAlreadyExistsException("Failed to create image", e);
         }
-        log.info("Created image {}", dto.getId());
-        log.trace("created image {}", dto);
+        log.info("Created image with id {} in metadata database", dto.getId());
         return dto;
     }
 
@@ -86,22 +85,20 @@ public class ImageServiceImpl implements ImageService {
         image.setJdbcMethod(changeDto.getJdbcMethod());
         /* update metadata db */
         final ContainerImage out = imageRepository.save(image);
-        log.info("Updated image with id {}", out.getId());
+        log.info("Updated image with id {} in metadata database", out.getId());
         return out;
     }
 
     @Override
     @Transactional
     public void delete(Long imageId) throws ImageNotFoundException {
-        if (!imageRepository.existsById(imageId)) {
-            throw new ImageNotFoundException("Image with id " + imageId + " not found");
-        }
+        find(imageId);
         try {
             imageRepository.deleteById(imageId);
-            log.info("Deleted image {}", imageId);
+            log.info("Deleted image with id {} in metadata database", imageId);
         } catch (EntityNotFoundException | EmptyResultDataAccessException | DataIntegrityViolationException e) {
-            log.error("Failed to delete image with id {} with constraint, reason: {}", imageId, e.getMessage());
-            throw new ImageNotFoundException("Failed to delete image with constraint", e);
+            log.error("Failed to delete image with id {} with constraint: {}", imageId, e.getMessage());
+            throw new ImageNotFoundException("Failed to delete image with id " + imageId + " with constraint", e);
         }
     }
 

@@ -31,10 +31,10 @@ public class ForeignKeyDto {
     private List<ColumnDto> referencedColumns;
 
     @JsonProperty("on_update")
-    @Field(name = "on_update", includeInParent = true, type = FieldType.Keyword)
+    @Field(name = "on_update", type = FieldType.Keyword)
     private ReferenceTypeDto onUpdate;
 
     @JsonProperty("on_delete")
-    @Field(name = "on_delete", includeInParent = true, type = FieldType.Keyword)
+    @Field(name = "on_delete", type = FieldType.Keyword)
     private ReferenceTypeDto onDelete;
 }

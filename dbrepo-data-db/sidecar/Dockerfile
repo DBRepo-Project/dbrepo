@@ -1,6 +1,6 @@
 FROM python:3.10-alpine
 
-RUN apk add bash curl jq
+RUN apk add bash curl jq mariadb-client
 
 ENV PYTHONFAULTHANDLER=1
 

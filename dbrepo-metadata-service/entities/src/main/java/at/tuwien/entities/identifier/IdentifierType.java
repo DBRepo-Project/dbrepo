@@ -6,5 +6,6 @@ import lombok.Getter;
 public enum IdentifierType {
     DATABASE,
     SUBSET,
+    TABLE,
     VIEW;
 }

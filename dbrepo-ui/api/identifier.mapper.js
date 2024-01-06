@@ -1,3 +1,5 @@
+import store from '@/store'
+
 class IdentifierMapper {
   identifierToCreators (identifier) {
     if (!identifier) {
@@ -13,12 +15,7 @@ class IdentifierMapper {
         str += ', '
       }
       /* name */
-      if (creators[i].firstname) {
-        str += (creators[i].firstname.toUpperCase().substring(0, 1) + '., ')
-      }
-      if (creators[i].lastname) {
-        str += creators[i].lastname
-      }
+      str += creators[i].creator_name
     }
     return str
   }
@@ -28,6 +25,7 @@ class IdentifierMapper {
       database_id: data.database_id,
       query_id: data.query_id,
       view_id: data.view_id,
+      table_id: data.table_id,
       type: data.type,
       titles: data.titles.map((t) => {
         return {
@@ -115,8 +113,22 @@ class IdentifierMapper {
     return filtered[0].description
   }
 
+  descriptionShort (description) {
+    const targetLength = 280
+    const lengthMax = 300
+    if (!description) {
+      return null
+    }
+    if (description.length <= lengthMax) {
+      return description
+    }
+    const extra = description.substring(targetLength, lengthMax)
+    const idx = extra.indexOf(' ')
+    return description.substring(0, targetLength + idx) + '...'
+  }
+
   identifierPreferEnglishTitle (identifier) {
-    if (!identifier) {
+    if (!identifier || !identifier.titles || identifier.titles.length === 0) {
       return null
     }
     const filtered = identifier.titles.filter(d => d.language && d.language === 'en')
@@ -124,6 +136,27 @@ class IdentifierMapper {
       return identifier.titles[0].title
     }
     return filtered[0].title
+  }
+
+  identifierToUrl (identifier) {
+    if (!identifier) {
+      return null
+    }
+    return identifier.doi !== null ? `${store().state.doiUrl}/${identifier.doi}` : `/pid/${identifier.id}`
+  }
+
+  identifierToDisplayName (identifier) {
+    if (!identifier) {
+      return null
+    }
+    return identifier.doi !== null ? identifier.doi : `/pid/${identifier.id}`
+  }
+
+  identifierToDisplayAcronym (identifier) {
+    if (!identifier) {
+      return null
+    }
+    return identifier.doi !== null ? 'DOI' : 'URI'
   }
 }
 

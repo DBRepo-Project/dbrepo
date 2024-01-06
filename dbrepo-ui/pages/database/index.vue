@@ -1,78 +1,10 @@
 <template>
-  <div>
-    <v-toolbar flat>
-      <v-toolbar-title v-if="!isFiltered" v-text="$t('databases.recent', { name: 'vue-i18n' })" />
-      <v-toolbar-title v-else v-text="$t('databases.my', { name: 'vue-i18n' })" />
-      <v-spacer />
-      <v-toolbar-title>
-        <v-btn v-if="canCreateDatabase" color="primary" name="create-database" @click.stop="createDbDialog = true">
-          <v-icon left>mdi-plus</v-icon> Database
-        </v-btn>
-      </v-toolbar-title>
-    </v-toolbar>
-    <DatabaseList ref="databases" />
-    <v-dialog
-      v-model="createDbDialog"
-      persistent
-      max-width="640">
-      <CreateDB @close="closed" />
-    </v-dialog>
-    <v-breadcrumbs :items="items" class="pa-0 mt-2" />
-  </div>
+  <div />
 </template>
 <script>
-import { mdiDatabaseArrowRightOutline } from '@mdi/js'
-import CreateDB from '@/components/dialogs/CreateDB.vue'
-import DatabaseList from '@/components/DatabaseList.vue'
-
 export default {
-  components: {
-    CreateDB,
-    DatabaseList
-  },
-  data () {
-    return {
-      loadingCreate: false,
-      createDbDialog: false,
-      createDatabaseDto: {
-        name: null,
-        is_public: true
-      },
-      items: [
-        { text: 'Databases', to: '/database', activeClass: '' }
-      ],
-      loadingDatabases: false,
-      error: false,
-      iconSelect: mdiDatabaseArrowRightOutline
-    }
-  },
-  computed: {
-    token () {
-      return this.$store.state.token
-    },
-    user () {
-      return this.$store.state.user
-    },
-    roles () {
-      return this.$store.state.roles
-    },
-    isFiltered () {
-      return this.$route.query.f === 'my'
-    },
-    canCreateDatabase () {
-      if (!this.roles) {
-        return false
-      }
-      return this.roles.includes('create-database')
-    }
-  },
-  methods: {
-    closed (event) {
-      this.createDbDialog = false
-      if (event.success) {
-        this.$refs.databases.loadDatabases()
-      }
-    }
+  mounted () {
+    this.$router.push('/')
   }
 }
 </script>

@@ -1,9 +1,13 @@
 package at.tuwien.mapper;
 
+import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.ViewBriefDto;
 import at.tuwien.api.database.ViewCreateDto;
 import at.tuwien.api.database.ViewDto;
+import at.tuwien.api.identifier.IdentifierDto;
+import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.View;
+import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.exception.QueryMalformedException;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -17,14 +21,14 @@ import java.text.Normalizer;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
-@Mapper(componentModel = "spring", uses = {ContainerMapper.class, UserMapper.class, IdentifierMapper.class})
+@Mapper(componentModel = "spring", uses = {ContainerMapper.class, UserMapper.class, TableMapper.class})
 public interface ViewMapper {
 
     org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ViewMapper.class);
 
-    @Named("internalMapping")
+    @Named("internalNameMapping")
     default String nameToInternalName(String data) {
-        if (data == null || data.length() == 0) {
+        if (data == null || data.isEmpty()) {
             return data;
         }
         final Pattern NONLATIN = Pattern.compile("[^\\w-]");
@@ -36,7 +40,10 @@ public interface ViewMapper {
     }
 
     @Mappings({
-            @Mapping(target = "database.container", ignore = true)
+            @Mapping(target = "database.container", ignore = true),
+            @Mapping(target = "database.views", ignore = true),
+            @Mapping(target = "database.tables", ignore = true),
+            @Mapping(target = "database.identifiers", ignore = true),
     })
     ViewDto viewToViewDto(View data);
 

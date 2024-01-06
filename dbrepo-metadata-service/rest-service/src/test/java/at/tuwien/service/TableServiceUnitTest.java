@@ -6,7 +6,7 @@ import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.exception.DatabaseNotFoundException;
 import at.tuwien.exception.TableNotFoundException;
-import at.tuwien.repository.mdb.TableRepository;
+import at.tuwien.repository.mdb.DatabaseRepository;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,11 +34,11 @@ import static org.mockito.Mockito.when;
 @MockOpensearch
 public class TableServiceUnitTest extends BaseUnitTest {
 
+    @MockBean
+    private DatabaseRepository databaseRepository;
+
     @Autowired
     private TableService tableService;
-
-    @MockBean
-    private TableRepository tableRepository;
 
     @BeforeEach
     public void beforeEach() {
@@ -49,8 +49,8 @@ public class TableServiceUnitTest extends BaseUnitTest {
     public void findAll_succeeds() throws TableNotFoundException, DatabaseNotFoundException {
 
         /* mock */
-        when(tableRepository.find(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(Optional.of(TABLE_8));
+        when(databaseRepository.findById(DATABASE_3_ID))
+                .thenReturn(Optional.of(DATABASE_3));
 
         /* test */
         final List<TableColumn> response = tableService.find(DATABASE_3_ID, TABLE_8_ID)

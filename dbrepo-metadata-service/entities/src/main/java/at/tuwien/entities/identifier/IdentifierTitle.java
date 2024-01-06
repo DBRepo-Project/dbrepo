@@ -4,7 +4,6 @@ import at.tuwien.entities.database.LanguageType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
-import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.io.Serializable;
@@ -29,7 +28,6 @@ public class IdentifierTitle implements Serializable {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String title;
 
-    @Field(name = "title_type")
     @Column(columnDefinition = "enum('ALTERNATIVE_TITLE', 'SUBTITLE', 'TRANSLATED_TITLE', 'OTHER')")
     @Enumerated(EnumType.STRING)
     private TitleType titleType;

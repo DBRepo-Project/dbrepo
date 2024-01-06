@@ -48,7 +48,6 @@ public class User {
     private String affiliation;
 
     @ToString.Exclude
-    @org.springframework.data.annotation.Transient
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumns({
             @JoinColumn(name = "user_id", referencedColumnName = "ID", insertable = false, updatable = false)

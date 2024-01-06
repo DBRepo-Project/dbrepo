@@ -2,7 +2,6 @@
   <div>
     <v-form ref="form" v-model="valid" autocomplete="off" @submit.prevent="submit">
       <v-card>
-        <v-progress-linear v-if="loading" :color="loadingColor" :indeterminate="!error" />
         <v-card-title v-text="title" />
         <v-card-subtitle v-if="subtitle" v-text="subtitle" />
         <v-card-text>
@@ -46,7 +45,7 @@
           <v-btn
             id="database"
             class="mb-2 ml-3 mr-2 black--text"
-            :disabled="!valid || loading"
+            :disabled="!valid || loading || accessType === modify.type"
             :color="buttonColor"
             type="submit"
             :loading="loading"
@@ -65,7 +64,7 @@ import UserService from '@/api/user.service'
 
 export default {
   props: {
-    username: {
+    userId: {
       type: String,
       default () {
         return null
@@ -98,9 +97,6 @@ export default {
     }
   },
   computed: {
-    loadingColor () {
-      return this.error ? 'red lighten-2' : 'primary'
-    },
     token () {
       return this.$store.state.token
     },
@@ -138,14 +134,14 @@ export default {
       return 'warning'
     },
     isModification () {
-      return this.username !== null
+      return this.userId !== null
     },
     buttonText () {
-      return (this.isModification ? 'Modify' : 'Give') + ' Access'
+      return (this.isModification ? 'Modify' : 'Create')
     }
   },
   watch: {
-    username () {
+    userId () {
       this.init()
     },
     accessType () {
@@ -163,6 +159,7 @@ export default {
       this.$emit('close-dialog', { success: false })
     },
     async updateAccess () {
+      this.loading = true
       if (this.isModification) {
         if (this.modify.type === 'revoke') {
           await this.revokeAccess()
@@ -174,7 +171,6 @@ export default {
       }
     },
     revokeAccess () {
-      this.loading = true
       DatabaseService.revokeAccess(this.$route.params.database_id, this.modify.userId)
         .then(() => {
           this.$toast.success('Successfully revoked access')
@@ -185,7 +181,6 @@ export default {
         })
     },
     modifyAccess () {
-      this.loading = true
       DatabaseService.modifyAccess(this.$route.params.database_id, this.modify.userId, this.modify.type)
         .then(() => {
           this.$toast.success('Successfully modified access')
@@ -196,7 +191,6 @@ export default {
         })
     },
     giveAccess () {
-      this.loading = true
       DatabaseService.giveAccess(this.$route.params.database_id, this.modify.userId, this.modify.type)
         .then(() => {
           this.$toast.success('Successfully provisioned access')
@@ -217,11 +211,11 @@ export default {
         })
     },
     init () {
-      if (!this.username) {
-        this.modify.username = null
+      if (!this.userId) {
+        this.modify.userId = null
         this.loadUsers()
       } else {
-        this.modify.username = this.username
+        this.modify.userId = this.userId
         /* eligible users are computed separately */
       }
       if (!this.accessType) {

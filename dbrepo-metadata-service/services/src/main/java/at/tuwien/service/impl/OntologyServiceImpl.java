@@ -37,11 +37,16 @@ public class OntologyServiceImpl implements OntologyService {
     }
 
     @Override
+    public List<Ontology> findAllProcessable() {
+        return ontologyRepository.findAllProcessable();
+    }
+
+    @Override
     public Ontology find(Long id) throws OntologyNotFoundException {
         final Optional<Ontology> optional = ontologyRepository.findById(id);
         if (optional.isEmpty()) {
-            log.error("Failed to find ontology with id {}", id);
-            throw new OntologyNotFoundException("Failed to find ontology with id " + id);
+            log.error("Failed to find ontology with id {} in metadata database", id);
+            throw new OntologyNotFoundException("Failed to find ontology with id " + id + " in metadata database");
         }
         return optional.get();
     }
@@ -51,7 +56,7 @@ public class OntologyServiceImpl implements OntologyService {
             KeycloakRemoteException, AccessDeniedException {
         final Ontology entity = ontologyMapper.ontologyCreateDtoToOntology(data);
         final Ontology ontology = ontologyRepository.save(entity);
-        log.info("Created ontology with id {}", ontology.getId());
+        log.info("Created ontology with id {}  in metadata database", ontology.getId());
         return ontology;
     }
 
@@ -63,15 +68,15 @@ public class OntologyServiceImpl implements OntologyService {
         entity.setSparqlEndpoint(data.getSparqlEndpoint());
         entity.setRdfPath(data.getRdfPath());
         final Ontology ontology = ontologyRepository.save(entity);
-        log.info("Update ontology with id {}", ontology.getId());
+        log.info("Update ontology with id {} in metadata database", ontology.getId());
         return ontology;
     }
 
     @Override
     public void delete(Long id) throws OntologyNotFoundException {
         if (!ontologyRepository.existsById(id)) {
-            log.error("Failed to delete ontology: ontology with id {} does not exist", id);
-            throw new OntologyNotFoundException("Failed to delete ontology: ontology with id " + id + " does not exist");
+            log.error("Failed to delete ontology with id {} in metadata database: does not exist", id);
+            throw new OntologyNotFoundException("Failed to delete ontology with id " + id + " in metadata database: does not exist");
         }
         ontologyRepository.deleteById(id);
         log.info("Deleted ontology with id {}", id);

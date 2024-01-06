@@ -46,14 +46,8 @@ export default {
     access () {
       return this.$store.state.access
     },
-    hasIdentifier () {
-      if ('identifier' in this.query && this.query.identifier) {
-        return 'id' in this.query.identifier
-      }
-      return false
-    },
     canPersistQuery () {
-      if (this.loadingQuery || !this.query || this.hasIdentifier) {
+      if (this.loadingQuery || !this.query) {
         return false
       }
       return UserUtils.hasReadAccess(this.access)

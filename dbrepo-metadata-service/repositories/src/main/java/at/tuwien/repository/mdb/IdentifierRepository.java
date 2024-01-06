@@ -20,14 +20,6 @@ public interface IdentifierRepository extends JpaRepository<Identifier, Long> {
     List<Identifier> findByDatabaseId(Long databaseId);
 
     /**
-     * Finds identifiers by given query id.
-     *
-     * @param queryId The query id.
-     * @return List of matching identifiers.
-     */
-    List<Identifier> findByQueryId(Long queryId);
-
-    /**
      * Finds identifiers by given database id and query id.
      *
      * @param databaseId The database id.
@@ -36,30 +28,9 @@ public interface IdentifierRepository extends JpaRepository<Identifier, Long> {
      */
     List<Identifier> findByDatabaseIdAndQueryId(Long databaseId, Long queryId);
 
-    /**
-     * Checks if an identifier exists by given database id and identifier type.
-     *
-     * @param databaseId The database id.
-     * @param type       The identifier type.
-     * @return True if identifier exists, false otherwise.
-     */
-    Boolean existsByDatabaseIdAndType(Long databaseId, IdentifierType type);
+    List<Identifier> findDatabaseIdentifier(Long databaseId);
 
-    /**
-     * Checks if an identifier exists by given database id, query id and identifier type.
-     *
-     * @param databaseId The database id.
-     * @param queryId    The query id.
-     * @param type       The identifier type.
-     * @return True if identifier exists, false otherwise.
-     */
-    Boolean existsByDatabaseIdAndQueryIdAndType(Long databaseId, Long queryId, IdentifierType type);
-
-    Optional<Identifier> findByDatabaseIdAndType(Long databaseId, IdentifierType type);
-
-    Optional<Identifier> findDatabaseIdentifier(Long databaseId);
-
-    Optional<Identifier> findSubsetIdentifier(Long databaseId, Long queryId);
+    List<Identifier> findSubsetIdentifier(Long databaseId, Long queryId);
 
     List<Identifier> findAllDatabaseIdentifiers();
 

@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface ViewService {
 
-    View findById(Long id) throws ViewNotFoundException;
+    View findById(Long id) throws ViewNotFoundException, DatabaseNotFoundException;
 
     /**
      * Find all views by database id.
@@ -19,7 +19,7 @@ public interface ViewService {
      * @return A list of views.
      * @throws UserNotFoundException The user with authorization principal was not found.
      */
-    List<View> findAll(Long databaseId, Principal principal) throws UserNotFoundException;
+    List<View> findAll(Long databaseId, Principal principal) throws UserNotFoundException, DatabaseNotFoundException;
 
     /**
      * Find a view by database id and view id.
@@ -31,7 +31,8 @@ public interface ViewService {
      * @throws ViewNotFoundException The view was not found in the metadata database.
      * @throws UserNotFoundException The user with authorization principal was not found.
      */
-    View findById(Long databaseId, Long id, Principal principal) throws ViewNotFoundException, UserNotFoundException;
+    View findById(Long databaseId, Long id, Principal principal) throws ViewNotFoundException, UserNotFoundException,
+            DatabaseNotFoundException;
 
     /**
      * Delete view in the container with the given id and database with id and the given view id.

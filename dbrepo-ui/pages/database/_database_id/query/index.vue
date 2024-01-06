@@ -1,14 +1,17 @@
 <template>
   <div>
-    <DBToolbar v-model="db" />
+    <DatabaseToolbar v-model="db" />
     <QueryList />
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
   </div>
 </template>
 
 <script>
-
+import QueryList from '@/components/QueryList.vue'
 export default {
+  components: {
+    QueryList
+  },
   data () {
     return {
       items: [

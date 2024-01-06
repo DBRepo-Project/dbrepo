@@ -4,7 +4,6 @@ import at.tuwien.entities.database.LanguageType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
-import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.io.Serializable;
@@ -20,6 +19,7 @@ import java.io.Serializable;
 public class IdentifierDescription implements Serializable {
 
     @Id
+    @org.springframework.data.annotation.Id
     @EqualsAndHashCode.Include
     @GeneratedValue(generator = "identifier-descriptions-sequence")
     @GenericGenerator(name = "identifier-descriptions-sequence", strategy = "increment")
@@ -29,7 +29,6 @@ public class IdentifierDescription implements Serializable {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String description;
 
-    @Field(name = "description_type")
     @Column(columnDefinition = "enum('ABSTRACT', 'METHODS', 'SERIES_INFORMATION', 'TABLE_OF_CONTENTS', 'TECHNICAL_INFO', 'OTHER')")
     @Enumerated(EnumType.STRING)
     private DescriptionType descriptionType;

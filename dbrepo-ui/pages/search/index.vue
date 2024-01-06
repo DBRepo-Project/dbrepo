@@ -12,31 +12,34 @@
     <v-card flat tile>
       <AdvancedSearch ref="adv" @search-result="onSearchResult" />
     </v-card>
-    <v-card
-      v-for="(result, idx) in results"
-      :key="idx"
-      :to="link(result) && link(result).startsWith('http') ? null : link(result)"
-      :href="link(result) && link(result).startsWith('http') ? link(result): null"
-      flat
-      tile>
-      <v-divider class="mx-4" />
-      <v-card-title>
-        <a v-if="link(result)" :href="link(result)">{{ title(result) }}</a>
-        <span v-else>{{ title(result) }}</span>
-      </v-card-title>
-      <v-card-subtitle class="search-subtitle" v-text="description(result)" />
-      <v-card-text v-if="tags(result).length > 0" class="search-description">
-        <div class="search-tags">
-          <v-chip
-            v-for="(tag, i) in tags(result)"
-            :key="i"
-            small
-            :color="tag.color"
-            outlined
-            v-text="tag.text" />
-        </div>
-      </v-card-text>
-    </v-card>
+    <DatabaseList v-if="isDatabaseSearch" :databases="results.results" />
+    <div v-else>
+      <v-card
+        v-for="(result, idx) in results.results"
+        :key="idx"
+        :to="link(result) && link(result).startsWith('http') ? null : link(result)"
+        :href="link(result) && link(result).startsWith('http') ? link(result): null"
+        flat
+        tile>
+        <v-divider class="mx-4" />
+        <v-card-title>
+          <a v-if="link(result)" :href="link(result)">{{ title(result) }}</a>
+          <span v-else>{{ title(result) }}</span>
+        </v-card-title>
+        <v-card-subtitle class="db-subtitle" v-text="description(result)" />
+        <v-card-text class="db-description">
+          <div v-if="tags(result).length > 0" class="db-tags">
+            <v-chip
+              v-for="(tag, i) in tags(result)"
+              :key="i"
+              small
+              :color="tag.color"
+              outlined
+              v-text="tag.text" />
+          </div>
+        </v-card-text>
+      </v-card>
+    </div>
     <v-dialog
       v-model="createDbDialog"
       persistent
@@ -47,8 +50,8 @@
 </template>
 
 <script>
-import SearchService from '@/api/search.service'
 import CreateDB from '@/components/dialogs/CreateDB'
+import SearchService from '@/api/search.service'
 import AdvancedSearch from '@/components/search/AdvancedSearch'
 import IdentifierMapper from '@/api/identifier.mapper'
 
@@ -59,7 +62,10 @@ export default {
   },
   data () {
     return {
-      results: [],
+      results: {
+        results: [],
+        type: null
+      },
       loading: false,
       createDbDialog: null
     }
@@ -74,27 +80,27 @@ export default {
       }
       return this.$route.query.q
     },
-    type () {
-      if (!this.$route.query || !this.$route.query.t) {
-        return null
-      }
-      return this.$route.query.t
-    },
     header () {
-      if (this.results.length !== 1) {
-        return `${this.results.length} results`
+      if (!this.results || !this.results.results) {
+        return '0 results'
       }
-      return `${this.results.length} result`
+      if (this.results.results.length !== 1) {
+        return `${this.results.results.length} results`
+      }
+      return `${this.results.results.length} result`
     },
     canCreateDatabase () {
       if (!this.roles) {
         return false
       }
       return this.roles.includes('create-database')
+    },
+    isDatabaseSearch () {
+      return this.results.type === 'database'
     }
   },
   watch: {
-    '$route.query.q': {
+    $route: {
       handler () {
         this.generalSearch()
       }
@@ -112,8 +118,8 @@ export default {
       }
       this.loading = true
       SearchService.search(null, { search_term: this.query })
-        .then((hits) => {
-          this.results = hits.map(h => h._source)
+        .then((response) => {
+          this.results = response
         })
         .finally(() => {
           this.loading = false
@@ -123,89 +129,65 @@ export default {
       if (!item) {
         return false
       }
-      if ('_class' in item) {
-        return /at.tuwien.api.database.DatabaseDto/.test(item._class)
-      }
-      return item.exchangeName !== undefined
+      return this.results.type === 'database'
     },
     isConcept (item) {
       if (!item) {
         return false
       }
-      if ('_class' in item) {
-        return /at.tuwien.api.database.table.columns.concepts.ConceptDto/.test(item._class)
-      }
-      return false
+      return this.results.type === 'concept'
     },
     isUnit (item) {
       if (!item) {
         return false
       }
-      if ('_class' in item) {
-        return /at.tuwien.api.database.table.columns.concepts.UnitDto/.test(item._class)
-      }
-      return false
+      return this.results.type === 'unit'
     },
     isTable (item) {
       if (!item) {
         return false
       }
-      if ('_class' in item) {
-        return /at.tuwien.api.database.table.TableDto/.test(item._class)
-      }
-      return false
+      return this.results.type === 'table'
     },
     isColumn (item) {
       if (!item) {
         return false
       }
-      if ('_class' in item) {
-        return /at.tuwien.api.database.table.columns.ColumnDto/.test(item._class)
-      }
-      return false
+      return this.results.type === 'column'
     },
     isUser (item) {
       if (!item) {
         return false
       }
-      if ('_class' in item) {
-        return /at.tuwien.api.user.UserDto/.test(item._class)
-      }
-      return false
+      return this.results.type === 'user'
     },
     isView (item) {
       if (!item) {
         return false
       }
-      if ('_class' in item) {
-        return /at.tuwien.api.database.ViewDto/.test(item._class)
-      }
-      return false
+      return this.results.type === 'view'
     },
     isIdentifier (item) {
       if (!item) {
         return false
       }
-      if ('_class' in item) {
-        return /at.tuwien.api.identifier.IdentifierDto/.test(item._class)
-      }
-      return false
+      return this.results.type === 'identifier'
     },
     isPublic (item) {
-      if (this.isDatabase(item) || this.isTable(item) || this.isColumn(item) || this.isView(item)) {
+      if (this.isDatabase(item) || this.isTable(item) || this.isColumn(item) || this.isView(item) || this.isIdentifier(item)) {
         return item.is_public
-      } else if (this.isIdentifier(item)) {
-        return item.visibility === 'EVERYONE'
       }
       return null
     },
     title (item) {
-      if (this.isDatabase(item) || this.isTable(item) || this.isColumn(item) || this.isView(item) || this.isConcept(item) || this.isUnit(item)) {
+      if (this.isDatabase(item) || this.isTable(item) || this.isColumn(item) || this.isView(item)) {
         return item.name
-      } else if (this.isIdentifier(item)) {
+      } else if (this.isConcept(item) || this.isUnit(item)) {
+        return item.uri
+      } if (this.isIdentifier(item)) {
         return IdentifierMapper.identifierPreferEnglishTitle(item)
       } else if (this.isUser(item)) {
-        return item.username
+        return item.creator.qualified_name
       }
       return null
     },
@@ -215,7 +197,11 @@ export default {
       } else if (this.isIdentifier(item)) {
         return IdentifierMapper.identifierPreferEnglishDescription(item)
       } else if (this.isColumn(item)) {
-        return null
+        let text = item.column_type
+        if (item.size) {
+          text += `(${item.size}${item.d ? ',' + item.d : ''})`
+        }
+        return text
       } else if (this.isView(item)) {
         return item.query
       } else if (this.isUser(item)) {
@@ -231,7 +217,7 @@ export default {
       } else if (this.isView(item)) {
         return `/database/${item.database_id}/view/${item.id}`
       } else if (this.isColumn(item)) {
-        return `/database/${item.database_id}/table/${item.table_id}`
+        return `/database/${item.database_id}/table/${item.table_id}/schema`
       } else if (this.isIdentifier(item)) {
         return `/pid/${item.id}`
       } else if (this.isConcept(item) || this.isUnit(item)) {
@@ -242,14 +228,11 @@ export default {
     tags (item) {
       const tags = []
       if (this.isPublic(item) === true || this.isPublic(item) === false) {
-        tags.push({ color: this.isPublic(item) ? 'green' : 'red', text: this.isPublic(item) ? 'Public' : 'Private' })
+        tags.push({ color: this.isPublic(item) ? 'green' : null, text: this.isPublic(item) ? 'Public' : 'Private' })
       }
       if (this.isDatabase(item)) {
-        tags.push({ text: 'Database' })
       } else if (this.isTable(item)) {
-        tags.push({ text: 'Table' })
       } else if (this.isColumn(item)) {
-        tags.push({ text: 'Column' })
         if ('concept' in item) {
           const conceptName = ('name' in item.concept) ? item.concept.name : 'Concept'
           tags.push({ color: 'green', text: conceptName })
@@ -259,16 +242,11 @@ export default {
           tags.push({ color: 'green', text: unitName })
         }
       } else if (this.isView(item)) {
-        tags.push({ text: 'View' })
       } else if (this.isIdentifier(item)) {
-        tags.push({ text: 'Identifier' })
       } else if (this.isUnit(item)) {
-        tags.push({ text: 'Unit' })
       } else if (this.isConcept(item)) {
-        tags.push({ text: 'Concept' })
       } else if (this.isUser(item)) {
-        tags.push({ text: 'User' })
-        if ('orcid' in item.attributes && item.attributes.orcid) {
+        if (item.creator.attributes.orcid) {
           tags.push({ text: 'ORCID', color: 'green' })
         }
       }
@@ -281,6 +259,7 @@ export default {
       }
     },
     onSearchResult (results) {
+      console.debug('found search results', results)
       this.results = results
     }
   }

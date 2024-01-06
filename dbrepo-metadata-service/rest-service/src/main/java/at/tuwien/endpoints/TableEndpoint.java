@@ -14,7 +14,6 @@ import at.tuwien.service.TableService;
 import at.tuwien.utils.PrincipalUtil;
 import at.tuwien.utils.UserUtil;
 import at.tuwien.validation.EndpointValidator;
-import io.micrometer.core.annotation.Timed;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -141,7 +140,7 @@ public class TableEndpoint {
                                                 @NotNull Principal principal)
             throws ImageNotSupportedException, DatabaseNotFoundException, TableMalformedException, AmqpException,
             TableNameExistsException, ContainerNotFoundException, UserNotFoundException, QueryMalformedException,
-            NotAllowedException, AccessDeniedException {
+            NotAllowedException, AccessDeniedException, TableNotFoundException {
         log.debug("endpoint create table, databaseId={}, createDto={}, {}", databaseId, createDto, PrincipalUtil.formatForDebug(principal));
         /* checks */
         if (createDto.getName().isBlank()) {
@@ -189,7 +188,7 @@ public class TableEndpoint {
                                              Principal principal) throws TableNotFoundException,
             DatabaseNotFoundException, QueueNotFoundException, BrokerRemoteException {
         log.debug("endpoint find table, databaseId={}, tableId={}, {}", databaseId, tableId, PrincipalUtil.formatForDebug(principal));
-        final Table table = tableService.findById(databaseId, tableId);
+        final Table table = tableService.find(databaseId, tableId);
         final TableDto dto = tableMapper.tableToTableDto(table);
         if (principal != null) {
             /* extra effort only when logged-in */
@@ -250,10 +249,17 @@ public class TableEndpoint {
             NotAllowedException {
         log.debug("endpoint delete table, databaseId={}, tableId={}, {}", databaseId, tableId, PrincipalUtil.formatForDebug(principal));
         final Table table = tableService.find(databaseId, tableId);
+        /* roles */
         if (!table.getOwner().getUsername().equals(principal.getName()) && !UserUtil.hasRole(principal, "delete-foreign-table")) {
-            log.error("Failed to delete table: not owned by you");
-            throw new NotAllowedException("Failed to delete table: not owned by you");
+            log.error("Failed to delete table: not owned by user with id {}", UserUtil.getId(principal));
+            throw new NotAllowedException("Failed to delete table: not owned by user with id " + UserUtil.getId(principal));
         }
+        /* check */
+        if (!table.getIdentifiers().isEmpty()) {
+            log.error("Failed to delete table: identifier already associated");
+            throw new NotAllowedException("Failed to delete table: identifier already associated");
+        }
+        /* delete table */
         tableService.deleteTable(databaseId, tableId);
         return ResponseEntity.accepted()
                 .build();

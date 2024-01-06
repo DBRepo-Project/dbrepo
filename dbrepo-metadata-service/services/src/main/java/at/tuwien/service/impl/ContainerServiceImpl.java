@@ -30,43 +30,47 @@ public class ContainerServiceImpl implements ContainerService {
     private final ContainerRepository containerRepository;
 
     @Autowired
-    public ContainerServiceImpl(ContainerRepository containerRepository, ImageRepository imageRepository,
-                                ContainerMapper containerMapper) {
+    public ContainerServiceImpl(ContainerMapper containerMapper, ImageRepository imageRepository,
+                                ContainerRepository containerRepository) {
+        this.containerMapper = containerMapper;
         this.imageRepository = imageRepository;
         this.containerRepository = containerRepository;
-        this.containerMapper = containerMapper;
     }
 
     @Override
     @Transactional
-    public Container create(ContainerCreateRequestDto createDto, Principal principal) throws ImageNotFoundException,
+    public Container create(ContainerCreateRequestDto data, Principal principal) throws ImageNotFoundException,
             ContainerAlreadyExistsException {
-        final Optional<ContainerImage> image = imageRepository.findById(createDto.getImageId());
-        if (image.isEmpty()) {
-            log.error("failed to get image with id {}", createDto.getImageId());
-            throw new ImageNotFoundException("image was not found in metadata database.");
+        /* check */
+        final Optional<Container> optional = containerRepository.findByInternalName(
+                containerMapper.containerToInternalContainerName(data.getName()));
+        if (optional.isPresent()) {
+            log.error("Failed to create container with name {}: already exists in metadata database", data.getName());
+            throw new ContainerAlreadyExistsException("Failed to create container with name " + data.getName() + ": already exists in metadata database");
+        }
+        final Optional<ContainerImage> optional2 = imageRepository.findById(data.getImageId());
+        if (optional2.isEmpty()) {
+            log.error("Failed to find image with id {} in metadata database", data.getImageId());
+            throw new ImageNotFoundException("Failed to find image with id " + data.getImageId() + " in metadata database");
         }
         /* entity */
-        Container container = new Container();
-        container.setImageId(image.get().getId());
-        container.setName(createDto.getName());
-        container.setInternalName(containerMapper.containerToInternalContainerName(container));
-        /* check duplicate */
-        final Optional<Container> optional = containerRepository.findByInternalName(container.getInternalName());
-        if (optional.isPresent()) {
-            log.error("Failed to create container with internal name {}, it already exists", container.getInternalName());
-            throw new ContainerAlreadyExistsException("Container name already exists");
-        }
-        log.info("Created container {}", container.getId());
+        final Container container = Container.builder()
+                .image(optional2.get())
+                .name(data.getName())
+                .internalName(containerMapper.containerToInternalContainerName(data.getName()))
+                .build();
+        log.info("Created container with id {} in metadata database", container.getId());
         return container;
     }
 
     @Override
     @Transactional
     public void remove(Long containerId) throws ContainerNotFoundException {
-        final Container container = find(containerId);
+        /* check */
+        find(containerId);
+        /* delete */
         containerRepository.deleteById(containerId);
-        log.info("Removed container with id {}", containerId);
+        log.info("Deleted container with id {} in metadata database", containerId);
     }
 
     @Override
@@ -74,8 +78,8 @@ public class ContainerServiceImpl implements ContainerService {
     public Container find(Long id) throws ContainerNotFoundException {
         final Optional<Container> container = containerRepository.findById(id);
         if (container.isEmpty()) {
-            log.error("failed to get container with id {}", id);
-            throw new ContainerNotFoundException("no container with this id in metadata database");
+            log.error("Failed to find container with id {} in metadata database", id);
+            throw new ContainerNotFoundException("Failed to find container with id " + id + " in metadata database");
         }
         return container.get();
     }
@@ -83,14 +87,11 @@ public class ContainerServiceImpl implements ContainerService {
     @Override
     @Transactional(readOnly = true)
     public List<Container> getAll(Integer limit) {
-        final List<Container> containers;
         if (limit == null) {
-            containers = containerRepository.findAll(Sort.by(Sort.Direction.DESC, "created"));
+            return containerRepository.findAll(Sort.by(Sort.Direction.DESC, "created"));
         } else {
-            containers = containerRepository.findAll(PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "created")))
+            return containerRepository.findAll(PageRequest.of(0, limit, Sort.by(Sort.Direction.DESC, "created")))
                     .toList();
         }
-        log.info("Found {} containers", containers.size());
-        return containers;
     }
 }

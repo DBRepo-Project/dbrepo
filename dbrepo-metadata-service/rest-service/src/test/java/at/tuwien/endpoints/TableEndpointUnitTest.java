@@ -17,7 +17,6 @@ import at.tuwien.service.DatabaseService;
 import at.tuwien.service.MessageQueueService;
 import at.tuwien.service.TableService;
 import lombok.extern.log4j.Log4j2;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,12 +59,6 @@ public class TableEndpointUnitTest extends BaseUnitTest {
 
     @Autowired
     private TableEndpoint tableEndpoint;
-
-    @BeforeEach
-    public void beforeEach() {
-        DATABASE_1.setTables(List.of(TABLE_1, TABLE_2, TABLE_3, TABLE_7));
-        DATABASE_3.setTables(List.of(TABLE_8));
-    }
 
     @Test
     @WithAnonymousUser
@@ -113,7 +106,7 @@ public class TableEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            generic_create(DATABASE_3_ID, DATABASE_3, TABLE_4_CREATE_DTO, null, null, null);
+            generic_create(DATABASE_3_ID, DATABASE_3, TABLE_5_CREATE_DTO, null, null, null);
         });
     }
 
@@ -123,7 +116,7 @@ public class TableEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
-            generic_create(DATABASE_3_ID, null, TABLE_4_CREATE_DTO, USER_1_ID, USER_1_PRINCIPAL, DATABASE_3_USER_1_WRITE_OWN_ACCESS);
+            generic_create(DATABASE_3_ID, null, TABLE_5_CREATE_DTO, USER_1_ID, USER_1_PRINCIPAL, DATABASE_3_USER_1_WRITE_OWN_ACCESS);
         });
     }
 
@@ -133,7 +126,7 @@ public class TableEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            generic_create(DATABASE_3_ID, DATABASE_3, TABLE_4_CREATE_DTO, USER_1_ID, USER_1_PRINCIPAL, null);
+            generic_create(DATABASE_3_ID, DATABASE_3, TABLE_5_CREATE_DTO, USER_1_ID, USER_1_PRINCIPAL, null);
         });
     }
 
@@ -143,7 +136,7 @@ public class TableEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            generic_create(DATABASE_3_ID, DATABASE_3, TABLE_4_CREATE_DTO, USER_1_ID, USER_1_PRINCIPAL, DATABASE_3_USER_1_WRITE_OWN_ACCESS);
+            generic_create(DATABASE_3_ID, DATABASE_3, TABLE_5_CREATE_DTO, USER_1_ID, USER_1_PRINCIPAL, DATABASE_3_USER_1_WRITE_OWN_ACCESS);
         });
     }
 
@@ -153,7 +146,7 @@ public class TableEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            generic_create(DATABASE_3_ID, DATABASE_3, TABLE_4_CREATE_DTO, USER_1_ID, USER_1_PRINCIPAL, DATABASE_3_USER_1_READ_ACCESS);
+            generic_create(DATABASE_3_ID, DATABASE_3, TABLE_5_CREATE_DTO, USER_1_ID, USER_1_PRINCIPAL, DATABASE_3_USER_1_READ_ACCESS);
         });
     }
 
@@ -185,8 +178,8 @@ public class TableEndpointUnitTest extends BaseUnitTest {
                 .columns(List.of(ColumnCreateDto.builder()
                         .name("ID")
                         .type(ColumnTypeDto.DECIMAL)
-                        .size(-1)
-                        .d(0)
+                        .size(-1L)
+                        .d(0L)
                         .build()))
                 .constraints(null)
                 .build();
@@ -206,8 +199,8 @@ public class TableEndpointUnitTest extends BaseUnitTest {
                 .columns(List.of(ColumnCreateDto.builder()
                         .name("ID")
                         .type(ColumnTypeDto.DECIMAL)
-                        .size(66)
-                        .d(0)
+                        .size(66L)
+                        .d(0L)
                         .build()))
                 .constraints(null)
                 .build();
@@ -227,8 +220,8 @@ public class TableEndpointUnitTest extends BaseUnitTest {
                 .columns(List.of(ColumnCreateDto.builder()
                         .name("ID")
                         .type(ColumnTypeDto.DECIMAL)
-                        .size(0)
-                        .d(39)
+                        .size(0L)
+                        .d(39L)
                         .build()))
                 .constraints(null)
                 .build();
@@ -248,8 +241,8 @@ public class TableEndpointUnitTest extends BaseUnitTest {
                 .columns(List.of(ColumnCreateDto.builder()
                         .name("ID")
                         .type(ColumnTypeDto.DECIMAL)
-                        .size(9)
-                        .d(10)
+                        .size(9L)
+                        .d(10L)
                         .build()))
                 .constraints(null)
                 .build();
@@ -309,85 +302,6 @@ public class TableEndpointUnitTest extends BaseUnitTest {
         generic_findById(DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8, USER_1_ID, USER_1_PRINCIPAL, null);
     }
 
-    @Test
-    @WithAnonymousUser
-    public void delete_publicAnonymous_fails() {
-
-        /* test */
-        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            generic_delete(DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_3, null);
-        });
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME, authorities = "delete-table")
-    public void delete_publicHasRoleTableNotFound_fails() throws TableNotFoundException, DatabaseNotFoundException {
-
-        /* mock */
-        doThrow(TableNotFoundException.class)
-                .when(tableService)
-                .find(DATABASE_3_ID, TABLE_8_ID);
-
-        /* test */
-        assertThrows(TableNotFoundException.class, () -> {
-            generic_delete(DATABASE_3_ID, TABLE_8_ID, DATABASE_3, null, USER_1_PRINCIPAL);
-        });
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME, authorities = "delete-table")
-    public void delete_publicHasRole_succeeds() throws DatabaseNotFoundException, NotAllowedException,
-            TableNotFoundException, TableMalformedException, QueryMalformedException, ImageNotSupportedException,
-            ContainerNotFoundException, DataProcessingException {
-
-        /* mock */
-        when(tableService.find(DATABASE_3_ID, TABLE_8_ID))
-                .thenReturn(TABLE_8);
-
-        /* test */
-        final ResponseEntity<?> response = generic_delete(DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8, USER_1_PRINCIPAL);
-        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME, authorities = "delete-table")
-    public void delete_privateHasRoleForeignTable_fails() throws DatabaseNotFoundException, TableNotFoundException {
-
-        /* mock */
-        when(tableService.find(DATABASE_1_ID, TABLE_2_ID))
-                .thenReturn(TABLE_2);
-
-        /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            generic_delete(DATABASE_1_ID, TABLE_2_ID, DATABASE_1, TABLE_2, USER_1_PRINCIPAL);
-        });
-    }
-
-    @Test
-    @WithMockUser(username = USER_2_USERNAME, authorities = "delete-foreign-table")
-    public void delete_privateHasRoleForeignTable_succeeds() throws DatabaseNotFoundException, TableNotFoundException,
-            NotAllowedException, TableMalformedException, QueryMalformedException, ImageNotSupportedException,
-            ContainerNotFoundException, DataProcessingException {
-
-        /* mock */
-        when(tableService.find(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1);
-
-        /* test */
-        final ResponseEntity<?> response = generic_delete(DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_2_PRINCIPAL);
-        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
-    }
-
-    @Test
-    @WithMockUser(username = USER_4_USERNAME)
-    public void delete_publicNoRole_fails() {
-
-        /* test */
-        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            generic_delete(DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8, USER_4_PRINCIPAL);
-        });
-    }
-
     /* ################################################################################################### */
     /* ## PRIVATE DATABASES                                                                             ## */
     /* ################################################################################################### */
@@ -441,7 +355,7 @@ public class TableEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            generic_create(DATABASE_1_ID, DATABASE_1, TABLE_4_CREATE_DTO, null, null, null);
+            generic_create(DATABASE_1_ID, DATABASE_1, TABLE_5_CREATE_DTO, null, null, null);
         });
     }
 
@@ -451,7 +365,7 @@ public class TableEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
-            generic_create(DATABASE_1_ID, null, TABLE_4_CREATE_DTO, USER_1_ID, USER_1_PRINCIPAL, DATABASE_1_USER_1_WRITE_OWN_ACCESS);
+            generic_create(DATABASE_1_ID, null, TABLE_5_CREATE_DTO, USER_1_ID, USER_1_PRINCIPAL, DATABASE_1_USER_1_WRITE_OWN_ACCESS);
         });
     }
 
@@ -461,7 +375,7 @@ public class TableEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            generic_create(DATABASE_1_ID, DATABASE_1, TABLE_4_CREATE_DTO, USER_1_ID, USER_1_PRINCIPAL, null);
+            generic_create(DATABASE_1_ID, DATABASE_1, TABLE_5_CREATE_DTO, USER_1_ID, USER_1_PRINCIPAL, null);
         });
     }
 
@@ -471,7 +385,7 @@ public class TableEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            generic_create(DATABASE_1_ID, DATABASE_1, TABLE_4_CREATE_DTO, USER_1_ID, USER_1_PRINCIPAL, DATABASE_1_USER_1_WRITE_OWN_ACCESS);
+            generic_create(DATABASE_1_ID, DATABASE_1, TABLE_5_CREATE_DTO, USER_1_ID, USER_1_PRINCIPAL, DATABASE_1_USER_1_WRITE_OWN_ACCESS);
         });
     }
 
@@ -481,7 +395,7 @@ public class TableEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            generic_create(DATABASE_1_ID, DATABASE_1, TABLE_4_CREATE_DTO, USER_1_ID, USER_1_PRINCIPAL, DATABASE_1_USER_1_READ_ACCESS);
+            generic_create(DATABASE_1_ID, DATABASE_1, TABLE_5_CREATE_DTO, USER_1_ID, USER_1_PRINCIPAL, DATABASE_1_USER_1_READ_ACCESS);
         });
     }
 
@@ -534,59 +448,6 @@ public class TableEndpointUnitTest extends BaseUnitTest {
     }
 
     @Test
-    @WithAnonymousUser
-    public void delete_privateAnonymous_fails() {
-
-        /* test */
-        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            generic_delete(DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, null);
-        });
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME, authorities = "delete-table")
-    public void delete_privateHasRoleTableNotFound_fails() throws TableNotFoundException, DatabaseNotFoundException {
-
-        doThrow(TableNotFoundException.class)
-                .when(tableService)
-                .find(DATABASE_1_ID, TABLE_1_ID);
-
-        /* test */
-        assertThrows(TableNotFoundException.class, () -> {
-            generic_delete(DATABASE_1_ID, TABLE_1_ID, DATABASE_1, null, USER_1_PRINCIPAL);
-        });
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME, authorities = "delete-table")
-    public void delete_privateHasRoleDatabaseNotFound_fails() throws TableNotFoundException, DatabaseNotFoundException {
-
-        /* mock */
-        when(tableService.find(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1);
-
-        /* test */
-        assertThrows(DatabaseNotFoundException.class, () -> {
-            generic_delete(DATABASE_1_ID, TABLE_1_ID, null, TABLE_1, USER_1_PRINCIPAL);
-        });
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME, authorities = "delete-table")
-    public void delete_privateHasRole_succeeds() throws DatabaseNotFoundException, NotAllowedException,
-            TableNotFoundException, TableMalformedException, QueryMalformedException, ImageNotSupportedException,
-            ContainerNotFoundException, DataProcessingException {
-
-        /* mock */
-        when(tableService.find(DATABASE_1_ID, TABLE_1_ID))
-                .thenReturn(TABLE_1);
-
-        /* test */
-        final ResponseEntity<?> response = generic_delete(DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_1_PRINCIPAL);
-        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
-    }
-
-    @Test
     @WithMockUser(username = USER_4_USERNAME)
     public void delete_privateNoRole_succeeds() throws TableNotFoundException, DatabaseNotFoundException,
             at.tuwien.exception.AccessDeniedException, QueueNotFoundException, BrokerRemoteException {
@@ -635,7 +496,7 @@ public class TableEndpointUnitTest extends BaseUnitTest {
                                                            UUID userId, Principal principal, DatabaseAccess access)
             throws DatabaseNotFoundException, NotAllowedException, UserNotFoundException, TableMalformedException,
             QueryMalformedException, ImageNotSupportedException, AmqpException, TableNameExistsException,
-            ContainerNotFoundException, at.tuwien.exception.AccessDeniedException {
+            ContainerNotFoundException, at.tuwien.exception.AccessDeniedException, TableNotFoundException {
 
         /* mock */
         if (database != null) {
@@ -671,14 +532,14 @@ public class TableEndpointUnitTest extends BaseUnitTest {
 
         /* mock */
         if (table != null) {
-            when(tableService.findById(databaseId, tableId))
+            when(tableService.find(databaseId, tableId))
                     .thenReturn(table);
             when(databaseService.find(databaseId))
                     .thenReturn(database);
         } else {
             doThrow(TableNotFoundException.class)
                     .when(tableService)
-                    .findById(databaseId, tableId);
+                    .find(databaseId, tableId);
             when(tableService.findAll(databaseId))
                     .thenReturn(List.of());
         }
@@ -703,27 +564,5 @@ public class TableEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         return tableEndpoint.findById(databaseId, tableId, principal);
-    }
-
-    protected ResponseEntity<?> generic_delete(Long databaseId, Long tableId, Database database, Table table, Principal principal) throws DatabaseNotFoundException, NotAllowedException, ContainerNotFoundException, TableNotFoundException, TableMalformedException, QueryMalformedException, ImageNotSupportedException, DataProcessingException {
-
-        /* mock */
-        if (table != null) {
-            doNothing()
-                    .when(tableService)
-                    .deleteTable(databaseId, tableId);
-        } else {
-            doThrow(TableNotFoundException.class)
-                    .when(tableService)
-                    .deleteTable(databaseId, tableId);
-        }
-        if (database == null) {
-            doThrow(DatabaseNotFoundException.class)
-                    .when(tableService)
-                    .deleteTable(databaseId, tableId);
-        }
-
-        /* test */
-        return tableEndpoint.delete(databaseId, tableId, principal);
     }
 }

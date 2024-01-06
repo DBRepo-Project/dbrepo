@@ -29,6 +29,8 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.*;
@@ -77,11 +79,19 @@ public class DataCiteIdentifierServiceIntegrationTest extends BaseUnitTest {
 
     @BeforeEach
     public void beforeEach() {
+        TABLE_1.setColumns(TABLE_1_COLUMNS);
+        TABLE_2.setColumns(TABLE_2_COLUMNS);
+        TABLE_3.setColumns(TABLE_3_COLUMNS);
+        TABLE_4.setColumns(TABLE_4_COLUMNS);
+        TABLE_5.setColumns(TABLE_5_COLUMNS);
+        TABLE_6.setColumns(TABLE_6_COLUMNS);
+        TABLE_7.setColumns(TABLE_7_COLUMNS);
+        /* metadata database */
         licenseRepository.save(LICENSE_1);
         imageRepository.save(IMAGE_1);
-        userRepository.save(USER_1);
-        containerRepository.save(CONTAINER_1_SIMPLE);
-        databaseRepository.save(DATABASE_1_SIMPLE);
+        userRepository.saveAll(List.of(USER_1, USER_2, USER_3));
+        containerRepository.saveAll(List.of(CONTAINER_1, CONTAINER_2));
+        databaseRepository.saveAll(List.of(DATABASE_1, DATABASE_2));
     }
 
     @Test
@@ -89,7 +99,7 @@ public class DataCiteIdentifierServiceIntegrationTest extends BaseUnitTest {
             throws DatabaseNotFoundException, UserNotFoundException, IdentifierAlreadyExistsException,
             QueryNotFoundException, IdentifierPublishingNotAllowedException, RemoteUnavailableException,
             IdentifierRequestException, ViewNotFoundException, QueryStoreException, DatabaseConnectionException,
-            ImageNotSupportedException {
+            ImageNotSupportedException, IdentifierNotFoundException {
         final DataCiteBody<DataCiteDoi> response =
                 new DataCiteBody<>(new DataCiteData<>(null, "dois", new DataCiteDoi(IDENTIFIER_1_DOI_NOT_NULL)));
 

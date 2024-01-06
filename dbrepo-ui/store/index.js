@@ -28,8 +28,8 @@ const store = new Store({
     clientSecret: null,
     searchUsername: null,
     searchPassword: null,
-    databaseCount: null,
-    doiUrl: null
+    doiUrl: null,
+    subset: null
   },
   getters: {
     getTitle: state => state.title,
@@ -48,7 +48,7 @@ const store = new Store({
     getClientSecret: state => state.clientSecret,
     getSearchUsername: state => state.searchUsername,
     getSearchPassword: state => state.searchPassword,
-    getDatabaseCount: state => state.databaseCount
+    getSubset: state => state.subset
   },
   mutations: {
     SET_TITLE (state, title) {
@@ -99,11 +99,11 @@ const store = new Store({
     SET_SEARCH_PASSWORD (state, searchPassword) {
       state.searchPassword = searchPassword
     },
-    SET_DATABASE_COUNT (state, databaseCount) {
-      state.databaseCount = databaseCount
-    },
     SET_DOI_URL (state, doiUrl) {
       state.doiUrl = doiUrl
+    },
+    SET_SUBSET (state, subset) {
+      state.subset = subset
     }
   },
   actions: {
@@ -143,20 +143,8 @@ const store = new Store({
           commit('SET_ONTOLOGIES', ontologies)
         })
     },
-    reloadDatabaseCount ({ state, commit }) {
-      DatabaseService.countAll(null)
-        .then((all) => {
-          if (!state.user) {
-            commit('SET_DATABASE_COUNT', { all, my: null })
-          } else {
-            DatabaseService.countAll(true)
-              .then((my) => {
-                commit('SET_DATABASE_COUNT', { all, my })
-              })
-          }
-        })
-    },
     logout ({ state, commit }) {
+      console.debug('triggered logout')
       commit('SET_TOKEN', null)
       commit('SET_REFRESH_TOKEN', null)
       commit('SET_ROLES', [])

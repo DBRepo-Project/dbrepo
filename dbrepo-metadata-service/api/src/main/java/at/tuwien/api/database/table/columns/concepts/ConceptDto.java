@@ -23,7 +23,6 @@ import java.util.List;
 @AllArgsConstructor
 @Jacksonized
 @ToString
-@Document(indexName = "concept")
 public class ConceptDto {
 
     @Id

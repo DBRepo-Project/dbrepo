@@ -7,7 +7,7 @@
     <v-card
       v-for="(database, idx) in databases"
       :key="idx"
-      :to="link(database)"
+      :to="`/database/${database.id}/info`"
       flat
       tile>
       <v-divider v-if="idx !== 0" class="mx-4" />
@@ -31,10 +31,10 @@
             outlined
             v-text="identifierYear(database)" />
           <v-chip
-            v-if="hasIdentifier(database)"
+            v-if="identifier(database)"
             small
             outlined
-            v-text="database.identifier.publisher" />
+            v-text="identifierPublisher(database)" />
           <v-chip
             v-for="(license,i) in identifierLicenses(database)"
             :key="i"
@@ -61,18 +61,24 @@
 </template>
 
 <script>
-import DatabaseService from '@/api/database.service'
 import DatabaseMapper from '@/api/database.mapper'
 import IdentifierMapper from '@/api/identifier.mapper'
 import { formatLanguage } from '@/utils'
 
 export default {
+  props: {
+    databases: {
+      type: Array,
+      default: () => {
+        return []
+      }
+    }
+  },
   data () {
     return {
       loadingDatabases: false,
       loadingCreate: false,
       createDbDialog: false,
-      databases: [],
       searchQuery: null,
       limit: 100,
       items: [
@@ -87,97 +93,62 @@ export default {
     },
     user () {
       return this.$store.state.user
-    },
-    isFiltered () {
-      return this.$route.query.f === 'my'
     }
-  },
-  watch: {
-    $route: {
-      handler () {
-        this.loadDatabases()
-      }
-    }
-  },
-  mounted () {
-    this.loadDatabases()
   },
   methods: {
     formatCreators (database) {
-      if (!database.identifier) {
+      if (!this.identifier(database)) {
         return DatabaseMapper.databaseToOwner(database)
       }
-      return IdentifierMapper.identifierToCreators(database.identifier)
-    },
-    hasIdentifier (database) {
-      return database && database.identifier
+      return IdentifierMapper.identifierToCreators(this.identifier(database))
     },
     formatTitle (database) {
-      if (!database) {
-        return null
-      }
-      if (!database.identifier) {
+      if (!this.identifier(database)) {
         return database.name
       }
-      return IdentifierMapper.identifierPreferEnglishTitle(database.identifier)
+      return IdentifierMapper.identifierPreferEnglishTitle(this.identifier(database))
     },
     identifierYear (database) {
-      if (!database || !database.identifier || !database.identifier.publication_year) {
+      if (!this.identifier(database)) {
         return null
       }
-      return database.identifier.publication_year
+      return this.identifier(database).publication_year
+    },
+    identifierPublisher (database) {
+      if (!this.identifier(database)) {
+        return null
+      }
+      return this.identifier(database).publisher
     },
     identifierLicenses (database) {
-      if (!database || !database.identifier) {
+      if (!this.identifier(database)) {
         return []
       }
-      return database.identifier.licenses
+      return this.identifier(database).licenses
     },
     identifierDescription (database) {
-      if (!database || !database.identifier) {
+      if (!this.identifier(database)) {
         return null
       }
-      return IdentifierMapper.identifierPreferEnglishDescription(database.identifier)
+      return IdentifierMapper.descriptionShort(IdentifierMapper.identifierPreferEnglishDescription(this.identifier(database)))
     },
     identifierLanguage (database) {
-      if (!database || !database.identifier || !database.identifier.language) {
+      if (!this.identifier(database) || !this.identifier(database).language) {
         return null
       }
-      return formatLanguage(database.identifier.language.toLowerCase())
+      return formatLanguage(this.identifier(database).language.toLowerCase())
     },
     identifierFunders (database) {
-      if (!database || !database.identifier || !database.identifier.funders) {
+      if (!this.identifier(database)) {
         return null
       }
-      return database.identifier.funders
+      return this.identifier(database).funders
     },
-    loadDatabases () {
-      this.loadingDatabases = true
-      if (this.isFiltered) {
-        DatabaseService.findAllOnlyAccess()
-          .then((databases) => {
-            this.databases = databases
-            console.info('Found', this.databases.length, 'database(s) with access')
-          })
-          .finally(() => {
-            this.loadingDatabases = false
-          })
-      } else {
-        DatabaseService.findAll()
-          .then((databases) => {
-            this.databases = databases
-            console.info('Found', this.databases.length, 'database(s)')
-          })
-          .finally(() => {
-            this.loadingDatabases = false
-          })
-      }
-    },
-    link (database) {
-      if (!database) {
+    identifier (database) {
+      if (!database || !database.identifiers || database.identifiers.length === 0) {
         return null
       }
-      return `/database/${database.id}`
+      return database.identifiers[0]
     },
     formatLanguage
   }

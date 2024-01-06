@@ -430,9 +430,12 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
         final ImportDto request = ImportDto.builder().location("test:csv/csv_01.csv").build();
 
         /* mock */
-        when(databaseService.find(databaseId)).thenReturn(database);
-        when(tableService.find(databaseId, tableId)).thenReturn(table);
-        when(accessService.find(databaseId, userId)).thenReturn(access);
+        when(databaseService.find(databaseId))
+                .thenReturn(database);
+        when(tableService.find(databaseId, tableId))
+                .thenReturn(table);
+        when(accessService.find(databaseId, userId))
+                .thenReturn(access);
 
         /* test */
         final ResponseEntity<?> response = dataEndpoint.importCsv(databaseId, tableId, request, principal);
@@ -447,9 +450,12 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
             ContainerNotFoundException, AccessDeniedException {
 
         /* mock */
-        when(databaseService.find(databaseId)).thenReturn(database);
-        when(tableService.find(databaseId, tableId)).thenReturn(table);
-        when(accessService.find(databaseId, userId)).thenReturn(access);
+        when(databaseService.find(databaseId))
+                .thenReturn(database);
+        when(tableService.find(databaseId, tableId))
+                .thenReturn(table);
+        when(accessService.find(databaseId, userId))
+                .thenReturn(access);
 
         /* test */
         final ResponseEntity<?> response = dataEndpoint.insert(databaseId, tableId, data, principal);
@@ -465,10 +471,14 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
             AccessDeniedException {
 
         /* mock */
-        when(databaseService.find(databaseId)).thenReturn(database);
-        when(tableService.find(databaseId, tableId)).thenReturn(table);
-        when(accessService.find(databaseId, userId)).thenReturn(access);
-        when(queryService.tableFindAll(databaseId, tableId, timestamp, page, size, principal)).thenReturn(QUERY_1_RESULT_DTO);
+        when(databaseService.find(databaseId))
+                .thenReturn(database);
+        when(tableService.find(databaseId, tableId))
+                .thenReturn(table);
+        when(accessService.find(databaseId, userId))
+                .thenReturn(access);
+        when(queryService.tableFindAll(databaseId, tableId, timestamp, page, size, principal))
+                .thenReturn(QUERY_1_RESULT_DTO);
 
         /* test */
         final ResponseEntity<QueryResultDto> response = dataEndpoint.getAll(databaseId, tableId,
@@ -487,10 +497,14 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
             ImageNotSupportedException, AccessDeniedException {
 
         /* mock */
-        when(databaseService.find(databaseId)).thenReturn(database);
-        when(tableService.find(databaseId, tableId)).thenReturn(table);
-        when(accessService.find(databaseId, userId)).thenReturn(access);
-        when(queryService.tableCount(databaseId, tableId, timestamp, principal)).thenReturn(QUERY_1_RESULT_NUMBER);
+        when(databaseService.find(databaseId))
+                .thenReturn(database);
+        when(tableService.find(databaseId, tableId))
+                .thenReturn(table);
+        when(accessService.find(databaseId, userId))
+                .thenReturn(access);
+        when(queryService.tableCount(databaseId, tableId, timestamp, principal))
+                .thenReturn(QUERY_1_RESULT_NUMBER);
 
         /* test */
         final ResponseEntity<Long> response = dataEndpoint.getCount(databaseId, tableId,

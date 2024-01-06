@@ -7,8 +7,6 @@ import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.exception.*;
-import at.tuwien.repository.mdb.DatabaseAccessRepository;
-import at.tuwien.repository.mdb.TableRepository;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.QueryService;
 import lombok.extern.log4j.Log4j2;
@@ -30,7 +28,6 @@ import java.io.IOException;
 import java.security.Principal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -48,12 +45,6 @@ public class ExportEndpointUnitTest extends BaseUnitTest {
 
     @MockBean
     private DatabaseService databaseService;
-
-    @MockBean
-    private DatabaseAccessRepository databaseAccessRepository;
-
-    @MockBean
-    private TableRepository tableRepository;
 
     @Autowired
     private ExportEndpoint exportEndpoint;
@@ -182,15 +173,6 @@ public class ExportEndpointUnitTest extends BaseUnitTest {
         /* mock */
         when(databaseService.find(databaseId))
                 .thenReturn(database);
-        if (access == null) {
-            when(databaseAccessRepository.findByDatabaseIdAndUserId(databaseId, userId))
-                    .thenReturn(Optional.empty());
-        } else {
-            when(databaseAccessRepository.findByDatabaseIdAndUserId(databaseId, userId))
-                    .thenReturn(Optional.of(access));
-        }
-        when(tableRepository.find(databaseId, tableId))
-                .thenReturn(Optional.of(TABLE_1));
         when(queryService.tableFindAll(databaseId, tableId, timestamp, principal))
                 .thenReturn(resource);
 

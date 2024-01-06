@@ -29,11 +29,13 @@ public class RabbitMqServiceImpl implements MessageQueueService {
     @Override
     public void createUser(String username, String password) throws BrokerRemoteException, BrokerVirtualHostModificationException {
         brokerServiceGateway.createUser(username, password);
+        log.info("Created user with username {} at broker service", username);
     }
 
     @Override
     public void deleteUser(String username) throws BrokerRemoteException, BrokerVirtualHostModificationException {
         brokerServiceGateway.deleteUser(username);
+        log.info("Deleted user with username {} at broker service", username);
     }
 
     @Override
@@ -45,6 +47,7 @@ public class RabbitMqServiceImpl implements MessageQueueService {
                 .build();
         log.debug("user with username {} has virtual host permissions {}", username, permissions);
         brokerServiceGateway.grantPermission(username, permissions);
+        log.info("Granted user with username {} permissions at broker service", username);
     }
 
     @Override
@@ -58,6 +61,7 @@ public class RabbitMqServiceImpl implements MessageQueueService {
                 .build();
         log.debug("user with username {} has exchange permissions {}", user.getUsername(), permissions);
         brokerServiceGateway.grantTopicPermission(user.getUsername(), permissions);
+        log.info("Granted user with username {} topic permissions at broker service", user.getUsername());
     }
 
     @Transactional(readOnly = true)

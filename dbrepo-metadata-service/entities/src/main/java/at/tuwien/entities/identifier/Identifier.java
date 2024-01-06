@@ -3,14 +3,18 @@ package at.tuwien.entities.identifier;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.LanguageType;
 import at.tuwien.entities.database.License;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
+import jakarta.persistence.OrderBy;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.io.Serializable;
@@ -48,10 +52,13 @@ public class Identifier implements Serializable {
     @Column(name = "qid")
     private Long queryId;
 
+    @Column(name = "tid")
+    private Long tableId;
+
     @Column(name = "vid")
     private Long viewId;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "identifier")
+    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "identifier")
     @OrderBy("id")
     private List<Creator> creators;
 
@@ -63,15 +70,15 @@ public class Identifier implements Serializable {
     @Enumerated(EnumType.STRING)
     private LanguageType language;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "identifier")
+    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "identifier")
     @OrderBy("id")
     private List<IdentifierTitle> titles;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "identifier")
+    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "identifier")
     @OrderBy("id")
     private List<IdentifierDescription> descriptions;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "identifier")
+    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "identifier")
     @OrderBy("id")
     private List<IdentifierFunder> funders;
 
@@ -83,57 +90,46 @@ public class Identifier implements Serializable {
     )
     private List<License> licenses;
 
-    @Column(name = "identifier_type", nullable = false, columnDefinition = "enum('SUBSET', 'DATABASE', 'VIEW')")
+    @Column(name = "identifier_type", nullable = false, columnDefinition = "enum('SUBSET', 'DATABASE', 'VIEW', 'TABLE')")
     @Enumerated(EnumType.STRING)
     private IdentifierType type;
 
     @Column(columnDefinition = "TEXT")
     private String query;
 
-    @Field(name = "query_normalized")
     @Column(columnDefinition = "TEXT")
     private String queryNormalized;
 
-    @Field(name = "query_hash")
     @Column
     private String queryHash;
 
-    @Field(name = "result_hash")
     @Column
     private String resultHash;
 
-    @Column(updatable = false, columnDefinition = "TIMESTAMP")
+    @Column(updatable = false, columnDefinition = "TIMESTAMP default NOW()")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant execution;
 
-    @Field(name = "result_number")
     @Column
     private Long resultNumber;
 
-    @Field(name = "publication_year")
     @Column(nullable = false)
     private Integer publicationYear;
 
-    @Field(name = "publication_month")
     @Column
     private Integer publicationMonth;
 
-    @Field(name = "publication_day")
     @Column
     private Integer publicationDay;
 
-    @Column(nullable = false, columnDefinition = "enum('EVERYONE', 'SELF')")
-    @Enumerated(EnumType.STRING)
-    private VisibilityType visibility;
-
     @ToString.Exclude
     @org.springframework.data.annotation.Transient
-    @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE})
     @JoinColumns({
             @JoinColumn(name = "dbid", referencedColumnName = "id", insertable = false, updatable = false)
     })
     private Database database;
 
-    @Field(name = "related_identifiers")
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "identifier")
     @OrderBy("id")
     private List<RelatedIdentifier> relatedIdentifiers;
@@ -142,17 +138,26 @@ public class Identifier implements Serializable {
     private String doi;
 
     @JdbcTypeCode(java.sql.Types.VARCHAR)
-    @Column(name = "createdBy", nullable = false, columnDefinition = "VARCHAR(36)")
     private UUID createdBy;
 
     @CreatedDate
-    @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP")
+    @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP default NOW()")
     private Instant created;
 
     @LastModifiedDate
-    @Field(name = "last_modified")
     @Column(columnDefinition = "TIMESTAMP")
     private Instant lastModified;
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) {
+            return true;
+        }
+        if (!(o instanceof Identifier other)) {
+            return false;
+        }
+        return this.id.equals(other.getId());
+    }
 
 }
 

@@ -6,11 +6,8 @@ import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.api.database.*;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
-import at.tuwien.entities.database.DatabaseAccess;
-import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.KeycloakGateway;
-import at.tuwien.repository.mdb.DatabaseAccessRepository;
 import at.tuwien.repository.mdb.IdentifierRepository;
 import at.tuwien.repository.mdb.UserRepository;
 import at.tuwien.repository.sdb.DatabaseIdxRepository;
@@ -20,13 +17,11 @@ import at.tuwien.service.MessageQueueService;
 import at.tuwien.service.QueryStoreService;
 import at.tuwien.service.impl.MariaDbServiceImpl;
 import lombok.extern.log4j.Log4j2;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.test.context.support.WithAnonymousUser;
@@ -37,7 +32,6 @@ import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -70,9 +64,6 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
 
     @MockBean
     private DatabaseIdxRepository databaseIdxRepository;
-
-    @MockBean
-    private DatabaseAccessRepository databaseAccessRepository;
 
     @MockBean
     private IdentifierRepository identifierRepository;
@@ -140,8 +131,6 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
         doNothing()
                 .when(queryStoreService)
                 .create(DATABASE_1_ID, USER_1_PRINCIPAL);
-        when(databaseAccessRepository.save(any(DatabaseAccess.class)))
-                .thenReturn(DATABASE_1_USER_1_WRITE_ALL_ACCESS);
         when(keycloakGateway.findByUsername(USER_1_USERNAME))
                 .thenReturn(USER_1_KEYCLOAK_DTO);
         when(userRepository.findByUsername(USER_1_USERNAME))
@@ -418,37 +407,6 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
         assertEquals(2, accessList.size());
     }
 
-    @Test
-    @WithAnonymousUser
-    public void delete_anonymous_fails() {
-
-        /* test */
-        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            delete_generic(DATABASE_1_ID, DATABASE_1, null);
-        });
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME)
-    public void delete_noRole_fails() {
-
-        /* test */
-        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            delete_generic(DATABASE_1_ID, DATABASE_1, USER_1_PRINCIPAL);
-        });
-    }
-
-    @Test
-    @Disabled
-    @WithMockUser(username = USER_2_USERNAME, authorities = {"delete-database"})
-    public void delete_hasRole_succeeds() throws UserNotFoundException, BrokerVirtualHostGrantException,
-            DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
-            AmqpException, DatabaseMalformedException, KeycloakRemoteException, AccessDeniedException, BrokerRemoteException {
-
-        /* test */
-        delete_generic(DATABASE_2_ID, DATABASE_2, USER_2_PRINCIPAL);
-    }
-
     /* ################################################################################################### */
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
@@ -509,8 +467,6 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
         doNothing()
                 .when(messageQueueService)
                 .setVirtualHostPermissions(username);
-        when(databaseAccessRepository.save(any(DatabaseAccess.class)))
-                .thenReturn(DATABASE_1_USER_1_WRITE_ALL_ACCESS);
 
         /* test */
         final ResponseEntity<DatabaseBriefDto> response = databaseEndpoint.create(data, principal);
@@ -568,24 +524,4 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
         return body;
     }
 
-    public void delete_generic(Long databaseId, Database database, Principal principal)
-            throws DatabaseNotFoundException, UserNotFoundException, DatabaseConnectionException,
-            QueryMalformedException, ImageNotSupportedException, AmqpException, DatabaseMalformedException,
-            BrokerVirtualHostGrantException, KeycloakRemoteException, AccessDeniedException, BrokerRemoteException {
-
-        /* mock */
-        if (database != null) {
-            when(databaseService.findById(databaseId))
-                    .thenReturn(database);
-        } else {
-            doThrow(DatabaseNotFoundException.class)
-                    .when(databaseService)
-                    .findById(databaseId);
-        }
-
-        /* test */
-        final ResponseEntity<?> response = databaseEndpoint.delete(databaseId, principal);
-        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
-        assertNull(response.getBody());
-    }
 }

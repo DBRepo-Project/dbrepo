@@ -7,14 +7,12 @@ import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
 import at.tuwien.querystore.Query;
-import at.tuwien.service.AccessService;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.QueryService;
 import at.tuwien.service.StoreService;
 import at.tuwien.utils.PrincipalUtil;
 import at.tuwien.utils.UserUtil;
 import at.tuwien.validation.EndpointValidator;
-import io.micrometer.core.annotation.Timed;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -64,7 +62,7 @@ public class QueryEndpoint {
                                                   @RequestParam(required = false) String sortColumn)
             throws DatabaseNotFoundException, ImageNotSupportedException, QueryStoreException, QueryMalformedException,
             ColumnParseException, UserNotFoundException, TableMalformedException, DatabaseConnectionException,
-            SortException, PaginationException, NotAllowedException, KeycloakRemoteException, AccessDeniedException {
+            SortException, PaginationException, NotAllowedException, KeycloakRemoteException, AccessDeniedException, QueryNotFoundException {
         log.debug("endpoint execute query, databaseId={}, data={}, page={}, size={}, sortDirection={}, sortColumn={}, {}",
                 databaseId, data, page, size, sortDirection, sortColumn, PrincipalUtil.formatForDebug(principal));
         /* check */
@@ -100,7 +98,7 @@ public class QueryEndpoint {
         log.debug("endpoint re-execute query, databaseId={}, queryId={}, page={}, size={}, sortDirection={}, sortColumn={}, {}",
                 databaseId, queryId, page, size, sortDirection, sortColumn, PrincipalUtil.formatForDebug(principal));
         endpointValidator.validateDataParams(page, size, sortDirection, sortColumn);
-        endpointValidator.validateOnlyAccessOrPublic(databaseId, queryId, principal);
+        endpointValidator.validateOnlyAccessOrPublic(databaseId, principal);
         /* execute */
         final Query query = storeService.findOne(databaseId, queryId, principal);
         final QueryResultDto result = queryService.reExecute(databaseId, query, page, size, sortDirection, sortColumn,
@@ -122,7 +120,7 @@ public class QueryEndpoint {
             QueryMalformedException, TableMalformedException, ColumnParseException, NotAllowedException,
             DatabaseConnectionException, UserNotFoundException, AccessDeniedException {
         log.debug("endpoint re-execute query count, databaseId={}, queryId={}, {}", databaseId, queryId, PrincipalUtil.formatForDebug(principal));
-        endpointValidator.validateOnlyAccessOrPublic(databaseId, queryId, principal);
+        endpointValidator.validateOnlyAccessOrPublic(databaseId, principal);
         /* execute */
         final Query query = storeService.findOne(databaseId, queryId, principal);
         final Long result = queryService.reExecuteCount(databaseId, query, principal);

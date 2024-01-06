@@ -1,6 +1,7 @@
 package at.tuwien.api.database.query;
 
 import at.tuwien.api.identifier.IdentifierBriefDto;
+import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.user.UserDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -13,6 +14,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.extern.jackson.Jacksonized;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 
@@ -67,10 +69,15 @@ public class QueryBriefDto {
     @Schema(example = "1")
     private Long resultNumber;
 
+    @NotNull
+    @JsonProperty("is_persisted")
+    @Schema(example = "true")
+    private Boolean isPersisted;
+
     @Schema(example = "query")
     private QueryTypeDto type;
 
-    private IdentifierBriefDto identifier;
+    private List<IdentifierBriefDto> identifiers;
 
     @NotNull
     @Schema(example = "2021-03-12T15:26:21Z")

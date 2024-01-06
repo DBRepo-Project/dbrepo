@@ -29,8 +29,8 @@ public class LicenseServiceImpl implements LicenseService {
     public License find(String identifier) throws LicenseNotFoundException {
         final Optional<License> license = licenseRepository.findByIdentifier(identifier);
         if (license.isEmpty()) {
-            log.error("Failed to find license for identifier {}", identifier);
-            throw new LicenseNotFoundException("Failed to find license");
+            log.error("Failed to find license with identifier {} in metadata database", identifier);
+            throw new LicenseNotFoundException("Failed to find license with identifier " + identifier + " in metadata database");
         }
         return license.get();
     }

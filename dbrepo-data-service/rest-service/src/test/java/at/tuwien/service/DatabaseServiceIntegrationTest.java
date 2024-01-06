@@ -4,13 +4,8 @@ import at.tuwien.BaseUnitTest;
 import at.tuwien.annotations.MockAmqp;
 import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.entities.database.Database;
-import at.tuwien.entities.user.User;
 import at.tuwien.exception.DatabaseNotFoundException;
-import at.tuwien.exception.UserNotFoundException;
-import at.tuwien.repository.mdb.ContainerRepository;
-import at.tuwien.repository.mdb.DatabaseRepository;
-import at.tuwien.repository.mdb.ImageRepository;
-import at.tuwien.repository.mdb.UserRepository;
+import at.tuwien.repository.mdb.*;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,14 +41,23 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     private DatabaseRepository databaseRepository;
 
     @Autowired
+    private LicenseRepository licenseRepository;
+
+    @Autowired
     private DatabaseService databaseService;
 
     @BeforeEach
     public void beforeEach() {
+        TABLE_1.setColumns(TABLE_1_COLUMNS);
+        TABLE_2.setColumns(TABLE_2_COLUMNS);
+        TABLE_3.setColumns(TABLE_3_COLUMNS);
+        TABLE_4.setColumns(TABLE_4_COLUMNS);
+        /* metadata database */
         userRepository.save(USER_1);
-        imageRepository.save(IMAGE_1_SIMPLE);
-        containerRepository.save(CONTAINER_1_SIMPLE);
-        databaseRepository.save(DATABASE_1_SIMPLE);
+        imageRepository.save(IMAGE_1);
+        licenseRepository.save(LICENSE_1);
+        containerRepository.save(CONTAINER_1);
+        databaseRepository.save(DATABASE_1);
     }
 
     @Test

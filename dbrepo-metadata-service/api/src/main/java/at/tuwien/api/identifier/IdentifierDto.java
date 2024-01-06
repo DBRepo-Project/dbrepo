@@ -27,7 +27,6 @@ import java.util.List;
 @AllArgsConstructor
 @Jacksonized
 @ToString
-@Document(indexName = "identifier")
 public class IdentifierDto {
 
     @Id
@@ -45,6 +44,11 @@ public class IdentifierDto {
     @Field(name = "query_id", type = FieldType.Keyword)
     private Long queryId;
 
+    @JsonProperty("table_id")
+    @Schema(example = "1")
+    @Field(name = "table_id", type = FieldType.Keyword)
+    private Long tableId;
+
     @JsonProperty("view_id")
     @Schema(example = "1")
     @Field(name = "view_id", type = FieldType.Keyword)
@@ -54,13 +58,13 @@ public class IdentifierDto {
     @Field(name = "type", type = FieldType.Keyword)
     private IdentifierTypeDto type;
 
-    @Field(name = "titles", includeInParent = true, type = FieldType.Nested)
+    @Field(name = "titles", type = FieldType.Nested)
     private List<IdentifierTitleDto> titles;
 
-    @Field(name = "descriptions", includeInParent = true, type = FieldType.Nested)
+    @Field(name = "descriptions", type = FieldType.Nested)
     private List<IdentifierDescriptionDto> descriptions;
 
-    @Field(name = "funders", includeInParent = true, type = FieldType.Nested)
+    @Field(name = "funders", type = FieldType.Nested)
     private List<IdentifierFunderDto> funders;
 
     @NotBlank
@@ -75,12 +79,8 @@ public class IdentifierDto {
     private String queryNormalized;
 
     @JsonProperty("related_identifiers")
-    @Field(name = "related_identifiers", includeInParent = true, type = FieldType.Nested)
+    @Field(name = "related_identifiers", type = FieldType.Nested)
     private List<RelatedIdentifierDto> relatedIdentifiers;
-
-    @NotNull
-    @org.springframework.data.annotation.Transient
-    private DatabaseDto database;
 
     @NotBlank
     @JsonProperty("query_hash")
@@ -105,11 +105,6 @@ public class IdentifierDto {
     @Field(name = "result_number", type = FieldType.Long)
     @Schema(example = "1")
     private Long resultNumber;
-
-    @NotNull
-    @Schema(example = "everyone")
-    @Field(name = "visibility", type = FieldType.Keyword)
-    private VisibilityTypeDto visibility;
 
     @Schema(example = "10.1038/nphys1170")
     @Field(name = "doi", type = FieldType.Keyword)
@@ -143,11 +138,11 @@ public class IdentifierDto {
     @Field(name = "language", type = FieldType.Keyword)
     private LanguageTypeDto language;
 
-    @Field(name = "licenses", includeInParent = true, type = FieldType.Nested)
+    @Field(name = "licenses", type = FieldType.Nested)
     private List<LicenseDto> licenses;
 
     @NotNull
-    @Field(name = "creators", includeInParent = true, type = FieldType.Nested)
+    @Field(name = "creators", type = FieldType.Nested)
     private List<CreatorDto> creators;
 
     @NotNull

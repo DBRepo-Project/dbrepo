@@ -2,12 +2,17 @@
   <div>
     <TableToolbar :selection="selection" />
     <v-card flat tile>
+      <Summary v-if="hasIdentifier" :identifier="identifier" />
+      <v-card-text v-if="hasIdentifier">
+        <Select :identifiers="identifiers" :identifier="identifier" />
+      </v-card-text>
+    </v-card>
+    <v-divider v-if="table && identifier" />
+    <v-card flat tile>
+      <v-card-title>Table</v-card-title>
       <v-card-text>
         <v-list dense>
           <v-list-item>
-            <v-list-item-icon>
-              <v-icon>mdi-table</v-icon>
-            </v-list-item-icon>
             <v-list-item-content>
               <v-list-item-title>
                 Table ID
@@ -44,10 +49,13 @@
               </v-list-item-content>
             </v-list-item-content>
           </v-list-item>
-          <v-list-item v-if="canWrite && canWriteQueues">
-            <v-list-item-icon>
-              <v-icon>mdi-rabbit</v-icon>
-            </v-list-item-icon>
+        </v-list>
+      </v-card-text>
+      <v-divider v-if="canWrite && canWriteQueues" />
+      <v-card-title v-if="canWrite && canWriteQueues">Broker</v-card-title>
+      <v-card-text v-if="canWrite && canWriteQueues">
+        <v-list dense>
+          <v-list-item>
             <v-list-item-content>
               <v-list-item-title>
                 Protocol
@@ -97,12 +105,16 @@
   </div>
 </template>
 <script>
-import TableToolbar from '@/components/TableToolbar.vue'
-import { formatTimestampUTCLabel } from '@/utils'
+import TableToolbar from '@/components/TableToolbar'
 import UserMapper from '@/api/user.mapper'
+import Select from '@/components/identifier/Select'
+import Summary from '@/components/identifier/Summary'
+import { formatTimestampUTCLabel } from '@/utils'
 
 export default {
   components: {
+    Summary,
+    Select,
     TableToolbar
   },
   data () {
@@ -125,6 +137,9 @@ export default {
     }
   },
   computed: {
+    pid () {
+      return this.$route.query.pid
+    },
     user () {
       return this.$store.state.user
     },
@@ -170,23 +185,23 @@ export default {
       }
       return this.roles.includes('insert-table-data')
     },
-    versionColor () {
-      if (this.version === null) {
-        return 'secondary white--text'
+    identifiers () {
+      if (!this.table.identifiers || this.table.identifiers.length === 0) {
+        return []
       }
-      return 'primary white--text'
+      return this.table.identifiers
     },
-    versionFormatted () {
-      if (this.version === null) {
-        return null
+    identifier () {
+      if (this.pid) {
+        const filter = this.identifiers.filter(i => i.id === Number(this.pid))
+        if (filter.length > 0) {
+          return filter[0]
+        }
       }
-      return this.version + ' (UTC)'
+      return this.identifiers[0]
     },
-    versionISO () {
-      if (this.version === null) {
-        return null
-      }
-      return this.version.substring(0, 10) + 'T' + this.version.substring(11, 19) + 'Z'
+    hasIdentifier () {
+      return this.identifiers.length > 0
     },
     brokerExtraInfo () {
       return this.$config.brokerExtraInfo

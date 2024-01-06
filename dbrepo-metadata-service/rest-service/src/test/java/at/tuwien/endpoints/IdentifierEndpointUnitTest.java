@@ -9,15 +9,13 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.exception.*;
-import at.tuwien.repository.mdb.DatabaseAccessRepository;
 import at.tuwien.repository.mdb.DatabaseRepository;
 import at.tuwien.repository.mdb.IdentifierRepository;
-import at.tuwien.repository.sdb.IdentifierIdxRepository;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.IdentifierService;
-import at.tuwien.service.QueryService;
 import at.tuwien.service.StoreService;
 import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,16 +59,7 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
     private AccessService accessService;
 
     @MockBean
-    private DatabaseAccessRepository accessRepository;
-
-    @MockBean
     private StoreService storeService;
-
-    @MockBean
-    private QueryService queryService;
-
-    @MockBean
-    private IdentifierIdxRepository identifierIdxRepository;
 
     @Autowired
     private IdentifierEndpoint identifierEndpoint;
@@ -80,6 +69,11 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
 
     @Autowired
     private EndpointConfig endpointConfig;
+
+    @BeforeEach
+    public void beforeEach() {
+        IDENTIFIER_1.setDatabase(DATABASE_1);
+    }
 
     @Test
     @WithAnonymousUser
@@ -157,8 +151,8 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
         final ResponseEntity<?> response = generic_find(null, null, null);
         assertEquals(HttpStatus.MOVED_PERMANENTLY, response.getStatusCode());
         assertNotNull(response.getHeaders().get("Location"));
-        assertEquals(endpointConfig.getWebsiteUrl() + "/database/"
-                + IDENTIFIER_1_DATABASE_ID, response.getHeaders().getFirst("Location"));
+        assertEquals(endpointConfig.getWebsiteUrl() + "/database/" + IDENTIFIER_1_DATABASE_ID + "/info?pid=" + IDENTIFIER_1_DATABASE_ID,
+                response.getHeaders().getFirst("Location"));
     }
 
     @Test
@@ -177,11 +171,9 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
             UserNotFoundException, QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException,
             IdentifierPublishingNotAllowedException, IdentifierRequestException, NotAllowedException,
             ViewNotFoundException, at.tuwien.exception.AccessDeniedException, QueryStoreException,
-            DatabaseConnectionException, ImageNotSupportedException {
-
-        /* mock */
-        when(accessRepository.findByDatabaseIdAndUserId(DATABASE_1_ID, USER_1_ID))
-                .thenReturn(Optional.of(DATABASE_1_USER_1_READ_ACCESS));
+            DatabaseConnectionException, ImageNotSupportedException, IdentifierNotFoundException,
+            TableNotFoundException, TableMalformedException, QueryMalformedException, FileStorageException,
+            DataDbSidecarException {
 
         /* test */
         generic_create(DATABASE_1_ID, DATABASE_1, DATABASE_1_USER_1_READ_ACCESS, IDENTIFIER_1_DTO_REQUEST, IDENTIFIER_1, USER_1_PRINCIPAL, USER_1_ID);
@@ -203,7 +195,7 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            generic_create(DATABASE_2_ID, DATABASE_2, null, IDENTIFIER_2_DTO_REQUEST, IDENTIFIER_2, null, null);
+            generic_create(DATABASE_2_ID, DATABASE_2, null, IDENTIFIER_5_DTO_REQUEST, IDENTIFIER_5, null, null);
         });
     }
 
@@ -213,10 +205,12 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
             UserNotFoundException, QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException,
             IdentifierPublishingNotAllowedException, IdentifierRequestException, NotAllowedException,
             at.tuwien.exception.AccessDeniedException, ViewNotFoundException, QueryStoreException,
-            DatabaseConnectionException, ImageNotSupportedException {
+            DatabaseConnectionException, ImageNotSupportedException, IdentifierNotFoundException,
+            TableNotFoundException, TableMalformedException, QueryMalformedException, FileStorageException,
+            DataDbSidecarException {
 
         /* test */
-        generic_create(DATABASE_2_ID, DATABASE_2, DATABASE_2_USER_1_READ_ACCESS, IDENTIFIER_2_DTO_REQUEST, IDENTIFIER_2, USER_2_PRINCIPAL, USER_2_ID);
+        generic_create(DATABASE_2_ID, DATABASE_2, DATABASE_2_USER_1_READ_ACCESS, IDENTIFIER_5_DTO_REQUEST, IDENTIFIER_5, USER_2_PRINCIPAL, USER_2_ID);
     }
 
     @Test
@@ -230,7 +224,7 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
                 .relatedIdentifiers(List.of())
                 .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
                 .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
-                .creators(List.of(IDENTIFIER_2_CREATOR_1_CREATE_DTO, IDENTIFIER_2_CREATOR_2_CREATE_DTO))
+                .creators(List.of(IDENTIFIER_5_CREATOR_1_CREATE_DTO, IDENTIFIER_5_CREATOR_2_CREATE_DTO))
                 .publisher(IDENTIFIER_1_PUBLISHER)
                 .type(IdentifierTypeDto.SUBSET)
                 .build();
@@ -245,16 +239,16 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
     @WithMockUser(username = USER_1_USERNAME, authorities = {"create-identifier"})
     public void create_invalidDatabase_fails() {
         final IdentifierSaveDto request = IdentifierSaveDto.builder()
-                .queryId(IDENTIFIER_1_QUERY_ID) // <--
+                .queryId(1L) // <--
                 .databaseId(IDENTIFIER_1_DATABASE_ID)
                 .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_CREATE_DTO))
                 .titles(List.of(IDENTIFIER_1_TITLE_1_CREATE_DTO))
-                .relatedIdentifiers(List.of(IDENTIFIER_1_RELATED_IDENTIFIER_2_CREATE_DTO))
-                .publicationDay(IDENTIFIER_2_PUBLICATION_DAY)
-                .publicationMonth(IDENTIFIER_2_PUBLICATION_MONTH)
-                .publicationYear(IDENTIFIER_2_PUBLICATION_YEAR)
-                .creators(List.of(IDENTIFIER_2_CREATOR_1_CREATE_DTO, IDENTIFIER_2_CREATOR_2_CREATE_DTO))
-                .publisher(IDENTIFIER_2_PUBLISHER)
+                .relatedIdentifiers(List.of(IDENTIFIER_1_RELATED_IDENTIFIER_5_CREATE_DTO))
+                .publicationDay(IDENTIFIER_5_PUBLICATION_DAY)
+                .publicationMonth(IDENTIFIER_5_PUBLICATION_MONTH)
+                .publicationYear(IDENTIFIER_5_PUBLICATION_YEAR)
+                .creators(List.of(IDENTIFIER_5_CREATOR_1_CREATE_DTO, IDENTIFIER_5_CREATOR_2_CREATE_DTO))
+                .publisher(IDENTIFIER_5_PUBLISHER)
                 .type(IdentifierTypeDto.DATABASE)
                 .build();
 
@@ -270,7 +264,7 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            generic_create(DATABASE_2_ID, DATABASE_2, null, IDENTIFIER_2_DTO_REQUEST, IDENTIFIER_2, USER_1_PRINCIPAL, USER_1_ID);
+            generic_create(DATABASE_2_ID, DATABASE_2, null, IDENTIFIER_5_DTO_REQUEST, IDENTIFIER_5, USER_1_PRINCIPAL, USER_1_ID);
         });
     }
 
@@ -283,7 +277,8 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
             throws QueryNotFoundException, RemoteUnavailableException, IdentifierAlreadyExistsException,
             UserNotFoundException, DatabaseNotFoundException, IdentifierPublishingNotAllowedException,
             IdentifierRequestException, NotAllowedException, at.tuwien.exception.AccessDeniedException,
-            ViewNotFoundException, QueryStoreException, DatabaseConnectionException, ImageNotSupportedException {
+            ViewNotFoundException, QueryStoreException, DatabaseConnectionException, ImageNotSupportedException,
+            IdentifierNotFoundException, TableNotFoundException, TableMalformedException, QueryMalformedException, FileStorageException, DataDbSidecarException {
 
         /* mock */
         when(databaseRepository.findById(databaseId))
@@ -299,9 +294,6 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
         when(storeService.findOne(databaseId, data.getQueryId(), principal))
                 .thenReturn(QUERY_1);
         when(identifierService.create(data, principal))
-                .thenReturn(identifier);
-        when(identifierRepository.save(any(Identifier.class)))
-                .thenReturn(identifier)
                 .thenReturn(identifier);
 
         /* test */

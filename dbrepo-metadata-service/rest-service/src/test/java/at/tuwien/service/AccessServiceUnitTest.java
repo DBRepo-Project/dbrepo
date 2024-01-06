@@ -8,11 +8,12 @@ import at.tuwien.api.database.DatabaseModifyAccessDto;
 import at.tuwien.entities.database.AccessType;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.exception.AccessDeniedException;
+import at.tuwien.exception.DatabaseNotFoundException;
 import at.tuwien.exception.NotAllowedException;
-import at.tuwien.repository.mdb.DatabaseAccessRepository;
 import at.tuwien.repository.mdb.DatabaseRepository;
 import at.tuwien.repository.mdb.UserRepository;
 import lombok.extern.log4j.Log4j2;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
 @Log4j2
@@ -38,44 +40,47 @@ public class AccessServiceUnitTest extends BaseUnitTest {
     private DatabaseRepository databaseRepository;
 
     @MockBean
-    private DatabaseAccessRepository databaseAccessRepository;
-
-    @MockBean
     private UserRepository userRepository;
 
     @Autowired
     private AccessService accessService;
 
-    @Test
-    public void list_succeeds() throws NotAllowedException {
-
-        /* mock */
-        when(databaseAccessRepository.findByDatabaseId(DATABASE_1_ID))
-                .thenReturn(List.of(DATABASE_1_USER_1_READ_ACCESS, DATABASE_2_USER_1_READ_ACCESS));
-
-        /* test */
-        final List<DatabaseAccess> response = accessService.list(DATABASE_1_ID);
-        assertEquals(2, response.size());
+    @BeforeEach
+    public void beforeEach() {
+        DATABASE_1.setAccesses(List.of(DATABASE_1_USER_1_READ_ACCESS, DATABASE_1_USER_2_WRITE_OWN_ACCESS, DATABASE_1_USER_3_WRITE_ALL_ACCESS));
     }
 
     @Test
-    public void list_empty_succeeds() throws NotAllowedException {
+    public void list_succeeds() throws DatabaseNotFoundException {
 
         /* mock */
-        when(databaseAccessRepository.findByDatabaseId(DATABASE_1_ID))
-                .thenReturn(List.of());
+        when(databaseRepository.findById(DATABASE_1_ID))
+                .thenReturn(Optional.of(DATABASE_1));
 
+        /* test */
+        final List<DatabaseAccess> response = accessService.list(DATABASE_1_ID);
+        assertEquals(3, response.size());
+    }
+
+    @Test
+    public void list_empty_succeeds() throws DatabaseNotFoundException {
+
+        /* mock */
+        DATABASE_1.setAccesses(List.of());
+        doReturn(Optional.of(DATABASE_1))
+                .when(databaseRepository)
+                .findById(DATABASE_1_ID);
         /* test */
         final List<DatabaseAccess> response = accessService.list(DATABASE_1_ID);
         assertEquals(0, response.size());
     }
 
     @Test
-    public void find_succeeds() throws AccessDeniedException {
+    public void find_succeeds() throws AccessDeniedException, DatabaseNotFoundException {
 
         /* mock */
-        when(databaseAccessRepository.findByDatabaseIdAndUserId(DATABASE_1_ID, USER_1_ID))
-                .thenReturn(Optional.of(DATABASE_1_USER_1_READ_ACCESS));
+        when(databaseRepository.findById(DATABASE_1_ID))
+                .thenReturn(Optional.of(DATABASE_1));
 
         /* test */
         final DatabaseAccess response = accessService.find(DATABASE_1_ID, USER_1_ID);
@@ -86,11 +91,25 @@ public class AccessServiceUnitTest extends BaseUnitTest {
     public void find_fails() {
 
         /* mock */
-        when(databaseAccessRepository.findByDatabaseIdAndUserId(DATABASE_1_ID, USER_1_ID))
-                .thenReturn(Optional.empty());
+        DATABASE_1.setAccesses(List.of());
+        when(databaseRepository.findById(DATABASE_1_ID))
+                .thenReturn(Optional.of(DATABASE_1));
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
+            accessService.find(DATABASE_1_ID, USER_1_ID);
+        });
+    }
+
+    @Test
+    public void find_databaseNotFound_fails() {
+
+        /* mock */
+        when(databaseRepository.findById(DATABASE_1_ID))
+                .thenReturn(Optional.empty());
+
+        /* test */
+        assertThrows(DatabaseNotFoundException.class, () -> {
             accessService.find(DATABASE_1_ID, USER_1_ID);
         });
     }

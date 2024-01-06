@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 
 import java.security.Principal;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public interface IdentifierService {
@@ -58,32 +57,34 @@ public interface IdentifierService {
      * Finds all identifiers in the metadata database which are not deleted. Optionally, the result can be filtered by
      * database id and/or query id.
      *
+     * @param type       The query type.
      * @param databaseId Optional. The database id.
      * @param queryId    Optional. The query id.
      * @param viewId     Optional. The view id.
+     * @param tableId    Optional. The table id.
      * @return List of identifiers
      */
-    List<Identifier> findAll(IdentifierTypeDto type, Long databaseId, Long queryId, Long viewId);
+    List<Identifier> findAll(IdentifierTypeDto type, Long databaseId, Long queryId, Long viewId, Long tableId);
 
     /**
      * Creates a new identifier in the metadata database for a query or database.
      *
-     * @param data          The identifier.
-     * @param principal     The authorization principal.
+     * @param data      The identifier.
+     * @param principal The authorization principal.
      * @return The created identifier from the metadata database if successful.
      * @throws IdentifierPublishingNotAllowedException The identifier with this visibility could not be created.
-     * @throws QueryNotFoundException                  The query with this id (in the data) could not be created.
+     * @throws QueryNotFoundException                  The query was not found in the data database.
      * @throws RemoteUnavailableException              The connection to the Query Store could not be established by
      *                                                 the database connector.
      * @throws IdentifierAlreadyExistsException        The identifier for this query/database already exists.
      * @throws UserNotFoundException                   The user was not found in the metadata database.
      * @throws DatabaseNotFoundException               The database was not found in the metadata database.
+     * @throws IdentifierNotFoundException             The identifier was not found in the metadata database.
      */
-    Identifier create(IdentifierSaveDto data, Principal principal)
-            throws IdentifierPublishingNotAllowedException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierAlreadyExistsException, UserNotFoundException,
+    Identifier create(IdentifierSaveDto data, Principal principal) throws IdentifierPublishingNotAllowedException,
+            QueryNotFoundException, RemoteUnavailableException, IdentifierAlreadyExistsException, UserNotFoundException,
             DatabaseNotFoundException, IdentifierRequestException, ViewNotFoundException, QueryStoreException,
-            DatabaseConnectionException, ImageNotSupportedException;
+            DatabaseConnectionException, ImageNotSupportedException, IdentifierNotFoundException;
 
     /**
      * Export metadata for a identifier
@@ -103,8 +104,7 @@ public interface IdentifierService {
      * @throws IdentifierNotFoundException The identifier was not found in the metadata database or was deleted.
      * @throws IdentifierRequestException  The identifier style was not found.
      */
-    String exportBibliography(Long id, BibliographyTypeDto style) throws IdentifierNotFoundException,
-            IdentifierRequestException;
+    String exportBibliography(Long id, BibliographyTypeDto style) throws IdentifierNotFoundException, IdentifierRequestException;
 
     /**
      * Exports an identifier to XML
@@ -113,27 +113,9 @@ public interface IdentifierService {
      * @return The XML resource, if successful.
      * @throws IdentifierNotFoundException The identifier was not found in the metadata database or was deleted.
      * @throws QueryNotFoundException      The query was not found in the metadata database or was deleted.
-     * @throws RemoteUnavailableException  The connection to the Query Store could not be established by the database
-     *                                     connector.
      * @throws IdentifierRequestException  The identifier does not allow for exporting.
      */
-    InputStreamResource exportResource(Long identifierId, Principal principal)
-            throws IdentifierNotFoundException, QueryNotFoundException, FileStorageException,
-            IdentifierRequestException, UserNotFoundException, QueryStoreException, TableMalformedException,
-            DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, DataDbSidecarException;
-
-    /**
-     * Updated the metadata (only) on the identifier for a given id in the metadata database.
-     *
-     * @param identifierId The identifier id.
-     * @param data         The metadata.
-     * @param principal    The user principal.
-     * @return The updated identifier if successful.
-     */
-    Identifier update(Long identifierId, IdentifierSaveDto data, Principal principal)
-            throws UserNotFoundException, DatabaseNotFoundException, QueryNotFoundException, RemoteUnavailableException,
-            IdentifierRequestException, IdentifierNotFoundException, QueryStoreException, DatabaseConnectionException,
-            ImageNotSupportedException;
+    InputStreamResource exportResource(Long identifierId, Principal principal) throws IdentifierNotFoundException, QueryNotFoundException, FileStorageException, IdentifierRequestException, UserNotFoundException, QueryStoreException, TableMalformedException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, DataDbSidecarException;
 
     /**
      * Soft-deletes an identifier for a given id in the metadata database. Does not actually remove the entity from the
@@ -142,5 +124,5 @@ public interface IdentifierService {
      * @param identifierId The identifier id.
      * @throws IdentifierNotFoundException The identifier was not found in the metadata database or was deleted.
      */
-    void delete(Long identifierId) throws IdentifierNotFoundException;
+    void delete(Long identifierId) throws IdentifierNotFoundException, DatabaseNotFoundException;
 }

@@ -13,8 +13,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.extern.jackson.Jacksonized;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
-
 
 @Getter
 @Setter
@@ -58,7 +58,7 @@ public class QueryDto {
     @Schema(example = "query")
     private QueryTypeDto type;
 
-    private IdentifierDto identifier;
+    private List<IdentifierDto> identifiers;
 
     @NotBlank(message = "query hash is required")
     @JsonProperty("query_hash")

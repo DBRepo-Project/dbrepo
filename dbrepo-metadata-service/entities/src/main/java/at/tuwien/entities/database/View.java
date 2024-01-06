@@ -2,17 +2,18 @@ package at.tuwien.entities.database;
 
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.identifier.Identifier;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import lombok.*;
 import net.sf.jsqlparser.statement.select.FromItem;
 import org.hibernate.annotations.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
@@ -36,33 +37,29 @@ import java.util.UUID;
 public class View {
 
     @Id
+    @org.springframework.data.annotation.Id
     @EqualsAndHashCode.Include
     @GeneratedValue(generator = "views-sequence")
     @GenericGenerator(name = "views-sequence", strategy = "increment")
     @Column(updatable = false, nullable = false)
     private Long id;
 
-    @Field(name = "database_id")
     @Column(updatable = false, nullable = false)
     private Long vdbid;
 
     @JdbcTypeCode(java.sql.Types.VARCHAR)
-    @Field(name = "created_by")
     @Column(name = "createdBy", nullable = false, columnDefinition = "VARCHAR(36)")
     private UUID createdBy;
 
     @Column(name = "vname", nullable = false)
     private String name;
 
-    @Field(name = "internal_name")
     @Column(nullable = false)
     private String internalName;
 
-    @Field(name = "is_public")
     @Column(name = "public", nullable = false)
     private Boolean isPublic;
 
-    @Field(name = "is_initial_view")
     @Column(name = "initialview", nullable = false)
     private Boolean isInitialView;
 
@@ -74,20 +71,22 @@ public class View {
 
     @ToString.Exclude
     @org.springframework.data.annotation.Transient
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumns({
+            @JoinColumn(name = "vid", referencedColumnName = "id", insertable = false, updatable = false),
+            @JoinColumn(name = "dbid", referencedColumnName = "vdbid", insertable = false, updatable = false)
+    })
+    @Where(clause = "identifier_type='VIEW'")
+    @OrderBy("id DESC")
+    private List<Identifier> identifiers;
+
+    @ToString.Exclude
+    @org.springframework.data.annotation.Transient
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
             @JoinColumn(name = "vdbid", referencedColumnName = "id", insertable = false, updatable = false)
     })
     private Database database;
-
-    @ToString.Exclude
-    @org.springframework.data.annotation.Transient
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumnsOrFormulas({
-            @JoinColumnOrFormula(column = @JoinColumn(name = "id", referencedColumnName = "vid", insertable = false, updatable = false)),
-            @JoinColumnOrFormula(formula = @JoinFormula(referencedColumnName = "identifier_type", value = "'VIEW'"))
-    })
-    private Identifier identifier;
 
     /**
      * KEEP THIS FUNCTION HERE! IT WILL BREAK CODE!
@@ -120,11 +119,11 @@ public class View {
     private List<TableColumn> columns;
 
     @CreatedDate
-    @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP")
+    @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP default NOW()")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant created;
 
     @LastModifiedDate
-    @Field(name = "last_modified")
     @Column(columnDefinition = "TIMESTAMP")
     private Instant lastModified;
 

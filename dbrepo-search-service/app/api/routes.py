@@ -7,16 +7,15 @@ from ast import literal_eval
 
 from flask import request
 
-# ToDo: make import recognisable by PyCharm
 from app.api import api_bp
 from flasgger.utils import swag_from
 from app.opensearch_client import *
 import math
 
-available_indices = literal_eval(
+available_types = literal_eval(
     os.getenv("COLLECTION", "['database','table','column','identifier','unit','concept','user','view']"))
 
-logging.info(f"Available collection loaded as: {available_indices}")
+logging.info(f"Available collection loaded as: {available_types}")
 
 
 def general_filter(index, results):
@@ -67,11 +66,11 @@ def get_index(index):
     :return: list of the results
     """
     logging.info(f'Searching for index: {index}')
-    if index not in available_indices:
+    if index not in available_types:
         return {
             "results": {},
         }, 404  # ToDo: replace with better error handling
-    results = query_index_by_term_opensearch(index, "*", "contains")
+    results = query_index_by_term_opensearch("*", "contains")
     results = general_filter(index, results)
     total_number_of_results = len(results)
 
@@ -79,24 +78,24 @@ def get_index(index):
     max_pages = math.ceil(len(results) / results_per_page)
     page = min(request.args.get("page", 1, type=int), max_pages)
     results = results[(results_per_page * (page - 1)): (results_per_page * page)]
-    return {"results": results, "total": total_number_of_results, "status": 200}
+    return {"results": results}, 200
 
 
-@api_bp.route("/api/search/<string:index>/fields", methods=["GET"], endpoint="search_get_index_fields")
-def get_fields(index):
+@api_bp.route("/api/search/<string:type>/fields", methods=["GET"], endpoint="search_get_index_fields")
+def get_fields(type):
     """
     returns a list of attributes of the data for a specific index.
-    :param index:
+    :param type: The search type
     :return:
     """
-    logging.info(f'Searching for index: {index}')
-    if index not in available_indices:
+    logging.info(f'Searching in index database for type: {type}')
+    if type not in available_types:
         return {
             "results": {},
         }, 404
-    fields = get_fields_for_index(index)
-    logging.debug(f'get fields for index {index} resulted in {len(fields)} field(s)')
-    return {"fields": fields, "status": 200}
+    fields = get_fields_for_index(type)
+    logging.debug(f'get fields for type {type} resulted in {len(fields)} field(s)')
+    return fields, 200
 
 
 @api_bp.route("/api/search", methods=["POST"], endpoint="search_fuzzy_search")
@@ -113,12 +112,12 @@ def post_fuzzy_search():
     req_body = request.json
     logging.debug(f"search request body: {req_body}")
     search_term = req_body.get("search_term")
-    response = general_search(None, available_indices, search_term, None, None, None)
-    return response, 200
+    response = general_search(None, search_term, None, None, None)
+    return {"results": response}, 200
 
 
-@api_bp.route("/api/search/<string:index>", methods=["POST"], endpoint="search_general_search")
-def post_general_search(index):
+@api_bp.route("/api/search/<string:type>", methods=["POST"], endpoint="search_general_search")
+def post_general_search(type):
     """
     Main endpoint for fuzzy searching.
     :return:
@@ -129,11 +128,11 @@ def post_general_search(index):
             "suggested_content_types": ["application/json"],
         }, 415
     req_body = request.json
-    logging.info(f'Searching for index: {index}')
+    logging.info(f'Searching in index database for type: {type}')
     logging.debug(f"search request body: {req_body}")
     search_term = req_body.get("search_term")
-    if index is not None and index not in available_indices:
-        logging.error(f"Index {index} is not in list of searchable indices: {available_indices}")
+    if type is not None and type not in available_types:
+        logging.error(f"Type {type} is not in collection: {available_types}")
         return {
             "results": {},
         }, 404
@@ -147,5 +146,50 @@ def post_general_search(index):
     if t1 is not None and t2 is not None and "unit.uri" in field_value_pairs and "concept.uri" in field_value_pairs:
         response = unit_independent_search(t1, t2, field_value_pairs)
     else:
-        response = general_search(index, available_indices, search_term, t1, t2, field_value_pairs)
-    return response, 200
+        response = general_search(type, search_term, t1, t2, field_value_pairs)
+    # filter by type
+    if type == 'table':
+        tmp = []
+        for database in response:
+            for table in database["tables"]:
+                table["is_public"] = database["is_public"]
+                tmp.append(table)
+        response = tmp
+    if type == 'identifier':
+        tmp = []
+        for database in response:
+            for identifier in database['identifiers']:
+                tmp.append(identifier)
+            for identifier in database['subsets']:
+                tmp.append(identifier)
+            for table in database['tables']:
+                for identifier in table['identifiers']:
+                    tmp.append(identifier)
+        for view in [x for xs in response for x in xs["views"]]:
+            if 'identifier' in view:
+                tmp.append(view['identifier'])
+        response = tmp
+    elif type == 'column':
+        response = [x for xs in response for x in xs["tables"]]
+        for table in response:
+            for column in table["columns"]:
+                column["table_id"] = table["id"]
+                column["database_id"] = table["database_id"]
+        response = [x for xs in response for x in xs["columns"]]
+    elif type == 'concept':
+        tmp = []
+        tables = [x for xs in response for x in xs["tables"]]
+        for column in [x for xs in tables for x in xs["columns"]]:
+            if 'concept' in column and column["concept"] is not None:
+                tmp.append(column["concept"])
+        response = tmp
+    elif type == 'unit':
+        tmp = []
+        tables = [x for xs in response for x in xs["tables"]]
+        for column in [x for xs in tables for x in xs["columns"]]:
+            if 'unit' in column and column["unit"] is not None:
+                tmp.append(column["unit"])
+        response = tmp
+    elif type == 'view':
+        response = [x for xs in response for x in xs["views"]]
+    return {'results': response, 'type': type}, 200

@@ -4,7 +4,6 @@ import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.auth.TokenIntrospectDto;
 import at.tuwien.api.keycloak.*;
 import at.tuwien.api.user.*;
-import at.tuwien.api.user.UserAttributesDto;
 import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.user.User;
 import org.mapstruct.Mapper;

@@ -4,8 +4,6 @@ import at.tuwien.BaseUnitTest;
 import at.tuwien.annotations.MockAmqp;
 import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.api.database.DatabaseCreateDto;
-import at.tuwien.entities.container.Container;
-import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
 import at.tuwien.repository.mdb.ContainerRepository;
@@ -24,7 +22,6 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @Log4j2
@@ -85,21 +82,6 @@ public class DatabaseServiceUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void delete_notFound_fails() {
-
-        /* mock */
-        when(containerRepository.findById(CONTAINER_1_ID))
-                .thenReturn(Optional.of(mock(Container.class)));
-        when(databaseRepository.findById(DATABASE_1_ID))
-                .thenReturn(Optional.empty());
-
-        /* test */
-        assertThrows(DatabaseNotFoundException.class, () -> {
-            databaseService.delete(DATABASE_1_ID, USER_1_ID);
-        });
-    }
-
-    @Test
     public void create_notFound_fails() throws UserNotFoundException {
         final DatabaseCreateDto request = DatabaseCreateDto.builder()
                 .cid(CONTAINER_1_ID)
@@ -115,30 +97,6 @@ public class DatabaseServiceUnitTest extends BaseUnitTest {
         /* test */
         assertThrows(ContainerNotFoundException.class, () -> {
             databaseService.create(request, USER_1_PRINCIPAL);
-        });
-    }
-
-    @Test
-    public void delete_image_fails() {
-        final ContainerImage image = ContainerImage.builder()
-                .name("mysql")
-                .build();
-        final Container container = Container.builder()
-                .image(image)
-                .build();
-        final Database database = Database.builder()
-                .container(container)
-                .build();
-
-        /* mock */
-        when(containerRepository.findById(CONTAINER_1_ID))
-                .thenReturn(Optional.of(CONTAINER_1));
-        when(databaseRepository.findById(DATABASE_1_ID))
-                .thenReturn(Optional.of(database));
-
-        /* test */
-        assertThrows(ImageNotSupportedException.class, () -> {
-            databaseService.delete(DATABASE_1_ID, USER_1_ID);
         });
     }
 

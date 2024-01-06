@@ -7,7 +7,7 @@ import at.tuwien.api.identifier.IdentifierDescriptionDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.identifier.IdentifierTitleDto;
 import at.tuwien.api.identifier.IdentifierTypeDto;
-import at.tuwien.exception.AccessDeniedException;
+import at.tuwien.entities.database.Database;
 import at.tuwien.exception.NotAllowedException;
 import at.tuwien.repository.mdb.*;
 import lombok.extern.log4j.Log4j2;
@@ -37,12 +37,6 @@ import static org.junit.jupiter.api.Assertions.*;
 public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
 
     @Autowired
-    private TableRepository tableRepository;
-
-    @Autowired
-    private IdentifierRepository identifierRepository;
-
-    @Autowired
     private UserRepository userRepository;
 
     @Autowired
@@ -62,13 +56,20 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
 
     @BeforeEach
     public void beforeEach() {
+        TABLE_1.setColumns(TABLE_1_COLUMNS);
+        TABLE_2.setColumns(TABLE_2_COLUMNS);
+        TABLE_3.setColumns(TABLE_3_COLUMNS);
+        TABLE_4.setColumns(TABLE_4_COLUMNS);
+        TABLE_5.setColumns(TABLE_5_COLUMNS);
+        TABLE_6.setColumns(TABLE_6_COLUMNS);
+        TABLE_7.setColumns(TABLE_7_COLUMNS);
+        TABLE_8.setColumns(TABLE_8_COLUMNS);
+        /* metadata database */
         imageRepository.save(IMAGE_1);
         userRepository.saveAll(List.of(USER_1, USER_2, USER_3, USER_4));
         licenseRepository.save(LICENSE_1);
-        containerRepository.saveAll(List.of(CONTAINER_1_SIMPLE, CONTAINER_2_SIMPLE, CONTAINER_3_SIMPLE, CONTAINER_4_SIMPLE));
-        databaseRepository.saveAll(List.of(DATABASE_1_SIMPLE, DATABASE_2_SIMPLE, DATABASE_3_SIMPLE, DATABASE_4_SIMPLE));
-        TABLE_2.setColumns(TABLE_2_COLUMNS);
-        tableRepository.save(TABLE_2);
+        containerRepository.saveAll(List.of(CONTAINER_1, CONTAINER_2, CONTAINER_3, CONTAINER_4));
+        databaseRepository.saveAll(List.of(DATABASE_1, DATABASE_2, DATABASE_3, DATABASE_4));
     }
 
     @Test
@@ -76,12 +77,9 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
     @WithAnonymousUser
     public void list_anonymous_succeeds() {
 
-        /* mock */
-        identifierRepository.save(IDENTIFIER_1);
-
         /* test */
-        final List<IdentifierDto> response = generic_list(null, null, null, null);
-        assertEquals(1, response.size());
+        final List<IdentifierDto> response = generic_list(null, null, null, null, null);
+        assertEquals(7, response.size());
         final IdentifierDto identifier = response.get(0);
         assertEquals(IDENTIFIER_1_ID, identifier.getId());
         final List<IdentifierTitleDto> titles = identifier.getTitles();
@@ -106,12 +104,9 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
     @WithMockUser(username = USER_1_USERNAME, authorities = {"list-identifiers"})
     public void list_hasRole_succeeds() {
 
-        /* mock */
-        identifierRepository.save(IDENTIFIER_1);
-
         /* test */
-        final List<IdentifierDto> response = generic_list(null, null, null, null);
-        assertEquals(1, response.size());
+        final List<IdentifierDto> response = generic_list(null, null, null, null, null);
+        assertEquals(7, response.size());
         final IdentifierDto identifier = response.get(0);
         assertEquals(IDENTIFIER_1_ID, identifier.getId());
         final List<IdentifierTitleDto> titles = identifier.getTitles();
@@ -136,12 +131,9 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
     @WithMockUser(username = USER_4_USERNAME)
     public void list_noRole_succeeds() {
 
-        /* mock */
-        identifierRepository.save(IDENTIFIER_1);
-
         /* test */
-        final List<IdentifierDto> response = generic_list(null, null, null, null);
-        assertEquals(1, response.size());
+        final List<IdentifierDto> response = generic_list(null, null, null, null, null);
+        assertEquals(7, response.size());
         final IdentifierDto identifier = response.get(0);
         final List<IdentifierTitleDto> titles = identifier.getTitles();
         assertEquals(2, titles.size());
@@ -165,12 +157,9 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
     @WithMockUser(username = USER_1_USERNAME)
     public void list_databaseId_succeeds() {
 
-        /* mock */
-        identifierRepository.save(IDENTIFIER_1);
-
         /* test */
-        final List<IdentifierDto> response = generic_list(DATABASE_1_ID, null, null, null);
-        assertEquals(1, response.size());
+        final List<IdentifierDto> response = generic_list(DATABASE_1_ID, null, null, null, null);
+        assertEquals(4, response.size());
         final IdentifierDto identifier = response.get(0);
         final List<IdentifierTitleDto> titles = identifier.getTitles();
         assertEquals(2, titles.size());
@@ -193,11 +182,8 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
     @WithMockUser(username = USER_1_USERNAME)
     public void list_viewId_succeeds() {
 
-        /* mock */
-        identifierRepository.saveAll(List.of(IDENTIFIER_1_SIMPLE, IDENTIFIER_2_SIMPLE, IDENTIFIER_3_SIMPLE, IDENTIFIER_4_SIMPLE, IDENTIFIER_5_SIMPLE, IDENTIFIER_6_SIMPLE));
-
         /* test */
-        final List<IdentifierDto> reponse = generic_list(null, null, VIEW_1_ID, null);
+        final List<IdentifierDto> reponse = generic_list(null, null, VIEW_1_ID, null, null);
         assertEquals(1, reponse.size());
     }
 
@@ -205,11 +191,8 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
     @WithMockUser(username = USER_1_USERNAME)
     public void list_viewType_succeeds() {
 
-        /* mock */
-        identifierRepository.saveAll(List.of(IDENTIFIER_1_SIMPLE, IDENTIFIER_2_SIMPLE, IDENTIFIER_3_SIMPLE, IDENTIFIER_4_SIMPLE, IDENTIFIER_5_SIMPLE, IDENTIFIER_6_SIMPLE));
-
         /* test */
-        final List<IdentifierDto> reponse = generic_list(null, null, null, IdentifierTypeDto.VIEW);
+        final List<IdentifierDto> reponse = generic_list(null, null, null, null, IdentifierTypeDto.VIEW);
         assertEquals(1, reponse.size());
     }
 
@@ -217,11 +200,8 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
     @WithMockUser(username = USER_1_USERNAME)
     public void list_databaseIdAndType_succeeds() {
 
-        /* mock */
-        identifierRepository.save(IDENTIFIER_1);
-
         /* test */
-        final List<IdentifierDto> response = generic_list(DATABASE_1_ID, null, null, IdentifierTypeDto.DATABASE);
+        final List<IdentifierDto> response = generic_list(DATABASE_1_ID, null, null, null, IdentifierTypeDto.DATABASE);
         assertEquals(1, response.size());
         final IdentifierDto identifier = response.get(0);
         assertEquals(0, identifier.getTitles().size());
@@ -233,11 +213,8 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
     @WithMockUser(username = USER_1_USERNAME)
     public void list_subsetIdAndType_succeeds() {
 
-        /* mock */
-        identifierRepository.save(IDENTIFIER_1);
-
         /* test */
-        final List<IdentifierDto> response = generic_list(DATABASE_1_ID, QUERY_1_ID, null, IdentifierTypeDto.DATABASE);
+        final List<IdentifierDto> response = generic_list(DATABASE_1_ID, null, null, null, IdentifierTypeDto.DATABASE);
         assertEquals(1, response.size());
         final IdentifierDto identifier = response.get(0);
         final List<IdentifierTitleDto> titles = identifier.getTitles();
@@ -264,7 +241,7 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            identifierEndpoint.create(IDENTIFIER_2_DTO_REQUEST, USER_4_PRINCIPAL);
+            identifierEndpoint.create(IDENTIFIER_5_DTO_REQUEST, USER_4_PRINCIPAL);
         });
     }
 
@@ -274,12 +251,12 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
     public void create_accessNotExists_fails() {
 
         /* mock */
-        containerRepository.save(CONTAINER_3_SIMPLE);
-        databaseRepository.save(DATABASE_3_SIMPLE);
+        containerRepository.save(CONTAINER_3);
+        databaseRepository.save(DATABASE_3);
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            identifierEndpoint.create(IDENTIFIER_3_DTO_REQUEST, USER_1_PRINCIPAL);
+            identifierEndpoint.create(IDENTIFIER_6_DTO_REQUEST, USER_1_PRINCIPAL);
         });
     }
 
@@ -287,10 +264,10 @@ public class IdentifierEndpointIntegrationTest extends BaseUnitTest {
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
 
-    protected List<IdentifierDto> generic_list(Long databaseId, Long queryId, Long viewId, IdentifierTypeDto type) {
+    protected List<IdentifierDto> generic_list(Long databaseId, Long queryId, Long viewId, Long tableId, IdentifierTypeDto type) {
 
         /* test */
-        final ResponseEntity<List<IdentifierDto>> response = identifierEndpoint.list(databaseId, queryId, viewId, type);
+        final ResponseEntity<List<IdentifierDto>> response = identifierEndpoint.list(databaseId, queryId, viewId, tableId, type);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         return response.getBody();

@@ -8,7 +8,6 @@ import at.tuwien.api.maintenance.BannerMessageCreateDto;
 import at.tuwien.api.maintenance.BannerMessageDto;
 import at.tuwien.api.maintenance.BannerMessageUpdateDto;
 import at.tuwien.entities.maintenance.BannerMessage;
-import at.tuwien.exception.AccessDeniedException;
 import at.tuwien.exception.BannerMessageNotFoundException;
 import at.tuwien.service.BannerMessageService;
 import lombok.extern.log4j.Log4j2;

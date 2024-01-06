@@ -6,9 +6,8 @@
 </template>
 
 <script>
-import Persist from '@/components/identifier/Persist.vue'
+import Persist from '@/components/identifier/Persist'
 import UserUtils from '@/api/user.utils'
-import QueryService from '@/api/query.service'
 
 export default {
   components: {
@@ -17,8 +16,6 @@ export default {
   data () {
     return {
       loading: false,
-      loadingView: false,
-      view: null,
       isAuthorizationError: false,
       items: [
         { text: 'Databases', to: '/database', activeClass: '' },
@@ -43,41 +40,20 @@ export default {
     database () {
       return this.$store.state.database
     },
+    view () {
+      if (!this.database) {
+        return null
+      }
+      return this.database.views.filter(v => v.id === Number(this.$route.params.view_id))[0]
+    },
     access () {
       return this.$store.state.access
     },
-    hasIdentifier () {
-      if ('identifier' in this.view && this.view.identifier) {
-        return 'id' in this.view.identifier
-      }
-      return false
-    },
     canPersistView () {
-      if (this.loadingView || !this.view || this.hasIdentifier) {
+      if (!this.view) {
         return false
       }
       return UserUtils.hasReadAccess(this.access)
-    }
-  },
-  mounted () {
-    this.loadView()
-  },
-  methods: {
-    loadView () {
-      this.loadingView = true
-      return new Promise((resolve, reject) => {
-        QueryService.findView(this.$route.params.database_id, this.$route.params.view_id)
-          .then((view) => {
-            this.view = view
-            resolve(view)
-          })
-          .catch((error) => {
-            reject(error)
-          })
-          .finally(() => {
-            this.loadingView = false
-          })
-      })
     }
   }
 }

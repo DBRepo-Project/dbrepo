@@ -4,8 +4,9 @@
       <v-card>
         <v-progress-linear v-if="loading" :color="loadingColor" :indeterminate="!error" />
         <v-card-title v-text="title" />
+        <v-card-subtitle v-if="subtitle" v-text="subtitle" />
         <v-card-text>
-          <div v-for="(column,idx) in columns" :key="idx">
+          <div v-for="(column,idx) in table.columns" :key="idx">
             <v-text-field
               v-if="isNumber(column)"
               v-model.number="localTuple[column.internal_name]"
@@ -144,9 +145,16 @@ export default {
       type: Boolean,
       default: false
     },
-    columns: {
-      type: Array,
-      default: () => []
+    table: {
+      type: Object,
+      default: () => {
+        return {
+          columns: [],
+          constraints: {
+            checks: []
+          }
+        }
+      }
     }
   },
   data () {
@@ -172,6 +180,12 @@ export default {
     },
     title () {
       return (this.edit ? 'Edit' : 'Add') + ' Tuple'
+    },
+    subtitle () {
+      if (!this.table.constraints) {
+        return null
+      }
+      return this.table.constraints.checks.length > 0 ? `Constraints: ${this.table.constraints.checks}` : null
     }
   },
   watch: {
@@ -268,7 +282,7 @@ export default {
     },
     updateTuple () {
       const constraints = {}
-      this.columns
+      this.table.columns
         .filter(c => c.is_primary_key)
         .forEach((c) => {
           constraints[c.internal_name] = this.tuple[c.internal_name]
@@ -285,12 +299,12 @@ export default {
     },
     addTuple () {
       const constraints = {}
-      this.columns
+      this.table.columns
         .filter(c => c.is_primary_key)
         .forEach((c) => {
           constraints[c.internal_name] = this.localTuple[c.internal_name]
         })
-      this.columns.forEach((column) => {
+      this.table.columns.forEach((column) => {
         if (!(column.internal_name in this.localTuple)) {
           this.localTuple[column.internal_name] = null
           this.localDisplay[column.internal_name] = null

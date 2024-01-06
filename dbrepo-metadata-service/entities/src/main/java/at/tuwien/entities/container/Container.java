@@ -2,6 +2,7 @@ package at.tuwien.entities.container;
 
 import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.entities.database.Database;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
@@ -21,6 +22,10 @@ import java.util.List;
 @EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Table(name = "mdb_containers")
+@NamedQueries({
+        @NamedQuery(name = "Container.findDefaultTimestampFormat", query = "select d from ContainerImageDate d where d.hasTime = true order by d.id limit 1"),
+        @NamedQuery(name = "Container.findDefaultDateFormat", query = "select d from ContainerImageDate d where d.hasTime = false order by d.id limit 1"),
+})
 public class Container {
 
     @Id
@@ -35,9 +40,6 @@ public class Container {
 
     @Column(nullable = false)
     private String internalName;
-
-    @Column(name = "image_id", nullable = false, updatable = false)
-    private Long imageId;
 
     @Column(nullable = false)
     private String host;
@@ -68,16 +70,15 @@ public class Container {
     })
     private List<Database> databases;
 
-    @ToString.Exclude
-    @org.springframework.data.annotation.Transient
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false, cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     @JoinColumns({
-            @JoinColumn(name = "image_id", referencedColumnName = "id", insertable = false, updatable = false)
+            @JoinColumn(name = "image_id", referencedColumnName = "id")
     })
     private ContainerImage image;
 
     @CreatedDate
-    @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP")
+    @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP default NOW()")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant created;
 
     @LastModifiedDate

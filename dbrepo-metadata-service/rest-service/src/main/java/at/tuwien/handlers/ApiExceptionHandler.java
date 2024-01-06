@@ -340,6 +340,18 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @Hidden
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ExceptionHandler(DatabaseUnchangedException.class)
+    public ResponseEntity<ApiErrorDto> handle(DatabaseUnchangedException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.NO_CONTENT)
+                .message(e.getLocalizedMessage())
+                .code("error.database.unchanged")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
+    @Hidden
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(ExchangeNotFoundException.class)
     public ResponseEntity<ApiErrorDto> handle(ExchangeNotFoundException e, WebRequest request) {
@@ -875,6 +887,18 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
                 .status(HttpStatus.NOT_FOUND)
                 .message(e.getLocalizedMessage())
                 .code("error.ontology.notfound")
+                .build();
+        return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
+    }
+
+    @Hidden
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+    @ExceptionHandler({OntologyInvalidException.class})
+    public ResponseEntity<ApiErrorDto> handle(OntologyInvalidException e, WebRequest request) {
+        final ApiErrorDto response = ApiErrorDto.builder()
+                .status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .message(e.getLocalizedMessage())
+                .code("error.ontology.invalid")
                 .build();
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }

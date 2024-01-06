@@ -41,16 +41,15 @@ public class QueryStoreServiceImpl extends HibernateConnector implements QuerySt
                 executeQuery(connection, query);
             }
         } catch (SQLException e) {
-            log.error("Failed to create query store {}, reason: {}", database, e.getMessage());
-            throw new DatabaseMalformedException("Failed to create database", e);
+            log.error("Failed to create query store in database with id {}: {}", databaseId, e.getMessage());
+            throw new DatabaseMalformedException("Failed to create query store in database with id " + databaseId, e);
         } catch (IOException e) {
-            log.error("Failed to load query store init script, reason: {}", e.getMessage());
-            throw new QueryStoreException("Failed to load query store init script");
+            log.error("Failed to load query store init script: {}", e.getMessage());
+            throw new QueryStoreException("Failed to load query store init script", e);
         } finally {
             dataSource.close();
         }
         log.info("Created query store in database with id {}", databaseId);
-        log.trace("created query store in database {}", database);
     }
 
     public void executeQuery(Connection connection, String statement, String... data) throws SQLException {

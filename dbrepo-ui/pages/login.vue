@@ -109,11 +109,13 @@ export default {
             .then(async (user) => {
               this.$store.commit('SET_USER', user)
               this.$vuetify.theme.dark = user.attributes.theme_dark
-              await this.$store.dispatch('reloadDatabaseCount')
               await this.$router.push('/database')
             })
         })
         .catch(() => {
+          this.loading = false
+        })
+        .finally(() => {
           this.loading = false
         })
     },

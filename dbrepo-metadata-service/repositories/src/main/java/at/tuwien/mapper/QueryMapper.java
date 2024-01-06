@@ -6,7 +6,6 @@ import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.TableCsvDeleteDto;
 import at.tuwien.api.database.table.TableCsvDto;
-import at.tuwien.api.database.table.TableCsvUpdateDto;
 import at.tuwien.api.database.table.TableHistoryDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.View;
@@ -18,6 +17,12 @@ import at.tuwien.exception.QueryMalformedException;
 import at.tuwien.exception.QueryStoreException;
 import at.tuwien.exception.TableMalformedException;
 import at.tuwien.querystore.Query;
+import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.CCJSqlParserManager;
+import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.statement.select.*;
+import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectItem;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.FileUtils;
@@ -30,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.math.BigInteger;
 import java.sql.Date;
 import java.sql.*;
@@ -37,12 +43,10 @@ import java.text.Normalizer;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
-import java.time.temporal.ChronoField;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Mapper(componentModel = "spring")
 public interface QueryMapper {
@@ -106,7 +110,7 @@ public interface QueryMapper {
         }
         final int[] idx = new int[]{0};
         final List<Map<String, Integer>> headers = columns.stream()
-                .map(c -> (Map<String, Integer>) new LinkedHashMap<String, Integer>(){{
+                .map(c -> (Map<String, Integer>) new LinkedHashMap<String, Integer>() {{
                     put(c.getAlias() != null ? c.getAlias() : c.getInternalName(), idx[0]++);
                 }})
                 .toList();
@@ -510,82 +514,6 @@ public interface QueryMapper {
         }
     }
 
-    default PreparedStatement tableCsvDtoToRawUpdateQuery(Connection connection, Table table, TableCsvUpdateDto data)
-            throws TableMalformedException, ImageNotSupportedException, QueryMalformedException {
-        log.trace("mapping table csv to update query, table={}, data={}", table, data);
-        int i = 1;
-        if (table.getColumns().size() == 0) {
-            log.error("Column size is zero");
-            throw new TableMalformedException("Columns are not known");
-        }
-        /* check image */
-        if (!table.getDatabase().getContainer().getImage().getName().equals("mariadb")) {
-            log.error("Currently only MariaDB is supported");
-            throw new ImageNotSupportedException("Image not supported.");
-        }
-        /* parameterized query for prepared statement */
-        final StringBuilder statement = new StringBuilder("UPDATE `")
-                .append(table.getInternalName())
-                .append("` SET ");
-        final int[] idx = new int[]{0};
-        data.getData()
-                .forEach((key, value) -> {
-                    statement.append(idx[0]++ == 0 ? "" : ", ")
-                            .append("`")
-                            .append(key)
-                            .append("` = ?");
-                });
-        statement.append(" WHERE ");
-        final int[] jdx = new int[]{0};
-        data.getKeys()
-                .forEach((key, value) -> {
-                    statement.append(jdx[0] == 0 ? "" : ", ")
-                            .append("`")
-                            .append(key)
-                            .append("` ");
-                    if (value == null) {
-                        statement.append(" IS NULL");
-                    } else {
-                        statement.append(" = '")
-                                .append(value)
-                                .append("'");
-                    }
-                    jdx[0]++;
-                });
-        statement.append(";");
-        try {
-            final PreparedStatement pstmt = connection.prepareStatement(statement.toString());
-            for (Map.Entry<String, Object> entry : data.getData().entrySet()) {
-                if (entry.getValue() == null) {
-                    log.trace("entry is null, preparing null");
-                    pstmt.setNull(i++, Types.NULL);
-                } else if (entry.getValue().equals(true) || entry.getValue().equals(false)) {
-                    log.trace("entry is not null, preparing boolean");
-                    pstmt.setBoolean(i++, Boolean.parseBoolean(String.valueOf(entry.getValue())));
-                } else {
-                    log.trace("entry is not null, preparing string");
-                    pstmt.setString(i++, String.valueOf(entry.getValue()));
-                }
-            }
-            log.trace("mapped update query {} to prepared statement {}", statement, pstmt);
-            return pstmt;
-        } catch (SQLException e) {
-            log.error("failed to prepare statement {}, reason: {}", statement, e.getMessage());
-            throw new QueryMalformedException("Failed to prepare statement", e);
-        }
-    }
-
-    default String tableColumnsToSelection(List<TableColumn> data) {
-        final StringBuilder selection = new StringBuilder();
-        final int[] idx = {0};
-        data.forEach(column -> selection.append(idx[0]++ == 0 ? "" : ", ")
-                .append("`")
-                .append(column.getInternalName())
-                .append("`"));
-        log.trace("mapped columns {} to selection {}", data, selection);
-        return selection.toString();
-    }
-
     default String tableToRawCountAllQuery(Table table, Instant timestamp)
             throws ImageNotSupportedException {
         log.trace("mapping table to raw count query, table={}, timestamp={}", table, timestamp);
@@ -734,10 +662,170 @@ public interface QueryMapper {
         log.trace("mapped find all from history view query [{}]", statement);
         try {
             final PreparedStatement pstmt = connection.prepareStatement(statement.toString());
-            log.trace("mapped select history query {} to prepared statement {}", statement, pstmt);
+            log.trace("mapped select history query {} to prepared statement", statement);
             return pstmt;
         } catch (SQLException e) {
-            log.error("Failed to prepare statement {} reason: {}", statement, e.getMessage());
+            log.error("Failed to prepare statement {}: {}", statement, e.getMessage());
+            throw new QueryMalformedException("Failed to prepare statement", e);
+        }
+    }
+
+    /**
+     * Parses the stored columns from a given query.
+     *
+     * @param query    The query.
+     * @param database The database that contains the list of tables with list of columns.
+     * @return List of columns in the order they are referenced in the query.
+     * @throws JSQLParserException The columns could not be extracted from the query.
+     */
+    @Transactional(readOnly = true)
+    default List<TableColumn> parseColumns(String query, Database database) throws JSQLParserException {
+        final List<TableColumn> columns = new ArrayList<>();
+        final CCJSqlParserManager parserRealSql = new CCJSqlParserManager();
+        final net.sf.jsqlparser.statement.Statement statement = parserRealSql.parse(new StringReader(query));
+        log.debug("parse columns from query: {}", query);
+        /* check */
+        if (!(statement instanceof Select)) {
+            log.error("Query attempts to update the dataset, not a SELECT statement");
+            throw new JSQLParserException("Query attempts to update the dataset");
+        }
+        /* start parsing */
+        final Select selectStatement = (Select) statement;
+        final PlainSelect ps = (PlainSelect) selectStatement.getSelectBody();
+        final List<SelectItem> clauses = ps.getSelectItems();
+        log.trace("columns referenced in the from-clause: {}", clauses);
+        /* Parse all tables */
+        final List<FromItem> tablesOrViews = new ArrayList<>();
+        tablesOrViews.add(ps.getFromItem());
+        if (ps.getJoins() != null && ps.getJoins().size() > 0) {
+            log.trace("query contains join items: {}", ps.getJoins());
+            for (net.sf.jsqlparser.statement.select.Join j : ps.getJoins()) {
+                if (j.getRightItem() != null) {
+                    tablesOrViews.add(j.getRightItem());
+                }
+            }
+        }
+        final List<TableColumn> allColumns = database.getTables()
+                .stream()
+                .map(Table::getColumns)
+                .flatMap(List::stream)
+                .toList();
+        log.trace("columns referenced in the from-clause and join-clause(s): {}", clauses);
+        /* Checking if all tables or views exist */
+        log.trace("table(s) or view(s) referenced in the statement: {}", tablesOrViews.stream().map(t -> ((net.sf.jsqlparser.schema.Table) t).getName()).collect(Collectors.toList()));
+        /* Checking if all columns exist */
+        for (SelectItem clause : clauses) {
+            final SelectExpressionItem item = (SelectExpressionItem) clause;
+            final Column column = (Column) item.getExpression();
+            final Optional<net.sf.jsqlparser.schema.Table> optionalTableOrView = tablesOrViews.stream()
+                    .map(t -> (net.sf.jsqlparser.schema.Table) t)
+                    .filter(t -> {
+                        if (column.getTable() == null) {
+                            /* column does not reference a specific table, so there is only one table */
+                            final String tableName = ((net.sf.jsqlparser.schema.Table) tablesOrViews.get(0)).getName().replace("`", "");
+                            return tableOptionalAliasMatches(t, tableName);
+                        }
+                        final String tableName = column.getTable().getName().replace("`", "");
+                        return tableOptionalAliasMatches(t, tableName);
+                    })
+                    .findFirst();
+            if (optionalTableOrView.isEmpty()) {
+                log.error("Failed to find table or view with alias {}", column.getTable().getAlias());
+                throw new JSQLParserException("Failed to find table or view with alias " + column.getTable().getAlias());
+            }
+            final Optional<TableColumn> optionalColumn = allColumns.stream()
+                    .filter(c -> c.getInternalName().equals(column.getColumnName().replace("`", "")))
+                    .filter(c -> columnMatches(c, optionalTableOrView.get().getName().replace("`", "")))
+                    .findFirst();
+            if (optionalColumn.isEmpty()) {
+                log.error("Failed to find column with name {} in {}", column.getColumnName(), allColumns.stream().map(TableColumn::getInternalName).toList());
+                throw new JSQLParserException("Failed to find column with name " + column.getColumnName() + " in " + allColumns.stream().map(TableColumn::getInternalName).toList());
+            }
+            final TableColumn aliasColumn = optionalColumn.get();
+            if (item.getAlias() != null) {
+                aliasColumn.setAlias(item.getAlias().getName());
+            }
+            log.trace("found column with internal name {} and alias {}", aliasColumn.getInternalName(), aliasColumn.getAlias());
+            columns.add(aliasColumn);
+        }
+        return columns;
+    }
+
+    default boolean tableOptionalAliasMatches(net.sf.jsqlparser.schema.Table table, String tableName) {
+        if (table.getAlias() == null) {
+            /* table is non-aliased */
+            final String otherTableName = table.getName()
+                    .trim()
+                    .replace("`", "");
+            log.trace("table {} has no alias", otherTableName);
+            return otherTableName.equals(tableName);
+        }
+        /* has alias */
+        final String alias = table.getAlias()
+                .getName()
+                .trim()
+                .replace("`", "");
+        log.trace("table {} has alias {}", table.getName(), alias);
+        return alias.equals(tableName);
+    }
+
+    @Transactional(readOnly = true)
+    default boolean columnMatches(TableColumn column, String tableOrView) {
+        if (column.getTable().getInternalName().equals(tableOrView)) {
+            /* matches table name */
+            return true;
+        }
+        if (column.getViews() == null) {
+            return false;
+        }
+        /* maybe matches one of the views */
+        return column.getViews()
+                .stream()
+                .anyMatch(v -> v.getInternalName().equals(tableOrView));
+    }
+
+    default PreparedStatement obtainTableMetadataRawQuery(Connection connection, String databaseName, String tableName) throws QueryMalformedException {
+        final StringBuilder statement = new StringBuilder("SELECT `ORDINAL_POSITION`, `COLUMN_DEFAULT`, `IS_NULLABLE`, `DATA_TYPE`, `CHARACTER_MAXIMUM_LENGTH`, `NUMERIC_PRECISION`, `NUMERIC_SCALE`, `COLUMN_TYPE`, `COLUMN_KEY`, `COLUMN_NAME` FROM `information_schema`.`COLUMNS` WHERE `TABLE_SCHEMA` = '")
+                .append(databaseName)
+                .append("' AND `TABLE_NAME` = '")
+                .append(tableName)
+                .append("'");
+        log.trace("mapped obtain table metadata statement {} to prepared statement", statement);
+        try {
+            return connection.prepareStatement(statement.toString());
+        } catch (SQLException e) {
+            log.error("Failed to prepare statement {}: {}", statement, e.getMessage());
+            throw new QueryMalformedException("Failed to prepare statement", e);
+        }
+    }
+
+    default PreparedStatement databaseToDatabaseConstraintMetadata(Connection connection, String databaseName, String tableName) throws QueryMalformedException {
+        final StringBuilder statement = new StringBuilder("SELECT tc.`CONSTRAINT_TYPE`, cc.`CONSTRAINT_NAME`, cc.`LEVEL`, cc.`CHECK_CLAUSE`, rc.`UNIQUE_CONSTRAINT_NAME`, rc.`REFERENCED_TABLE_NAME` FROM information_schema.`TABLE_CONSTRAINTS` tc LEFT JOIN information_schema.`CHECK_CONSTRAINTS` cc ON tc.`CONSTRAINT_SCHEMA` = cc.`CONSTRAINT_SCHEMA` AND tc.`TABLE_NAME` = cc.`TABLE_NAME` AND tc.`CONSTRAINT_TYPE` = 'CHECK' LEFT JOIN information_schema.`REFERENTIAL_CONSTRAINTS` rc ON tc.`CONSTRAINT_SCHEMA` = rc.`CONSTRAINT_SCHEMA` AND tc.`TABLE_NAME` = rc.`TABLE_NAME` AND tc.`CONSTRAINT_TYPE` = 'FOREIGN KEY' WHERE tc.`TABLE_SCHEMA` = '")
+                .append(databaseName)
+                .append("' AND tc.`TABLE_NAME` = '")
+                .append(tableName)
+                .append("'");
+        log.trace("statement={}", statement);
+        try {
+            return connection.prepareStatement(statement.toString());
+        } catch (SQLException e) {
+            log.error("Failed to prepare statement {}, reason: {}", statement, e.getMessage());
+            throw new QueryMalformedException("Failed to prepare statement", e);
+        }
+    }
+
+    default PreparedStatement tableEnableSystemVersioning(Connection connection, String databaseName, String tableName)
+            throws QueryMalformedException {
+        final StringBuilder statement = new StringBuilder("ALTER TABLE `")
+                .append(databaseName)
+                .append("`.`")
+                .append(tableName)
+                .append("` ADD SYSTEM VERSIONING;");
+        log.trace("mapped enable system-versioning statement {} to prepared statement", statement);
+        try {
+            return connection.prepareStatement(statement.toString());
+        } catch (SQLException e) {
+            log.error("Failed to prepare statement {}: {}", statement, e.getMessage());
             throw new QueryMalformedException("Failed to prepare statement", e);
         }
     }

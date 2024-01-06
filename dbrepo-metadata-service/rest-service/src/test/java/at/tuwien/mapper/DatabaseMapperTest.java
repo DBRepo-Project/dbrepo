@@ -4,7 +4,6 @@ import at.tuwien.BaseUnitTest;
 import at.tuwien.annotations.MockAmqp;
 import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.user.UserBriefDto;
 import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.user.User;
@@ -41,10 +40,10 @@ public class DatabaseMapperTest extends BaseUnitTest {
         assertEquals(DATABASE_1_DESCRIPTION, response.getDescription());
         assertEquals(DATABASE_1_INTERNALNAME, response.getInternalName());
         assertEquals(DATABASE_1_CREATED, response.getCreated());
-        final UserBriefDto creator = response.getCreator();
+        final UserDto creator = response.getCreator();
         assertEquals(USER_1_ID, creator.getId());
         assertEquals(USER_1_USERNAME, creator.getUsername());
-        final UserBriefDto owner = response.getOwner();
+        final UserDto owner = response.getOwner();
         assertEquals(USER_1_ID, owner.getId());
         assertEquals(USER_1_USERNAME, owner.getUsername());
     }

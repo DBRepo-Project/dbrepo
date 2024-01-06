@@ -2,12 +2,8 @@ package at.tuwien.mapper;
 
 import at.tuwien.api.database.*;
 import at.tuwien.api.user.UserDetailsDto;
-import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.container.image.ContainerImage;
-import at.tuwien.entities.database.AccessType;
-import at.tuwien.entities.database.Database;
-import at.tuwien.entities.database.DatabaseAccess;
-import at.tuwien.entities.database.LanguageType;
+import at.tuwien.entities.database.*;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.QueryMalformedException;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -23,10 +19,9 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.text.Normalizer;
 import java.util.Locale;
-import java.util.UUID;
 import java.util.regex.Pattern;
 
-@Mapper(componentModel = "spring", uses = {ContainerMapper.class, UserMapper.class, ImageMapper.class, UserMapper.class/*, IdentifierMapper.class*/}, imports = {RandomStringUtils.class})
+@Mapper(componentModel = "spring", uses = {ContainerMapper.class, UserMapper.class, ImageMapper.class, UserMapper.class, TableMapper.class, IdentifierMapper.class, ViewMapper.class}, imports = {RandomStringUtils.class})
 public interface DatabaseMapper {
 
     org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(DatabaseMapper.class);
@@ -51,7 +46,6 @@ public interface DatabaseMapper {
     @Named("languageMapping")
     LanguageType languageTypeDtoToLanguageType(LanguageTypeDto data);
 
-    /* keep */
     @Named("engineMapping")
     default String containerImageToEngine(ContainerImage data) {
         return data.getName() + ":" + data.getVersion();
@@ -59,7 +53,6 @@ public interface DatabaseMapper {
 
     @Mappings({
             @Mapping(target = "id", source = "id"),
-            @Mapping(target = "engine", source = "container.image", qualifiedByName = "engineMapping"),
             @Mapping(target = "image", source = "container.image"),
             @Mapping(target = "created", source = "created", dateFormat = "dd-MM-yyyy HH:mm"),
             @Mapping(target = "container", ignore = true),
@@ -68,21 +61,20 @@ public interface DatabaseMapper {
 
     @Mappings({
             @Mapping(target = "id", source = "id"),
-            @Mapping(target = "image", source = "container.image"),
             @Mapping(target = "created", source = "created", dateFormat = "dd-MM-yyyy HH:mm"),
-            @Mapping(target = "identifier.database", ignore = true)
     })
     DatabaseDto databaseToDatabaseDto(Database data);
-
-    @Mappings({
-            @Mapping(target = "identifier.database", ignore = true)
-    })
-    Database databaseDtoToDatabase(DatabaseDto data);
 
     @Mappings({
             @Mapping(target = "internalName", expression = "java(nameToInternalName(data.getName()) + \"_\" + RandomStringUtils.randomAlphabetic(4).toLowerCase())"),
     })
     Database databaseCreateDtoToDatabase(DatabaseCreateDto data);
+
+    AccessType accessTypeDtoToAccessType(AccessTypeDto data);
+
+    AccessTypeDto accessTypeToAccessTypeDto(AccessType data);
+
+    DatabaseAccessDto databaseAccessToDatabaseAccessDto(DatabaseAccess data);
 
     default PreparedStatement userToRawCreateUserQuery(Connection connection, User data) throws QueryMalformedException {
         if (data.getMariadbPassword() == null) {
@@ -122,6 +114,19 @@ public interface DatabaseMapper {
         }
     }
 
+    default PreparedStatement databaseToDatabaseMetadata(Connection connection, Database database) throws QueryMalformedException {
+        final StringBuilder statement = new StringBuilder("SELECT t.`TABLE_NAME`, t.`TABLE_TYPE`, t.`TABLE_ROWS`, t.`AVG_ROW_LENGTH`, t.`DATA_LENGTH`, t.`MAX_DATA_LENGTH`, COALESCE(t.`CREATE_TIME`, NOW()) as `CREATE_TIME`, t.`UPDATE_TIME`, v.`VIEW_DEFINITION` FROM information_schema.TABLES t LEFT JOIN information_schema.VIEWS v ON t.`TABLE_NAME` = v.`TABLE_NAME` WHERE t.`TABLE_SCHEMA` = '")
+                .append(database.getInternalName())
+                .append("' AND t.`TABLE_TYPE` IN ('BASE TABLE', 'SYSTEM VERSIONED', 'VIEW') AND t.`TABLE_NAME` NOT IN ('qs_queries', '_tmp') AND t.`TABLE_NAME` NOT LIKE 'hs_%'");
+        log.trace("statement={}", statement);
+        try {
+            return connection.prepareStatement(statement.toString());
+        } catch (SQLException e) {
+            log.error("Failed to prepare statement {}, reason: {}", statement, e.getMessage());
+            throw new QueryMalformedException("Failed to prepare statement", e);
+        }
+    }
+
     default PreparedStatement userToRawDropUserQuery(Connection connection, String username) throws QueryMalformedException {
         final StringBuilder statement = new StringBuilder("DROP USER IF EXISTS `")
                 .append(username)
@@ -143,7 +148,7 @@ public interface DatabaseMapper {
         try {
             return connection.prepareStatement(statement.toString());
         } catch (SQLException e) {
-            log.error("Failed to prepare statement {}, reason: {}", statement, e.getMessage());
+            log.error("Failed to prepare statement {}: {}", statement, e.getMessage());
             throw new QueryMalformedException("Failed to prepare statement", e);
         }
     }
@@ -260,43 +265,6 @@ public interface DatabaseMapper {
         final Principal principal = new BasicUserPrincipal(data.getUsername());
         log.debug("mapped user details {} to principal {}", data, principal);
         return principal;
-    }
-
-    default DatabaseAccess defaultCreatorAccess(Database database, UUID userId) {
-        final DatabaseAccess access = DatabaseAccess.builder()
-                .hdbid(database.getId())
-                .huserid(userId)
-                .type(AccessType.WRITE_ALL)
-                .build();
-        log.debug("give default owner access to database with id {} to user with id {}", database.getId(), userId);
-        return access;
-    }
-
-    AccessType accessTypeDtoToAccessType(AccessTypeDto data);
-
-    AccessTypeDto accessTypeToAccessTypeDto(AccessType data);
-
-    DatabaseAccessDto databaseAccessToDatabaseAccessDto(DatabaseAccess data);
-
-    default DatabaseAccess databaseGiveAccessDtoToDatabaseAccess(Database database, UUID id,
-                                                                 DatabaseGiveAccessDto data) {
-        final DatabaseAccess access = DatabaseAccess.builder()
-                .hdbid(database.getId())
-                .huserid(id)
-                .type(accessTypeDtoToAccessType(data.getType()))
-                .build();
-        log.debug("mapped database access {} to database access {}", data, access);
-        return access;
-    }
-
-    default DatabaseAccess databaseModifyAccessDtoToDatabaseAccess(Database database, User user, DatabaseModifyAccessDto data) {
-        final DatabaseAccess access = DatabaseAccess.builder()
-                .hdbid(database.getId())
-                .huserid(user.getId())
-                .type(accessTypeDtoToAccessType(data.getType()))
-                .build();
-        log.debug("mapped database access {} to database access {}", data, access);
-        return access;
     }
 
 }

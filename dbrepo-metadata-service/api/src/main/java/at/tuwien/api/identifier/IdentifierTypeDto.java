@@ -12,6 +12,9 @@ public enum IdentifierTypeDto {
     @JsonProperty("subset")
     SUBSET("subset"),
 
+    @JsonProperty("table")
+    TABLE("table"),
+
     @JsonProperty("view")
     VIEW("view");
 

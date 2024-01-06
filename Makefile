@@ -16,13 +16,10 @@ clean:
 
 build: build-backend build-docker
 
-build-backend: build-metadata-service build-analyse-service build-data-service build-mirror-service
+build-backend: build-metadata-service build-analyse-service build-data-service
 
 build-data-service: build-metadata-service
 	mvn -f ./dbrepo-data-service/pom.xml clean package -DskipTests
-
-build-mirror-service: build-metadata-service
-	mvn -f ./dbrepo-mirror-service/pom.xml clean package -DskipTests
 
 build-metadata-service:
 	mvn -f ./dbrepo-metadata-service/pom.xml clean install -DskipTests
@@ -33,7 +30,6 @@ build-analyse-service:
 build-docker:
 	docker build -t dbrepo-metadata-service:build --target build dbrepo-metadata-service
 	docker build -t dbrepo-data-service:build --target build dbrepo-data-service
-	docker build -t dbrepo-mirror-service:build --target build dbrepo-mirror-service
 	docker build ./dbrepo-log-service -t dbrepo-log-service
 	docker compose build --parallel
 
@@ -44,7 +40,7 @@ build-frontend:
 build-clients:
 	bash ./.gitlab/swagger/generate.sh
 
-tag: tag-analyse-service tag-authentication-service tag-metadata-db tag-ui tag-metadata-service tag-data-service tag-mirror-service tag-log-service tag-search-db tag-search-db-init tag-search-service tag-data-db-sidecar
+tag: tag-analyse-service tag-authentication-service tag-metadata-db tag-ui tag-metadata-service tag-data-service tag-log-service tag-search-db tag-search-db-init tag-search-service tag-data-db-sidecar
 
 tag-analyse-service:
 	docker tag dbrepo-analyse-service:latest "${REPOSITORY_URL}/analyse-service:${TAG}"
@@ -64,11 +60,7 @@ tag-ui:
 
 tag-data-service:
 	docker tag dbrepo-data-service:latest "${REPOSITORY_URL}/data-service:${TAG}"
-	docker tag dbrepo-data-service:latest "${REPOSITORY2_URL}/data-service:${TAG}"
-
-tag-mirror-service:
-	docker tag dbrepo-mirror-service:latest "${REPOSITORY_URL}/mirror-service:${TAG}"
-	docker tag dbrepo-mirror-service:latest "${REPOSITORY2_URL}/mirror-service:${TAG}"
+	docker tag dbrepo-data-service:latest "${REPOSITORY2_URL}/data-service:${TAG}
 
 tag-metadata-service:
 	docker tag dbrepo-metadata-service:latest "${REPOSITORY_URL}/metadata-service:${TAG}"
@@ -98,7 +90,7 @@ tag-storage-service-init:
 	docker tag dbrepo-storage-service-init:latest "${REPOSITORY_URL}/storage-service-init:${TAG}"
 	docker tag dbrepo-storage-service-init:latest "${REPOSITORY2_URL}/storage-service-init:${TAG}"
 
-release: build-docker tag release-analyse-service release-authentication-service release-metadata-db release-ui release-metadata-service release-data-service release-log-service release-search-db release-mirror-service release-search-db-init release-search-service release-data-db-sidecar
+release: build-docker tag release-analyse-service release-authentication-service release-metadata-db release-ui release-metadata-service release-data-service release-log-service release-search-db release-search-db-init release-search-service release-data-db-sidecar
 
 release-analyse-service: tag-analyse-service
 	docker push "${REPOSITORY_URL}/analyse-service:${TAG}"
@@ -119,10 +111,6 @@ release-ui: tag-ui
 release-data-service: tag-data-service
 	docker push "${REPOSITORY_URL}/data-service:${TAG}"
 	docker push "${REPOSITORY2_URL}/data-service:${TAG}"
-
-release-mirror-service: tag-mirror-service
-	docker push "${REPOSITORY_URL}/mirror-service:${TAG}"
-	docker push "${REPOSITORY2_URL}/mirror-service:${TAG}"
 
 release-search-db: tag-search-db
 	docker push "${REPOSITORY_URL}/search-db:${TAG}"
@@ -152,13 +140,10 @@ release-storage-service-init: tag-storage-service-init
 	docker push "${REPOSITORY_URL}/storage-service-init:${TAG}"
 	docker push "${REPOSITORY2_URL}/storage-service-init:${TAG}"
 
-test-backend: test-metadata-service test-analyse-service test-data-service test-mirror-service
+test-backend: test-metadata-service test-analyse-service test-data-service
 
 test-data-service: build-data-service
 	mvn -f ./dbrepo-data-service/pom.xml clean test verify
-
-test-mirror-service: build-mirror-service
-	mvn -f ./dbrepo-mirror-service/pom.xml clean test verify
 
 test-metadata-service: build-metadata-service
 	mvn -f ./dbrepo-metadata-service/pom.xml clean test verify
@@ -166,7 +151,7 @@ test-metadata-service: build-metadata-service
 test-analyse-service: build-analyse-service
 	bash ./dbrepo-analyse-service/test.sh
 
-scan: scan-analyse-service scan-authentication-service scan-broker-service scan-gateway-service scan-metadata-db scan-metadata-service scan-search-db scan-ui scan-data-service scan-data-db scan-log-service scan-mirror-service scan-search-dashboard scan-search-service
+scan: scan-analyse-service scan-authentication-service scan-broker-service scan-gateway-service scan-metadata-db scan-metadata-service scan-search-db scan-ui scan-data-service scan-data-db scan-log-service scan-search-dashboard scan-search-service
 
 scan-analyse-service:
 	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-analyse-service-report.json dbrepo-analyse-service:latest
@@ -203,11 +188,6 @@ scan-data-service:
 	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-data-service-report.json dbrepo-data-service:latest
 	trivy image --insecure --exit-code 0 dbrepo-data-service:latest
 	trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-data-service:latest
-
-scan-mirror-service:
-	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-mirror-service-report.json dbrepo-mirror-service:latest
-	trivy image --insecure --exit-code 0 dbrepo-mirror-service:latest
-	trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-mirror-service:latest
 
 scan-search-db:
 	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-db-report.json "dbrepo-search-db"
@@ -258,5 +238,5 @@ teardown:
 
 docs: build-docker
 	docker compose up -d || docker compose down
-	bash .docs/generate_swagger.sh || docker compose down
+	cd .docs && bash generate_swagger.sh || docker compose down
 	docker compose down

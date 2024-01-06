@@ -33,6 +33,10 @@ public class IdentifierSaveDto {
     @Schema(example = "null")
     private Long viewId;
 
+    @JsonProperty("table_id")
+    @Schema(example = "null")
+    private Long tableId;
+
     @NotNull
     @Schema(example = "database")
     private IdentifierTypeDto type;
@@ -44,10 +48,6 @@ public class IdentifierSaveDto {
     private List<IdentifierFunderSaveDto> funders;
 
     private List<LicenseDto> licenses;
-
-    @NotNull
-    @Schema(example = "everyone")
-    private VisibilityTypeDto visibility;
 
     @JsonProperty("publication_day")
     @Schema(example = "15")

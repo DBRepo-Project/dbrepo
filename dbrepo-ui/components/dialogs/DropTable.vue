@@ -33,6 +33,7 @@
             color="error"
             :loading="loadingDelete"
             :disabled="confirm !== table.internal_name"
+            type="submit"
             @click="dropTable">
             Delete
           </v-btn>
@@ -56,6 +57,9 @@ export default {
   computed: {
     table () {
       return this.$store.state.table
+    },
+    database () {
+      return this.$store.state.database
     }
   },
   methods: {
@@ -70,7 +74,7 @@ export default {
         return
       }
       this.loadingDelete = true
-      TableService.delete(this.table.database.id, this.table.id)
+      TableService.delete(this.database.id, this.table.id)
         .then(() => {
           console.info('Deleted table with id ', this.table.id)
           this.$toast.success('Successfully deleted table with id ' + this.table.id)

@@ -6,7 +6,6 @@ import at.tuwien.repository.mdb.DatabaseRepository;
 import at.tuwien.service.DatabaseService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.annotation.Transient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,16 +24,18 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Database> findAll() {
         return databaseRepository.findAll();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Database find(Long databaseId) throws DatabaseNotFoundException {
         final Optional<Database> database = databaseRepository.findById(databaseId);
         if (database.isEmpty()) {
             log.error("Failed to find database with id {}", databaseId);
-            throw new DatabaseNotFoundException("could not find database with id " + databaseId);
+            throw new DatabaseNotFoundException("Failed to find database with id " + databaseId);
         }
         return database.get();
     }
@@ -45,7 +46,7 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         final Optional<Database> database = databaseRepository.findByInternalName(internalName);
         if (database.isEmpty()) {
             log.error("Failed to find database with internal name {}", internalName);
-            throw new DatabaseNotFoundException("could not find database with internal name " + internalName);
+            throw new DatabaseNotFoundException("Failed to find database with internal name " + internalName);
         }
         return database.get();
     }

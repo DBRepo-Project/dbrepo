@@ -8,10 +8,12 @@ import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.MariaDbContainerConfig;
 import at.tuwien.config.QueryConfig;
 import at.tuwien.entities.database.Database;
+import at.tuwien.entities.database.View;
+import at.tuwien.entities.database.table.Table;
+import at.tuwien.entities.database.table.columns.TableColumn;
+import at.tuwien.entities.database.table.columns.TableColumnType;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
-import at.tuwien.gateway.KeycloakGateway;
-import at.tuwien.mapper.DatabaseMapper;
 import at.tuwien.repository.mdb.*;
 import at.tuwien.repository.sdb.DatabaseIdxRepository;
 import at.tuwien.service.impl.MariaDbServiceImpl;
@@ -19,7 +21,6 @@ import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Answers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -29,10 +30,11 @@ import org.testcontainers.containers.MariaDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.sql.Connection;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.SQLInvalidAuthorizationSpecException;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -57,9 +59,6 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     private UserRepository userRepository;
 
     @Autowired
-    private DatabaseAccessRepository databaseAccessRepository;
-
-    @Autowired
     private ContainerRepository containerRepository;
 
     @Autowired
@@ -67,6 +66,9 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
 
     @Autowired
     private ImageRepository imageRepository;
+
+    @Autowired
+    private LicenseRepository licenseRepository;
 
     @Autowired
     private MariaDbServiceImpl databaseService;
@@ -78,12 +80,24 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     private static MariaDBContainer<?> mariaDBContainer = MariaDbContainerConfig.getContainer();
 
     @BeforeEach
-    public void beforeEach() throws SQLException {
+    public void beforeEach() throws SQLException, IOException {
+        TABLE_1.setColumns(TABLE_1_COLUMNS);
+        TABLE_2.setColumns(TABLE_2_COLUMNS);
+        TABLE_3.setColumns(TABLE_3_COLUMNS);
+        TABLE_4.setColumns(TABLE_4_COLUMNS);
+        TABLE_5.setColumns(TABLE_5_COLUMNS);
+        TABLE_6.setColumns(TABLE_6_COLUMNS);
+        TABLE_7.setColumns(TABLE_7_COLUMNS);
+        TABLE_8.setColumns(TABLE_8_COLUMNS);
         /* metadata database */
         imageRepository.save(IMAGE_1);
-        userRepository.saveAll(List.of(USER_1, USER_2, USER_3));
-        containerRepository.save(CONTAINER_1_SIMPLE);
-        databaseRepository.saveAll(List.of(DATABASE_1_SIMPLE, DATABASE_2_SIMPLE, DATABASE_3_SIMPLE));
+        licenseRepository.save(LICENSE_1);
+        userRepository.saveAll(List.of(USER_1, USER_2, USER_3, USER_4));
+        containerRepository.saveAll(List.of(CONTAINER_1, CONTAINER_2, CONTAINER_3));
+        DATABASE_1.setAccesses(List.of());
+        DATABASE_2.setAccesses(List.of());
+        DATABASE_3.setAccesses(List.of(DATABASE_1_USER_3_READ_ACCESS));
+        databaseRepository.saveAll(List.of(DATABASE_1, DATABASE_2, DATABASE_3));
         MariaDbConfig.dropAllDatabases(CONTAINER_1);
         MariaDbConfig.createInitDatabase(CONTAINER_1, DATABASE_1);
         MariaDbConfig.createInitDatabase(CONTAINER_1, DATABASE_2);
@@ -146,7 +160,6 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         /* mock */
         MariaDbConfig.dropDatabase(CONTAINER_1, DATABASE_2_INTERNALNAME);
         MariaDbConfig.dropDatabase(CONTAINER_1, DATABASE_3_INTERNALNAME);
-        databaseRepository.deleteAll();
         when(databaseIdxRepository.save(any(DatabaseDto.class)))
                 .thenReturn(DATABASE_2_DTO)
                 .thenReturn(DATABASE_3_DTO);
@@ -164,7 +177,6 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         /* mock */
         MariaDbConfig.dropDatabase(CONTAINER_1, DATABASE_2_INTERNALNAME);
         MariaDbConfig.dropDatabase(CONTAINER_1, DATABASE_3_INTERNALNAME);
-        databaseRepository.deleteAll();
         when(databaseIdxRepository.save(any(DatabaseDto.class)))
                 .thenReturn(DATABASE_3_DTO)
                 .thenReturn(DATABASE_2_DTO);
@@ -181,7 +193,6 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
 
         /* mock */
         MariaDbConfig.dropDatabase(CONTAINER_1, DATABASE_1_INTERNALNAME);
-        databaseRepository.deleteAll();
         when(databaseIdxRepository.save(any(DatabaseDto.class)))
                 .thenReturn(DATABASE_1_DTO);
         when(queryConfig.getGrantPrivileges())
@@ -198,7 +209,6 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
 
         /* mock */
         MariaDbConfig.dropDatabase(CONTAINER_1, DATABASE_1_INTERNALNAME);
-        databaseRepository.deleteAll();
         when(databaseIdxRepository.save(any(DatabaseDto.class)))
                 .thenReturn(DATABASE_1_DTO);
         when(queryConfig.getGrantPrivileges())
@@ -215,8 +225,6 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     public void updatePassword_canLogin_succeeds() throws Exception {
 
         /* mock */
-        userRepository.save(USER_3);
-        databaseAccessRepository.save(DATABASE_1_USER_3_READ_ACCESS);
         when(databaseIdxRepository.save(any(DatabaseDto.class)))
                 .thenReturn(DATABASE_1_DTO);
         when(queryConfig.getGrantPrivileges())
@@ -300,7 +308,6 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         MariaDbConfig.dropDatabase(CONTAINER_1, DATABASE_3_INTERNALNAME);
         MariaDbConfig.createInitDatabase(CONTAINER_1, DATABASE_3);
         mariaDbConfig.grantUserPermissions(CONTAINER_1, DATABASE_3, "junit1");
-        databaseAccessRepository.save(DATABASE_3_USER_1_WRITE_ALL_ACCESS);
         when(queryConfig.getGrantPrivileges())
                 .thenReturn("SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE");
 
@@ -309,24 +316,10 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void delete_succeeds() throws QueryMalformedException, UserNotFoundException, DatabaseConnectionException,
-            DatabaseNotFoundException, ImageNotSupportedException, DatabaseMalformedException {
-
-        /* mock */
-        databaseRepository.save(DATABASE_1_SIMPLE);
-
-        /* test */
-        databaseService.delete(DATABASE_1_ID, USER_1_ID);
-    }
-
-    @Test
     public void visibility_succeeds() throws DatabaseNotFoundException {
         final DatabaseModifyVisibilityDto request = DatabaseModifyVisibilityDto.builder()
                 .isPublic(true)
                 .build();
-
-        /* mock */
-        databaseRepository.save(DATABASE_1_SIMPLE);
 
         /* test */
         final Database response = databaseService.visibility(DATABASE_1_ID, request);
@@ -339,13 +332,73 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
                 .username(USER_2_USERNAME)
                 .build();
 
-        /* mock */
-        databaseRepository.save(DATABASE_1_SIMPLE);
-        userRepository.save(USER_2);
-
         /* test */
         final Database response = databaseService.transfer(DATABASE_1_ID, request);
         assertEquals(USER_2_ID, response.getOwnedBy());
+    }
+
+    @Test
+    public void obtainMetadata_tableWithoutVersioning_succeeds() throws DatabaseUnchangedException, QueryMalformedException,
+            DatabaseNotFoundException, ColumnParseException {
+
+        /* test */
+        final Database response = databaseService.obtainMetadata(DATABASE_1_ID);
+        final List<Table> tables = response.getTables();
+        assertEquals(7, tables.size());
+        final Optional<Table> optional3 = tables.stream().filter(t -> t.getInternalName().equals("weather_aut_without_versioning")).findFirst();
+        assertTrue(optional3.isPresent());
+        final Table table3 = optional3.get();
+        assertEquals(5, table3.getColumns().size());
+        assertColumn(table3.getColumns().get(0), 0, "id", TableColumnType.BIGINT, null, false, true, false);
+        assertColumn(table3.getColumns().get(1), 1, "date", TableColumnType.DATE, null, false, false, false);
+        assertColumn(table3.getColumns().get(2), 2, "location", TableColumnType.VARCHAR, 255L, true, false, false);
+        assertColumn(table3.getColumns().get(3), 3, "mintemp", TableColumnType.DOUBLE, null, true, false, false);
+        assertColumn(table3.getColumns().get(4), 4, "rainfall", TableColumnType.DOUBLE, null, true, false, false);
+    }
+
+    @Test
+    public void obtainMetadata_tableWithVersioning_succeeds() throws DatabaseUnchangedException, QueryMalformedException,
+            DatabaseNotFoundException, ColumnParseException {
+
+        /* test */
+        final Database response = databaseService.obtainMetadata(DATABASE_1_ID);
+        final List<Table> tables = response.getTables();
+        assertEquals(7, tables.size());
+        final Optional<Table> optional4 = tables.stream().filter(t -> t.getInternalName().equals("weather_aut")).findFirst();
+        assertTrue(optional4.isPresent());
+        final Table table4 = optional4.get();
+        assertEquals("weather_aut", table4.getName());
+        assertEquals(5, table4.getColumns().size());
+        assertColumn(table4.getColumns().get(0), 0, "id", TableColumnType.BIGINT, null, false, true, true);
+        assertColumn(table4.getColumns().get(1), 1, "date", TableColumnType.DATE, null, false, false, false);
+        assertColumn(table4.getColumns().get(2), 2, "location", TableColumnType.VARCHAR, 255L, true, false, false);
+        assertColumn(table4.getColumns().get(3), 3, "mintemp", TableColumnType.DOUBLE, null, true, false, false);
+        assertColumn(table4.getColumns().get(4), 4, "rainfall", TableColumnType.DOUBLE, null, true, false, false);
+    }
+
+    @Test
+    public void obtainMetadata_view_succeeds() throws DatabaseUnchangedException, QueryMalformedException,
+            DatabaseNotFoundException, ColumnParseException {
+
+        /* test */
+        final Database response = databaseService.obtainMetadata(DATABASE_1_ID);
+        final List<Table> tables = response.getTables();
+        assertEquals(7, tables.size());
+        final List<View> views = response.getViews();
+        log.debug("found {} views: {}", views.size(), views.stream().map(View::getInternalName).toList());
+        assertEquals(4, views.size());
+        final Optional<View> optional1 = views.stream().filter(v -> v.getInternalName().equals("weather_aut_merge")).findFirst();
+        assertTrue(optional1.isPresent());
+        final View view1 = optional1.get();
+        assertEquals("weather_aut_merge", view1.getInternalName());
+        assertEquals("weather_aut_merge", view1.getName());
+        assertEquals(DATABASE_1_PUBLIC, view1.getIsPublic());
+        assertFalse(view1.getIsInitialView());
+        assertEquals(DATABASE_1_OWNER, view1.getCreatedBy());
+        assertNotNull(view1.getQuery());
+        assertNotNull(view1.getQueryHash());
+        assertColumn(view1.getColumns().get(0), 0, "id", TableColumnType.BIGINT, null, false, true, true);
+        assertColumn(view1.getColumns().get(1), 1, "date", TableColumnType.DATE, null, false, false, false);
     }
 
     /* ################################################################################################### */
@@ -390,6 +443,20 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         /* test */
         final Long queryId = MariaDbConfig.mockUserQueryInsert(DATABASE_3, QUERY_4_STATEMENT, username, password);
         assertEquals(1L, queryId);
+    }
+
+    public void assertColumn(TableColumn column, Integer ordinalPosition, String columnName, TableColumnType type,
+                             Long size, Boolean isNullAllowed, Boolean isPrimary, Boolean isAutoGenerated) {
+        assertEquals(ordinalPosition, column.getOrdinalPosition());
+        assertEquals(columnName, column.getName());
+        assertEquals(columnName, column.getInternalName());
+        assertEquals(type, column.getColumnType());
+        if (size != null) {
+            assertEquals(size, column.getSize());
+        }
+        assertEquals(isNullAllowed, column.getIsNullAllowed());
+        assertEquals(isPrimary, column.getIsPrimaryKey());
+        assertEquals(isAutoGenerated, column.getAutoGenerated());
     }
 
 }

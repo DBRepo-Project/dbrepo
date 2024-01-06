@@ -5,7 +5,7 @@
     "force": false
   },
   "logo": {
-    "path": "/logo.png"
+    "path": "/logo.svg"
   },
   "icon": {
     "path": "/favicon.ico"
@@ -15,6 +15,7 @@
   },
   "broker": {
     "connection": {
+      "host": "localhost",
       "ports": [
         5672
       ],

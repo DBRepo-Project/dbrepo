@@ -37,31 +37,6 @@
           </v-list-item-content>
         </v-list-item>
         <v-list-item
-          to="/database"
-          router
-          exact>
-          <v-list-item-action>
-            <v-icon>mdi-database</v-icon>
-          </v-list-item-action>
-          <v-list-item-content>
-            <v-list-item-title>{{ $t('layout.databases', { name: 'vue-i18n' }) }}</v-list-item-title>
-          </v-list-item-content>
-          <v-list-item-action v-if="databaseCount" v-text="databaseCount.all" />
-        </v-list-item>
-        <v-list-item
-          v-if="user"
-          to="/database?f=my"
-          router
-          exact>
-          <v-list-item-action>
-            <v-icon>mdi-bookmark-outline</v-icon>
-          </v-list-item-action>
-          <v-list-item-content>
-            <v-list-item-title>{{ $t('layout.mydatabases', { name: 'vue-i18n' }) }}</v-list-item-title>
-          </v-list-item-content>
-          <v-list-item-action v-if="databaseCount" v-text="databaseCount.my" />
-        </v-list-item>
-        <v-list-item
           v-if="canListOntologies"
           to="/semantic"
           router>
@@ -133,6 +108,11 @@
           <v-list>
             <v-list-item
               v-if="user"
+              :to="`/search?t=database&owner.username=${user.username}`">
+              {{ $t('layout.mydatabases', { name: 'vue-i18n' }) }}
+            </v-list-item>
+            <v-list-item
+              v-if="user"
               @click="logout">
               {{ $t('layout.logout', { name: 'vue-i18n' }) }}
             </v-list-item>
@@ -151,6 +131,8 @@
 <script>
 import DatabaseService from '@/api/database.service'
 import TableService from '@/api/table.service'
+import AuthenticationService from '@/api/authentication.service'
+import AuthenticationMapper from '@/api/authentication.mapper'
 
 export default {
   data () {
@@ -168,9 +150,6 @@ export default {
     }
   },
   computed: {
-    availableLocales () {
-      return this.$i18n.locales.filter(i => i.code !== this.$i18n.locale)
-    },
     user () {
       return this.$store.state.user
     },
@@ -203,9 +182,6 @@ export default {
     },
     logo () {
       return this.$config.logo
-    },
-    databaseCount () {
-      return this.$store.state.databaseCount
     }
   },
   watch: {
@@ -217,7 +193,6 @@ export default {
     '$route.params.database_id': {
       handler (id, oldId) {
         if (id !== oldId) {
-          this.$store.dispatch('reloadDatabaseCount')
           this.loadDatabase()
           this.loadAccess()
         }
@@ -237,12 +212,9 @@ export default {
   },
   mounted () {
     this.initEnvironment()
-    this.$store.dispatch('reloadDatabaseCount')
+    this.attemptRefreshToken()
     this.$store.dispatch('reloadMessages')
     this.$store.dispatch('reloadOntologies')
-    if (this.locale) {
-      this.$i18n.locale = this.locale
-    }
     if (this.$route.query && this.$route.query.q) {
       this.search = this.$route.query.q
     }
@@ -323,6 +295,20 @@ export default {
       this.$store.commit('SET_SEARCH_PASSWORD', this.$config.searchPassword)
       this.$store.commit('SET_DOI_URL', this.$config.doiUrl)
       console.debug('runtime config', this.$config)
+      if (this.locale) {
+        this.$i18n.locale = this.locale
+      }
+    },
+    attemptRefreshToken () {
+      if (!this.$store.state.token || !this.$store.state.refreshToken) {
+        return
+      }
+      if (AuthenticationMapper.isExpiredToken(this.$store.state.refreshToken)) {
+        console.error('Refresh token is expired: trigger logout of user')
+        this.$store.dispatch('logout')
+      } else {
+        AuthenticationService.refreshToken()
+      }
     }
   },
   head () {
