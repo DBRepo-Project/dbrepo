@@ -19,7 +19,9 @@ services:
     container_name: dbrepo-metadata-db
     hostname: metadata-db
     image: dbrepo-metadata-db:latest
-    build: ./dbrepo-metadata-db
+    build:
+      context: ./dbrepo-metadata-db
+      network: host
     volumes:
       - metadata-db-data:/bitnami/mariadb
       - ./dbrepo-metadata-db/setup-schema_local.sql:/docker-entrypoint-initdb.d/setup-schema_local.sql
@@ -82,7 +84,9 @@ services:
     container_name: dbrepo-authentication-service
     hostname: authentication-service
     image: dbrepo-authentication-service:latest
-    build: ./dbrepo-authentication-service
+    build:
+      context: ./dbrepo-authentication-service
+      network: host
     ports:
       - "8443:8443"
       - "8080:8080"
@@ -108,7 +112,9 @@ services:
     container_name: dbrepo-metadata-service
     hostname: metadata-service
     image: dbrepo-metadata-service:latest
-    build: ./dbrepo-metadata-service
+    build:
+      context: ./dbrepo-metadata-service
+      network: host
     volumes:
       - "${SHARED_FILESYSTEM:-/tmp}:/tmp"
     ports:
@@ -182,7 +188,9 @@ services:
     container_name: dbrepo-analyse-service
     hostname: analyse-service
     image: dbrepo-analyse-service:latest
-    build: ./dbrepo-analyse-service
+    build:
+      context: ./dbrepo-analyse-service
+      network: host
     ports:
       - "5000:5000"
     environment:
@@ -227,7 +235,9 @@ services:
     container_name: dbrepo-search-db
     hostname: search-db
     image: dbrepo-search-db:latest
-    build: ./dbrepo-search-db
+    build:
+      context: ./dbrepo-search-db
+      network: host
     ports:
       - "9200:9200"
     healthcheck:
@@ -252,7 +262,9 @@ services:
     container_name: dbrepo-search-service
     hostname: search-service
     image: dbrepo-search-service:latest
-    build: ./dbrepo-search-service
+    build:
+      context: ./dbrepo-search-service
+      network: host
     ports:
       - "4000:4000"
     environment:
@@ -265,7 +277,9 @@ services:
     container_name: dbrepo-data-db-sidecar
     hostname: data-db-sidecar
     image: dbrepo-data-db-sidecar:latest
-    build: ./dbrepo-data-db/sidecar
+    build:
+      context: ./dbrepo-data-db/sidecar
+      network: host
     ports:
       - "3305:3305"
     environment:
@@ -286,7 +300,9 @@ services:
     container_name: dbrepo-ui
     hostname: ui
     image: dbrepo-ui:latest
-    build: ./dbrepo-ui
+    build:
+      context: ./dbrepo-ui
+      network: host
     volumes:
       - ./dbrepo-ui/dbrepo.config.json:/app/dbrepo.config.json
     depends_on:
@@ -343,7 +359,9 @@ services:
     container_name: dbrepo-search-db-init
     hostname: search-db-init
     image: dbrepo-search-db-init:latest
-    build: ./dbrepo-search-db/init
+    build:
+      context: ./dbrepo-search-db/init
+      network: host
     environment:
       OPENSEARCH_HOST: ${SEARCH_DB_HOST:-http://search-db:9200}
       CURL_EXTRA_ARGS: ${SEARCH_DB_EXTRA_ARGS:-}
@@ -377,7 +395,9 @@ services:
     container_name: dbrepo-storage-service-init
     hostname: storage-service-init
     image: dbrepo-storage-service-init:latest
-    build: ./dbrepo-storage-service/init
+    build:
+      context: ./dbrepo-storage-service/init
+      network: host
     environment:
       SEAWEEDFS_ENDPOINT: "${STORAGE_SEAWEEDFS_ENDPOINT:-storage-service:9333}"
     depends_on:
@@ -417,7 +437,9 @@ services:
     container_name: dbrepo-data-service
     hostname: data-service
     image: dbrepo-data-service:latest
-    build: ./dbrepo-data-service
+    build:
+      context: ./dbrepo-data-service
+      network: host
     ports:
       - "9093:9093"
     environment:
