@@ -19,13 +19,12 @@ import java.util.List;
 @ToString
 public class ConstraintsDto {
 
-    @Field(name = "uniques", includeInParent = true, type = FieldType.Nested)
+    @Field(name = "uniques", type = FieldType.Nested)
     private List<UniqueDto> uniques;
 
     @JsonProperty("foreign_keys")
-    @Field(name = "foreign_keys", includeInParent = true, type = FieldType.Nested)
+    @Field(name = "foreign_keys", type = FieldType.Nested)
     private List<ForeignKeyDto> foreignKeys;
 
-    @Field(name = "checks", includeInParent = true, type = FieldType.Nested)
     private List<String> checks;
 }

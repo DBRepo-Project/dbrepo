@@ -108,7 +108,8 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"check-database-access"})
-    public void find_hasRoleHasAccess_succeeds() throws NotAllowedException, AccessDeniedException {
+    public void find_hasRoleHasAccess_succeeds() throws NotAllowedException, AccessDeniedException,
+            DatabaseNotFoundException {
 
         /* test */
         generic_find(DATABASE_1_ID, DATABASE_1, DATABASE_1_USER_1_READ_ACCESS, USER_1_ID, USER_1_PRINCIPAL);
@@ -181,7 +182,7 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"delete-database-access"})
     public void revoke_succeeds() throws UserNotFoundException, QueryMalformedException, DatabaseNotFoundException,
-            DatabaseMalformedException, NotAllowedException, KeycloakRemoteException, AccessDeniedException {
+            DatabaseMalformedException, NotAllowedException, AccessDeniedException {
 
         /* mock */
         doNothing()
@@ -225,7 +226,8 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
     }
 
     protected void generic_find(Long databaseId, Database database, DatabaseAccess access, UUID userId,
-                                Principal principal) throws NotAllowedException, AccessDeniedException {
+                                Principal principal) throws NotAllowedException, AccessDeniedException,
+            DatabaseNotFoundException {
 
         /* mock */
         when(databaseRepository.findById(databaseId))
@@ -281,7 +283,7 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
 
     protected void generic_revoke(Long databaseId, DatabaseAccess access, UUID userId, Principal principal)
             throws NotAllowedException, UserNotFoundException, QueryMalformedException, DatabaseNotFoundException,
-            DatabaseMalformedException, AccessDeniedException, KeycloakRemoteException {
+            DatabaseMalformedException, AccessDeniedException {
 
         /* mock */
         if (access != null) {

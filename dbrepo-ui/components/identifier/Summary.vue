@@ -1,7 +1,7 @@
 <template>
   <v-card flat tile>
     <v-card-title>Identifier</v-card-title>
-    <v-card-text>
+    <v-card-text v-if="identifier">
       <v-list dense>
         <v-list-item>
           <v-list-item-content>

@@ -51,13 +51,10 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
     private DatabaseRepository databaseRepository;
 
     @Autowired
-    private DatabaseAccessRepository databaseAccessRepository;
-
-    @Autowired
-    private TableRepository tableRepository;
-
-    @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private LicenseRepository licenseRepository;
 
     @Autowired
     private RabbitMqServiceImpl messageQueueService;
@@ -81,12 +78,17 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
 
     @BeforeEach
     public void beforeEach() {
+        TABLE_1.setColumns(TABLE_1_COLUMNS);
+        TABLE_2.setColumns(TABLE_2_COLUMNS);
+        TABLE_3.setColumns(TABLE_3_COLUMNS);
+        TABLE_4.setColumns(TABLE_4_COLUMNS);
+        /* metadata database */
         userRepository.saveAll(List.of(USER_1, USER_2, USER_3));
         imageRepository.save(IMAGE_1);
+        licenseRepository.save(LICENSE_1);
         containerRepository.save(CONTAINER_1);
-        databaseRepository.save(DATABASE_1_SIMPLE);
-        tableRepository.saveAll(List.of(TABLE_1, TABLE_2, TABLE_3, TABLE_7));
-        DATABASE_1.setTables(List.of(TABLE_1, TABLE_2, TABLE_3, TABLE_7));
+        DATABASE_1.setAccesses(List.of());
+        databaseRepository.save(DATABASE_1);
     }
 
     @Test
@@ -111,9 +113,6 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
     @Test
     public void updatePermissions_writeAll_succeeds() throws BrokerRemoteException, BrokerVirtualHostGrantException {
 
-        /* mock */
-        databaseAccessRepository.save(DATABASE_1_USER_1_WRITE_ALL_ACCESS);
-
         /* test */
         final VirtualHostPermissionDto permissions = setVirtualHostPermissions_generic();
         assertEquals(USER_1_USERNAME, permissions.getUser());
@@ -126,9 +125,6 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
     @Test
     public void updatePermissions_writeOwn_succeeds() throws BrokerRemoteException, BrokerVirtualHostGrantException {
 
-        /* mock */
-        databaseAccessRepository.save(DATABASE_1_USER_1_WRITE_OWN_ACCESS);
-
         /* test */
         final VirtualHostPermissionDto permissions = setVirtualHostPermissions_generic();
         assertEquals(USER_1_USERNAME, permissions.getUser());
@@ -139,11 +135,7 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void updatePermissions_read_succeeds() throws BrokerRemoteException,
-            BrokerVirtualHostGrantException {
-
-        /* mock */
-        databaseAccessRepository.save(DATABASE_1_USER_1_READ_ACCESS);
+    public void updatePermissions_read_succeeds() throws BrokerRemoteException, BrokerVirtualHostGrantException {
 
         /* test */
         final VirtualHostPermissionDto permissions = setVirtualHostPermissions_generic();
@@ -170,10 +162,8 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     @Transactional(readOnly = true)
-    public void setTopicExchangePermissions_writeAll_succeeds() throws BrokerRemoteException, BrokerVirtualHostGrantException {
-
-        /* mock */
-        databaseAccessRepository.save(DATABASE_1_USER_1_WRITE_ALL_ACCESS);
+    public void setTopicExchangePermissions_writeAll_succeeds() throws BrokerRemoteException,
+            BrokerVirtualHostGrantException {
 
         /* test */
         final TopicPermissionDto permissions = setTopicExchangePermissions_generic(List.of(DATABASE_1_USER_1_WRITE_ALL_ACCESS));
@@ -186,10 +176,8 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     @Transactional(readOnly = true)
-    public void setTopicExchangePermissions_writeOwn_succeeds() throws BrokerRemoteException, BrokerVirtualHostGrantException {
-
-        /* mock */
-        databaseAccessRepository.save(DATABASE_1_USER_1_WRITE_OWN_ACCESS);
+    public void setTopicExchangePermissions_writeOwn_succeeds() throws BrokerRemoteException,
+            BrokerVirtualHostGrantException {
 
         /* test */
         final TopicPermissionDto permissions = setTopicExchangePermissions_generic(List.of(DATABASE_1_USER_1_WRITE_OWN_ACCESS));
@@ -202,10 +190,8 @@ public class MessageQueueServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     @Transactional(readOnly = true)
-    public void setTopicExchangePermissions_read_succeeds() throws BrokerRemoteException, BrokerVirtualHostGrantException {
-
-        /* mock */
-        databaseAccessRepository.save(DATABASE_1_USER_1_READ_ACCESS);
+    public void setTopicExchangePermissions_read_succeeds() throws BrokerRemoteException,
+            BrokerVirtualHostGrantException {
 
         /* test */
         final TopicPermissionDto permissions = setTopicExchangePermissions_generic(List.of(DATABASE_1_USER_1_READ_ACCESS));

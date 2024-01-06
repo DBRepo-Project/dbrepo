@@ -118,13 +118,12 @@ class DatabaseService {
       api.get(`/api/database/${databaseId}/access`, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const databases = response.data
-          console.debug('response databases', databases)
+          console.debug('response databases access', databases)
           resolve(databases)
         })
         .catch((error) => {
           const { status } = error
           if (status !== 401 && status !== 403 && status !== 405) { /* ignore no access errors */
-            displayError(error, 'Failed to check database access')
             reject(error)
           }
         })

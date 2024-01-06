@@ -9,7 +9,6 @@ import at.tuwien.service.DatabaseService;
 import at.tuwien.service.QueryService;
 import at.tuwien.utils.PrincipalUtil;
 import at.tuwien.utils.UserUtil;
-import io.micrometer.core.annotation.Timed;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;

@@ -4,14 +4,10 @@ import at.tuwien.BaseUnitTest;
 import at.tuwien.SortType;
 import at.tuwien.annotations.MockAmqp;
 import at.tuwien.annotations.MockOpensearch;
-import at.tuwien.api.database.AccessTypeDto;
 import at.tuwien.api.database.table.TableCreateDto;
 import at.tuwien.api.database.table.columns.ColumnCreateDto;
 import at.tuwien.api.database.table.columns.ColumnTypeDto;
-import at.tuwien.entities.database.AccessType;
 import at.tuwien.entities.database.table.Table;
-import at.tuwien.entities.identifier.Identifier;
-import at.tuwien.entities.identifier.VisibilityType;
 import at.tuwien.exception.*;
 import at.tuwien.repository.mdb.IdentifierRepository;
 import at.tuwien.service.AccessService;
@@ -19,6 +15,7 @@ import at.tuwien.service.DatabaseService;
 import at.tuwien.service.TableService;
 import at.tuwien.validation.EndpointValidator;
 import lombok.extern.log4j.Log4j2;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -30,7 +27,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -86,6 +82,11 @@ public class EndpointValidatorUnitTest extends BaseUnitTest {
                 Arguments.arguments(ColumnTypeDto.TIMESTAMP),
                 Arguments.arguments(ColumnTypeDto.TIME)
         );
+    }
+
+    @BeforeEach
+    public void beforeEach() {
+        DATABASE_1.setAccesses(List.of(DATABASE_1_USER_1_READ_ACCESS));
     }
 
     @Test
@@ -255,57 +256,6 @@ public class EndpointValidatorUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void validateOnlyAccessOrPublic2_privateAnonymousHasPublicIdentifier_succeeds() throws DatabaseNotFoundException,
-            NotAllowedException, AccessDeniedException {
-
-        /* mock */
-        when(databaseService.find(DATABASE_1_ID))
-                .thenReturn(DATABASE_1);
-        when(identifierRepository.findSubsetIdentifier(DATABASE_1_ID, QUERY_1_ID))
-                .thenReturn(Optional.of(IDENTIFIER_1));
-
-        /* test */
-        endpointValidator.validateOnlyAccessOrPublic(DATABASE_1_ID, QUERY_1_ID, null);
-    }
-
-    @Test
-    public void validateOnlyAccessOrPublic2_privateAnonymousHasSelfIdentifier_fails() throws DatabaseNotFoundException {
-        final Identifier identifier = Identifier.builder()
-                .visibility(VisibilityType.SELF)
-                .createdBy(USER_1_ID)
-                .build();
-
-        /* mock */
-        when(databaseService.find(DATABASE_1_ID))
-                .thenReturn(DATABASE_1);
-        when(identifierRepository.findSubsetIdentifier(DATABASE_1_ID, QUERY_1_ID))
-                .thenReturn(Optional.of(identifier));
-
-        /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            endpointValidator.validateOnlyAccessOrPublic(DATABASE_1_ID, QUERY_1_ID, null);
-        });
-    }
-
-    @Test
-    public void validateOnlyAccessOrPublic2_privateCreatorHasSelfIdentifier_succeeds() throws DatabaseNotFoundException,
-            NotAllowedException, AccessDeniedException {
-        final Identifier identifier = Identifier.builder()
-                .visibility(VisibilityType.SELF)
-                .createdBy(USER_1_ID)
-                .build();
-
-        /* mock */
-        when(databaseService.find(DATABASE_1_ID))
-                .thenReturn(DATABASE_1);
-        when(identifierRepository.findSubsetIdentifier(DATABASE_1_ID, QUERY_1_ID))
-                .thenReturn(Optional.of(identifier));
-
-        /* test */
-        endpointValidator.validateOnlyAccessOrPublic(DATABASE_1_ID, QUERY_1_ID, USER_1_PRINCIPAL);
-    }
-
-    @Test
     public void validateOnlyWriteOwnOrWriteAllAccess_privateAnonymous_fails() {
 
         /* test */
@@ -392,7 +342,7 @@ public class EndpointValidatorUnitTest extends BaseUnitTest {
         final TableCreateDto request = TableCreateDto.builder()
                 .columns(List.of(ColumnCreateDto.builder()
                         .type(type)
-                        .size(10)
+                        .size(10L)
                         .d(null) // <<<<<<<
                         .build()))
                 .build();
@@ -472,11 +422,11 @@ public class EndpointValidatorUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void validateOnlyOwnerOrWriteAll_onlyReadAccess_fails() throws TableNotFoundException,
-            DatabaseNotFoundException, AccessDeniedException {
+    public void validateOnlyOwnerOrWriteAll_onlyReadAccess_fails() throws DatabaseNotFoundException,
+            TableNotFoundException, AccessDeniedException {
 
         /* mock */
-        when(tableService.findById(DATABASE_1_ID, TABLE_1_ID))
+        when(tableService.find(DATABASE_1_ID, TABLE_1_ID))
                 .thenReturn(TABLE_1);
         when(accessService.find(DATABASE_1_ID, USER_1_ID))
                 .thenReturn(DATABASE_1_USER_1_READ_ACCESS);

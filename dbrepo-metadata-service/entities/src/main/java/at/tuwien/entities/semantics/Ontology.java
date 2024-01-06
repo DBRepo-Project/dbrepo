@@ -21,6 +21,7 @@ import java.util.UUID;
 @Table(name = "mdb_ontologies")
 @NamedQueries({
         @NamedQuery(name = "Ontology.findAll", query = "select o from Ontology o order by sparqlEndpoint desc"),
+        @NamedQuery(name = "Ontology.findAllProcessable", query = "select o from Ontology o where o.sparqlEndpoint != null or o.rdfPath != null order by sparqlEndpoint desc"),
 })
 public class Ontology {
 

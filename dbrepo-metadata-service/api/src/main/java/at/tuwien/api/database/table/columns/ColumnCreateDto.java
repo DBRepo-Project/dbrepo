@@ -29,17 +29,17 @@ public class ColumnCreateDto {
     private Boolean primaryKey;
 
     @JsonProperty("index_length")
-    private Integer indexLength;
+    private Long indexLength;
 
     @NotNull
     @Schema(example = "string")
     private ColumnTypeDto type;
 
     @Schema(example = "255")
-    private Integer size;
+    private Long size;
 
     @Schema(example = "0")
-    private Integer d;
+    private Long d;
 
     @NotNull
     @JsonProperty("null_allowed")

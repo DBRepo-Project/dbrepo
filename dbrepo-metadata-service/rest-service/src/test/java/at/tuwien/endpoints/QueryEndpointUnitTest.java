@@ -12,7 +12,6 @@ import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.exception.*;
 import at.tuwien.querystore.Query;
 import at.tuwien.repository.mdb.ContainerRepository;
-import at.tuwien.repository.mdb.DatabaseAccessRepository;
 import at.tuwien.repository.mdb.DatabaseRepository;
 import at.tuwien.repository.mdb.ImageRepository;
 import at.tuwien.service.QueryService;
@@ -34,6 +33,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.io.File;
 import java.io.IOException;
 import java.security.Principal;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -46,9 +46,6 @@ import static org.mockito.Mockito.when;
 @MockAmqp
 @MockOpensearch
 public class QueryEndpointUnitTest extends BaseUnitTest {
-
-    @MockBean
-    private DatabaseAccessRepository databaseAccessRepository;
 
     @MockBean
     private ImageRepository imageRepository;
@@ -127,7 +124,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
     public void execute_publicNoAccess_succeeds() throws UserNotFoundException, QueryStoreException, SortException,
             TableMalformedException, DatabaseConnectionException, NotAllowedException, QueryMalformedException,
             ColumnParseException, DatabaseNotFoundException, ImageNotSupportedException, PaginationException,
-            KeycloakRemoteException, at.tuwien.exception.AccessDeniedException {
+            KeycloakRemoteException, at.tuwien.exception.AccessDeniedException, QueryNotFoundException {
 
         /* test */
         generic_execute(DATABASE_3_ID, QUERY_4_STATEMENT, null, null, DATABASE_3, null);
@@ -138,7 +135,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
     public void execute_publicRead_succeeds() throws UserNotFoundException, QueryStoreException, TableMalformedException,
             DatabaseConnectionException, QueryMalformedException, ColumnParseException, DatabaseNotFoundException,
             ImageNotSupportedException, SortException, NotAllowedException, PaginationException,
-            KeycloakRemoteException, at.tuwien.exception.AccessDeniedException {
+            KeycloakRemoteException, at.tuwien.exception.AccessDeniedException, QueryNotFoundException {
 
         /* test */
         generic_execute(DATABASE_3_ID, QUERY_4_STATEMENT, USER_2_ID, USER_2_PRINCIPAL, DATABASE_3, DATABASE_3_USER_2_WRITE_ALL_ACCESS);
@@ -149,7 +146,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
     public void execute_publicWriteOwn_succeeds() throws UserNotFoundException, QueryStoreException, TableMalformedException,
             DatabaseConnectionException, QueryMalformedException, ColumnParseException, DatabaseNotFoundException,
             ImageNotSupportedException, SortException, NotAllowedException, PaginationException,
-            KeycloakRemoteException, at.tuwien.exception.AccessDeniedException {
+            KeycloakRemoteException, at.tuwien.exception.AccessDeniedException, QueryNotFoundException {
 
         /* test */
         generic_execute(DATABASE_3_ID, QUERY_4_STATEMENT, USER_2_ID, USER_2_PRINCIPAL, DATABASE_3, DATABASE_3_USER_2_WRITE_ALL_ACCESS);
@@ -160,7 +157,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
     public void execute_publicWriteAll_succeeds() throws UserNotFoundException, QueryStoreException, TableMalformedException,
             DatabaseConnectionException, QueryMalformedException, ColumnParseException, DatabaseNotFoundException,
             ImageNotSupportedException, SortException, NotAllowedException, PaginationException,
-            KeycloakRemoteException, at.tuwien.exception.AccessDeniedException {
+            KeycloakRemoteException, at.tuwien.exception.AccessDeniedException, QueryNotFoundException {
 
         /* test */
         generic_execute(DATABASE_3_ID, QUERY_4_STATEMENT, USER_2_ID, USER_2_PRINCIPAL, DATABASE_3, DATABASE_3_USER_2_WRITE_ALL_ACCESS);
@@ -171,7 +168,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
     public void execute_publicOwner_succeeds() throws UserNotFoundException, QueryStoreException, TableMalformedException,
             DatabaseConnectionException, QueryMalformedException, ColumnParseException, DatabaseNotFoundException,
             ImageNotSupportedException, SortException, NotAllowedException, PaginationException,
-            KeycloakRemoteException, at.tuwien.exception.AccessDeniedException {
+            KeycloakRemoteException, at.tuwien.exception.AccessDeniedException, QueryNotFoundException {
 
         /* test */
         generic_execute(DATABASE_3_ID, QUERY_4_STATEMENT, USER_2_ID, USER_2_PRINCIPAL, DATABASE_3, DATABASE_3_USER_2_WRITE_ALL_ACCESS);
@@ -237,7 +234,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
     public void export_publicRead_succeeds() throws UserNotFoundException, QueryStoreException,
             TableMalformedException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException,
             ImageNotSupportedException, QueryNotFoundException, FileStorageException,
-             IOException, NotAllowedException {
+            IOException, NotAllowedException {
 
         /* test */
         export_generic(DATABASE_3_ID, QUERY_3_ID, USER_2_ID, USER_2_PRINCIPAL, DATABASE_3, DATABASE_3_USER_1_READ_ACCESS, null, HttpStatus.OK);
@@ -285,7 +282,10 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
     public void execute_privateRead_succeeds() throws UserNotFoundException, QueryStoreException, TableMalformedException,
             DatabaseConnectionException, QueryMalformedException, ColumnParseException, DatabaseNotFoundException,
             ImageNotSupportedException, SortException, NotAllowedException, PaginationException,
-            KeycloakRemoteException, at.tuwien.exception.AccessDeniedException {
+            KeycloakRemoteException, at.tuwien.exception.AccessDeniedException, QueryNotFoundException {
+
+        /* mock */
+        DATABASE_2.setAccesses(List.of(DATABASE_2_USER_2_READ_ACCESS));
 
         /* test */
         generic_execute(DATABASE_2_ID, QUERY_1_STATEMENT, USER_2_ID, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_USER_1_READ_ACCESS);
@@ -296,7 +296,10 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
     public void execute_privateWriteOwn_succeeds() throws UserNotFoundException, QueryStoreException, TableMalformedException,
             DatabaseConnectionException, QueryMalformedException, ColumnParseException, DatabaseNotFoundException,
             ImageNotSupportedException, SortException, NotAllowedException, PaginationException,
-            KeycloakRemoteException, at.tuwien.exception.AccessDeniedException {
+            KeycloakRemoteException, at.tuwien.exception.AccessDeniedException, QueryNotFoundException {
+
+        /* mock */
+        DATABASE_2.setAccesses(List.of(DATABASE_2_USER_2_WRITE_OWN_ACCESS));
 
         /* test */
         generic_execute(DATABASE_2_ID, QUERY_1_STATEMENT, USER_2_ID, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_USER_1_WRITE_OWN_ACCESS);
@@ -307,7 +310,10 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
     public void execute_privateWriteAll_succeeds() throws UserNotFoundException, QueryStoreException, TableMalformedException,
             DatabaseConnectionException, QueryMalformedException, ColumnParseException, DatabaseNotFoundException,
             ImageNotSupportedException, SortException, NotAllowedException, PaginationException,
-            KeycloakRemoteException, at.tuwien.exception.AccessDeniedException {
+            KeycloakRemoteException, at.tuwien.exception.AccessDeniedException, QueryNotFoundException {
+
+        /* mock */
+        DATABASE_2.setAccesses(List.of(DATABASE_2_USER_2_WRITE_ALL_ACCESS));
 
         /* test */
         generic_execute(DATABASE_2_ID, QUERY_1_STATEMENT, USER_2_ID, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_USER_1_WRITE_ALL_ACCESS);
@@ -318,7 +324,10 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
     public void execute_privateOwner_succeeds() throws UserNotFoundException, QueryStoreException, TableMalformedException,
             DatabaseConnectionException, QueryMalformedException, ColumnParseException, DatabaseNotFoundException,
             ImageNotSupportedException, SortException, NotAllowedException, PaginationException,
-            KeycloakRemoteException, at.tuwien.exception.AccessDeniedException {
+            KeycloakRemoteException, at.tuwien.exception.AccessDeniedException, QueryNotFoundException {
+
+        /* mock */
+        DATABASE_2.setAccesses(List.of(DATABASE_2_USER_1_WRITE_ALL_ACCESS));
 
         /* test */
         generic_execute(DATABASE_2_ID, QUERY_1_STATEMENT, USER_1_ID, USER_1_PRINCIPAL, DATABASE_2, DATABASE_2_USER_1_WRITE_ALL_ACCESS);
@@ -339,8 +348,11 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
     @WithMockUser(username = USER_2_USERNAME, authorities = {"execute-query"})
     public void reExecute_privateRead_succeeds() throws UserNotFoundException, QueryStoreException, TableMalformedException,
             DatabaseConnectionException, QueryMalformedException, ColumnParseException, DatabaseNotFoundException,
-            ImageNotSupportedException, SortException, NotAllowedException,
-            PaginationException, QueryNotFoundException, at.tuwien.exception.AccessDeniedException {
+            ImageNotSupportedException, SortException, NotAllowedException, PaginationException, QueryNotFoundException,
+            at.tuwien.exception.AccessDeniedException {
+
+        /* mock */
+        DATABASE_2.setAccesses(List.of(DATABASE_2_USER_2_READ_ACCESS));
 
         /* test */
         generic_reExecute(DATABASE_2_ID, QUERY_1_ID, QUERY_1, QUERY_1_RESULT_ID, QUERY_1_RESULT_DTO,
@@ -354,6 +366,9 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
             DatabaseNotFoundException, ImageNotSupportedException, SortException, NotAllowedException,
             PaginationException, QueryNotFoundException, at.tuwien.exception.AccessDeniedException {
 
+        /* mock */
+        DATABASE_2.setAccesses(List.of(DATABASE_2_USER_2_WRITE_OWN_ACCESS));
+
         /* test */
         generic_reExecute(DATABASE_2_ID, QUERY_1_ID, QUERY_1, QUERY_1_RESULT_ID, QUERY_1_RESULT_DTO,
                 USER_2_ID, USER_2_PRINCIPAL, DATABASE_2, DATABASE_2_USER_1_WRITE_OWN_ACCESS);
@@ -365,6 +380,9 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
             TableMalformedException, DatabaseConnectionException, QueryMalformedException, ColumnParseException,
             DatabaseNotFoundException, ImageNotSupportedException, SortException, NotAllowedException,
             PaginationException, QueryNotFoundException, at.tuwien.exception.AccessDeniedException {
+
+        /* mock */
+        DATABASE_2.setAccesses(List.of(DATABASE_2_USER_2_WRITE_ALL_ACCESS));
 
         /* test */
         generic_reExecute(DATABASE_2_ID, QUERY_1_ID, QUERY_1, QUERY_1_RESULT_ID, QUERY_1_RESULT_DTO,
@@ -434,7 +452,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
             QueryStoreException, TableMalformedException, DatabaseConnectionException,
             QueryMalformedException, ColumnParseException, DatabaseNotFoundException, ImageNotSupportedException,
             SortException, NotAllowedException, PaginationException, KeycloakRemoteException,
-            at.tuwien.exception.AccessDeniedException {
+            at.tuwien.exception.AccessDeniedException, QueryNotFoundException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement(statement)
                 .build();
@@ -447,15 +465,6 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
         when(databaseRepository.findById(databaseId))
                 .thenReturn(Optional.of(database));
         log.trace("mock database for container database id {}", databaseId);
-        if (access == null) {
-            when(databaseAccessRepository.findByDatabaseIdAndUserId(databaseId, userId))
-                    .thenReturn(Optional.empty());
-            log.trace("mock no access for database with id {} and username {}", databaseId, userId);
-        } else {
-            when(databaseAccessRepository.findByDatabaseIdAndUserId(databaseId, userId))
-                    .thenReturn(Optional.of(access));
-            log.trace("mock access {} for database with id {} and username {}", access.getType(), databaseId, userId);
-        }
         when(queryService.execute(databaseId, request, principal, page, size, sortDirection, sortColumn))
                 .thenReturn(QUERY_1_RESULT_DTO);
         log.trace("mock query service for container database with id {}", databaseId);
@@ -487,13 +496,6 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(Optional.of(database));
         when(storeService.findOne(databaseId, queryId, principal))
                 .thenReturn(query);
-        if (access == null) {
-            when(databaseAccessRepository.findByDatabaseIdAndUserId(databaseId, userId))
-                    .thenReturn(Optional.empty());
-        } else {
-            when(databaseAccessRepository.findByDatabaseIdAndUserId(databaseId, userId))
-                    .thenReturn(Optional.of(access));
-        }
         when(queryService.reExecute(databaseId, query, page, size, sortDirection, sortColumn, principal))
                 .thenReturn(result);
 
@@ -518,13 +520,6 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
         /* mock */
         when(databaseRepository.findById(databaseId))
                 .thenReturn(Optional.of(database));
-        if (access == null) {
-            when(databaseAccessRepository.findByDatabaseIdAndUserId(databaseId, userId))
-                    .thenReturn(Optional.empty());
-        } else {
-            when(databaseAccessRepository.findByDatabaseIdAndUserId(databaseId, userId))
-                    .thenReturn(Optional.of(access));
-        }
         when(storeService.findOne(databaseId, queryId, principal))
                 .thenReturn(QUERY_1);
         when(queryService.findOne(databaseId, queryId, principal))

@@ -5,8 +5,6 @@ import at.tuwien.annotations.MockAmqp;
 import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.api.database.LicenseDto;
 import at.tuwien.repository.mdb.LicenseRepository;
-import at.tuwien.repository.sdb.DatabaseIdxRepository;
-import com.rabbitmq.client.Channel;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

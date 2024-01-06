@@ -1,13 +1,5 @@
 {
   "id": 1,
-  "database": {
-    "id": 1,
-    "name": "Weather",
-    "exchange_name": "dbrepo.weather",
-    "internal_name": "weather",
-    "description": "Weather in Australia",
-    "is_public": false
-  },
   "query_id": 1,
   "type": "subset",
   "titles": [

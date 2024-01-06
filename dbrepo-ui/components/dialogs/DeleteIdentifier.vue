@@ -1,12 +1,12 @@
 <template>
   <div>
-    <v-form ref="form" v-model="valid" autocomplete="off" @submit.prevent="submit">
+    <v-form v-if="identifier" ref="form" v-model="valid" autocomplete="off" @submit.prevent="submit">
       <v-card>
         <v-card-title v-text="title" />
         <v-card-text>
           <v-row dense>
             <v-col>
-              This action cannot be undone! Type the identifier <strong>{{ confirmText }}</strong> below if you really want to delete it.
+              This action cannot be undone! Type the identifier <code>{{ confirmText }}</code> below if you really want to delete it.
             </v-col>
           </v-row>
           <v-row dense>
@@ -63,21 +63,9 @@ export default {
   },
   computed: {
     title () {
-      if (!this.identifier || !('doi' in this.identifier)) {
-        return null
-      }
-      if (this.identifier.doi) {
-        return `DOI ${this.identifier.doi}`
-      }
-      return `Identifier with id ${this.identifier.id}`
+      return `PID ${this.confirmText}`
     },
     confirmText () {
-      if (!this.identifier || !('doi' in this.identifier)) {
-        return null
-      }
-      if (this.identifier.doi) {
-        return this.identifier.doi
-      }
       return `/pid/${this.identifier.id}`
     }
   },

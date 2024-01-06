@@ -4,10 +4,7 @@ import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.user.*;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
-import at.tuwien.gateway.KeycloakGateway;
-import at.tuwien.mapper.UserMapper;
 import at.tuwien.repository.mdb.UserRepository;
-import at.tuwien.repository.sdb.UserIdxRepository;
 import at.tuwien.service.UserService;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -23,18 +20,11 @@ import java.util.UUID;
 @Service
 public class UserServiceImpl implements UserService {
 
-    private final UserMapper userMapper;
     private final UserRepository userRepository;
-    private final KeycloakGateway keycloakGateway;
-    private final UserIdxRepository userIdxRepository;
 
     @Autowired
-    public UserServiceImpl(UserMapper userMapper, UserRepository userRepository, KeycloakGateway keycloakGateway,
-                           UserIdxRepository userIdxRepository) {
-        this.userMapper = userMapper;
+    public UserServiceImpl(UserRepository userRepository) {
         this.userRepository = userRepository;
-        this.keycloakGateway = keycloakGateway;
-        this.userIdxRepository = userIdxRepository;
     }
 
     @Override
@@ -46,8 +36,8 @@ public class UserServiceImpl implements UserService {
     public User findByUsername(String username) throws UserNotFoundException {
         final Optional<User> optional = userRepository.findByUsername(username);
         if (optional.isEmpty()) {
-            log.error("Failed to find user with username {}: not present in metadata database", username);
-            throw new UserNotFoundException("Failed to find user with username " + username + ": not present in metadata database");
+            log.error("Failed to find user with username {} in metadata database", username);
+            throw new UserNotFoundException("Failed to find user with username " + username + " in metadata database");
         }
         return optional.get();
     }
@@ -56,8 +46,8 @@ public class UserServiceImpl implements UserService {
     public User find(UUID id) throws UserNotFoundException {
         final Optional<User> optional = userRepository.findById(id);
         if (optional.isEmpty()) {
-            log.error("Failed to find user with id {}: not present in metadata database", id);
-            throw new UserNotFoundException("Failed to find user with id " + id + ": not present in metadata database");
+            log.error("Failed to find user with id {} in metadata database", id);
+            throw new UserNotFoundException("Failed to find user with id " + id + " in metadata database");
         }
         return optional.get();
     }
@@ -76,9 +66,6 @@ public class UserServiceImpl implements UserService {
         /* create at metadata database */
         final User user = userRepository.save(entity);
         log.info("Created user with id {} in metadata database", user.getId());
-        /* save in open search database */
-        userIdxRepository.save(userMapper.userToUserDto(user));
-        log.info("Created user with id {} in open search database", user.getId());
         return user;
     }
 
@@ -91,10 +78,7 @@ public class UserServiceImpl implements UserService {
         entity.setOrcid(data.getOrcid());
         /* create at metadata database */
         final User user = userRepository.save(entity);
-        log.info("Updated user data for user with id {}", user.getId());
-        /* save in open search database */
-        userIdxRepository.save(userMapper.userToUserDto(user));
-        log.info("Created user with id {} in open search database", user.getId());
+        log.info("Modified user with id {} in metadata database", user.getId());
         return user;
     }
 
@@ -103,7 +87,7 @@ public class UserServiceImpl implements UserService {
         final User user = find(id);
         user.setMariadbPassword(getMariaDbPassword(data.getPassword()));
         userRepository.save(user);
-        log.info("Updated user password with id {}", id);
+        log.info("Updated password of user with id {} in metadata database", id);
     }
 
     @Override
@@ -111,14 +95,13 @@ public class UserServiceImpl implements UserService {
         final User entity = find(id);
         entity.setThemeDark(data.getThemeDark());
         final User user = userRepository.save(entity);
-        log.info("Updated theme by updating attribute with id {}", id);
+        log.info("Updated theme of user with id {} in metadata database", id);
         return user;
     }
 
     @Override
     public void validateUsernameNotExists(String username) throws UserAlreadyExistsException {
         if (userRepository.existsByUsername(username)) {
-            log.error("User with username {} already exists in metadata database", username);
             throw new UserAlreadyExistsException("User with username " + username + " already exists in metadata database");
         }
     }
@@ -126,7 +109,6 @@ public class UserServiceImpl implements UserService {
     @Override
     public void validateEmailNotExists(String email) throws UserEmailAlreadyExistsException {
         if (userRepository.existsByEmail(email)) {
-            log.error("User with email {} already exists in metadata database", email);
             throw new UserEmailAlreadyExistsException("User with email " + email + " already exists in metadata database");
         }
     }

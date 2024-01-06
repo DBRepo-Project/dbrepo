@@ -2,7 +2,6 @@ package at.tuwien.mapper;
 
 import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.TableCreateDto;
-import at.tuwien.api.database.table.TableCreateRawQuery;
 import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.columns.ColumnCreateDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
@@ -18,6 +17,7 @@ import at.tuwien.api.semantics.EntityDto;
 import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.entities.container.image.ContainerImageDate;
 import at.tuwien.entities.database.Database;
+import at.tuwien.entities.database.View;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.database.table.columns.TableColumnConcept;
@@ -31,16 +31,14 @@ import at.tuwien.entities.database.table.constraints.unique.Unique;
 import at.tuwien.exception.ImageNotSupportedException;
 import at.tuwien.exception.QueryMalformedException;
 import at.tuwien.exception.TableMalformedException;
-import at.tuwien.repository.mdb.TableRepository;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 import org.mapstruct.Named;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.text.Normalizer;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -63,8 +61,7 @@ public interface TableMapper {
             @Mapping(target = "internalName", expression = "java(data.getInternalName())"),
             @Mapping(target = "queueName", expression = "java(data.getQueueName())"),
             @Mapping(target = "routingKey", expression = "java(data.getRoutingKey())"),
-            @Mapping(source = "description", target = "description"),
-            @Mapping(source = "database.isPublic", target = "isPublic"),
+            @Mapping(source = "description", target = "description")
     })
     TableDto tableToTableDto(Table data);
 
@@ -133,26 +130,32 @@ public interface TableMapper {
 
     ReferenceType referenceTypeDtoToReferenceType(ReferenceTypeDto dto);
 
-    default ForeignKey foreignKeyCreateDtoToForeignKey(TableRepository repo, Table table, ForeignKeyCreateDto data) throws TableMalformedException {
-        final Optional<Table> referencedTable = repo.findByTdbidAndInternalName(table.getDatabase().getId(), nameToInternalName(data.getReferencedTable()));
-        if (referencedTable.isEmpty()) {
-            log.error("Failed to find referenced table with database id {} and internal name {}", table.getDatabase().getId(), nameToInternalName(data.getReferencedTable()));
-            throw new TableMalformedException("Failed to find referenced table with database id " + table.getDatabase().getId() + " and internal name " + nameToInternalName(data.getReferencedTable()));
+    @Transactional(readOnly = true)
+    default ForeignKey foreignKeyCreateDtoToForeignKey(Table table, ForeignKeyCreateDto data) throws TableMalformedException {
+        final String referencedTableInternalName = nameToInternalName(data.getReferencedTable());
+        final Optional<Table> optional = table.getDatabase()
+                .getTables()
+                .stream()
+                .filter(t -> t.getInternalName().equals(referencedTableInternalName))
+                .findFirst();
+        if (optional.isEmpty()) {
+            log.error("Failed to find referenced table with internal name {} in database with id {}", referencedTableInternalName, table.getDatabase().getId());
+            throw new TableMalformedException("Failed to find referenced table with internal name " + referencedTableInternalName + " in database with id " + table.getDatabase().getId());
         }
         final ForeignKey.ForeignKeyBuilder builder = ForeignKey.builder()
                 .table(table)
                 .onUpdate(referenceTypeDtoToReferenceType(data.getOnUpdate()))
                 .onDelete(referenceTypeDtoToReferenceType(data.getOnDelete()))
-                .referencedTable(referencedTable.get());
+                .referencedTable(optional.get());
         final List<TableColumn> columns = columnNameListToTableColumn(table, data.getColumns());
-        final List<TableColumn> referencedColumns = columnNameListToTableColumn(referencedTable.get(), data.getReferencedColumns());
+        final List<TableColumn> referencedColumns = columnNameListToTableColumn(optional.get(), data.getReferencedColumns());
         if (columns.isEmpty()) {
-            log.error("Foreign key does not have any columns.");
-            throw new TableMalformedException("Foreign key does not have any columns.");
+            log.error("Foreign key does not have any referenced columns");
+            throw new TableMalformedException("Foreign key does not have any referenced columns");
         }
         if (columns.size() != referencedColumns.size()) {
-            log.error("There have to be equally as many columns and referenced columns in a foreign key.");
-            throw new TableMalformedException("There have to be equally as many columns and referenced columns in a foreign key.");
+            log.error("There have to be equally as many columns and referenced columns in a foreign key");
+            throw new TableMalformedException("There have to be equally as many columns and referenced columns in a foreign key");
         }
         final List<ForeignKeyReference> references = new ArrayList<>();
         final ForeignKey foreignKey = builder.references(references).build();
@@ -191,13 +194,12 @@ public interface TableMapper {
         return dto;
     }
 
-    default Constraints constraintsCreateDtoToConstraints(TableRepository repo, Table table, ConstraintsCreateDto data) throws TableMalformedException {
+    default Constraints constraintsCreateDtoToConstraints(Table table, ConstraintsCreateDto data)
+            throws TableMalformedException {
         if (data == null) {
             return null;
         }
-
         Constraints.ConstraintsBuilder builder = Constraints.builder();
-
         if (data.getUniques() != null) {
             List<Unique> uniques = new ArrayList<>();
             for (List<String> columns : data.getUniques()) {
@@ -208,7 +210,7 @@ public interface TableMapper {
         if (data.getForeignKeys() != null) {
             List<ForeignKey> foreignKeys = new ArrayList<>();
             for (ForeignKeyCreateDto foreignKeyData : data.getForeignKeys()) {
-                foreignKeys.add(foreignKeyCreateDtoToForeignKey(repo, table, foreignKeyData));
+                foreignKeys.add(foreignKeyCreateDtoToForeignKey(table, foreignKeyData));
             }
             builder.foreignKeys(foreignKeys);
         }
@@ -492,6 +494,115 @@ public interface TableMapper {
             log.error("Failed to prepare statement: {}", e.getMessage());
             throw new QueryMalformedException("Failed to prepare statement", e);
         }
+    }
+
+    @Transactional(readOnly = true)
+    default List<Table> resultListToTableList(ResultSet resultSet, Database database) throws SQLException {
+        final List<Table> tables = new LinkedList<>();
+        while (resultSet.next()) {
+            final String tableType = resultSet.getString(2);
+            if (!List.of("SYSTEM VERSIONED", "BASE TABLE").contains(tableType)) {
+                log.trace("table is not of type system versioned or base table: {}", tableType);
+                continue;
+            }
+            final Table table = Table.builder()
+                    .name(resultSet.getString(1))
+                    .internalName(resultSet.getString(1))
+                    .isVersioned(resultSet.getString(2).equals("SYSTEM VERSIONED"))
+                    .numRows(resultSet.getLong(3))
+                    .avgRowLength(resultSet.getLong(4))
+                    .dataLength(resultSet.getLong(5))
+                    .maxDataLength(resultSet.getLong(6))
+                    .database(database)
+                    .tdbid(database.getId())
+                    .queueName("dbrepo")
+                    .routingKey("dbrepo." + database.getInternalName() + "." + resultSet.getString(1))
+                    .creator(database.getOwner())
+                    .createdBy(database.getOwner().getId())
+                    .owner(database.getOwner())
+                    .ownedBy(database.getOwner().getId())
+                    .build();
+            if (resultSet.getString(7) != null && !resultSet.getString(7).isEmpty()) {
+                table.setCreated(Timestamp.valueOf(resultSet.getString(7))
+                        .toInstant());
+            }
+            if (resultSet.getString(8) != null && !resultSet.getString(8).isEmpty()) {
+                table.setLastModified(Timestamp.valueOf(resultSet.getString(8))
+                        .toInstant());
+            }
+            log.trace("mapped result set to table {}", table);
+            tables.add(table);
+        }
+        return tables;
+    }
+
+    @Transactional(readOnly = true)
+    default List<View> resultListToViewList(ResultSet resultSet, Database database) throws SQLException {
+        final List<View> views = new LinkedList<>();
+        while (resultSet.next()) {
+            final String tableType = resultSet.getString(2);
+            if (!tableType.equals("VIEW")) {
+                log.trace("table is not of type view: {}", tableType);
+                continue;
+            }
+            final View view = View.builder()
+                    .name(resultSet.getString(1))
+                    .internalName(resultSet.getString(1))
+                    .database(database)
+                    .vdbid(database.getId())
+                    .createdBy(database.getOwner().getId())
+                    .isInitialView(false)
+                    .isPublic(database.getIsPublic())
+                    .query(resultSet.getString(9))
+                    .queryHash(new DigestUtils("SHA-256").digestAsHex(resultSet.getString(9)))
+                    .build();
+            if (resultSet.getString(7) != null && !resultSet.getString(7).isEmpty()) {
+                view.setCreated(Timestamp.valueOf(resultSet.getString(7))
+                        .toInstant());
+            }
+            if (resultSet.getString(8) != null && !resultSet.getString(8).isEmpty()) {
+                view.setLastModified(Timestamp.valueOf(resultSet.getString(8))
+                        .toInstant());
+            }
+            log.trace("mapped result set to view {}", view);
+            views.add(view);
+        }
+        return views;
+    }
+
+    default Table resultSetTableToObtainedMetadata(ResultSet resultSet,
+                                                   Table data,
+                                                   ContainerImageDate defaultDateFormat,
+                                                   ContainerImageDate defaultTimestampFormat) throws SQLException {
+        final List<TableColumn> columns = new LinkedList<>();
+        while (resultSet.next()) {
+            final TableColumn column = TableColumn.builder()
+                    .table(data)
+                    .ordinalPosition(resultSet.getInt(1) - 1) /* start at zero */
+//                    .default()
+                    .autoGenerated(resultSet.getString(2) != null && resultSet.getString(2).startsWith("nextval"))
+                    .isNullAllowed(resultSet.getString(3).equals("YES"))
+                    .columnType(TableColumnType.valueOf(resultSet.getString(4).toUpperCase()))
+                    .d(resultSet.getString(7) != null ? resultSet.getLong(7) : null)
+                    .isPrimaryKey(resultSet.getString(9) != null && resultSet.getString(9).equals("PRI"))
+                    .name(resultSet.getString(10))
+                    .internalName(resultSet.getString(10))
+                    .build();
+            if (resultSet.getString(5) != null) {
+                column.setSize(resultSet.getLong(5));
+            } else if (resultSet.getString(6) != null) {
+                column.setSize(resultSet.getLong(6));
+            }
+            if (column.getColumnType().equals(TableColumnType.TIMESTAMP) || column.getColumnType().equals(TableColumnType.DATETIME)) {
+                column.setDateFormat(defaultTimestampFormat);
+            } else if (column.getColumnType().equals(TableColumnType.DATE)) {
+                column.setDateFormat(defaultDateFormat);
+            }
+            log.trace("mapped result set to column {}", column);
+            columns.add(column);
+        }
+        data.setColumns(columns);
+        return data;
     }
 
 }

@@ -41,15 +41,6 @@ build-data-service:
     - "mvn -f ./dbrepo-metadata-service/pom.xml clean install -Dstyle.color=always -DskipTests"
     - "mvn -f ./dbrepo-data-service/pom.xml clean package -Dstyle.color=always -DskipTests"
 
-build-mirror-service:
-  image: maven:3-openjdk-17
-  stage: build
-  needs:
-    - build-metadata-service
-  script:
-    - "mvn -f ./dbrepo-metadata-service/pom.xml clean install -Dstyle.color=always -DskipTests"
-    - "mvn -f ./dbrepo-mirror-service/pom.xml clean package -Dstyle.color=always -DskipTests"
-
 build-frontend:
   image: node:14-alpine
   stage: build
@@ -72,7 +63,6 @@ build-docker:
     - "cp .env.unix.example .env"
     - "docker build -t dbrepo-metadata-service:build --target build dbrepo-metadata-service"
     - "docker build -t dbrepo-data-service:build --target build dbrepo-data-service"
-    - "docker build -t dbrepo-mirror-service:build --target build dbrepo-mirror-service"
     - "docker build ./dbrepo-log-service -t dbrepo-log-service"
     - "docker compose build --parallel"
 
@@ -112,25 +102,6 @@ test-data-service:
     expire_in: 1 days
     reports:
       junit: ./dbrepo-data-service/rest-service/target/surefire-reports/TEST-*.xml
-  coverage: '/Total.*?([0-9]{1,3})%/'
-
-test-mirror-service:
-  image: maven:3-openjdk-17
-  stage: test
-  needs:
-    - build-mirror-service
-  script:
-    - "mvn -f ./dbrepo-metadata-service/pom.xml clean install -Dstyle.color=always -DskipTests"
-    - "mvn -f ./dbrepo-mirror-service/pom.xml clean test verify -Dstyle.color=always"
-    - "cat ./dbrepo-mirror-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
-  artifacts:
-    when: always
-    paths:
-      - ./dbrepo-mirror-service/report/target/site/jacoco-aggregate/
-      - ./dbrepo-mirror-service/rest-service/target/surefire-reports/
-    expire_in: 1 days
-    reports:
-      junit: ./dbrepo-mirror-service/rest-service/target/surefire-reports/TEST-*.xml
   coverage: '/Total.*?([0-9]{1,3})%/'
 
 test-analyse-service:
@@ -472,7 +443,6 @@ release-latest:
   needs:
     - test-metadata-service
     - test-data-service
-    - test-mirror-service
     - test-analyse-service
     - test-frontend
   only:
@@ -491,7 +461,6 @@ release-version:
   needs:
     - test-metadata-service
     - test-data-service
-    - test-mirror-service
     - test-analyse-service
     - test-frontend
   only:

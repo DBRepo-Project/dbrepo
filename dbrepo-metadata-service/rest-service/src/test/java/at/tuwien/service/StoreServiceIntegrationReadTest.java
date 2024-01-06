@@ -8,7 +8,6 @@ import at.tuwien.config.MariaDbContainerConfig;
 import at.tuwien.exception.*;
 import at.tuwien.querystore.Query;
 import at.tuwien.repository.mdb.DatabaseRepository;
-import at.tuwien.repository.mdb.TableRepository;
 import lombok.extern.log4j.Log4j2;
 import org.apache.http.auth.BasicUserPrincipal;
 import org.junit.jupiter.api.BeforeAll;
@@ -44,9 +43,6 @@ import static org.mockito.Mockito.when;
 public class StoreServiceIntegrationReadTest extends BaseUnitTest {
 
     @MockBean
-    private TableRepository tableRepository;
-
-    @MockBean
     private DatabaseRepository databaseRepository;
 
     @Autowired
@@ -61,13 +57,6 @@ public class StoreServiceIntegrationReadTest extends BaseUnitTest {
         MariaDbConfig.dropAllDatabases(CONTAINER_1);
         MariaDbConfig.createInitDatabase(CONTAINER_1, DATABASE_1);
         MariaDbConfig.insertQueryStore(DATABASE_1, QUERY_1, USER_1_USERNAME);
-    }
-
-    @BeforeEach
-    public void beforeEach() {
-        /* metadata database */
-        DATABASE_1.setTables(List.of(TABLE_1, TABLE_2, TABLE_3, TABLE_7));
-        DATABASE_1.setViews(List.of(VIEW_3));
     }
 
     @Test

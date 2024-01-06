@@ -9,18 +9,18 @@ import java.util.List;
 
 public interface EntityService {
 
-    List<EntityDto> findByLabel(Ontology ontology, String label) throws QueryMalformedException;
+    List<EntityDto> findByLabel(Ontology ontology, String label) throws QueryMalformedException, OntologyInvalidException;
 
-    List<EntityDto> findByLabel(Ontology ontology, String label, Integer limit) throws QueryMalformedException;
+    List<EntityDto> findByLabel(Ontology ontology, String label, Integer limit) throws QueryMalformedException, OntologyInvalidException;
 
-    List<EntityDto> findByUri(Ontology ontology, String uri) throws QueryMalformedException;
+    List<EntityDto> findByUri(Ontology ontology, String uri) throws QueryMalformedException, OntologyInvalidException;
 
     EntityDto findOneByUri(Ontology ontology, String uri) throws QueryMalformedException,
-            SemanticEntityNotFoundException;
+            SemanticEntityNotFoundException, OntologyInvalidException;
 
     List<EntityDto> suggestTableSemantics(Long databaseId, Long tableId) throws TableNotFoundException,
-            QueryMalformedException, DatabaseNotFoundException;
+            QueryMalformedException, DatabaseNotFoundException, OntologyInvalidException;
 
     List<TableColumnEntityDto> suggestTableColumnSemantics(Long databaseId, Long tableId, Long columnId)
-            throws QueryMalformedException, TableColumnNotFoundException;
+            throws QueryMalformedException, TableColumnNotFoundException, TableNotFoundException, DatabaseNotFoundException, OntologyInvalidException;
 }

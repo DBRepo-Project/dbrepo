@@ -3,15 +3,11 @@ package at.tuwien.endpoints;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.api.identifier.BibliographyTypeDto;
 import at.tuwien.api.identifier.IdentifierDto;
-import at.tuwien.api.identifier.IdentifierSaveDto;
 import at.tuwien.config.EndpointConfig;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.IdentifierMapper;
-import at.tuwien.service.AccessService;
 import at.tuwien.service.IdentifierService;
-import at.tuwien.utils.UserUtil;
-import io.micrometer.core.annotation.Timed;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -41,15 +37,13 @@ import java.util.regex.Pattern;
 @RequestMapping("/api/pid")
 public class PersistenceEndpoint {
 
-    private final AccessService accessService;
     private final EndpointConfig endpointConfig;
     private final IdentifierMapper identifierMapper;
     private final IdentifierService identifierService;
 
     @Autowired
-    public PersistenceEndpoint(AccessService accessService, EndpointConfig endpointConfig,
-                               IdentifierMapper identifierMapper, IdentifierService identifierService) {
-        this.accessService = accessService;
+    public PersistenceEndpoint(EndpointConfig endpointConfig, IdentifierMapper identifierMapper,
+                               IdentifierService identifierService) {
         this.endpointConfig = endpointConfig;
         this.identifierMapper = identifierMapper;
         this.identifierService = identifierService;
@@ -150,62 +144,6 @@ public class PersistenceEndpoint {
                 .build();
     }
 
-    @PutMapping("/{id}")
-    @Transactional
-    @Observed(name = "dbr_pid_update")
-    @PreAuthorize("hasAuthority('modify-identifier-metadata')")
-    @Operation(summary = "Update some identifier", security = @SecurityRequirement(name = "bearerAuth"))
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "202",
-                    description = "Updated identifier",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = IdentifierDto.class))}),
-            @ApiResponse(responseCode = "400",
-                    description = "Identifier data is not valid to the form",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "404",
-                    description = "Identifier or user could not be found",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "405",
-                    description = "Updating identifier not permitted",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "406",
-                    description = "Updating identifier not allowed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-    })
-    public ResponseEntity<IdentifierDto> update(@NotNull @PathVariable("id") Long id,
-                                                @NotNull @Valid @RequestBody IdentifierSaveDto data,
-                                                @NotNull Principal principal)
-            throws IdentifierNotFoundException, IdentifierRequestException, UserNotFoundException, NotAllowedException,
-            QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException, QueryStoreException,
-            DatabaseConnectionException, ImageNotSupportedException {
-        log.debug("endpoint update identifier, id={}, data={}", id, data);
-        final Identifier identifier = identifierService.find(id);
-        try {
-            accessService.find(identifier.getDatabase().getId(), UserUtil.getId(principal));
-        } catch (AccessDeniedException e) {
-            if (!UserUtil.hasRole(principal, "modify-identifier-metadata")) {
-                log.error("Failed to update identifier: insufficient access");
-                throw new NotAllowedException("Failed to update identifier: insufficient access");
-            }
-        }
-        /* check */
-        final IdentifierDto dto = identifierMapper.identifierToIdentifierDto(identifierService.update(id, data, principal));
-        log.info("Update identifier with pid: {}", dto.getId());
-        log.trace("updated identifier: {}", dto);
-        return ResponseEntity.accepted()
-                .body(dto);
-    }
-
     @DeleteMapping("/{id}")
     @Transactional
     @Observed(name = "dbr_pid_delete")
@@ -216,7 +154,7 @@ public class PersistenceEndpoint {
                     description = "Deleted identifier",
                     content = {@Content}),
             @ApiResponse(responseCode = "404",
-                    description = "Identifier could not be found",
+                    description = "Identifier or database could not be found",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -227,7 +165,7 @@ public class PersistenceEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))})
     })
     public ResponseEntity<?> delete(@NotNull @PathVariable("id") Long id)
-            throws IdentifierNotFoundException, NotAllowedException {
+            throws IdentifierNotFoundException, NotAllowedException, DatabaseNotFoundException {
         log.debug("endpoint delete identifier, id={}", id);
         final Identifier identifier = identifierService.find(id);
         if (identifier.getDoi() != null) {

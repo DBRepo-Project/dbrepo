@@ -9,16 +9,14 @@ import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.MariaDbContainerConfig;
-import at.tuwien.config.MinioConfig;
+import at.tuwien.config.S3Config;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.DataDbSidecarGateway;
 import at.tuwien.querystore.Query;
 import at.tuwien.repository.mdb.*;
 import at.tuwien.service.impl.QueryServiceImpl;
-import io.minio.MinioClient;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,8 +35,6 @@ import org.testcontainers.containers.MinIOContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.sql.SQLException;
@@ -54,7 +50,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
 
 @Log4j2
 @Testcontainers
@@ -79,19 +74,13 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     private ContainerRepository containerRepository;
 
     @Autowired
-    private ViewRepository viewRepository;
-
-    @Autowired
-    private TableRepository tableRepository;
-
-    @Autowired
-    private TableColumnRepository tableColumnRepository;
-
-    @Autowired
     private QueryServiceImpl queryService;
 
     @Autowired
-    private MinioConfig minioConfig;
+    private S3Config s3Config;
+
+    @Autowired
+    private LicenseRepository licenseRepository;
 
     @MockBean
     private DataDbSidecarGateway dataDbSidecarGateway;
@@ -101,33 +90,35 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
     @Container
     private static MinIOContainer minIOContainer = new MinIOContainer("minio/minio")
-            .withUserName("minioadmin")
-            .withPassword("minioadmin");
+            .withUserName("seaweedfsadmin")
+            .withPassword("seaweedfsadmin");
 
     @DynamicPropertySource
     static void openSearchProperties(DynamicPropertyRegistry registry) {
-        registry.add("fda.minio.endpoint", () -> minIOContainer.getS3URL());
+        registry.add("fda.s3.endpoint", () -> minIOContainer.getS3URL());
     }
 
     @BeforeEach
     public void beforeEach() throws SQLException {
+        TABLE_1.setColumns(TABLE_1_COLUMNS);
+        TABLE_2.setColumns(TABLE_2_COLUMNS);
+        TABLE_3.setColumns(TABLE_3_COLUMNS);
+        TABLE_4.setColumns(TABLE_4_COLUMNS);
+        TABLE_5.setColumns(TABLE_5_COLUMNS);
+        TABLE_6.setColumns(TABLE_6_COLUMNS);
+        TABLE_7.setColumns(TABLE_7_COLUMNS);
+        DATABASE_1.setAccesses(List.of());
+        DATABASE_2.setAccesses(List.of());
+        /* metadata database */
+        imageRepository.save(IMAGE_1);
+        licenseRepository.save(LICENSE_1);
+        userRepository.saveAll(List.of(USER_1, USER_2, USER_3));
+        containerRepository.saveAll(List.of(CONTAINER_1, CONTAINER_2));
+        databaseRepository.saveAll(List.of(DATABASE_1, DATABASE_2));
+        /* mock */
         MariaDbConfig.dropAllDatabases(CONTAINER_1);
         MariaDbConfig.createInitDatabase(CONTAINER_1, DATABASE_2);
         MariaDbConfig.createInitDatabase(CONTAINER_1, DATABASE_1);
-        /* metadata database */
-        imageRepository.save(IMAGE_1);
-        userRepository.saveAll(List.of(USER_1, USER_2, USER_3));
-        containerRepository.saveAll(List.of(CONTAINER_1_SIMPLE, CONTAINER_2_SIMPLE));
-        databaseRepository.saveAll(List.of(DATABASE_1_SIMPLE, DATABASE_2_SIMPLE));
-        tableRepository.saveAll(List.of(TABLE_1_SIMPLE, TABLE_2_SIMPLE, TABLE_3_SIMPLE, TABLE_4_SIMPLE, TABLE_5_SIMPLE, TABLE_6_SIMPLE, TABLE_7_SIMPLE));
-        tableColumnRepository.saveAll(TABLE_1_COLUMNS);
-        tableColumnRepository.saveAll(TABLE_2_COLUMNS);
-        tableColumnRepository.saveAll(TABLE_3_COLUMNS);
-        tableColumnRepository.saveAll(TABLE_4_COLUMNS);
-        tableColumnRepository.saveAll(TABLE_5_COLUMNS);
-        tableColumnRepository.saveAll(TABLE_6_COLUMNS);
-        tableColumnRepository.saveAll(TABLE_7_COLUMNS);
-        viewRepository.saveAll(List.of(VIEW_1, VIEW_2, VIEW_3, VIEW_4));
     }
 
     @Test
@@ -139,27 +130,26 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         final QueryResultDto result = queryService.tableFindAll(DATABASE_1_ID, TABLE_1_ID, Instant.now(),
                 null, null, USER_1_PRINCIPAL);
         assertEquals(3, result.getResult().size());
-        assertEquals(BigInteger.valueOf(1L), result.getResult().get(0).get(COLUMN_1_1_INTERNAL_NAME));
-        assertEquals(toInstant("2008-12-01"), result.getResult().get(0).get(COLUMN_1_2_INTERNAL_NAME));
-        assertEquals("Albury", result.getResult().get(0).get(COLUMN_1_3_INTERNAL_NAME));
-        assertEquals(13.4, result.getResult().get(0).get(COLUMN_1_4_INTERNAL_NAME));
-        assertEquals(0.6, result.getResult().get(0).get(COLUMN_1_5_INTERNAL_NAME));
-        assertEquals(BigInteger.valueOf(2L), result.getResult().get(1).get(COLUMN_1_1_INTERNAL_NAME));
-        assertEquals(toInstant("2008-12-02"), result.getResult().get(1).get(COLUMN_1_2_INTERNAL_NAME));
-        assertEquals("Albury", result.getResult().get(1).get(COLUMN_1_3_INTERNAL_NAME));
-        assertEquals(7.4, result.getResult().get(1).get(COLUMN_1_4_INTERNAL_NAME));
-        assertEquals(0.0, result.getResult().get(1).get(COLUMN_1_5_INTERNAL_NAME));
-        assertEquals(BigInteger.valueOf(3L), result.getResult().get(2).get(COLUMN_1_1_INTERNAL_NAME));
-        assertEquals(toInstant("2008-12-03"), result.getResult().get(2).get(COLUMN_1_2_INTERNAL_NAME));
-        assertEquals("Albury", result.getResult().get(2).get(COLUMN_1_3_INTERNAL_NAME));
-        assertEquals(12.9, result.getResult().get(2).get(COLUMN_1_4_INTERNAL_NAME));
-        assertEquals(0.0, result.getResult().get(2).get(COLUMN_1_5_INTERNAL_NAME));
+        assertEquals(BigInteger.valueOf(1L), result.getResult().get(0).get(TABLE_1_COLUMNS.get(0).getInternalName()));
+        assertEquals(toInstant("2008-12-01"), result.getResult().get(0).get(TABLE_1_COLUMNS.get(1).getInternalName()));
+        assertEquals("Albury", result.getResult().get(0).get(TABLE_1_COLUMNS.get(2).getInternalName()));
+        assertEquals(13.4, result.getResult().get(0).get(TABLE_1_COLUMNS.get(3).getInternalName()));
+        assertEquals(0.6, result.getResult().get(0).get(TABLE_1_COLUMNS.get(4).getInternalName()));
+        assertEquals(BigInteger.valueOf(2L), result.getResult().get(1).get(TABLE_1_COLUMNS.get(0).getInternalName()));
+        assertEquals(toInstant("2008-12-02"), result.getResult().get(1).get(TABLE_1_COLUMNS.get(1).getInternalName()));
+        assertEquals("Albury", result.getResult().get(1).get(TABLE_1_COLUMNS.get(2).getInternalName()));
+        assertEquals(7.4, result.getResult().get(1).get(TABLE_1_COLUMNS.get(3).getInternalName()));
+        assertEquals(0.0, result.getResult().get(1).get(TABLE_1_COLUMNS.get(4).getInternalName()));
+        assertEquals(BigInteger.valueOf(3L), result.getResult().get(2).get(TABLE_1_COLUMNS.get(0).getInternalName()));
+        assertEquals(toInstant("2008-12-03"), result.getResult().get(2).get(TABLE_1_COLUMNS.get(1).getInternalName()));
+        assertEquals("Albury", result.getResult().get(2).get(TABLE_1_COLUMNS.get(2).getInternalName()));
+        assertEquals(12.9, result.getResult().get(2).get(TABLE_1_COLUMNS.get(3).getInternalName()));
+        assertEquals(0.0, result.getResult().get(2).get(TABLE_1_COLUMNS.get(4).getInternalName()));
     }
 
     @Test
-    public void selectAll_succeeds() throws TableNotFoundException, DatabaseConnectionException,
-            DatabaseNotFoundException, ImageNotSupportedException, TableMalformedException, PaginationException,
-            QueryMalformedException, UserNotFoundException {
+    public void selectAll_succeeds() throws TableNotFoundException, DatabaseNotFoundException,
+            ImageNotSupportedException, TableMalformedException, QueryMalformedException {
         final Long page = 0L;
         final Long size = 10L;
 
@@ -191,8 +181,8 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void insert_date_succeeds() throws UserNotFoundException, TableNotFoundException, TableMalformedException,
-            DatabaseConnectionException, DatabaseNotFoundException, ImageNotSupportedException, SQLException {
+    public void insert_date_succeeds() throws TableNotFoundException, TableMalformedException,
+            DatabaseNotFoundException, SQLException {
         final TableCsvDto request = TableCsvDto.builder()
                 .data(new HashMap<>() {{
                     put("id", 4L);
@@ -212,8 +202,8 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void insert_timestamp_succeeds() throws UserNotFoundException, TableNotFoundException, TableMalformedException,
-            DatabaseConnectionException, DatabaseNotFoundException, ImageNotSupportedException {
+    public void insert_timestamp_succeeds() throws TableNotFoundException, TableMalformedException,
+            DatabaseNotFoundException {
         final TableCsvDto request = TableCsvDto.builder()
                 .data(new HashMap<>() {{
                     put("timestamp", "2023-02-10 12:15:20");
@@ -221,12 +211,12 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                 }}).build();
 
         /* test */
-        queryService.insert(DATABASE_1_ID, TABLE_7_ID, request, USER_1_PRINCIPAL);
+        queryService.insert(DATABASE_1_ID, TABLE_4_ID, request, USER_1_PRINCIPAL);
     }
 
     @Test
-    public void insert_timestampMillis_succeeds() throws UserNotFoundException, TableNotFoundException, TableMalformedException,
-            DatabaseConnectionException, DatabaseNotFoundException, ImageNotSupportedException {
+    public void insert_timestampMillis_succeeds() throws TableNotFoundException, TableMalformedException,
+            DatabaseNotFoundException {
         final TableCsvDto request = TableCsvDto.builder()
                 .data(new HashMap<>() {{
                     put("timestamp", "2023-02-10 12:15:20.613405");
@@ -234,12 +224,12 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                 }}).build();
 
         /* test */
-        queryService.insert(DATABASE_1_ID, TABLE_7_ID, request, USER_1_PRINCIPAL);
+        queryService.insert(DATABASE_1_ID, TABLE_4_ID, request, USER_1_PRINCIPAL);
     }
 
     @Test
-    public void insert_withConstraints_succeeds() throws UserNotFoundException, TableNotFoundException,
-            TableMalformedException, DatabaseConnectionException, DatabaseNotFoundException, ImageNotSupportedException {
+    public void insert_withConstraints_succeeds() throws TableNotFoundException, TableMalformedException,
+            DatabaseNotFoundException {
         final TableCsvDto request = TableCsvDto.builder()
                 .data(Map.of("id", 4L,
                         "date", "2008-12-04",
@@ -324,7 +314,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     public void execute_succeeds() throws DatabaseConnectionException, TableMalformedException,
             DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException, UserNotFoundException,
             QueryStoreException, ColumnParseException, InterruptedException, KeycloakRemoteException,
-            AccessDeniedException {
+            AccessDeniedException, QueryNotFoundException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement("SELECT n.`firstname`, n.`lastname`, n.`birth`, n.`reminder`, z.`animal_name`, z.`legs` FROM `likes` l JOIN `names` n ON l.`name_id` = n.`id` JOIN `mock_view` z ON z.`id` = l.`zoo_id`")
                 .build();
@@ -363,7 +353,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     public void execute_withoutNullField_succeeds() throws DatabaseConnectionException, TableMalformedException,
             DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException, UserNotFoundException,
             QueryStoreException, ColumnParseException, InterruptedException, KeycloakRemoteException,
-            AccessDeniedException {
+            AccessDeniedException, QueryNotFoundException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement("SELECT `location`, `lng` FROM `weather_location` WHERE `lat` IS NULL")
                 .build();
@@ -385,7 +375,8 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     @Test
     public void execute_withoutNullField2_succeeds() throws DatabaseConnectionException, TableMalformedException,
             DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException, UserNotFoundException,
-            QueryStoreException, ColumnParseException, InterruptedException, KeycloakRemoteException, AccessDeniedException {
+            QueryStoreException, ColumnParseException, InterruptedException, KeycloakRemoteException,
+            AccessDeniedException, QueryNotFoundException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement("SELECT `location` FROM `weather_location` WHERE `lat` IS NULL")
                 .build();
@@ -408,7 +399,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     public void execute_withNullField_succeeds() throws DatabaseConnectionException, TableMalformedException,
             DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException, UserNotFoundException,
             QueryStoreException, ColumnParseException, InterruptedException, KeycloakRemoteException,
-            AccessDeniedException {
+            AccessDeniedException, QueryNotFoundException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement("SELECT `lat`, `lng` FROM `weather_location` WHERE `lat` IS NULL")
                 .build();
@@ -426,7 +417,8 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     @Test
     public void execute_aliases_succeeds() throws DatabaseConnectionException, TableMalformedException,
             DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException, UserNotFoundException,
-            QueryStoreException, ColumnParseException, InterruptedException, KeycloakRemoteException, AccessDeniedException {
+            QueryStoreException, ColumnParseException, InterruptedException, KeycloakRemoteException,
+            AccessDeniedException, QueryNotFoundException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement("SELECT aus.location as a, loc.location from weather_aus aus, weather_location loc")
                 .build();
@@ -463,7 +455,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     public void execute_aliasesWithDatabaseName_succeeds() throws DatabaseConnectionException, TableMalformedException,
             DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException, UserNotFoundException,
             QueryStoreException, ColumnParseException, InterruptedException, KeycloakRemoteException,
-            AccessDeniedException {
+            AccessDeniedException, QueryNotFoundException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement("SELECT aus.location as a, loc.location from weather.weather_aus aus, weather.weather_location loc")
                 .build();
@@ -508,22 +500,22 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         final QueryResultDto response = queryService.viewFindAll(DATABASE_1_ID, VIEW_2, 0L, 10L, USER_1_PRINCIPAL);
         assertNotNull(response.getResult());
         final List<Map<String, Object>> result = response.getResult();
-        /* values */
-        assertEquals(0.6, result.get(0).get("rainfall"));
-        assertEquals("Albury", result.get(0).get("loc"));
-        assertEquals(13.4, result.get(0).get("mintemp"));
-        assertEquals(0.0, result.get(1).get("rainfall"));
-        assertEquals("Albury", result.get(1).get("loc"));
-        assertEquals(7.4, result.get(1).get("mintemp"));
-        assertEquals(0.0, result.get(2).get("rainfall"));
-        assertEquals("Albury", result.get(2).get("loc"));
-        assertEquals(12.9, result.get(2).get("mintemp"));
         /* ordering */
         final String[] keys = result.get(0).keySet().toArray(new String[0]);
         assertEquals("date", keys[0]);
-        assertEquals("loc", keys[1]);
-        assertEquals("rainfall", keys[2]);
+        assertEquals("rainfall", keys[1]);
+        assertEquals("location", keys[2]);
         assertEquals("mintemp", keys[3]);
+        /* values */
+        assertEquals(0.6, result.get(0).get("rainfall"));
+        assertEquals("Albury", result.get(0).get("location"));
+        assertEquals(13.4, result.get(0).get("mintemp"));
+        assertEquals(0.0, result.get(1).get("rainfall"));
+        assertEquals("Albury", result.get(1).get("location"));
+        assertEquals(7.4, result.get(1).get("mintemp"));
+        assertEquals(0.0, result.get(2).get("rainfall"));
+        assertEquals("Albury", result.get(2).get("location"));
+        assertEquals(12.9, result.get(2).get("mintemp"));
     }
 
     @Test
@@ -548,8 +540,8 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         doNothing()
                 .when(dataDbSidecarGateway)
                 .exportFile(anyString(), anyInt(), anyString());
-        minioConfig.makeBuckets("dbrepo-upload", "dbrepo-download");
-        minioConfig.uploadFile("dbrepo-download", "./src/test/resources/csv/testdata.csv", filename);
+        s3Config.makeBuckets("dbrepo-upload", "dbrepo-download");
+        s3Config.uploadFile("dbrepo-download", "./src/test/resources/csv/testdata.csv", filename);
 
         /* test */
         final ExportResource response = queryService.findOne(DATABASE_1_ID, QUERY_1_ID, USER_1_PRINCIPAL, filename);

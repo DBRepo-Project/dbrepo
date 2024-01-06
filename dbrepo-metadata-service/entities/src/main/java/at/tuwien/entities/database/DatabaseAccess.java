@@ -1,12 +1,14 @@
 package at.tuwien.entities.database;
 
 import at.tuwien.entities.user.User;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import jakarta.persistence.*;;
+import jakarta.persistence.*;
+
 import java.time.Instant;
 import java.util.UUID;
 
@@ -20,19 +22,19 @@ import java.util.UUID;
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "mdb_have_access")
 @NamedQueries({
-        @NamedQuery(name ="DatabaseAccess.findByDatabaseId", query = "select a from DatabaseAccess a where a.hdbid = ?1"),
-        @NamedQuery(name ="DatabaseAccess.findByDatabaseIdAndUserId", query = "select a from DatabaseAccess a where a.hdbid = ?1 and a.huserid = ?2")
+        @NamedQuery(name = "DatabaseAccess.findByDatabaseId", query = "select a from DatabaseAccess a where a.hdbid = ?1"),
+        @NamedQuery(name = "DatabaseAccess.findByDatabaseIdAndUserId", query = "select a from DatabaseAccess a where a.hdbid = ?1 and a.huserid = ?2")
 })
 public class DatabaseAccess {
 
     @Id
-    @EqualsAndHashCode.Include
     @JdbcTypeCode(java.sql.Types.VARCHAR)
     @Column(name = "user_id", updatable = false, columnDefinition = "VARCHAR(36)")
     private UUID huserid;
 
+    @ToString.Exclude
     @org.springframework.data.annotation.Transient
-    @ManyToOne(cascade = CascadeType.PERSIST)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
             @JoinColumn(name = "user_id", referencedColumnName = "ID", insertable = false, updatable = false)
     })
@@ -43,19 +45,32 @@ public class DatabaseAccess {
     @Column(name = "database_id", updatable = false)
     private Long hdbid;
 
+    @ToString.Exclude
     @org.springframework.data.annotation.Transient
-    @ManyToOne(cascade = CascadeType.PERSIST)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
             @JoinColumn(name = "database_id", referencedColumnName = "id", insertable = false, updatable = false)
     })
     private Database database;
 
-    @Column(nullable = false, name = "access_type", columnDefinition = "enum('READ', 'WRITE_OWN', 'WRITE_ALL')")
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false, name = "access_type", columnDefinition = "enum('READ', 'WRITE_OWN', 'WRITE_ALL')")
     private AccessType type;
 
-    @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP")
     @CreatedDate
+    @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant created;
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) {
+            return true;
+        }
+        if (!(o instanceof DatabaseAccess other)) {
+            return false;
+        }
+        return this.hdbid.equals(other.getHdbid()) && this.huserid.equals(other.getHuserid());
+    }
 
 }

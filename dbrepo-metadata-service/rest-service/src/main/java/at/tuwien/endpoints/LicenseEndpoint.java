@@ -3,7 +3,6 @@ package at.tuwien.endpoints;
 import at.tuwien.api.database.LicenseDto;
 import at.tuwien.mapper.LicenseMapper;
 import at.tuwien.service.LicenseService;
-import io.micrometer.core.annotation.Timed;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;

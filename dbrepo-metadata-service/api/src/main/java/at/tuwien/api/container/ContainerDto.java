@@ -40,7 +40,7 @@ public class ContainerDto {
     @Field(name = "host", type = FieldType.Keyword)
     private String host;
 
-    @Field(name = "port", type = FieldType.Keyword)
+    @Field(name = "port", type = FieldType.Integer)
     private Integer port;
 
     @NotBlank
@@ -50,7 +50,7 @@ public class ContainerDto {
 
     @NotNull
     @JsonProperty("sidecar_port")
-    @Field(name = "sidecar_port", type = FieldType.Keyword)
+    @Field(name = "sidecar_port", type = FieldType.Integer)
     private Integer sidecarPort;
 
     @JsonProperty("ui_host")
@@ -58,10 +58,10 @@ public class ContainerDto {
     private String uiHost;
 
     @JsonProperty("ui_port")
-    @Field(name = "ui_port", type = FieldType.Keyword)
+    @Field(name = "ui_port", type = FieldType.Integer)
     private Integer uiPort;
 
-    @Field(name = "image", includeInParent = true, type = FieldType.Nested)
+    @Field(name = "image", type = FieldType.Nested)
     private ImageBriefDto image;
 
     @NotNull

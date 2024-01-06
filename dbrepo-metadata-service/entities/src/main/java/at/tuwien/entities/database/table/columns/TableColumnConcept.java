@@ -1,5 +1,6 @@
 package at.tuwien.entities.database.table.columns;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
@@ -43,8 +44,9 @@ public class TableColumnConcept {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP")
     @CreatedDate
+    @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP default NOW()")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant created;
 
     @ToString.Exclude

@@ -21,7 +21,6 @@ COPY ./dbrepo.config.json ./dbrepo.config.json
 COPY ./assets ./assets
 COPY ./api ./api
 COPY ./components ./components
-COPY ./lang ./lang
 COPY ./layouts ./layouts
 COPY ./locales ./locales
 COPY ./pages ./pages

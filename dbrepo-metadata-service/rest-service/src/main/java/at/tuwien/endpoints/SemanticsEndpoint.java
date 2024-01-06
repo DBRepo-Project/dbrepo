@@ -1,21 +1,14 @@
 package at.tuwien.endpoints;
 
 import at.tuwien.api.database.table.columns.concepts.ConceptDto;
-import at.tuwien.api.database.table.columns.concepts.ConceptSaveDto;
 import at.tuwien.api.database.table.columns.concepts.UnitDto;
-import at.tuwien.api.database.table.columns.concepts.UnitSaveDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.api.semantics.EntityDto;
 import at.tuwien.api.semantics.TableColumnEntityDto;
-import at.tuwien.exception.DatabaseNotFoundException;
-import at.tuwien.exception.QueryMalformedException;
-import at.tuwien.exception.TableColumnNotFoundException;
-import at.tuwien.exception.TableNotFoundException;
-import at.tuwien.mapper.OntologyMapper;
+import at.tuwien.exception.*;
 import at.tuwien.mapper.SemanticMapper;
 import at.tuwien.service.EntityService;
 import at.tuwien.service.SemanticService;
-import io.micrometer.core.annotation.Timed;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -24,7 +17,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,15 +34,13 @@ import java.util.List;
 public class SemanticsEndpoint {
 
     private final SemanticMapper semanticMapper;
-    private final OntologyMapper ontologyMapper;
     private final SemanticService semanticService;
     private final EntityService entityService;
 
     @Autowired
-    public SemanticsEndpoint(SemanticMapper semanticMapper, OntologyMapper ontologyMapper,
-                             SemanticService semanticService, EntityService entityService) {
+    public SemanticsEndpoint(SemanticMapper semanticMapper, SemanticService semanticService,
+                             EntityService entityService) {
         this.semanticMapper = semanticMapper;
-        this.ontologyMapper = ontologyMapper;
         this.semanticService = semanticService;
         this.entityService = entityService;
     }
@@ -77,26 +67,6 @@ public class SemanticsEndpoint {
                 .body(dtos);
     }
 
-    @PostMapping("/concept")
-    @Transactional
-    @PreAuthorize("hasAuthority('create-semantic-concept')")
-    @Observed(name = "dbr_semantic_concepts_save")
-    @Operation(summary = "Create or update a semantic concept", security = @SecurityRequirement(name = "bearerAuth"))
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "202",
-                    description = "Saved a semantic concept",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ConceptDto.class))}),
-    })
-    public ResponseEntity<ConceptDto> saveConcept(@NotNull @Valid @RequestBody ConceptSaveDto data) {
-        log.debug("endpoint save concept, data={}", data);
-        final ConceptDto dto = ontologyMapper.tableColumnConceptToConceptDto(semanticService.saveConcept(data));
-        log.trace("save concept resulted in dto {}", dto);
-        return ResponseEntity.accepted()
-                .body(dto);
-    }
-
     @GetMapping("/unit")
     @Transactional(readOnly = true)
     @Observed(name = "dbr_semantic_units_findall")
@@ -117,26 +87,6 @@ public class SemanticsEndpoint {
         log.trace("Find all units resulted in dtos {}", dtos);
         return ResponseEntity.ok()
                 .body(dtos);
-    }
-
-    @PostMapping("/unit")
-    @Transactional
-    @PreAuthorize("hasAuthority('create-semantic-unit')")
-    @Observed(name = "dbr_semantic_units_save")
-    @Operation(summary = "Save a semantic unit", security = @SecurityRequirement(name = "bearerAuth"))
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "202",
-                    description = "Saved a semantic unit",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = UnitDto.class))}),
-    })
-    public ResponseEntity<UnitDto> saveUnit(@NotNull @Valid @RequestBody UnitSaveDto data) {
-        log.debug("endpoint save or update unit, data={}", data);
-        final UnitDto dto = ontologyMapper.tableColumnUnitToUnitDto(semanticService.saveUnit(data));
-        log.trace("save unit resulted in dto {}", dto);
-        return ResponseEntity.accepted()
-                .body(dto);
     }
 
     @GetMapping("/database/{databaseId}/table/{tableId}")
@@ -160,10 +110,15 @@ public class SemanticsEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "422",
+                    description = "Ontology does not have rdf or sparql endpoint",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<List<EntityDto>> analyseTable(@NotNull @PathVariable("databaseId") Long databaseId,
                                                         @NotNull @PathVariable("tableId") Long tableId)
-            throws TableNotFoundException, QueryMalformedException, DatabaseNotFoundException {
+            throws TableNotFoundException, QueryMalformedException, DatabaseNotFoundException, OntologyInvalidException {
         log.debug("endpoint analyse table semantics, databaseId={}, tableId={}", databaseId, tableId);
         final List<EntityDto> dtos = entityService.suggestTableSemantics(databaseId, tableId);
         log.trace("analyse table semantics resulted in dtos {}", dtos);
@@ -192,11 +147,17 @@ public class SemanticsEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "422",
+                    description = "Ontology does not have rdf or sparql endpoint",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<List<TableColumnEntityDto>> analyseTableColumn(@NotNull @PathVariable("databaseId") Long databaseId,
                                                                          @NotNull @PathVariable("tableId") Long tableId,
                                                                          @NotNull @PathVariable("columnId") Long columnId)
-            throws QueryMalformedException, TableColumnNotFoundException {
+            throws QueryMalformedException, TableColumnNotFoundException, TableNotFoundException, DatabaseNotFoundException,
+            OntologyInvalidException {
         log.debug("endpoint analyse table column semantics, databaseId={}, tableId={}, columnId={}", databaseId, tableId, columnId);
         final List<TableColumnEntityDto> dtos = entityService.suggestTableColumnSemantics(databaseId, tableId, columnId);
         log.trace("analyse table semantics resulted in dtos {}", dtos);

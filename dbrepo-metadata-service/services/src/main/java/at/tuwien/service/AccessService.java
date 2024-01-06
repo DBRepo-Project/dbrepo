@@ -16,7 +16,7 @@ public interface AccessService {
      * @param databaseId The database id.
      * @return The list of database access definitions.
      */
-    List<DatabaseAccess> list(Long databaseId);
+    List<DatabaseAccess> list(Long databaseId) throws DatabaseNotFoundException;
 
     /**
      * Finds database access by given database id and user id.
@@ -26,17 +26,7 @@ public interface AccessService {
      * @return The database access.
      * @throws AccessDeniedException The access does not exist.
      */
-    DatabaseAccess find(Long databaseId, UUID userId) throws AccessDeniedException;
-
-    /**
-     * Checks if the user with username has access to the database with given id.
-     *
-     * @param databaseId The database id.
-     * @param userId     The user id.
-     * @return The access object.
-     * @throws NotAllowedException The user does not have access.
-     */
-    DatabaseAccess hasAccess(Long databaseId, UUID userId) throws NotAllowedException;
+    DatabaseAccess find(Long databaseId, UUID userId) throws AccessDeniedException, DatabaseNotFoundException;
 
     /**
      * Give somebody access to a database of container.
@@ -81,5 +71,5 @@ public interface AccessService {
      * @throws DatabaseMalformedException The database has an invalid state.
      */
     void delete(Long databaseId, UUID userId) throws DatabaseNotFoundException, UserNotFoundException,
-            NotAllowedException, QueryMalformedException, DatabaseMalformedException;
+            NotAllowedException, QueryMalformedException, DatabaseMalformedException, AccessDeniedException;
 }

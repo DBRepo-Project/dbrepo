@@ -1,23 +1,17 @@
-
 package at.tuwien.endpoints;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.annotations.MockAmqp;
 import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.api.database.table.columns.concepts.ConceptDto;
-import at.tuwien.api.database.table.columns.concepts.ConceptSaveDto;
 import at.tuwien.api.database.table.columns.concepts.UnitDto;
-import at.tuwien.api.database.table.columns.concepts.UnitSaveDto;
 import at.tuwien.api.semantics.EntityDto;
 import at.tuwien.api.semantics.TableColumnEntityDto;
-import at.tuwien.entities.database.table.columns.TableColumnConcept;
-import at.tuwien.entities.database.table.columns.TableColumnUnit;
 import at.tuwien.exception.*;
 import at.tuwien.service.EntityService;
 import at.tuwien.service.SemanticService;
 import lombok.extern.log4j.Log4j2;
 import org.apache.jena.sys.JenaSystem;
-import org.hibernate.HibernateException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,7 +27,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
 @Log4j2
@@ -91,62 +84,6 @@ public class SemanticsEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void saveConcept_anonymous_fails() {
-
-        /* test */
-        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            saveConcept_generic(COLUMN_CONCEPT_TEMPERATURE_SAVE_DTO, COLUMN_CONCEPT_TEMPERATURE);
-        });
-    }
-
-    @Test
-    @WithMockUser(username = USER_4_USERNAME, authorities = {})
-    public void saveConcept_noRole_fails() {
-
-        /* test */
-        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            saveConcept_generic(COLUMN_CONCEPT_TEMPERATURE_SAVE_DTO, COLUMN_CONCEPT_TEMPERATURE);
-        });
-    }
-
-    @Test
-    @WithMockUser(username = USER_3_USERNAME, authorities = {"create-semantic-concept"})
-    public void saveConcept_hasRole_succeeds() {
-
-        /* test */
-        saveConcept_generic(COLUMN_CONCEPT_TEMPERATURE_SAVE_DTO, COLUMN_CONCEPT_TEMPERATURE);
-    }
-
-    @Test
-    @WithAnonymousUser
-    public void saveUnit_anonymous_fails() {
-
-        /* test */
-        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            saveUnit_generic(UNIT_1_SAVE_DTO, UNIT_1);
-        });
-    }
-
-    @Test
-    @WithMockUser(username = USER_4_USERNAME, authorities = {})
-    public void saveUnit_noRole_fails() {
-
-        /* test */
-        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            saveUnit_generic(UNIT_1_SAVE_DTO, UNIT_1);
-        });
-    }
-
-    @Test
-    @WithMockUser(username = USER_3_USERNAME, authorities = {"create-semantic-unit"})
-    public void saveUnit_hasRole_succeeds() {
-
-        /* test */
-        saveUnit_generic(UNIT_1_SAVE_DTO, UNIT_1);
-    }
-
-    @Test
-    @WithAnonymousUser
     public void analyseTable_anonymous_fails() {
 
         /* test */
@@ -167,7 +104,8 @@ public class SemanticsEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"table-semantic-analyse"})
-    public void findAll_hasRole_succeeds() throws TableNotFoundException, QueryMalformedException, DatabaseNotFoundException {
+    public void findAll_hasRole_succeeds() throws TableNotFoundException, QueryMalformedException,
+            DatabaseNotFoundException, OntologyInvalidException {
 
         /* test */
         analyseTable_generic(DATABASE_1_ID, TABLE_1_ID);
@@ -179,7 +117,7 @@ public class SemanticsEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            analyseTableColumn_generic(DATABASE_1_ID, TABLE_1_ID, COLUMN_1_1_ID);
+            analyseTableColumn_generic(DATABASE_1_ID, TABLE_1_ID, TABLE_1_COLUMNS.get(0).getId());
         });
     }
 
@@ -189,16 +127,17 @@ public class SemanticsEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            analyseTableColumn_generic(DATABASE_1_ID, TABLE_1_ID, COLUMN_1_1_ID);
+            analyseTableColumn_generic(DATABASE_1_ID, TABLE_1_ID, TABLE_1_COLUMNS.get(0).getId());
         });
     }
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"table-semantic-analyse"})
-    public void analyseTableColumn_hasRole_succeeds() throws QueryMalformedException, TableColumnNotFoundException {
+    public void analyseTableColumn_hasRole_succeeds() throws QueryMalformedException, TableColumnNotFoundException,
+            TableNotFoundException, DatabaseNotFoundException, OntologyInvalidException {
 
         /* test */
-        analyseTableColumn_generic(DATABASE_1_ID, TABLE_1_ID, COLUMN_1_1_ID);
+        analyseTableColumn_generic(DATABASE_1_ID, TABLE_1_ID, TABLE_1_COLUMNS.get(0).getId());
     }
 
     /* ################################################################################################### */
@@ -209,7 +148,7 @@ public class SemanticsEndpointUnitTest extends BaseUnitTest {
 
         /* mock */
         when(semanticService.findAllConcepts())
-                .thenReturn(List.of(COLUMN_CONCEPT_TEMPERATURE, COLUMN_CONCEPT_FAIR_DATA));
+                .thenReturn(List.of(COLUMN_CONCEPT_PRECIPITATION, COLUMN_CONCEPT_FAIR_DATA));
 
         /* test */
         final ResponseEntity<List<ConceptDto>> response = semanticsEndpoint.findAllConcepts();
@@ -223,7 +162,7 @@ public class SemanticsEndpointUnitTest extends BaseUnitTest {
 
         /* mock */
         when(semanticService.findAllUnits())
-                .thenReturn(List.of(UNIT_2, UNIT_1));
+                .thenReturn(List.of(UNIT_MILLIMETRE, UNIT_TONNE));
 
         /* test */
         final ResponseEntity<List<UnitDto>> response = semanticsEndpoint.findAllUnits();
@@ -233,45 +172,8 @@ public class SemanticsEndpointUnitTest extends BaseUnitTest {
         assertEquals(2, body.size());
     }
 
-    public void saveConcept_generic(ConceptSaveDto saveDto, TableColumnConcept concept) {
-
-        /* mock */
-        if (concept != null) {
-            when(semanticService.saveConcept(saveDto))
-                    .thenReturn(concept);
-        } else {
-            doThrow(HibernateException.class)
-                    .when(semanticService)
-                    .saveConcept(saveDto);
-        }
-
-        /* test */
-        final ResponseEntity<ConceptDto> response = semanticsEndpoint.saveConcept(saveDto);
-        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
-        final ConceptDto body = response.getBody();
-        assertNotNull(body);
-    }
-
-    public void saveUnit_generic(UnitSaveDto saveDto, TableColumnUnit unit) {
-
-        /* mock */
-        if (unit != null) {
-            when(semanticService.saveUnit(saveDto))
-                    .thenReturn(unit);
-        } else {
-            doThrow(HibernateException.class)
-                    .when(semanticService)
-                    .saveUnit(saveDto);
-        }
-
-        /* test */
-        final ResponseEntity<UnitDto> response = semanticsEndpoint.saveUnit(saveDto);
-        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
-        final UnitDto body = response.getBody();
-        assertNotNull(body);
-    }
-
-    public void analyseTable_generic(Long databaseId, Long tableId) throws TableNotFoundException, QueryMalformedException, DatabaseNotFoundException {
+    public void analyseTable_generic(Long databaseId, Long tableId) throws TableNotFoundException,
+            QueryMalformedException, DatabaseNotFoundException, OntologyInvalidException {
 
         /* mock */
         when(entityService.suggestTableSemantics(databaseId, tableId))
@@ -285,7 +187,7 @@ public class SemanticsEndpointUnitTest extends BaseUnitTest {
     }
 
     public void analyseTableColumn_generic(Long databaseId, Long tableId, Long columnId) throws QueryMalformedException,
-            TableColumnNotFoundException {
+            TableColumnNotFoundException, TableNotFoundException, DatabaseNotFoundException, OntologyInvalidException {
 
         /* mock */
         when(entityService.suggestTableColumnSemantics(databaseId, tableId, columnId))

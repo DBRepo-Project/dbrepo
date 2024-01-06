@@ -5,7 +5,6 @@ import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.TableCsvDeleteDto;
 import at.tuwien.api.database.table.TableCsvDto;
-import at.tuwien.api.database.table.TableCsvUpdateDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
 import at.tuwien.service.DatabaseService;
@@ -13,7 +12,6 @@ import at.tuwien.service.QueryService;
 import at.tuwien.utils.PrincipalUtil;
 import at.tuwien.utils.UserUtil;
 import at.tuwien.validation.EndpointValidator;
-import io.micrometer.core.annotation.Timed;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -64,28 +62,6 @@ public class TableDataEndpoint {
         endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(databaseId, tableId, principal);
         /* insert */
         queryService.insert(databaseId, tableId, data, principal);
-        return ResponseEntity.accepted()
-                .build();
-    }
-
-    @PutMapping
-    @Transactional
-    @Deprecated
-    @PreAuthorize("hasAuthority('insert-table-data')")
-    @Observed(name = "dbr_table_data_update")
-    @Operation(summary = "Update data", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<Void> update(@NotNull @PathVariable("databaseId") Long databaseId,
-                                       @NotNull @PathVariable("tableId") Long tableId,
-                                       @NotNull @Valid @RequestBody TableCsvUpdateDto data,
-                                       @NotNull Principal principal)
-            throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
-            ImageNotSupportedException, DatabaseConnectionException, QueryMalformedException,
-            UserNotFoundException, NotAllowedException, AccessDeniedException {
-        log.debug("endpoint update data, databaseId={}, tableId={}, data={}, {}", databaseId, tableId, data, PrincipalUtil.formatForDebug(principal));
-        /* check */
-        endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(databaseId, tableId, principal);
-        /* update */
-        queryService.update(databaseId, tableId, data, principal);
         return ResponseEntity.accepted()
                 .build();
     }

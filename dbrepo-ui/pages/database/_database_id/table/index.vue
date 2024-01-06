@@ -1,6 +1,6 @@
 <template>
   <div>
-    <DBToolbar />
+    <DatabaseToolbar />
     <v-tabs-items v-model="tab">
       <TableList />
     </v-tabs-items>
@@ -9,13 +9,13 @@
 </template>
 <script>
 import TableList from '@/components/TableList.vue'
-import DBToolbar from '@/components/DBToolbar.vue'
+import DatabaseToolbar from '@/components/DatabaseToolbar.vue'
 
 export default {
   name: 'Tables',
   components: {
     TableList,
-    DBToolbar
+    DatabaseToolbar
   },
   data () {
     return {

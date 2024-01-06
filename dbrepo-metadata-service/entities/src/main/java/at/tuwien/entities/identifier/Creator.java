@@ -17,6 +17,7 @@ import jakarta.persistence.*;
 public class Creator {
 
     @Id
+    @org.springframework.data.annotation.Id
     @EqualsAndHashCode.Include
     @GeneratedValue(generator = "creators-sequence")
     @GenericGenerator(name = "creators-sequence", strategy = "increment")

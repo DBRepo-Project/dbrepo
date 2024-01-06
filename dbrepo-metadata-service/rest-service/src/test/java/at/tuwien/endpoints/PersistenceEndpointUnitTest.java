@@ -16,6 +16,7 @@ import at.tuwien.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -59,6 +60,13 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     @Autowired
     private PersistenceEndpoint persistenceEndpoint;
 
+    @BeforeEach
+    public void beforeEach() {
+        IDENTIFIER_1.setDatabase(DATABASE_1);
+        IDENTIFIER_5.setDatabase(DATABASE_2);
+        IDENTIFIER_6.setDatabase(DATABASE_3);
+    }
+
     @Test
     @WithAnonymousUser
     public void find_json0_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
@@ -69,11 +77,11 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
         final IdentifierDto compare = objectMapper.readValue(FileUtils.readFileToString(new File("src/test/resources/json/metadata0.json"), StandardCharsets.UTF_8), IdentifierDto.class);
 
         /* mock */
-        when(identifierService.find(IDENTIFIER_4_ID))
-                .thenReturn(IDENTIFIER_4);
+        when(identifierService.find(IDENTIFIER_7_ID))
+                .thenReturn(IDENTIFIER_7);
 
         /* test */
-        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_4_ID, accept, USER_1_PRINCIPAL);
+        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_7_ID, accept, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final IdentifierDto body = (IdentifierDto) response.getBody();
         assertNotNull(body);
@@ -81,7 +89,6 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
         assertEquals(compare.getTitles().size(), body.getTitles().size());
         assertEquals(compare.getDescriptions().size(), body.getDescriptions().size());
         assertEquals(compare.getDescriptions(), body.getDescriptions());
-        assertEquals(compare.getDatabase().getId(), body.getDatabase().getId());
         assertEquals(compare.getCreated(), body.getCreated());
         assertEquals(compare.getLastModified(), body.getLastModified());
         assertEquals(compare.getDoi(), body.getDoi());
@@ -122,7 +129,6 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
         assertEquals(compare.getDescriptions().get(0).getDescription(), body.getDescriptions().get(0).getDescription());
         assertEquals(compare.getDescriptions().get(0).getLanguage(), body.getDescriptions().get(0).getLanguage());
         assertEquals(compare.getDescriptions().get(0).getDescriptionType(), body.getDescriptions().get(0).getDescriptionType());
-        assertEquals(compare.getDatabase().getId(), body.getDatabase().getId());
         assertEquals(compare.getCreated(), body.getCreated());
         assertEquals(compare.getLastModified(), body.getLastModified());
         assertEquals(compare.getDoi(), body.getDoi());
@@ -249,13 +255,13 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
                 StandardCharsets.UTF_8);
 
         /* mock */
-        when(identifierService.exportBibliography(IDENTIFIER_4_ID, BibliographyTypeDto.APA))
+        when(identifierService.exportBibliography(IDENTIFIER_7_ID, BibliographyTypeDto.APA))
                 .thenReturn(compare);
-        when(identifierService.find(IDENTIFIER_4_ID))
-                .thenReturn(IDENTIFIER_4);
+        when(identifierService.find(IDENTIFIER_7_ID))
+                .thenReturn(IDENTIFIER_7);
 
         /* test */
-        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_4_ID, accept, USER_1_PRINCIPAL);
+        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_7_ID, accept, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final String body = (String) response.getBody();
         assertNotNull(body);
@@ -297,13 +303,13 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
                 StandardCharsets.UTF_8);
 
         /* mock */
-        when(identifierService.exportBibliography(IDENTIFIER_2_ID, BibliographyTypeDto.APA))
+        when(identifierService.exportBibliography(IDENTIFIER_5_ID, BibliographyTypeDto.APA))
                 .thenReturn(compare);
-        when(identifierService.find(IDENTIFIER_2_ID))
-                .thenReturn(IDENTIFIER_2);
+        when(identifierService.find(IDENTIFIER_5_ID))
+                .thenReturn(IDENTIFIER_5);
 
         /* test */
-        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_2_ID, accept, USER_1_PRINCIPAL);
+        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_5_ID, accept, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final String body = (String) response.getBody();
         assertNotNull(body);
@@ -321,13 +327,13 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
                 StandardCharsets.UTF_8);
 
         /* mock */
-        when(identifierService.exportBibliography(IDENTIFIER_3_ID, BibliographyTypeDto.APA))
+        when(identifierService.exportBibliography(IDENTIFIER_6_ID, BibliographyTypeDto.APA))
                 .thenReturn(compare);
-        when(identifierService.find(IDENTIFIER_3_ID))
-                .thenReturn(IDENTIFIER_3);
+        when(identifierService.find(IDENTIFIER_6_ID))
+                .thenReturn(IDENTIFIER_6);
 
         /* test */
-        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_3_ID, accept, USER_1_PRINCIPAL);
+        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_6_ID, accept, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final String body = (String) response.getBody();
         assertNotNull(body);
@@ -369,13 +375,13 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
                 StandardCharsets.UTF_8);
 
         /* mock */
-        when(identifierService.exportBibliography(IDENTIFIER_4_ID, BibliographyTypeDto.IEEE))
+        when(identifierService.exportBibliography(IDENTIFIER_7_ID, BibliographyTypeDto.IEEE))
                 .thenReturn(compare);
-        when(identifierService.find(IDENTIFIER_4_ID))
-                .thenReturn(IDENTIFIER_4);
+        when(identifierService.find(IDENTIFIER_7_ID))
+                .thenReturn(IDENTIFIER_7);
 
         /* test */
-        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_4_ID, accept, USER_1_PRINCIPAL);
+        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_7_ID, accept, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final String body = (String) response.getBody();
         assertNotNull(body);
@@ -417,13 +423,13 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
                 StandardCharsets.UTF_8);
 
         /* mock */
-        when(identifierService.exportBibliography(IDENTIFIER_2_ID, BibliographyTypeDto.IEEE))
+        when(identifierService.exportBibliography(IDENTIFIER_5_ID, BibliographyTypeDto.IEEE))
                 .thenReturn(compare);
-        when(identifierService.find(IDENTIFIER_2_ID))
-                .thenReturn(IDENTIFIER_2);
+        when(identifierService.find(IDENTIFIER_5_ID))
+                .thenReturn(IDENTIFIER_5);
 
         /* test */
-        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_2_ID, accept, USER_1_PRINCIPAL);
+        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_5_ID, accept, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final String body = (String) response.getBody();
         assertNotNull(body);
@@ -465,13 +471,13 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
                 StandardCharsets.UTF_8);
 
         /* mock */
-        when(identifierService.exportBibliography(IDENTIFIER_4_ID, BibliographyTypeDto.BIBTEX))
+        when(identifierService.exportBibliography(IDENTIFIER_7_ID, BibliographyTypeDto.BIBTEX))
                 .thenReturn(compare);
-        when(identifierService.find(IDENTIFIER_4_ID))
-                .thenReturn(IDENTIFIER_4);
+        when(identifierService.find(IDENTIFIER_7_ID))
+                .thenReturn(IDENTIFIER_7);
 
         /* test */
-        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_4_ID, accept, USER_1_PRINCIPAL);
+        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_7_ID, accept, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final String body = (String) response.getBody();
         assertNotNull(body);
@@ -513,13 +519,13 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
                 StandardCharsets.UTF_8);
 
         /* mock */
-        when(identifierService.exportBibliography(IDENTIFIER_2_ID, BibliographyTypeDto.BIBTEX))
+        when(identifierService.exportBibliography(IDENTIFIER_5_ID, BibliographyTypeDto.BIBTEX))
                 .thenReturn(compare);
-        when(identifierService.find(IDENTIFIER_2_ID))
-                .thenReturn(IDENTIFIER_2);
+        when(identifierService.find(IDENTIFIER_5_ID))
+                .thenReturn(IDENTIFIER_5);
 
         /* test */
-        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_2_ID, accept, USER_1_PRINCIPAL);
+        final ResponseEntity<?> response = persistenceEndpoint.find(IDENTIFIER_5_ID, accept, USER_1_PRINCIPAL);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final String body = (String) response.getBody();
         assertNotNull(body);
@@ -552,51 +558,6 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void update_anonymous_fails() {
-
-        /* test */
-        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            generic_update(IDENTIFIER_3_ID, IDENTIFIER_3, IDENTIFIER_3_DTO_UPDATE_REQUEST, null, null, null);
-        });
-    }
-
-    @Test
-    @WithMockUser(username = USER_4_USERNAME, authorities = {})
-    public void update_noRole_fails() {
-
-        /* test */
-        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            generic_update(IDENTIFIER_3_ID, IDENTIFIER_3, IDENTIFIER_3_DTO_UPDATE_REQUEST, USER_4_USERNAME, USER_4, USER_4_PRINCIPAL);
-        });
-    }
-
-    @Test
-    @WithMockUser(username = USER_3_USERNAME, authorities = {"modify-identifier-metadata"})
-    public void update_hasRoleNoAccess_succeeds() throws UserNotFoundException, NotAllowedException,
-            IdentifierNotFoundException, IdentifierRequestException, QueryNotFoundException, DatabaseNotFoundException,
-            RemoteUnavailableException, QueryStoreException, DatabaseConnectionException, ImageNotSupportedException {
-
-        /* test */
-        generic_update(IDENTIFIER_3_ID, IDENTIFIER_3, IDENTIFIER_3_DTO_UPDATE_REQUEST, USER_3_USERNAME, USER_3, USER_3_PRINCIPAL);
-    }
-
-    @Test
-    @WithMockUser(username = USER_3_USERNAME, authorities = {"modify-identifier-metadata"})
-    public void update_hasRoleHasAccess_succeeds() throws IdentifierNotFoundException, IdentifierRequestException,
-            UserNotFoundException, at.tuwien.exception.AccessDeniedException, NotAllowedException,
-            QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException, QueryStoreException,
-            DatabaseConnectionException, ImageNotSupportedException {
-
-        /* mock */
-        when(accessService.find(IDENTIFIER_3_DATABASE_ID, USER_3_ID))
-                .thenReturn(DATABASE_3_USER_3_READ_ACCESS);
-
-        /* test */
-        generic_update(IDENTIFIER_3_ID, IDENTIFIER_3, IDENTIFIER_3_DTO_UPDATE_REQUEST, USER_3_USERNAME, USER_3, USER_3_PRINCIPAL);
-    }
-
-    @Test
-    @WithAnonymousUser
     public void delete_anonymous_fails() {
 
         /* test */
@@ -617,7 +578,8 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_2_USERNAME, authorities = {"delete-identifier"})
-    public void delete_hasRole_succeeds() throws NotAllowedException, IdentifierNotFoundException {
+    public void delete_hasRole_succeeds() throws NotAllowedException, IdentifierNotFoundException,
+            DatabaseNotFoundException {
 
         /* test */
         this.generic_delete(IDENTIFIER_1_ID, IDENTIFIER_1);
@@ -631,50 +593,8 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
         return IOUtils.toString(inputStream, StandardCharsets.UTF_8);
     }
 
-    protected void generic_update(Long id, Identifier identifier, IdentifierSaveDto data, String username, User user,
-                                  Principal principal) throws IdentifierNotFoundException, IdentifierRequestException,
-            UserNotFoundException, NotAllowedException, QueryNotFoundException, DatabaseNotFoundException,
-            RemoteUnavailableException, QueryStoreException, DatabaseConnectionException, ImageNotSupportedException {
-
-        /* mock */
-        if (identifier != null) {
-            when(identifierService.update(id, data, principal))
-                    .thenReturn(identifier);
-            when(identifierService.find(id))
-                    .thenReturn(identifier);
-        } else {
-            doThrow(IdentifierNotFoundException.class)
-                    .when(identifierService)
-                    .find(id);
-        }
-        if (user != null) {
-            when(userService.findByUsername(username))
-                    .thenReturn(user);
-        } else {
-            doThrow(UserNotFoundException.class)
-                    .when(userService)
-                    .findByUsername(username);
-        }
-
-        /* test */
-        final ResponseEntity<IdentifierDto> response = persistenceEndpoint.update(id, data, principal);
-        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
-        final IdentifierDto body = response.getBody();
-        assertNotNull(body);
-        assertEquals(IDENTIFIER_3_ID, body.getId());
-        assertEquals(1, body.getTitles().size());
-        assertEquals(IDENTIFIER_3_TITLE_1_TITLE, body.getTitles().get(0).getTitle());
-        assertEquals(IDENTIFIER_3_TITLE_1_LANG_DTO, body.getTitles().get(0).getLanguage());
-        assertEquals(1, body.getDescriptions().size());
-        assertEquals(IDENTIFIER_3_DESCRIPTION_1_DESCRIPTION, body.getDescriptions().get(0).getDescription());
-        assertEquals(IDENTIFIER_3_DESCRIPTION_1_LANG_DTO, body.getDescriptions().get(0).getLanguage());
-        assertEquals(IDENTIFIER_3_QUERY, body.getQuery());
-        assertEquals(IDENTIFIER_3_QUERY_HASH, body.getQueryHash());
-        assertEquals(IDENTIFIER_3_RESULT_NUMBER, body.getResultNumber());
-        assertEquals(IDENTIFIER_3_RESULT_HASH, body.getResultHash());
-    }
-
-    protected void generic_delete(Long id, Identifier identifier) throws IdentifierNotFoundException, NotAllowedException {
+    protected void generic_delete(Long id, Identifier identifier) throws IdentifierNotFoundException,
+            NotAllowedException, DatabaseNotFoundException {
 
         /* mock */
         when(identifierService.find(id))

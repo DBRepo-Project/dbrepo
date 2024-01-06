@@ -1,5 +1,6 @@
 package at.tuwien.api.container;
 
+import at.tuwien.api.container.image.ImageBriefDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -37,6 +38,10 @@ public class ContainerBriefDto {
     @Field(name = "internal_name")
     @Schema(example = "air-quality")
     private String internalName;
+
+    @NotNull
+    @Field(name = "internal_name")
+    private ImageBriefDto image;
 
     @NotNull
     @org.springframework.data.annotation.Transient

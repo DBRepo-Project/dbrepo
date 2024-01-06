@@ -1,85 +1,35 @@
 <template>
   <div>
     <v-progress-linear v-if="loadingIdentifiers || loadingQueries" color="primary" :indeterminate="!error" />
-    <v-card v-if="!(loadingIdentifiers || loadingQueries) && queries && identifiers && queries.length === 0 && identifiers.length === 0" flat tile>
-      <v-card-text v-text="emptyText" />
-    </v-card>
     <v-card v-if="isNotReachable" flat tile>
       <v-card-text>
         Failed to load queries: database is not reachable
       </v-card-text>
     </v-card>
+    <v-card v-if="queries.length === 0" flat tile>
+      <v-card-text>(no subsets)</v-card-text>
+    </v-card>
     <v-tabs-items>
-      <div v-if="!loadingQueries && !error">
-        <div v-for="(item,i) in queries" :key="i">
-          <v-divider v-if="i !== 0" class="mx-4" />
-          <v-list-item-group>
-            <v-list-item two-line :class="clazz(item)" :to="link(item)" :href="navigate(item)">
-              <v-list-item-content>
-                <v-list-item-title v-text="title(item)" />
-                <v-list-item-subtitle class="mt-2">
-                  <pre>{{ item.query }}</pre>
-                </v-list-item-subtitle>
-              </v-list-item-content>
-              <v-list-item-action v-if="item.identifier">
-                <v-tooltip left>
-                  <template v-slot:activator="{ on, attrs }">
-                    <v-icon color="primary" v-bind="attrs" v-on="on">mdi-identifier</v-icon>
-                  </template>
-                  Subset has persistent identifier
-                </v-tooltip>
-              </v-list-item-action>
-            </v-list-item>
-          </v-list-item-group>
-        </div>
-      </div>
-      <div v-if="!loadingIdentifiers && loadingQueries">
-        <!-- show identifiers when loading subsets -->
-        <div v-for="(item,i) in identifiers" :key="i">
-          <v-divider v-if="i !== 0" class="mx-4" />
-          <v-list-item-group>
-            <v-list-item two-line :class="clazz(item)" :to="link(item)" :href="navigate(item)">
-              <v-list-item-content>
-                <v-list-item-title v-text="title(item)" />
-                <v-list-item-subtitle class="mt-2">
-                  <pre>{{ item.query }}</pre>
-                </v-list-item-subtitle>
-              </v-list-item-content>
-              <v-list-item-action>
-                <v-tooltip left>
-                  <template v-slot:activator="{ on, attrs }">
-                    <v-icon color="primary" v-bind="attrs" v-on="on">mdi-identifier</v-icon>
-                  </template>
-                  Subset has persistent identifier
-                </v-tooltip>
-              </v-list-item-action>
-            </v-list-item>
-          </v-list-item-group>
-        </div>
-      </div>
-      <div v-if="!loadingIdentifiers && !isPublicOrOwner">
-        <!-- show identifiers when private -->
-        <div v-for="(item,i) in identifiers" :key="i">
-          <v-divider v-if="i !== 0" class="mx-4" />
-          <v-list-item-group>
-            <v-list-item two-line :class="clazz(item)" :to="link(item)" :href="navigate(item)">
-              <v-list-item-content>
-                <v-list-item-title v-text="title(item)" />
-                <v-list-item-subtitle class="mt-2">
-                  <pre>{{ item.query }}</pre>
-                </v-list-item-subtitle>
-              </v-list-item-content>
-              <v-list-item-action>
-                <v-tooltip left>
-                  <template v-slot:activator="{ on, attrs }">
-                    <v-icon color="primary" v-bind="attrs" v-on="on">mdi-identifier</v-icon>
-                  </template>
-                  Subset has persistent identifier
-                </v-tooltip>
-              </v-list-item-action>
-            </v-list-item>
-          </v-list-item-group>
-        </div>
+      <div v-for="(item,i) in queries" :key="i">
+        <v-divider v-if="i !== 0" class="mx-4" />
+        <v-list-item-group>
+          <v-list-item two-line :class="clazz(item)" :to="link(item)" :href="link(item)">
+            <v-list-item-content>
+              <v-list-item-title v-text="title(item)" />
+              <v-list-item-subtitle class="mt-2">
+                <pre>{{ item.query }}</pre>
+              </v-list-item-subtitle>
+            </v-list-item-content>
+            <v-list-item-action v-if="item.identifier">
+              <v-tooltip left>
+                <template v-slot:activator="{ on, attrs }">
+                  <v-icon color="primary" v-bind="attrs" v-on="on">mdi-identifier</v-icon>
+                </template>
+                Subset has persistent identifier
+              </v-tooltip>
+            </v-list-item-action>
+          </v-list-item>
+        </v-list-item-group>
       </div>
     </v-tabs-items>
   </div>
@@ -103,9 +53,6 @@ export default {
     }
   },
   computed: {
-    baseUrl () {
-      return `${location.protocol}//${location.host}`
-    },
     token () {
       return this.$store.state.token
     },
@@ -117,25 +64,6 @@ export default {
     },
     creator () {
       return this.queryDetails.creator
-    },
-    emptyText () {
-      const add = this.database && this.database.is_public ? '' : ' public'
-      return `(no${add} subsets)`
-    },
-    isPublicOrOwner () {
-      if (!this.database) {
-        return false
-      }
-      if (this.database.is_public) {
-        return true
-      }
-      if (this.token === null) {
-        return false
-      }
-      if (!this.user) {
-        return false
-      }
-      return this.database.creator.username === this.user.username
     }
   },
   mounted () {
@@ -182,23 +110,8 @@ export default {
       }
       return enTitle[0].title
     },
-    link (queryOrIdentifier) {
-      if (queryOrIdentifier.identifier === null) {
-        return `/database/${this.$route.params.database_id}/query/${queryOrIdentifier.id}`
-      }
-      if ('query_id' in queryOrIdentifier) {
-        return null
-      }
-      return null
-    },
-    navigate (queryOrIdentifier) {
-      if (queryOrIdentifier.identifier === null) {
-        return
-      }
-      if ('query_id' in queryOrIdentifier) {
-        return `/pid/${queryOrIdentifier.id}`
-      }
-      return `/pid/${queryOrIdentifier.identifier.id}`
+    link (query) {
+      return `/database/${this.$route.params.database_id}/query/${query.id}/info`
     },
     clazz (queryOrIdentifier) {
       if ('query_id' in queryOrIdentifier || queryOrIdentifier.identifier) {

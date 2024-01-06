@@ -4,19 +4,20 @@ import at.tuwien.BaseUnitTest;
 import at.tuwien.annotations.MockAmqp;
 import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.api.database.table.TableCreateDto;
-import at.tuwien.api.database.table.TableDto;
 import at.tuwien.api.database.table.columns.ColumnCreateDto;
 import at.tuwien.api.database.table.columns.ColumnTypeDto;
+import at.tuwien.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
 import at.tuwien.api.database.table.constraints.ConstraintsCreateDto;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.MariaDbContainerConfig;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
+import at.tuwien.entities.database.table.columns.TableColumnConcept;
+import at.tuwien.entities.identifier.Identifier;
+import at.tuwien.entities.identifier.IdentifierType;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.TableMapper;
 import at.tuwien.repository.mdb.*;
-import at.tuwien.repository.sdb.TableColumnIdxRepository;
-import at.tuwien.repository.sdb.TableIdxRepository;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,9 +26,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.MariaDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -40,9 +41,6 @@ import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
 
 @Log4j2
 @Testcontainers
@@ -54,12 +52,6 @@ import static org.mockito.Mockito.when;
 @MockOpensearch
 public class TableServiceIntegrationWriteTest extends BaseUnitTest {
 
-    @MockBean
-    private TableIdxRepository tableidxRepository;
-
-    @MockBean
-    private TableColumnIdxRepository tableColumnidxRepository;
-
     @Autowired
     private ImageRepository imageRepository;
 
@@ -70,7 +62,10 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
     private DatabaseRepository databaseRepository;
 
     @Autowired
-    private TableRepository tableRepository;
+    private LicenseRepository licenseRepository;
+
+    @Autowired
+    private IdentifierRepository identifierRepository;
 
     @Autowired
     private TableService tableService;
@@ -86,56 +81,60 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
 
     @BeforeEach
     public void beforeEach() throws SQLException {
-        MariaDbConfig.dropAllDatabases(CONTAINER_1);
-        MariaDbConfig.createInitDatabase(CONTAINER_1, DATABASE_1);
+        TABLE_1.setColumns(TABLE_1_COLUMNS);
+        TABLE_1_FOREIGN_KEY_1.setReferences(List.of(TABLE_1_FOREIGN_KEY_REFERENCE));
+        TABLE_1.setConstraints(TABLE_1_CONSTRAINTS);
+        TABLE_2.setColumns(TABLE_2_COLUMNS);
+        TABLE_2.setConstraints(TABLE_2_CONSTRAINTS);
+        TABLE_3.setColumns(TABLE_3_COLUMNS);
+        TABLE_3.setConstraints(TABLE_3_CONSTRAINTS);
+        TABLE_4.setColumns(TABLE_4_COLUMNS);
+        DATABASE_1.setAccesses(List.of());
+        TABLE_1.setDatabase(DATABASE_1);
+        TABLE_2.setDatabase(DATABASE_1);
+        TABLE_3.setDatabase(DATABASE_1);
+        TABLE_4.setDatabase(DATABASE_1);
         /* metadata database */
         imageRepository.save(IMAGE_1);
-        userRepository.save(USER_1);
-        userRepository.save(USER_2);
-        containerRepository.save(CONTAINER_1_SIMPLE);
-        containerRepository.save(CONTAINER_2_SIMPLE);
-        databaseRepository.save(DATABASE_1_SIMPLE);
-        tableRepository.save(TABLE_1_SIMPLE);
-        tableRepository.save(TABLE_2_SIMPLE);
-        /* missing pointers */
-        TABLE_1.setConstraints(TABLE_1_CONSTRAINTS);
-        TABLE_2.setConstraints(TABLE_2_CONSTRAINTS);
+        licenseRepository.save(LICENSE_1);
+        userRepository.saveAll(List.of(USER_1, USER_2));
+        containerRepository.save(CONTAINER_1);
+        databaseRepository.save(DATABASE_1);
+        /* data stuff */
+        MariaDbConfig.dropAllDatabases(CONTAINER_1);
+        MariaDbConfig.createInitDatabase(CONTAINER_1, DATABASE_1);
     }
 
     @Test
     public void create_succeeds() throws UserNotFoundException, TableMalformedException, QueryMalformedException,
             DatabaseNotFoundException, ImageNotSupportedException, TableNameExistsException,
-            ContainerNotFoundException {
-
-        /* mock */
-        when(tableidxRepository.save(any(TableDto.class)))
-                .thenReturn(null);
-        when(tableColumnidxRepository.saveAll(anyList()))
-                .thenReturn(List.of());
+            ContainerNotFoundException, TableNotFoundException {
+        final TableCreateDto request = TableCreateDto.builder()
+                .name("Hello Table")
+                .description(TABLE_3_DESCRIPTION)
+                .columns(List.of())
+                .constraints(TABLE_3_CONSTRAINTS_CREATE_DTO)
+                .build();
 
         /* test */
-        tableService.createTable(DATABASE_1_ID, TABLE_3_CREATE_DTO, USER_1_PRINCIPAL);
+        final Table response = tableService.createTable(DATABASE_1_ID, request, USER_1_PRINCIPAL);
+        assertNotNull(response.getId());
     }
 
     @Test
     public void create_withConstraints_succeeds() throws UserNotFoundException, TableMalformedException,
             QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, TableNameExistsException,
-            ContainerNotFoundException, SQLException {
-
-        /* mock */
-        when(tableidxRepository.save(any(TableDto.class)))
-                .thenReturn(null);
-        when(tableColumnidxRepository.saveAll(anyList()))
-                .thenReturn(List.of());
+            ContainerNotFoundException, SQLException, TableNotFoundException {
 
         /* test */
-        tableService.createTable(DATABASE_1_ID, TABLE_4_CREATE_DTO, USER_1_PRINCIPAL); // table to reference
-        assertTrue(MariaDbConfig.tableExists(DATABASE_1, TABLE_4_INTERNALNAME));
-        final Table response = tableService.createTable(DATABASE_1_ID, TABLE_5_CREATE_DTO, USER_1_PRINCIPAL);
+        tableService.createTable(DATABASE_1_ID, TABLE_5_CREATE_DTO, USER_1_PRINCIPAL); // table to reference
         assertTrue(MariaDbConfig.tableExists(DATABASE_1, TABLE_5_INTERNALNAME));
-        assertEquals(TABLE_5_NAME, response.getName());
-        assertEquals(TABLE_5_INTERNALNAME, response.getInternalName());
-        assertEquals(TABLE_5_DESCRIPTION, response.getDescription());
+        final Table response = tableService.createTable(DATABASE_1_ID, TABLE_6_CREATE_DTO, USER_1_PRINCIPAL);
+        assertTrue(MariaDbConfig.tableExists(DATABASE_1, TABLE_6_INTERNALNAME));
+        assertNotNull(response.getId());
+        assertEquals(TABLE_6_NAME, response.getName());
+        assertEquals(TABLE_6_INTERNALNAME, response.getInternalName());
+        assertEquals(TABLE_6_DESCRIPTION, response.getDescription());
     }
 
     @Test
@@ -158,7 +157,7 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
                                 .type(ColumnTypeDto.CHAR)
                                 .nullAllowed(true)
                                 .primaryKey(false)
-                                .size(50)
+                                .size(50L)
                                 .build(),
                         ColumnCreateDto.builder()
                                 .name("col2a")
@@ -171,7 +170,7 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
                                 .type(ColumnTypeDto.VARCHAR)
                                 .nullAllowed(true)
                                 .primaryKey(false)
-                                .size(1024)
+                                .size(1024L)
                                 .build(),
                         ColumnCreateDto.builder()
                                 .name("col3")
@@ -184,7 +183,7 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
                                 .type(ColumnTypeDto.VARBINARY)
                                 .nullAllowed(true)
                                 .primaryKey(false)
-                                .size(200)
+                                .size(200L)
                                 .build(),
                         ColumnCreateDto.builder()
                                 .name("col5")
@@ -344,14 +343,9 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
                                 .build()))
                 .build();
 
-        /* mock */
-        when(tableidxRepository.save(any(TableDto.class)))
-                .thenReturn(null);
-        when(tableColumnidxRepository.saveAll(anyList()))
-                .thenReturn(List.of());
-
         /* test */
         final Table response = tableService.createTable(DATABASE_1_ID, request, USER_1_PRINCIPAL);
+        assertNotNull(response.getId());
         assertEquals("full", response.getInternalName());
         assertEquals("full example", response.getDescription());
         assertEquals(32, response.getColumns().size());
@@ -399,17 +393,51 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
         }
     }
 
-    private String getType(Object type) {
-        final Pattern pattern = Pattern.compile("^([a-z]+)");
-        final Matcher matcher = pattern.matcher(String.valueOf(type));
-        if (!matcher.find()) {
-            log.error("Failed to extract type");
-            return null;
-        }
-        return matcher.group();
+    @Test
+    public void create_withForeignKeyButWithoutReferencingTable_fails() {
+
+        /* test */
+        assertThrows(QueryMalformedException.class, () -> {
+            tableService.createTable(DATABASE_1_ID, TABLE_6_CREATE_DTO, USER_1_PRINCIPAL);
+        });
     }
 
-    private Integer getLength(Object type) {
+    @Test
+    @Transactional
+    public void update_succeeds() throws TableNotFoundException, SemanticEntityPersistException,
+            TableMalformedException, QueryMalformedException, DatabaseNotFoundException,
+            SemanticEntityNotFoundException, ContainerNotFoundException {
+        final ColumnSemanticsUpdateDto request = ColumnSemanticsUpdateDto.builder()
+                .conceptUri(COLUMN_CONCEPT_PRECIPITATION_URI)
+                .build();
+
+        /* test */
+        final TableColumn response = tableService.update(DATABASE_1_ID, TABLE_1_ID, TABLE_1_COLUMNS.get(0).getId(),
+                request, "abc");
+        assertNotNull(response.getConcept());
+        final TableColumnConcept concept = response.getConcept();
+        assertEquals(COLUMN_CONCEPT_PRECIPITATION_URI, concept.getUri());
+    }
+
+    @Test
+    @Transactional
+    public void delete_succeeds() throws TableNotFoundException, TableMalformedException, QueryMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException {
+
+        /* test */
+        tableService.deleteTable(DATABASE_1_ID, TABLE_1_ID);
+    }
+
+    @Test
+    @Transactional
+    public void delete_hasIdentifier_succeeds() throws TableNotFoundException, TableMalformedException,
+            QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException {
+
+        /* test */
+        tableService.deleteTable(DATABASE_1_ID, TABLE_4_ID);
+    }
+
+    private Long getLength(Object type) {
         final Pattern pattern = Pattern.compile("\\(([0-9]+)\\)");
         final Matcher matcher = pattern.matcher(String.valueOf(type));
         if (!matcher.find()) {
@@ -417,44 +445,7 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
             return null;
         }
         final String raw = matcher.group();
-        return Integer.valueOf(raw.substring(1, raw.length() - 1));
-    }
-
-    @Test
-    public void create_withForeignKeyButWithoutReferencingTable_fails() {
-
-        /* test */
-        assertThrows(TableMalformedException.class, () -> {
-            tableService.createTable(DATABASE_1_ID, TABLE_5_CREATE_DTO, USER_1_PRINCIPAL);
-        });
-    }
-
-    @Test
-    public void delete_succeeds() throws TableMalformedException, QueryMalformedException, DatabaseNotFoundException,
-            ImageNotSupportedException, ContainerNotFoundException, TableNotFoundException, DataProcessingException {
-
-        /* mock */
-        doNothing()
-                .when(tableidxRepository)
-                .delete(any(TableDto.class));
-
-        /* test */
-        tableService.deleteTable(DATABASE_1_ID, TABLE_1_ID);
-        assertTrue(databaseRepository.findById(TABLE_1_DATABASE_ID).isPresent());
-    }
-
-    @Test
-    public void delete_notFound_fails() {
-
-        /* mock */
-        doNothing()
-                .when(tableidxRepository)
-                .delete(any(TableDto.class));
-
-        /* test */
-        assertThrows(TableNotFoundException.class, () -> {
-            tableService.deleteTable(DATABASE_1_ID, 9999L);
-        });
+        return Long.valueOf(raw.substring(1, raw.length() - 1));
     }
 
 }

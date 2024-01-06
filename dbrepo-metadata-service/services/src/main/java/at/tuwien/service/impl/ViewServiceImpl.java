@@ -5,12 +5,12 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.View;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.exception.*;
+import at.tuwien.mapper.DatabaseMapper;
+import at.tuwien.mapper.QueryMapper;
 import at.tuwien.mapper.ViewMapper;
-import at.tuwien.repository.mdb.ViewRepository;
-import at.tuwien.repository.sdb.ViewIdxRepository;
+import at.tuwien.repository.mdb.DatabaseRepository;
+import at.tuwien.repository.sdb.DatabaseIdxRepository;
 import at.tuwien.service.DatabaseService;
-import at.tuwien.service.QueryService;
-import at.tuwien.service.UserService;
 import at.tuwien.service.ViewService;
 import at.tuwien.utils.UserUtil;
 import com.google.common.hash.Hashing;
@@ -34,58 +34,71 @@ import java.util.Optional;
 public class ViewServiceImpl extends HibernateConnector implements ViewService {
 
     private final ViewMapper viewMapper;
-    private final UserService userService;
-    private final ViewRepository viewRepository;
+    private final QueryMapper queryMapper;
+    private final DatabaseMapper databaseMapper;
     private final DatabaseService databaseService;
-    private final ViewIdxRepository viewIdxRepository;
-    private final QueryService queryService;
+    private final DatabaseRepository databaseRepository;
+    private final DatabaseIdxRepository databaseIdxRepository;
 
     @Autowired
-    public ViewServiceImpl(ViewMapper viewMapper, UserService userService, ViewRepository viewRepository,
-                           DatabaseService databaseService, ViewIdxRepository viewIdxRepository, QueryService queryService) {
+    public ViewServiceImpl(ViewMapper viewMapper, QueryMapper queryMapper, DatabaseMapper databaseMapper,
+                           DatabaseService databaseService, DatabaseRepository databaseRepository,
+                           DatabaseIdxRepository databaseIdxRepository) {
         this.viewMapper = viewMapper;
-        this.userService = userService;
-        this.viewRepository = viewRepository;
+        this.queryMapper = queryMapper;
+        this.databaseMapper = databaseMapper;
         this.databaseService = databaseService;
-        this.viewIdxRepository = viewIdxRepository;
-        this.queryService = queryService;
+        this.databaseRepository = databaseRepository;
+        this.databaseIdxRepository = databaseIdxRepository;
     }
 
     @Override
-    public View findById(Long id) throws ViewNotFoundException {
-        final Optional<View> optional = viewRepository.findById(id);
+    public View findById(Long id) throws ViewNotFoundException, DatabaseNotFoundException {
+        final Optional<View> optional = databaseService.find(id)
+                .getViews()
+                .stream()
+                .filter(v -> v.getId().equals(id))
+                .findFirst();
         if (optional.isEmpty()) {
-            log.error("Failed to find view with id: {}", id);
-            throw new ViewNotFoundException("Failed to find view with id: " + id);
+            log.error("Failed to find view with id {} in metadata database", id);
+            throw new ViewNotFoundException("Failed to find view with id " + id + " in metadata database");
         }
         return optional.get();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<View> findAll(Long databaseId, Principal principal) throws UserNotFoundException {
+    public List<View> findAll(Long databaseId, Principal principal) throws UserNotFoundException,
+            DatabaseNotFoundException {
         if (principal == null) {
-            log.trace("principal is null, list only public views");
-            return viewRepository.findAllPublicByDatabaseId(databaseId);
+            final List<View> views = databaseService.find(databaseId)
+                    .getViews()
+                    .stream()
+                    .filter(v -> v.getDatabase().getId().equals(databaseId))
+                    .toList();
+            log.debug("list {} public view(s)", views.size());
+            return views;
         }
-        log.trace("principal is not null, list public views and mine");
-        return viewRepository.findAllPublicOrMineByDatabaseId(databaseId, UserUtil.getId(principal));
+        final List<View> views = databaseService.find(databaseId)
+                .getViews()
+                .stream()
+                .filter(v -> v.getDatabase().getId().equals(databaseId) || v.getCreatedBy().equals(UserUtil.getId(principal)))
+                .toList();
+        log.debug("list {} public or private self-owned view(s)", views.size());
+        return views;
     }
 
     @Override
     @Transactional(readOnly = true)
-    public View findById(Long databaseId, Long id, Principal principal) throws ViewNotFoundException {
-        final Optional<View> optional;
-        if (principal == null) {
-            log.trace("principal is null, find only public view");
-            optional = viewRepository.findPublicByDatabaseIdAndId(databaseId, id);
-        } else {
-            log.trace("principal is not null, find public view or mine");
-            optional = viewRepository.findPublicOrMineByDatabaseIdAndId(databaseId, id, UserUtil.getId(principal));
-        }
+    public View findById(Long databaseId, Long id, Principal principal) throws ViewNotFoundException,
+            UserNotFoundException, DatabaseNotFoundException {
+        final Optional<View> optional = findAll(databaseId, principal)
+                .stream()
+                .filter(v -> v.getId().equals(id))
+                .findFirst();
         if (optional.isEmpty()) {
-            log.error("Failed to find view with id {}", id);
-            throw new ViewNotFoundException("Failed to find view with id " + id);
+            log.error("Failed to find view with id {} in metadata database", id);
+            throw new ViewNotFoundException("Failed to find view with id " + id + " in metadata database");
         }
         return optional.get();
     }
@@ -111,10 +124,11 @@ public class ViewServiceImpl extends HibernateConnector implements ViewService {
             dataSource.close();
         }
         /* delete in metadata database */
-        viewRepository.delete(view);
-        log.info("Deleted view with id {} in metadata database", id);
-        viewIdxRepository.deleteById(id);
-        log.info("Deleted view with id {} in open search database", id);
+        database.getViews().remove(view);
+        databaseRepository.save(database);
+        /* delete in opensearch database */
+        databaseIdxRepository.save(databaseMapper.databaseToDatabaseDto(databaseService.find(databaseId)));
+        log.info("Deleted view with id {} in metadata database & search database", id);
     }
 
     @Override
@@ -129,7 +143,7 @@ public class ViewServiceImpl extends HibernateConnector implements ViewService {
                 database.getContainer(), database);
         final List<TableColumn> columns;
         try {
-            columns = queryService.parseColumns(data.getQuery(), database);
+            columns = queryMapper.parseColumns(data.getQuery(), database);
         } catch (JSQLParserException e) {
             log.error("Failed to map/parse columns: {}", e.getMessage());
             throw new QueryMalformedException(e.getMessage(), e);
@@ -159,11 +173,21 @@ public class ViewServiceImpl extends HibernateConnector implements ViewService {
                 .isPublic(data.getIsPublic())
                 .columns(columns)
                 .build();
-        final View view = viewRepository.save(entity);
-        log.info("Created view with id {} in metadata database", view.getId());
-        viewIdxRepository.save(viewMapper.viewToViewDto(view));
-        log.info("Created view with id {} in open search database", view.getId());
-        return view;
+        database.getViews()
+                .add(entity);
+        final Optional<View> optional = databaseRepository.save(database)
+                .getViews()
+                .stream()
+                .filter(v -> v.getInternalName().equals(entity.getInternalName()))
+                .findFirst();
+        if (optional.isEmpty()) {
+            log.error("Failed to find created view from database with id {}", databaseId);
+            throw new ViewMalformedException("Failed to find created view from database with id " + databaseId);
+        }
+        /* save in opensearch database */
+        databaseIdxRepository.save(databaseMapper.databaseToDatabaseDto(databaseService.find(databaseId)));
+        log.info("Created view with id {} in metadata database & search database", optional.get().getId());
+        return optional.get();
     }
 
 }

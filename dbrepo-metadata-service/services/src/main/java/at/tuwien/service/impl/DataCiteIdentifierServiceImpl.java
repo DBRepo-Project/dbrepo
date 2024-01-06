@@ -39,29 +39,29 @@ import java.util.List;
 public class DataCiteIdentifierServiceImpl implements IdentifierService {
 
     private final DataCiteConfig dataCiteConfig;
-    private final EndpointConfig endpointConfig;
     private final DataCiteMapper dataCiteMapper;
+    private final EndpointConfig endpointConfig;
+    private final IdentifierService identifierService;
     private final RestTemplateBuilder restTemplateBuilder;
     private final IdentifierRepository identifierRepository;
-    private final IdentifierService identifierService;
 
     public DataCiteIdentifierServiceImpl(DataCiteConfig dataCiteConfig, DataCiteMapper dataCiteMapper,
-                                         RestTemplateBuilder restTemplateBuilder, EndpointConfig endpointConfig,
-                                         IdentifierRepository identifierRepository, IdentifierServiceImpl identifierService) {
+                                         EndpointConfig endpointConfig, IdentifierRepository identifierRepository,
+                                         RestTemplateBuilder restTemplateBuilder, IdentifierServiceImpl identifierService) {
         this.dataCiteConfig = dataCiteConfig;
         this.dataCiteMapper = dataCiteMapper;
+        this.endpointConfig = endpointConfig;
+        this.identifierService = identifierService;
         this.restTemplateBuilder = restTemplateBuilder.basicAuthentication(dataCiteConfig.getUsername(),
                         dataCiteConfig.getPassword())
                 .uriTemplateHandler(new DefaultUriBuilderFactory(dataCiteConfig.getUrl()));
-        this.endpointConfig = endpointConfig;
         this.identifierRepository = identifierRepository;
-        this.identifierService = identifierService;
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<Identifier> findAll(IdentifierTypeDto type, Long databaseId, Long queryId, Long viewId) {
-        return identifierService.findAll(type, databaseId, queryId, viewId);
+    public List<Identifier> findAll(IdentifierTypeDto type, Long databaseId, Long queryId, Long viewId, Long tableId) {
+        return identifierService.findAll(type, databaseId, queryId, viewId, tableId);
     }
 
     @Override
@@ -86,7 +86,7 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
             throws IdentifierPublishingNotAllowedException, QueryNotFoundException, RemoteUnavailableException,
             IdentifierAlreadyExistsException, UserNotFoundException, DatabaseNotFoundException,
             IdentifierRequestException, ViewNotFoundException, QueryStoreException, DatabaseConnectionException,
-            ImageNotSupportedException {
+            ImageNotSupportedException, IdentifierNotFoundException {
         final Identifier identifier = identifierService.create(data, principal);
         /* https://stackoverflow.com/questions/55090541/spring-data-jpa-lombok-unsupportedoperationexception-during-saving */
         if (identifier.getCreators() != null) {
@@ -197,62 +197,8 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
     }
 
     @Override
-    @Transactional(rollbackFor = {Exception.class})
-    public Identifier update(Long identifierId, IdentifierSaveDto data, Principal principal)
-            throws UserNotFoundException, QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException,
-            IdentifierRequestException, IdentifierNotFoundException, QueryStoreException, DatabaseConnectionException,
-            ImageNotSupportedException {
-        Identifier identifier = identifierService.update(identifierId, data, principal);
-        if (identifier.getDoi() == null) {
-            return identifier;
-        }
-
-        RestTemplate restTemplate = restTemplateBuilder.build();
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setBasicAuth(dataCiteConfig.getUsername(), dataCiteConfig.getPassword());
-        HttpEntity<DataCiteBody<DataCiteCreateDoi>> request = new HttpEntity<>(
-                DataCiteBody.<DataCiteCreateDoi>builder()
-                        .data(DataCiteData.<DataCiteCreateDoi>builder()
-                                .type("dois")
-                                .attributes(dataCiteMapper.identifierToDataCiteCreateDoi(identifier,
-                                        endpointConfig.getWebsiteUrl() + "/pid/" + identifier.getId(),
-                                        dataCiteConfig.getPrefix()))
-                                .build())
-                        .build(),
-                headers
-        );
-
-        try {
-            ResponseEntity<DataCiteBody<DataCiteDoi>> response = restTemplate.exchange("dois/{doi}", HttpMethod.PUT,
-                    request,
-                    new ParameterizedTypeReference<>() {
-                    },
-                    identifier.getDoi()
-            );
-
-            if (response.getStatusCode() != HttpStatus.OK || response.getBody() == null) {
-                log.error("Could not successfully create DOI. Response: {}", response);
-                throw new IdentifierRequestException("Could not successfully create DOI.");
-            }
-
-            identifier.setDoi(response.getBody().getData().getAttributes().getDoi());
-            this.identifierRepository.save(identifier);
-        } catch (HttpClientErrorException e) {
-            log.error("Invalid DOI metadata.", e);
-            throw new IdentifierRequestException("Invalid DOI metadata.", e);
-        } catch (RestClientException e) {
-            log.error("Could not fulfil request to DataCite server.", e);
-            throw new InternalError("Could not fulfil request to DataCite server.", e);
-        }
-
-        return identifier;
-    }
-
-    @Override
     @Transactional
-    public void delete(Long identifierId) throws IdentifierNotFoundException {
+    public void delete(Long identifierId) throws IdentifierNotFoundException, DatabaseNotFoundException {
         identifierService.delete(identifierId);
     }
 

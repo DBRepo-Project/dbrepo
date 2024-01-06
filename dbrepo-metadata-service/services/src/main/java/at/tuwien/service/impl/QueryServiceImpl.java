@@ -7,8 +7,7 @@ import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.TableCsvDeleteDto;
 import at.tuwien.api.database.table.TableCsvDto;
-import at.tuwien.api.database.table.TableCsvUpdateDto;
-import at.tuwien.config.QueryConfig;
+import at.tuwien.config.S3Config;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.View;
@@ -18,7 +17,6 @@ import at.tuwien.exception.*;
 import at.tuwien.gateway.DataDbSidecarGateway;
 import at.tuwien.mapper.QueryMapper;
 import at.tuwien.querystore.Query;
-import at.tuwien.repository.mdb.TableColumnRepository;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.QueryService;
 import at.tuwien.service.StoreService;
@@ -29,22 +27,14 @@ import io.minio.MinioClient;
 import io.minio.errors.*;
 import lombok.extern.log4j.Log4j2;
 import net.sf.jsqlparser.JSQLParserException;
-import net.sf.jsqlparser.parser.CCJSqlParserManager;
-import net.sf.jsqlparser.schema.Column;
-import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.select.*;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
@@ -54,37 +44,31 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Log4j2
 @Service
 public class QueryServiceImpl extends HibernateConnector implements QueryService {
 
+    private final S3Config s3Config;
     private final MinioClient minioClient;
     private final QueryMapper queryMapper;
     private final StoreService storeService;
     private final TableService tableService;
     private final DatabaseService databaseService;
     private final DataDbSidecarGateway dataDbSidecarGateway;
-    private final TableColumnRepository tableColumnRepository;
-
-    private static final String BUCKET_NAME_DOWNLOAD = "dbrepo-download";
-    private static final String BUCKET_NAME_UPLOAD = "dbrepo-upload";
 
     @Autowired
-    public QueryServiceImpl(MinioClient minioClient, QueryMapper queryMapper, TableService tableService,
-                            DatabaseService databaseService, StoreService storeService,
-                            DataDbSidecarGateway dataDbSidecarGateway, TableColumnRepository tableColumnRepository) {
+    public QueryServiceImpl(S3Config s3Config, MinioClient minioClient, QueryMapper queryMapper,
+                            TableService tableService, DatabaseService databaseService, StoreService storeService,
+                            DataDbSidecarGateway dataDbSidecarGateway) {
+        this.s3Config = s3Config;
         this.minioClient = minioClient;
         this.queryMapper = queryMapper;
         this.tableService = tableService;
         this.storeService = storeService;
         this.databaseService = databaseService;
         this.dataDbSidecarGateway = dataDbSidecarGateway;
-        this.tableColumnRepository = tableColumnRepository;
     }
 
     @Override
@@ -93,10 +77,10 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
                                   Long size, SortType sortDirection, String sortColumn)
             throws DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException, QueryStoreException,
             ColumnParseException, UserNotFoundException, DatabaseConnectionException, TableMalformedException,
-            KeycloakRemoteException, AccessDeniedException {
+            KeycloakRemoteException, AccessDeniedException, QueryNotFoundException {
         if (statement.getStatement().contains(";")) {
-            log.error("Failed to execute query since it contains ';'");
-            throw new QueryMalformedException("Failed to execute query since it contains ';'");
+            log.error("Failed to execute query: contains ';'");
+            throw new QueryMalformedException("Failed to execute query: contains ';'");
         }
         final Query query = storeService.insert(databaseId, statement, principal);
         return reExecute(databaseId, query, page, size, sortDirection, sortColumn, principal);
@@ -115,7 +99,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         /* map the result to the tables (with respective columns) from the statement metadata */
         final List<TableColumn> columns;
         try {
-            columns = parseColumns(query.getQuery(), database);
+            columns = queryMapper.parseColumns(query.getQuery(), database);
         } catch (JSQLParserException e) {
             log.error("Failed to map/parse columns: {}", e.getMessage());
             throw new ColumnParseException("Failed to map/parse columns: " + e.getMessage(), e);
@@ -139,7 +123,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         }
         /* run query */
         try {
-            parseColumns(query.getQuery(), database);
+            queryMapper.parseColumns(query.getQuery(), database);
         } catch (JSQLParserException e) {
             log.error("Failed to map/parse columns: {}", e.getMessage());
             throw new ColumnParseException("Failed to map/parse columns: " + e.getMessage(), e);
@@ -152,7 +136,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         try {
             return connection.prepareStatement(statement);
         } catch (SQLException e) {
-            log.error("Failed to prepare statement {}m reason: {}", statement, e.getMessage());
+            log.error("Failed to prepare statement: {}", e.getMessage());
             throw new QueryMalformedException("Failed to prepare statement", e);
         }
     }
@@ -172,7 +156,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             return queryMapper.resultListToQueryResultDto(columns, resultSet);
         } catch (SQLException e) {
             log.error("Failed to execute and map time-versioned query: {}", e.getMessage());
-            throw new TableMalformedException("Failed to execute and map time-versioned query: " + e.getMessage(), e);
+            throw new TableMalformedException("Failed to execute and map time-versioned query", e);
         } finally {
             dataSource.close();
         }
@@ -192,7 +176,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             return queryMapper.resultSetToNumber(resultSet);
         } catch (SQLException e) {
             log.error("Failed to map object: {}", e.getMessage());
-            throw new TableMalformedException("Failed to map object: " + e.getMessage(), e);
+            throw new TableMalformedException("Failed to map object", e);
         } finally {
             dataSource.close();
         }
@@ -257,7 +241,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             log.error("Failed to execute query and/or export file: {}", e.getMessage());
-            throw new FileStorageException("Failed to execute query and/or export file: " + e.getMessage(), e);
+            throw new FileStorageException("Failed to execute query and/or export file", e);
         } finally {
             dataSource.close();
         }
@@ -269,8 +253,8 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         dataDbSidecarGateway.exportFile(container.getSidecarHost(), container.getSidecarPort(), filename);
         /* export file from blob storage */
         try {
-            final InputStream stream = minioClient.getObject(GetObjectArgs.builder().bucket(BUCKET_NAME_DOWNLOAD).object(filename).build());
-            log.debug("found object with key {} in bucket {}", filename, BUCKET_NAME_DOWNLOAD);
+            final InputStream stream = minioClient.getObject(GetObjectArgs.builder().bucket(s3Config.getS3ExportBucket()).object(filename).build());
+            log.debug("found object with key {} in bucket {}", filename, s3Config.getS3ExportBucket());
             return ExportResource.builder()
                     .resource(new InputStreamResource(stream))
                     .filename(filename)
@@ -278,8 +262,8 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         } catch (ServerException | InsufficientDataException | ErrorResponseException | IOException |
                  NoSuchAlgorithmException | InvalidKeyException | InvalidResponseException | XmlParserException |
                  InternalException e) {
-            log.error("Failed to find object {} in bucket {}", filename, BUCKET_NAME_DOWNLOAD);
-            throw new FileStorageException("Failed to find object " + filename + " in bucket " + BUCKET_NAME_DOWNLOAD);
+            log.error("Failed to find object {} in bucket {}", filename, s3Config.getS3ExportBucket());
+            throw new FileStorageException("Failed to find object " + filename + " in bucket " + s3Config.getS3ExportBucket());
         }
     }
 
@@ -307,35 +291,11 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             log.error("Failed to execute query: {}", e.getMessage());
-            throw new QueryStoreException("Failed to execute query: " + e.getMessage(), e);
+            throw new QueryStoreException("Failed to execute query", e);
         } finally {
             dataSource.close();
         }
         return retrieveBlobAsResource(database.getContainer(), filename);
-    }
-
-    @Override
-    @Transactional
-    public void update(Long databaseId, Long tableId, TableCsvUpdateDto data, Principal principal)
-            throws ImageNotSupportedException, TableMalformedException, DatabaseNotFoundException,
-            TableNotFoundException, QueryMalformedException {
-        /* find */
-        final Database database = databaseService.find(databaseId);
-        final Table table = tableService.find(databaseId, tableId);
-        /* run query */
-        if (data.getData().size() == 0 || data.getKeys().size() == 0) return;
-        final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(),
-                database.getContainer(), database);
-        try {
-            final Connection connection = dataSource.getConnection();
-            final PreparedStatement preparedStatement = queryMapper.tableCsvDtoToRawUpdateQuery(connection, table, data);
-            preparedStatement.executeUpdate();
-        } catch (SQLException e) {
-            log.error("Failed to update tuples: {}", e.getMessage());
-            throw new TableMalformedException("Failed to update tuples: " + e.getMessage(), e);
-        } finally {
-            dataSource.close();
-        }
     }
 
     @Override
@@ -356,13 +316,13 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             preparedStatement.executeUpdate();
         } catch (DateTimeParseException e) {
             log.error("Failed to parse date: {}", e.getMessage());
-            throw new TableMalformedException("Failed to parse date: " + e.getMessage(), e);
+            throw new TableMalformedException("Failed to parse date", e);
         } catch (NumberFormatException e) {
             log.error("Failed to parse number: {}", e.getMessage());
-            throw new TableMalformedException("Failed to parse number: " + e.getMessage(), e);
+            throw new TableMalformedException("Failed to parse number", e);
         } catch (Exception e) {
             log.error("Database failed to accept tuple: {}", e.getMessage());
-            throw new TableMalformedException("Database failed to accept tuple: " + e.getMessage(), e);
+            throw new TableMalformedException("Database failed to accept tuple", e);
         } finally {
             dataSource.close();
         }
@@ -387,7 +347,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             log.error("Failed to delete tuples: {}", e.getMessage());
-            throw new TableMalformedException("Failed to delete tuples: " + e.getMessage(), e);
+            throw new TableMalformedException("Failed to delete tuples", e);
         } finally {
             dataSource.close();
         }
@@ -415,104 +375,6 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         } finally {
             dataSource.close();
         }
-    }
-
-    /**
-     * Parses the stored columns from a given query.
-     *
-     * @param query    The query.
-     * @param database The database that contains the list of tables with list of columns.
-     * @return List of columns in the order they are referenced in the query.
-     * @throws JSQLParserException The columns could not be extracted from the query.
-     */
-    @Transactional(readOnly = true)
-    public List<TableColumn> parseColumns(String query, Database database) throws JSQLParserException {
-        final List<TableColumn> columns = new ArrayList<>();
-        final CCJSqlParserManager parserRealSql = new CCJSqlParserManager();
-        final Statement statement = parserRealSql.parse(new StringReader(query));
-        /* check */
-        if (!(statement instanceof Select)) {
-            log.error("Query attempts to update the dataset, not a SELECT statement");
-            throw new JSQLParserException("Query attempts to update the dataset");
-        }
-        /* start parsing */
-        final Select selectStatement = (Select) statement;
-        final PlainSelect ps = (PlainSelect) selectStatement.getSelectBody();
-        final List<SelectItem> clauses = ps.getSelectItems();
-        log.trace("columns referenced in the from-clause: {}", clauses);
-        /* Parse all tables */
-        final List<FromItem> tablesOrViews = new ArrayList<>();
-        tablesOrViews.add(ps.getFromItem());
-        if (ps.getJoins() != null && ps.getJoins().size() > 0) {
-            log.trace("query contains join items: {}", ps.getJoins());
-            for (Join j : ps.getJoins()) {
-                if (j.getRightItem() != null) {
-                    tablesOrViews.add(j.getRightItem());
-                }
-            }
-        }
-        final List<TableColumn> allColumns = tableColumnRepository.findAllByDatabaseId(database.getId());
-        log.trace("columns referenced in the from-clause and join-clause(s): {}", clauses);
-        /* Checking if all tables or views exist */
-        log.trace("table(s) or view(s) referenced in the statement: {}", tablesOrViews.stream().map(t -> ((net.sf.jsqlparser.schema.Table) t).getName()).collect(Collectors.toList()));
-        /* Checking if all columns exist */
-        for (SelectItem clause : clauses) {
-            final SelectExpressionItem item = (SelectExpressionItem) clause;
-            final Column column = (Column) item.getExpression();
-            final Optional<net.sf.jsqlparser.schema.Table> optionalTableOrView = tablesOrViews.stream()
-                    .map(t -> (net.sf.jsqlparser.schema.Table) t)
-                    .filter(t -> {
-                        if (column.getTable() == null) {
-                            /* column does not reference a specific table, so there is only one table */
-                            final String tableName = ((net.sf.jsqlparser.schema.Table) tablesOrViews.get(0)).getName().replace("`", "");
-                            if (t.getAlias() == null) {
-                                /* table is non-aliased */
-                                return t.getName().replace("`", "").equals(tableName);
-                            }
-                            /* has alias */
-                            return t.getAlias().getName().equals(tableName);
-                        }
-                        final String tableName = column.getTable().getName().replace("`", "");
-                        if (t.getAlias() == null) {
-                            /* table is non-aliased */
-                            return t.getName().replace("`", "").equals(tableName);
-                        }
-                        /* has alias */
-                        return t.getAlias().getName().equals(tableName);
-                    })
-                    .findFirst();
-            if (optionalTableOrView.isEmpty()) {
-                log.error("Failed to find table or view with alias '{}'", column.getTable().getAlias());
-                throw new JSQLParserException("Failed to find table or view with alias " + column.getTable().getAlias());
-            }
-            final Optional<TableColumn> optionalColumn = allColumns.stream()
-                    .filter(c -> c.getInternalName().equals(column.getColumnName().replace("`", "")))
-                    .filter(c -> columnMatches(c, optionalTableOrView.get().getName().replace("`", "")))
-                    .findFirst();
-            if (optionalColumn.isEmpty()) {
-                log.error("Failed to find column with name {} in {}", column.getColumnName(), allColumns.stream().map(TableColumn::getInternalName).toList());
-                throw new JSQLParserException("Failed to find column with name " + column.getColumnName() + " in " + allColumns.stream().map(TableColumn::getInternalName).toList());
-            }
-            final TableColumn aliasColumn = optionalColumn.get();
-            if (item.getAlias() != null) {
-                aliasColumn.setAlias(item.getAlias().getName());
-            }
-            log.trace("found column with internal name {} and alias {}", aliasColumn.getInternalName(), aliasColumn.getAlias());
-            columns.add(aliasColumn);
-        }
-        return columns;
-    }
-
-    @Transactional(readOnly = true)
-    public boolean columnMatches(TableColumn column, String tableOrView) {
-        if (column.getTable().getInternalName().equals(tableOrView)) {
-            /* matches table name */
-            return true;
-        }
-        /* maybe matches one of the views */
-        return column.getViews()
-                .stream()
-                .anyMatch(v -> v.getInternalName().equals(tableOrView));
     }
 
 }

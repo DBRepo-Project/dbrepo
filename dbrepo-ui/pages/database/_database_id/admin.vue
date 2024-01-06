@@ -1,6 +1,6 @@
 <template>
   <div v-if="db">
-    <DBToolbar />
+    <DatabaseToolbar />
     <v-tabs-items v-model="tab">
       <v-card flat>
         <v-card-title>
@@ -37,12 +37,12 @@
 </template>
 
 <script>
-import DBToolbar from '@/components/DBToolbar.vue'
+import DatabaseToolbar from '@/components/DatabaseToolbar.vue'
 import DatabaseService from '@/api/database.service'
 
 export default {
   components: {
-    DBToolbar
+    DatabaseToolbar
   },
   data () {
     return {

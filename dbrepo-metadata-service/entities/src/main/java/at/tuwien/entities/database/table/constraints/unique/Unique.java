@@ -21,14 +21,14 @@ import java.util.List;
 public class Unique {
 
     @Id
+    @EqualsAndHashCode.Include
     @GeneratedValue(generator = "constraints-unique-sequence")
     @GenericGenerator(name = "constraints-unique-sequence", strategy = "increment")
     @Column(updatable = false, nullable = false)
-    @EqualsAndHashCode.Include
     private Long uid;
 
-    @org.springframework.data.annotation.Transient
     @ToString.Exclude
+    @org.springframework.data.annotation.Transient
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumns({
             @JoinColumn(name = "tid", referencedColumnName = "id")

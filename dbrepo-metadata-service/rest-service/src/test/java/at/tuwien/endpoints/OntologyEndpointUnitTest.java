@@ -245,7 +245,7 @@ public class OntologyEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"execute-semantic-query"})
     public void find_hasRoleLabel_succeeds() throws UriMalformedException, QueryMalformedException,
-            OntologyNotFoundException, FilterBadRequestException {
+            OntologyNotFoundException, FilterBadRequestException, OntologyInvalidException {
         final EntityDto entityDto = EntityDto.builder()
                 .label("Apache Jena")
                 .uri("http://www.wikidata.org/entity/Q1686799")
@@ -261,7 +261,7 @@ public class OntologyEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"execute-semantic-query"})
     public void find_hasRoleUri_succeeds() throws UriMalformedException, QueryMalformedException,
-            OntologyNotFoundException, FilterBadRequestException {
+            OntologyNotFoundException, FilterBadRequestException, OntologyInvalidException {
         final EntityDto entityDto = EntityDto.builder()
                 .label("Apache Jena")
                 .uri("http://www.wikidata.org/entity/Q1686799")
@@ -379,7 +379,7 @@ public class OntologyEndpointUnitTest extends BaseUnitTest {
     }
 
     public List<EntityDto> find_generic(Long ontologyId, String label, String uri, Ontology ontology, EntityDto entityDto)
-            throws OntologyNotFoundException, QueryMalformedException, UriMalformedException, FilterBadRequestException {
+            throws OntologyNotFoundException, QueryMalformedException, UriMalformedException, FilterBadRequestException, OntologyInvalidException {
 
         /* mock */
         if (ontology != null) {

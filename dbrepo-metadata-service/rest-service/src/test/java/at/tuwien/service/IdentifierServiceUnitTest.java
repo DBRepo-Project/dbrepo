@@ -5,14 +5,13 @@ import at.tuwien.annotations.MockAmqp;
 import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.identifier.BibliographyTypeDto;
-import at.tuwien.api.identifier.IdentifierDto;
+import at.tuwien.entities.database.Database;
 import at.tuwien.entities.identifier.Creator;
 import at.tuwien.entities.identifier.Identifier;
-import at.tuwien.entities.identifier.IdentifierType;
 import at.tuwien.entities.identifier.NameIdentifierSchemeType;
 import at.tuwien.exception.*;
+import at.tuwien.repository.mdb.DatabaseRepository;
 import at.tuwien.repository.mdb.IdentifierRepository;
-import at.tuwien.repository.sdb.IdentifierIdxRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,10 +43,13 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
     private IdentifierRepository identifierRepository;
 
     @MockBean
-    private IdentifierIdxRepository identifierIdxRepository;
+    private DatabaseRepository databaseRepository;
 
     @MockBean
     private DatabaseService databaseService;
+
+    @MockBean
+    private StoreService storeService;
 
     @MockBean
     @Qualifier("restTemplate")
@@ -67,7 +69,7 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
                 .thenReturn(List.of(IDENTIFIER_1));
 
         /* test */
-        final List<Identifier> response = identifierService.findAll(null, null, null, null);
+        final List<Identifier> response = identifierService.findAll(null, null, null, null, null);
         assertEquals(1, response.size());
         assertEquals(IDENTIFIER_1, response.get(0));
     }
@@ -80,7 +82,7 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
                 .thenReturn(List.of(IDENTIFIER_1));
 
         /* test */
-        final List<Identifier> response = identifierService.findAll(null, null, null, null);
+        final List<Identifier> response = identifierService.findAll(null, null, null, null, null);
         assertEquals(1, response.size());
         assertEquals(IDENTIFIER_1, response.get(0));
     }
@@ -93,7 +95,7 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
                 .thenReturn(List.of(IDENTIFIER_1));
 
         /* test */
-        final List<Identifier> response = identifierService.findAll(null, DATABASE_1_ID, null, null);
+        final List<Identifier> response = identifierService.findAll(null, DATABASE_1_ID, null, null, null);
         assertEquals(1, response.size());
         assertEquals(IDENTIFIER_1, response.get(0));
     }
@@ -103,12 +105,11 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
 
         /* mock */
         when(identifierRepository.findAll())
-                .thenReturn(List.of(IDENTIFIER_1));
+                .thenReturn(List.of(IDENTIFIER_1, IDENTIFIER_5));
 
         /* test */
-        final List<Identifier> response = identifierService.findAll(null, null, QUERY_1_ID, null);
+        final List<Identifier> response = identifierService.findAll(null, null, IDENTIFIER_5_QUERY_ID, null, null);
         assertEquals(1, response.size());
-        assertEquals(IDENTIFIER_1, response.get(0));
     }
 
     @Test
@@ -116,12 +117,11 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
 
         /* mock */
         when(identifierRepository.findAll())
-                .thenReturn(List.of(IDENTIFIER_1));
+                .thenReturn(List.of(IDENTIFIER_5));
 
         /* test */
-        final List<Identifier> response = identifierService.findAll(null, DATABASE_1_ID, QUERY_1_ID, null);
+        final List<Identifier> response = identifierService.findAll(null, IDENTIFIER_5_DATABASE_ID, IDENTIFIER_5_QUERY_ID, null, null);
         assertEquals(1, response.size());
-        assertEquals(IDENTIFIER_1, response.get(0));
     }
 
     @Test
@@ -180,7 +180,7 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
             throws DatabaseNotFoundException, UserNotFoundException, IdentifierAlreadyExistsException,
             QueryNotFoundException, IdentifierPublishingNotAllowedException, RemoteUnavailableException,
             IdentifierRequestException, ViewNotFoundException, QueryStoreException, DatabaseConnectionException,
-            ImageNotSupportedException {
+            ImageNotSupportedException, IdentifierNotFoundException {
 
         /* mock */
         when(databaseService.find(DATABASE_1_ID))
@@ -191,8 +191,6 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
                 .thenReturn(USER_1);
         when(identifierRepository.save(any(Identifier.class)))
                 .thenReturn(IDENTIFIER_1);
-        when(identifierIdxRepository.save(any(IdentifierDto.class)))
-                .thenReturn(IDENTIFIER_1_DTO);
 
 
         /* test */
@@ -200,36 +198,39 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void create_existsSubset_fails()
-            throws DatabaseNotFoundException {
+    public void create_existsSubset_succeeds() throws DatabaseNotFoundException, UserNotFoundException,
+            QueryStoreException, DatabaseConnectionException, QueryNotFoundException, ImageNotSupportedException,
+            IdentifierAlreadyExistsException, IdentifierPublishingNotAllowedException, RemoteUnavailableException,
+            IdentifierNotFoundException, IdentifierRequestException, ViewNotFoundException {
 
         /* mock */
         when(databaseService.find(DATABASE_2_ID))
                 .thenReturn(DATABASE_2);
-        when(identifierRepository.existsByDatabaseIdAndQueryIdAndType(DATABASE_2_ID, QUERY_2_ID, IdentifierType.SUBSET))
-                .thenReturn(true);
+        when(storeService.findOne(IDENTIFIER_5_DATABASE_ID, IDENTIFIER_5_QUERY_ID, USER_1_PRINCIPAL))
+                .thenReturn(QUERY_2);
+        when(identifierRepository.save(any(Identifier.class)))
+                .thenReturn(IDENTIFIER_5);
 
 
         /* test */
-        assertThrows(IdentifierAlreadyExistsException.class, () -> {
-            identifierService.create(IDENTIFIER_2_DTO_REQUEST, USER_1_PRINCIPAL);
-        });
+        identifierService.create(IDENTIFIER_5_DTO_REQUEST, USER_1_PRINCIPAL);
     }
 
     @Test
-    public void create_existsDatabase_fails() throws DatabaseNotFoundException {
+    public void create_existsDatabase_succeeds() throws DatabaseNotFoundException, IdentifierAlreadyExistsException,
+            UserNotFoundException, QueryStoreException, DatabaseConnectionException, QueryNotFoundException,
+            ImageNotSupportedException, IdentifierPublishingNotAllowedException, RemoteUnavailableException,
+            IdentifierNotFoundException, IdentifierRequestException, ViewNotFoundException {
 
         /* mock */
         when(databaseService.find(DATABASE_1_ID))
                 .thenReturn(DATABASE_1);
-        when(identifierRepository.existsByDatabaseIdAndType(DATABASE_1_ID, IdentifierType.DATABASE))
-                .thenReturn(true);
+        when(identifierRepository.save(any(Identifier.class)))
+                .thenReturn(IDENTIFIER_1);
 
 
         /* test */
-        assertThrows(IdentifierAlreadyExistsException.class, () -> {
-            identifierService.create(IDENTIFIER_1_DTO_REQUEST, USER_1_PRINCIPAL);
-        });
+        identifierService.create(IDENTIFIER_1_DTO_REQUEST, USER_1_PRINCIPAL);
     }
 
     @Test
@@ -347,19 +348,13 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void delete_succeeds() throws IdentifierNotFoundException {
+    public void delete_succeeds() throws IdentifierNotFoundException, DatabaseNotFoundException {
 
         /* mock */
         when(identifierRepository.existsById(IDENTIFIER_1_ID))
                 .thenReturn(true);
-        when(identifierIdxRepository.existsById(IDENTIFIER_1_ID))
-                .thenReturn(true);
-        doNothing()
-                .when(identifierRepository)
-                .delete(IDENTIFIER_1);
-        doNothing()
-                .when(identifierIdxRepository)
-                .deleteById(IDENTIFIER_1_ID);
+        when(identifierRepository.findById(IDENTIFIER_1_ID))
+                .thenReturn(Optional.of(IDENTIFIER_1));
 
         /* test */
         identifierService.delete(IDENTIFIER_1_ID);
@@ -410,12 +405,12 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
     public void exportResource_database_fails() {
 
         /* mock */
-        when(identifierRepository.findById(IDENTIFIER_4_ID))
-                .thenReturn(Optional.of(IDENTIFIER_4));
+        when(identifierRepository.findById(IDENTIFIER_7_ID))
+                .thenReturn(Optional.of(IDENTIFIER_7));
 
         /* test */
         assertThrows(IdentifierRequestException.class, () -> {
-            identifierService.exportResource(IDENTIFIER_4_ID, USER_1_PRINCIPAL);
+            identifierService.exportResource(IDENTIFIER_7_ID, USER_1_PRINCIPAL);
         });
     }
 

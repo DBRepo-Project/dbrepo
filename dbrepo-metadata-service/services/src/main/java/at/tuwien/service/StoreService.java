@@ -56,7 +56,7 @@ public interface StoreService {
      * @throws DatabaseConnectionException The database connection to the remote container failed.
      */
     Query insert(Long databaseId, ExecuteStatementDto metadata, Principal principal) throws QueryStoreException,
-            DatabaseNotFoundException, ImageNotSupportedException, UserNotFoundException, DatabaseConnectionException, KeycloakRemoteException, AccessDeniedException;
+            DatabaseNotFoundException, ImageNotSupportedException, UserNotFoundException, DatabaseConnectionException, KeycloakRemoteException, AccessDeniedException, QueryNotFoundException;
 
     /**
      * Persists a query to be displayed in the frontend.

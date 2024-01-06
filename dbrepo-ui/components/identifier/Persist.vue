@@ -268,20 +268,6 @@
         </v-card-text>
         <v-card-title>Publication</v-card-title>
         <v-card-text>
-          <v-row v-if="isSubset" dense>
-            <v-col cols="8">
-              <v-select
-                v-model="identifier.visibility"
-                :items="visibilities"
-                item-text="name"
-                item-value="value"
-                label="Visibility *"
-                :hint="visibilityHint"
-                persistent-hint
-                :rules="[ v => !!v || $t('Required') ]"
-                required />
-            </v-col>
-          </v-row>
           <v-row dense>
             <v-col cols="8">
               <v-text-field
@@ -508,6 +494,12 @@ export default {
       default () {
         return {}
       }
+    },
+    table: {
+      type: Object,
+      default () {
+        return {}
+      }
     }
   },
   data () {
@@ -516,17 +508,13 @@ export default {
       loading: false,
       error: false, // XXX: `error` is never changed
       licenses: [],
-      visibilities: [
-        { name: 'Public', value: 'everyone' },
-        { name: 'Private', value: 'self' }
-      ],
       identifier: {
         database_id: parseInt(this.$route.params.database_id),
         query_id: parseInt(this.$route.params.query_id),
         view_id: parseInt(this.$route.params.view_id),
+        table_id: parseInt(this.$route.params.table_id),
         titles: [],
         descriptions: [],
-        visibility: 'everyone',
         publisher: this.$config.defaultPublisher,
         publication_year: formatYearUTC(Date.now()),
         publication_month: formatMonthUTC(Date.now()),
@@ -611,12 +599,6 @@ export default {
     }
   },
   computed: {
-    loadingColor () {
-      return this.error ? 'red lighten-2' : 'primary'
-    },
-    token () {
-      return this.$store.state.token
-    },
     user () {
       return this.$store.state.user
     },
@@ -629,6 +611,9 @@ export default {
     isView () {
       return this.type === 'view'
     },
+    isTable () {
+      return this.type === 'table'
+    },
     backTo () {
       if (this.isSubset) {
         return `/database/${this.$route.params.database_id}/query/${this.$route.params.query_id}`
@@ -636,6 +621,8 @@ export default {
         return `/database/${this.$route.params.database_id}`
       } else if (this.isView) {
         return `/database/${this.$route.params.database_id}/view/${this.$route.params.view_id}`
+      } else if (this.isTable) {
+        return `/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}`
       }
       return null
     },
@@ -651,17 +638,15 @@ export default {
       }
       return this.identifier.creators.filter(c => c.name_identifier === this.user.attributes.orcid).length === 0
     },
-    visibilityHint () {
-      if (this.identifier.visibility === 'everyone') {
-        return 'The result set will be open access (world-readable)'
-      }
-      return 'The result set will be visible only to you'
-    },
     prefix () {
       if (this.isSubset) {
         return 'Subset'
       } else if (this.isDatabase) {
         return 'Database'
+      } else if (this.isView) {
+        return 'View'
+      } else if (this.isTable) {
+        return 'Table'
       }
       return ''
     }
@@ -853,32 +838,29 @@ export default {
       const payload = identifierMapper.identifierToIdentifierSave(this.identifier)
       if (this.isUpdate) {
         IdentifierService.update(this.identifier.id, payload)
-          .then(async () => {
-            await this.$store.dispatch('reloadDatabase')
-            await this.$router.push(this.backTo)
-            await this.$toast.success(this.prefix + ' successfully persisted')
+          .then(() => {
+            console.info('Updated identifier with id', this.identifier.id)
+            this.$store.dispatch('reloadDatabase')
+            this.$router.push(this.backTo)
+            this.$toast.success(this.prefix + ' successfully persisted')
           })
           .finally(() => {
             this.loading = false
           })
-        console.info('Updated identifier with id', this.identifier.id)
       } else {
         IdentifierService.create(payload)
           .then(async () => {
+            console.info('Created identifier')
             await this.$store.dispatch('reloadDatabase')
-            await this.$router.push(this.backTo)
             await this.$toast.success(this.prefix + ' successfully persisted')
+            await this.$router.push(this.backTo)
           })
           .finally(() => {
             this.loading = false
           })
-        console.info('Created identifier')
       }
     },
     loadLicenses () {
-      if (!this.token) {
-        return
-      }
       this.loading = true
       DatabaseService.findAllLicenses()
         .then((licenses) => {

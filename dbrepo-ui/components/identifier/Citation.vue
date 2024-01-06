@@ -5,17 +5,8 @@
     </v-list-item-title>
     <v-list-item-content>
       <v-row no-gutters>
-        <v-col
-          v-if="loading">
-          <v-skeleton-loader
-            class="skeleton-large"
-            type="list-item-two-line" />
-        </v-col>
-        <v-col
-          v-if="!loading"
-          md="10">
-          <pre
-            v-text="citation" />
+        <v-col v-if="!loading" md="10">
+          <pre v-text="citation" />
         </v-col>
         <v-col
           md="2"

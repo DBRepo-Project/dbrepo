@@ -117,8 +117,6 @@ services:
       ADMIN_MAIL: "${ADMIN_MAIL:-noreply@localhost}"
       BASE_URL: "${BASE_URL:-http://localhost}"
       GRANT_PRIVILEGES: "${GRANT_PRIVILEGES:-SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE}"
-      MIN_CONCURRENT_CONSUMERS: ${MIN_CONCURRENT_CONSUMERS:-1}
-      MAX_CONCURRENT_CONSUMERS: ${MAX_CONCURRENT_CONSUMERS:-5}
       BROKER_USERNAME: ${BROKER_USERNAME:-fda}
       BROKER_PASSWORD: ${BROKER_PASSWORD:-fda}
       BROKER_ENDPOINT: "${BROKER_ENDPOINT:-http://broker-service:15672/admin/broker}"
@@ -145,9 +143,7 @@ services:
       REPOSITORY_NAME: "${REPOSITORY_NAME:-Example Repository}"
       SEARCH_USERNAME: "${SEARCH_USERNAME:-admin}"
       SEARCH_PASSWORD: "${SEARCH_PASSWORD:-admin}"
-      SHARED_FILESYSTEM: "${SHARED_FILESYSTEM:-/tmp}"
       DELETE_AFTER_IMPORT: "${DELETE_AFTER_IMPORT:-true}"
-      USER_NETWORK: "${USER_NETWORK:-userdb}"
       WEBSITE: "${WEBSITE:-http://localhost}"
       KEYCLOAK_HOST: "${KEYCLOAK_HOST:-http://authentication-service:8080}"
       KEYCLOAK_ADMIN: "${KEYCLOAK_ADMIN:-fda}"
@@ -156,6 +152,14 @@ services:
       DATACITE_PREFIX: "${DATACITE_PREFIX:-}"
       DATACITE_USERNAME: "${DATACITE_USERNAME:-}"
       DATACITE_PASSWORD: "${DATACITE_PASSWORD:-}"
+      S3_STORAGE_ENDPOINT: "${STORAGE_ENDPOINT:-http://storage-service:9000}"
+      S3_ACCESS_KEY_ID: "${STORAGE_USERNAME:-seaweedfsadmin}"
+      S3_SECRET_ACCESS_KEY: "${STORAGE_PASSWORD:-seaweedfsadmin}"
+      S3_IMPORT_BUCKET: "${STORAGE_IMPORT_BUCKET:-dbrepo-upload}"
+      S3_EXPORT_BUCKET: "${STORAGE_EXPORT_BUCKET:-dbrepo-download}"
+      MIRROR_RATE: ${METADATA_SERVICE_MIRROR_RATE:-60}
+      OBTAIN_METADATA_RATE: ${METADATA_SERVICE_OBTAIN_METADATA_RATE:-60}
+      DELETE_STALE_QUERIES_RATE: ${METADATA_SERVICE_DELETE_STALE_QUERIES_RATE:-60}
     healthcheck:
       test: wget -qO- localhost:9099/actuator/health/readiness | grep -q "UP" || exit 1
       interval: 10s
@@ -252,6 +256,7 @@ services:
     ports:
       - "4000:4000"
     environment:
+      LOG_LEVEL: ${LOG_LEVEL:-debug}
       FLASK_DEBUG: ${SEARCH_DEBUG_MODE:-true}
       OPENSEARCH_HOST: ${OPENSEARCH_HOST:-dbrepo-search-db}
 
@@ -333,20 +338,20 @@ services:
     logging:
       driver: json-file
 
-  dbrepo-search-db-init:
-    restart: "no"
-    container_name: dbrepo-search-db-init
-    hostname: search-db-init
-    image: dbrepo-search-db-init:latest
-    build: ./dbrepo-search-db/init
-    environment:
-      OPENSEARCH_HOST: ${SEARCH_DB_HOST:-http://search-db:9200}
-      CURL_EXTRA_ARGS: ${SEARCH_DB_EXTRA_ARGS:-}
-    depends_on:
-      dbrepo-search-db:
-        condition: service_healthy
-    logging:
-      driver: json-file
+#  dbrepo-search-db-init:
+#    restart: "no"
+#    container_name: dbrepo-search-db-init
+#    hostname: search-db-init
+#    image: dbrepo-search-db-init:latest
+#    build: ./dbrepo-search-db/init
+#    environment:
+#      OPENSEARCH_HOST: ${SEARCH_DB_HOST:-http://search-db:9200}
+#      CURL_EXTRA_ARGS: ${SEARCH_DB_EXTRA_ARGS:-}
+#    depends_on:
+#      dbrepo-search-db:
+#        condition: service_healthy
+#    logging:
+#      driver: json-file
 
   dbrepo-storage-service:
     restart: "no"
@@ -404,37 +409,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 12
-    logging:
-      driver: json-file
-
-  dbrepo-mirror-service:
-    restart: "no"
-    container_name: dbrepo-mirror-service
-    hostname: mirror-service
-    image: dbrepo-mirror-service:latest
-    build: ./dbrepo-mirror-service
-    ports:
-      - "9050:9050"
-    environment:
-      METADATA_DB: ${METADATA_DB:-fda}
-      METADATA_HOST: ${METADATA_HOST:-metadata-db}
-      METADATA_JDBC_EXTRA_ARGS: ${METADATA_JDBC_EXTRA_ARGS:-}
-      METADATA_PASSWORD: ${METADATA_PASSWORD:-dbrepo}
-      METADATA_USERNAME: ${METADATA_USERNAME:-root}
-      SEARCH_USERNAME: ${SEARCH_USERNAME:-admin}
-      SEARCH_PASSWORD: ${SEARCH_PASSWORD:-admin}
-      LOG_LEVEL: ${LOG_LEVEL:-debug}
-      SYNC_RATE: ${SYNC_RATE:-60}
-    healthcheck:
-      test: wget -qO- localhost:9050/actuator/health/readiness | grep -q "UP" || exit 1
-      interval: 10s
-      timeout: 5s
-      retries: 12
-    depends_on:
-      dbrepo-metadata-db:
-        condition: service_healthy
-      dbrepo-search-db:
-        condition: service_started
     logging:
       driver: json-file
 

@@ -9,11 +9,9 @@ import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.DatabaseMapper;
-import at.tuwien.repository.mdb.DatabaseAccessRepository;
 import at.tuwien.service.*;
 import at.tuwien.utils.PrincipalUtil;
 import at.tuwien.utils.UserUtil;
-import io.micrometer.core.annotation.Timed;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -44,27 +42,24 @@ import java.util.stream.Collectors;
 public class DatabaseEndpoint {
 
     private final UserService userService;
+    private final RabbitConfig rabbitConfig;
     private final AccessService accessService;
     private final DatabaseMapper databaseMapper;
-    private final RabbitConfig rabbitMqConfig;
     private final DatabaseService databaseService;
     private final QueryStoreService queryStoreService;
     private final MessageQueueService messageQueueService;
-    private final DatabaseAccessRepository databaseAccessRepository;
 
     @Autowired
-    public DatabaseEndpoint(DatabaseMapper databaseMapper, UserService userService, RabbitConfig rabbitMqConfig,
+    public DatabaseEndpoint(DatabaseMapper databaseMapper, UserService userService, RabbitConfig rabbitConfig,
                             DatabaseService databaseService, QueryStoreService queryStoreService,
-                            AccessService accessService, MessageQueueService messageQueueService,
-                            DatabaseAccessRepository databaseAccessRepository) {
+                            AccessService accessService, MessageQueueService messageQueueService) {
         this.userService = userService;
-        this.rabbitMqConfig = rabbitMqConfig;
+        this.rabbitConfig = rabbitConfig;
         this.accessService = accessService;
         this.databaseMapper = databaseMapper;
         this.databaseService = databaseService;
         this.queryStoreService = queryStoreService;
         this.messageQueueService = messageQueueService;
-        this.databaseAccessRepository = databaseAccessRepository;
     }
 
     @GetMapping
@@ -196,7 +191,9 @@ public class DatabaseEndpoint {
         final User user = userService.findByUsername(principal.getName());
         final Database database = databaseService.create(createDto, principal);
         queryStoreService.create(database.getId(), principal);
-        databaseAccessRepository.save(databaseMapper.defaultCreatorAccess(database, UserUtil.getId(principal)));
+        accessService.create(database.getId(), user.getId(), DatabaseGiveAccessDto.builder()
+                .type(AccessTypeDto.WRITE_ALL)
+                .build());
         final DatabaseBriefDto dto = databaseMapper.databaseToDatabaseBriefDto(database);
         log.trace("create database resulted in database {}", dto);
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -313,70 +310,11 @@ public class DatabaseEndpoint {
         }
         if (principal != null) {
             /* extra effort only when logged-in */
-            final ExchangeDto exchange = messageQueueService.findExchange(rabbitMqConfig.getExchangeName());
+            final ExchangeDto exchange = messageQueueService.findExchange(rabbitConfig.getExchangeName());
             dto.setExchangeType(exchange.getType());
         }
         log.trace("find database resulted in dto {}", dto);
         return ResponseEntity.ok(dto);
-    }
-
-    @DeleteMapping("/{id}")
-    @Transactional(rollbackFor = Exception.class)
-    @PreAuthorize("hasAuthority('delete-database')")
-    @Observed(name = "dbr_database_delete")
-    @Operation(summary = "Delete some database", security = @SecurityRequirement(name = "bearerAuth"))
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201",
-                    description = "Deleted a database",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = DatabaseBriefDto.class))}),
-            @ApiResponse(responseCode = "400",
-                    description = "Database delete query is malformed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "404",
-                    description = "Container or database could not be found",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "405",
-                    description = "Database delete permission is missing or revoke permissions at broker service failed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "406",
-                    description = "Failed to delete user at broker service or virtual host could not be reached at broker service",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "501",
-                    description = "Container image is not supported",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "502",
-                    description = "Connection to the container failed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "503",
-                    description = "Connection to the database failed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-    })
-    public ResponseEntity<?> delete(@NotNull @PathVariable Long id, Principal principal)
-            throws DatabaseNotFoundException, ImageNotSupportedException, DatabaseMalformedException, AmqpException,
-            QueryMalformedException, UserNotFoundException, BrokerVirtualHostGrantException,
-            DatabaseConnectionException, KeycloakRemoteException, AccessDeniedException, BrokerRemoteException {
-        log.debug("endpoint delete database, id={}, {}", id, PrincipalUtil.formatForDebug(principal));
-        databaseService.findById(id);
-        final User user = userService.findByUsername(principal.getName());
-        databaseService.delete(id, user.getId());
-        return ResponseEntity.accepted()
-                .build();
     }
 
 }

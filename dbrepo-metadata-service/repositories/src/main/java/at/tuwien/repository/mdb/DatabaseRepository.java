@@ -17,6 +17,8 @@ public interface DatabaseRepository extends JpaRepository<Database, Long> {
 
     List<Database> findConfigureAccess(UUID id);
 
+    List<Long> findAllOnlyIds();
+
     Optional<Database> findPublicOrMine(Long databaseId, UUID id);
 
     Optional<Database> findPublic(Long databaseId);

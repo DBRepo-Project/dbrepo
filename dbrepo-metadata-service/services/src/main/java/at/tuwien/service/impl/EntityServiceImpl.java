@@ -2,14 +2,12 @@ package at.tuwien.service.impl;
 
 import at.tuwien.api.semantics.EntityDto;
 import at.tuwien.api.semantics.TableColumnEntityDto;
+import at.tuwien.config.JenaConfig;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.semantics.Ontology;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.OntologyMapper;
-import at.tuwien.repository.mdb.OntologyRepository;
-import at.tuwien.repository.mdb.TableColumnRepository;
-import at.tuwien.repository.mdb.TableRepository;
 import at.tuwien.service.EntityService;
 import at.tuwien.service.OntologyService;
 import at.tuwien.service.TableService;
@@ -26,46 +24,60 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 @Log4j2
 @Service
 public class EntityServiceImpl implements EntityService {
 
     private final Dataset dataset;
+    private final JenaConfig jenaConfig;
+    private final TableService tableService;
     private final OntologyMapper ontologyMapper;
-    private final OntologyRepository ontologyRepository;
     private final OntologyService ontologyService;
-    private final TableRepository tableRepository;
-    private final TableColumnRepository tableColumnRepository;
 
     @Autowired
-    public EntityServiceImpl(OntologyRepository ontologyRepository, OntologyMapper ontologyMapper,
-                             OntologyService ontologyService, TableRepository tableRepository,
-                             TableColumnRepository tableColumnRepository) {
+    public EntityServiceImpl(Dataset dataset, JenaConfig jenaConfig, TableService tableService,
+                             OntologyMapper ontologyMapper, OntologyService ontologyService) {
+        this.dataset = dataset;
+        this.jenaConfig = jenaConfig;
+        this.tableService = tableService;
         this.ontologyMapper = ontologyMapper;
-        this.ontologyRepository = ontologyRepository;
-        this.dataset = DatasetFactory.create();
         this.ontologyService = ontologyService;
-        this.tableRepository = tableRepository;
-        this.tableColumnRepository = tableColumnRepository;
+    }
+
+    public void validateOntology(Ontology ontology) throws OntologyInvalidException {
+        if (ontology.getRdfPath() == null && ontology.getSparqlEndpoint() == null) {
+            log.error("Ontology with uri {} is invalid: no RDF file present and no SPARQL endpoint found", ontology.getUri());
+            throw new OntologyInvalidException("Ontology with uri " + ontology.getUri() + " is invalid: no RDF file present and no SPARQL endpoint found");
+        }
     }
 
     @Override
-    public List<EntityDto> findByLabel(Ontology ontology, String label) throws QueryMalformedException {
+    public List<EntityDto> findByLabel(Ontology ontology, String label) throws QueryMalformedException,
+            OntologyInvalidException {
         return findByLabel(ontology, label, 10);
     }
 
     @Override
-    public List<EntityDto> findByLabel(Ontology ontology, String label, Integer limit) throws QueryMalformedException {
-        final List<Ontology> ontologies = ontologyRepository.findAll();
+    public List<EntityDto> findByLabel(Ontology ontology, String label, Integer limit) throws QueryMalformedException,
+            OntologyInvalidException {
+        /* check */
+        validateOntology(ontology);
+        /* find */
+        final List<Ontology> ontologies = ontologyService.findAll();
         final String statement = ontologyMapper.ontologyToFindByLabelQuery(ontologies, ontology, label, limit);
         log.trace("execute sparql query:\n{}", statement);
         final List<EntityDto> results = new LinkedList<>();
         if (ontology.getSparqlEndpoint() == null && ontology.getRdfPath() != null) {
-            log.debug("load RDF model from path {}", ontology.getRdfPath());
+            log.debug("load rdf model from path {}", ontology.getRdfPath());
             this.dataset.setDefaultModel(RDFDataMgr.loadModel(ontology.getRdfPath()));
         }
-        try (QueryExecution execution = QueryExecutionFactory.create(statement, this.dataset.getDefaultModel())) {
+        try (QueryExecution execution = QueryExecutionDatasetBuilder.create()
+                .model(this.dataset.getDefaultModel())
+                .query(statement)
+                .timeout(jenaConfig.getConnectionTimeout(), TimeUnit.MILLISECONDS)
+                .build()) {
             final Iterator<QuerySolution> resultSet = execution.execSelect();
             while (resultSet.hasNext()) {
                 final QuerySolution solution = resultSet.next();
@@ -85,11 +97,19 @@ public class EntityServiceImpl implements EntityService {
     }
 
     @Override
-    public List<EntityDto> findByUri(Ontology ontology, String uri) throws QueryMalformedException {
-        final List<Ontology> ontologies = ontologyRepository.findAll();
+    public List<EntityDto> findByUri(Ontology ontology, String uri) throws QueryMalformedException,
+            OntologyInvalidException {
+        /* check */
+        validateOntology(ontology);
+        /* find */
+        final List<Ontology> ontologies = ontologyService.findAll();
         final String statement = ontologyMapper.ontologyToFindByUriQuery(ontologies, ontology, uri);
         log.trace("execute sparql query:\n{}", statement);
-        try (QueryExecution execution = QueryExecutionFactory.create(statement, this.dataset.getDefaultModel())) {
+        try (QueryExecution execution = QueryExecutionDatasetBuilder.create()
+                .model(this.dataset.getDefaultModel())
+                .query(statement)
+                .timeout(jenaConfig.getConnectionTimeout(), TimeUnit.MILLISECONDS)
+                .build()) {
             final Iterator<QuerySolution> resultSet = execution.execSelect();
             final List<EntityDto> results = new LinkedList<>();
             while (resultSet.hasNext()) {
@@ -106,13 +126,16 @@ public class EntityServiceImpl implements EntityService {
             return results;
         } catch (QueryParseException | IllegalArgumentException | RiotException e) {
             log.error("Failed to parse query: {}", e.getMessage());
-            throw new QueryMalformedException("Failed to parse query: " + e.getMessage(), e);
+            throw new QueryMalformedException("Failed to parse query", e);
         }
     }
 
     @Override
     public EntityDto findOneByUri(Ontology ontology, String uri) throws QueryMalformedException,
-            SemanticEntityNotFoundException {
+            SemanticEntityNotFoundException, OntologyInvalidException {
+        /* check */
+        validateOntology(ontology);
+        /* find */
         final List<EntityDto> results = findByUri(ontology, uri);
         if (results.size() != 1) {
             log.error("None or multiple entities found for uri {}", uri);
@@ -124,30 +147,32 @@ public class EntityServiceImpl implements EntityService {
     @Override
     @Transactional(readOnly = true)
     public List<EntityDto> suggestTableSemantics(Long databaseId, Long tableId) throws TableNotFoundException,
-            QueryMalformedException {
-        final Optional<Table> table = tableRepository.findByDatabaseIdAndId(databaseId, tableId);
-        if(table.isEmpty()) {
-            throw new TableNotFoundException("Failed to find table with database id " + databaseId + " and id " + tableId);
-        }
+            QueryMalformedException, DatabaseNotFoundException, OntologyInvalidException {
+        final Table table = tableService.find(databaseId, tableId);
         final List<EntityDto> suggestions = new LinkedList<>();
-        for (Ontology ontology : ontologyService.findAll()) {
-            suggestions.addAll(findByLabel(ontology, table.get().getName(), 3));
+        for (Ontology ontology : ontologyService.findAllProcessable()) {
+            suggestions.addAll(findByLabel(ontology, table.getName(), 3));
         }
-        log.debug("suggested {} semantic entities total", suggestions.size());
+        log.debug("suggested {} semantic entit{}", suggestions.size(), suggestions.size() == 1 ? "y" : "ies");
         return suggestions;
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<TableColumnEntityDto> suggestTableColumnSemantics(Long databaseId, Long tableId, Long columnId)
-            throws QueryMalformedException, TableColumnNotFoundException {
-        final Optional<TableColumn> optional = tableColumnRepository.findById(columnId);
+            throws QueryMalformedException, TableColumnNotFoundException, TableNotFoundException,
+            DatabaseNotFoundException, OntologyInvalidException {
+        final Optional<TableColumn> optional = tableService.find(databaseId, tableId)
+                .getColumns()
+                .stream()
+                .filter(c -> c.getId().equals(columnId))
+                .findFirst();
         if (optional.isEmpty()) {
             log.error("Failed to find column with id {}", columnId);
             throw new TableColumnNotFoundException("Failed to find column with id " + columnId);
         }
         final List<TableColumnEntityDto> suggestions = new LinkedList<>();
-        for (Ontology ontology : ontologyService.findAll()) {
+        for (Ontology ontology : ontologyService.findAllProcessable()) {
             suggestions.addAll(findByLabel(ontology, optional.get().getName(), 3)
                     .stream()
                     .map(e -> TableColumnEntityDto.builder()
@@ -160,7 +185,7 @@ public class EntityServiceImpl implements EntityService {
                             .build())
                     .toList());
         }
-        log.debug("suggested {} semantic entities total", suggestions.size());
+        log.debug("suggested {} semantic entit{}", suggestions.size(), suggestions.size() == 1 ? "y" : "ies");
         return suggestions;
     }
 

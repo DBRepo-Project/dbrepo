@@ -6,13 +6,11 @@ import at.tuwien.api.database.table.columns.concepts.UnitDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
@@ -26,7 +24,6 @@ import java.util.List;
 @AllArgsConstructor
 @Jacksonized
 @ToString
-@Document(indexName = "column")
 public class ColumnDto {
 
     @Id
@@ -60,7 +57,7 @@ public class ColumnDto {
     private String alias;
 
     @JsonProperty("date_format")
-    @Field(name = "date_format", includeInParent = true, type = FieldType.Nested)
+    @Field(name = "date_format", type = FieldType.Nested)
     private ImageDateDto dateFormat;
 
     @NotNull
@@ -75,9 +72,13 @@ public class ColumnDto {
     @Schema(example = "true")
     private Boolean isPrimaryKey;
 
-    @Field(name = "index_length", type = FieldType.Integer)
+    @Field(name = "index_length", type = FieldType.Long)
     @JsonProperty("index_length")
-    private Integer indexLength;
+    private Long indexLength;
+
+    @Field(name = "length", type = FieldType.Long)
+    @JsonProperty("length")
+    private Long length;
 
     @NotNull
     @JsonProperty("column_type")
@@ -86,12 +87,24 @@ public class ColumnDto {
     private ColumnTypeDto columnType;
 
     @Schema(example = "255")
-    @Field(name = "size", type = FieldType.Integer)
-    private Integer size;
+    @Field(name = "size", type = FieldType.Long)
+    private Long size;
 
     @Schema(example = "0")
-    @Field(name = "d", type = FieldType.Integer)
-    private Integer d;
+    @Field(name = "d", type = FieldType.Long)
+    private Long d;
+
+    @Schema(example = "34300")
+    @Field(name = "data_length", type = FieldType.Long)
+    private Long dataLength;
+
+    @Schema(example = "34300")
+    @Field(name = "max_data_length", type = FieldType.Long)
+    private Long maxDataLength;
+
+    @Schema(example = "32")
+    @Field(name = "num_rows", type = FieldType.Long)
+    private Long numRows;
 
     @Schema(example = "0")
     @Field(name = "val_min", type = FieldType.Double)
@@ -113,10 +126,10 @@ public class ColumnDto {
     @Field(name = "std_dev", type = FieldType.Double)
     private BigDecimal stdDev;
 
-    @Field(name = "concept", includeInParent = true, type = FieldType.Nested)
+    @Field(name = "concept", type = FieldType.Nested)
     private ConceptDto concept;
 
-    @Field(name = "unit", includeInParent = true, type = FieldType.Nested)
+    @Field(name = "unit", type = FieldType.Nested)
     private UnitDto unit;
 
     @NotNull
@@ -131,11 +144,11 @@ public class ColumnDto {
     @Schema(example = "false")
     private Boolean isNullAllowed;
 
-    @Field(name = "enums", includeInParent = true, type = FieldType.Nested)
+    @Field(name = "enums", type = FieldType.Nested)
     @Parameter(description = "enum values, only considered when type = ENUM")
     private List<String> enums;
 
-    @Field(name = "sets", includeInParent = true, type = FieldType.Nested)
+    @Field(name = "sets", type = FieldType.Nested)
     @Parameter(description = "enum values, only considered when type = ENUM")
     private List<String> sets;
 

@@ -8,7 +8,6 @@ import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.*;
-import at.tuwien.repository.mdb.DatabaseAccessRepository;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.TableService;
 import lombok.extern.log4j.Log4j2;
@@ -25,7 +24,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.security.Principal;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -41,9 +39,6 @@ public class TableHistoryEndpointUnitTest extends BaseUnitTest {
 
     @MockBean
     private DatabaseService databaseService;
-
-    @MockBean
-    private DatabaseAccessRepository databaseAccessRepository;
 
     @MockBean
     private TableService tableService;
@@ -83,7 +78,7 @@ public class TableHistoryEndpointUnitTest extends BaseUnitTest {
             QueryStoreException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException {
 
         /* test */
-        data_generic(DATABASE_2_ID, DATABASE_2, TABLE_4_ID, TABLE_4, USER_1_ID, USER_1_PRINCIPAL, null);
+        data_generic(DATABASE_2_ID, DATABASE_2, TABLE_5_ID, TABLE_5, USER_1_ID, USER_1_PRINCIPAL, null);
     }
 
     /* ################################################################################################### */
@@ -100,13 +95,6 @@ public class TableHistoryEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(database);
         when(tableService.find(databaseId, tableId))
                 .thenReturn(table);
-        if (access != null) {
-            when(databaseAccessRepository.findByDatabaseIdAndUserId(databaseId, userId))
-                    .thenReturn(Optional.of(access));
-        } else {
-            when(databaseAccessRepository.findByDatabaseIdAndUserId(databaseId, userId))
-                    .thenReturn(Optional.empty());
-        }
 
         /* test */
         final ResponseEntity<List<TableHistoryDto>> response = tableHistoryEndpoint.getAll(databaseId, tableId, principal);

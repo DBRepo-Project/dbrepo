@@ -8,9 +8,10 @@ from opensearchpy import OpenSearch
 from config import Config
 from prometheus_flask_exporter import PrometheusMetrics
 
-log_level = os.getenv('LOG_LEVEL', 'INFO')
+log_level = os.getenv('LOG_LEVEL', 'info').upper()
 
-logging.basicConfig(level=logging.getLevelName(log_level))
+logging.addLevelName(level=logging.NOTSET, levelName='TRACE')
+logging.basicConfig(level=logging.getLevelName(log_level.upper()))
 
 from logging.config import dictConfig
 

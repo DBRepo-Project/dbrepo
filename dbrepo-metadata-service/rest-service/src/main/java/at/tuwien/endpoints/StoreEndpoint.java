@@ -18,7 +18,6 @@ import at.tuwien.service.UserService;
 import at.tuwien.utils.PrincipalUtil;
 import at.tuwien.utils.UserUtil;
 import at.tuwien.validation.EndpointValidator;
-import io.micrometer.core.annotation.Timed;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -119,7 +118,9 @@ public class StoreEndpoint {
             AccessDeniedException {
         log.debug("endpoint list queries, databaseId={}, persisted={}, {}", databaseId, persisted, PrincipalUtil.formatForDebug(principal));
         endpointValidator.validateOnlyAccessOrPublic(databaseId, principal);
+        /* find all from data database */
         final List<Query> queries = storeService.findAll(databaseId, persisted, principal);
+        /* add identifiers from metadata database */
         final List<IdentifierBriefDto> identifiers = identifierService.findAllSubsetIdentifiers()
                 .stream()
                 .map(identifierMapper::identifierToIdentifierBriefDto)
@@ -127,10 +128,10 @@ public class StoreEndpoint {
         final List<QueryBriefDto> dto = queries.stream()
                 .map(queryMapper::queryToQueryBriefDto)
                 .peek(q -> {
-                    final Optional<IdentifierBriefDto> optional = identifiers.stream()
+                    final List<IdentifierBriefDto> subsetIdentifiers = identifiers.stream()
                             .filter(i -> i.getDatabaseId().equals(databaseId) && i.getQueryId().equals(q.getId()))
-                            .findFirst();
-                    optional.ifPresent(q::setIdentifier);
+                            .toList();
+                    q.setIdentifiers(subsetIdentifiers);
                 })
                 .collect(Collectors.toList());
         log.trace("find queries resulted in queries {}", dto);
@@ -181,14 +182,16 @@ public class StoreEndpoint {
             DatabaseConnectionException, KeycloakRemoteException, AccessDeniedException {
         log.debug("endpoint find query, databaseId={}, queryId={}, {}", databaseId, queryId, PrincipalUtil.formatForDebug(principal));
         /* check */
-        endpointValidator.validateOnlyAccessOrPublic(databaseId, queryId, principal);
+        endpointValidator.validateOnlyAccessOrPublic(databaseId, principal);
         /* find */
         final Query query = storeService.findOne(databaseId, queryId, principal);
         final QueryDto dto = queryMapper.queryToQueryDto(query);
         dto.setCreator(userMapper.userToUserDto(userService.findByUsername(query.getCreatedBy())));
         final List<Identifier> identifiers = identifierService.findByDatabaseIdAndQueryId(databaseId, queryId);
         if (!identifiers.isEmpty()) {
-            dto.setIdentifier(identifierMapper.identifierToIdentifierDto(identifiers.get(0)));
+            dto.setIdentifiers(identifiers.stream()
+                    .map(identifierMapper::identifierToIdentifierDto)
+                    .toList());
         }
         log.trace("find query resulted in query {}", dto);
         return ResponseEntity.ok(dto);

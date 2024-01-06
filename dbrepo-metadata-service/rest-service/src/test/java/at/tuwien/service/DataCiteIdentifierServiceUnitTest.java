@@ -35,6 +35,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.security.Principal;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -86,11 +87,17 @@ public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
 
     @BeforeEach
     public void beforeEach() {
+        TABLE_1.setColumns(TABLE_1_COLUMNS);
+        TABLE_2.setColumns(TABLE_2_COLUMNS);
+        TABLE_3.setColumns(TABLE_3_COLUMNS);
+        TABLE_4.setColumns(TABLE_4_COLUMNS);
+        /* metadata database */
         licenseRepository.save(LICENSE_1);
         imageRepository.save(IMAGE_1);
         userRepository.save(USER_1);
-        containerRepository.save(CONTAINER_1_SIMPLE);
-        databaseRepository.save(DATABASE_1_SIMPLE);
+        containerRepository.save(CONTAINER_1);
+        DATABASE_1.setAccesses(List.of());
+        databaseRepository.save(DATABASE_1);
     }
 
     @Test
@@ -98,7 +105,7 @@ public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
             throws DatabaseNotFoundException, UserNotFoundException, IdentifierAlreadyExistsException,
             QueryNotFoundException, IdentifierPublishingNotAllowedException, RemoteUnavailableException,
             IdentifierRequestException, ViewNotFoundException, QueryStoreException, DatabaseConnectionException,
-            ImageNotSupportedException {
+            ImageNotSupportedException, IdentifierNotFoundException {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
         final DataCiteBody<DataCiteDoi> response =
                 new DataCiteBody<>(new DataCiteData<>(null, "dois", new DataCiteDoi(IDENTIFIER_1_DOI_NOT_NULL)));
@@ -118,11 +125,10 @@ public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void create_invalidMetadata_fails()
-            throws IdentifierAlreadyExistsException, UserNotFoundException, QueryNotFoundException,
-            DatabaseNotFoundException, RemoteUnavailableException, IdentifierPublishingNotAllowedException,
-            IdentifierRequestException, ViewNotFoundException, QueryStoreException, DatabaseConnectionException,
-            ImageNotSupportedException {
+    public void create_invalidMetadata_fails() throws IdentifierAlreadyExistsException, UserNotFoundException,
+            QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException,
+            IdentifierPublishingNotAllowedException, IdentifierRequestException, ViewNotFoundException,
+            QueryStoreException, DatabaseConnectionException, ImageNotSupportedException, IdentifierNotFoundException {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
@@ -137,15 +143,14 @@ public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
         assertThrows(IdentifierRequestException.class, () -> {
             dataCiteIdentifierService.create(IDENTIFIER_1_DTO_REQUEST, principal);
         });
-        assertEquals(0, identifierRepository.count());
+        assertEquals(4, identifierRepository.count());
     }
 
     @Test
-    public void create_restClientException_fails()
-            throws IdentifierAlreadyExistsException, UserNotFoundException, QueryNotFoundException,
-            DatabaseNotFoundException, RemoteUnavailableException, IdentifierPublishingNotAllowedException,
-            IdentifierRequestException, ViewNotFoundException, QueryStoreException, DatabaseConnectionException,
-            ImageNotSupportedException {
+    public void create_restClientException_fails() throws IdentifierAlreadyExistsException, UserNotFoundException,
+            QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException,
+            IdentifierPublishingNotAllowedException, IdentifierRequestException, ViewNotFoundException,
+            QueryStoreException, DatabaseConnectionException, ImageNotSupportedException, IdentifierNotFoundException {
         final Principal principal = new BasicUserPrincipal(USER_1_USERNAME);
 
         /* mock */
@@ -160,68 +165,7 @@ public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
         assertThrows(InternalError.class, () -> {
             dataCiteIdentifierService.create(IDENTIFIER_1_DTO_REQUEST, principal);
         });
-        assertEquals(0, identifierRepository.count());
-    }
-
-    @Test
-    public void update_existing_succeeds() throws IdentifierRequestException, UserNotFoundException,
-            QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException, IdentifierNotFoundException,
-            QueryStoreException, DatabaseConnectionException, ImageNotSupportedException {
-        final DataCiteBody<DataCiteDoi> response =
-                new DataCiteBody<>(new DataCiteData<>(null, "dois", new DataCiteDoi(IDENTIFIER_1_DOI_NOT_NULL)));
-
-        /* mock */
-        when(identifierService.update(eq(IDENTIFIER_1_ID), any(IdentifierSaveDto.class), any(Principal.class)))
-                .thenAnswer((i) -> identifierRepository.save(IDENTIFIER_1_WITH_DOI));
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class),
-                any(ParameterizedTypeReference.class), eq(IDENTIFIER_1_DOI_NOT_NULL)))
-                .thenReturn(ResponseEntity.ok(response));
-        when(restTemplateBuilder.build()).thenReturn(restTemplate);
-
-        /* test */
-        Identifier result = dataCiteIdentifierService.update(IDENTIFIER_1_ID, IDENTIFIER_1_DTO_UPDATE_REQUEST, USER_1_PRINCIPAL);
-        assertTrue(identifierRepository.existsById(IDENTIFIER_1_ID));
-        assertEquals(IDENTIFIER_1_DOI_NOT_NULL, result.getDoi());
-    }
-
-    @Test
-    public void update_invalidMetadata_fails() throws UserNotFoundException, QueryNotFoundException,
-            DatabaseNotFoundException, RemoteUnavailableException, IdentifierNotFoundException, QueryStoreException,
-            DatabaseConnectionException, ImageNotSupportedException {
-
-        /* mock */
-        when(identifierService.update(eq(IDENTIFIER_1_ID), any(IdentifierSaveDto.class), any(Principal.class)))
-                .thenAnswer((i) -> identifierRepository.save(IDENTIFIER_1_WITH_DOI));
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class),
-                any(ParameterizedTypeReference.class), eq(IDENTIFIER_1_DOI_NOT_NULL)))
-                .thenThrow(HttpClientErrorException.BadRequest.class);
-        when(restTemplateBuilder.build()).thenReturn(restTemplate);
-
-        /* test */
-        assertThrows(IdentifierRequestException.class, () -> {
-            dataCiteIdentifierService.update(IDENTIFIER_1_ID, IDENTIFIER_1_DTO_UPDATE_REQUEST, USER_1_PRINCIPAL);
-        });
-        assertEquals(0, identifierRepository.count());
-    }
-
-    @Test
-    public void update_restClientException_fails() throws UserNotFoundException, QueryNotFoundException,
-            DatabaseNotFoundException, RemoteUnavailableException, IdentifierNotFoundException, QueryStoreException,
-            DatabaseConnectionException, ImageNotSupportedException {
-
-        /* mock */
-        when(identifierService.update(eq(IDENTIFIER_1_ID), any(IdentifierSaveDto.class), any(Principal.class)))
-                .thenAnswer((i) -> identifierRepository.save(IDENTIFIER_1_WITH_DOI));
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class),
-                any(ParameterizedTypeReference.class), eq(IDENTIFIER_1_DOI_NOT_NULL)))
-                .thenThrow(RestClientException.class);
-        when(restTemplateBuilder.build()).thenReturn(restTemplate);
-
-        /* test */
-        assertThrows(InternalError.class, () -> {
-            dataCiteIdentifierService.update(IDENTIFIER_1_ID, IDENTIFIER_1_DTO_UPDATE_REQUEST, USER_1_PRINCIPAL);
-        });
-        assertEquals(0, identifierRepository.count());
+        assertEquals(4, identifierRepository.count());
     }
 
 }

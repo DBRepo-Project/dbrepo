@@ -16,7 +16,7 @@ class SearchService {
     })
   }
 
-  search (index, searchData) {
+  search (filter, searchData) {
     // transform values to what the search API expects
     let localSearchData = Object.assign({}, searchData)
     const searchTerm = localSearchData.search_term
@@ -33,11 +33,9 @@ class SearchService {
       field_value_pairs: { ...localSearchData }
     }
     return new Promise((resolve, reject) => {
-      api.post(`/api/search${index ? `/${index}` : ''}`, payload, { headers: { Accept: 'application/json' } })
+      api.post(`/api/search${filter ? `/${filter}` : ''}`, payload, { headers: { Accept: 'application/json' } })
         .then((response) => {
-          const { hits } = response.data
-          console.debug('advanced search response', hits.hits)
-          resolve(hits.hits)
+          resolve(response.data)
         })
         .catch((error) => {
           displayError('Failed to load search results', error)

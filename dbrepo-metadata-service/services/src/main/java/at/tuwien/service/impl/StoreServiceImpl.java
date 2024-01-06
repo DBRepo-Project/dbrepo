@@ -55,10 +55,14 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
             final Connection connection = dataSource.getConnection();
             final PreparedStatement preparedStatement = storeMapper.queryStoreRawSelectAllQuery(connection, persisted);
             final ResultSet resultSet = preparedStatement.executeQuery();
-            return resultSetToQueryList(resultSet);
+            final List<Query> queries = new LinkedList<>();
+            while (resultSet.next()) {
+                queries.add(storeMapper.resultSetToQuery(resultSet));
+            }
+            return queries;
         } catch (SQLException e) {
-            log.error("Failed to find queries in container with database with id {}, reason: {}", databaseId, e.getMessage());
-            throw new QueryStoreException("Failed to find queries: " + e.getMessage());
+            log.error("Failed to find queries in database with id {}: {}", databaseId, e.getMessage());
+            throw new QueryStoreException("Failed to find queries in database with id " + database);
         } finally {
             dataSource.close();
         }
@@ -82,12 +86,12 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
             final PreparedStatement preparedStatement = storeMapper.queryStoreRawSelectOneQuery(connection, queryId);
             final ResultSet resultSet = preparedStatement.executeQuery();
             if (!resultSet.next()) {
-                log.error("Query not found with id {}", queryId);
-                throw new QueryNotFoundException("Query not found with id " + queryId);
+                log.error("Query not found with id {} in database with id {}", queryId, databaseId);
+                throw new QueryNotFoundException("Query not found with id " + queryId + "  in database with id " + databaseId);
             }
             return storeMapper.resultSetToQuery(resultSet);
         } catch (SQLException e) {
-            log.error("Failed to retrieve first row for query with id {}, because {}", queryId, e.getMessage());
+            log.error("Failed to retrieve first row for query with id {}: {}", queryId, e.getMessage());
             throw new QueryStoreException("Failed to retrieve first row for query with id " + queryId);
         } finally {
             dataSource.close();
@@ -98,7 +102,8 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
     @Transactional(readOnly = true)
     public Query insert(Long databaseId, ExecuteStatementDto metadata, Principal principal)
             throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
-            UserNotFoundException, DatabaseConnectionException, KeycloakRemoteException, AccessDeniedException {
+            UserNotFoundException, DatabaseConnectionException, KeycloakRemoteException, AccessDeniedException,
+            QueryNotFoundException {
         /* find */
         final Database database = databaseService.find(databaseId);
         if (!database.getContainer().getImage().getName().equals("mariadb")) {
@@ -124,8 +129,8 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
             final PreparedStatement preparedStatement = storeMapper.queryStoreRawSelectOneQuery(connection, queryId);
             final ResultSet resultSet = preparedStatement.executeQuery();
             if (!resultSet.next()) {
-                log.error("Failed to retrieve query with id {}", queryId);
-                throw new QueryStoreException("Failed to retrieve query with id " + queryId);
+                log.error("Query not found with id {} in database with id {}", queryId, databaseId);
+                throw new QueryNotFoundException("Query not found with id " + queryId + "  in database with id " + databaseId);
             }
             final Query query = storeMapper.resultSetToQuery(resultSet);
             log.info("Found query with id {} into the query store of database with id {}", queryId, databaseId);
@@ -159,12 +164,12 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
             final PreparedStatement preparedStatement1 = storeMapper.queryStoreRawSelectOneQuery(connection, queryId);
             final ResultSet resultSet = preparedStatement1.executeQuery();
             if (!resultSet.next()) {
-                log.error("Failed to retrieve first row for query with id {}", queryId);
-                throw new QueryStoreException("Failed to retrieve first row for query with id " + queryId);
+                log.error("Failed to retrieve first row for query with id {} in database with id {}", queryId, databaseId);
+                throw new QueryStoreException("Failed to retrieve first row for query with id " + queryId + "in database with id " + databaseId);
             }
             out = storeMapper.resultSetToQuery(resultSet);
         } catch (SQLException e) {
-            log.error("Failed to update query, reason: {}", e.getMessage());
+            log.error("Failed to update query: {}", e.getMessage());
             throw new QueryStoreException("Failed to update query", e);
         } finally {
             dataSource.close();
@@ -173,7 +178,7 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public void deleteStaleQueries() throws ImageNotSupportedException, QueryStoreException {
         /* find */
         final List<Database> databases = databaseService.findAll();
@@ -192,20 +197,12 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
                 final int affected = preparedStatement.executeUpdate();
                 log.debug("delete stale queries affected {} rows", affected);
             } catch (SQLException e) {
-                log.error("Failed to delete stale queries in database with id {}, reason: {}", database.getId(), e.getMessage());
-                throw new QueryStoreException("Failed to delete stale queries in database with id " + database.getId() + ": " + e.getMessage());
+                log.error("Failed to delete stale queries in database with id {}: {}", database.getId(), e.getMessage());
+                throw new QueryStoreException("Failed to delete stale queries in database with id " + database.getId(), e);
             } finally {
                 dataSource.close();
             }
         }
-    }
-
-    protected List<Query> resultSetToQueryList(ResultSet resultSet) throws SQLException {
-        final List<Query> queries = new LinkedList<>();
-        while (resultSet.next()) {
-            queries.add(storeMapper.resultSetToQuery(resultSet));
-        }
-        return queries;
     }
 
 

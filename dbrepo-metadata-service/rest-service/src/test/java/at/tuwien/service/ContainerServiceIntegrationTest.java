@@ -41,8 +41,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
 
     @BeforeEach
     public void beforeEach() {
-        /* mock data */
-        imageRepository.save(IMAGE_1_SIMPLE);
+        imageRepository.save(IMAGE_1);
     }
 
     @Test
@@ -132,7 +131,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
 
         /* mock */
         containerRepository.save(CONTAINER_1);
-        containerRepository.save(CONTAINER_2_SIMPLE);
+        containerRepository.save(CONTAINER_2);
 
         /* test */
         final List<Container> response = containerService.getAll(null);
@@ -144,7 +143,7 @@ public class ContainerServiceIntegrationTest extends BaseUnitTest {
 
         /* mock */
         containerRepository.save(CONTAINER_1);
-        containerRepository.save(CONTAINER_2_SIMPLE);
+        containerRepository.save(CONTAINER_2);
 
         /* test */
         final List<Container> response = containerService.getAll(1);

@@ -20,8 +20,8 @@ export default ({ store }) => {
       clientSecret: state.clientSecret,
       searchUsername: state.searchUsername,
       searchPassword: state.searchPassword,
-      databaseCount: state.databaseCount,
-      doiUrl: state.doiUrl
+      doiUrl: state.doiUrl,
+      subset: state.subset
     })
   }).plugin(store)
 }

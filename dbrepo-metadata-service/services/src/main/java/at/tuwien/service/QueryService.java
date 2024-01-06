@@ -7,18 +7,13 @@ import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.TableCsvDeleteDto;
 import at.tuwien.api.database.table.TableCsvDto;
-import at.tuwien.api.database.table.TableCsvUpdateDto;
-import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.View;
-import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.exception.*;
 import at.tuwien.querystore.Query;
-import net.sf.jsqlparser.JSQLParserException;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
 import java.time.Instant;
-import java.util.List;
 
 @Service
 public interface QueryService {
@@ -44,7 +39,8 @@ public interface QueryService {
     QueryResultDto execute(Long databaseId, ExecuteStatementDto statement, Principal principal, Long page, Long size,
                            SortType sortDirection, String sortColumn) throws DatabaseNotFoundException,
             ImageNotSupportedException, QueryMalformedException, QueryStoreException, ColumnParseException,
-            UserNotFoundException, TableMalformedException, DatabaseConnectionException, KeycloakRemoteException, AccessDeniedException;
+            UserNotFoundException, TableMalformedException, DatabaseConnectionException, KeycloakRemoteException,
+            AccessDeniedException, QueryNotFoundException;
 
     /**
      * Re-Executes an arbitrary query on the database. We allow the user to only view the data, therefore the
@@ -107,8 +103,8 @@ public interface QueryService {
      * @throws TableMalformedException    The table is malformed.
      * @throws QueryMalformedException    The query is malformed.
      */
-    QueryResultDto tableFindAll(Long databaseId, Long tableId, Instant timestamp,
-                                Long page, Long size, Principal principal) throws TableNotFoundException, DatabaseNotFoundException,
+    QueryResultDto tableFindAll(Long databaseId, Long tableId, Instant timestamp, Long page, Long size,
+                                Principal principal) throws TableNotFoundException, DatabaseNotFoundException,
             ImageNotSupportedException, DatabaseConnectionException, TableMalformedException, PaginationException,
             QueryMalformedException, UserNotFoundException;
 
@@ -173,7 +169,8 @@ public interface QueryService {
      */
     ExportResource findOne(Long databaseId, Long queryId, Principal principal) throws DatabaseNotFoundException,
             ImageNotSupportedException, TableMalformedException, FileStorageException, QueryStoreException,
-            QueryNotFoundException, QueryMalformedException, DatabaseConnectionException, UserNotFoundException, DataDbSidecarException;
+            QueryNotFoundException, QueryMalformedException, DatabaseConnectionException, UserNotFoundException,
+            DataDbSidecarException;
 
     /**
      * Count the total tuples for a given table id within a database id at a given time.
@@ -189,7 +186,9 @@ public interface QueryService {
      * @throws ImageNotSupportedException The image is not supported.
      */
     Long tableCount(Long databaseId, Long tableId, Instant timestamp, Principal principal)
-            throws DatabaseNotFoundException, TableNotFoundException, TableMalformedException, ImageNotSupportedException, DatabaseConnectionException, QueryMalformedException, QueryStoreException, UserNotFoundException;
+            throws DatabaseNotFoundException, TableNotFoundException, TableMalformedException,
+            ImageNotSupportedException, DatabaseConnectionException, QueryMalformedException, QueryStoreException,
+            UserNotFoundException;
 
     /**
      * Count the total tuples for a given table id within a database id at a given time.
@@ -202,25 +201,9 @@ public interface QueryService {
      * @throws TableMalformedException    The view columns are messed up what we got from the metadata database.
      * @throws ImageNotSupportedException The image is not supported.
      */
-    Long viewCount(Long databaseId, View view, Principal principal)
-            throws DatabaseNotFoundException, TableMalformedException, ImageNotSupportedException, DatabaseConnectionException, QueryMalformedException, QueryStoreException, UserNotFoundException;
-
-    /**
-     * @param databaseId The database id.
-     * @param tableId    The table id.
-     * @param data
-     * @param principal  The user principal.
-     * @throws ImageNotSupportedException  The image is not supported.
-     * @throws TableMalformedException     The table does not exist in the metadata database.
-     * @throws DatabaseNotFoundException   The database was not found in the remote database.
-     * @throws TableNotFoundException      The table was not found in the metadata database.
-     * @throws DatabaseConnectionException The database was not found in the remote database.
-     * @throws QueryMalformedException     The query is malformed.
-     */
-    @Deprecated
-    void update(Long databaseId, Long tableId, TableCsvUpdateDto data, Principal principal)
-            throws ImageNotSupportedException, TableMalformedException, DatabaseNotFoundException,
-            TableNotFoundException, DatabaseConnectionException, QueryMalformedException, UserNotFoundException;
+    Long viewCount(Long databaseId, View view, Principal principal) throws DatabaseNotFoundException,
+            TableMalformedException, ImageNotSupportedException, DatabaseConnectionException, QueryMalformedException,
+            QueryStoreException, UserNotFoundException;
 
     /**
      * Insert data from AMQP client into a table of a table-database id tuple, we need the "root" role for this as the
@@ -236,7 +219,8 @@ public interface QueryService {
      * @throws TableNotFoundException     The table is not found in the metadata database.
      */
     void insert(Long databaseId, Long tableId, TableCsvDto data, Principal principal) throws ImageNotSupportedException,
-            TableMalformedException, DatabaseNotFoundException, TableNotFoundException, DatabaseConnectionException, UserNotFoundException;
+            TableMalformedException, DatabaseNotFoundException, TableNotFoundException, DatabaseConnectionException,
+            UserNotFoundException;
 
     /**
      * Deletes a tuple by given constraint set
@@ -270,15 +254,6 @@ public interface QueryService {
      * @throws QueryMalformedException    The query is malformed.
      */
     void insert(Long databaseId, Long tableId, ImportDto data, Principal principal) throws ImageNotSupportedException,
-            TableMalformedException, DatabaseNotFoundException, TableNotFoundException, DatabaseConnectionException, QueryMalformedException, UserNotFoundException, DataDbSidecarException;
-
-    /**
-     * Parses the stored columns from a given query.
-     *
-     * @param query    The query.
-     * @param database The database that contains the list of tables with list of columns.
-     * @return List of columns in the order they are referenced in the query.
-     * @throws JSQLParserException The columns could not be extracted from the query.
-     */
-    List<TableColumn> parseColumns(String query, Database database) throws JSQLParserException;
+            TableMalformedException, DatabaseNotFoundException, TableNotFoundException, DatabaseConnectionException,
+            QueryMalformedException, UserNotFoundException, DataDbSidecarException;
 }

@@ -5,16 +5,16 @@ import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.identifier.IdentifierSaveDto;
 import at.tuwien.api.identifier.IdentifierTypeDto;
 import at.tuwien.api.user.external.ExternalMetadataDto;
+import at.tuwien.entities.database.Database;
+import at.tuwien.entities.database.View;
+import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.IdentifierMapper;
-import at.tuwien.service.AccessService;
-import at.tuwien.service.IdentifierService;
-import at.tuwien.service.MetadataService;
-import at.tuwien.service.UserService;
+import at.tuwien.querystore.Query;
+import at.tuwien.service.*;
 import at.tuwien.utils.PrincipalUtil;
 import at.tuwien.utils.UserUtil;
-import io.micrometer.core.annotation.Timed;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -43,15 +43,25 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/identifier")
 public class IdentifierEndpoint {
 
+    private final ViewService viewService;
+    private final TableService tableService;
+    private final StoreService storeService;
     private final AccessService accessService;
+    private final DatabaseService databaseService;
     private final MetadataService metadataService;
     private final IdentifierMapper identifierMapper;
     private final IdentifierService identifierService;
 
     @Autowired
-    public IdentifierEndpoint(AccessService accessService, MetadataService metadataService,
-                              IdentifierMapper identifierMapper, IdentifierService identifierService) {
+    public IdentifierEndpoint(ViewService viewService, TableService tableService, StoreService storeService,
+                              AccessService accessService, DatabaseService databaseService,
+                              MetadataService metadataService, IdentifierMapper identifierMapper,
+                              IdentifierService identifierService) {
+        this.viewService = viewService;
+        this.tableService = tableService;
+        this.storeService = storeService;
         this.accessService = accessService;
+        this.databaseService = databaseService;
         this.metadataService = metadataService;
         this.identifierMapper = identifierMapper;
         this.identifierService = identifierService;
@@ -71,9 +81,10 @@ public class IdentifierEndpoint {
     public ResponseEntity<List<IdentifierDto>> list(@RequestParam(required = false) Long dbid,
                                                     @RequestParam(required = false) Long qid,
                                                     @RequestParam(required = false) Long vid,
+                                                    @RequestParam(required = false) Long tid,
                                                     @RequestParam(required = false) IdentifierTypeDto type) {
-        log.debug("endpoint find identifiers, dbid={}, qid={}, vid={}, type={}", dbid, qid, vid, type);
-        final List<IdentifierDto> dto = identifierService.findAll(type, dbid, qid, vid)
+        log.debug("endpoint find identifiers, dbid={}, qid={}, vid={}, tid={}, type={}", dbid, qid, vid, tid, type);
+        final List<IdentifierDto> dto = identifierService.findAll(type, dbid, qid, vid, tid)
                 .stream()
                 .map(identifierMapper::identifierToIdentifierDto)
                 .collect(Collectors.toList());
@@ -99,6 +110,11 @@ public class IdentifierEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "403",
                     description = "Insufficient access rights or authorities",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Failed to find database, table or view",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -128,24 +144,61 @@ public class IdentifierEndpoint {
             throws IdentifierAlreadyExistsException, QueryNotFoundException, IdentifierPublishingNotAllowedException,
             RemoteUnavailableException, UserNotFoundException, DatabaseNotFoundException, IdentifierRequestException,
             NotAllowedException, ViewNotFoundException, QueryStoreException, DatabaseConnectionException,
-            ImageNotSupportedException {
+            ImageNotSupportedException, IdentifierNotFoundException, TableNotFoundException, TableMalformedException,
+            QueryMalformedException, FileStorageException, DataDbSidecarException {
         log.debug("endpoint create identifier, data={}, {}", data, PrincipalUtil.formatForDebug(principal));
-        if (data.getType().equals(IdentifierTypeDto.SUBSET) && (data.getQueryId() == null || data.getViewId() != null)) {
-            log.error("Identifier of type subset need to have a qid and not a vid present");
-            throw new IdentifierRequestException("Identifier of type subset need to have a qid and not a vid present");
-        } else if (data.getType().equals(IdentifierTypeDto.DATABASE) && (data.getQueryId() != null || data.getViewId() != null)) {
-            log.error("Identifier of type database must not have a qid and not a vid present");
-            throw new IdentifierRequestException("Identifier of type database must not have a qid and not a vid present");
-        } else if (data.getType().equals(IdentifierTypeDto.VIEW) && data.getQueryId() != null) {
-            log.error("Identifier of type view must not have a qid present");
-            throw new IdentifierRequestException("Identifier of type database must not have a qid present");
-        }
         try {
             accessService.find(data.getDatabaseId(), UserUtil.getId(principal));
         } catch (AccessDeniedException e) {
             if (!UserUtil.hasRole(principal, "create-foreign-identifier")) {
                 log.error("Failed to create identifier: insufficient access");
                 throw new NotAllowedException("Failed to create identifier: insufficient access");
+            }
+        }
+        final Database database = databaseService.find(data.getDatabaseId());
+        switch (data.getType()) {
+            case VIEW -> {
+                if (data.getDatabaseId() == null || data.getQueryId() != null || data.getViewId() == null || data.getTableId() != null) {
+                    log.error("Failed to create identifier: only parameters database_id & view_id must be present");
+                    throw new IdentifierRequestException("Failed to create identifier: only parameters database_id & view_id must be present");
+                }
+                final View view = viewService.findById(data.getViewId());
+                if (!database.getOwnedBy().equals(UserUtil.getId(principal)) && !view.getCreatedBy().equals(UserUtil.getId(principal))) {
+                    log.error("Failed to create identifier: insufficient role");
+                    throw new IdentifierRequestException("Failed to create identifier: insufficient role");
+                }
+            }
+            case TABLE -> {
+                if (data.getDatabaseId() == null || data.getQueryId() != null || data.getViewId() != null || data.getTableId() == null) {
+                    log.error("Failed to create identifier: only parameters database_id & table_id must be present");
+                    throw new IdentifierRequestException("Failed to create identifier: only parameters database_id & table_id must be present");
+                }
+                final Table table = tableService.find(data.getDatabaseId(), data.getTableId());
+                if (!database.getOwnedBy().equals(UserUtil.getId(principal)) && !table.getOwnedBy().equals(UserUtil.getId(principal))) {
+                    log.error("Failed to create identifier: insufficient role");
+                    throw new IdentifierRequestException("Failed to create identifier: insufficient role");
+                }
+            }
+            case SUBSET -> {
+                if (data.getDatabaseId() == null || data.getQueryId() == null || data.getViewId() != null || data.getTableId() != null) {
+                    log.error("Failed to create identifier: only parameters database_id & query_id must be present");
+                    throw new IdentifierRequestException("Failed to create identifier: only parameters database_id & query_id must be present");
+                }
+                final Query query = storeService.findOne(data.getDatabaseId(), data.getQueryId(), principal);
+                if (!database.getOwnedBy().equals(UserUtil.getId(principal)) && !query.getCreatedBy().equals(UserUtil.getId(principal).toString())) {
+                    log.error("Failed to create identifier: insufficient role");
+                    throw new IdentifierRequestException("Failed to create identifier: insufficient role");
+                }
+            }
+            case DATABASE -> {
+                if (data.getDatabaseId() == null || data.getQueryId() != null || data.getViewId() != null || data.getTableId() != null) {
+                    log.error("Failed to create identifier: only parameters database_id must be present");
+                    throw new IdentifierRequestException("Failed to create identifier: only parameters database_id must be present");
+                }
+                if (!database.getOwnedBy().equals(UserUtil.getId(principal))) {
+                    log.error("Failed to create identifier: insufficient role");
+                    throw new IdentifierRequestException("Failed to create identifier: insufficient role");
+                }
             }
         }
         final Identifier identifier = identifierService.create(data, principal);

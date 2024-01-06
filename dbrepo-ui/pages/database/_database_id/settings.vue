@@ -1,6 +1,6 @@
 <template>
   <div v-if="user">
-    <DBToolbar ref="toolbar" />
+    <DatabaseToolbar ref="toolbar" />
     <v-progress-linear v-if="loading" />
     <v-tabs-items v-model="tab">
       <v-tab-item>
@@ -90,27 +90,27 @@
     <v-dialog
       v-model="editAccessDialog"
       max-width="640">
-      <EditAccess :username="username" :access-type="accessType" @close-dialog="closeDialog" />
+      <EditAccess :user-id="userId" :access-type="accessType" @close-dialog="closeDialog" />
     </v-dialog>
   </div>
 </template>
 
 <script>
-import DBToolbar from '@/components/DBToolbar.vue'
+import DatabaseToolbar from '@/components/DatabaseToolbar.vue'
 import EditAccess from '@/components/dialogs/EditAccess.vue'
 import DatabaseService from '@/api/database.service'
 import UserService from '@/api/user.service'
 
 export default {
   components: {
-    DBToolbar,
+    DatabaseToolbar,
     EditAccess
   },
   data () {
     return {
       dialogDelete: false,
       confirm: null,
-      username: null,
+      userId: null,
       accessType: null,
       users: [],
       loading: false,
@@ -263,12 +263,12 @@ export default {
         })
     },
     giveAccess () {
-      this.username = null
+      this.userId = null
       this.accessType = null
       this.editAccessDialog = true
     },
     modifyAccess (item) {
-      this.username = item.user.username
+      this.userId = item.user.id
       this.accessType = item.type
       this.editAccessDialog = true
     },

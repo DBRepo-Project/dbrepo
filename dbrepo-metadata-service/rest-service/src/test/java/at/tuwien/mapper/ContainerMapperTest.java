@@ -4,15 +4,10 @@ package at.tuwien.mapper;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.annotations.MockAmqp;
 import at.tuwien.annotations.MockOpensearch;
-import at.tuwien.api.database.DatabaseDto;
-import at.tuwien.api.user.UserBriefDto;
-import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.container.Container;
-import at.tuwien.exception.QueryMalformedException;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 

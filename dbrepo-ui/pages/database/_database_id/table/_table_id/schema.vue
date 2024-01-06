@@ -1,62 +1,69 @@
 <template>
   <div>
     <TableToolbar :selection="selection" />
-    <v-data-table
-      v-if="table"
-      class="full-width"
-      disable-sort
-      hide-default-footer
-      :items-per-page="-1"
-      :headers="headers"
-      :items="table.columns">
-      <template v-slot:item.is_null_allowed="{ item }">
-        <span v-if="item.is_null_allowed">●</span> {{ item.is_null_allowed }}
-      </template>
-      <template v-slot:item.unique="{ item }">
-        <span v-if="isUnique(item)">●</span> {{ isUnique(item) }}
-      </template>
-      <template v-slot:item.extra="{ item }">
-        <pre>{{ extra(item) }}</pre>
-      </template>
-      <template v-slot:item.is_primary_key="{ item }">
-        <span v-if="item.is_primary_key">●</span> {{ item.is_primary_key }}
-      </template>
-      <template v-slot:item.auto_generated="{ item }">
-        <span v-if="item.auto_generated">●</span> {{ item.auto_generated }}
-      </template>
-      <template v-slot:item.column_concept="{ item }">
-        <v-btn v-if="canAssignSemanticInformation && !hasConcept(item)" small @click="pick(item, 'concept')">Assign</v-btn>
-        <v-btn
-          v-if="canAssignSemanticInformation && hasConcept(item)"
-          :title="item.concept.uri"
-          color="secondary"
-          small
-          @click="pick(item, 'concept')">
-          <span v-if="item.concept.name" v-text="item.concept.name" />
-          <span v-else v-text="item.concept.uri" />
-        </v-btn>
-        <a v-if="!canAssignSemanticInformation && hasConcept(item)" :href="item.concept.uri" target="_blank">
-          <span v-if="item.concept.name" v-text="item.concept.name" />
-          <span v-else v-text="item.concept.uri" />
-        </a>
-      </template>
-      <template v-slot:item.column_unit="{ item }">
-        <v-btn v-if="canAssignSemanticInformation && !hasUnit(item)" small @click="pick(item, 'unit')">Assign</v-btn>
-        <v-btn
-          v-if="canAssignSemanticInformation && hasUnit(item)"
-          :title="item.unit.uri"
-          color="secondary"
-          small
-          @click="pick(item, 'unit')">
-          <span v-if="item.unit.name" v-text="item.unit.name" />
-          <span v-else v-text="item.unit.uri" />
-        </v-btn>
-        <a v-if="!canAssignSemanticInformation && hasUnit(item)" :href="item.unit.uri" target="_blank">
-          <span v-if="item.unit.name" v-text="item.unit.name" />
-          <span v-else v-text="item.unit.uri" />
-        </a>
-      </template>
-    </v-data-table>
+    <v-toolbar color="secondary white--text" flat>
+      <strong>
+        <v-toolbar-title v-text="title" />
+      </strong>
+    </v-toolbar>
+    <v-card tile>
+      <v-data-table
+        v-if="table"
+        class="full-width"
+        disable-sort
+        hide-default-footer
+        :items-per-page="-1"
+        :headers="headers"
+        :items="table.columns">
+        <template v-slot:item.is_null_allowed="{ item }">
+          <span v-if="item.is_null_allowed">●</span> {{ item.is_null_allowed }}
+        </template>
+        <template v-slot:item.unique="{ item }">
+          <span v-if="isUnique(item)">●</span> {{ isUnique(item) }}
+        </template>
+        <template v-slot:item.extra="{ item }">
+          <pre>{{ extra(item) }}</pre>
+        </template>
+        <template v-slot:item.is_primary_key="{ item }">
+          <span v-if="item.is_primary_key">●</span> {{ item.is_primary_key }}
+        </template>
+        <template v-slot:item.auto_generated="{ item }">
+          <span v-if="item.auto_generated">●</span> {{ item.auto_generated }}
+        </template>
+        <template v-slot:item.column_concept="{ item }">
+          <v-btn v-if="canAssignSemanticInformation && !hasConcept(item)" small @click="pick(item, 'concept')">Assign</v-btn>
+          <v-btn
+            v-if="canAssignSemanticInformation && hasConcept(item)"
+            :title="item.concept.uri"
+            color="secondary"
+            small
+            @click="pick(item, 'concept')">
+            <span v-if="item.concept.name" v-text="item.concept.name" />
+            <span v-else v-text="item.concept.uri" />
+          </v-btn>
+          <a v-if="!canAssignSemanticInformation && hasConcept(item)" :href="item.concept.uri" target="_blank">
+            <span v-if="item.concept.name" v-text="item.concept.name" />
+            <span v-else v-text="item.concept.uri" />
+          </a>
+        </template>
+        <template v-slot:item.column_unit="{ item }">
+          <v-btn v-if="canAssignSemanticInformation && !hasUnit(item)" small @click="pick(item, 'unit')">Assign</v-btn>
+          <v-btn
+            v-if="canAssignSemanticInformation && hasUnit(item)"
+            :title="item.unit.uri"
+            color="secondary"
+            small
+            @click="pick(item, 'unit')">
+            <span v-if="item.unit.name" v-text="item.unit.name" />
+            <span v-else v-text="item.unit.uri" />
+          </v-btn>
+          <a v-if="!canAssignSemanticInformation && hasUnit(item)" :href="item.unit.uri" target="_blank">
+            <span v-if="item.unit.name" v-text="item.unit.name" />
+            <span v-else v-text="item.unit.uri" />
+          </a>
+        </template>
+      </v-data-table>
+    </v-card>
     <v-dialog
       v-if="table && database"
       v-model="dialogSemantic"
@@ -121,6 +128,12 @@ export default {
     },
     roles () {
       return this.$store.state.roles
+    },
+    title () {
+      if (!this.table) {
+        return null
+      }
+      return this.table.constraints.checks.length > 0 ? `Constraints: ${this.table.constraints.checks}` : 'Schema'
     },
     canAssignSemanticInformation () {
       if (!this.user) {

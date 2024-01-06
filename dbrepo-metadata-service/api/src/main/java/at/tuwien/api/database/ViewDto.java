@@ -28,7 +28,6 @@ import java.util.UUID;
 @AllArgsConstructor
 @Jacksonized
 @ToString
-@Document(indexName = "view")
 public class ViewDto {
 
     @Id
@@ -50,8 +49,8 @@ public class ViewDto {
     @Field(name = "name", type = FieldType.Keyword)
     private String name;
 
-    @org.springframework.data.annotation.Transient
-    private IdentifierDto identifier;
+    @Field(name = "identifiers", type = FieldType.Nested)
+    private List<IdentifierDto> identifiers;
 
     @NotBlank
     @Schema(example = "air_quality")
@@ -91,7 +90,6 @@ public class ViewDto {
     private UUID createdBy;
 
     @NotNull
-    @Field(name = "creator", includeInParent = true, type = FieldType.Nested)
     private UserDto creator;
 
     @NotNull(message = "columns are required")

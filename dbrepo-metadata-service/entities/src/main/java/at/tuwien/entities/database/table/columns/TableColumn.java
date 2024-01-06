@@ -3,6 +3,7 @@ package at.tuwien.entities.database.table.columns;
 import at.tuwien.entities.container.image.ContainerImageDate;
 import at.tuwien.entities.database.View;
 import at.tuwien.entities.database.table.Table;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
@@ -38,18 +39,20 @@ public class TableColumn implements Comparable<TableColumn> {
     private Long id;
 
     @ToString.Exclude
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE})
     @JoinColumn(name = "dfid", referencedColumnName = "id")
     private ContainerImageDate dateFormat;
 
     @ToString.Exclude
-    @ManyToOne(fetch = FetchType.LAZY)
+    @org.springframework.data.annotation.Transient
+    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE})
     @JoinColumns({
             @JoinColumn(name = "tID", referencedColumnName = "id", nullable = false)
     })
     private Table table;
 
     @ToString.Exclude
+    @org.springframework.data.annotation.Transient
     @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE, mappedBy = "columns")
     private List<View> views;
 
@@ -66,7 +69,7 @@ public class TableColumn implements Comparable<TableColumn> {
     private Boolean isPrimaryKey;
 
     @Column
-    private Integer indexLength;
+    private Long indexLength;
 
     @Column
     private String alias;
@@ -76,7 +79,7 @@ public class TableColumn implements Comparable<TableColumn> {
     private TableColumnType columnType;
 
     @Column
-    private Integer length;
+    private Long length;
 
     @Column(nullable = false, columnDefinition = "BOOLEAN default true")
     private Boolean isNullAllowed;
@@ -84,8 +87,9 @@ public class TableColumn implements Comparable<TableColumn> {
     @Column(nullable = false)
     private Integer ordinalPosition;
 
-    @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP default NOW()")
     @CreatedDate
+    @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP default NOW()")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant created;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST})
@@ -111,10 +115,10 @@ public class TableColumn implements Comparable<TableColumn> {
     private List<String> sets;
 
     @Column
-    private Integer size;
+    private Long size;
 
     @Column
-    private Integer d;
+    private Long d;
 
     @Column(name = "val_min")
     private BigDecimal valMin;

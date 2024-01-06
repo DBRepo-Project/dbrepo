@@ -12,6 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -23,6 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @Log4j2
 @ExtendWith(SpringExtension.class)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @AutoConfigureMockMvc
 @SpringBootTest
 @MockAmqp
@@ -48,20 +50,23 @@ public class MetadataEndpointComponentTest extends BaseUnitTest {
     private DatabaseRepository databaseRepository;
 
     @Autowired
-    private IdentifierRepository identifierRepository;
-
-    @Autowired
     private UserRepository userRepository;
 
     @BeforeEach
     public void beforeEach() {
+        TABLE_1.setColumns(TABLE_1_COLUMNS);
+        TABLE_2.setColumns(TABLE_2_COLUMNS);
+        TABLE_3.setColumns(TABLE_3_COLUMNS);
+        TABLE_4.setColumns(TABLE_4_COLUMNS);
+        TABLE_5.setColumns(TABLE_5_COLUMNS);
+        TABLE_6.setColumns(TABLE_6_COLUMNS);
+        TABLE_7.setColumns(TABLE_7_COLUMNS);
         /* metadata database */
-        imageRepository.save(IMAGE_1_SIMPLE);
+        imageRepository.save(IMAGE_1);
         userRepository.saveAll(List.of(USER_1, USER_2));
         licenseRepository.save(LICENSE_1);
-        containerRepository.saveAll(List.of(CONTAINER_1_SIMPLE, CONTAINER_2_SIMPLE));
-        databaseRepository.saveAll(List.of(DATABASE_1_SIMPLE, DATABASE_2_SIMPLE));
-        identifierRepository.saveAll(List.of(IDENTIFIER_1, IDENTIFIER_2));
+        containerRepository.saveAll(List.of(CONTAINER_1, CONTAINER_2));
+        databaseRepository.saveAll(List.of(DATABASE_1, DATABASE_2));
     }
 
     @Test
@@ -105,7 +110,10 @@ public class MetadataEndpointComponentTest extends BaseUnitTest {
                 .andExpect(content().contentType("text/xml;charset=UTF-8"))
                 .andExpect(xpath("//request[@verb='ListIdentifiers']").exists())
                 .andExpect(xpath("//header[1]/identifier").string("oai:" + IDENTIFIER_1_ID))
-                .andExpect(xpath("//header[2]/identifier").string("doi:" + IDENTIFIER_2_DOI))
+                .andExpect(xpath("//header[2]/identifier").string("oai:" + IDENTIFIER_2_ID))
+                .andExpect(xpath("//header[3]/identifier").string("oai:" + IDENTIFIER_3_ID))
+                .andExpect(xpath("//header[4]/identifier").string("oai:" + IDENTIFIER_4_ID))
+                .andExpect(xpath("//header[5]/identifier").string("doi:" + IDENTIFIER_5_DOI))
                 .andExpect(status().isOk());
     }
 
@@ -136,12 +144,12 @@ public class MetadataEndpointComponentTest extends BaseUnitTest {
     public void getRecord_doi_succeeds() throws Exception {
 
         /* test */
-        this.mockMvc.perform(get("/api/oai?verb=GetRecord&identifier=doi:" + IDENTIFIER_2_DOI))
+        this.mockMvc.perform(get("/api/oai?verb=GetRecord&identifier=doi:" + IDENTIFIER_5_DOI))
                 .andDo(print())
                 .andExpect(content().contentType("text/xml;charset=UTF-8"))
                 .andExpect(xpath("//request[@verb='GetRecord']").exists())
-                .andExpect(xpath("//request[@identifier='doi:" + IDENTIFIER_2_DOI + "']").exists())
-                .andExpect(xpath("//header/identifier").string("doi:" + IDENTIFIER_2_DOI))
+                .andExpect(xpath("//request[@identifier='doi:" + IDENTIFIER_5_DOI + "']").exists())
+                .andExpect(xpath("//header/identifier").string("doi:" + IDENTIFIER_5_DOI))
                 .andExpect(status().isOk());
     }
 

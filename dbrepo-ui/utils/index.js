@@ -29,7 +29,7 @@ function isNonNegativeInteger (str) {
 }
 
 function formatDateUTC (str) {
-  if (str === null) {
+  if (!str) {
     return null
   }
   const date = new Date(str).toISOString().slice(0, -1)
@@ -37,7 +37,7 @@ function formatDateUTC (str) {
 }
 
 function formatYearUTC (str) {
-  if (str === null) {
+  if (!str) {
     return null
   }
   const date = new Date(str).toISOString().slice(0, -1)
@@ -45,7 +45,7 @@ function formatYearUTC (str) {
 }
 
 function formatMonthUTC (str) {
-  if (str === null) {
+  if (!str) {
     return null
   }
   const date = new Date(str).toISOString().slice(0, -1)
@@ -53,7 +53,7 @@ function formatMonthUTC (str) {
 }
 
 function formatDayUTC (str) {
-  if (str === null) {
+  if (!str) {
     return null
   }
   const date = new Date(str).toISOString().slice(0, -1)
@@ -61,14 +61,14 @@ function formatDayUTC (str) {
 }
 
 function formatTimestamp (str) {
-  if (str === null) {
+  if (!str) {
     return null
   }
   return format(new Date(str), 'yyyy-MM-dd HH:mm:ss')
 }
 
 function formatTimestampUTCLabel (str) {
-  if (str === null) {
+  if (!str) {
     return null
   }
   const date = new Date(str).toISOString().slice(0, -1)
@@ -76,7 +76,7 @@ function formatTimestampUTCLabel (str) {
 }
 
 function formatTimestampUTC (str) {
-  if (str === null) {
+  if (!str) {
     return null
   }
   const date = new Date(str).toISOString().slice(0, -1)

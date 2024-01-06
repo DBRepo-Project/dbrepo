@@ -1,0 +1,14 @@
+{
+  "tables.name": "Table Name",
+  "owner.id": "Owner ID",
+  "owner.username": "Owner Username",
+  "owner.attributes.orcid": "Owner ORCID",
+  "creator.orcid": "Creator ORCID",
+  "identifier.licenses.uri": "License URI",
+  "identifier.related_identifiers.type": "Related Identifier Type",
+  "identifier.funders.id": "Funder ID",
+  "identifier.result_hash": "Result Hash",
+  "is_public": "Public",
+  "tables.columns.concept.uri": "URI",
+  "tables.columns.unit.uri": "URI"
+}

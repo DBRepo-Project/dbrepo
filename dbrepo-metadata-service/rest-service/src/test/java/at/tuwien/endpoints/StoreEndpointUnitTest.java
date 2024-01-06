@@ -14,9 +14,7 @@ import at.tuwien.repository.mdb.UserRepository;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.impl.StoreServiceImpl;
-import jakarta.persistence.Access;
 import lombok.extern.log4j.Log4j2;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,7 +95,7 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_2_USERNAME, authorities = {"list-queries"})
-    public void findAll_privateNoAccess_fails() throws AccessDeniedException {
+    public void findAll_privateNoAccess_fails() throws AccessDeniedException, DatabaseNotFoundException {
 
         /* mock */
         doThrow(AccessDeniedException.class)

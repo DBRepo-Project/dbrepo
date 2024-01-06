@@ -9,9 +9,7 @@
     <div v-for="(item,i) in tables" :key="i">
       <v-divider v-if="i !== 0" class="mx-4" />
       <v-list-item-group>
-        <v-list-item
-          two-line
-          :to="`/database/${$route.params.database_id}/table/${item.id}`">
+        <v-list-item two-line :class="clazz(item)" :to="`/database/${$route.params.database_id}/table/${item.id}/info`">
           <v-list-item-content>
             <v-list-item-title v-text="item.name" />
             <v-list-item-subtitle class="mt-2">
@@ -19,12 +17,12 @@
               <span v-else>(no description)</span>
             </v-list-item-subtitle>
           </v-list-item-content>
-          <v-list-item-action>
+          <v-list-item-action v-if="item.identifiers && item.identifiers.length > 0">
             <v-tooltip left>
               <template v-slot:activator="{ on, attrs }">
-                <span v-bind="attrs" v-on="on" v-text="permissionAcronyms(item)" />
+                <v-icon color="primary" v-bind="attrs" v-on="on">mdi-identifier</v-icon>
               </template>
-              <span v-text="permissionTooltip(item)" />
+              Persistent identifier
             </v-tooltip>
           </v-list-item-action>
         </v-list-item>
@@ -46,18 +44,6 @@ export default {
       column: null,
       dialogSemantic: false,
       mode: 'unit',
-      tableDetails: {
-        id: null,
-        internal_name: null,
-        description: null,
-        queue_name: null,
-        routing_key: null,
-        columns: [],
-        created: null,
-        creator: {
-          username: null
-        }
-      },
       dialogDelete: false,
       headers: [
         { value: 'name', text: 'Name' },
@@ -100,27 +86,6 @@ export default {
         return null
       }
       return this.database.tables
-    },
-    createdUTC () {
-      if (this.tableDetails.created === undefined || this.tableDetails.created === null) {
-        return null
-      }
-      return formatTimestampUTCLabel(this.tableDetails.created)
-    },
-    canRead () {
-      if (this.database && this.database.is_public) {
-        return true
-      }
-      if (!this.user || !this.access) {
-        return false
-      }
-      return this.access.type === 'read' || this.access.type === 'write_own' || this.access.type === 'write_all'
-    },
-    canModify () {
-      if (!this.user || !this.access) {
-        return false
-      }
-      return this.access.type === 'write_own' || this.access.type === 'write_all'
     }
   },
   methods: {
@@ -129,18 +94,11 @@ export default {
       this.mode = mode
       this.dialogSemantic = true
     },
-    hasUnit (item) {
-      return item.unit !== null
+    clazz (table) {
+      return this.hasIdentifiers(table) ? 'primary--text' : null
     },
-    hasConcept (item) {
-      return item.concept !== null
-    },
-    columnName (column) {
-      const filter = this.columnTypes.filter(t => t.value === column.column_type)
-      if (filter.length > 0) {
-        return filter[0].text
-      }
-      return column.column_type
+    hasIdentifiers (table) {
+      return table && 'identifiers' in table && table.identifiers.length > 0
     },
     closed (data) {
       console.debug('closed dialog', data)
@@ -148,37 +106,10 @@ export default {
     },
     created (created) {
       return formatTimestampUTCLabel(created)
-    },
-    permissionAcronyms (table) {
-      let acronyms = ''
-      if (this.canRead) {
-        acronyms += 'R'
-      }
-      if (!this.access) {
-        return acronyms
-      }
-      if (this.access.type === 'write_all' || (this.access.type === 'write_own' && table.owner.id === this.user.id)) {
-        acronyms += 'W'
-      }
-      return acronyms
-    },
-    permissionTooltip (table) {
-      let tooltip = ''
-      if (this.canRead) {
-        tooltip += 'You can read'
-      }
-      if (!this.access) {
-        return tooltip
-      }
-      if (this.access.type === 'write_all' || (this.access.type === 'write_own' && table.owner.id === this.user.id)) {
-        tooltip += ' and write'
-      }
-      return tooltip
     }
   }
 }
 </script>
-
 <style scoped>
 .colTable thead th {
   text-align: initial;

@@ -3,7 +3,7 @@
     <TableToolbar :selection="selection" @modified="modified" />
     <v-toolbar :color="versionColor" flat>
       <v-toolbar-title>
-        <strong>Versioning</strong>
+        <strong>Current</strong>
         <span v-if="version !== null">{{ versionFormatted }}</span>
       </v-toolbar-title>
       <v-spacer />
@@ -31,6 +31,7 @@
       </v-card>
       <v-data-table
         v-if="!error"
+        flat
         :headers="headers"
         :items="rows"
         :options.sync="options"

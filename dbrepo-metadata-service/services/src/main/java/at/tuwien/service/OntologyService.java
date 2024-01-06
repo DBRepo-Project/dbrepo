@@ -14,6 +14,8 @@ import java.util.List;
 public interface OntologyService {
     List<Ontology> findAll();
 
+    List<Ontology> findAllProcessable();
+
     Ontology find(Long id) throws OntologyNotFoundException;
 
     Ontology create(OntologyCreateDto data, Principal principal) throws UserNotFoundException, KeycloakRemoteException, AccessDeniedException;

@@ -19,6 +19,7 @@ import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.MariaDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -39,10 +40,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class TableServiceIntegrationReadTest extends BaseUnitTest {
 
     @Autowired
-    private TableRepository tableRepository;
+    private ImageRepository imageRepository;
 
     @Autowired
-    private ImageRepository imageRepository;
+    private LicenseRepository licenseRepository;
 
     @Autowired
     private ContainerRepository containerRepository;
@@ -61,20 +62,23 @@ public class TableServiceIntegrationReadTest extends BaseUnitTest {
 
     @BeforeEach
     public void beforeEach() throws SQLException {
+        TABLE_1.setColumns(TABLE_1_COLUMNS);
+        TABLE_2.setColumns(TABLE_2_COLUMNS);
+        TABLE_3.setColumns(TABLE_3_COLUMNS);
+        TABLE_4.setColumns(TABLE_4_COLUMNS);
+        DATABASE_1.setAccesses(List.of());
+        /* metadata database */
         imageRepository.save(IMAGE_1);
+        licenseRepository.save(LICENSE_1);
         userRepository.saveAll(List.of(USER_1, USER_2, USER_3));
-        containerRepository.save(CONTAINER_1_SIMPLE);
-        containerRepository.save(CONTAINER_2_SIMPLE);
-        databaseRepository.save(DATABASE_1_SIMPLE);
-        tableRepository.save(TABLE_1_SIMPLE);
-        tableRepository.save(TABLE_2_SIMPLE);
-        tableRepository.save(TABLE_3_SIMPLE);
-        tableRepository.save(TABLE_7_SIMPLE);
+        containerRepository.save(CONTAINER_1);
+        databaseRepository.save(DATABASE_1);
         MariaDbConfig.dropAllDatabases(CONTAINER_1);
         MariaDbConfig.createInitDatabase(CONTAINER_1, DATABASE_1);
     }
 
     @Test
+    @Transactional(readOnly = true)
     public void findAll_succeeds() throws DatabaseNotFoundException {
 
         /* test */
@@ -95,7 +99,7 @@ public class TableServiceIntegrationReadTest extends BaseUnitTest {
     public void findById_succeeds() throws TableNotFoundException, DatabaseNotFoundException{
 
         /* test */
-        final Table response = tableService.findById(DATABASE_1_ID, TABLE_1_ID);
+        final Table response = tableService.find(DATABASE_1_ID, TABLE_1_ID);
         assertEquals(TABLE_1_ID, response.getId());
         assertEquals(TABLE_1_NAME, response.getName());
         assertEquals(TABLE_1_INTERNALNAME, response.getInternalName());
@@ -106,7 +110,7 @@ public class TableServiceIntegrationReadTest extends BaseUnitTest {
 
         /* test */
         assertThrows(TableNotFoundException.class, () -> {
-            tableService.findById(DATABASE_1_ID, 99999L);
+            tableService.find(DATABASE_1_ID, 99999L);
         });
     }
 
@@ -115,7 +119,7 @@ public class TableServiceIntegrationReadTest extends BaseUnitTest {
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
-            tableService.findById(99999L, TABLE_3_ID);
+            tableService.find(99999L, TABLE_3_ID);
         });
     }
 

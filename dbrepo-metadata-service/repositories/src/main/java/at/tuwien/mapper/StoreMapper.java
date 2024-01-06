@@ -1,7 +1,6 @@
 package at.tuwien.mapper;
 
 import at.tuwien.api.database.query.ExecuteStatementDto;
-import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.QueryStoreException;
 import at.tuwien.exception.TableMalformedException;
