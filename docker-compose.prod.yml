@@ -154,6 +154,9 @@ services:
       S3_SECRET_ACCESS_KEY: "${STORAGE_PASSWORD:-seaweedfsadmin}"
       S3_IMPORT_BUCKET: "${STORAGE_IMPORT_BUCKET:-dbrepo-upload}"
       S3_EXPORT_BUCKET: "${STORAGE_EXPORT_BUCKET:-dbrepo-download}"
+      MIRROR_RATE: ${METADATA_SERVICE_MIRROR_RATE:-60}
+      OBTAIN_METADATA_RATE: ${METADATA_SERVICE_OBTAIN_METADATA_RATE:-60}
+      DELETE_STALE_QUERIES_RATE: ${METADATA_SERVICE_DELETE_STALE_QUERIES_RATE:-60}
     healthcheck:
       test: wget -qO- localhost:9099/actuator/health/readiness | grep -q "UP" || exit 1
       interval: 10s
@@ -247,6 +250,7 @@ services:
     ports:
       - "4000:4000"
     environment:
+      LOG_LEVEL: ${LOG_LEVEL:-debug}
       FLASK_DEBUG: ${SEARCH_DEBUG_MODE:-true}
       OPENSEARCH_HOST: ${OPENSEARCH_HOST:-dbrepo-search-db}
 
@@ -395,36 +399,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 12
-    logging:
-      driver: json-file
-
-  dbrepo-mirror-service:
-    restart: "no"
-    container_name: dbrepo-mirror-service
-    hostname: mirror-service
-    image: docker.io/dbrepo/mirror-service:latest
-    ports:
-      - "9050:9050"
-    environment:
-      METADATA_DB: ${METADATA_DB:-fda}
-      METADATA_HOST: ${METADATA_HOST:-metadata-db}
-      METADATA_JDBC_EXTRA_ARGS: ${METADATA_JDBC_EXTRA_ARGS:-}
-      METADATA_PASSWORD: ${METADATA_PASSWORD:-dbrepo}
-      METADATA_USERNAME: ${METADATA_USERNAME:-root}
-      SEARCH_USERNAME: ${SEARCH_USERNAME:-admin}
-      SEARCH_PASSWORD: ${SEARCH_PASSWORD:-admin}
-      LOG_LEVEL: ${LOG_LEVEL:-debug}
-      SYNC_RATE: ${SYNC_RATE:-60}
-    healthcheck:
-      test: wget -qO- localhost:9050/actuator/health/readiness | grep -q "UP" || exit 1
-      interval: 10s
-      timeout: 5s
-      retries: 12
-    depends_on:
-      dbrepo-metadata-db:
-        condition: service_healthy
-      dbrepo-search-db:
-        condition: service_started
     logging:
       driver: json-file
 

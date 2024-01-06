@@ -1,1334 +1,1148 @@
 {
   "aliases": {},
   "mappings": {
-    "properties": {
-      "accesses": {
-        "type": "nested",
-        "properties": {
-          "access_type": {
-            "type": "keyword"
-          },
-          "created": {
-            "type": "date",
-            "format": "date_optional_time||epoch_millis"
-          },
-          "database_id": {
-            "type": "keyword"
+      "properties": {
+        "accesses": {
+          "properties": {
+            "created": {
+              "type": "long"
+            },
+            "hdbid": {
+              "type": "long"
+            },
+            "huserid": {
+              "type": "text",
+              "fields": {
+                "keyword": {
+                  "type": "keyword",
+                  "ignore_above": 256
+                }
+              }
+            },
+            "type": {
+              "type": "text",
+              "fields": {
+                "keyword": {
+                  "type": "keyword",
+                  "ignore_above": 256
+                }
+              }
+            }
           }
-        }
-      },
-      "identifier": {
-        "type": "nested",
-        "properties": {
-          "creators": {
-            "type": "nested",
-            "properties": {
-              "affiliation": {
-                "type": "keyword"
-              },
-              "affiliation_identifier": {
-                "type": "keyword"
-              },
-              "affiliation_identifier_scheme_type": {
-                "type": "keyword"
-              },
-              "creator_name": {
-                "type": "keyword"
-              },
-              "firstname": {
-                "type": "keyword"
-              },
-              "id": {
-                "type": "keyword"
-              },
-              "lastname": {
-                "type": "keyword"
-              },
-              "name_identifier": {
-                "type": "keyword"
-              },
-              "name_identifier_scheme_type": {
-                "type": "keyword"
-              },
-              "type": {
-                "type": "keyword"
-              }
+        },
+        "contact": {
+          "type": "nested",
+          "properties": {
+            "firstname": {
+              "type": "keyword"
+            },
+            "id": {
+              "type": "keyword"
+            },
+            "lastname": {
+              "type": "keyword"
+            },
+            "name": {
+              "type": "keyword"
+            },
+            "qualified_name": {
+              "type": "keyword"
+            },
+            "username": {
+              "type": "keyword"
             }
-          },
-          "database_id": {
-            "type": "keyword"
-          },
-          "descriptions": {
-            "type": "nested",
-            "properties": {
-              "description": {
-                "type": "text"
-              },
-              "id": {
-                "type": "keyword"
-              },
-              "language": {
-                "type": "keyword"
-              },
-              "type": {
-                "type": "keyword"
-              }
-            }
-          },
-          "doi": {
-            "type": "keyword"
-          },
-          "execution": {
-            "type": "date",
-            "format": "date_optional_time||epoch_millis"
-          },
-          "funders": {
-            "type": "nested",
-            "properties": {
-              "award_number": {
-                "type": "keyword"
-              },
-              "award_title": {
-                "type": "keyword"
-              },
-              "funder_identifier": {
-                "type": "keyword"
-              },
-              "funder_identifier_type": {
-                "type": "keyword"
-              },
-              "funder_name": {
-                "type": "keyword"
-              },
-              "id": {
-                "type": "keyword"
-              }
-            }
-          },
-          "language": {
-            "type": "keyword"
-          },
-          "licenses": {
-            "type": "nested",
-            "properties": {
-              "identifier": {
-                "type": "keyword"
-              },
-              "uri": {
-                "type": "keyword"
-              }
-            }
-          },
-          "publication_day": {
-            "type": "integer"
-          },
-          "publication_month": {
-            "type": "integer"
-          },
-          "publication_year": {
-            "type": "integer"
-          },
-          "publisher": {
-            "type": "keyword"
-          },
-          "query": {
-            "type": "text"
-          },
-          "query_hash": {
-            "type": "keyword"
-          },
-          "query_id": {
-            "type": "keyword"
-          },
-          "query_normalized": {
-            "type": "text"
-          },
-          "related_identifiers": {
-            "type": "nested",
-            "properties": {
-              "id": {
-                "type": "keyword"
-              },
-              "relation": {
-                "type": "keyword"
-              },
-              "type": {
-                "type": "keyword"
-              },
-              "value": {
-                "type": "keyword"
-              }
-            }
-          },
-          "result_hash": {
-            "type": "keyword"
-          },
-          "result_number": {
-            "type": "long"
-          },
-          "titles": {
-            "type": "nested",
-            "properties": {
-              "id": {
-                "type": "keyword"
-              },
-              "language": {
-                "type": "keyword"
-              },
-              "title": {
-                "type": "keyword"
-              },
-              "type": {
-                "type": "keyword"
-              }
-            }
-          },
-          "type": {
-            "type": "keyword"
-          },
-          "view_id": {
-            "type": "keyword"
-          },
-          "visibility": {
-            "type": "keyword"
           }
-        }
-      },
-      "contact": {
-        "type": "nested",
-        "properties": {
-          "accesses": {
-            "type": "nested",
-            "properties": {
-              "access_type": {
-                "type": "keyword"
-              },
-              "created": {
-                "type": "date",
-                "format": "date_optional_time||epoch_millis"
-              },
-              "database_id": {
-                "type": "keyword"
+        },
+        "container": {
+          "type": "nested",
+          "properties": {
+            "created": {
+              "type": "date",
+              "format": "date_optional_time||epoch_millis"
+            },
+            "host": {
+              "type": "keyword"
+            },
+            "id": {
+              "type": "long"
+            },
+            "image": {
+              "type": "nested",
+              "properties": {
+                "id": {
+                  "type": "keyword"
+                },
+                "name": {
+                  "type": "keyword"
+                },
+                "version": {
+                  "type": "keyword"
+                }
               }
+            },
+            "internal_name": {
+              "type": "keyword"
+            },
+            "name": {
+              "type": "keyword"
+            },
+            "port": {
+              "type": "integer"
+            },
+            "sidecar_host": {
+              "type": "keyword"
+            },
+            "sidecar_port": {
+              "type": "integer"
+            },
+            "ui_host": {
+              "type": "keyword"
+            },
+            "ui_port": {
+              "type": "integer"
             }
-          },
-          "affiliation": {
-            "type": "keyword"
-          },
-          "firstname": {
-            "type": "keyword"
-          },
-          "id": {
-            "type": "keyword"
-          },
-          "lastname": {
-            "type": "keyword"
-          },
-          "orcid": {
-            "type": "keyword"
-          },
-          "username": {
-            "type": "keyword"
           }
-        }
-      },
-      "container": {
-        "type": "nested",
-        "properties": {
-          "created": {
-            "type": "date",
-            "format": "date_optional_time||epoch_millis"
-          },
-          "host": {
-            "type": "text"
-          },
-          "id": {
-            "type": "keyword"
-          },
-          "image": {
-            "type": "nested",
-            "properties": {
-              "created": {
-                "type": "date",
-                "format": "date_optional_time||epoch_millis"
-              },
-              "date_formats": {
-                "type": "nested",
-                "properties": {
-                  "created": {
-                    "type": "date",
-                    "format": "date_optional_time||epoch_millis"
-                  },
-                  "database_format": {
-                    "type": "keyword"
-                  },
-                  "example": {
-                    "type": "text"
-                  },
-                  "has_time": {
-                    "type": "boolean"
-                  },
-                  "id": {
-                    "type": "keyword"
-                  },
-                  "unix_format": {
-                    "type": "keyword"
-                  }
+        },
+        "created": {
+          "type": "date",
+          "format": "date_optional_time||epoch_millis"
+        },
+        "description": {
+          "type": "text"
+        },
+        "exchange_name": {
+          "type": "keyword"
+        },
+        "exchange_type": {
+          "type": "keyword"
+        },
+        "id": {
+          "type": "keyword"
+        },
+        "identifiers": {
+          "type": "nested",
+          "properties": {
+            "created": {
+              "type": "date",
+              "format": "date_optional_time||epoch_millis"
+            },
+            "creator": {
+              "type": "nested",
+              "properties": {
+                "firstname": {
+                  "type": "keyword"
+                },
+                "id": {
+                  "type": "keyword"
+                },
+                "lastname": {
+                  "type": "keyword"
+                },
+                "name": {
+                  "type": "keyword"
+                },
+                "qualified_name": {
+                  "type": "keyword"
+                },
+                "username": {
+                  "type": "keyword"
                 }
-              },
-              "dialect": {
-                "type": "text"
-              },
-              "driver_class": {
-                "type": "text"
-              },
-              "id": {
-                "type": "keyword"
-              },
-              "jdbc_method": {
-                "type": "text"
-              },
-              "name": {
-                "type": "keyword"
-              },
-              "version": {
-                "type": "keyword"
               }
+            },
+            "creators": {
+              "type": "nested",
+              "properties": {
+                "affiliation": {
+                  "type": "keyword"
+                },
+                "affiliation_identifier": {
+                  "type": "keyword"
+                },
+                "affiliation_identifier_scheme": {
+                  "type": "keyword"
+                },
+                "affiliation_identifier_scheme_uri": {
+                  "type": "keyword"
+                },
+                "creator_name": {
+                  "type": "text"
+                },
+                "firstname": {
+                  "type": "text"
+                },
+                "id": {
+                  "type": "keyword"
+                },
+                "lastname": {
+                  "type": "text"
+                },
+                "name_identifier": {
+                  "type": "keyword"
+                },
+                "name_identifier_scheme": {
+                  "type": "keyword"
+                },
+                "name_identifier_scheme_uri": {
+                  "type": "keyword"
+                },
+                "name_type": {
+                  "type": "keyword"
+                }
+              }
+            },
+            "database_id": {
+              "type": "keyword"
+            },
+            "descriptions": {
+              "type": "nested",
+              "properties": {
+                "description": {
+                  "type": "text"
+                },
+                "id": {
+                  "type": "keyword"
+                },
+                "language": {
+                  "type": "keyword"
+                },
+                "type": {
+                  "type": "keyword"
+                }
+              }
+            },
+            "doi": {
+              "type": "keyword"
+            },
+            "execution": {
+              "type": "date",
+              "format": "date_optional_time||epoch_millis"
+            },
+            "funders": {
+              "type": "nested",
+              "properties": {
+                "award_number": {
+                  "type": "keyword"
+                },
+                "award_title": {
+                  "type": "keyword"
+                },
+                "funder_identifier": {
+                  "type": "keyword"
+                },
+                "funder_identifier_type": {
+                  "type": "keyword"
+                },
+                "funder_name": {
+                  "type": "keyword"
+                },
+                "id": {
+                  "type": "keyword"
+                },
+                "scheme_uri": {
+                  "type": "keyword"
+                }
+              }
+            },
+            "id": {
+              "type": "keyword"
+            },
+            "language": {
+              "type": "keyword"
+            },
+            "licenses": {
+              "type": "nested"
+            },
+            "publication_day": {
+              "type": "integer"
+            },
+            "publication_month": {
+              "type": "integer"
+            },
+            "publication_year": {
+              "type": "integer"
+            },
+            "publisher": {
+              "type": "text"
+            },
+            "query": {
+              "type": "text"
+            },
+            "query_hash": {
+              "type": "text"
+            },
+            "query_id": {
+              "type": "keyword"
+            },
+            "query_normalized": {
+              "type": "text"
+            },
+            "related_identifiers": {
+              "type": "nested",
+              "properties": {
+                "created": {
+                  "type": "date",
+                  "format": "date_optional_time||epoch_millis"
+                },
+                "id": {
+                  "type": "keyword"
+                },
+                "relation": {
+                  "type": "keyword"
+                },
+                "type": {
+                  "type": "keyword"
+                },
+                "value": {
+                  "type": "keyword"
+                }
+              }
+            },
+            "result_hash": {
+              "type": "text"
+            },
+            "result_number": {
+              "type": "long"
+            },
+            "table_id": {
+              "type": "keyword"
+            },
+            "titles": {
+              "type": "nested",
+              "properties": {
+                "id": {
+                  "type": "keyword"
+                },
+                "language": {
+                  "type": "keyword"
+                },
+                "title": {
+                  "type": "keyword"
+                },
+                "type": {
+                  "type": "keyword"
+                }
+              }
+            },
+            "type": {
+              "type": "keyword"
+            },
+            "view_id": {
+              "type": "keyword"
             }
-          },
-          "internal_name": {
-            "type": "keyword"
-          },
-          "name": {
-            "type": "keyword"
-          },
-          "port": {
-            "type": "integer"
-          },
-          "sidecar_host": {
-            "type": "text"
-          },
-          "sidecar_port": {
-            "type": "integer"
-          },
-          "ui_additional_flags": {
-            "type": "text"
-          },
-          "ui_host": {
-            "type": "text"
-          },
-          "ui_port": {
-            "type": "integer"
           }
-        }
-      },
-      "created": {
-        "type": "date",
-        "format": "date_optional_time||epoch_millis"
-      },
-      "creator": {
-        "type": "nested",
-        "properties": {
-          "accesses": {
-            "type": "nested",
-            "properties": {
-              "access_type": {
-                "type": "keyword"
-              },
-              "created": {
-                "type": "date",
-                "format": "date_optional_time||epoch_millis"
-              },
-              "database_id": {
-                "type": "keyword"
-              }
+        },
+        "internal_name": {
+          "type": "keyword"
+        },
+        "is_public": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "keyword"
+        },
+        "owner": {
+          "type": "nested",
+          "properties": {
+            "firstname": {
+              "type": "keyword"
+            },
+            "id": {
+              "type": "keyword"
+            },
+            "lastname": {
+              "type": "keyword"
+            },
+            "name": {
+              "type": "keyword"
+            },
+            "qualified_name": {
+              "type": "keyword"
+            },
+            "username": {
+              "type": "keyword"
             }
-          },
-          "affiliation": {
-            "type": "keyword"
-          },
-          "firstname": {
-            "type": "keyword"
-          },
-          "id": {
-            "type": "keyword"
-          },
-          "lastname": {
-            "type": "keyword"
-          },
-          "orcid": {
-            "type": "keyword"
-          },
-          "username": {
-            "type": "keyword"
           }
-        }
-      },
-      "description": {
-        "type": "text"
-      },
-      "exchange_name": {
-        "type": "keyword"
-      },
-      "id": {
-        "type": "keyword"
-      },
-      "internal_name": {
-        "type": "keyword"
-      },
-      "is_public": {
-        "type": "boolean"
-      },
-      "name": {
-        "type": "keyword"
-      },
-      "owner": {
-        "type": "nested",
-        "properties": {
-          "accesses": {
-            "type": "nested",
-            "properties": {
-              "access_type": {
-                "type": "keyword"
-              },
-              "created": {
-                "type": "date",
-                "format": "date_optional_time||epoch_millis"
-              },
-              "database_id": {
-                "type": "keyword"
+        },
+        "subsets": {
+          "type": "nested",
+          "properties": {
+            "created": {
+              "type": "date",
+              "format": "date_optional_time||epoch_millis"
+            },
+            "creator": {
+              "type": "nested",
+              "properties": {
+                "firstname": {
+                  "type": "keyword"
+                },
+                "id": {
+                  "type": "keyword"
+                },
+                "lastname": {
+                  "type": "keyword"
+                },
+                "name": {
+                  "type": "keyword"
+                },
+                "qualified_name": {
+                  "type": "keyword"
+                },
+                "username": {
+                  "type": "keyword"
+                }
               }
+            },
+            "creators": {
+              "type": "nested",
+              "properties": {
+                "affiliation": {
+                  "type": "keyword"
+                },
+                "affiliation_identifier": {
+                  "type": "keyword"
+                },
+                "affiliation_identifier_scheme": {
+                  "type": "keyword"
+                },
+                "affiliation_identifier_scheme_uri": {
+                  "type": "keyword"
+                },
+                "creator_name": {
+                  "type": "text"
+                },
+                "firstname": {
+                  "type": "text"
+                },
+                "id": {
+                  "type": "keyword"
+                },
+                "lastname": {
+                  "type": "text"
+                },
+                "name_identifier": {
+                  "type": "keyword"
+                },
+                "name_identifier_scheme": {
+                  "type": "keyword"
+                },
+                "name_identifier_scheme_uri": {
+                  "type": "keyword"
+                },
+                "name_type": {
+                  "type": "keyword"
+                }
+              }
+            },
+            "database_id": {
+              "type": "keyword"
+            },
+            "descriptions": {
+              "type": "nested",
+              "properties": {
+                "description": {
+                  "type": "text"
+                },
+                "id": {
+                  "type": "keyword"
+                },
+                "language": {
+                  "type": "keyword"
+                },
+                "type": {
+                  "type": "keyword"
+                }
+              }
+            },
+            "doi": {
+              "type": "keyword"
+            },
+            "execution": {
+              "type": "date",
+              "format": "date_optional_time||epoch_millis"
+            },
+            "funders": {
+              "type": "nested",
+              "properties": {
+                "award_number": {
+                  "type": "keyword"
+                },
+                "award_title": {
+                  "type": "keyword"
+                },
+                "funder_identifier": {
+                  "type": "keyword"
+                },
+                "funder_identifier_type": {
+                  "type": "keyword"
+                },
+                "funder_name": {
+                  "type": "keyword"
+                },
+                "id": {
+                  "type": "keyword"
+                },
+                "scheme_uri": {
+                  "type": "keyword"
+                }
+              }
+            },
+            "id": {
+              "type": "keyword"
+            },
+            "language": {
+              "type": "keyword"
+            },
+            "licenses": {
+              "type": "nested"
+            },
+            "publication_day": {
+              "type": "integer"
+            },
+            "publication_month": {
+              "type": "integer"
+            },
+            "publication_year": {
+              "type": "integer"
+            },
+            "publisher": {
+              "type": "text"
+            },
+            "query": {
+              "type": "text"
+            },
+            "query_hash": {
+              "type": "text"
+            },
+            "query_id": {
+              "type": "keyword"
+            },
+            "query_normalized": {
+              "type": "text"
+            },
+            "related_identifiers": {
+              "type": "nested",
+              "properties": {
+                "created": {
+                  "type": "date",
+                  "format": "date_optional_time||epoch_millis"
+                },
+                "id": {
+                  "type": "keyword"
+                },
+                "relation": {
+                  "type": "keyword"
+                },
+                "type": {
+                  "type": "keyword"
+                },
+                "value": {
+                  "type": "keyword"
+                }
+              }
+            },
+            "result_hash": {
+              "type": "text"
+            },
+            "result_number": {
+              "type": "long"
+            },
+            "table_id": {
+              "type": "keyword"
+            },
+            "titles": {
+              "type": "nested",
+              "properties": {
+                "id": {
+                  "type": "keyword"
+                },
+                "language": {
+                  "type": "keyword"
+                },
+                "title": {
+                  "type": "keyword"
+                },
+                "type": {
+                  "type": "keyword"
+                }
+              }
+            },
+            "type": {
+              "type": "keyword"
+            },
+            "view_id": {
+              "type": "keyword"
             }
-          },
-          "affiliation": {
-            "type": "keyword"
-          },
-          "firstname": {
-            "type": "keyword"
-          },
-          "id": {
-            "type": "keyword"
-          },
-          "lastname": {
-            "type": "keyword"
-          },
-          "orcid": {
-            "type": "keyword"
-          },
-          "username": {
-            "type": "keyword"
           }
-        }
-      },
-      "queries": {
-        "type": "nested",
-        "properties": {
-          "creators": {
-            "type": "nested",
-            "properties": {
-              "affiliation": {
-                "type": "keyword"
-              },
-              "affiliation_identifier": {
-                "type": "keyword"
-              },
-              "affiliation_identifier_scheme_type": {
-                "type": "keyword"
-              },
-              "creator_name": {
-                "type": "keyword"
-              },
-              "firstname": {
-                "type": "keyword"
-              },
-              "id": {
-                "type": "keyword"
-              },
-              "lastname": {
-                "type": "keyword"
-              },
-              "name_identifier": {
-                "type": "keyword"
-              },
-              "name_identifier_scheme_type": {
-                "type": "keyword"
-              },
-              "type": {
-                "type": "keyword"
+        },
+        "tables": {
+          "type": "nested",
+          "properties": {
+            "constraints": {
+              "type": "nested",
+              "properties": {
+                "foreign_keys": {
+                  "type": "nested",
+                  "properties": {
+                    "on_delete": {
+                      "type": "keyword"
+                    },
+                    "on_update": {
+                      "type": "keyword"
+                    }
+                  }
+                },
+                "uniques": {
+                  "type": "nested",
+                  "properties": {
+                    "id": {
+                      "type": "keyword"
+                    }
+                  }
+                }
               }
-            }
-          },
-          "database_id": {
-            "type": "keyword"
-          },
-          "descriptions": {
-            "type": "nested",
-            "properties": {
-              "description": {
-                "type": "text"
-              },
-              "id": {
-                "type": "keyword"
-              },
-              "language": {
-                "type": "keyword"
-              },
-              "type": {
-                "type": "keyword"
+            },
+            "created": {
+              "type": "date",
+              "format": "date_optional_time||epoch_millis"
+            },
+            "creator": {
+              "type": "nested",
+              "properties": {
+                "firstname": {
+                  "type": "keyword"
+                },
+                "id": {
+                  "type": "keyword"
+                },
+                "lastname": {
+                  "type": "keyword"
+                },
+                "name": {
+                  "type": "keyword"
+                },
+                "qualified_name": {
+                  "type": "keyword"
+                },
+                "username": {
+                  "type": "keyword"
+                }
               }
-            }
-          },
-          "doi": {
-            "type": "keyword"
-          },
-          "execution": {
-            "type": "date",
-            "format": "date_optional_time||epoch_millis"
-          },
-          "funders": {
-            "type": "nested",
-            "properties": {
-              "award_number": {
-                "type": "keyword"
-              },
-              "award_title": {
-                "type": "keyword"
-              },
-              "funder_identifier": {
-                "type": "keyword"
-              },
-              "funder_identifier_type": {
-                "type": "keyword"
-              },
-              "funder_name": {
-                "type": "keyword"
-              },
-              "id": {
-                "type": "keyword"
+            },
+            "database_id": {
+              "type": "keyword"
+            },
+            "description": {
+              "type": "text"
+            },
+            "id": {
+              "type": "keyword"
+            },
+            "identifiers": {
+              "type": "nested",
+              "properties": {
+                "created": {
+                  "type": "date",
+                  "format": "date_optional_time||epoch_millis"
+                },
+                "creator": {
+                  "type": "nested",
+                  "properties": {
+                    "firstname": {
+                      "type": "keyword"
+                    },
+                    "id": {
+                      "type": "keyword"
+                    },
+                    "lastname": {
+                      "type": "keyword"
+                    },
+                    "name": {
+                      "type": "keyword"
+                    },
+                    "qualified_name": {
+                      "type": "keyword"
+                    },
+                    "username": {
+                      "type": "keyword"
+                    }
+                  }
+                },
+                "creators": {
+                  "type": "nested",
+                  "properties": {
+                    "affiliation": {
+                      "type": "keyword"
+                    },
+                    "affiliation_identifier": {
+                      "type": "keyword"
+                    },
+                    "affiliation_identifier_scheme": {
+                      "type": "keyword"
+                    },
+                    "affiliation_identifier_scheme_uri": {
+                      "type": "keyword"
+                    },
+                    "creator_name": {
+                      "type": "text"
+                    },
+                    "firstname": {
+                      "type": "text"
+                    },
+                    "id": {
+                      "type": "keyword"
+                    },
+                    "lastname": {
+                      "type": "text"
+                    },
+                    "name_identifier": {
+                      "type": "keyword"
+                    },
+                    "name_identifier_scheme": {
+                      "type": "keyword"
+                    },
+                    "name_identifier_scheme_uri": {
+                      "type": "keyword"
+                    },
+                    "name_type": {
+                      "type": "keyword"
+                    }
+                  }
+                },
+                "database_id": {
+                  "type": "keyword"
+                },
+                "descriptions": {
+                  "type": "nested",
+                  "properties": {
+                    "description": {
+                      "type": "text"
+                    },
+                    "id": {
+                      "type": "keyword"
+                    },
+                    "language": {
+                      "type": "keyword"
+                    },
+                    "type": {
+                      "type": "keyword"
+                    }
+                  }
+                },
+                "doi": {
+                  "type": "keyword"
+                },
+                "execution": {
+                  "type": "date",
+                  "format": "date_optional_time||epoch_millis"
+                },
+                "funders": {
+                  "type": "nested",
+                  "properties": {
+                    "award_number": {
+                      "type": "keyword"
+                    },
+                    "award_title": {
+                      "type": "keyword"
+                    },
+                    "funder_identifier": {
+                      "type": "keyword"
+                    },
+                    "funder_identifier_type": {
+                      "type": "keyword"
+                    },
+                    "funder_name": {
+                      "type": "keyword"
+                    },
+                    "id": {
+                      "type": "keyword"
+                    },
+                    "scheme_uri": {
+                      "type": "keyword"
+                    }
+                  }
+                },
+                "id": {
+                  "type": "keyword"
+                },
+                "language": {
+                  "type": "keyword"
+                },
+                "licenses": {
+                  "type": "nested"
+                },
+                "publication_day": {
+                  "type": "integer"
+                },
+                "publication_month": {
+                  "type": "integer"
+                },
+                "publication_year": {
+                  "type": "integer"
+                },
+                "publisher": {
+                  "type": "text"
+                },
+                "query": {
+                  "type": "text"
+                },
+                "query_hash": {
+                  "type": "text"
+                },
+                "query_id": {
+                  "type": "keyword"
+                },
+                "query_normalized": {
+                  "type": "text"
+                },
+                "related_identifiers": {
+                  "type": "nested",
+                  "properties": {
+                    "created": {
+                      "type": "date",
+                      "format": "date_optional_time||epoch_millis"
+                    },
+                    "id": {
+                      "type": "keyword"
+                    },
+                    "relation": {
+                      "type": "keyword"
+                    },
+                    "type": {
+                      "type": "keyword"
+                    },
+                    "value": {
+                      "type": "keyword"
+                    }
+                  }
+                },
+                "result_hash": {
+                  "type": "text"
+                },
+                "result_number": {
+                  "type": "long"
+                },
+                "table_id": {
+                  "type": "keyword"
+                },
+                "titles": {
+                  "type": "nested",
+                  "properties": {
+                    "id": {
+                      "type": "keyword"
+                    },
+                    "language": {
+                      "type": "keyword"
+                    },
+                    "title": {
+                      "type": "keyword"
+                    },
+                    "type": {
+                      "type": "keyword"
+                    }
+                  }
+                },
+                "type": {
+                  "type": "keyword"
+                },
+                "view_id": {
+                  "type": "keyword"
+                }
               }
-            }
-          },
-          "language": {
-            "type": "keyword"
-          },
-          "licenses": {
-            "type": "nested",
-            "properties": {
-              "identifier": {
-                "type": "keyword"
-              },
-              "uri": {
-                "type": "keyword"
+            },
+            "internal_name": {
+              "type": "keyword"
+            },
+            "is_public": {
+              "type": "boolean"
+            },
+            "is_versioned": {
+              "type": "boolean"
+            },
+            "name": {
+              "type": "keyword"
+            },
+            "owner": {
+              "type": "nested",
+              "properties": {
+                "firstname": {
+                  "type": "keyword"
+                },
+                "id": {
+                  "type": "keyword"
+                },
+                "lastname": {
+                  "type": "keyword"
+                },
+                "name": {
+                  "type": "keyword"
+                },
+                "qualified_name": {
+                  "type": "keyword"
+                },
+                "username": {
+                  "type": "keyword"
+                }
               }
+            },
+            "queue_name": {
+              "type": "keyword"
+            },
+            "queue_type": {
+              "type": "keyword"
+            },
+            "routing_key": {
+              "type": "keyword"
             }
-          },
-          "publication_day": {
-            "type": "integer"
-          },
-          "publication_month": {
-            "type": "integer"
-          },
-          "publication_year": {
-            "type": "integer"
-          },
-          "publisher": {
-            "type": "keyword"
-          },
-          "query": {
-            "type": "text"
-          },
-          "query_hash": {
-            "type": "keyword"
-          },
-          "query_id": {
-            "type": "keyword"
-          },
-          "query_normalized": {
-            "type": "text"
-          },
-          "related_identifiers": {
-            "type": "nested",
-            "properties": {
-              "id": {
-                "type": "keyword"
-              },
-              "relation": {
-                "type": "keyword"
-              },
-              "type": {
-                "type": "keyword"
-              },
-              "value": {
-                "type": "keyword"
-              }
-            }
-          },
-          "result_hash": {
-            "type": "keyword"
-          },
-          "result_number": {
-            "type": "long"
-          },
-          "titles": {
-            "type": "nested",
-            "properties": {
-              "id": {
-                "type": "keyword"
-              },
-              "language": {
-                "type": "keyword"
-              },
-              "title": {
-                "type": "keyword"
-              },
-              "type": {
-                "type": "keyword"
-              }
-            }
-          },
-          "type": {
-            "type": "keyword"
-          },
-          "view_id": {
-            "type": "keyword"
-          },
-          "visibility": {
-            "type": "keyword"
           }
-        }
-      },
-      "tables": {
-        "type": "nested",
-        "properties": {
-          "avg_row_length": {
-            "type": "long"
-          },
-          "columns": {
-            "type": "nested",
-            "properties": {
-              "concept": {
-                "type": "nested",
-                "properties": {
-                  "created": {
-                    "type": "date",
-                    "format": "date_optional_time||epoch_millis"
-                  },
-                  "description": {
-                    "type": "text"
-                  },
-                  "id": {
-                    "type": "keyword"
-                  },
-                  "name": {
-                    "type": "keyword"
-                  },
-                  "uri": {
-                    "type": "keyword"
+        },
+        "views": {
+          "type": "nested",
+          "properties": {
+            "created": {
+              "type": "date",
+              "format": "date_optional_time||epoch_millis"
+            },
+            "database_id": {
+              "type": "keyword"
+            },
+            "id": {
+              "type": "keyword"
+            },
+            "identifiers": {
+              "type": "nested",
+              "properties": {
+                "created": {
+                  "type": "date",
+                  "format": "date_optional_time||epoch_millis"
+                },
+                "creator": {
+                  "type": "nested",
+                  "properties": {
+                    "firstname": {
+                      "type": "keyword"
+                    },
+                    "id": {
+                      "type": "keyword"
+                    },
+                    "lastname": {
+                      "type": "keyword"
+                    },
+                    "name": {
+                      "type": "keyword"
+                    },
+                    "qualified_name": {
+                      "type": "keyword"
+                    },
+                    "username": {
+                      "type": "keyword"
+                    }
                   }
-                }
-              },
-              "created": {
-                "type": "date",
-                "format": "date_optional_time||epoch_millis"
-              },
-              "d": {
-                "type": "integer"
-              },
-              "date_format": {
-                "type": "nested",
-                "properties": {
-                  "created": {
-                    "type": "date",
-                    "format": "date_optional_time||epoch_millis"
-                  },
-                  "database_format": {
-                    "type": "keyword"
-                  },
-                  "example": {
-                    "type": "text"
-                  },
-                  "has_time": {
-                    "type": "boolean"
-                  },
-                  "id": {
-                    "type": "keyword"
-                  },
-                  "unix_format": {
-                    "type": "keyword"
+                },
+                "creators": {
+                  "type": "nested",
+                  "properties": {
+                    "affiliation": {
+                      "type": "keyword"
+                    },
+                    "affiliation_identifier": {
+                      "type": "keyword"
+                    },
+                    "affiliation_identifier_scheme": {
+                      "type": "keyword"
+                    },
+                    "affiliation_identifier_scheme_uri": {
+                      "type": "keyword"
+                    },
+                    "creator_name": {
+                      "type": "text"
+                    },
+                    "firstname": {
+                      "type": "text"
+                    },
+                    "id": {
+                      "type": "keyword"
+                    },
+                    "lastname": {
+                      "type": "text"
+                    },
+                    "name_identifier": {
+                      "type": "keyword"
+                    },
+                    "name_identifier_scheme": {
+                      "type": "keyword"
+                    },
+                    "name_identifier_scheme_uri": {
+                      "type": "keyword"
+                    },
+                    "name_type": {
+                      "type": "keyword"
+                    }
                   }
-                }
-              },
-              "enums": {
-                "type": "nested"
-              },
-              "id": {
-                "type": "keyword"
-              },
-              "index_length": {
-                "type": "integer"
-              },
-              "internal_name": {
-                "type": "keyword"
-              },
-              "is_auto_generated": {
-                "type": "boolean"
-              },
-              "is_null_allowed": {
-                "type": "boolean"
-              },
-              "is_primary_key": {
-                "type": "boolean"
-              },
-              "length": {
-                "type": "integer"
-              },
-              "mean": {
-                "type": "double"
-              },
-              "median": {
-                "type": "double"
-              },
-              "name": {
-                "type": "keyword"
-              },
-              "ordinal_position": {
-                "type": "integer"
-              },
-              "size": {
-                "type": "integer"
-              },
-              "std_dev": {
-                "type": "double"
-              },
-              "type": {
-                "type": "keyword"
-              },
-              "unit": {
-                "type": "nested",
-                "properties": {
-                  "created": {
-                    "type": "date",
-                    "format": "date_optional_time||epoch_millis"
-                  },
-                  "description": {
-                    "type": "text"
-                  },
-                  "id": {
-                    "type": "keyword"
-                  },
-                  "name": {
-                    "type": "keyword"
-                  },
-                  "uri": {
-                    "type": "keyword"
+                },
+                "database_id": {
+                  "type": "keyword"
+                },
+                "descriptions": {
+                  "type": "nested",
+                  "properties": {
+                    "description": {
+                      "type": "text"
+                    },
+                    "id": {
+                      "type": "keyword"
+                    },
+                    "language": {
+                      "type": "keyword"
+                    },
+                    "type": {
+                      "type": "keyword"
+                    }
                   }
+                },
+                "doi": {
+                  "type": "keyword"
+                },
+                "execution": {
+                  "type": "date",
+                  "format": "date_optional_time||epoch_millis"
+                },
+                "funders": {
+                  "type": "nested",
+                  "properties": {
+                    "award_number": {
+                      "type": "keyword"
+                    },
+                    "award_title": {
+                      "type": "keyword"
+                    },
+                    "funder_identifier": {
+                      "type": "keyword"
+                    },
+                    "funder_identifier_type": {
+                      "type": "keyword"
+                    },
+                    "funder_name": {
+                      "type": "keyword"
+                    },
+                    "id": {
+                      "type": "keyword"
+                    },
+                    "scheme_uri": {
+                      "type": "keyword"
+                    }
+                  }
+                },
+                "id": {
+                  "type": "keyword"
+                },
+                "language": {
+                  "type": "keyword"
+                },
+                "licenses": {
+                  "type": "nested"
+                },
+                "publication_day": {
+                  "type": "integer"
+                },
+                "publication_month": {
+                  "type": "integer"
+                },
+                "publication_year": {
+                  "type": "integer"
+                },
+                "publisher": {
+                  "type": "text"
+                },
+                "query": {
+                  "type": "text"
+                },
+                "query_hash": {
+                  "type": "text"
+                },
+                "query_id": {
+                  "type": "keyword"
+                },
+                "query_normalized": {
+                  "type": "text"
+                },
+                "related_identifiers": {
+                  "type": "nested",
+                  "properties": {
+                    "created": {
+                      "type": "date",
+                      "format": "date_optional_time||epoch_millis"
+                    },
+                    "id": {
+                      "type": "keyword"
+                    },
+                    "relation": {
+                      "type": "keyword"
+                    },
+                    "type": {
+                      "type": "keyword"
+                    },
+                    "value": {
+                      "type": "keyword"
+                    }
+                  }
+                },
+                "result_hash": {
+                  "type": "text"
+                },
+                "result_number": {
+                  "type": "long"
+                },
+                "table_id": {
+                  "type": "keyword"
+                },
+                "titles": {
+                  "type": "nested",
+                  "properties": {
+                    "id": {
+                      "type": "keyword"
+                    },
+                    "language": {
+                      "type": "keyword"
+                    },
+                    "title": {
+                      "type": "keyword"
+                    },
+                    "type": {
+                      "type": "keyword"
+                    }
+                  }
+                },
+                "type": {
+                  "type": "keyword"
+                },
+                "view_id": {
+                  "type": "keyword"
                 }
-              },
-              "val_max": {
-                "type": "double"
-              },
-              "val_min": {
-                "type": "double"
-              },
-              "value": {
-                "type": "nested"
               }
+            },
+            "initial_view": {
+              "type": "boolean"
+            },
+            "internal_name": {
+              "type": "keyword"
+            },
+            "is_public": {
+              "type": "boolean"
+            },
+            "name": {
+              "type": "keyword"
+            },
+            "query": {
+              "type": "text"
+            },
+            "query_hash": {
+              "type": "keyword"
             }
-          },
-          "constraints": {
-            "type": "nested",
-            "properties": {
-            }
-          },
-          "created": {
-            "type": "date",
-            "format": "date_optional_time||epoch_millis"
-          },
-          "data_length": {
-            "type": "long"
-          },
-          "database_id": {
-            "type": "keyword"
-          },
-          "description": {
-            "type": "text"
-          },
-          "internal_name": {
-            "type": "keyword"
-          },
-          "is_versioned": {
-            "type": "boolean"
-          },
-          "max_data_length": {
-            "type": "long"
-          },
-          "name": {
-            "type": "keyword"
-          },
-          "num_rows": {
-            "type": "long"
-          },
-          "owner": {
-            "type": "nested",
-            "properties": {
-              "accesses": {
-                "type": "nested",
-                "properties": {
-                  "access_type": {
-                    "type": "keyword"
-                  },
-                  "created": {
-                    "type": "date",
-                    "format": "date_optional_time||epoch_millis"
-                  },
-                  "database_id": {
-                    "type": "keyword"
-                  }
-                }
-              },
-              "affiliation": {
-                "type": "keyword"
-              },
-              "firstname": {
-                "type": "keyword"
-              },
-              "id": {
-                "type": "keyword"
-              },
-              "lastname": {
-                "type": "keyword"
-              },
-              "orcid": {
-                "type": "keyword"
-              },
-              "username": {
-                "type": "keyword"
-              }
-            }
-          },
-          "queue_name": {
-            "type": "keyword"
-          },
-          "routing_key": {
-            "type": "keyword"
-          }
-        }
-      },
-      "views": {
-        "type": "nested",
-        "properties": {
-          "columns": {
-            "type": "nested",
-            "properties": {
-              "concept": {
-                "type": "nested",
-                "properties": {
-                  "created": {
-                    "type": "date",
-                    "format": "date_optional_time||epoch_millis"
-                  },
-                  "description": {
-                    "type": "text"
-                  },
-                  "id": {
-                    "type": "keyword"
-                  },
-                  "name": {
-                    "type": "keyword"
-                  },
-                  "uri": {
-                    "type": "keyword"
-                  }
-                }
-              },
-              "created": {
-                "type": "date",
-                "format": "date_optional_time||epoch_millis"
-              },
-              "d": {
-                "type": "integer"
-              },
-              "date_format": {
-                "type": "nested",
-                "properties": {
-                  "created": {
-                    "type": "date",
-                    "format": "date_optional_time||epoch_millis"
-                  },
-                  "database_format": {
-                    "type": "keyword"
-                  },
-                  "example": {
-                    "type": "text"
-                  },
-                  "has_time": {
-                    "type": "boolean"
-                  },
-                  "id": {
-                    "type": "keyword"
-                  },
-                  "unix_format": {
-                    "type": "keyword"
-                  }
-                }
-              },
-              "enums": {
-                "type": "nested"
-              },
-              "id": {
-                "type": "keyword"
-              },
-              "index_length": {
-                "type": "integer"
-              },
-              "internal_name": {
-                "type": "keyword"
-              },
-              "is_auto_generated": {
-                "type": "boolean"
-              },
-              "is_null_allowed": {
-                "type": "boolean"
-              },
-              "is_primary_key": {
-                "type": "boolean"
-              },
-              "length": {
-                "type": "integer"
-              },
-              "mean": {
-                "type": "double"
-              },
-              "median": {
-                "type": "double"
-              },
-              "name": {
-                "type": "keyword"
-              },
-              "ordinal_position": {
-                "type": "integer"
-              },
-              "size": {
-                "type": "integer"
-              },
-              "std_dev": {
-                "type": "double"
-              },
-              "type": {
-                "type": "keyword"
-              },
-              "unit": {
-                "type": "nested",
-                "properties": {
-                  "created": {
-                    "type": "date",
-                    "format": "date_optional_time||epoch_millis"
-                  },
-                  "description": {
-                    "type": "text"
-                  },
-                  "id": {
-                    "type": "keyword"
-                  },
-                  "name": {
-                    "type": "keyword"
-                  },
-                  "uri": {
-                    "type": "keyword"
-                  }
-                }
-              },
-              "val_max": {
-                "type": "double"
-              },
-              "val_min": {
-                "type": "double"
-              },
-              "value": {
-                "type": "nested"
-              }
-            }
-          },
-          "created": {
-            "type": "date",
-            "format": "date_optional_time||epoch_millis"
-          },
-          "identifier": {
-            "type": "nested",
-            "properties": {
-              "creators": {
-                "type": "nested",
-                "properties": {
-                  "affiliation": {
-                    "type": "keyword"
-                  },
-                  "affiliation_identifier": {
-                    "type": "keyword"
-                  },
-                  "affiliation_identifier_scheme_type": {
-                    "type": "keyword"
-                  },
-                  "creator_name": {
-                    "type": "keyword"
-                  },
-                  "firstname": {
-                    "type": "keyword"
-                  },
-                  "id": {
-                    "type": "keyword"
-                  },
-                  "lastname": {
-                    "type": "keyword"
-                  },
-                  "name_identifier": {
-                    "type": "keyword"
-                  },
-                  "name_identifier_scheme_type": {
-                    "type": "keyword"
-                  },
-                  "type": {
-                    "type": "keyword"
-                  }
-                }
-              },
-              "database_id": {
-                "type": "keyword"
-              },
-              "descriptions": {
-                "type": "nested",
-                "properties": {
-                  "description": {
-                    "type": "text"
-                  },
-                  "id": {
-                    "type": "keyword"
-                  },
-                  "language": {
-                    "type": "keyword"
-                  },
-                  "type": {
-                    "type": "keyword"
-                  }
-                }
-              },
-              "doi": {
-                "type": "keyword"
-              },
-              "execution": {
-                "type": "date",
-                "format": "date_optional_time||epoch_millis"
-              },
-              "funders": {
-                "type": "nested",
-                "properties": {
-                  "award_number": {
-                    "type": "keyword"
-                  },
-                  "award_title": {
-                    "type": "keyword"
-                  },
-                  "funder_identifier": {
-                    "type": "keyword"
-                  },
-                  "funder_identifier_type": {
-                    "type": "keyword"
-                  },
-                  "funder_name": {
-                    "type": "keyword"
-                  },
-                  "id": {
-                    "type": "keyword"
-                  }
-                }
-              },
-              "language": {
-                "type": "keyword"
-              },
-              "licenses": {
-                "type": "nested",
-                "properties": {
-                  "identifier": {
-                    "type": "keyword"
-                  },
-                  "uri": {
-                    "type": "keyword"
-                  }
-                }
-              },
-              "publication_day": {
-                "type": "integer"
-              },
-              "publication_month": {
-                "type": "integer"
-              },
-              "publication_year": {
-                "type": "integer"
-              },
-              "publisher": {
-                "type": "keyword"
-              },
-              "query": {
-                "type": "text"
-              },
-              "query_hash": {
-                "type": "keyword"
-              },
-              "query_id": {
-                "type": "keyword"
-              },
-              "query_normalized": {
-                "type": "text"
-              },
-              "related_identifiers": {
-                "type": "nested",
-                "properties": {
-                  "id": {
-                    "type": "keyword"
-                  },
-                  "relation": {
-                    "type": "keyword"
-                  },
-                  "type": {
-                    "type": "keyword"
-                  },
-                  "value": {
-                    "type": "keyword"
-                  }
-                }
-              },
-              "result_hash": {
-                "type": "keyword"
-              },
-              "result_number": {
-                "type": "long"
-              },
-              "titles": {
-                "type": "nested",
-                "properties": {
-                  "id": {
-                    "type": "keyword"
-                  },
-                  "language": {
-                    "type": "keyword"
-                  },
-                  "title": {
-                    "type": "keyword"
-                  },
-                  "type": {
-                    "type": "keyword"
-                  }
-                }
-              },
-              "type": {
-                "type": "keyword"
-              },
-              "view_id": {
-                "type": "keyword"
-              },
-              "visibility": {
-                "type": "keyword"
-              }
-            }
-          },
-          "subsets": {
-            "type": "nested",
-            "properties": {
-              "creators": {
-                "type": "nested",
-                "properties": {
-                  "affiliation": {
-                    "type": "keyword"
-                  },
-                  "affiliation_identifier": {
-                    "type": "keyword"
-                  },
-                  "affiliation_identifier_scheme_type": {
-                    "type": "keyword"
-                  },
-                  "creator_name": {
-                    "type": "keyword"
-                  },
-                  "firstname": {
-                    "type": "keyword"
-                  },
-                  "id": {
-                    "type": "keyword"
-                  },
-                  "lastname": {
-                    "type": "keyword"
-                  },
-                  "name_identifier": {
-                    "type": "keyword"
-                  },
-                  "name_identifier_scheme_type": {
-                    "type": "keyword"
-                  },
-                  "type": {
-                    "type": "keyword"
-                  }
-                }
-              },
-              "database_id": {
-                "type": "keyword"
-              },
-              "descriptions": {
-                "type": "nested",
-                "properties": {
-                  "description": {
-                    "type": "text"
-                  },
-                  "id": {
-                    "type": "keyword"
-                  },
-                  "language": {
-                    "type": "keyword"
-                  },
-                  "type": {
-                    "type": "keyword"
-                  }
-                }
-              },
-              "doi": {
-                "type": "keyword"
-              },
-              "execution": {
-                "type": "date",
-                "format": "date_optional_time||epoch_millis"
-              },
-              "funders": {
-                "type": "nested",
-                "properties": {
-                  "award_number": {
-                    "type": "keyword"
-                  },
-                  "award_title": {
-                    "type": "keyword"
-                  },
-                  "funder_identifier": {
-                    "type": "keyword"
-                  },
-                  "funder_identifier_type": {
-                    "type": "keyword"
-                  },
-                  "funder_name": {
-                    "type": "keyword"
-                  },
-                  "id": {
-                    "type": "keyword"
-                  }
-                }
-              },
-              "language": {
-                "type": "keyword"
-              },
-              "licenses": {
-                "type": "nested",
-                "properties": {
-                  "identifier": {
-                    "type": "keyword"
-                  },
-                  "uri": {
-                    "type": "keyword"
-                  }
-                }
-              },
-              "publication_day": {
-                "type": "integer"
-              },
-              "publication_month": {
-                "type": "integer"
-              },
-              "publication_year": {
-                "type": "integer"
-              },
-              "publisher": {
-                "type": "keyword"
-              },
-              "query": {
-                "type": "text"
-              },
-              "query_hash": {
-                "type": "keyword"
-              },
-              "query_id": {
-                "type": "keyword"
-              },
-              "query_normalized": {
-                "type": "text"
-              },
-              "related_identifiers": {
-                "type": "nested",
-                "properties": {
-                  "id": {
-                    "type": "keyword"
-                  },
-                  "relation": {
-                    "type": "keyword"
-                  },
-                  "type": {
-                    "type": "keyword"
-                  },
-                  "value": {
-                    "type": "keyword"
-                  }
-                }
-              },
-              "result_hash": {
-                "type": "keyword"
-              },
-              "result_number": {
-                "type": "long"
-              },
-              "titles": {
-                "type": "nested",
-                "properties": {
-                  "id": {
-                    "type": "keyword"
-                  },
-                  "language": {
-                    "type": "keyword"
-                  },
-                  "title": {
-                    "type": "keyword"
-                  },
-                  "type": {
-                    "type": "keyword"
-                  }
-                }
-              },
-              "type": {
-                "type": "keyword"
-              },
-              "view_id": {
-                "type": "keyword"
-              },
-              "visibility": {
-                "type": "keyword"
-              }
-            }
-          },
-          "internal_name": {
-            "type": "keyword"
-          },
-          "is_initial_view": {
-            "type": "boolean"
-          },
-          "is_public": {
-            "type": "boolean"
-          },
-          "name": {
-            "type": "keyword"
-          },
-          "query": {
-            "type": "text"
-          },
-          "query_hash": {
-            "type": "keyword"
           }
         }
       }
-    }
-  },
+    },
   "settings": {
     "index": {
       "number_of_shards": "1",

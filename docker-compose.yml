@@ -338,20 +338,20 @@ services:
     logging:
       driver: json-file
 
-#  dbrepo-search-db-init:
-#    restart: "no"
-#    container_name: dbrepo-search-db-init
-#    hostname: search-db-init
-#    image: dbrepo-search-db-init:latest
-#    build: ./dbrepo-search-db/init
-#    environment:
-#      OPENSEARCH_HOST: ${SEARCH_DB_HOST:-http://search-db:9200}
-#      CURL_EXTRA_ARGS: ${SEARCH_DB_EXTRA_ARGS:-}
-#    depends_on:
-#      dbrepo-search-db:
-#        condition: service_healthy
-#    logging:
-#      driver: json-file
+  dbrepo-search-db-init:
+    restart: "no"
+    container_name: dbrepo-search-db-init
+    hostname: search-db-init
+    image: dbrepo-search-db-init:latest
+    build: ./dbrepo-search-db/init
+    environment:
+      OPENSEARCH_HOST: ${SEARCH_DB_HOST:-http://search-db:9200}
+      CURL_EXTRA_ARGS: ${SEARCH_DB_EXTRA_ARGS:-}
+    depends_on:
+      dbrepo-search-db:
+        condition: service_healthy
+    logging:
+      driver: json-file
 
   dbrepo-storage-service:
     restart: "no"
