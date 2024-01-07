@@ -52,11 +52,6 @@ def determine_datatypes(filename, enum=False, enum_tol=0.0001, separator=None) -
 
         r = {}
 
-        # list of rows
-        if enum == True:
-            rows = pd.read_csv(fh, sep=separator, header=offset)
-            n = len(rows)
-
         for i in range(0, (len(types))):
             if type(types[i]) == messytables.types.BoolType:
                 r[headers[i]] = "bool"
@@ -72,31 +67,8 @@ def determine_datatypes(filename, enum=False, enum_tol=0.0001, separator=None) -
                 r[headers[i]] = "decimal"
             elif type(types[i]) == messytables.types.StringType:
                 r[headers[i]] = "varchar"
-            elif type(types[i]) == messytables.types.PercentageType:
-                r[headers[i]] = "double"
-            elif type(types[i]) == messytables.types.CurrencyType:
-                r[headers[i]] = "double"
-            elif type(types[i]) == messytables.types.TimeType:
-                r[headers[i]] = "time"
             else:
-                if enum == True:
-                    enum_set = set()
-                    m = 0
-                    is_enum = True
-                    for elem in range(0, n):
-                        if (m < enum_tol * n):
-                            enum_set.add(rows.iloc[elem, i])
-                        else:
-                            is_enum = False
-                            break
-                        m = len(enum_set)
-                    if is_enum:
-                        enum_set.discard(None)
-                        r[headers[i]] = {"enums": list(enum_set)}
-                    else:
-                        r[headers[i]] = "text"
-                else:
-                    r[headers[i]] = "text"
+                r[headers[i]] = "text"
         fh.close()
         s = {'columns': r, 'separator': separator}
         logging.info('Determined data types %s', s)

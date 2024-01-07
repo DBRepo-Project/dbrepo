@@ -22,6 +22,19 @@ class S3ClientTest(unittest.TestCase):
         self.assertTrue(response)
 
     # @Test
+    def test_upload_bucket_notFound_fails(self):
+
+        # test
+        try:
+            S3Client().upload_file(filename="testdt01.csv", path="./data/", bucket="invalidbucket")
+        except ConnectionRefusedError:
+            pass
+        except Exception:
+            self.fail('unexpected exception raised')
+        else:
+            self.fail('ConnectionRefusedError not raised')
+
+    # @Test
     def test_upload_file_notFound_fails(self):
 
         # test
@@ -41,8 +54,7 @@ class S3ClientTest(unittest.TestCase):
         S3Client().upload_file(filename="testdt01.csv", path="./data/", bucket="dbrepo-upload")
 
         # test
-        response = S3Client().download_file(filename="testdt01.csv")
-        self.assertTrue(response)
+        S3Client().download_file(filename="testdt01.csv")
 
     # @Test
     def test_download_file_notFound_fails(self):
@@ -50,6 +62,19 @@ class S3ClientTest(unittest.TestCase):
         # test
         try:
             S3Client().download_file(filename="testdt01.csv")
+        except ClientError:
+            pass
+        except Exception:
+            self.fail('unexpected exception raised')
+        else:
+            self.fail('ClientError not raised')
+
+    # @Test
+    def test_download_bucket_notFound_fails(self):
+
+        # test
+        try:
+            S3Client().download_file(filename="testdt01.csv", bucket="invalidbucket")
         except ClientError:
             pass
         except Exception:

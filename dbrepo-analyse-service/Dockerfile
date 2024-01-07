@@ -5,8 +5,11 @@ RUN apt update && apt install -y curl
 
 WORKDIR /app
 
-COPY ./requirements.txt ./requirements.txt
-RUN pip install -r requirements.txt
+COPY Pipfile Pipfile.lock ./
+
+RUN pip install pipenv && \
+    pipenv install gunicorn && \
+    pipenv install --system --deploy
 
 ENV FLASK_APP=app.py
 ENV FLASK_RUN_HOST=0.0.0.0

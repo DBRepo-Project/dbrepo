@@ -2,6 +2,7 @@ import os
 import boto3
 import logging
 
+from boto3.exceptions import S3UploadFailedError
 from botocore.exceptions import ClientError
 
 
@@ -34,31 +35,24 @@ class S3Client:
             logging.error(f'Failed to find .csv at {filepath}')
             raise FileNotFoundError(f'Failed to find .csv at {filepath}')
         try:
-            if self.client.upload_file(filepath, bucket, filename) is False:
-                logging.warning(f"Failed to upload file with key {filename}")
-                raise ConnectionRefusedError(f"Failed to upload file with key {filename}")
+            self.client.upload_file(filepath, bucket, filename)
             logging.info(f"Uploaded .csv {filepath} with key {filename}")
             return True
-        except ClientError as e:
-            logging.error(e)
-            return False
+        except (ClientError, S3UploadFailedError) as e:
+            logging.warning(f"Failed to upload file with key {filename}")
+            raise ConnectionRefusedError(f"Failed to upload file with key {filename}", e)
 
-    def download_file(self, filename) -> bool:
+    def download_file(self, filename, bucket="dbrepo-upload"):
         """
         Downloads a file from the blob storage.
         Follows the official API https://boto3.amazonaws.com/v1/documentation/api/latest/guide/s3-example-download-file.html
         :param filename: The filename.
-        :return: True if the file was downloaded and saved.
+        :param bucket: The bucket to download the file from.
         """
-        self.file_exists("dbrepo-upload", filename)
+        self.file_exists(bucket, filename)
         filepath = os.path.join("/tmp/", filename)
-        try:
-            self.client.download_file("dbrepo-upload", filename, filepath)
-            logging.info(f"Downloaded .csv with key {filename} into {filepath}")
-            return True
-        except ClientError:
-            logging.error(f"Failed to download file with key {filename} into {filepath}")
-            return False
+        self.client.download_file(bucket, filename, filepath)
+        logging.info(f"Downloaded .csv with key {filename} into {filepath}")
 
     def file_exists(self, bucket, filename):
         try:
