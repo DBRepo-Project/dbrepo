@@ -30,7 +30,8 @@ build-analyse-service:
   image: python:3.9-slim
   stage: build
   script:
-    - "pip install -r ./dbrepo-analyse-service/requirements.txt"
+    - apt-get update && apt-get install -y pipenv
+    - "PIPENV_PIPFILE=./dbrepo-analyse-service/Pipfile pipenv install --dev"
 
 build-data-service:
   image: maven:3-openjdk-17
