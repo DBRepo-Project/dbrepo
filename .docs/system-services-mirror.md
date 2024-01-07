@@ -8,7 +8,7 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`dbrepo/mirror-service:latest`](https://hub.docker.com/r/dbrepo/mirror-service)
+    Image: [`dbrepo/mirror-service:1.4`](https://hub.docker.com/r/dbrepo/mirror-service)
 
     * Ports: 9050/tcp
     * Info: `http://<hostname>:9050/actuator/info`

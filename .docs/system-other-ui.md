@@ -8,7 +8,7 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`dbrepo/ui:latest`](https://hub.docker.com/r/dbrepo/ui)
+    Image: [`dbrepo/ui:1.4`](https://hub.docker.com/r/dbrepo/ui)
 
     * Ports: 3000/tcp, 9100/tcp
     * Prometheus: `http://:9100/metrics`

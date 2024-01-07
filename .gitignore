@@ -20,6 +20,9 @@ site/
 .pytest_cache/
 __pycache__/
 
+# docs
+site/
+
 # Previous directories
 fda-analyse-service/
 fda-authentication-service/
@@ -39,6 +42,9 @@ fda-ui/
 
 # demo
 .demo
+
+# Generated
+ready
 
 # crt
 *.crt

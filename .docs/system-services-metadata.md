@@ -8,7 +8,7 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`dbrepo/metadata-service:latest`](https://hub.docker.com/r/dbrepo/metadata-service)
+    Image: [`dbrepo/metadata-service:1.4`](https://hub.docker.com/r/dbrepo/metadata-service)
 
     * Ports: 9099/tcp
     * Info: `http://9093:9099/actuator/info`

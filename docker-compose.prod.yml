@@ -1,5 +1,5 @@
-  # INFO: This compose file deploys the official Docker images from a stable, tested master branch
-# MODIFIED: 2023-06-01
+# INFO: This compose file deploys the official Docker images from a stable, tested master branch
+# MODIFIED: 2024-01-07
 # MAINTAINER: Martin Weise <martin.weise@tuwien.ac.at>
 
 version: "3.6"
@@ -18,7 +18,7 @@ services:
     restart: "no"
     container_name: dbrepo-metadata-db
     hostname: metadata-db
-    image: docker.io/dbrepo/metadata-db:0.1.4
+    image: docker.io/dbrepo/metadata-db:1.4
     volumes:
       - metadata-db-data:/bitnami/mariadb
       - ./dist/setup-schema_local.sql:/docker-entrypoint-initdb.d/setup-schema_local.sql
@@ -80,7 +80,7 @@ services:
     restart: "no"
     container_name: dbrepo-authentication-service
     hostname: authentication-service
-    image: docker.io/dbrepo/authentication-service:0.1.4
+    image: docker.io/dbrepo/authentication-service:1.4
     ports:
       - "8443:8443"
       - "8080:8080"
@@ -105,7 +105,7 @@ services:
     restart: "no"
     container_name: dbrepo-metadata-service
     hostname: metadata-service
-    image: docker.io/dbrepo/metadata-service:0.1.4
+    image: docker.io/dbrepo/metadata-service:1.4
     volumes:
       - "${SHARED_FILESYSTEM:-/tmp}:/tmp"
     ports:
@@ -178,7 +178,7 @@ services:
     restart: "no"
     container_name: dbrepo-analyse-service
     hostname: analyse-service
-    image: docker.io/dbrepo/analyse-service:0.1.4
+    image: docker.io/dbrepo/analyse-service:1.4
     ports:
       - "5000:5000"
     environment:
@@ -222,7 +222,7 @@ services:
     restart: "no"
     container_name: dbrepo-search-db
     hostname: search-db
-    image: docker.io/dbrepo/search-db:0.1.4
+    image: docker.io/dbrepo/search-db:1.4
     ports:
       - "9200:9200"
     healthcheck:
@@ -246,7 +246,7 @@ services:
     restart: "no"
     container_name: dbrepo-search-service
     hostname: search-service
-    image: docker.io/dbrepo/search-service:0.1.4
+    image: docker.io/dbrepo/search-service:1.4
     ports:
       - "4000:4000"
     environment:
@@ -258,7 +258,7 @@ services:
     restart: "no"
     container_name: dbrepo-data-db-sidecar
     hostname: data-db-sidecar
-    image: docker.io/dbrepo/data-db-sidecar:0.1.4
+    image: docker.io/dbrepo/data-db-sidecar:1.4
     ports:
       - "3305:3305"
     environment:
@@ -278,7 +278,7 @@ services:
     restart: "no"
     container_name: dbrepo-ui
     hostname: ui
-    image: docker.io/dbrepo/ui:0.1.4
+    image: docker.io/dbrepo/ui:1.4
     volumes:
       - ./dist/dbrepo.config.json:/app/dbrepo.config.json
     depends_on:
@@ -334,7 +334,7 @@ services:
     restart: "no"
     container_name: dbrepo-search-db-init
     hostname: search-db-init
-    image: docker.io/dbrepo/search-db-init:0.1.4
+    image: docker.io/dbrepo/search-db-init:1.4
     environment:
       OPENSEARCH_HOST: ${SEARCH_DB_HOST:-http://search-db:9200}
       CURL_EXTRA_ARGS: ${SEARCH_DB_EXTRA_ARGS:-}
@@ -367,7 +367,7 @@ services:
     restart: "no"
     container_name: dbrepo-storage-service-init
     hostname: storage-service-init
-    image: docker.io/dbrepo/storage-service-init:0.1.4
+    image: docker.io/dbrepo/storage-service-init:1.4
     environment:
       SEAWEEDFS_ENDPOINT: "${STORAGE_SEAWEEDFS_ENDPOINT:-storage-service:9333}"
     depends_on:
@@ -406,7 +406,7 @@ services:
     restart: "no"
     container_name: dbrepo-data-service
     hostname: data-service
-    image: docker.io/dbrepo/data-service:0.1.4
+    image: docker.io/dbrepo/data-service:1.4
     ports:
       - "9093:9093"
     environment:

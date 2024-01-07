@@ -1,0 +1,1521 @@
+openapi: 3.0.1
+info:
+  title: Database Repository User Service API
+  description: Service that manages the users
+  contact:
+    name: Prof. Andreas Rauber
+    email: andreas.rauber@tuwien.ac.at
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+  version: 1.2.0
+externalDocs:
+  description: Wiki Documentation
+  url: https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/wikis
+servers:
+- url: http://localhost:9098
+  description: Generated server url
+paths:
+  /api/user/{id}:
+    get:
+      tags:
+      - user-endpoint
+      summary: Get a user info
+      operationId: find
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "404":
+          description: User was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "405":
+          description: Find user is not permitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "200":
+          description: Found user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDto'
+      security:
+      - bearerAuth: []
+    put:
+      tags:
+      - user-endpoint
+      summary: Modify user information
+      operationId: modify
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdateDto'
+        required: true
+      responses:
+        "202":
+          description: Modified user information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDto'
+        "405":
+          description: Modify user is not permitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "404":
+          description: User attribute was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+      security:
+      - bearerAuth: []
+  /api/user/{id}/theme:
+    put:
+      tags:
+      - user-endpoint
+      summary: Modify user theme
+      operationId: theme
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserThemeSetDto'
+        required: true
+      responses:
+        "405":
+          description: Modify user is not permitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "404":
+          description: User or user attribute was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "202":
+          description: Modified user theme
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDto'
+      security:
+      - bearerAuth: []
+  /api/user/{id}/password:
+    put:
+      tags:
+      - user-endpoint
+      summary: Modify user password
+      operationId: password
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserPasswordDto'
+        required: true
+      responses:
+        "404":
+          description: User was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "405":
+          description: Modify user is not permitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "202":
+          description: Modified user password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDto'
+      security:
+      - bearerAuth: []
+  /api/maintenance/message/{id}:
+    get:
+      tags:
+      - maintenance-endpoint
+      summary: Find one maintenance message
+      operationId: find_1
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: Get messages
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BannerMessageDto'
+    put:
+      tags:
+      - maintenance-endpoint
+      summary: Update maintenance message
+      operationId: update
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BannerMessageUpdateDto'
+        required: true
+      responses:
+        "404":
+          description: Could not find message
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BannerMessageNotFoundException'
+        "202":
+          description: Updated message
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BannerMessageBriefDto'
+    delete:
+      tags:
+      - maintenance-endpoint
+      summary: Delete maintenance message
+      operationId: delete
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "202":
+          description: Deleted message
+          content:
+            application/json: {}
+        "404":
+          description: Could not find message
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BannerMessageNotFoundException'
+  /api/user:
+    get:
+      tags:
+      - user-endpoint
+      summary: Find all users
+      operationId: findAll
+      responses:
+        "200":
+          description: List users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserBriefDto'
+    post:
+      tags:
+      - user-endpoint
+      summary: Create user
+      operationId: create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignupRequestDto'
+        required: true
+      responses:
+        "409":
+          description: User with username already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "404":
+          description: Realm or default role not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "201":
+          description: Created user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserBriefDto'
+        "417":
+          description: User with e-mail already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+  /api/maintenance/message:
+    get:
+      tags:
+      - maintenance-endpoint
+      summary: Find maintenance messages
+      operationId: list
+      responses:
+        "200":
+          description: List messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BannerMessageDto'
+    post:
+      tags:
+      - maintenance-endpoint
+      summary: Create maintenance message
+      operationId: create_1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BannerMessageCreateDto'
+        required: true
+      responses:
+        "201":
+          description: Created message
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BannerMessageBriefDto'
+  /api/maintenance/message/active:
+    get:
+      tags:
+      - maintenance-endpoint
+      summary: Find active maintenance messages
+      operationId: active
+      responses:
+        "200":
+          description: List messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BannerMessageBriefDto'
+components:
+  schemas:
+    UserUpdateDto:
+      type: object
+      properties:
+        firstname:
+          type: string
+          example: Josiah
+        lastname:
+          type: string
+          example: Carberry
+        affiliation:
+          type: string
+          example: Brown University
+        orcid:
+          type: string
+          example: 0000-0002-1825-0097
+    ColumnBriefDto:
+      required:
+      - column_type
+      - database_id
+      - id
+      - internal_name
+      - name
+      - table_id
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+          example: date
+        database_id:
+          type: integer
+          format: int64
+        table_id:
+          type: integer
+          format: int64
+        internal_name:
+          type: string
+          example: mdb_date
+        column_type:
+          type: string
+          example: date
+          enum:
+          - enum
+          - number
+          - decimal
+          - string
+          - text
+          - boolean
+          - date
+          - timestamp
+          - blob
+    ContainerDto:
+      required:
+      - created
+      - hash
+      - id
+      - internal_name
+      - name
+      - running
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        hash:
+          type: string
+          example: f829dd8a884182d0da846f365dee1221fd16610a14c81b8f9f295ff162749e50
+        name:
+          type: string
+          example: Air Quality
+        state:
+          type: string
+          example: running
+          enum:
+          - created
+          - restarting
+          - running
+          - paused
+          - exited
+          - dead
+        database:
+          $ref: '#/components/schemas/DatabaseDto'
+        running:
+          type: boolean
+          example: true
+        image:
+          $ref: '#/components/schemas/ImageBriefDto'
+        port:
+          type: integer
+          format: int32
+        owner:
+          $ref: '#/components/schemas/UserBriefDto'
+        created:
+          type: string
+          format: date-time
+          example: 2021-03-12T15:26:21.678396092Z
+        internal_name:
+          type: string
+          example: air-quality
+        ip_address:
+          type: string
+    CreatorDto:
+      required:
+      - firstname
+      - id
+      - lastname
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        firstname:
+          type: string
+          example: Josiah
+        lastname:
+          type: string
+          example: Carberry
+        affiliation:
+          type: string
+          example: Wesleyan University
+        orcid:
+          type: string
+          example: 0000-0002-1825-0097
+    DatabaseAccessDto:
+      required:
+      - type
+      - user
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/UserDto'
+        type:
+          type: string
+          enum:
+          - read
+          - write_own
+          - write_all
+        created:
+          type: string
+          format: date-time
+    DatabaseDto:
+      required:
+      - creator
+      - exchange_name
+      - id
+      - internal_name
+      - name
+      - owner
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+          example: Air Quality
+        identifier:
+          $ref: '#/components/schemas/IdentifierDto'
+        description:
+          type: string
+          example: Weather Australia 2009-2021
+        tables:
+          type: array
+          items:
+            $ref: '#/components/schemas/TableBriefDto'
+        views:
+          type: array
+          items:
+            $ref: '#/components/schemas/ViewBriefDto'
+        image:
+          $ref: '#/components/schemas/ImageDto'
+        container:
+          $ref: '#/components/schemas/ContainerDto'
+        accesses:
+          type: array
+          items:
+            $ref: '#/components/schemas/DatabaseAccessDto'
+        creator:
+          $ref: '#/components/schemas/UserBriefDto'
+        owner:
+          $ref: '#/components/schemas/UserBriefDto'
+        created:
+          type: string
+          format: date-time
+        exchange_name:
+          type: string
+          example: dbrepo/air_quality
+        internal_name:
+          type: string
+          example: weather_australia
+        is_public:
+          type: boolean
+          example: true
+    IdentifierDto:
+      required:
+      - container id
+      - creators
+      - database id
+      - execution
+      - publication_year
+      - query
+      - query_hash
+      - query_normalized
+      - result_hash
+      - result_number
+      - title
+      - type
+      - visibility
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        type:
+          type: string
+          enum:
+          - database
+          - subset
+        title:
+          type: string
+          example: "Airquality Stephansplatz, Vienna, Austria"
+        description:
+          type: string
+          example: "Air quality reports at Stephansplatz, Vienna"
+        query:
+          type: string
+          example: "SELECT `id`, `value`, `location` FROM `air_quality` WHERE `location`\
+            \ = \"09:STEF\""
+        execution:
+          type: string
+          format: date-time
+        visibility:
+          type: string
+          example: everyone
+          enum:
+          - everyone
+          - self
+        doi:
+          type: string
+          example: 10.1038/nphys1170
+        publisher:
+          type: string
+          example: TU Wien
+        language:
+          type: string
+          enum:
+          - ab
+          - aa
+          - af
+          - ak
+          - sq
+          - am
+          - ar
+          - an
+          - hy
+          - as
+          - av
+          - ae
+          - ay
+          - az
+          - bm
+          - ba
+          - eu
+          - be
+          - bn
+          - bh
+          - bi
+          - bs
+          - br
+          - bg
+          - my
+          - ca
+          - km
+          - ch
+          - ce
+          - ny
+          - zh
+          - cu
+          - cv
+          - kw
+          - co
+          - cr
+          - hr
+          - cs
+          - da
+          - dv
+          - nl
+          - dz
+          - en
+          - eo
+          - et
+          - ee
+          - fo
+          - fj
+          - fi
+          - fr
+          - ff
+          - gd
+          - gl
+          - lg
+          - ka
+          - de
+          - ki
+          - el
+          - kl
+          - gn
+          - gu
+          - ht
+          - ha
+          - he
+          - hz
+          - hi
+          - ho
+          - hu
+          - is
+          - io
+          - ig
+          - id
+          - ia
+          - ie
+          - iu
+          - ik
+          - ga
+          - it
+          - ja
+          - jv
+          - kn
+          - kr
+          - ks
+          - kk
+          - rw
+          - kv
+          - kg
+          - ko
+          - kj
+          - ku
+          - ky
+          - lo
+          - la
+          - lv
+          - lb
+          - li
+          - ln
+          - lt
+          - lu
+          - mk
+          - mg
+          - ms
+          - ml
+          - mt
+          - gv
+          - mi
+          - mr
+          - mh
+          - ro
+          - mn
+          - na
+          - nv
+          - nd
+          - ng
+          - ne
+          - se
+          - "no"
+          - nb
+          - nn
+          - ii
+          - oc
+          - oj
+          - or
+          - om
+          - os
+          - pi
+          - pa
+          - ps
+          - fa
+          - pl
+          - pt
+          - qu
+          - rm
+          - rn
+          - ru
+          - sm
+          - sg
+          - sa
+          - sc
+          - sr
+          - sn
+          - sd
+          - si
+          - sk
+          - sl
+          - so
+          - st
+          - nr
+          - es
+          - su
+          - sw
+          - ss
+          - sv
+          - tl
+          - ty
+          - tg
+          - ta
+          - tt
+          - te
+          - th
+          - bo
+          - ti
+          - to
+          - ts
+          - tn
+          - tr
+          - tk
+          - tw
+          - ug
+          - uk
+          - ur
+          - uz
+          - ve
+          - vi
+          - vo
+          - wa
+          - cy
+          - fy
+          - wo
+          - xh
+          - yi
+          - yo
+          - za
+          - zu
+        license:
+          $ref: '#/components/schemas/LicenseDto'
+        creators:
+          type: array
+          items:
+            $ref: '#/components/schemas/CreatorDto'
+        created:
+          type: string
+          format: date-time
+        container id:
+          type: integer
+          format: int64
+          example: 1
+        database id:
+          type: integer
+          format: int64
+          example: 1
+        query id:
+          type: integer
+          format: int64
+          example: 1
+        query_normalized:
+          type: string
+          example: "SELECT `id`, `value`, `location` FROM `air_quality` WHERE `location`\
+            \ = \"09:STEF\""
+        related:
+          type: array
+          items:
+            $ref: '#/components/schemas/RelatedIdentifierDto'
+        query_hash:
+          type: string
+          description: query hash in sha512
+        result_hash:
+          type: string
+        result_number:
+          type: integer
+          format: int64
+          example: 1
+        publication_day:
+          type: integer
+          format: int32
+          example: 15
+        publication_month:
+          type: integer
+          format: int32
+          example: 12
+        publication_year:
+          type: integer
+          format: int32
+          example: 2022
+        last_modified:
+          type: string
+          format: date-time
+    ImageBriefDto:
+      required:
+      - id
+      - registry
+      - repository
+      - tag
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        registry:
+          type: string
+          example: docker.io/library
+        repository:
+          type: string
+          example: mariadb
+        tag:
+          type: string
+          example: "10.5"
+    ImageDateDto:
+      required:
+      - database_format
+      - example
+      - has_time
+      - id
+      - unix_format
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        example:
+          type: string
+          example: 30.01.2022
+        database_format:
+          type: string
+          example: '%d.%c.%Y'
+        unix_format:
+          type: string
+          example: dd.MM.YYYY
+        has_time:
+          type: boolean
+          example: false
+        created_at:
+          type: string
+          format: date-time
+    ImageDto:
+      required:
+      - default_port
+      - dialect
+      - driver_class
+      - id
+      - jdbc_method
+      - registry
+      - repository
+      - tag
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        registry:
+          type: string
+          example: docker.io/library
+        repository:
+          type: string
+          example: mariadb
+        tag:
+          type: string
+          example: "10.5"
+        dialect:
+          type: string
+          example: org.hibernate.dialect.MariaDBDialect
+        hash:
+          type: string
+          example: sha256:c5ec7353d87dfc35067e7bffeb25d6a0d52dad41e8b7357213e3b12d6e7ff78e
+        compiled:
+          type: string
+          format: date-time
+          example: 2021-03-12T15:26:21.678396092Z
+        size:
+          type: integer
+          example: 314295447
+        driver_class:
+          type: string
+          example: org.mariadb.jdbc.Driver
+        date_formats:
+          type: array
+          items:
+            $ref: '#/components/schemas/ImageDateDto'
+        jdbc_method:
+          type: string
+          example: mariadb
+        default_port:
+          type: integer
+          format: int32
+          example: 3306
+    LicenseDto:
+      required:
+      - identifier
+      - uri
+      type: object
+      properties:
+        identifier:
+          type: string
+          example: MIT
+        uri:
+          type: string
+          example: https://opensource.org/licenses/MIT
+    RelatedIdentifierDto:
+      required:
+      - created
+      - id
+      - value
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        value:
+          type: string
+          example: 10.70124/dc4zh-9ce78
+        type:
+          type: string
+          example: DOI
+          enum:
+          - DOI
+          - URL
+          - URN
+          - ARK
+          - arXiv
+          - bibcode
+          - EAN13
+          - EISSN
+          - Handle
+          - IGSN
+          - ISBN
+          - ISTC
+          - LISSN
+          - LSID
+          - PMID
+          - PURL
+          - UPC
+          - w3id
+        relation:
+          type: string
+          example: Cites
+          enum:
+          - IsCitedBy
+          - Cites
+          - IsSupplementTo
+          - IsSupplementedBy
+          - IsContinuedBy
+          - Continues
+          - IsDescribedBy
+          - Describes
+          - HasMetadata
+          - IsMetadataFor
+          - HasVersion
+          - IsVersionOf
+          - IsNewVersionOf
+          - IsPreviousVersionOf
+          - IsPartOf
+          - HasPart
+          - IsPublishedIn
+          - IsReferencedBy
+          - References
+          - IsDocumentedBy
+          - Documents
+          - IsCompiledBy
+          - Compiles
+          - IsVariantFormOf
+          - IsOriginalFormOf
+          - IsIdenticalTo
+          - IsReviewedBy
+          - Reviews
+          - IsDerivedFrom
+          - IsSourceOf
+          - IsRequiredBy
+          - Requires
+          - IsObsoletedBy
+          - Obsoletes
+        created:
+          type: string
+          format: date-time
+        last_modified:
+          type: string
+          format: date-time
+    TableBriefDto:
+      required:
+      - columns
+      - description
+      - id
+      - internal_name
+      - name
+      - owner
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+          example: Air Quality
+        description:
+          type: string
+          example: Air Quality in Austria
+        owner:
+          $ref: '#/components/schemas/UserBriefDto'
+        columns:
+          type: array
+          items:
+            $ref: '#/components/schemas/ColumnBriefDto'
+        internal_name:
+          type: string
+          example: air_quality
+    UserAttributeDto:
+      type: object
+      properties:
+        name:
+          type: string
+          example: theme_dark
+        value:
+          type: string
+          example: "true"
+    UserBriefDto:
+      required:
+      - id
+      - username
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 1ffc7b0e-9aeb-4e8b-b8f1-68f3936155b4
+        username:
+          type: string
+          description: Only contains lowercase characters
+          example: jcarberry
+        name:
+          type: string
+          example: Josiah Carberry
+        orcid:
+          type: string
+          example: 0000-0002-1825-0097
+        given_name:
+          type: string
+          example: Josiah
+        family_name:
+          type: string
+          example: Carberry
+        email_verified:
+          type: boolean
+          example: true
+    UserDto:
+      required:
+      - email
+      - email_verified
+      - id
+      - username
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 1ffc7b0e-9aeb-4e8b-b8f1-68f3936155b4
+        username:
+          type: string
+          description: Only contains lowercase characters
+          example: jcarberry
+        name:
+          type: string
+          example: Josiah Carberry
+        orcid:
+          type: string
+          example: 0000-0002-1825-0097
+        attributes:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserAttributeDto'
+        containers:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContainerDto'
+        databases:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContainerDto'
+        identifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContainerDto'
+        email:
+          type: string
+          example: jcarberry@brown.edu
+        given_name:
+          type: string
+          example: Josiah
+        family_name:
+          type: string
+          example: Carberry
+        email_verified:
+          type: boolean
+          example: true
+    ViewBriefDto:
+      required:
+      - created
+      - creator
+      - id
+      - internal_name
+      - name
+      - query
+      - vdbid
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        vdbid:
+          type: integer
+          format: int64
+        name:
+          type: string
+          example: Air Quality
+        query:
+          type: string
+          example: SELECT `id` FROM `air_quality` ORDER BY `value` DESC
+        created:
+          type: string
+          format: date-time
+        creator:
+          $ref: '#/components/schemas/UserDto'
+        internal_name:
+          type: string
+          example: air_quality
+        is_public:
+          type: boolean
+          example: true
+        initial_view:
+          type: boolean
+          description: True if it is the default view for the database
+          example: true
+        last_modified:
+          type: string
+          format: date-time
+    ApiErrorDto:
+      required:
+      - code
+      - message
+      - status
+      type: object
+      properties:
+        status:
+          type: string
+          example: STATUS
+          enum:
+          - 100 CONTINUE
+          - 101 SWITCHING_PROTOCOLS
+          - 102 PROCESSING
+          - 103 EARLY_HINTS
+          - 103 CHECKPOINT
+          - 200 OK
+          - 201 CREATED
+          - 202 ACCEPTED
+          - 203 NON_AUTHORITATIVE_INFORMATION
+          - 204 NO_CONTENT
+          - 205 RESET_CONTENT
+          - 206 PARTIAL_CONTENT
+          - 207 MULTI_STATUS
+          - 208 ALREADY_REPORTED
+          - 226 IM_USED
+          - 300 MULTIPLE_CHOICES
+          - 301 MOVED_PERMANENTLY
+          - 302 FOUND
+          - 302 MOVED_TEMPORARILY
+          - 303 SEE_OTHER
+          - 304 NOT_MODIFIED
+          - 305 USE_PROXY
+          - 307 TEMPORARY_REDIRECT
+          - 308 PERMANENT_REDIRECT
+          - 400 BAD_REQUEST
+          - 401 UNAUTHORIZED
+          - 402 PAYMENT_REQUIRED
+          - 403 FORBIDDEN
+          - 404 NOT_FOUND
+          - 405 METHOD_NOT_ALLOWED
+          - 406 NOT_ACCEPTABLE
+          - 407 PROXY_AUTHENTICATION_REQUIRED
+          - 408 REQUEST_TIMEOUT
+          - 409 CONFLICT
+          - 410 GONE
+          - 411 LENGTH_REQUIRED
+          - 412 PRECONDITION_FAILED
+          - 413 PAYLOAD_TOO_LARGE
+          - 413 REQUEST_ENTITY_TOO_LARGE
+          - 414 URI_TOO_LONG
+          - 414 REQUEST_URI_TOO_LONG
+          - 415 UNSUPPORTED_MEDIA_TYPE
+          - 416 REQUESTED_RANGE_NOT_SATISFIABLE
+          - 417 EXPECTATION_FAILED
+          - 418 I_AM_A_TEAPOT
+          - 419 INSUFFICIENT_SPACE_ON_RESOURCE
+          - 420 METHOD_FAILURE
+          - 421 DESTINATION_LOCKED
+          - 422 UNPROCESSABLE_ENTITY
+          - 423 LOCKED
+          - 424 FAILED_DEPENDENCY
+          - 425 TOO_EARLY
+          - 426 UPGRADE_REQUIRED
+          - 428 PRECONDITION_REQUIRED
+          - 429 TOO_MANY_REQUESTS
+          - 431 REQUEST_HEADER_FIELDS_TOO_LARGE
+          - 451 UNAVAILABLE_FOR_LEGAL_REASONS
+          - 500 INTERNAL_SERVER_ERROR
+          - 501 NOT_IMPLEMENTED
+          - 502 BAD_GATEWAY
+          - 503 SERVICE_UNAVAILABLE
+          - 504 GATEWAY_TIMEOUT
+          - 505 HTTP_VERSION_NOT_SUPPORTED
+          - 506 VARIANT_ALSO_NEGOTIATES
+          - 507 INSUFFICIENT_STORAGE
+          - 508 LOOP_DETECTED
+          - 509 BANDWIDTH_LIMIT_EXCEEDED
+          - 510 NOT_EXTENDED
+          - 511 NETWORK_AUTHENTICATION_REQUIRED
+        message:
+          type: string
+          example: Error message
+        code:
+          type: string
+          example: error.service.code
+    UserThemeSetDto:
+      required:
+      - theme_dark
+      type: object
+      properties:
+        theme_dark:
+          type: boolean
+          example: true
+    UserPasswordDto:
+      required:
+      - password
+      type: object
+      properties:
+        password:
+          type: string
+    BannerMessageUpdateDto:
+      required:
+      - message
+      - type
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+          - error
+          - warning
+          - info
+        message:
+          type: string
+          example: Maintenance starts on 8am on Monday
+        link:
+          type: string
+          example: https://example.com
+        link_text:
+          type: string
+          example: More
+        display_start:
+          type: string
+          format: date-time
+        display_end:
+          type: string
+          format: date-time
+    BannerMessageNotFoundException:
+      type: object
+      properties:
+        cause:
+          type: object
+          properties:
+            stackTrace:
+              type: array
+              items:
+                type: object
+                properties:
+                  classLoaderName:
+                    type: string
+                  moduleName:
+                    type: string
+                  moduleVersion:
+                    type: string
+                  methodName:
+                    type: string
+                  fileName:
+                    type: string
+                  lineNumber:
+                    type: integer
+                    format: int32
+                  nativeMethod:
+                    type: boolean
+                  className:
+                    type: string
+            message:
+              type: string
+            suppressed:
+              type: array
+              items:
+                type: object
+                properties:
+                  stackTrace:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        classLoaderName:
+                          type: string
+                        moduleName:
+                          type: string
+                        moduleVersion:
+                          type: string
+                        methodName:
+                          type: string
+                        fileName:
+                          type: string
+                        lineNumber:
+                          type: integer
+                          format: int32
+                        nativeMethod:
+                          type: boolean
+                        className:
+                          type: string
+                  message:
+                    type: string
+                  localizedMessage:
+                    type: string
+            localizedMessage:
+              type: string
+        stackTrace:
+          type: array
+          items:
+            type: object
+            properties:
+              classLoaderName:
+                type: string
+              moduleName:
+                type: string
+              moduleVersion:
+                type: string
+              methodName:
+                type: string
+              fileName:
+                type: string
+              lineNumber:
+                type: integer
+                format: int32
+              nativeMethod:
+                type: boolean
+              className:
+                type: string
+        message:
+          type: string
+        suppressed:
+          type: array
+          items:
+            type: object
+            properties:
+              stackTrace:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    classLoaderName:
+                      type: string
+                    moduleName:
+                      type: string
+                    moduleVersion:
+                      type: string
+                    methodName:
+                      type: string
+                    fileName:
+                      type: string
+                    lineNumber:
+                      type: integer
+                      format: int32
+                    nativeMethod:
+                      type: boolean
+                    className:
+                      type: string
+              message:
+                type: string
+              localizedMessage:
+                type: string
+        localizedMessage:
+          type: string
+    BannerMessageBriefDto:
+      required:
+      - message
+      - type
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+          - error
+          - warning
+          - info
+        message:
+          type: string
+          example: Maintenance starts on 8am on Monday
+        link:
+          type: string
+          example: https://example.com
+        link_text:
+          type: string
+          example: More
+    SignupRequestDto:
+      required:
+      - email
+      - password
+      - username
+      type: object
+      properties:
+        username:
+          pattern: "^[a-z0-9]{3,}$"
+          type: string
+          example: user
+        email:
+          type: string
+          example: user@example.com
+        password:
+          type: string
+    BannerMessageCreateDto:
+      required:
+      - message
+      - type
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+          - error
+          - warning
+          - info
+        message:
+          type: string
+          example: Maintenance starts on 8am on Monday
+        link:
+          type: string
+          example: https://example.com
+        link_text:
+          type: string
+          example: More
+        display_start:
+          type: string
+          format: date-time
+        display_end:
+          type: string
+          format: date-time
+    BannerMessageDto:
+      required:
+      - id
+      - message
+      - type
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        type:
+          type: string
+          enum:
+          - error
+          - warning
+          - info
+        message:
+          type: string
+          example: Maintenance starts on 8am on Monday
+        link:
+          type: string
+          example: https://example.com
+        link_text:
+          type: string
+          example: More
+        display_start:
+          type: string
+          format: date-time
+        display_end:
+          type: string
+          format: date-time
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

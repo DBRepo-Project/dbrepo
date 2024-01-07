@@ -8,7 +8,7 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`dbrepo/analyse-service:latest`](https://hub.docker.com/r/dbrepo/analyse-service)
+    Image: [`dbrepo/analyse-service:1.4`](https://hub.docker.com/r/dbrepo/analyse-service)
 
     * Ports: 5000/tcp
     * Prometheus: `http://<hostname>:5000/metrics`

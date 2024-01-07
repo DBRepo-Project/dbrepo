@@ -8,7 +8,7 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`dbrepo/search-db:latest`](https://hub.docker.com/r/dbrepo/search-db)
+    Image: [`dbrepo/search-db:1.4`](https://hub.docker.com/r/dbrepo/search-db)
 
     * Ports: 9200/tcp
     * Indexes: `http://:9200/_all`
