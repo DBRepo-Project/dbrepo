@@ -12,7 +12,7 @@ helm upgrade --install dbrepo \
   -n dbrepo \
   "oci://dbrepo.azurecr.io/helm/dbrepo-core" \
   --values ./values.yaml \
-  --version "0.1.4-RC2" \
+  --version "0.1.4" \
   --create-namespace \
   --cleanup-on-fail
 ```
@@ -23,19 +23,12 @@ Our chart depends on seven other charts which will be automatically resolved whe
 
 * Keycloak (Bitnami, v17.3.3) for [Authentication Service](../system-services-authentication)
 * MariaDB Galera (Bitnami, v10.1.3) for [Data Database](../system-databases-data) &amp; [Metadata Database](../system-databases-metadata)
-* MinIO (Bitnami, v12.9.4) for [Storage Service](../system-services-storage)
+* SeaweedFS (SeaweedFS, v3.59.4) for [Storage Service](../system-services-storage)
 * OpenSearch (OpenSearch Project, v2.16.0) for [Search Database](../system-databases-search)
 * OpenSearch Dashboards (OpenSearch Project, v2.14.0) for [Search Dashboard](../system-other-search-dashboard)
 * PostgreSQL HA (Bitnami, v12.1.7) for [Auth Database](../system-databases-auth)
 * RabbitMQ (Bitnami, v12.5.1) for [Broker Service](../system-services-broker)
-
-### Backup
-
-tbd
-
-### Restore
-
-tbd
+* FluentBit (FluentBit, v0.40.0) for logging in the cluster.
 
 ## Limitations
 
