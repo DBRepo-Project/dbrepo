@@ -33,7 +33,7 @@ build-analyse-service:
     PIPENV_PIPFILE: "./dbrepo-analyse-service/Pipfile"
   script:
     - "pip install pipenv"
-    - "pipenv install gunicorn && pipenv install --system --deploy"
+    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
 
 build-data-service:
   image: maven:3-openjdk-17
@@ -116,7 +116,7 @@ test-analyse-service:
     - build-analyse-service
   script:
     - "pip install pipenv"
-    - "pipenv install gunicorn && pipenv install --system --deploy"
+    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
     - "cd ./dbrepo-analyse-service/ && coverage run -m pytest test/test_determine_dt.py test/test_determine_pk.py --junitxml=report.xml && coverage html && coverage report > ./coverage.txt"
     - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
   artifacts:
