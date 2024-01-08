@@ -480,7 +480,7 @@ build-api-latest:
       - ./swagger/latest
     expire_in: 1 days
 
-build-api-version:
+build-api-1.3:
   stage: build
   image: docker.io/alpine:3.18
   only:
@@ -489,7 +489,7 @@ build-api-version:
       - master
   script:
     - apk add bash git
-    - git fetch && git checkout master
+    - git fetch && git checkout release-v1.3
     - bash .docs/.swagger/generate.sh
     - mkdir -p ./swagger/1.3
     - cp -r ./site/* ./swagger/1.3/
@@ -500,6 +500,28 @@ build-api-version:
     when: always
     paths:
       - ./swagger/1.3
+    expire_in: 1 days
+
+build-api-1.4:
+  stage: build
+  image: docker.io/alpine:3.18
+  only:
+    refs:
+      - dev
+      - master
+  script:
+    - apk add bash git
+    - git fetch && git checkout master
+    - bash .docs/.swagger/generate.sh
+    - mkdir -p ./swagger/1.4
+    - cp -r ./site/* ./swagger/1.4/
+  cache:
+    paths:
+      - ./swagger/1.4
+  artifacts:
+    when: always
+    paths:
+      - ./swagger/1.4
     expire_in: 1 days
 
 docs-registry:
@@ -526,7 +548,8 @@ docs-latest:
   image: docker.io/python:3.9-slim
   needs:
     - build-api-latest
-    - build-api-version
+    - build-api-1.3
+    - build-api-1.4
   only:
     refs:
       - dev
@@ -548,12 +571,39 @@ docs-latest:
       - ./final
     expire_in: 1 days
 
-docs-version:
+docs-1.3:
   stage: docs
   image: docker.io/python:3.9-slim
   needs:
     - build-api-latest
-    - build-api-version
+    - build-api-1.3
+  only:
+    refs:
+      - dev
+      - master
+  script:
+    - apt-get update && apt-get install -y git make
+    - git fetch && git checkout release-v1.3
+    - pip install -r ./.docs/requirements.txt
+    - mkdir -p ./final
+    - mkdocs build && cp -r ./site ./final/1.3
+    - cp -r ./swagger/1.3 ./final/1.3/swagger
+  cache:
+    paths:
+      - ./final
+  artifacts:
+    when: always
+    paths:
+      - ./final
+    expire_in: 1 days
+
+docs-1.4:
+  stage: docs
+  image: docker.io/python:3.9-slim
+  needs:
+    - build-api-latest
+    - build-api-1.3
+    - build-api-1.4
   only:
     refs:
       - dev
@@ -563,8 +613,8 @@ docs-version:
     - git fetch && git checkout master
     - pip install -r ./.docs/requirements.txt
     - mkdir -p ./final
-    - mkdocs build && cp -r ./site ./final/1.3
-    - cp -r ./swagger/1.3 ./final/1.3/swagger
+    - mkdocs build && cp -r ./site ./final/1.4
+    - cp -r ./swagger/1.4 ./final/1.4/swagger
   cache:
     paths:
       - ./final
@@ -579,7 +629,8 @@ release-docs:
   image: docker.io/finalgene/openssh:9.1
   needs:
     - docs-latest
-    - docs-version
+    - docs-1.3
+    - docs-1.4
   only:
     refs:
       - dev
