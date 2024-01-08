@@ -125,6 +125,7 @@
         <nuxt />
       </v-container>
     </v-main>
+    <script v-if="hasDataset" type="application/ld+json" v-text="datasetJsonLd" />
   </v-app>
 </template>
 
@@ -133,6 +134,8 @@ import DatabaseService from '@/api/database.service'
 import TableService from '@/api/table.service'
 import AuthenticationService from '@/api/authentication.service'
 import AuthenticationMapper from '@/api/authentication.mapper'
+import DatabaseMapper from '@/api/database.mapper'
+import IdentifierMapper from '@/api/identifier.mapper'
 
 export default {
   data () {
@@ -182,6 +185,18 @@ export default {
     },
     logo () {
       return this.$config.logo
+    },
+    hasDataset () {
+      return this.$route.path.startsWith('/database')
+    },
+    datasetJsonLd () {
+      if (!this.hasDataset || !this.database) {
+        return {}
+      }
+      if (!('identifiers' in this.database) || this.database.identifiers.length === 0) {
+        return DatabaseMapper.databaseToJsonLd(this.database)
+      }
+      return IdentifierMapper.identifiersToJsonLd(this.database)
     }
   },
   watch: {
