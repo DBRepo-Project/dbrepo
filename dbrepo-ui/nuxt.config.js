@@ -51,7 +51,8 @@ export default {
     title: config.title,
     meta,
     link: [
-      { rel: 'icon', type: 'image/x-icon', href: config.icon.path }
+      { rel: 'icon', type: 'image/x-icon', href: config.icon.path },
+      { rel: 'apple-touch-icon', sizes: '180x180', href: config.appleTouchIcon.path }
     ]
   },
 

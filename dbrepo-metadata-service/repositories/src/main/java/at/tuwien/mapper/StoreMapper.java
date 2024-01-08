@@ -28,7 +28,7 @@ public interface StoreMapper {
         /* timestamp */
         if (data.getTimestamp() == null) {
             data.setTimestamp(Instant.now());
-            log.trace("timestamp=null, set to {}", data.getTimestamp());
+            log.trace("timestamp is null: set timestamp to {}", data.getTimestamp());
         }
         try {
             final CallableStatement ps = connection.prepareCall(statement);
@@ -39,11 +39,10 @@ public interface StoreMapper {
             ps.setTimestamp(3, Timestamp.from(data.getTimestamp()));
             log.trace("param 3={}", Timestamp.from(data.getTimestamp()));
             ps.registerOutParameter(4, Types.BIGINT);
-            log.trace("out param 4={}", Types.BIGINT);
             return ps;
         } catch (SQLException e) {
-            log.error("failed to prepare statement {}, reason: {}", statement, e.getMessage());
-            throw new QueryStoreException("Failed to prepare statement", e);
+            log.error("failed to prepare statement {}: {}", statement, e.getMessage());
+            throw new QueryStoreException("Failed to prepare statement '" + statement + "'", e);
         }
     }
 

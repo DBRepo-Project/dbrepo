@@ -26,10 +26,31 @@ curl \
    -d '{"name": "Data Database 2", "imageId": 1, "host": "example.com", "port": 3306, "privilegedUsername": "root", "privilegedPassword": "s3cr3t" }'
 ```
 
+### Settings
+
+The procedures require the user-generated databases to have the same collation (because of comparison operations).
+Ensure that the Data Database has the character set `utf8mb4` and collation `utf8mb4_general_ci` in your `my.cfg`:
+
+```ini
+[mysqld]
+character_set_server=utf8mb4
+collation_server=utf8mb4_general_ci
+```
+
+We observed this unexpected behavior for
+the [MariaDB Galera chart](https://artifacthub.io/packages/helm/bitnami/mariadb-galera) powered by Bitnami and had to
+set extra flags. We could not observe this behavior with
+the [MariaDB Galera container image](https://hub.docker.com/r/bitnami/mariadb-galera) itself.
+
+```yaml
+mariadb-galera:
+  extraFlags: "--character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci"
+```
+
 ### Sidecar
 
-We deploy a sidecar that handles the CSV-file upload/download operations between 
-the [Storage Service](../system-services-storage) and the Data Database using a Python Flask application and 
+We deploy a sidecar that handles the CSV-file upload/download operations between
+the [Storage Service](../system-services-storage) and the Data Database using a Python Flask application and
 the [`boto3`](https://boto3.amazonaws.com/v1/documentation/api/latest/index.html) client until MariaDB supports S3
 natively.
 
@@ -44,7 +65,7 @@ Export all databases with `--skip-lock-tables` option for MariaDB Galera cluster
 MariaDB Galera.
 
 ```console
-mysqldump \
+mariadb \
     -u <privilegedUsername> \
     -p<privilegedPassword> \
     --complete-insert \
@@ -56,7 +77,7 @@ mysqldump \
 ### Restore
 
 ```console
-mysql \
+mariadb \
     -u <privilegedUsername> \
     -p<privilegedPassword> < dump.sql
 ```

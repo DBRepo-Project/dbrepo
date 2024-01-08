@@ -22,7 +22,7 @@ helm upgrade --install dbrepo \
 Our chart depends on seven other charts which will be automatically resolved when installing our `dbrepo-core` chart:
 
 * Keycloak (Bitnami, v17.3.3) for [Authentication Service](../system-services-authentication)
-* MariaDB Galera (Bitnami, v10.1.3) for [Data Database](../system-databases-data) &amp; [Metadata Database](../system-databases-metadata)
+* MariaDB Galera (Bitnami, v11.0.1) for [Data Database](../system-databases-data) &amp; [Metadata Database](../system-databases-metadata)
 * SeaweedFS (SeaweedFS, v3.59.4) for [Storage Service](../system-services-storage)
 * OpenSearch (OpenSearch Project, v2.16.0) for [Search Database](../system-databases-search)
 * OpenSearch Dashboards (OpenSearch Project, v2.14.0) for [Search Dashboard](../system-other-search-dashboard)

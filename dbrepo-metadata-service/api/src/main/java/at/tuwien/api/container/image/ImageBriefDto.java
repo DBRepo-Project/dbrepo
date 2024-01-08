@@ -1,5 +1,6 @@
 package at.tuwien.api.container.image;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -30,5 +31,11 @@ public class ImageBriefDto {
     @Field(name = "version", type = FieldType.Keyword)
     @Schema(example = "10.5")
     private String version;
+
+    @NotBlank
+    @JsonProperty("jdbc_method")
+    @Field(name = "jdbc_method")
+    @Schema(example = "mariadb")
+    private String jdbcMethod;
 
 }

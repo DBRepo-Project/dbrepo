@@ -247,6 +247,9 @@ export default {
           this.$toast.success('Successfully updated the database visibility')
           location.reload()
         })
+        .catch(() => {
+          this.loading = false
+        })
         .finally(() => {
           this.loading = false
         })
@@ -257,6 +260,9 @@ export default {
         .then(() => {
           this.$toast.success('Successfully updated the database owner')
           location.reload()
+        })
+        .catch(() => {
+          this.loading = false
         })
         .finally(() => {
           this.loading = false
@@ -277,6 +283,9 @@ export default {
       UserService.findAll()
         .then((users) => {
           this.users = users
+        })
+        .catch(() => {
+          this.loadingUsers = false
         })
         .finally(() => {
           this.loadingUsers = false

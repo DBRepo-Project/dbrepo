@@ -122,6 +122,9 @@ export default {
           })
           this.concepts = concepts
         })
+        .catch(() => {
+          this.loadingConcepts = false
+        })
         .finally(() => {
           this.loadingConcepts = false
         })
@@ -135,6 +138,9 @@ export default {
             return unit
           })
           this.units = units
+        })
+        .catch(() => {
+          this.loadingUnits = false
         })
         .finally(() => {
           this.loadingUnits = false

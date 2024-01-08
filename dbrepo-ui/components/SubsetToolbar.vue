@@ -135,6 +135,9 @@ export default {
         .then((subset) => {
           this.subset = subset
         })
+        .catch(() => {
+          this.loadingSave = false
+        })
         .finally(() => {
           this.loadingSave = false
         })
@@ -144,6 +147,9 @@ export default {
       QueryService.findOne(this.$route.params.database_id, this.$route.params.query_id)
         .then((subset) => {
           this.subset = subset
+        })
+        .catch(() => {
+          this.loading = false
         })
         .finally(() => {
           this.loading = false
@@ -159,6 +165,9 @@ export default {
           link.setAttribute('download', 'subset.csv')
           document.body.appendChild(link)
           link.click()
+        })
+        .catch(() => {
+          this.downloadLoading = false
         })
         .finally(() => {
           this.downloadLoading = false

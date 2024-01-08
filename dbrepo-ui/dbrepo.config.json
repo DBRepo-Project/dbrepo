@@ -10,6 +10,9 @@
   "icon": {
     "path": "/favicon.ico"
   },
+  "appleTouchIcon": {
+    "path": "/apple-touch-icon.png"
+  },
   "api": {
     "useSsl": false
   },

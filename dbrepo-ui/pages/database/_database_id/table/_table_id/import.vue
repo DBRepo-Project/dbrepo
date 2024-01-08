@@ -205,6 +205,9 @@ export default {
               this.$toast.success('Successfully imported data')
               this.$router.push(`/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}`)
             })
+            .catch(() => {
+              this.loading = false
+            })
             .finally(() => {
               this.loading = false
             })
@@ -218,6 +221,9 @@ export default {
       TableService.findOne(this.$route.params.database_id, this.$route.params.table_id)
         .then((table) => {
           this.table = table
+        })
+        .catch(() => {
+          this.loading = false
         })
         .finally(() => {
           this.loading = false

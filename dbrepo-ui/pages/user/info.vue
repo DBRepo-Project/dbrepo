@@ -169,6 +169,9 @@ export default {
           this.$toast.success('Successfully updated user information')
           this.reloadUser()
         })
+        .catch(() => {
+          this.loadingUpdate = false
+        })
         .finally(() => {
           this.loadingUpdate = false
         })

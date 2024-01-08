@@ -88,6 +88,9 @@ export default {
             this.databases = databases
             console.info('Found', this.databases.length, 'database(s) with access')
           })
+          .catch(() => {
+            this.loadingDatabases = false
+          })
           .finally(() => {
             this.loadingDatabases = false
           })
@@ -96,6 +99,9 @@ export default {
           .then((databases) => {
             this.databases = databases
             console.info('Found', this.databases.length, 'database(s)')
+          })
+          .catch(() => {
+            this.loadingDatabases = false
           })
           .finally(() => {
             this.loadingDatabases = false

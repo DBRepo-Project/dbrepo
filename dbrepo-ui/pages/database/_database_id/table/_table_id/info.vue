@@ -41,7 +41,7 @@
               </v-list-item-title>
               <v-list-item-content v-if="access && access.type">
                 <span>
-                  <v-badge v-if="brokerExtraInfo" inline :content="brokerExtraInfo" color="primary">
+                  <v-badge v-if="brokerExtraInfo" inline :content="brokerExtraInfo" color="secondary">
                     <span v-text="accessDescription.text" />
                   </v-badge>
                   <span v-else v-text="accessDescription.text" />

@@ -158,6 +158,9 @@ export default {
           await this.$store.dispatch('reloadDatabase')
           await this.$router.push(`/database/${this.databaseId}/table/${table.id}`)
         })
+        .catch(() => {
+          this.loading = false
+        })
         .finally(() => {
           this.loading = false
         })

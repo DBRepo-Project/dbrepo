@@ -64,6 +64,9 @@ export default {
           this.subset = subset
           this.loadResult()
         })
+        .catch(() => {
+          this.loadingSubset = false
+        })
         .finally(() => {
           this.loadingSubset = false
         })

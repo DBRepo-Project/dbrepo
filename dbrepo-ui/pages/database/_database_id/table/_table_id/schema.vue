@@ -228,6 +228,9 @@ export default {
         .then((table) => {
           this.$store.commit('SET_TABLE', table)
         })
+        .catch(() => {
+          this.loading = false
+        })
         .finally(() => {
           this.loading = false
         })

@@ -196,6 +196,9 @@ export default {
             document.body.appendChild(link)
             link.click()
           })
+          .catch(() => {
+            this.downloadLoading = false
+          })
           .finally(() => {
             this.downloadLoading = false
           })
@@ -208,6 +211,9 @@ export default {
             link.setAttribute('download', `table_${this.versionISO}.csv`)
             document.body.appendChild(link)
             link.click()
+          })
+          .catch(() => {
+            this.downloadLoading = false
           })
           .finally(() => {
             this.downloadLoading = false
@@ -307,6 +313,9 @@ export default {
       TableService.dataCount(this.$route.params.database_id, this.$route.params.table_id, (this.versionISO || this.lastReload.toISOString()))
         .then((count) => {
           this.total = count
+        })
+        .catch(() => {
+          this.loadingData--
         })
         .finally(() => {
           this.loadingData--

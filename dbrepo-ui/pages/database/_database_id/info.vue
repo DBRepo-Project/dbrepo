@@ -19,41 +19,25 @@
                   <v-list-item-title>
                     Database Visibility
                   </v-list-item-title>
-                  <v-list-item-content>
-                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
-                    <span v-if="!loading">{{ database.is_public ? 'Public' : 'Private' }}</span>
-                  </v-list-item-content>
+                  <v-list-item-content v-if="!loading" v-text="`${database.is_public ? 'Public' : 'Private'}`" />
                   <v-list-item-title class="mt-2">
                     Database Internal Name
                   </v-list-item-title>
-                  <v-list-item-content>
-                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
-                    <span v-if="!loading">{{ internal_name }}</span>
-                  </v-list-item-content>
+                  <v-list-item-content v-if="!loading" v-text="internal_name" />
                   <v-list-item-title class="mt-2">
                     Database Creator
                   </v-list-item-title>
-                  <v-list-item-content>
-                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
-                    <span v-if="!loading">
-                      {{ creator }} <sup v-if="creatorVerified">
-                        <v-icon color="primary" title="E-Mail verified" small>mdi-check-decagram</v-icon>
-                      </sup>
-                    </span>
-                  </v-list-item-content>
+                  <v-list-item-content v-if="!loading" v-text="creator" />
                   <v-list-item-title class="mt-2">
                     Database Creation
                   </v-list-item-title>
-                  <v-list-item-content>
-                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
-                    <span v-if="!loading" v-text="createdUTC" />
-                  </v-list-item-content>
+                  <v-list-item-content v-if="!loading" v-text="createdUTC" />
                   <v-list-item-title v-if="access && access.type" class="mt-2">
                     Database Access
                   </v-list-item-title>
                   <v-list-item-content v-if="access && access.type">
                     <span>
-                      <v-badge v-if="databaseExtraInfo" inline :content="databaseExtraInfo" color="primary">
+                      <v-badge v-if="databaseExtraInfo" inline :content="databaseExtraInfo" color="secondary">
                         <span v-text="accessDescription.text" />
                       </v-badge>
                       <span v-else v-text="accessDescription.text" />
@@ -86,31 +70,19 @@
                   <v-list-item-title class="mt-2">
                     Container Name
                   </v-list-item-title>
-                  <v-list-item-content>
-                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
-                    <span v-if="!loading" v-text="container_name" />
-                  </v-list-item-content>
+                  <v-list-item-content v-if="!loading" v-text="container_name" />
                   <v-list-item-title class="mt-2">
                     Container Internal Name
                   </v-list-item-title>
-                  <v-list-item-content>
-                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
-                    <span v-if="!loading" v-text="container_internal_name" />
-                  </v-list-item-content>
+                  <v-list-item-content v-if="!loading" v-text="container_internal_name" />
                   <v-list-item-title class="mt-2">
                     Image Name
                   </v-list-item-title>
-                  <v-list-item-content>
-                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
-                    <span v-if="!loading" v-text="image_name" />
-                  </v-list-item-content>
+                  <v-list-item-content v-if="!loading" v-text="image_name" />
                   <v-list-item-title class="mt-2">
                     Image Version
                   </v-list-item-title>
-                  <v-list-item-content>
-                    <v-skeleton-loader v-if="loading" type="text" class="skeleton-small" />
-                    <span v-if="!loading" v-text="image_version" />
-                  </v-list-item-content>
+                  <v-list-item-content v-if="!loading" v-text="image_version" />
                 </v-list-item-content>
               </v-list-item>
             </v-list>
@@ -244,7 +216,7 @@ export default {
     },
     jdbcString () {
       const flags = this.database.container.ui_additional_flags ? this.database.container.ui_additional_flags : ''
-      return `jdbc://${this.database.container.ui_host}:${this.database.container.ui_port}/${this.database.internal_name}${flags} (username=${this.user.username}, password=yourpassword)`
+      return `jdbc:${this.database.container.image.jdbc_method}://${this.database.container.ui_host}:${this.database.container.ui_port}/${this.database.internal_name}${flags} (username=${this.user.username}, password=yourpassword)`
     },
     databaseExtraInfo () {
       return this.$config.databaseExtraInfo

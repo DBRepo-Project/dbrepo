@@ -188,6 +188,9 @@ export default {
         .then((subset) => {
           this.subset = subset
         })
+        .catch(() => {
+          this.loadingSubset = false
+        })
         .finally(() => {
           this.loadingSubset = false
         })

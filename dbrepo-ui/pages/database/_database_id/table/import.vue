@@ -377,6 +377,9 @@ export default {
             this.step = 4
           }
         })
+        .catch(() => {
+          this.loading = false
+        })
         .finally(() => {
           this.loading = false
         })
@@ -440,6 +443,7 @@ export default {
               this.step = 5
             })
             .catch(() => {
+              this.loading = false
               this.$refs.schema.loading = false
             })
             .finally(() => {

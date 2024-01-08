@@ -121,12 +121,18 @@ export default {
         .catch(() => {
           this.loading = false
         })
+        .finally(() => {
+          this.loading = false
+        })
     },
     loadUsers () {
       this.loadingUsers = true
       UserService.findAll()
         .then((users) => {
           this.usernames = users.map(u => u.username)
+        })
+        .catch(() => {
+          this.loadingUsers = false
         })
         .finally(() => {
           this.loadingUsers = false

@@ -121,6 +121,9 @@ export default {
         .then((response) => {
           this.results = response
         })
+        .catch(() => {
+          this.loading = false
+        })
         .finally(() => {
           this.loading = false
         })
