@@ -25,9 +25,14 @@
                   </v-list-item-title>
                   <v-list-item-content v-if="!loading" v-text="internal_name" />
                   <v-list-item-title class="mt-2">
-                    Database Creator
+                    Database Owner
                   </v-list-item-title>
-                  <v-list-item-content v-if="!loading" v-text="creator" />
+                  <v-list-item-content v-if="!loading">
+                    <p class="mb-0">
+                      <OrcidIcon v-if="database.owner.attributes.orcid" :orcid="database.owner.attributes.orcid" />
+                      <span v-text="owner" />
+                    </p>
+                  </v-list-item-content>
                   <v-list-item-title class="mt-2">
                     Database Creation
                   </v-list-item-title>
@@ -53,7 +58,10 @@
                     Database Contact
                   </v-list-item-title>
                   <v-list-item-content v-if="contact">
-                    <span v-if="!loading" v-text="contact" />
+                    <p class="mb-0">
+                      <OrcidIcon v-if="database.contact.attributes.orcid" :orcid="database.contact.attributes.orcid" />
+                      <span v-text="contact" />
+                    </p>
                   </v-list-item-content>
                 </v-list-item-content>
               </v-list-item>
@@ -100,9 +108,11 @@ import { formatTimestampUTCLabel } from '@/utils'
 import DatabaseMapper from '@/api/database.mapper'
 import Summary from '@/components/identifier/Summary'
 import Select from '@/components/identifier/Select'
+import OrcidIcon from '@/components/icons/OrcidIcon.vue'
 
 export default {
   components: {
+    OrcidIcon,
     DatabaseToolbar,
     Summary,
     Select
@@ -190,11 +200,8 @@ export default {
     contact () {
       return DatabaseMapper.databaseToContact(this.database)
     },
-    creator () {
+    owner () {
       return DatabaseMapper.databaseToOwner(this.database)
-    },
-    creatorVerified () {
-      return this.database.creator.email_verified
     },
     hasIdentifier () {
       return this.identifiers.length > 0
