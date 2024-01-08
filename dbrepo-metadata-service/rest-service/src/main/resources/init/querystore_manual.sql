@@ -36,7 +36,7 @@ BEGIN
     DECLARE _queryhash varchar(255) DEFAULT SHA2(query, 256);
     DECLARE _username varchar(255) DEFAULT REGEXP_REPLACE(current_user(), '@.*', '');
     DECLARE _query TEXT DEFAULT CONCAT('CREATE OR REPLACE TABLE _tmp AS (', query, ')');
-    PREPARE stmt FROM _query; EXECUTE stmt; DEALLOCATE PREPARE stmt; CALL hash_table('_tmp', @hash, @count);
+    PREPARE stmt FROM _query; EXECUTE stmt; DEALLOCATE PREPARE stmt; CALL hash_table('_tmp', @hash, @count); DROP TABLE IF EXISTS `_tmp`;
     IF @hash IS NULL THEN
         INSERT INTO `qs_queries` (`created_by`, `query`, `query_normalized`, `is_persisted`, `query_hash`, `result_hash`,
                                   `result_number`, `executed`)
@@ -50,7 +50,6 @@ BEGIN
         WHERE NOT EXISTS (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` = @hash);
         SET queryId = (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` = @hash);
     END IF;
-    DROP TABLE IF EXISTS `_tmp`;
 END; $$
 
 DELIMITER $$
@@ -59,7 +58,7 @@ CREATE
 BEGIN
     DECLARE _queryhash varchar(255) DEFAULT SHA2(query, 256);
     DECLARE _query TEXT DEFAULT CONCAT('CREATE OR REPLACE TABLE _tmp AS (', query, ')');
-    PREPARE stmt FROM _query; EXECUTE stmt; DEALLOCATE PREPARE stmt; CALL hash_table('_tmp', @hash, @count);
+    PREPARE stmt FROM _query; EXECUTE stmt; DEALLOCATE PREPARE stmt; CALL hash_table('_tmp', @hash, @count); DROP TABLE IF EXISTS `_tmp`;
     IF @hash IS NULL THEN
         INSERT INTO `qs_queries` (`created_by`, `query`, `query_normalized`, `is_persisted`, `query_hash`, `result_hash`,
                                   `result_number`, `executed`)
@@ -73,7 +72,6 @@ BEGIN
         WHERE NOT EXISTS (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` = @hash);
         SET queryId = (SELECT `id` FROM `qs_queries` WHERE `query_hash` = _queryhash AND `result_hash` = @hash);
     END IF;
-    DROP TABLE IF EXISTS `_tmp`;
 END; $$
 
 DELIMITER ;

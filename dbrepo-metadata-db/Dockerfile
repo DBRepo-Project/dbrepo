@@ -1,4 +1,4 @@
-FROM bitnami/mariadb:10.5 as runtime
+FROM bitnami/mariadb:11.2.2-debian-11-r0 as runtime
 
 ENV MARIADB_DATABASE=fda
 ENV MARIADB_ROOT_PASSWORD=dbrepo

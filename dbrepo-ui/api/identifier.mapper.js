@@ -142,14 +142,26 @@ class IdentifierMapper {
     if (!identifier) {
       return null
     }
-    return identifier.doi !== null ? `${store().state.doiUrl}/${identifier.doi}` : `/pid/${identifier.id}`
+    if (identifier.doi !== null) {
+      if (identifier.doi.startsWith('http')) {
+        return identifier.doi
+      }
+      return `${store().state.doiUrl}/${identifier.doi}`
+    }
+    return `/pid/${identifier.id}`
   }
 
   identifierToDisplayName (identifier) {
     if (!identifier) {
       return null
     }
-    return identifier.doi !== null ? identifier.doi : `/pid/${identifier.id}`
+    if (identifier.doi !== null) {
+      if (identifier.doi.startsWith('http')) {
+        return identifier.replaceAll('https?://doi.org/', '')
+      }
+      return identifier.doi
+    }
+    return `/pid/${identifier.id}`
   }
 
   identifierToDisplayAcronym (identifier) {

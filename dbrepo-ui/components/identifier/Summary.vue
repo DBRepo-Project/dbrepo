@@ -55,11 +55,7 @@
             </v-list-item-title>
             <v-list-item-content v-if="identifier.related_identifiers && identifier.related_identifiers.length > 0">
               <div v-for="(rel, i) in identifier.related_identifiers" :key="`r-${i}`">
-                <span v-if="rel.type === 'DOI'">
-                  {{ rel.type }}: <a :href="`https://doi.org/${rel.value}`" target="_blank">{{ rel.value }}</a>
-                  <span v-if="rel.relation">({{ rel.relation }})</span>
-                </span>
-                <span v-if="rel.type === 'URL'">
+                <span v-if="rel.type === 'DOI' || rel.type === 'URL'">
                   {{ rel.type }}: <a :href="`${rel.value}`" target="_blank">{{ rel.value }}</a>
                   <span v-if="rel.relation">({{ rel.relation }})</span>
                 </span>

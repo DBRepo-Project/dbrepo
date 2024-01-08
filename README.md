@@ -2,7 +2,7 @@
 [![coverage report](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/badges/master/coverage.svg)](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/commits/master)
 [![license](.gitlab/license.svg)](https://opensource.org/licenses/Apache-2.0)
 
-# DBRepo &mdash; A Repository for Databases
+![DBREPO &mdash; Repository for Data in Databases](./dbrepo-ui/static/logo.png)
 
 ## Documentation
 

@@ -27,8 +27,8 @@
     "port": 9000,
     "useSsl": false,
     "accessKey": {
-      "id": "minioadmin",
-      "secret": "minioadmin"
+      "id": "seaweedfsadmin",
+      "secret": "seaweedfsadmin"
     }
   },
   "database": {
@@ -48,7 +48,7 @@
   },
   "pid": {
     "default": {
-      "publisher": ""
+      "publisher": "Example University"
     }
   },
   "doi": {

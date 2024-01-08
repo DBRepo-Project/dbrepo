@@ -33,7 +33,7 @@ public class MariaDbContainerConfig {
 
         public static synchronized CustomMariaDBContainer getInstance() {
             if (instance == null) {
-                instance = new CustomMariaDBContainer("mariadb:11.1.3");
+                instance = new CustomMariaDBContainer("mariadb:11.2.2-debian-11-r0");
                 instance.withImagePullPolicy(PullPolicy.alwaysPull());
                 instance.addFixedExposedPort(BaseTest.CONTAINER_1_PORT, BaseTest.IMAGE_1_PORT);
                 instance.withUsername(BaseTest.CONTAINER_1_PRIVILEGED_USERNAME);
