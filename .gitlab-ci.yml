@@ -511,7 +511,7 @@ build-api-1.4:
       - master
   script:
     - apk add bash git
-    - git fetch && git checkout master
+    - git fetch && git checkout release-v1.4
     - bash .docs/.swagger/generate.sh
     - mkdir -p ./swagger/1.4
     - cp -r ./site/* ./swagger/1.4/
@@ -610,7 +610,7 @@ docs-1.4:
       - master
   script:
     - apt-get update && apt-get install -y git make
-    - git fetch && git checkout master
+    - git fetch && git checkout release-v1.4
     - pip install -r ./.docs/requirements.txt
     - mkdir -p ./final
     - mkdocs build && cp -r ./site ./final/1.4
