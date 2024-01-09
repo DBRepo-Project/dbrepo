@@ -10,11 +10,9 @@
 <script>
     function getVersion() {
         const segments = location.pathname.split('/')
-        if (segments.length === 5) {
-            console.log('version', segments[3], segments)
+        if (segments.length >= 4) {
             return segments[3]
         } else {
-            console.log('version defaulted to 1.4')
             return '1.4'
         }
     }
