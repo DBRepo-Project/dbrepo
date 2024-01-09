@@ -155,7 +155,8 @@ scan-analyse-service:
   only:
     refs:
       - dev
-      - master
+      - release-v1.3
+      - release-v1.4
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-analyse-service-report.json docker.io/dbrepo/analyse-service:latest
@@ -176,7 +177,8 @@ scan-authentication-service:
   only:
     refs:
       - dev
-      - master
+      - release-v1.3
+      - release-v1.4
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-authentication-service-report.json docker.io/dbrepo/authentication-service:latest
@@ -197,7 +199,8 @@ scan-broker-service:
   only:
     refs:
       - dev
-      - master
+      - release-v1.3
+      - release-v1.4
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-broker-service-report.json docker.io/dbrepo/broker-service:latest
@@ -218,7 +221,8 @@ scan-gateway-service:
   only:
     refs:
       - dev
-      - master
+      - release-v1.3
+      - release-v1.4
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-gateway-service-report.json docker.io/nginx:1.25.0-alpine-slim
@@ -239,7 +243,8 @@ scan-metadata-service:
   only:
     refs:
       - dev
-      - master
+      - release-v1.3
+      - release-v1.4
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-metadata-service-report.json docker.io/dbrepo/metadata-service:latest
@@ -260,7 +265,8 @@ scan-search-db:
   only:
     refs:
       - dev
-      - master
+      - release-v1.3
+      - release-v1.4
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-db-report.json docker.io/dbrepo/search-db:latest
@@ -281,7 +287,8 @@ scan-search-dashboard:
   only:
     refs:
       - dev
-      - master
+      - release-v1.3
+      - release-v1.4
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-dashboard-report.json docker.io/opensearchproject/opensearch-dashboards:2.10.0
@@ -302,7 +309,8 @@ scan-search-db-init:
   only:
     refs:
       - dev
-      - master
+      - release-v1.3
+      - release-v1.4
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-db-init-report.json docker.io/dbrepo/search-db-init:latest
@@ -323,7 +331,8 @@ scan-data-db:
   only:
     refs:
       - dev
-      - master
+      - release-v1.3
+      - release-v1.4
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-data-db-report.json docker.io/bitnami/mariadb:11.2.2-debian-11-r0
@@ -344,7 +353,8 @@ scan-metadata-db:
   only:
     refs:
       - dev
-      - master
+      - release-v1.3
+      - release-v1.4
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-metadata-db-report.json docker.io/dbrepo/metadata-db:latest
@@ -365,7 +375,8 @@ scan-ui:
   only:
     refs:
       - dev
-      - master
+      - release-v1.3
+      - release-v1.4
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-ui-report.json docker.io/dbrepo/ui:latest
@@ -386,7 +397,8 @@ scan-storage-service:
   only:
     refs:
       - dev
-      - master
+      - release-v1.3
+      - release-v1.4
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-storage-service-report.json docker.io/chrislusf/seaweedfs:3.59
@@ -407,7 +419,8 @@ scan-storage-service-init:
   only:
     refs:
       - dev
-      - master
+      - release-v1.3
+      - release-v1.4
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-storage-service-init-report.json docker.io/dbrepo/storage-service-init:latest
@@ -440,7 +453,7 @@ release-latest:
     - echo "$CI_REGISTRY2_PASSWORD" | docker login --username "$CI_REGISTRY2_USER" --password-stdin $CI_REGISTRY2_URL
     - TAG=latest make release
 
-release-version:
+release-1.3:
   stage: release
   image: docker:24-dind
   needs:
@@ -450,7 +463,7 @@ release-version:
     - test-frontend
   only:
     refs:
-      - master
+      - release-v1.3
   script:
     - "ifconfig eth0 mtu 1450 up"
     - "apk add make"
@@ -458,13 +471,32 @@ release-version:
     - echo "$CI_REGISTRY2_PASSWORD" | docker login --username "$CI_REGISTRY2_USER" --password-stdin $CI_REGISTRY2_URL
     - "TAG=1.3 make release"
 
+release-1.4:
+  stage: release
+  image: docker:24-dind
+  needs:
+    - test-metadata-service
+    - test-data-service
+    - test-analyse-service
+    - test-frontend
+  only:
+    refs:
+      - release-v1.4
+  script:
+    - "ifconfig eth0 mtu 1450 up"
+    - "apk add make"
+    - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY_URL
+    - echo "$CI_REGISTRY2_PASSWORD" | docker login --username "$CI_REGISTRY2_USER" --password-stdin $CI_REGISTRY2_URL
+    - "TAG=1.4 make release"
+
 build-api-latest:
   stage: build
   image: docker.io/alpine:3.18
   only:
     refs:
       - dev
-      - master
+      - release-v1.3
+      - release-v1.4
   script:
     - apk add bash git
     - git fetch && git checkout dev
@@ -486,7 +518,8 @@ build-api-1.3:
   only:
     refs:
       - dev
-      - master
+      - release-v1.3
+      - release-v1.4
   script:
     - apk add bash git
     - git fetch && git checkout release-v1.3
@@ -508,10 +541,11 @@ build-api-1.4:
   only:
     refs:
       - dev
-      - master
+      - release-v1.3
+      - release-v1.4
   script:
     - apk add bash git
-    - git fetch && git checkout master
+    - git fetch && git checkout release-v1.4
     - bash .docs/.swagger/generate.sh
     - mkdir -p ./swagger/1.4
     - cp -r ./site/* ./swagger/1.4/
@@ -530,7 +564,8 @@ docs-registry:
   only:
     refs:
       - dev
-      - master
+      - release-v1.3
+      - release-v1.4
   script:
     - pip install -r ./requirements.txt
     - python3 .docs/docker/release.py
@@ -553,7 +588,8 @@ docs-latest:
   only:
     refs:
       - dev
-      - master
+      - release-v1.3
+      - release-v1.4
   script:
     - apt-get update && apt-get install -y git make
     - git fetch && git checkout dev
@@ -580,7 +616,8 @@ docs-1.3:
   only:
     refs:
       - dev
-      - master
+      - release-v1.3
+      - release-v1.4
   script:
     - apt-get update && apt-get install -y git make
     - git fetch && git checkout release-v1.3
@@ -607,10 +644,11 @@ docs-1.4:
   only:
     refs:
       - dev
-      - master
+      - release-v1.3
+      - release-v1.4
   script:
     - apt-get update && apt-get install -y git make
-    - git fetch && git checkout master
+    - git fetch && git checkout release-v1.4
     - pip install -r ./.docs/requirements.txt
     - mkdir -p ./final
     - mkdocs build && cp -r ./site ./final/1.4
@@ -634,7 +672,8 @@ release-docs:
   only:
     refs:
       - dev
-      - master
+      - release-v1.3
+      - release-v1.4
   script:
     - eval $(ssh-agent -s)
     - echo "$CI_KEY_PRIVATE" > /root/.ssh/id_rsa && chmod 0600 /root/.ssh/id_rsa
