@@ -440,7 +440,7 @@ release-latest:
     - echo "$CI_REGISTRY2_PASSWORD" | docker login --username "$CI_REGISTRY2_USER" --password-stdin $CI_REGISTRY2_URL
     - TAG=latest make release
 
-release-version:
+release-1.3:
   stage: release
   image: docker:24-dind
   needs:
@@ -450,7 +450,7 @@ release-version:
     - test-frontend
   only:
     refs:
-      - master
+      - release-v1.3
   script:
     - "ifconfig eth0 mtu 1450 up"
     - "apk add make"
@@ -458,13 +458,32 @@ release-version:
     - echo "$CI_REGISTRY2_PASSWORD" | docker login --username "$CI_REGISTRY2_USER" --password-stdin $CI_REGISTRY2_URL
     - "TAG=1.3 make release"
 
+release-1.4:
+  stage: release
+  image: docker:24-dind
+  needs:
+    - test-metadata-service
+    - test-data-service
+    - test-analyse-service
+    - test-frontend
+  only:
+    refs:
+      - release-v1.4
+  script:
+    - "ifconfig eth0 mtu 1450 up"
+    - "apk add make"
+    - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY_URL
+    - echo "$CI_REGISTRY2_PASSWORD" | docker login --username "$CI_REGISTRY2_USER" --password-stdin $CI_REGISTRY2_URL
+    - "TAG=1.4 make release"
+
 build-api-latest:
   stage: build
   image: docker.io/alpine:3.18
   only:
     refs:
       - dev
-      - master
+      - release-v1.3
+      - release-v1.4
   script:
     - apk add bash git
     - git fetch && git checkout dev
@@ -486,7 +505,8 @@ build-api-1.3:
   only:
     refs:
       - dev
-      - master
+      - release-v1.3
+      - release-v1.4
   script:
     - apk add bash git
     - git fetch && git checkout release-v1.3
@@ -508,7 +528,8 @@ build-api-1.4:
   only:
     refs:
       - dev
-      - master
+      - release-v1.3
+      - release-v1.4
   script:
     - apk add bash git
     - git fetch && git checkout release-v1.4
@@ -530,7 +551,8 @@ docs-registry:
   only:
     refs:
       - dev
-      - master
+      - release-v1.3
+      - release-v1.4
   script:
     - pip install -r ./requirements.txt
     - python3 .docs/docker/release.py
@@ -553,7 +575,8 @@ docs-latest:
   only:
     refs:
       - dev
-      - master
+      - release-v1.3
+      - release-v1.4
   script:
     - apt-get update && apt-get install -y git make
     - git fetch && git checkout dev
@@ -580,7 +603,8 @@ docs-1.3:
   only:
     refs:
       - dev
-      - master
+      - release-v1.3
+      - release-v1.4
   script:
     - apt-get update && apt-get install -y git make
     - git fetch && git checkout release-v1.3
@@ -607,7 +631,8 @@ docs-1.4:
   only:
     refs:
       - dev
-      - master
+      - release-v1.3
+      - release-v1.4
   script:
     - apt-get update && apt-get install -y git make
     - git fetch && git checkout release-v1.4
@@ -634,7 +659,8 @@ release-docs:
   only:
     refs:
       - dev
-      - master
+      - release-v1.3
+      - release-v1.4
   script:
     - eval $(ssh-agent -s)
     - echo "$CI_KEY_PRIVATE" > /root/.ssh/id_rsa && chmod 0600 /root/.ssh/id_rsa
