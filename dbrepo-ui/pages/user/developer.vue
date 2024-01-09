@@ -1,9 +1,9 @@
 <template>
-  <div v-if="canHandleMessages">
+  <div>
     <UserToolbar />
     <v-tabs-items v-model="tab">
       <v-tab-item>
-        <v-card flat tile>
+        <v-card v-if="canHandleMessages" flat tile>
           <v-card-title>Maintenance Messages</v-card-title>
           <v-data-table
             :headers="headers"
@@ -28,6 +28,40 @@
             </v-btn>
           </v-card-text>
         </v-card>
+        <v-divider v-if="canHandleMessages" />
+        <v-card flat tile>
+          <v-card-title>Token Information</v-card-title>
+          <v-card-text>
+            <v-row dense>
+              <v-col xl="4">
+                <v-text-field
+                  v-model="token"
+                  disabled
+                  label="Access Token" />
+              </v-col>
+              <v-col xl="2">
+                <v-text-field
+                  v-model="tokenExpiry"
+                  disabled
+                  :label="tokenExpiryLabel" />
+              </v-col>
+            </v-row>
+            <v-row dense>
+              <v-col xl="4">
+                <v-text-field
+                  v-model="refreshToken"
+                  disabled
+                  label="Refresh Token" />
+              </v-col>
+              <v-col xl="2">
+                <v-text-field
+                  v-model="refreshTokenExpiry"
+                  disabled
+                  :label="refreshTokenExpiryLabel" />
+              </v-col>
+            </v-row>
+          </v-card-text>
+        </v-card>
       </v-tab-item>
     </v-tabs-items>
     <v-dialog
@@ -43,7 +77,8 @@
 import UserToolbar from '@/components/UserToolbar'
 import MetadataService from '@/api/metadata.service'
 import EditMaintenanceMessage from '@/components/dialogs/EditMaintenanceMessage'
-import { isActiveMessage } from '@/utils'
+import { formatTimestampUTCLabel, isActiveMessage, timestampsToHumanDifference } from '@/utils'
+import AuthenticationMapper from '@/api/authentication.mapper'
 
 export default {
   components: {
@@ -68,6 +103,33 @@ export default {
   computed: {
     token () {
       return this.$store.state.token
+    },
+    tokenExpiry () {
+      if (!this.token) {
+        return null
+      }
+      return formatTimestampUTCLabel(AuthenticationMapper.tokenToExpiryDate(this.token))
+    },
+    tokenExpiryLabel () {
+      if (!this.token) {
+        return 'Expiry Date'
+      }
+      return `Expiry Date (${timestampsToHumanDifference(Date.now(), AuthenticationMapper.tokenToExpiryDate(this.token))})`
+    },
+    refreshToken () {
+      return this.$store.state.refreshToken
+    },
+    refreshTokenExpiry () {
+      if (!this.refreshToken) {
+        return null
+      }
+      return formatTimestampUTCLabel(AuthenticationMapper.tokenToExpiryDate(this.refreshToken))
+    },
+    refreshTokenExpiryLabel () {
+      if (!this.refreshToken) {
+        return 'Expiry Date'
+      }
+      return `Expiry Date (${timestampsToHumanDifference(Date.now(), AuthenticationMapper.tokenToExpiryDate(this.refreshToken))})`
     },
     user () {
       return this.$store.state.user

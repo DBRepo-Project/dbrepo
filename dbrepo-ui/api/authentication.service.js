@@ -3,7 +3,6 @@ import store from '@/store'
 import qs from 'qs'
 import UserMapper from '@/api/user.mapper'
 import axios from 'axios'
-import AuthenticationMapper from '@/api/authentication.mapper'
 
 /**
  * Service class for interaction with Authentication Service in the back end.
@@ -99,22 +98,6 @@ class AuthenticationService {
           reject(error)
         })
     })
-  }
-
-  refreshToken () {
-    const refreshToken = store().state.refreshToken
-    if (AuthenticationMapper.isExpiredToken(refreshToken)) {
-      /* refresh token expired */
-      console.error('Refresh token expired:', AuthenticationMapper.tokenToExpiryDate(refreshToken))
-      return false
-    }
-    this.authenticateToken(refreshToken)
-      .then((response) => {
-        store().commit('SET_TOKEN', response.access_token)
-        store().commit('SET_REFRESH_TOKEN', response.refresh_token)
-        console.debug('new access token expires:', AuthenticationMapper.tokenToExpiryDate(refreshToken))
-        return false
-      })
   }
 }
 

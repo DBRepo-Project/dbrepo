@@ -132,8 +132,6 @@
 <script>
 import DatabaseService from '@/api/database.service'
 import TableService from '@/api/table.service'
-import AuthenticationService from '@/api/authentication.service'
-import AuthenticationMapper from '@/api/authentication.mapper'
 import DatabaseMapper from '@/api/database.mapper'
 import IdentifierMapper from '@/api/identifier.mapper'
 
@@ -227,7 +225,6 @@ export default {
   },
   mounted () {
     this.initEnvironment()
-    this.attemptRefreshToken()
     this.$store.dispatch('reloadMessages')
     this.$store.dispatch('reloadOntologies')
     if (this.$route.query && this.$route.query.q) {
@@ -312,17 +309,6 @@ export default {
       console.debug('runtime config', this.$config)
       if (this.locale) {
         this.$i18n.locale = this.locale
-      }
-    },
-    attemptRefreshToken () {
-      if (!this.$store.state.token || !this.$store.state.refreshToken) {
-        return
-      }
-      if (AuthenticationMapper.isExpiredToken(this.$store.state.refreshToken)) {
-        console.error('Refresh token is expired: trigger logout of user')
-        this.$store.dispatch('logout')
-      } else {
-        AuthenticationService.refreshToken()
       }
     }
   },
