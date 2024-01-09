@@ -1,4 +1,4 @@
-<mxfile host="Electron" modified="2023-11-22T22:51:30.674Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/21.1.2 Chrome/106.0.5249.199 Electron/21.4.3 Safari/537.36" etag="rfDZiCzC6Lc0py7Ucjta" version="21.1.2" type="device" pages="7">
+<mxfile host="Electron" modified="2024-01-09T07:45:42.511Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/22.1.2 Chrome/114.0.5735.289 Electron/25.9.4 Safari/537.36" etag="Z7gOGdpTEhMqKwyj4jJS" version="22.1.2" type="device" pages="8">
   <diagram id="mvBsv1rP8O80Qe3yGnn_" name="docker-compose">
     <mxGraphModel dx="1434" dy="822" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
       <root>
@@ -689,6 +689,44 @@
       </root>
     </mxGraphModel>
   </diagram>
+  <diagram id="n3Gsc6DDUkQ8nNTTz0wk" name="data-db">
+    <mxGraphModel dx="1434" dy="172" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1019" pageHeight="650" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="S8wz9ZtwZs3Sd4maCRdY-9" value="shared filesystem&lt;br&gt;/tmp" style="rounded=1;whiteSpace=wrap;html=1;arcSize=3;verticalAlign=bottom;fontStyle=2" parent="1" vertex="1">
+          <mxGeometry x="425" y="840" width="248" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="S8wz9ZtwZs3Sd4maCRdY-11" value="jdbc" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;exitPerimeter=0;endArrow=none;endFill=0;startArrow=classic;startFill=1;" parent="1" source="S8wz9ZtwZs3Sd4maCRdY-1" edge="1">
+          <mxGeometry x="0.3769" relative="1" as="geometry">
+            <mxPoint x="472.71428571428555" y="810" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="S8wz9ZtwZs3Sd4maCRdY-1" value="" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=8.600000000000023;fillColor=#dae8fc;strokeColor=#000000;" parent="1" vertex="1">
+          <mxGeometry x="447.5" y="857" width="50" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="S8wz9ZtwZs3Sd4maCRdY-2" value="data-db" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;spacing=-1;" parent="1" vertex="1">
+          <mxGeometry x="431.5" y="919" width="85" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="S8wz9ZtwZs3Sd4maCRdY-12" value="http" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;startArrow=classic;startFill=1;endArrow=none;endFill=0;" parent="1" source="S8wz9ZtwZs3Sd4maCRdY-7" edge="1">
+          <mxGeometry x="0.4743" relative="1" as="geometry">
+            <mxPoint x="585.0952380952381" y="810" as="targetPoint" />
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m0IQrUpga-DAo2afT193-3" value="S3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;startArrow=classic;startFill=1;" parent="1" source="S8wz9ZtwZs3Sd4maCRdY-7" target="m0IQrUpga-DAo2afT193-1" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="S8wz9ZtwZs3Sd4maCRdY-7" value="Data DB Sidecar" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="520" y="869" width="130" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="m0IQrUpga-DAo2afT193-1" value="Storage Service&lt;br&gt;(minIO)" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="720" y="869" width="130" height="40" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
   <diagram id="0gRvLy_AUZ0Xau8SBKI8" name="Gitlab Runner">
     <mxGraphModel dx="1434" dy="822" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
       <root>
@@ -797,41 +835,11 @@
       </root>
     </mxGraphModel>
   </diagram>
-  <diagram id="n3Gsc6DDUkQ8nNTTz0wk" name="data-db">
-    <mxGraphModel dx="1434" dy="172" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1019" pageHeight="650" math="0" shadow="0">
+  <diagram id="tPNobnWashSc2-ieysYs" name="Branching Strategy">
+    <mxGraphModel dx="1434" dy="822" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="S8wz9ZtwZs3Sd4maCRdY-9" value="shared filesystem&lt;br&gt;/tmp" style="rounded=1;whiteSpace=wrap;html=1;arcSize=3;verticalAlign=bottom;fontStyle=2" parent="1" vertex="1">
-          <mxGeometry x="425" y="840" width="248" height="130" as="geometry" />
-        </mxCell>
-        <mxCell id="S8wz9ZtwZs3Sd4maCRdY-11" value="jdbc" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;exitPerimeter=0;endArrow=none;endFill=0;startArrow=classic;startFill=1;" parent="1" source="S8wz9ZtwZs3Sd4maCRdY-1" edge="1">
-          <mxGeometry x="0.3769" relative="1" as="geometry">
-            <mxPoint x="472.71428571428555" y="810" as="targetPoint" />
-            <mxPoint as="offset" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="S8wz9ZtwZs3Sd4maCRdY-1" value="" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=8.600000000000023;fillColor=#dae8fc;strokeColor=#000000;" parent="1" vertex="1">
-          <mxGeometry x="447.5" y="857" width="50" height="64" as="geometry" />
-        </mxCell>
-        <mxCell id="S8wz9ZtwZs3Sd4maCRdY-2" value="data-db" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;spacing=-1;" parent="1" vertex="1">
-          <mxGeometry x="431.5" y="919" width="85" height="20" as="geometry" />
-        </mxCell>
-        <mxCell id="S8wz9ZtwZs3Sd4maCRdY-12" value="http" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;startArrow=classic;startFill=1;endArrow=none;endFill=0;" parent="1" source="S8wz9ZtwZs3Sd4maCRdY-7" edge="1">
-          <mxGeometry x="0.4743" relative="1" as="geometry">
-            <mxPoint x="585.0952380952381" y="810" as="targetPoint" />
-            <mxPoint as="offset" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="m0IQrUpga-DAo2afT193-3" value="S3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;startArrow=classic;startFill=1;" parent="1" source="S8wz9ZtwZs3Sd4maCRdY-7" target="m0IQrUpga-DAo2afT193-1" edge="1">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="S8wz9ZtwZs3Sd4maCRdY-7" value="Data DB Sidecar" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="520" y="869" width="130" height="40" as="geometry" />
-        </mxCell>
-        <mxCell id="m0IQrUpga-DAo2afT193-1" value="Storage Service&lt;br&gt;(minIO)" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="720" y="869" width="130" height="40" as="geometry" />
-        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>

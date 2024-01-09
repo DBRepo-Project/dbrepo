@@ -27,6 +27,13 @@ We practice test-driven development and require contributors to test their code 
 
 ## Code Versioning
 
+### Branching Strategy
+
+<p align="center">
+<img src="../.gitlab/branching-strategy.png" alt="Branching strategy from the master-dev-feature branches and release branches." width="732" height="391" /><br/>
+<i><strong>Figure 1.</strong> Branching strategy of the source code development.</i>
+</p>
+
 ### CI/CD
 
 We get compute resources in-kind from [dataLAB](https://www.it.tuwien.ac.at/en/services/network-and-servers/datalab)
@@ -34,7 +41,7 @@ to run our pipeline:
 
 <p align="center">
 <img src="../.gitlab/gitlab-runner.png" alt="Gitlab runner configuration in the cluster" width="732" height="262" /><br/>
-<i><strong>Figure 1.</strong> Gitlab runner configuration in the cluster.</i>
+<i><strong>Figure 2.</strong> Gitlab runner configuration in the cluster.</i>
 </p>
 
 Minikube cluster with 6vCPU and 28GB RAM. The CI pipeline is configured as follows in the `config.toml`:
