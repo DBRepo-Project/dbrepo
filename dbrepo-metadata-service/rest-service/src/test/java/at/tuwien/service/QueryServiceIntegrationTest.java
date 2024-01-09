@@ -316,7 +316,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
             QueryStoreException, ColumnParseException, InterruptedException, KeycloakRemoteException,
             AccessDeniedException, QueryNotFoundException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
-                .statement("SELECT n.`firstname`, n.`lastname`, n.`birth`, n.`reminder`, z.`animal_name`, z.`legs` FROM `likes` l JOIN `names` n ON l.`name_id` = n.`id` JOIN `mock_view` z ON z.`id` = l.`zoo_id`")
+                .statement("SELECT n.`firstname`, n.`lastname`, n.`birth`, n.`reminder`, z.`animal_name`, z.`legs` FROM `likes` l JOIN `names` n ON l.`name_id` = n.`id` JOIN `mock_view` z ON z.`id` = l.`zoo_id` ORDER BY animal_name ASC")
                 .build();
 
         /* pre-condition */

@@ -69,16 +69,18 @@ public class StoreServiceIntegrationModifyTest extends BaseUnitTest {
 
     @BeforeEach
     public void beforeEach() throws InterruptedException, SQLException {
-        MariaDbConfig.dropAllDatabases(CONTAINER_1);
-        MariaDbConfig.createInitDatabase(CONTAINER_1, DATABASE_1);
         TABLE_1.setColumns(TABLE_1_COLUMNS);
         TABLE_2.setColumns(TABLE_2_COLUMNS);
+        TABLE_3.setColumns(TABLE_3_COLUMNS);
+        TABLE_4.setColumns(TABLE_4_COLUMNS);
         /* metadata database */
         imageRepository.save(IMAGE_1);
         licenseRepository.save(LICENSE_1);
-        containerRepository.save(CONTAINER_1);
         userRepository.saveAll(List.of(USER_1, USER_2, USER_3, USER_4, USER_5));
+        containerRepository.save(CONTAINER_1);
         databaseRepository.save(DATABASE_1);
+        MariaDbConfig.dropAllDatabases(CONTAINER_1);
+        MariaDbConfig.createInitDatabase(CONTAINER_1, DATABASE_1);
     }
 
     @Test

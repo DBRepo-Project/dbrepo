@@ -88,17 +88,18 @@ public class MariaDbConfig {
         try (Connection connection = DriverManager.getConnection(jdbc, container.getPrivilegedUsername(), container.getPrivilegedPassword())) {
             final String sql = "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME NOT IN ('information_schema', 'mysql', 'performance_schema');";
             log.trace("prepare statement '{}'", sql);
-            final PreparedStatement statement = connection.prepareStatement(sql);
-            final ResultSet resultSet = statement.executeQuery();
+            final PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            final ResultSet resultSet = preparedStatement.executeQuery();
             final List<String> databases = new LinkedList<>();
             while (resultSet.next()) {
                 databases.add(resultSet.getString(1));
             }
             resultSet.close();
-            statement.close();
-            for (String database : databases) {
-                final String drop = "DROP DATABASE IF EXISTS `" + database + "`;";
-                final PreparedStatement dropStatement = connection.prepareStatement(drop);
+            preparedStatement.close();
+            for (String databaseName : databases) {
+                final String statement = "DROP DATABASE IF EXISTS `" + databaseName + "`;";
+                log.trace("drop database {}", databaseName);
+                final PreparedStatement dropStatement = connection.prepareStatement(statement);
                 dropStatement.executeUpdate();
                 dropStatement.close();
             }
