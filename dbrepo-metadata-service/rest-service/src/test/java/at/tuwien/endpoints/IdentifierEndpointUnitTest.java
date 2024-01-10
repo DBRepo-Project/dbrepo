@@ -8,12 +8,14 @@ import at.tuwien.config.EndpointConfig;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.identifier.Identifier;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.repository.mdb.DatabaseRepository;
 import at.tuwien.repository.mdb.IdentifierRepository;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.IdentifierService;
 import at.tuwien.service.StoreService;
+import at.tuwien.service.UserService;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -51,6 +53,9 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
 
     @MockBean
     private DatabaseRepository databaseRepository;
+
+    @MockBean
+    private UserService userService;
 
     @MockBean
     private IdentifierRepository identifierRepository;
@@ -291,6 +296,8 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
                     .when(accessService)
                     .find(databaseId, userId);
         }
+        when(userService.findByUsername(USER_1_USERNAME))
+                .thenReturn(USER_1);
         when(storeService.findOne(databaseId, data.getQueryId(), principal))
                 .thenReturn(QUERY_1);
         when(identifierService.create(data, principal))

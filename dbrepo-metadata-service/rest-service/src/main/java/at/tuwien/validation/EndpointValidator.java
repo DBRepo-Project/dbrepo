@@ -170,7 +170,19 @@ public class EndpointValidator {
             log.debug("validation passed: user with id {} has write all access", UserUtil.getId(principal));
             return true;
         }
-        log.debug("validation failed: user with id {} has insufficient access or role", UserUtil.getId(principal));
+        log.debug("validation failed: user with id {} has insufficient access {} or role", UserUtil.getId(principal), access.getType());
+        return false;
+    }
+
+    public boolean validateOnlyMineOrReadAccessOrHasRole(UUID ownerId, Principal principal, DatabaseAccess access, String role) {
+        if (validateOnlyMineOrWriteAccessOrHasRole(ownerId, principal, access, role)) {
+            return true;
+        }
+        if (access.getType().equals(AccessType.READ)) {
+            log.debug("validation passed: user with id {} has read access", UserUtil.getId(principal));
+            return true;
+        }
+        log.debug("validation failed: user with id {} has insufficient access {} or role", UserUtil.getId(principal), access.getType());
         return false;
     }
 

@@ -172,7 +172,7 @@ public class IdentifierEndpoint {
                     throw new IdentifierRequestException("Failed to create view identifier: only parameters database_id & view_id must be present");
                 }
                 final View view = viewService.findById(data.getViewId());
-                if (!endpointValidator.validateOnlyMineOrWriteAccessOrHasRole(view.getCreatedBy(), principal, access, "create-foreign-identifier")) {
+                if (!endpointValidator.validateOnlyMineOrReadAccessOrHasRole(view.getCreatedBy(), principal, access, "create-foreign-identifier")) {
                     log.error("Failed to create view identifier: insufficient access or role");
                     throw new IdentifierRequestException("Failed to create view identifier: insufficient access or role");
                 }
@@ -183,7 +183,7 @@ public class IdentifierEndpoint {
                     throw new IdentifierRequestException("Failed to create table identifier: only parameters database_id & table_id must be present");
                 }
                 final Table table = tableService.find(data.getDatabaseId(), data.getTableId());
-                if (!endpointValidator.validateOnlyMineOrWriteAccessOrHasRole(table.getOwnedBy(), principal, access, "create-foreign-identifier")) {
+                if (!endpointValidator.validateOnlyMineOrReadAccessOrHasRole(table.getOwnedBy(), principal, access, "create-foreign-identifier")) {
                     log.error("Failed to create table identifier: insufficient access or role");
                     throw new IdentifierRequestException("Failed to create table identifier: insufficient access or role");
                 }
@@ -195,7 +195,7 @@ public class IdentifierEndpoint {
                 }
                 final Query query = storeService.findOne(data.getDatabaseId(), data.getQueryId(), principal);
                 final User user = userService.findByUsername(query.getCreatedBy());
-                if (!endpointValidator.validateOnlyMineOrWriteAccessOrHasRole(user.getId(), principal, access, "create-foreign-identifier")) {
+                if (!endpointValidator.validateOnlyMineOrReadAccessOrHasRole(user.getId(), principal, access, "create-foreign-identifier")) {
                     log.error("Failed to create subset identifier: insufficient access or role");
                     throw new IdentifierRequestException("Failed to create subset identifier: insufficient access or role");
                 }
@@ -205,7 +205,7 @@ public class IdentifierEndpoint {
                     log.error("Failed to create database identifier: only parameters database_id must be present");
                     throw new IdentifierRequestException("Failed to create database identifier: only parameters database_id must be present");
                 }
-                if (!endpointValidator.validateOnlyMineOrWriteAccessOrHasRole(database.getOwnedBy(), principal, access, "create-foreign-identifier")) {
+                if (!endpointValidator.validateOnlyMineOrReadAccessOrHasRole(database.getOwnedBy(), principal, access, "create-foreign-identifier")) {
                     log.error("Failed to create database identifier: insufficient access or role");
                     throw new IdentifierRequestException("Failed to create database identifier: insufficient access or role");
                 }
