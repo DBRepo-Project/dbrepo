@@ -80,7 +80,7 @@
   </div>
 </template>
 <script>
-import TableToolbar from '@/components/TableToolbar.vue'
+import TableToolbar from '@/components/table/TableToolbar.vue'
 import TableService from '@/api/table.service'
 
 export default {

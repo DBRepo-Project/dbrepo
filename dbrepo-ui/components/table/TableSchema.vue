@@ -67,7 +67,7 @@
               :error-messages="dErrorMessages(c)"
               label="d *" />
           </v-col>
-          <v-col v-if="hasDate(c)" cols="1">
+          <v-col v-if="hasDate(c)" cols="2">
             <v-select
               v-model="c.dfid"
               required
@@ -118,7 +118,6 @@
 </template>
 
 <script>
-import DatabaseService from '@/api/database.service'
 import QueryMapper from '@/api/query.mapper'
 
 export default {
@@ -139,7 +138,6 @@ export default {
   data () {
     return {
       loading: false,
-      dateFormats: [],
       valid: true,
       finished: false,
       tableColumns: [],
@@ -147,12 +145,18 @@ export default {
     }
   },
   computed: {
+    database () {
+      return this.$store.state.database
+    },
     needsSequence () {
       return this.columns.filter(c => c.primary_key).length === 0
+    },
+    dateFormats () {
+      if (!this.database || !('container' in this.database) || !('image' in this.database.container) || !('date_formats' in this.database.container.image)) {
+        return []
+      }
+      return this.database.container.image.date_formats
     }
-  },
-  mounted () {
-    this.loadDateFormats()
   },
   methods: {
     shift (column) {
@@ -170,14 +174,6 @@ export default {
         shift++
       }
       return shift
-    },
-    async loadDateFormats () {
-      try {
-        const database = await DatabaseService.findOne(this.$route.params.database_id)
-        this.dateFormats = database.image.date_formats
-      } finally {
-        this.loading = false
-      }
     },
     submit () {
       this.finished = true

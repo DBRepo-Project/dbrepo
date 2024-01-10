@@ -6,15 +6,18 @@ import at.tuwien.api.identifier.IdentifierSaveDto;
 import at.tuwien.api.identifier.IdentifierTypeDto;
 import at.tuwien.api.user.external.ExternalMetadataDto;
 import at.tuwien.entities.database.Database;
+import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.database.View;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.identifier.Identifier;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.IdentifierMapper;
 import at.tuwien.querystore.Query;
 import at.tuwien.service.*;
 import at.tuwien.utils.PrincipalUtil;
 import at.tuwien.utils.UserUtil;
+import at.tuwien.validation.EndpointValidator;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -35,6 +38,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Log4j2
@@ -43,6 +47,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/identifier")
 public class IdentifierEndpoint {
 
+    private final UserService userService;
     private final ViewService viewService;
     private final TableService tableService;
     private final StoreService storeService;
@@ -50,13 +55,15 @@ public class IdentifierEndpoint {
     private final DatabaseService databaseService;
     private final MetadataService metadataService;
     private final IdentifierMapper identifierMapper;
+    private final EndpointValidator endpointValidator;
     private final IdentifierService identifierService;
 
     @Autowired
-    public IdentifierEndpoint(ViewService viewService, TableService tableService, StoreService storeService,
-                              AccessService accessService, DatabaseService databaseService,
+    public IdentifierEndpoint(UserService userService, ViewService viewService, TableService tableService,
+                              StoreService storeService, AccessService accessService, DatabaseService databaseService,
                               MetadataService metadataService, IdentifierMapper identifierMapper,
-                              IdentifierService identifierService) {
+                              EndpointValidator endpointValidator, IdentifierService identifierService) {
+        this.userService = userService;
         this.viewService = viewService;
         this.tableService = tableService;
         this.storeService = storeService;
@@ -64,6 +71,7 @@ public class IdentifierEndpoint {
         this.databaseService = databaseService;
         this.metadataService = metadataService;
         this.identifierMapper = identifierMapper;
+        this.endpointValidator = endpointValidator;
         this.identifierService = identifierService;
     }
 
@@ -147,57 +155,59 @@ public class IdentifierEndpoint {
             ImageNotSupportedException, IdentifierNotFoundException, TableNotFoundException, TableMalformedException,
             QueryMalformedException, FileStorageException, DataDbSidecarException {
         log.debug("endpoint create identifier, data={}, {}", data, PrincipalUtil.formatForDebug(principal));
+        DatabaseAccess access = null;
         try {
-            accessService.find(data.getDatabaseId(), UserUtil.getId(principal));
+            access = accessService.find(data.getDatabaseId(), UserUtil.getId(principal));
         } catch (AccessDeniedException e) {
             if (!UserUtil.hasRole(principal, "create-foreign-identifier")) {
-                log.error("Failed to create identifier: insufficient access");
-                throw new NotAllowedException("Failed to create identifier: insufficient access");
+                log.error("Failed to create identifier: insufficient role");
+                throw new NotAllowedException("Failed to create identifier: insufficient role");
             }
         }
         final Database database = databaseService.find(data.getDatabaseId());
         switch (data.getType()) {
             case VIEW -> {
                 if (data.getDatabaseId() == null || data.getQueryId() != null || data.getViewId() == null || data.getTableId() != null) {
-                    log.error("Failed to create identifier: only parameters database_id & view_id must be present");
-                    throw new IdentifierRequestException("Failed to create identifier: only parameters database_id & view_id must be present");
+                    log.error("Failed to create view identifier: only parameters database_id & view_id must be present");
+                    throw new IdentifierRequestException("Failed to create view identifier: only parameters database_id & view_id must be present");
                 }
                 final View view = viewService.findById(data.getViewId());
-                if (!database.getOwnedBy().equals(UserUtil.getId(principal)) && !view.getCreatedBy().equals(UserUtil.getId(principal))) {
-                    log.error("Failed to create identifier: insufficient role");
-                    throw new IdentifierRequestException("Failed to create identifier: insufficient role");
+                if (!endpointValidator.validateOnlyMineOrWriteAccessOrHasRole(view.getCreatedBy(), principal, access, "create-foreign-identifier")) {
+                    log.error("Failed to create view identifier: insufficient access or role");
+                    throw new IdentifierRequestException("Failed to create view identifier: insufficient access or role");
                 }
             }
             case TABLE -> {
                 if (data.getDatabaseId() == null || data.getQueryId() != null || data.getViewId() != null || data.getTableId() == null) {
-                    log.error("Failed to create identifier: only parameters database_id & table_id must be present");
-                    throw new IdentifierRequestException("Failed to create identifier: only parameters database_id & table_id must be present");
+                    log.error("Failed to create table identifier: only parameters database_id & table_id must be present");
+                    throw new IdentifierRequestException("Failed to create table identifier: only parameters database_id & table_id must be present");
                 }
                 final Table table = tableService.find(data.getDatabaseId(), data.getTableId());
-                if (!database.getOwnedBy().equals(UserUtil.getId(principal)) && !table.getOwnedBy().equals(UserUtil.getId(principal))) {
-                    log.error("Failed to create identifier: insufficient role");
-                    throw new IdentifierRequestException("Failed to create identifier: insufficient role");
+                if (!endpointValidator.validateOnlyMineOrWriteAccessOrHasRole(table.getOwnedBy(), principal, access, "create-foreign-identifier")) {
+                    log.error("Failed to create table identifier: insufficient access or role");
+                    throw new IdentifierRequestException("Failed to create table identifier: insufficient access or role");
                 }
             }
             case SUBSET -> {
                 if (data.getDatabaseId() == null || data.getQueryId() == null || data.getViewId() != null || data.getTableId() != null) {
-                    log.error("Failed to create identifier: only parameters database_id & query_id must be present");
-                    throw new IdentifierRequestException("Failed to create identifier: only parameters database_id & query_id must be present");
+                    log.error("Failed to create subset identifier: only parameters database_id & query_id must be present");
+                    throw new IdentifierRequestException("Failed to create subset identifier: only parameters database_id & query_id must be present");
                 }
                 final Query query = storeService.findOne(data.getDatabaseId(), data.getQueryId(), principal);
-                if (!database.getOwnedBy().equals(UserUtil.getId(principal)) && !query.getCreatedBy().equals(UserUtil.getId(principal).toString())) {
-                    log.error("Failed to create identifier: insufficient role");
-                    throw new IdentifierRequestException("Failed to create identifier: insufficient role");
+                final User user = userService.findByUsername(query.getCreatedBy());
+                if (!endpointValidator.validateOnlyMineOrWriteAccessOrHasRole(user.getId(), principal, access, "create-foreign-identifier")) {
+                    log.error("Failed to create subset identifier: insufficient access or role");
+                    throw new IdentifierRequestException("Failed to create subset identifier: insufficient access or role");
                 }
             }
             case DATABASE -> {
                 if (data.getDatabaseId() == null || data.getQueryId() != null || data.getViewId() != null || data.getTableId() != null) {
-                    log.error("Failed to create identifier: only parameters database_id must be present");
-                    throw new IdentifierRequestException("Failed to create identifier: only parameters database_id must be present");
+                    log.error("Failed to create database identifier: only parameters database_id must be present");
+                    throw new IdentifierRequestException("Failed to create database identifier: only parameters database_id must be present");
                 }
-                if (!database.getOwnedBy().equals(UserUtil.getId(principal))) {
-                    log.error("Failed to create identifier: insufficient role");
-                    throw new IdentifierRequestException("Failed to create identifier: insufficient role");
+                if (!endpointValidator.validateOnlyMineOrWriteAccessOrHasRole(database.getOwnedBy(), principal, access, "create-foreign-identifier")) {
+                    log.error("Failed to create database identifier: insufficient access or role");
+                    throw new IdentifierRequestException("Failed to create database identifier: insufficient access or role");
                 }
             }
         }

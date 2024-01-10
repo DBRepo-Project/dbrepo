@@ -20,7 +20,7 @@
                 <pre>{{ item.query }}</pre>
               </v-list-item-subtitle>
             </v-list-item-content>
-            <v-list-item-action v-if="item.identifier">
+            <v-list-item-action v-if="item.identifiers.length > 0">
               <v-tooltip left>
                 <template v-slot:activator="{ on, attrs }">
                   <v-icon color="primary" v-bind="attrs" v-on="on">mdi-identifier</v-icon>
@@ -39,6 +39,7 @@
 import { formatTimestampUTCLabel } from '@/utils'
 import QueryService from '@/api/query.service'
 import IdentifierService from '@/api/identifier.service'
+import IdentifierMapper from '@/api/identifier.mapper'
 
 export default {
   data () {
@@ -101,20 +102,16 @@ export default {
         })
     },
     title (query) {
-      if (!query.identifier || !('titles' in query.identifier)) {
+      if (query.identifiers.length === 0) {
         return formatTimestampUTCLabel(query.created)
       }
-      const enTitle = query.identifier.titles.filter(t => t.language).filter(t => t.language === 'en')
-      if (enTitle.length !== 1) {
-        return query.identifier.titles[0].title
-      }
-      return enTitle[0].title
+      return IdentifierMapper.identifierPreferEnglishTitle(query.identifiers[0])
     },
     link (query) {
       return `/database/${this.$route.params.database_id}/query/${query.id}/info`
     },
-    clazz (queryOrIdentifier) {
-      if ('query_id' in queryOrIdentifier || queryOrIdentifier.identifier) {
+    clazz (query) {
+      if (query.identifiers.length > 0) {
         return 'primary--text'
       }
       return null

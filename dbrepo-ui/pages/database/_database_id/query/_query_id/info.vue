@@ -84,7 +84,7 @@
 </template>
 <script>
 import Summary from '@/components/identifier/Summary'
-import SubsetToolbar from '@/components/SubsetToolbar'
+import SubsetToolbar from '@/components/query/SubsetToolbar.vue'
 import QueryService from '@/api/query.service'
 import Select from '@/components/identifier/Select'
 import { formatTimestampUTCLabel } from '@/utils'

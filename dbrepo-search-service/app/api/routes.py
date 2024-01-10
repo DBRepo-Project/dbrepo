@@ -112,8 +112,10 @@ def post_fuzzy_search():
     req_body = request.json
     logging.debug(f"search request body: {req_body}")
     search_term = req_body.get("search_term")
-    response = general_search(None, search_term, None, None, None)
-    return {"results": response}, 200
+    results = general_search(None, search_term, None, None, None)
+    if "hits" in results and "hits" in results["hits"]:
+        results = [hit["_source"] for hit in results["hits"]["hits"]]
+    return {"results": results}, 200
 
 
 @api_bp.route("/api/search/<string:type>", methods=["POST"], endpoint="search_general_search")

@@ -103,7 +103,7 @@
 </template>
 
 <script>
-import DatabaseToolbar from '@/components/DatabaseToolbar'
+import DatabaseToolbar from '@/components/database/DatabaseToolbar.vue'
 import { formatTimestampUTCLabel } from '@/utils'
 import DatabaseMapper from '@/api/database.mapper'
 import Summary from '@/components/identifier/Summary'

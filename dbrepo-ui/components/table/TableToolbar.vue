@@ -63,11 +63,11 @@
 </template>
 
 <script>
-import EditTuple from '@/components/dialogs/EditTuple'
+import EditTuple from '@/components/dialogs/EditTuple.vue'
 import TableService from '@/api/table.service'
 import UserUtils from '@/api/user.utils'
 import DatabaseUtils from '@/api/database.utils'
-import DropTable from '@/components/dialogs/DropTable'
+import DropTable from '@/components/dialogs/DropTable.vue'
 import TableUtils from '@/api/table.utils'
 
 export default {

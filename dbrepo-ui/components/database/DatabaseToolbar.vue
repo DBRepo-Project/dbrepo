@@ -74,7 +74,7 @@
 </template>
 
 <script>
-import DownloadButton from '@/components/identifier/DownloadButton'
+import DownloadButton from '@/components/identifier/DownloadButton.vue'
 
 export default {
   components: {

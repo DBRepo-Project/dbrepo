@@ -8,8 +8,8 @@
   </div>
 </template>
 <script>
-import DatabaseToolbar from '@/components/DatabaseToolbar.vue'
-import ViewList from '@/components/ViewList.vue'
+import DatabaseToolbar from '@/components/database/DatabaseToolbar.vue'
+import ViewList from '@/components/view/ViewList.vue'
 
 export default {
   name: 'Views',

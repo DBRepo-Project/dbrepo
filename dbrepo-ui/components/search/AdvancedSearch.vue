@@ -37,9 +37,6 @@
                 label="Internal Name" />
             </v-col>
           </v-row>
-          <v-row v-if="loadingFields" dense>
-            <v-progress-circular color="primary" indeterminate />
-          </v-row>
           <v-row v-if="!loadingFields && renderedFields" dense>
             <v-col v-for="field in renderedFields" :key="`f-${field.attr_name}`" cols="3">
               <v-select

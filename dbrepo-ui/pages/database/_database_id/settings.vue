@@ -96,7 +96,7 @@
 </template>
 
 <script>
-import DatabaseToolbar from '@/components/DatabaseToolbar.vue'
+import DatabaseToolbar from '@/components/database/DatabaseToolbar.vue'
 import EditAccess from '@/components/dialogs/EditAccess.vue'
 import DatabaseService from '@/api/database.service'
 import UserService from '@/api/user.service'

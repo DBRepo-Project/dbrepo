@@ -831,7 +831,7 @@ public abstract class BaseTest {
 
     public final static Long CONTAINER_1_ID = 1L;
     public final static ContainerImage CONTAINER_1_IMAGE = IMAGE_1;
-    public final static ImageBriefDto CONTAINER_1_IMAGE_BRIEF_DTO = IMAGE_1_BRIEF_DTO;
+    public final static ImageDto CONTAINER_1_IMAGE_DTO = IMAGE_1_DTO;
     public final static String CONTAINER_1_NAME = "u01";
     public final static String CONTAINER_1_INTERNALNAME = "dbrepo-userdb-u01";
     public final static String CONTAINER_1_IP = "127.0.0.1";
@@ -868,7 +868,7 @@ public abstract class BaseTest {
             .id(CONTAINER_1_ID)
             .name(CONTAINER_1_NAME)
             .internalName(CONTAINER_1_INTERNALNAME)
-            .image(CONTAINER_1_IMAGE_BRIEF_DTO)
+            .image(CONTAINER_1_IMAGE_DTO)
             .created(CONTAINER_1_CREATED)
             .host(CONTAINER_1_HOST)
             .port(CONTAINER_1_PORT)
@@ -886,7 +886,7 @@ public abstract class BaseTest {
 
     public final static Long CONTAINER_2_ID = 2L;
     public final static ContainerImage CONTAINER_2_IMAGE = IMAGE_1;
-    public final static ImageBriefDto CONTAINER_2_IMAGE_BRIEF_DTO = IMAGE_1_BRIEF_DTO;
+    public final static ImageDto CONTAINER_2_IMAGE_DTO = IMAGE_1_DTO;
     public final static String CONTAINER_2_NAME = "u02";
     public final static String CONTAINER_2_INTERNALNAME = "dbrepo-userdb-u02";
     public final static String CONTAINER_2_IP = "172.30.0.6";
@@ -917,7 +917,7 @@ public abstract class BaseTest {
             .id(CONTAINER_2_ID)
             .name(CONTAINER_2_NAME)
             .internalName(CONTAINER_2_INTERNALNAME)
-            .image(CONTAINER_2_IMAGE_BRIEF_DTO)
+            .image(CONTAINER_2_IMAGE_DTO)
             .created(CONTAINER_2_CREATED)
             .host(CONTAINER_2_HOST)
             .port(CONTAINER_2_PORT)

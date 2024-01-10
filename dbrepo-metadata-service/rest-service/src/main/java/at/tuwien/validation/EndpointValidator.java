@@ -10,6 +10,7 @@ import at.tuwien.entities.database.AccessType;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.database.table.Table;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.repository.mdb.IdentifierRepository;
 import at.tuwien.service.AccessService;
@@ -30,16 +31,14 @@ import java.util.regex.Pattern;
 public class EndpointValidator {
 
     private final QueryConfig queryConfig;
-    private final IdentifierRepository identifierRepository;
     private final AccessService accessService;
     private final DatabaseService databaseService;
     private final TableService tableService;
 
     @Autowired
-    public EndpointValidator(QueryConfig queryConfig, IdentifierRepository identifierRepository,
-                             AccessService accessService, DatabaseService databaseService, TableService tableService) {
+    public EndpointValidator(QueryConfig queryConfig, AccessService accessService, DatabaseService databaseService,
+                             TableService tableService) {
         this.queryConfig = queryConfig;
-        this.identifierRepository = identifierRepository;
         this.accessService = accessService;
         this.databaseService = databaseService;
         this.tableService = tableService;
@@ -90,7 +89,7 @@ public class EndpointValidator {
                 .filter(c -> needSize.contains(c.getType()))
                 .findFirst();
         if (optional0.isPresent()) {
-            log.error("Validation failed: column {} needs size parameter", optional0.get().getName() );
+            log.error("Validation failed: column {} needs size parameter", optional0.get().getName());
             throw new TableMalformedException("Validation failed: column " + optional0.get().getName() + " needs size parameter");
         }
         /* check size and d */
@@ -151,6 +150,28 @@ public class EndpointValidator {
             log.error("Validation failed: column {} needs a format", optional4.get().getName());
             throw new TableMalformedException("Validation failed: column " + optional4.get().getName() + " needs a format");
         }
+    }
+
+    public boolean validateOnlyMineOrWriteAccessOrHasRole(UUID ownerId, Principal principal, DatabaseAccess access, String role) {
+        if (UserUtil.hasRole(principal, role)) {
+            log.debug("validation passed: role {} present", role);
+            return true;
+        }
+        if (access == null) {
+            /* should never happen */
+            log.error("validation failed: access is null");
+            return false;
+        }
+        if (ownerId.equals(UserUtil.getId(principal)) && (access.getType().equals(AccessType.WRITE_ALL) || access.getType().equals(AccessType.WRITE_OWN))) {
+            log.debug("validation passed: user id {} matches owner id {} and has write access {}", UserUtil.getId(principal), ownerId, access.getType());
+            return true;
+        }
+        if (access.getType().equals(AccessType.WRITE_ALL)) {
+            log.debug("validation passed: user with id {} has write all access", UserUtil.getId(principal));
+            return true;
+        }
+        log.debug("validation failed: user with id {} has insufficient access or role", UserUtil.getId(principal));
+        return false;
     }
 
     public void validateOnlyOwnerOrWriteAll(Long databaseId, Long tableId, Principal principal)

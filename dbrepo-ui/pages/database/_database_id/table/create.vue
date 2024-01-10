@@ -56,7 +56,7 @@
 </template>
 
 <script>
-import TableSchema from '@/components/TableSchema.vue'
+import TableSchema from '@/components/table/TableSchema.vue'
 import { notEmpty } from '@/utils'
 import TableService from '@/api/table.service'
 import TableMapper from '@/api/table.mapper'

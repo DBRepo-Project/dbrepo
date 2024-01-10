@@ -24,7 +24,7 @@
         </div>
       </v-card-text>
     </v-card>
-    <DatabaseList ref="databases" :databases="databases" />
+    <DatabaseList ref="databases" :loading="loadingDatabases" :databases="databases" />
     <v-dialog
       v-model="createDbDialog"
       persistent
@@ -35,7 +35,7 @@
 </template>
 
 <script>
-import DatabaseList from '@/components/DatabaseList'
+import DatabaseList from '@/components/database/DatabaseList.vue'
 import CreateDB from '@/components/dialogs/CreateDB'
 import DatabaseService from '@/api/database.service'
 
@@ -47,6 +47,7 @@ export default {
   data () {
     return {
       loading: false,
+      loadingDatabases: false,
       createDbDialog: null,
       databases: []
     }

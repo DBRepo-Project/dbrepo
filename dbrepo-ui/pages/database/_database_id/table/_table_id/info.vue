@@ -105,7 +105,7 @@
   </div>
 </template>
 <script>
-import TableToolbar from '@/components/TableToolbar'
+import TableToolbar from '@/components/table/TableToolbar.vue'
 import UserMapper from '@/api/user.mapper'
 import Select from '@/components/identifier/Select'
 import Summary from '@/components/identifier/Summary'

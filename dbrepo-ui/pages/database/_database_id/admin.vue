@@ -37,7 +37,7 @@
 </template>
 
 <script>
-import DatabaseToolbar from '@/components/DatabaseToolbar.vue'
+import DatabaseToolbar from '@/components/database/DatabaseToolbar.vue'
 import DatabaseService from '@/api/database.service'
 
 export default {

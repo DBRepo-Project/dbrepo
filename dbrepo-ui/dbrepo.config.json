@@ -82,12 +82,12 @@
         {
           "text": "Release Notes",
           "blank": true,
-          "href": "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/blob/dev/CHANGELOG.md"
+          "href": "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/blob/master/CHANGELOG.md"
         },
         {
           "text": "Online Documentation",
           "blank": true,
-          "href": "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/latest/"
+          "href": "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.4/"
         },
         {
           "text": "Sourcecode Documentation",
@@ -105,9 +105,9 @@
           "href": "https://test.dbrepo.tuwien.ac.at/"
         },
         {
-          "text": "Demo Instance (Docker Compose)",
+          "text": "Pilot Instance (Docker Compose)",
           "blank": true,
-          "href": "https://dbrepo2.ec.tuwien.ac.at/"
+          "href": "https://dbrepo1.ec.tuwien.ac.at/"
         },
         {
           "text": "Paper",

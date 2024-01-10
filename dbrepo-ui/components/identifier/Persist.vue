@@ -844,6 +844,9 @@ export default {
             this.$router.push(this.backTo)
             this.$toast.success(this.prefix + ' successfully persisted')
           })
+          .catch(() => {
+            this.loading = false
+          })
           .finally(() => {
             this.loading = false
           })
@@ -855,6 +858,9 @@ export default {
             await this.$toast.success(this.prefix + ' successfully persisted')
             await this.$router.push(this.backTo)
           })
+          .catch(() => {
+            this.loading = false
+          })
           .finally(() => {
             this.loading = false
           })
@@ -865,6 +871,9 @@ export default {
       DatabaseService.findAllLicenses()
         .then((licenses) => {
           this.licenses = licenses
+        })
+        .catch(() => {
+          this.loading = false
         })
         .finally(() => {
           this.loading = false

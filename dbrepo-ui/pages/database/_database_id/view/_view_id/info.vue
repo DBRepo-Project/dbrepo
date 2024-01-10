@@ -83,7 +83,7 @@
 </template>
 <script>
 import { formatTimestampUTCLabel } from '@/utils'
-import ViewToolbar from '@/components/ViewToolbar.vue'
+import ViewToolbar from '@/components/view/ViewToolbar.vue'
 import UserMapper from '@/api/user.mapper'
 import UserUtils from '@/api/user.utils'
 import Summary from '@/components/identifier/Summary.vue'
