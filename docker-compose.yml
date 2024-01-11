@@ -1,7 +1,3 @@
-# INFO: This compose file deploys the official Docker images from a stable, tested master branch
-# MODIFIED: 2024-01-07
-# MAINTAINER: Martin Weise <martin.weise@tuwien.ac.at>
-
 version: "3.6"
 
 volumes:
