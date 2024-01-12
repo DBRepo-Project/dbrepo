@@ -259,6 +259,28 @@ scan-metadata-service:
     reports:
       container_scanning: ./.trivy/trivy-metadata-service-report.json
 
+scan-data-service:
+  image: bitnami/trivy:latest
+  stage: scan
+  only:
+    refs:
+      - dev
+      - release-v1.3
+      - release-v1.4
+  allow_failure: true
+  script:
+    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-data-service-report.json docker.io/dbrepo/data-service:latest
+    - trivy image --insecure --exit-code 0 docker.io/dbrepo/data-service:latest
+    - trivy image --insecure --exit-code 1 --severity CRITICAL docker.io/dbrepo/data-service:latest
+  cache:
+    paths:
+      - .trivycache/
+  artifacts:
+    when: always
+    expire_in: 1 days
+    reports:
+      container_scanning: ./.trivy/trivy-data-service-report.json
+
 scan-search-db:
   image: bitnami/trivy:latest
   stage: scan
