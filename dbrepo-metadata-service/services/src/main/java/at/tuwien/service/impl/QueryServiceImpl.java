@@ -16,6 +16,7 @@ import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.DataDbSidecarGateway;
 import at.tuwien.mapper.QueryMapper;
+import at.tuwien.mapper.ViewMapper;
 import at.tuwien.querystore.Query;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.QueryService;
@@ -51,6 +52,7 @@ import java.util.List;
 public class QueryServiceImpl extends HibernateConnector implements QueryService {
 
     private final S3Config s3Config;
+    private final ViewMapper viewMapper;
     private final MinioClient minioClient;
     private final QueryMapper queryMapper;
     private final StoreService storeService;
@@ -59,10 +61,11 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     private final DataDbSidecarGateway dataDbSidecarGateway;
 
     @Autowired
-    public QueryServiceImpl(S3Config s3Config, MinioClient minioClient, QueryMapper queryMapper,
+    public QueryServiceImpl(S3Config s3Config, ViewMapper viewMapper, MinioClient minioClient, QueryMapper queryMapper,
                             TableService tableService, DatabaseService databaseService, StoreService storeService,
                             DataDbSidecarGateway dataDbSidecarGateway) {
         this.s3Config = s3Config;
+        this.viewMapper = viewMapper;
         this.minioClient = minioClient;
         this.queryMapper = queryMapper;
         this.tableService = tableService;
@@ -198,8 +201,22 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     @Transactional(readOnly = true)
     public QueryResultDto viewFindAll(Long databaseId, View view, Long page, Long size, Principal principal)
             throws DatabaseNotFoundException, QueryMalformedException, TableMalformedException {
+        /* find */
+        final Database database = databaseService.find(databaseId);
         /* run query */
-        return executeNonPersistent(databaseId, view.getQuery(), view.getColumns());
+        final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(),
+                database.getContainer(), database);
+        try {
+            final Connection connection = dataSource.getConnection();
+            final PreparedStatement preparedStatement = viewMapper.viewToSelectAll(connection, view, page, size);
+            final ResultSet resultSet = preparedStatement.executeQuery();
+            return queryMapper.resultListToQueryResultDto(view.getColumns(), resultSet);
+        } catch (SQLException e) {
+            log.error("Failed to map object: {}", e.getMessage());
+            throw new TableMalformedException("Failed to map object", e);
+        } finally {
+            dataSource.close();
+        }
     }
 
     @Override

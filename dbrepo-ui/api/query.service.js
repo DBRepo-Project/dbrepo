@@ -30,9 +30,9 @@ class QueryService {
     })
   }
 
-  persist (databaseId, queryId) {
+  persist (databaseId, queryId, persist) {
     return new Promise((resolve, reject) => {
-      api.put(`/api/database/${databaseId}/query/${queryId}`, { persist: true }, { headers: { Accept: 'application/json' } })
+      api.put(`/api/database/${databaseId}/query/${queryId}`, { persist }, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const query = response.data
           console.debug('response query', query)

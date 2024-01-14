@@ -223,7 +223,7 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         final Database database = findById(databaseId);
         final List<Table> diffTables;
         final List<View> diffViews;
-        final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(), database.getContainer());
+        final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(), database.getContainer(), database);
         try {
             final Connection connection = dataSource.getConnection();
             final PreparedStatement preparedStatement0 = databaseMapper.databaseToDatabaseMetadata(connection, database);
@@ -269,6 +269,8 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
                 }
                 final PreparedStatement preparedStatement2 = queryMapper.databaseToDatabaseConstraintMetadata(connection, table.getDatabase().getInternalName(), table.getInternalName());
                 table.setConstraints(resultSetTableToObtainedConstraintsMetadata(preparedStatement2.executeQuery(), table));
+                final PreparedStatement preparedStatement3 = tableMapper.tableToCreateHistoryViewRawQuery(connection, table);
+                preparedStatement3.executeUpdate();
                 database.getTables().add(table);
             }
         } catch (SQLException e) {

@@ -35,6 +35,7 @@ import java.sql.SQLException;
 import java.sql.SQLInvalidAuthorizationSpecException;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -274,7 +275,7 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
                 .thenReturn("SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE");
 
         /* test */
-        generic_system_insert(CONTAINER_1_PRIVILEGED_USERNAME, CONTAINER_1_PRIVILEGED_PASSWORD);
+        generic_system_insert(CONTAINER_1_PRIVILEGED_USERNAME, UUID.randomUUID(), CONTAINER_1_PRIVILEGED_PASSWORD);
     }
 
     @Test
@@ -286,7 +287,7 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
 
         /* test */
         assertThrows(SQLException.class, () -> {
-            generic_system_insert("junit1", "junit1");
+            generic_system_insert(USER_1_USERNAME, USER_1_ID, USER_1_PASSWORD);
         });
     }
 
@@ -425,13 +426,13 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         return response;
     }
 
-    protected void generic_system_insert(String username, String password) throws SQLException, QueryMalformedException {
+    protected void generic_system_insert(String username, UUID userId, String password) throws SQLException, QueryMalformedException {
 
         /* mock */
         mariaDbConfig.grantUserPermissions(CONTAINER_1, DATABASE_3, USER_1_USERNAME);
 
         /* test */
-        final Long queryId = MariaDbConfig.mockSystemQueryInsert(DATABASE_3, QUERY_4_STATEMENT, username, password);
+        final Long queryId = MariaDbConfig.mockSystemQueryInsert(DATABASE_3, QUERY_4_STATEMENT, username, userId, password);
         assertEquals(1L, queryId);
     }
 

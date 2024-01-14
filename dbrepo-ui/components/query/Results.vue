@@ -1,11 +1,14 @@
 <template>
-  <v-data-table
-    flat
-    :headers="headers"
-    :items="result.rows"
-    :loading="loading > 0"
-    :options.sync="options"
-    :server-items-length="total" />
+  <div>
+    <v-data-table
+      flat
+      :headers="headers"
+      :items="result.rows"
+      :loading="loading > 0"
+      :options.sync="options"
+      :footer-props="footerProps"
+      :server-items-length="total" />
+  </div>
 </template>
 
 <script>
@@ -35,6 +38,10 @@ export default {
       options: {
         page: 1,
         itemsPerPage: 10
+      },
+      footerProps: {
+        showFirstLastPage: true,
+        itemsPerPageOptions: [10, 25, 50, 100]
       },
       total: -1
     }
@@ -71,7 +78,7 @@ export default {
         statement: sql,
         timestamp
       }
-      QueryService.execute(this.$route.params.database_id, payload, 0, this.options.itemsPerPage)
+      QueryService.execute(this.$route.params.database_id, payload, this.options.page - 1, this.options.itemsPerPage)
         .then((result) => {
           this.mapResults(result)
           parent.resultId = result.id
@@ -86,7 +93,7 @@ export default {
       }
       this.loading++
       if (this.type === 'query') {
-        QueryService.reExecuteQuery(this.$route.params.database_id, id, 0, this.options.itemsPerPage)
+        QueryService.reExecuteQuery(this.$route.params.database_id, id, this.options.page - 1, this.options.itemsPerPage)
           .then((result) => {
             this.mapResults(result)
             this.id = id
@@ -95,7 +102,7 @@ export default {
             this.loading--
           })
       } else {
-        QueryService.reExecuteView(this.$route.params.database_id, id, 0, this.options.itemsPerPage)
+        QueryService.reExecuteView(this.$route.params.database_id, id, this.options.page - 1, this.options.itemsPerPage)
           .then((result) => {
             this.mapResults(result)
             this.id = id

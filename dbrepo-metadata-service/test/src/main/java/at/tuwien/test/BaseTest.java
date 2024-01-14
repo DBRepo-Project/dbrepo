@@ -302,7 +302,6 @@ public abstract class BaseTest {
     public final static UserDto USER_1_DTO = UserDto.builder()
             .id(USER_1_ID)
             .username(USER_1_USERNAME)
-            .email(USER_1_EMAIL)
             .firstname(USER_1_FIRSTNAME)
             .lastname(USER_1_LASTNAME)
             .attributes(USER_1_ATTRIBUTES_DTO)
@@ -409,7 +408,6 @@ public abstract class BaseTest {
     public final static UserDto USER_2_DTO = UserDto.builder()
             .id(USER_2_ID)
             .username(USER_2_USERNAME)
-            .email(USER_2_EMAIL)
             .firstname(USER_2_FIRSTNAME)
             .lastname(USER_2_LASTNAME)
             .name(USER_2_NAME)
@@ -495,7 +493,6 @@ public abstract class BaseTest {
     public final static UserDto USER_3_DTO = UserDto.builder()
             .id(USER_3_ID)
             .username(USER_3_USERNAME)
-            .email(USER_3_EMAIL)
             .firstname(USER_3_FIRSTNAME)
             .lastname(USER_3_LASTNAME)
             .name(USER_3_NAME)
@@ -572,7 +569,6 @@ public abstract class BaseTest {
     public final static UserDto USER_4_DTO = UserDto.builder()
             .id(USER_4_ID)
             .username(USER_4_USERNAME)
-            .email(USER_4_EMAIL)
             .firstname(USER_4_FIRSTNAME)
             .lastname(USER_4_LASTNAME)
             .attributes(USER_4_ATTRIBUTES_DTO)
@@ -615,7 +611,6 @@ public abstract class BaseTest {
     public final static UserDto USER_5_DTO = UserDto.builder()
             .id(USER_5_ID)
             .username(USER_5_USERNAME)
-            .email(USER_5_EMAIL)
             .firstname(USER_5_FIRSTNAME)
             .lastname(USER_5_LASTNAME)
             .build();
@@ -661,7 +656,6 @@ public abstract class BaseTest {
     public final static UserDto USER_6_DTO = UserDto.builder()
             .id(USER_6_ID)
             .username(USER_6_USERNAME)
-            .email(USER_6_EMAIL)
             .firstname(USER_6_FIRSTNAME)
             .lastname(USER_6_LASTNAME)
             .build();
@@ -2424,7 +2418,7 @@ public abstract class BaseTest {
     public final static String QUERY_1_RESULT_HASH = "8358c8ade4849d2094ab5bb29127afdae57e6bb5acb1db7af603813d406c467a";
     public final static Instant QUERY_1_CREATED = Instant.ofEpochSecond(1677648377L);
     public final static Instant QUERY_1_EXECUTION = Instant.now();
-    public final static Boolean QUERY_1_PERSISTED = false;
+    public final static Boolean QUERY_1_PERSISTED = true;
 
     public final static Query QUERY_1 = Query.builder()
             .id(QUERY_1_ID)
@@ -2434,14 +2428,13 @@ public abstract class BaseTest {
             .resultNumber(QUERY_1_RESULT_NUMBER)
             .created(QUERY_1_CREATED)
             .executed(QUERY_1_EXECUTION)
-            .createdBy(USER_1_USERNAME)
+            .createdBy(USER_1_ID)
             .isPersisted(QUERY_1_PERSISTED)
             .build();
 
     public final static QueryDto QUERY_1_DTO = QueryDto.builder()
             .id(QUERY_1_ID)
-            .cid(QUERY_1_CONTAINER_ID)
-            .dbid(QUERY_1_DATABASE_ID)
+            .databaseId(QUERY_1_DATABASE_ID)
             .query(QUERY_1_STATEMENT)
             .queryHash(QUERY_1_QUERY_HASH)
             .resultHash(QUERY_1_RESULT_HASH)
@@ -2453,8 +2446,7 @@ public abstract class BaseTest {
 
     public final static QueryBriefDto QUERY_1_BRIEF_DTO = QueryBriefDto.builder()
             .id(QUERY_1_ID)
-            .cid(QUERY_1_CONTAINER_ID)
-            .dbid(QUERY_1_DATABASE_ID)
+            .databaseId(QUERY_1_DATABASE_ID)
             .query(QUERY_1_STATEMENT)
             .queryHash(QUERY_1_QUERY_HASH)
             .resultHash(QUERY_1_RESULT_HASH)
@@ -2484,20 +2476,20 @@ public abstract class BaseTest {
             .resultNumber(QUERY_2_RESULT_NUMBER)
             .created(QUERY_2_CREATED)
             .executed(QUERY_2_EXECUTION)
-            .createdBy(USER_1_USERNAME)
+            .createdBy(USER_1_ID)
             .isPersisted(QUERY_2_PERSISTED)
             .build();
 
     public final static QueryDto QUERY_2_DTO = QueryDto.builder()
             .id(QUERY_2_ID)
-            .cid(QUERY_2_CONTAINER_ID)
-            .dbid(QUERY_2_DATABASE_ID)
+            .databaseId(QUERY_2_DATABASE_ID)
             .query(QUERY_2_STATEMENT)
             .queryNormalized(QUERY_2_STATEMENT)
             .resultNumber(QUERY_2_RESULT_NUMBER)
             .resultHash(QUERY_2_RESULT_HASH)
             .lastModified(QUERY_2_LAST_MODIFIED)
             .created(QUERY_2_CREATED)
+            .createdBy(USER_1_ID)
             .queryHash(QUERY_2_QUERY_HASH)
             .execution(QUERY_2_EXECUTION)
             .build();
@@ -2521,21 +2513,21 @@ public abstract class BaseTest {
             .resultHash(QUERY_3_RESULT_HASH)
             .created(QUERY_3_CREATED)
             .executed(QUERY_3_EXECUTION)
-            .createdBy(USER_1_USERNAME)
+            .createdBy(USER_1_ID)
             .resultNumber(QUERY_3_RESULT_NUMBER)
             .isPersisted(QUERY_3_PERSISTED)
             .build();
 
     public final static QueryDto QUERY_3_DTO = QueryDto.builder()
             .id(QUERY_3_ID)
-            .cid(QUERY_3_CONTAINER_ID)
-            .dbid(QUERY_3_DATABASE_ID)
+            .databaseId(QUERY_3_DATABASE_ID)
             .query(QUERY_3_STATEMENT)
             .queryNormalized(QUERY_3_STATEMENT)
             .resultNumber(QUERY_3_RESULT_NUMBER)
             .resultHash(QUERY_3_RESULT_HASH)
             .lastModified(QUERY_3_LAST_MODIFIED)
             .created(QUERY_3_CREATED)
+            .createdBy(USER_1_ID)
             .queryHash(QUERY_3_QUERY_HASH)
             .execution(QUERY_3_EXECUTION)
             .build();
@@ -2562,7 +2554,7 @@ public abstract class BaseTest {
             .executed(QUERY_4_EXECUTION)
             .isPersisted(QUERY_4_PERSISTED)
             .resultNumber(QUERY_4_RESULT_NUMBER)
-            .createdBy(USER_1_USERNAME)
+            .createdBy(USER_1_ID)
             .build();
     public final static List<Map<String, Object>> QUERY_4_RESULT_RESULT = List.of(
             new HashMap<>() {{
@@ -2593,14 +2585,14 @@ public abstract class BaseTest {
 
     public final static QueryDto QUERY_4_DTO = QueryDto.builder()
             .id(QUERY_4_ID)
-            .cid(QUERY_4_CONTAINER_ID)
-            .dbid(QUERY_4_DATABASE_ID)
+            .databaseId(QUERY_4_DATABASE_ID)
             .query(QUERY_4_STATEMENT)
             .queryNormalized(QUERY_4_STATEMENT)
             .resultNumber(QUERY_4_RESULT_NUMBER)
             .resultHash(QUERY_4_RESULT_HASH)
             .lastModified(QUERY_4_LAST_MODIFIED)
             .created(QUERY_4_CREATED)
+            .createdBy(USER_1_ID)
             .queryHash(QUERY_4_QUERY_HASH)
             .execution(QUERY_4_EXECUTION)
             .build();
@@ -2624,14 +2616,13 @@ public abstract class BaseTest {
             .resultHash(QUERY_5_RESULT_HASH)
             .created(QUERY_5_CREATED)
             .executed(QUERY_5_EXECUTION)
-            .createdBy(USER_1_USERNAME)
+            .createdBy(USER_1_ID)
             .isPersisted(QUERY_5_PERSISTED)
             .build();
 
     public final static QueryDto QUERY_5_DTO = QueryDto.builder()
             .id(QUERY_5_ID)
-            .cid(QUERY_5_CONTAINER_ID)
-            .dbid(QUERY_5_DATABASE_ID)
+            .databaseId(QUERY_5_DATABASE_ID)
             .query(QUERY_5_STATEMENT)
             .queryNormalized(QUERY_5_STATEMENT)
             .resultNumber(QUERY_5_RESULT_NUMBER)
@@ -2661,20 +2652,20 @@ public abstract class BaseTest {
             .resultHash(QUERY_6_RESULT_HASH)
             .created(QUERY_6_CREATED)
             .executed(QUERY_6_EXECUTION)
-            .createdBy(USER_1_USERNAME)
+            .createdBy(USER_1_ID)
             .isPersisted(QUERY_6_PERSISTED)
             .build();
 
     public final static QueryDto QUERY_6_DTO = QueryDto.builder()
             .id(QUERY_6_ID)
-            .cid(QUERY_6_CONTAINER_ID)
-            .dbid(QUERY_6_DATABASE_ID)
+            .databaseId(QUERY_6_DATABASE_ID)
             .query(QUERY_6_STATEMENT)
             .queryNormalized(QUERY_6_STATEMENT)
             .resultNumber(QUERY_6_RESULT_NUMBER)
             .resultHash(QUERY_6_RESULT_HASH)
             .lastModified(QUERY_6_LAST_MODIFIED)
             .created(QUERY_6_CREATED)
+            .createdBy(USER_1_ID)
             .queryHash(QUERY_6_QUERY_HASH)
             .execution(QUERY_6_EXECUTION)
             .build();
@@ -6092,6 +6083,7 @@ public abstract class BaseTest {
     public final static String IDENTIFIER_2_QUERY_HASH = QUERY_1_QUERY_HASH;
     public final static String IDENTIFIER_2_RESULT_HASH = QUERY_1_RESULT_HASH;
     public final static String IDENTIFIER_2_QUERY = QUERY_1_STATEMENT;
+    public final static Long IDENTIFIER_2_QUERY_ID = QUERY_1_ID;
     public final static String IDENTIFIER_2_NORMALIZED = QUERY_1_STATEMENT;
     public final static Long IDENTIFIER_2_RESULT_NUMBER = QUERY_1_RESULT_NUMBER;
     public final static String IDENTIFIER_2_PUBLISHER = "Swedish Government";
@@ -6100,6 +6092,7 @@ public abstract class BaseTest {
 
     public final static Identifier IDENTIFIER_2 = Identifier.builder()
             .id(IDENTIFIER_2_ID)
+            .queryId(IDENTIFIER_2_QUERY_ID)
             .databaseId(IDENTIFIER_2_DATABASE_ID)
             .descriptions(List.of())
             .titles(List.of())
@@ -6125,6 +6118,7 @@ public abstract class BaseTest {
 
     public final static IdentifierDto IDENTIFIER_2_DTO = IdentifierDto.builder()
             .id(IDENTIFIER_2_ID)
+            .queryId(IDENTIFIER_2_QUERY_ID)
             .databaseId(IDENTIFIER_2_DATABASE_ID)
             .descriptions(List.of())
             .titles(List.of())
@@ -6149,6 +6143,7 @@ public abstract class BaseTest {
 
     public final static IdentifierSaveDto IDENTIFIER_2_DTO_REQUEST = IdentifierSaveDto.builder()
             .databaseId(IDENTIFIER_2_DATABASE_ID)
+            .queryId(IDENTIFIER_2_QUERY_ID)
             .descriptions(List.of())
             .titles(List.of())
             .relatedIdentifiers(List.of())

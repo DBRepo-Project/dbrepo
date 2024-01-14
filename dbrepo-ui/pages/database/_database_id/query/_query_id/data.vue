@@ -20,11 +20,13 @@
 
 <script>
 import QueryResults from '@/components/query/Results'
+import SubsetToolbar from '@/components/query/SubsetToolbar'
 import QueryService from '@/api/query.service'
 import { formatTimestampUTCLabel } from '@/utils'
 
 export default {
   components: {
+    SubsetToolbar,
     QueryResults
   },
   data () {

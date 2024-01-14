@@ -71,7 +71,7 @@ public interface StoreService {
      * @throws QueryStoreException         The query store raised some error.
      */
     Query persist(Long databaseId, Long queryId, QueryPersistDto data) throws DatabaseNotFoundException,
-            ImageNotSupportedException, DatabaseConnectionException, QueryStoreException, UserNotFoundException;
+            ImageNotSupportedException, DatabaseConnectionException, QueryStoreException, UserNotFoundException, IdentifierAlreadyPublishedException;
 
     /**
      * Deletes the stale queries that have not been persisted within 24 hozrs.

@@ -3,10 +3,12 @@ package at.tuwien.service.impl;
 import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.api.database.query.QueryPersistDto;
 import at.tuwien.entities.database.Database;
+import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.StoreMapper;
 import at.tuwien.querystore.Query;
+import at.tuwien.repository.mdb.IdentifierRepository;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.StoreService;
 import at.tuwien.service.UserService;
@@ -28,12 +30,15 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
     private final StoreMapper storeMapper;
     private final UserService userService;
     private final DatabaseService databaseService;
+    private final IdentifierRepository identifierRepository;
 
     @Autowired
-    public StoreServiceImpl(StoreMapper storeMapper, UserService userService, DatabaseService databaseService) {
+    public StoreServiceImpl(StoreMapper storeMapper, UserService userService, DatabaseService databaseService,
+                            IdentifierRepository identifierRepository) {
         this.storeMapper = storeMapper;
         this.userService = userService;
         this.databaseService = databaseService;
+        this.identifierRepository = identifierRepository;
     }
 
     @Override
@@ -146,7 +151,12 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
     @Override
     @Transactional
     public Query persist(Long databaseId, Long queryId, QueryPersistDto data) throws DatabaseNotFoundException,
-            ImageNotSupportedException, QueryStoreException {
+            ImageNotSupportedException, QueryStoreException, IdentifierAlreadyPublishedException {
+        /* check */
+        if (!data.getPersist() && !identifierRepository.findByDatabaseIdAndQueryId(databaseId, queryId).isEmpty()) {
+            log.error("Failed to de-persist query with id {} in database with id {}: identifier already attached", queryId, databaseId);
+            throw new IdentifierAlreadyPublishedException("Failed to de-persist query with id " + queryId + " in database with id " + databaseId + ": identifier already attached");
+        }
         /* find */
         final Database database = databaseService.find(databaseId);
         if (!database.getContainer().getImage().getName().equals("mariadb")) {
