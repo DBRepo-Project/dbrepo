@@ -194,7 +194,7 @@ public class IdentifierEndpoint {
                     throw new IdentifierRequestException("Failed to create subset identifier: only parameters database_id & query_id must be present");
                 }
                 final Query query = storeService.findOne(data.getDatabaseId(), data.getQueryId(), principal);
-                final User user = userService.findByUsername(query.getCreatedBy());
+                final User user = userService.find(query.getCreatedBy());
                 if (!endpointValidator.validateOnlyMineOrReadAccessOrHasRole(user.getId(), principal, access, "create-foreign-identifier")) {
                     log.error("Failed to create subset identifier: insufficient access or role");
                     throw new IdentifierRequestException("Failed to create subset identifier: insufficient access or role");

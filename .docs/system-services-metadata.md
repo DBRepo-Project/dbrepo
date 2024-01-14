@@ -32,7 +32,7 @@ This service manages the following topics:
 
 ### Databases
 
-The service handles table operations inside a database. We use [Hibernate](https://hibernate.org/orm/) for schema and 
+The service handles table operations inside a database. We use [Hibernate](https://hibernate.org/orm/) for schema and
 data ingest operations.
 
 ### Identifiers
@@ -47,16 +47,15 @@ This service provides an OAI-PMH endpoint for metadata aggregators.
 
 ### Queries
 
-It provides an interface to insert data into the tables. It also allows for view-only, paginated and versioned query 
+It provides an interface to insert data into the tables. It also allows for view-only, paginated and versioned query
 execution to the raw data.
 
 ### Semantics
 
 The service provides metadata to the table columns in the [Metadata Database](../system-databases-metadata) from
-registered ontologies like Wikidata [`wd:`](https://wikidata.org), Ontology of Units of 
-Measurement [`om2:`](https://www.ontology-of-units-of-measure.org/resource/om-2), Friend of a 
+registered ontologies like Wikidata [`wd:`](https://wikidata.org), Ontology of Units of
+Measurement [`om2:`](https://www.ontology-of-units-of-measure.org/resource/om-2), Friend of a
 Friend [`foaf:`](http://xmlns.com/foaf/0.1/), the [`prov:`](http://www.w3.org/ns/prov#) namespace, etc.
-
 
 ### Tables
 
@@ -65,9 +64,37 @@ in the [Metadata Database](../system-databases-metadata).
 
 ### Users
 
-The service manages users in the [Data Database](../system-databases-data) 
+The service manages users in the [Data Database](../system-databases-data)
 and [Metadata Database](../system-databases-metadata), as well as in the [Broker Service](../system-services-broker)
 and the [Authentication Service](../system-services-authentication).
+
+The default configuration grants the users only very basic permissions on the databases:
+
+* `SELECT`
+* `CREATE`
+* `CREATE VIEW`
+* `CREATE ROUTINE`
+* `CREATE TEMPORARY TABLES`
+* `LOCK TABLES`
+* `INDEX`
+* `TRIGGER`
+* `INSERT`
+* `UPDATE`
+* `DELETE`
+
+This configuration is passed as environment variable `GRANT_PRIVILEGES` to the service as comma-separated string. You
+can add/remove grants by setting this environment variable, e.g. allow the users to only select data and create
+temporary tables:
+
+```yaml title="docker-compose.yml"
+services:
+  dbrepo-metadata-service:
+    environment:
+      GRANT_PRIVILEGES=SELECT,CREATE TEMPORARY TABLES
+      ...
+```
+
+A list of all grants is available in the MariaDB documentation for [`GRANT`](https://mariadb.com/kb/en/grant/)
 
 ### Views
 

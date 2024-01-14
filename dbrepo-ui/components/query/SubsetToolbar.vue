@@ -12,6 +12,9 @@
         <v-btn v-if="canPersistQuery" :loading="loadingSave" class="mb-1" @click.stop="save">
           <v-icon left>mdi-content-save-outline</v-icon> Save
         </v-btn>
+        <v-btn v-if="canForgetQuery" :loading="loadingSave" class="mb-1" @click.stop="forget">
+          <v-icon left>mdi-trash-can-outline</v-icon> Soft-Delete
+        </v-btn>
         <v-btn v-if="result_visibility && subset && subset.result_number" class="mb-1" :loading="downloadLoading" @click.stop="downloadSubset">
           <v-icon left>mdi-download</v-icon> Data .csv
         </v-btn>
@@ -51,7 +54,6 @@ export default {
       loading: false,
       loadingSave: false,
       downloadLoading: false,
-      identifier: null,
       subset: null
     }
   },
@@ -75,10 +77,33 @@ export default {
       if (!this.database || !this.database.subsets || this.database.subsets.length === 0) {
         return []
       }
-      return this.database.subsets
+      return this.database.subsets.filter(s => s.query_id === Number(this.$route.params.query_id))
+    },
+    identifier () {
+      /* mount pid */
+      if (this.pid) {
+        const filter = this.identifiers.filter(i => i.id === Number(this.pid))
+        if (filter.length > 0) {
+          const identifier = filter[0]
+          console.debug('identifier set according to route pid', identifier)
+          return identifier
+        }
+      }
+      const identifier = this.identifiers[0]
+      console.debug('defaulted to latest identifier', identifier)
+      return identifier
     },
     canPersistQuery () {
       if (this.loading || !this.subset || this.subset.is_persisted) {
+        return false
+      }
+      return UserUtils.hasReadAccess(this.access)
+    },
+    canForgetQuery () {
+      if (this.loading || !this.subset || !this.subset.is_persisted) {
+        return false
+      }
+      if (this.subset.identifiers.length > 0) {
         return false
       }
       return UserUtils.hasReadAccess(this.access)
@@ -90,7 +115,7 @@ export default {
       return formatTimestampUTCLabel(this.subset.created)
     },
     result_visibility () {
-      if (!this.database || this.database.is_public === null) {
+      if (!this.database) {
         return false
       }
       if (this.database.is_public) {
@@ -112,17 +137,6 @@ export default {
     }
   },
   mounted () {
-    /* mount pid */
-    if (this.pid) {
-      const filter = this.identifiers.filter(i => i.id === Number(this.pid))
-      if (filter.length > 0) {
-        this.identifier = filter[0]
-        console.debug('identifier set according to route pid', this.identifier)
-        return
-      }
-    }
-    this.identifier = this.identifiers[0]
-    console.debug('defaulted to latest identifier', this.identifier)
     /* load subset metadata */
     if (!this.subset) {
       this.loadSubset()
@@ -131,7 +145,20 @@ export default {
   methods: {
     save () {
       this.loadingSave = true
-      QueryService.persist(this.$route.params.database_id, this.$route.params.query_id)
+      QueryService.persist(this.$route.params.database_id, this.$route.params.query_id, true)
+        .then((subset) => {
+          this.subset = subset
+        })
+        .catch(() => {
+          this.loadingSave = false
+        })
+        .finally(() => {
+          this.loadingSave = false
+        })
+    },
+    forget () {
+      this.loadingSave = true
+      QueryService.persist(this.$route.params.database_id, this.$route.params.query_id, false)
         .then((subset) => {
           this.subset = subset
         })

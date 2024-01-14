@@ -38,7 +38,7 @@ public class MariaDbConfig {
      * @return The generated or retrieved query id.
      * @throws SQLException The procedure did not succeed.
      */
-    public static Long mockSystemQueryInsert(Database database, String query, String username, String password)
+    public static Long mockSystemQueryInsert(Database database, String query, String username, UUID userId, String password)
             throws SQLException {
         final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
         log.trace("connect to database {}", jdbc);
@@ -46,7 +46,7 @@ public class MariaDbConfig {
             final String call = "{call _store_query(?,?,?,?)}";
             log.trace("prepare procedure '{}'", call);
             final CallableStatement statement = connection.prepareCall(call);
-            statement.setString(1, username);
+            statement.setString(1, String.valueOf(userId));
             statement.setString(2, query);
             statement.setTimestamp(3, Timestamp.from(Instant.now()));
             statement.registerOutParameter(4, Types.BIGINT);
@@ -163,7 +163,7 @@ public class MariaDbConfig {
 
     public static String getPrivileges(String hostname, Integer port, String database, String username, String password)
             throws Exception {
-        final String jdbc = "jdbc:mariadb://" + hostname + ":" + port  + (database != null ? "/" + database : "");
+        final String jdbc = "jdbc:mariadb://" + hostname + ":" + port + (database != null ? "/" + database : "");
         log.trace("connect to database {}", jdbc);
         try (Connection connection = DriverManager.getConnection(jdbc, username, password)) {
             final String query = "SHOW GRANTS FOR `" + username + "`;";
@@ -218,16 +218,16 @@ public class MariaDbConfig {
      * @throws SQLException The procedure did not succeed.
      */
     public static Long mockSystemQueryInsert(Database database, String query) throws SQLException {
-        return mockSystemQueryInsert(database, query, database.getContainer().getPrivilegedUsername(), database.getContainer().getPrivilegedPassword());
+        return mockSystemQueryInsert(database, query, database.getContainer().getPrivilegedUsername(), UUID.randomUUID(), database.getContainer().getPrivilegedPassword());
     }
 
-    public static void insertQueryStore(Database database, Query query, String username) throws SQLException {
+    public static void insertQueryStore(Database database, Query query, UUID userId) throws SQLException {
         final String jdbc = "jdbc:mariadb://" + database.getContainer().getHost() + ":" + database.getContainer().getPort() + "/" + database.getInternalName();
         log.trace("connect to database {}", jdbc);
         try (Connection connection = DriverManager.getConnection(jdbc, database.getContainer().getPrivilegedUsername(), database.getContainer().getPrivilegedPassword())) {
             final PreparedStatement prepareStatement = connection.prepareStatement(
                     "INSERT INTO qs_queries (created_by, query, query_normalized, is_persisted, query_hash, result_hash, result_number, created, executed) VALUES (?,?,?,?,?,?,?,?,?)");
-            prepareStatement.setString(1, username);
+            prepareStatement.setString(1, String.valueOf(userId));
             prepareStatement.setString(2, query.getQuery());
             prepareStatement.setString(3, query.getQuery());
             prepareStatement.setBoolean(4, query.getIsPersisted());

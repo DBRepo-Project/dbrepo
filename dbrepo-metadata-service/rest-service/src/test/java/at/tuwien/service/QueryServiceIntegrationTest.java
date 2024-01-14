@@ -531,12 +531,12 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                 .resultNumber(0L)
                 .created(QUERY_1_CREATED)
                 .executed(QUERY_1_EXECUTION)
-                .createdBy(USER_1_USERNAME)
+                .createdBy(USER_1_ID)
                 .isPersisted(true)
                 .build();
 
         /* mock */
-        MariaDbConfig.insertQueryStore(DATABASE_1, query, USER_1_USERNAME);
+        MariaDbConfig.insertQueryStore(DATABASE_1, query, USER_1_ID);
         doNothing()
                 .when(dataDbSidecarGateway)
                 .exportFile(anyString(), anyInt(), anyString());

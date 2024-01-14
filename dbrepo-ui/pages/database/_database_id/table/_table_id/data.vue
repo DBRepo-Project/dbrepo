@@ -66,7 +66,8 @@ export default {
       editTupleDialog: false,
       total: -1,
       footerProps: {
-        'items-per-page-options': [10, 20, 30, 40, 50]
+        showFirstLastPage: true,
+        itemsPerPageOptions: [10, 25, 50, 100]
       },
       downloadLoading: false,
       dateMenu: false,

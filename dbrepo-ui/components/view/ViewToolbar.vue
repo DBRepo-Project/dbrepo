@@ -6,15 +6,13 @@
           <v-icon left>mdi-arrow-left</v-icon>
         </v-btn>
       </v-toolbar-title>
-      <v-toolbar-title>
-        <span v-if="view.name">{{ view.name }}</span>
-      </v-toolbar-title>
+      <v-toolbar-title v-text="title" />
       <v-spacer />
       <v-toolbar-title>
-        <v-btn v-if="canDeleteView" :loading="loadingDelete" color="error" class="mb-1" @click="deleteView">
+        <v-btn v-if="canDeleteView" class="mb-1" :loading="loadingDelete" color="error" @click="deleteView">
           <v-icon left>mdi-delete</v-icon> Delete
         </v-btn>
-        <v-btn v-if="canCreatePid" class="mb-1 ml-2" color="primary" :to="`/database/${$route.params.database_id}/view/${$route.params.view_id}/persist`">
+        <v-btn v-if="canCreatePid" class="mb-1" color="primary" :to="`/database/${$route.params.database_id}/view/${$route.params.view_id}/persist`">
           <v-icon left>mdi-content-save-outline</v-icon> Get PID
         </v-btn>
       </v-toolbar-title>
@@ -33,6 +31,7 @@
 <script>
 import UserUtils from '@/api/user.utils'
 import DatabaseService from '@/api/database.service'
+import IdentifierMapper from '@/api/identifier.mapper'
 
 export default {
   components: {
@@ -45,6 +44,9 @@ export default {
     }
   },
   computed: {
+    pid () {
+      return this.$route.query.pid
+    },
     database () {
       return this.$store.state.database
     },
@@ -74,6 +76,35 @@ export default {
     },
     roles () {
       return this.$store.state.roles
+    },
+    identifiers () {
+      if (!this.view) {
+        return []
+      }
+      return this.view.identifiers.filter(s => s.view_id === Number(this.$route.params.view_id))
+    },
+    identifier () {
+      /* mount pid */
+      if (this.pid) {
+        const filter = this.identifiers.filter(i => i.id === Number(this.pid))
+        if (filter.length > 0) {
+          const identifier = filter[0]
+          console.debug('identifier set according to route pid', identifier)
+          return identifier
+        }
+      }
+      const identifier = this.identifiers[0]
+      console.debug('defaulted to latest identifier', identifier)
+      return identifier
+    },
+    title () {
+      if (!this.view) {
+        return null
+      }
+      if (!this.identifier) {
+        return this.view.name
+      }
+      return IdentifierMapper.identifierPreferEnglishTitle(this.identifier)
     }
   },
   methods: {

@@ -3,7 +3,7 @@ CREATE TABLE `qs_queries` (
     `id`               bigint       not null primary key default nextval(`qs_queries_seq`),
     `created`          datetime     not null             default now(),
     `executed`         datetime     not null             default now(),
-    `created_by`       varchar(255) not null,
+    `created_by`       varchar(36)  not null,
     `query`            text         not null,
     `query_normalized` text         not null,
     `is_persisted`     boolean      not null,

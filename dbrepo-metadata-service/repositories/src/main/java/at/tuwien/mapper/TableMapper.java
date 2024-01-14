@@ -44,7 +44,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-@Mapper(componentModel = "spring", uses = {IdentifierMapper.class})
+@Mapper(componentModel = "spring", uses = {IdentifierMapper.class, UserMapper.class})
 public interface TableMapper {
 
     org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(TableMapper.class);
