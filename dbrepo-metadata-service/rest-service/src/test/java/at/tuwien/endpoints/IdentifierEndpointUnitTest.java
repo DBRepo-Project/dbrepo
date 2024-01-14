@@ -296,7 +296,7 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
                     .when(accessService)
                     .find(databaseId, userId);
         }
-        when(userService.findByUsername(USER_1_USERNAME))
+        when(userService.find(USER_1_ID))
                 .thenReturn(USER_1);
         when(storeService.findOne(databaseId, data.getQueryId(), principal))
                 .thenReturn(QUERY_1);

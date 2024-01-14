@@ -48,7 +48,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", imports = {LinkedList.class})
 public interface QueryMapper {
 
     org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(QueryMapper.class);
@@ -57,12 +57,13 @@ public interface QueryMapper {
             .withZone(ZoneId.of("UTC"));
 
     @Mappings({
-            @Mapping(target = "createdBy", ignore = true)
+            @Mapping(target = "createdBy", ignore = true),
+            @Mapping(target = "identifiers", expression = "java(new LinkedList())")
     })
     QueryDto queryToQueryDto(Query data);
 
     @Mappings({
-            @Mapping(target = "createdBy", ignore = true)
+            @Mapping(target = "identifiers", expression = "java(new LinkedList())")
     })
     QueryBriefDto queryToQueryBriefDto(Query data);
 
@@ -123,14 +124,7 @@ public interface QueryMapper {
 
     default void importCsvQuery(Connection connection, Table table, ImportDto csv) throws SQLException {
         final Statement statement = connection.createStatement();
-        final StringBuilder query0 = new StringBuilder("DROP TABLE IF EXISTS `")
-                .append(table.getDatabase().getInternalName())
-                .append("`.`")
-                .append(table.getInternalName())
-                .append("_temporary`;");
-        log.trace("mapped drop temporary table statement: {}", query0);
-        statement.execute(query0.toString());
-        final StringBuilder query1 = new StringBuilder("CREATE TABLE `")
+        final StringBuilder query0 = new StringBuilder("CREATE TABLE `")
                 .append(table.getDatabase().getInternalName())
                 .append("`.`")
                 .append(table.getInternalName())
@@ -140,13 +134,20 @@ public interface QueryMapper {
                 .append("`.`")
                 .append(table.getInternalName())
                 .append("`;");
-        log.trace("mapped create temporary table statement: {}", query1);
+        log.trace("mapped create temporary table statement: {}", query0);
+        statement.execute(query0.toString());
+        final String query1 = pathToRawInsertQuery(table, csv);
+        log.trace("mapped import csv statement: {}", query1);
         statement.execute(query1.toString());
-        final String query2 = pathToRawInsertQuery(table, csv);
-        log.trace("mapped import csv statement: {}", query2);
+        final String query2 = generateInsertFromTemporaryTableSQL(table);
+        log.trace("mapped import table statement: {}", query2);
         statement.execute(query2.toString());
-        final String query3 = generateInsertFromTemporaryTableSQL(table);
-        log.trace("mapped import table statement: {}", query3);
+        final StringBuilder query3 = new StringBuilder("DROP TABLE IF EXISTS `")
+                .append(table.getDatabase().getInternalName())
+                .append("`.`")
+                .append(table.getInternalName())
+                .append("_temporary`;");
+        log.trace("mapped drop temporary table statement: {}", query3);
         statement.execute(query3.toString());
 
     }

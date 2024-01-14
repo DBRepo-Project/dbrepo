@@ -19,7 +19,7 @@
                   <v-list-item-title>
                     Database Visibility
                   </v-list-item-title>
-                  <v-list-item-content v-if="!loading" v-text="`${database.is_public ? 'Public' : 'Private'}`" />
+                  <v-list-item-content v-if="!loading && database" v-text="`${database.is_public ? 'Public' : 'Private'}`" />
                   <v-list-item-title class="mt-2">
                     Database Internal Name
                   </v-list-item-title>
@@ -27,11 +27,8 @@
                   <v-list-item-title class="mt-2">
                     Database Owner
                   </v-list-item-title>
-                  <v-list-item-content v-if="!loading">
-                    <p class="mb-0">
-                      <OrcidIcon v-if="database.owner.attributes.orcid" :orcid="database.owner.attributes.orcid" />
-                      <span v-text="owner" />
-                    </p>
+                  <v-list-item-content>
+                    <UserBadge v-if="database" :user="database.owner" :other-user="user" />
                   </v-list-item-content>
                   <v-list-item-title class="mt-2">
                     Database Creation
@@ -57,11 +54,8 @@
                   <v-list-item-title v-if="contact" class="mt-2">
                     Database Contact
                   </v-list-item-title>
-                  <v-list-item-content v-if="contact">
-                    <p class="mb-0">
-                      <OrcidIcon v-if="database.contact.attributes.orcid" :orcid="database.contact.attributes.orcid" />
-                      <span v-text="contact" />
-                    </p>
+                  <v-list-item-content>
+                    <UserBadge v-if="database.contact" :user="database.contact" :other-user="user" />
                   </v-list-item-content>
                 </v-list-item-content>
               </v-list-item>
@@ -108,14 +102,14 @@ import { formatTimestampUTCLabel } from '@/utils'
 import DatabaseMapper from '@/api/database.mapper'
 import Summary from '@/components/identifier/Summary'
 import Select from '@/components/identifier/Select'
-import OrcidIcon from '@/components/icons/OrcidIcon.vue'
+import UserBadge from '@/components/UserBadge.vue'
 
 export default {
   components: {
-    OrcidIcon,
     DatabaseToolbar,
     Summary,
-    Select
+    Select,
+    UserBadge
   },
   data () {
     return {

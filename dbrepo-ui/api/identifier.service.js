@@ -17,10 +17,6 @@ class IdentifierService {
     })
   }
 
-  find (id) {
-    return this.findAccept(id, 'application/json')
-  }
-
   retrieve (url) {
     return new Promise((resolve, reject) => {
       if (url === null) {

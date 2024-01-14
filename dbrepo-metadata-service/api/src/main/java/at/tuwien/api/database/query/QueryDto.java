@@ -28,11 +28,9 @@ public class QueryDto {
     @NotNull(message = "id is required")
     private Long id;
 
-    @NotNull(message = "container id is required")
-    private Long cid;
-
     @NotNull(message = "database id is required")
-    private Long dbid;
+    @JsonProperty("database_id")
+    private Long databaseId;
 
     @JsonIgnore
     @EqualsAndHashCode.Exclude

@@ -2,6 +2,7 @@ package at.tuwien.entities.database;
 
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.identifier.Identifier;
+import at.tuwien.entities.user.User;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import jakarta.persistence.CascadeType;
@@ -47,9 +48,16 @@ public class View {
     @Column(updatable = false, nullable = false)
     private Long vdbid;
 
+    @ToString.Exclude
     @JdbcTypeCode(java.sql.Types.VARCHAR)
-    @Column(name = "createdBy", nullable = false, columnDefinition = "VARCHAR(36)")
+    @Column(name = "created_by", columnDefinition = "VARCHAR(36)")
     private UUID createdBy;
+
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @JoinColumns({
+            @JoinColumn(name = "created_by", referencedColumnName = "ID", insertable = false, updatable = false)
+    })
+    private User creator;
 
     @Column(name = "vname", nullable = false)
     private String name;

@@ -21,13 +21,6 @@ api.interceptors.request.use(config =>
       if (AuthenticationMapper.isExpiredToken(refreshToken)) {
         console.warn('Refresh token is expired: trigger logout of user')
         store().dispatch('logout')
-          .then(() => {
-            resolve(config)
-          })
-          .catch((error) => {
-            console.error('Failed to logout', error)
-            reject(error)
-          })
         resolve(config)
       }
       AuthenticationService.authenticateToken(refreshToken)
@@ -39,8 +32,10 @@ api.interceptors.request.use(config =>
           resolve(config)
         })
         .catch((error) => {
-          console.error('Failed to refresh token', error)
-          resolve(config)
+          if (error.response.data.error === 'invalid_grant') {
+            store().dispatch('logout')
+          }
+          reject(error)
         })
     } else {
       config.headers.Authorization = `Bearer ${store().state.token}`

@@ -18,7 +18,6 @@ nav:
       - Gateway Service: system-services-gateway.md
       - Data Service: system-services-data.md
       - Metadata Service: system-services-metadata.md
-      - Mirror Service: system-services-mirror.md
       - Upload Service: system-services-upload.md
       - Storage Service: system-services-storage.md
     - Databases:
