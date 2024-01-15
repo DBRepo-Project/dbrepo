@@ -4,7 +4,153 @@ author: Martin Weise
 
 # Overview
 
-We give usage examples of the seven most important use-cases we identified.
+We give usage examples of the most important use-cases we identified.
+
+## Create User Account
+
+A user wants to create an account in DBRepo.
+
+=== "UI"
+
+    To create a new user account in DBRepo, navigate to the signup page by clicking the ":material-account-plus: SIGNUP"
+    button and provide a valid work e-mail address :material-numeric-1-circle-outline: and a username (in lowercase
+    alphanumeric characters) :material-numeric-2-circle-outline:. Choose a secure password in field 
+    :material-numeric-3-circle-outline: and repeat it in field :material-numeric-4-circle-outline:. Click "SUBMIT" and
+    the system creates a user account in Figure 1 with the [default roles](../system-services-authentication/#roles)
+    that your administrator has assigned.
+
+    <figure markdown>
+    ![Create user account](images/screenshots/create-account-step-1.png){ .img-border }
+    <figcaption>Figure 1: Create user account.</figcaption>
+    </figure>
+
+    To login in DBRepo, navigate to the login page by clicking the ":material-login: LOGIN" button and provide the
+    username :material-numeric-1-circle-outline: and the password from the previous step
+    :material-numeric-2-circle-outline:. After clicking "LOGIN", you will acquire the roles assigned to you and are now
+    authenticated with DBRepo in Figure 2.
+
+    <figure markdown>
+    ![Create user account](images/screenshots/create-account-step-2.png){ .img-border }
+    <figcaption>Figure 2: Login to the user account.</figcaption>
+    </figure>
+
+    You can view your user information upon clicking on your username :material-numeric-1-circle-outline: on the top. To
+    change your password in all components of DBRepo, click the "AUTHENTICATION" tab :material-numeric-2-circle-outline:
+    and change your password by typing a new one into fields :material-numeric-3-circle-outline: and repeat it 
+    identically in field :material-numeric-4-circle-outline:. 
+
+    <figure markdown>
+    ![Change user account password](images/screenshots/create-account-step-3.png){ .img-border }
+    <figcaption>Figure 3: Change user account password.</figcaption>
+    </figure>
+
+=== "Terminal"
+
+    To create a new user account in DBRepo with the Terminal, provide your details in the following REST HTTP-API call.
+
+    ```bash
+    curl -sSL \
+      -X POST \
+      -H "Content-Type: application/json" \
+      -d '{"username":"foo","email":"foo.bar@example.com","password":"bar"}' \
+      http://localhost/api/user | jq .id
+    ```
+
+    To login in DBRepo, obtain an access token:
+
+    ```bash
+    curl -sSL \
+      -X POST \
+      -d 'username=foo&password=bar&grant_type=password&client_id=dbrepo-client&scope=openid&client_secret=MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG' \
+      http://localhost/api/auth/realms/dbrepo/protocol/openid-connect/token | jq .access_token
+    ```
+
+    !!! note
+
+        Please note that the `client_secret` is different for your DBRepo instance. This is a default client secret that
+        likely has been replaced. Please contact your DBRepo administrator to get the `client_secret` for your instance.
+        Similar you need to replace `localhost` with your actual DBRepo instance hostname, e.g. `test.dbrepo.tuwien.ac.at`.
+
+    You can view your user information by sending a request to the user endpoint with your access token.
+
+    ```bash
+    curl -sSL \
+      -H "Authorization: Bearer ACCESS_TOKEN" \
+      http://localhost/api/user/USER_ID | jq
+    ```
+
+    To change your password in all components of DBRepo:
+
+    ```bash
+    curl -sSL \
+      -X PUT \
+      -H "Authorization: Bearer ACCESS_TOKEN" \
+      -d '{"password":"s3cr3tp4ss0rd"}' \
+      http://localhost/api/user/USER_ID/password | jq
+    ```
+
+=== "Python"
+
+    To create a new user account in DBRepo with the Terminal, provide your details in the following REST HTTP-API call.
+
+    ```python
+    import requests
+    
+    response = requests.post("http://localhost/api/user", json={
+        "username": "foo",
+        "password": "bar",
+        "email": "foo.bar@example.com"
+    })
+    user_id = response.json()["id"]
+    print(user_id)
+    ```
+
+    To login in DBRepo, obtain an access token:
+
+    ```python
+    import requests
+    
+    response = requests.post("http://localhost/api/auth/realms/dbrepo/protocol/openid-connect/token", json={
+        "username": "foo",
+        "password": "bar",
+        "grant_type": "password",
+        "client_id": "dbrepo-client",
+        "scope": "openid",
+        "client_secret": "MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG"
+    })
+    access_token = response.json()["access_token"]
+    print(access_token)
+    ```
+
+    !!! note
+
+        Please note that the `client_secret` is different for your DBRepo instance. This is a default client secret that
+        likely has been replaced. Please contact your DBRepo administrator to get the `client_secret` for your instance.
+        Similar you need to replace `localhost` with your actual DBRepo instance hostname, e.g. `test.dbrepo.tuwien.ac.at`.
+
+    You can view your user information by sending a request to the user endpoint with your access token.
+
+    ```python
+    import requests
+    
+    response = requests.get("http://localhost/api/user/" + user_id, header={
+        "Authorization": "Bearer " + access_token
+    })
+    user_id = response.json()["id"]
+    print(user_id)
+    ```
+
+    To change your password in all components of DBRepo:
+
+    ```python
+    import requests
+    
+    requests.put("http://localhost/api/user/" + user_id + "/password", header={
+        "Authorization": "Bearer " + access_token
+    }, json={
+        "password": "s3cr3tp4ssw0rd"
+    })
+    ```
 
 ## Create Database
 
@@ -76,7 +222,7 @@ A user wants to create a database in DBRepo.
     ```python
     import requests
     
-    auth = requests.post("http://localhost/api/auth/realms/dbrepo/protocol/openid-connect/token", data={
+    response = requests.post("http://localhost/api/auth/realms/dbrepo/protocol/openid-connect/token", json={
         "username": "foo",
         "password": "bar",
         "grant_type": "password",
@@ -84,8 +230,8 @@ A user wants to create a database in DBRepo.
         "scope": "openid",
         "client_secret": "MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG"
     })
-    token = auth.json()["access_token"]
-    print(token)
+    access_token = response.json()["access_token"]
+    print(access_token)
     ```
 
     !!! note
@@ -99,8 +245,8 @@ A user wants to create a database in DBRepo.
     ```python
     import requests
     
-    containers = requests.get("http://localhost/api/container")
-    print(containers.json())
+    response = requests.get("http://localhost/api/container")
+    print(response.json())
     ```
 
     Create a public databse with the container id from the previous step. You can also create a private database in this
@@ -109,14 +255,14 @@ A user wants to create a database in DBRepo.
     ```python
     import requests
     
-    database = requests.post("http://localhost/api/database", headers={
-        "Authentication": "Bearer " + token
+    response = requests.post("http://localhost/api/database", headers={
+        "Authorization": "Bearer " + access_token
     }, json={
         "name": "Danube Water Quality Measurements",
         "container_id": 1,
         "is_public": True
     })
-    print(database.json()["id"])
+    print(response.json()["id"])
     ```
 
 ## Import Dataset
@@ -275,7 +421,28 @@ access to. This is the default for self-created databases like above in [Create 
 
 === "Python"
 
-    123
+    Obtain an access token:
+
+    ```python
+    import requests
+    
+    response = requests.post("http://localhost/api/auth/realms/dbrepo/protocol/openid-connect/token", json={
+        "username": "foo",
+        "password": "bar",
+        "grant_type": "password",
+        "client_id": "dbrepo-client",
+        "scope": "openid",
+        "client_secret": "MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG"
+    })
+    access_token = response.json()["access_token"]
+    print(access_token)
+    ```
+
+    !!! note
+
+        Please note that the `client_secret` is different for your DBRepo instance. This is a default client secret that
+        likely has been replaced. Please contact your DBRepo administrator to get the `client_secret` for your instance.
+        Similar you need to replace `localhost` with your actual DBRepo instance hostname, e.g. `test.dbrepo.tuwien.ac.at`.
 
 ## Import Database Dump
 
