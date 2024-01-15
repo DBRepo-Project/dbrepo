@@ -48,7 +48,9 @@ This service provides an OAI-PMH endpoint for metadata aggregators.
 ### Queries
 
 It provides an interface to insert data into the tables. It also allows for view-only, paginated and versioned query
-execution to the raw data.
+execution to the raw data. Any stale queries (query that have been executed by users in DBRepo but were not saved) are
+periodically being deleted from the query store based on the `DELETE_STALE_QUERIES_RATE` environment variable (defaults
+to 60 seconds).
 
 ### Semantics
 
@@ -60,7 +62,9 @@ Friend [`foaf:`](http://xmlns.com/foaf/0.1/), the [`prov:`](http://www.w3.org/ns
 ### Tables
 
 The service manages tables in the [Data Database](../system-databases-data) and manages the metadata of these tables
-in the [Metadata Database](../system-databases-metadata).
+in the [Metadata Database](../system-databases-metadata). Any tables that are created outside of DBRepo (e.g. directly via the JDBC API) are
+periodically fetched by this service (based on the `OBTAIN_METADATA_RATE` environment variable, default interval is 60
+seconds).
 
 ### Users
 
@@ -99,7 +103,9 @@ A list of all grants is available in the MariaDB documentation for [`GRANT`](htt
 ### Views
 
 The service manages views in the [Data Database](../system-databases-data)
-and [Metadata Database](../system-databases-metadata).
+and [Metadata Database](../system-databases-metadata). Any views that are created outside of DBRepo (e.g. directly via 
+the JDBC API) are periodically fetched by this service (based on the `OBTAIN_METADATA_RATE` environment variable,
+default interval is 60 seconds).
 
 ## Limitations
 

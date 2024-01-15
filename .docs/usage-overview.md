@@ -6,6 +6,17 @@ author: Martin Weise
 
 We give usage examples of the most important use-cases we identified.
 
+|                                                           |         UI         |      Terminal      |        JDBC        |       Python       |
+|-----------------------------------------------------------|:------------------:|:------------------:|:------------------:|:------------------:|
+| [Create User Account](#create-user-account)               | :white_check_mark: | :white_check_mark: |        :x:         | :white_check_mark: | 
+| [Create Database](#create-database)                       | :white_check_mark: | :white_check_mark: |        :x:         | :white_check_mark: | 
+| [Import Dataset](#import-dataset)                         | :white_check_mark: | :white_check_mark: |        :x:         | :white_check_mark: | 
+| [Import Database Dump](#import-database-dump)             |        :x:         |        :x:         | :white_check_mark: |        :x:         | 
+| [Import Live Data](#import-live-data)                     |        :x:         | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
+| [Export Subset](#export-subset)                           | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
+| [Assign Database PID](#assign-database-pid)               | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
+| [Private Database &amp; Access](#private-database-access) | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | 
+
 ## Create User Account
 
 A user wants to create an account in DBRepo.
@@ -158,27 +169,27 @@ A user wants to create a database in DBRepo.
 
 === "UI"
 
-    Login and press the ":material-plus: DATABASE" button on the top right :material-numeric-1-circle-outline: as seen in Figure 1.
+    Login and press the ":material-plus: DATABASE" button on the top right :material-numeric-1-circle-outline: as seen in Figure 4.
 
     <figure markdown>
     ![Open the create database dialog](images/screenshots/create-database-step-1.png){ .img-border }
-    <figcaption>Figure 1: Open the create database dialog.</figcaption>
+    <figcaption>Figure 4: Open the create database dialog.</figcaption>
     </figure>
 
     Give the database a meaningful title :material-numeric-1-circle-outline: that describes the contained data in few 
     words and select a pre-configured container :material-numeric-2-circle-outline: from the list for this database. To
-    finally create the database, press "Create" :material-numeric-3-circle-outline: as seen in Figure 2.
+    finally create the database, press "Create" :material-numeric-3-circle-outline: as seen in Figure 5.
 
     <figure markdown>
     ![Create database form](images/screenshots/create-database-step-2.png){ .img-border }
-    <figcaption>Figure 2: Create database form.</figcaption>
+    <figcaption>Figure 5: Create database form.</figcaption>
     </figure>
 
-    After a few seconds, you can see the created database in the "Recent Databases" list, as seen in Figure 3.
+    After a few seconds, you can see the created database in the "Recent Databases" list, as seen in Figure 6.
 
     <figure markdown>
     ![View the created database](images/screenshots/create-database-step-3.png){ .img-border }
-    <figcaption>Figure 3: View the created database.</figcaption>
+    <figcaption>Figure 6: View the created database.</figcaption>
     </figure>
 
 === "Terminal"
@@ -274,19 +285,19 @@ access to. This is the default for self-created databases like above in [Create 
 
     Login and select a database where you have at least `write-all` access (this is the case for e.g. self-created 
     databases). Click the ":material-cloud-upload: IMPORT CSV" button :material-numeric-1-circle-outline: as seen in 
-    Figure 4.
+    Figure 7.
 
     <figure markdown>
     ![Open the import CSV form](images/screenshots/import-dataset-step-1.png){ .img-border }
-    <figcaption>Figure 4: Open the import CSV form.</figcaption>
+    <figcaption>Figure 7: Open the import CSV form.</figcaption>
     </figure>
 
     Provide the table name :material-numeric-1-circle-outline: and optionally a table description :material-numeric-2-circle-outline:
-    as seen in Figure 5.
+    as seen in Figure 8.
 
     <figure markdown>
     ![Basic table information](images/screenshots/import-dataset-step-2.png){ .img-border }
-    <figcaption>Figure 5: Basic table information.</figcaption>
+    <figcaption>Figure 8: Basic table information.</figcaption>
     </figure>
 
     Next, provide the dataset metadata that is necessary for import into the table by providing the dataset separator
@@ -294,7 +305,7 @@ access to. This is the default for self-created databases like above in [Create 
     containing the names of the columns) set the number of lines to skip to 1 in field :material-numeric-2-circle-outline:.
     If your dataset contains more lines that should be ignored, set the number of lines accordingly. If your dataset
     contains quoted values, indicate this by setting the field :material-numeric-3-circle-outline: accordingly
-    in Figure 6.
+    in Figure 9.
 
     If your dataset contains encodings for `NULL` (e.g. `NA`), provide this encoding information 
     in :material-numeric-4-circle-outline:. Similar, if it contains encodings for boolean `true` (e.g. `1` or `YES`),
@@ -303,15 +314,15 @@ access to. This is the default for self-created databases like above in [Create 
 
     <figure markdown>
     ![Dataset metadata necessary for import](images/screenshots/import-dataset-step-3.png){ .img-border }
-    <figcaption>Figure 6: Dataset metadata necessary for import.</figcaption>
+    <figcaption>Figure 9: Dataset metadata necessary for import.</figcaption>
     </figure>
 
     Select the dataset file from your local computer by clicking :material-numeric-1-circle-outline: or dragging the
-    dataset file onto the field in Figure 7.
+    dataset file onto the field in Figure 10.
 
     <figure markdown>
     ![Dataset import file](images/screenshots/import-dataset-step-4.png){ .img-border }
-    <figcaption>Figure 7: Dataset import file.</figcaption>
+    <figcaption>Figure 10: Dataset import file.</figcaption>
     </figure>
 
     The table schema is suggested based on heuristics between the upload and the suggested schema in Figure 8. If your
@@ -322,20 +333,20 @@ access to. This is the default for self-created databases like above in [Create 
     unique constraint is needed (no values in this column are then allowed to repeat) in :material-numeric-6-circle-outline:.
 
     Optionally, you can remove table column definitions by clicking the "REMOVE" button or add additional table column
-    definitions by clicking the "ADD COLUMN" button in Figure 8.
+    definitions by clicking the "ADD COLUMN" button in Figure 11.
 
     <figure markdown>
     ![Confirm the table schema and provide missing information](images/screenshots/import-dataset-step-5.png){ .img-border }
-    <figcaption>Figure 8: Confirm the table schema and provide missing information.</figcaption>
+    <figcaption>Figure 11: Confirm the table schema and provide missing information.</figcaption>
     </figure>
 
     If a table column data type is of `DATE` or `TIMESTAMP` (or similar), provide a date format 
     :material-numeric-3-circle-outline: from the list of available formats that are most similar to the one in the
-    dataset as seen in Figure 9.
+    dataset as seen in Figure 12.
 
     <figure markdown>
     ![Confirm the table schema and provide missing information](images/screenshots/import-dataset-step-6.png){ .img-border }
-    <figcaption>Figure 9: Confirm the table schema and provide missing information.</figcaption>
+    <figcaption>Figure 12: Confirm the table schema and provide missing information.</figcaption>
     </figure>
 
     When you are finished with the table schema definition, the dataset is imported and a table is created. You are
@@ -344,11 +355,12 @@ access to. This is the default for self-created databases like above in [Create 
     no identifier is associated with it :material-numeric-3-circle-outline:.
 
     Public databases allow anyone to download :material-numeric-4-circle-outline: the table data as dataset file. Also
-    it allows anyone to view the recent history of inserted data :material-numeric-5-circle-outline: dialog.
+    it allows anyone to view the recent history of inserted data :material-numeric-5-circle-outline: dialog in Figure
+    13.
 
     <figure markdown>
     ![Table data](images/screenshots/import-dataset-step-7.png){ .img-border }
-    <figcaption>Figure 10: Table data.</figcaption>
+    <figcaption>Figure 13: Table data.</figcaption>
     </figure>
 
 === "Terminal"
@@ -446,37 +458,83 @@ access to. This is the default for self-created databases like above in [Create 
 
 ## Import Database Dump
 
-TBD
-
-=== "UI"
-
-    ABC
-
-=== "HTTP API"
-
-    DEF
+A user wants to import a database dump in `.sql` (or in `.sql.gz`) format into DBRepo.
 
 === "JDBC API"
 
-    123
+    First, create a new database as descriped in the [Create Database](#create-database) use-case above. Then, import
+    the database dump `dump.sql` via the `mariadb` client.
+
+    ```bash
+    mariadb -u USERNAME -pYOURPASSWORD db_name < dump.sql
+    ```
+
+    Alternatively, if your database dump is compressed, import the `dump.sql.gz` by piping it through `gunzip`.
+
+    ```bash
+    gunzip < dump.sql.gz | mysql -u root -pYOURPASSWORD db_name
+    ```
+
+    The [Metadata Service](../system-services-metadata) periodically (by default configuration every 60 seconds) checks
+    and adds missing tables and views to the [Metadata Database](../system-databases-metadata), the database dump
+    will be visible afterwards. Currently, date formats for columns with time types (e.g. `DATE`, `TIMESTAMP`) are
+    assumed to match the first date format found for the database image. This may need to be manually specified by the
+    administrator.
+
+    !!! example "Specifying a custom date format"
+
+        In case the pre-defined date formats are not matching the found date format in the database dump, the system
+        administrator needs to add it manually in the [Metadata Database](../system-databases-metadata).
+
+        ```sql
+        INSERT INTO `mdb_images_date` (`iid`, `database_format`, `unix_format`, `example`, `has_time`)
+        VALUES (1, '%d.%c.%Y', 'dd.MM.yyyy', '15.01.2024', false),
+               (1, '%Y-%c-%d %l:%i:%S %p', 'yyyy-MM-dd ll:mm:ss r', '2024-01-15 06:23:12 AM', true);
+        ```
+    
 
 ## Import Live Data
 
-TBD
+A user wants to import live data from e.g. sensor measurements fast and without delay into a table in DBRepo.
 
-=== "UI"
+=== "Terminal"
 
-    ABC
+    Obtain an access token:
 
-=== "HTTP API"
+    ```bash
+    curl -sSL \
+      -X POST \
+      -d 'username=foo&password=bar&grant_type=password&client_id=dbrepo-client&scope=openid&client_secret=MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG' \
+      http://localhost/api/auth/realms/dbrepo/protocol/openid-connect/token | jq .access_token
+    ```
 
-    DEF
+    !!! note
+
+        Please note that the `client_secret` is different for your DBRepo instance. This is a default client secret that
+        likely has been replaced. Please contact your DBRepo administrator to get the `client_secret` for your instance.
+        Similar you need to replace `localhost` with your actual DBRepo instance hostname, e.g. `test.dbrepo.tuwien.ac.at`.
+
+    !!! warning
+
+        Beware that access tokens are short lived (default is 15 minutes) and need to be refreshed regularly with
+        refresh tokens (default is 10 days). See the usage page 
+        on [how to refresh access tokens](../usage-auth/#refresh-access-token).
+
+    Add a data tuple to an already existing table where the user has at least `write-own` access.
+
+    ```bash
+    curl -sSL \
+      -X POST \
+      -H "Authorization: Bearer ACCESS_TOKEN" \
+      -d '{"data":{"column1":"value1","column2":"value2"}}' \
+      http://localhost/api/database/DATABASE_ID/table/TABLE_ID/data
+    ```
 
 === "JDBC API"
 
     123
 
-=== "AMQP API"
+=== "Python"
 
     456
 
