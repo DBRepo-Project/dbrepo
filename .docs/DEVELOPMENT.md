@@ -86,3 +86,7 @@ cluster.
 The full CI/CD pipeline Helm chart is documented in 
 the [`fda-deployment`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-deployment/-/tree/master/charts/dbrepo-devops)
 repository.
+
+## Documentation
+
+For consistency reasons across the documentation, the resolution needs to be 1280x800 (16:10 ratio)

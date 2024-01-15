@@ -2,7 +2,7 @@
   <div v-if="database">
     <v-toolbar flat>
       <v-toolbar-title>
-        <span v-if="$vuetify.breakpoint.lgAndUp">{{ database.name }}</span>
+        <span v-if="$vuetify.breakpoint.lgAndUp" v-text="database.name" />
         <v-tooltip bottom>
           <template v-slot:activator="{ on, attrs }">
             <v-icon
@@ -29,25 +29,25 @@
       <v-spacer />
       <v-toolbar-title>
         <v-btn v-if="canImportCsv" class="mb-1" :to="`/database/${$route.params.database_id}/table/import`">
-          <v-icon v-if="$vuetify.breakpoint.lgAndUp" left>mdi-cloud-upload</v-icon> Import .csv
+          <v-icon left>mdi-cloud-upload</v-icon> <span v-if="$vuetify.breakpoint.xlOnly">Import</span> csv
         </v-btn>
         <DownloadButton
           v-if="database && database.identifier"
           :pid="database.identifier.id"
           class="mr-2 mb-1">
-          <v-icon left>mdi-code-tags</v-icon> Identifier .xml
+          <v-icon left>mdi-code-tags</v-icon> <span v-if="$vuetify.breakpoint.xlOnly">Identifier</span> xml
         </DownloadButton>
         <v-btn v-if="canCreateSubset" color="secondary" class="mb-1 white--text" :to="`/database/${$route.params.database_id}/query/create`">
-          <v-icon v-if="$vuetify.breakpoint.lgAndUp" left>mdi-wrench</v-icon> Create Subset
+          <v-icon v-if="$vuetify.breakpoint.lgAndUp" left>mdi-wrench</v-icon> <span v-if="$vuetify.breakpoint.xlOnly">Create</span> Subset
         </v-btn>
         <v-btn v-if="canCreateView" color="secondary" class="mb-1 white--text" :to="`/database/${$route.params.database_id}/view/create`">
-          <v-icon v-if="$vuetify.breakpoint.lgAndUp" left>mdi-view-carousel-outline</v-icon> Create View
+          <v-icon v-if="$vuetify.breakpoint.lgAndUp" left>mdi-view-carousel-outline</v-icon> <span v-if="$vuetify.breakpoint.xlOnly">Create</span> View
         </v-btn>
         <v-btn v-if="canCreateTable" color="secondary" class="mb-1" :to="`/database/${$route.params.database_id}/table/create`">
-          <v-icon v-if="$vuetify.breakpoint.lgAndUp" left>mdi-table-large-plus</v-icon> Create Table
+          <v-icon v-if="$vuetify.breakpoint.lgAndUp" left>mdi-table-large-plus</v-icon> <span v-if="$vuetify.breakpoint.xlOnly">Create</span> Table
         </v-btn>
         <v-btn v-if="canCreateIdentifier" color="primary" class="mb-1" :to="`/database/${$route.params.database_id}/persist`">
-          <v-icon v-if="$vuetify.breakpoint.lgAndUp" left>mdi-identifier</v-icon> Get PID
+          <v-icon v-if="$vuetify.breakpoint.lgAndUp" left>mdi-identifier</v-icon> <span v-if="$vuetify.breakpoint.xlOnly">Get</span> PID
         </v-btn>
       </v-toolbar-title>
       <template v-slot:extension>

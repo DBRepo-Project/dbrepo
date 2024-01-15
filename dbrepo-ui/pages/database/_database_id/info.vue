@@ -19,11 +19,15 @@
                   <v-list-item-title>
                     Database Visibility
                   </v-list-item-title>
-                  <v-list-item-content v-if="!loading && database" v-text="`${database.is_public ? 'Public' : 'Private'}`" />
+                  <v-list-item-content v-if="database" v-text="`${database.is_public ? 'Public' : 'Private'}`" />
+                  <v-list-item-title class="mt-2">
+                    Database Name
+                  </v-list-item-title>
+                  <v-list-item-content v-if="database" v-text="database.name" />
                   <v-list-item-title class="mt-2">
                     Database Internal Name
                   </v-list-item-title>
-                  <v-list-item-content v-if="!loading" v-text="internal_name" />
+                  <v-list-item-content v-if="database" v-text="database.internal_name" />
                   <v-list-item-title class="mt-2">
                     Database Owner
                   </v-list-item-title>

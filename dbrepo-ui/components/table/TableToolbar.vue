@@ -21,19 +21,19 @@
           <v-icon left>mdi-delete</v-icon> Delete <span v-if="selection.length > 1">&nbsp;{{ selection.length }}</span>
         </v-btn>
         <v-btn v-if="canImportCsv" class="mb-1" :to="`/database/${$route.params.database_id}/table/${$route.params.table_id}/import`">
-          <v-icon left>mdi-cloud-upload</v-icon> Import .csv
+          <v-icon left>mdi-cloud-upload</v-icon> <span v-if="$vuetify.breakpoint.xlOnly">Import</span> csv
         </v-btn>
         <v-btn v-if="canExecuteQuery" class="mb-1" :to="`/database/${$route.params.database_id}/query/create?tid=${$route.params.table_id}`" color="secondary">
-          <v-icon left>mdi-wrench</v-icon> Create Subset
+          <v-icon left>mdi-wrench</v-icon> <span v-if="$vuetify.breakpoint.xlOnly">Create</span> Subset
         </v-btn>
         <v-btn v-if="canCreateView" class="mb-1" :to="`/database/${$route.params.database_id}/view/create?tid=${$route.params.table_id}`" color="secondary">
-          <v-icon left>mdi-view-carousel</v-icon> Create View
+          <v-icon left>mdi-view-carousel</v-icon> <span v-if="$vuetify.breakpoint.xlOnly">Create</span> View
         </v-btn>
         <v-btn v-if="canDropTable" class="mb-1" color="error" @click="dropTableDialog = true">
-          <v-icon left>mdi-delete</v-icon> Drop Table
+          <v-icon left>mdi-delete</v-icon> <span v-if="$vuetify.breakpoint.xlOnly">Drop</span> Table
         </v-btn>
         <v-btn v-if="canGetPid" class="mb-1" color="primary" :to="`/database/${$route.params.database_id}/table/${$route.params.table_id}/persist`">
-          <v-icon left>mdi-content-save-outline</v-icon> Get PID
+          <v-icon left>mdi-content-save-outline</v-icon> <span v-if="$vuetify.breakpoint.xlOnly">Get</span> PID
         </v-btn>
       </v-toolbar-title>
     </v-toolbar>
