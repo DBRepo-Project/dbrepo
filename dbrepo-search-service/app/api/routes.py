@@ -72,7 +72,6 @@ def get_index(index):
         }, 404  # ToDo: replace with better error handling
     results = query_index_by_term_opensearch("*", "contains")
     results = general_filter(index, results)
-    total_number_of_results = len(results)
 
     results_per_page = min(request.args.get("results_per_page", 50, type=int), 500)
     max_pages = math.ceil(len(results) / results_per_page)
@@ -153,20 +152,25 @@ def post_general_search(type):
     if type == 'table':
         tmp = []
         for database in response:
-            for table in database["tables"]:
-                table["is_public"] = database["is_public"]
-                tmp.append(table)
+            if database["tables"] is not None:
+                for table in database["tables"]:
+                    table["is_public"] = database["is_public"]
+                    tmp.append(table)
         response = tmp
     if type == 'identifier':
         tmp = []
         for database in response:
-            for identifier in database['identifiers']:
-                tmp.append(identifier)
-            for identifier in database['subsets']:
-                tmp.append(identifier)
-            for table in database['tables']:
-                for identifier in table['identifiers']:
+            if database["identifiers"] is not None:
+                for identifier in database['identifiers']:
                     tmp.append(identifier)
+            if database["subsets"] is not None:
+                for identifier in database['subsets']:
+                    tmp.append(identifier)
+            if database["tables"] is not None:
+                for table in database['tables']:
+                    if database["identifiers"] is not None:
+                        for identifier in table['identifiers']:
+                            tmp.append(identifier)
         for view in [x for xs in response for x in xs["views"]]:
             if 'identifier' in view:
                 tmp.append(view['identifier'])

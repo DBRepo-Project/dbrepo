@@ -55,6 +55,7 @@ public class UserDto {
     private String lastname;
 
     @NotNull
+    @org.springframework.data.annotation.Transient
     private UserAttributesDto attributes;
 
 }

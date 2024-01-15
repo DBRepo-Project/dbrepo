@@ -96,37 +96,37 @@
                 clearable />
             </v-col>
           </v-row>
-          <p v-if="isEligibleConceptOrUnitSearch" class="mt-4">
+          <p v-if="isEligibleUnitIndependentSearch" class="mt-4">
             If you select a <code>concept</code> and <code>unit</code>, you can search across columns regardless of their
             unit of measurement.
           </p>
-          <v-row v-if="isEligibleConceptOrUnitSearch" dense>
-            <v-col cols="3">
+          <v-row v-if="isEligibleConceptOrUnitSearch || isEligibleUnitIndependentSearch" dense>
+            <v-col v-if="isEligibleConceptOrUnitSearch || isEligibleUnitIndependentSearch" cols="3">
               <v-select
-                v-model="advancedSearchData['concept.uri']"
+                v-model="advancedSearchData['tables.columns.concept.uri']"
                 clearable
                 :items="concepts"
                 item-text="name"
                 item-value="uri"
                 label="Concept" />
             </v-col>
-            <v-col cols="3">
+            <v-col v-if="isEligibleConceptOrUnitSearch || isEligibleUnitIndependentSearch" cols="3">
               <v-select
-                v-model="advancedSearchData['unit.uri']"
+                v-model="advancedSearchData['tables.columns.unit.uri']"
                 clearable
                 :items="units"
                 item-text="name"
                 item-value="uri"
                 label="Unit" />
             </v-col>
-            <v-col cols="3">
+            <v-col v-if="isEligibleUnitIndependentSearch" cols="3">
               <v-text-field
                 v-model="advancedSearchData['t1']"
                 clearable
                 type="number"
                 label="Start Value" />
             </v-col>
-            <v-col cols="3">
+            <v-col v-if="isEligibleUnitIndependentSearch" cols="3">
               <v-text-field
                 v-model="advancedSearchData['t2']"
                 clearable
@@ -221,6 +221,9 @@ export default {
       }
     },
     isEligibleConceptOrUnitSearch () {
+      return ['column', 'database'].includes(this.searchType)
+    },
+    isEligibleUnitIndependentSearch () {
       return ['column'].includes(this.searchType)
     },
     isEligibleYearRangeSearch () {

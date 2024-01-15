@@ -58,13 +58,13 @@ public class IdentifierDto {
     @Field(name = "type", type = FieldType.Keyword)
     private IdentifierTypeDto type;
 
-    @Field(name = "titles", type = FieldType.Nested)
+    @Field(name = "titles", type = FieldType.Object)
     private List<IdentifierTitleDto> titles;
 
-    @Field(name = "descriptions", type = FieldType.Nested)
+    @Field(name = "descriptions", type = FieldType.Object)
     private List<IdentifierDescriptionDto> descriptions;
 
-    @Field(name = "funders", type = FieldType.Nested)
+    @Field(name = "funders", type = FieldType.Object)
     private List<IdentifierFunderDto> funders;
 
     @NotBlank
@@ -79,7 +79,7 @@ public class IdentifierDto {
     private String queryNormalized;
 
     @JsonProperty("related_identifiers")
-    @Field(name = "related_identifiers", type = FieldType.Nested)
+    @Field(name = "related_identifiers", type = FieldType.Object)
     private List<RelatedIdentifierDto> relatedIdentifiers;
 
     @NotBlank
@@ -116,7 +116,7 @@ public class IdentifierDto {
 
     @NotNull
     @JsonIgnore
-    @Field(name = "creator", type = FieldType.Nested)
+    @org.springframework.data.annotation.Transient
     private UserDto creator;
 
     @JsonProperty("publication_day")
@@ -138,11 +138,11 @@ public class IdentifierDto {
     @Field(name = "language", type = FieldType.Keyword)
     private LanguageTypeDto language;
 
-    @Field(name = "licenses", type = FieldType.Nested)
+    @Field(name = "licenses", type = FieldType.Object)
     private List<LicenseDto> licenses;
 
     @NotNull
-    @Field(name = "creators", type = FieldType.Nested)
+    @Field(name = "creators", type = FieldType.Object)
     private List<CreatorDto> creators;
 
     @NotNull

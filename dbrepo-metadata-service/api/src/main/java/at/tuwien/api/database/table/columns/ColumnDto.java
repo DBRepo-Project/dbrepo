@@ -57,7 +57,7 @@ public class ColumnDto {
     private String alias;
 
     @JsonProperty("date_format")
-    @Field(name = "date_format", type = FieldType.Nested)
+    @Field(name = "date_format", type = FieldType.Object)
     private ImageDateDto dateFormat;
 
     @NotNull
@@ -126,10 +126,10 @@ public class ColumnDto {
     @Field(name = "std_dev", type = FieldType.Double)
     private BigDecimal stdDev;
 
-    @Field(name = "concept", type = FieldType.Nested)
+    @Field(name = "concept", type = FieldType.Object)
     private ConceptDto concept;
 
-    @Field(name = "unit", type = FieldType.Nested)
+    @Field(name = "unit", type = FieldType.Object)
     private UnitDto unit;
 
     @NotNull
@@ -144,11 +144,11 @@ public class ColumnDto {
     @Schema(example = "false")
     private Boolean isNullAllowed;
 
-    @Field(name = "enums", type = FieldType.Nested)
+    @Field(name = "enums", type = FieldType.Object)
     @Parameter(description = "enum values, only considered when type = ENUM")
     private List<String> enums;
 
-    @Field(name = "sets", type = FieldType.Nested)
+    @Field(name = "sets", type = FieldType.Object)
     @Parameter(description = "enum values, only considered when type = ENUM")
     private List<String> sets;
 

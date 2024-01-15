@@ -219,13 +219,23 @@ class IdentifierMapper {
     const identifier = database.identifiers[0]
     const partIdentifiers = []
     if (database.subsets.length > 0) {
-      database.subsets.forEach((s) => { if (s.identifiers.length > 0) { s.identifiers.forEach(i => partIdentifiers.push(i)) } })
+      database.subsets.forEach((s) => {
+        partIdentifiers.push(s)
+      })
     }
     if (database.tables.length > 0) {
-      database.tables.forEach((t) => { if (t.identifiers.length > 0) { t.identifiers.forEach(i => partIdentifiers.push(i)) } })
+      database.tables.forEach((t) => {
+        if (t.identifiers.length > 0) {
+          t.identifiers.forEach(i => partIdentifiers.push(i))
+        }
+      })
     }
     if (database.views.length > 0) {
-      database.views.forEach((v) => { if (v.identifiers.length > 0) { v.identifiers.forEach(i => partIdentifiers.push(i)) } })
+      database.views.forEach((v) => {
+        if (v.identifiers.length > 0) {
+          v.identifiers.forEach(i => partIdentifiers.push(i))
+        }
+      })
     }
     return {
       '@context': 'https://schema.org/',
