@@ -559,11 +559,15 @@ A user wants to import live data from e.g. sensor measurements fast and without 
     import pika
     import json
 
-    connection = pika.BlockingConnection()
+    credentials = pika.credentials.PlainCredentials('foo', 'bar')
+    # credentials = pika.credentials.PlainCredentials('', 'ACCESS_TOKEN')
+    parameters = pika.ConnectionParameters('localhost', 5672, '/', credentials)
+    connection = pika.BlockingConnection(parameters)
     channel = connection.channel()
     channel.basic_publish(exchange='dbrepo',
         routing_key='dbrepo.test_fiyg.dabube_water_levels',
         body=json.dumps({"data":{"column1":"value1","column2":"value2"}}))
+    print(" [x] Sent tuple!")
     connection.close()
     ```
 
