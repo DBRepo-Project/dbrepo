@@ -411,7 +411,7 @@
                     @focusout="retrieveFunder(funder)" />
                 </v-col>
                 <v-col cols="4" class="mt-5">
-                  <v-btn v-if="i > 0" color="error" small @click="deleteFunder(i)">
+                  <v-btn color="error" small @click="deleteFunder(i)">
                     Remove
                   </v-btn>
                 </v-col>
@@ -813,9 +813,6 @@ export default {
       this.identifier.creators.splice(index, 1)
     },
     deleteFunder (index) {
-      if (index === 0) {
-        return
-      }
       this.identifier.funders.splice(index, 1)
     },
     deleteTitle (index) {

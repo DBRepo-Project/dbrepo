@@ -491,7 +491,6 @@ A user wants to import a database dump in `.sql` (or in `.sql.gz`) format into D
         VALUES (1, '%d.%c.%Y', 'dd.MM.yyyy', '15.01.2024', false),
                (1, '%Y-%c-%d %l:%i:%S %p', 'yyyy-MM-dd ll:mm:ss r', '2024-01-15 06:23:12 AM', true);
         ```
-    
 
 ## Import Live Data
 
@@ -532,48 +531,308 @@ A user wants to import live data from e.g. sensor measurements fast and without 
 
 === "JDBC API"
 
-    123
+    Add a data tuple to an already existing table where the user has at least `write-own` access. Connect to the
+    database via JDBC, you can obtain the connection string in the UI under the database info (c.f. Figure 14).
+
+    <figure markdown>
+    ![JDBC connection information](images/screenshots/database-jdbc.png){ .img-border }
+    <figcaption>Figure 14: JDBC connection information.</figcaption>
+    </figure>
+    
+
+    ```sql
+    INSERT INTO `danube_water_levels` (`datetime`, `level`)
+    VALUES (NOW(), '10')
+    ```
 
 === "Python"
 
-    456
+    Add a data tuple to an already existing table where the user has at least `write-own` access. Connect to the
+    database via AMQP, you can obtain the connection string in the UI under the table info (c.f. Figure 14).
+
+    <figure markdown>
+    ![AMQP connection information](images/screenshots/table-amqp.png){ .img-border }
+    <figcaption>Figure 14: AMQP connection information.</figcaption>
+    </figure>
+
+    ```python
+    import pika
+    import json
+
+    connection = pika.BlockingConnection()
+    channel = connection.channel()
+    channel.basic_publish(exchange='dbrepo',
+        routing_key='dbrepo.test_fiyg.dabube_water_levels',
+        body=json.dumps({"data":{"column1":"value1","column2":"value2"}}))
+    connection.close()
+    ```
 
 ## Export Subset
 
-TBD
+A user wants to create a subset and export it as csv file.
 
 === "UI"
 
-    ABC
+    Login and select a database where you have at least `read` access (this is the case for e.g. self-created 
+    databases). Click the ":material-wrench: CREATE SUBSET" button :material-numeric-1-circle-outline: as seen in 
+    Figure 16.
 
-=== "HTTP API"
+    <figure markdown>
+    ![Open the create subset form](images/screenshots/export-subset-step-1.png){ .img-border }
+    <figcaption>Figure 16: Open the create subset form.</figcaption>
+    </figure>
 
-    DEF
+    A subset can be created by using our query builder that is visible by default in the "SIMPLE" tab. First, a source 
+    table :material-numeric-1-circle-outline: needs to be selected, then the columns that are part of the subset in
+    :material-numeric-2-circle-outline:. Optionally the subset can be filtered. The subset query (=SQL) is displayed
+    in :material-numeric-3-circle-outline: in Figure 17. 
 
-=== "JDBC API"
+    Once you are confident the query covers the desired result, click ":material-run: Create".
 
-    123
+    <figure markdown>
+    ![Subset query building](images/screenshots/export-subset-step-2.png){ .img-border }
+    <figcaption>Figure 17: Subset query building.</figcaption>
+    </figure>
+
+    Once the subset is created (may take some seconds), the user is presented with the result set in
+    :material-numeric-1-circle-outline:, more information on the subset can be obtained by clicking ":material-run:
+    View" on the top (c.f. Figure 18).
+
+    <figure markdown>
+    ![Subset result set](images/screenshots/export-subset-step-3.png){ .img-border }
+    <figcaption>Figure 18: Subset result set.</figcaption>
+    </figure>
+
+    The subset information page in Figure 19 shows the most important metadata like subset query hash and result hash
+    (e.g. for reproducability) and subset result count. Note that although this subset is stored in the query store
+    already, it is only temporarly stored there for 24 hours (default configuration). 
+
+    After that the subset is deleted from the query store. If you wish to keep the subset (with metadata information), 
+    click ":material-content-save-outline: SAVE" in :material-numeric-1-circle-outline:. The subset can be exported to
+    a csv file by clicking the ":material-download: DATA .CSV" button :material-numeric-2-circle-outline:.
+
+    <figure markdown>
+    ![Subset information](images/screenshots/export-subset-step-4.png){ .img-border }
+    <figcaption>Figure 19: Subset information.</figcaption>
+    </figure>
+
+=== "Terminal"
+
+    Obtain an access token:
+
+    ```bash
+    curl -sSL \
+      -X POST \
+      -d 'username=foo&password=bar&grant_type=password&client_id=dbrepo-client&scope=openid&client_secret=MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG' \
+      http://localhost/api/auth/realms/dbrepo/protocol/openid-connect/token | jq .access_token
+    ```
+
+    !!! note
+
+        Please note that the `client_secret` is different for your DBRepo instance. This is a default client secret that
+        likely has been replaced. Please contact your DBRepo administrator to get the `client_secret` for your instance.
+        Similar you need to replace `localhost` with your actual DBRepo instance hostname, e.g. `test.dbrepo.tuwien.ac.at`.
+
+    A subset can be created by passing a SQL query to a database where you have at least `read` access (this is the case
+    for e.g. self-created databases).
+
+    ```bash
+    curl -sSL \
+      -X POST \
+      -H "Authorization: Bearer ACCESS_TOKEN" \
+      -d '{"statement":"SELECT `id`,`datetime`,`level` FROM `danube_water_levels`"}' \
+      http://localhost/api/database/DATABASE_ID/query?page=0&sort=10 | jq .id
+    ```
+
+    !!! note
+
+        An optional field `"timestamp":"2024-01-16 23:00:00"` can be provided to execute a query with a system time of
+        2024-01-16 23:00:00 (UTC). Make yourself familiar with the concept
+        of [System Versioned Tables](https://mariadb.com/kb/en/system-versioned-tables/) for more information.
+
+    ```bash
+    curl -sSL \
+      -H "Authorization: Bearer ACCESS_TOKEN" \
+      http://localhost/api/database/DATABASE_ID/query/QUERY_ID | jq
+    ```
+
+    The subset information shows the most important metadata like subset query hash and result hash (e.g. for 
+    reproducability) and subset result count. Note that although this subset is stored in the query store already, it is
+    only temporarly stored there for 24 hours (default configuration).
+
+    After that the subset is deleted from the query store. If you wish to keep the subset (with metadata information),
+    persist it.
+
+    ```bash
+    curl -sSL \
+      -H "Authorization: Bearer ACCESS_TOKEN" \
+      -d '{"persist":true}' \
+      http://localhost/api/database/DATABASE_ID/query/QUERY_ID | jq
+    ```
+
+    The subset can be exported to a `subset_export.csv` file (this also works for non-persisted subsets).
+
+    ```bash
+    curl -sSL \
+      -H "Authorization: Bearer ACCESS_TOKEN" \
+      -H "Accept: text/csv" \
+      -o subset_export.csv \
+      http://localhost/api/database/DATABASE_ID/query/QUERY_ID
+    ```
+
+=== "JDBC"
+
+    A subset can be created by passing a SQL query to a database where you have at least `read` access (this is the case
+    for e.g. self-created databases). Connect to the database via JDBC, you can obtain the connection string in the UI
+    under the database info (c.f. Figure 20).
+
+    <figure markdown>
+    ![JDBC connection information](images/screenshots/database-jdbc.png){ .img-border }
+    <figcaption>Figure 20: JDBC connection information.</figcaption>
+    </figure>
+
+    ```sql
+    CALL store_query('SELECT `id`,`datetime`,`level` FROM `danube_water_levels`',
+        NOW(), @subsetId)
+    ```
+
+    Afterwards, you can see the subset in the UI with subset id `@subsetId` and persist it there. Only the administrator
+    can persist the subset in the [Data Database](../system-databases-data) through JDBC by setting the `persisted`
+    column to `true` in the `qs_queries` table.
+
+=== "Python"
+
+    tbd
 
 ## Assign Database PID
 
-TBD
+A user wants to assign a persistent identifier to a database owned by them.
 
 === "UI"
 
-    ABC
+    Login and select a database where you are the owner (this is the case for e.g. self-created databases). Click 
+    the ":material-identifier: GET PID" button :material-numeric-1-circle-outline: as seen in Figure 21.
 
-=== "HTTP API"
+    <figure markdown>
+    ![Open the get persisent identifier form](images/screenshots/assign-database-pid-step-1.png){ .img-border }
+    <figcaption>Figure 21: Open the get persisent identifier form.</figcaption>
+    </figure>
 
-    DEF
+    First, provide information on the dataset creator(s). Since the [Metadata Service](../system-services-metadata) 
+    automatically resolves external PIDs, the easiest way is to provide the correct mandatory data is by filling the
+    name identifier :material-numeric-1-circle-outline:. The creator type :material-numeric-2-circle-outline:
+    denotes either a natural person or organization. Optionally fill out the given 
+    name :material-numeric-3-circle-outline: and family name :material-numeric-4-circle-outline:, both form the
+    mandatory name :material-numeric-5-circle-outline:. Optionally provide an external affilation
+    identifier :material-numeric-6-circle-outline: which is automatically resolved. Optionally provide an affiliation
+    name :material-numeric-7-circle-outline: in Figure 22. You can change the order of creators with the up/down buttons
+    :material-numeric-8-circle-outline:.
+
+    <figure markdown>
+    ![Identifier creator fields](images/screenshots/assign-database-pid-step-2.png){ .img-border }
+    <figcaption>Figure 22: Identifier creator fields.</figcaption>
+    </figure>
+
+    The identifier needs at least one title in the title field :material-numeric-1-circle-outline: and optionally a
+    title type :material-numeric-2-circle-outline: from the selection and a title 
+    language :material-numeric-3-circle-outline: from the available list of languages. Additional titles can be removed
+    again :material-numeric-4-circle-outline: if they are not needed in Figure 23.
+
+    <figure markdown>
+    ![JDBC connection information](images/screenshots/assign-database-pid-step-3.png){ .img-border }
+    <figcaption>Figure 23: Identifier title fields.</figcaption>
+    </figure>
+
+    The identifier needs at least one description in the description field :material-numeric-1-circle-outline: and 
+    optionally a description type :material-numeric-2-circle-outline: from the selection and a description 
+    language :material-numeric-3-circle-outline:. Fill the dataset publisher information 
+    :material-numeric-4-circle-outline: and publication year :material-numeric-5-circle-outline: and optionally a
+    publication month and publication day in Figure 24.
+
+    <figure markdown>
+    ![Identifier description fields and publishing information](images/screenshots/assign-database-pid-step-4.png){ .img-border }
+    <figcaption>Figure 24: Identifier description fields and publishing information.</figcaption>
+    </figure>
+
+    Optionally reference other PIDs :material-numeric-1-circle-outline:, if you added too much, removing a related
+    identifier can be done by clicking the "REMOVE" button :material-numeric-2-circle-outline:. Add a license from the
+    list :material-numeric-3-circle-outline: fitting to your interests and optionally provide the main language for the
+    identifier :material-numeric-4-circle-outline: (c.f. Figure 25). This helps machines to understand the context of
+    your data.
+
+    <figure markdown>
+    ![Related identifiers, license and language of the identifier](images/screenshots/assign-database-pid-step-5.png){ .img-border }
+    <figcaption>Figure 25: Related identifiers, license and language of the identifier.</figcaption>
+    </figure>
+
+    Optionally add funding information, again the [Metadata Service](../system-services-metadata) 
+    automatically resolves external PIDs, the easiest way is to provide the correct mandatory data is by filling the
+    funder identifier :material-numeric-1-circle-outline: that attempts to get the funder
+    name :material-numeric-2-circle-outline:. If you provide an award number :material-numeric-3-circle-outline: and/or
+    award title :material-numeric-4-circle-outline:, this information will be represented also in human-readable
+    language on the identifier summary page (c.f. Figure 26).
+
+    <figure markdown>
+    ![Identifier funder information](images/screenshots/assign-database-pid-step-6.png){ .img-border }
+    <figcaption>Figure 26: Identifier funder information.</figcaption>
+    </figure>
+
+    Scroll to the top again and click the ":material-content-save-outline: CREATE PID" button to create the PID. The
+    result is displayed in Figure 27.
+
+    <figure markdown>
+    ![Identifier summary page](images/screenshots/assign-database-pid-step-7.png){ .img-border }
+    <figcaption>Figure 27: Identifier summary page.</figcaption>
+    </figure>
+
+=== "Terminal"
+
+    tbd
+
+=== "JDBC"
+
+    tbd
+
+=== "Python"
+
+    tbd
 
 ## Private Database &amp; Access
 
-TBD
+A user wants a public database to be private and only give specific users access.
 
 === "UI"
 
-    ABC
+    Login and select a database where you are the owner (this is the case for e.g. self-created databases). Click 
+    the "SETTINGS" tab :material-numeric-1-circle-outline: and set the visibility to `Private`
+    :material-numeric-2-circle-outline:, then click the "MODIFY VISIBILITY" button to apply the changes.
 
-=== "HTTP API"
+    An overview of users who have access to this database is given in :material-numeric-3-circle-outline: and can be
+    changed or revoked at any time by the owner. To give a user account access, click the "GIVE ACCESS" button to open
+    the dialog (c.f. Figure 28).
 
-    DEF
+    <figure markdown>
+    ![Database settings for visibility and access](images/screenshots/private-database-access-step-1.png){ .img-border }
+    <figcaption>Figure 28: Database settings for visibility and access.</figcaption>
+    </figure>
+
+    Give a user from the list access to the database by selecting the qualified username from the 
+    list :material-numeric-1-circle-outline: and the access :material-numeric-2-circle-outline:, e.g. `read` for
+    allowing users to view the private data (c.f. Figure 29).
+
+    <figure markdown>
+    ![Database acccess dialog](images/screenshots/private-database-access-step-2.png){ .img-border }
+    <figcaption>Figure 29: Database acccess dialog.</figcaption>
+    </figure>
+
+=== "Terminal"
+
+    tbd
+
+=== "JDBC"
+
+    tbd
+
+=== "Python"
+
+    tbd
