@@ -26,6 +26,6 @@ public class ConstraintsDto {
     @Field(name = "foreign_keys", type = FieldType.Object)
     private List<ForeignKeyDto> foreignKeys;
 
-    @Field(name = "checks", type = FieldType.Object)
+    @org.springframework.data.annotation.Transient
     private List<String> checks;
 }

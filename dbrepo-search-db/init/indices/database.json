@@ -672,9 +672,6 @@
           "constraints": {
             "type": "object",
             "properties": {
-              "checks": {
-                "type": "object"
-              },
               "foreign_keys": {
                 "type": "object",
                 "properties": {
