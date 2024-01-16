@@ -744,7 +744,7 @@ public interface QueryMapper {
             }
             final TableColumn aliasColumn = optionalColumn.get();
             if (item.getAlias() != null) {
-                aliasColumn.setAlias(item.getAlias().getName());
+                aliasColumn.setAlias(item.getAlias().getName().replace("`", ""));
             }
             log.trace("found column with internal name {} and alias {}", aliasColumn.getInternalName(), aliasColumn.getAlias());
             columns.add(aliasColumn);

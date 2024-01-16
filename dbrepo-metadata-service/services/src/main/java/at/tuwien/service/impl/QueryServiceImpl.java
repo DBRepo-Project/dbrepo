@@ -140,7 +140,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             return connection.prepareStatement(statement);
         } catch (SQLException e) {
             log.error("Failed to prepare statement: {}", e.getMessage());
-            throw new QueryMalformedException("Failed to prepare statement", e);
+            throw new QueryMalformedException("Failed to prepare statement: " + e.getMessage(), e);
         }
     }
 
@@ -159,7 +159,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             return queryMapper.resultListToQueryResultDto(columns, resultSet);
         } catch (SQLException e) {
             log.error("Failed to execute and map time-versioned query: {}", e.getMessage());
-            throw new TableMalformedException("Failed to execute and map time-versioned query", e);
+            throw new TableMalformedException("Failed to execute and map time-versioned query: " + e.getMessage(), e);
         } finally {
             dataSource.close();
         }
@@ -179,7 +179,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             return queryMapper.resultSetToNumber(resultSet);
         } catch (SQLException e) {
             log.error("Failed to map object: {}", e.getMessage());
-            throw new TableMalformedException("Failed to map object", e);
+            throw new TableMalformedException("Failed to map object: " + e.getMessage(), e);
         } finally {
             dataSource.close();
         }
@@ -188,13 +188,13 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     @Override
     @Transactional(readOnly = true)
     public QueryResultDto tableFindAll(Long databaseId, Long tableId, Instant timestamp, Long page,
-                                       Long size, Principal principal) throws TableNotFoundException, DatabaseNotFoundException,
-            ImageNotSupportedException, TableMalformedException, QueryMalformedException {
+                                       Long size, Principal principal) throws TableNotFoundException,
+            DatabaseNotFoundException, TableMalformedException, QueryMalformedException, ImageNotSupportedException {
         /* find */
         final Table table = tableService.find(databaseId, tableId);
         /* run query */
-        String statement = queryMapper.tableToRawFindAllQuery(table, timestamp, size, page);
-        return executeNonPersistent(databaseId, statement, table.getColumns());
+        return executeNonPersistent(databaseId, queryMapper.tableToRawFindAllQuery(table, timestamp, size, page),
+                table.getColumns());
     }
 
     @Override
@@ -213,7 +213,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             return queryMapper.resultListToQueryResultDto(view.getColumns(), resultSet);
         } catch (SQLException e) {
             log.error("Failed to map object: {}", e.getMessage());
-            throw new TableMalformedException("Failed to map object", e);
+            throw new TableMalformedException("Failed to map object: " + e.getMessage(), e);
         } finally {
             dataSource.close();
         }
@@ -258,7 +258,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             log.error("Failed to execute query and/or export file: {}", e.getMessage());
-            throw new FileStorageException("Failed to execute query and/or export file", e);
+            throw new FileStorageException("Failed to execute query and/or export file: " + e.getMessage(), e);
         } finally {
             dataSource.close();
         }

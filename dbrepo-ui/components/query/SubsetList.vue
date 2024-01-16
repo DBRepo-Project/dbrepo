@@ -89,7 +89,7 @@ export default {
           this.queries = queries
         })
         .catch((error) => {
-          if (error.response.status === 405) {
+          if (error.response.status === 403 || error.response.status === 405) {
             this.isAuthorizationError = true
             return
           }
