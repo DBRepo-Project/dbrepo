@@ -68,7 +68,6 @@ build-docker:
     - "cp .env.unix.example .env"
     - "docker build -t dbrepo-metadata-service:build --target build dbrepo-metadata-service"
     - "docker build -t dbrepo-data-service:build --target build dbrepo-data-service"
-    - "docker build ./dbrepo-log-service -t dbrepo-log-service"
     - "docker compose build --parallel"
 
 test-metadata-service:
