@@ -607,7 +607,7 @@ A user wants to import live data from e.g. sensor measurements fast and without 
       -X POST \
       -H "Authorization: Bearer ACCESS_TOKEN" \
       -d '{"data":{"column1":"value1","column2":"value2"}}' \
-      http://localhost/api/database/DATABASE_ID/table/TABLE_ID/data
+      http://localhost/api/database/1/table/1/data
     ```
 
 === "JDBC API"
@@ -726,7 +726,7 @@ A user wants to create a subset and export it as csv file.
       -X POST \
       -H "Authorization: Bearer ACCESS_TOKEN" \
       -d '{"statement":"SELECT `id`,`datetime`,`level` FROM `danube_water_levels`"}' \
-      http://localhost/api/database/DATABASE_ID/query?page=0&sort=10 | jq .id
+      http://localhost/api/database/1/query?page=0&sort=10 | jq .id
     ```
 
     !!! note
@@ -738,7 +738,7 @@ A user wants to create a subset and export it as csv file.
     ```bash
     curl -sSL \
       -H "Authorization: Bearer ACCESS_TOKEN" \
-      http://localhost/api/database/DATABASE_ID/query/QUERY_ID | jq
+      http://localhost/api/database/1/query/1 | jq
     ```
 
     The subset information shows the most important metadata like subset query hash and result hash (e.g. for 
@@ -750,9 +750,10 @@ A user wants to create a subset and export it as csv file.
 
     ```bash
     curl -sSL \
+      -X PUT \
       -H "Authorization: Bearer ACCESS_TOKEN" \
       -d '{"persist":true}' \
-      http://localhost/api/database/DATABASE_ID/query/QUERY_ID | jq
+      http://localhost/api/database/1/query/1 | jq
     ```
 
     The subset can be exported to a `subset_export.csv` file (this also works for non-persisted subsets).
@@ -762,7 +763,7 @@ A user wants to create a subset and export it as csv file.
       -H "Authorization: Bearer ACCESS_TOKEN" \
       -H "Accept: text/csv" \
       -o subset_export.csv \
-      http://localhost/api/database/DATABASE_ID/query/QUERY_ID
+      http://localhost/api/database/1/query/1
     ```
 
 === "JDBC"
@@ -809,6 +810,70 @@ A user wants to create a subset and export it as csv file.
         Please note that the `client_secret` is different for your DBRepo instance. This is a default client secret that
         likely has been replaced. Please contact your DBRepo administrator to get the `client_secret` for your instance.
         Similar you need to replace `localhost` with your actual DBRepo instance hostname, e.g. `test.dbrepo.tuwien.ac.at`.
+
+    A subset can be created by passing a SQL query to a database where you have at least `read` access (this is the case
+    for e.g. self-created databases).
+
+    ```python
+    import requests
+
+    response = requests.post("http://localhost/api/database/1/query?page=0&sort=10", headers={
+        "Authorization": "Bearer " + access_token
+    }, json={
+        "statement": "SELECT `id`,`datetime`,`level` FROM `danube_water_levels`"
+    })
+    query_id = response.json()["id"]
+    ```
+
+    !!! note
+
+        An optional field `"timestamp":"2024-01-16 23:00:00"` can be provided to execute a query with a system time of
+        2024-01-16 23:00:00 (UTC). Make yourself familiar with the concept
+        of [System Versioned Tables](https://mariadb.com/kb/en/system-versioned-tables/) for more information.
+
+    ```python
+    import requests
+
+    response = requests.get("http://localhost/api/database/1/query/1", headers={
+        "Authorization": "Bearer " + access_token
+    })
+    print(response.json())
+    ```
+
+    The subset information shows the most important metadata like subset query hash and result hash (e.g. for 
+    reproducability) and subset result count. Note that although this subset is stored in the query store already, it is
+    only temporarly stored there for 24 hours (default configuration).
+
+    After that the subset is deleted from the query store. If you wish to keep the subset (with metadata information),
+    persist it.
+
+    ```python
+    import requests
+    
+    response = requests.put("http://localhost/api/database/1/query/1", headers={
+        "Authorization": "Bearer " + access_token
+    }, json={
+        "persist": True
+    })
+    ```
+
+    The subset can be exported to a `subset_export.csv` file (this also works for non-persisted subsets).
+
+    ```python
+    import requests
+
+    headers = {
+        "Authorization": "Bearer " + access_token,
+        "Accept": "text/csv"
+    }
+    
+    with requests.Session() as s:
+        response = s.get("http://localhost/api/database/1/query/1",
+                         headers=headers, stream=True)
+        decoded_content = response.content.decode('utf-8')
+        with open("subset_export.csv", "w") as f:
+            f.write(decoded_content)
+    ```
 
 ## Assign Database PID
 
@@ -893,15 +958,147 @@ A user wants to assign a persistent identifier to a database owned by them.
 
 === "Terminal"
 
-    tbd
+    Obtain an access token:
+
+    ```bash
+    curl -sSL \
+      -X POST \
+      -d 'username=foo&password=bar&grant_type=password&client_id=dbrepo-client&scope=openid&client_secret=MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG' \
+      http://localhost/api/auth/realms/dbrepo/protocol/openid-connect/token | jq .access_token
+    ```
+
+    !!! note
+
+        Please note that the `client_secret` is different for your DBRepo instance. This is a default client secret that
+        likely has been replaced. Please contact your DBRepo administrator to get the `client_secret` for your instance.
+        Similar you need to replace `localhost` with your actual DBRepo instance hostname, e.g. `test.dbrepo.tuwien.ac.at`.
+
+    Create a persistent identifier for a database where you are the owner (this is the case for self-created databases)
+    using the HTTP API:
+
+    ```bash
+    curl -sSL \
+      -X POST \
+      -H "Authorization: Bearer ACCESS_TOKEN" \
+      -d '{"type": "database", "titles": [{"title": "Danube water level measurements", "language": "en"},{"title": "Donau Wasserstandsmessungen", "language": "de", "type": "TranslatedTitle"}], "descriptions": [{"description": "This dataset contains hourly measurements of the water level in Vienna from 1983 to 2015", "language": "en", "type": "Abstract"}], "funders": [{ "funder_name": "Austrian Science Fund", "funder_identifier": "https://doi.org/10.13039/100000001", "funder_identifier_type": "Crossref Funder ID", "scheme_uri": "http://doi.org/"}], "licenses": [{"identifier": "CC-BY-4.0", "uri": "https://creativecommons.org/licenses/by/4.0/legalcode"}], "visibility": "everyone", "publisher": "Example University", "creators": [{"firstname": "Martin", "lastname": "Weise", "affiliation": "TU Wien", "creator_name": "Weise, Martin", "name_type": "Personal", "name_identifier": "0000-0003-4216-302X", "name_identifier_scheme": "ORCID", "affiliation_identifier": "https://ror.org/04d836q62", "affiliation_identifier_scheme": "ROR"}], "database_id": 1, "publication_day": 16, "publication_month": 1, "publication_year": 2024, "related_identifiers": [{"value": "10.5334/dsj-2022-004", "type": "DOI", "relation": "Cites"}]}' \
+      http://localhost/api/identifier | jq .id
+    ```
 
 === "JDBC"
 
-    tbd
+    !!! warning
+
+        Creating a PID directly in the [Metadata Database](../system-databases-metadata) is not recommended! It bypasses
+        validation and creation of external PIDs (e.g. DOI) and may lead to inconstistent data locally compared to
+        external systems (e.g. DataCite Fabrica).
+
+    Create a local PID directly in the [Metadata Database](../system-databases-metadata) by filling the tables in this
+    order (they have foreign key dependencies).
+
+    1. `mdb_identifiers` ... identifier core information
+        * `mdb_identifier_creators` ... identifier creator list
+        * `mdb_identifier_titles` ... identifier creator list
+        * `mdb_identifier_descriptions` ... identifier description list
+        * `mdb_identifier_funders` ... identifier funder list
+        * `mdb_identifier_licenses` ... identifier license list
+        * `mdb_related_identifiers` ... related identifier list
 
 === "Python"
 
-    tbd
+    Obtain an access token:
+
+    ```python
+    import requests
+    
+    response = requests.post("http://localhost/api/auth/realms/dbrepo/protocol/openid-connect/token", json={
+        "username": "foo",
+        "password": "bar",
+        "grant_type": "password",
+        "client_id": "dbrepo-client",
+        "scope": "openid",
+        "client_secret": "MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG"
+    })
+    access_token = response.json()["access_token"]
+    print(access_token)
+    ```
+
+    !!! note
+
+        Please note that the `client_secret` is different for your DBRepo instance. This is a default client secret that
+        likely has been replaced. Please contact your DBRepo administrator to get the `client_secret` for your instance.
+        Similar you need to replace `localhost` with your actual DBRepo instance hostname, e.g. `test.dbrepo.tuwien.ac.at`.
+
+    Create a persistent identifier for a database where you are the owner (this is the case for self-created databases)
+    using the HTTP API:
+
+    ```python
+    import requests
+
+    response = requests.post("http://localhost/api/database/1/query/1", headers={
+        "Authorization": "Bearer " + access_token
+    }, json={
+        "type": "database",
+        "titles": [
+            {
+                "title": "Danube water level measurements",
+                "language": "en"
+            },
+            {
+                "title": "Donau Wasserstandsmessungen",
+                "language": "de",
+                "type": "TranslatedTitle"
+            }
+        ],
+        "descriptions": [
+            {
+                "description": "This dataset contains hourly measurements of the water level in Vienna from 1983 to 2015",
+                "language": "en",
+                "type": "Abstract"
+            }
+        ],
+        "funders": [
+            {
+                "funder_name": "Austrian Science Fund",
+                "funder_identifier": "https://doi.org/10.13039/100000001",
+                "funder_identifier_type": "Crossref Funder ID",
+                "scheme_uri": "http://doi.org/"
+            }
+        ],
+        "licenses": [
+            {
+                "identifier": "CC-BY-4.0",
+                "uri": "https://creativecommons.org/licenses/by/4.0/legalcode"
+            }
+        ],
+        "visibility": "everyone",
+        "publisher": "Example University",
+        "creators": [
+            {
+                "firstname": "Martin",
+                "lastname": "Weise",
+                "affiliation": "TU Wien",
+                "creator_name": "Weise, Martin",
+                "name_type": "Personal",
+                "name_identifier": "0000-0003-4216-302X",
+                "name_identifier_scheme": "ORCID",
+                "affiliation_identifier": "https://ror.org/04d836q62",
+                "affiliation_identifier_scheme": "ROR"
+            }
+        ],
+        "database_id": 1,
+        "publication_day": 16,
+        "publication_month": 1,
+        "publication_year": 2024,
+        "related_identifiers": [
+            {
+                "value": "10.5334/dsj-2022-004",
+                "type": "DOI",
+                "relation": "Cites"
+            }
+        ]
+    })
+    pid = response.json()["id"]
+    ```
 
 ## Private Database &amp; Access
 
