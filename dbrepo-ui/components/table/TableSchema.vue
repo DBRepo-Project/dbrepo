@@ -14,7 +14,7 @@
               v-model="c.name"
               required
               :rules="[v => !!v || $t('Required')]"
-              :error-messages="needsSequence && c.name === 'id' ? ['Column needs to be declared as primary key'] : []"
+              :error-messages="needsSequence && c.name.toLowerCase() === 'id' ? ['Column needs to be declared as primary key'] : []"
               label="Name *" />
           </v-col>
           <v-col cols="2">

@@ -266,7 +266,7 @@ public class TableServiceImpl extends HibernateConnector implements TableService
             tableMapper.tableToDropTableRawQuery(connection, table);
         } catch (SQLException e) {
             log.error("Failed to drop table: {}", e.getMessage());
-            throw new TableMalformedException("Failed to drop table", e);
+            throw new TableMalformedException("Failed to drop table: " + e.getMessage(), e);
         } finally {
             dataSource.close();
         }

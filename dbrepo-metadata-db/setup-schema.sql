@@ -178,7 +178,7 @@ CREATE TABLE IF NOT EXISTS `mdb_columns_enums`
     id        bigint                 NOT NULL AUTO_INCREMENT,
     column_id bigint                 NOT NULL,
     value     CHARACTER VARYING(255) NOT NULL,
-    FOREIGN KEY (column_id) REFERENCES mdb_columns (ID),
+    FOREIGN KEY (column_id) REFERENCES mdb_columns (ID) ON DELETE CASCADE,
     PRIMARY KEY (id)
 ) WITH SYSTEM VERSIONING;
 
@@ -187,7 +187,7 @@ CREATE TABLE IF NOT EXISTS `mdb_columns_sets`
     id        bigint                 NOT NULL AUTO_INCREMENT,
     column_id bigint                 NOT NULL,
     value     CHARACTER VARYING(255) NOT NULL,
-    FOREIGN KEY (column_id) REFERENCES mdb_columns (ID),
+    FOREIGN KEY (column_id) REFERENCES mdb_columns (ID) ON DELETE CASCADE,
     PRIMARY KEY (id)
 ) WITH SYSTEM VERSIONING;
 

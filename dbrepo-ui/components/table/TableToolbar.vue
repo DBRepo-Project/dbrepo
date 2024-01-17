@@ -7,33 +7,33 @@
         </v-btn>
       </v-toolbar-title>
       <v-toolbar-title>
-        {{ table.name }}
+        <span v-if="$vuetify.breakpoint.lgAndUp" v-text="table.name" />
       </v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
         <v-btn v-if="canAddTuple" class="mb-1" @click="addTuple">
-          <v-icon left>mdi-plus</v-icon> Add
+          <v-icon :left="$vuetify.breakpoint.xlOnly">mdi-plus</v-icon> <span v-if="$vuetify.breakpoint.xlOnly">Add</span>
         </v-btn>
         <v-btn v-if="canEditTuple" color="warning" class="mb-1 black--text" @click="editTuple">
-          <v-icon left>mdi-pencil</v-icon> Edit
+          <v-icon :left="$vuetify.breakpoint.xlOnly">mdi-pencil</v-icon> <span v-if="$vuetify.breakpoint.xlOnly">Edit</span>
         </v-btn>
         <v-btn v-if="canDeleteTuple" color="error" class="mb-1" :loading="loadingDelete" @click="deleteItems">
-          <v-icon left>mdi-delete</v-icon> Delete <span v-if="selection.length > 1">&nbsp;{{ selection.length }}</span>
+          <v-icon :left="$vuetify.breakpoint.xlOnly">mdi-delete</v-icon> <span v-if="$vuetify.breakpoint.xlOnly">Delete</span>
         </v-btn>
         <v-btn v-if="canImportCsv" class="mb-1" :to="`/database/${$route.params.database_id}/table/${$route.params.table_id}/import`">
-          <v-icon left>mdi-cloud-upload</v-icon> <span v-if="$vuetify.breakpoint.xlOnly">Import</span> csv
+          <v-icon left>mdi-cloud-upload</v-icon> <span v-if="$vuetify.breakpoint.xlOnly">Import&nbsp;</span> csv
         </v-btn>
         <v-btn v-if="canExecuteQuery" class="mb-1" :to="`/database/${$route.params.database_id}/query/create?tid=${$route.params.table_id}`" color="secondary">
-          <v-icon left>mdi-wrench</v-icon> <span v-if="$vuetify.breakpoint.xlOnly">Create</span> Subset
+          <v-icon left>mdi-wrench</v-icon> <span v-if="$vuetify.breakpoint.xlOnly">Create&nbsp;</span> Subset
         </v-btn>
         <v-btn v-if="canCreateView" class="mb-1" :to="`/database/${$route.params.database_id}/view/create?tid=${$route.params.table_id}`" color="secondary">
-          <v-icon left>mdi-view-carousel</v-icon> <span v-if="$vuetify.breakpoint.xlOnly">Create</span> View
+          <v-icon left>mdi-view-carousel</v-icon> <span v-if="$vuetify.breakpoint.xlOnly">Create&nbsp;</span> View
         </v-btn>
         <v-btn v-if="canDropTable" class="mb-1" color="error" @click="dropTableDialog = true">
-          <v-icon left>mdi-delete</v-icon> <span v-if="$vuetify.breakpoint.xlOnly">Drop</span> Table
+          <v-icon left>mdi-delete</v-icon> <span v-if="$vuetify.breakpoint.xlOnly">Drop&nbsp;</span> Table
         </v-btn>
         <v-btn v-if="canGetPid" class="mb-1" color="primary" :to="`/database/${$route.params.database_id}/table/${$route.params.table_id}/persist`">
-          <v-icon left>mdi-content-save-outline</v-icon> <span v-if="$vuetify.breakpoint.xlOnly">Get</span> PID
+          <v-icon left>mdi-content-save-outline</v-icon> <span v-if="$vuetify.breakpoint.xlOnly">Get&nbsp;</span> PID
         </v-btn>
       </v-toolbar-title>
     </v-toolbar>
