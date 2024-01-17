@@ -144,11 +144,9 @@ public class ColumnDto {
     @Schema(example = "false")
     private Boolean isNullAllowed;
 
-    @Field(name = "enums", type = FieldType.Object)
     @Parameter(description = "enum values, only considered when type = ENUM")
     private List<String> enums;
 
-    @Field(name = "sets", type = FieldType.Object)
     @Parameter(description = "enum values, only considered when type = ENUM")
     private List<String> sets;
 

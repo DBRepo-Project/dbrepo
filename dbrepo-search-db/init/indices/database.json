@@ -614,6 +614,9 @@
               "database_id": {
                 "type": "long"
               },
+              "data_length": {
+                "type": "long"
+              },
               "description": {
                 "type": "text"
               },
@@ -647,6 +650,21 @@
                   }
                 }
               },
+              "num_rows": {
+                "type": "long"
+              },
+              "max_data_length": {
+                "type": "long"
+              },
+              "mean": {
+                "type": "double"
+              },
+              "median": {
+                "type": "double"
+              },
+              "std_dev": {
+                "type": "double"
+              },
               "size": {
                 "type": "long"
               },
@@ -666,6 +684,12 @@
                     "type": "keyword"
                   }
                 }
+              },
+              "val_min": {
+                "type": "double"
+              },
+              "val_max": {
+                "type": "double"
               }
             }
           },

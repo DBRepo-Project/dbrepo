@@ -30,7 +30,6 @@ build-analyse-service:
 build-docker:
 	docker build --network=host -t dbrepo-metadata-service:build --target build dbrepo-metadata-service
 	docker build --network=host -t dbrepo-data-service:build --target build dbrepo-data-service
-	docker build --network=host ./dbrepo-log-service -t dbrepo-log-service
 	docker compose build --parallel
 
 build-frontend:
@@ -40,7 +39,7 @@ build-frontend:
 build-clients:
 	bash ./.gitlab/swagger/generate.sh
 
-tag: tag-analyse-service tag-authentication-service tag-metadata-db tag-ui tag-metadata-service tag-data-service tag-log-service tag-search-db tag-search-db-init tag-search-service tag-data-db-sidecar
+tag: tag-analyse-service tag-authentication-service tag-metadata-db tag-ui tag-metadata-service tag-data-service tag-search-db tag-search-db-init tag-search-service tag-data-db-sidecar
 
 tag-analyse-service:
 	docker tag dbrepo-analyse-service:latest "${REPOSITORY_1_URL}/analyse-service:${TAG}"
@@ -78,10 +77,6 @@ tag-search-db-init:
 	docker tag dbrepo-search-db-init:latest "${REPOSITORY_1_URL}/search-db-init:${TAG}"
 	docker tag dbrepo-search-db-init:latest "${REPOSITORY_2_URL}/search-db-init:${TAG}"
 
-tag-log-service:
-	docker tag dbrepo-log-service:latest "${REPOSITORY_1_URL}/log-service:${TAG}"
-	docker tag dbrepo-log-service:latest "${REPOSITORY_2_URL}/log-service:${TAG}"
-
 tag-search-service:
 	docker tag dbrepo-search-service:latest "${REPOSITORY_1_URL}/search-service:${TAG}"
 	docker tag dbrepo-search-service:latest "${REPOSITORY_2_URL}/search-service:${TAG}"
@@ -90,7 +85,7 @@ tag-storage-service-init:
 	docker tag dbrepo-storage-service-init:latest "${REPOSITORY_1_URL}/storage-service-init:${TAG}"
 	docker tag dbrepo-storage-service-init:latest "${REPOSITORY_2_URL}/storage-service-init:${TAG}"
 
-release: build-docker tag release-analyse-service release-authentication-service release-metadata-db release-ui release-metadata-service release-data-service release-log-service release-search-db release-search-db-init release-search-service release-data-db-sidecar
+release: build-docker tag release-analyse-service release-authentication-service release-metadata-db release-ui release-metadata-service release-data-service release-search-db release-search-db-init release-search-service release-data-db-sidecar
 
 release-analyse-service: tag-analyse-service
 	docker push "${REPOSITORY_1_URL}/analyse-service:${TAG}"
@@ -128,10 +123,6 @@ release-metadata-service: tag-metadata-service
 	docker push "${REPOSITORY_1_URL}/metadata-service:${TAG}"
 	docker push "${REPOSITORY_2_URL}/metadata-service:${TAG}"
 
-release-log-service: tag-log-service
-	docker push "${REPOSITORY_1_URL}/log-service:${TAG}"
-	docker push "${REPOSITORY_2_URL}/log-service:${TAG}"
-
 release-search-service: tag-search-service
 	docker push "${REPOSITORY_1_URL}/search-service:${TAG}"
 	docker push "${REPOSITORY_2_URL}/search-service:${TAG}"
@@ -151,7 +142,7 @@ test-metadata-service: build-metadata-service
 test-analyse-service: build-analyse-service
 	bash ./dbrepo-analyse-service/test.sh
 
-scan: scan-analyse-service scan-authentication-service scan-broker-service scan-gateway-service scan-metadata-db scan-metadata-service scan-search-db scan-ui scan-data-service scan-data-db scan-log-service scan-search-dashboard scan-search-service
+scan: scan-analyse-service scan-authentication-service scan-broker-service scan-gateway-service scan-metadata-db scan-metadata-service scan-search-db scan-ui scan-data-service scan-data-db scan-search-dashboard scan-search-service
 
 scan-analyse-service:
 	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-analyse-service-report.json dbrepo-analyse-service:latest
@@ -210,13 +201,8 @@ scan-ui:
 	trivy image --insecure --exit-code 0 dbrepo-ui:latest
 	trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-ui:latest
 
-scan-log-service:
-	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-log-service-report.json dbrepo-log-service:latest
-	trivy image --insecure --exit-code 0 dbrepo-log-service:latest
-	trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-log-service:latest
-
 scan-search-service:
-	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-log-service-report.json dbrepo-search-service:latest
+	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-service-report.json dbrepo-search-service:latest
 	trivy image --insecure --exit-code 0 dbrepo-search-service:latest
 	trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-search-service:latest
 

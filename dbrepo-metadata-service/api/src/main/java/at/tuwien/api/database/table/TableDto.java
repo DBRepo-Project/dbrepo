@@ -105,6 +105,7 @@ public class TableDto {
     private Instant created;
 
     @NotNull(message = "columns are required")
+    @Field(name = "columns", type = FieldType.Object)
     private List<ColumnDto> columns;
 
     @Field(name = "constraints", type = FieldType.Object)
