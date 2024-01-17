@@ -72,6 +72,11 @@ public class DatabaseEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             array = @ArraySchema(schema = @Schema(implementation = DatabaseBriefDto.class)))}),
+            @ApiResponse(responseCode = "404",
+                    description = "User not found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<List<DatabaseDto>> list(@NotNull Principal principal,
                                                   @RequestParam(required = false) String filter)
@@ -100,8 +105,12 @@ public class DatabaseEndpoint {
     @Operation(summary = "Count databases")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
-                    description = "Count databases",
-                    content = {@Content()}),
+                    description = "Count databases"),
+            @ApiResponse(responseCode = "404",
+                    description = "User not found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<List<DatabaseDto>> count(@NotNull Principal principal,
                                                    @RequestParam(required = false) String filter)
@@ -140,7 +149,12 @@ public class DatabaseEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseBriefDto.class))}),
             @ApiResponse(responseCode = "400",
-                    description = "Database create query is malformed",
+                    description = "Database create query is malformed or image is not supported",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Database create permission is missing or grant permissions at broker service failed",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -149,28 +163,8 @@ public class DatabaseEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "405",
-                    description = "Database create permission is missing or grant permissions at broker service failed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "406",
-                    description = "Failed to create user at broker service or virtual host could not be reached at broker service",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "409",
-                    description = "Database name already exist or query store could not be created",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "501",
-                    description = "Container image is not supported",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "502",
-                    description = "Connection to the container failed",
+                    description = "Query store could not be created",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -182,11 +176,9 @@ public class DatabaseEndpoint {
     })
     public ResponseEntity<DatabaseBriefDto> create(@Valid @RequestBody DatabaseCreateDto createDto,
                                                    @NotNull Principal principal)
-            throws ImageNotSupportedException, ContainerNotFoundException, DatabaseMalformedException,
-            AmqpException, ContainerConnectionException, UserNotFoundException,
-            DatabaseNotFoundException, DatabaseNameExistsException, DatabaseConnectionException,
-            QueryMalformedException, NotAllowedException, BrokerVirtualHostModificationException, QueryStoreException,
-            BrokerVirtualHostGrantException, KeycloakRemoteException, AccessDeniedException, BrokerRemoteException {
+            throws ContainerNotFoundException, DatabaseMalformedException, UserNotFoundException,
+            DatabaseNotFoundException, DatabaseConnectionException, QueryMalformedException, NotAllowedException,
+            QueryStoreException {
         log.debug("endpoint create database, createDto={}, {}", createDto, PrincipalUtil.formatForDebug(principal));
         final User user = userService.findByUsername(principal.getName());
         final Database database = databaseService.create(createDto, principal);
@@ -212,11 +204,11 @@ public class DatabaseEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseDto.class))}),
             @ApiResponse(responseCode = "404",
-                    description = "Database or user could not be found",
+                    description = "Database could not be found",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "405",
+            @ApiResponse(responseCode = "403",
                     description = "Visibility modification is not permitted",
                     content = {@Content(
                             mediaType = "application/json",
@@ -225,10 +217,9 @@ public class DatabaseEndpoint {
     public ResponseEntity<DatabaseDto> visibility(@NotNull @PathVariable Long id,
                                                   @Valid @RequestBody DatabaseModifyVisibilityDto data,
                                                   @NotNull Principal principal) throws DatabaseNotFoundException,
-            UserNotFoundException, NotAllowedException {
+            NotAllowedException {
         log.debug("endpoint update database, id={}, data={}, {}", id, data, PrincipalUtil.formatForDebug(principal));
         final Database database = databaseService.findById(id);
-        final User user = userService.findByUsername(principal.getName());
         if (!database.getOwnedBy().equals(UserUtil.getId(principal))) {
             log.error("Failed to create database: not owner");
             throw new NotAllowedException(("Failed to create database: not owner"));
@@ -255,7 +246,7 @@ public class DatabaseEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "405",
+            @ApiResponse(responseCode = "403",
                     description = "Transfer of ownership is not permitted",
                     content = {@Content(
                             mediaType = "application/json",
@@ -264,7 +255,7 @@ public class DatabaseEndpoint {
     public ResponseEntity<DatabaseDto> transfer(@NotNull @PathVariable Long id,
                                                 @Valid @RequestBody DatabaseTransferDto transferDto,
                                                 @NotNull Principal principal) throws DatabaseNotFoundException,
-            UserNotFoundException, NotAllowedException, KeycloakRemoteException, AccessDeniedException {
+            UserNotFoundException, NotAllowedException {
         log.debug("endpoint update database, id={}, transferDto={}, {}", id, transferDto, PrincipalUtil.formatForDebug(principal));
         final Database database = databaseService.findById(id);
         final User user = userService.findByUsername(principal.getName());
@@ -289,7 +280,12 @@ public class DatabaseEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = DatabaseDto.class))}),
             @ApiResponse(responseCode = "404",
-                    description = "Database could not be found",
+                    description = "Database or exchange could not be found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "503",
+                    description = "Connection to the broker service could not be established",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),

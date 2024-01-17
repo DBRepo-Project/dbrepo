@@ -96,16 +96,10 @@ public class OntologyEndpoint {
                     description = "Registered ontology successfully",
                     content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = OntologyDto.class))}),
-            @ApiResponse(responseCode = "201",
-                    description = "Could not find user",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                            schema = @Schema(implementation = OntologyDto.class))})
     })
     public ResponseEntity<OntologyDto> create(@NotNull @Valid @RequestBody OntologyCreateDto data,
-                                              @NotNull Principal principal) throws UserNotFoundException,
-            KeycloakRemoteException, AccessDeniedException {
+                                              @NotNull Principal principal) {
         log.debug("endpoint create ontology, data={}, {}", data, PrincipalUtil.formatForDebug(principal));
         final OntologyDto dto = ontologyMapper.ontologyToOntologyDto(ontologyService.create(data, principal));
         log.trace("create ontology resulted in dto {}", dto);

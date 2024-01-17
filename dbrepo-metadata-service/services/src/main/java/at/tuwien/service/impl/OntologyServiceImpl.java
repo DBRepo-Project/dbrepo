@@ -52,8 +52,7 @@ public class OntologyServiceImpl implements OntologyService {
     }
 
     @Override
-    public Ontology create(OntologyCreateDto data, Principal principal) throws UserNotFoundException,
-            KeycloakRemoteException, AccessDeniedException {
+    public Ontology create(OntologyCreateDto data, Principal principal) {
         final Ontology entity = ontologyMapper.ontologyCreateDtoToOntology(data);
         final Ontology ontology = ontologyRepository.save(entity);
         log.info("Created ontology with id {}  in metadata database", ontology.getId());

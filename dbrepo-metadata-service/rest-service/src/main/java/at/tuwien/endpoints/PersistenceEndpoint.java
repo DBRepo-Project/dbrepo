@@ -72,11 +72,26 @@ public class PersistenceEndpoint {
                             mediaType = "text/bibliography",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "404",
-                    description = "Identifier could not be exported from database as the resource was not found",
+                    description = "Identifier could not be found",
                     content = {@Content(
                             mediaType = "text/csv",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "502",
+            @ApiResponse(responseCode = "409",
+                    description = "Exported resource was not found",
+                    content = {@Content(
+                            mediaType = "text/csv",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "410",
+                    description = "Failed to retrieve from S3 endpoint",
+                    content = {@Content(
+                            mediaType = "text/csv",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "422",
+                    description = "Failed to retrieve from database sidecar",
+                    content = {@Content(
+                            mediaType = "text/csv",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "503",
                     description = "Identifier could not exported from database as it is not reachable",
                     content = {@Content(
                             mediaType = "text/csv",
@@ -85,9 +100,9 @@ public class PersistenceEndpoint {
     public ResponseEntity<?> find(@Valid @PathVariable("pid") Long pid,
                                   @RequestHeader(HttpHeaders.ACCEPT) String accept,
                                   @NotNull Principal principal) throws IdentifierNotFoundException,
-            QueryNotFoundException, RemoteUnavailableException, IdentifierRequestException, UserNotFoundException,
-            QueryStoreException, TableMalformedException, DatabaseConnectionException, QueryMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException, DataDbSidecarException {
+            QueryNotFoundException, IdentifierRequestException, UserNotFoundException, QueryStoreException,
+            TableMalformedException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException,
+            ImageNotSupportedException, FileStorageException, DataDbSidecarException {
         log.debug("endpoint find identifier, pid={}, accept={}", pid, accept);
         final Identifier identifier = identifierService.find(pid);
         log.info("Found persistent identifier with id {}", identifier.getId());
@@ -151,15 +166,14 @@ public class PersistenceEndpoint {
     @Operation(summary = "Delete some identifier", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
-                    description = "Deleted identifier",
-                    content = {@Content}),
-            @ApiResponse(responseCode = "404",
-                    description = "Identifier or database could not be found",
+                    description = "Deleted identifier"),
+            @ApiResponse(responseCode = "403",
+                    description = "Deleting identifier not permitted",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "405",
-                    description = "Deleting identifier not permitted",
+            @ApiResponse(responseCode = "404",
+                    description = "Identifier or database could not be found",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))})

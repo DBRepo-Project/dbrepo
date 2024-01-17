@@ -24,8 +24,7 @@ public interface StoreService {
      * @throws QueryStoreException        The query store produced an invalid result
      */
     List<Query> findAll(Long databaseId, Boolean persisted, Principal principal) throws DatabaseNotFoundException,
-            ImageNotSupportedException, QueryStoreException, ContainerNotFoundException, DatabaseConnectionException,
-            TableMalformedException, UserNotFoundException;
+            ImageNotSupportedException, QueryStoreException;
 
     /**
      * Finds a query in the query store of the given database id and query id.
@@ -40,7 +39,7 @@ public interface StoreService {
      * @throws QueryNotFoundException     The query store did not return a query
      */
     Query findOne(Long databaseId, Long queryId, Principal principal) throws DatabaseNotFoundException,
-            ImageNotSupportedException, DatabaseConnectionException, QueryNotFoundException, QueryStoreException, UserNotFoundException;
+            ImageNotSupportedException, QueryNotFoundException, QueryStoreException;
 
     /**
      * Inserts a query and metadata to the query store of a given database id.
@@ -49,14 +48,15 @@ public interface StoreService {
      * @param metadata   The statement.
      * @param principal  The user principal.
      * @return The stored query on success
-     * @throws QueryStoreException         The query store raised some error
-     * @throws DatabaseNotFoundException   The database id was not found in the metadata database
-     * @throws ImageNotSupportedException  The image is not supported
-     * @throws UserNotFoundException       The user was not found in the metadata database.
-     * @throws DatabaseConnectionException The database connection to the remote container failed.
+     * @throws QueryStoreException        The query store raised some error
+     * @throws DatabaseNotFoundException  The database id was not found in the metadata database
+     * @throws ImageNotSupportedException The image is not supported
+     * @throws UserNotFoundException      The user was not found in the metadata database.
+     * @throws QueryNotFoundException     The query was not found in the query store.
      */
     Query insert(Long databaseId, ExecuteStatementDto metadata, Principal principal) throws QueryStoreException,
-            DatabaseNotFoundException, ImageNotSupportedException, UserNotFoundException, DatabaseConnectionException, KeycloakRemoteException, AccessDeniedException, QueryNotFoundException;
+            DatabaseNotFoundException, ImageNotSupportedException, UserNotFoundException,
+            QueryNotFoundException;
 
     /**
      * Persists a query to be displayed in the frontend.
@@ -65,16 +65,16 @@ public interface StoreService {
      * @param queryId    The query id.
      * @param data       The desired persist state.
      * @return The stored query on success.
-     * @throws DatabaseNotFoundException   The database id was not found in the metadata database
-     * @throws ImageNotSupportedException  The image is not supported.
-     * @throws DatabaseConnectionException The database connection to the remote container failed.
-     * @throws QueryStoreException         The query store raised some error.
+     * @throws DatabaseNotFoundException           The database id was not found in the metadata database
+     * @throws ImageNotSupportedException          The image is not supported.
+     * @throws QueryStoreException                 The query store raised some error.
+     * @throws IdentifierAlreadyPublishedException The query is already persisted.
      */
     Query persist(Long databaseId, Long queryId, QueryPersistDto data) throws DatabaseNotFoundException,
-            ImageNotSupportedException, DatabaseConnectionException, QueryStoreException, UserNotFoundException, IdentifierAlreadyPublishedException;
+            ImageNotSupportedException, QueryStoreException, IdentifierAlreadyPublishedException;
 
     /**
-     * Deletes the stale queries that have not been persisted within 24 hozrs.
+     * Deletes the stale queries that have not been persisted within 24 hours.
      *
      * @throws ImageNotSupportedException The image is not supported.
      * @throws QueryStoreException        The query store raised some error.

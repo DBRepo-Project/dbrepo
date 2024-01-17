@@ -31,16 +31,18 @@ public interface QueryService {
      * @param sortColumn    The sorting column.
      * @return The result.
      * @throws QueryStoreException        The query store is not reachable.
-     * @throws QueryMalformedException    The query is malformed.
-     * @throws DatabaseNotFoundException  The database was not found in the metdata database.
+     * @throws DatabaseNotFoundException  The database was not found in the metadata database.
      * @throws ImageNotSupportedException The image is not supported.
      * @throws QueryMalformedException    The query is malformed.
+     * @throws ColumnParseException       The column could not be parsed.
+     * @throws UserNotFoundException      The user could not be found.
+     * @throws TableMalformedException    The table is malformed.
+     * @throws QueryNotFoundException     The query was not found in the query store.
      */
     QueryResultDto execute(Long databaseId, ExecuteStatementDto statement, Principal principal, Long page, Long size,
                            SortType sortDirection, String sortColumn) throws DatabaseNotFoundException,
             ImageNotSupportedException, QueryMalformedException, QueryStoreException, ColumnParseException,
-            UserNotFoundException, TableMalformedException, DatabaseConnectionException, KeycloakRemoteException,
-            AccessDeniedException, QueryNotFoundException;
+            UserNotFoundException, TableMalformedException, QueryNotFoundException;
 
     /**
      * Re-Executes an arbitrary query on the database. We allow the user to only view the data, therefore the
@@ -54,7 +56,6 @@ public interface QueryService {
      * @param sortColumn    The sorting column.
      * @param principal     The user principal.
      * @return The result.
-     * @throws QueryStoreException        The query store is not reachable.
      * @throws QueryMalformedException    The query is malformed.
      * @throws DatabaseNotFoundException  The database was not found in the metdata database.
      * @throws ImageNotSupportedException The image is not supported.
@@ -64,8 +65,7 @@ public interface QueryService {
      */
     QueryResultDto reExecute(Long databaseId, Query query, Long page, Long size, SortType sortDirection,
                              String sortColumn, Principal principal) throws QueryMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, ColumnParseException, DatabaseConnectionException,
-            TableMalformedException, QueryStoreException, UserNotFoundException;
+            DatabaseNotFoundException, ImageNotSupportedException, ColumnParseException, TableMalformedException;
 
     /**
      * Re-Executes the count-statement of an arbitrary query on the database. We allow the user to only view
@@ -105,8 +105,7 @@ public interface QueryService {
      */
     QueryResultDto tableFindAll(Long databaseId, Long tableId, Instant timestamp, Long page, Long size,
                                 Principal principal) throws TableNotFoundException, DatabaseNotFoundException,
-            ImageNotSupportedException, DatabaseConnectionException, TableMalformedException, PaginationException,
-            QueryMalformedException, UserNotFoundException;
+            TableMalformedException, QueryMalformedException, ImageNotSupportedException;
 
     /**
      * Select all data known in the database-table id tuple at a given time and return a downloadable input stream
@@ -118,18 +117,15 @@ public interface QueryService {
      * @param timestamp  The given time.
      * @param principal  The user principal.
      * @return The select all data result in the form of a downloadable .csv file.
-     * @throws TableNotFoundException      The table was not found in the metadata database.
-     * @throws TableMalformedException     The table columns are messed up what we got from the metadata database.
-     * @throws DatabaseNotFoundException   The database was not found in the remote database.
-     * @throws ImageNotSupportedException  The image is not supported.
-     * @throws DatabaseConnectionException The connection to the remote database was unsuccessful.
-     * @throws FileStorageException        The file could not be exported.
-     * @throws QueryMalformedException     The query is malformed.
+     * @throws TableNotFoundException    The table was not found in the metadata database.
+     * @throws DatabaseNotFoundException The database was not found in the remote database.
+     * @throws FileStorageException      The file could not be exported.
+     * @throws QueryMalformedException   The query is malformed.
+     * @throws DataDbSidecarException    The data database sidecar failed to produce the export resource.
      */
     ExportResource tableFindAll(Long databaseId, Long tableId, Instant timestamp, Principal principal)
-            throws TableNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
-            DatabaseConnectionException, TableMalformedException, PaginationException,
-            FileStorageException, QueryMalformedException, UserNotFoundException, DataDbSidecarException;
+            throws TableNotFoundException, DatabaseNotFoundException, FileStorageException, QueryMalformedException,
+            DataDbSidecarException;
 
     /**
      * Select all data known in the view id tuple and return a page of specific size.
@@ -141,16 +137,12 @@ public interface QueryService {
      * @param size       The page size.
      * @param principal  The user principal.
      * @return The select all data result
-     * @throws ViewNotFoundException      The view was not found in the metadata database.
-     * @throws DatabaseNotFoundException  The database was not found in the metdata database.
-     * @throws ImageNotSupportedException The image is not supported.
-     * @throws ViewMalformedException     The table is malformed.
-     * @throws QueryMalformedException    The query is malformed.
+     * @throws DatabaseNotFoundException The database was not found in the metadata database.
+     * @throws QueryMalformedException   The query is malformed.
+     * @throws TableMalformedException   The table is malformed.
      */
     QueryResultDto viewFindAll(Long databaseId, View view, Long page, Long size, Principal principal)
-            throws ViewNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
-            DatabaseConnectionException, ViewMalformedException, PaginationException, QueryMalformedException,
-            UserNotFoundException, TableMalformedException;
+            throws DatabaseNotFoundException, QueryMalformedException, TableMalformedException;
 
     /**
      * Finds one query by database id and query id.
@@ -161,16 +153,15 @@ public interface QueryService {
      * @return The query result in the form  of a downloadable .csv file.
      * @throws DatabaseNotFoundException  The database was not found in the remote database.
      * @throws ImageNotSupportedException The image is not supported.
-     * @throws TableMalformedException    The table columns are messed up what we got from the metadata database.
      * @throws FileStorageException       The file could not be exported.
      * @throws QueryStoreException        The query store is not reachable.
      * @throws QueryNotFoundException     THe query was not found in the query store.
      * @throws QueryMalformedException    The query is malformed.
+     * @throws DataDbSidecarException     The data database sidecar failed to produce the export resource.
      */
     ExportResource findOne(Long databaseId, Long queryId, Principal principal) throws DatabaseNotFoundException,
-            ImageNotSupportedException, TableMalformedException, FileStorageException, QueryStoreException,
-            QueryNotFoundException, QueryMalformedException, DatabaseConnectionException, UserNotFoundException,
-            DataDbSidecarException;
+            ImageNotSupportedException, FileStorageException, QueryStoreException, QueryNotFoundException,
+            QueryMalformedException, DataDbSidecarException;
 
     /**
      * Count the total tuples for a given table id within a database id at a given time.
@@ -184,11 +175,12 @@ public interface QueryService {
      * @throws TableNotFoundException     The table was not found in the metadata database.
      * @throws TableMalformedException    The table columns are messed up what we got from the metadata database.
      * @throws ImageNotSupportedException The image is not supported.
+     * @throws QueryMalformedException    The query is malformed.
+     * @throws QueryStoreException        The query store could not retrieve.
      */
     Long tableCount(Long databaseId, Long tableId, Instant timestamp, Principal principal)
-            throws DatabaseNotFoundException, TableNotFoundException, TableMalformedException,
-            ImageNotSupportedException, DatabaseConnectionException, QueryMalformedException, QueryStoreException,
-            UserNotFoundException;
+            throws DatabaseNotFoundException, TableNotFoundException, ImageNotSupportedException,
+            QueryMalformedException, QueryStoreException, TableMalformedException;
 
     /**
      * Count the total tuples for a given table id within a database id at a given time.
@@ -202,8 +194,7 @@ public interface QueryService {
      * @throws ImageNotSupportedException The image is not supported.
      */
     Long viewCount(Long databaseId, View view, Principal principal) throws DatabaseNotFoundException,
-            TableMalformedException, ImageNotSupportedException, DatabaseConnectionException, QueryMalformedException,
-            QueryStoreException, UserNotFoundException;
+            ImageNotSupportedException, QueryMalformedException, QueryStoreException, TableMalformedException;
 
     /**
      * Insert data from AMQP client into a table of a table-database id tuple, we need the "root" role for this as the
@@ -213,14 +204,12 @@ public interface QueryService {
      * @param tableId    The table id.
      * @param data       The data.
      * @param principal  The user principal.
-     * @throws ImageNotSupportedException The image is not supported.
-     * @throws TableMalformedException    The table does not exist in the metadata database.
-     * @throws DatabaseNotFoundException  The database is not found in the metadata database.
-     * @throws TableNotFoundException     The table is not found in the metadata database.
+     * @throws TableMalformedException   The table does not exist in the metadata database.
+     * @throws DatabaseNotFoundException The database is not found in the metadata database.
+     * @throws TableNotFoundException    The table is not found in the metadata database.
      */
-    void insert(Long databaseId, Long tableId, TableCsvDto data, Principal principal) throws ImageNotSupportedException,
-            TableMalformedException, DatabaseNotFoundException, TableNotFoundException, DatabaseConnectionException,
-            UserNotFoundException;
+    void insert(Long databaseId, Long tableId, TableCsvDto data, Principal principal) throws TableMalformedException,
+            DatabaseNotFoundException, TableNotFoundException;
 
     /**
      * Deletes a tuple by given constraint set
@@ -237,7 +226,7 @@ public interface QueryService {
      */
     void delete(Long databaseId, Long tableId, TableCsvDeleteDto data, Principal principal)
             throws ImageNotSupportedException, TableMalformedException, DatabaseNotFoundException,
-            TableNotFoundException, DatabaseConnectionException, QueryMalformedException, UserNotFoundException;
+            TableNotFoundException, QueryMalformedException;
 
     /**
      * Insert data from a csv into a table of a table-database id tuple, we need the "root" role for this as the
@@ -247,13 +236,11 @@ public interface QueryService {
      * @param tableId    The table id.
      * @param data       The data path.
      * @param principal  The user principal.
-     * @throws ImageNotSupportedException The image is not supported.
-     * @throws TableMalformedException    The table does not exist in the metadata database.
-     * @throws DatabaseNotFoundException  The database is not found in the metadata database.
-     * @throws TableNotFoundException     The table is not found in the metadata database.
-     * @throws QueryMalformedException    The query is malformed.
+     * @throws TableMalformedException   The table does not exist in the metadata database.
+     * @throws DatabaseNotFoundException The database is not found in the metadata database.
+     * @throws TableNotFoundException    The table is not found in the metadata database.
+     * @throws DataDbSidecarException    The data database sidecar failed to import the dataset.
      */
-    void insert(Long databaseId, Long tableId, ImportDto data, Principal principal) throws ImageNotSupportedException,
-            TableMalformedException, DatabaseNotFoundException, TableNotFoundException, DatabaseConnectionException,
-            QueryMalformedException, UserNotFoundException, DataDbSidecarException;
+    void insert(Long databaseId, Long tableId, ImportDto data, Principal principal) throws TableMalformedException,
+            DatabaseNotFoundException, TableNotFoundException, DataDbSidecarException;
 }

@@ -111,6 +111,11 @@ public class IdentifierEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = IdentifierDto.class))}),
+            @ApiResponse(responseCode = "204",
+                    description = "Identifier could not be created",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "400",
                     description = "Identifier form contains invalid request data",
                     content = {@Content(
@@ -146,14 +151,17 @@ public class IdentifierEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "503",
+                    description = "DataCite system did not respond",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<IdentifierDto> create(@NotNull @Valid @RequestBody IdentifierSaveDto data,
-                                                @NotNull Principal principal)
-            throws IdentifierAlreadyExistsException, QueryNotFoundException, IdentifierPublishingNotAllowedException,
-            RemoteUnavailableException, UserNotFoundException, DatabaseNotFoundException, IdentifierRequestException,
-            NotAllowedException, ViewNotFoundException, QueryStoreException, DatabaseConnectionException,
-            ImageNotSupportedException, IdentifierNotFoundException, TableNotFoundException, TableMalformedException,
-            QueryMalformedException, FileStorageException, DataDbSidecarException {
+                                                @NotNull Principal principal) throws DatabaseNotFoundException,
+            NotAllowedException, IdentifierRequestException, ViewNotFoundException, TableNotFoundException,
+            QueryStoreException, QueryNotFoundException, ImageNotSupportedException, UserNotFoundException,
+            DatabaseConnectionException, RemoteUnavailableException {
         log.debug("endpoint create identifier, data={}, {}", data, PrincipalUtil.formatForDebug(principal));
         DatabaseAccess access = null;
         try {

@@ -87,16 +87,6 @@ public class ImageEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "404",
-                    description = "User could not be found",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "502",
-                    description = "Failed to connect",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "409",
                     description = "Image already exists",
                     content = {@Content(
@@ -104,8 +94,8 @@ public class ImageEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<ImageDto> create(@Valid @RequestBody ImageCreateDto data,
-                                           @NotNull Principal principal) throws ImageNotFoundException,
-            ImageAlreadyExistsException, UserNotFoundException, ImageInvalidException {
+                                           @NotNull Principal principal) throws ImageAlreadyExistsException,
+            ImageInvalidException {
         log.debug("endpoint create image, data={}, {}", data, PrincipalUtil.formatForDebug(principal));
         if (data.getDefaultPort() == null) {
             log.error("Failed to create image, default port is null");

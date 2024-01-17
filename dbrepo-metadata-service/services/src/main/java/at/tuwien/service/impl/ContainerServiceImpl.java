@@ -45,13 +45,13 @@ public class ContainerServiceImpl implements ContainerService {
         final Optional<Container> optional = containerRepository.findByInternalName(
                 containerMapper.containerToInternalContainerName(data.getName()));
         if (optional.isPresent()) {
-            log.error("Failed to create container with name {}: already exists in metadata database", data.getName());
-            throw new ContainerAlreadyExistsException("Failed to create container with name " + data.getName() + ": already exists in metadata database");
+            log.error("Failed to create container with name {}: already exists", data.getName());
+            throw new ContainerAlreadyExistsException("Failed to create container with name " + data.getName() + ": already exists");
         }
         final Optional<ContainerImage> optional2 = imageRepository.findById(data.getImageId());
         if (optional2.isEmpty()) {
-            log.error("Failed to find image with id {} in metadata database", data.getImageId());
-            throw new ImageNotFoundException("Failed to find image with id " + data.getImageId() + " in metadata database");
+            log.error("Failed to find image with id {}", data.getImageId());
+            throw new ImageNotFoundException("Failed to find image with id " + data.getImageId());
         }
         /* entity */
         final Container container = Container.builder()

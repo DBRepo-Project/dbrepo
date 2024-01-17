@@ -51,22 +51,17 @@ public class TableHistoryEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Find table history is not permitted",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "404",
                     description = "Table, database or user could not be found",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "405",
-                    description = "Find table history is not permitted",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "503",
-                    description = "Connection to the database failed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "504",
+            @ApiResponse(responseCode = "409",
                     description = "Query store failed to query table history",
                     content = {@Content(
                             mediaType = "application/json",
@@ -75,8 +70,7 @@ public class TableHistoryEndpoint {
     public ResponseEntity<List<TableHistoryDto>> getAll(@NotNull @PathVariable("databaseId") Long databaseId,
                                                         @NotNull @PathVariable("tableId") Long tableId,
                                                         @NotNull Principal principal)
-            throws TableNotFoundException, QueryMalformedException, DatabaseNotFoundException,
-            QueryStoreException, DatabaseConnectionException, UserNotFoundException {
+            throws TableNotFoundException, QueryMalformedException, DatabaseNotFoundException, QueryStoreException {
         log.debug("endpoint find all history, databaseId={}, tableId={}, {}", databaseId, tableId, PrincipalUtil.formatForDebug(principal));
         final List<TableHistoryDto> history = tableService.findHistory(databaseId, tableId, principal);
         log.trace("find all history resulted in history {}", history);

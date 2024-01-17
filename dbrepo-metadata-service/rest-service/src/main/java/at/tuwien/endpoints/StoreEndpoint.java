@@ -219,6 +219,16 @@ public class StoreEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = QueryDto.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Image not supported",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Not allowed to persist query",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "404",
                     description = "Database, query or user could not be found",
                     content = {@Content(
@@ -229,29 +239,18 @@ public class StoreEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "409",
+            @ApiResponse(responseCode = "412",
                     description = "Query is already persisted",
                     content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "501",
-                    description = "Image is not supported",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "504",
-                    description = "Query store failed to persist query",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                            schema = @Schema(implementation = ApiErrorDto.class))})
     })
     public ResponseEntity<QueryDto> persist(@NotNull @PathVariable("databaseId") Long databaseId,
                                             @NotNull @PathVariable("queryId") Long queryId,
                                             @NotNull @Valid @RequestBody QueryPersistDto data,
                                             @NotNull Principal principal)
-            throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
-            DatabaseConnectionException, UserNotFoundException, NotAllowedException, AccessDeniedException,
-            IdentifierAlreadyPublishedException {
+            throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException, UserNotFoundException,
+            NotAllowedException, AccessDeniedException, IdentifierAlreadyPublishedException {
         log.debug("endpoint persist query, container, databaseId={}, queryId={}, data.persist={}, {}", databaseId, queryId, data.getPersist(), PrincipalUtil.formatForDebug(principal));
         /* check */
         endpointValidator.validateOnlyAccessOrPublic(databaseId, principal);

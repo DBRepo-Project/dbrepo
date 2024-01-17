@@ -74,7 +74,7 @@ public class SemanticServiceImpl implements SemanticService {
                 .findFirst();
         if (optional.isEmpty()) {
             log.error("Failed to find unit with uri {} in metadata database", uri);
-            throw new UnitNotFoundException("Failed to find unit with uri " + uri + " in metadata database");
+            throw new UnitNotFoundException("Failed to find unit with uri " + uri);
         }
         return optional.get();
     }
@@ -94,7 +94,7 @@ public class SemanticServiceImpl implements SemanticService {
                 .findFirst();
         if (optional.isEmpty()) {
             log.error("Failed to find concept with uri {} in metadata database", uri);
-            throw new ConceptNotFoundException("Failed to find concept with uri " + uri + " in metadata database");
+            throw new ConceptNotFoundException("Failed to find concept with uri " + uri);
         }
         return optional.get();
     }

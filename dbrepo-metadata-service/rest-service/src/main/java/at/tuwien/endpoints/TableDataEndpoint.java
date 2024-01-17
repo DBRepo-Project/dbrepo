@@ -5,6 +5,8 @@ import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.TableCsvDeleteDto;
 import at.tuwien.api.database.table.TableCsvDto;
+import at.tuwien.api.database.table.columns.ColumnDto;
+import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
 import at.tuwien.service.DatabaseService;
@@ -14,6 +16,10 @@ import at.tuwien.utils.UserUtil;
 import at.tuwien.validation.EndpointValidator;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -50,13 +56,31 @@ public class TableDataEndpoint {
     @Observed(name = "dbr_table_data_insert")
     @PreAuthorize("hasAuthority('insert-table-data')")
     @Operation(summary = "Insert data", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<Void> insert(@NotNull @PathVariable("databaseId") Long databaseId,
-                                       @NotNull @PathVariable("tableId") Long tableId,
-                                       @NotNull @Valid @RequestBody TableCsvDto data,
-                                       @NotNull Principal principal)
-            throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
-            ImageNotSupportedException, ContainerNotFoundException, DatabaseConnectionException, UserNotFoundException,
-            NotAllowedException, AccessDeniedException {
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202",
+                    description = "Inserted data successfully"),
+            @ApiResponse(responseCode = "400",
+                    description = "Insert table data is malformed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Access to the database is forbidden",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Table or database could not be found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
+    public ResponseEntity<?> insert(@NotNull @PathVariable("databaseId") Long databaseId,
+                                    @NotNull @PathVariable("tableId") Long tableId,
+                                    @NotNull @Valid @RequestBody TableCsvDto data,
+                                    @NotNull Principal principal)
+            throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException, NotAllowedException,
+            AccessDeniedException {
         log.debug("endpoint insert data, databaseId={}, tableId={}, data={}, {}", databaseId, tableId, data, PrincipalUtil.formatForDebug(principal));
         /* check */
         endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(databaseId, tableId, principal);
@@ -71,13 +95,31 @@ public class TableDataEndpoint {
     @PreAuthorize("hasAuthority('delete-table-data')")
     @Observed(name = "dbr_table_data_delete")
     @Operation(summary = "Delete data", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202",
+                    description = "Deleted table data successfully"),
+            @ApiResponse(responseCode = "400",
+                    description = "Table data or query is malformed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Access to the database is forbidden",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Table or database could not be found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
     public ResponseEntity<Void> delete(@NotNull @PathVariable("databaseId") Long databaseId,
                                        @NotNull @PathVariable("tableId") Long tableId,
                                        @NotNull @Valid @RequestBody TableCsvDeleteDto data,
                                        @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
-            ImageNotSupportedException, DatabaseConnectionException, QueryMalformedException, UserNotFoundException,
-            NotAllowedException, AccessDeniedException {
+            ImageNotSupportedException, QueryMalformedException, NotAllowedException, AccessDeniedException {
         log.debug("endpoint delete data, databaseId={}, tableId={}, data={}, {}", databaseId, tableId, data, PrincipalUtil.formatForDebug(principal));
         /* check */
         endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(databaseId, tableId, principal);
@@ -92,12 +134,35 @@ public class TableDataEndpoint {
     @PreAuthorize("hasAuthority('insert-table-data')")
     @Observed(name = "dbr_table_data_import")
     @Operation(summary = "Insert data from csv", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202",
+                    description = "Import table data successfully"),
+            @ApiResponse(responseCode = "400",
+                    description = "Table data is malformed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Access to the database is forbidden",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Table or database could not be found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "422",
+                    description = "Could not import csv via sidecar",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
     public ResponseEntity<Void> importCsv(@NotNull @PathVariable("databaseId") Long databaseId,
                                           @NotNull @PathVariable("tableId") Long tableId,
                                           @NotNull @Valid @RequestBody ImportDto data,
                                           @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
-            ImageNotSupportedException, DatabaseConnectionException, QueryMalformedException, UserNotFoundException,
             NotAllowedException, AccessDeniedException, DataDbSidecarException {
         log.debug("endpoint insert data from csv, databaseId={}, tableId={}, data={}, {}", databaseId, tableId, data, PrincipalUtil.formatForDebug(principal));
         /* check */
@@ -112,6 +177,30 @@ public class TableDataEndpoint {
     @Transactional(readOnly = true)
     @Observed(name = "dbr_table_data_findall")
     @Operation(summary = "Find data", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202",
+                    description = "Get table data successfully"),
+            @ApiResponse(responseCode = "400",
+                    description = "Table data is malformed or image is not supported",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Access to the database is forbidden",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Table or database could not be found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "422",
+                    description = "Could not import csv via sidecar",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
     public ResponseEntity<QueryResultDto> getAll(@NotNull @PathVariable("databaseId") Long databaseId,
                                                  @NotNull @PathVariable("tableId") Long tableId,
                                                  @NotNull Principal principal,
@@ -120,9 +209,9 @@ public class TableDataEndpoint {
                                                  @RequestParam(required = false) Long size,
                                                  @RequestParam(required = false) SortType sortDirection,
                                                  @RequestParam(required = false) String sortColumn)
-            throws TableNotFoundException, DatabaseNotFoundException, DatabaseConnectionException,
-            ImageNotSupportedException, TableMalformedException, PaginationException, QueryMalformedException,
-            UserNotFoundException, SortException, NotAllowedException, AccessDeniedException {
+            throws TableNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
+            TableMalformedException, PaginationException, QueryMalformedException, SortException, NotAllowedException,
+            AccessDeniedException {
         log.debug("endpoint find table data, databaseId={}, tableId={}, timestamp={}, page={}, size={}, sortDirection={}, sortColumn={}, {}",
                 databaseId, tableId, timestamp, page, size, sortDirection, sortColumn, PrincipalUtil.formatForDebug(principal));
         /* check */
@@ -144,13 +233,37 @@ public class TableDataEndpoint {
     @Transactional(readOnly = true)
     @Observed(name = "dbr_table_data_countall")
     @Operation(summary = "Find data", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202",
+                    description = "Get table data count successfully"),
+            @ApiResponse(responseCode = "400",
+                    description = "Table data is malformed or image is not supported",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Access to the database is forbidden",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Table or database could not be found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "422",
+                    description = "Could not import csv via sidecar",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
     public ResponseEntity<Long> getCount(@NotNull @PathVariable("databaseId") Long databaseId,
                                          @NotNull @PathVariable("tableId") Long tableId,
                                          @NotNull Principal principal,
                                          @RequestParam(required = false) Instant timestamp)
-            throws TableNotFoundException, DatabaseNotFoundException, DatabaseConnectionException,
-            ImageNotSupportedException, TableMalformedException, QueryStoreException, QueryMalformedException,
-            UserNotFoundException, NotAllowedException, AccessDeniedException {
+            throws TableNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
+            TableMalformedException, QueryStoreException, QueryMalformedException, NotAllowedException,
+            AccessDeniedException {
         log.debug("endpoint find table data, databaseId={}, tableId={}, timestamp={}, {}", databaseId, tableId, timestamp, PrincipalUtil.formatForDebug(principal));
         /* check */
         endpointValidator.validateOnlyAccessOrPublic(databaseId, principal);

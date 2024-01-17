@@ -31,7 +31,7 @@ public class QueryStoreServiceImpl extends HibernateConnector implements QuerySt
     @Override
     @Transactional(rollbackFor = DatabaseMalformedException.class)
     public void create(Long databaseId, Principal principal) throws DatabaseNotFoundException,
-            DatabaseConnectionException, DatabaseMalformedException, UserNotFoundException, QueryStoreException {
+            DatabaseMalformedException, UserNotFoundException, QueryStoreException {
         final Database database = databaseService.findById(databaseId);
         /* create */
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(), database.getContainer(), database);

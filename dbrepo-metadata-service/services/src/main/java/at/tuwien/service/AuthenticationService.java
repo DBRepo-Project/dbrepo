@@ -43,5 +43,13 @@ public interface AuthenticationService {
     UserDto findByUsername(String username) throws UserNotFoundException, KeycloakRemoteException,
             AccessDeniedException;
 
+    /**
+     * Updates the password of a user with given id.
+     *
+     * @param id   The user id.
+     * @param data The new password.
+     * @throws KeycloakRemoteException The Authentication Service was not able to respond within the 3s timeout.
+     * @throws AccessDeniedException   The admin token could not be obtained.
+     */
     void updatePassword(UUID id, UserPasswordDto data) throws KeycloakRemoteException, AccessDeniedException;
 }

@@ -15,6 +15,7 @@ public interface AccessService {
      *
      * @param databaseId The database id.
      * @return The list of database access definitions.
+     * @throws DatabaseNotFoundException The database was not found in the metadata database.
      */
     List<DatabaseAccess> list(Long databaseId) throws DatabaseNotFoundException;
 
@@ -24,7 +25,8 @@ public interface AccessService {
      * @param databaseId The database id.
      * @param userId     The user id.
      * @return The database access.
-     * @throws AccessDeniedException The access does not exist.
+     * @throws AccessDeniedException     The access does not exist.
+     * @throws DatabaseNotFoundException The database was not found in the metadata database.
      */
     DatabaseAccess find(Long databaseId, UUID userId) throws AccessDeniedException, DatabaseNotFoundException;
 
@@ -56,8 +58,7 @@ public interface AccessService {
      * @throws DatabaseMalformedException The database has an invalid state.
      */
     void update(Long databaseId, UUID userId, DatabaseModifyAccessDto accessDto) throws DatabaseNotFoundException,
-            UserNotFoundException, QueryMalformedException, DatabaseMalformedException,
-            NotAllowedException;
+            UserNotFoundException, QueryMalformedException, DatabaseMalformedException, NotAllowedException;
 
     /**
      * Revokes access to a database of container.
@@ -69,6 +70,7 @@ public interface AccessService {
      * @throws NotAllowedException        The access is not allowed.
      * @throws QueryMalformedException    The mapped access query is malformed.
      * @throws DatabaseMalformedException The database has an invalid state.
+     * @throws AccessDeniedException      The access to the database was denied.
      */
     void delete(Long databaseId, UUID userId) throws DatabaseNotFoundException, UserNotFoundException,
             NotAllowedException, QueryMalformedException, DatabaseMalformedException, AccessDeniedException;

@@ -59,6 +59,11 @@ public class AccessEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Failed giving access",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "404",
                     description = "Database or user not found",
                     content = {@Content(
@@ -75,7 +80,7 @@ public class AccessEndpoint {
                                     @Valid @RequestBody DatabaseGiveAccessDto accessDto,
                                     @NotNull Principal principal)
             throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException, QueryMalformedException,
-            DatabaseMalformedException, KeycloakRemoteException, AccessDeniedException {
+            DatabaseMalformedException {
         log.debug("endpoint give access to database, databaseId={}, userId={}, accessDto={}, {}", databaseId, userId, accessDto, PrincipalUtil.formatForDebug(principal));
         try {
             accessService.find(databaseId, userId);
@@ -119,7 +124,7 @@ public class AccessEndpoint {
                                     @Valid @RequestBody DatabaseModifyAccessDto accessDto,
                                     @NotNull Principal principal)
             throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException, QueryMalformedException,
-            DatabaseMalformedException, AccessDeniedException, KeycloakRemoteException {
+            DatabaseMalformedException, AccessDeniedException {
         log.debug("endpoint modify access to database, databaseId={}, userId={}, accessDto={}, {}", databaseId, userId, accessDto, PrincipalUtil.formatForDebug(principal));
         accessService.find(databaseId, userId);
         accessService.update(databaseId, userId, accessDto);
@@ -143,8 +148,8 @@ public class AccessEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "405",
-                    description = "Check access is not permitted",
+            @ApiResponse(responseCode = "404",
+                    description = "Database not found",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -173,18 +178,13 @@ public class AccessEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "404",
-                    description = "User with access was not found",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "405",
-                    description = "Revoke of access not permitted",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "403",
                     description = "Revoke of access not permitted as no access was found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "User, database with access was not found",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),

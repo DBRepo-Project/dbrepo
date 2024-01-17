@@ -45,8 +45,8 @@ public class ImageServiceImpl implements ImageService {
     public ContainerImage find(Long imageId) throws ImageNotFoundException {
         final Optional<ContainerImage> image = imageRepository.findById(imageId);
         if (image.isEmpty()) {
-            log.error("Failed to find image with id {} in metadata database", imageId);
-            throw new ImageNotFoundException("Failed to find image with id " + imageId + " in metadata database");
+            log.error("Failed to find image with id {}", imageId);
+            throw new ImageNotFoundException("Failed to find image with id " + imageId);
         }
         return image.get();
     }

@@ -67,15 +67,10 @@ public class TableColumnEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "404",
-                    description = "Table, database, semantic concept, unit of measurement or container could not be found",
+                    description = "Table or database could not be found",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "405",
-                    description = "Update column semantics not permitted",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ColumnDto.class))}),
     })
     public ResponseEntity<ColumnDto> update(@NotNull @PathVariable("id") Long id,
                                             @NotNull @PathVariable("tableId") Long tableId,
@@ -83,9 +78,8 @@ public class TableColumnEndpoint {
                                             @NotNull @Valid @RequestBody ColumnSemanticsUpdateDto updateDto,
                                             @NotNull Principal principal,
                                             @NotNull @RequestHeader("Authorization") String authorization)
-            throws TableNotFoundException, TableMalformedException, DatabaseNotFoundException,
-            ContainerNotFoundException, NotAllowedException, SemanticEntityPersistException,
-            SemanticEntityNotFoundException, QueryMalformedException, AccessDeniedException {
+            throws TableNotFoundException, TableMalformedException, DatabaseNotFoundException, NotAllowedException,
+            AccessDeniedException {
         log.debug("endpoint update table, id={}, tableId={}, columnId={}, {}", id, tableId, columnId, PrincipalUtil.formatForDebug(principal));
         if (principal != null && !UserUtil.hasRole(principal, "modify-foreign-table-column-semantics")) {
             endpointValidator.validateOnlyAccess(id, principal, true);
