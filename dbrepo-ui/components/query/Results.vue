@@ -82,6 +82,7 @@ export default {
         .then((result) => {
           this.mapResults(result)
           parent.resultId = result.id
+          this.id = result.id
         })
         .finally(() => {
           this.loading--
