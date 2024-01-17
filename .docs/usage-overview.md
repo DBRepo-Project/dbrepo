@@ -222,6 +222,7 @@ A user wants to create a database in DBRepo.
     ```bash
     curl -sSL \
       -X POST \
+      -H "Authorization: Bearer ACCESS_TOKEN" \
       -d '{"name":"Danube Water Quality Measurements","container_id":1,"is_public":true}' \
       http://localhost/api/database | jq .id
     ```
@@ -394,6 +395,7 @@ access to. This is the default for self-created databases like above in [Create 
     ```bash
     curl -sSL \
       -X POST \
+      -H "Authorization: Bearer ACCESS_TOKEN" \
       -d '{"filename":"FILEKEY","separator":","}' \
       http://localhost/api/analyse/determinedt | jq
     ```
@@ -403,6 +405,7 @@ access to. This is the default for self-created databases like above in [Create 
     ```bash
     curl -sSL \
       -X POST \
+      -H "Authorization: Bearer ACCESS_TOKEN" \
       -d '{"name":"Danube water levels","description":"Measurements of the river danube water levels","columns":[{"name":"datetime","type":"timestamp","dfid":1,"primary_key":false,"null_allowed":true},{"name":"level","type":"bigint","size":255,"primary_key":false,"null_allowed":true}]}' \
       http://localhost/api/database/1/table | jq .id
     ```
@@ -419,6 +422,7 @@ access to. This is the default for self-created databases like above in [Create 
     ```bash
     curl -sSL \
       -X POST \
+      -H "Authorization: Bearer ACCESS_TOKEN" \
       -d '{"location":"FILEKEY","separator":",","quote":"\"","skip_lines":1,"null_element":"NA"}' \
       http://localhost/api/database/1/table/1/data/import | jq
     ```
@@ -455,6 +459,83 @@ access to. This is the default for self-created databases like above in [Create 
         Please note that the `client_secret` is different for your DBRepo instance. This is a default client secret that
         likely has been replaced. Please contact your DBRepo administrator to get the `client_secret` for your instance.
         Similar you need to replace `localhost` with your actual DBRepo instance hostname, e.g. `test.dbrepo.tuwien.ac.at`.
+
+    Select a database where you have at least `write-all` access (this is the case for e.g. self-created databases).
+
+    Upload the dataset via the Python [`boto3`](https://boto3.amazonaws.com/v1/documentation/api/latest/index.html) 
+    client to the `dbrepo-upload` bucket.
+
+    ```python
+    import boto3
+    import os
+    
+    client = boto3.client(service_name='s3', endpoint_url='http://localhost:9000',
+                          aws_access_key_id='seaweedfsadmin',
+                          aws_secret_access_key='seaweedfsadmin')
+    filepath = os.path.join('/path/to', 'your_dataset.csv')
+    client.upload_file(filepath, 'dbrepo-upload', 'your_dataset.csv')
+    ```
+
+    Analyse the dataset and get the table column names and datatype suggestion.
+
+    ```python
+    import requests
+
+    response = requests.post("http://localhost/api/analyse/determinedt", headers={
+        "Authorization": "Bearer " + access_token
+    }, json={
+        "filename": "your_dataset.csv",
+        "separator": ","
+    })
+    print(response.json()["columns"])
+    ```
+
+    Provide the table name and optionally a table description along with the table columns.
+
+    ```python
+    import requests
+
+    response = requests.post("http://localhost/api/database/1/table", headers={
+        "Authorization": "Bearer " + access_token
+    }, json={"name": "Danube water levels", "description": "Measurements of the river danube water levels",
+             "columns": [{"name": "datetime", "type": "timestamp", "dfid": 1, "primary_key": False, "null_allowed": True},
+                         {"name": "level", "type": "bigint", "size": 255, "primary_key": False, "null_allowed": True}]})
+    print(response.json()["id"])
+    ```
+
+    Next, provide the dataset metadata that is necessary for import into the table by providing the dataset separator
+    (e.g. `,` or `;` or `\t`). If your dataset has a header line (the first line containing the names of the columns) 
+    set the number of lines to skip to 1. If your dataset contains more lines that should be ignored, set the number of
+    lines accordingly. If your dataset contains quoted values, indicate this by setting the field accordingly.
+
+    If your dataset contains encodings for `NULL` (e.g. `NA`), provide this encoding information. Similar, if it 
+    contains encodings for boolean `true` (e.g. `1` or `YES`), provide this encoding information. For boolean `false`
+    (e.g. `0` or `NO`), provide this information.
+
+    ```python
+    import requests
+
+    response = requests.post("http://localhost/api/database/1/table/1/data/import", headers={
+        "Authorization": "Bearer " + access_token
+    }, json={
+        "location": "your_dataset.csv",
+        "separator": ",",
+        "quote": "\"",
+        "skip_lines": 1,
+        "null_element": "NA"
+    })
+    ```
+
+    When you are finished with the table schema definition, the dataset is imported and a table is created. View the
+    table data:
+
+    ```python
+    import requests
+
+    response = requests.get("http://localhost/api/database/1/table/1/data?page=0&size=10", headers={
+        "Authorization": "Bearer " + access_token
+    })
+    ```
 
 ## Import Database Dump
 
@@ -706,7 +787,28 @@ A user wants to create a subset and export it as csv file.
 
 === "Python"
 
-    tbd
+    Obtain an access token:
+
+    ```python
+    import requests
+    
+    response = requests.post("http://localhost/api/auth/realms/dbrepo/protocol/openid-connect/token", json={
+        "username": "foo",
+        "password": "bar",
+        "grant_type": "password",
+        "client_id": "dbrepo-client",
+        "scope": "openid",
+        "client_secret": "MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG"
+    })
+    access_token = response.json()["access_token"]
+    print(access_token)
+    ```
+
+    !!! note
+
+        Please note that the `client_secret` is different for your DBRepo instance. This is a default client secret that
+        likely has been replaced. Please contact your DBRepo administrator to get the `client_secret` for your instance.
+        Similar you need to replace `localhost` with your actual DBRepo instance hostname, e.g. `test.dbrepo.tuwien.ac.at`.
 
 ## Assign Database PID
 
