@@ -10,6 +10,7 @@
 <script>
     function getVersion() {
         const segments = location.pathname.split('/')
+        console.debug('segments', segments)
         if (segments.length >= 4) {
             return segments[3]
         } else {
