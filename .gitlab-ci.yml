@@ -546,7 +546,6 @@ build-api-1.4:
   script:
     - apk add bash git maven
     - git fetch && git checkout release-v1.4
-    - TAG=${VERSION} bash .docs/.swagger/swagger-version.sh
     - bash .docs/.swagger/swagger-site.sh
     - mkdir -p ./swagger/${VERSION}
     - cp -r ./site/* ./swagger/${VERSION}/
