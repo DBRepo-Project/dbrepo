@@ -36,8 +36,8 @@ build-frontend:
 	yarn --cwd ./dbrepo-ui install --legacy-peer-deps
 	yarn --cwd ./dbrepo-ui run build
 
-build-clients:
-	bash ./.gitlab/swagger/generate.sh
+build-swagger:
+	bash ./.docs/generate.sh
 
 tag: tag-analyse-service tag-authentication-service tag-metadata-db tag-ui tag-metadata-service tag-data-service tag-search-db tag-search-db-init tag-search-service tag-data-db-sidecar
 

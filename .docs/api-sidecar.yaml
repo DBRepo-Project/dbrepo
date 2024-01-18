@@ -1,0 +1,100 @@
+components:
+  schemas:
+    Health:
+      properties:
+        status:
+          example: UP
+          type: string
+      required:
+        - status
+      title: Status object
+      type: object
+externalDocs:
+  description: Sourcecode Documentation
+  url: https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services
+info:
+  contact:
+    email: andreas.rauber@tuwien.ac.at
+    name: Prof. Andreas Rauber
+  description: Sidecar that downloads the import .csv file
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+  title: Database Repository Data Database sidecar API
+  version: 1.4.0
+openapi: 3.0.0
+paths:
+  /health:
+    get:
+      consumes:
+        - application/json
+      description: 'Return UP if the instance is ready to serve connections.
+
+        '
+      produces:
+        - application/json
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
+          description: OK, service is up and running
+        '404':
+          description: Service is not yet ready
+      summary: Return a healthcheck
+      tags:
+        - actuator
+  /sidecar/export/{filename}:
+    post:
+      consumes:
+        - application/json
+      description: 'Exports a specific .csv file to the Storage Service via S3
+
+        '
+      parameters:
+        - description: Name of the object file to export to the Storage Service
+          in: path
+          name: filename
+          required: true
+      produces:
+        - application/json
+      responses:
+        '202':
+          content: {}
+          description: Exported the .csv
+        '400':
+          description: The Storage Service could not be contacted or .csv was not
+            found.
+      summary: Exports a .csv to the Storage Service
+      tags:
+        - sidecar
+  /sidecar/import/{filename}:
+    post:
+      consumes:
+        - application/json
+      description: 'Imports a specific .csv file from the Storage Service via S3
+
+        '
+      parameters:
+        - description: Name of the object file to import from the Storage Service
+          in: path
+          name: filename
+          required: true
+      produces:
+        - application/json
+      responses:
+        '202':
+          content: {}
+          description: Imported the .csv
+        '400':
+          description: The Storage Service could not be contacted or .csv was not
+            found.
+      summary: Imports a .csv from the Storage Service
+      tags:
+        - sidecar
+servers:
+  - description: Generated server url
+    url: http://localhost:5000
+  - description: Sandbox
+    url: https://test.dbrepo.tuwien.ac.at
