@@ -14,8 +14,8 @@ collection. Challenges revolve around organizing, searching and retrieving conte
 constitute a major technical burden as their internal representation greatly differs from static documents most digital
 repositories are designed for.
 
-[System Description](../system){ .action-button .md-button .md-button--secondary }
-[How to use](../usage-overview){ .action-button .md-button .md-button--primary }
+[System Description](./system){ .action-button .md-button .md-button--secondary }
+[How to use](./usage-overview){ .action-button .md-button .md-button--primary }
 
 ## Application Areas
 
