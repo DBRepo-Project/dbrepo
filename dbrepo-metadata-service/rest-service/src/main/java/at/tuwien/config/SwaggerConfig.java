@@ -16,7 +16,7 @@ import java.util.List;
 @Configuration
 public class SwaggerConfig {
 
-    @Value("${app.version:unknown}")
+    @Value("${app.version}")
     private String version;
 
     @Bean
@@ -40,7 +40,7 @@ public class SwaggerConfig {
                                 .url("http://localhost:9099"),
                         new Server()
                                 .description("Sandbox")
-                                .url("https://dbrepo2.tuwien.ac.at")));
+                                .url("https://test.dbrepo.tuwien.ac.at")));
     }
 
     @Bean
