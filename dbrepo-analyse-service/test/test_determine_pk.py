@@ -14,7 +14,6 @@ from clients.s3_client import S3Client
 from determine_pk import determine_pk
 
 class DeterminePrimaryKeyTest(unittest.TestCase):
-
     # @Test
     def test_determine_pk_largeFileIdFirst_succeeds(self):
 
