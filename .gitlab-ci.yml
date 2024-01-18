@@ -499,7 +499,6 @@ build-api-latest:
   script:
     - apk add bash git
     - git fetch && git checkout dev
-    - TAG=latest bash .docs/.swagger/swagger-version.sh
     - bash .docs/.swagger/swagger-site.sh
     - mkdir -p ./swagger/latest
     - cp -r ./site/* ./swagger/latest/
