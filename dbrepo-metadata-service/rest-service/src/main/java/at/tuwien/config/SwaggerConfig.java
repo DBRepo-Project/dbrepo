@@ -24,7 +24,7 @@ public class SwaggerConfig {
                                 .name("Prof. Andreas Rauber")
                                 .email("andreas.rauber@tuwien.ac.at"))
                         .description("Service that manages the metadata")
-                        .version("dbrepo-latest")
+                        .version("$TAG")
                         .license(new License()
                                 .name("Apache 2.0")
                                 .url("https://www.apache.org/licenses/LICENSE-2.0")))

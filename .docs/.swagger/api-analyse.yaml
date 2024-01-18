@@ -12,7 +12,7 @@ info:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0
   title: Database Repository Analyse Service API
-  version: dbrepo-latest
+  version: $TAG
 openapi: 3.0.0
 paths:
   /api/analyse/determinedt:
@@ -48,8 +48,6 @@ paths:
         '405':
           description: Invalid input
       summary: Determine datatypes
-      tags:
-        - analyse-endpoint
   /api/analyse/determinepk:
     post:
       consumes:
@@ -78,88 +76,6 @@ paths:
         '405':
           description: Invalid input
       summary: Determine primary keys
-      tags:
-        - analyse-endpoint
-  /api/analyse/determinestat:
-    post:
-      operationId: determinestat
-      requestBody:
-        content:
-          application/json:
-            schema:
-              properties:
-                database_id:
-                  example: 1
-                  type: integer
-                table_id:
-                  example: 1
-                  type: integer
-              required:
-                - database_id
-                - table_id
-              type: object
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                properties:
-                  message:
-                    example: Analysed statistical properties
-                    type: string
-                  status:
-                    example: '200'
-                    type: integer
-                required:
-                  - message
-                  - status
-                type: object
-          description: Determined statistics
-        '400':
-          description: Invalid input
-          ontent:
-            application/json:
-              schema:
-                properties:
-                  message:
-                    example: Analysed statistical properties
-                    type: string
-                  status:
-                    example: '200'
-                    type: integer
-                required:
-                  - message
-                  - status
-                type: object
-      summary: Determine statistics
-      tags:
-        - analyse-endpoint
-  /api/analyse/determinestats:
-    post:
-      operationId: determinestats
-      requestBody:
-        content:
-          application/json:
-            schema:
-              properties:
-                filepath:
-                  example: file.csv
-                  type: string
-                separator:
-                  example: ','
-                  type: string
-              required:
-                - filepath
-                - separator
-              type: object
-      responses:
-        '200':
-          description: Determined statistics
-        '400':
-          description: Invalid input
-      summary: Determine statistics
-      tags:
-        - analyse-endpoint
   /health:
     get:
       consumes:
@@ -182,10 +98,8 @@ paths:
         '200':
           description: OK
       summary: Check if application is running
-      tags:
-        - health-endpoint
 servers:
   - description: Generated server url
     url: http://localhost:5000
   - description: Sandbox
-    url: https://test.dbrepo.tuwien.ac.at
+    url: https://dbrepo2.tuwien.ac.at

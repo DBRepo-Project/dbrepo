@@ -66,7 +66,7 @@ def create_app(config_class=Config):
         "info": {
             "title": "Database Repository Search Service API",
             "description": "Service that searches the search database",
-            "version": "dbrepo-latest",
+            "version": "$TAG",
             "contact": {
                 "name": "Prof. Andreas Rauber",
                 "email": "andreas.rauber@tuwien.ac.at"
