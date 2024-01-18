@@ -119,7 +119,7 @@ test-analyse-service:
   script:
     - "pip install pipenv"
     - "pipenv install gunicorn && pipenv install --dev --system --deploy"
-    - "cd ./dbrepo-analyse-service/ && coverage run -m pytest test/test_determine_dt.py test/test_determine_pk.py --junitxml=report.xml && coverage html && coverage report > ./coverage.txt"
+    - "cd ./dbrepo-analyse-service/ && coverage run -m pytest test/test_determine_dt.py test/test_determine_pk.py test/test_determine_stats.py --junitxml=report.xml && coverage html && coverage report > ./coverage.txt"
     - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
   artifacts:
     when: always

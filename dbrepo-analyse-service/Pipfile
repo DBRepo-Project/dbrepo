@@ -16,11 +16,16 @@ numpy = "*"
 pandas = "*"
 messytables = "*"
 minio = "*"
+flask-sqlalchemy = "*"
+opensearch-py = "*"
+pymysql = "*"
 
 [dev-packages]
 coverage = "*"
 pytest = "*"
 testcontainers-minio = "*"
+testcontainers-mysql = "*"
+testcontainers-opensearch = "*"
 
 [requires]
 python_version = "3.9"
