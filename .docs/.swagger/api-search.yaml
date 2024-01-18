@@ -1,0 +1,22 @@
+components:
+  schemas: {}
+externalDocs:
+  description: Sourcecode Documentation
+  url: https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services
+info:
+  contact:
+    email: andreas.rauber@tuwien.ac.at
+    name: Prof. Andreas Rauber
+  description: Service that searches the search database
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+  title: Database Repository Search Service API
+  version: $TAG
+openapi: 3.0.0
+paths: {}
+servers:
+  - description: Generated server url
+    url: http://localhost:4000
+  - description: Sandbox
+    url: https://test.dbrepo.tuwien.ac.at

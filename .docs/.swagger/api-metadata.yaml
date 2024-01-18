@@ -8,14 +8,14 @@ info:
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0
-  version: 1.3.0
+  version: $TAG
 externalDocs:
   description: Sourcecode Documentation
   url: https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services
 servers:
 - url: http://localhost:9099
   description: Generated server url
-- url: https://dbrepo2.tuwien.ac.at
+- url: https://test.dbrepo.tuwien.ac.at
   description: Sandbox
 paths:
   /api/database/{databaseId}/table/{tableId}/history:
@@ -38,26 +38,26 @@ paths:
           type: integer
           format: int64
       responses:
-        "404":
-          description: "Table, database or user could not be found"
+        "400":
+          description: Table history query is malformed
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorDto'
-        "503":
-          description: Connection to the database failed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        "405":
+        "403":
           description: Find table history is not permitted
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorDto'
-        "400":
-          description: Table history query is malformed
+        "409":
+          description: Query store failed to query table history
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "404":
+          description: "Table, database or user could not be found"
           content:
             application/json:
               schema:
@@ -70,12 +70,6 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/TableHistoryDto'
-        "504":
-          description: Query store failed to query table history
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
       security:
       - bearerAuth: []
     head:
@@ -97,26 +91,26 @@ paths:
           type: integer
           format: int64
       responses:
-        "404":
-          description: "Table, database or user could not be found"
+        "400":
+          description: Table history query is malformed
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorDto'
-        "503":
-          description: Connection to the database failed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        "405":
+        "403":
           description: Find table history is not permitted
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorDto'
-        "400":
-          description: Table history query is malformed
+        "409":
+          description: Query store failed to query table history
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "404":
+          description: "Table, database or user could not be found"
           content:
             application/json:
               schema:
@@ -129,12 +123,6 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/TableHistoryDto'
-        "504":
-          description: Query store failed to query table history
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
       security:
       - bearerAuth: []
   /api/database/{databaseId}/table/{tableId}/data:
@@ -188,42 +176,36 @@ paths:
         schema:
           type: string
       responses:
-        "200":
-          description: OK
+        "403":
+          description: Access to the database is forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "400":
+          description: Table data is malformed or image is not supported
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "202":
+          description: Get table data successfully
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/QueryResultDto'
-      security:
-      - bearerAuth: []
-    put:
-      tags:
-      - table-data-endpoint
-      summary: Update data
-      operationId: update_6
-      parameters:
-      - name: databaseId
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      - name: tableId
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TableCsvUpdateDto'
-        required: true
-      responses:
-        "200":
-          description: OK
-      deprecated: true
+        "404":
+          description: Table or database could not be found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "422":
+          description: Could not import csv via sidecar
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
       security:
       - bearerAuth: []
     post:
@@ -251,15 +233,37 @@ paths:
               $ref: '#/components/schemas/TableCsvDto'
         required: true
       responses:
-        "200":
-          description: OK
+        "403":
+          description: Access to the database is forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "202":
+          description: Inserted data successfully
+          content:
+            '*/*':
+              schema:
+                type: object
+        "400":
+          description: Insert table data is malformed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "404":
+          description: Table or database could not be found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
       security:
       - bearerAuth: []
     delete:
       tags:
       - table-data-endpoint
       summary: Delete data
-      operationId: delete_7
+      operationId: delete_6
       parameters:
       - name: databaseId
         in: path
@@ -280,8 +284,26 @@ paths:
               $ref: '#/components/schemas/TableCsvDeleteDto'
         required: true
       responses:
-        "200":
-          description: OK
+        "202":
+          description: Deleted table data successfully
+        "403":
+          description: Access to the database is forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "404":
+          description: Table or database could not be found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "400":
+          description: Table data or query is malformed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
       security:
       - bearerAuth: []
     head:
@@ -334,12 +356,36 @@ paths:
         schema:
           type: string
       responses:
-        "200":
-          description: OK
+        "403":
+          description: Access to the database is forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "400":
+          description: Table data is malformed or image is not supported
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "202":
+          description: Get table data successfully
           content:
             '*/*':
               schema:
                 $ref: '#/components/schemas/QueryResultDto'
+        "404":
+          description: Table or database could not be found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "422":
+          description: Could not import csv via sidecar
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
       security:
       - bearerAuth: []
   /api/user/{id}:
@@ -356,24 +402,24 @@ paths:
           type: string
           format: uuid
       responses:
-        "200":
-          description: Found user
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UserDto'
         "404":
           description: User was not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorDto'
-        "405":
+        "403":
           description: Find user is not permitted
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorDto'
+        "200":
+          description: Found user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDto'
       security:
       - bearerAuth: []
     put:
@@ -395,24 +441,36 @@ paths:
               $ref: '#/components/schemas/UserUpdateDto'
         required: true
       responses:
-        "405":
-          description: Modify user is not permitted
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        "404":
-          description: User attribute was not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
         "202":
           description: Modified user information
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserDto'
+        "404":
+          description: User attribute was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "403":
+          description: Modify user is not permitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "405":
+          description: Foreign user modification
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "400":
+          description: Modify user query is malformed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
       security:
       - bearerAuth: []
   /api/user/{id}/theme:
@@ -435,14 +493,14 @@ paths:
               $ref: '#/components/schemas/UserThemeSetDto'
         required: true
       responses:
-        "405":
-          description: Modify user is not permitted
+        "404":
+          description: User or user attribute was not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorDto'
-        "404":
-          description: User or user attribute was not found
+        "403":
+          description: Modify user is not permitted
           content:
             application/json:
               schema:
@@ -453,6 +511,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserDto'
+        "405":
+          description: Foreign user modification
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
       security:
       - bearerAuth: []
   /api/user/{id}/password:
@@ -482,13 +546,25 @@ paths:
               schema:
                 $ref: '#/components/schemas/UserDto'
         "405":
-          description: Modify user is not permitted
+          description: Foreign user modification
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorDto'
         "404":
           description: User was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "403":
+          description: Modify is not allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "503":
+          description: Authentication service does not respond
           content:
             application/json:
               schema:
@@ -540,18 +616,18 @@ paths:
               $ref: '#/components/schemas/OntologyModifyDto'
         required: true
       responses:
-        "404":
-          description: Could not find ontology
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
         "202":
           description: Updated ontology successfully
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/OntologyDto'
+        "404":
+          description: Could not find ontology
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
       security:
       - bearerAuth: []
     delete:
@@ -579,87 +655,6 @@ paths:
                 $ref: '#/components/schemas/ApiErrorDto'
       security:
       - bearerAuth: []
-  /api/pid/{id}:
-    put:
-      tags:
-      - persistence-endpoint
-      summary: Update some identifier
-      operationId: update_1
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/IdentifierSaveDto'
-        required: true
-      responses:
-        "406":
-          description: Updating identifier not allowed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        "405":
-          description: Updating identifier not permitted
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        "202":
-          description: Updated identifier
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/IdentifierDto'
-        "404":
-          description: Identifier or user could not be found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        "400":
-          description: Identifier data is not valid to the form
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-      security:
-      - bearerAuth: []
-    delete:
-      tags:
-      - persistence-endpoint
-      summary: Delete some identifier
-      operationId: delete_1
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      responses:
-        "405":
-          description: Deleting identifier not permitted
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        "202":
-          description: Deleted identifier
-        "404":
-          description: Identifier could not be found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-      security:
-      - bearerAuth: []
   /api/maintenance/message/{id}:
     get:
       tags:
@@ -674,6 +669,12 @@ paths:
           type: integer
           format: int64
       responses:
+        "404":
+          description: Could not find message
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
         "200":
           description: Get messages
           content:
@@ -684,7 +685,7 @@ paths:
       tags:
       - maintenance-endpoint
       summary: Update maintenance message
-      operationId: update_2
+      operationId: update_1
       parameters:
       - name: id
         in: path
@@ -699,18 +700,18 @@ paths:
               $ref: '#/components/schemas/BannerMessageUpdateDto'
         required: true
       responses:
-        "404":
-          description: Could not find message
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BannerMessageNotFoundException'
         "202":
           description: Updated message
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/BannerMessageBriefDto'
+        "404":
+          description: Could not find message
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
     delete:
       tags:
       - maintenance-endpoint
@@ -724,16 +725,16 @@ paths:
           type: integer
           format: int64
       responses:
-        "202":
-          description: Deleted message
-          content:
-            application/json: {}
         "404":
           description: Could not find message
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BannerMessageNotFoundException'
+                $ref: '#/components/schemas/ApiErrorDto'
+        "202":
+          description: Deleted message
+          content:
+            application/json: {}
   /api/image/{id}:
     get:
       tags:
@@ -748,23 +749,23 @@ paths:
           type: integer
           format: int64
       responses:
-        "404":
-          description: Image could not be found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
         "200":
           description: Found image
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ImageDto'
+        "404":
+          description: Image could not be found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
     put:
       tags:
       - image-endpoint
       summary: Update some image
-      operationId: update_3
+      operationId: update_2
       parameters:
       - name: id
         in: path
@@ -779,18 +780,18 @@ paths:
               $ref: '#/components/schemas/ImageChangeDto'
         required: true
       responses:
-        "404":
-          description: Image could not be found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
         "202":
           description: Updated image successfully
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ImageDto'
+        "404":
+          description: Image could not be found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
       security:
       - bearerAuth: []
     delete:
@@ -836,7 +837,13 @@ paths:
               $ref: '#/components/schemas/DatabaseModifyVisibilityDto'
         required: true
       responses:
-        "405":
+        "404":
+          description: Database could not be found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "403":
           description: Visibility modification is not permitted
           content:
             application/json:
@@ -848,12 +855,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DatabaseDto'
-        "404":
-          description: Database or user could not be found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
       security:
       - bearerAuth: []
   /api/database/{id}/transfer:
@@ -876,8 +877,8 @@ paths:
               $ref: '#/components/schemas/DatabaseTransferDto'
         required: true
       responses:
-        "405":
-          description: Transfer of ownership is not permitted
+        "404":
+          description: Database or user could not be found
           content:
             application/json:
               schema:
@@ -888,8 +889,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DatabaseDto'
-        "404":
-          description: Database or user could not be found
+        "403":
+          description: Transfer of ownership is not permitted
           content:
             application/json:
               schema:
@@ -901,7 +902,7 @@ paths:
       tags:
       - table-column-endpoint
       summary: Update a table column semantic mapping
-      operationId: update_4
+      operationId: update_3
       parameters:
       - name: id
         in: path
@@ -933,21 +934,21 @@ paths:
               $ref: '#/components/schemas/ColumnSemanticsUpdateDto'
         required: true
       responses:
-        "405":
-          description: Update column semantics not permitted
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ColumnDto'
-        "404":
-          description: "Table, database, semantic concept, unit of measurement or\
-            \ container could not be found"
+        "403":
+          description: Access to the database is forbidden
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorDto'
-        "403":
-          description: Access to the database is forbidden
+        "404":
+          description: Table or database could not be found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "400":
+          description: Update semantic concept query is malformed or update unit of
+            measurement query is malformed
           content:
             application/json:
               schema:
@@ -958,13 +959,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ColumnDto'
-        "400":
-          description: Update semantic concept query is malformed or update unit of
-            measurement query is malformed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
       security:
       - bearerAuth: []
   /api/database/{id}/access/{userId}:
@@ -972,7 +966,7 @@ paths:
       tags:
       - access-endpoint
       summary: Modify access to some database
-      operationId: update_5
+      operationId: update_4
       parameters:
       - name: id
         in: path
@@ -1000,14 +994,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorDto'
-        "202":
-          description: Modify access succeeded
         "400":
           description: Modify access query or database connection is malformed
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorDto'
+        "202":
+          description: Modify access succeeded
         "404":
           description: Database or user not found
           content:
@@ -1041,10 +1035,8 @@ paths:
               $ref: '#/components/schemas/DatabaseGiveAccessDto'
         required: true
       responses:
-        "202":
-          description: Granting access succeeded
-        "400":
-          description: Granting access query or database connection is malformed
+        "403":
+          description: Failed giving access
           content:
             application/json:
               schema:
@@ -1055,8 +1047,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorDto'
+        "202":
+          description: Granting access succeeded
         "404":
           description: Database or user not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "400":
+          description: Granting access query or database connection is malformed
           content:
             application/json:
               schema:
@@ -1082,28 +1082,22 @@ paths:
           type: string
           format: uuid
       responses:
-        "403":
-          description: Revoke of access not permitted as no access was found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        "405":
-          description: Revoke of access not permitted
+        "400":
+          description: Modify access query or database connection is malformed
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorDto'
         "404":
-          description: User with access was not found
+          description: "User, database with access was not found"
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorDto'
         "202":
           description: Revoked access successfully
-        "400":
-          description: Modify access query or database connection is malformed
+        "403":
+          description: Revoke of access not permitted as no access was found
           content:
             application/json:
               schema:
@@ -1130,8 +1124,8 @@ paths:
           type: integer
           format: int64
       responses:
-        "503":
-          description: Connection to the database failed
+        "501":
+          description: Image is not supported
           content:
             application/json:
               schema:
@@ -1154,8 +1148,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/QueryDto'
-        "501":
-          description: Image is not supported
+        "503":
+          description: Connection to the database failed
           content:
             application/json:
               schema:
@@ -1193,14 +1187,26 @@ paths:
               $ref: '#/components/schemas/QueryPersistDto'
         required: true
       responses:
-        "409":
+        "412":
           description: Query is already persisted
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorDto'
-        "504":
-          description: Query store failed to persist query
+        "403":
+          description: Not allowed to persist query
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "400":
+          description: Image not supported
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "405":
+          description: Persist query is not permitted
           content:
             application/json:
               schema:
@@ -1217,18 +1223,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/QueryDto'
-        "501":
-          description: Image is not supported
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        "405":
-          description: Persist query is not permitted
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
       security:
       - bearerAuth: []
   /api/user:
@@ -1258,16 +1252,16 @@ paths:
               $ref: '#/components/schemas/SignupRequestDto'
         required: true
       responses:
-        "201":
-          description: Created user
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UserBriefDto'
         "400":
           description: Parameters are not well-formed (likely email)
           content:
             application/json: {}
+        "404":
+          description: default role not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
         "409":
           description: User with username already exists
           content:
@@ -1280,47 +1274,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorDto'
-        "404":
-          description: default role not found
+        "201":
+          description: Created user
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-  /api/semantic/unit:
-    get:
-      tags:
-      - semantics-endpoint
-      summary: List semantic units
-      operationId: findAllUnits
-      responses:
-        "200":
-          description: Find all semantic units
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/UnitDto'
-    post:
-      tags:
-      - semantics-endpoint
-      summary: Save a semantic unit
-      operationId: saveUnit
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UnitSaveDto'
-        required: true
-      responses:
-        "202":
-          description: Saved a semantic unit
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UnitDto'
-      security:
-      - bearerAuth: []
+                $ref: '#/components/schemas/UserBriefDto'
   /api/semantic/ontology:
     get:
       tags:
@@ -1349,46 +1308,11 @@ paths:
         required: true
       responses:
         "201":
-          description: Could not find user
+          description: Registered ontology successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-      security:
-      - bearerAuth: []
-  /api/semantic/concept:
-    get:
-      tags:
-      - semantics-endpoint
-      summary: List semantic concepts
-      operationId: findAllConcepts
-      responses:
-        "200":
-          description: Find all semantic concepts
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ConceptDto'
-    post:
-      tags:
-      - semantics-endpoint
-      summary: Create or update a semantic concept
-      operationId: saveUnit_1
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ConceptSaveDto'
-        required: true
-      responses:
-        "202":
-          description: Saved a semantic concept
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ConceptDto'
+                $ref: '#/components/schemas/OntologyDto'
       security:
       - bearerAuth: []
   /api/maintenance/message:
@@ -1451,14 +1375,8 @@ paths:
               $ref: '#/components/schemas/ImageCreateDto'
         required: true
       responses:
-        "409":
-          description: Image already exists
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        "404":
-          description: User could not be found
+        "400":
+          description: Image specification is invalid
           content:
             application/json:
               schema:
@@ -1469,14 +1387,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ImageDto'
-        "502":
-          description: Failed to connect
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        "400":
-          description: Image specification is invalid
+        "409":
+          description: Image already exists
           content:
             application/json:
               schema:
@@ -1508,6 +1420,12 @@ paths:
         schema:
           type: integer
           format: int64
+      - name: tid
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
       - name: type
         in: query
         required: false
@@ -1516,6 +1434,7 @@ paths:
           enum:
           - database
           - subset
+          - table
           - view
       responses:
         "200":
@@ -1538,32 +1457,26 @@ paths:
               $ref: '#/components/schemas/IdentifierSaveDto'
         required: true
       responses:
-        "406":
-          description: Creating identifier not allowed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
         "201":
           description: Created identifier
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/IdentifierDto'
-        "400":
-          description: Identifier form contains invalid request data
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        "403":
-          description: Insufficient access rights or authorities
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
         "409":
           description: Identifier for this resource already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "503":
+          description: DataCite system did not respond
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "204":
+          description: Identifier could not be created
           content:
             application/json:
               schema:
@@ -1574,8 +1487,32 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorDto'
+        "406":
+          description: Creating identifier not allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "404":
+          description: "Failed to find database, table or view"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "400":
+          description: Identifier form contains invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
         "405":
           description: Creating identifier not permitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "403":
+          description: Insufficient access rights or authorities
           content:
             application/json:
               schema:
@@ -1603,6 +1540,12 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/DatabaseBriefDto'
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
     post:
       tags:
       - database-endpoint
@@ -1615,25 +1558,7 @@ paths:
               $ref: '#/components/schemas/DatabaseCreateDto'
         required: true
       responses:
-        "503":
-          description: Connection to the database failed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        "501":
-          description: Container image is not supported
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        "404":
-          description: "Container, user or database could not be found"
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        "405":
+        "403":
           description: Database create permission is missing or grant permissions
             at broker service failed
           content:
@@ -1641,19 +1566,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiErrorDto'
         "409":
-          description: Database name already exist or query store could not be created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        "400":
-          description: Database create query is malformed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        "502":
-          description: Connection to the container failed
+          description: Query store could not be created
           content:
             application/json:
               schema:
@@ -1664,9 +1577,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DatabaseBriefDto'
-        "406":
-          description: Failed to create user at broker service or virtual host could
-            not be reached at broker service
+        "503":
+          description: Connection to the database failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "400":
+          description: Database create query is malformed or image is not supported
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "404":
+          description: "Container, user or database could not be found"
           content:
             application/json:
               schema:
@@ -1687,6 +1611,18 @@ paths:
       responses:
         "200":
           description: Count databases
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DatabaseDto'
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
   /api/database/{databaseId}/view:
     get:
       tags:
@@ -1709,12 +1645,6 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/ViewBriefDto'
-        "405":
-          description: Find views is not permitted
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
         "404":
           description: Database or user could not be found
           content:
@@ -1742,8 +1672,8 @@ paths:
               $ref: '#/components/schemas/ViewCreateDto'
         required: true
       responses:
-        "503":
-          description: Connection to the database failed
+        "423":
+          description: Create view resulted in an invalid query statement
           content:
             application/json:
               schema:
@@ -1754,20 +1684,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ViewBriefDto'
+        "403":
+          description: Credentials missing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
         "401":
           description: Credentials missing
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorDto'
-        "423":
-          description: Create view resulted in an invalid query statement
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        "403":
-          description: Credentials missing
+        "503":
+          description: Connection to the database failed
           content:
             application/json:
               schema:
@@ -1778,14 +1708,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorDto'
-        "400":
-          description: Create view query is malformed
+        "405":
+          description: Create view is not permitted
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorDto'
-        "405":
-          description: Create view is not permitted
+        "400":
+          description: Create view query is malformed
           content:
             application/json:
               schema:
@@ -1806,6 +1736,12 @@ paths:
           type: integer
           format: int64
       responses:
+        "404":
+          description: Database could not be found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
         "200":
           description: List tables
           content:
@@ -1814,13 +1750,7 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/TableBriefDto'
-        "404":
-          description: Database could not be found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        "405":
+        "403":
           description: List tables not permitted
           content:
             application/json:
@@ -1847,20 +1777,20 @@ paths:
               $ref: '#/components/schemas/TableCreateDto'
         required: true
       responses:
+        "404":
+          description: "Database, container or user could not be found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
         "409":
           description: Create table conflicts with existing table name
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorDto'
-        "504":
-          description: Broker service failed to create queue
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        "404":
-          description: "Database, container or user could not be found"
+        "400":
+          description: Create table query is malformed
           content:
             application/json:
               schema:
@@ -1871,20 +1801,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TableBriefDto'
-        "405":
+        "403":
           description: Create table not permitted
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        "501":
-          description: Image is not supported
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        "400":
-          description: Create table query is malformed
           content:
             application/json:
               schema:
@@ -1917,8 +1835,32 @@ paths:
               $ref: '#/components/schemas/ImportDto'
         required: true
       responses:
-        "200":
-          description: OK
+        "202":
+          description: Import table data successfully
+        "403":
+          description: Access to the database is forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "404":
+          description: Table or database could not be found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "422":
+          description: Could not import csv via sidecar
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "400":
+          description: Table data is malformed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
       security:
       - bearerAuth: []
   /api/database/{databaseId}/query:
@@ -1940,14 +1882,8 @@ paths:
         schema:
           type: boolean
       responses:
-        "503":
-          description: Connection to the database failed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        "504":
-          description: Query store failed to select query
+        "404":
+          description: "Database, container or user could not be found"
           content:
             application/json:
               schema:
@@ -1955,24 +1891,6 @@ paths:
         "423":
           description: Selection of time-versioned query resulted in an invalid query
             statement
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        "404":
-          description: "Database, container or user could not be found"
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        "501":
-          description: Image is not supported
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        "405":
-          description: Find all queries is not permitted
           content:
             application/json:
               schema:
@@ -1985,6 +1903,30 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/QueryBriefDto'
+        "501":
+          description: Image is not supported
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "504":
+          description: Query store failed to select query
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "503":
+          description: Connection to the database failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "405":
+          description: Find all queries is not permitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
       security:
       - bearerAuth: []
     post:
@@ -2031,12 +1973,42 @@ paths:
               $ref: '#/components/schemas/ExecuteStatementDto'
         required: true
       responses:
-        "200":
-          description: OK
+        "400":
+          description: Image is not supported
           content:
-            '*/*':
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "409":
+          description: Could not store query in query store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "202":
+          description: Executed query
+          content:
+            application/json:
               schema:
                 $ref: '#/components/schemas/QueryResultDto'
+        "404":
+          description: "Database, query or user could not be found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "403":
+          description: Execute query not permitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "417":
+          description: Could not parse columns
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
       security:
       - bearerAuth: []
   /api/container:
@@ -2073,14 +2045,14 @@ paths:
               $ref: '#/components/schemas/ContainerCreateRequestDto'
         required: true
       responses:
-        "409":
-          description: Container name already exists
+        "201":
+          description: Created a new container
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        "502":
-          description: Failed to connect
+                $ref: '#/components/schemas/ContainerBriefDto'
+        "409":
+          description: Container name already exists
           content:
             application/json:
               schema:
@@ -2091,14 +2063,23 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorDto'
-        "201":
-          description: Created a new container
+      security:
+      - bearerAuth: []
+  /api/semantic/unit:
+    get:
+      tags:
+      - semantics-endpoint
+      summary: List semantic units
+      operationId: findAllUnits
+      responses:
+        "200":
+          description: Find all semantic units
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ContainerBriefDto'
-      security:
-      - bearerAuth: []
+                type: array
+                items:
+                  $ref: '#/components/schemas/UnitDto'
   /api/semantic/ontology/{id}/entity:
     get:
       tags:
@@ -2129,18 +2110,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorDto'
-        "400":
-          description: Filter params are invalid
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        "404":
-          description: Could not find ontology
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
         "200":
           description: Found entities
           content:
@@ -2149,6 +2118,24 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/EntityDto'
+        "404":
+          description: Could not find ontology
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "400":
+          description: Filter params are invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "422":
+          description: Ontology does not have rdf or sparql endpoint
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
       security:
       - bearerAuth: []
   /api/semantic/database/{databaseId}/table/{tableId}:
@@ -2177,6 +2164,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorDto'
+        "404":
+          description: Could not find the table
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "422":
+          description: Ontology does not have rdf or sparql endpoint
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
         "200":
           description: Suggested table semantics successfully
           content:
@@ -2185,12 +2184,6 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/TableColumnEntityDto'
-        "404":
-          description: Could not find the table
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
       security:
       - bearerAuth: []
   /api/semantic/database/{databaseId}/table/{tableId}/column/{columnId}:
@@ -2219,12 +2212,6 @@ paths:
           type: integer
           format: int64
       responses:
-        "404":
-          description: Could not find the table column
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
         "417":
           description: Generated query is malformed
           content:
@@ -2239,8 +2226,35 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/TableColumnEntityDto'
+        "404":
+          description: Could not find the table column
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "422":
+          description: Ontology does not have rdf or sparql endpoint
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
       security:
       - bearerAuth: []
+  /api/semantic/concept:
+    get:
+      tags:
+      - semantics-endpoint
+      summary: List semantic concepts
+      operationId: findAllConcepts
+      responses:
+        "200":
+          description: Find all semantic concepts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ConceptDto'
   /api/pid/{pid}:
     get:
       tags:
@@ -2260,6 +2274,12 @@ paths:
         schema:
           type: string
       responses:
+        "409":
+          description: Exported resource was not found
+          content:
+            text/csv:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
         "200":
           description: Found identifier successfully
           content:
@@ -2272,14 +2292,13 @@ paths:
             text/bibliography; style=apa: {}
             text/bibliography; style=ieee: {}
             text/bibliography; style=bibtex: {}
-        "404":
-          description: Identifier could not be exported from database as the resource
-            was not found
+        "422":
+          description: Failed to retrieve from database sidecar
           content:
             text/csv:
               schema:
                 $ref: '#/components/schemas/ApiErrorDto'
-        "502":
+        "503":
           description: Identifier could not exported from database as it is not reachable
           content:
             text/csv:
@@ -2290,6 +2309,18 @@ paths:
             \ known"
           content:
             text/bibliography:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "410":
+          description: Failed to retrieve from S3 endpoint
+          content:
+            text/csv:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "404":
+          description: Identifier could not be found
+          content:
+            text/csv:
               schema:
                 $ref: '#/components/schemas/ApiErrorDto'
   /api/oai:
@@ -2331,7 +2362,7 @@ paths:
       tags:
       - identifier-endpoint
       summary: Retrieve metadata from identifier
-      operationId: create_10
+      operationId: retrieve
       parameters:
       - name: url
         in: query
@@ -2359,8 +2390,8 @@ paths:
           type: integer
           format: int64
       responses:
-        "404":
-          description: Database could not be found
+        "503":
+          description: Connection to the broker service could not be established
           content:
             application/json:
               schema:
@@ -2371,67 +2402,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DatabaseDto'
-      security:
-      - bearerAuth: []
-    delete:
-      tags:
-      - database-endpoint
-      summary: Delete some database
-      operationId: delete_4
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      responses:
-        "503":
-          description: Connection to the database failed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        "501":
-          description: Container image is not supported
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        "405":
-          description: Database delete permission is missing or revoke permissions
-            at broker service failed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        "201":
-          description: Deleted a database
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DatabaseBriefDto'
-        "406":
-          description: Failed to delete user at broker service or virtual host could
-            not be reached at broker service
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        "502":
-          description: Connection to the container failed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        "400":
-          description: Database delete query is malformed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
         "404":
-          description: Container or database could not be found
+          description: Database or exchange could not be found
           content:
             application/json:
               schema:
@@ -2464,13 +2436,48 @@ paths:
           type: string
           format: date-time
       responses:
-        "200":
-          description: OK
+        "201":
+          description: Created identifier
           content:
-            '*/*':
+            application/json:
               schema:
-                type: string
-                format: binary
+                $ref: '#/components/schemas/IdentifierDto'
+        "503":
+          description: Database connection could not be established
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "403":
+          description: Operation is not allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "422":
+          description: Sidecar operation could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "404":
+          description: "Table, database or user was not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "400":
+          description: Images is not supported or table/query is malformed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "410":
+          description: Blob storage operation could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
       security:
       - bearerAuth: []
   /api/database/{id}/access:
@@ -2487,18 +2494,18 @@ paths:
           type: integer
           format: int64
       responses:
-        "405":
-          description: Check access is not permitted
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
         "200":
           description: Found database access
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/DatabaseAccessDto'
+        "404":
+          description: Database not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
         "403":
           description: No access to this database
           content:
@@ -2527,20 +2534,20 @@ paths:
           type: integer
           format: int64
       responses:
-        "404":
-          description: "Database, view or user could not be found"
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
         "200":
           description: Find view successfully
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ViewDto'
-        "405":
+        "403":
           description: Find view is not permitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "404":
+          description: "Database, view or user could not be found"
           content:
             application/json:
               schema:
@@ -2551,7 +2558,7 @@ paths:
       tags:
       - view-endpoint
       summary: Delete one view
-      operationId: delete_5
+      operationId: delete_4
       parameters:
       - name: databaseId
         in: path
@@ -2566,22 +2573,14 @@ paths:
           type: integer
           format: int64
       responses:
-        "200":
-          description: Delete view successfully
-        "503":
-          description: Connection to the database failed
+        "400":
+          description: Delete view query is malformed
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorDto'
-        "404":
-          description: "Database, view or user could not be found"
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        "401":
-          description: Credentials missing
+        "403":
+          description: Deletion not allowed
           content:
             application/json:
               schema:
@@ -2592,24 +2591,26 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorDto'
+        "503":
+          description: Connection to the database failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
         "423":
           description: Delete view resulted in an invalid query statement
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorDto'
-        "400":
-          description: Delete view query is malformed
+        "404":
+          description: "Database, view or user could not be found"
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorDto'
-        "403":
-          description: Credentials missing
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
+        "200":
+          description: Delete view successfully
       security:
       - bearerAuth: []
   /api/database/{databaseId}/view/{viewId}/data:
@@ -2644,44 +2645,8 @@ paths:
           type: integer
           format: int64
       responses:
-        "503":
-          description: Connection to the database failed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        "400":
-          description: Pagination not in valid range or find data query is malformed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        "405":
-          description: Find data is not permitted
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        "401":
-          description: Credentials missing
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        "417":
-          description: Parsing of resulting columns failed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
         "404":
           description: "Database, view, container or user could not be found"
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        "403":
-          description: Credentials missing
           content:
             application/json:
               schema:
@@ -2692,20 +2657,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/QueryResultDto'
-        "423":
-          description: Find data resulted in an invalid query statement
+        "400":
+          description: Pagination not in valid range or find data query is malformed
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorDto'
-        "501":
-          description: Image is not supported
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        "504":
-          description: Query store failed to query view data
+        "403":
+          description: View data not allowed
           content:
             application/json:
               schema:
@@ -2732,10 +2691,34 @@ paths:
           type: integer
           format: int64
       responses:
-        "200":
-          description: OK
+        "404":
+          description: "Database, view, container or user could not be found"
           content:
-            '*/*':
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "403":
+          description: Count data not allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "409":
+          description: Could not count query data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "400":
+          description: Pagination not in valid range or find data query is malformed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "200":
+          description: Count data successfully
+          content:
+            application/json:
               schema:
                 type: integer
                 format: int64
@@ -2761,6 +2744,12 @@ paths:
           type: integer
           format: int64
       responses:
+        "404":
+          description: "Table, database or container could not be found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
         "403":
           description: Access to the database is forbidden
           content:
@@ -2773,14 +2762,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TableDto'
-        "404":
-          description: "Table, database or container could not be found"
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        "405":
-          description: Find table not permitted
+        "503":
+          description: Could not communicate with the broker service
           content:
             application/json:
               schema:
@@ -2791,7 +2774,7 @@ paths:
       tags:
       - table-endpoint
       summary: Delete a table
-      operationId: delete_6
+      operationId: delete_5
       parameters:
       - name: databaseId
         in: path
@@ -2806,20 +2789,8 @@ paths:
           type: integer
           format: int64
       responses:
-        "400":
-          description: Delete table query resulted in an invalid query statement
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        "202":
-          description: Delete table successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TableDto'
-        "423":
-          description: Delete table resulted in an invalid state
+        "404":
+          description: "Table, database or container could not be found"
           content:
             application/json:
               schema:
@@ -2830,20 +2801,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorDto'
-        "501":
-          description: Image is not supported
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        "405":
-          description: Delete table not permitted
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
-        "404":
-          description: "Table, database or container could not be found"
+        "202":
+          description: Delete table successfully
+        "400":
+          description: Delete table query resulted in an invalid query statement
           content:
             application/json:
               schema:
@@ -2876,8 +2837,32 @@ paths:
           type: string
           format: date-time
       responses:
-        "200":
-          description: OK
+        "403":
+          description: Access to the database is forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "400":
+          description: Table data is malformed or image is not supported
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "404":
+          description: Table or database could not be found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "422":
+          description: Could not import csv via sidecar
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "202":
+          description: Get table data count successfully
           content:
             '*/*':
               schema:
@@ -2910,12 +2895,48 @@ paths:
         schema:
           type: string
       responses:
+        "400":
+          description: Image is not supported
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
         "200":
-          description: OK
+          description: Executed query
           content:
             '*/*':
               schema:
                 type: object
+        "410":
+          description: Could not find in S3 storage
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "403":
+          description: Execute query not permitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "422":
+          description: Sidecar failed to export
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "409":
+          description: Export of query failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "404":
+          description: Database or query could not be found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
       security:
       - bearerAuth: []
   /api/database/{databaseId}/query/{queryId}/data:
@@ -2963,12 +2984,42 @@ paths:
         schema:
           type: string
       responses:
-        "200":
-          description: OK
+        "400":
+          description: Image is not supported
           content:
-            '*/*':
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "409":
+          description: Could not store query in query store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "202":
+          description: Executed query
+          content:
+            application/json:
               schema:
                 $ref: '#/components/schemas/QueryResultDto'
+        "403":
+          description: Execute query not permitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "417":
+          description: Could not parse columns
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "404":
+          description: Database or query could not be found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
       security:
       - bearerAuth: []
   /api/database/{databaseId}/query/{queryId}/data/count:
@@ -2991,13 +3042,36 @@ paths:
           type: integer
           format: int64
       responses:
-        "200":
-          description: OK
+        "400":
+          description: Image is not supported
           content:
-            '*/*':
+            application/json:
               schema:
-                type: integer
-                format: int64
+                $ref: '#/components/schemas/ApiErrorDto'
+        "202":
+          description: Executed query
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryResultDto'
+        "403":
+          description: Execute query not permitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "417":
+          description: Could not parse columns
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+        "404":
+          description: Database or query could not be found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
       security:
       - bearerAuth: []
   /api/database/license:
@@ -3029,12 +3103,6 @@ paths:
           type: integer
           format: int64
       responses:
-        "502":
-          description: Connection to the container failed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiErrorDto'
         "200":
           description: Found container
           content:
@@ -3051,7 +3119,7 @@ paths:
       tags:
       - container-endpoint
       summary: Delete some container
-      operationId: delete_8
+      operationId: delete_7
       parameters:
       - name: id
         in: path
@@ -3060,16 +3128,48 @@ paths:
           type: integer
           format: int64
       responses:
-        "410":
-          description: Container is already removed
+        "202":
+          description: Deleted container successfully
+          content:
+            '*/*':
+              schema:
+                type: object
+        "404":
+          description: Container not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorDto'
+      security:
+      - bearerAuth: []
+  /api/pid/{id}:
+    delete:
+      tags:
+      - persistence-endpoint
+      summary: Delete some identifier
+      operationId: delete_1
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "404":
+          description: Identifier or database could not be found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorDto'
         "202":
-          description: Deleted container successfully
-        "409":
-          description: Container is still running
+          description: Deleted identifier
+          content:
+            '*/*':
+              schema:
+                type: object
+        "403":
+          description: Deleting identifier not permitted
           content:
             application/json:
               schema:
@@ -3235,7 +3335,6 @@ components:
     UserDto:
       required:
       - attributes
-      - email
       - id
       - username
       type: object
@@ -3253,9 +3352,6 @@ components:
           example: Josiah Carberry
         attributes:
           $ref: '#/components/schemas/UserAttributesDto'
-        email:
-          type: string
-          example: jcarberry@brown.edu
         qualified_name:
           type: string
           example: Josiah Carberry — @jcarberry
@@ -3295,6 +3391,9 @@ components:
         sparql_endpoint:
           type: string
           example: Ontology SPARQL endpoint
+        rdf_path:
+          type: string
+          example: rdf/om-2.0.rdf
     OntologyDto:
       required:
       - created
@@ -3332,6 +3431,9 @@ components:
         sparql_endpoint:
           type: string
           example: https://query.wikidata.org/sparql
+        rdf_path:
+          type: string
+          example: rdf/om-2.0.rdf
     UserBriefDto:
       required:
       - id
@@ -3361,6 +3463,1826 @@ components:
         family_name:
           type: string
           example: Carberry
+    BannerMessageUpdateDto:
+      required:
+      - message
+      - type
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+          - error
+          - warning
+          - info
+        message:
+          type: string
+          example: Maintenance starts on 8am on Monday
+        link:
+          type: string
+          example: https://example.com
+        link_text:
+          type: string
+          example: More
+        display_start:
+          type: string
+          format: date-time
+          example: 2021-03-12T15:26:21Z
+        display_end:
+          type: string
+          format: date-time
+          example: 2021-03-12T15:26:21Z
+    BannerMessageBriefDto:
+      required:
+      - message
+      - type
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+          - error
+          - warning
+          - info
+        message:
+          type: string
+          example: Maintenance starts on 8am on Monday
+        link:
+          type: string
+          example: https://example.com
+        link_text:
+          type: string
+          example: More
+    ImageChangeDto:
+      required:
+      - dialect
+      - driver_class
+      - jdbc_method
+      - registry
+      type: object
+      properties:
+        registry:
+          type: string
+          example: docker.io/library
+        defaultPort:
+          maximum: 65535
+          minimum: 1024
+          type: integer
+          format: int32
+          example: 5432
+        dialect:
+          type: string
+          example: Postgres
+        driver_class:
+          type: string
+          example: org.postgresql.Driver
+        jdbc_method:
+          type: string
+          example: postgresql
+    ImageDateDto:
+      required:
+      - created_at
+      - database_format
+      - example
+      - has_time
+      - id
+      - unix_format
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        example:
+          type: string
+          example: 30.01.2022
+        database_format:
+          type: string
+          example: '%d.%c.%Y'
+        unix_format:
+          type: string
+          example: dd.MM.YYYY
+        has_time:
+          type: boolean
+          example: false
+        created_at:
+          type: string
+          format: date-time
+          example: 2021-03-12T15:26:21Z
+    ImageDto:
+      required:
+      - default_port
+      - dialect
+      - driver_class
+      - id
+      - jdbc_method
+      - name
+      - registry
+      - version
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        registry:
+          type: string
+          example: docker.io/library
+        name:
+          type: string
+          example: mariadb
+        version:
+          type: string
+          example: "10.5"
+        dialect:
+          type: string
+          example: org.hibernate.dialect.MariaDBDialect
+        driver_class:
+          type: string
+          example: org.mariadb.jdbc.Driver
+        date_formats:
+          type: array
+          items:
+            $ref: '#/components/schemas/ImageDateDto'
+        jdbc_method:
+          type: string
+          example: mariadb
+        default_port:
+          type: integer
+          format: int32
+          example: 3306
+    DatabaseModifyVisibilityDto:
+      required:
+      - is_public
+      type: object
+      properties:
+        is_public:
+          type: boolean
+          example: true
+    ColumnBriefDto:
+      required:
+      - column_type
+      - database_id
+      - id
+      - internal_name
+      - name
+      - table_id
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+          example: date
+        alias:
+          type: string
+        database_id:
+          type: integer
+          format: int64
+        table_id:
+          type: integer
+          format: int64
+        internal_name:
+          type: string
+          example: mdb_date
+        column_type:
+          type: string
+          example: date
+          enum:
+          - char
+          - varchar
+          - binary
+          - varbinary
+          - tinyblob
+          - tinytext
+          - text
+          - blob
+          - mediumtext
+          - mediumblob
+          - longtext
+          - longblob
+          - enum
+          - set
+          - bit
+          - tinyint
+          - bool
+          - smallint
+          - mediumint
+          - int
+          - bigint
+          - float
+          - double
+          - decimal
+          - date
+          - datetime
+          - timestamp
+          - time
+          - year
+    ColumnDto:
+      required:
+      - auto_generated
+      - column_type
+      - database_id
+      - id
+      - internal_name
+      - is_null_allowed
+      - is_primary_key
+      - is_public
+      - name
+      - table_id
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+          example: Date
+        alias:
+          type: string
+        size:
+          type: integer
+          format: int64
+          example: 255
+        d:
+          type: integer
+          format: int64
+          example: 0
+        dataLength:
+          type: integer
+          format: int64
+          example: 34300
+        maxDataLength:
+          type: integer
+          format: int64
+          example: 34300
+        numRows:
+          type: integer
+          format: int64
+          example: 32
+        valMin:
+          type: number
+          example: 0
+        valMax:
+          type: number
+          example: 100
+        mean:
+          type: number
+          example: 45.4
+        median:
+          type: number
+          example: 51
+        stdDev:
+          type: number
+          example: 5.32
+        concept:
+          $ref: '#/components/schemas/ConceptDto'
+        unit:
+          $ref: '#/components/schemas/UnitDto'
+        enums:
+          type: array
+          items:
+            type: string
+        sets:
+          type: array
+          items:
+            type: string
+        database_id:
+          type: integer
+          format: int64
+        table_id:
+          type: integer
+          format: int64
+        internal_name:
+          type: string
+          example: mdb_date
+        date_format:
+          $ref: '#/components/schemas/ImageDateDto'
+        auto_generated:
+          type: boolean
+          example: false
+        is_primary_key:
+          type: boolean
+          example: true
+        index_length:
+          type: integer
+          format: int64
+        length:
+          type: integer
+          format: int64
+        column_type:
+          type: string
+          example: string
+          enum:
+          - char
+          - varchar
+          - binary
+          - varbinary
+          - tinyblob
+          - tinytext
+          - text
+          - blob
+          - mediumtext
+          - mediumblob
+          - longtext
+          - longblob
+          - enum
+          - set
+          - bit
+          - tinyint
+          - bool
+          - smallint
+          - mediumint
+          - int
+          - bigint
+          - float
+          - double
+          - decimal
+          - date
+          - datetime
+          - timestamp
+          - time
+          - year
+        is_public:
+          type: boolean
+          example: true
+        is_null_allowed:
+          type: boolean
+          example: false
+    ConceptDto:
+      required:
+      - columns
+      - created
+      - id
+      - uri
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        uri:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        created:
+          type: string
+          format: date-time
+          example: 2021-03-12T15:26:21Z
+        columns:
+          type: array
+          items:
+            $ref: '#/components/schemas/ColumnBriefDto'
+    ConstraintsDto:
+      type: object
+      properties:
+        uniques:
+          type: array
+          items:
+            $ref: '#/components/schemas/UniqueDto'
+        checks:
+          type: array
+          items:
+            type: string
+        foreign_keys:
+          type: array
+          items:
+            $ref: '#/components/schemas/ForeignKeyDto'
+    ContainerDto:
+      required:
+      - created
+      - host
+      - id
+      - internal_name
+      - name
+      - sidecar_host
+      - sidecar_port
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+          example: Air Quality
+        host:
+          type: string
+        port:
+          type: integer
+          format: int32
+        image:
+          $ref: '#/components/schemas/ImageDto'
+        created:
+          type: string
+          format: date-time
+          example: 2021-03-12T15:26:21Z
+        internal_name:
+          type: string
+          example: data-db
+        sidecar_host:
+          type: string
+        sidecar_port:
+          type: integer
+          format: int32
+        ui_host:
+          type: string
+        ui_port:
+          type: integer
+          format: int32
+    CreatorDto:
+      required:
+      - creator_name
+      - id
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        firstname:
+          type: string
+          example: Josiah
+        lastname:
+          type: string
+          example: Carberry
+        affiliation:
+          type: string
+          example: Brown University
+        creator_name:
+          type: string
+          example: "Carberry, Josiah"
+        name_type:
+          type: string
+          example: Personal
+          enum:
+          - Personal
+          - Organizational
+        name_identifier:
+          type: string
+          example: 0000-0002-1825-0097
+        name_identifier_scheme:
+          type: string
+          example: ORCID
+          enum:
+          - ORCID
+          - ROR
+          - ISNI
+          - GRID
+        name_identifier_scheme_uri:
+          type: string
+          example: https://orcid.org/
+        affiliation_identifier:
+          type: string
+          example: https://ror.org/05gq02987
+        affiliation_identifier_scheme:
+          type: string
+          example: ROR
+          enum:
+          - ROR
+          - GRID
+          - ISNI
+        affiliation_identifier_scheme_uri:
+          type: string
+          example: https://ror.org/
+    DatabaseAccessDto:
+      required:
+      - created
+      - type
+      - user
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/UserDto'
+        type:
+          type: string
+          enum:
+          - read
+          - write_own
+          - write_all
+        created:
+          type: string
+          format: date-time
+          example: 2021-03-12T15:26:21Z
+    DatabaseDto:
+      required:
+      - contact
+      - created
+      - creator
+      - exchange_name
+      - id
+      - internal_name
+      - name
+      - owner
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+          example: Air Quality
+        description:
+          type: string
+          example: Air Quality
+        tables:
+          type: array
+          items:
+            $ref: '#/components/schemas/TableDto'
+        views:
+          type: array
+          items:
+            $ref: '#/components/schemas/ViewDto'
+        container:
+          $ref: '#/components/schemas/ContainerDto'
+        accesses:
+          type: array
+          items:
+            $ref: '#/components/schemas/DatabaseAccessDto'
+        identifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/IdentifierDto'
+        subsets:
+          type: array
+          items:
+            $ref: '#/components/schemas/IdentifierDto'
+        creator:
+          $ref: '#/components/schemas/UserDto'
+        contact:
+          $ref: '#/components/schemas/UserDto'
+        owner:
+          $ref: '#/components/schemas/UserDto'
+        created:
+          type: string
+          format: date-time
+          example: 2021-03-12T15:26:21Z
+        exchange_name:
+          type: string
+          example: dbrepo
+        exchange_type:
+          type: string
+          example: topic
+        internal_name:
+          type: string
+          example: air_quality
+        is_public:
+          type: boolean
+          example: true
+    ForeignKeyDto:
+      type: object
+      properties:
+        columns:
+          type: array
+          items:
+            $ref: '#/components/schemas/ColumnDto'
+        referenced_table:
+          $ref: '#/components/schemas/TableBriefDto'
+        referenced_columns:
+          type: array
+          items:
+            $ref: '#/components/schemas/ColumnDto'
+        on_update:
+          type: string
+          enum:
+          - restrict
+          - cascade
+          - set_null
+          - no_action
+          - set_default
+        on_delete:
+          type: string
+          enum:
+          - restrict
+          - cascade
+          - set_null
+          - no_action
+          - set_default
+    IdentifierDescriptionDto:
+      required:
+      - id
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        description:
+          type: string
+          example: "Air quality reports at Stephansplatz, Vienna"
+        language:
+          type: string
+          example: en
+          enum:
+          - ab
+          - aa
+          - af
+          - ak
+          - sq
+          - am
+          - ar
+          - an
+          - hy
+          - as
+          - av
+          - ae
+          - ay
+          - az
+          - bm
+          - ba
+          - eu
+          - be
+          - bn
+          - bh
+          - bi
+          - bs
+          - br
+          - bg
+          - my
+          - ca
+          - km
+          - ch
+          - ce
+          - ny
+          - zh
+          - cu
+          - cv
+          - kw
+          - co
+          - cr
+          - hr
+          - cs
+          - da
+          - dv
+          - nl
+          - dz
+          - en
+          - eo
+          - et
+          - ee
+          - fo
+          - fj
+          - fi
+          - fr
+          - ff
+          - gd
+          - gl
+          - lg
+          - ka
+          - de
+          - ki
+          - el
+          - kl
+          - gn
+          - gu
+          - ht
+          - ha
+          - he
+          - hz
+          - hi
+          - ho
+          - hu
+          - is
+          - io
+          - ig
+          - id
+          - ia
+          - ie
+          - iu
+          - ik
+          - ga
+          - it
+          - ja
+          - jv
+          - kn
+          - kr
+          - ks
+          - kk
+          - rw
+          - kv
+          - kg
+          - ko
+          - kj
+          - ku
+          - ky
+          - lo
+          - la
+          - lv
+          - lb
+          - li
+          - ln
+          - lt
+          - lu
+          - mk
+          - mg
+          - ms
+          - ml
+          - mt
+          - gv
+          - mi
+          - mr
+          - mh
+          - ro
+          - mn
+          - na
+          - nv
+          - nd
+          - ng
+          - ne
+          - se
+          - "no"
+          - nb
+          - nn
+          - ii
+          - oc
+          - oj
+          - or
+          - om
+          - os
+          - pi
+          - pa
+          - ps
+          - fa
+          - pl
+          - pt
+          - qu
+          - rm
+          - rn
+          - ru
+          - sm
+          - sg
+          - sa
+          - sc
+          - sr
+          - sn
+          - sd
+          - si
+          - sk
+          - sl
+          - so
+          - st
+          - nr
+          - es
+          - su
+          - sw
+          - ss
+          - sv
+          - tl
+          - ty
+          - tg
+          - ta
+          - tt
+          - te
+          - th
+          - bo
+          - ti
+          - to
+          - ts
+          - tn
+          - tr
+          - tk
+          - tw
+          - ug
+          - uk
+          - ur
+          - uz
+          - ve
+          - vi
+          - vo
+          - wa
+          - cy
+          - fy
+          - wo
+          - xh
+          - yi
+          - yo
+          - za
+          - zu
+        type:
+          type: string
+          example: Abstract
+          enum:
+          - Abstract
+          - Methods
+          - SeriesInformation
+          - TableOfContents
+          - TechnicalInfo
+          - Other
+    IdentifierDto:
+      required:
+      - created
+      - creators
+      - execution
+      - id
+      - last_modified
+      - publication_year
+      - query
+      - query_hash
+      - query_normalized
+      - result_hash
+      - result_number
+      - type
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        type:
+          type: string
+          enum:
+          - database
+          - subset
+          - table
+          - view
+        titles:
+          type: array
+          items:
+            $ref: '#/components/schemas/IdentifierTitleDto'
+        descriptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/IdentifierDescriptionDto'
+        funders:
+          type: array
+          items:
+            $ref: '#/components/schemas/IdentifierFunderDto'
+        query:
+          type: string
+          example: "SELECT `id`, `value`, `location` FROM `air_quality` WHERE `location`\
+            \ = \"09:STEF\""
+        execution:
+          type: string
+          format: date-time
+          example: 2021-03-12T15:26:21Z
+        doi:
+          type: string
+          example: 10.1038/nphys1170
+        publisher:
+          type: string
+          example: TU Wien
+        language:
+          type: string
+          enum:
+          - ab
+          - aa
+          - af
+          - ak
+          - sq
+          - am
+          - ar
+          - an
+          - hy
+          - as
+          - av
+          - ae
+          - ay
+          - az
+          - bm
+          - ba
+          - eu
+          - be
+          - bn
+          - bh
+          - bi
+          - bs
+          - br
+          - bg
+          - my
+          - ca
+          - km
+          - ch
+          - ce
+          - ny
+          - zh
+          - cu
+          - cv
+          - kw
+          - co
+          - cr
+          - hr
+          - cs
+          - da
+          - dv
+          - nl
+          - dz
+          - en
+          - eo
+          - et
+          - ee
+          - fo
+          - fj
+          - fi
+          - fr
+          - ff
+          - gd
+          - gl
+          - lg
+          - ka
+          - de
+          - ki
+          - el
+          - kl
+          - gn
+          - gu
+          - ht
+          - ha
+          - he
+          - hz
+          - hi
+          - ho
+          - hu
+          - is
+          - io
+          - ig
+          - id
+          - ia
+          - ie
+          - iu
+          - ik
+          - ga
+          - it
+          - ja
+          - jv
+          - kn
+          - kr
+          - ks
+          - kk
+          - rw
+          - kv
+          - kg
+          - ko
+          - kj
+          - ku
+          - ky
+          - lo
+          - la
+          - lv
+          - lb
+          - li
+          - ln
+          - lt
+          - lu
+          - mk
+          - mg
+          - ms
+          - ml
+          - mt
+          - gv
+          - mi
+          - mr
+          - mh
+          - ro
+          - mn
+          - na
+          - nv
+          - nd
+          - ng
+          - ne
+          - se
+          - "no"
+          - nb
+          - nn
+          - ii
+          - oc
+          - oj
+          - or
+          - om
+          - os
+          - pi
+          - pa
+          - ps
+          - fa
+          - pl
+          - pt
+          - qu
+          - rm
+          - rn
+          - ru
+          - sm
+          - sg
+          - sa
+          - sc
+          - sr
+          - sn
+          - sd
+          - si
+          - sk
+          - sl
+          - so
+          - st
+          - nr
+          - es
+          - su
+          - sw
+          - ss
+          - sv
+          - tl
+          - ty
+          - tg
+          - ta
+          - tt
+          - te
+          - th
+          - bo
+          - ti
+          - to
+          - ts
+          - tn
+          - tr
+          - tk
+          - tw
+          - ug
+          - uk
+          - ur
+          - uz
+          - ve
+          - vi
+          - vo
+          - wa
+          - cy
+          - fy
+          - wo
+          - xh
+          - yi
+          - yo
+          - za
+          - zu
+        licenses:
+          type: array
+          items:
+            $ref: '#/components/schemas/LicenseDto'
+        creators:
+          type: array
+          items:
+            $ref: '#/components/schemas/CreatorDto'
+        created:
+          type: string
+          format: date-time
+          example: 2021-03-12T15:26:21Z
+        database_id:
+          type: integer
+          format: int64
+          example: 1
+        query_id:
+          type: integer
+          format: int64
+          example: 1
+        table_id:
+          type: integer
+          format: int64
+          example: 1
+        view_id:
+          type: integer
+          format: int64
+          example: 1
+        query_normalized:
+          type: string
+          example: "SELECT `id`, `value`, `location` FROM `air_quality` WHERE `location`\
+            \ = \"09:STEF\""
+        related_identifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/RelatedIdentifierDto'
+        query_hash:
+          type: string
+          description: query hash in sha512
+        result_hash:
+          type: string
+          example: 34fe82cda2c53f13f8d90cfd7a3469e3a939ff311add50dce30d9136397bf8e5
+        result_number:
+          type: integer
+          format: int64
+          example: 1
+        publication_day:
+          type: integer
+          format: int32
+          example: 15
+        publication_month:
+          type: integer
+          format: int32
+          example: 12
+        publication_year:
+          type: integer
+          format: int32
+          example: 2022
+        last_modified:
+          type: string
+          format: date-time
+          example: 2021-03-12T15:26:21Z
+    IdentifierFunderDto:
+      required:
+      - funder_name
+      - id
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        funder_name:
+          type: string
+          example: European Commission
+        funder_identifier:
+          type: string
+          example: http://doi.org/10.13039/501100000780
+        funder_identifier_type:
+          type: string
+          example: Crossref Funder ID
+          enum:
+          - Crossref Funder ID
+          - ROR
+          - GND
+          - ISNI
+          - Other
+        scheme_uri:
+          type: string
+          example: http://doi.org/
+        award_number:
+          type: string
+          example: "824087"
+        award_title:
+          type: string
+          example: EOSC-Life
+    IdentifierTitleDto:
+      required:
+      - id
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        title:
+          type: string
+          example: Airquality Demonstrator
+        language:
+          type: string
+          example: en
+          enum:
+          - ab
+          - aa
+          - af
+          - ak
+          - sq
+          - am
+          - ar
+          - an
+          - hy
+          - as
+          - av
+          - ae
+          - ay
+          - az
+          - bm
+          - ba
+          - eu
+          - be
+          - bn
+          - bh
+          - bi
+          - bs
+          - br
+          - bg
+          - my
+          - ca
+          - km
+          - ch
+          - ce
+          - ny
+          - zh
+          - cu
+          - cv
+          - kw
+          - co
+          - cr
+          - hr
+          - cs
+          - da
+          - dv
+          - nl
+          - dz
+          - en
+          - eo
+          - et
+          - ee
+          - fo
+          - fj
+          - fi
+          - fr
+          - ff
+          - gd
+          - gl
+          - lg
+          - ka
+          - de
+          - ki
+          - el
+          - kl
+          - gn
+          - gu
+          - ht
+          - ha
+          - he
+          - hz
+          - hi
+          - ho
+          - hu
+          - is
+          - io
+          - ig
+          - id
+          - ia
+          - ie
+          - iu
+          - ik
+          - ga
+          - it
+          - ja
+          - jv
+          - kn
+          - kr
+          - ks
+          - kk
+          - rw
+          - kv
+          - kg
+          - ko
+          - kj
+          - ku
+          - ky
+          - lo
+          - la
+          - lv
+          - lb
+          - li
+          - ln
+          - lt
+          - lu
+          - mk
+          - mg
+          - ms
+          - ml
+          - mt
+          - gv
+          - mi
+          - mr
+          - mh
+          - ro
+          - mn
+          - na
+          - nv
+          - nd
+          - ng
+          - ne
+          - se
+          - "no"
+          - nb
+          - nn
+          - ii
+          - oc
+          - oj
+          - or
+          - om
+          - os
+          - pi
+          - pa
+          - ps
+          - fa
+          - pl
+          - pt
+          - qu
+          - rm
+          - rn
+          - ru
+          - sm
+          - sg
+          - sa
+          - sc
+          - sr
+          - sn
+          - sd
+          - si
+          - sk
+          - sl
+          - so
+          - st
+          - nr
+          - es
+          - su
+          - sw
+          - ss
+          - sv
+          - tl
+          - ty
+          - tg
+          - ta
+          - tt
+          - te
+          - th
+          - bo
+          - ti
+          - to
+          - ts
+          - tn
+          - tr
+          - tk
+          - tw
+          - ug
+          - uk
+          - ur
+          - uz
+          - ve
+          - vi
+          - vo
+          - wa
+          - cy
+          - fy
+          - wo
+          - xh
+          - yi
+          - yo
+          - za
+          - zu
+        type:
+          type: string
+          enum:
+          - AlternativeTitle
+          - Subtitle
+          - TranslatedTitle
+          - Other
+    LicenseDto:
+      required:
+      - identifier
+      - uri
+      type: object
+      properties:
+        identifier:
+          type: string
+          example: MIT
+        uri:
+          type: string
+          example: https://opensource.org/licenses/MIT
+    RelatedIdentifierDto:
+      required:
+      - created
+      - id
+      - value
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        value:
+          type: string
+          example: 10.70124/dc4zh-9ce78
+        type:
+          type: string
+          example: DOI
+          enum:
+          - DOI
+          - URL
+          - URN
+          - ARK
+          - arXiv
+          - bibcode
+          - EAN13
+          - EISSN
+          - Handle
+          - IGSN
+          - ISBN
+          - ISTC
+          - LISSN
+          - LSID
+          - PMID
+          - PURL
+          - UPC
+          - w3id
+        relation:
+          type: string
+          example: Cites
+          enum:
+          - IsCitedBy
+          - Cites
+          - IsSupplementTo
+          - IsSupplementedBy
+          - IsContinuedBy
+          - Continues
+          - IsDescribedBy
+          - Describes
+          - HasMetadata
+          - IsMetadataFor
+          - HasVersion
+          - IsVersionOf
+          - IsNewVersionOf
+          - IsPreviousVersionOf
+          - IsPartOf
+          - HasPart
+          - IsPublishedIn
+          - IsReferencedBy
+          - References
+          - IsDocumentedBy
+          - Documents
+          - IsCompiledBy
+          - Compiles
+          - IsVariantFormOf
+          - IsOriginalFormOf
+          - IsIdenticalTo
+          - IsReviewedBy
+          - Reviews
+          - IsDerivedFrom
+          - IsSourceOf
+          - IsRequiredBy
+          - Requires
+          - IsObsoletedBy
+          - Obsoletes
+        created:
+          type: string
+          format: date-time
+          example: 2021-03-12T15:26:21Z
+        last_modified:
+          type: string
+          format: date-time
+          example: 2021-03-12T15:26:21Z
+    TableBriefDto:
+      required:
+      - columns
+      - description
+      - id
+      - internal_name
+      - is_versioned
+      - name
+      - owner
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+          example: Air Quality
+        description:
+          type: string
+          example: Air Quality in Austria
+        owner:
+          $ref: '#/components/schemas/UserBriefDto'
+        columns:
+          type: array
+          items:
+            $ref: '#/components/schemas/ColumnBriefDto'
+        internal_name:
+          type: string
+          example: air_quality
+        is_versioned:
+          type: boolean
+          example: true
+    TableDto:
+      required:
+      - columns
+      - created
+      - created_by
+      - creator
+      - id
+      - internal_name
+      - is_public
+      - is_versioned
+      - name
+      - owner
+      - queue_name
+      - routing_key
+      - tdbid
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        tdbid:
+          type: integer
+          format: int64
+        name:
+          type: string
+          example: Air Quality
+        identifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/IdentifierDto'
+        creator:
+          $ref: '#/components/schemas/UserDto'
+        owner:
+          $ref: '#/components/schemas/UserDto'
+        description:
+          type: string
+          example: Air Quality in Austria
+        created:
+          type: string
+          format: date-time
+          example: 2021-03-12T15:26:21Z
+        columns:
+          type: array
+          items:
+            $ref: '#/components/schemas/ColumnDto'
+        constraints:
+          $ref: '#/components/schemas/ConstraintsDto'
+        internal_name:
+          type: string
+          example: air_quality
+        is_versioned:
+          type: boolean
+          example: true
+        created_by:
+          type: string
+          format: uuid
+        queue_name:
+          type: string
+          example: air_quality
+        queue_type:
+          type: string
+          example: quorum
+        routing_key:
+          type: string
+          example: dbrepo.database.air_quality
+        is_public:
+          type: boolean
+          example: true
+    UniqueDto:
+      required:
+      - columns
+      - table
+      - uid
+      type: object
+      properties:
+        uid:
+          type: integer
+          format: int64
+        table:
+          $ref: '#/components/schemas/TableDto'
+        columns:
+          type: array
+          items:
+            $ref: '#/components/schemas/ColumnDto'
+    UnitDto:
+      required:
+      - columns
+      - created
+      - id
+      - uri
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        uri:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        created:
+          type: string
+          format: date-time
+          example: 2021-03-12T15:26:21Z
+        columns:
+          type: array
+          items:
+            $ref: '#/components/schemas/ColumnBriefDto'
+    ViewDto:
+      required:
+      - columns
+      - created
+      - creator
+      - database
+      - database_id
+      - id
+      - internal_name
+      - name
+      - query
+      - query_hash
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        database:
+          $ref: '#/components/schemas/DatabaseDto'
+        name:
+          type: string
+          example: Air Quality
+        identifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/IdentifierDto'
+        query:
+          type: string
+          example: SELECT `id` FROM `air_quality` ORDER BY `value` DESC
+        created:
+          type: string
+          format: date-time
+          example: 2021-03-12T15:26:21Z
+        creator:
+          $ref: '#/components/schemas/UserDto'
+        columns:
+          type: array
+          items:
+            $ref: '#/components/schemas/ColumnDto'
+        database_id:
+          type: integer
+          format: int64
+        internal_name:
+          type: string
+          example: air_quality
+        is_public:
+          type: boolean
+          example: true
+        initial_view:
+          type: boolean
+          description: True if it is the default view for the database
+          example: true
+        query_hash:
+          type: string
+          example: 7de03e818900b6ea6d58ad0306d4a741d658c6df3d1964e89ed2395d8c7e7916
+        last_modified:
+          type: string
+          format: date-time
+          example: 2021-03-12T15:26:21Z
+    DatabaseTransferDto:
+      required:
+      - username
+      type: object
+      properties:
+        username:
+          type: string
+    ColumnSemanticsUpdateDto:
+      type: object
+      properties:
+        concept_uri:
+          type: string
+        unit_uri:
+          type: string
+    DatabaseModifyAccessDto:
+      required:
+      - type
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+          - read
+          - write_own
+          - write_all
+    QueryPersistDto:
+      required:
+      - persist
+      type: object
+      properties:
+        persist:
+          type: boolean
+          example: true
+    QueryDto:
+      required:
+      - created
+      - creator
+      - database_id
+      - execution
+      - id
+      - is_persisted
+      - last_modified
+      - query
+      - query_hash
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        creator:
+          $ref: '#/components/schemas/UserDto'
+        execution:
+          type: string
+          format: date-time
+          example: 2021-03-12T15:26:21Z
+        query:
+          type: string
+          example: SELECT `id` FROM `air_quality`
+        type:
+          type: string
+          example: query
+          enum:
+          - query
+          - view
+        identifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/IdentifierDto'
+        created:
+          type: string
+          format: date-time
+          example: 2021-03-12T15:26:21Z
+        database_id:
+          type: integer
+          format: int64
+        query_normalized:
+          type: string
+          example: SELECT `id` FROM `air_quality`
+        query_hash:
+          type: string
+          example: 17e682f060b5f8e47ea04c5c4855908b0a5ad612022260fe50e11ecb0cc0ab76
+        is_persisted:
+          type: boolean
+          example: true
+        result_hash:
+          type: string
+          example: 17e682f060b5f8e47ea04c5c4855908b0a5ad612022260fe50e11ecb0cc0ab76
+        result_number:
+          type: integer
+          format: int64
+          example: 1
+        last_modified:
+          type: string
+          format: date-time
+          example: 2021-03-12T15:26:21Z
+    SignupRequestDto:
+      required:
+      - email
+      - password
+      - username
+      type: object
+      properties:
+        username:
+          pattern: "^[a-z0-9]{3,}$"
+          type: string
+          example: user
+        email:
+          type: string
+          example: user@example.com
+        password:
+          type: string
+    OntologyCreateDto:
+      required:
+      - prefix
+      - uri
+      type: object
+      properties:
+        uri:
+          type: string
+          example: Ontology URI
+        prefix:
+          type: string
+          example: Ontology prefix
+        sparql_endpoint:
+          type: string
+          example: Ontology SPARQL endpoint
+    BannerMessageCreateDto:
+      required:
+      - message
+      - type
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+          - error
+          - warning
+          - info
+        message:
+          type: string
+          example: Maintenance starts on 8am on Monday
+        link:
+          type: string
+          example: https://example.com
+        link_text:
+          type: string
+          example: More
+        display_start:
+          type: string
+          format: date-time
+          example: 2021-03-12T15:26:21Z
+        display_end:
+          type: string
+          format: date-time
+          example: 2021-03-12T15:26:21Z
+    ImageCreateDto:
+      required:
+      - default_port
+      - dialect
+      - driver_class
+      - jdbc_method
+      - name
+      - registry
+      - version
+      type: object
+      properties:
+        registry:
+          type: string
+          example: docker.io/library
+        name:
+          type: string
+          example: mariadb
+        version:
+          type: string
+        dialect:
+          type: string
+        driver_class:
+          type: string
+        jdbc_method:
+          type: string
+        default_port:
+          maximum: 65535
+          minimum: 1024
+          type: integer
+          format: int32
     CreatorSaveDto:
       required:
       - creator_name
@@ -3656,7 +5578,6 @@ components:
       - database_id
       - publication_year
       - type
-      - visibility
       type: object
       properties:
         type:
@@ -3665,6 +5586,7 @@ components:
           enum:
           - database
           - subset
+          - table
           - view
         titles:
           type: array
@@ -3682,12 +5604,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/LicenseDto'
-        visibility:
-          type: string
-          example: everyone
-          enum:
-          - everyone
-          - self
         publisher:
           type: string
           example: TU Wien
@@ -3890,6 +5806,9 @@ components:
           type: integer
           format: int64
         view_id:
+          type: integer
+          format: int64
+        table_id:
           type: integer
           format: int64
         publication_day:
@@ -4113,18 +6032,6 @@ components:
           - Subtitle
           - TranslatedTitle
           - Other
-    LicenseDto:
-      required:
-      - identifier
-      - uri
-      type: object
-      properties:
-        identifier:
-          type: string
-          example: MIT
-        uri:
-          type: string
-          example: https://opensource.org/licenses/MIT
     RelatedIdentifierSaveDto:
       required:
       - value
@@ -4193,95 +6100,55 @@ components:
           - Requires
           - IsObsoletedBy
           - Obsoletes
-    ColumnBriefDto:
+    DatabaseCreateDto:
       required:
-      - column_type
-      - database_id
-      - id
-      - internal_name
-      - name
-      - table_id
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        name:
-          type: string
-          example: date
-        alias:
-          type: string
-        database_id:
-          type: integer
-          format: int64
-        table_id:
-          type: integer
-          format: int64
-        internal_name:
-          type: string
-          example: mdb_date
-        column_type:
-          type: string
-          example: date
-          enum:
-          - char
-          - varchar
-          - binary
-          - varbinary
-          - tinyblob
-          - tinytext
-          - text
-          - blob
-          - mediumtext
-          - mediumblob
-          - longtext
-          - longblob
-          - enum
-          - set
-          - bit
-          - tinyint
-          - bool
-          - smallint
-          - mediumint
-          - int
-          - bigint
-          - float
-          - double
-          - decimal
-          - date
-          - datetime
-          - timestamp
-          - time
-          - year
-    ContainerDto:
-      required:
-      - created
-      - host
-      - id
-      - internal_name
+      - container_id
+      - is_public
       - name
       type: object
       properties:
-        id:
-          type: integer
-          format: int64
         name:
           type: string
           example: Air Quality
-        host:
-          type: string
-        port:
+        container_id:
           type: integer
-          format: int32
+          format: int64
+          example: 1
+        is_public:
+          type: boolean
+          example: true
+    ContainerBriefDto:
+      required:
+      - created
+      - hash
+      - id
+      - image
+      - internal_name
+      - name
+      - running
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        hash:
+          type: string
+          example: f829dd8a884182d0da846f365dee1221fd16610a14c81b8f9f295ff162749e50
+        name:
+          type: string
+          example: Air Quality
         image:
           $ref: '#/components/schemas/ImageBriefDto'
+        running:
+          type: boolean
+          example: true
         created:
           type: string
           format: date-time
           example: 2021-03-12T15:26:21Z
         internal_name:
           type: string
-          example: data-db
+          example: air-quality
     CreatorBriefDto:
       required:
       - creator_name
@@ -4302,80 +6169,7 @@ components:
         creator_name:
           type: string
           example: "Carberry, Josiah"
-    CreatorDto:
-      required:
-      - creator_name
-      - id
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        firstname:
-          type: string
-          example: Josiah
-        lastname:
-          type: string
-          example: Carberry
-        affiliation:
-          type: string
-          example: Brown University
-        creator_name:
-          type: string
-          example: "Carberry, Josiah"
-        name_type:
-          type: string
-          example: Personal
-          enum:
-          - Personal
-          - Organizational
-        name_identifier:
-          type: string
-          example: 0000-0002-1825-0097
-        name_identifier_scheme:
-          type: string
-          example: ORCID
-          enum:
-          - ORCID
-          - ROR
-          - ISNI
-          - GRID
-        name_identifier_scheme_uri:
-          type: string
-          example: https://orcid.org/
-        affiliation_identifier:
-          type: string
-          example: https://ror.org/05gq02987
-        affiliation_identifier_scheme:
-          type: string
-          example: ROR
-          enum:
-          - ROR
-          - GRID
-          - ISNI
-        affiliation_identifier_scheme_uri:
-          type: string
-          example: https://ror.org/
-    DatabaseAccessDto:
-      required:
-      - created
-      - type
-      - user
-      type: object
-      properties:
-        user:
-          $ref: '#/components/schemas/UserDto'
-        type:
-          type: string
-          enum:
-          - read
-          - write_own
-          - write_all
-        created:
-          type: string
-          format: date-time
-          example: 2021-03-12T15:26:21Z
-    DatabaseDto:
+    DatabaseBriefDto:
       required:
       - created
       - creator
@@ -4408,7 +6202,7 @@ components:
         image:
           $ref: '#/components/schemas/ImageDto'
         container:
-          $ref: '#/components/schemas/ContainerDto'
+          $ref: '#/components/schemas/ContainerBriefDto'
         accesses:
           type: array
           items:
@@ -4449,6 +6243,7 @@ components:
           enum:
           - database
           - subset
+          - table
           - view
         titles:
           type: array
@@ -4476,959 +6271,26 @@ components:
           type: integer
           format: int32
           example: 2022
-    IdentifierDescriptionDto:
-      required:
-      - id
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        description:
-          type: string
-          example: "Air quality reports at Stephansplatz, Vienna"
-        language:
-          type: string
-          example: en
-          enum:
-          - ab
-          - aa
-          - af
-          - ak
-          - sq
-          - am
-          - ar
-          - an
-          - hy
-          - as
-          - av
-          - ae
-          - ay
-          - az
-          - bm
-          - ba
-          - eu
-          - be
-          - bn
-          - bh
-          - bi
-          - bs
-          - br
-          - bg
-          - my
-          - ca
-          - km
-          - ch
-          - ce
-          - ny
-          - zh
-          - cu
-          - cv
-          - kw
-          - co
-          - cr
-          - hr
-          - cs
-          - da
-          - dv
-          - nl
-          - dz
-          - en
-          - eo
-          - et
-          - ee
-          - fo
-          - fj
-          - fi
-          - fr
-          - ff
-          - gd
-          - gl
-          - lg
-          - ka
-          - de
-          - ki
-          - el
-          - kl
-          - gn
-          - gu
-          - ht
-          - ha
-          - he
-          - hz
-          - hi
-          - ho
-          - hu
-          - is
-          - io
-          - ig
-          - id
-          - ia
-          - ie
-          - iu
-          - ik
-          - ga
-          - it
-          - ja
-          - jv
-          - kn
-          - kr
-          - ks
-          - kk
-          - rw
-          - kv
-          - kg
-          - ko
-          - kj
-          - ku
-          - ky
-          - lo
-          - la
-          - lv
-          - lb
-          - li
-          - ln
-          - lt
-          - lu
-          - mk
-          - mg
-          - ms
-          - ml
-          - mt
-          - gv
-          - mi
-          - mr
-          - mh
-          - ro
-          - mn
-          - na
-          - nv
-          - nd
-          - ng
-          - ne
-          - se
-          - "no"
-          - nb
-          - nn
-          - ii
-          - oc
-          - oj
-          - or
-          - om
-          - os
-          - pi
-          - pa
-          - ps
-          - fa
-          - pl
-          - pt
-          - qu
-          - rm
-          - rn
-          - ru
-          - sm
-          - sg
-          - sa
-          - sc
-          - sr
-          - sn
-          - sd
-          - si
-          - sk
-          - sl
-          - so
-          - st
-          - nr
-          - es
-          - su
-          - sw
-          - ss
-          - sv
-          - tl
-          - ty
-          - tg
-          - ta
-          - tt
-          - te
-          - th
-          - bo
-          - ti
-          - to
-          - ts
-          - tn
-          - tr
-          - tk
-          - tw
-          - ug
-          - uk
-          - ur
-          - uz
-          - ve
-          - vi
-          - vo
-          - wa
-          - cy
-          - fy
-          - wo
-          - xh
-          - yi
-          - yo
-          - za
-          - zu
-        type:
-          type: string
-          example: Abstract
-          enum:
-          - Abstract
-          - Methods
-          - SeriesInformation
-          - TableOfContents
-          - TechnicalInfo
-          - Other
-    IdentifierDto:
-      required:
-      - created
-      - creators
-      - database
-      - execution
-      - id
-      - last_modified
-      - publication_year
-      - query
-      - query_hash
-      - query_normalized
-      - result_hash
-      - result_number
-      - type
-      - visibility
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        type:
-          type: string
-          enum:
-          - database
-          - subset
-          - view
-        titles:
-          type: array
-          items:
-            $ref: '#/components/schemas/IdentifierTitleDto'
-        descriptions:
-          type: array
-          items:
-            $ref: '#/components/schemas/IdentifierDescriptionDto'
-        funders:
-          type: array
-          items:
-            $ref: '#/components/schemas/IdentifierFunderDto'
-        query:
-          type: string
-          example: "SELECT `id`, `value`, `location` FROM `air_quality` WHERE `location`\
-            \ = \"09:STEF\""
-        database:
-          $ref: '#/components/schemas/DatabaseDto'
-        execution:
-          type: string
-          format: date-time
-          example: 2021-03-12T15:26:21Z
-        visibility:
-          type: string
-          example: everyone
-          enum:
-          - everyone
-          - self
-        doi:
-          type: string
-          example: 10.1038/nphys1170
-        publisher:
-          type: string
-          example: TU Wien
-        language:
-          type: string
-          enum:
-          - ab
-          - aa
-          - af
-          - ak
-          - sq
-          - am
-          - ar
-          - an
-          - hy
-          - as
-          - av
-          - ae
-          - ay
-          - az
-          - bm
-          - ba
-          - eu
-          - be
-          - bn
-          - bh
-          - bi
-          - bs
-          - br
-          - bg
-          - my
-          - ca
-          - km
-          - ch
-          - ce
-          - ny
-          - zh
-          - cu
-          - cv
-          - kw
-          - co
-          - cr
-          - hr
-          - cs
-          - da
-          - dv
-          - nl
-          - dz
-          - en
-          - eo
-          - et
-          - ee
-          - fo
-          - fj
-          - fi
-          - fr
-          - ff
-          - gd
-          - gl
-          - lg
-          - ka
-          - de
-          - ki
-          - el
-          - kl
-          - gn
-          - gu
-          - ht
-          - ha
-          - he
-          - hz
-          - hi
-          - ho
-          - hu
-          - is
-          - io
-          - ig
-          - id
-          - ia
-          - ie
-          - iu
-          - ik
-          - ga
-          - it
-          - ja
-          - jv
-          - kn
-          - kr
-          - ks
-          - kk
-          - rw
-          - kv
-          - kg
-          - ko
-          - kj
-          - ku
-          - ky
-          - lo
-          - la
-          - lv
-          - lb
-          - li
-          - ln
-          - lt
-          - lu
-          - mk
-          - mg
-          - ms
-          - ml
-          - mt
-          - gv
-          - mi
-          - mr
-          - mh
-          - ro
-          - mn
-          - na
-          - nv
-          - nd
-          - ng
-          - ne
-          - se
-          - "no"
-          - nb
-          - nn
-          - ii
-          - oc
-          - oj
-          - or
-          - om
-          - os
-          - pi
-          - pa
-          - ps
-          - fa
-          - pl
-          - pt
-          - qu
-          - rm
-          - rn
-          - ru
-          - sm
-          - sg
-          - sa
-          - sc
-          - sr
-          - sn
-          - sd
-          - si
-          - sk
-          - sl
-          - so
-          - st
-          - nr
-          - es
-          - su
-          - sw
-          - ss
-          - sv
-          - tl
-          - ty
-          - tg
-          - ta
-          - tt
-          - te
-          - th
-          - bo
-          - ti
-          - to
-          - ts
-          - tn
-          - tr
-          - tk
-          - tw
-          - ug
-          - uk
-          - ur
-          - uz
-          - ve
-          - vi
-          - vo
-          - wa
-          - cy
-          - fy
-          - wo
-          - xh
-          - yi
-          - yo
-          - za
-          - zu
-        licenses:
-          type: array
-          items:
-            $ref: '#/components/schemas/LicenseDto'
-        creators:
-          type: array
-          items:
-            $ref: '#/components/schemas/CreatorDto'
-        created:
-          type: string
-          format: date-time
-          example: 2021-03-12T15:26:21Z
-        database_id:
-          type: integer
-          format: int64
-          example: 1
-        query_id:
-          type: integer
-          format: int64
-          example: 1
-        view_id:
-          type: integer
-          format: int64
-          example: 1
-        query_normalized:
-          type: string
-          example: "SELECT `id`, `value`, `location` FROM `air_quality` WHERE `location`\
-            \ = \"09:STEF\""
-        related_identifiers:
-          type: array
-          items:
-            $ref: '#/components/schemas/RelatedIdentifierDto'
-        query_hash:
-          type: string
-          description: query hash in sha512
-        result_hash:
-          type: string
-          example: 34fe82cda2c53f13f8d90cfd7a3469e3a939ff311add50dce30d9136397bf8e5
-        result_number:
-          type: integer
-          format: int64
-          example: 1
-        publication_day:
-          type: integer
-          format: int32
-          example: 15
-        publication_month:
-          type: integer
-          format: int32
-          example: 12
-        publication_year:
-          type: integer
-          format: int32
-          example: 2022
-        last_modified:
-          type: string
-          format: date-time
-          example: 2021-03-12T15:26:21Z
-    IdentifierFunderDto:
-      required:
-      - funder_name
-      - id
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        funder_name:
-          type: string
-          example: European Commission
-        funder_identifier:
-          type: string
-          example: http://doi.org/10.13039/501100000780
-        funder_identifier_type:
-          type: string
-          example: Crossref Funder ID
-          enum:
-          - Crossref Funder ID
-          - ROR
-          - GND
-          - ISNI
-          - Other
-        scheme_uri:
-          type: string
-          example: http://doi.org/
-        award_number:
-          type: string
-          example: "824087"
-        award_title:
-          type: string
-          example: EOSC-Life
-    IdentifierTitleDto:
-      required:
-      - id
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        title:
-          type: string
-          example: Airquality Demonstrator
-        language:
-          type: string
-          example: en
-          enum:
-          - ab
-          - aa
-          - af
-          - ak
-          - sq
-          - am
-          - ar
-          - an
-          - hy
-          - as
-          - av
-          - ae
-          - ay
-          - az
-          - bm
-          - ba
-          - eu
-          - be
-          - bn
-          - bh
-          - bi
-          - bs
-          - br
-          - bg
-          - my
-          - ca
-          - km
-          - ch
-          - ce
-          - ny
-          - zh
-          - cu
-          - cv
-          - kw
-          - co
-          - cr
-          - hr
-          - cs
-          - da
-          - dv
-          - nl
-          - dz
-          - en
-          - eo
-          - et
-          - ee
-          - fo
-          - fj
-          - fi
-          - fr
-          - ff
-          - gd
-          - gl
-          - lg
-          - ka
-          - de
-          - ki
-          - el
-          - kl
-          - gn
-          - gu
-          - ht
-          - ha
-          - he
-          - hz
-          - hi
-          - ho
-          - hu
-          - is
-          - io
-          - ig
-          - id
-          - ia
-          - ie
-          - iu
-          - ik
-          - ga
-          - it
-          - ja
-          - jv
-          - kn
-          - kr
-          - ks
-          - kk
-          - rw
-          - kv
-          - kg
-          - ko
-          - kj
-          - ku
-          - ky
-          - lo
-          - la
-          - lv
-          - lb
-          - li
-          - ln
-          - lt
-          - lu
-          - mk
-          - mg
-          - ms
-          - ml
-          - mt
-          - gv
-          - mi
-          - mr
-          - mh
-          - ro
-          - mn
-          - na
-          - nv
-          - nd
-          - ng
-          - ne
-          - se
-          - "no"
-          - nb
-          - nn
-          - ii
-          - oc
-          - oj
-          - or
-          - om
-          - os
-          - pi
-          - pa
-          - ps
-          - fa
-          - pl
-          - pt
-          - qu
-          - rm
-          - rn
-          - ru
-          - sm
-          - sg
-          - sa
-          - sc
-          - sr
-          - sn
-          - sd
-          - si
-          - sk
-          - sl
-          - so
-          - st
-          - nr
-          - es
-          - su
-          - sw
-          - ss
-          - sv
-          - tl
-          - ty
-          - tg
-          - ta
-          - tt
-          - te
-          - th
-          - bo
-          - ti
-          - to
-          - ts
-          - tn
-          - tr
-          - tk
-          - tw
-          - ug
-          - uk
-          - ur
-          - uz
-          - ve
-          - vi
-          - vo
-          - wa
-          - cy
-          - fy
-          - wo
-          - xh
-          - yi
-          - yo
-          - za
-          - zu
-        type:
-          type: string
-          enum:
-          - AlternativeTitle
-          - Subtitle
-          - TranslatedTitle
-          - Other
     ImageBriefDto:
       required:
       - id
-      - name
-      - version
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        name:
-          type: string
-          example: mariadb
-        version:
-          type: string
-          example: "10.5"
-    ImageDateDto:
-      required:
-      - created_at
-      - database_format
-      - example
-      - has_time
-      - id
-      - unix_format
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        example:
-          type: string
-          example: 30.01.2022
-        database_format:
-          type: string
-          example: '%d.%c.%Y'
-        unix_format:
-          type: string
-          example: dd.MM.YYYY
-        has_time:
-          type: boolean
-          example: false
-        created_at:
-          type: string
-          format: date-time
-          example: 2021-03-12T15:26:21Z
-    ImageDto:
-      required:
-      - default_port
-      - dialect
-      - driver_class
-      - id
       - jdbc_method
       - name
-      - registry
       - version
       type: object
       properties:
         id:
           type: integer
           format: int64
-        registry:
-          type: string
-          example: docker.io/library
         name:
           type: string
           example: mariadb
         version:
           type: string
           example: "10.5"
-        dialect:
-          type: string
-          example: org.hibernate.dialect.MariaDBDialect
-        driver_class:
-          type: string
-          example: org.mariadb.jdbc.Driver
-        date_formats:
-          type: array
-          items:
-            $ref: '#/components/schemas/ImageDateDto'
         jdbc_method:
           type: string
           example: mariadb
-        default_port:
-          type: integer
-          format: int32
-          example: 3306
-    RelatedIdentifierDto:
-      required:
-      - created
-      - id
-      - value
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        value:
-          type: string
-          example: 10.70124/dc4zh-9ce78
-        type:
-          type: string
-          example: DOI
-          enum:
-          - DOI
-          - URL
-          - URN
-          - ARK
-          - arXiv
-          - bibcode
-          - EAN13
-          - EISSN
-          - Handle
-          - IGSN
-          - ISBN
-          - ISTC
-          - LISSN
-          - LSID
-          - PMID
-          - PURL
-          - UPC
-          - w3id
-        relation:
-          type: string
-          example: Cites
-          enum:
-          - IsCitedBy
-          - Cites
-          - IsSupplementTo
-          - IsSupplementedBy
-          - IsContinuedBy
-          - Continues
-          - IsDescribedBy
-          - Describes
-          - HasMetadata
-          - IsMetadataFor
-          - HasVersion
-          - IsVersionOf
-          - IsNewVersionOf
-          - IsPreviousVersionOf
-          - IsPartOf
-          - HasPart
-          - IsPublishedIn
-          - IsReferencedBy
-          - References
-          - IsDocumentedBy
-          - Documents
-          - IsCompiledBy
-          - Compiles
-          - IsVariantFormOf
-          - IsOriginalFormOf
-          - IsIdenticalTo
-          - IsReviewedBy
-          - Reviews
-          - IsDerivedFrom
-          - IsSourceOf
-          - IsRequiredBy
-          - Requires
-          - IsObsoletedBy
-          - Obsoletes
-        created:
-          type: string
-          format: date-time
-          example: 2021-03-12T15:26:21Z
-        last_modified:
-          type: string
-          format: date-time
-          example: 2021-03-12T15:26:21Z
-    TableBriefDto:
-      required:
-      - columns
-      - description
-      - id
-      - internal_name
-      - is_versioned
-      - name
-      - owner
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        name:
-          type: string
-          example: Air Quality
-        description:
-          type: string
-          example: Air Quality in Austria
-        owner:
-          $ref: '#/components/schemas/UserBriefDto'
-        columns:
-          type: array
-          items:
-            $ref: '#/components/schemas/ColumnBriefDto'
-        internal_name:
-          type: string
-          example: air_quality
-        is_versioned:
-          type: boolean
-          example: true
     ViewBriefDto:
       required:
       - created
@@ -5478,676 +6340,6 @@ components:
           type: string
           format: date-time
           example: 2021-03-12T15:26:21Z
-    BannerMessageUpdateDto:
-      required:
-      - message
-      - type
-      type: object
-      properties:
-        type:
-          type: string
-          enum:
-          - error
-          - warning
-          - info
-        message:
-          type: string
-          example: Maintenance starts on 8am on Monday
-        link:
-          type: string
-          example: https://example.com
-        link_text:
-          type: string
-          example: More
-        display_start:
-          type: string
-          format: date-time
-          example: 2021-03-12T15:26:21Z
-        display_end:
-          type: string
-          format: date-time
-          example: 2021-03-12T15:26:21Z
-    BannerMessageNotFoundException:
-      type: object
-      properties:
-        cause:
-          type: object
-          properties:
-            stackTrace:
-              type: array
-              items:
-                type: object
-                properties:
-                  classLoaderName:
-                    type: string
-                  moduleName:
-                    type: string
-                  moduleVersion:
-                    type: string
-                  methodName:
-                    type: string
-                  fileName:
-                    type: string
-                  lineNumber:
-                    type: integer
-                    format: int32
-                  nativeMethod:
-                    type: boolean
-                  className:
-                    type: string
-            message:
-              type: string
-            suppressed:
-              type: array
-              items:
-                type: object
-                properties:
-                  stackTrace:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        classLoaderName:
-                          type: string
-                        moduleName:
-                          type: string
-                        moduleVersion:
-                          type: string
-                        methodName:
-                          type: string
-                        fileName:
-                          type: string
-                        lineNumber:
-                          type: integer
-                          format: int32
-                        nativeMethod:
-                          type: boolean
-                        className:
-                          type: string
-                  message:
-                    type: string
-                  localizedMessage:
-                    type: string
-            localizedMessage:
-              type: string
-        stackTrace:
-          type: array
-          items:
-            type: object
-            properties:
-              classLoaderName:
-                type: string
-              moduleName:
-                type: string
-              moduleVersion:
-                type: string
-              methodName:
-                type: string
-              fileName:
-                type: string
-              lineNumber:
-                type: integer
-                format: int32
-              nativeMethod:
-                type: boolean
-              className:
-                type: string
-        message:
-          type: string
-        suppressed:
-          type: array
-          items:
-            type: object
-            properties:
-              stackTrace:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    classLoaderName:
-                      type: string
-                    moduleName:
-                      type: string
-                    moduleVersion:
-                      type: string
-                    methodName:
-                      type: string
-                    fileName:
-                      type: string
-                    lineNumber:
-                      type: integer
-                      format: int32
-                    nativeMethod:
-                      type: boolean
-                    className:
-                      type: string
-              message:
-                type: string
-              localizedMessage:
-                type: string
-        localizedMessage:
-          type: string
-    BannerMessageBriefDto:
-      required:
-      - message
-      - type
-      type: object
-      properties:
-        type:
-          type: string
-          enum:
-          - error
-          - warning
-          - info
-        message:
-          type: string
-          example: Maintenance starts on 8am on Monday
-        link:
-          type: string
-          example: https://example.com
-        link_text:
-          type: string
-          example: More
-    ImageChangeDto:
-      required:
-      - dialect
-      - driver_class
-      - jdbc_method
-      - registry
-      type: object
-      properties:
-        registry:
-          type: string
-          example: docker.io/library
-        defaultPort:
-          maximum: 65535
-          minimum: 1024
-          type: integer
-          format: int32
-          example: 5432
-        dialect:
-          type: string
-          example: Postgres
-        driver_class:
-          type: string
-          example: org.postgresql.Driver
-        jdbc_method:
-          type: string
-          example: postgresql
-    DatabaseModifyVisibilityDto:
-      required:
-      - is_public
-      type: object
-      properties:
-        is_public:
-          type: boolean
-          example: true
-    DatabaseTransferDto:
-      required:
-      - username
-      type: object
-      properties:
-        username:
-          type: string
-    ColumnSemanticsUpdateDto:
-      type: object
-      properties:
-        concept_uri:
-          type: string
-        unit_uri:
-          type: string
-    ColumnDto:
-      required:
-      - auto_generated
-      - column_type
-      - database_id
-      - id
-      - internal_name
-      - is_null_allowed
-      - is_primary_key
-      - is_public
-      - name
-      - table_id
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        name:
-          type: string
-          example: Date
-        alias:
-          type: string
-        size:
-          type: integer
-          format: int32
-          example: 255
-        d:
-          type: integer
-          format: int32
-          example: 0
-        concept:
-          $ref: '#/components/schemas/ConceptDto'
-        unit:
-          $ref: '#/components/schemas/UnitDto'
-        enums:
-          type: array
-          items:
-            type: string
-        sets:
-          type: array
-          items:
-            type: string
-        database_id:
-          type: integer
-          format: int64
-        table_id:
-          type: integer
-          format: int64
-        internal_name:
-          type: string
-          example: mdb_date
-        date_format:
-          $ref: '#/components/schemas/ImageDateDto'
-        auto_generated:
-          type: boolean
-          example: false
-        is_primary_key:
-          type: boolean
-          example: true
-        index_length:
-          type: integer
-          format: int32
-        column_type:
-          type: string
-          example: string
-          enum:
-          - char
-          - varchar
-          - binary
-          - varbinary
-          - tinyblob
-          - tinytext
-          - text
-          - blob
-          - mediumtext
-          - mediumblob
-          - longtext
-          - longblob
-          - enum
-          - set
-          - bit
-          - tinyint
-          - bool
-          - smallint
-          - mediumint
-          - int
-          - bigint
-          - float
-          - double
-          - decimal
-          - date
-          - datetime
-          - timestamp
-          - time
-          - year
-        is_public:
-          type: boolean
-          example: true
-        is_null_allowed:
-          type: boolean
-          example: false
-    ConceptDto:
-      required:
-      - columns
-      - created
-      - id
-      - uri
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        uri:
-          type: string
-        name:
-          type: string
-        description:
-          type: string
-        created:
-          type: string
-          format: date-time
-          example: 2021-03-12T15:26:21Z
-        columns:
-          type: array
-          items:
-            $ref: '#/components/schemas/ColumnBriefDto'
-    UnitDto:
-      required:
-      - columns
-      - created
-      - id
-      - uri
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        uri:
-          type: string
-        name:
-          type: string
-        description:
-          type: string
-        created:
-          type: string
-          format: date-time
-          example: 2021-03-12T15:26:21Z
-        columns:
-          type: array
-          items:
-            $ref: '#/components/schemas/ColumnBriefDto'
-    DatabaseModifyAccessDto:
-      required:
-      - type
-      type: object
-      properties:
-        type:
-          type: string
-          enum:
-          - read
-          - write_own
-          - write_all
-    TableCsvUpdateDto:
-      required:
-      - data
-      - keys
-      type: object
-      properties:
-        data:
-          type: object
-          additionalProperties:
-            type: object
-        keys:
-          type: object
-          additionalProperties:
-            type: object
-    QueryPersistDto:
-      required:
-      - persist
-      type: object
-      properties:
-        persist:
-          type: boolean
-          example: true
-    QueryDto:
-      required:
-      - cid
-      - created
-      - creator
-      - dbid
-      - execution
-      - id
-      - is_persisted
-      - last_modified
-      - query
-      - query_hash
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        cid:
-          type: integer
-          format: int64
-        dbid:
-          type: integer
-          format: int64
-        creator:
-          $ref: '#/components/schemas/UserDto'
-        execution:
-          type: string
-          format: date-time
-          example: 2021-03-12T15:26:21Z
-        query:
-          type: string
-          example: SELECT `id` FROM `air_quality`
-        type:
-          type: string
-          example: query
-          enum:
-          - query
-          - view
-        identifier:
-          $ref: '#/components/schemas/IdentifierDto'
-        created:
-          type: string
-          format: date-time
-          example: 2021-03-12T15:26:21Z
-        query_normalized:
-          type: string
-          example: SELECT `id` FROM `air_quality`
-        query_hash:
-          type: string
-          example: 17e682f060b5f8e47ea04c5c4855908b0a5ad612022260fe50e11ecb0cc0ab76
-        is_persisted:
-          type: boolean
-          example: true
-        result_hash:
-          type: string
-          example: 17e682f060b5f8e47ea04c5c4855908b0a5ad612022260fe50e11ecb0cc0ab76
-        result_number:
-          type: integer
-          format: int64
-          example: 1
-        last_modified:
-          type: string
-          format: date-time
-          example: 2021-03-12T15:26:21Z
-    SignupRequestDto:
-      required:
-      - email
-      - password
-      - username
-      type: object
-      properties:
-        username:
-          pattern: "^[a-z0-9]{3,}$"
-          type: string
-          example: user
-        email:
-          type: string
-          example: user@example.com
-        password:
-          type: string
-    UnitSaveDto:
-      required:
-      - description
-      - name
-      - uri
-      type: object
-      properties:
-        uri:
-          type: string
-        name:
-          type: string
-        description:
-          type: string
-    OntologyCreateDto:
-      required:
-      - prefix
-      - uri
-      type: object
-      properties:
-        uri:
-          type: string
-          example: Ontology URI
-        prefix:
-          type: string
-          example: Ontology prefix
-        sparql_endpoint:
-          type: string
-          example: Ontology SPARQL endpoint
-    ConceptSaveDto:
-      required:
-      - description
-      - name
-      - uri
-      type: object
-      properties:
-        uri:
-          type: string
-        name:
-          type: string
-        description:
-          type: string
-    BannerMessageCreateDto:
-      required:
-      - message
-      - type
-      type: object
-      properties:
-        type:
-          type: string
-          enum:
-          - error
-          - warning
-          - info
-        message:
-          type: string
-          example: Maintenance starts on 8am on Monday
-        link:
-          type: string
-          example: https://example.com
-        link_text:
-          type: string
-          example: More
-        display_start:
-          type: string
-          format: date-time
-          example: 2021-03-12T15:26:21Z
-        display_end:
-          type: string
-          format: date-time
-          example: 2021-03-12T15:26:21Z
-    ImageCreateDto:
-      required:
-      - default_port
-      - dialect
-      - driver_class
-      - jdbc_method
-      - name
-      - registry
-      - version
-      type: object
-      properties:
-        registry:
-          type: string
-          example: docker.io/library
-        name:
-          type: string
-          example: mariadb
-        version:
-          type: string
-        dialect:
-          type: string
-        driver_class:
-          type: string
-        jdbc_method:
-          type: string
-        default_port:
-          maximum: 65535
-          minimum: 1024
-          type: integer
-          format: int32
-    DatabaseCreateDto:
-      required:
-      - container_id
-      - is_public
-      - name
-      type: object
-      properties:
-        name:
-          type: string
-          example: Air Quality
-        container_id:
-          type: integer
-          format: int64
-          example: 1
-        is_public:
-          type: boolean
-          example: true
-    ContainerBriefDto:
-      required:
-      - created
-      - hash
-      - id
-      - internal_name
-      - name
-      - running
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        hash:
-          type: string
-          example: f829dd8a884182d0da846f365dee1221fd16610a14c81b8f9f295ff162749e50
-        name:
-          type: string
-          example: Air Quality
-        running:
-          type: boolean
-          example: true
-        created:
-          type: string
-          format: date-time
-          example: 2021-03-12T15:26:21Z
-        internal_name:
-          type: string
-          example: air-quality
-    DatabaseBriefDto:
-      required:
-      - created
-      - id
-      - image
-      - internal_name
-      - name
-      - owner
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        name:
-          type: string
-          example: Air Quality
-        description:
-          type: string
-          example: Air Quality in Austria
-        identifier:
-          $ref: '#/components/schemas/IdentifierBriefDto'
-        engine:
-          type: string
-          example: mariadb:10.5
-        owner:
-          $ref: '#/components/schemas/UserBriefDto'
-        container:
-          $ref: '#/components/schemas/ContainerBriefDto'
-        creator:
-          $ref: '#/components/schemas/UserBriefDto'
-        created:
-          type: string
-          format: date-time
-          example: 2021-03-12T15:26:21Z
-        image:
-          $ref: '#/components/schemas/ImageBriefDto'
-        internal_name:
-          type: string
-          example: air_quality
-        is_public:
-          type: boolean
-          example: true
     DatabaseGiveAccessDto:
       required:
       - type
@@ -6221,11 +6413,11 @@ components:
           - year
         size:
           type: integer
-          format: int32
+          format: int64
           example: 255
         d:
           type: integer
-          format: int32
+          format: int64
           example: 0
         dfid:
           type: integer
@@ -6248,7 +6440,7 @@ components:
           example: false
         index_length:
           type: integer
-          format: int32
+          format: int64
         null_allowed:
           type: boolean
           example: true
@@ -6333,7 +6525,7 @@ components:
       properties:
         location:
           type: string
-          example: /tmp/file.csv
+          example: file.csv
         separator:
           type: string
           example: ","
@@ -6517,14 +6709,23 @@ components:
           type: string
         internalName:
           type: string
-        imageId:
-          type: integer
-          format: int64
         host:
           type: string
         port:
           type: integer
           format: int32
+        sidecarHost:
+          type: string
+        sidecarPort:
+          type: integer
+          format: int32
+        uiHost:
+          type: string
+        uiPort:
+          type: integer
+          format: int32
+        uiAdditionalFlags:
+          type: string
         databases:
           type: array
           items:
@@ -6611,8 +6812,8 @@ components:
         nameType:
           type: string
           enum:
-          - Personal
-          - Organizational
+          - PERSONAL
+          - ORGANIZATIONAL
         nameIdentifier:
           type: string
         nameIdentifierScheme:
@@ -6678,8 +6879,14 @@ components:
           format: uuid
         contact:
           $ref: '#/components/schemas/User'
-        identifier:
-          $ref: '#/components/schemas/Identifier'
+        identifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Identifier'
+        subsets:
+          type: array
+          items:
+            $ref: '#/components/schemas/Identifier'
         tables:
           type: array
           items:
@@ -6688,6 +6895,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/View'
+        accesses:
+          type: array
+          items:
+            $ref: '#/components/schemas/DatabaseAccess'
         isPublic:
           type: boolean
         created:
@@ -6772,6 +6983,9 @@ components:
           type: integer
           format: int64
         queryId:
+          type: integer
+          format: int64
+        tableId:
           type: integer
           format: int64
         viewId:
@@ -6991,6 +7205,7 @@ components:
           enum:
           - DATABASE
           - SUBSET
+          - TABLE
           - VIEW
         query:
           type: string
@@ -7015,11 +7230,6 @@ components:
         publicationDay:
           type: integer
           format: int32
-        visibility:
-          type: string
-          enum:
-          - VisibilityType.EVERYONE
-          - VisibilityType.SELF
         database:
           $ref: '#/components/schemas/Database'
         relatedIdentifiers:
@@ -7583,10 +7793,26 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/TableColumn'
+        identifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Identifier'
         constraints:
           $ref: '#/components/schemas/Constraints'
         isVersioned:
           type: boolean
+        numRows:
+          type: integer
+          format: int64
+        dataLength:
+          type: integer
+          format: int64
+        maxDataLength:
+          type: integer
+          format: int64
+        avgRowLength:
+          type: integer
+          format: int64
         created:
           type: string
           format: date-time
@@ -7617,7 +7843,7 @@ components:
           type: boolean
         indexLength:
           type: integer
-          format: int32
+          format: int64
         alias:
           type: string
         columnType:
@@ -7654,7 +7880,7 @@ components:
           - TableColumnType.YEAR
         length:
           type: integer
-          format: int32
+          format: int64
         isNullAllowed:
           type: boolean
         ordinalPosition:
@@ -7677,10 +7903,20 @@ components:
             type: string
         size:
           type: integer
-          format: int32
+          format: int64
         d:
           type: integer
-          format: int32
+          format: int64
+        valMin:
+          type: number
+        valMax:
+          type: number
+        mean:
+          type: number
+        median:
+          type: number
+        stdDev:
+          type: number
         lastModified:
           type: string
           format: date-time
@@ -7772,6 +8008,8 @@ components:
         createdBy:
           type: string
           format: uuid
+        creator:
+          $ref: '#/components/schemas/User'
         name:
           type: string
         internalName:
@@ -7784,10 +8022,12 @@ components:
           type: string
         queryHash:
           type: string
+        identifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Identifier'
         database:
           $ref: '#/components/schemas/Database'
-        identifier:
-          $ref: '#/components/schemas/Identifier'
         columns:
           type: array
           items:
@@ -7798,206 +8038,20 @@ components:
         lastModified:
           type: string
           format: date-time
-    ViewDto:
-      required:
-      - columns
-      - created
-      - creator
-      - database
-      - database_id
-      - id
-      - internal_name
-      - name
-      - query
-      - query_hash
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        database:
-          $ref: '#/components/schemas/DatabaseDto'
-        name:
-          type: string
-          example: Air Quality
-        identifier:
-          $ref: '#/components/schemas/IdentifierDto'
-        query:
-          type: string
-          example: SELECT `id` FROM `air_quality` ORDER BY `value` DESC
-        created:
-          type: string
-          format: date-time
-          example: 2021-03-12T15:26:21Z
-        creator:
-          $ref: '#/components/schemas/UserDto'
-        columns:
-          type: array
-          items:
-            $ref: '#/components/schemas/ColumnDto'
-        database_id:
-          type: integer
-          format: int64
-        internal_name:
-          type: string
-          example: air_quality
-        is_public:
-          type: boolean
-          example: true
-        initial_view:
-          type: boolean
-          description: True if it is the default view for the database
-          example: true
-        query_hash:
-          type: string
-          example: 7de03e818900b6ea6d58ad0306d4a741d658c6df3d1964e89ed2395d8c7e7916
-        last_modified:
-          type: string
-          format: date-time
-          example: 2021-03-12T15:26:21Z
-    ConstraintsDto:
-      type: object
-      properties:
-        uniques:
-          type: array
-          items:
-            $ref: '#/components/schemas/UniqueDto'
-        checks:
-          type: array
-          items:
-            type: string
-        foreign_keys:
-          type: array
-          items:
-            $ref: '#/components/schemas/ForeignKeyDto'
-    ForeignKeyDto:
-      type: object
-      properties:
-        columns:
-          type: array
-          items:
-            $ref: '#/components/schemas/ColumnDto'
-        referenced_table:
-          $ref: '#/components/schemas/TableBriefDto'
-        referenced_columns:
-          type: array
-          items:
-            $ref: '#/components/schemas/ColumnDto'
-        on_update:
-          type: string
-          enum:
-          - restrict
-          - cascade
-          - set_null
-          - no_action
-          - set_default
-        on_delete:
-          type: string
-          enum:
-          - restrict
-          - cascade
-          - set_null
-          - no_action
-          - set_default
-    TableDto:
-      required:
-      - columns
-      - created
-      - created_by
-      - creator
-      - database
-      - id
-      - internal_name
-      - is_public
-      - is_versioned
-      - name
-      - owner
-      - queue_name
-      - routing_key
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        database:
-          $ref: '#/components/schemas/DatabaseDto'
-        name:
-          type: string
-          example: Air Quality
-        creator:
-          $ref: '#/components/schemas/UserDto'
-        owner:
-          $ref: '#/components/schemas/UserDto'
-        description:
-          type: string
-          example: Air Quality in Austria
-        created:
-          type: string
-          format: date-time
-          example: 2021-03-12T15:26:21Z
-        columns:
-          type: array
-          items:
-            $ref: '#/components/schemas/ColumnDto'
-        constraints:
-          $ref: '#/components/schemas/ConstraintsDto'
-        internal_name:
-          type: string
-          example: air_quality
-        is_versioned:
-          type: boolean
-          example: true
-        created_by:
-          type: string
-          format: uuid
-        queue_name:
-          type: string
-          example: air_quality
-        queue_type:
-          type: string
-          example: quorum
-        routing_key:
-          type: string
-          example: dbrepo.database.air_quality
-        is_public:
-          type: boolean
-          example: true
-    UniqueDto:
-      required:
-      - columns
-      - table
-      - uid
-      type: object
-      properties:
-        uid:
-          type: integer
-          format: int64
-        table:
-          $ref: '#/components/schemas/TableDto'
-        columns:
-          type: array
-          items:
-            $ref: '#/components/schemas/ColumnDto'
     QueryBriefDto:
       required:
-      - cid
       - created
       - creator
-      - dbid
+      - database_id
       - execution
       - id
+      - is_persisted
       - last_modified
       - query
       - query_hash
       type: object
       properties:
         id:
-          type: integer
-          format: int64
-        cid:
-          type: integer
-          format: int64
-        dbid:
           type: integer
           format: int64
         creator:
@@ -8014,12 +8068,17 @@ components:
           enum:
           - query
           - view
-        identifier:
-          $ref: '#/components/schemas/IdentifierBriefDto'
+        identifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/IdentifierBriefDto'
         created:
           type: string
           format: date-time
           example: 2021-03-12T15:26:21Z
+        database_id:
+          type: integer
+          format: int64
         query_normalized:
           type: string
           example: SELECT `id` FROM `air_quality`
@@ -8033,6 +8092,9 @@ components:
           type: integer
           format: int64
           example: 1
+        is_persisted:
+          type: boolean
+          example: true
         last_modified:
           type: string
           format: date-time

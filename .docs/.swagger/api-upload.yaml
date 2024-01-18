@@ -1,4 +1,4 @@
-openapi: 3.0.1
+openapi: 3.0.0
 info:
   title: Database Repository Upload Service API
   description: Service that manages the uploads
@@ -8,23 +8,23 @@ info:
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0
-  version: 1.3.0
+  version: $TAG
 externalDocs:
   description: Sourcecode Documentation
   url: https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services
 servers:
-- url: http://localhost:1080
-  description: Generated server url
-- url: https://test.dbrepo.tuwien.ac.at
-  description: Sandbox
+  - url: http://localhost:1080
+    description: Generated server url
+  - url: https://test.dbrepo.tuwien.ac.at
+    description: Sandbox
 paths:
   /api/upload/files:
     post:
       tags:
-      - upload-endpoint
+        - upload-endpoint
       summary: Uploads a file
       operationId: upload
       responses:
         "201":
           description: "Successfully uploaded a file"
-      security: {}
+      security: { }

@@ -5,6 +5,6 @@ setup(name='dockerhub-client',
       description='Dockerhub Maintenance Client',
       author='Martin Weise',
       author_email='martin.weise@tuwien.ac.at',
-      url='https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/latest/',
+      url='https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/',
       packages=['dockerhub-client'],
       )

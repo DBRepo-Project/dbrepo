@@ -41,6 +41,16 @@ components = [
         "name": "User Interface",
         "doc": "system-other-ui",
         "dir": "ui"
+    },
+    {
+        "name": "Search Service",
+        "doc": "system-services-search",
+        "dir": "search-service"
+    },
+    {
+        "name": "Data Database Sidecar",
+        "doc": "system-databases-data",
+        "dir": "data-db"
     }
 ]
 
