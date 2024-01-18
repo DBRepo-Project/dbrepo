@@ -595,6 +595,7 @@ docs-latest:
     - pip install -r ./requirements.txt
     - mkdir -p ./final
     - find ./.docs -type f -exec sed -i -e "s/\$TAG/latest/g" {} \;
+    - find ./.docs -type f -exec sed -i -e "s/\$VERSION/${VERSION}/g" {} \;
     - mkdocs build && cp -r ./site ./final/latest
     - cp ./.docs/redirect.html ./final/index.html
     - cp -r ./swagger/latest ./final/latest/swagger
