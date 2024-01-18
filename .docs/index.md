@@ -14,8 +14,8 @@ collection. Challenges revolve around organizing, searching and retrieving conte
 constitute a major technical burden as their internal representation greatly differs from static documents most digital
 repositories are designed for.
 
-[Get Started](../deployment-docker-compose/){ .action-button .md-button .md-button--primary }
-[Learn More](../system){ .action-button .md-button .md-button--secondary }
+[Get Started](./deployment-docker-compose){ .action-button .md-button .md-button--primary }
+[Learn More](./system){ .action-button .md-button .md-button--secondary }
 
 ## Application Areas
 
