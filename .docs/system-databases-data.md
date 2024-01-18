@@ -8,10 +8,17 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`bitnami/mariadb:10.5`](https://hub.docker.com/r/bitnami/mariadb)
+    Image: [`bitnami/mariadb-galera:11.2.2-debian-11-r0`](https://hub.docker.com/r/bitnami/mariadb-galera)
 
     * Ports: 3306/tcp
     * JDBC: `jdbc://mariadb:<hostname>:3306`
+
+!!! debug "Debug Information"
+
+    Image: [`dbrepo/data-db-sidecar:$TAG`](https://hub.docker.com/r/dbrepo/data-db-sidecar)
+
+    * Ports: 3305/tcp
+    * Swagger UI: `http://<hostname>:1080/swagger-ui/` <a href="../swagger/sidecar" target="_blank">:fontawesome-solid-square-up-right: view online</a>
 
 ## Overview
 
@@ -21,7 +28,7 @@ them available in the repository as follows:
 ```console
 curl \
    -sSL \
-   http://<hostname>:9093/api/container \
+   http://<hostname>/api/container \
    -X POST \
    -d '{"name": "Data Database 2", "imageId": 1, "host": "example.com", "port": 3306, "privilegedUsername": "root", "privilegedPassword": "s3cr3t" }'
 ```

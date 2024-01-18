@@ -8,11 +8,12 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [tusproject/tusd:v1.12`](https://hub.docker.com/r/tusproject/tusd)
+    Image: [`tusproject/tusd:v1.12`](https://hub.docker.com/r/tusproject/tusd)
 
     * Ports: 1080/tcp
     * Prometheus: `http://<hostname>:1080/api/upload/metrics`
     * API: `http://<hostname>:1080/api/upload`
+    * Swagger UI: <a href="../swagger/upload" target="_blank">:fontawesome-solid-square-up-right: view online</a>
 
 ## Overview
 

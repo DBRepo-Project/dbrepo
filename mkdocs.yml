@@ -15,11 +15,12 @@ nav:
       - Analyse Service: system-services-analyse.md
       - Authentication Service: system-services-authentication.md
       - Broker Service: system-services-broker.md
-      - Gateway Service: system-services-gateway.md
       - Data Service: system-services-data.md
+      - Gateway Service: system-services-gateway.md
       - Metadata Service: system-services-metadata.md
-      - Upload Service: system-services-upload.md
+      - Search Service: system-services-search.md
       - Storage Service: system-services-storage.md
+      - Upload Service: system-services-upload.md
     - Databases:
       - Auth Database: system-databases-auth.md
       - Data Database: system-databases-data.md
@@ -34,9 +35,10 @@ nav:
       - Analyse Service: usage-analyse.md
       - Authentication Service: usage-auth.md
       - Broker Service: usage-broker.md
-      - Identifier Service: usage-identifier.md
-      - Upload Service: usage-upload.md
+      - Metadata Service: usage-metadata.md
+      - Search Service: usage-search.md
       - Storage Service: usage-storage.md
+      - Upload Service: usage-upload.md
   - publications.md
   - contact.md
 extra_css:

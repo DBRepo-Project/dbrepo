@@ -8,7 +8,7 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`bitnami/mariadb:10.5`](https://hub.docker.com/r/bitnami/mariadb)
+    Image: [`bitnami/mariadb:11.2.2-debian-11-r0`](https://hub.docker.com/r/bitnami/mariadb)
 
     * Ports: 3306/tcp
     * JDBC: `jdbc://mariadb:<hostname>:3306`

@@ -527,7 +527,8 @@ build-api-latest:
   script:
     - apk add bash git
     - git fetch && git checkout dev
-    - bash .docs/.swagger/generate.sh
+    - TAG=latest bash .docs/.swagger/swagger-version.sh
+    - bash .docs/.swagger/swagger-site.sh
     - mkdir -p ./swagger/latest
     - cp -r ./site/* ./swagger/latest/
   cache:
@@ -573,7 +574,8 @@ build-api-1.4:
   script:
     - apk add bash git maven
     - git fetch && git checkout release-v1.4
-    - bash .docs/.swagger/generate.sh
+    - TAG=${VERSION} bash .docs/.swagger/swagger-version.sh
+    - bash .docs/.swagger/swagger-site.sh
     - mkdir -p ./swagger/1.4
     - cp -r ./site/* ./swagger/1.4/
   cache:
@@ -618,10 +620,11 @@ docs-latest:
       - release-v1.3
       - release-v1.4
   script:
-    - apt-get update && apt-get install -y git make
+    - apt-get update && apt-get install -y git make sed
     - git fetch && git checkout dev
     - pip install -r ./requirements.txt
     - mkdir -p ./final
+    - find ./.docs -type f -exec sed -i -e "s/\$TAG/latest/g" {} \;
     - mkdocs build && cp -r ./site ./final/latest
     - cp ./.docs/redirect.html ./final/index.html
     - cp -r ./swagger/latest ./final/latest/swagger
@@ -674,10 +677,11 @@ docs-1.4:
       - release-v1.3
       - release-v1.4
   script:
-    - apt-get update && apt-get install -y git make
+    - apt-get update && apt-get install -y git make sed
     - git fetch && git checkout release-v1.4
     - pip install -r ./.docs/requirements.txt
     - mkdir -p ./final
+    - find ./.docs -type f -exec sed -i -e "s/\$TAG/${VERSION}/g" {} \;
     - mkdocs build && cp -r ./site ./final/1.4
     - cp -r ./swagger/1.4 ./final/1.4/swagger
   cache:

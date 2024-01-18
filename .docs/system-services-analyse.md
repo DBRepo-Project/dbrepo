@@ -8,12 +8,12 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`dbrepo/analyse-service:1.4`](https://hub.docker.com/r/dbrepo/analyse-service)
+    Image: [`dbrepo/analyse-service:$TAG`](https://hub.docker.com/r/dbrepo/analyse-service)
 
     * Ports: 5000/tcp
     * Prometheus: `http://<hostname>:5000/metrics`
     * Health: `http://<hostname>:5000/health`
-    * Swagger UI: `http://<hostname>:5000/swagger-ui/index.html` <a href="../swagger/analyse" target="_blank">:fontawesome-solid-square-up-right: view online</a>
+    * Swagger UI: `http://<hostname>:5000/swagger-ui/` <a href="../swagger/analyse" target="_blank">:fontawesome-solid-square-up-right: view online</a>
 
 ## Overview
 

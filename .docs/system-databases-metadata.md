@@ -8,7 +8,7 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`bitnami/mariadb:10.5`](https://hub.docker.com/r/bitnami/mariadb)
+    Image: [`dbrepo/metadata-db:$TAG`](https://hub.docker.com/r/dbrepo/metadata-db)
 
     * Ports: 3306/tcp
     * JDBC: `jdbc://mariadb:<hostname>:3306`
