@@ -26,6 +26,5 @@ evolving, allows reproducing of query results and supports findable-, accessible
 ## More Information
 
 - Demonstration instance [https://dbrepo1.ec.tuwien.ac.at](https://dbrepo1.ec.tuwien.ac.at)
-- Test instance [https://test.tuwien.ac.at](https://test.tuwien.ac.at) -- try it yourself!
-- Sandbox instance [https://test.dbrepo.tuwien.ac.at](https://dbrepo2.ec.tuwien.ac.at)
+- Test instance [https://test.dbrepo.tuwien.ac.at](https://test.dbrepo.tuwien.ac.at)
 - System description [https://doi.org/10.2218/ijdc.v17i1.825](https://doi.org/10.2218/ijdc.v17i1.825)

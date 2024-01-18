@@ -19,8 +19,8 @@ author: Martin Weise
 It provides a *user interface* (UI) for a researcher to interact with the database repository's API.
 
 <figure markdown>
-   ![Data ingest](images/ui.png){ .img-border }
-   <figcaption>User Interface</figcaption>
+![Data ingest](images/ui.png){ .img-border }
+<figcaption>User Interface</figcaption>
 </figure>
 
 <figure markdown>

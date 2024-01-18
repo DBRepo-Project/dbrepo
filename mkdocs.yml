@@ -35,8 +35,6 @@ nav:
       - Analyse Service: usage-analyse.md
       - Authentication Service: usage-auth.md
       - Broker Service: usage-broker.md
-      - Metadata Service: usage-metadata.md
-      - Search Service: usage-search.md
       - Storage Service: usage-storage.md
       - Upload Service: usage-upload.md
   - publications.md
