@@ -9,7 +9,7 @@ author: Martin Weise
 If you have [Docker](https://docs.docker.com/engine/install/) already installed on your system, you can install DBRepo with:
 
 ```shell
-curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/install.sh | bash
+curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/master/install.sh | bash
 ```
 
 ## Requirements
@@ -19,14 +19,17 @@ curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-service
 For this small, local, test deployment any modern hardware would suffice, we recommend a dedicated virtual machine with
 the following settings.
 
+- min. 8 vCPU cores
+- min. 16GB RAM memory
+- min. 200GB SSD storage
+- min. 100Mbit/s connection
+
+*Optional*: public IP-address if you want to secure the deployment with a (free) TLS-certificate from Let's Encrypt.
+
 !!! tip "Resource Consumption"
 
     Note that most of the vCPU and RAM resources will be needed for starting the infrastructure, this is because of
     Docker. During operation and especially idle times, the deployment will use significantly less resources.
-
-- 8 vCPU cores
-- 16GB RAM memory
-- 100GB SSD storage
 
 ### Software
 
@@ -93,17 +96,37 @@ core infrastructure and a single Docker container for all user-generated databas
 
     Install DBRepo with the default configuration from the Debian container:
 
-        curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/install.sh | bash
+        curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/master/install.sh | bash
 
 View the logs:
 
     docker compose logs -f
 
-You should now be able to view the front end at [http://localhost:80](http://localhost:80).
+You should now be able to view the front end at [http://localhost](http://localhost).
 
 Please be warned that the default configuration is not intended for public deployments. It is only intended to have a
 running system within minutes to play around within the system and explore features. It is strongly advised to change 
 the default `.env` environment variables.
+
+### Troubleshooting
+
+In case the deployment is unsuccessful, we have explanations on their origin and solutions to the most common errors:
+
+**Are you trying to mount a directory onto a file (or vice-versa)?**
+
+:   *Origin*:   Docker Compose does not find all files referenced in the `volumes` section of your `docker-compose.yml`
+                file.
+:   *Solution*: Ensure all mounted files in the `volumes` section of your `docker-compose.yml` exist and have correct
+                file permissions (`0644`) to be found in the filesystem. Note that paths containing directories may not
+                work when using Windows instead of the supported Linux.
+
+**The Docker images have been updated but my deployment is not receiving the updates**
+
+:   *Origin*:   Your local Docker image cache is not up-to-date and needs to fetch the remote changes.
+:   *Solution*: Update your local Docker image cache by executing `docker compose pull`, it automatically downloads
+                all Docker images that have updates. Then apply the new images with `docker compose up -d`.
+
+## Security
 
 !!! warning "Known security issues with the default configuration"
 
@@ -141,42 +164,6 @@ the default `.env` environment variables.
       SSL/TLS certificate in the configuration file or use your own proxy in front of the Gateway Service. See this
       [simple guide](http://nginx.org/en/docs/http/configuring_https_servers.html) on how to install a SSL/TLS
       certificate on NGINX.
-
-## Upgrade Guide
-
-### 1.2 to 1.3
-
-In case you have a previous deployment from version 1.2, shut down the containers and back them up manually. You can do
-this by using the `busybox` image. Replace `deadbeef` with your container name or hash:
-
-```console
-export NAME=dbrepo-userdb-xyz
-docker run --rm --volumes-from $NAME -v /home/$USER/backup:/backup busybox tar pcvfz /backup/$NAME.tar.gz /var/lib/mysql
-```
-
-!!! danger "Wipe all traces of DBRepo from your system"
-
-    To erase all traces of DBRepo from your computer or virtual machine, the following commands delete all containers,
-    volumes and networks that are present, execute the following **dangerous** command. It will **wipe** all information
-    about DBRepo from your system (excluding the images).
-    
-    ```console
-    docker container stop $(docker container ls -aq -f name=^/dbrepo-.*) || true
-    docker container rm $(docker container ls -aq -f name=^/dbrepo-.*) || true
-    docker volume rm $(docker volume ls -q -f name=^dbrepo-.*) || true
-    docker network rm $(docker network ls -q -f name=^dbrepo-.*) || true
-    ```
-
-You can restore the volume *after* downloading the new 1.3 images and creating the infrastructure:
-
-```console
-export NAME=dbrepo-userdb-xyz
-export PORT=12345
-docker container create -h $NAME --name $NAME -p $PORT:3306 -e MARIADB_ROOT_PASSWORD=mariadb --network userdb -v /backup mariadb:10.5
-docker run --rm --volumes-from $NAME -v /home/$USER/backup/.tar.gz:/backup/$NAME.tar.gz busybox sh -c 'cd /backup && tar xvfz /backup/$NAME.tar.gz && cp -r /backup/var/lib/mysql/* /var/lib/mysql'
-```
-
-Future releases will be backwards compatible and will come with migration scripts.
 
 ## Limitations
 

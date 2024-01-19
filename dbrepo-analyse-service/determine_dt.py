@@ -9,8 +9,13 @@ import io
 from clients.s3_client import S3Client
 
 import messytables, pandas as pd
-from messytables import CSVTableSet, type_guess, \
-    headers_guess, headers_processor, offset_processor
+from messytables import (
+    CSVTableSet,
+    type_guess,
+    headers_guess,
+    headers_processor,
+    offset_processor,
+)
 
 
 def determine_datatypes(filename, enum=False, enum_tol=0.0001, separator=None) -> {}:
@@ -25,16 +30,16 @@ def determine_datatypes(filename, enum=False, enum_tol=0.0001, separator=None) -
         logging.warning(f'Failed to determine data types: file {filename} has empty body')
         return json.dumps({'columns': [], 'separator': ','})
     if separator is None:
-        logging.info('Attempt to guess separator for from first line')
+        logging.info("Attempt to guess separator for from first line")
         with io.BytesIO(stream.read()) as fh:
             line = next(fh)
-            dialect = csv.Sniffer().sniff(line.decode('utf-8'))
+            dialect = csv.Sniffer().sniff(line.decode("utf-8"))
             separator = dialect.delimiter
-            logging.info('determined separator: %s', separator)
+            logging.info("determined separator: %s", separator)
 
     # Load a file object:
     with io.BytesIO(stream.read()) as fh:
-        logging.info('Analysing corpus with separator: %s', separator)
+        logging.info("Analysing corpus with separator: %s", separator)
         table_set = CSVTableSet(fh, delimiter=separator)
 
         # A table set is a collection of tables:
@@ -58,18 +63,27 @@ def determine_datatypes(filename, enum=False, enum_tol=0.0001, separator=None) -
             elif type(types[i]) == messytables.types.IntegerType:
                 r[headers[i]] = "bigint"
             elif type(types[i]) == messytables.types.DateType:
-                if "%H" in types[i].format or "%M" in types[i].format or "%S" in types[i].format or "%Z" in types[
-                    i].format:
-                    r[headers[i]] = "timestamp"  # todo: guesses date format too, return it
+                if (
+                    "%H" in types[i].format
+                    or "%M" in types[i].format
+                    or "%S" in types[i].format
+                    or "%Z" in types[i].format
+                ):
+                    r[
+                        headers[i]
+                    ] = "timestamp"  # todo: guesses date format too, return it
                 else:
                     r[headers[i]] = "date"
-            elif type(types[i]) == messytables.types.DecimalType or type(types[i]) == messytables.types.FloatType:
+            elif (
+                type(types[i]) == messytables.types.DecimalType
+                or type(types[i]) == messytables.types.FloatType
+            ):
                 r[headers[i]] = "decimal"
             elif type(types[i]) == messytables.types.StringType:
                 r[headers[i]] = "varchar"
             else:
                 r[headers[i]] = "text"
         fh.close()
-        s = {'columns': r, 'separator': separator}
-        logging.info('Determined data types %s', s)
+        s = {"columns": r, "separator": separator}
+        logging.info("Determined data types %s", s)
     return json.dumps(s)

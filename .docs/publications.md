@@ -6,6 +6,18 @@ hide:
 
 # Publications
 
+## Logos
+
+DBRepo logo in various formats:
+
+* [logo.png](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/dbrepo-ui/static/logo.png)
+* [logo.svg](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/dbrepo-ui/static/logo.svg)
+
+DBRepo logo (short) in various formats:
+
+* [favicon.svg](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/dbrepo-ui/static/favicon.svg)
+* [favicon.png](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/dbrepo-ui/static/favicon.png)
+
 ## Refereed
 
 ##### 2023

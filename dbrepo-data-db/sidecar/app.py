@@ -61,7 +61,7 @@ template = {
     "info": {
         "title": "Database Repository Data Database sidecar API",
         "description": "Sidecar that downloads the import .csv file",
-        "version": "1.3.0",
+        "version": "$TAG",
         "contact": {
             "name": "Prof. Andreas Rauber",
             "email": "andreas.rauber@tuwien.ac.at"

@@ -149,8 +149,8 @@ public class AccessServiceImpl extends HibernateConnector implements AccessServi
             final PreparedStatement preparedStatement4 = databaseMapper.rawFlushPrivileges(connection);
             preparedStatement4.executeUpdate();
         } catch (SQLException e) {
-            log.error("Failed to modify database access {}, reason {}", accessDto, e.getMessage());
-            throw new DatabaseMalformedException("Failed to execute query", e);
+            log.error("Failed to modify database access: {}", e.getMessage());
+            throw new DatabaseMalformedException("Failed to modify database access: " + e.getMessage(), e);
         } finally {
             dataSource.close();
         }
@@ -176,8 +176,8 @@ public class AccessServiceImpl extends HibernateConnector implements AccessServi
 
     @Override
     @Transactional
-    public void delete(Long databaseId, UUID userId) throws DatabaseNotFoundException, UserNotFoundException,
-            NotAllowedException, QueryMalformedException, DatabaseMalformedException, AccessDeniedException {
+    public void delete(Long databaseId, UUID userId) throws DatabaseNotFoundException, NotAllowedException,
+            QueryMalformedException, DatabaseMalformedException, AccessDeniedException {
         /* check */
         final Database database = databaseService.findById(databaseId);
         final Container container = database.getContainer();
@@ -195,8 +195,8 @@ public class AccessServiceImpl extends HibernateConnector implements AccessServi
             final PreparedStatement preparedStatement2 = databaseMapper.userToRawDropUserQuery(connection, access.getUser().getUsername());
             preparedStatement2.executeUpdate();
         } catch (SQLException e) {
-            log.error("Failed to revoke database access, reason {}", e.getMessage());
-            throw new DatabaseMalformedException("Failed to execute query", e);
+            log.error("Failed to revoke database access: {}", e.getMessage());
+            throw new DatabaseMalformedException("Failed to execute query: " + e.getMessage(), e);
         } finally {
             dataSource.close();
         }

@@ -82,11 +82,9 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional(rollbackFor = {Exception.class})
-    public Identifier create(IdentifierSaveDto data, Principal principal)
-            throws IdentifierPublishingNotAllowedException, QueryNotFoundException, RemoteUnavailableException,
-            IdentifierAlreadyExistsException, UserNotFoundException, DatabaseNotFoundException,
-            IdentifierRequestException, ViewNotFoundException, QueryStoreException, DatabaseConnectionException,
-            ImageNotSupportedException, IdentifierNotFoundException {
+    public Identifier create(IdentifierSaveDto data, Principal principal) throws QueryNotFoundException,
+            IdentifierRequestException, RemoteUnavailableException, UserNotFoundException, DatabaseNotFoundException,
+            ViewNotFoundException, QueryStoreException, ImageNotSupportedException {
         final Identifier identifier = identifierService.create(data, principal);
         /* https://stackoverflow.com/questions/55090541/spring-data-jpa-lombok-unsupportedoperationexception-during-saving */
         if (identifier.getCreators() != null) {
@@ -190,9 +188,8 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
     @Transactional(readOnly = true)
     public InputStreamResource exportResource(Long identifierId, Principal principal)
             throws IdentifierNotFoundException, QueryNotFoundException, FileStorageException,
-            IdentifierRequestException, UserNotFoundException, QueryStoreException, TableMalformedException,
-            DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
-            DataDbSidecarException {
+            IdentifierRequestException, QueryStoreException, QueryMalformedException, DatabaseNotFoundException,
+            ImageNotSupportedException, DataDbSidecarException {
         return identifierService.exportResource(identifierId, principal);
     }
 

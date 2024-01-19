@@ -52,13 +52,12 @@ def general_filter(index, results):
 
 
 @api_bp.route("/health", methods=["GET"], endpoint="actuator_health")
-@swag_from("us-yml/get_health")  # ToDo: get the SWAG right
+@swag_from("../../us-yml/get_health.yml")
 def health():
     return {"status": "UP"}
 
 
 @api_bp.route("/api/search/<string:index>", methods=["GET"], endpoint="search_get_index")
-@swag_from("us-yml")  # ToDo: get the SWAG right
 def get_index(index):
     """
     returns all entries in a specific index
@@ -72,7 +71,6 @@ def get_index(index):
         }, 404  # ToDo: replace with better error handling
     results = query_index_by_term_opensearch("*", "contains")
     results = general_filter(index, results)
-    total_number_of_results = len(results)
 
     results_per_page = min(request.args.get("results_per_page", 50, type=int), 500)
     max_pages = math.ceil(len(results) / results_per_page)
@@ -82,6 +80,7 @@ def get_index(index):
 
 
 @api_bp.route("/api/search/<string:type>/fields", methods=["GET"], endpoint="search_get_index_fields")
+@swag_from("../../us-yml/get_fields.yml")
 def get_fields(type):
     """
     returns a list of attributes of the data for a specific index.
@@ -91,7 +90,7 @@ def get_fields(type):
     logging.info(f'Searching in index database for type: {type}')
     if type not in available_types:
         return {
-            "results": {},
+            "results": {},  # FIXME this can't be right
         }, 404
     fields = get_fields_for_index(type)
     logging.debug(f'get fields for type {type} resulted in {len(fields)} field(s)')
@@ -99,6 +98,7 @@ def get_fields(type):
 
 
 @api_bp.route("/api/search", methods=["POST"], endpoint="search_fuzzy_search")
+@swag_from("../../us-yml/post_fuzzy_search.yml")
 def post_fuzzy_search():
     """
     Main endpoint for fuzzy searching.
@@ -112,11 +112,14 @@ def post_fuzzy_search():
     req_body = request.json
     logging.debug(f"search request body: {req_body}")
     search_term = req_body.get("search_term")
-    response = general_search(None, search_term, None, None, None)
-    return {"results": response}, 200
+    results = general_search(None, search_term, None, None, None)
+    if "hits" in results and "hits" in results["hits"]:
+        results = [hit["_source"] for hit in results["hits"]["hits"]]
+    return {"results": results}, 200
 
 
 @api_bp.route("/api/search/<string:type>", methods=["POST"], endpoint="search_general_search")
+@swag_from("../../us-yml/post_general_search.yml")
 def post_general_search(type):
     """
     Main endpoint for fuzzy searching.
@@ -151,20 +154,25 @@ def post_general_search(type):
     if type == 'table':
         tmp = []
         for database in response:
-            for table in database["tables"]:
-                table["is_public"] = database["is_public"]
-                tmp.append(table)
+            if database["tables"] is not None:
+                for table in database["tables"]:
+                    table["is_public"] = database["is_public"]
+                    tmp.append(table)
         response = tmp
     if type == 'identifier':
         tmp = []
         for database in response:
-            for identifier in database['identifiers']:
-                tmp.append(identifier)
-            for identifier in database['subsets']:
-                tmp.append(identifier)
-            for table in database['tables']:
-                for identifier in table['identifiers']:
+            if database["identifiers"] is not None:
+                for identifier in database['identifiers']:
                     tmp.append(identifier)
+            if database["subsets"] is not None:
+                for identifier in database['subsets']:
+                    tmp.append(identifier)
+            if database["tables"] is not None:
+                for table in database['tables']:
+                    if database["identifiers"] is not None:
+                        for identifier in table['identifiers']:
+                            tmp.append(identifier)
         for view in [x for xs in response for x in xs["views"]]:
             if 'identifier' in view:
                 tmp.append(view['identifier'])

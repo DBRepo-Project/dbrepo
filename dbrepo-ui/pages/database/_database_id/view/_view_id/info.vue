@@ -20,29 +20,29 @@
                     Query Statement
                   </v-list-item-title>
                   <v-list-item-content>
-                    <v-skeleton-loader v-if="!view.query" type="text" />
-                    <v-skeleton-loader v-if="!view.query" type="text" class="skeleton-large" />
-                    <pre v-if="view.query">{{ view.query }}</pre>
+                    <v-skeleton-loader v-if="!view" type="text" class="skeleton-large" />
+                    <pre v-if="view">{{ view.query }}</pre>
                   </v-list-item-content>
-                  <v-list-item-title v-if="canViewView" class="mt-2">
+                  <v-list-item-title class="mt-2">
                     View Creator
                   </v-list-item-title>
-                  <v-list-item-content v-if="canViewView">
-                    <span v-if="creator">{{ creator }}</span>
+                  <v-list-item-content>
+                    <v-skeleton-loader v-if="!view" type="text" class="skeleton-small" />
+                    <UserBadge v-if="view" :user="view.creator" :other-user="user" />
                   </v-list-item-content>
                   <v-list-item-title class="mt-2">
                     View Creation
                   </v-list-item-title>
                   <v-list-item-content>
-                    <v-skeleton-loader v-if="!view.created" type="text" class="skeleton-medium" />
+                    <v-skeleton-loader v-if="!view" type="text" class="skeleton-medium" />
                     <span v-if="view.created">{{ formatUTC(view.created) }}</span>
                   </v-list-item-content>
                   <v-list-item-title>
                     View Visibility
                   </v-list-item-title>
                   <v-list-item-content>
-                    <v-skeleton-loader v-if="view.is_public === null" type="text" class="skeleton-xsmall" />
-                    <span v-if="view.is_public !== null">{{ view.is_public ? 'Public' : 'Private' }}</span>
+                    <v-skeleton-loader v-if="!view" type="text" class="skeleton-xsmall" />
+                    <span v-if="view" v-text="view.is_public ? 'Public' : 'Private'" />
                   </v-list-item-content>
                 </v-list-item-content>
               </v-list-item>
@@ -83,17 +83,18 @@
 </template>
 <script>
 import { formatTimestampUTCLabel } from '@/utils'
-import ViewToolbar from '@/components/ViewToolbar.vue'
+import ViewToolbar from '@/components/view/ViewToolbar.vue'
 import UserMapper from '@/api/user.mapper'
-import UserUtils from '@/api/user.utils'
 import Summary from '@/components/identifier/Summary.vue'
 import Select from '@/components/identifier/Select.vue'
+import UserBadge from '@/components/UserBadge.vue'
 
 export default {
   components: {
     Select,
     Summary,
-    ViewToolbar
+    ViewToolbar,
+    UserBadge
   },
   data () {
     return {
@@ -151,10 +152,6 @@ export default {
     pid () {
       return this.$route.query.pid
     },
-    canViewView () {
-      /* is private */
-      return UserUtils.hasReadAccess(this.access)
-    },
     hasIdentifier () {
       return this.identifiers.length > 0
     },
@@ -162,6 +159,7 @@ export default {
       if (!this.view) {
         return null
       }
+      console.debug('====>', this.view)
       return UserMapper.userToFullName(this.view.creator)
     }
   },
@@ -188,5 +186,17 @@ pre {
 }
 #back-btn::before {
   opacity: 0;
+}
+.skeleton-large > div {
+  width: 400px !important;
+}
+.skeleton-medium > div {
+  width: 200px !important;
+}
+.skeleton-small > div {
+  width: 100px !important;
+}
+.skeleton-xsmall > div {
+  width: 50px !important;
 }
 </style>

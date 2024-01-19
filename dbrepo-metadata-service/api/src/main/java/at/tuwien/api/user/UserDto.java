@@ -55,11 +55,7 @@ public class UserDto {
     private String lastname;
 
     @NotNull
-    private UserAttributesDto attributes;
-
-    @NotNull
     @org.springframework.data.annotation.Transient
-    @Schema(example = "jcarberry@brown.edu")
-    private String email;
+    private UserAttributesDto attributes;
 
 }

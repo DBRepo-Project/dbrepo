@@ -7,6 +7,7 @@ import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.StoreMapper;
 import at.tuwien.querystore.Query;
+import at.tuwien.repository.mdb.IdentifierRepository;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.StoreService;
 import at.tuwien.service.UserService;
@@ -28,19 +29,21 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
     private final StoreMapper storeMapper;
     private final UserService userService;
     private final DatabaseService databaseService;
+    private final IdentifierRepository identifierRepository;
 
     @Autowired
-    public StoreServiceImpl(StoreMapper storeMapper, UserService userService, DatabaseService databaseService) {
+    public StoreServiceImpl(StoreMapper storeMapper, UserService userService, DatabaseService databaseService,
+                            IdentifierRepository identifierRepository) {
         this.storeMapper = storeMapper;
         this.userService = userService;
         this.databaseService = databaseService;
+        this.identifierRepository = identifierRepository;
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<Query> findAll(Long databaseId, Boolean persisted, Principal principal)
-            throws DatabaseNotFoundException, ImageNotSupportedException, QueryStoreException,
-            ContainerNotFoundException, DatabaseConnectionException, TableMalformedException, UserNotFoundException {
+            throws DatabaseNotFoundException, ImageNotSupportedException, QueryStoreException {
         /* find */
         final Database database = databaseService.find(databaseId);
         if (!database.getContainer().getImage().getName().equals("mariadb")) {
@@ -62,7 +65,7 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
             return queries;
         } catch (SQLException e) {
             log.error("Failed to find queries in database with id {}: {}", databaseId, e.getMessage());
-            throw new QueryStoreException("Failed to find queries in database with id " + database);
+            throw new QueryStoreException("Failed to find queries in database with id " + databaseId + ": " + e.getMessage());
         } finally {
             dataSource.close();
         }
@@ -87,12 +90,12 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
             final ResultSet resultSet = preparedStatement.executeQuery();
             if (!resultSet.next()) {
                 log.error("Query not found with id {} in database with id {}", queryId, databaseId);
-                throw new QueryNotFoundException("Query not found with id " + queryId + "  in database with id " + databaseId);
+                throw new QueryNotFoundException("Query not found with id " + queryId + " in database with id " + databaseId);
             }
             return storeMapper.resultSetToQuery(resultSet);
         } catch (SQLException e) {
             log.error("Failed to retrieve first row for query with id {}: {}", queryId, e.getMessage());
-            throw new QueryStoreException("Failed to retrieve first row for query with id " + queryId);
+            throw new QueryStoreException("Failed to retrieve first row for query with id " + queryId + ": " + e.getMessage());
         } finally {
             dataSource.close();
         }
@@ -101,8 +104,7 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
     @Override
     @Transactional(readOnly = true)
     public Query insert(Long databaseId, ExecuteStatementDto metadata, Principal principal)
-            throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
-            UserNotFoundException, DatabaseConnectionException, KeycloakRemoteException, AccessDeniedException,
+            throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException, UserNotFoundException,
             QueryNotFoundException {
         /* find */
         final Database database = databaseService.find(databaseId);
@@ -137,7 +139,7 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
             return query;
         } catch (SQLException e) {
             log.error("Failed to execute query: {}", e.getMessage());
-            throw new QueryStoreException("Failed to execute query", e);
+            throw new QueryStoreException("Failed to execute query: " + e.getMessage(), e);
         } finally {
             dataSource.close();
         }
@@ -146,7 +148,12 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
     @Override
     @Transactional
     public Query persist(Long databaseId, Long queryId, QueryPersistDto data) throws DatabaseNotFoundException,
-            ImageNotSupportedException, QueryStoreException {
+            ImageNotSupportedException, QueryStoreException, IdentifierAlreadyPublishedException {
+        /* check */
+        if (!data.getPersist() && !identifierRepository.findByDatabaseIdAndQueryId(databaseId, queryId).isEmpty()) {
+            log.error("Failed to de-persist query with id {} in database with id {}: identifier already attached", queryId, databaseId);
+            throw new IdentifierAlreadyPublishedException("Failed to de-persist query with id " + queryId + " in database with id " + databaseId + ": identifier already attached");
+        }
         /* find */
         final Database database = databaseService.find(databaseId);
         if (!database.getContainer().getImage().getName().equals("mariadb")) {
@@ -198,7 +205,7 @@ public class StoreServiceImpl extends HibernateConnector implements StoreService
                 log.debug("delete stale queries affected {} rows", affected);
             } catch (SQLException e) {
                 log.error("Failed to delete stale queries in database with id {}: {}", database.getId(), e.getMessage());
-                throw new QueryStoreException("Failed to delete stale queries in database with id " + database.getId(), e);
+                throw new QueryStoreException("Failed to delete stale queries in database with id " + database.getId() + ": " + e.getMessage(), e);
             } finally {
                 dataSource.close();
             }

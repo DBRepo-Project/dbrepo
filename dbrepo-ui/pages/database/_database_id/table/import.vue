@@ -203,7 +203,7 @@
 </template>
 <script>
 import { notEmpty, isNonNegativeInteger } from '@/utils'
-import TableSchema from '@/components/TableSchema.vue'
+import TableSchema from '@/components/table/TableSchema.vue'
 import TableService from '@/api/table.service'
 import AnalyseService from '@/api/analyse.service'
 import DatabaseService from '@/api/database.service'

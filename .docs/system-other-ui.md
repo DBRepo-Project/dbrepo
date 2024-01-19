@@ -8,23 +8,23 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`dbrepo/ui:1.4`](https://hub.docker.com/r/dbrepo/ui)
+    Image: [`dbrepo/ui:$TAG`](https://hub.docker.com/r/dbrepo/ui)
 
     * Ports: 3000/tcp, 9100/tcp
-    * Prometheus: `http://:9100/metrics`
-    * UI: `http://:3000/`
+    * Prometheus: `http://<hostname>:9100/metrics`
+    * UI: `http://<hostname>/`
 
 ## Overview
 
 It provides a *user interface* (UI) for a researcher to interact with the database repository's API.
 
 <figure markdown>
-   ![Data ingest](images/ui.png){ .img-border }
-   <figcaption>User Interface</figcaption>
+![Data ingest](images/ui.png){ .img-border }
+<figcaption>User Interface</figcaption>
 </figure>
 
 <figure markdown>
-![UI microservice architecture detailed](images/architecture-ui.png)
+![UI microservice architecture detailed](images/architecture-ui.svg)
 <figcaption>Architecture of the UI microservice</figcaption>
 </figure>
 

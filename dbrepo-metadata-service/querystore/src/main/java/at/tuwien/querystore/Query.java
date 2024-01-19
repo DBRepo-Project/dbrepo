@@ -6,9 +6,10 @@ import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import jakarta.persistence.*;;
+import jakarta.persistence.*;
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.UUID;
 
 @Data
 @Entity
@@ -61,6 +62,6 @@ public class Query implements Serializable {
     private Instant executed;
 
     @jakarta.persistence.Column(nullable = false)
-    private String createdBy;
+    private UUID createdBy;
 
 }

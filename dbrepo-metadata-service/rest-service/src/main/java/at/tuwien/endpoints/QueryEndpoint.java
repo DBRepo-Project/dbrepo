@@ -4,6 +4,7 @@ import at.tuwien.ExportResource;
 import at.tuwien.SortType;
 import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.api.database.query.QueryResultDto;
+import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
 import at.tuwien.querystore.Query;
@@ -15,6 +16,10 @@ import at.tuwien.utils.UserUtil;
 import at.tuwien.validation.EndpointValidator;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -53,6 +58,38 @@ public class QueryEndpoint {
     @Observed(name = "dbr_query_execute")
     @PreAuthorize("hasAuthority('execute-query')")
     @Operation(summary = "Execute query", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202",
+                    description = "Executed query",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = QueryResultDto.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Image is not supported",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Execute query not permitted",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Database, query or user could not be found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "409",
+                    description = "Could not store query in query store",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "417",
+                    description = "Could not parse columns",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))})
+    })
     public ResponseEntity<QueryResultDto> execute(@NotNull @PathVariable("databaseId") Long databaseId,
                                                   @NotNull @Valid @RequestBody ExecuteStatementDto data,
                                                   @RequestParam(value = "page", required = false) Long page,
@@ -61,8 +98,8 @@ public class QueryEndpoint {
                                                   @RequestParam(required = false) SortType sortDirection,
                                                   @RequestParam(required = false) String sortColumn)
             throws DatabaseNotFoundException, ImageNotSupportedException, QueryStoreException, QueryMalformedException,
-            ColumnParseException, UserNotFoundException, TableMalformedException, DatabaseConnectionException,
-            SortException, PaginationException, NotAllowedException, KeycloakRemoteException, AccessDeniedException, QueryNotFoundException {
+            ColumnParseException, UserNotFoundException, TableMalformedException, SortException, PaginationException,
+            NotAllowedException, AccessDeniedException, QueryNotFoundException {
         log.debug("endpoint execute query, databaseId={}, data={}, page={}, size={}, sortDirection={}, sortColumn={}, {}",
                 databaseId, data, page, size, sortDirection, sortColumn, PrincipalUtil.formatForDebug(principal));
         /* check */
@@ -85,6 +122,38 @@ public class QueryEndpoint {
     @Transactional(readOnly = true)
     @Observed(name = "dbr_query_reexecute")
     @Operation(summary = "Re-execute some query", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202",
+                    description = "Executed query",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = QueryResultDto.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Image is not supported",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Execute query not permitted",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Database or query could not be found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "409",
+                    description = "Could not store query in query store",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "417",
+                    description = "Could not parse columns",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))})
+    })
     public ResponseEntity<QueryResultDto> reExecute(@NotNull @PathVariable("databaseId") Long databaseId,
                                                     @NotNull @PathVariable("queryId") Long queryId,
                                                     Principal principal,
@@ -92,9 +161,9 @@ public class QueryEndpoint {
                                                     @RequestParam(value = "size", required = false) Long size,
                                                     @RequestParam(required = false) SortType sortDirection,
                                                     @RequestParam(required = false) String sortColumn)
-            throws QueryStoreException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
-            QueryMalformedException, TableMalformedException, ColumnParseException, DatabaseConnectionException,
-            SortException, PaginationException, UserNotFoundException, NotAllowedException, AccessDeniedException {
+            throws DatabaseNotFoundException, ImageNotSupportedException, QueryStoreException, QueryMalformedException,
+            ColumnParseException, TableMalformedException, SortException, PaginationException, NotAllowedException,
+            AccessDeniedException, QueryNotFoundException {
         log.debug("endpoint re-execute query, databaseId={}, queryId={}, page={}, size={}, sortDirection={}, sortColumn={}, {}",
                 databaseId, queryId, page, size, sortDirection, sortColumn, PrincipalUtil.formatForDebug(principal));
         endpointValidator.validateDataParams(page, size, sortDirection, sortColumn);
@@ -113,12 +182,39 @@ public class QueryEndpoint {
     @Transactional(readOnly = true)
     @Observed(name = "dbr_query_reexecute_count")
     @Operation(summary = "Re-execute some query", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202",
+                    description = "Executed query",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = QueryResultDto.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Image is not supported",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Execute query not permitted",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Database or query could not be found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "417",
+                    description = "Could not parse columns",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))})
+    })
     public ResponseEntity<Long> reExecuteCount(@NotNull @PathVariable("databaseId") Long databaseId,
                                                @NotNull @PathVariable("queryId") Long queryId,
                                                Principal principal)
             throws QueryStoreException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
             QueryMalformedException, TableMalformedException, ColumnParseException, NotAllowedException,
-            DatabaseConnectionException, UserNotFoundException, AccessDeniedException {
+            AccessDeniedException {
         log.debug("endpoint re-execute query count, databaseId={}, queryId={}, {}", databaseId, queryId, PrincipalUtil.formatForDebug(principal));
         endpointValidator.validateOnlyAccessOrPublic(databaseId, principal);
         /* execute */
@@ -133,13 +229,46 @@ public class QueryEndpoint {
     @Transactional(readOnly = true)
     @Observed(name = "dbr_query_export")
     @Operation(summary = "Exports some query", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Executed query"),
+            @ApiResponse(responseCode = "400",
+                    description = "Image is not supported",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Execute query not permitted",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Database or query could not be found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "409",
+                    description = "Export of query failed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "410",
+                    description = "Could not find in S3 storage",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "422",
+                    description = "Sidecar failed to export",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))})
+    })
     public ResponseEntity<?> export(@NotNull @PathVariable("databaseId") Long databaseId,
                                     @NotNull @PathVariable("queryId") Long queryId,
                                     @RequestHeader(HttpHeaders.ACCEPT) String accept,
                                     Principal principal)
             throws QueryStoreException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
-            TableMalformedException, FileStorageException, QueryMalformedException, DatabaseConnectionException,
-            UserNotFoundException, NotAllowedException, DataDbSidecarException {
+            FileStorageException, QueryMalformedException, NotAllowedException, DataDbSidecarException {
         log.debug("endpoint export query, databaseId={}, queryId={}, accept={}, {}", databaseId, queryId, accept, PrincipalUtil.formatForDebug(principal));
         final Database database = databaseService.find(databaseId);
         if (!database.getIsPublic()) {

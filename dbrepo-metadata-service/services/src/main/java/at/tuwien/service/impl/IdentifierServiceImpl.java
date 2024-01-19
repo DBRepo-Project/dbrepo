@@ -84,8 +84,8 @@ public class IdentifierServiceImpl implements IdentifierService {
     public Identifier find(Long identifierId) throws IdentifierNotFoundException {
         final Optional<Identifier> optional = identifierRepository.findById(identifierId);
         if (optional.isEmpty()) {
-            log.error("Identifier with id {} not existing", identifierId);
-            throw new IdentifierNotFoundException("Unable to find identifier with pid: " + identifierId);
+            log.error("Failed to find identifier with id: {}", identifierId);
+            throw new IdentifierNotFoundException("Failed to find identifier with id: " + identifierId);
         }
         return optional.get();
     }
@@ -95,8 +95,8 @@ public class IdentifierServiceImpl implements IdentifierService {
     public Identifier findByDoi(String doi) throws IdentifierNotFoundException {
         final Optional<Identifier> optional = identifierRepository.findByDoi(doi);
         if (optional.isEmpty()) {
-            log.error("Identifier with doi {} not existing", doi);
-            throw new IdentifierNotFoundException("Unable to find identifier with doi: " + doi);
+            log.error("Failed to find identifier with doi {}: not existing", doi);
+            throw new IdentifierNotFoundException("Failed to find identifier with doi " + doi + ": not existing");
         }
         return optional.get();
     }
@@ -153,11 +153,9 @@ public class IdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional
-    public Identifier create(IdentifierSaveDto data, Principal principal)
-            throws QueryNotFoundException, RemoteUnavailableException, IdentifierAlreadyExistsException,
-            UserNotFoundException, DatabaseNotFoundException, IdentifierPublishingNotAllowedException,
-            IdentifierRequestException, ViewNotFoundException, QueryStoreException, DatabaseConnectionException,
-            ImageNotSupportedException, IdentifierNotFoundException {
+    public Identifier create(IdentifierSaveDto data, Principal principal) throws QueryNotFoundException,
+            IdentifierRequestException, RemoteUnavailableException, UserNotFoundException, DatabaseNotFoundException,
+            ViewNotFoundException, QueryStoreException, ImageNotSupportedException {
         /* create identifier */
         final Identifier entity = identifierMapper.identifierCreateDtoToIdentifier(data);
         entity.setCreatedBy(UserUtil.getId(principal));
@@ -218,8 +216,8 @@ public class IdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional(readOnly = true)
-    public String exportBibliography(Long id, BibliographyTypeDto style)
-            throws IdentifierNotFoundException, IdentifierRequestException {
+    public String exportBibliography(Long id, BibliographyTypeDto style) throws IdentifierNotFoundException,
+            IdentifierRequestException {
         /* check */
         final Identifier identifier = find(id);
         /* context */
@@ -237,7 +235,7 @@ public class IdentifierServiceImpl implements IdentifierService {
             body = templateEngine.process(template, context);
         } catch (TemplateInputException e) {
             log.error("Failed to load template: {}", e.getMessage());
-            throw new IdentifierRequestException("Failed to load template", e);
+            throw new IdentifierRequestException("Failed to load template: " + e.getMessage(), e);
         }
         log.trace("mapped bibliography {}", body);
         return body;
@@ -246,8 +244,7 @@ public class IdentifierServiceImpl implements IdentifierService {
     @Override
     @Transactional(readOnly = true)
     public InputStreamResource exportResource(Long identifierId, Principal principal) throws IdentifierNotFoundException,
-            QueryNotFoundException, IdentifierRequestException, UserNotFoundException, QueryStoreException,
-            TableMalformedException, DatabaseConnectionException, QueryMalformedException,
+            QueryNotFoundException, IdentifierRequestException, QueryStoreException, QueryMalformedException,
             DatabaseNotFoundException, ImageNotSupportedException, FileStorageException, DataDbSidecarException {
         /* check */
         final Identifier identifier = find(identifierId);

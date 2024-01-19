@@ -9,13 +9,13 @@ public interface QueryStoreService {
     /**
      * Creates the query store in the database.
      *
-     * @param databaseId  The database id.
-     * @param principal   The principal of the user.
-     * @throws DatabaseNotFoundException
-     * @throws DatabaseConnectionException
-     * @throws DatabaseMalformedException
-     * @throws UserNotFoundException
-     * @throws QueryStoreException
+     * @param databaseId The database id.
+     * @param principal  The principal of the user.
+     * @throws DatabaseNotFoundException  The database is not found in the metadata database.
+     * @throws DatabaseMalformedException The database is malformed.
+     * @throws UserNotFoundException      The user was not found in the metadata database.
+     * @throws QueryStoreException        The query store failed to retrieve.
      */
-    void create(Long databaseId, Principal principal) throws DatabaseNotFoundException, DatabaseConnectionException, DatabaseMalformedException, UserNotFoundException, QueryStoreException;
+    void create(Long databaseId, Principal principal) throws DatabaseNotFoundException, DatabaseMalformedException,
+            UserNotFoundException, QueryStoreException;
 }

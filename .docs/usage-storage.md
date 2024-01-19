@@ -4,10 +4,21 @@ author: Martin Weise
 
 # Storage Service
 
+Configure the credentials to access the S3 endpoint:
+
+```console
+$ aws configure \
+    --endpoint-url http://localhost:9000
+AWS Access Key ID [None]: seaweedfsadmin
+AWS Secret Access Key [None]: seaweedfsadmin
+Default region name [None]: 
+Default output format [None]:
+```
+
 Upload a CSV-file into the `dbrepo-upload` bucket with the AWS CLI:
 
 ```console
-$ aws --endpoint-url http://<hostname>:9000 \
+$ aws --endpoint-url http://localhost:9000 \
     s3 \
     cp /path/to/file.csv \
     s3://dbrepo-upload/
@@ -17,7 +28,7 @@ upload: /path/to/file.csv to s3://dbrepo-upload/file.csv
 You can list the buckets:
 
 ```console
-$ aws --endpoint-url http://<hostname>:9000 \
+$ aws --endpoint-url http://localhost:9000 \
     s3 \
     ls
 2023-12-03 16:23:15 dbrepo-download
@@ -27,7 +38,7 @@ $ aws --endpoint-url http://<hostname>:9000 \
 And list the files in the bucket `dbrepo-upload` with:
 
 ```console
-$ aws --endpoint-url http://<hostname>:9000 \
+$ aws --endpoint-url http://localhost:9000 \
     s3 \
     ls \
     dbrepo-upload

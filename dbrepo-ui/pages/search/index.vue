@@ -1,7 +1,10 @@
 <template>
   <div>
     <v-toolbar flat tile>
-      <v-toolbar-title v-text="header" />
+      <v-toolbar-title>
+        <v-skeleton-loader v-if="loading || !header" type="text" class="skeleton-small" />
+        <span v-if="!loading && header" v-text="header" />
+      </v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
         <v-btn v-if="canCreateDatabase" color="primary" name="create-database" @click.stop="createDbDialog = true">
@@ -12,7 +15,7 @@
     <v-card flat tile>
       <AdvancedSearch ref="adv" @search-result="onSearchResult" />
     </v-card>
-    <DatabaseList v-if="isDatabaseSearch" :databases="results.results" />
+    <DatabaseList v-if="isDatabaseSearch" :loading="loading" :databases="results.results" />
     <div v-else>
       <v-card
         v-for="(result, idx) in results.results"
@@ -82,7 +85,7 @@ export default {
     },
     header () {
       if (!this.results || !this.results.results) {
-        return '0 results'
+        return null
       }
       if (this.results.results.length !== 1) {
         return `${this.results.results.length} results`
@@ -120,17 +123,18 @@ export default {
       SearchService.search(null, { search_term: this.query })
         .then((response) => {
           this.results = response
-        })
-        .catch(() => {
           this.loading = false
         })
-        .finally(() => {
+        .catch(() => {
           this.loading = false
         })
     },
     isDatabase (item) {
       if (!item) {
         return false
+      }
+      if ('exchange_name' in item) {
+        return true
       }
       return this.results.type === 'database'
     },

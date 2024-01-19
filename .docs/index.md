@@ -14,8 +14,8 @@ collection. Challenges revolve around organizing, searching and retrieving conte
 constitute a major technical burden as their internal representation greatly differs from static documents most digital
 repositories are designed for.
 
-[Get Started](./deployment-docker-compose){ .action-button .md-button .md-button--primary }
-[Learn More](./system){ .action-button .md-button .md-button--secondary }
+[System Description](./system){ .action-button .md-button .md-button--secondary }
+[How to use](./usage-overview){ .action-button .md-button .md-button--primary }
 
 ## Application Areas
 
@@ -26,5 +26,5 @@ evolving, allows reproducing of query results and supports findable-, accessible
 ## More Information
 
 - Demonstration instance [https://dbrepo1.ec.tuwien.ac.at](https://dbrepo1.ec.tuwien.ac.at)
-- Sandbox instance [https://test.dbrepo.tuwien.ac.at](https://dbrepo2.ec.tuwien.ac.at)
+- Test instance [https://test.dbrepo.tuwien.ac.at](https://test.dbrepo.tuwien.ac.at)
 - System description [https://doi.org/10.2218/ijdc.v17i1.825](https://doi.org/10.2218/ijdc.v17i1.825)

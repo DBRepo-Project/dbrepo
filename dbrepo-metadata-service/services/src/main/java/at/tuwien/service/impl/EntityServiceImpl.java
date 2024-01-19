@@ -126,7 +126,7 @@ public class EntityServiceImpl implements EntityService {
             return results;
         } catch (QueryParseException | IllegalArgumentException | RiotException e) {
             log.error("Failed to parse query: {}", e.getMessage());
-            throw new QueryMalformedException("Failed to parse query", e);
+            throw new QueryMalformedException("Failed to parse query: " + e.getMessage(), e);
         }
     }
 

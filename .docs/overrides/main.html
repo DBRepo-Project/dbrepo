@@ -4,16 +4,17 @@
 <label for="version">Version</label>
 <select style="margin-left:8px;" id="version" name="version" onchange="switchVersion(this.options[this.selectedIndex].value)">
     <option value="1.4.0">1.4.0</option>
-    <option value="1.3.9">1.3.9</option>
+    <option value="1.3.0">1.3.0</option>
     <option value="latest">latest</option>
 </select>
 <script>
     function getVersion() {
         const segments = location.pathname.split('/')
+        console.debug('segments', segments)
         if (segments.length >= 4) {
             return segments[3]
         } else {
-            return '$TAG'
+            return '$VERSION'
         }
     }
     function switchVersion(value) {

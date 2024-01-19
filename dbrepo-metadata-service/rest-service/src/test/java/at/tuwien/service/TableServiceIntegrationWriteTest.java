@@ -139,218 +139,15 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
 
     @Test
     public void create_full_succeeds() throws Exception {
-        final TableCreateDto request = TableCreateDto.builder()
-                .name("full")
-                .description("full example")
-                .constraints(ConstraintsCreateDto.builder()
-                        .uniques(List.of())
-                        .foreignKeys(List.of())
-                        .build())
-                .columns(List.of(ColumnCreateDto.builder()
-                                .name("col1a")
-                                .type(ColumnTypeDto.CHAR)
-                                .nullAllowed(true)
-                                .primaryKey(false)
-                                .build(),
-                        ColumnCreateDto.builder()
-                                .name("col1b")
-                                .type(ColumnTypeDto.CHAR)
-                                .nullAllowed(true)
-                                .primaryKey(false)
-                                .size(50L)
-                                .build(),
-                        ColumnCreateDto.builder()
-                                .name("col2a")
-                                .type(ColumnTypeDto.VARCHAR)
-                                .nullAllowed(true)
-                                .primaryKey(false)
-                                .build(),
-                        ColumnCreateDto.builder()
-                                .name("col2b")
-                                .type(ColumnTypeDto.VARCHAR)
-                                .nullAllowed(true)
-                                .primaryKey(false)
-                                .size(1024L)
-                                .build(),
-                        ColumnCreateDto.builder()
-                                .name("col3")
-                                .type(ColumnTypeDto.BINARY)
-                                .nullAllowed(true)
-                                .primaryKey(false)
-                                .build(),
-                        ColumnCreateDto.builder()
-                                .name("col4")
-                                .type(ColumnTypeDto.VARBINARY)
-                                .nullAllowed(true)
-                                .primaryKey(false)
-                                .size(200L)
-                                .build(),
-                        ColumnCreateDto.builder()
-                                .name("col5")
-                                .type(ColumnTypeDto.TINYBLOB)
-                                .nullAllowed(true)
-                                .primaryKey(false)
-                                .build(),
-                        ColumnCreateDto.builder()
-                                .name("col6")
-                                .type(ColumnTypeDto.TINYTEXT)
-                                .nullAllowed(true)
-                                .primaryKey(false)
-                                .build(),
-                        ColumnCreateDto.builder()
-                                .name("col7")
-                                .type(ColumnTypeDto.TEXT)
-                                .nullAllowed(true)
-                                .primaryKey(false)
-                                .build(),
-                        ColumnCreateDto.builder()
-                                .name("col8")
-                                .type(ColumnTypeDto.BLOB)
-                                .nullAllowed(true)
-                                .primaryKey(false)
-                                .build(),
-                        ColumnCreateDto.builder()
-                                .name("col9")
-                                .type(ColumnTypeDto.MEDIUMTEXT)
-                                .nullAllowed(true)
-                                .primaryKey(false)
-                                .build(),
-                        ColumnCreateDto.builder()
-                                .name("col10")
-                                .type(ColumnTypeDto.MEDIUMBLOB)
-                                .nullAllowed(true)
-                                .primaryKey(false)
-                                .build(),
-                        ColumnCreateDto.builder()
-                                .name("col11")
-                                .type(ColumnTypeDto.LONGTEXT)
-                                .nullAllowed(true)
-                                .primaryKey(false)
-                                .build(),
-                        ColumnCreateDto.builder()
-                                .name("col12")
-                                .type(ColumnTypeDto.LONGBLOB)
-                                .nullAllowed(true)
-                                .primaryKey(false)
-                                .build(),
-                        ColumnCreateDto.builder()
-                                .name("col13")
-                                .type(ColumnTypeDto.ENUM)
-                                .nullAllowed(true)
-                                .primaryKey(false)
-                                .enums(List.of("val1", "val2"))
-                                .build(),
-                        ColumnCreateDto.builder()
-                                .name("col14")
-                                .type(ColumnTypeDto.SET)
-                                .nullAllowed(true)
-                                .primaryKey(false)
-                                .sets(List.of("val1", "val2"))
-                                .build(),
-                        ColumnCreateDto.builder()
-                                .name("col15")
-                                .type(ColumnTypeDto.BIT)
-                                .nullAllowed(true)
-                                .primaryKey(false)
-                                .build(),
-                        ColumnCreateDto.builder()
-                                .name("col16")
-                                .type(ColumnTypeDto.TINYINT)
-                                .nullAllowed(true)
-                                .primaryKey(false)
-                                .build(),
-                        ColumnCreateDto.builder()
-                                .name("col17")
-                                .type(ColumnTypeDto.BOOL)
-                                .nullAllowed(true)
-                                .primaryKey(false)
-                                .build(),
-                        ColumnCreateDto.builder()
-                                .name("col18")
-                                .type(ColumnTypeDto.SMALLINT)
-                                .nullAllowed(true)
-                                .primaryKey(false)
-                                .build(),
-                        ColumnCreateDto.builder()
-                                .name("col19")
-                                .type(ColumnTypeDto.MEDIUMINT)
-                                .nullAllowed(true)
-                                .primaryKey(false)
-                                .build(),
-                        ColumnCreateDto.builder()
-                                .name("col20")
-                                .type(ColumnTypeDto.INT)
-                                .nullAllowed(true)
-                                .primaryKey(false)
-                                .build(),
-                        ColumnCreateDto.builder()
-                                .name("col21")
-                                .type(ColumnTypeDto.BIGINT)
-                                .nullAllowed(true)
-                                .primaryKey(false)
-                                .build(),
-                        ColumnCreateDto.builder()
-                                .name("col22")
-                                .type(ColumnTypeDto.FLOAT)
-                                .nullAllowed(true)
-                                .primaryKey(false)
-                                .build(),
-                        ColumnCreateDto.builder()
-                                .name("col23")
-                                .type(ColumnTypeDto.DOUBLE)
-                                .nullAllowed(true)
-                                .primaryKey(false)
-                                .build(),
-                        ColumnCreateDto.builder()
-                                .name("col24")
-                                .type(ColumnTypeDto.DECIMAL)
-                                .nullAllowed(true)
-                                .primaryKey(false)
-                                .build(),
-                        ColumnCreateDto.builder()
-                                .name("col25")
-                                .type(ColumnTypeDto.DATE)
-                                .nullAllowed(true)
-                                .primaryKey(false)
-                                .dfid(IMAGE_DATE_1_ID)
-                                .build(),
-                        ColumnCreateDto.builder()
-                                .name("col26")
-                                .type(ColumnTypeDto.DATETIME)
-                                .nullAllowed(true)
-                                .primaryKey(false)
-                                .dfid(IMAGE_DATE_3_ID)
-                                .build(),
-                        ColumnCreateDto.builder()
-                                .name("col27")
-                                .type(ColumnTypeDto.TIMESTAMP)
-                                .nullAllowed(true)
-                                .primaryKey(false)
-                                .dfid(IMAGE_DATE_3_ID)
-                                .build(),
-                        ColumnCreateDto.builder()
-                                .name("col28")
-                                .type(ColumnTypeDto.TIME)
-                                .nullAllowed(true)
-                                .primaryKey(false)
-                                .dfid(IMAGE_DATE_4_ID)
-                                .build(),
-                        ColumnCreateDto.builder()
-                                .name("col29")
-                                .type(ColumnTypeDto.YEAR)
-                                .nullAllowed(true)
-                                .primaryKey(false)
-                                .build()))
-                .build();
 
         /* test */
-        final Table response = tableService.createTable(DATABASE_1_ID, request, USER_1_PRINCIPAL);
+        final Table response = tableService.createTable(DATABASE_1_ID, TABLE_0_CREATE_DTO, USER_1_PRINCIPAL);
         assertNotNull(response.getId());
         assertEquals("full", response.getInternalName());
         assertEquals("full example", response.getDescription());
         assertEquals(32, response.getColumns().size());
-        for (int i = 1; i < request.getColumns().size(); i++) {
-            final ColumnCreateDto expected = request.getColumns().get(i);
+        for (int i = 1; i < TABLE_0_CREATE_DTO.getColumns().size(); i++) {
+            final ColumnCreateDto expected = TABLE_0_CREATE_DTO.getColumns().get(i);
             final TableColumn result = response.getColumns().get(i);
             assertEquals(expected.getName(), result.getName());
             assertEquals(expected.getType(), tableMapper.columnTypeToColumnTypeDto(result.getColumnType()));
@@ -373,7 +170,7 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
         }
         final Map<String, List<Object>> schema = MariaDbConfig.describeTableSchema(response, CONTAINER_1_PRIVILEGED_USERNAME, CONTAINER_1_PRIVILEGED_PASSWORD);
         for (Map.Entry<String, List<Object>> entry : schema.entrySet()) {
-            final ColumnCreateDto columnRequest = request.getColumns().stream().filter(c -> c.getName().equals(entry.getKey())).findFirst().get();
+            final ColumnCreateDto columnRequest = TABLE_0_CREATE_DTO.getColumns().stream().filter(c -> c.getName().equals(entry.getKey())).findFirst().get();
             final TableColumn columnEntity = response.getColumns().stream().filter(c -> c.getName().equals(entry.getKey())).findFirst().get();
             final List<Object> columnSchema = schema.get(columnEntity.getInternalName());
             if (columnEntity.getInternalName().equals("id")) {
@@ -426,6 +223,17 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
 
         /* test */
         tableService.deleteTable(DATABASE_1_ID, TABLE_1_ID);
+    }
+
+    @Test
+    @Transactional
+    public void delete_full_succeeds() throws TableNotFoundException, TableMalformedException, QueryMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException, UserNotFoundException, TableNameExistsException,
+            ContainerNotFoundException {
+
+        /* test */
+        final Table response = tableService.createTable(DATABASE_1_ID, TABLE_0_CREATE_DTO, USER_1_PRINCIPAL);
+        tableService.deleteTable(DATABASE_1_ID, response.getId());
     }
 
     @Test

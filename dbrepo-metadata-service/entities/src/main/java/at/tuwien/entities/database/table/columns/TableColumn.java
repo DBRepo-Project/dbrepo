@@ -6,6 +6,8 @@ import at.tuwien.entities.database.table.Table;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -104,14 +106,18 @@ public class TableColumn implements Comparable<TableColumn> {
             inverseJoinColumns = @JoinColumn(name = "id", referencedColumnName = "id"))
     private TableColumnUnit unit;
 
-    @ElementCollection(targetClass = String.class, fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY, targetClass = String.class)
     @CollectionTable(name = "mdb_columns_enums", joinColumns = @JoinColumn(name = "column_id"))
     @Column(name = "value", nullable = false)
+    @JoinColumn(name = "column_id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private List<String> enums;
 
-    @ElementCollection(targetClass = String.class, fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY, targetClass = String.class)
     @CollectionTable(name = "mdb_columns_sets", joinColumns = @JoinColumn(name = "column_id"))
     @Column(name = "value", nullable = false)
+    @JoinColumn(name = "column_id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private List<String> sets;
 
     @Column

@@ -119,7 +119,7 @@ test-analyse-service:
   script:
     - "pip install pipenv"
     - "pipenv install gunicorn && pipenv install --dev --system --deploy"
-    - "cd ./dbrepo-analyse-service/ && coverage run -m pytest test/test_determine_dt.py test/test_determine_pk.py --junitxml=report.xml && coverage html && coverage report > ./coverage.txt"
+    - "cd ./dbrepo-analyse-service/ && coverage run -m pytest test/test_determine_dt.py test/test_determine_pk.py test/test_determine_stats.py --junitxml=report.xml && coverage html && coverage report > ./coverage.txt"
     - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
   artifacts:
     when: always
@@ -156,7 +156,7 @@ scan-analyse-service:
   stage: scan
   only:
     refs:
-      - dev
+      - master
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-analyse-service-report.json docker.io/dbrepo/analyse-service:latest
@@ -176,7 +176,7 @@ scan-authentication-service:
   stage: scan
   only:
     refs:
-      - dev
+      - master
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-authentication-service-report.json docker.io/dbrepo/authentication-service:latest
@@ -196,7 +196,7 @@ scan-broker-service:
   stage: scan
   only:
     refs:
-      - dev
+      - master
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-broker-service-report.json docker.io/dbrepo/broker-service:latest
@@ -216,7 +216,7 @@ scan-gateway-service:
   stage: scan
   only:
     refs:
-      - dev
+      - master
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-gateway-service-report.json docker.io/nginx:1.25.0-alpine-slim
@@ -236,7 +236,7 @@ scan-metadata-service:
   stage: scan
   only:
     refs:
-      - dev
+      - master
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-metadata-service-report.json docker.io/dbrepo/metadata-service:latest
@@ -256,7 +256,7 @@ scan-data-service:
   stage: scan
   only:
     refs:
-      - dev
+      - master
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-data-service-report.json docker.io/dbrepo/data-service:latest
@@ -276,7 +276,7 @@ scan-search-db:
   stage: scan
   only:
     refs:
-      - dev
+      - master
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-db-report.json docker.io/dbrepo/search-db:latest
@@ -296,7 +296,7 @@ scan-search-dashboard:
   stage: scan
   only:
     refs:
-      - dev
+      - master
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-dashboard-report.json docker.io/opensearchproject/opensearch-dashboards:2.10.0
@@ -316,7 +316,7 @@ scan-search-db-init:
   stage: scan
   only:
     refs:
-      - dev
+      - master
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-db-init-report.json docker.io/dbrepo/search-db-init:latest
@@ -336,7 +336,7 @@ scan-data-db:
   stage: scan
   only:
     refs:
-      - dev
+      - master
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-data-db-report.json docker.io/bitnami/mariadb:11.2.2-debian-11-r0
@@ -356,7 +356,7 @@ scan-metadata-db:
   stage: scan
   only:
     refs:
-      - dev
+      - master
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-metadata-db-report.json docker.io/dbrepo/metadata-db:latest
@@ -376,7 +376,7 @@ scan-ui:
   stage: scan
   only:
     refs:
-      - dev
+      - master
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-ui-report.json docker.io/dbrepo/ui:latest
@@ -396,7 +396,7 @@ scan-storage-service:
   stage: scan
   only:
     refs:
-      - dev
+      - master
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-storage-service-report.json docker.io/chrislusf/seaweedfs:3.59
@@ -416,7 +416,7 @@ scan-storage-service-init:
   stage: scan
   only:
     refs:
-      - dev
+      - master
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-storage-service-init-report.json docker.io/dbrepo/storage-service-init:latest
@@ -441,7 +441,7 @@ release-latest:
     - test-frontend
   only:
     refs:
-      - dev
+      - master
   before_script:
     - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY_URL
     - echo "$CI_REGISTRY2_PASSWORD" | docker login --username "$CI_REGISTRY2_USER" --password-stdin $CI_REGISTRY2_URL
@@ -467,7 +467,7 @@ release-1.3:
   script:
     - "ifconfig eth0 mtu 1450 up"
     - "apk add make"
-    - "TAG=1.3.9 make release"
+    - "TAG=1.3.0 make release"
 
 release-1.4:
   stage: release
@@ -493,12 +493,12 @@ build-api-latest:
   image: docker.io/alpine:3.18
   only:
     refs:
-      - dev
+      - master
       - release-v1.3
       - release-v1.4
   script:
     - apk add bash git
-    - git fetch && git checkout dev
+    - git fetch && git checkout master
     - bash .docs/.swagger/swagger-site.sh
     - mkdir -p ./swagger/latest
     - cp -r ./site/* ./swagger/latest/
@@ -516,22 +516,22 @@ build-api-1.3:
   image: docker.io/alpine:3.18
   only:
     refs:
-      - dev
+      - master
       - release-v1.3
       - release-v1.4
   script:
     - apk add bash git maven
     - git fetch && git checkout release-v1.3
     - bash .docs/.swagger/generate.sh
-    - mkdir -p ./swagger/1.3.9
-    - cp -r ./site/* ./swagger/1.3.9/
+    - mkdir -p ./swagger/1.3.0
+    - cp -r ./site/* ./swagger/1.3.0/
   cache:
     paths:
-      - ./swagger/1.3.9
+      - ./swagger/1.3.0
   artifacts:
     when: always
     paths:
-      - ./swagger/1.3.9
+      - ./swagger/1.3.0
     expire_in: 1 days
 
 build-api-1.4:
@@ -539,7 +539,7 @@ build-api-1.4:
   image: docker.io/alpine:3.18
   only:
     refs:
-      - dev
+      - master
       - release-v1.3
       - release-v1.4
   script:
@@ -562,7 +562,7 @@ docs-registry:
   image: docker.io/python:3.9-slim
   only:
     refs:
-      - dev
+      - master
       - release-v1.3
       - release-v1.4
   script:
@@ -586,12 +586,12 @@ docs-latest:
     - build-api-1.4
   only:
     refs:
-      - dev
+      - master
       - release-v1.3
       - release-v1.4
   script:
     - apt-get update && apt-get install -y git make sed
-    - git fetch && git checkout dev
+    - git fetch && git checkout master
     - pip install -r ./requirements.txt
     - mkdir -p ./final
     - find ./.docs -type f -exec sed -i -e "s/\$TAG/latest/g" {} \;
@@ -616,16 +616,17 @@ docs-1.3:
     - build-api-1.3
   only:
     refs:
-      - dev
+      - master
       - release-v1.3
       - release-v1.4
   script:
-    - apt-get update && apt-get install -y git make
+    - apt-get update && apt-get install -y git make wget
     - git fetch && git checkout release-v1.3
     - pip install -r ./.docs/requirements.txt
+    - wget https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/.docs/overrides/main.html -O .docs/overrides/main.html -q
     - mkdir -p ./final
-    - mkdocs build && cp -r ./site ./final/1.3.9
-    - cp -r ./swagger/1.3.9 ./final/1.3.9/swagger
+    - mkdocs build && cp -r ./site ./final/1.3.0
+    - cp -r ./swagger/1.3.0 ./final/1.3.0/swagger
   cache:
     paths:
       - ./final
@@ -644,13 +645,14 @@ docs-1.4:
     - build-api-1.4
   only:
     refs:
-      - dev
+      - master
       - release-v1.3
       - release-v1.4
   script:
-    - apt-get update && apt-get install -y git make sed
+    - apt-get update && apt-get install -y git make sed wget
     - git fetch && git checkout release-v1.4
     - pip install -r ./.docs/requirements.txt
+    - wget https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/.docs/overrides/main.html -O .docs/overrides/main.html -q
     - mkdir -p ./final
     - find ./.docs -type f -exec sed -i -e "s/\$TAG/${VERSION}/g" {} \;
     - mkdocs build && cp -r ./site ./final/${VERSION}
@@ -673,7 +675,7 @@ release-docs:
     - docs-1.4
   only:
     refs:
-      - dev
+      - master
       - release-v1.3
       - release-v1.4
   script:

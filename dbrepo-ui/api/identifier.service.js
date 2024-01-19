@@ -17,8 +17,27 @@ class IdentifierService {
     })
   }
 
-  find (id) {
-    return this.findAccept(id, 'application/json')
+  retrieve (url) {
+    return new Promise((resolve, reject) => {
+      if (url === null) {
+        reject(Error)
+      }
+      api.get(`/api/identifier/retrieve?url=${url}`, { headers: { Accept: 'application/json' } })
+        .then((response) => {
+          const { status, data } = response
+          if (status === 200) {
+            console.debug('response metadata', data)
+            resolve(data)
+          } else {
+            console.error('response metadata', response)
+            reject(response)
+          }
+        })
+        .catch((error) => {
+          displayError('Failed to load identifier', error)
+          reject(error)
+        })
+    })
   }
 
   retrieve (url) {

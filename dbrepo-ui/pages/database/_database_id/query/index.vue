@@ -1,16 +1,16 @@
 <template>
   <div>
     <DatabaseToolbar v-model="db" />
-    <QueryList />
+    <SubsetList />
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
   </div>
 </template>
 
 <script>
-import QueryList from '@/components/QueryList.vue'
+import SubsetList from '@/components/query/SubsetList.vue'
 export default {
   components: {
-    QueryList
+    SubsetList
   },
   data () {
     return {

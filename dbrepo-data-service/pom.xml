@@ -10,7 +10,7 @@
 
     <groupId>at.tuwien</groupId>
     <artifactId>dbrepo-data-service</artifactId>
-    <version>1.3.0</version>
+    <version>latest</version>
     <name>dbrepo-data-service</name>
     <description>
         This service is responsible for the database-specific CRUD operations.

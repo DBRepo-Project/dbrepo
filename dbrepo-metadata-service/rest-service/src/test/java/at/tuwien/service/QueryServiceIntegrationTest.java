@@ -316,7 +316,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
             QueryStoreException, ColumnParseException, InterruptedException, KeycloakRemoteException,
             AccessDeniedException, QueryNotFoundException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
-                .statement("SELECT n.`firstname`, n.`lastname`, n.`birth`, n.`reminder`, z.`animal_name`, z.`legs` FROM `likes` l JOIN `names` n ON l.`name_id` = n.`id` JOIN `mock_view` z ON z.`id` = l.`zoo_id`")
+                .statement("SELECT n.`firstname`, n.`lastname`, n.`birth`, n.`reminder`, z.`animal_name`, z.`legs` FROM `likes` l JOIN `names` n ON l.`name_id` = n.`id` JOIN `mock_view` z ON z.`id` = l.`zoo_id` ORDER BY animal_name ASC")
                 .build();
 
         /* pre-condition */
@@ -531,12 +531,12 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                 .resultNumber(0L)
                 .created(QUERY_1_CREATED)
                 .executed(QUERY_1_EXECUTION)
-                .createdBy(USER_1_USERNAME)
+                .createdBy(USER_1_ID)
                 .isPersisted(true)
                 .build();
 
         /* mock */
-        MariaDbConfig.insertQueryStore(DATABASE_1, query, USER_1_USERNAME);
+        MariaDbConfig.insertQueryStore(DATABASE_1, query, USER_1_ID);
         doNothing()
                 .when(dataDbSidecarGateway)
                 .exportFile(anyString(), anyInt(), anyString());

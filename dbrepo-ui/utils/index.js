@@ -1,4 +1,5 @@
 const { format } = require('date-fns')
+const moment = require('moment')
 
 function notEmpty (str) {
   return typeof str === 'string' && str.trim().length > 0
@@ -1013,22 +1014,6 @@ function formatLanguage (code) {
   return filter[0].name
 }
 
-function isOrcid (orcid) {
-  if (!orcid || orcid.startsWith('http')) {
-    return false
-  }
-  const input = orcid.replace('-', '')
-  let total = 0
-  for (let i = 0; i < input.length; i++) {
-    const digit = Number(input.charAt(i))
-    total = (total + digit) * 2
-  }
-  const remainder = total % 11
-  const result = (12 - remainder) % 11
-  const checksum = result === 10 ? 'X' : String(result)
-  return orcid.charAt(orcid.length - 1) === checksum
-}
-
 function isActiveMessage (message) {
   if (!message) {
     return false
@@ -1055,6 +1040,12 @@ function timestampToTimeZonedTimestamp (str) {
   return format(new Date(str), 'yyyy-MM-dd\'T\'HH:mm:ss.SSS\'Z\'')
 }
 
+function timestampsToHumanDifference (date1, date2) {
+  const date = moment(date1)
+  const other = moment(date2)
+  return moment.duration(other.diff(date)).humanize(true)
+}
+
 module.exports = {
   notEmpty,
   formatTimestamp,
@@ -1065,10 +1056,10 @@ module.exports = {
   formatYearUTC,
   formatMonthUTC,
   formatDayUTC,
-  isOrcid,
   isActiveMessage,
   timestampToTimeZonedTimestamp,
   formatBinaryStream,
   languages,
-  formatLanguage
+  formatLanguage,
+  timestampsToHumanDifference
 }

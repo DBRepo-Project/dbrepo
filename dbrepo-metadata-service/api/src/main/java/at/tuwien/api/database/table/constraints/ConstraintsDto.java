@@ -19,12 +19,13 @@ import java.util.List;
 @ToString
 public class ConstraintsDto {
 
-    @Field(name = "uniques", type = FieldType.Nested)
+    @Field(name = "uniques", type = FieldType.Object)
     private List<UniqueDto> uniques;
 
     @JsonProperty("foreign_keys")
-    @Field(name = "foreign_keys", type = FieldType.Nested)
+    @Field(name = "foreign_keys", type = FieldType.Object)
     private List<ForeignKeyDto> foreignKeys;
 
+    @org.springframework.data.annotation.Transient
     private List<String> checks;
 }

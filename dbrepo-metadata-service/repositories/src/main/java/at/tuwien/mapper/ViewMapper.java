@@ -1,13 +1,9 @@
 package at.tuwien.mapper;
 
-import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.api.database.ViewBriefDto;
 import at.tuwien.api.database.ViewCreateDto;
 import at.tuwien.api.database.ViewDto;
-import at.tuwien.api.identifier.IdentifierDto;
-import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.View;
-import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.exception.QueryMalformedException;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -49,9 +45,39 @@ public interface ViewMapper {
 
     ViewBriefDto viewToViewBriefDto(View data);
 
+
+    default PreparedStatement viewToSelectAll(Connection connection, View view, Long page, Long size) throws QueryMalformedException {
+        log.debug("mapping view query, view.query={}", view.getQuery());
+        final StringBuilder statement = new StringBuilder("SELECT ");
+        final int[] idx = new int[]{0};
+        view.getColumns()
+                .forEach(c -> statement.append(idx[0]++ > 0 ? "," : "")
+                        .append("`")
+                        .append(c.getInternalName())
+                        .append("`"));
+        statement.append(" FROM `")
+                .append(view.getInternalName())
+                .append("`");
+        /* pagination */
+        log.trace("pagination size/limit of {}", size);
+        statement.append(" LIMIT ")
+                .append(size);
+        log.trace("pagination page/offset of {}", page);
+        statement.append(" OFFSET ")
+                .append(page * size);
+        statement.append(";");
+        try {
+            log.trace("mapped view query {} to prepared statement", statement);
+            return connection.prepareStatement(statement.toString());
+        } catch (SQLException e) {
+            log.error("Failed to prepare statement {}: {}", statement, e.getMessage());
+            throw new QueryMalformedException("Failed to prepare statement: " + e.getMessage(), e);
+        }
+    }
+
     default PreparedStatement viewToRawDeleteViewQuery(Connection connection, View view)
             throws QueryMalformedException {
-        log.debug("mapping delete view query, view={}", view);
+        log.debug("mapping delete view query, view.name={}", view.getName());
         final StringBuilder statement = new StringBuilder("DROP VIEW `")
                 .append(nameToInternalName(view.getName()))
                 .append("`;");
@@ -59,8 +85,8 @@ public interface ViewMapper {
             log.trace("mapped delete view {} to prepared statement", view.getName());
             return connection.prepareStatement(statement.toString());
         } catch (SQLException e) {
-            log.debug("Failed to prepare statement {}, reason: {}", statement, e.getMessage());
-            throw new QueryMalformedException("Failed to prepare statement", e);
+            log.error("Failed to prepare statement {}: {}", statement, e.getMessage());
+            throw new QueryMalformedException("Failed to prepare statement: " + e.getMessage(), e);
         }
     }
 
@@ -77,8 +103,8 @@ public interface ViewMapper {
             log.trace("mapped create view {} to prepared statement {}", data.getName(), pstmt);
             return pstmt;
         } catch (SQLException e) {
-            log.error("Failed to prepare statement {}, reason: {}", statement, e.getMessage());
-            throw new QueryMalformedException("Failed to prepare statement", e);
+            log.error("Failed to prepare statement {}: {}", statement, e.getMessage());
+            throw new QueryMalformedException("Failed to prepare statement: " + e.getMessage(), e);
         }
     }
 

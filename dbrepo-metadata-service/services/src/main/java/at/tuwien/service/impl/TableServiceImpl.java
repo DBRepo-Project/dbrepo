@@ -116,7 +116,7 @@ public class TableServiceImpl extends HibernateConnector implements TableService
             return queryMapper.resultListToTableHistoryDto(resultSet);
         } catch (SQLException e) {
             log.error("Failed to map table history: {}", e.getMessage());
-            throw new QueryStoreException("Failed to map table history", e);
+            throw new QueryStoreException("Failed to map table history: " + e.getMessage(), e);
         } finally {
             dataSource.close();
         }
@@ -209,10 +209,9 @@ public class TableServiceImpl extends HibernateConnector implements TableService
 
     @Override
     @Transactional
-    public TableColumn update(Long databaseId, Long tableId, Long columnId,
-                              ColumnSemanticsUpdateDto updateDto, String authorization)
-            throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
-            SemanticEntityNotFoundException, QueryMalformedException {
+    public TableColumn update(Long databaseId, Long tableId, Long columnId, ColumnSemanticsUpdateDto updateDto,
+                              String authorization) throws TableNotFoundException, DatabaseNotFoundException,
+            TableMalformedException {
         final Table table = find(databaseId, tableId);
         final TableColumn column = findColumn(table, columnId);
         /* assign */
@@ -266,7 +265,7 @@ public class TableServiceImpl extends HibernateConnector implements TableService
             tableMapper.tableToDropTableRawQuery(connection, table);
         } catch (SQLException e) {
             log.error("Failed to drop table: {}", e.getMessage());
-            throw new TableMalformedException("Failed to drop table", e);
+            throw new TableMalformedException("Failed to drop table: " + e.getMessage(), e);
         } finally {
             dataSource.close();
         }

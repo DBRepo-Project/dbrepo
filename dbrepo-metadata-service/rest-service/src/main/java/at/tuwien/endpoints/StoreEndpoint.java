@@ -5,6 +5,7 @@ import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.query.QueryPersistDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.api.identifier.IdentifierBriefDto;
+import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.IdentifierMapper;
@@ -38,8 +39,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static org.apache.jena.sparql.vocabulary.VocabTestQuery.query;
 
 @Log4j2
 @RestController
@@ -120,18 +122,26 @@ public class StoreEndpoint {
         endpointValidator.validateOnlyAccessOrPublic(databaseId, principal);
         /* find all from data database */
         final List<Query> queries = storeService.findAll(databaseId, persisted, principal);
-        /* add identifiers from metadata database */
+        /* add identifiers and creator from metadata database */
         final List<IdentifierBriefDto> identifiers = identifierService.findAllSubsetIdentifiers()
                 .stream()
                 .map(identifierMapper::identifierToIdentifierBriefDto)
                 .toList();
+        final List<UserDto> users = userService.findAll()
+                .stream()
+                .map(userMapper::userToUserDto)
+                .toList();
         final List<QueryBriefDto> dto = queries.stream()
                 .map(queryMapper::queryToQueryBriefDto)
                 .peek(q -> {
-                    final List<IdentifierBriefDto> subsetIdentifiers = identifiers.stream()
+                    q.setDatabaseId(databaseId);
+                    users.stream()
+                            .filter(u -> u.getId().equals(q.getCreatedBy()))
+                            .findFirst()
+                            .ifPresentOrElse(q::setCreator, () -> log.warn("Query creator with id {} not found in list of users", q.getCreatedBy()));
+                    q.setIdentifiers(identifiers.stream()
                             .filter(i -> i.getDatabaseId().equals(databaseId) && i.getQueryId().equals(q.getId()))
-                            .toList();
-                    q.setIdentifiers(subsetIdentifiers);
+                            .toList());
                 })
                 .collect(Collectors.toList());
         log.trace("find queries resulted in queries {}", dto);
@@ -186,7 +196,8 @@ public class StoreEndpoint {
         /* find */
         final Query query = storeService.findOne(databaseId, queryId, principal);
         final QueryDto dto = queryMapper.queryToQueryDto(query);
-        dto.setCreator(userMapper.userToUserDto(userService.findByUsername(query.getCreatedBy())));
+        dto.setDatabaseId(databaseId);
+        dto.setCreator(userMapper.userToUserDto(userService.find(query.getCreatedBy())));
         final List<Identifier> identifiers = identifierService.findByDatabaseIdAndQueryId(databaseId, queryId);
         if (!identifiers.isEmpty()) {
             dto.setIdentifiers(identifiers.stream()
@@ -208,6 +219,16 @@ public class StoreEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = QueryDto.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Image not supported",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Not allowed to persist query",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "404",
                     description = "Database, query or user could not be found",
                     content = {@Content(
@@ -218,43 +239,27 @@ public class StoreEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "409",
+            @ApiResponse(responseCode = "412",
                     description = "Query is already persisted",
                     content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "501",
-                    description = "Image is not supported",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "504",
-                    description = "Query store failed to persist query",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                            schema = @Schema(implementation = ApiErrorDto.class))})
     })
     public ResponseEntity<QueryDto> persist(@NotNull @PathVariable("databaseId") Long databaseId,
                                             @NotNull @PathVariable("queryId") Long queryId,
                                             @NotNull @Valid @RequestBody QueryPersistDto data,
                                             @NotNull Principal principal)
-            throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
-            DatabaseConnectionException, UserNotFoundException, QueryNotFoundException,
-            QueryAlreadyPersistedException, NotAllowedException, AccessDeniedException {
-        log.debug("endpoint persist query, container, databaseId={}, queryId={}, {}", databaseId, queryId, PrincipalUtil.formatForDebug(principal));
+            throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException, UserNotFoundException,
+            NotAllowedException, AccessDeniedException, IdentifierAlreadyPublishedException {
+        log.debug("endpoint persist query, container, databaseId={}, queryId={}, data.persist={}, {}", databaseId, queryId, data.getPersist(), PrincipalUtil.formatForDebug(principal));
         /* check */
         endpointValidator.validateOnlyAccessOrPublic(databaseId, principal);
-        final Query check = storeService.findOne(databaseId, queryId, principal);
-        if (check.getIsPersisted()) {
-            log.error("Failed to persist, is already persisted");
-            throw new QueryAlreadyPersistedException("Failed to persist");
-        }
         /* has access */
         accessService.find(databaseId, UserUtil.getId(principal));
         /* persist */
         final Query query = storeService.persist(databaseId, queryId, data);
         final QueryDto dto = queryMapper.queryToQueryDto(query);
-        dto.setCreator(userMapper.userToUserDto(userService.findByUsername(query.getCreatedBy())));
+        dto.setCreator(userMapper.userToUserDto(userService.find(query.getCreatedBy())));
         log.trace("persist query resulted in query {}", dto);
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(dto);

@@ -14,17 +14,25 @@ import java.util.List;
 public interface TableService {
 
     /**
-     * Find a table in the metadata database by database-table id tuple
+     * Find a table in the metadata database by database and table id.
      *
      * @param databaseId The database id.
      * @param tableId    The table id.
-     * @return The database.
-     * @throws DatabaseNotFoundException The database is not found.
-     * @throws TableNotFoundException    The table is not found.
+     * @return The table, if successful.
+     * @throws DatabaseNotFoundException The database was not found in the metadata database.
+     * @throws TableNotFoundException    The table was not found in the metadata database.
      */
     Table find(Long databaseId, Long tableId) throws DatabaseNotFoundException, TableNotFoundException;
 
-    @Transactional(readOnly = true)
+    /**
+     * Find a table in the metadata database by database id and table name.
+     *
+     * @param databaseId   The database id.
+     * @param internalName The table name.
+     * @return The table, if successful.
+     * @throws DatabaseNotFoundException The database was not found in the metadata database.
+     * @throws TableNotFoundException    The table was not found in the metadata database.
+     */
     Table find(Long databaseId, String internalName) throws DatabaseNotFoundException, TableNotFoundException;
 
     /**
@@ -44,16 +52,17 @@ public interface TableService {
      * @throws QueryMalformedException   The query is malformed.
      * @throws DatabaseNotFoundException The database is not found.
      * @throws TableNotFoundException    The table is not found.
+     * @throws QueryStoreException       The query store failed.
      */
     List<TableHistoryDto> findHistory(Long databaseId, Long tableId, Principal principal)
-            throws DatabaseNotFoundException, QueryMalformedException, TableNotFoundException,
-            DatabaseConnectionException, QueryStoreException, UserNotFoundException;
+            throws DatabaseNotFoundException, TableNotFoundException, QueryStoreException, QueryMalformedException;
 
     /**
      * Select all tables from the metadata database.
      *
      * @param databaseId The database id.
      * @return The list of tables.
+     * @throws DatabaseNotFoundException The database was not found in the metadata database.
      */
     List<Table> findAll(Long databaseId) throws DatabaseNotFoundException;
 
@@ -68,14 +77,12 @@ public interface TableService {
      * @throws ImageNotSupportedException The image is not supported.
      * @throws DatabaseNotFoundException  The database was not found in the metadata database.
      * @throws TableNameExistsException   The table name exists already in this database.
-     * @throws ContainerNotFoundException The container was not found.
      * @throws TableMalformedException    The table seems malformed by the mapper.
      * @throws QueryMalformedException    The query to create the table is malformed.
      */
     Table createTable(Long databaseId, TableCreateDto createDto, Principal principal)
             throws ImageNotSupportedException, DatabaseNotFoundException, TableMalformedException,
-            TableNameExistsException, ContainerNotFoundException, UserNotFoundException, QueryMalformedException,
-            TableNotFoundException;
+            TableNameExistsException, QueryMalformedException, TableNotFoundException;
 
 
     /**
@@ -86,16 +93,14 @@ public interface TableService {
      * @param columnId   The column id.
      * @param updateDto  The update data containing unit and concept uris.
      * @return The updated table column, if successful.
-     * @throws TableNotFoundException     The table was not found in the metadata database.
-     * @throws DatabaseNotFoundException  The database was not found in the metadata database.
-     * @throws ContainerNotFoundException The container was not found.
-     * @throws TableMalformedException    The table seems malformed by the mapper.
-     * @throws QueryMalformedException    The query to update the table is malformed.
+     * @throws TableNotFoundException    The table was not found in the metadata database.
+     * @throws DatabaseNotFoundException The database was not found in the metadata database.
+     * @throws TableMalformedException   The table seems malformed by the mapper.
+     * @throws TableNotFoundException    The table is not found.
      */
     TableColumn update(Long databaseId, Long tableId, Long columnId, ColumnSemanticsUpdateDto updateDto,
                        String authorization) throws TableNotFoundException, DatabaseNotFoundException,
-            ContainerNotFoundException, TableMalformedException, SemanticEntityPersistException,
-            SemanticEntityNotFoundException, QueryMalformedException;
+            TableMalformedException;
 
     /**
      * Deletes a table from the database in the metadata database and data database.

@@ -74,11 +74,6 @@ public class ViewEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "405",
-                    description = "Find views is not permitted",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<List<ViewBriefDto>> findAll(@NotNull @PathVariable("databaseId") Long databaseId,
                                                       Principal principal) throws DatabaseNotFoundException,
@@ -172,21 +167,21 @@ public class ViewEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ViewDto.class))}),
-            @ApiResponse(responseCode = "404",
-                    description = "Database, view or user could not be found",
+            @ApiResponse(responseCode = "403",
+                    description = "Find view is not permitted",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "405",
-                    description = "Find view is not permitted",
+            @ApiResponse(responseCode = "404",
+                    description = "Database, view or user could not be found",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<ViewDto> find(@NotNull @PathVariable("databaseId") Long databaseId,
                                         @NotNull @PathVariable("viewId") Long viewId,
-                                        Principal principal) throws DatabaseNotFoundException,
-            NotAllowedException, ViewNotFoundException, UserNotFoundException {
+                                        Principal principal) throws DatabaseNotFoundException, ViewNotFoundException,
+            UserNotFoundException {
         log.debug("endpoint find view, databaseId={}, viewId={}, {}", databaseId, viewId, PrincipalUtil.formatForDebug(principal));
         final Database database = databaseService.find(databaseId);
         log.trace("find view for database {}", database);
@@ -209,13 +204,8 @@ public class ViewEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "401",
-                    description = "Credentials missing",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "403",
-                    description = "Credentials missing",
+                    description = "Deletion not allowed",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -243,8 +233,8 @@ public class ViewEndpoint {
     public ResponseEntity<?> delete(@NotNull @PathVariable("databaseId") Long databaseId,
                                     @NotNull @PathVariable("viewId") Long viewId,
                                     @NotNull Principal principal) throws DatabaseNotFoundException,
-            ViewNotFoundException, UserNotFoundException, DatabaseConnectionException,
-            ViewMalformedException, QueryMalformedException, NotAllowedException {
+            ViewNotFoundException, UserNotFoundException, DatabaseConnectionException, ViewMalformedException,
+            QueryMalformedException, NotAllowedException {
         log.debug("endpoint delete view, databaseId={}, viewId={}, {}", databaseId, viewId, PrincipalUtil.formatForDebug(principal));
         /* check */
         final Database database = databaseService.find(databaseId);
@@ -272,13 +262,8 @@ public class ViewEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "401",
-                    description = "Credentials missing",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "403",
-                    description = "Credentials missing",
+                    description = "View data not allowed",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -286,37 +271,7 @@ public class ViewEndpoint {
                     description = "Database, view, container or user could not be found",
                     content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "405",
-                    description = "Find data is not permitted",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "417",
-                    description = "Parsing of resulting columns failed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "423",
-                    description = "Find data resulted in an invalid query statement",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "501",
-                    description = "Image is not supported",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "503",
-                    description = "Connection to the database failed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "504",
-                    description = "Query store failed to query view data",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                            schema = @Schema(implementation = ApiErrorDto.class))})
     })
     public ResponseEntity<QueryResultDto> data(@NotNull @PathVariable("databaseId") Long databaseId,
                                                @NotNull @PathVariable("viewId") Long viewId,
@@ -324,8 +279,7 @@ public class ViewEndpoint {
                                                @RequestParam(required = false) Long page,
                                                @RequestParam(required = false) Long size)
             throws DatabaseNotFoundException, NotAllowedException, ViewNotFoundException, PaginationException,
-            QueryStoreException, DatabaseConnectionException, TableMalformedException, QueryMalformedException,
-            ImageNotSupportedException, ColumnParseException, UserNotFoundException, ContainerNotFoundException, ViewMalformedException {
+            TableMalformedException, QueryMalformedException, UserNotFoundException {
         log.debug("endpoint find view data, databaseId={}, viewId={}, page={}, size={}, {}", databaseId, viewId, page, size, PrincipalUtil.formatForDebug(principal));
         /* check */
         endpointValidator.validateDataParams(page, size);
@@ -354,12 +308,38 @@ public class ViewEndpoint {
     @Transactional(readOnly = true)
     @Observed(name = "dbr_view_data_count")
     @Operation(summary = "Find view data count", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Count data successfully",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = Long.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Pagination not in valid range or find data query is malformed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Count data not allowed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Database, view, container or user could not be found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "409",
+                    description = "Could not count query data",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))})
+    })
     public ResponseEntity<Long> count(@NotNull @PathVariable("databaseId") Long databaseId,
                                       @NotNull @PathVariable("viewId") Long viewId,
                                       Principal principal)
-            throws DatabaseNotFoundException, ViewNotFoundException, QueryStoreException, DatabaseConnectionException,
-            TableMalformedException, QueryMalformedException, ImageNotSupportedException, UserNotFoundException,
-            ContainerNotFoundException {
+            throws DatabaseNotFoundException, ViewNotFoundException, QueryStoreException, TableMalformedException,
+            QueryMalformedException, ImageNotSupportedException, UserNotFoundException {
         log.debug("endpoint find view data count, databaseId={}, viewId={}, {}", databaseId, viewId, PrincipalUtil.formatForDebug(principal));
         /* find */
         databaseService.find(databaseId);

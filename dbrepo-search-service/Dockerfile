@@ -27,4 +27,6 @@ ENV LOG_LEVEL=info
 RUN chown -R alpine:alpine ./
 USER alpine
 
+EXPOSE 4000
+
 ENTRYPOINT ["sh", "./scripts/docker-entrypoint.sh"]

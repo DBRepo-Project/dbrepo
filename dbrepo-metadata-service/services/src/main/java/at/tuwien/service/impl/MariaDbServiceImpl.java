@@ -118,10 +118,8 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
 
     @Override
     @Transactional
-    public Database create(DatabaseCreateDto createDto, Principal principal)
-            throws ImageNotSupportedException, ContainerNotFoundException, DatabaseMalformedException, AmqpException,
-            ContainerConnectionException, UserNotFoundException, DatabaseNameExistsException,
-            DatabaseConnectionException, QueryMalformedException, KeycloakRemoteException, AccessDeniedException {
+    public Database create(DatabaseCreateDto createDto, Principal principal) throws ContainerNotFoundException,
+            DatabaseMalformedException, UserNotFoundException, QueryMalformedException {
         /* start the object */
         final Database database = databaseMapper.databaseCreateDtoToDatabase(createDto);
         final Container container = containerService.find(database.getCid());
@@ -145,7 +143,7 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
             preparedStatement3.executeUpdate();
         } catch (SQLException e) {
             log.error("Failed to create database/-user: {}", e.getMessage());
-            throw new DatabaseMalformedException("Failed to create database/-user", e);
+            throw new DatabaseMalformedException("Failed to create database/-user: " + e.getMessage(), e);
         } finally {
             dataSource.close();
         }
@@ -223,7 +221,7 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         final Database database = findById(databaseId);
         final List<Table> diffTables;
         final List<View> diffViews;
-        final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(), database.getContainer());
+        final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(), database.getContainer(), database);
         try {
             final Connection connection = dataSource.getConnection();
             final PreparedStatement preparedStatement0 = databaseMapper.databaseToDatabaseMetadata(connection, database);
@@ -268,7 +266,9 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
                     log.info("Enabled system-versioning for table with name {}", table.getInternalName());
                 }
                 final PreparedStatement preparedStatement2 = queryMapper.databaseToDatabaseConstraintMetadata(connection, table.getDatabase().getInternalName(), table.getInternalName());
-                table.setConstraints(resultSetTableToObtainedConstraintsMetadata(preparedStatement2.executeQuery(), table));
+                table.setConstraints(resultSetTableToObtainedConstraintsMetadata(preparedStatement2.executeQuery()));
+                final PreparedStatement preparedStatement3 = tableMapper.tableToCreateHistoryViewRawQuery(connection, table);
+                preparedStatement3.executeUpdate();
                 database.getTables().add(table);
             }
         } catch (SQLException e) {
@@ -298,8 +298,7 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
     }
 
     @Transactional
-    public Constraints resultSetTableToObtainedConstraintsMetadata(ResultSet resultSet, Table table)
-            throws SQLException {
+    public Constraints resultSetTableToObtainedConstraintsMetadata(ResultSet resultSet) throws SQLException {
         final Set<String> checks = new LinkedHashSet<>();
         final List<Unique> uniques = new LinkedList<>();
         final List<ForeignKey> foreignKeys = new LinkedList<>();

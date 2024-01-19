@@ -8,12 +8,12 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`dbrepo/authentication-service:1.4`](https://hub.docker.com/r/dbrepo/authentication-service)
+    Image: [`dbrepo/authentication-service:$TAG`](https://hub.docker.com/r/dbrepo/authentication-service)
 
     * Ports: 8080/tcp
-    * Admin Console: `http://<hostname>:8080/api/auth/admin/`
     * Health: `http://<hostname>:8080/api/auth/health`
     * Prometheus: `http://<hostname>:8080/api/auth/metrics`
+    * UI: `http://<hostname>/api/auth/admin/`
 
 ## Overview
 

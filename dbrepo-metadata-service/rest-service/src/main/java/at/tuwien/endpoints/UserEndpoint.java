@@ -154,20 +154,20 @@ public class UserEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = UserDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Find user is not permitted",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "404",
                     description = "User was not found",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "405",
-                    description = "Find user is not permitted",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<UserDto> find(@NotNull @PathVariable("id") UUID id,
-                                        @NotNull Principal principal) throws UserNotFoundException, NotAllowedException,
-            KeycloakRemoteException, AccessDeniedException {
+                                        @NotNull Principal principal) throws UserNotFoundException,
+            NotAllowedException {
         log.debug("endpoint find a user, id={}, {}", id, PrincipalUtil.formatForDebug(principal));
         /* check */
         final User user = userService.find(id);
@@ -196,13 +196,23 @@ public class UserEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = UserDto.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Modify user query is malformed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Modify user is not permitted",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "404",
                     description = "User attribute was not found",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "405",
-                    description = "Modify user is not permitted",
+                    description = "Foreign user modification",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -210,8 +220,7 @@ public class UserEndpoint {
     public ResponseEntity<UserDto> modify(@NotNull @PathVariable("id") UUID id,
                                           @NotNull @Valid @RequestBody UserUpdateDto data,
                                           @NotNull Principal principal) throws UserNotFoundException,
-            ForeignUserException, UserAttributeNotFoundException, KeycloakRemoteException, AccessDeniedException,
-            QueryMalformedException, DatabaseMalformedException {
+            ForeignUserException, QueryMalformedException {
         log.debug("endpoint modify a user, id={}, data={}, {}", id, data, PrincipalUtil.formatForDebug(principal));
         /* check */
         if (!id.equals(UserUtil.getId(principal))) {
@@ -238,13 +247,18 @@ public class UserEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = UserDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Modify user is not permitted",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "404",
                     description = "User or user attribute was not found",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "405",
-                    description = "Modify user is not permitted",
+                    description = "Foreign user modification",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -278,13 +292,23 @@ public class UserEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = UserDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Modify is not allowed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "404",
                     description = "User was not found",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "405",
-                    description = "Modify user is not permitted",
+                    description = "Foreign user modification",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "503",
+                    description = "Authentication service does not respond",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -292,8 +316,7 @@ public class UserEndpoint {
     public ResponseEntity<?> password(@NotNull @PathVariable("id") UUID id,
                                       @NotNull @Valid @RequestBody UserPasswordDto data,
                                       @NotNull Principal principal)
-            throws UserNotFoundException, ForeignUserException, KeycloakRemoteException, AccessDeniedException,
-            QueryMalformedException, DatabaseMalformedException {
+            throws UserNotFoundException, ForeignUserException, KeycloakRemoteException, AccessDeniedException {
         log.debug("endpoint modify a user password, id={}, data={}, {}", id, data, PrincipalUtil.formatForDebug(principal));
         /* check */
         if (!id.equals(UserUtil.getId(principal))) {

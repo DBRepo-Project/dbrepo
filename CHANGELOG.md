@@ -5,7 +5,43 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [[1.3]()] - 2023-06-01
+## [[1.4.0]()] - 2024-01-19
+
+### Added
+
+- Increased DOI system support: tables, views, subsets and databases. Also allowing multiple identifiers per object.
+- Extensive documentation directly in the repository with 
+  usage [examples](https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.4.0/usage-overview/).
+- Identifier can now be crawled in the UI via JSON-LD (Google Datasets).
+- OpenAIRE Graph protocol for OAI-PMH.
+- Added a data service that inserts data from the Broker Service.
+- Added search service for searching the search-db.
+- Added storage service for S3-compatible file uploads and downloads.
+
+### Changed
+
+- Changed the model to one isolated database within a single database container (by default), additional containers
+  can still be created and registered.
+- Refactored the Hibernate mappings extensively, simplifying the save operations.
+- Using only one OpenSearch index `database` containing all metadata mirrored from the metadata database.
+- Broker service has only one exchange `dbrepo` (topic) and one queue `dbrepo` (quorum), the delivery of tuples is
+  managed via routing keys according to the hierarchy, e.g. `dbrepo.database_name_rand.table_name`.
+
+### Fixed
+
+- Runtime dependencies for creating the OpenSearch index.
+- Using Testcontainer fixtures where possible for integration tests.
+- Fixed the wildcard search with own search service that can do faceted browsing.
+
+### Removed
+
+- The container service, merged into metadata service.
+- The database service, merged into metadata service.
+- The identifier service, merged into metadata service.
+- The query service, merged into metadata service.
+- The table service, merged into metadata service.
+
+## [[1.3.0](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags/v1.3.0)] - 2023-06-01
 
 ### Added
 

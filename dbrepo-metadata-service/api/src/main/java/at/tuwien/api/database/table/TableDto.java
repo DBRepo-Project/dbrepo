@@ -49,7 +49,7 @@ public class TableDto {
     @Field(name = "internal_name", type = FieldType.Keyword)
     private String internalName;
 
-    @Field(name = "identifiers", type = FieldType.Nested)
+    @Field(name = "identifiers", type = FieldType.Object)
     private List<IdentifierDto> identifiers;
 
     @NotNull
@@ -64,11 +64,11 @@ public class TableDto {
     private UUID createdBy;
 
     @NotNull(message = "creator is required")
-    @Field(name = "creator", type = FieldType.Nested)
+    @org.springframework.data.annotation.Transient
     private UserDto creator;
 
     @NotNull(message = "owner is required")
-    @Field(name = "owner", type = FieldType.Nested)
+    @Field(name = "owner", type = FieldType.Object)
     private UserDto owner;
 
     @NotBlank(message = "queueName is required")
@@ -105,9 +105,10 @@ public class TableDto {
     private Instant created;
 
     @NotNull(message = "columns are required")
+    @Field(name = "columns", type = FieldType.Object)
     private List<ColumnDto> columns;
 
-    @Field(name = "constraints", type = FieldType.Nested)
+    @Field(name = "constraints", type = FieldType.Object)
     private ConstraintsDto constraints;
 
 }

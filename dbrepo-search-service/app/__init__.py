@@ -52,7 +52,7 @@ def create_app(config_class=Config):
             {
                 "endpoint": "api-search",
                 "route": "/api-search.json",
-                "rule_filter": lambda rule: rule.endpoint.startswith('actuator'),
+                "rule_filter": lambda rule: True,
                 "model_filter": lambda tag: True,  # all in
             }
         ],
@@ -66,7 +66,7 @@ def create_app(config_class=Config):
         "info": {
             "title": "Database Repository Search Service API",
             "description": "Service that searches the search database",
-            "version": "1.3.0",
+            "version": "$TAG",
             "contact": {
                 "name": "Prof. Andreas Rauber",
                 "email": "andreas.rauber@tuwien.ac.at"

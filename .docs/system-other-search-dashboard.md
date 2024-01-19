@@ -11,7 +11,7 @@ author: Martin Weise
     Image: [`opensearchproject/opensearch-dashboards:2.10.0`](https://hub.docker.com/r/opensearchproject/opensearch-dashboards)
 
     * Ports: 5601/tcp
-    * UI: `http://:5601/admin/dashboard/`
+    * UI: `http://<hostname>/admin/dashboard/`
 
 ## Overview
 

@@ -63,20 +63,13 @@ public interface DatabaseService {
      *
      * @param createDto The metadata.
      * @return The database, if successful.
-     * @throws ImageNotSupportedException   The image is not supported.
-     * @throws ContainerNotFoundException   The container was not found in the metadata database.
-     * @throws DatabaseMalformedException   The query string is malformed.
-     * @throws AmqpException                The exchange could not be created.
-     * @throws ContainerConnectionException The connection to the container could not be established.
-     * @throws UserNotFoundException        The current user could not be loaded in the metadata database.
-     * @throws DatabaseNameExistsException  A database with this name already exists in the container.
-     * @throws DatabaseConnectionException  The connection to the database could not be established by the database connector.
-     * @throws QueryMalformedException      The mapped creation query resulted in an invalid query statement and thus was rejected by the database engine.
+     * @throws ContainerNotFoundException The container was not found in the metadata database.
+     * @throws DatabaseMalformedException The query string is malformed.
+     * @throws UserNotFoundException      The current user could not be loaded in the metadata database.
+     * @throws QueryMalformedException    The mapped creation query resulted in an invalid query statement and thus was rejected by the database engine.
      */
-    Database create(DatabaseCreateDto createDto, Principal principal) throws ImageNotSupportedException,
-            ContainerNotFoundException, DatabaseMalformedException, AmqpException, ContainerConnectionException,
-            UserNotFoundException, DatabaseNameExistsException, DatabaseConnectionException, QueryMalformedException,
-            KeycloakRemoteException, AccessDeniedException;
+    Database create(DatabaseCreateDto createDto, Principal principal) throws ContainerNotFoundException,
+            DatabaseMalformedException, UserNotFoundException, QueryMalformedException;
 
     /**
      * Updates the user's password.

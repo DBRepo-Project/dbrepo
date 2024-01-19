@@ -16,6 +16,7 @@ import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.DataDbSidecarGateway;
 import at.tuwien.mapper.QueryMapper;
+import at.tuwien.mapper.ViewMapper;
 import at.tuwien.querystore.Query;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.QueryService;
@@ -51,6 +52,7 @@ import java.util.List;
 public class QueryServiceImpl extends HibernateConnector implements QueryService {
 
     private final S3Config s3Config;
+    private final ViewMapper viewMapper;
     private final MinioClient minioClient;
     private final QueryMapper queryMapper;
     private final StoreService storeService;
@@ -59,10 +61,11 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     private final DataDbSidecarGateway dataDbSidecarGateway;
 
     @Autowired
-    public QueryServiceImpl(S3Config s3Config, MinioClient minioClient, QueryMapper queryMapper,
+    public QueryServiceImpl(S3Config s3Config, ViewMapper viewMapper, MinioClient minioClient, QueryMapper queryMapper,
                             TableService tableService, DatabaseService databaseService, StoreService storeService,
                             DataDbSidecarGateway dataDbSidecarGateway) {
         this.s3Config = s3Config;
+        this.viewMapper = viewMapper;
         this.minioClient = minioClient;
         this.queryMapper = queryMapper;
         this.tableService = tableService;
@@ -76,8 +79,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     public QueryResultDto execute(Long databaseId, ExecuteStatementDto statement, Principal principal, Long page,
                                   Long size, SortType sortDirection, String sortColumn)
             throws DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException, QueryStoreException,
-            ColumnParseException, UserNotFoundException, DatabaseConnectionException, TableMalformedException,
-            KeycloakRemoteException, AccessDeniedException, QueryNotFoundException {
+            ColumnParseException, UserNotFoundException, TableMalformedException, QueryNotFoundException {
         if (statement.getStatement().contains(";")) {
             log.error("Failed to execute query: contains ';'");
             throw new QueryMalformedException("Failed to execute query: contains ';'");
@@ -137,7 +139,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             return connection.prepareStatement(statement);
         } catch (SQLException e) {
             log.error("Failed to prepare statement: {}", e.getMessage());
-            throw new QueryMalformedException("Failed to prepare statement", e);
+            throw new QueryMalformedException("Failed to prepare statement: " + e.getMessage(), e);
         }
     }
 
@@ -156,7 +158,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             return queryMapper.resultListToQueryResultDto(columns, resultSet);
         } catch (SQLException e) {
             log.error("Failed to execute and map time-versioned query: {}", e.getMessage());
-            throw new TableMalformedException("Failed to execute and map time-versioned query", e);
+            throw new TableMalformedException("Failed to execute and map time-versioned query: " + e.getMessage(), e);
         } finally {
             dataSource.close();
         }
@@ -176,7 +178,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             return queryMapper.resultSetToNumber(resultSet);
         } catch (SQLException e) {
             log.error("Failed to map object: {}", e.getMessage());
-            throw new TableMalformedException("Failed to map object", e);
+            throw new TableMalformedException("Failed to map object: " + e.getMessage(), e);
         } finally {
             dataSource.close();
         }
@@ -185,21 +187,35 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     @Override
     @Transactional(readOnly = true)
     public QueryResultDto tableFindAll(Long databaseId, Long tableId, Instant timestamp, Long page,
-                                       Long size, Principal principal) throws TableNotFoundException, DatabaseNotFoundException,
-            ImageNotSupportedException, TableMalformedException, QueryMalformedException {
+                                       Long size, Principal principal) throws TableNotFoundException,
+            DatabaseNotFoundException, TableMalformedException, QueryMalformedException, ImageNotSupportedException {
         /* find */
         final Table table = tableService.find(databaseId, tableId);
         /* run query */
-        String statement = queryMapper.tableToRawFindAllQuery(table, timestamp, size, page);
-        return executeNonPersistent(databaseId, statement, table.getColumns());
+        return executeNonPersistent(databaseId, queryMapper.tableToRawFindAllQuery(table, timestamp, size, page),
+                table.getColumns());
     }
 
     @Override
     @Transactional(readOnly = true)
     public QueryResultDto viewFindAll(Long databaseId, View view, Long page, Long size, Principal principal)
             throws DatabaseNotFoundException, QueryMalformedException, TableMalformedException {
+        /* find */
+        final Database database = databaseService.find(databaseId);
         /* run query */
-        return executeNonPersistent(databaseId, view.getQuery(), view.getColumns());
+        final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(),
+                database.getContainer(), database);
+        try {
+            final Connection connection = dataSource.getConnection();
+            final PreparedStatement preparedStatement = viewMapper.viewToSelectAll(connection, view, page, size);
+            final ResultSet resultSet = preparedStatement.executeQuery();
+            return queryMapper.resultListToQueryResultDto(view.getColumns(), resultSet);
+        } catch (SQLException e) {
+            log.error("Failed to map object: {}", e.getMessage());
+            throw new TableMalformedException("Failed to map object: " + e.getMessage(), e);
+        } finally {
+            dataSource.close();
+        }
     }
 
     @Override
@@ -215,9 +231,8 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
 
     @Override
     @Transactional
-    public Long viewCount(Long databaseId, View view, Principal principal)
-            throws DatabaseNotFoundException, ImageNotSupportedException,
-            QueryMalformedException, QueryStoreException, TableMalformedException {
+    public Long viewCount(Long databaseId, View view, Principal principal) throws DatabaseNotFoundException,
+            ImageNotSupportedException, QueryMalformedException, QueryStoreException, TableMalformedException {
         /* find */
         final String statement = queryMapper.viewToRawCountAllQuery(view);
         return executeCountNonPersistent(databaseId, statement);
@@ -241,14 +256,15 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             log.error("Failed to execute query and/or export file: {}", e.getMessage());
-            throw new FileStorageException("Failed to execute query and/or export file", e);
+            throw new FileStorageException("Failed to execute query and/or export file: " + e.getMessage(), e);
         } finally {
             dataSource.close();
         }
         return retrieveBlobAsResource(database.getContainer(), filename);
     }
 
-    private ExportResource retrieveBlobAsResource(Container container, String filename) throws DataDbSidecarException, FileStorageException {
+    private ExportResource retrieveBlobAsResource(Container container, String filename) throws DataDbSidecarException,
+            FileStorageException {
         /* upload from sidecar into blob storage */
         dataDbSidecarGateway.exportFile(container.getSidecarHost(), container.getSidecarPort(), filename);
         /* export file from blob storage */
@@ -262,8 +278,8 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         } catch (ServerException | InsufficientDataException | ErrorResponseException | IOException |
                  NoSuchAlgorithmException | InvalidKeyException | InvalidResponseException | XmlParserException |
                  InternalException e) {
-            log.error("Failed to find object {} in bucket {}", filename, s3Config.getS3ExportBucket());
-            throw new FileStorageException("Failed to find object " + filename + " in bucket " + s3Config.getS3ExportBucket());
+            log.error("Failed to find object {} in bucket {}: {}", filename, s3Config.getS3ExportBucket(), e.getMessage());
+            throw new FileStorageException("Failed to find object " + filename + " in bucket " + s3Config.getS3ExportBucket() + ": " + e.getMessage());
         }
     }
 
@@ -271,14 +287,14 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     @Transactional(readOnly = true)
     public ExportResource findOne(Long databaseId, Long queryId, Principal principal)
             throws DatabaseNotFoundException, ImageNotSupportedException, FileStorageException, QueryStoreException,
-            QueryNotFoundException, QueryMalformedException, DatabaseConnectionException, UserNotFoundException, DataDbSidecarException {
+            QueryNotFoundException, QueryMalformedException, DataDbSidecarException {
         return findOne(databaseId, queryId, principal, RandomStringUtils.randomAlphabetic(40) + ".csv");
     }
 
     @Transactional(readOnly = true)
     public ExportResource findOne(Long databaseId, Long queryId, Principal principal, String filename)
             throws DatabaseNotFoundException, ImageNotSupportedException, FileStorageException, QueryStoreException,
-            QueryNotFoundException, QueryMalformedException, DatabaseConnectionException, UserNotFoundException, DataDbSidecarException {
+            QueryNotFoundException, QueryMalformedException, DataDbSidecarException {
         /* find */
         final Database database = databaseService.find(databaseId);
         final Query query = storeService.findOne(databaseId, queryId, principal);
@@ -291,7 +307,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             log.error("Failed to execute query: {}", e.getMessage());
-            throw new QueryStoreException("Failed to execute query", e);
+            throw new QueryStoreException("Failed to execute query: " + e.getMessage(), e);
         } finally {
             dataSource.close();
         }
@@ -316,13 +332,13 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             preparedStatement.executeUpdate();
         } catch (DateTimeParseException e) {
             log.error("Failed to parse date: {}", e.getMessage());
-            throw new TableMalformedException("Failed to parse date", e);
+            throw new TableMalformedException("Failed to parse date: " + e.getMessage(), e);
         } catch (NumberFormatException e) {
             log.error("Failed to parse number: {}", e.getMessage());
-            throw new TableMalformedException("Failed to parse number", e);
+            throw new TableMalformedException("Failed to parse number: " + e.getMessage(), e);
         } catch (Exception e) {
             log.error("Database failed to accept tuple: {}", e.getMessage());
-            throw new TableMalformedException("Database failed to accept tuple", e);
+            throw new TableMalformedException("Database failed to accept tuple: " + e.getMessage(), e);
         } finally {
             dataSource.close();
         }
@@ -332,7 +348,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     @Transactional
     public void delete(Long databaseId, Long tableId, TableCsvDeleteDto data, Principal principal)
             throws ImageNotSupportedException, TableMalformedException, DatabaseNotFoundException,
-            TableNotFoundException, DatabaseConnectionException, QueryMalformedException, UserNotFoundException {
+            TableNotFoundException, QueryMalformedException {
         /* find */
         final Database database = databaseService.find(databaseId);
         final Table table = tableService.find(databaseId, tableId);
@@ -347,7 +363,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             log.error("Failed to delete tuples: {}", e.getMessage());
-            throw new TableMalformedException("Failed to delete tuples", e);
+            throw new TableMalformedException("Failed to delete tuples: " + e.getMessage(), e);
         } finally {
             dataSource.close();
         }
@@ -356,8 +372,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     @Override
     @Transactional
     public void insert(Long databaseId, Long tableId, ImportDto data, Principal principal)
-            throws TableMalformedException, DatabaseNotFoundException, TableNotFoundException, QueryMalformedException,
-            DataDbSidecarException {
+            throws TableMalformedException, DatabaseNotFoundException, TableNotFoundException, DataDbSidecarException {
         /* find */
         final Database database = databaseService.find(databaseId);
         final Table table = tableService.find(databaseId, tableId);
@@ -370,8 +385,8 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             final Connection connection = dataSource.getConnection();
             queryMapper.importCsvQuery(connection, table, data);
         } catch (SQLException e) {
-            log.error("Failed to import .csv: {}", e.getMessage());
-            throw new TableMalformedException("Failed to import .csv", e);
+            log.error("Failed to import csv: {}", e.getMessage());
+            throw new TableMalformedException("Failed to import csv: " + e.getMessage(), e);
         } finally {
             dataSource.close();
         }

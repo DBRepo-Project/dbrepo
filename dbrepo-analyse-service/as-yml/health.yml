@@ -1,21 +1,18 @@
+tags:
+  - health-endpoint
 summary: "Check if application is running"
 description: "This is a simple API which checks if the application is healthy"
 consumes:
-- "application/json"
+  - "application/json"
 produces:
-- "application/json"
-parameters:
-- in: "body"
-  name: "body"
-  description: "to-do description"
-  required: true
-  schema:
-    type: "object"
-    properties:
-      status:
-        type: "string" 
-        example : "UP"
+  - "application/json"
 responses:
-  200: 
+  200:
     description: "OK"
+    schema:
+      type: "object"
+      properties:
+        status:
+          type: "string"
+          example: "UP"
     

@@ -28,7 +28,8 @@
                 Table Owner
               </v-list-item-title>
               <v-list-item-content>
-                <span v-if="table && table.creator">{{ formatCreator(table.owner) }} <span v-if="is_owner(table)" style="flex:none;">&nbsp;(you)</span></span>
+                <v-skeleton-loader v-if="!table" type="text" class="skeleton-small" />
+                <UserBadge v-if="table" :user="table.creator" :other-user="user" />
               </v-list-item-content>
               <v-list-item-title v-if="table && table.created" class="mt-2">
                 Table Creation
@@ -105,17 +106,18 @@
   </div>
 </template>
 <script>
-import TableToolbar from '@/components/TableToolbar'
-import UserMapper from '@/api/user.mapper'
+import TableToolbar from '@/components/table/TableToolbar.vue'
 import Select from '@/components/identifier/Select'
 import Summary from '@/components/identifier/Summary'
 import { formatTimestampUTCLabel } from '@/utils'
+import UserBadge from '@/components/UserBadge.vue'
 
 export default {
   components: {
     Summary,
     Select,
-    TableToolbar
+    TableToolbar,
+    UserBadge
   },
   data () {
     return {
@@ -226,15 +228,6 @@ export default {
     }
   },
   methods: {
-    formatCreator (creator) {
-      return UserMapper.userToFullName(creator)
-    },
-    is_owner (table) {
-      if (!this.user) {
-        return false
-      }
-      return table.owner.id === this.user.id
-    },
     amqpBadgeText (port) {
       if (port === 5672) {
         return 'insecure'
@@ -263,5 +256,17 @@ export default {
 <style>
 .v-card__text {
   font-size: initial;
+}
+.skeleton-large > div {
+  width: 400px !important;
+}
+.skeleton-medium > div {
+  width: 200px !important;
+}
+.skeleton-small > div {
+  width: 100px !important;
+}
+.skeleton-xsmall > div {
+  width: 50px !important;
 }
 </style>

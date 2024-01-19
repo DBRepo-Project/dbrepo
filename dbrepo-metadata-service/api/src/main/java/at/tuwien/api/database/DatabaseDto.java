@@ -62,10 +62,10 @@ public class DatabaseDto {
     @Field(name = "description", type = FieldType.Text)
     private String description;
 
-    @Field(name = "tables", type = FieldType.Nested)
+    @Field(name = "tables", type = FieldType.Object)
     private List<TableDto> tables;
 
-    @Field(name = "views", type = FieldType.Nested)
+    @Field(name = "views", type = FieldType.Object)
     private List<ViewDto> views;
 
     @JsonProperty("is_public")
@@ -73,26 +73,28 @@ public class DatabaseDto {
     @Field(name = "is_public", type = FieldType.Boolean)
     private Boolean isPublic;
 
-    @Field(name = "container", type = FieldType.Nested)
+    @Field(name = "container", type = FieldType.Object)
     private ContainerDto container;
 
+    @org.springframework.data.annotation.Transient
     private List<DatabaseAccessDto> accesses;
 
-    @Field(name = "identifiers", type = FieldType.Nested)
+    @Field(name = "identifiers", type = FieldType.Object)
     private List<IdentifierDto> identifiers;
 
-    @Field(name = "subsets", type = FieldType.Nested)
+    @Field(name = "subsets", type = FieldType.Object)
     private List<IdentifierDto> subsets;
 
     @NotNull
+    @org.springframework.data.annotation.Transient
     private UserDto creator;
 
     @NotNull
-    @Field(name = "contact", type = FieldType.Nested)
+    @Field(name = "contact", type = FieldType.Object)
     private UserDto contact;
 
     @NotNull
-    @Field(name = "owner", type = FieldType.Nested)
+    @Field(name = "owner", type = FieldType.Object)
     private UserDto owner;
 
     @NotNull

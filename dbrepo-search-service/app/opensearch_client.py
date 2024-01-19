@@ -211,15 +211,9 @@ def general_search(type=None, search_term=None, t1=None, t2=None, field_value_pa
             else:
                 if '.' in key:
                     logging.debug(f'key {key} is nested: use nested query')
-                    index = key.split('.')[0]
                     musts.append({
-                        "nested": {
-                            "path": index,
-                            "query": {
-                                "term": {
-                                    key: value
-                                }
-                            }
+                        "match": {
+                            key: value
                         }
                     })
                 else:

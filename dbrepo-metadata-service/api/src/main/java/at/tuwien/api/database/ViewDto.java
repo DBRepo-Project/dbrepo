@@ -49,7 +49,7 @@ public class ViewDto {
     @Field(name = "name", type = FieldType.Keyword)
     private String name;
 
-    @Field(name = "identifiers", type = FieldType.Nested)
+    @Field(name = "identifiers", type = FieldType.Object)
     private List<IdentifierDto> identifiers;
 
     @NotBlank
@@ -90,6 +90,7 @@ public class ViewDto {
     private UUID createdBy;
 
     @NotNull
+    @org.springframework.data.annotation.Transient
     private UserDto creator;
 
     @NotNull(message = "columns are required")

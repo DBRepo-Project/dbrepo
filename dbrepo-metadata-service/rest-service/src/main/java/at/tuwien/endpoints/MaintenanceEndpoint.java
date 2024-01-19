@@ -1,5 +1,6 @@
 package at.tuwien.endpoints;
 
+import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.api.maintenance.BannerMessageBriefDto;
 import at.tuwien.api.maintenance.BannerMessageCreateDto;
 import at.tuwien.api.maintenance.BannerMessageDto;
@@ -69,6 +70,11 @@ public class MaintenanceEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = BannerMessageDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Could not find message",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<BannerMessageDto> find(@NotNull @PathVariable("id") Long messageId)
             throws BannerMessageNotFoundException {
@@ -131,7 +137,7 @@ public class MaintenanceEndpoint {
                     description = "Could not find message",
                     content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = BannerMessageNotFoundException.class))}),
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<BannerMessageDto> update(@NotNull @PathVariable("id") Long messageId,
                                                         @Valid @RequestBody BannerMessageUpdateDto data)
@@ -155,7 +161,7 @@ public class MaintenanceEndpoint {
                     description = "Could not find message",
                     content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = BannerMessageNotFoundException.class))}),
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<?> delete(@NotNull @PathVariable("id") Long messageId)
             throws BannerMessageNotFoundException {

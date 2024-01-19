@@ -1,7 +1,7 @@
 FROM python:3.9-slim
 MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
 
-RUN apt update && apt install -y curl
+RUN apt update && apt install -y curl gcc libmariadb-dev
 
 WORKDIR /app
 

@@ -84,16 +84,6 @@ public class ContainerEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ContainerBriefDto.class))}),
-            @ApiResponse(responseCode = "502",
-                    description = "Failed to connect",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "404",
-                    description = "Container image or user could not be found",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "404",
                     description = "Container image or user could not be found",
                     content = {@Content(
@@ -126,24 +116,14 @@ public class ContainerEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ContainerDto.class))}),
-            @ApiResponse(responseCode = "502",
-                    description = "Failed to connect",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "404",
                     description = "Container image could not be found",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "502",
-                    description = "Connection to the container failed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<ContainerDto> findById(@NotNull @PathVariable("id") Long containerId)
-            throws  ContainerNotFoundException {
+            throws ContainerNotFoundException {
         log.debug("endpoint find container, id={}", containerId);
         final Container container = containerService.find(containerId);
         final ContainerDto dto = containerMapper.containerToContainerDto(container);
@@ -159,15 +139,9 @@ public class ContainerEndpoint {
     @Operation(summary = "Delete some container", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
-                    description = "Deleted container successfully",
-                    content = {@Content}),
-            @ApiResponse(responseCode = "409",
-                    description = "Container is still running",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "410",
-                    description = "Container is already removed",
+                    description = "Deleted container successfully"),
+            @ApiResponse(responseCode = "404",
+                    description = "Container not found",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),

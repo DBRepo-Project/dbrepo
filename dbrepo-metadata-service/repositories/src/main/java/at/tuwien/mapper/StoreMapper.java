@@ -12,6 +12,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.UUID;
 
 @Mapper(componentModel = "spring")
 public interface StoreMapper {
@@ -32,8 +33,8 @@ public interface StoreMapper {
         }
         try {
             final CallableStatement ps = connection.prepareCall(statement);
-            ps.setString(1, user.getUsername());
-            log.trace("param 1={}", user.getUsername());
+            ps.setString(1, String.valueOf(user.getId()));
+            log.trace("param 1={}", user.getId());
             ps.setString(2, data.getStatement());
             log.trace("param 2={}", data.getStatement());
             ps.setTimestamp(3, Timestamp.from(data.getTimestamp()));
@@ -99,7 +100,7 @@ public interface StoreMapper {
         return Query.builder()
                 .id(data.getLong(1))
                 .created(createdInst)
-                .createdBy(data.getString(3))
+                .createdBy(UUID.fromString(data.getString(3)))
                 .query(data.getString(4))
                 .queryHash(data.getString(5))
                 .resultHash(data.getString(6))

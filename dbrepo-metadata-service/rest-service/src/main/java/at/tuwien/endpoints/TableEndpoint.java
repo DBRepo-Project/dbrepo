@@ -68,13 +68,13 @@ public class TableEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             array = @ArraySchema(schema = @Schema(implementation = TableBriefDto.class)))}),
-            @ApiResponse(responseCode = "404",
-                    description = "Database could not be found",
+            @ApiResponse(responseCode = "403",
+                    description = "List tables not permitted",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "405",
-                    description = "List tables not permitted",
+            @ApiResponse(responseCode = "404",
+                    description = "Database could not be found",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -109,13 +109,13 @@ public class TableEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "404",
-                    description = "Database, container or user could not be found",
+            @ApiResponse(responseCode = "403",
+                    description = "Create table not permitted",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "405",
-                    description = "Create table not permitted",
+            @ApiResponse(responseCode = "404",
+                    description = "Database, container or user could not be found",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -124,23 +124,13 @@ public class TableEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "501",
-                    description = "Image is not supported",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "504",
-                    description = "Broker service failed to create queue",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<TableBriefDto> create(@NotNull @PathVariable("databaseId") Long databaseId,
                                                 @NotNull @Valid @RequestBody TableCreateDto createDto,
                                                 @NotNull Principal principal)
-            throws ImageNotSupportedException, DatabaseNotFoundException, TableMalformedException, AmqpException,
-            TableNameExistsException, ContainerNotFoundException, UserNotFoundException, QueryMalformedException,
-            NotAllowedException, AccessDeniedException, TableNotFoundException {
+            throws ImageNotSupportedException, DatabaseNotFoundException, TableMalformedException,
+            TableNameExistsException, QueryMalformedException, NotAllowedException, AccessDeniedException,
+            TableNotFoundException {
         log.debug("endpoint create table, databaseId={}, createDto={}, {}", databaseId, createDto, PrincipalUtil.formatForDebug(principal));
         /* checks */
         if (createDto.getName().isBlank()) {
@@ -177,8 +167,8 @@ public class TableEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "405",
-                    description = "Find table not permitted",
+            @ApiResponse(responseCode = "503",
+                    description = "Could not communicate with the broker service",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -207,9 +197,7 @@ public class TableEndpoint {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Delete table successfully",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = TableDto.class))}),
+                    content = {@Content}),
             @ApiResponse(responseCode = "400",
                     description = "Delete table query resulted in an invalid query statement",
                     content = {@Content(
@@ -224,29 +212,13 @@ public class TableEndpoint {
                     description = "Table, database or container could not be found",
                     content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "405",
-                    description = "Delete table not permitted",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "423",
-                    description = "Delete table resulted in an invalid state",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "501",
-                    description = "Image is not supported",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
+                            schema = @Schema(implementation = ApiErrorDto.class))})
     })
-    public ResponseEntity<Void> delete(@NotNull @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<?> delete(@NotNull @PathVariable("databaseId") Long databaseId,
                                        @NotNull @PathVariable("tableId") Long tableId,
                                        @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
-            DataProcessingException, ContainerNotFoundException, TableMalformedException, QueryMalformedException,
-            NotAllowedException {
+            TableMalformedException, QueryMalformedException, NotAllowedException {
         log.debug("endpoint delete table, databaseId={}, tableId={}, {}", databaseId, tableId, PrincipalUtil.formatForDebug(principal));
         final Table table = tableService.find(databaseId, tableId);
         /* roles */

@@ -15,39 +15,52 @@
           <v-list-item>
             <v-list-item-content>
               <v-list-item-title>
+                Subset Visibility
+              </v-list-item-title>
+              <v-list-item-content>
+                <v-skeleton-loader v-if="!database" type="text" class="skeleton-small" />
+                <span v-if="database" v-text="database.is_public ? 'Public' : 'Private'" />
+              </v-list-item-content>
+              <v-list-item-title>
+                Subset Creator
+              </v-list-item-title>
+              <v-list-item-content>
+                <v-skeleton-loader v-if="!subset" type="text" class="skeleton-small" />
+                <UserBadge v-if="subset" :user="subset.creator" :other-user="user" />
+              </v-list-item-content>
+              <v-list-item-title>
                 Subset Query
               </v-list-item-title>
               <v-list-item-content>
-                <pre>{{ subset.query }}</pre>
+                <v-skeleton-loader v-if="!subset" type="text" />
+                <pre v-if="subset">{{ subset.query }}</pre>
               </v-list-item-content>
               <v-list-item-title class="mt-2">
                 Subset Query Hash
               </v-list-item-title>
               <v-list-item-content>
-                <pre>sha256:{{ subset.query_hash }}</pre>
+                <v-skeleton-loader v-if="!subset" type="text" />
+                <pre v-if="subset">sha256:{{ subset.query_hash }}</pre>
               </v-list-item-content>
               <v-list-item-title class="mt-2">
                 Subset Creation
               </v-list-item-title>
               <v-list-item-content>
+                <v-skeleton-loader v-if="!executionUTC" type="text" class="skeleton-small" />
                 <span v-if="executionUTC">{{ executionUTC }}</span>
-              </v-list-item-content>
-              <v-list-item-title>
-                Subset Visibility
-              </v-list-item-title>
-              <v-list-item-content>
-                {{ database.is_public ? 'Public' : 'Private' }}
               </v-list-item-content>
               <v-list-item-title class="mt-2">
                 Subset Hash
               </v-list-item-title>
               <v-list-item-content>
+                <v-skeleton-loader v-if="!subset" type="text" />
                 <pre v-if="subset">{{ result_hash }}</pre>
               </v-list-item-content>
               <v-list-item-title class="mt-2">
                 Subset Count
               </v-list-item-title>
               <v-list-item-content>
+                <v-skeleton-loader v-if="!subset" type="text" class="skeleton-xsmall" />
                 <span v-if="subset">{{ subset.result_number }}</span>
               </v-list-item-content>
             </v-list-item-content>
@@ -84,17 +97,20 @@
 </template>
 <script>
 import Summary from '@/components/identifier/Summary'
-import SubsetToolbar from '@/components/SubsetToolbar'
+import SubsetToolbar from '@/components/query/SubsetToolbar.vue'
 import QueryService from '@/api/query.service'
 import Select from '@/components/identifier/Select'
 import { formatTimestampUTCLabel } from '@/utils'
+import UserMapper from '@/api/user.mapper'
+import UserBadge from '@/components/UserBadge.vue'
 
 export default {
   name: 'QueryShow',
   components: {
     Select,
     Summary,
-    SubsetToolbar
+    SubsetToolbar,
+    UserBadge
   },
   data () {
     return {
@@ -112,10 +128,7 @@ export default {
       downloadLoading: false,
       error: false,
       promises: [],
-      subset: {
-        query: null,
-        query_hash: null
-      }
+      subset: null
     }
   },
   computed: {
@@ -135,7 +148,7 @@ export default {
       if (!this.database || !this.database.subsets || this.database.subsets.length === 0) {
         return []
       }
-      return this.database.subsets
+      return this.database.subsets.filter(s => s.query_id === Number(this.$route.params.query_id))
     },
     hasIdentifier () {
       return this.identifiers.length > 0
@@ -194,6 +207,15 @@ export default {
         .finally(() => {
           this.loadingSubset = false
         })
+    },
+    isCreator (subset) {
+      if (!this.user) {
+        return false
+      }
+      return subset.creator.id === this.user.id
+    },
+    formatCreator (creator) {
+      return UserMapper.userToFullName(creator)
     }
   }
 }

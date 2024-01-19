@@ -50,7 +50,7 @@
 </template>
 <script>
 import TimeTravel from '@/components/dialogs/TimeTravel.vue'
-import TableToolbar from '@/components/TableToolbar.vue'
+import TableToolbar from '@/components/table/TableToolbar.vue'
 import TableService from '@/api/table.service'
 import { formatTimestampUTC, formatDateUTC, formatTimestamp, formatBinaryStream } from '@/utils'
 
@@ -66,7 +66,8 @@ export default {
       editTupleDialog: false,
       total: -1,
       footerProps: {
-        'items-per-page-options': [10, 20, 30, 40, 50]
+        showFirstLastPage: true,
+        itemsPerPageOptions: [10, 25, 50, 100]
       },
       downloadLoading: false,
       dateMenu: false,
