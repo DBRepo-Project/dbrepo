@@ -52,7 +52,7 @@ def create_app(config_class=Config):
             {
                 "endpoint": "api-search",
                 "route": "/api-search.json",
-                "rule_filter": lambda rule: rule.endpoint.startswith('actuator'),
+                "rule_filter": lambda rule: True,
                 "model_filter": lambda tag: True,  # all in
             }
         ],

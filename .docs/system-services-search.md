@@ -71,7 +71,7 @@ between 32 - 50 &deg;F"* instead.
 
 ## Examples
 
-See the [usage page](../usage-search).
+TBD
 
 ## Limitations
 

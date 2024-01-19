@@ -1,25 +1,27 @@
+tags:
+  - analyse-endpoint
 summary: "Determine primary keys"
 description: "This is a simple API which returns the primary keys + ranking of a (path) csv file"
 consumes:
-- "application/json"
+  - "application/json"
 produces:
-- "application/json"
+  - "application/json"
 parameters:
-- in: "body"
-  name: "body"
-  description: "to-do description"
-  required: true
-  schema:
-    type: "object"
-    properties:
-      filepath:
-        type: "string"
-        example : "/data/testdt08.csv"
-      seperator: 
-        type: "string"
-        example: ","
+  - in: "body"
+    name: "body"
+    description: "to-do description"
+    required: true
+    schema:
+      type: "object"
+      properties:
+        filepath:
+          type: "string"
+          example: "/data/testdt08.csv"
+        seperator:
+          type: "string"
+          example: ","
 responses:
-  200: 
+  200:
     description: "OK"
   405:
     description: "Invalid input"

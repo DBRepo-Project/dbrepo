@@ -52,13 +52,12 @@ def general_filter(index, results):
 
 
 @api_bp.route("/health", methods=["GET"], endpoint="actuator_health")
-@swag_from("us-yml/get_health")  # ToDo: get the SWAG right
+@swag_from("../../us-yml/get_health.yml")
 def health():
     return {"status": "UP"}
 
 
 @api_bp.route("/api/search/<string:index>", methods=["GET"], endpoint="search_get_index")
-@swag_from("us-yml")  # ToDo: get the SWAG right
 def get_index(index):
     """
     returns all entries in a specific index
@@ -81,6 +80,7 @@ def get_index(index):
 
 
 @api_bp.route("/api/search/<string:type>/fields", methods=["GET"], endpoint="search_get_index_fields")
+@swag_from("../../us-yml/get_fields.yml")
 def get_fields(type):
     """
     returns a list of attributes of the data for a specific index.
@@ -90,7 +90,7 @@ def get_fields(type):
     logging.info(f'Searching in index database for type: {type}')
     if type not in available_types:
         return {
-            "results": {},
+            "results": {},  # FIXME this can't be right
         }, 404
     fields = get_fields_for_index(type)
     logging.debug(f'get fields for type {type} resulted in {len(fields)} field(s)')
@@ -98,6 +98,7 @@ def get_fields(type):
 
 
 @api_bp.route("/api/search", methods=["POST"], endpoint="search_fuzzy_search")
+@swag_from("../../us-yml/post_fuzzy_search.yml")
 def post_fuzzy_search():
     """
     Main endpoint for fuzzy searching.
@@ -118,6 +119,7 @@ def post_fuzzy_search():
 
 
 @api_bp.route("/api/search/<string:type>", methods=["POST"], endpoint="search_general_search")
+@swag_from("../../us-yml/post_general_search.yml")
 def post_general_search(type):
     """
     Main endpoint for fuzzy searching.

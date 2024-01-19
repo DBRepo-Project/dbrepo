@@ -66,15 +66,9 @@ swagger_config = {
         {
             "endpoint": "api-analyse",
             "route": "/api-analyse.json",
-            "rule_filter": lambda rule: rule.endpoint.startswith("analyze"),
+            "rule_filter": lambda rule: True,
             "model_filter": lambda tag: True,  # all in
-        },
-        {
-            "endpoint": "api-mdb",
-            "route": "/api-mdb.json",
-            "rule_filter": lambda rule: rule.endpoint.startswith("mdb"),
-            "model_filter": lambda tag: True,  # all in
-        },
+        }
     ],
     "static_url_path": "/flasgger_static",
     "swagger_ui": True,
@@ -102,7 +96,7 @@ template = {
     },
     "servers": [
         {"url": "http://localhost:5000", "description": "Generated server url"},
-        {"url": "https://dbrepo2.tuwien.ac.at", "description": "Sandbox"},
+        {"url": "https://test.dbrepo.tuwien.ac.at", "description": "Sandbox"},
     ],
 }
 
@@ -175,8 +169,9 @@ def determinepk():
         return Response(res, mimetype="application/json"), 500
 
 
-@app.route("/api/analyse/determineStats", methods=["POST"], endpoint="analyze_stats")
-def determineStats():
+@app.route("/api/analyse/determinestats", methods=["POST"], endpoint="analyse_determinestats")
+@swag_from("as-yml/determine_stats.yml")
+def determinestats():
     logging.debug(
         "endpoint to determine the statistical properties, body = %s", request
     )
@@ -189,8 +184,9 @@ def determineStats():
     return determine_stats(filepath, separator)
 
 
-@app.route("/api/analyse/determineStat", methods=["POST"])
-def determineStat():
+@app.route("/api/analyse/determinestat", methods=["POST"], endpoint="analyse_determinestat")
+@swag_from("as-yml/determine_stat.yml")
+def determinestat():
     input_json = request.get_json()
 
     if "database_id" not in input_json:

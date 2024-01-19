@@ -1130,12 +1130,110 @@ A user wants a public database to be private and only give specific users access
 
 === "Terminal"
 
-    tbd
+    Obtain an access token:
+
+    ```bash
+    curl -sSL \
+      -X POST \
+      -d 'username=foo&password=bar&grant_type=password&client_id=dbrepo-client&scope=openid&client_secret=MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG' \
+      http://localhost/api/auth/realms/dbrepo/protocol/openid-connect/token | jq .access_token
+    ```
+
+    !!! note
+
+        Please note that the `client_secret` is different for your DBRepo instance. This is a default client secret that
+        likely has been replaced. Please contact your DBRepo administrator to get the `client_secret` for your instance.
+        Similar you need to replace `localhost` with your actual DBRepo instance hostname, e.g. `test.dbrepo.tuwien.ac.at`.
+
+    To change the visibility of a database where you are the owner (this is the case for self-created databases), send
+    a request to the HTTP API:
+
+    ```bash
+    curl -sSL \
+      -X PUT \
+      -H "Authorization: Bearer ACCESS_TOKEN" \
+      -d '{"is_public":true}' \
+      http://localhost/api/database/1/visibility
+    ```
+
+    To give a user (with id `e9bf38a0-a254-4040-87e3-92e0f09e29c8` access to this database (e.g. read access), update
+    their access using the HTTP API:
+
+    ```bash
+    curl -sSL \
+      -X POST \
+      -H "Authorization: Bearer ACCESS_TOKEN" \
+      -d '{"type":"read"}' \
+      http://localhost/api/database/1/access/e9bf38a0-a254-4040-87e3-92e0f09e29c8
+    ```
+
+    In case the user already has access, use the method `PUT`.
 
 === "JDBC"
 
-    tbd
+    To change the visibility of a database as administrator with direct JDBC access to 
+    the [Metadata Database](../system-databases-metadata), change the visibility directly by executing the SQL-query
+    in the `fda` schema:
+
+    ```sql
+    UPDATE `fda`.`mdb_databases` SET `is_public` = TRUE;
+    ```
+
+    To give a user (with id `e9bf38a0-a254-4040-87e3-92e0f09e29c8` access to this database (e.g. read access), update
+    their access using the JDBC API:
+
+    ```sql
+    INSERT INTO `fda`.`mdb_have_access` (`user_id`, `database_id`, `access_type`)
+        VALUES ('e9bf38a0-a254-4040-87e3-92e0f09e29c8', 1, 'READ');
+    ```
+
+    In case the user already has access, use an `UPDATE` query.
 
 === "Python"
 
-    tbd
+    Obtain an access token:
+
+    ```python
+    import requests
+    
+    response = requests.post("http://localhost/api/auth/realms/dbrepo/protocol/openid-connect/token", json={
+        "username": "foo",
+        "password": "bar",
+        "grant_type": "password",
+        "client_id": "dbrepo-client",
+        "scope": "openid",
+        "client_secret": "MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG"
+    })
+    access_token = response.json()["access_token"]
+    print(access_token)
+    ```
+
+    !!! note
+
+        Please note that the `client_secret` is different for your DBRepo instance. This is a default client secret that
+        likely has been replaced. Please contact your DBRepo administrator to get the `client_secret` for your instance.
+        Similar you need to replace `localhost` with your actual DBRepo instance hostname, e.g. `test.dbrepo.tuwien.ac.at`.
+
+    To change the visibility of a database where you are the owner (this is the case for self-created databases), send
+    a request to the HTTP API:
+
+    ```python
+    requests.put("http://localhost/api/database/1/visibility", headers={
+        "Authorization": "Bearer " + access_token
+    }, json={
+        "is_public": True
+    })
+    ```
+
+    To give a user (with id `e9bf38a0-a254-4040-87e3-92e0f09e29c8` access to this database (e.g. read access), update
+    their access using the HTTP API:
+
+    ```python
+    requests.post("http://localhost/api/database/1/access/e9bf38a0-a254-4040-87e3-92e0f09e29c8", headers={
+        "Authorization": "Bearer " + access_token
+    }, json={
+        "type": "read"
+    })
+    ```
+
+    In case the user already has access, use the method `put`.

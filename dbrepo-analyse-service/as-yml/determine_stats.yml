@@ -1,0 +1,24 @@
+tags:
+  - analyse-endpoint
+summary: Determine statistics
+operationId: determinestats
+requestBody:
+  content:
+    application/json:
+      schema:
+        required:
+          - filepath
+          - separator
+        type: object
+        properties:
+          filepath:
+            type: "string"
+            example: "file.csv"
+          separator:
+            type: "string"
+            example: ","
+responses:
+  "200":
+    description: Determined statistics
+  "400":
+    description: "Invalid input"
