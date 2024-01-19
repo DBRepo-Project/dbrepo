@@ -3,7 +3,7 @@
 [![license](.gitlab/license.svg)](https://opensource.org/licenses/Apache-2.0)
 [![release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/badges/release.svg)](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags)
 
-<img src="./dbrepo-ui/static/logo.png" alt="DBREPO &mdash; Repository for Data in Databases" width="200" />
+![DBRepo &mdash; Repository for Data in Databases](./.gitlab/logo.png)
 
 ## tl;dr
 
@@ -14,15 +14,61 @@ with:
 curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/master/install.sh | bash
 ```
 
+## Run
+
+tbd
+
 ## Documentation
 
 Find a system description, component documentation and endpoint documentation 
 online: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/.
 
-## Contribute
+## Development
 
 Contributions are always welcome and encouraged, please read the [contribution overview](./CONTRIBUTING.md) and
 contact [Prof. Andreas Rauber](http://www.ifs.tuwien.ac.at/~andi/) or [Martin Weise](https://ec.tuwien.ac.at/~weise/).
+
+### Build
+
+Install the build dependencies under Debian 
+12 ([Instructions for Docker Engine](https://docs.docker.com/engine/install/debian/#install-using-the-repository)):
+
+```console
+$ apt install -y bash maven openjdk-17-jdk nodejs && npm install --global yarn
+$ node --version
+v18.19.0
+```
+
+Build the Docker containers:
+
+```console
+./bin/build-docker.sh
+```
+
+### Test
+
+Install the [build dependencies](#build) as they also cover the test dependencies.
+
+Test the backend and frontend:
+
+```console
+./bin/test.sh
+```
+
+## Run
+
+After [building the docker containers](#build) you can run them using the default `docker-compose.yml` in the root of
+the sourcecode directory. This starts all services in the background (as daemons hence the `-d` flag).
+
+```console
+$ docker compose up -d
+```
+
+Optionally view all logs in real-time:
+
+```console
+$ docker compose logs -f
+```
 
 ## Acknowledgements
 

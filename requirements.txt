@@ -1,8 +1,0 @@
-mkdocs==1.4.3
-mkdocs-material==9.1.17
-mkdocs-with-pdf==0.9.3
-mkdocs-material-extensions>=1.0.3
-requests>=2.27.0
-py-dotenv>=0.1
-python-dotenv==1.0.0
-requests==2.31.0

@@ -28,9 +28,7 @@ build-analyse-service:
 	bash ./dbrepo-analyse-service/build.sh
 
 build-docker:
-	docker build --network=host -t dbrepo-metadata-service:build --target build dbrepo-metadata-service
-	docker build --network=host -t dbrepo-data-service:build --target build dbrepo-data-service
-	docker compose build --parallel
+	bash ./bin/build-docker.sh
 
 build-frontend:
 	yarn --cwd ./dbrepo-ui install --legacy-peer-deps
@@ -220,7 +218,7 @@ test-clients:
 test: test-backend test-frontend
 
 teardown:
-	./.scripts/teardown.sh
+	./bin/teardown.sh
 
 docs: build-docker
 	docker compose up -d || docker compose down
