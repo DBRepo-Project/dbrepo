@@ -19,14 +19,17 @@ curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-service
 For this small, local, test deployment any modern hardware would suffice, we recommend a dedicated virtual machine with
 the following settings.
 
+- min. 8 vCPU cores
+- min. 16GB RAM memory
+- min. 200GB SSD storage
+- min. 100Mbit/s connection
+
+*Optional*: public IP-address if you want to secure the deployment with a (free) TLS-certificate from Let's Encrypt.
+
 !!! tip "Resource Consumption"
 
     Note that most of the vCPU and RAM resources will be needed for starting the infrastructure, this is because of
     Docker. During operation and especially idle times, the deployment will use significantly less resources.
-
-- 8 vCPU cores
-- 16GB RAM memory
-- 100GB SSD storage
 
 ### Software
 
