@@ -467,7 +467,7 @@ release-1.3:
   script:
     - "ifconfig eth0 mtu 1450 up"
     - "apk add make"
-    - "TAG=1.3.9 make release"
+    - "TAG=1.3.0 make release"
 
 release-1.4:
   stage: release
@@ -523,15 +523,15 @@ build-api-1.3:
     - apk add bash git maven
     - git fetch && git checkout release-v1.3
     - bash .docs/.swagger/generate.sh
-    - mkdir -p ./swagger/1.3.9
-    - cp -r ./site/* ./swagger/1.3.9/
+    - mkdir -p ./swagger/1.3.0
+    - cp -r ./site/* ./swagger/1.3.0/
   cache:
     paths:
-      - ./swagger/1.3.9
+      - ./swagger/1.3.0
   artifacts:
     when: always
     paths:
-      - ./swagger/1.3.9
+      - ./swagger/1.3.0
     expire_in: 1 days
 
 build-api-1.4:
@@ -625,8 +625,8 @@ docs-1.3:
     - pip install -r ./.docs/requirements.txt
     - wget https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/.docs/overrides/main.html -O .docs/overrides/main.html -q
     - mkdir -p ./final
-    - mkdocs build && cp -r ./site ./final/1.3.9
-    - cp -r ./swagger/1.3.9 ./final/1.3.9/swagger
+    - mkdocs build && cp -r ./site ./final/1.3.0
+    - cp -r ./swagger/1.3.0 ./final/1.3.0/swagger
   cache:
     paths:
       - ./final
