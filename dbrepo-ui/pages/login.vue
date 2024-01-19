@@ -51,6 +51,11 @@
             Login
           </v-btn>
         </v-card-actions>
+        <v-card-subtitle class="text-right">
+          <a v-for="(link, i) in loginLinks" :key="i" class="ml-1" :href="link.href" :target="link.blank ? '_blank' : 'self'">
+            {{ link.text }} <sup v-if="link.blank"><v-icon color="primary" x-small>mdi-open-in-new</v-icon></sup>
+          </a>
+        </v-card-subtitle>
       </v-card>
     </v-form>
   </div>
@@ -79,11 +84,16 @@ export default {
     },
     user () {
       return this.$store.state.user
+    },
+    loginLinks () {
+      const loginLinks = this.$config.loginLinks
+      console.debug('login links', loginLinks)
+      return loginLinks
     }
   },
   mounted () {
     if (this.token) {
-      this.$router.push('/container')
+      this.$router.push('/database')
     }
   },
   methods: {
@@ -99,10 +109,13 @@ export default {
             .then(async (user) => {
               this.$store.commit('SET_USER', user)
               this.$vuetify.theme.dark = user.attributes.theme_dark
-              await this.$router.push('/container')
+              await this.$router.push('/database')
             })
         })
         .catch(() => {
+          this.loading = false
+        })
+        .finally(() => {
           this.loading = false
         })
     },

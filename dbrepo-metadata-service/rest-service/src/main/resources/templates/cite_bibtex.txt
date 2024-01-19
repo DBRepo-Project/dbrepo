@@ -1,0 +1,6 @@
+@misc{[[${identifier.publicationYear}]],
+  author = {[# th:each="creator,idx: ${identifier.creators}"][# th:if="${idx.index} &gt; 0"] and [/][[${creator.getBibtexName()}]][/]},
+  title = {[[${title.title}]]},
+  [[${keyword}]] = [[${urlOrDoi}]],
+  year = {[[${identifier.publicationYear}]]}
+}

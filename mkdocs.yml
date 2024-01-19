@@ -6,9 +6,37 @@ copyright: CC-BY 4.0 Technische Universit&auml;t Wien & Universit&auml;t Wien
 docs_dir: .docs
 nav:
   - Home: index.md
-  - get-started.md
-  - customization.md
-  - system.md
+  - Deployment:
+    - Kubernetes: deployment-helm.md
+    - Docker Compose: deployment-docker-compose.md
+  - System:
+    - Overview: system.md
+    - Services:
+      - Analyse Service: system-services-analyse.md
+      - Authentication Service: system-services-authentication.md
+      - Broker Service: system-services-broker.md
+      - Data Service: system-services-data.md
+      - Gateway Service: system-services-gateway.md
+      - Metadata Service: system-services-metadata.md
+      - Search Service: system-services-search.md
+      - Storage Service: system-services-storage.md
+      - Upload Service: system-services-upload.md
+    - Databases:
+      - Auth Database: system-databases-auth.md
+      - Data Database: system-databases-data.md
+      - Metadata Database: system-databases-metadata.md
+      - Search Database: system-databases-search.md
+    - Other:
+      - User Interface: system-other-ui.md
+      - Search Database Dashboard: system-other-search-dashboard.md
+  - Usage:
+    - Overview: usage-overview.md
+    - Services:
+      - Analyse Service: usage-analyse.md
+      - Authentication Service: usage-auth.md
+      - Broker Service: usage-broker.md
+      - Storage Service: usage-storage.md
+      - Upload Service: usage-upload.md
   - publications.md
   - contact.md
 extra_css:
@@ -51,6 +79,7 @@ theme:
   name: material
 markdown_extensions:
   - attr_list
+  - def_list
   - md_in_html
   - admonition
   - pymdownx.details
@@ -64,7 +93,7 @@ markdown_extensions:
       emoji_generator: !!python/name:materialx.emoji.to_svg
       options:
         custom_icons:
-          - overrides/.icons
+          - .docs/overrides/.icons
 extra:
   homepage: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/
   social:

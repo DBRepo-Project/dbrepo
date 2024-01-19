@@ -4,9 +4,24 @@ export default ({ store }) => {
   new VuexPersistence({
     storage: window.localStorage,
     reducer: state => ({
+      title: state.title,
+      icon: state.icon,
       token: state.token,
       refreshToken: state.refreshToken,
-      user: state.user
+      roles: state.roles,
+      user: state.user,
+      database: state.database,
+      table: state.table,
+      access: state.access,
+      locale: state.locale,
+      messages: state.messages,
+      ontologies: state.ontologies,
+      clientId: state.clientId,
+      clientSecret: state.clientSecret,
+      searchUsername: state.searchUsername,
+      searchPassword: state.searchPassword,
+      doiUrl: state.doiUrl,
+      subset: state.subset
     })
   }).plugin(store)
 }

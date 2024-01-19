@@ -1,5 +1,4 @@
-import Vue from 'vue'
-import api from '@/api'
+import api, { displayError } from '@/api'
 
 class SemanticService {
   findAllOntologies () {
@@ -11,9 +10,7 @@ class SemanticService {
           resolve(ontologies)
         })
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to load ontologies', error)
-          Vue.$toast.error(`[${code}] Failed to load ontologies: ${message}`)
+          displayError('Failed to load ontologies', error)
           reject(error)
         })
     })
@@ -28,9 +25,7 @@ class SemanticService {
           resolve(concepts)
         })
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to load concepts', error)
-          Vue.$toast.error(`[${code}] Failed to load concepts: ${message}`)
+          displayError('Failed to load concepts', error)
           reject(error)
         })
     })
@@ -45,9 +40,7 @@ class SemanticService {
           resolve(concept)
         })
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to update concept', error)
-          Vue.$toast.error(`[${code}] Failed to update concept: ${message}`)
+          displayError('Failed to update concept', error)
           reject(error)
         })
     })
@@ -62,9 +55,7 @@ class SemanticService {
           resolve(units)
         })
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to load units', error)
-          Vue.$toast.error(`[${code}] Failed to load units: ${message}`)
+          displayError('Failed to load units', error)
           reject(error)
         })
     })
@@ -79,9 +70,7 @@ class SemanticService {
           resolve(unit)
         })
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to update unit', error)
-          Vue.$toast.error(`[${code}] Failed to update unit: ${message}`)
+          displayError('Failed to update unit', error)
           reject(error)
         })
     })
@@ -96,9 +85,7 @@ class SemanticService {
           resolve(ontology)
         })
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to load ontology', error)
-          Vue.$toast.error(`[${code}] Failed to load ontology: ${message}`)
+          displayError('Failed to find ontology', error)
           reject(error)
         })
     })
@@ -113,9 +100,7 @@ class SemanticService {
           resolve(ontology)
         })
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to register ontology', error)
-          Vue.$toast.error(`[${code}] Failed to register ontology: ${message}`)
+          displayError('Failed to register ontology', error)
           reject(error)
         })
     })
@@ -130,9 +115,7 @@ class SemanticService {
           resolve(ontology)
         })
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to update ontology', error)
-          Vue.$toast.error(`[${code}] Failed to update ontology: ${message}`)
+          displayError('Failed to update ontology', error)
           reject(error)
         })
     })
@@ -143,9 +126,7 @@ class SemanticService {
       api.delete(`/api/semantic/ontology/${id}`, { headers: { Accept: 'application/json' } })
         .then(() => resolve())
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to delete ontology', error)
-          Vue.$toast.error(`[${code}] Failed to delete ontology: ${message}`)
+          displayError('Failed to unregister ontology', error)
           reject(error)
         })
     })
@@ -160,9 +141,7 @@ class SemanticService {
           resolve(semantics)
         })
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to load table column semantics', error)
-          Vue.$toast.error(`[${code}] Failed to load table column semantics: ${message}`)
+          displayError('Failed to suggest table column semantic', error)
           reject(error)
         })
     })

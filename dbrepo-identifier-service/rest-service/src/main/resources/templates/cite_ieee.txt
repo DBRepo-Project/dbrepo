@@ -1,1 +1,0 @@
-[1] [# th:each="creator,idx: ${creators}"][# th:if="${idx.index} &gt; 0"] and [/][[${creator.firstname.substring(0,1)}]]. [[${creator.lastname}]][/][# th:if="${creators.size()} &gt; 0"], [/]“[[${title}]]“, [[${publisher}]], [[${publicationYear}]], [[${identifierType} == 'url' ? 'Available: ' : 'doi: ']][[${identifier}]].

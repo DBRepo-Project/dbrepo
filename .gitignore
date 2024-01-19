@@ -4,6 +4,17 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+# generated
+ready
+schema.xsd
+
+# docs
+.docs/.swagger/dist/
+.docs/.swagger/site/
+site/
+
+.$*
+
 # Notebooks
 .jupyter/
 .pytest_cache/

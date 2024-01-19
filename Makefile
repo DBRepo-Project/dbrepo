@@ -1,173 +1,148 @@
-.PHONY: clean all
+.PHONY: all
 
 TAG ?= latest
 TRIVY_VERSION ?= v0.41.0
-ELASTIC_VERSION ?= 8.7.1
-NGINX_VERSION ?= 1.25.0-alpine-slim
+REPOSITORY_1_URL ?= docker.io/dbrepo
+REPOSITORY_2_URL ?= s210.dl.hpc.tuwien.ac.at/dbrepo
 
-all:
+all: build
 
-build-backend: build-metadata-db build-database-service build-query-service build-table-service build-identifier-service build-container-service build-metadata-service build-analyse-service build-user-service
+clean:
+	rm -rf ./dist || true
+	rm -f .env || true
+	docker container stop $(docker container ls -aq) || true
+	docker container rm $(docker container ls -aq) || true
+	docker volume rm $(docker volume ls -q) || true
 
-build-metadata-db:
-	mvn -f ./dbrepo-metadata-db/pom.xml clean install
+build: build-backend build-docker
 
-build-identifier-service: build-metadata-db
-	mvn -f ./dbrepo-identifier-service/pom.xml clean package -DskipTests
+build-backend: build-metadata-service build-analyse-service build-data-service
 
-build-table-service: build-metadata-db
-	mvn -f ./dbrepo-table-service/pom.xml clean package -DskipTests
+build-data-service: build-metadata-service
+	mvn -f ./dbrepo-data-service/pom.xml clean package -DskipTests
 
-build-container-service: build-metadata-db
-	mvn -f ./dbrepo-container-service/pom.xml clean package -DskipTests
-
-build-database-service: build-metadata-db
-	mvn -f ./dbrepo-database-service/pom.xml clean package -DskipTests
-
-build-query-service: build-metadata-db
-	mvn -f ./dbrepo-query-service/pom.xml clean package -DskipTests
-
-build-metadata-service: build-metadata-db
-	mvn -f ./dbrepo-metadata-service/pom.xml clean package -DskipTests
-
-build-user-service: build-metadata-db
-	mvn -f ./dbrepo-user-service/pom.xml clean package -DskipTests
-
-build-semantics-service: build-metadata-db
-	mvn -f ./dbrepo-semantics-service/pom.xml clean package -DskipTests
+build-metadata-service:
+	mvn -f ./dbrepo-metadata-service/pom.xml clean install -DskipTests
 
 build-analyse-service:
 	bash ./dbrepo-analyse-service/build.sh
 
 build-docker:
-	docker compose build dbrepo-metadata-db
+	docker build --network=host -t dbrepo-metadata-service:build --target build dbrepo-metadata-service
+	docker build --network=host -t dbrepo-data-service:build --target build dbrepo-data-service
 	docker compose build --parallel
 
 build-frontend:
 	yarn --cwd ./dbrepo-ui install --legacy-peer-deps
 	yarn --cwd ./dbrepo-ui run build
 
-build-clients:
-	bash ./.gitlab/swagger/generate.sh
+build-swagger:
+	bash ./.docs/generate.sh
 
-tag: tag-identifier tag-container tag-database tag-query tag-table tag-analyse tag-authentication tag-metadata-db tag-ui tag-semantics tag-broker tag-metadata tag-user
+tag: tag-analyse-service tag-authentication-service tag-metadata-db tag-ui tag-metadata-service tag-data-service tag-search-db tag-search-db-init tag-search-service tag-data-db-sidecar
 
-tag-analyse:
-	docker tag dbrepo-analyse-service:latest "dbrepo/analyse-service:${TAG}"
+tag-analyse-service:
+	docker tag dbrepo-analyse-service:latest "${REPOSITORY_1_URL}/analyse-service:${TAG}"
+	docker tag dbrepo-analyse-service:latest "${REPOSITORY_2_URL}/analyse-service:${TAG}"
 
-tag-authentication:
-	docker tag dbrepo-authentication-service:latest "dbrepo/authentication-service:${TAG}"
+tag-authentication-service:
+	docker tag dbrepo-authentication-service:latest "${REPOSITORY_1_URL}/authentication-service:${TAG}"
+	docker tag dbrepo-authentication-service:latest "${REPOSITORY_2_URL}/authentication-service:${TAG}"
 
 tag-metadata-db:
-	docker tag dbrepo-metadata-db:latest "dbrepo/metadata-db:${TAG}"
+	docker tag dbrepo-metadata-db:latest "${REPOSITORY_1_URL}/metadata-db:${TAG}"
+	docker tag dbrepo-metadata-db:latest "${REPOSITORY_2_URL}/metadata-db:${TAG}"
 
 tag-ui:
-	docker tag dbrepo-ui:latest "dbrepo/ui:${TAG}"
+	docker tag dbrepo-ui:latest "${REPOSITORY_1_URL}/ui:${TAG}"
+	docker tag dbrepo-ui:latest "${REPOSITORY_2_URL}/ui:${TAG}"
 
-tag-identifier:
-	docker tag dbrepo-identifier-service:latest "dbrepo/identifier-service:${TAG}"
+tag-data-service:
+	docker tag dbrepo-data-service:latest "${REPOSITORY_1_URL}/data-service:${TAG}"
+	docker tag dbrepo-data-service:latest "${REPOSITORY_2_URL}/data-service:${TAG}"
 
-tag-metadata:
-	docker tag dbrepo-metadata-service:latest "dbrepo/metadata-service:${TAG}"
+tag-metadata-service:
+	docker tag dbrepo-metadata-service:latest "${REPOSITORY_1_URL}/metadata-service:${TAG}"
+	docker tag dbrepo-metadata-service:latest "${REPOSITORY_2_URL}/metadata-service:${TAG}"
 
-tag-container:
-	docker tag dbrepo-container-service:latest "dbrepo/container-service:${TAG}"
+tag-search-db:
+	docker tag dbrepo-search-db:latest "${REPOSITORY_1_URL}/search-db:${TAG}"
+	docker tag dbrepo-search-db:latest "${REPOSITORY_2_URL}/search-db:${TAG}"
 
-tag-database:
-	docker tag dbrepo-database-service:latest "dbrepo/database-service:${TAG}"
+tag-data-db-sidecar:
+	docker tag dbrepo-data-db-sidecar:latest "${REPOSITORY_1_URL}/data-db-sidecar:${TAG}"
+	docker tag dbrepo-data-db-sidecar:latest "${REPOSITORY_2_URL}/data-db-sidecar:${TAG}"
 
-tag-query:
-	docker tag dbrepo-query-service:latest "dbrepo/query-service:${TAG}"
+tag-search-db-init:
+	docker tag dbrepo-search-db-init:latest "${REPOSITORY_1_URL}/search-db-init:${TAG}"
+	docker tag dbrepo-search-db-init:latest "${REPOSITORY_2_URL}/search-db-init:${TAG}"
 
-tag-user:
-	docker tag dbrepo-user-service:latest "dbrepo/user-service:${TAG}"
+tag-search-service:
+	docker tag dbrepo-search-service:latest "${REPOSITORY_1_URL}/search-service:${TAG}"
+	docker tag dbrepo-search-service:latest "${REPOSITORY_2_URL}/search-service:${TAG}"
 
-tag-table:
-	docker tag dbrepo-table-service:latest "dbrepo/table-service:${TAG}"
+tag-storage-service-init:
+	docker tag dbrepo-storage-service-init:latest "${REPOSITORY_1_URL}/storage-service-init:${TAG}"
+	docker tag dbrepo-storage-service-init:latest "${REPOSITORY_2_URL}/storage-service-init:${TAG}"
 
-tag-semantics:
-	docker tag dbrepo-semantics-service:latest "dbrepo/semantics-service:${TAG}"
+release: build-docker tag release-analyse-service release-authentication-service release-metadata-db release-ui release-metadata-service release-data-service release-search-db release-search-db-init release-search-service release-data-db-sidecar
 
-tag-broker:
-	docker tag dbrepo-broker-service:latest "dbrepo/broker-service:${TAG}"
+release-analyse-service: tag-analyse-service
+	docker push "${REPOSITORY_1_URL}/analyse-service:${TAG}"
+	docker push "${REPOSITORY_2_URL}/analyse-service:${TAG}"
 
-tag-search:
-	docker tag dbrepo-search-db:latest "dbrepo/search-db:${TAG}"
-
-release: build-docker tag release-identifier release-container release-database release-query release-table release-analyse release-authentication release-metadata-db release-ui release-semantics release-broker release-metadata release-user
-
-release-analyse: tag-analyse
-	docker push "dbrepo/analyse-service:${TAG}"
-
-release-authentication: tag-authentication
-	docker push "dbrepo/authentication-service:${TAG}"
+release-authentication-service: tag-authentication-service
+	docker push "${REPOSITORY_1_URL}/authentication-service:${TAG}"
+	docker push "${REPOSITORY_2_URL}/authentication-service:${TAG}"
 
 release-metadata-db: tag-metadata-db
-	docker push "dbrepo/metadata-db:${TAG}"
+	docker push "${REPOSITORY_1_URL}/metadata-db:${TAG}"
+	docker push "${REPOSITORY_2_URL}/metadata-db:${TAG}"
 
 release-ui: tag-ui
-	docker push "dbrepo/ui:${TAG}"
+	docker push "${REPOSITORY_1_URL}/ui:${TAG}"
+	docker push "${REPOSITORY_2_URL}/ui:${TAG}"
 
-release-identifier: tag-identifier
-	docker push "dbrepo/identifier-service:${TAG}"
+release-data-service: tag-data-service
+	docker push "${REPOSITORY_1_URL}/data-service:${TAG}"
+	docker push "${REPOSITORY_2_URL}/data-service:${TAG}"
 
-release-container: tag-container
-	docker push "dbrepo/container-service:${TAG}"
+release-search-db: tag-search-db
+	docker push "${REPOSITORY_1_URL}/search-db:${TAG}"
+	docker push "${REPOSITORY_2_URL}/search-db:${TAG}"
 
-release-database: tag-database
-	docker push "dbrepo/database-service:${TAG}"
+release-search-db-init: tag-search-db-init
+	docker push "${REPOSITORY_1_URL}/search-db-init:${TAG}"
+	docker push "${REPOSITORY_2_URL}/search-db-init:${TAG}"
 
-release-query: tag-query
-	docker push "dbrepo/query-service:${TAG}"
+release-data-db-sidecar: tag-data-db-sidecar
+	docker push "${REPOSITORY_1_URL}/data-db-sidecar:${TAG}"
+	docker push "${REPOSITORY_2_URL}/data-db-sidecar:${TAG}"
 
-release-user: tag-user
-	docker push "dbrepo/user-service:${TAG}"
+release-metadata-service: tag-metadata-service
+	docker push "${REPOSITORY_1_URL}/metadata-service:${TAG}"
+	docker push "${REPOSITORY_2_URL}/metadata-service:${TAG}"
 
-release-table: tag-table
-	docker push "dbrepo/table-service:${TAG}"
+release-search-service: tag-search-service
+	docker push "${REPOSITORY_1_URL}/search-service:${TAG}"
+	docker push "${REPOSITORY_2_URL}/search-service:${TAG}"
 
-release-semantics: tag-semantics
-	docker push "dbrepo/semantics-service:${TAG}"
+release-storage-service-init: tag-storage-service-init
+	docker push "${REPOSITORY_1_URL}/storage-service-init:${TAG}"
+	docker push "${REPOSITORY_2_URL}/storage-service-init:${TAG}"
 
-release-broker: tag-broker
-	docker push "dbrepo/broker-service:${TAG}"
+test-backend: test-metadata-service test-analyse-service test-data-service
 
-release-metadata: tag-metadata
-	docker push "dbrepo/metadata-service:${TAG}"
+test-data-service: build-data-service
+	mvn -f ./dbrepo-data-service/pom.xml clean test verify
 
-test-backend: test-container-service test-database-service test-query-service test-table-service test-identifier-service test-metadata-service test-semantics-service test-analyse-service test-user-service
-
-test-identifier-service: clean build-metadata-db build-identifier-service
-	mvn -f ./dbrepo-identifier-service/pom.xml clean test verify
-
-test-container-service: clean build-metadata-db build-container-service
-	mvn -f ./dbrepo-container-service/pom.xml clean test verify
-
-test-database-service: clean build-metadata-db build-database-service
-	docker pull rabbitmq:3-management-alpine
-	docker pull elasticsearch:8.7.1
-	mvn -f ./dbrepo-database-service/pom.xml clean test verify
-
-test-query-service: clean build-metadata-db build-query-service
-	mvn -f ./dbrepo-query-service/pom.xml clean test verify
-
-test-table-service: clean build-metadata-db build-table-service
-	docker pull mysql:8.0
-	mvn -f ./dbrepo-table-service/pom.xml clean test verify
-
-test-metadata-service: clean build-metadata-db build-metadata-service
+test-metadata-service: build-metadata-service
 	mvn -f ./dbrepo-metadata-service/pom.xml clean test verify
-
-test-user-service: clean build-metadata-db build-user-service
-	mvn -f ./dbrepo-user-service/pom.xml clean test verify
-
-test-semantics-service: clean build-metadata-db build-semantics-service
-	mvn -f ./dbrepo-semantics-service/pom.xml clean test verify
 
 test-analyse-service: build-analyse-service
 	bash ./dbrepo-analyse-service/test.sh
 
-scan: scan-analyse-service scan-authentication-service scan-broker-service scan-container-service scan-database-service scan-gateway-service scan-identifier-service scan-metadata-db scan-metadata-service scan-query-service scan-search-db scan-semantics-service scan-table-service scan-ui scan-user-service
+scan: scan-analyse-service scan-authentication-service scan-broker-service scan-gateway-service scan-metadata-db scan-metadata-service scan-search-db scan-ui scan-data-service scan-data-db scan-search-dashboard scan-search-service
 
 scan-analyse-service:
 	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-analyse-service-report.json dbrepo-analyse-service:latest
@@ -180,30 +155,15 @@ scan-authentication-service:
 	trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-authentication-service:latest
 
 scan-broker-service:
-	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-broker-service-report.json dbrepo-broker-service:latest
-	trivy image --insecure --exit-code 0 dbrepo-broker-service:latest
-	trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-broker-service:latest
-
-scan-container-service:
-	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-container-service-report.json dbrepo-container-service:latest
-	trivy image --insecure --exit-code 0 dbrepo-container-service:latest
-	trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-container-service:latest
-
-scan-database-service:
-	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-database-service-report.json dbrepo-database-service:latest
-	trivy image --insecure --exit-code 0 dbrepo-database-service:latest
-	trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-database-service:latest
+	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-broker-service-report.json bitnami/rabbitmq:3.10
+	trivy image --insecure --exit-code 0 bitnami/rabbitmq:3.10
+	trivy image --insecure --exit-code 1 --severity CRITICAL bitnami/rabbitmq:3.10
 
 scan-gateway-service:
-	docker pull "nginx:${NGINX_VERSION}"
-	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-gateway-service-report.json "nginx:${NGINX_VERSION}"
-	trivy image --insecure --exit-code 0 "nginx:${NGINX_VERSION}"
-	trivy image --insecure --exit-code 1 --severity CRITICAL "nginx:${NGINX_VERSION}"
-
-scan-identifier-service:
-	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-identifier-service-report.json dbrepo-identifier-service:latest
-	trivy image --insecure --exit-code 0 dbrepo-identifier-service:latest
-	trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-identifier-service:latest
+	docker pull "nginx:1.25.0-alpine-slim"
+	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-gateway-service-report.json "nginx:1.25.0-alpine-slim"
+	trivy image --insecure --exit-code 0 "nginx:1.25.0-alpine-slim"
+	trivy image --insecure --exit-code 1 --severity CRITICAL "nginx:1.25.0-alpine-slim"
 
 scan-metadata-db:
 	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-metadata-db-report.json dbrepo-metadata-db:latest
@@ -215,47 +175,44 @@ scan-metadata-service:
 	trivy image --insecure --exit-code 0 dbrepo-metadata-service:latest
 	trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-metadata-service:latest
 
-scan-query-service:
-	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-query-service-report.json dbrepo-query-service:latest
-	trivy image --insecure --exit-code 0 dbrepo-query-service:latest
-	trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-query-service:latest
+scan-data-service:
+	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-data-service-report.json dbrepo-data-service:latest
+	trivy image --insecure --exit-code 0 dbrepo-data-service:latest
+	trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-data-service:latest
 
 scan-search-db:
-	docker pull "elasticsearch:${ELASTIC_VERSION}"
-	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-db-report.json "elasticsearch:${ELASTIC_VERSION}"
-	trivy image --insecure --exit-code 0 "elasticsearch:${ELASTIC_VERSION}"
-	trivy image --insecure --exit-code 1 --severity CRITICAL "elasticsearch:${ELASTIC_VERSION}"
+	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-db-report.json "dbrepo-search-db"
+	trivy image --insecure --exit-code 0 "dbrepo-search-db"
+	trivy image --insecure --exit-code 1 --severity CRITICAL "dbrepo-search-db"
 
-scan-semantics-service:
-	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-semantics-service-report.json dbrepo-semantics-service:latest
-	trivy image --insecure --exit-code 0 dbrepo-semantics-service:latest
-	trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-semantics-service:latest
+scan-search-dashboard:
+	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-db-report.json "opensearchproject/opensearch-dashboards:2.10.0"
+	trivy image --insecure --exit-code 0 "opensearchproject/opensearch-dashboards:2.10.0"
+	trivy image --insecure --exit-code 1 --severity CRITICAL "opensearchproject/opensearch-dashboards:2.10.0"
 
-scan-table-service:
-	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-table-service-report.json dbrepo-table-service:latest
-	trivy image --insecure --exit-code 0 dbrepo-table-service:latest
-	trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-table-service:latest
+scan-data-db:
+	docker pull "bitnami/mariadb:11.2.2-debian-11-r0"
+	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-data-db-report.json "bitnami/mariadb:11.2.2-debian-11-r0"
+	trivy image --insecure --exit-code 0 "bitnami/mariadb:11.2.2-debian-11-r0"
+	trivy image --insecure --exit-code 1 --severity CRITICAL "bitnami/mariadb:11.2.2-debian-11-r0"
 
 scan-ui:
 	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-ui-report.json dbrepo-ui:latest
 	trivy image --insecure --exit-code 0 dbrepo-ui:latest
 	trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-ui:latest
 
-scan-user-service:
-	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-user-service-report.json dbrepo-user-service:latest
-	trivy image --insecure --exit-code 0 dbrepo-user-service:latest
-	trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-user-service:latest
+scan-search-service:
+	trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-service-report.json dbrepo-search-service:latest
+	trivy image --insecure --exit-code 0 dbrepo-search-service:latest
+	trivy image --insecure --exit-code 1 --severity CRITICAL dbrepo-search-service:latest
 
 coverage-frontend: build-frontend
 	yarn --cwd ./dbrepo-ui run coverage || true
 
-test-frontend: clean build-frontend
+test-frontend: build-frontend
 	yarn --cwd ./dbrepo-ui install
 	yarn --cwd ./dbrepo-ui run test:unit || true
 	yarn --cwd ./dbrepo-ui run coverage || true
-
-clean:
-	docker system prune -f --volumes
 
 test-clients:
 	bash ./.gitlab/test.sh
@@ -263,4 +220,9 @@ test-clients:
 test: test-backend test-frontend
 
 teardown:
-	./.junit/teardown
+	./.scripts/teardown.sh
+
+docs: build-docker
+	docker compose up -d || docker compose down
+	cd .docs && bash generate_swagger.sh || docker compose down
+	docker compose down

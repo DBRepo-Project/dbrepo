@@ -1,26 +1,7 @@
-import Vue from 'vue'
 import axios from 'axios'
+import { displayError } from '@/api/index'
 
 class MiddlewareService {
-  upload (file) {
-    return new Promise((resolve, reject) => {
-      const data = new FormData()
-      data.append('file', file)
-      axios.post('/server-middleware/upload', data, { headers: { 'Content-Type': 'multipart/form-data' } })
-        .then((response) => {
-          const file = response.data
-          console.debug('response file', file)
-          resolve(file)
-        })
-        .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to create database', error)
-          Vue.$toast.error(`[${code}] Failed to create database: ${message}`)
-          reject(error)
-        })
-    })
-  }
-
   buildQuery (data) {
     return new Promise((resolve, reject) => {
       axios.post('/server-middleware/query/build', data, { headers: { 'Content-Type': 'application/json' } })
@@ -30,9 +11,7 @@ class MiddlewareService {
           resolve(file)
         })
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to build query', error)
-          Vue.$toast.error(`[${code}] Failed to build query: ${message}`)
+          displayError('Failed to build query', error)
           reject(error)
         })
     })

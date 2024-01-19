@@ -1,0 +1,1 @@
+[1] [# th:each="creator,idx: ${identifier.creators}"][# th:if="${idx.index} &gt; 0"], [/][[${creator.getIeeeName()}]][/][# th:if="${identifier.creators.size()} &gt; 0"], [/]“[[${title.getTitle()}]]“, [[${identifier.publisher}]], [[${identifier.publicationYear}]], [[${url}]].

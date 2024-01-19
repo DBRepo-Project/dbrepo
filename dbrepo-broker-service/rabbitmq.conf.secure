@@ -1,0 +1,40 @@
+# user
+default_vhost = dbrepo
+default_user = fda
+default_pass = fda
+default_user_tags.administrator = true
+default_permissions.configure = .*
+default_permissions.read = .*
+default_permissions.write = .*
+
+# enable http outside localhost
+listeners.tcp.1 = 0.0.0.0:5672
+listeners.ssl.2 = 0.0.0.0:5671
+
+# management prefix (https://www.rabbitmq.com/management.html#path-prefix)
+management.path_prefix = /admin/broker
+management.load_definitions = /app/definitions.json
+
+# logging
+log.console = true
+log.console.level = warning
+ssl_options.cacertfile = /etc/rabbitmq/cacert.crt
+ssl_options.certfile = /etc/tls/tls.crt
+ssl_options.keyfile = /etc/tls/tls.key
+ssl_options.verify = verify_peer
+ssl_options.fail_if_no_peer_cert = true
+
+# Obviously your authentication server cannot vouch for itself, so you'll need another backend with at least one user in
+# it. You should probably use the internal database
+auth_backends.1 = rabbit_auth_backend_oauth2
+auth_backends.2 = rabbit_auth_backend_internal
+
+# OAuth 2.0 files
+auth_oauth2.resource_server_id = rabbitmq
+#auth_oauth2.additional_scopes_key = my_custom_scope_key
+auth_oauth2.preferred_username_claims.1 = client_id
+auth_oauth2.default_key = t2OCeCheJ9uwoBbNQjG_nN6WKiLcceTIAZmiTbGODFM
+auth_oauth2.signing_keys.t2OCeCheJ9uwoBbNQjG_nN6WKiLcceTIAZmiTbGODFM = /app/cert.pem
+auth_oauth2.signing_keys.id2 = /app/pubkey.pem
+auth_oauth2.algorithms.1 = HS256
+auth_oauth2.algorithms.2 = RS256

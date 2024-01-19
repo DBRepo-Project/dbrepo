@@ -1,11 +1,14 @@
 <template>
-  <v-data-table
-    flat
-    :headers="result.headers"
-    :items="result.rows"
-    :loading="loading > 0"
-    :options.sync="options"
-    :server-items-length="total" />
+  <div>
+    <v-data-table
+      flat
+      :headers="headers"
+      :items="result.rows"
+      :loading="loading > 0"
+      :options.sync="options"
+      :footer-props="footerProps"
+      :server-items-length="total" />
+  </div>
 </template>
 
 <script>
@@ -15,6 +18,12 @@ export default {
     type: {
       type: String,
       default: () => 'query' /* query or view */
+    },
+    view: {
+      type: Object,
+      default: () => {
+        return {}
+      }
     }
   },
   data () {
@@ -30,7 +39,28 @@ export default {
         page: 1,
         itemsPerPage: 10
       },
+      footerProps: {
+        showFirstLastPage: true,
+        itemsPerPageOptions: [10, 25, 50, 100]
+      },
       total: -1
+    }
+  },
+  computed: {
+    headers () {
+      if (this.result.headers.length !== 0) {
+        return this.result.headers
+      }
+      if (this.type === 'view' && this.view && this.view.columns) {
+        return this.view.columns.map((c) => {
+          return {
+            text: c.alias ? c.alias : c.internal_name,
+            value: c.alias ? c.alias : c.internal_name,
+            sortable: false
+          }
+        })
+      }
+      return []
     }
   },
   watch: {
@@ -48,21 +78,15 @@ export default {
         statement: sql,
         timestamp
       }
-      QueryService.execute(this.$route.params.container_id, this.$route.params.database_id, payload, 0, this.options.itemsPerPage)
+      QueryService.execute(this.$route.params.database_id, payload, this.options.page - 1, this.options.itemsPerPage)
         .then((result) => {
           this.mapResults(result)
           parent.resultId = result.id
+          this.id = result.id
         })
         .finally(() => {
           this.loading--
         })
-    },
-    buildHeaders (firstLine) {
-      return Object.keys(firstLine).map(k => ({
-        text: k,
-        value: k,
-        sortable: false
-      }))
     },
     reExecute (id) {
       if (id === null) {
@@ -70,7 +94,7 @@ export default {
       }
       this.loading++
       if (this.type === 'query') {
-        QueryService.reExecuteQuery(this.$route.params.container_id, this.$route.params.database_id, id, 0, this.options.itemsPerPage)
+        QueryService.reExecuteQuery(this.$route.params.database_id, id, this.options.page - 1, this.options.itemsPerPage)
           .then((result) => {
             this.mapResults(result)
             this.id = id
@@ -79,7 +103,7 @@ export default {
             this.loading--
           })
       } else {
-        QueryService.reExecuteView(this.$route.params.container_id, this.$route.params.database_id, id, 0, this.options.itemsPerPage)
+        QueryService.reExecuteView(this.$route.params.database_id, id, this.options.page - 1, this.options.itemsPerPage)
           .then((result) => {
             this.mapResults(result)
             this.id = id
@@ -95,7 +119,7 @@ export default {
       }
       this.loading++
       if (this.type === 'query') {
-        QueryService.reExecuteQueryCount(this.$route.params.container_id, this.$route.params.database_id, id)
+        QueryService.reExecuteQueryCount(this.$route.params.database_id, id)
           .then((count) => {
             this.total = count
           })
@@ -103,7 +127,7 @@ export default {
             this.loading--
           })
       } else {
-        QueryService.reExecuteViewCount(this.$route.params.container_id, this.$route.params.database_id, id)
+        QueryService.reExecuteViewCount(this.$route.params.database_id, id)
           .then((count) => {
             this.total = count
           })
@@ -113,9 +137,13 @@ export default {
       }
     },
     mapResults (data) {
-      if (data.result.length) {
-        this.result.headers = this.buildHeaders(data.result[0])
-      }
+      this.result.headers = data.headers.map((h) => {
+        return {
+          text: Object.keys(h)[0],
+          value: Object.keys(h)[0],
+          sortable: false
+        }
+      })
       console.debug('query result', data)
       this.result.rows = data.result
       if (this.total < 0 && data.result_number != null) {

@@ -1,0 +1,56 @@
+package at.tuwien.api.container;
+
+import at.tuwien.api.container.image.ImageBriefDto;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
+import lombok.extern.jackson.Jacksonized;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
+
+import java.time.Instant;
+
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Jacksonized
+@ToString
+public class ContainerBriefDto {
+
+    @NotNull
+    private Long id;
+
+    @NotNull
+    @Schema(example = "f829dd8a884182d0da846f365dee1221fd16610a14c81b8f9f295ff162749e50")
+    private String hash;
+
+    @NotBlank
+    @Schema(example = "Air Quality")
+    private String name;
+
+    @NotBlank
+    @JsonProperty("internal_name")
+    @Field(name = "internal_name")
+    @Schema(example = "air-quality")
+    private String internalName;
+
+    @NotNull
+    @Field(name = "internal_name")
+    private ImageBriefDto image;
+
+    @NotNull
+    @org.springframework.data.annotation.Transient
+    @Schema(example = "true")
+    private Boolean running;
+
+    @NotNull
+    @Schema(example = "2021-03-12T15:26:21Z")
+    @Field(type = FieldType.Date)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
+    private Instant created;
+}

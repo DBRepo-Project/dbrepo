@@ -1,0 +1,21 @@
+package at.tuwien.exception;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
+
+@ResponseStatus(code = HttpStatus.FORBIDDEN)
+public class NotAllowedException extends Exception {
+
+    public NotAllowedException(String msg) {
+        super(msg);
+    }
+
+    public NotAllowedException(String msg, Throwable thr) {
+        super(msg + ": " + thr.getLocalizedMessage(), thr);
+    }
+
+    public NotAllowedException(Throwable thr) {
+        super(thr);
+    }
+
+}

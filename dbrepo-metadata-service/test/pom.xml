@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>at.tuwien</groupId>
+        <artifactId>dbrepo-metadata-service</artifactId>
+        <version>latest</version>
+    </parent>
+
+    <artifactId>dbrepo-metadata-service-test</artifactId>
+    <version>latest</version>
+    <name>dbrepo-metadata-service-test</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>at.tuwien</groupId>
+            <artifactId>dbrepo-metadata-service-entities</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>at.tuwien</groupId>
+            <artifactId>dbrepo-metadata-service-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>at.tuwien</groupId>
+            <artifactId>dbrepo-metadata-service-querystore</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+
+</project>

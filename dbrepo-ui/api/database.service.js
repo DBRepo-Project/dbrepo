@@ -1,223 +1,223 @@
-import Vue from 'vue'
-import api from '@/api'
+import api, { displayError } from '@/api'
 
 class DatabaseService {
-  findAll (id) {
+  findAll () {
     return new Promise((resolve, reject) => {
-      api.get(`/api/container/${id}/database`, { headers: { Accept: 'application/json' } })
+      api.get('/api/database', { headers: { Accept: 'application/json' } })
         .then((response) => {
           const databases = response.data
           console.debug('response databases', databases)
           resolve(databases)
         })
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to load databases', error)
-          Vue.$toast.error(`[${code}] Failed to load databases: ${message}`)
+          displayError(error, 'Failed to load databases')
           reject(error)
         })
     })
   }
 
-  findOne (id, databaseId) {
+  findAllOnlyAccess () {
     return new Promise((resolve, reject) => {
-      api.get(`/api/container/${id}/database/${databaseId}`, { headers: { Accept: 'application/json' } })
+      api.get('/api/database?filter=access', { headers: { Accept: 'application/json' } })
+        .then((response) => {
+          const databases = response.data
+          console.debug('response my databases', databases)
+          resolve(databases)
+        })
+        .catch((error) => {
+          displayError(error, 'Failed to load my databases')
+          reject(error)
+        })
+    })
+  }
+
+  countAll (filter) {
+    return new Promise((resolve, reject) => {
+      api.head(`/api/database${filter ? '?filter=access' : ''}`, { headers: { Accept: 'application/json' } })
+        .then((response) => {
+          const count = response.headers.get('x-count')
+          console.debug('response count', count)
+          resolve(count)
+        })
+        .catch((error) => {
+          displayError(error, 'Failed to count databases')
+          reject(error)
+        })
+    })
+  }
+
+  findOne (databaseId) {
+    return new Promise((resolve, reject) => {
+      api.get(`/api/database/${databaseId}`, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const database = response.data
           console.debug('response database', database)
           resolve(database)
         }).catch((error) => {
-          const { code, message } = error
-          console.error('Failed to load database', error)
-          Vue.$toast.error(`[${code}] Failed to load database: ${message}`)
+          displayError(error, 'Failed to load database')
           reject(error)
         })
     })
   }
 
-  create (id, data) {
+  create (data) {
     return new Promise((resolve, reject) => {
-      api.post(`/api/container/${id}/database`, data, { headers: { Accept: 'application/json' } })
+      api.post('/api/database', data, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const database = response.data
           console.debug('response database', database)
           resolve(database)
         }).catch((error) => {
-          const { code, message } = error
-          console.error('Failed to create database', error)
-          Vue.$toast.error(`[${code}] Failed to create database: ${message}`)
+          displayError(error, 'Failed to create database')
           reject(error)
         })
     })
   }
 
-  delete (id, databaseId) {
+  delete (databaseId) {
     return new Promise((resolve, reject) => {
-      api.delete(`/api/container/${id}/database/${databaseId}`, { headers: { Accept: 'application/json' } })
+      api.delete(`/api/database/${databaseId}`, { headers: { Accept: 'application/json' } })
         .then(() => resolve())
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to delete database', error)
-          Vue.$toast.error(`[${code}] Failed to delete database: ${message}`)
+          displayError(error, 'Failed to delete database')
           reject(error)
         })
     })
   }
 
-  modifyVisibility (id, databaseId, isPublic) {
+  modifyVisibility (databaseId, isPublic) {
     return new Promise((resolve, reject) => {
-      api.put(`/api/container/${id}/database/${databaseId}/visibility`, { is_public: isPublic }, { headers: { Accept: 'application/json' } })
+      api.put(`/api/database/${databaseId}/visibility`, { is_public: isPublic }, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const database = response.data
           console.debug('response database', database)
           resolve(database)
         }).catch((error) => {
-          const { code, message } = error
-          console.error('Failed to modify database visibility', error)
-          Vue.$toast.error(`[${code}] Failed to modify database visibility: ${message}`)
+          displayError(error, 'Failed to modify database visibility')
           reject(error)
         })
     })
   }
 
-  modifyOwner (id, databaseId, username) {
+  modifyOwner (databaseId, username) {
     return new Promise((resolve, reject) => {
-      api.put(`/api/container/${id}/database/${databaseId}/transfer`, { username }, { headers: { Accept: 'application/json' } })
+      api.put(`/api/database/${databaseId}/transfer`, { username }, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const database = response.data
           console.debug('response database', database)
           resolve(database)
         }).catch((error) => {
-          const { code, message } = error
-          console.error('Failed to modify database owner', error)
-          Vue.$toast.error(`[${code}] Failed to modify database owner: ${message}`)
+          displayError(error, 'Failed to modify database owner')
           reject(error)
         })
     })
   }
 
-  checkAccess (id, databaseId) {
+  checkAccess (databaseId) {
     return new Promise((resolve, reject) => {
-      api.get(`/api/container/${id}/database/${databaseId}/access`, { headers: { Accept: 'application/json' } })
+      api.get(`/api/database/${databaseId}/access`, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const databases = response.data
-          console.debug('response databases', databases)
+          console.debug('response databases access', databases)
           resolve(databases)
         })
         .catch((error) => {
-          const { code, message, response } = error
-          const { status } = response
+          const { status } = error
           if (status !== 401 && status !== 403 && status !== 405) { /* ignore no access errors */
-            console.error('Failed to check database access', error)
-            Vue.$toast.error(`[${code}] Failed to check database access: ${message}`)
             reject(error)
           }
         })
     })
   }
 
-  modifyAccess (id, databaseId, username, type) {
+  modifyAccess (databaseId, userId, type) {
     return new Promise((resolve, reject) => {
-      api.put(`/api/container/${id}/database/${databaseId}/access/${username}`, { type }, { headers: { Accept: 'application/json' } })
+      api.put(`/api/database/${databaseId}/access/${userId}`, { type }, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const database = response.data
           console.debug('response database', database)
           resolve(database)
         })
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to modify database access', error)
-          Vue.$toast.error(`[${code}] Failed to modify database access: ${message}`)
+          displayError(error, 'Failed to modify database access')
           reject(error)
         })
     })
   }
 
-  revokeAccess (id, databaseId, username) {
+  revokeAccess (databaseId, userId) {
     return new Promise((resolve, reject) => {
-      api.delete(`/api/container/${id}/database/${databaseId}/access/${username}`, { headers: { Accept: 'application/json' } })
+      api.delete(`/api/database/${databaseId}/access/${userId}`, { headers: { Accept: 'application/json' } })
         .then(() => resolve())
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to revoke database access', error)
-          Vue.$toast.error(`[${code}] Failed to revoke database access: ${message}`)
+          displayError(error, 'Failed to revoke database access')
           reject(error)
         })
     })
   }
 
-  giveAccess (id, databaseId, username, type) {
+  giveAccess (databaseId, userId, type) {
     return new Promise((resolve, reject) => {
-      api.post(`/api/container/${id}/database/${databaseId}/access`, { username, type }, { headers: { Accept: 'application/json' } })
+      api.post(`/api/database/${databaseId}/access/${userId}`, { type }, { headers: { Accept: 'application/json' } })
         .then(() => resolve())
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to give database access', error)
-          Vue.$toast.error(`[${code}] Failed to give database access: ${message}`)
+          displayError(error, 'Failed to give database access')
           reject(error)
         })
     })
   }
 
-  findAllLicenses (id) {
+  findAllLicenses () {
     return new Promise((resolve, reject) => {
-      api.get(`/api/container/${id}/database/license`, { headers: { Accept: 'application/json' } })
+      api.get('/api/database/license', { headers: { Accept: 'application/json' } })
         .then((response) => {
           const licenses = response.data
           console.debug('response licenses', licenses)
           resolve(licenses)
         })
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to load licenses', error)
-          Vue.$toast.error(`[${code}] Failed to load licenses: ${message}`)
+          displayError(error, 'Failed to load licenses')
           reject(error)
         })
     })
   }
 
-  findView (id, databaseId, viewId) {
+  findView (databaseId, viewId) {
     return new Promise((resolve, reject) => {
-      api.get(`/api/container/${id}/database/${databaseId}/view/${viewId}`, { headers: { Accept: 'application/json' } })
+      api.get(`/api/database/${databaseId}/view/${viewId}`, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const view = response.data
           console.debug('response view', view)
           resolve(view)
         })
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to find view', error)
-          Vue.$toast.error(`[${code}] Failed to find view: ${message}`)
+          displayError(error, 'Failed to find view')
           reject(error)
         })
     })
   }
 
-  createView (id, databaseId, data) {
+  createView (databaseId, data) {
     return new Promise((resolve, reject) => {
-      api.post(`/api/container/${id}/database/${databaseId}/view`, data, { headers: { Accept: 'application/json' } })
+      api.post(`/api/database/${databaseId}/view`, data, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const view = response.data
           console.debug('response view', view)
           resolve(view)
         })
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to delete view', error)
-          Vue.$toast.error(`[${code}] Failed to delete view: ${message}`)
+          displayError(error, 'Failed to create view')
           reject(error)
         })
     })
   }
 
-  deleteView (id, databaseId, viewId) {
+  deleteView (databaseId, viewId) {
     return new Promise((resolve, reject) => {
-      api.delete(`/api/container/${id}/database/${databaseId}/view/${viewId}`, { headers: { Accept: 'application/json' } })
+      api.delete(`/api/database/${databaseId}/view/${viewId}`, { headers: { Accept: 'application/json' } })
         .then(() => resolve())
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to delete view', error)
-          Vue.$toast.error(`[${code}] Failed to delete view: ${message}`)
+          displayError(error, 'Failed to delete view')
           reject(error)
         })
     })

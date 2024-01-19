@@ -5,7 +5,7 @@ import at.tuwien.oaipmh.OaiErrorType;
 import at.tuwien.oaipmh.OaiListIdentifiersParameters;
 import at.tuwien.oaipmh.OaiRecordParameters;
 import at.tuwien.service.MetadataService;
-import io.micrometer.core.annotation.Timed;
+import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -14,11 +14,12 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Log4j2
 @CrossOrigin(origins = "*")
@@ -40,7 +41,7 @@ public class MetadataEndpoint {
             @ExampleObject(value = "GetRecord"),
             @ExampleObject(value = "ListMetadataFormats"),
     })
-    @Timed(value = "repository.identify", description = "Time needed to identify the repository")
+    @Observed(name = "dbr_oai_identify")
     @Operation(summary = "Identify the repository")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -53,7 +54,7 @@ public class MetadataEndpoint {
     }
 
     @GetMapping(params = "verb=Identify", produces = "text/xml;charset=UTF-8")
-    @Timed(value = "repository.identify", description = "Time needed to identify the repository")
+    @Observed(name = "dbr_oai_identify")
     @Operation(summary = "Identify the repository")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -68,7 +69,7 @@ public class MetadataEndpoint {
     }
 
     @GetMapping(params = "verb=ListIdentifiers", produces = "text/xml;charset=UTF-8")
-    @Timed(value = "identifiers.list", description = "Time needed to list the identifiers")
+    @Observed(name = "dbr_oai_identifiers_list")
     @Operation(summary = "List the identifiers")
     public ResponseEntity<String> listIdentifiers(OaiListIdentifiersParameters parameters) {
         log.debug("endpoint list identifiers, verb=ListIdentifiers, parameters={}", parameters);
@@ -78,20 +79,30 @@ public class MetadataEndpoint {
     }
 
     @GetMapping(params = "verb=GetRecord", produces = "text/xml;charset=UTF-8")
-    @Timed(value = "record.find", description = "Time needed to find a record")
+    @Observed(name = "dbr_oai_record_get")
     @Operation(summary = "Get the record")
     public ResponseEntity<String> getRecord(OaiRecordParameters parameters) {
         log.debug("endpoint get record, verb=GetRecord, parameters={}", parameters);
-        if (parameters.getMetadataPrefix() != null && !parameters.getMetadataPrefix().equals("oai_dc")) {
-            log.trace("metadataPrefix matches oai_dc, failed to serve this format");
+        final List<String> supportedMetadataFormats = List.of("oai_dc", "oai_datacite");
+        if (parameters.getMetadataPrefix() != null && !supportedMetadataFormats.contains(parameters.getMetadataPrefix())) {
+            log.trace("metadataPrefix does not match supported list: {}", supportedMetadataFormats);
+            log.error("Failed to get record: Format {} is not supported", parameters.getMetadataPrefix());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(metadataService.error(OaiErrorType.CANNOT_DISSEMINATE_FORMAT));
         }
-        if (parameters.getIdentifier() == null || !NumberUtils.isCreatable(parameters.getIdentifier())) {
-            log.trace("identifier is null or not a number");
+        log.trace("metadata prefix {} is supported", parameters.getMetadataPrefix());
+        final List<String> supportedIdentifierPrefixes = List.of("doi", "oai");
+        if (parameters.getIdentifier() == null) {
+            log.error("Failed to get record: Identifier is empty");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(metadataService.error(OaiErrorType.NO_RECORDS_MATCH));
+        } else if(supportedIdentifierPrefixes.stream().noneMatch(identifierPrefix -> parameters.getIdentifier().startsWith(identifierPrefix))
+                || parameters.getIdentifier().indexOf(':') > 3) {
+            log.error("Failed to get record: Identifier does not match supported prefixes {}", supportedIdentifierPrefixes);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(metadataService.error(OaiErrorType.NO_RECORDS_MATCH));
         }
+        log.trace("identifier prefix of {} is supported", parameters.getIdentifier());
         try {
             final String xml = metadataService.getRecord(parameters);
             log.trace("get record resulted in xml {}", xml);
@@ -103,7 +114,7 @@ public class MetadataEndpoint {
     }
 
     @GetMapping(params = "verb=ListMetadataFormats", produces = "text/xml;charset=UTF-8")
-    @Timed(value = "formats.list", description = "Time needed to list the metadata formats")
+    @Observed(name = "dbr_oai_metadataformats_list")
     @Operation(summary = "List the metadata formats")
     public ResponseEntity<String> listMetadataFormats() {
         log.debug("endpoint list metadata formats, verb=ListMetadataFormats");

@@ -1,30 +1,32 @@
+tags:
+  - analyse-endpoint
 summary: "Determine datatypes"
 description: "This is a simple API which returns the datatypes of a (path) csv file"
 consumes:
-- "application/json"
+  - "application/json"
 produces:
-- "application/json"
+  - "application/json"
 parameters:
-- in: "body"
-  name: "body"
-  description: "to-do description"
-  required: true
-  schema:
-    type: "object"
-    properties:
-      filepath:
-        type: "string"
-        example : "/data/testdt08.csv"
-      enum: 
-        type: "boolean"
-        example: true 
-      enum_tol: 
-        example: 0.1
-      separator: 
-        type: "string"
-        example: ","
+  - in: "body"
+    name: "body"
+    description: "to-do description"
+    required: true
+    schema:
+      type: "object"
+      properties:
+        filename:
+          type: "string"
+          example: "sample.csv"
+        enum:
+          type: "boolean"
+          example: true
+        enum_tol:
+          example: 0.1
+        separator:
+          type: "string"
+          example: ","
 responses:
-  200: 
+  200:
     description: "OK"
   405:
     description: "Invalid input"

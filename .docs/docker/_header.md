@@ -1,0 +1,41 @@
+# Quick Reference
+
+* **Maintained by**:
+
+  [the DBRepo Maintainers](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/graphs/dev)
+
+* **Where to get help**:
+
+  [the official documentation](https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/latest/),
+
+# Supported tags
+
+* [`1.3`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/blob/master/dbrepo-DIR/Dockerfile/)
+* [`latest`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/blob/dev/dbrepo-DIR/Dockerfile/)
+
+# Non-supported tags
+
+* `1.2`
+* `1.1`
+
+# Quick reference (cont.)
+
+* **Where to file issues**:
+
+  Send us an [email](https://tiss.tuwien.ac.at/person/287722.html)
+
+* **Supported architectures:**
+
+  `amd64`
+
+* **Source of this description:**
+
+  [docs repo's `.docs/docker` directory](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tree/dev/.docs/docker)
+  ([history](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/commits/dev/.docs/docker))
+
+# What is DBRepo?
+
+We present a database repository system that allows researchers to ingest data into a central, versioned repository
+through common interfaces, provides efficient access to arbitrary subsets of data even when the underlying data store is
+evolving, allows reproducing of query results and supports findable-, accessible-, interoperable- and reusable (FAIR)
+data.

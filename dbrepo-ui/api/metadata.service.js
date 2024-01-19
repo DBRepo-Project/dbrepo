@@ -1,5 +1,4 @@
-import Vue from 'vue'
-import api from '@/api'
+import api, { displayError } from '@/api'
 
 class MetadataService {
   findAllMessages () {
@@ -11,9 +10,7 @@ class MetadataService {
           resolve(messages)
         })
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to load messages', error)
-          Vue.$toast.error(`[${code}] Failed to load messages: ${message}`)
+          displayError('Failed to load maintenance messages', error)
           reject(error)
         })
     })
@@ -28,9 +25,7 @@ class MetadataService {
           resolve(messages)
         })
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to create message', error)
-          Vue.$toast.error(`[${code}] Failed to create message: ${message}`)
+          displayError('Failed to create maintenance message', error)
           reject(error)
         })
     })
@@ -45,9 +40,7 @@ class MetadataService {
           resolve(messages)
         })
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to find message', error)
-          Vue.$toast.error(`[${code}] Failed to find message: ${message}`)
+          displayError('Failed to find maintenance message', error)
           reject(error)
         })
     })
@@ -62,9 +55,7 @@ class MetadataService {
           resolve(messages)
         })
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to update message', error)
-          Vue.$toast.error(`[${code}] Failed to update message: ${message}`)
+          displayError('Failed to update maintenance message', error)
           reject(error)
         })
     })
@@ -75,9 +66,7 @@ class MetadataService {
       api.delete(`/api/maintenance/message/${id}`, { headers: { Accept: 'application/json' } })
         .then(() => resolve())
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to delete message', error)
-          Vue.$toast.error(`[${code}] Failed to delete message: ${message}`)
+          displayError('Failed to delete maintenance message', error)
           reject(error)
         })
     })
@@ -92,9 +81,7 @@ class MetadataService {
           resolve(messages)
         })
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to load active messages', error)
-          Vue.$toast.error(`[${code}] Failed to load active messages: ${message}`)
+          displayError('Failed to load active maintenance messages', error)
           reject(error)
         })
     })

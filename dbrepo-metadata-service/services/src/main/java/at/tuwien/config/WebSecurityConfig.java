@@ -1,5 +1,9 @@
 package at.tuwien.config;
 
+import at.tuwien.auth.AuthTokenFilter;
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
+import io.swagger.v3.oas.annotations.security.SecurityScheme;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -7,18 +11,28 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
-import jakarta.servlet.http.HttpServletResponse;
-
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
+@SecurityScheme(
+        name = "bearerAuth",
+        type = SecuritySchemeType.HTTP,
+        bearerFormat = "JWT",
+        scheme = "bearer"
+)
 public class WebSecurityConfig {
+
+    @Bean
+    public AuthTokenFilter authTokenFilter() {
+        return new AuthTokenFilter();
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -30,7 +44,9 @@ public class WebSecurityConfig {
                 new AntPathRequestMatcher("/swagger-ui.html")
         );
         final OrRequestMatcher publicEndpoints = new OrRequestMatcher(
-                new AntPathRequestMatcher("/api/oai/**", "GET")
+                new AntPathRequestMatcher("/api/**", "GET"),
+                new AntPathRequestMatcher("/api/**", "HEAD"),
+                new AntPathRequestMatcher("/api/user/**", "POST")
         );
         /* enable CORS and disable CSRF */
         http = http.cors().and().csrf().disable();
@@ -57,6 +73,10 @@ public class WebSecurityConfig {
                 .requestMatchers(publicEndpoints).permitAll()
                 /* our private endpoints */
                 .anyRequest().authenticated();
+        /* add JWT token filter */
+        http.addFilterBefore(authTokenFilter(),
+                UsernamePasswordAuthenticationFilter.class
+        );
         return http.build();
     }
 
@@ -71,4 +91,5 @@ public class WebSecurityConfig {
         source.registerCorsConfiguration("/**", config);
         return new CorsFilter(source);
     }
+
 }

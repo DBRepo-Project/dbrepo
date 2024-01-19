@@ -1,0 +1,31 @@
+tags:
+  - search-endpoint
+summary: Performs a fuzzy search
+operationId: post_fuzzy_search
+description: Performs a fuzzy search
+consumes:
+  - application/json
+produces:
+  - application/json
+parameters:
+  - in: "body"
+    name: "body"
+    required: true
+    schema:
+      type: "object"
+      properties:
+        search_term:
+          type: "string"
+          example: "air quality"
+responses:
+  200:
+    description: OK, contains the elements formatted as an array of JSON arrays
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            results:
+              type: array
+              items:
+                type: object

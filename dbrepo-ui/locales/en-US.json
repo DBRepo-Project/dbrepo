@@ -2,15 +2,22 @@
   "layout": {
     "information": "Information",
     "databases": "Databases",
+    "mydatabases": "My Databases",
     "semantics": "Semantics",
     "ontologies": "Ontologies",
-    "search": "Search ...",
+    "search": "Search",
     "login": "Login",
     "logout": "Logout",
     "signup": "Signup"
   },
+  "search": {
+    "fuzzy": {
+      "placeholder": "Search ..."
+    }
+  },
   "databases": {
     "recent": "Recent Databases",
+    "my": "My Databases",
     "tooltip": {
       "private": "Private",
       "public": "Public"

@@ -1,13 +1,8 @@
 <template>
   <div>
     <v-card>
-      <v-progress-linear
-        v-if="loadingSemantics"
-        color="primary"
-        indeterminate />
       <v-card-title v-text="column.name" />
-      <v-card-subtitle v-if="loadingSemantics && !semanticEntity">Loading semantic recommendations ...</v-card-subtitle>
-      <v-card-text>
+      <v-card-text class="pb-0">
         <v-alert
           v-if="!entity"
           border="left"
@@ -20,11 +15,11 @@
             column. You can still use other URIs that are not matching these ontologies, the URI will be displayed
             instead.
           </p>
-          <ul>
-            <li v-for="(item,idx) in ontologies" :key="idx">
-              <a :href="item.uri" target="_blank" v-text="item.uri" />
-            </li>
-          </ul>
+          <div v-for="(ontology,idx) in ontologies" :key="idx">
+            <v-badge inline :content="badge(ontology).text" :color="badge(ontology).color">
+              <a :href="ontology.uri" target="_blank" v-text="ontology.uri_pattern" />
+            </v-badge>
+          </div>
         </v-alert>
         <v-alert
           v-if="entity"
@@ -38,10 +33,16 @@
           </div>
           <div v-text="entity.description" />
         </v-alert>
+        <v-btn v-if="recommendations.length === 0" small :loading="loadingSemantics" @click="recommendSemantics">
+          Recommend
+        </v-btn>
+        <p v-else>
+          Found {{ recommendations.length }} labels based on the column name <code>{{ column.internal_name }}</code>.
+        </p>
       </v-card-text>
       <v-card-text>
         <v-form ref="form" v-model="valid" autocomplete="off" @submit.prevent="submit">
-          <v-list-item-group v-if="!loadingSemantics" v-model="recommendation">
+          <v-list-item-group v-model="recommendation">
             <v-list-item v-for="(item,idx) in recommendations" :key="idx" three-line>
               <template v-slot:default="{ active, }">
                 <v-list-item-action>
@@ -136,7 +137,7 @@ export default {
       if (!ontologies) {
         return []
       }
-      return ontologies.filter(o => o.sparql)
+      return ontologies.filter(o => o.sparql || o.rdf)
     },
     canAutomaticResolve () {
       if (!this.uri) {
@@ -159,9 +160,7 @@ export default {
   },
   watch: {
     column () {
-      if (!this.column[this.mode]) {
-        this.recommendSemantics()
-      }
+      this.recommendations = []
       this.init()
     },
     recommendation (index) {
@@ -173,10 +172,8 @@ export default {
     }
   },
   mounted () {
+    this.recommendations = []
     this.init()
-    if (!this.column[this.mode]) {
-      this.recommendSemantics()
-    }
   },
   methods: {
     cancel () {
@@ -190,14 +187,18 @@ export default {
         unit_uri: this.mode === 'unit' ? this.uri : unitUri
       }
       this.loadingSave = true
-      TableService.updateColumn(this.database.id, this.database.id, this.tableId, this.column.id, payload)
+      TableService.updateColumn(this.database.id, this.tableId, this.column.id, payload)
         .then(() => {
+          this.recommendation = null
+          this.$refs.form.reset()
           this.$emit('close', {
             success: true,
             action: 'assign'
           })
         })
         .finally(() => {
+          this.recommendation = null
+          this.$refs.form.reset()
           this.loadingSave = false
         })
     },
@@ -215,18 +216,26 @@ export default {
       if (!str) {
         return true
       }
-      return str.match(/https?:\/\//g)
+      return str.startsWith('http')
+    },
+    badge (ontology) {
+      if (ontology.sparql) {
+        return { color: 'green', text: 'SPARQL' }
+      }
+      if (ontology.rdf) {
+        return { color: 'secondary', text: 'RDF' }
+      }
+      return null
     },
     init () {
+      this.uri = null
       if (this.column.unit && this.mode === 'unit') {
         this.uri = this.column.unit.uri
         return
       }
       if (this.column.concept && this.mode === 'concept') {
         this.uri = this.column.concept.uri
-        return
       }
-      this.uri = null
     },
     submit () {
       this.$refs.form.validate()

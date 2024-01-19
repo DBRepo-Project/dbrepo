@@ -115,7 +115,7 @@ export default {
     },
     loadHistory () {
       this.loading = true
-      TableService.findHistory(this.$route.params.container_id, this.$route.params.database_id, this.$route.params.table_id)
+      TableService.findHistory(this.$route.params.database_id, this.$route.params.table_id)
         .then((history) => {
           this.chartData.labels = history.map(function (d, idx) {
             if (idx === 0) {

@@ -9,7 +9,7 @@
       <v-toolbar-title>{{ title }}</v-toolbar-title>
       <v-spacer />
       <v-toolbar-title>
-        <v-btn v-if="token && !isExecuted" :disabled="!canExecute || !valid" :loading="loadingQuery" color="primary" @click="execute">
+        <v-btn v-if="user && !isExecuted" :disabled="!canExecute || !valid" :loading="loadingQuery" color="primary" @click="execute">
           <v-icon left>mdi-run</v-icon>
           Create
         </v-btn>
@@ -34,7 +34,7 @@
     <v-form v-model="valid">
       <v-card flat>
         <v-card-text v-if="isView">
-          <v-row>
+          <v-row dense>
             <v-col cols="6">
               <v-text-field
                 v-model="view.name"
@@ -46,18 +46,30 @@
                 required />
             </v-col>
           </v-row>
-          <v-row>
+          <v-row v-if="!view.is_public" dense>
             <v-col>
-              <v-switch
+              <v-alert
+                border="left"
+                color="warning">
+                The view metadata (name, query, etc.) will still be public, but the data will only be visible to you.
+              </v-alert>
+            </v-col>
+          </v-row>
+          <v-row dense>
+            <v-col cols="6">
+              <v-select
                 v-model="view.is_public"
-                :label="`${view.is_public ? 'Public' : 'Private'} view`" />
+                :items="visibilityOptions"
+                item-text="name"
+                item-value="value"
+                label="View visibility" />
             </v-col>
           </v-row>
         </v-card-text>
         <v-card-text>
           <v-tabs-items v-model="tabs">
             <v-tab-item>
-              <v-row>
+              <v-row dense>
                 <v-col cols="6">
                   <v-select
                     v-model="table"
@@ -123,7 +135,7 @@
                   <v-alert
                     border="left"
                     color="info">
-                    Currently, comments and <a href="https://mariadb.com/kb/en/aggregate-functions/" target="_blank">aggregation functions</a>
+                    The star selector, comments and <a href="https://mariadb.com/kb/en/aggregate-functions/" target="_blank">aggregation functions</a>
                     <sup>
                       <v-icon dense x-small>mdi-open-in-new</v-icon>
                     </sup>
@@ -150,6 +162,7 @@
 <script>
 import DatabaseService from '@/api/database.service'
 import MiddlewareService from '@/api/middleware.service'
+import TableMapper from '@/api/table.mapper'
 
 export default {
   props: {
@@ -208,15 +221,16 @@ export default {
       rawSQL: '',
       select: [],
       clauses: [],
-      tabs: 0
+      tabs: 0,
+      visibilityOptions: [
+        { name: 'Public', value: true },
+        { name: 'Private', value: false }
+      ]
     }
   },
   computed: {
     columnNames () {
       return this.columns && this.columns.map(s => s.internal_name)
-    },
-    tableId () {
-      return this.table.id
     },
     columns () {
       if (!this.table) {
@@ -233,19 +247,17 @@ export default {
     database () {
       return this.$store.state.database
     },
+    user () {
+      return this.$store.state.user
+    },
+    viewNames () {
+      if (!this.database) {
+        return []
+      }
+      return this.database.views.map(v => v.internal_name)
+    },
     viewLink () {
-      return `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}` + (this.isView ? '/view' : '/query') + `/${this.resultId}`
-    },
-    token () {
-      return this.$store.state.token
-    },
-    config () {
-      if (this.token === null) {
-        return {}
-      }
-      return {
-        headers: { Authorization: `Bearer ${this.token}` }
-      }
+      return `/database/${this.$route.params.database_id}` + (this.isView ? '/view' : '/query') + `/${this.resultId}`
     },
     sql () {
       if (this.tabs === 0) {
@@ -261,7 +273,7 @@ export default {
       return !(!this.sql || this.sql.length === 0)
     },
     backTo () {
-      return `/container/${this.$route.params.container_id}/database/${this.$route.params.database_id}/` + (this.isView ? 'view' : 'query')
+      return `/database/${this.$route.params.database_id}/` + (this.isView ? 'view' : 'query')
     },
     isView () {
       return this.mode === 'view'
@@ -292,8 +304,7 @@ export default {
       if (!name) {
         return false
       }
-      const names = this.views.map(v => v.name)
-      return names.includes(name.toLowerCase())
+      return this.viewNames.includes(TableMapper.tableNameToInternalName(name))
     },
     selectTable () {
       if (this.$route.query.tid === undefined) {
@@ -322,7 +333,7 @@ export default {
     createView () {
       this.loadingQuery = true
       this.view.query = this.sql
-      DatabaseService.createView(this.$route.params.container_id, this.$route.params.database_id, this.view)
+      DatabaseService.createView(this.$route.params.database_id, this.view)
         .then(async (view) => {
           this.resultId = view.id
           await this.$store.dispatch('reloadDatabase')

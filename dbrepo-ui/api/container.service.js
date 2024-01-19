@@ -1,5 +1,4 @@
-import Vue from 'vue'
-import api from '@/api'
+import api, { displayError } from '@/api'
 
 class ContainerService {
   findAll (limit = 100) {
@@ -11,26 +10,7 @@ class ContainerService {
           resolve(containers)
         })
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to load containers', error)
-          Vue.$toast.error(`[${code}] Failed to load containers: ${message}`)
-          reject(error)
-        })
-    })
-  }
-
-  findAllImages () {
-    return new Promise((resolve, reject) => {
-      api.get('/api/image', { headers: { Accept: 'application/json' } })
-        .then((response) => {
-          const images = response.data
-          console.debug('response images', images)
-          resolve(images)
-        })
-        .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to load images', error)
-          Vue.$toast.error(`[${code}] Failed to load images: ${message}`)
+          displayError('Failed to load container', error)
           reject(error)
         })
     })
@@ -45,9 +25,7 @@ class ContainerService {
           resolve(container)
         })
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to load container', error)
-          Vue.$toast.error(`[${code}] Failed to load container: ${message}`)
+          displayError('Failed to load container', error)
           reject(error)
         })
     })
@@ -62,50 +40,8 @@ class ContainerService {
           resolve(image)
         })
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to load image', error)
-          Vue.$toast.error(`[${code}] Failed to load image: ${message}`)
+          displayError('Failed to load image', error)
           reject(error)
-        })
-    })
-  }
-
-  create (data) {
-    return new Promise((resolve, reject) => {
-      api.post('/api/container', data, { headers: { Accept: 'application/json' } })
-        .then((response) => {
-          const container = response.data
-          console.debug('response container', container)
-          resolve(container)
-        })
-        .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to create container', error)
-          Vue.$toast.error(`[${code}] Failed to create container: ${message}`)
-          reject(error)
-        })
-    })
-  }
-
-  modify (id, action) {
-    return new Promise((resolve, reject) => {
-      api.put(`/api/container/${id}`, { action }, { headers: { Accept: 'application/json' } })
-        .then((response) => {
-          const container = response.data
-          console.debug('response container', container)
-          resolve(container)
-        })
-        .catch((error) => {
-          const { code, message, response } = error
-          const { status } = response
-          if (status === 409) {
-            console.warn('Failed to modify container', error)
-            reject(error)
-          } else {
-            console.error('Failed to modify container', error)
-            Vue.$toast.error(`[${code}] Failed to modify container: ${message}`)
-            reject(error)
-          }
         })
     })
   }

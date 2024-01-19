@@ -1,234 +1,210 @@
-import Vue from 'vue'
-import api from '@/api'
+import api, { displayError } from '@/api'
 
 class QueryService {
-  findAll (id, databaseId, persisted) {
+  findAll (databaseId, persisted) {
     return new Promise((resolve, reject) => {
-      api.get(`/api/container/${id}/database/${databaseId}/query${persisted === null ? '' : `?persisted=${persisted}`}`, { headers: { Accept: 'application/json' } })
+      api.get(`/api/database/${databaseId}/query${persisted === null ? '' : `?persisted=${persisted}`}`, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const queries = response.data
           console.debug('response queries', queries)
           resolve(queries)
         })
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to load queries', error)
-          Vue.$toast.error(`[${code}] Failed to load queries: ${message}`)
+          displayError('Failed to load queries', error)
           reject(error)
         })
     })
   }
 
-  findOne (id, databaseId, queryId) {
+  findOne (databaseId, queryId) {
     return new Promise((resolve, reject) => {
-      api.get(`/api/container/${id}/database/${databaseId}/query/${queryId}`, { headers: { Accept: 'application/json' } })
+      api.get(`/api/database/${databaseId}/query/${queryId}`, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const query = response.data
           console.debug('response query', query)
           resolve(query)
         }).catch((error) => {
-          const { code, message } = error
-          console.error('Failed to load query', error)
-          Vue.$toast.error(`[${code}] Failed to load query: ${message}`)
+          displayError('Failed to load query', error)
           reject(error)
         })
     })
   }
 
-  persist (id, databaseId, queryId) {
+  persist (databaseId, queryId, persist) {
     return new Promise((resolve, reject) => {
-      api.put(`/api/container/${id}/database/${databaseId}/query/${queryId}`, {}, { headers: { Accept: 'application/json' } })
+      api.put(`/api/database/${databaseId}/query/${queryId}`, { persist }, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const query = response.data
           console.debug('response query', query)
           resolve(query)
         })
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to persist query', error)
-          Vue.$toast.error(`[${code}] Failed to persist query: ${message}`)
+          displayError('Failed to persist query', error)
           reject(error)
         })
     })
   }
 
-  importCsv (id, databaseId, tableId, data) {
+  importCsv (databaseId, tableId, data) {
     return new Promise((resolve, reject) => {
-      api.post(`/api/container/${id}/database/${databaseId}/table/${tableId}/data/import`, data, { headers: { Accept: 'application/json' } })
+      api.post(`/api/database/${databaseId}/table/${tableId}/data/import`, data, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const table = response.data
           console.debug('response table', table)
           resolve(table)
         })
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to import csv to table', error)
-          Vue.$toast.error(`[${code}] Failed to import csv to table: ${message}`)
+          displayError('Failed to import csv to table', error)
           reject(error)
         })
     })
   }
 
-  insertTuple (id, databaseId, tableId, data) {
+  insertTuple (databaseId, tableId, data) {
     return new Promise((resolve, reject) => {
-      api.post(`/api/container/${id}/database/${databaseId}/table/${tableId}/data`, data, { headers: { Accept: 'text/csv' } })
+      api.post(`/api/database/${databaseId}/table/${tableId}/data`, { data }, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const tuple = response.data
           console.debug('response insert tuple', tuple)
           resolve(tuple)
         })
         .catch((error) => {
-          const { code, message, response } = error
-          const { status } = response
-          if (status === 423) {
-            console.error('Database failed to accept tuple', error)
-            Vue.$toast.error(`Database failed to accept tuple: ${message}`)
-          } else {
-            console.error('Failed to insert tuple', error)
-            Vue.$toast.error(`[${code}] Failed to insert tuple: ${message}`)
-          }
+          displayError('Failed to insert tuple', error)
           reject(error)
         })
     })
   }
 
-  updateTuple (id, databaseId, tableId, data) {
+  updateTuple (databaseId, tableId, data) {
     return new Promise((resolve, reject) => {
-      api.put(`/api/container/${id}/database/${databaseId}/table/${tableId}/data`, data, { headers: { Accept: 'text/csv' } })
+      api.put(`/api/database/${databaseId}/table/${tableId}/data`, data, { headers: { Accept: 'text/csv' } })
         .then((response) => {
           const tuple = response.data
           console.debug('response update tuple', tuple)
           resolve(tuple)
         })
         .catch((error) => {
-          const { code, message, response } = error
-          const { status } = response
-          if (status === 423) {
-            console.error('Database failed to accept tuple', error)
-            Vue.$toast.error(`Database failed to accept tuple: ${message}`)
-          } else {
-            console.error('Failed to update tuple', error)
-            Vue.$toast.error(`[${code}] Failed to update tuple: ${message}`)
-          }
+          displayError('Failed to update tuple', error)
           reject(error)
         })
     })
   }
 
-  exportSubset (id, databaseId, queryId) {
+  exportSubset (databaseId, queryId) {
     return new Promise((resolve, reject) => {
-      api.get(`/api/container/${id}/database/${databaseId}/query/${queryId}/export`, { headers: { Accept: 'text/csv' } })
+      api.get(`/api/database/${databaseId}/query/${queryId}/export`, { headers: { Accept: 'text/csv' } })
         .then((response) => {
           const subset = response.data
           console.debug('response subset', subset)
           resolve(subset)
         })
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to export query', error)
-          Vue.$toast.error(`[${code}] Failed to export query: ${message}`)
+          displayError('Failed to export subset', error)
           reject(error)
         })
     })
   }
 
-  exportMetadata (id, mime) {
+  exportMetadata (pid, mime) {
     return new Promise((resolve, reject) => {
-      api.get(`/api/pid/${id}`, { headers: { Accept: mime } })
+      api.get(`/api/pid/${pid}`, { headers: { Accept: mime } })
         .then((response) => {
           const metadata = response.data
           console.debug('response metadata', metadata)
           resolve(metadata)
         })
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to export metadata', error)
-          Vue.$toast.error(`[${code}] Failed to export metadata: ${message}`)
+          displayError('Failed to export metadata', error)
           reject(error)
         })
     })
   }
 
-  execute (id, databaseId, data, page, size) {
+  execute (databaseId, data, page, size) {
     return new Promise((resolve, reject) => {
-      api.post(`/api/container/${id}/database/${databaseId}/query?page=${page}&size=${size}`, data, { headers: { Accept: 'application/json' } })
+      api.post(`/api/database/${databaseId}/query?page=${page}&size=${size}`, data, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const result = response.data
           console.debug('response result', result)
           resolve(result)
         })
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to execute statement', error)
-          Vue.$toast.error(`[${code}] Failed to execute statement: ${message}`)
+          displayError('Failed to execute query', error)
           reject(error)
         })
     })
   }
 
-  reExecuteQuery (id, databaseId, queryId, page, size) {
+  reExecuteQuery (databaseId, queryId, page, size) {
     return new Promise((resolve, reject) => {
-      api.get(`/api/container/${id}/database/${databaseId}/query/${queryId}/data?page=${page}&size=${size}`, { headers: { Accept: 'application/json' } })
+      api.get(`/api/database/${databaseId}/query/${queryId}/data?page=${page}&size=${size}`, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const result = response.data
           console.debug('response result', result)
           resolve(result)
         })
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to re-execute query', error)
-          Vue.$toast.error(`[${code}] Failed to re-execute query: ${message}`)
+          displayError('Failed to re-execute query', error)
           reject(error)
         })
     })
   }
 
-  reExecuteQueryCount (id, databaseId, queryId) {
+  reExecuteQueryCount (databaseId, queryId) {
     return new Promise((resolve, reject) => {
-      api.get(`/api/container/${id}/database/${databaseId}/query/${queryId}/data/count`, { headers: { Accept: 'application/json' } })
+      api.get(`/api/database/${databaseId}/query/${queryId}/data/count`, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const count = response.data
           console.debug('response count', count)
           resolve(count)
         })
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to re-execute query count', error)
-          Vue.$toast.error(`[${code}] Failed to re-execute query count: ${message}`)
+          displayError('Failed to re-execute query and count results', error)
           reject(error)
         })
     })
   }
 
-  reExecuteView (id, databaseId, viewId, page, size) {
+  reExecuteView (databaseId, viewId, page, size) {
     return new Promise((resolve, reject) => {
-      api.get(`/api/container/${id}/database/${databaseId}/view/${viewId}/data?page=${page}&size=${size}`, { headers: { Accept: 'application/json' } })
+      api.get(`/api/database/${databaseId}/view/${viewId}/data?page=${page}&size=${size}`, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const result = response.data
           console.debug('response result', result)
           resolve(result)
         })
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to re-execute view', error)
-          Vue.$toast.error(`[${code}] Failed to re-execute view: ${message}`)
+          displayError('Failed to re-execute view', error)
           reject(error)
         })
     })
   }
 
-  reExecuteViewCount (id, databaseId, viewId) {
+  reExecuteViewCount (databaseId, viewId) {
     return new Promise((resolve, reject) => {
-      api.get(`/api/container/${id}/database/${databaseId}/view/${viewId}/data/count`, { headers: { Accept: 'application/json' } })
+      api.get(`/api/database/${databaseId}/view/${viewId}/data/count`, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const count = response.data
           console.debug('response count', count)
           resolve(count)
         })
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to re-execute view count', error)
-          Vue.$toast.error(`[${code}] Failed to re-execute view count: ${message}`)
+          displayError('Failed to re-execute view and count results', error)
+          reject(error)
+        })
+    })
+  }
+
+  findView (databaseId, viewId) {
+    return new Promise((resolve, reject) => {
+      api.get(`/api/database/${databaseId}/view/${viewId}`, { headers: { Accept: 'application/json' } })
+        .then((response) => {
+          const view = response.data
+          console.debug('response view', view)
+          resolve(view)
+        })
+        .catch((error) => {
+          displayError('Failed to find view', error)
           reject(error)
         })
     })

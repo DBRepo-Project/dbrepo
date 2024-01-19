@@ -1,5 +1,4 @@
-import Vue from 'vue'
-import api from '@/api'
+import api, { displayError } from '@/api'
 
 class IdentifierService {
   findAll (databaseId, type) {
@@ -12,16 +11,33 @@ class IdentifierService {
           resolve(identifiers)
         })
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to load identifiers', error)
-          Vue.$toast.error(`[${code}] Failed to load identifiers: ${message}`)
+          displayError('Failed to load identifiers', error)
           reject(error)
         })
     })
   }
 
-  find (id) {
-    return this.findAccept(id, 'application/json')
+  retrieve (url) {
+    return new Promise((resolve, reject) => {
+      if (url === null) {
+        reject(Error)
+      }
+      api.get(`/api/identifier/retrieve?url=${url}`, { headers: { Accept: 'application/json' } })
+        .then((response) => {
+          const { status, data } = response
+          if (status === 200) {
+            console.debug('response metadata', data)
+            resolve(data)
+          } else {
+            console.error('response metadata', response)
+            reject(response)
+          }
+        })
+        .catch((error) => {
+          displayError('Failed to load identifier', error)
+          reject(error)
+        })
+    })
   }
 
   findAccept (id, accept) {
@@ -33,9 +49,7 @@ class IdentifierService {
           resolve(identifier)
         })
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to load identifier', error)
-          Vue.$toast.error(`[${code}] Failed to load identifier: ${message}`)
+          displayError('Failed to load citation recommendation', error)
           reject(error)
         })
     })
@@ -50,9 +64,7 @@ class IdentifierService {
           resolve(identifier)
         })
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to create identifier', error)
-          Vue.$toast.error(`[${code}] Failed to create identifier: ${message}`)
+          displayError('Failed to create identifier', error)
           reject(error)
         })
     })
@@ -67,9 +79,7 @@ class IdentifierService {
           resolve(identifier)
         })
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to update identifier', error)
-          Vue.$toast.error(`[${code}] Failed to update identifier: ${message}`)
+          displayError('Failed to update identifier', error)
           reject(error)
         })
     })
@@ -84,9 +94,7 @@ class IdentifierService {
           resolve(identifier)
         })
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to export identifier', error)
-          Vue.$toast.error(`[${code}] Failed to export identifier: ${message}`)
+          displayError('Failed to export identifier', error)
           reject(error)
         })
     })
@@ -97,9 +105,7 @@ class IdentifierService {
       api.delete(`/api/pid/${pid}`, { headers: { Accept: 'application/json' } })
         .then(() => resolve())
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to delete identifier', error)
-          Vue.$toast.error(`[${code}] Failed to delete identifier: ${message}`)
+          displayError('Failed to delete identifier', error)
           reject(error)
         })
     })

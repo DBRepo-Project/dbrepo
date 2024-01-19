@@ -1,0 +1,55 @@
+package at.tuwien.api.user;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.*;
+
+import jakarta.validation.constraints.NotNull;
+import lombok.extern.jackson.Jacksonized;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
+
+import java.util.UUID;
+
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Jacksonized
+@ToString
+public class UserBriefDto {
+
+    @NotNull
+    @Field(name = "id", type = FieldType.Keyword)
+    @Schema(example = "1ffc7b0e-9aeb-4e8b-b8f1-68f3936155b4")
+    private UUID id;
+
+    @NotNull
+    @Field(name = "username", type = FieldType.Keyword)
+    @Schema(example = "jcarberry", description = "Only contains lowercase characters")
+    private String username;
+
+    @Schema(example = "Josiah Carberry")
+    private String name;
+
+    @JsonProperty("qualified_name")
+    @Field(name = "qualified_name", type = FieldType.Keyword)
+    @Schema(example = "Josiah Carberry — @jcarberry")
+    private String qualifiedName;
+
+    @Field(name = "orcid", type = FieldType.Keyword)
+    @Schema(example = "0000-0002-1825-0097")
+    private String orcid;
+
+    @JsonProperty("given_name")
+    @Field(name = "firstname", type = FieldType.Keyword)
+    @Schema(example = "Josiah")
+    private String firstname;
+
+    @JsonProperty("family_name")
+    @Field(name = "lastname", type = FieldType.Keyword)
+    @Schema(example = "Carberry")
+    private String lastname;
+
+}

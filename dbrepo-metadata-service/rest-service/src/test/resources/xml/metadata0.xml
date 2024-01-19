@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<resource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://datacite.org/schema/kernel-4"
+          xsi:schemaLocation="http://datacite.org/schema/kernel-4 https://schema.datacite.org/meta/kernel-4.4/metadata.xsd">
+    <identifier identifierType="PID">oai:1</identifier>
+    <titles>
+        <title xml:lang="en">Australia weather data</title>
+    </titles>
+    <publisher xml:lang="en">Australian Government</publisher>
+    <publicationYear>2022</publicationYear>
+    <dates>
+        <date dateType="Issued">2022-01-07T20:45:52Z</date>
+        <date dateType="Available">2022-01-07T20:45:52Z</date>
+    </dates>
+    <resourceType resourceTypeGeneral="Dataset">Dataset</resourceType>
+    <descriptions>
+        <description descriptionType="Abstract">Selecting all from the weather Australia table</description>
+    </descriptions>
+    <version>1.0</version>
+</resource>

@@ -7,7 +7,6 @@ import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.servers.Server;
 import org.springdoc.core.models.GroupedOpenApi;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -15,9 +14,6 @@ import java.util.List;
 
 @Configuration
 public class SwaggerConfig {
-
-    @Value("${app.version:unknown}")
-    private String version;
 
     @Bean
     public OpenAPI springShopOpenAPI() {
@@ -28,7 +24,7 @@ public class SwaggerConfig {
                                 .name("Prof. Andreas Rauber")
                                 .email("andreas.rauber@tuwien.ac.at"))
                         .description("Service that manages the metadata")
-                        .version(version)
+                        .version("$TAG")
                         .license(new License()
                                 .name("Apache 2.0")
                                 .url("https://www.apache.org/licenses/LICENSE-2.0")))
@@ -40,7 +36,7 @@ public class SwaggerConfig {
                                 .url("http://localhost:9099"),
                         new Server()
                                 .description("Sandbox")
-                                .url("https://dbrepo2.tuwien.ac.at")));
+                                .url("https://test.dbrepo.tuwien.ac.at")));
     }
 
     @Bean
