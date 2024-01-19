@@ -9,7 +9,7 @@ author: Martin Weise
 If you have [Docker](https://docs.docker.com/engine/install/) already installed on your system, you can install DBRepo with:
 
 ```shell
-curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/install.sh | bash
+curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/master/install.sh | bash
 ```
 
 ## Requirements

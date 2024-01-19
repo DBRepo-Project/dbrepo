@@ -37,13 +37,32 @@ data ingest operations.
 
 ### Identifiers
 
-The service is responsible for creating and resolving a *persistent identifier* (PID) attached to a query to
-obtain the metadata attached to it and allow re-execution of a query. We store both the query and hashes of the query
-and result set to allow equality checks of the originally obtained result set and the currently obtained result set. In
-the reference implementation we currently only use a numerical id column and plan to integrate *digital object
-identifier* (DOI) through our institutional library soon.
+The service is responsible for creating and resolving a *persistent identifier* (PID) attached to a database, subset,
+table or view to obtain the metadata attached to it and allow reproduction of the exact same result.
 
-This service provides an OAI-PMH endpoint for metadata aggregators.
+This service also provides an OAI-PMH endpoint for metadata aggregators 
+(e.g. [OpenAIRE Graph](https://graph.openaire.eu/)). Through the User Interface, it also exposes metadata through
+JSON-LD to metadata aggregators (e.g. [Google Datasets](https://datasetsearch.research.google.com/)). PID metadata
+is always exposed, even for private databases.
+
+The service generates internal PIDs, essentially representing internal URIs in 
+the [DataCite Metadata Schema 4.4](https://doi.org/10.14454/3w3z-sa82). This can be enhanced with activating the 
+external DataCite Fabrica system to generate DOIs, this is disabled by default. 
+
+To activate DOI minting, pass your DataCite Fabrica credentials in the environment variables:
+
+```yaml title="docker-compose.yml"
+services:
+  dbrepo-metadata-service:
+    image: docker.io/dbrepo/metadata-service:1.4.0
+    environment:
+      spring_profiles_active: doi
+      DATACITE_URL: https://api.datacite.org
+      DATACITE_PREFIX: 10.12345
+      DATACITE_USERNAME: username
+      DATACITE_PASSWORD: password
+  ...
+```
 
 ### Queries
 
