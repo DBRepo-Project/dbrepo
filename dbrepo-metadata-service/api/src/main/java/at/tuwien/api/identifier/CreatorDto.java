@@ -1,0 +1,82 @@
+package at.tuwien.api.identifier;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.*;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.extern.jackson.Jacksonized;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
+
+
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Jacksonized
+@ToString
+public class CreatorDto {
+
+    @Id
+    @NotNull
+    @Field(name = "id", type = FieldType.Keyword)
+    private Long id;
+
+    @Schema(example = "Josiah")
+    @Field(name = "firstname", type = FieldType.Text)
+    private String firstname;
+
+    @Schema(example = "Carberry")
+    @Field(name = "lastname", type = FieldType.Text)
+    private String lastname;
+
+    @NotBlank
+    @JsonProperty("creator_name")
+    @Schema(example = "Carberry, Josiah")
+    @Field(name = "creator_name", type = FieldType.Text)
+    private String creatorName;
+
+    @JsonProperty("name_type")
+    @Schema(example = "Personal")
+    @Field(name = "name_type", type = FieldType.Keyword)
+    private NameTypeDto nameType;
+
+    @JsonProperty("name_identifier")
+    @Schema(example = "0000-0002-1825-0097")
+    @Field(name = "name_identifier", type = FieldType.Keyword)
+    private String nameIdentifier;
+
+    @JsonProperty("name_identifier_scheme")
+    @Schema(example = "ORCID")
+    @Field(name = "name_identifier_scheme", type = FieldType.Keyword)
+    private NameIdentifierSchemeTypeDto nameIdentifierScheme;
+
+    @JsonProperty("name_identifier_scheme_uri")
+    @Schema(example = "https://orcid.org/")
+    @Field(name = "name_identifier_scheme_uri", type = FieldType.Keyword)
+    private String nameIdentifierSchemeUri;
+
+    @Schema(example = "Brown University")
+    @Field(name = "affiliation", type = FieldType.Keyword)
+    private String affiliation;
+
+    @JsonProperty("affiliation_identifier")
+    @Schema(example = "https://ror.org/05gq02987")
+    @Field(name = "affiliation_identifier", type = FieldType.Keyword)
+    private String affiliationIdentifier;
+
+    @JsonProperty("affiliation_identifier_scheme")
+    @Schema(example = "ROR")
+    @Field(name = "affiliation_identifier_scheme", type = FieldType.Keyword)
+    private AffiliationIdentifierSchemeTypeDto affiliationIdentifierScheme;
+
+    @JsonProperty("affiliation_identifier_scheme_uri")
+    @Schema(example = "https://ror.org/")
+    @Field(name = "affiliation_identifier_scheme_uri", type = FieldType.Keyword)
+    private String affiliationIdentifierSchemeUri;
+
+}

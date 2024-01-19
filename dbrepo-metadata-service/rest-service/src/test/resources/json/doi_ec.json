@@ -1,0 +1,467 @@
+{
+  "country": {
+    "resource": "http://sws.geonames.org/6695072/"
+  },
+  "address": {
+    "postalAddress": {
+      "addressCountry": "eue"
+    }
+  },
+  "inScheme": {
+    "resource": "http://data.crossref.org/fundingdata/vocabulary"
+  },
+  "created": "2011-06-08T16:00:03.0",
+  "prefLabel": {
+    "Label": {
+      "literalForm": {
+        "lang": "en",
+        "content": "European Commission"
+      },
+      "about": "http://data.crossref.org/fundingdata/vocabulary/Label-31893"
+    }
+  },
+  "narrower": [
+    {
+      "resource": "http://dx.doi.org/10.13039/100018708"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/100010661"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/100011102"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/100011103"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/100011104"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/100011105"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/100013268"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/100013284"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/100013286"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/100013971"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/100013972"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/100018693"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/100019763"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/100019764"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/100019765"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/501100000781"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/501100000783"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/501100000785"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/501100000802"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/501100000803"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/501100000804"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/501100000808"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/501100000810"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/501100000811"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/501100000886"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/501100000887"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/501100000888"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/501100000889"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/501100000890"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/501100000891"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/501100000892"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/501100000893"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/501100000894"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/501100000895"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/501100000896"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/501100000897"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/501100000898"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/501100000899"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/501100000900"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/501100000904"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/501100000905"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/501100001942"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/501100002207"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/501100003528"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/501100004963"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/501100004964"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/501100004965"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/501100004966"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/501100007561"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/501100007562"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/501100007565"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/501100007601"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/501100007920"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/501100008530"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/501100010790"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/501100012290"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/501100013212"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/501100013213"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/501100013215"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/501100014585"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/100020311"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/100020631"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/100020632"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/100020633"
+    },
+    {
+      "resource": "http://dx.doi.org/10.13039/100020634"
+    }
+  ],
+  "modified": "2023-04-07T06:35:55.000000",
+  "altLabel": [
+    {
+      "Label": {
+        "literalForm": {
+          "lang": "en",
+          "content": "European Union"
+        },
+        "about": "http://data.crossref.org/fundingdata/vocabulary/Label-46950"
+      }
+    },
+    {
+      "Label": {
+        "literalForm": {
+          "lang": "es",
+          "content": "Comisión Europea"
+        },
+        "about": "http://data.crossref.org/fundingdata/vocabulary/Label-11817954"
+      }
+    },
+    {
+      "Label": {
+        "literalForm": {
+          "lang": "de",
+          "content": "Europäische Kommission"
+        },
+        "about": "http://data.crossref.org/fundingdata/vocabulary/Label-6350205"
+      }
+    },
+    {
+      "Label": {
+        "literalForm": {
+          "lang": "da",
+          "content": "EU-Kommissionen"
+        },
+        "about": "http://data.crossref.org/fundingdata/vocabulary/Label-24955712"
+      }
+    },
+    {
+      "Label": {
+        "literalForm": {
+          "lang": "et",
+          "content": "Euroopa Komisjoni"
+        },
+        "about": "http://data.crossref.org/fundingdata/vocabulary/Label-24955713"
+      }
+    },
+    {
+      "Label": {
+        "literalForm": {
+          "lang": "el",
+          "content": "Ευρωπαϊκής Επιτροπής"
+        },
+        "about": "http://data.crossref.org/fundingdata/vocabulary/Label-24955714"
+      }
+    },
+    {
+      "Label": {
+        "literalForm": {
+          "lang": "bg",
+          "content": "Европейската комисия"
+        },
+        "about": "http://data.crossref.org/fundingdata/vocabulary/Label-24955715"
+      }
+    },
+    {
+      "Label": {
+        "literalForm": {
+          "lang": "cs",
+          "content": "Evropské komise"
+        },
+        "about": "http://data.crossref.org/fundingdata/vocabulary/Label-24955716"
+      }
+    },
+    {
+      "Label": {
+        "literalForm": {
+          "lang": "fr",
+          "content": "Commission européenne"
+        },
+        "about": "http://data.crossref.org/fundingdata/vocabulary/Label-3798452"
+      }
+    },
+    {
+      "Label": {
+        "literalForm": {
+          "lang": "ga",
+          "content": "Choimisiúin Eorpaigh"
+        },
+        "about": "http://data.crossref.org/fundingdata/vocabulary/Label-24955718"
+      }
+    },
+    {
+      "Label": {
+        "literalForm": {
+          "lang": "hr",
+          "content": "Europskoj komisiji"
+        },
+        "about": "http://data.crossref.org/fundingdata/vocabulary/Label-24955722"
+      }
+    },
+    {
+      "Label": {
+        "literalForm": {
+          "lang": "it",
+          "content": "Commissione europea"
+        },
+        "about": "http://data.crossref.org/fundingdata/vocabulary/Label-4073281"
+      }
+    },
+    {
+      "Label": {
+        "literalForm": {
+          "lang": "it",
+          "content": "La Commissione europea"
+        },
+        "about": "http://data.crossref.org/fundingdata/vocabulary/Label-24955729"
+      }
+    },
+    {
+      "Label": {
+        "literalForm": {
+          "lang": "lv",
+          "content": "Eiropas Komisiju"
+        },
+        "about": "http://data.crossref.org/fundingdata/vocabulary/Label-24955730"
+      }
+    },
+    {
+      "Label": {
+        "literalForm": {
+          "lang": "lt",
+          "content": "Europos Komisijos"
+        },
+        "about": "http://data.crossref.org/fundingdata/vocabulary/Label-24955733"
+      }
+    },
+    {
+      "Label": {
+        "literalForm": {
+          "lang": "hu",
+          "content": "Európai Bizottságról"
+        },
+        "about": "http://data.crossref.org/fundingdata/vocabulary/Label-24955734"
+      }
+    },
+    {
+      "Label": {
+        "literalForm": {
+          "lang": "nl",
+          "content": "Europese Commissie"
+        },
+        "about": "http://data.crossref.org/fundingdata/vocabulary/Label-14932494"
+      }
+    },
+    {
+      "Label": {
+        "literalForm": {
+          "lang": "pl",
+          "content": "Komisja Europejska"
+        },
+        "about": "http://data.crossref.org/fundingdata/vocabulary/Label-24955740"
+      }
+    },
+    {
+      "Label": {
+        "literalForm": {
+          "lang": "pt",
+          "content": "Comissão Europeia"
+        },
+        "about": "http://data.crossref.org/fundingdata/vocabulary/Label-24955741"
+      }
+    },
+    {
+      "Label": {
+        "literalForm": {
+          "lang": "ro",
+          "content": "Comisia Europeană"
+        },
+        "about": "http://data.crossref.org/fundingdata/vocabulary/Label-24955743"
+      }
+    },
+    {
+      "Label": {
+        "literalForm": {
+          "lang": "sk",
+          "content": "Európskej komisii"
+        },
+        "about": "http://data.crossref.org/fundingdata/vocabulary/Label-24955745"
+      }
+    },
+    {
+      "Label": {
+        "literalForm": {
+          "lang": "sl",
+          "content": "Evropski komisiji"
+        },
+        "about": "http://data.crossref.org/fundingdata/vocabulary/Label-24955746"
+      }
+    },
+    {
+      "Label": {
+        "literalForm": {
+          "lang": "fi",
+          "content": "Euroopan komission"
+        },
+        "about": "http://data.crossref.org/fundingdata/vocabulary/Label-24955750"
+      }
+    },
+    {
+      "Label": {
+        "literalForm": {
+          "lang": "sv",
+          "content": "Europeiska kommissionen"
+        },
+        "about": "http://data.crossref.org/fundingdata/vocabulary/Label-24955751"
+      }
+    },
+    {
+      "Label": {
+        "literalForm": {
+          "lang": "en",
+          "content": "EC"
+        },
+        "usageFlag": {
+          "resource": "http://data.crossref.org/fundingdata/vocabulary/acronym"
+        },
+        "about": "http://data.crossref.org/fundingdata/vocabulary/Label-31894"
+      }
+    },
+    {
+      "Label": {
+        "literalForm": {
+          "lang": "en",
+          "content": "EU"
+        },
+        "usageFlag": {
+          "resource": "http://data.crossref.org/fundingdata/vocabulary/acronym"
+        },
+        "about": "http://data.crossref.org/fundingdata/vocabulary/Label-25291959"
+      }
+    }
+  ],
+  "id": "https://doi.org/10.13039/501100000780",
+  "region": "Europe",
+  "fundingBodyType": "gov",
+  "fundingBodySubType": "National government"
+}

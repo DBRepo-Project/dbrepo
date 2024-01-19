@@ -1,5 +1,4 @@
-import Vue from 'vue'
-import api from '@/api'
+import api, { displayError } from '@/api'
 import UserMapper from '@/api/user.mapper'
 
 class UserService {
@@ -12,9 +11,7 @@ class UserService {
           resolve(users)
         })
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to load users', error)
-          Vue.$toast.error(`[${code}] Failed to load users: ${message}`)
+          displayError(error, 'Failed to load users')
           reject(error)
         })
     })
@@ -28,9 +25,7 @@ class UserService {
           console.debug('response user', response.data, 'mapped user', user)
           resolve(user)
         }).catch((error) => {
-          const { code, message } = error
-          console.error('Failed to load user', error)
-          Vue.$toast.error(`[${code}] Failed to load user: ${message}`)
+          displayError(error, 'Failed to load user')
           reject(error)
         })
     })
@@ -44,9 +39,7 @@ class UserService {
           console.debug('response user', response.data, 'mapped user', user)
           resolve(user)
         }).catch((error) => {
-          const { code, message } = error
-          console.error('Failed to update user information', error)
-          Vue.$toast.error(`[${code}] Failed to update user information: ${message}`)
+          displayError(error, 'Failed to update user information')
           reject(error)
         })
     })
@@ -60,18 +53,16 @@ class UserService {
           console.debug('response user', user)
           resolve(user)
         }).catch((error) => {
-          const { code, message, response } = error
-          const { status } = response
+          const { status } = error
           if (status === 417) {
-            Vue.$toast.error('This e-mail address is already taken')
+            displayError(error, 'This e-mail address is already taken')
           } else if (status === 409) {
-            Vue.$toast.error('This username is already taken')
+            displayError(error, 'This username is already taken')
           } else if (status === 428) {
-            Vue.$toast.warning(`[${code}] Account was created: ${message}`)
+            displayError(error, 'Account was created')
           } else {
-            Vue.$toast.error(`[${code}] Failed to create user: ${message}`)
+            displayError(error, 'Failed to create user')
           }
-          console.error('Failed to create user', error)
           this.loading = false
           reject(error)
         })
@@ -83,9 +74,7 @@ class UserService {
       api.put(`/api/user/${id}/password`, { password }, { headers: { Accept: 'application/json' } })
         .then(() => resolve())
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to update user password', error)
-          Vue.$toast.error(`[${code}] Failed to update user password: ${message}`)
+          displayError(error, 'Failed to update password')
           reject(error)
         })
     })
@@ -96,9 +85,7 @@ class UserService {
       api.put(`/api/user/${id}/theme`, { theme_dark: themeDark }, { headers: { Accept: 'application/json' } })
         .then(() => resolve())
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to update user theme', error)
-          Vue.$toast.error(`[${code}] Failed to update user theme: ${message}`)
+          displayError(error, 'Failed to update theme')
           reject(error)
         })
     })

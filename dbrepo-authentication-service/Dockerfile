@@ -5,6 +5,7 @@ MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
 # Enable health and metrics support
 ENV KC_HEALTH_ENABLED=true
 ENV KC_METRICS_ENABLED=true
+ENV KC_HTTP_RELATIVE_PATH=/api/auth
 
 # Configure a database vendor
 ENV KC_DB=mariadb
@@ -33,21 +34,23 @@ COPY ./dbrepo-realm.json /opt/keycloak/data/import/dbrepo-realm.json
 
 WORKDIR /app
 
-COPY ./healthcheck.sh ./healthcheck.sh
+COPY ./docker-entrypoint.sh ./docker-entrypoint.sh
+COPY ./disable-tls.sh ./disable-tls.sh
 
-ENV METADATA_USERNAME=root
-ENV METADATA_PASSWORD=dbrepo
+ENV AUTH_DB=keycloak
+ENV AUTH_USERNAME=root
+ENV AUTH_PASSWORD=dbrepo
 
 ENV KC_DB=mariadb
-ENV KC_DB_URL=jdbc:mariadb://metadata-db/fda
-ENV KC_DB_USERNAME=${METADATA_USERNAME}
-ENV KC_DB_PASSWORD=${METADATA_PASSWORD}
-ENV KC_HOSTNAME=localhost
+ENV KC_DB_URL=jdbc:mariadb://auth-db/${AUTH_DB}
+ENV KC_DB_USERNAME=${AUTH_USERNAME}
+ENV KC_DB_PASSWORD=${AUTH_PASSWORD}
+ENV KC_HOSTNAME_STRICT_HTTPS=false
+ENV KC_HOSTNAME_PATH=/api/auth
+ENV KC_HOSTNAME_ADMIN_URL=http://localhost/api/auth
 
 ENV KEYCLOAK_IMPORT=/opt/keycloak/data/import/dbrepo-realm.json
 ENV KEYCLOAK_ADMIN=fda
 ENV KEYCLOAK_ADMIN_PASSWORD=fda
 
-HEALTHCHECK --interval=10s --timeout=5s --retries=12 CMD ["bash", "/app/healthcheck.sh"]
-
-ENTRYPOINT ["/opt/keycloak/bin/kc.sh", "start-dev", "--import-realm"]
+ENTRYPOINT [ "bash", "/app/docker-entrypoint.sh" ]

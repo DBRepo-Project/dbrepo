@@ -4,78 +4,98 @@
       <v-card>
         <v-progress-linear v-if="loading" :color="loadingColor" :indeterminate="!error" />
         <v-card-title v-text="title" />
+        <v-card-subtitle v-if="subtitle" v-text="subtitle" />
         <v-card-text>
-          <div v-for="(attr,idx) in columns" :key="idx">
+          <div v-for="(column,idx) in table.columns" :key="idx">
             <v-text-field
-              v-if="attr.column_type === 'number'"
-              v-model.number="localTuple[attr.internal_name]"
-              :disabled="(!edit && attr.auto_generated)"
+              v-if="isNumber(column)"
+              v-model.number="localTuple[column.internal_name]"
+              :disabled="(!edit && column.auto_generated)"
               class="mb-2"
-              :hint="hint(attr)"
+              :hint="hint(column)"
               persistent-hint
-              :rules="(attr.is_null_allowed || attr.auto_generated) ? [] : [ v => !!v || $t('Required') ]"
-              :required="required(attr)"
-              :label="label(attr)"
+              :rules="rules(column)"
+              :required="required(column)"
+              :label="label(column)"
               type="number" />
             <v-text-field
-              v-if="attr.column_type === 'string' || attr.column_type === 'text' || attr.column_type === 'decimal'"
-              v-model="localTuple[attr.internal_name]"
-              :disabled="(edit && attr.is_primary_key) || (!edit && attr.auto_generated)"
+              v-if="isTextField(column)"
+              v-model="localTuple[column.internal_name]"
+              :disabled="disabled(column)"
               class="mb-2"
-              :rules="(attr.is_null_allowed || attr.auto_generated) ? [] : [ v => !!v || $t('Required') ]"
-              :required="required(attr)"
-              :label="label(attr)"
+              :clearable="!required(column)"
+              :counter="maxLength(column) !== null"
+              :maxlength="maxLength(column)"
+              :rules="rules(column)"
+              :required="required(column)"
+              :label="label(column)"
               type="text" />
             <v-text-field
-              v-if="attr.column_type === 'timestamp'"
-              v-model="localTuple[attr.internal_name]"
-              suffix="UTC"
-              hint="e.g. 2022-07-12 18:32:59"
-              :rules="(attr.auto_generated) ? [] : (attr.is_null_allowed ? [ validateTimestamp ] : [validateTimestamp || $t('Required format yyyy-MM-dd HH:mm:ss'), v => !!v || $t('Required')])"
+              v-if="isFloatingPoint(column)"
+              v-model="localTuple[column.internal_name]"
+              :disabled="disabled(column)"
               class="mb-2"
-              :required="required(attr)"
-              :label="label(attr)"
+              step=".1"
+              :clearable="!required(column)"
+              :rules="rules(column)"
+              :required="required(column)"
+              :hint="hint(column)"
+              :label="label(column)"
+              type="number" />
+            <v-file-input
+              v-if="isFileField(column)"
+              v-model="localTuple[column.internal_name]"
+              :disabled="disabled(column)"
+              prepend-icon="mdi-code-brackets"
+              class="mb-2"
+              :clearable="!required(column)"
+              :rules="rules(column)"
+              :required="required(column)"
+              :hint="hint(column)"
+              :show-size="1000"
+              counter
+              :label="label(column)"
+              type="file"
+              @focusout="upload(column, localTuple[column.internal_name])" />
+            <v-textarea
+              v-if="isTextArea(column)"
+              v-model="localTuple[column.internal_name]"
+              :disabled="disabled(column)"
+              class="mb-2"
+              rows="3"
+              :clearable="!required(column)"
+              :rules="rules(column)"
+              :required="required(column)"
+              :hint="hint(column)"
+              :label="label(column)" />
+            <v-text-field
+              v-if="isTimeField(column)"
+              v-model="localTuple[column.internal_name]"
+              :hint="hint(column)"
+              persistent-hint
+              class="mb-2"
+              :clearable="!required(column)"
+              :required="required(column)"
+              :label="label(column)"
               type="text" />
-            <v-menu
-              v-if="attr.column_type === 'date'"
-              ref="menu"
-              v-model="menu"
-              :close-on-content-click="true"
-              transition="scale-transition"
-              offset-y
-              min-width="auto">
-              <template v-slot:activator="{ on, attrs }">
-                <v-text-field
-                  v-model="localTuple[attr.internal_name]"
-                  :label="label(attr)"
-                  suffix="UTC"
-                  readonly
-                  v-bind="attrs"
-                  v-on="on" />
-              </template>
-              <v-date-picker
-                v-model="localTuple[attr.internal_name]"
-                color="primary"
-                no-title
-                scrollable />
-            </v-menu>
             <v-select
-              v-if="attr.column_type === 'ENUM'"
-              v-model="localTuple[attr.internal_name]"
+              v-if="isSet(column) || isEnum(column)"
+              v-model="localTuple[column.internal_name]"
               class="mb-2"
-              :rules="(attr.is_null_allowed || attr.auto_generated) ? [] : [ v => !!v || $t('Required') ]"
-              :required="required(attr)"
-              :items="attr.enum_values"
-              :label="label(attr)" />
+              :rules="rules(column)"
+              :required="required(column)"
+              :clearable="!required(column)"
+              :items="isSet(column) ? column.sets : column.enums"
+              :label="label(column)" />
             <v-select
-              v-if="attr.column_type === 'boolean'"
-              v-model="localTuple[attr.internal_name]"
+              v-if="isBoolean(column)"
+              v-model="localTuple[column.internal_name]"
               class="mb-2"
-              :rules="(attr.is_null_allowed || attr.auto_generated) ? [] : [ v => v !== null || $t('Required') ]"
-              :required="required(attr)"
+              :rules="rules(column)"
+              :required="required(column)"
               :items="bools"
-              :clearable="attr.is_null_allowed"
-              :label="label(attr)" />
+              :clearable="!required(column)"
+              :label="label(column)" />
           </div>
         </v-card-text>
         <v-card-actions>
@@ -113,6 +133,7 @@
 
 <script>
 import QueryService from '@/api/query.service'
+import UploadService from '@/api/upload.service'
 
 export default {
   props: {
@@ -123,6 +144,17 @@ export default {
     edit: {
       type: Boolean,
       default: false
+    },
+    table: {
+      type: Object,
+      default: () => {
+        return {
+          columns: [],
+          constraints: {
+            checks: []
+          }
+        }
+      }
     }
   },
   data () {
@@ -131,8 +163,8 @@ export default {
       loading: false,
       error: false,
       menu: false,
-      columns: this.$parent.$parent.$parent.$parent.table.columns,
       localTuple: null,
+      localDisplay: null,
       bools: [
         { text: 'true', value: true },
         { text: 'false', value: false }
@@ -148,15 +180,23 @@ export default {
     },
     title () {
       return (this.edit ? 'Edit' : 'Add') + ' Tuple'
+    },
+    subtitle () {
+      if (!this.table.constraints) {
+        return null
+      }
+      return this.table.constraints.checks.length > 0 ? `Constraints: ${this.table.constraints.checks}` : null
     }
   },
   watch: {
     tuple (val) {
       this.localTuple = Object.assign({}, val)
+      this.localDisplay = Object.assign({}, val)
     }
   },
   mounted () {
     this.localTuple = Object.assign({}, this.tuple)
+    this.localDisplay = Object.assign({}, this.tuple)
   },
   methods: {
     submit () {
@@ -166,30 +206,83 @@ export default {
       this.menu = false
       this.$emit('close', { success: false })
     },
-    hint (attr) {
-      if (!this.edit && attr.auto_generated) {
-        return 'Value is auto-generated'
+    hint (column) {
+      if (!this.edit && column.auto_generated) {
+        return 'Auto-generated by sequence'
       }
-      if (this.edit && attr.is_primary_key) {
+      if (this.edit && column.is_primary_key) {
         return 'Required (Primary Key)'
       }
-      if (!attr.is_null_allowed) {
-        return 'Required'
+      if (['double', 'decimal'].includes(column.column_type)) {
+        return `Floating point number max. ${column.size} digit${column.size !== 1 ? 's' : ''} before and max. ${column.d} digit${column.d !== 1 ? 's' : ''} after the dot`
       }
-      return null
+      if (['date', 'datetime', 'timestamp', 'time'].includes(column.column_type)) {
+        return `Format: ${column.date_format.unix_format}`
+      }
+      if (['year'].includes(column.column_type)) {
+        return 'Format: YYYY'
+      }
     },
-    label (attr) {
-      return attr.name + (!attr.is_null_allowed ? ' *' : '')
+    label (column) {
+      return column.name + (!column.is_null_allowed ? ' *' : '')
     },
-    required (attr) {
-      return attr.is_null_allowed
+    isTextField (column) {
+      return ['char', 'varchar', 'tinytext', 'mediumtext'].includes(column.column_type)
     },
-    validateTimestamp (val) {
-      return /^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$/.test(val)
+    isTextArea (column) {
+      return ['text'].includes(column.column_type)
+    },
+    isFileField (column) {
+      return ['blob', 'longblob', 'mediumblob', 'tinyblob'].includes(column.column_type)
+    },
+    isBoolean (column) {
+      return ['bool'].includes(column.column_type)
+    },
+    isNumber (column) {
+      return ['int', 'binary', 'bit', 'tinyint', 'smallint', 'mediumint', 'bigint'].includes(column.column_type)
+    },
+    isFloatingPoint (column) {
+      return ['float', 'double', 'decimal'].includes(column.column_type)
+    },
+    isEnum (column) {
+      return column.column_type === 'enum'
+    },
+    isSet (column) {
+      return column.column_type === 'set'
+    },
+    isTimeField (column) {
+      return ['date', 'datetime', 'timestamp', 'time', 'year'].includes(column.column_type)
+    },
+    rules (column) {
+      if (column.auto_generated || column.is_null_allowed) {
+        return []
+      }
+      const rules = []
+      rules.push(v => !!v || 'Required')
+      if (column.column_type === 'char') {
+        rules.push(v => !(!v || v.length !== column.size) || `Must be exactly ${column.size} character${column.size !== 1 ? 's' : ''}`)
+      }
+      if (column.column_type === 'decimal' || column.column_type === 'double') {
+        rules.push(v => !(!v || v.split('.')[0].length > column.size) || `max. ${column.size} digit${column.size !== 1 ? 's' : ''} before the dot`)
+        rules.push(v => !(!v || v.split('.')[1] > column.d) || `max. ${column.d} digit${column.d !== 1 ? 's' : ''} after the dot`)
+      }
+      return rules
+    },
+    maxLength (column) {
+      if (!this.isTextField(column) || column.size === null) {
+        return null
+      }
+      return column.size
+    },
+    required (column) {
+      return column.is_null_allowed === false
+    },
+    disabled (column) {
+      return (this.edit && column.is_primary_key) || (!this.edit && column.auto_generated)
     },
     updateTuple () {
       const constraints = {}
-      this.columns
+      this.table.columns
         .filter(c => c.is_primary_key)
         .forEach((c) => {
           constraints[c.internal_name] = this.tuple[c.internal_name]
@@ -198,7 +291,7 @@ export default {
         data: this.localTuple,
         keys: constraints
       }
-      QueryService.updateTuple(this.$route.params.container_id, this.$route.params.database_id, this.$route.params.table_id, data)
+      QueryService.updateTuple(this.$route.params.database_id, this.$route.params.table_id, data)
         .then(() => {
           this.$toast.success('Successfully updated tuple!')
           this.$emit('close', { success: true })
@@ -206,20 +299,37 @@ export default {
     },
     addTuple () {
       const constraints = {}
-      this.columns
+      this.table.columns
         .filter(c => c.is_primary_key)
         .forEach((c) => {
           constraints[c.internal_name] = this.localTuple[c.internal_name]
         })
-      this.columns.forEach((column) => {
+      this.table.columns.forEach((column) => {
         if (!(column.internal_name in this.localTuple)) {
           this.localTuple[column.internal_name] = null
+          this.localDisplay[column.internal_name] = null
         }
       })
-      QueryService.insertTuple(this.$route.params.container_id, this.$route.params.database_id, this.$route.params.table_id, { data: this.localTuple })
+      QueryService.insertTuple(this.$route.params.database_id, this.$route.params.table_id, this.localTuple)
         .then(() => {
           this.$toast.success('Successfully added tuple!')
           this.$emit('close', { success: true })
+        })
+    },
+    upload (column, file) {
+      if (!file) {
+        return
+      }
+      UploadService.upload(file)
+        .then((metadata) => {
+          console.debug('uploaded file', metadata)
+          const { s3key } = metadata
+          this.localDisplay[column.internal_name] = this.localTuple[column.internal_name]
+          this.localTuple[column.internal_name] = s3key
+        })
+        .catch((error) => {
+          console.error(`Failed to set column value: ${column.internal_name}`, error)
+          this.$toast.error(`Failed to set column value: ${column.internal_name}`)
         })
     }
   }

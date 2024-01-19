@@ -7,16 +7,16 @@ import api from '@/api'
  * @author Martin Weise
  */
 class TableService {
-  findAll (id, databaseId) {
+  findAll (databaseId) {
     return new Promise((resolve, reject) => {
-      api.get(`/api/container/${id}/database/${databaseId}/table`, { headers: { Accept: 'application/json' } })
+      api.get(`/api/database/${databaseId}/table`, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const tables = response.data
           console.debug('response tables', tables)
           resolve(tables)
         })
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to load tables', error)
           Vue.$toast.error(`[${code}] Failed to load tables: ${message}`)
           reject(error)
@@ -24,16 +24,16 @@ class TableService {
     })
   }
 
-  findOne (id, databaseId, tableId) {
+  findOne (databaseId, tableId) {
     return new Promise((resolve, reject) => {
-      api.get(`/api/container/${id}/database/${databaseId}/table/${tableId}`, { headers: { Accept: 'application/json' } })
+      api.get(`/api/database/${databaseId}/table/${tableId}`, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const table = response.data
           console.debug('response table', table)
           resolve(table)
         })
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to load table', error)
           Vue.$toast.error(`[${code}] Failed to load table: ${message}`)
           reject(error)
@@ -41,16 +41,29 @@ class TableService {
     })
   }
 
-  updateColumn (id, databaseId, tableId, columnId, data) {
+  findByName (databaseId, name) {
     return new Promise((resolve, reject) => {
-      api.put(`/api/container/${id}/database/${databaseId}/table/${tableId}/column/${columnId}`, data, { headers: { Accept: 'application/json' } })
+      this.findAll(databaseId)
+        .then((tables) => {
+          const filter = tables.filter(t => t.name === name)
+          if (filter.length === 1) {
+            resolve(filter[0])
+          }
+          reject(new Error('Failed to find table with name ' + name + ' in database with id ' + databaseId))
+        })
+    })
+  }
+
+  updateColumn (databaseId, tableId, columnId, data) {
+    return new Promise((resolve, reject) => {
+      api.put(`/api/database/${databaseId}/table/${tableId}/column/${columnId}`, data, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const column = response.data
           console.debug('response column', column)
           resolve(column)
         })
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to update column', error)
           Vue.$toast.error(`[${code}] Failed to update column: ${message}`)
           reject(error)
@@ -58,12 +71,12 @@ class TableService {
     })
   }
 
-  importCsv (id, databaseId, tableId, data) {
+  importCsv (databaseId, tableId, data) {
     return new Promise((resolve, reject) => {
-      api.post(`/api/container/${id}/database/${databaseId}/table/${tableId}/data/import`, data, { headers: { Accept: 'application/json' } })
+      api.post(`/api/database/${databaseId}/table/${tableId}/data/import`, data, { headers: { Accept: 'application/json' } })
         .then(() => resolve())
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to import table data', error)
           Vue.$toast.error(`[${code}] Failed to import table data: ${message}`)
           reject(error)
@@ -71,16 +84,16 @@ class TableService {
     })
   }
 
-  data (id, databaseId, tableId, page, size, timestamp) {
+  data (databaseId, tableId, page, size, timestamp) {
     return new Promise((resolve, reject) => {
-      api.get(`/api/container/${id}/database/${databaseId}/table/${tableId}/data?page=${page}&size=${size}&timestamp=${timestamp}`, { headers: { Accept: 'application/json' } })
+      api.get(`/api/database/${databaseId}/table/${tableId}/data?page=${page}&size=${size}&timestamp=${timestamp}`, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const data = response.data
           console.debug('response data', data)
           resolve(data)
         })
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to load table data', error)
           Vue.$toast.error(`[${code}] Failed to load table data: ${message}`)
           reject(error)
@@ -88,16 +101,16 @@ class TableService {
     })
   }
 
-  dataCount (id, databaseId, tableId, timestamp) {
+  dataCount (databaseId, tableId, timestamp) {
     return new Promise((resolve, reject) => {
-      api.get(`/api/container/${id}/database/${databaseId}/table/${tableId}/data/count?timestamp=${timestamp}`, { headers: { Accept: 'application/json' } })
+      api.get(`/api/database/${databaseId}/table/${tableId}/data/count?timestamp=${timestamp}`, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const count = response.data
           console.debug('response count', count)
           resolve(count)
         })
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to load table count', error)
           Vue.$toast.error(`[${code}] Failed to load table count: ${message}`)
           reject(error)
@@ -105,16 +118,16 @@ class TableService {
     })
   }
 
-  findHistory (id, databaseId, tableId) {
+  findHistory (databaseId, tableId) {
     return new Promise((resolve, reject) => {
-      api.get(`/api/container/${id}/database/${databaseId}/table/${tableId}/history`, { headers: { Accept: 'application/json' } })
+      api.get(`/api/database/${databaseId}/table/${tableId}/history`, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const history = response.data
           console.debug('response history', history)
           resolve(history)
         })
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to load table history', error)
           Vue.$toast.error(`[${code}] Failed to load table history: ${message}`)
           reject(error)
@@ -122,20 +135,20 @@ class TableService {
     })
   }
 
-  exportData (id, databaseId, tableId) {
-    return this.exportDataTimestamp(id, databaseId, tableId, null)
+  exportData (databaseId, tableId) {
+    return this.exportDataTimestamp(databaseId, tableId, null)
   }
 
-  exportDataTimestamp (id, databaseId, tableId, timestamp) {
+  exportDataTimestamp (databaseId, tableId, timestamp) {
     return new Promise((resolve, reject) => {
-      api.get(`/api/container/${id}/database/${databaseId}/table/${tableId}/export?timestamp=${timestamp}`, { responseType: 'text' })
+      api.get(`/api/database/${databaseId}/table/${tableId}/export${timestamp ? ('?timestamp=' + timestamp) : ''}`, { responseType: 'text' })
         .then((response) => {
           const data = response.data
           console.debug('response data', data)
           resolve(data)
         })
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to export table data', error)
           Vue.$toast.error(`[${code}] Failed to export table data: ${message}`)
           reject(error)
@@ -143,17 +156,16 @@ class TableService {
     })
   }
 
-  create (id, databaseId, data) {
+  create (databaseId, data) {
     return new Promise((resolve, reject) => {
-      console.debug('====>', data)
-      api.post(`/api/container/${id}/database/${databaseId}/table`, data, { headers: { Accept: 'application/json' } })
+      api.post(`/api/database/${databaseId}/table`, data, { headers: { Accept: 'application/json' } })
         .then((response) => {
           const table = response.data
           console.debug('response table', table)
           resolve(table)
         })
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to create table', error)
           Vue.$toast.error(`[${code}] Failed to create table: ${message}`)
           reject(error)
@@ -161,12 +173,28 @@ class TableService {
     })
   }
 
-  deleteTuple (id, databaseId, tableId, data) {
+  delete (databaseId, tableId) {
     return new Promise((resolve, reject) => {
-      api.delete(`/api/container/${id}/database/${databaseId}/table/${tableId}/data`, { headers: { Accept: 'application/json' }, data })
+      api.delete(`/api/database/${databaseId}/table/${tableId}`, { headers: { Accept: 'application/json' } })
+        .then(() => {
+          console.info('Deleted table with id', tableId)
+          resolve()
+        })
+        .catch((error) => {
+          const { code, message } = error.response.data
+          console.error('Failed to delete table', error)
+          Vue.$toast.error(`[${code}] Failed to delete table: ${message}`)
+          reject(error)
+        })
+    })
+  }
+
+  deleteTuple (databaseId, tableId, data) {
+    return new Promise((resolve, reject) => {
+      api.delete(`/api/database/${databaseId}/table/${tableId}/data`, { headers: { Accept: 'application/json' }, data })
         .then(() => resolve())
         .catch((error) => {
-          const { code, message } = error
+          const { code, message } = error.response.data
           console.error('Failed to delete table tuple', error)
           Vue.$toast.error(`[${code}] Failed to delete table tuple: ${message}`)
           reject(error)

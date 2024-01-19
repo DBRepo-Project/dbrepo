@@ -1,20 +1,44 @@
-import Vue from 'vue'
-import axios from 'axios'
-import { elasticPassword } from '../config'
+import api, { displayError } from '@/api/index'
 
 class SearchService {
-  search (query) {
+  getFields (type) {
     return new Promise((resolve, reject) => {
-      axios.get(`/retrieve/_all/_search?q=${query}*&terminate_after=50`, { headers: { Accept: 'application/json' }, auth: { username: 'elastic', password: elasticPassword } })
+      api.get(`/api/search/${type}/fields`, { headers: { Accept: 'application/json' } })
         .then((response) => {
-          const hits = response.data.hits.hits
-          console.debug('response hits', hits)
-          resolve(hits)
+          const json = response.data
+          console.debug('fields result', json)
+          resolve(json)
         })
         .catch((error) => {
-          const { code, message } = error
-          console.error('Failed to load search results', error)
-          Vue.$toast.error(`[${code}] Failed to load search results: ${message}`)
+          displayError('Failed to load fields', error)
+          reject(error)
+        })
+    })
+  }
+
+  search (filter, searchData) {
+    // transform values to what the search API expects
+    let localSearchData = Object.assign({}, searchData)
+    const searchTerm = localSearchData.search_term
+    delete localSearchData.search_term
+    const t1 = localSearchData.t1
+    delete localSearchData.t1
+    const t2 = localSearchData.t2
+    delete localSearchData.t2
+    localSearchData = Object.fromEntries(Object.entries(localSearchData).filter(([_, v]) => v != null && v !== '')) // https://stackoverflow.com/questions/286141/remove-blank-attributes-from-an-object-in-javascript
+    const payload = {
+      t1,
+      t2,
+      search_term: searchTerm,
+      field_value_pairs: { ...localSearchData }
+    }
+    return new Promise((resolve, reject) => {
+      api.post(`/api/search${filter ? `/${filter}` : ''}`, payload, { headers: { Accept: 'application/json' } })
+        .then((response) => {
+          resolve(response.data)
+        })
+        .catch((error) => {
+          displayError('Failed to load search results', error)
           reject(error)
         })
     })

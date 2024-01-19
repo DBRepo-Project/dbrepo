@@ -1,0 +1,57 @@
+{
+  "id": 1,
+  "query_id": 1,
+  "type": "subset",
+  "titles": [
+    {
+      "id": 1,
+      "title": "Austrian weather data",
+      "language": "en"
+    },
+    {
+      "id": 2,
+      "title": "Österreichische Wetterdaten",
+      "type": "TranslatedTitle",
+      "language": "de"
+    }
+  ],
+  "descriptions": [
+    {
+      "id": 1,
+      "description": "Selecting all from the weather Austrian table",
+      "language": "en"
+    }
+  ],
+  "query": "SELECT `id` FROM `foobar`",
+  "query_normalized": "SELECT `id` FROM `foobar`",
+  "doi": null,
+  "query_hash": "abc",
+  "execution": "2018-11-07T10:59:12.000+00:00",
+  "result_hash": "def",
+  "result_number": 2,
+  "publisher": "Austrian Government",
+  "creators": [
+    {
+      "id": 1,
+      "firstname": "Max",
+      "lastname": "Mustermann",
+      "creator_name": "Mustermann, Max",
+      "name_type": "Personal",
+      "affiliation": "TU Graz",
+      "affiliation_identifier": "https://ror.org/04wn28048",
+      "affiliation_identifier_scheme": "ROR",
+      "name_identifier": "00000-00000-00000",
+      "name_identifier_scheme": "ORCID"
+    }
+  ],
+  "licenses": [
+    {
+      "identifier": "MIT",
+      "uri": "https://opensource.org/license/mit/"
+    }
+  ],
+  "publication_month": 5,
+  "publication_year": 2022,
+  "created": "2022-01-07T20:45:52.000+00:00",
+  "last_modified": "2018-11-07T10:59:12.000+00:00"
+}

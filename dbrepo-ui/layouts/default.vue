@@ -1,5 +1,6 @@
 <template>
   <v-app>
+    <!-- Side Bar -->
     <v-navigation-drawer v-model="drawer" fixed app :permanent="$vuetify.breakpoint.lgAndUp">
       <div>
         <v-img
@@ -9,12 +10,8 @@
       </div>
       <v-list-item class="mt-2">
         <v-list-item-content>
-          <v-list-item-subtitle>
-            {{ version }}
-          </v-list-item-subtitle>
-          <v-list-item-title class="text-h6">
-            Database Repository
-          </v-list-item-title>
+          <v-list-item-subtitle v-text="version" />
+          <v-list-item-title class="text-h6" v-text="title" />
         </v-list-item-content>
       </v-list-item>
       <v-list nav>
@@ -29,13 +26,14 @@
           </v-list-item-content>
         </v-list-item>
         <v-list-item
-          to="/container"
-          router>
+          to="/search"
+          router
+          exact>
           <v-list-item-action>
-            <v-icon>mdi-database</v-icon>
+            <v-icon>mdi-magnify</v-icon>
           </v-list-item-action>
           <v-list-item-content>
-            <v-list-item-title>{{ $t('layout.databases', { name: 'vue-i18n' }) }}</v-list-item-title>
+            <v-list-item-title>{{ $t('layout.search', { name: 'vue-i18n' }) }}</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
         <v-list-item
@@ -57,68 +55,69 @@
           class="banner"
           border="left"
           tile
-          :type="message.type"
-          v-text="message.message" />
+          :type="message.type">
+          {{ message.message }}<span v-if="message.link">&nbsp;&mdash;&nbsp;<a :href="message.link" v-text="message.link_text ? message.link_text : message.link" /></span>
+        </v-alert>
       </div>
     </v-navigation-drawer>
     <v-form ref="form" @submit.prevent="submit">
-      <v-app-bar fixed app>
+      <v-app-bar app extension-height="64">
         <v-app-bar-nav-icon v-if="!$vuetify.breakpoint.lgAndUp" class="mr-1" @click.stop="drawer = !drawer" />
+        <!-- Search Bar -->
         <v-text-field
           v-model="search"
           solo
           flat
           single-line
           hide-details
-          :placeholder="$t('layout.search', { name: 'vue-i18n' })" />
-        <v-btn icon class="ml-2" type="submit" name="search-submit" @click="retrieve">
-          <v-icon>mdi-magnify</v-icon>
-        </v-btn>
+          clearable
+          append-icon="mdi-magnify"
+          :placeholder="$t('search.fuzzy.placeholder', { name: 'vue-i18n' })"
+          @click:append="retrieve" />
         <v-spacer />
-        <div v-if="!user">
-          <v-btn
-            class="mr-2"
-            color="secondary"
-            to="/login">
-            <v-icon left>mdi-login</v-icon>
-            {{ $t('layout.login', { name: 'vue-i18n' }) }}
-          </v-btn>
-          <v-btn
-            class="mr-2"
-            color="primary"
-            to="/signup">
-            <v-icon left>mdi-account-plus</v-icon>
-            {{ $t('layout.signup', { name: 'vue-i18n' }) }}
-          </v-btn>
-        </div>
-        <div v-if="user">
-          <v-btn to="/user" plain>
-            {{ user.username }}
-          </v-btn>
-          <v-menu bottom offset-y left>
-            <template v-slot:activator="{ on, attrs }">
-              <v-btn
-                icon
-                v-bind="attrs"
-                v-on="on">
-                <v-icon>mdi-dots-vertical</v-icon>
-              </v-btn>
-            </template>
-            <v-list>
-              <v-list-item
-                v-for="locale in []"
-                :key="locale.code"
-                :to="switchLocalePath(locale.code)">
-                <v-list-item-title>{{ locale.name }}</v-list-item-title>
-              </v-list-item>
-              <v-list-item
-                v-if="user"
-                @click="logout">
-                {{ $t('layout.logout', { name: 'vue-i18n' }) }}
-              </v-list-item>
-            </v-list>
-          </v-menu>
-        </div>
+        <v-btn
+          v-if="!user"
+          class="mr-2"
+          color="secondary"
+          to="/login">
+          <v-icon left>mdi-login</v-icon>
+          {{ $t('layout.login', { name: 'vue-i18n' }) }}
+        </v-btn>
+        <v-btn
+          v-if="!user"
+          color="primary"
+          to="/signup">
+          <v-icon left>mdi-account-plus</v-icon>
+          {{ $t('layout.signup', { name: 'vue-i18n' }) }}
+        </v-btn>
+        <v-btn
+          v-if="user"
+          to="/user"
+          plain>
+          {{ user.username }}
+        </v-btn>
+        <v-menu v-if="user" bottom offset-y left>
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn
+              icon
+              v-bind="attrs"
+              v-on="on">
+              <v-icon>mdi-dots-vertical</v-icon>
+            </v-btn>
+          </template>
+          <v-list>
+            <v-list-item
+              v-if="user"
+              :to="`/search?t=database&owner.username=${user.username}`">
+              {{ $t('layout.mydatabases', { name: 'vue-i18n' }) }}
+            </v-list-item>
+            <v-list-item
+              v-if="user"
+              @click="logout">
+              {{ $t('layout.logout', { name: 'vue-i18n' }) }}
+            </v-list-item>
+          </v-list>
+        </v-menu>
       </v-app-bar>
     </v-form>
     <v-main>
@@ -126,13 +125,15 @@
         <nuxt />
       </v-container>
     </v-main>
+    <script v-if="hasDataset" type="application/ld+json" v-text="datasetJsonLd" />
   </v-app>
 </template>
 
 <script>
-import AuthenticationService from '@/api/authentication.service'
 import DatabaseService from '@/api/database.service'
 import TableService from '@/api/table.service'
+import DatabaseMapper from '@/api/database.mapper'
+import IdentifierMapper from '@/api/identifier.mapper'
 
 export default {
   data () {
@@ -150,20 +151,8 @@ export default {
     }
   },
   computed: {
-    availableLocales () {
-      return this.$i18n.locales.filter(i => i.code !== this.$i18n.locale)
-    },
-    token () {
-      return this.$store.state.token
-    },
-    refreshToken () {
-      return this.$store.state.refreshToken
-    },
     user () {
       return this.$store.state.user
-    },
-    container () {
-      return this.$store.state.container
     },
     locale () {
       return this.$store.state.locale
@@ -183,6 +172,9 @@ export default {
     version () {
       return this.$config.version
     },
+    title () {
+      return this.$config.title
+    },
     canListOntologies () {
       if (!this.roles) {
         return false
@@ -191,19 +183,24 @@ export default {
     },
     logo () {
       return this.$config.logo
+    },
+    hasDataset () {
+      return this.$route.path.startsWith('/database')
+    },
+    datasetJsonLd () {
+      if (!this.hasDataset || !this.database) {
+        return {}
+      }
+      if (!('identifiers' in this.database) || this.database.identifiers.length === 0) {
+        return DatabaseMapper.databaseToJsonLd(this.database)
+      }
+      return IdentifierMapper.identifiersToJsonLd(this.database)
     }
   },
   watch: {
     '$i18n.locale': {
       handler () {
         this.$store.commit('SET_LOCALE', this.$i18n.locale)
-      }
-    },
-    $route: {
-      handler () {
-        if (this.refreshToken) {
-          AuthenticationService.authenticateToken(this.refreshToken)
-        }
       }
     },
     '$route.params.database_id': {
@@ -227,10 +224,9 @@ export default {
     }
   },
   mounted () {
+    this.initEnvironment()
     this.$store.dispatch('reloadMessages')
-    if (this.locale) {
-      this.$i18n.locale = this.locale
-    }
+    this.$store.dispatch('reloadOntologies')
     if (this.$route.query && this.$route.query.q) {
       this.search = this.$route.query.q
     }
@@ -251,21 +247,17 @@ export default {
       if (typeof message === 'string') {
         this.$toast.warning(message)
       }
-      this.$store.commit('SET_TOKEN', null)
-      this.$store.commit('SET_REFRESH_TOKEN', null)
-      this.$store.commit('SET_ROLES', [])
-      this.$store.commit('SET_USER', null)
-      this.$store.commit('SET_ACCESS', null)
+      this.$store.dispatch('logout')
       this.$vuetify.theme.dark = false
-      this.$router.push('/container')
+      this.$router.push('/database')
     },
     loadDatabase () {
-      if (!this.$route.params.container_id || !this.$route.params.database_id) {
+      if (!this.$route.params.database_id) {
         this.$store.commit('SET_DATABASE', null)
         return
       }
       this.loading = true
-      DatabaseService.findOne(this.$route.params.container_id, this.$route.params.database_id)
+      DatabaseService.findOne(this.$route.params.database_id)
         .then((database) => {
           this.$store.commit('SET_DATABASE', database)
           this.loading = false
@@ -276,11 +268,11 @@ export default {
         })
     },
     loadTable () {
-      if (!this.$route.params.container_id || !this.$route.params.database_id || !this.$route.params.table_id) {
+      if (!this.$route.params.database_id || !this.$route.params.table_id) {
         return
       }
       this.loading = true
-      TableService.findOne(this.$route.params.container_id, this.$route.params.database_id, this.$route.params.table_id)
+      TableService.findOne(this.$route.params.database_id, this.$route.params.table_id)
         .then((table) => {
           this.$store.commit('SET_TABLE', table)
         })
@@ -289,14 +281,11 @@ export default {
         })
     },
     loadAccess () {
-      if (!this.$route.params.container_id || !this.$route.params.database_id) {
-        return
-      }
-      if (!this.token) {
+      if (!this.$route.params.database_id) {
         return
       }
       this.loading = true
-      DatabaseService.checkAccess(this.$route.params.container_id, this.$route.params.database_id)
+      DatabaseService.checkAccess(this.$route.params.database_id)
         .then((access) => {
           this.$store.commit('SET_ACCESS', access)
           this.loading = false
@@ -306,7 +295,26 @@ export default {
         })
     },
     retrieve () {
+      console.debug('performing fuzzy search')
       this.$router.push({ path: '/search', query: { q: this.search } })
+    },
+    initEnvironment () {
+      this.$store.commit('SET_TITLE', this.$config.title)
+      this.$store.commit('SET_ICON', this.$config.icon)
+      this.$store.commit('SET_CLIENT_ID', this.$config.clientId)
+      this.$store.commit('SET_CLIENT_SECRET', this.$config.clientSecret)
+      this.$store.commit('SET_SEARCH_USERNAME', this.$config.searchUsername)
+      this.$store.commit('SET_SEARCH_PASSWORD', this.$config.searchPassword)
+      this.$store.commit('SET_DOI_URL', this.$config.doiUrl)
+      console.debug('runtime config', this.$config)
+      if (this.locale) {
+        this.$i18n.locale = this.locale
+      }
+    }
+  },
+  head () {
+    return {
+      title: this.$config.title
     }
   }
 }

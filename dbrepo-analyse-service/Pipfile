@@ -1,0 +1,31 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+boto3 = "*"
+exceptiongroup = "*"
+flask = "*"
+flasgger = "*"
+gevent = "*"
+gunicorn = "*"
+greenlet = "*"
+prometheus-flask-exporter = "*"
+numpy = "*"
+pandas = "*"
+messytables = "*"
+minio = "*"
+flask-sqlalchemy = "*"
+opensearch-py = "*"
+pymysql = "*"
+
+[dev-packages]
+coverage = "*"
+pytest = "*"
+testcontainers-minio = "*"
+testcontainers-mysql = "*"
+testcontainers-opensearch = "*"
+
+[requires]
+python_version = "3.9"

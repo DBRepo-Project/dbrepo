@@ -1,9 +1,11 @@
 <template>
   <div>
-    {{ prefix }}: <a :href="pidUrl">{{ displayName }}</a>
+    {{ prefix }}: <a :href="href">{{ displayName }}</a>
   </div>
 </template>
 <script>
+import IdentifierMapper from '@/api/identifier.mapper'
+
 export default {
   props: {
     identifier: {
@@ -14,35 +16,14 @@ export default {
     }
   },
   computed: {
-    baseUrl () {
-      return `${this.$config.baseUrl}`
-    },
-    baseDoi () {
-      return this.$config.doiUrl
-    },
-    isDoi () {
-      if (!this.identifier) {
-        return null
-      }
-      return this.identifier.doi !== null
-    },
     prefix () {
-      if (!this.identifier) {
-        return null
-      }
-      return this.isDoi ? 'DOI' : 'URI'
-    },
-    pidUrl () {
-      if (!this.identifier) {
-        return null
-      }
-      return this.isDoi ? `${this.baseDoi}/${this.identifier.doi}` : `${this.baseUrl}/pid/${this.identifier.id}`
+      return IdentifierMapper.identifierToDisplayAcronym(this.identifier)
     },
     displayName () {
-      if (!this.identifier) {
-        return null
-      }
-      return this.isDoi ? `${this.identifier.doi}` : `/pid/${this.identifier.id}`
+      return IdentifierMapper.identifierToDisplayName(this.identifier)
+    },
+    href () {
+      return IdentifierMapper.identifierToUrl(this.identifier)
     }
   }
 }

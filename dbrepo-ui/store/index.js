@@ -10,7 +10,10 @@ Vue.use(Vuex)
 
 // https://github.com/hua1995116/webchat/blob/7c6544d3defd41cb7cf68306accea97800858bc3/client/src/store/index.js#L293
 const store = new Store({
+  // changes to the state information here *NEED* to be manually propagated to @/plugins/vuex-persist.js to be stored in the web-browser
   state: {
+    title: null,
+    icon: null,
     token: null,
     refreshToken: null,
     roles: [],
@@ -20,9 +23,17 @@ const store = new Store({
     access: null,
     locale: null,
     messages: [],
-    ontologies: []
+    ontologies: [],
+    clientId: null,
+    clientSecret: null,
+    searchUsername: null,
+    searchPassword: null,
+    doiUrl: null,
+    subset: null
   },
   getters: {
+    getTitle: state => state.title,
+    getIcon: state => state.icon,
     getToken: state => state.token,
     getRefreshToken: state => state.refreshToken,
     getRoles: state => state.roles,
@@ -32,9 +43,20 @@ const store = new Store({
     getAccess: state => state.access,
     getLocale: state => state.locale,
     getMessages: state => state.messages,
-    getOntologies: state => state.ontologies
+    getOntologies: state => state.ontologies,
+    getClientId: state => state.clientId,
+    getClientSecret: state => state.clientSecret,
+    getSearchUsername: state => state.searchUsername,
+    getSearchPassword: state => state.searchPassword,
+    getSubset: state => state.subset
   },
   mutations: {
+    SET_TITLE (state, title) {
+      state.title = title
+    },
+    SET_ICON (state, icon) {
+      state.icon = icon
+    },
     SET_TOKEN (state, token) {
       state.token = token
     },
@@ -64,6 +86,24 @@ const store = new Store({
     },
     SET_ONTOLOGIES (state, ontologies) {
       state.ontologies = ontologies
+    },
+    SET_CLIENT_ID (state, clientId) {
+      state.clientId = clientId
+    },
+    SET_CLIENT_SECRET (state, clientSecret) {
+      state.clientSecret = clientSecret
+    },
+    SET_SEARCH_USERNAME (state, searchUsername) {
+      state.searchUsername = searchUsername
+    },
+    SET_SEARCH_PASSWORD (state, searchPassword) {
+      state.searchPassword = searchPassword
+    },
+    SET_DOI_URL (state, doiUrl) {
+      state.doiUrl = doiUrl
+    },
+    SET_SUBSET (state, subset) {
+      state.subset = subset
     }
   },
   actions: {
@@ -74,19 +114,19 @@ const store = new Store({
         })
     },
     reloadAccess ({ state, commit }) {
-      DatabaseService.checkAccess(state.container.id, state.database.id)
+      DatabaseService.checkAccess(state.database.id)
         .then((access) => {
           commit('SET_ACCESS', access)
         })
     },
     reloadDatabase ({ state, commit }) {
-      DatabaseService.findOne(state.database.container.id, state.database.id)
+      DatabaseService.findOne(state.database.id)
         .then((database) => {
           commit('SET_DATABASE', database)
         })
     },
     reloadTable ({ state, commit }) {
-      TableService.findOne(state.database.container.id, state.database.id, state.table.id)
+      TableService.findOne(state.database.id, state.table.id)
         .then((table) => {
           commit('SET_TABLE', table)
         })
@@ -102,6 +142,15 @@ const store = new Store({
         .then((ontologies) => {
           commit('SET_ONTOLOGIES', ontologies)
         })
+    },
+    logout ({ state, commit }) {
+      console.debug('triggered logout')
+      commit('SET_TOKEN', null)
+      commit('SET_REFRESH_TOKEN', null)
+      commit('SET_ROLES', [])
+      commit('SET_USER', null)
+      commit('SET_DATABASE', null)
+      commit('SET_ACCESS', null)
     }
   }
 })

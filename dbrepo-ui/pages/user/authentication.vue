@@ -98,6 +98,9 @@ export default {
         .catch(() => {
           this.loadingUpdate = false
         })
+        .finally(() => {
+          this.loadingUpdate = false
+        })
     }
   }
 }

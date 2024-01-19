@@ -1,0 +1,28 @@
+{
+  "id": 7,
+  "type": "database",
+  "titles": [],
+  "descriptions": [],
+  "doi": null,
+  "publisher": "Swedish Government",
+  "publication_day": 14,
+  "publication_month": 7,
+  "publication_year": 2022,
+  "licenses": [],
+  "creators": [
+    {
+      "id": 1,
+      "firstname": "Max",
+      "lastname": "Mustermann",
+      "creator_name": "Mustermann, Max",
+      "name_type": "Personal",
+      "affiliation": "TU Graz",
+      "affiliation_identifier": "https://ror.org/04wn28048",
+      "affiliation_identifier_scheme": "ROR",
+      "name_identifier": "00000-00000-00000",
+      "name_identifier_scheme": "ORCID"
+    }
+  ],
+  "created": "2022-01-07T20:45:52.000+00:00",
+  "last_modified": "2018-11-07T10:59:12.000+00:00"
+}

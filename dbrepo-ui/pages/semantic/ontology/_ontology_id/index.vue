@@ -148,6 +148,9 @@ export default {
           this.ontology = ontology
           this.ontologyChangeDto = Object.assign({}, ontology)
         })
+        .catch(() => {
+          this.loading = false
+        })
         .finally(() => {
           this.loading = false
         })
@@ -158,6 +161,9 @@ export default {
         .then(async () => {
           await this.$store.dispatch('reloadOntologies')
           await this.$router.push('/semantic/ontology')
+        })
+        .catch(() => {
+          this.loadingDelete = false
         })
         .finally(() => {
           this.loadingDelete = false
@@ -175,6 +181,9 @@ export default {
           this.loadOntology()
           this.$store.dispatch('reloadOntologies')
           this.$toast.success('Successfully update ontology!')
+        })
+        .catch(() => {
+          this.loading = false
         })
         .finally(() => {
           this.loading = false

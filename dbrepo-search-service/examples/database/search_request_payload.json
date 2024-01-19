@@ -1,0 +1,10 @@
+{
+  "database.created": "2022-05-27",
+  "database.description": "Some description",
+  "database.is_public": true,
+  "id": "5",
+  "internal_name": "test_db",
+  "name": "Test DB",
+  "search_term": "free text here",
+  "type": "database"
+}

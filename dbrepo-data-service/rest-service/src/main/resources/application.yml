@@ -1,0 +1,73 @@
+app.version: '@project.version@'
+spring:
+  main.banner-mode: off
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchRestClientAutoConfiguration, org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration
+  datasource:
+    url: "jdbc:mariadb://${METADATA_HOST}:3306/${METADATA_DB}${METADATA_JDBC_EXTRA_ARGS}"
+    driver-class-name: org.mariadb.jdbc.Driver
+    username: "${METADATA_USERNAME}"
+    password: "${METADATA_PASSWORD}"
+  rabbitmq:
+    host: "${BROKER_HOST}"
+    virtual-host: "${BROKER_VIRTUALHOST}"
+    password: "${BROKER_PASSWORD}"
+    username: "${BROKER_USERNAME}"
+    port: ${BROKER_PORT}
+  jpa:
+    show-sql: false
+    database-platform: org.hibernate.dialect.MariaDBDialect
+    hibernate:
+      search:
+        default:
+          elasticsearch:
+            host: search-db
+      ddl-auto: validate
+      use-new-id-generator-mappings: false
+    open-in-view: false
+    properties:
+      hibernate:
+        default_schema: "${METADATA_DB}"
+        jdbc:
+          time_zone: UTC
+  application:
+    name: search-sync-agent
+  opensearch:
+    username: "${SEARCH_USERNAME}"
+    password: "${SEARCH_PASSWORD}"
+    host: search-db
+    port: 9200
+    protocol: http
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  health:
+    readinessState:
+      enabled: true
+    livenessState:
+      enabled: true
+server:
+  port: 9093
+logging:
+  pattern.console: "%d %highlight(%-5level) %msg%n"
+  level:
+    root: warn
+    at.tuwien.: "${LOG_LEVEL}"
+    org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
+fda:
+  jwt:
+    issuer: "${JWT_ISSUER}"
+    public_key: "${JWT_PUBKEY}"
+  minConcurrent: "${MIN_CONCURRENT_CONSUMERS}"
+  maxConcurrent: "${MAX_CONCURRENT_CONSUMERS}"
+  requeueRejected: ${REQUEUE_REJECTED}
+  queueName: "${QUEUE_NAME}"
+  exchangeName: "${EXCHANGE_NAME}"
+  routingKey: "${ROUTING_KEY}"
+  connectionTimeout: ${CONNECTION_TIMEOUT}

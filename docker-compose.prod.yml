@@ -1,94 +1,74 @@
-  # INFO: This compose file deploys the official Docker images from a stable, tested master branch
-# MODIFIED: 2023-06-01
-# MAINTAINER: Martin Weise <martin.weise@tuwien.ac.at>
-
 version: "3.6"
 
 volumes:
   metadata-db-data:
-  search-db-data:
+  data-db-data:
+  auth-db-data:
   broker-service-data:
-  authentication-service-data:
-
-networks:
-  userdb:
-    name: userdb
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 172.30.0.0/16
-  public:
-    name: public
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 172.31.0.0/16
-  core:
-    name: core
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 172.32.0.0/16
+  upload-service-data:
+  search-db-data:
+  storage-service-data:
 
 services:
-
   dbrepo-metadata-db:
     restart: "no"
     container_name: dbrepo-metadata-db
     hostname: metadata-db
-    image: dbrepo/metadata-db:1.3
-    networks:
-      core:
+    image: docker.io/dbrepo/metadata-db:latest
     volumes:
-      - metadata-db-data:/var/lib/mysql
+      - metadata-db-data:/bitnami/mariadb
+      - ./dist/setup-schema_local.sql:/docker-entrypoint-initdb.d/setup-schema_local.sql
     ports:
       - "3306:3306"
-      - "9100:9100"
-    env_file:
-      - .env
+    environment:
+      MARIADB_DATABASE: "${METADATA_DB:-fda}"
+      MARIADB_ROOT_PASSWORD: "${METADATA_PASSWORD:-dbrepo}"
+    healthcheck:
+      test: mysqladmin ping --user="${METADATA_USERNAME:-root}" --password="${METADATA_PASSWORD:-dbrepo}" --silent
+      interval: 10s
+      timeout: 5s
+      retries: 12
     logging:
       driver: json-file
 
-  dbrepo-database-service:
+  dbrepo-data-db:
     restart: "no"
-    container_name: dbrepo-database-service
-    hostname: database-service
-    image: dbrepo/database-service:1.3
-    networks:
-      userdb:
-      core:
-    ports:
-      - "9092:9092"
-    env_file:
-      - .env
+    container_name: dbrepo-data-db
+    hostname: data-db
+    image: docker.io/bitnami/mariadb-galera:11.2.2-debian-11-r0
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    depends_on:
-      dbrepo-container-service:
-        condition: service_healthy
-      dbrepo-broker-service:
-        condition: service_started
-      dbrepo-authentication-service:
-        condition: service_healthy
+      - data-db-data:/bitnami/mariadb
+      - "${SHARED_FILESYSTEM:-/tmp}:/tmp"
+    ports:
+      - "3307:3306"
+    environment:
+      MARIADB_ROOT_PASSWORD: "${USER_DB_PASSWORD:-dbrepo}"
+      MARIADB_GALERA_MARIABACKUP_PASSWORD: "${USER_DB_BACKUP_PASSWORD:-dbrepo}"
+    healthcheck:
+      test: mysqladmin ping --user="${USER_DB_USERNAME:-root}" --password="${USER_DB_PASSWORD:-dbrepo}" --silent
+      interval: 10s
+      timeout: 5s
+      retries: 12
     logging:
       driver: json-file
 
-  dbrepo-container-service:
+  dbrepo-auth-db:
     restart: "no"
-    container_name: dbrepo-container-service
-    hostname: container-service
-    image: dbrepo/container-service:1.3
-    networks:
-      core:
-    ports:
-      - "9091:9091"
-    env_file:
-      - .env
+    container_name: dbrepo-auth-db
+    hostname: auth-db
+    image: docker.io/bitnami/mariadb:11.2.2-debian-11-r0
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    depends_on:
-      dbrepo-authentication-service:
-        condition: service_healthy
+      - auth-db-data:/bitnami/mariadb
+    ports:
+      - "3308:3306"
+    environment:
+      MARIADB_DATABASE: "${AUTH_DB:-keycloak}"
+      MARIADB_ROOT_PASSWORD: "${AUTH_PASSWORD:-dbrepo}"
+    healthcheck:
+      test: mysqladmin ping --user="${AUTH_USERNAME:-root}" --password="${AUTH_PASSWORD:-dbrepo}" --silent
+      interval: 10s
+      timeout: 5s
+      retries: 12
     logging:
       driver: json-file
 
@@ -96,87 +76,24 @@ services:
     restart: "no"
     container_name: dbrepo-authentication-service
     hostname: authentication-service
-    image: dbrepo/authentication-service:1.3
-    networks:
-      core:
+    image: docker.io/dbrepo/authentication-service:latest
     ports:
       - "8443:8443"
       - "8080:8080"
-    env_file:
-      - .env
-    volumes:
-      - authentication-service-data:/opt/keycloak/data/
+    healthcheck:
+      test: curl -sSL 'http://0.0.0.0:8080/realms/dbrepo' | grep "dbrepo" || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    environment:
+      AUTH_DB: "${AUTH_DB:-keycloak}"
+      KC_DB_USERNAME: "${AUTH_USERNAME:-root}"
+      KC_DB_PASSWORD: "${AUTH_PASSWORD:-dbrepo}"
+      KEYCLOAK_ADMIN: "${KEYCLOAK_ADMIN:-fda}"
+      KEYCLOAK_ADMIN_PASSWORD: "${KEYCLOAK_ADMIN_PASSWORD:-fda}"
     depends_on:
-      dbrepo-metadata-db:
+      dbrepo-auth-db:
         condition: service_healthy
-    logging:
-      driver: json-file
-
-  dbrepo-query-service:
-    restart: "no"
-    container_name: dbrepo-query-service
-    hostname: query-service
-    image: dbrepo/query-service:1.3
-    networks:
-      core:
-      userdb:
-    env_file:
-      - .env
-    volumes:
-      - ${SHARED_FILESYSTEM}:/tmp
-    depends_on:
-      dbrepo-broker-service:
-        condition: service_healthy
-      dbrepo-table-service:
-        condition: service_healthy
-      dbrepo-authentication-service:
-        condition: service_healthy
-    logging:
-      driver: json-file
-
-  dbrepo-table-service:
-    restart: "no"
-    container_name: dbrepo-table-service
-    hostname: table-service
-    image: dbrepo/table-service:1.3
-    networks:
-      core:
-      userdb:
-    ports:
-      - "9094:9094"
-    env_file:
-      - .env
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ${SHARED_FILESYSTEM}:/tmp
-    depends_on:
-      dbrepo-authentication-service:
-        condition: service_healthy
-      dbrepo-search-db:
-        condition: service_started
-      dbrepo-broker-service:
-        condition: service_healthy
-    logging:
-      driver: json-file
-
-  dbrepo-identifier-service:
-    restart: "no"
-    container_name: dbrepo-identifier-service
-    hostname: identifier-service
-    image: dbrepo/identifier-service:1.3
-    networks:
-      core:
-    ports:
-      - "9096:9096"
-    env_file:
-      - .env
-    depends_on:
-      dbrepo-query-service:
-        condition: service_healthy
-      dbrepo-authentication-service:
-        condition: service_healthy
-    volumes:
-      - ${SHARED_FILESYSTEM}:/tmp
     logging:
       driver: json-file
 
@@ -184,17 +101,71 @@ services:
     restart: "no"
     container_name: dbrepo-metadata-service
     hostname: metadata-service
-    image: dbrepo/metadata-service:1.3
-    networks:
-      core:
-    env_file:
-      - .env
+    image: docker.io/dbrepo/metadata-service:latest
+    volumes:
+      - "${SHARED_FILESYSTEM:-/tmp}:/tmp"
     ports:
       - "9099:9099"
+    environment:
+      ADMIN_MAIL: "${ADMIN_MAIL:-noreply@localhost}"
+      BASE_URL: "${BASE_URL:-http://localhost}"
+      GRANT_PRIVILEGES: "${GRANT_PRIVILEGES:-SELECT, CREATE, CREATE VIEW, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, INDEX, TRIGGER, INSERT, UPDATE, DELETE}"
+      BROKER_USERNAME: ${BROKER_USERNAME:-fda}
+      BROKER_PASSWORD: ${BROKER_PASSWORD:-fda}
+      BROKER_ENDPOINT: "${BROKER_ENDPOINT:-http://broker-service:15672/admin/broker}"
+      BROKER_HOST: "${BROKER_HOST:-broker-service}"
+      BROKER_VIRTUALHOST: ${BROKER_VIRTUALHOST:-dbrepo}
+      REQUEUE_REJECTED: ${REQUEUE_REJECTED:-false}
+      QUEUE_NAME: ${QUEUE_NAME:-dbrepo}
+      EXCHANGE_NAME: ${EXCHANGE_NAME:-dbrepo}
+      ROUTING_KEY: "${ROUTING_KEY:-dbrepo.#}"
+      CONNECTION_TIMEOUT: ${CONNECTION_TIMEOUT:-60000}
+      DELETED_RECORD: "${DELETED_RECORD:-persistent}"
+      EARLIEST_DATESTAMP: "${EARLIEST_DATESTAMP:-2022-09-17T18:23:00Z}"
+      GRANULARITY: "${GRANULARITY:-YYYY-MM-DDThh:mm:ssZ}"
+      JWT_ISSUER: "${JWT_ISSUER:-http://localhost/api/auth/realms/dbrepo}"
+      JWT_PUBKEY: "${JWT_PUBKEY:-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB}"
+      LOG_LEVEL: "${LOG_LEVEL:-debug}"
+      METADATA_DB: "${METADATA_DB:-fda}"
+      METADATA_HOST: "${METADATA_HOST:-metadata-db}"
+      METADATA_JDBC_EXTRA_ARGS: "${METADATA_JDBC_EXTRA_ARGS:-}"
+      METADATA_USERNAME: "${METADATA_USERNAME:-root}"
+      METADATA_PASSWORD: "${METADATA_PASSWORD:-dbrepo}"
+      NOT_SUPPORTED_KEYWORDS: "${NOT_SUPPORTED_KEYWORDS:-\\*,AVG,BIT_AND,BIT_OR,BIT_XOR,COUNT,COUNTDISTINCT,GROUP_CONCAT,JSON_ARRAYAGG,JSON_OBJECTAGG,MAX,MIN,STD,STDDEV,STDDEV_POP,STDDEV_SAMP,SUM,VARIANCE,VAR_POP,VAR_SAMP,--}"
+      PID_BASE: "${PID_BASE:-http://localhost/pid/}"
+      REPOSITORY_NAME: "${REPOSITORY_NAME:-Example Repository}"
+      SEARCH_USERNAME: "${SEARCH_USERNAME:-admin}"
+      SEARCH_PASSWORD: "${SEARCH_PASSWORD:-admin}"
+      DELETE_AFTER_IMPORT: "${DELETE_AFTER_IMPORT:-true}"
+      WEBSITE: "${WEBSITE:-http://localhost}"
+      KEYCLOAK_HOST: "${KEYCLOAK_HOST:-http://authentication-service:8080}"
+      KEYCLOAK_ADMIN: "${KEYCLOAK_ADMIN:-fda}"
+      KEYCLOAK_ADMIN_PASSWORD: "${KEYCLOAK_ADMIN_PASSWORD:-fda}"
+      DATACITE_URL: "${DATACITE_URL:-https://api.test.datacite.org}"
+      DATACITE_PREFIX: "${DATACITE_PREFIX:-}"
+      DATACITE_USERNAME: "${DATACITE_USERNAME:-}"
+      DATACITE_PASSWORD: "${DATACITE_PASSWORD:-}"
+      S3_STORAGE_ENDPOINT: "${STORAGE_ENDPOINT:-http://storage-service:9000}"
+      S3_ACCESS_KEY_ID: "${STORAGE_USERNAME:-seaweedfsadmin}"
+      S3_SECRET_ACCESS_KEY: "${STORAGE_PASSWORD:-seaweedfsadmin}"
+      S3_IMPORT_BUCKET: "${STORAGE_IMPORT_BUCKET:-dbrepo-upload}"
+      S3_EXPORT_BUCKET: "${STORAGE_EXPORT_BUCKET:-dbrepo-download}"
+      MIRROR_RATE: ${METADATA_SERVICE_MIRROR_RATE:-60}
+      OBTAIN_METADATA_RATE: ${METADATA_SERVICE_OBTAIN_METADATA_RATE:-60}
+      DELETE_STALE_QUERIES_RATE: ${METADATA_SERVICE_DELETE_STALE_QUERIES_RATE:-60}
+    healthcheck:
+      test: wget -qO- localhost:9099/actuator/health/readiness | grep -q "UP" || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 12
     depends_on:
       dbrepo-authentication-service:
         condition: service_healthy
+      dbrepo-broker-service:
+        condition: service_healthy
       dbrepo-metadata-db:
+        condition: service_healthy
+      dbrepo-search-db:
         condition: service_healthy
     logging:
       driver: json-file
@@ -203,56 +174,20 @@ services:
     restart: "no"
     container_name: dbrepo-analyse-service
     hostname: analyse-service
-    image: dbrepo/analyse-service:1.3
-    networks:
-      core:
-      userdb:
-    env_file:
-      - .env
-    volumes:
-      - ${SHARED_FILESYSTEM}:/tmp
-      - /var/run/docker.sock:/var/run/docker.sock
-    logging:
-      driver: json-file
-
-  dbrepo-user-service:
-    restart: "no"
-    container_name: dbrepo-user-service
-    hostname: user-service
-    image: dbrepo/user-service:1.3
-    networks:
-      core:
+    image: docker.io/dbrepo/analyse-service:latest
     ports:
-      - "9098:9098"
-    env_file:
-      - .env
-    depends_on:
-      dbrepo-metadata-db:
-        condition: service_healthy
-      dbrepo-authentication-service:
-        condition: service_healthy
-    logging:
-      driver: json-file
-
-  dbrepo-semantics-service:
-    restart: "no"
-    container_name: dbrepo-semantics-service
-    hostname: semantics-service
-    image: dbrepo/semantics-service:1.3
-    networks:
-      core:
-    ports:
-      - "9097:9097"
-    env_file:
-      - .env
+      - "5000:5000"
+    environment:
+      S3_STORAGE_ENDPOINT: "${STORAGE_ENDPOINT:-http://storage-service:9000}"
+      S3_ACCESS_KEY_ID: "${STORAGE_USERNAME:-seaweedfsadmin}"
+      S3_SECRET_ACCESS_KEY: "${STORAGE_PASSWORD:-seaweedfsadmin}"
     volumes:
-      - ${SHARED_FILESYSTEM}:/tmp
-      - /var/run/docker.sock:/var/run/docker.sock
-    depends_on:
-      dbrepo-metadata-db:
-        condition: service_healthy
-      dbrepo-authentication-service:
-        condition: service_healthy
+      - "${SHARED_FILESYSTEM:-/tmp}:/tmp"
+    healthcheck:
+      test: curl -sSL localhost:5000/health | grep 'UP' || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 12
     logging:
       driver: json-file
 
@@ -260,60 +195,92 @@ services:
     restart: "no"
     container_name: dbrepo-broker-service
     hostname: broker-service
-    image: dbrepo/broker-service:1.3
-    networks:
-      core:
+    image: docker.io/bitnami/rabbitmq:3.10
     ports:
       - "5672:5672"
       - "15672:15672"
-    env_file:
-      - .env
-    depends_on:
-      dbrepo-authentication-service:
-        condition: service_healthy
     volumes:
-      - broker-service-data:/var/lib/rabbitmq/
+      - ./dist/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+      - ./dist/enabled_plugins:/etc/rabbitmq/enabled_plugins
+      - ./dist/cert.pem:/app/cert.pem
+      - ./dist/pubkey.pem:/app/pubkey.pem
+      - ./dist/definitions.json:/app/definitions.json
+      - broker-service-data:/bitnami/rabbitmq/mnesia
+    healthcheck:
+      test: rabbitmq-diagnostics -q is_running | grep 'is fully booted and running'
+      interval: 10s
+      timeout: 5s
+      retries: 12
     logging:
       driver: json-file
 
   dbrepo-search-db:
-    restart: always
+    restart: "no"
     container_name: dbrepo-search-db
     hostname: search-db
-    image: elasticsearch:8.7.1
-    networks:
-      core:
+    image: docker.io/dbrepo/search-db:latest
     ports:
-      - 9200:9200
-    env_file:
-      - .env
+      - "9200:9200"
+    healthcheck:
+      test: curl -sSL localhost:9200/_plugins/_security/health | jq .status | grep UP
+      interval: 10s
+      timeout: 5s
+      retries: 12
     environment:
-      discovery.type: "single-node"
-      ES_JAVA_OPTS: "-Xms2g -Xmx2g"
+      ES_JAVA_OPTS: "-Xms4g -Xmx4g"
       logger.level: "WARN"
-      bootstrap.memory_lock: "true"
-      xpack.security.enabled: "true"
+    deploy:
+      resources:
+        limits:
+          memory: 4G
     volumes:
       - search-db-data:/usr/share/elasticsearch/data
     logging:
       driver: json-file
 
+  dbrepo-search-service:
+    restart: "no"
+    container_name: dbrepo-search-service
+    hostname: search-service
+    image: docker.io/dbrepo/search-service:latest
+    ports:
+      - "4000:4000"
+    environment:
+      LOG_LEVEL: ${LOG_LEVEL:-debug}
+      FLASK_DEBUG: ${SEARCH_DEBUG_MODE:-true}
+      OPENSEARCH_HOST: ${OPENSEARCH_HOST:-dbrepo-search-db}
+
+  dbrepo-data-db-sidecar:
+    restart: "no"
+    container_name: dbrepo-data-db-sidecar
+    hostname: data-db-sidecar
+    image: docker.io/dbrepo/data-db-sidecar:latest
+    ports:
+      - "3305:3305"
+    environment:
+      FLASK_DEBUG: ${SEARCH_DEBUG_MODE:-true}
+      S3_STORAGE_ENDPOINT: "${STORAGE_ENDPOINT:-http://storage-service:9000}"
+      S3_ACCESS_KEY_ID: "${STORAGE_USERNAME:-seaweedfsadmin}"
+      S3_SECRET_ACCESS_KEY: ${STORAGE_PASSWORD:-seaweedfsadmin}
+    volumes:
+      - "${SHARED_FILESYSTEM:-/tmp}:/tmp"
+    healthcheck:
+      test: curl -sSL 127.0.0.1:3305/health | jq .status | grep "UP" || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
   dbrepo-ui:
     restart: "no"
     container_name: dbrepo-ui
     hostname: ui
-    image: dbrepo/ui:1.3
-    networks:
-      core:
-      public:
-    env_file:
-      - .env
+    image: docker.io/dbrepo/ui:latest
     volumes:
-      - ${SHARED_FILESYSTEM}:/tmp
+      - ./dist/dbrepo.config.json:/app/dbrepo.config.json
     depends_on:
-      dbrepo-identifier-service:
-        condition: service_healthy
-      dbrepo-database-service:
+      dbrepo-search-service:
+        condition: service_started
+      dbrepo-storage-service:
         condition: service_healthy
     logging:
       driver: json-file
@@ -322,15 +289,12 @@ services:
     restart: "no"
     container_name: dbrepo-gateway-service
     hostname: gateway-service
-    image: nginx:1.25-alpine-slim
-    networks:
-      core:
-      public:
+    image: docker.io/nginx:1.25-alpine-slim
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - ./dbrepo.conf:/etc/nginx/conf.d/default.conf
+      - ./dist/dbrepo.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       dbrepo-analyse-service:
         condition: service_healthy
@@ -338,25 +302,138 @@ services:
         condition: service_healthy
       dbrepo-broker-service:
         condition: service_healthy
-      dbrepo-container-service:
-        condition: service_healthy
-      dbrepo-database-service:
-        condition: service_healthy
-      dbrepo-identifier-service:
-        condition: service_healthy
       dbrepo-metadata-service:
         condition: service_healthy
-      dbrepo-query-service:
-        condition: service_healthy
       dbrepo-search-db:
-        condition: service_started
-      dbrepo-semantics-service:
-        condition: service_healthy
-      dbrepo-table-service:
         condition: service_healthy
       dbrepo-ui:
         condition: service_started
-      dbrepo-user-service:
+    logging:
+      driver: json-file
+
+  dbrepo-search-db-dashboard:
+    restart: "no"
+    container_name: dbrepo-search-db-dashboard
+    hostname: search-db-dashboard
+    image: docker.io/opensearchproject/opensearch-dashboards:2.10.0
+    volumes:
+      - ./dist/opensearch_dashboards.yml:/usr/share/opensearch-dashboards/config/opensearch_dashboards.yml
+    ports:
+      - "5601:5601"
+    depends_on:
+      dbrepo-search-db:
+        condition: service_healthy
+    logging:
+      driver: json-file
+
+  dbrepo-search-db-init:
+    restart: "no"
+    container_name: dbrepo-search-db-init
+    hostname: search-db-init
+    image: docker.io/dbrepo/search-db-init:latest
+    environment:
+      OPENSEARCH_HOST: ${SEARCH_DB_HOST:-http://search-db:9200}
+      CURL_EXTRA_ARGS: ${SEARCH_DB_EXTRA_ARGS:-}
+    depends_on:
+      dbrepo-search-db:
+        condition: service_healthy
+    logging:
+      driver: json-file
+
+  dbrepo-storage-service:
+    restart: "no"
+    container_name: dbrepo-storage-service
+    hostname: storage-service
+    image: docker.io/chrislusf/seaweedfs:3.59
+    command: [ "server", "-dir=/data", "-s3", "-s3.port=9000", "-s3.config=/app/s3_config.json", "-metricsPort=9091" ]
+    ports:
+      - 9000:9000
+    volumes:
+      - ./dist/s3_config.json:/app/s3_config.json
+      - storage-service-data:/data
+    healthcheck:
+      test: echo "cluster.check" | weed shell | grep "checking master.*ok" || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    logging:
+      driver: json-file
+
+  dbrepo-storage-service-init:
+    restart: "no"
+    container_name: dbrepo-storage-service-init
+    hostname: storage-service-init
+    image: docker.io/dbrepo/storage-service-init:latest
+    environment:
+      SEAWEEDFS_ENDPOINT: "${STORAGE_SEAWEEDFS_ENDPOINT:-storage-service:9333}"
+    depends_on:
+      dbrepo-storage-service:
+        condition: service_healthy
+    logging:
+      driver: json-file
+
+  dbrepo-upload-service:
+    restart: "no"
+    container_name: dbrepo-upload-service
+    hostname: upload-service
+    image: docker.io/tusproject/tusd:v1.12
+    ports:
+      - "1080:1080"
+    command:
+      - "--base-path=/api/upload/files/"
+      - "-s3-endpoint=${STORAGE_ENDPOINT:-http://storage-service:9000}"
+      - "-s3-bucket=dbrepo-upload"
+    environment:
+      AWS_ACCESS_KEY_ID: "${STORAGE_USERNAME:-seaweedfsadmin}"
+      AWS_SECRET_ACCESS_KEY: "${STORAGE_PASSWORD:-seaweedfsadmin}"
+      AWS_REGION: "${STORAGE_REGION_NAME:-default}"
+    depends_on:
+      dbrepo-storage-service:
+        condition: service_healthy
+    healthcheck:
+      test: wget -qO- localhost:1080/metrics | grep "tusd" || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    logging:
+      driver: json-file
+
+  dbrepo-data-service:
+    restart: "no"
+    container_name: dbrepo-data-service
+    hostname: data-service
+    image: docker.io/dbrepo/data-service:latest
+    ports:
+      - "9093:9093"
+    environment:
+      METADATA_DB: ${METADATA_DB:-fda}
+      METADATA_HOST: ${METADATA_HOST:-metadata-db}
+      METADATA_JDBC_EXTRA_ARGS: ${METADATA_JDBC_EXTRA_ARGS:-}
+      METADATA_PASSWORD: ${METADATA_PASSWORD:-dbrepo}
+      METADATA_USERNAME: ${METADATA_USERNAME:-root}
+      JWT_ISSUER: "${JWT_ISSUER:-http://localhost/api/auth/realms/dbrepo}"
+      JWT_PUBKEY: "${JWT_PUBKEY:-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB}"
+      LOG_LEVEL: ${LOG_LEVEL:-debug}
+      MIN_CONCURRENT_CONSUMERS: ${MIN_CONCURRENT_CONSUMERS:-1}
+      MAX_CONCURRENT_CONSUMERS: ${MAX_CONCURRENT_CONSUMERS:-5}
+      BROKER_USERNAME: ${BROKER_USERNAME:-fda}
+      BROKER_PASSWORD: ${BROKER_PASSWORD:-fda}
+      BROKER_HOST: "${BROKER_HOST:-broker-service}"
+      BROKER_VIRTUALHOST: ${BROKER_VIRTUALHOST:-dbrepo}
+      REQUEUE_REJECTED: ${REQUEUE_REJECTED:-false}
+      QUEUE_NAME: ${QUEUE_NAME:-dbrepo}
+      EXCHANGE_NAME: ${EXCHANGE_NAME:-dbrepo}
+      ROUTING_KEY: "${ROUTING_KEY:-dbrepo.#}"
+      CONNECTION_TIMEOUT: ${CONNECTION_TIMEOUT:-60000}
+    healthcheck:
+      test: wget -qO- localhost:9093/actuator/health/readiness | grep -q "UP" || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    depends_on:
+      dbrepo-metadata-db:
+        condition: service_healthy
+      dbrepo-data-db:
         condition: service_healthy
     logging:
       driver: json-file

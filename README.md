@@ -1,65 +1,40 @@
 [![pipeline status](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/badges/master/pipeline.svg)](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/commits/master)
 [![coverage report](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/badges/master/coverage.svg)](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/commits/master)
 [![license](.gitlab/license.svg)](https://opensource.org/licenses/Apache-2.0)
+[![release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/badges/release.svg)](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags)
 
-# FAIR Data Austria Database Repository
+<img src="./dbrepo-ui/static/logo.png" alt="DBREPO &mdash; Repository for Data in Databases" width="200" />
 
-## Deployment
+## tl;dr
 
-Download the Docker Compose template and the environment file:
+If you have [Docker](https://docs.docker.com/engine/install/) already installed on your system, you can install DBRepo
+with:
 
-```console
-$ curl -o docker-compose.yml https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/master/docker-compose.prod.yml
-$ curl -o .env https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/master/.env.unix.example
+```bash
+curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/master/install.sh | bash
 ```
 
-Start the Docker containers:
+## Documentation
 
-```console
-$ docker compose up -d
-$ docker compose logs -f
-```
-
-## Development
-
-### Build
-
-Local development minimum requirements:
-
-- Ubuntu 18.04 LTS (Rocky Linux is also supported)
-- Apache Maven 3.0.0
-- OpenJDK 11.0.0
-- Docker Engine 20.10.0
-- Docker Compose 1.28.0
-
-Everything is handled by compose, just build it by running:
-
-```console
-$ docker-compose build --parallel
-```
-
-A more detailed description on how
-to get started is available at our documentation
-website: [https://dbrepo-docs.ossdip.at/getting-started/](https://dbrepo-docs.ossdip.at/getting-started/)
-
-### Run
-
-Copy and *optionally* edit the environment:
-
-```console
-$ cp .env.unix .env
-$ docker compose -f ./docker-compose.prod.yml up -d
-$ docker compose -f ./docker-compose.prod.yml logs -f 
-```
-
-Once the services are started, open [http://localhost:3000](http://localhost:3000).
+Find a system description, component documentation and endpoint documentation 
+online: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/.
 
 ## Contribute
 
-Contributions are always welcome and encouraged, simply fork the repository and
-contact [Andreas Rauber](http://www.ifs.tuwien.ac.at/~andi/).
+Contributions are always welcome and encouraged, please read the [contribution overview](./CONTRIBUTING.md) and
+contact [Prof. Andreas Rauber](http://www.ifs.tuwien.ac.at/~andi/) or [Martin Weise](https://ec.tuwien.ac.at/~weise/).
 
-# License
+## Acknowledgements
 
-This work is licensed under
-a [Creative Commons Attribution 4.0 International License](http://creativecommons.org/licenses/by/4.0/)
+We want to thank the following organizations:
+
+* Bundesministerium für Bildung, Wissenschaft und Forschung (BMBWF) for funding during
+  the [call](https://www.bmbwf.gv.at/Themen/HS-Uni/Aktuelles/Ausschreibung--Digitale-und-soziale-Transformation-in-der-Hochschulbildung-.html)
+  "Digitale und soziale Transformation in der Hochschulbildung".
+* [TU.it &amp; .digital office](https://www.it.tuwien.ac.at/en/) for their continuous support in project 
+  work, [funding](https://www.tuwien.at/tu-wien/organisation/zentrale-bereiche/digital-office/projekte/dcall-2023-projekte)
+  and compute resources provided in-kind.
+
+## License
+
+The source code is licensed under [Apache 2.0](https://opensource.org/licenses/Apache-2.0).
