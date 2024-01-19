@@ -2,7 +2,7 @@
 [![coverage report](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/badges/master/coverage.svg)](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/commits/master)
 [![license](.gitlab/license.svg)](https://opensource.org/licenses/Apache-2.0)
 [![release](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/badges/release.svg)](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tags)
-[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/dbrepo)](https://artifacthub.io/packages/search?repo=dbrepo)
+[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/dbrepo)](https://artifacthub.io/packages/helm/dbrepo/dbrepo-core)
 
 ![DBRepo &mdash; Repository for Data in Databases](./.gitlab/logo.png)
 
