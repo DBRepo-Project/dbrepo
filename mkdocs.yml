@@ -7,8 +7,8 @@ docs_dir: .docs
 nav:
   - Home: index.md
   - Deployment:
-    - Kubernetes: deployment-helm.md
     - Docker Compose: deployment-docker-compose.md
+    - Kubernetes: deployment-helm.md
   - System:
     - Overview: system.md
     - Services:

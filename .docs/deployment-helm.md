@@ -4,18 +4,20 @@ author: Martin Weise
 
 ## TL;DR
 
-To install DBRepo in your existing cluster, download the sample [`values.yaml`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-deployment/-/raw/dev/charts/dbrepo-core/values.yaml?inline=false)
+To install DBRepo in your existing cluster, download the sample [`values.yaml`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-deployment/-/raw/master/charts/dbrepo-core/values.yaml?inline=false)
 for your deployment and update the variables, especially `hostname`.
 
 ```shell
 helm upgrade --install dbrepo \
   -n dbrepo \
-  "oci://dbrepo.azurecr.io/helm/dbrepo-core" \
+  "oci://s210.dl.hpc.tuwien.ac.at/dbrepo/helm/dbrepo-core" \
   --values ./values.yaml \
-  --version "0.1.4" \
+  --version "1.4.0" \
   --create-namespace \
   --cleanup-on-fail
 ```
+
+This chart is also on [Artifact Hub](https://artifacthub.io/packages/helm/dbrepo/dbrepo-core).
 
 ## Dependencies
 

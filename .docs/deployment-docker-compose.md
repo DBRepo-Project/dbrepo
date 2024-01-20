@@ -61,7 +61,7 @@ since RabbitMQ maintains state inside the container.
 We maintain a rapid prototype deployment option through Docker Compose (v2.17.0 and newer). This deployment creates the
 core infrastructure and a single Docker container for all user-generated databases.
 
-=== ":simple-linux: Linux"
+=== "Linux"
 
     Download and install [Docker Engine](https://docs.docker.com/desktop/install/linux-install/) for your Linux
     distribution. Although the installation might work, we *do not* recommend Docker Desktop.
@@ -74,7 +74,7 @@ core infrastructure and a single Docker container for all user-generated databas
 
         curl -sSL https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/install.sh | bash
 
-=== ":simple-windows: Windows"
+=== "Windows"
 
     Open `cmd.exe` as administrator and install WSL2 and the Debian subsystem:
 
@@ -125,6 +125,14 @@ In case the deployment is unsuccessful, we have explanations on their origin and
 :   *Origin*:   Your local Docker image cache is not up-to-date and needs to fetch the remote changes.
 :   *Solution*: Update your local Docker image cache by executing `docker compose pull`, it automatically downloads
                 all Docker images that have updates. Then apply the new images with `docker compose up -d`.
+
+**Error response from daemon: Error starting userland proxy: listen tcp4 0.0.0.0:xyz: bind: address already in use**
+
+:   *Origin*:   Your deployment machine (e.g. laptop, virtual machine) has the port `xyz` already assigned. Some service
+                or application is already listening to this port.
+:   *Solution*: This service or application needs to be stopped. You can find out the service or application via
+                `sudo netstat -tulpn` (sudo is necessary for the process id) and then stop the service or application
+                gracefully or force a stop via `kill -15 PID` (not recommended).
 
 ## Security
 
