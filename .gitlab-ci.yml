@@ -447,7 +447,7 @@ release-latest:
     - echo "$CI_REGISTRY2_PASSWORD" | docker login --username "$CI_REGISTRY2_USER" --password-stdin $CI_REGISTRY2_URL
   script:
     - "ifconfig eth0 mtu 1450 up"
-    - "apk add make"
+    - "apk add make bash"
     - TAG=latest make release
 
 release-1.3:
