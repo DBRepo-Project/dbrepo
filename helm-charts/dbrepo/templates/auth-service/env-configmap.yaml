@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: auth-service-config
+  namespace: {{ $.Values.namespace }}
+data:
+  KC_HOSTNAME_PATH: "/api/auth"
+  KC_HOSTNAME_ADMIN_URL: "https://{{ .Values.hostname }}/api/auth"
