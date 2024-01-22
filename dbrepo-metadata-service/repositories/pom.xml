@@ -6,12 +6,12 @@
     <parent>
         <artifactId>dbrepo-metadata-service</artifactId>
         <groupId>at.tuwien</groupId>
-        <version>latest</version>
+        <version>1.4.1</version>
     </parent>
 
     <artifactId>dbrepo-metadata-service-repositories</artifactId>
-    <version>latest</version>
     <name>dbrepo-metadata-service-repositories</name>
+    <version>1.4.1</version>
 
     <dependencies>
         <dependency>

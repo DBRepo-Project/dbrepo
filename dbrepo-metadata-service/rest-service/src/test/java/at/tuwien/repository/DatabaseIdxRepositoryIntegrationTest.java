@@ -74,6 +74,9 @@ public class DatabaseIdxRepositoryIntegrationTest extends BaseUnitTest {
     @Container
     private static MariaDBContainer<?> mariaDBContainer = MariaDbContainerConfig.getContainer();
 
+    /**
+     * @apiNote Must be the same image tag as version in pom.xml properties -> opensearch-rest-client.version
+     */
     @Container
     private static final OpensearchContainer opensearchContainer = new OpensearchContainer(DockerImageName.parse("opensearchproject/opensearch:2.10.0"));
 
