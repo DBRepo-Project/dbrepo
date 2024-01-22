@@ -7,6 +7,8 @@ target/
 # generated
 ready
 schema.xsd
+final/
+build/
 
 # docs
 .docs/.swagger/dist/
@@ -68,7 +70,7 @@ debug.txt
 .DS_Store
 
 # IDE
-fda-analyse-service/venv
+venv/
 .git.bfg-*
 
 # Docs

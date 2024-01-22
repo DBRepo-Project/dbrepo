@@ -1,0 +1,39 @@
+{{- if .Values.ingress.enabled }}
+{{- range .Values.ingress.data }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dbrepo-{{ .name }}
+  {{- with .annotations }}
+  annotations:
+      {{- toYaml . | nindent 4 }}
+  {{- end }}
+  namespace: {{ $.Values.namespace }}
+spec:
+  ingressClassName: nginx
+  {{- if .tls }}
+  tls:
+    {{- range .tls }}
+    - hosts:
+        - "{{ $.Values.hostname }}"
+      secretName: {{ .secretName }}
+    {{- end }}
+  {{- end }}
+  rules:
+  {{- range .hosts }}
+  - host: "{{ $.Values.hostname }}"
+    http:
+      paths:
+      {{- range .paths }}
+      - path: {{ .path }}
+        pathType: {{ .pathType }}
+        backend:
+          service:
+            name: {{ .serviceName }}
+            port:
+              number: {{ .portNumber }}
+      {{- end}}
+  {{- end}}
+{{- end}}
+{{- end}}

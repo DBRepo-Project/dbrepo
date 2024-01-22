@@ -1,7 +1,6 @@
 .PHONY: all
 
 TAG ?= latest
-TRIVY_VERSION ?= v0.41.0
 REPOSITORY_1_URL ?= docker.io/dbrepo
 REPOSITORY_2_URL ?= s210.dl.hpc.tuwien.ac.at/dbrepo
 
@@ -36,6 +35,11 @@ build-frontend:
 
 build-swagger:
 	bash ./.docs/generate.sh
+
+build-helm-chart:
+	sed -i -e "s/^version:.*/version: \"${TAG}-dev\"/g" ./helm-charts/dbrepo/Chart.yaml
+	sed -i -e "s/^appVersion:.*/appVersion: \"${TAG}-dev\"/g" ./helm-charts/dbrepo/Chart.yaml
+	helm package ./helm-charts/dbrepo --destination ./build
 
 tag: tag-analyse-service tag-authentication-service tag-metadata-db tag-ui tag-metadata-service tag-data-service tag-search-db tag-search-db-init tag-search-service tag-data-db-sidecar
 
@@ -128,6 +132,10 @@ release-search-service: tag-search-service
 release-storage-service-init: tag-storage-service-init
 	docker push "${REPOSITORY_1_URL}/storage-service-init:${TAG}"
 	docker push "${REPOSITORY_2_URL}/storage-service-init:${TAG}"
+
+release-helm-chart: build-helm-chart
+	helm package ./helm-charts/dbrepo --destination ./build
+	helm push ./build/dbrepo-${TAG}-dev.tgz "oci://${REPOSITORY_2_URL}/helm"
 
 test-backend: test-metadata-service test-analyse-service test-data-service
 

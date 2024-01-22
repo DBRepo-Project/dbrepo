@@ -1,0 +1,19 @@
+{{- if .Values.metadataService.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: metadata-service
+  namespace: {{ $.Values.namespace }}
+  labels:
+    service: metadata-service
+spec:
+  type: ClusterIP
+  ports:
+    - name: "metadata-service"
+      port: 80
+      targetPort: 9099
+      protocol: TCP
+  selector:
+    service: metadata-service
+{{- end }}

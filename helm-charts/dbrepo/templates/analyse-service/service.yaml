@@ -1,0 +1,19 @@
+{{- if .Values.analyseService.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: analyse-service
+  namespace: {{ $.Values.namespace }}
+  labels:
+    service: analyse-service
+spec:
+  type: ClusterIP
+  ports:
+    - name: "flask"
+      port: 80
+      targetPort: 5000
+      protocol: TCP
+  selector:
+    service: analyse-service
+{{- end }}
