@@ -29,10 +29,8 @@ COPY ./test ./test
 RUN mvn clean install -DskipTests
 
 ###### SECOND STAGE ######
-FROM openjdk:17-alpine as runtime
+FROM eclipse-temurin:17-jdk as runtime
 MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
-
-RUN apk --no-cache add curl bash
 
 ENV ADMIN_MAIL="noreply@localhost"
 ENV BASE_URL="http://localhost"

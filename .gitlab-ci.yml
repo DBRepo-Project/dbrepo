@@ -156,6 +156,7 @@ scan-analyse-service:
   stage: scan
   only:
     refs:
+      - dev
       - master
   allow_failure: true
   script:
@@ -176,6 +177,7 @@ scan-authentication-service:
   stage: scan
   only:
     refs:
+      - dev
       - master
   allow_failure: true
   script:
@@ -196,6 +198,7 @@ scan-broker-service:
   stage: scan
   only:
     refs:
+      - dev
       - master
   allow_failure: true
   script:
@@ -216,6 +219,7 @@ scan-gateway-service:
   stage: scan
   only:
     refs:
+      - dev
       - master
   allow_failure: true
   script:
@@ -236,6 +240,7 @@ scan-metadata-service:
   stage: scan
   only:
     refs:
+      - dev
       - master
   allow_failure: true
   script:
@@ -256,6 +261,7 @@ scan-data-service:
   stage: scan
   only:
     refs:
+      - dev
       - master
   allow_failure: true
   script:
@@ -276,6 +282,7 @@ scan-search-db:
   stage: scan
   only:
     refs:
+      - dev
       - master
   allow_failure: true
   script:
@@ -296,6 +303,7 @@ scan-search-dashboard:
   stage: scan
   only:
     refs:
+      - dev
       - master
   allow_failure: true
   script:
@@ -316,6 +324,7 @@ scan-search-db-init:
   stage: scan
   only:
     refs:
+      - dev
       - master
   allow_failure: true
   script:
@@ -336,6 +345,7 @@ scan-data-db:
   stage: scan
   only:
     refs:
+      - dev
       - master
   allow_failure: true
   script:
@@ -356,6 +366,7 @@ scan-metadata-db:
   stage: scan
   only:
     refs:
+      - dev
       - master
   allow_failure: true
   script:
@@ -376,6 +387,7 @@ scan-ui:
   stage: scan
   only:
     refs:
+      - dev
       - master
   allow_failure: true
   script:
@@ -396,6 +408,7 @@ scan-storage-service:
   stage: scan
   only:
     refs:
+      - dev
       - master
   allow_failure: true
   script:
@@ -416,6 +429,7 @@ scan-storage-service-init:
   stage: scan
   only:
     refs:
+      - dev
       - master
   allow_failure: true
   script:

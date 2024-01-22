@@ -5,21 +5,41 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.0.6</version>
+        <version>3.0.13</version>
     </parent>
 
     <groupId>at.tuwien</groupId>
     <artifactId>dbrepo-data-service</artifactId>
-    <version>latest</version>
     <name>dbrepo-data-service</name>
-    <description>
-        This service is responsible for the database-specific CRUD operations.
-    </description>
+    <version>1.4.1</version>
+
+    <description>This service is responsible for the database-specific CRUD operations.</description>
+
     <url>https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/</url>
     <developers>
         <developer>
             <name>Martin Weise</name>
             <email>martin.weise@tuwien.ac.at</email>
+            <organization>TU Wien</organization>
+        </developer>
+        <developer>
+            <name>Moritz Staudinger</name>
+            <email>moritz.staudinger@tuwien.ac.at</email>
+            <organization>TU Wien</organization>
+        </developer>
+        <developer>
+            <name>Tobias Grantner</name>
+            <email>tobias.grantner@tuwien.ac.at</email>
+            <organization>TU Wien</organization>
+        </developer>
+        <developer>
+            <name>Sotirios Tsepelakis</name>
+            <email>sotirios.tsepelakis@tuwien.ac.at</email>
+            <organization>TU Wien</organization>
+        </developer>
+        <developer>
+            <name>Geoffrey Karnbach</name>
+            <email>geoffrey.karnbach@tuwien.ac.at</email>
             <organization>TU Wien</organization>
         </developer>
     </developers>
@@ -35,14 +55,14 @@
         <java.version>17</java.version>
         <spring-cloud.version>4.0.2</spring-cloud.version>
         <mapstruct.version>1.5.5.Final</mapstruct.version>
-        <jacoco.version>0.8.10</jacoco.version>
+        <jacoco.version>0.8.11</jacoco.version>
         <jwt.version>4.3.0</jwt.version>
         <opencsv.version>5.7.1</opencsv.version>
         <super-csv.version>2.4.0</super-csv.version>
         <jsql.version>4.6</jsql.version>
         <springdoc-openapi.version>2.1.0</springdoc-openapi.version>
         <hsqldb.version>2.7.2</hsqldb.version>
-        <testcontainers.version>1.18.3</testcontainers.version>
+        <testcontainers.version>1.19.1</testcontainers.version>
         <opensearch-testcontainer.version>2.0.0</opensearch-testcontainer.version>
         <opensearch-client.version>1.1.0</opensearch-client.version>
         <opensearch-rest-client.version>2.8.0</opensearch-rest-client.version>
@@ -198,11 +218,6 @@
             <artifactId>mariadb</artifactId>
             <version>${testcontainers.version}</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jacoco</groupId>
-            <artifactId>jacoco-maven-plugin</artifactId>
-            <version>${jacoco.version}</version>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
