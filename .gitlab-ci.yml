@@ -595,11 +595,11 @@ docs-latest:
     - apt-get update && apt-get install -y git make sed
     - git fetch && git checkout master
     - pip install -r ./requirements.txt
-    - find .docs -type f -exec sed -i -e "s/\$TAG/latest/g" {} \;
-    - find .docs -type f -exec sed -i -e "s/\$VERSION/latest/g" {} \;
+    - mkdir -p ./final
+    - find ./.docs -type f -exec sed -i -e "s/\$TAG/latest/g" {} \;
+    - find ./.docs -type f -exec sed -i -e "s/\$VERSION/${VERSION}/g" {} \;
     - mkdocs build && cp -r ./site ./final/latest
-    - mkdir -p ./final/1.3
-    - cp ./.docs/redirect.html ./final/1.3/index.html
+    - cp ./.docs/redirect.html ./final/index.html
     - cp -r ./swagger/latest ./final/latest/swagger
   cache:
     paths:
