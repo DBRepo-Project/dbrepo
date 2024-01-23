@@ -527,11 +527,12 @@ release-helm-1.4:
   before_script:
     - echo "$CI_REGISTRY2_PASSWORD" | docker login --username "$CI_REGISTRY2_USER" --password-stdin $CI_REGISTRY2_URL
   script:
-    - apk add sed helm
+    - apk add sed helm curl
     - 'sed -i -e "s/^version:.*/version: \"${VERSION}\"/g" ./helm-charts/dbrepo/Chart.yaml'
     - 'sed -i -e "s/^appVersion:.*/appVersion: \"${VERSION}\"/g" ./helm-charts/dbrepo/Chart.yaml'
     - helm package ./helm-charts/dbrepo --destination ./build
     - helm push "./build/dbrepo-${VERSION}.tgz" "oci://${CI_REGISTRY2_URL}/helm"
+    - curl -sSL -X POST --form 'chart=@dbrepo-${VERSION}.tgz' --user mweise:${GITLAB_ACCESS_TOKEN} https://gitlab.example.com/api/v4/projects/450/packages/helm/api/stable/charts
 
 build-api-latest:
   stage: build
