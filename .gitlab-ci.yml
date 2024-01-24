@@ -500,6 +500,7 @@ build-api-latest:
     - apk add bash git
     - git fetch && git checkout master
     - bash .docs/.swagger/swagger-site.sh
+    - find ./site -type f -exec sed -i -e "s/\$TAG/latest/g" {} \;
     - mkdir -p ./swagger/latest
     - cp -r ./site/* ./swagger/latest/
   cache:
@@ -546,6 +547,7 @@ build-api-1.4:
     - apk add bash git maven
     - git fetch && git checkout release-v1.4
     - bash .docs/.swagger/swagger-site.sh
+    - find ./site -type f -exec sed -i -e "s/\$TAG/${VERSION}/g" {} \;
     - mkdir -p ./swagger/${VERSION}
     - cp -r ./site/* ./swagger/${VERSION}/
   cache:
@@ -654,7 +656,9 @@ docs-1.4:
     - pip install -r ./.docs/requirements.txt
     - wget https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/.docs/overrides/main.html -O .docs/overrides/main.html -q
     - mkdir -p ./final
-    - find ./.docs -type f -exec sed -i -e "s/\$TAG/${VERSION}/g" {} \;
+    - find .docs -type f -exec sed -i -e "s/\$TAG/${VERSION}/g" {} \;
+    - find .docs -type f -exec sed -i -e "s/\$VERSION/${VERSION}/g" {} \;
+    - cp ./.docs/redirect.html ./final/index.html
     - mkdocs build && cp -r ./site ./final/${VERSION}
     - cp -r ./swagger/${VERSION} ./final/${VERSION}/swagger
   cache:

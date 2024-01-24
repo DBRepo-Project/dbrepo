@@ -20,8 +20,8 @@ For this small, local, test deployment any modern hardware would suffice, we rec
 the following settings.
 
 - min. 8 vCPU cores
-- min. 16GB RAM memory
-- min. 200GB SSD storage
+- min. 8GB free RAM memory
+- min. 200GB free SSD storage
 - min. 100Mbit/s connection
 
 *Optional*: public IP-address if you want to secure the deployment with a (free) TLS-certificate from Let's Encrypt.
@@ -133,6 +133,22 @@ In case the deployment is unsuccessful, we have explanations on their origin and
 :   *Solution*: This service or application needs to be stopped. You can find out the service or application via
                 `sudo netstat -tulpn` (sudo is necessary for the process id) and then stop the service or application
                 gracefully or force a stop via `kill -15 PID` (not recommended).
+
+**IllegalArgumentException values less than -1 bytes are not supported**
+
+:   *Origin*:   Your deployment machine (e.g. laptop, virtual machine) appears to not have enough RAM assigned.
+:   *Solution*: Assign more RAM to the deployment machine (e.g. add vRAM to the virtual machine).
+
+## Next Steps
+
+You should now be able to view the front end at [http://localhost](http://localhost).
+
+Please be warned that the default configuration is not intended for public deployments. It is only intended to have a
+running system within minutes to play around within the system and explore features. It is strongly advised to change 
+the default `.env` environment variables.
+
+Next, create a [user account](../usage-overview/#create-user-account) and 
+then [create a database](../usage-overview/#create-database) to [import a dataset](../usage-overview/#import-dataset).
 
 ## Security
 
