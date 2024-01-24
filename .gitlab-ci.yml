@@ -245,6 +245,7 @@ scan-metadata-service:
       - master
   allow_failure: true
   script:
+    - "ifconfig eth0 mtu 1450 up"
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-metadata-service-report.json docker.io/dbrepo/metadata-service:latest
     - trivy image --insecure --exit-code 0 docker.io/dbrepo/metadata-service:latest
     - trivy image --insecure --exit-code 1 --severity CRITICAL docker.io/dbrepo/metadata-service:latest
@@ -266,6 +267,7 @@ scan-data-service:
       - master
   allow_failure: true
   script:
+    - "ifconfig eth0 mtu 1450 up"
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-data-service-report.json docker.io/dbrepo/data-service:latest
     - trivy image --insecure --exit-code 0 docker.io/dbrepo/data-service:latest
     - trivy image --insecure --exit-code 1 --severity CRITICAL docker.io/dbrepo/data-service:latest
@@ -514,10 +516,10 @@ release-helm-latest:
     - echo "$CI_REGISTRY2_PASSWORD" | docker login --username "$CI_REGISTRY2_USER" --password-stdin $CI_REGISTRY2_URL
   script:
     - apk add sed helm
-    - 'sed -i -e "s/^version:.*/version: \"${CHART_VERSION}-RC1\"/g" ./helm-charts/dbrepo/Chart.yaml'
-    - 'sed -i -e "s/^appVersion:.*/appVersion: \"latest\"/g" ./helm-charts/dbrepo/Chart.yaml'
+    - 'sed -i -e "s/^version:.*/version: \"${CHART_VERSION}-0.git.${CI_PIPELINE_ID}.${CI_COMMIT_SHORT_SHA}\"/g" ./helm-charts/dbrepo/Chart.yaml'
+    - 'sed -i -e "s/^appVersion:.*/appVersion: \"${CHART_VERSION}-0.git.${CI_PIPELINE_ID}.${CI_COMMIT_SHORT_SHA}\"/g" ./helm-charts/dbrepo/Chart.yaml'
     - helm package ./helm-charts/dbrepo --destination ./build
-    - helm push "./build/dbrepo-${CHART_VERSION}-RC1.tgz" "oci://${CI_REGISTRY2_URL}/helm"
+    - helm push "./build/dbrepo-${CHART_VERSION}-0.git.${CI_PIPELINE_ID}.${CI_COMMIT_SHORT_SHA}.tgz" "oci://${CI_REGISTRY2_URL}/helm"
 
 release-helm-1.4:
   stage: release

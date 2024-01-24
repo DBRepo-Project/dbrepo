@@ -36,9 +36,6 @@ build-frontend:
 build-swagger:
 	bash ./.docs/generate.sh
 
-build-helm-chart:
-	helm package ./helm-charts/dbrepo --destination ./build
-
 tag: tag-analyse-service tag-authentication-service tag-metadata-db tag-ui tag-metadata-service tag-data-service tag-search-db tag-search-db-init tag-search-service tag-data-db-sidecar
 
 tag-analyse-service:
@@ -130,10 +127,6 @@ release-search-service: tag-search-service
 release-storage-service-init: tag-storage-service-init
 	docker push "${REPOSITORY_1_URL}/storage-service-init:${TAG}"
 	docker push "${REPOSITORY_2_URL}/storage-service-init:${TAG}"
-
-release-helm-chart: build-helm-chart
-	helm package ./helm-charts/dbrepo --destination ./build
-	helm push ./build/dbrepo-${TAG}-dev.tgz "oci://${REPOSITORY_2_URL}/helm"
 
 test-backend: test-metadata-service test-analyse-service test-data-service
 
