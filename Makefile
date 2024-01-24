@@ -37,8 +37,6 @@ build-swagger:
 	bash ./.docs/generate.sh
 
 build-helm-chart:
-	sed -i -e "s/^version:.*/version: \"${TAG}-dev\"/g" ./helm-charts/dbrepo/Chart.yaml
-	sed -i -e "s/^appVersion:.*/appVersion: \"${TAG}-dev\"/g" ./helm-charts/dbrepo/Chart.yaml
 	helm package ./helm-charts/dbrepo --destination ./build
 
 tag: tag-analyse-service tag-authentication-service tag-metadata-db tag-ui tag-metadata-service tag-data-service tag-search-db tag-search-db-init tag-search-service tag-data-db-sidecar

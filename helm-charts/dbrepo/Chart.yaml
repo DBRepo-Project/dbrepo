@@ -6,8 +6,8 @@ description: |
   is evolving, allows reproducing of query results and supports findable-, accessible-, interoperable- and reusable
   data.
 type: application
-version: "1.4.0-dev.667653b51"
-appVersion: "1.4.0-dev.667653b51"
+version: "1.4.1-RC1"
+appVersion: "1.4.0"
 keywords:
   - dbrepo
 maintainers:
