@@ -1,7 +1,6 @@
 .PHONY: all
 
 TAG ?= latest
-TRIVY_VERSION ?= v0.41.0
 REPOSITORY_1_URL ?= docker.io/dbrepo
 REPOSITORY_2_URL ?= s210.dl.hpc.tuwien.ac.at/dbrepo
 

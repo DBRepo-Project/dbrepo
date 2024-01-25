@@ -1,0 +1,19 @@
+{{- if .Values.dataService.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: data-service
+  namespace: {{ $.Values.namespace }}
+  labels:
+    service: data-service
+spec:
+  type: ClusterIP
+  ports:
+    - name: "data-service"
+      port: 80
+      targetPort: 9093
+      protocol: TCP
+  selector:
+    service: data-service
+{{- end }}
