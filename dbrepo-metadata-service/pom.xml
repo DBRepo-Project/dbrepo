@@ -63,7 +63,8 @@
         <mapstruct.version>1.5.5.Final</mapstruct.version>
         <rabbitmq.version>5.20.0</rabbitmq.version>
         <jackson-datatype.version>2.15.0</jackson-datatype.version>
-        <commons.version>2.11.0</commons.version>
+        <commons-io.version>2.15.0</commons-io.version>
+        <commons-validator.version>1.8.0</commons-validator.version>
         <guava.version>33.0.0-jre</guava.version>
         <jacoco.version>0.8.11</jacoco.version>
         <jwt.version>4.3.0</jwt.version>
@@ -238,7 +239,12 @@
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>${commons.version}</version>
+            <version>${commons-io.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-validator</groupId>
+            <artifactId>commons-validator</artifactId>
+            <version>${commons-validator.version}</version>
         </dependency>
         <!-- AMPQ -->
         <dependency>

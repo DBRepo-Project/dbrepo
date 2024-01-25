@@ -5,19 +5,19 @@ import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.api.database.table.TableCreateDto;
 import at.tuwien.api.database.table.columns.ColumnCreateDto;
 import at.tuwien.api.database.table.columns.ColumnTypeDto;
+import at.tuwien.api.identifier.IdentifierSaveDto;
 import at.tuwien.config.QueryConfig;
 import at.tuwien.entities.database.AccessType;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.database.table.Table;
-import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
-import at.tuwien.repository.mdb.IdentifierRepository;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.TableService;
 import at.tuwien.utils.UserUtil;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.validator.GenericValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -319,6 +319,36 @@ public class EndpointValidator {
         }
         log.error("Access not allowed: no write access for table with id {}", tableId);
         throw new NotAllowedException("Access not allowed: no write access for table with id " + tableId);
+    }
+
+    /**
+     * Precondition: identifier.getPublicationYear() is not null
+     *
+     * @param identifier The identifier that will be created.
+     * @return True if the publication date is valid, false otherwise.
+     */
+    public boolean validatePublicationDate(IdentifierSaveDto identifier) {
+        if (identifier.getPublicationMonth() != null && (identifier.getPublicationMonth() < 1 || identifier.getPublicationMonth() > 12)) {
+            log.trace("publication month {} needs to fulfill: 1 >= publicationMonth <= 12", identifier.getPublicationMonth());
+            return false;
+        }
+        if (identifier.getPublicationDay() != null && (identifier.getPublicationDay() < 1 || identifier.getPublicationDay() > 31)) {
+            log.trace("publication day {} needs to fulfill: 1 >= publicationDay <= 31", identifier.getPublicationDay());
+            return false;
+        }
+        if (identifier.getPublicationMonth() != null && identifier.getPublicationDay() != null) {
+            final String paddedMonth = identifier.getPublicationMonth() < 9 ? "0" + identifier.getPublicationMonth() : "" + identifier.getPublicationMonth();
+            final boolean result = GenericValidator.isDate(identifier.getPublicationYear() + "-" + paddedMonth + "-"
+                    + identifier.getPublicationDay(), "yyyy-MM-dd", true);
+            if (!result) {
+                log.trace("publication date {}-{}-{} needs to be valid", identifier.getPublicationYear(), paddedMonth,
+                        identifier.getPublicationDay());
+                return false;
+            }
+            return true;
+        }
+        log.trace("publication date is valid");
+        return true;
     }
 
 }

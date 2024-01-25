@@ -7,6 +7,7 @@ import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.api.database.table.TableCreateDto;
 import at.tuwien.api.database.table.columns.ColumnCreateDto;
 import at.tuwien.api.database.table.columns.ColumnTypeDto;
+import at.tuwien.api.identifier.IdentifierSaveDto;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.*;
 import at.tuwien.repository.mdb.IdentifierRepository;
@@ -29,7 +30,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
@@ -45,9 +46,6 @@ public class EndpointValidatorUnitTest extends BaseUnitTest {
 
     @MockBean
     private AccessService accessService;
-
-    @MockBean
-    private IdentifierRepository identifierRepository;
 
     @MockBean
     private TableService tableService;
@@ -461,6 +459,138 @@ public class EndpointValidatorUnitTest extends BaseUnitTest {
         assertThrows(NotAllowedException.class, () -> {
             endpointValidator.validateOnlyPrivateHasRole(DATABASE_1_ID, USER_4_PRINCIPAL, "list-tables");
         });
+    }
+
+    @Test
+    public void validatePublicationDate_succeeds() {
+        final IdentifierSaveDto request = IdentifierSaveDto.builder()
+                .publicationYear(2024)
+                .publicationMonth(1)
+                .publicationDay(25)
+                .build();
+
+        /* test */
+        assertTrue(endpointValidator.validatePublicationDate(request));
+    }
+
+    @Test
+    public void validatePublicationDate_missingDay_succeeds() {
+        final IdentifierSaveDto request = IdentifierSaveDto.builder()
+                .publicationYear(2024)
+                .publicationMonth(1)
+                .build();
+
+        /* test */
+        assertTrue(endpointValidator.validatePublicationDate(request));
+    }
+
+    @Test
+    public void validatePublicationDate_missingMonth_succeeds() {
+        final IdentifierSaveDto request = IdentifierSaveDto.builder()
+                .publicationYear(2024)
+                .publicationDay(1)
+                .build();
+
+        /* test */
+        assertTrue(endpointValidator.validatePublicationDate(request));
+    }
+
+    @Test
+    public void validatePublicationDate_missingDayMonth_succeeds() {
+        final IdentifierSaveDto request = IdentifierSaveDto.builder()
+                .publicationYear(2024)
+                .build();
+
+        /* test */
+        assertTrue(endpointValidator.validatePublicationDate(request));
+    }
+
+    @Test
+    public void validatePublicationDate_yearEarly_succeeds() {
+        final IdentifierSaveDto request = IdentifierSaveDto.builder()
+                .publicationYear(1300)
+                .build();
+
+        /* test */
+        assertTrue(endpointValidator.validatePublicationDate(request));
+    }
+
+    @Test
+    public void validatePublicationDate_yearLate_succeeds() {
+        final IdentifierSaveDto request = IdentifierSaveDto.builder()
+                .publicationYear(12345)
+                .build();
+
+        /* test */
+        assertTrue(endpointValidator.validatePublicationDate(request));
+    }
+
+    @Test
+    public void validatePublicationDate_monthInvalid1_fails() {
+        final IdentifierSaveDto request = IdentifierSaveDto.builder()
+                .publicationYear(2024)
+                .publicationMonth(0)
+                .build();
+
+        /* test */
+        assertFalse(endpointValidator.validatePublicationDate(request));
+    }
+
+    @Test
+    public void validatePublicationDate_monthInvalid2_fails() {
+        final IdentifierSaveDto request = IdentifierSaveDto.builder()
+                .publicationYear(2024)
+                .publicationMonth(13)
+                .build();
+
+        /* test */
+        assertFalse(endpointValidator.validatePublicationDate(request));
+    }
+
+    @Test
+    public void validatePublicationDate_dayInvalid1_fails() {
+        final IdentifierSaveDto request = IdentifierSaveDto.builder()
+                .publicationYear(2024)
+                .publicationDay(0)
+                .build();
+
+        /* test */
+        assertFalse(endpointValidator.validatePublicationDate(request));
+    }
+
+    @Test
+    public void validatePublicationDate_dayInvalid2_fails() {
+        final IdentifierSaveDto request = IdentifierSaveDto.builder()
+                .publicationYear(2024)
+                .publicationDay(32)
+                .build();
+
+        /* test */
+        assertFalse(endpointValidator.validatePublicationDate(request));
+    }
+
+    @Test
+    public void validatePublicationDate_february29Invalid_fails() {
+        final IdentifierSaveDto request = IdentifierSaveDto.builder()
+                .publicationYear(2023)
+                .publicationMonth(2)
+                .publicationDay(29)
+                .build();
+
+        /* test */
+        assertFalse(endpointValidator.validatePublicationDate(request));
+    }
+
+    @Test
+    public void validatePublicationDate_february29_succeeds() {
+        final IdentifierSaveDto request = IdentifierSaveDto.builder()
+                .publicationYear(2024)
+                .publicationMonth(2)
+                .publicationDay(29)
+                .build();
+
+        /* test */
+        assertTrue(endpointValidator.validatePublicationDate(request));
     }
 
 }
