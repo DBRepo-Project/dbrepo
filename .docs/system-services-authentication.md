@@ -8,7 +8,7 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`dbrepo/authentication-service:__TAG__`](https://hub.docker.com/r/dbrepo/authentication-service)
+    Image: [`dbrepo/authentication-service:__APPVERSION__`](https://hub.docker.com/r/dbrepo/authentication-service)
 
     * Ports: 8080/tcp
     * Health: `http://<hostname>:8080/api/auth/health`

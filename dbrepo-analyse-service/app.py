@@ -80,7 +80,7 @@ template = {
     "info": {
         "title": "Database Repository Analyse Service API",
         "description": "Service that analyses data structures",
-        "version": "__TAG__",
+        "version": "__APPVERSION__",
         "contact": {
             "name": "Prof. Andreas Rauber",
             "email": "andreas.rauber@tuwien.ac.at",

@@ -8,7 +8,7 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`dbrepo/metadata-db:__TAG__`](https://hub.docker.com/r/dbrepo/metadata-db)
+    Image: [`dbrepo/metadata-db:__APPVERSION__`](https://hub.docker.com/r/dbrepo/metadata-db)
 
     * Ports: 3306/tcp
     * JDBC: `jdbc://mariadb:<hostname>:3306`
