@@ -97,7 +97,7 @@ import IsniIcon from '@/components/icons/IsniIcon.vue'
 import OrcidIcon from '@/components/icons/OrcidIcon.vue'
 import RorIcon from '@/components/icons/RorIcon.vue'
 import Banner from '@/components/identifier/Banner.vue'
-import { formatDateUTC, formatLanguage } from '@/utils'
+import { formatLanguage } from '@/utils'
 
 export default {
   components: {
@@ -167,7 +167,9 @@ export default {
       if (this.identifier.publication_year && !this.identifier.publication_month && !this.identifier.publication_day) {
         return this.identifier.publication_year
       } else if (this.identifier.publication_year && this.identifier.publication_month && this.identifier.publication_day) {
-        return formatDateUTC(this.identifier.publication_year + '-' + this.identifier.publication_month + '-' + this.identifier.publication_day)
+        const month = this.identifier.publication_month
+        const day = this.identifier.publication_day
+        return `${this.identifier.publication_year}-${month < 9 ? '0' + month : month}-${day < 9 ? '0' + day : day}`
       } else {
         return null
       }

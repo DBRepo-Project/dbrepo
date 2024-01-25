@@ -37,6 +37,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -163,6 +164,12 @@ public class IdentifierEndpoint {
             QueryStoreException, QueryNotFoundException, ImageNotSupportedException, UserNotFoundException,
             DatabaseConnectionException, RemoteUnavailableException {
         log.debug("endpoint create identifier, data={}, {}", data, PrincipalUtil.formatForDebug(principal));
+        /* check data */
+        if (!endpointValidator.validatePublicationDate(data)) {
+            log.error("Failed to create identifier: publication date is invalid");
+            throw new IdentifierRequestException("Failed to create identifier: publication date is invalid");
+        }
+        /* check access */
         DatabaseAccess access = null;
         try {
             access = accessService.find(data.getDatabaseId(), UserUtil.getId(principal));
@@ -172,6 +179,7 @@ public class IdentifierEndpoint {
                 throw new NotAllowedException("Failed to create identifier: insufficient role");
             }
         }
+        /* create identifier */
         final Database database = databaseService.find(data.getDatabaseId());
         switch (data.getType()) {
             case VIEW -> {
