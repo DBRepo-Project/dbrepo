@@ -1,0 +1,277 @@
+{{- if .Values.metadataService.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: metadata-service
+  namespace: {{ $.Values.namespace }}
+  labels:
+    app: metadata-service
+    service: metadata-service
+spec:
+  replicas: {{ .Values.metadataService.replicaCount }}
+  strategy:
+    type: {{ $.Values.strategyType }}
+  selector:
+    matchLabels:
+      app: metadata-service
+      service: metadata-service
+  template:
+    metadata:
+      labels:
+        app: metadata-service
+        service: metadata-service
+    spec:
+      securityContext:
+        fsGroup: 0
+        runAsUser: 0
+        runAsGroup: 0
+      containers:
+        - name: metadata-service
+          image: {{ printf "%s/%s:%s" .Values.metadataService.image.registry .Values.metadataService.image.repository .Values.metadataService.image.tag }}
+          imagePullPolicy: {{ .Values.metadataService.image.pullPolicy | default "IfNotPresent" }}
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+          ports:
+            - containerPort: 9099
+              protocol: TCP
+          env:
+            - name: ADMIN_MAIL
+              valueFrom:
+                secretKeyRef:
+                  name: metadata-service-secret
+                  key: admin-email
+            - name: GATEWAY_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: metadata-service-secret
+                  key: gateway-endpoint
+            - name: WEBSITE
+              valueFrom:
+                secretKeyRef:
+                  name: metadata-service-secret
+                  key: website
+            - name: SEARCH_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: metadata-service-secret
+                  key: search-username
+            - name: SEARCH_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: metadata-service-secret
+                  key: search-password
+            - name: BROKER_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: metadata-service-secret
+                  key: broker-host
+            - name: BROKER_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: metadata-service-secret
+                  key: broker-port
+            - name: BROKER_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: metadata-service-secret
+                  key: broker-endpoint
+            - name: BROKER_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: metadata-service-secret
+                  key: broker-username
+            - name: BROKER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: metadata-service-secret
+                  key: broker-password
+            - name: SHARED_FILESYSTEM
+              value: /mnt/shared
+            - name: METADATA_DB
+              valueFrom:
+                secretKeyRef:
+                  name: metadata-service-secret
+                  key: metadata-db
+            - name: METADATA_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: metadata-service-secret
+                  key: metadata-host
+            - name: METADATA_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: metadata-service-secret
+                  key: metadata-username
+            - name: METADATA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: metadata-service-secret
+                  key: metadata-password
+            - name: METADATA_JDBC_EXTRA_ARGS
+              valueFrom:
+                secretKeyRef:
+                  name: metadata-service-secret
+                  key: metadata-jdbc-extra-args
+            - name: KEYCLOAK_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: metadata-service-secret
+                  key: keycloak-host
+            - name: KEYCLOAK_ADMIN
+              valueFrom:
+                secretKeyRef:
+                  name: metadata-service-secret
+                  key: keycloak-admin
+            - name: KEYCLOAK_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: metadata-service-secret
+                  key: keycloak-admin-password
+            - name: JWT_ISSUER
+              valueFrom:
+                secretKeyRef:
+                  name: metadata-service-secret
+                  key: jwt-issuer
+            - name: DATACITE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: metadata-service-secret
+                  key: datacite-url
+            - name: DATACITE_PREFIX
+              valueFrom:
+                secretKeyRef:
+                  name: metadata-service-secret
+                  key: datacite-prefix
+            - name: DATACITE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: metadata-service-secret
+                  key: datacite-username
+            - name: DATACITE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: metadata-service-secret
+                  key: datacite-password
+            - name: REPOSITORY_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: metadata-service-secret
+                  key: repository-name
+            - name: BASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: metadata-service-secret
+                  key: base-url
+            - name: PID_BASE
+              valueFrom:
+                secretKeyRef:
+                  name: metadata-service-secret
+                  key: pid-base
+            - name: MIN_CONCURRENT_CONSUMERS
+              valueFrom:
+                secretKeyRef:
+                  name: metadata-service-secret
+                  key: min-concurrent-consumers
+            - name: MAX_CONCURRENT_CONSUMERS
+              valueFrom:
+                secretKeyRef:
+                  name: metadata-service-secret
+                  key: max-concurrent-consumers
+            - name: REQUEUE_REJECTED
+              valueFrom:
+                secretKeyRef:
+                  name: metadata-service-secret
+                  key: requeue-rejected
+            - name: BROKER_VIRTUALHOST
+              valueFrom:
+                secretKeyRef:
+                  name: metadata-service-secret
+                  key: broker-virtualhost
+            - name: QUEUE_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: metadata-service-secret
+                  key: queue-name
+            - name: EXCHANGE_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: metadata-service-secret
+                  key: exchange-name
+            - name: ROUTING_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: metadata-service-secret
+                  key: routing-key
+            - name: CONNECTION_TIMEOUT
+              valueFrom:
+                secretKeyRef:
+                  name: metadata-service-secret
+                  key: connection-timeout
+            - name: LOG_LEVEL
+              valueFrom:
+                secretKeyRef:
+                  name: metadata-service-secret
+                  key: log-level
+            - name: S3_STORAGE_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: metadata-service-secret
+                  key: s3-storage-endpoint
+            - name: S3_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: metadata-service-secret
+                  key: s3-access-key-id
+            - name: S3_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: metadata-service-secret
+                  key: s3-secret-access-key
+            - name: S3_IMPORT_BUCKET
+              valueFrom:
+                secretKeyRef:
+                  name: metadata-service-secret
+                  key: s3-import-bucket
+            - name: S3_EXPORT_BUCKET
+              valueFrom:
+                secretKeyRef:
+                  name: metadata-service-secret
+                  key: s3-export-bucket
+            - name: MIRROR_RATE
+              valueFrom:
+                secretKeyRef:
+                  name: metadata-service-secret
+                  key: mirror-rate
+            - name: OBTAIN_METADATA_RATE
+              valueFrom:
+                secretKeyRef:
+                  name: metadata-service-secret
+                  key: obtain-metadata-rate
+            - name: DELETE_STALE_QUERIES_RATE
+              valueFrom:
+                secretKeyRef:
+                  name: metadata-service-secret
+                  key: delete-stale-queries-rate
+            {{- if .Values.metadataService.datacite.enabled }}
+            - name: spring_profiles_active
+              value: doi
+            {{- end }}
+          livenessProbe:
+            exec:
+              command:
+                - /bin/bash
+                - -ec
+                - "curl -sSL localhost:9099/actuator/health/readiness | grep 'UP' || exit 1"
+            initialDelaySeconds: 120
+            periodSeconds: 30
+          readinessProbe:
+            exec:
+              command:
+                - /bin/bash
+                - -ec
+                - "curl -sSL localhost:9099/actuator/health/liveness | grep 'UP' || exit 1"
+            initialDelaySeconds: 30
+            periodSeconds: 30
+{{- end }}

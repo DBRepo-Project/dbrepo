@@ -1,0 +1,19 @@
+{{- if .Values.ui.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ui
+  namespace: {{ $.Values.namespace }}
+  labels:
+    service: ui
+spec:
+  type: ClusterIP
+  ports:
+    - name: "nuxt"
+      port: 80
+      targetPort: 3000
+      protocol: TCP
+  selector:
+    service: ui
+{{- end }}

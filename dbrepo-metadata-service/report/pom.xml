@@ -6,15 +6,12 @@
     <parent>
         <artifactId>dbrepo-metadata-service</artifactId>
         <groupId>at.tuwien</groupId>
-        <version>latest</version>
+        <version>1.4.1</version>
     </parent>
 
     <artifactId>dbrepo-metadata-service-report</artifactId>
     <name>dbrepo-metadata-service-report</name>
-
-    <properties>
-        <jacoco.version>0.8.7</jacoco.version>
-    </properties>
+    <version>1.4.1</version>
 
     <dependencies>
         <dependency>

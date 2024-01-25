@@ -109,15 +109,11 @@ public class TableColumn implements Comparable<TableColumn> {
     @ElementCollection(fetch = FetchType.LAZY, targetClass = String.class)
     @CollectionTable(name = "mdb_columns_enums", joinColumns = @JoinColumn(name = "column_id"))
     @Column(name = "value", nullable = false)
-    @JoinColumn(name = "column_id")
-    @OnDelete(action = OnDeleteAction.CASCADE)
     private List<String> enums;
 
     @ElementCollection(fetch = FetchType.LAZY, targetClass = String.class)
     @CollectionTable(name = "mdb_columns_sets", joinColumns = @JoinColumn(name = "column_id"))
     @Column(name = "value", nullable = false)
-    @JoinColumn(name = "column_id")
-    @OnDelete(action = OnDeleteAction.CASCADE)
     private List<String> sets;
 
     @Column

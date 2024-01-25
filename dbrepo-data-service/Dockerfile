@@ -20,10 +20,8 @@ COPY ./report ./report
 RUN mvn clean package -DskipTests
 
 ###### THIRD STAGE ######
-FROM openjdk:17-alpine as runtime
+FROM eclipse-temurin:17-jdk as runtime
 MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
-
-RUN apk --no-cache add curl bash
 
 ENV METADATA_DB=fda
 ENV METADATA_HOST=metadata-db

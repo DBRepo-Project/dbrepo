@@ -1,0 +1,53 @@
+apiVersion: v2
+name: dbrepo
+description: Helm Chart for installing DBRepo
+category: Database
+sources:
+  - https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services
+type: application
+version: "1.4.1-RC1"
+appVersion: "1.4.0"
+keywords:
+  - dbrepo
+maintainers:
+  - name: Martin Weise
+    email: martin.weise@tuwien.ac.at
+home: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/
+icon: https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/master/.docs/images/signet_white.png
+dependencies:
+  - name: opensearch
+    alias: search-db
+    version: 2.15.0 # app version 2.10.0
+    repository: https://opensearch-project.github.io/helm-charts/
+  - name: opensearch-dashboards
+    alias: search-db-dashboard
+    version: 2.13.0 # app version 2.10.0
+    repository: https://opensearch-project.github.io/helm-charts/
+  - name: keycloak
+    alias: auth-service
+    version: 17.3.3
+    repository: https://charts.bitnami.com/bitnami
+  - name: mariadb-galera
+    alias: data-db
+    version: 11.0.1
+    repository: https://charts.bitnami.com/bitnami
+  - name: mariadb-galera
+    alias: metadata-db
+    version: 11.0.1
+    repository: https://charts.bitnami.com/bitnami
+  - name: postgresql-ha
+    alias: auth-db
+    version: 12.1.7
+    repository: https://charts.bitnami.com/bitnami
+  - name: rabbitmq
+    alias: broker-service
+    version: 12.5.1
+    repository: https://charts.bitnami.com/bitnami
+  - name: fluent-bit
+    alias: log-service
+    version: 0.40.0
+    repository: https://fluent.github.io/helm-charts
+  - name: seaweedfs
+    alias: storage-service
+    version: 3.59.4
+    repository: https://seaweedfs.github.io/seaweedfs/helm
