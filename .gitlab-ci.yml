@@ -531,7 +531,7 @@ release-helm-1.4:
     - apk add sed helm curl
     - 'sed -i -e "s/^version:.*/version: \"${CHART_VERSION}\"/g" ./helm-charts/dbrepo/Chart.yaml'
     - 'sed -i -e "s/^appVersion:.*/appVersion: \"${APP_VERSION}\"/g" ./helm-charts/dbrepo/Chart.yaml'
-    - find ./site -type f -exec sed -i -e "s/__CHARTVERSION__/${CHART_VERSION}/g" {} \;
+    - find ./helm-charts -type f -exec sed -i -e "s/__CHARTVERSION__/${CHART_VERSION}/g" {} \;
     - helm package ./helm-charts/dbrepo --destination ./build
     - helm push "./build/dbrepo-${CHART_VERSION}.tgz" "oci://${CI_REGISTRY2_URL}/helm"
     - curl -sSL -X POST --form 'chart=@build/dbrepo-${CHART_VERSION}.tgz' --user mweise:${GITLAB_ACCESS_TOKEN} https://gitlab.example.com/api/v4/projects/450/packages/helm/api/stable/charts
