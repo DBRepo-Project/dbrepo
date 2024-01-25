@@ -515,7 +515,7 @@ release-helm-latest:
     - apk add sed helm
     - 'sed -i -e "s/^version:.*/version: \"${CHART_VERSION}-0.git.${CI_PIPELINE_ID}.${CI_COMMIT_SHORT_SHA}\"/g" ./helm-charts/dbrepo/Chart.yaml'
     - 'sed -i -e "s/^appVersion:.*/appVersion: \"${CHART_VERSION}-0.git.${CI_PIPELINE_ID}.${CI_COMMIT_SHORT_SHA}\"/g" ./helm-charts/dbrepo/Chart.yaml'
-    - find ./site -type f -exec sed -i -e "s/__CHARTVERSION__/${CHART_VERSION}/g" {} \;
+    - find ./helm-charts -type f -exec sed -i -e "s/__CHARTVERSION__/${CHART_VERSION}/g" {} \;
     - helm package ./helm-charts/dbrepo --destination ./build
     - helm push "./build/dbrepo-${CHART_VERSION}-0.git.${CI_PIPELINE_ID}.${CI_COMMIT_SHORT_SHA}.tgz" "oci://${CI_REGISTRY2_URL}/helm"
 
