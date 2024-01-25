@@ -10,27 +10,21 @@ for your deployment and update the variables, especially `hostname`.
 ```shell
 helm upgrade --install dbrepo \
   -n dbrepo \
-  "oci://s210.dl.hpc.tuwien.ac.at/dbrepo/helm/dbrepo-core" \
+  "oci://s210.dl.hpc.tuwien.ac.at/dbrepo/helm/dbrepo" \
   --values ./values.yaml \
-  --version "1.4.0" \
+  --version "__CHARTVERSION__" \
   --create-namespace \
   --cleanup-on-fail
 ```
 
-This chart is also on [Artifact Hub](https://artifacthub.io/packages/helm/dbrepo/dbrepo-core).
+This chart is also on [Artifact Hub](https://artifacthub.io/packages/helm/dbrepo/dbrepo) with a full documentation
+about values, etc.
 
-## Dependencies
+## Prerequisites
 
-Our chart depends on seven other charts which will be automatically resolved when installing our `dbrepo-core` chart:
-
-* Keycloak (Bitnami, v17.3.3) for [Authentication Service](../system-services-authentication)
-* MariaDB Galera (Bitnami, v11.0.1) for [Data Database](../system-databases-data) &amp; [Metadata Database](../system-databases-metadata)
-* SeaweedFS (SeaweedFS, v3.59.4) for [Storage Service](../system-services-storage)
-* OpenSearch (OpenSearch Project, v2.16.0) for [Search Database](../system-databases-search)
-* OpenSearch Dashboards (OpenSearch Project, v2.14.0) for [Search Dashboard](../system-other-search-dashboard)
-* PostgreSQL HA (Bitnami, v12.1.7) for [Auth Database](../system-databases-auth)
-* RabbitMQ (Bitnami, v12.5.1) for [Broker Service](../system-services-broker)
-* FluentBit (FluentBit, v0.40.0) for logging in the cluster.
+* Kubernetes 1.24+
+* Kubernetes 3.8.0+
+* PV provisioner support in the underlying infrastructure
 
 ## Limitations
 

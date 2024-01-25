@@ -6,12 +6,12 @@
     <parent>
         <groupId>at.tuwien</groupId>
         <artifactId>dbrepo-data-service</artifactId>
-        <version>latest</version>
+        <version>1.4.1</version>
     </parent>
 
     <artifactId>rest-service</artifactId>
-    <version>latest</version>
     <name>dbrepo-data-service-rest-service</name>
+    <version>1.4.1</version>
 
     <properties>
         <jacoco.version>0.8.7</jacoco.version>

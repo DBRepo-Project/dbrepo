@@ -1,6 +1,6 @@
 {
   "title": "Database Repository",
-  "version": "vue-dev",
+  "version": "1.4.0",
   "ssl": {
     "force": false
   },
@@ -80,14 +80,9 @@
     "information": {
       "links": [
         {
-          "text": "Release Notes",
-          "blank": true,
-          "href": "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/blob/master/CHANGELOG.md"
-        },
-        {
           "text": "Online Documentation",
           "blank": true,
-          "href": "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.4/"
+          "href": "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/"
         },
         {
           "text": "Sourcecode Documentation",
