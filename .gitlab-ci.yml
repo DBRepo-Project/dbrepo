@@ -644,9 +644,10 @@ docs-latest:
     - git fetch && git checkout master
     - pip install -r ./requirements.txt
     - mkdir -p ./final
+    - sed -i -e "s/__APPVERSION__/${APP_VERSION}/g" .docs/redirect.html
+    - cp ./.docs/redirect.html ./final/index.html
     - find .docs/ -type f -exec sed -i -e "s/__APPVERSION__/latest/g" {} \;
     - mkdocs build && cp -r ./site ./final/latest
-    - cp ./.docs/redirect.html ./final/index.html
     - cp -r ./swagger/latest ./final/latest/swagger
   cache:
     paths:
