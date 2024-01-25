@@ -8,7 +8,7 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`dbrepo/ui:$TAG`](https://hub.docker.com/r/dbrepo/ui)
+    Image: [`dbrepo/ui:__TAG__`](https://hub.docker.com/r/dbrepo/ui)
 
     * Ports: 3000/tcp, 9100/tcp
     * Prometheus: `http://<hostname>:9100/metrics`
@@ -46,7 +46,7 @@ configured as well via the `dbrepo.config.json` values file. The important links
 ```json title="dbrepo.config.json"
 {
   "title": "Database Repository",
-  "version": "$TAG_DOCKER-COMPOSE",
+  "version": "__TAG___DOCKER-COMPOSE",
   "logo": {
     "path": "/my_logo.png"
   },
@@ -65,7 +65,7 @@ if you use a Kubernetes deployment via ConfigMap and Volumes).
 ```yaml title="docker-compose.yml"
 services:
   dbrepo-ui:
-    image: docker.io/dbrepo/ui:$TAG
+    image: docker.io/dbrepo/ui:__TAG__
     volumes:
       - ./my_logo.png:/app/static/my_logo.png
       - ./dbrepo.conf.json:/app/dbrepo.conf.json

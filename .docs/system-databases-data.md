@@ -15,7 +15,7 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`dbrepo/data-db-sidecar:$TAG`](https://hub.docker.com/r/dbrepo/data-db-sidecar)
+    Image: [`dbrepo/data-db-sidecar:__TAG__`](https://hub.docker.com/r/dbrepo/data-db-sidecar)
 
     * Ports: 3305/tcp
     * Swagger UI: `http://<hostname>:1080/swagger-ui/` <a href="../swagger/sidecar" target="_blank">:fontawesome-solid-square-up-right: view online</a>

@@ -516,6 +516,7 @@ release-helm-latest:
     - apk add sed helm
     - 'sed -i -e "s/^version:.*/version: \"${CHART_VERSION}-0.git.${CI_PIPELINE_ID}.${CI_COMMIT_SHORT_SHA}\"/g" ./helm-charts/dbrepo/Chart.yaml'
     - 'sed -i -e "s/^appVersion:.*/appVersion: \"${CHART_VERSION}-0.git.${CI_PIPELINE_ID}.${CI_COMMIT_SHORT_SHA}\"/g" ./helm-charts/dbrepo/Chart.yaml'
+    - find ./site -type f -exec sed -i -e "s/__CHARTVERSION__/${CHART_VERSION}/g" {} \;
     - helm package ./helm-charts/dbrepo --destination ./build
     - helm push "./build/dbrepo-${CHART_VERSION}-0.git.${CI_PIPELINE_ID}.${CI_COMMIT_SHORT_SHA}.tgz" "oci://${CI_REGISTRY2_URL}/helm"
 
@@ -531,9 +532,10 @@ release-helm-1.4:
     - apk add sed helm curl
     - 'sed -i -e "s/^version:.*/version: \"${CHART_VERSION}\"/g" ./helm-charts/dbrepo/Chart.yaml'
     - 'sed -i -e "s/^appVersion:.*/appVersion: \"${APP_VERSION}\"/g" ./helm-charts/dbrepo/Chart.yaml'
+    - find ./site -type f -exec sed -i -e "s/__CHARTVERSION__/${CHART_VERSION}/g" {} \;
     - helm package ./helm-charts/dbrepo --destination ./build
     - helm push "./build/dbrepo-${CHART_VERSION}.tgz" "oci://${CI_REGISTRY2_URL}/helm"
-    - curl -sSL -X POST --form 'chart=@dbrepo-${CHART_VERSION}.tgz' --user mweise:${GITLAB_ACCESS_TOKEN} https://gitlab.example.com/api/v4/projects/450/packages/helm/api/stable/charts
+    - curl -sSL -X POST --form 'chart=@build/dbrepo-${CHART_VERSION}.tgz' --user mweise:${GITLAB_ACCESS_TOKEN} https://gitlab.example.com/api/v4/projects/450/packages/helm/api/stable/charts
 
 build-api-latest:
   stage: build
@@ -547,7 +549,7 @@ build-api-latest:
     - apk add bash git
     - git fetch && git checkout master
     - bash .docs/.swagger/swagger-site.sh
-    - find ./site -type f -exec sed -i -e "s/\$TAG/latest/g" {} \;
+    - find ./site -type f -exec sed -i -e "s/__TAG__/latest/g" {} \;
     - mkdir -p ./swagger/latest
     - cp -r ./site/* ./swagger/latest/
   cache:
@@ -594,7 +596,7 @@ build-api-1.4:
     - apk add bash git maven
     - git fetch && git checkout release-v1.4
     - bash .docs/.swagger/swagger-site.sh
-    - find ./site -type f -exec sed -i -e "s/\$TAG/${APP_VERSION}/g" {} \;
+    - find ./site -type f -exec sed -i -e "s/__TAG__/${APP_VERSION}/g" {} \;
     - mkdir -p ./swagger/${APP_VERSION}
     - cp -r ./site/* ./swagger/${APP_VERSION}/
   cache:
@@ -643,8 +645,8 @@ docs-latest:
     - git fetch && git checkout master
     - pip install -r ./requirements.txt
     - mkdir -p ./final/{latest,1.3}
-    - find ./.docs -type f -exec sed -i -e "s/\$TAG/latest/g" {} \;
-    - find ./.docs -type f -exec sed -i -e "s/\$VERSION/${APP_VERSION}/g" {} \;
+    - find ./.docs -type f -exec sed -i -e "s/__TAG__/latest/g" {} \;
+    - find ./.docs -type f -exec sed -i -e "s/__APPVERSION__/${APP_VERSION}/g" {} \;
     - mkdocs build && cp -r ./site ./final/latest
     - cp ./.docs/redirect.html ./final/index.html
     - cp ./.docs/redirect.html ./final/1.3/index.html
@@ -704,8 +706,8 @@ docs-1.4:
     - pip install -r ./.docs/requirements.txt
     - wget https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/.docs/overrides/main.html -O .docs/overrides/main.html -q
     - mkdir -p ./final
-    - find .docs -type f -exec sed -i -e "s/\$TAG/${APP_VERSION}/g" {} \;
-    - find .docs -type f -exec sed -i -e "s/\$VERSION/${APP_VERSION}/g" {} \;
+    - find .docs -type f -exec sed -i -e "s/__TAG__/${APP_VERSION}/g" {} \;
+    - find .docs -type f -exec sed -i -e "s/__APPVERSION__/${APP_VERSION}/g" {} \;
     - mkdocs build && cp -r ./site ./final/${APP_VERSION}
     - cp -r ./swagger/${APP_VERSION} ./final/${APP_VERSION}/swagger
   cache:

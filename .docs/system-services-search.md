@@ -8,7 +8,7 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`dbrepo/search-service:$TAG`](https://hub.docker.com/r/dbrepo/search-service)
+    Image: [`dbrepo/search-service:__TAG__`](https://hub.docker.com/r/dbrepo/search-service)
 
     * Ports: 4000/tcp
     * Health: `http://<hostname>:4000/api/search/health`

@@ -8,7 +8,7 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`dbrepo/search-db:$TAG`](https://hub.docker.com/r/dbrepo/search-db)
+    Image: [`dbrepo/search-db:__TAG__`](https://hub.docker.com/r/dbrepo/search-db)
 
     * Ports: 9200/tcp
 

@@ -1,10 +1,9 @@
 apiVersion: v2
 name: dbrepo
-description: |
-  We present a database repository system that allows researchers to ingest data into a central, versioned repository 
-  through common interfaces, provides efficient access to arbitrary subsets of data even when the underlying data store
-  is evolving, allows reproducing of query results and supports findable-, accessible-, interoperable- and reusable
-  data.
+description: Helm Chart for installing DBRepo
+category: Database
+sources:
+  - https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services
 type: application
 version: "1.4.1-RC1"
 appVersion: "1.4.0"
@@ -14,8 +13,7 @@ maintainers:
   - name: Martin Weise
     email: martin.weise@tuwien.ac.at
 home: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/
-icon:
-  https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/master/dbrepo-ui/static/favicon.png
+icon: https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/master/.docs/images/signet_white.png
 dependencies:
   - name: opensearch
     alias: search-db
