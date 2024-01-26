@@ -36,6 +36,9 @@ build-frontend:
 build-swagger:
 	bash ./.docs/generate.sh
 
+build-helm:
+	helm package ./helm-charts/dbrepo --destination ./build
+
 tag: tag-analyse-service tag-authentication-service tag-metadata-db tag-ui tag-metadata-service tag-data-service tag-search-db tag-search-db-init tag-search-service tag-data-db-sidecar
 
 tag-analyse-service:

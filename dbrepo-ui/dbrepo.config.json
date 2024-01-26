@@ -34,6 +34,11 @@
       "secret": "seaweedfsadmin"
     }
   },
+  "upload": {
+    "endpoint": "localhost",
+    "port": 1080,
+    "useSsl": false
+  },
   "database": {
     "connection": {
       "extraInfo": null

@@ -21,7 +21,7 @@ info:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0
   title: Database Repository Data Database sidecar API
-  version: $TAG
+  version: __APPVERSION__
 openapi: 3.0.0
 paths:
   /health:
