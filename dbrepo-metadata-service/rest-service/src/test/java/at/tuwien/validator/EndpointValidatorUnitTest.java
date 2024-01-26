@@ -10,7 +10,6 @@ import at.tuwien.api.database.table.columns.ColumnTypeDto;
 import at.tuwien.api.identifier.IdentifierSaveDto;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.exception.*;
-import at.tuwien.repository.mdb.IdentifierRepository;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.TableService;
@@ -591,6 +590,41 @@ public class EndpointValidatorUnitTest extends BaseUnitTest {
 
         /* test */
         assertTrue(endpointValidator.validatePublicationDate(request));
+    }
+
+    @Test
+    public void validateOnlyMineOrWriteAccessOrHasRole_noAccess_fails() {
+
+        /* test */
+        assertFalse(endpointValidator.validateOnlyMineOrWriteAccessOrHasRole(USER_1_ID, USER_1_PRINCIPAL, null, "nobody-role"));
+    }
+
+    @Test
+    public void validateOnlyMineOrWriteAccessOrHasRole_readAccess_fails() {
+
+        /* test */
+        assertFalse(endpointValidator.validateOnlyMineOrWriteAccessOrHasRole(USER_1_ID, USER_1_PRINCIPAL, DATABASE_1_USER_1_READ_ACCESS, "nobody-role"));
+    }
+
+    @Test
+    public void validateOnlyMineOrWriteAccessOrHasRole_ownerOnlyWriteOwn_succeeds() {
+
+        /* test */
+        assertTrue(endpointValidator.validateOnlyMineOrWriteAccessOrHasRole(USER_1_ID, USER_1_PRINCIPAL, DATABASE_1_USER_1_WRITE_OWN_ACCESS, "nobody-role"));
+    }
+
+    @Test
+    public void validateOnlyMineOrWriteAccessOrHasRole_notOwnerOnlyWriteOwn_fails() {
+
+        /* test */
+        assertFalse(endpointValidator.validateOnlyMineOrWriteAccessOrHasRole(USER_2_ID, USER_1_PRINCIPAL, DATABASE_1_USER_1_WRITE_OWN_ACCESS, "nobody-role"));
+    }
+
+    @Test
+    public void validateOnlyMineOrWriteAccessOrHasRole_notOwnerWriteAll_succeeds() {
+
+        /* test */
+        assertTrue(endpointValidator.validateOnlyMineOrWriteAccessOrHasRole(USER_2_ID, USER_1_PRINCIPAL, DATABASE_1_USER_1_WRITE_ALL_ACCESS, "nobody-role"));
     }
 
 }

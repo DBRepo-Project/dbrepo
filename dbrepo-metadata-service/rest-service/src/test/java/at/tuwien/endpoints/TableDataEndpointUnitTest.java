@@ -424,9 +424,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
     public void generic_import(Long databaseId, Database database, Long tableId, Table table, UUID userId,
                                DatabaseAccess access, Principal principal) throws DatabaseNotFoundException,
-            TableNotFoundException, NotAllowedException, UserNotFoundException, TableMalformedException,
-            DatabaseConnectionException, QueryMalformedException, ImageNotSupportedException,
-            AccessDeniedException, DataDbSidecarException {
+            TableNotFoundException, AccessDeniedException, TableMalformedException, NotAllowedException, DataDbSidecarException {
         final ImportDto request = ImportDto.builder().location("test:csv/csv_01.csv").build();
 
         /* mock */
@@ -445,9 +443,8 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
     public void generic_insert(Long databaseId, Long tableId, Database database, Table table, UUID userId,
                                DatabaseAccess access, TableCsvDto data, Principal principal)
-            throws DatabaseNotFoundException, TableNotFoundException, NotAllowedException, UserNotFoundException,
-            TableMalformedException, DatabaseConnectionException, ImageNotSupportedException,
-            ContainerNotFoundException, AccessDeniedException {
+            throws DatabaseNotFoundException, TableNotFoundException, AccessDeniedException, TableMalformedException,
+            NotAllowedException {
 
         /* mock */
         when(databaseService.find(databaseId))
@@ -465,10 +462,9 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
     public void generic_getAll(Long databaseId, Long tableId, Database database, Table table, UUID userId,
                                DatabaseAccess access, Principal principal, Instant timestamp, Long page, Long size,
-                               SortType sortDirection, String sortColumn) throws UserNotFoundException,
-            TableMalformedException, NotAllowedException, PaginationException, TableNotFoundException, SortException,
-            DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
-            AccessDeniedException {
+                               SortType sortDirection, String sortColumn) throws TableMalformedException,
+            NotAllowedException, PaginationException, TableNotFoundException, SortException, QueryMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException, AccessDeniedException {
 
         /* mock */
         when(databaseService.find(databaseId))
@@ -492,9 +488,8 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
     public void generic_getCount(Long databaseId, Long tableId, Database database, Table table, UUID userId,
                                  DatabaseAccess access, Principal principal, Instant timestamp)
-            throws UserNotFoundException, TableMalformedException, NotAllowedException, TableNotFoundException,
-            QueryStoreException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException,
-            ImageNotSupportedException, AccessDeniedException {
+            throws TableMalformedException, NotAllowedException, TableNotFoundException, QueryStoreException,
+            QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, AccessDeniedException {
 
         /* mock */
         when(databaseService.find(databaseId))

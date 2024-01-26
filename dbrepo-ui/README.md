@@ -1,73 +1,43 @@
-# fda-ui
+# User Interface
 
-## Prerequisit
+## Prerequisites
 
-We use Ubuntu 20.04 LTS.
+* Node.js 14+ ([how to install](https://www.stewright.me/2021/03/install-nodejs-14-on-ubuntu-20-04/))
+* Yarn 1.22.0+ ([how to install](https://classic.yarnpkg.com/lang/en/docs/install/#debian-stable))
 
-## Build environment: yarn
-
-Install yarn:
-
-First we need curl:
-
-	sudo apt install curl
-
-Add yarn GPG-Key
-
-	curl -sL https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
-
-Add repo
-
-	echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
-
-Install yarn
-
-	sudo apt update && sudo apt install yarn
-
-Run yarn
-
-	$ yarn
-
-which gives yarn install v1.22.5
-
-## Nuxt
-
-With yarn installed, install nuxt.js
-
-See https://nuxtjs.org/
-
-	yarn add nuxt
-
-
-## Prepare
-
-Configure the `.env` file for the IP and port running or run through terminal:
+Install the runtime dependencies into `node_modules`:
 
 ```bash
-API=http://fda-gateway-service npm --prefix ./fda-ui run dev
+yarn install
 ```
 
-Of course you need to add `fda-gateway-service` to your `/etc/hosts` file for Docker "DNS" to your containers:
+## Run
+
+Then, start a local development server at port 3001. The development server has a local proxy that rewrites the paths
+and does not rely on the `gateway-service` (a NGINX-based proxy to bundle the REST API).
 
 ```bash
-172.29.0.6	fda-gateway-service
+yarn dev
 ```
 
-## Build Setup
+Visit [http://localhost:3001](http://localhost:3001) in your browser. The development server watches for changes in
+`dbrepo-ui` and will reload the frontend.
+
+## Configure
+
+To change most display settings, modify the `dbrepo.config.json` in the root folder. Extend it for any configuration
+that the user needs to do, e.g. change the title, logo, display a list of links.
+
+## Test
+
+TO run the unit tests:
 
 ```bash
-# install dependencies
-$ yarn install
-
-# serve with hot reload at localhost:3000
-$ yarn dev
-
-# build for production and launch server
-$ yarn build
-$ yarn start
-
-# generate static project
-$ yarn generate
+yarn run test:unit
 ```
 
-For detailed explanation on how things work, check out [Nuxt.js docs](https://nuxtjs.org).
+Optionally, generate a coverage report:
+
+```bash
+yarn run coverage
+```
