@@ -1,6 +1,6 @@
-namespace: dbrepo
+namespace:
 
-hostname: example.com
+hostname:
 
 strategyType: RollingUpdate
 

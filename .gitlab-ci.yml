@@ -1,12 +1,11 @@
 variables:
   HOSTALIASES: ./hosts
-  TAG: "${TAG:-latest}"
   TRIVY_NO_PROGRESS: "true"
   TRIVY_CACHE_DIR: ".trivycache/"
   DOCKER_HOST: "unix:///var/run/dind/docker.sock"
   TESTCONTAINERS_RYUK_DISABLED: "false"
-  APP_VERSION: "1.4.1"
-  CHART_VERSION: "1.4.1"
+  APP_VERSION: "1.4.0"
+  CHART_VERSION: "1.4.0"
 
 image: debian:12-slim
 
@@ -157,8 +156,8 @@ scan-analyse-service:
   stage: scan
   only:
     refs:
-      - dev
       - master
+      - release-v1.4
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-analyse-service-report.json docker.io/dbrepo/analyse-service:latest
@@ -178,8 +177,8 @@ scan-authentication-service:
   stage: scan
   only:
     refs:
-      - dev
       - master
+      - release-v1.4
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-authentication-service-report.json docker.io/dbrepo/authentication-service:latest
@@ -199,8 +198,8 @@ scan-broker-service:
   stage: scan
   only:
     refs:
-      - dev
       - master
+      - release-v1.4
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-broker-service-report.json docker.io/dbrepo/broker-service:latest
@@ -220,8 +219,8 @@ scan-gateway-service:
   stage: scan
   only:
     refs:
-      - dev
       - master
+      - release-v1.4
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-gateway-service-report.json docker.io/nginx:1.25.0-alpine-slim
@@ -241,11 +240,10 @@ scan-metadata-service:
   stage: scan
   only:
     refs:
-      - dev
       - master
+      - release-v1.4
   allow_failure: true
   script:
-    - "ifconfig eth0 mtu 1450 up"
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-metadata-service-report.json docker.io/dbrepo/metadata-service:latest
     - trivy image --insecure --exit-code 0 docker.io/dbrepo/metadata-service:latest
     - trivy image --insecure --exit-code 1 --severity CRITICAL docker.io/dbrepo/metadata-service:latest
@@ -263,11 +261,10 @@ scan-data-service:
   stage: scan
   only:
     refs:
-      - dev
       - master
+      - release-v1.4
   allow_failure: true
   script:
-    - "ifconfig eth0 mtu 1450 up"
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-data-service-report.json docker.io/dbrepo/data-service:latest
     - trivy image --insecure --exit-code 0 docker.io/dbrepo/data-service:latest
     - trivy image --insecure --exit-code 1 --severity CRITICAL docker.io/dbrepo/data-service:latest
@@ -285,8 +282,8 @@ scan-search-db:
   stage: scan
   only:
     refs:
-      - dev
       - master
+      - release-v1.4
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-db-report.json docker.io/dbrepo/search-db:latest
@@ -306,8 +303,8 @@ scan-search-dashboard:
   stage: scan
   only:
     refs:
-      - dev
       - master
+      - release-v1.4
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-dashboard-report.json docker.io/opensearchproject/opensearch-dashboards:2.10.0
@@ -327,8 +324,8 @@ scan-search-db-init:
   stage: scan
   only:
     refs:
-      - dev
       - master
+      - release-v1.4
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-db-init-report.json docker.io/dbrepo/search-db-init:latest
@@ -348,8 +345,8 @@ scan-data-db:
   stage: scan
   only:
     refs:
-      - dev
       - master
+      - release-v1.4
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-data-db-report.json docker.io/bitnami/mariadb:11.2.2-debian-11-r0
@@ -369,8 +366,8 @@ scan-metadata-db:
   stage: scan
   only:
     refs:
-      - dev
       - master
+      - release-v1.4
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-metadata-db-report.json docker.io/dbrepo/metadata-db:latest
@@ -390,8 +387,8 @@ scan-ui:
   stage: scan
   only:
     refs:
-      - dev
       - master
+      - release-v1.4
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-ui-report.json docker.io/dbrepo/ui:latest
@@ -411,8 +408,8 @@ scan-storage-service:
   stage: scan
   only:
     refs:
-      - dev
       - master
+      - release-v1.4
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-storage-service-report.json docker.io/chrislusf/seaweedfs:3.59
@@ -432,8 +429,8 @@ scan-storage-service-init:
   stage: scan
   only:
     refs:
-      - dev
       - master
+      - release-v1.4
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-storage-service-init-report.json docker.io/dbrepo/storage-service-init:latest
@@ -464,7 +461,7 @@ release-latest:
     - echo "$CI_REGISTRY2_PASSWORD" | docker login --username "$CI_REGISTRY2_USER" --password-stdin $CI_REGISTRY2_URL
   script:
     - "ifconfig eth0 mtu 1450 up"
-    - "apk add make"
+    - "apk add make bash"
     - TAG=latest make release
 
 release-1.3:
@@ -483,7 +480,7 @@ release-1.3:
     - echo "$CI_REGISTRY2_PASSWORD" | docker login --username "$CI_REGISTRY2_USER" --password-stdin $CI_REGISTRY2_URL
   script:
     - "ifconfig eth0 mtu 1450 up"
-    - "apk add make"
+    - "apk add make bash"
     - "TAG=1.3.0 make release"
 
 release-1.4:
@@ -502,7 +499,7 @@ release-1.4:
     - echo "$CI_REGISTRY2_PASSWORD" | docker login --username "$CI_REGISTRY2_USER" --password-stdin $CI_REGISTRY2_URL
   script:
     - "ifconfig eth0 mtu 1450 up"
-    - "apk add make"
+    - "apk add make bash"
     - "TAG=${APP_VERSION} make release"
 
 release-helm-latest:
@@ -518,6 +515,7 @@ release-helm-latest:
     - apk add sed helm
     - 'sed -i -e "s/^version:.*/version: \"${CHART_VERSION}-0.git.${CI_PIPELINE_ID}.${CI_COMMIT_SHORT_SHA}\"/g" ./helm-charts/dbrepo/Chart.yaml'
     - 'sed -i -e "s/^appVersion:.*/appVersion: \"${CHART_VERSION}-0.git.${CI_PIPELINE_ID}.${CI_COMMIT_SHORT_SHA}\"/g" ./helm-charts/dbrepo/Chart.yaml'
+    - find ./helm-charts -type f -exec sed -i -e "s/__CHARTVERSION__/${CHART_VERSION}/g" {} \;
     - helm package ./helm-charts/dbrepo --destination ./build
     - helm push "./build/dbrepo-${CHART_VERSION}-0.git.${CI_PIPELINE_ID}.${CI_COMMIT_SHORT_SHA}.tgz" "oci://${CI_REGISTRY2_URL}/helm"
 
@@ -533,9 +531,10 @@ release-helm-1.4:
     - apk add sed helm curl
     - 'sed -i -e "s/^version:.*/version: \"${CHART_VERSION}\"/g" ./helm-charts/dbrepo/Chart.yaml'
     - 'sed -i -e "s/^appVersion:.*/appVersion: \"${APP_VERSION}\"/g" ./helm-charts/dbrepo/Chart.yaml'
+    - find ./helm-charts -type f -exec sed -i -e "s/__CHARTVERSION__/${CHART_VERSION}/g" {} \;
     - helm package ./helm-charts/dbrepo --destination ./build
     - helm push "./build/dbrepo-${CHART_VERSION}.tgz" "oci://${CI_REGISTRY2_URL}/helm"
-    - curl -sSL -X POST --form 'chart=@dbrepo-${CHART_VERSION}.tgz' --user mweise:${GITLAB_ACCESS_TOKEN} https://gitlab.example.com/api/v4/projects/450/packages/helm/api/stable/charts
+    - curl -sSL -X POST --form 'chart=@build/dbrepo-${CHART_VERSION}.tgz' --user mweise:${GITLAB_ACCESS_TOKEN} https://gitlab.example.com/api/v4/projects/450/packages/helm/api/stable/charts
 
 build-api-latest:
   stage: build
@@ -549,6 +548,7 @@ build-api-latest:
     - apk add bash git
     - git fetch && git checkout master
     - bash .docs/.swagger/swagger-site.sh
+    - find ./site -type f -exec sed -i -e "s/__APPVERSION__/latest/g" {} \;
     - mkdir -p ./swagger/latest
     - cp -r ./site/* ./swagger/latest/
   cache:
@@ -595,6 +595,7 @@ build-api-1.4:
     - apk add bash git maven
     - git fetch && git checkout release-v1.4
     - bash .docs/.swagger/swagger-site.sh
+    - find ./site -type f -exec sed -i -e "s/__APPVERSION__/${APP_VERSION}/g" {} \;
     - mkdir -p ./swagger/${APP_VERSION}
     - cp -r ./site/* ./swagger/${APP_VERSION}/
   cache:
@@ -642,11 +643,12 @@ docs-latest:
     - apt-get update && apt-get install -y git make sed
     - git fetch && git checkout master
     - pip install -r ./requirements.txt
-    - mkdir -p ./final/{latest,1.3}
-    - sed -i -e "s/\$TAG/${APP_VERSION}/g"
-    - sed -i -e "s/\$APP_VERSION/${APP_VERSION}/g"
+    - mkdir -p ./final
+    - sed -i -e "s/__APPVERSION__/${APP_VERSION}/g" .docs/redirect.html
+    - cp ./.docs/redirect.html ./final/index.html
+    - find .docs/ -type f -exec sed -i -e "s/__APPVERSION__/latest/g" {} \;
+    - find .docs/ -type f -exec sed -i -e "s/__CHARTVERSION__/${CHART_VERSION}/g" {} \;
     - mkdocs build && cp -r ./site ./final/latest
-    - cp ./.docs/redirect.html ./final/index.html ./final/1.3/index.html
     - cp -r ./swagger/latest ./final/latest/swagger
   cache:
     paths:
@@ -703,8 +705,8 @@ docs-1.4:
     - pip install -r ./.docs/requirements.txt
     - wget https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/.docs/overrides/main.html -O .docs/overrides/main.html -q
     - mkdir -p ./final
-    - sed -i -e "s/\$TAG/${APP_VERSION}/g"
-    - sed -i -e "s/\$APP_VERSION/${APP_VERSION}/g"
+    - find .docs/ -type f -exec sed -i -e "s/__APPVERSION__/${APP_VERSION}/g" {} \;
+    - find .docs/ -type f -exec sed -i -e "s/__CHARTVERSION__/${CHART_VERSION}/g" {} \;
     - mkdocs build && cp -r ./site ./final/${APP_VERSION}
     - cp -r ./swagger/${APP_VERSION} ./final/${APP_VERSION}/swagger
   cache:
