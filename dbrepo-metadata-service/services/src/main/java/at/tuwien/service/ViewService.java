@@ -9,7 +9,16 @@ import java.util.List;
 
 public interface ViewService {
 
-    View findById(Long id) throws ViewNotFoundException, DatabaseNotFoundException;
+    /**
+     * Find a view of a database with id.
+     *
+     * @param databaseId The database id.
+     * @param viewId     The view id.
+     * @return The view, if successful.
+     * @throws ViewNotFoundException     The view was not found in the metadata database.
+     * @throws DatabaseNotFoundException The database was not found in the metadata database.
+     */
+    View findById(Long databaseId, Long viewId) throws ViewNotFoundException, DatabaseNotFoundException;
 
     /**
      * Find all views by database id.

@@ -117,14 +117,14 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         databaseRepository.saveAll(List.of(DATABASE_1, DATABASE_2));
         /* mock */
         MariaDbConfig.dropAllDatabases(CONTAINER_1);
-        MariaDbConfig.createInitDatabase(CONTAINER_1, DATABASE_2);
         MariaDbConfig.createInitDatabase(CONTAINER_1, DATABASE_1);
+        MariaDbConfig.createInitDatabase(CONTAINER_1, DATABASE_2);
     }
 
     @Test
     public void findAll_succeeds() throws DatabaseNotFoundException, ImageNotSupportedException,
-            TableMalformedException, TableNotFoundException, DatabaseConnectionException,
-            PaginationException, QueryMalformedException, UserNotFoundException {
+            TableMalformedException, TableNotFoundException, DatabaseConnectionException, PaginationException,
+            QueryMalformedException, UserNotFoundException {
 
         /* test */
         final QueryResultDto result = queryService.tableFindAll(DATABASE_1_ID, TABLE_1_ID, Instant.now(),
@@ -148,8 +148,8 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void selectAll_succeeds() throws TableNotFoundException, DatabaseNotFoundException,
-            ImageNotSupportedException, TableMalformedException, QueryMalformedException {
+    public void selectAll_succeeds() throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
+            ImageNotSupportedException, QueryMalformedException {
         final Long page = 0L;
         final Long size = 10L;
 
@@ -181,8 +181,8 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void insert_date_succeeds() throws TableNotFoundException, TableMalformedException,
-            DatabaseNotFoundException, SQLException {
+    public void insert_date_succeeds() throws TableNotFoundException, TableMalformedException, SQLException,
+            DatabaseNotFoundException {
         final TableCsvDto request = TableCsvDto.builder()
                 .data(new HashMap<>() {{
                     put("id", 4L);
@@ -291,18 +291,16 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void findAll_timestampMissing_succeeds() throws TableNotFoundException, DatabaseConnectionException,
-            TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, PaginationException,
-            QueryMalformedException, UserNotFoundException {
+    public void findAll_timestampMissing_succeeds() throws TableNotFoundException, TableMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException {
 
         /* test */
         queryService.tableFindAll(DATABASE_1_ID, TABLE_1_ID, null, null, null, USER_1_PRINCIPAL);
     }
 
     @Test
-    public void findAll_timestampBeforeCreation_succeeds() throws TableNotFoundException, DatabaseConnectionException,
-            TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, PaginationException,
-            QueryMalformedException, UserNotFoundException {
+    public void findAll_timestampBeforeCreation_succeeds() throws TableNotFoundException, TableMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException {
         final Instant timestamp = DATABASE_1_CREATED.minus(1, ChronoUnit.SECONDS);
 
         /* test */
@@ -311,12 +309,11 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void execute_succeeds() throws DatabaseConnectionException, TableMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException, UserNotFoundException,
-            QueryStoreException, ColumnParseException, InterruptedException, KeycloakRemoteException,
-            AccessDeniedException, QueryNotFoundException {
+    public void execute_succeeds() throws TableMalformedException, DatabaseNotFoundException,
+            ImageNotSupportedException, QueryMalformedException, UserNotFoundException, QueryStoreException,
+            ColumnParseException, InterruptedException, QueryNotFoundException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
-                .statement("SELECT n.`firstname`, n.`lastname`, n.`birth`, n.`reminder`, z.`animal_name`, z.`legs` FROM `likes` l JOIN `names` n ON l.`name_id` = n.`id` JOIN `mock_view` z ON z.`id` = l.`zoo_id` ORDER BY animal_name ASC")
+                .statement("SELECT n.`id`, n.`firstname`, n.`lastname`, n.`birth`, n.`reminder`, z.`animal_name`, z.`legs` FROM `likes` l JOIN `names` n ON l.`name_id` = n.`id` JOIN `mock_view` z ON z.`id` = l.`zoo_id` ORDER BY id, animal_name ASC")
                 .build();
 
         /* pre-condition */
@@ -327,22 +324,26 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         assertEquals(4L, response.getResultNumber());
         assertNotNull(response.getResult());
         final List<Map<String, Object>> result = response.getResult();
+        assertEquals(BigInteger.valueOf(1L), result.get(0).get("id"));
         assertEquals(4, result.get(0).get("legs"));
         assertEquals("boar", result.get(0).get("animal_name"));
         assertEquals("Moritz", result.get(0).get("firstname"));
         assertEquals("Staudinger", result.get(0).get("lastname"));
         assertEquals("1990", result.get(0).get("birth"));
         assertEquals("11:22:33", result.get(0).get("reminder"));
+        assertEquals(BigInteger.valueOf(1L), result.get(1).get("id"));
         assertEquals(4, result.get(1).get("legs"));
         assertEquals("cavy", result.get(1).get("animal_name"));
         assertEquals("Moritz", result.get(1).get("firstname"));
         assertEquals("Staudinger", result.get(1).get("lastname"));
         assertEquals("1990", result.get(1).get("birth"));
         assertEquals("11:22:33", result.get(1).get("reminder"));
+        assertEquals(BigInteger.valueOf(3L), result.get(2).get("id"));
         assertEquals(4, result.get(2).get("legs"));
         assertEquals("bear", result.get(2).get("animal_name"));
         assertEquals("Eva", result.get(2).get("firstname"));
         assertEquals("Gergely", result.get(2).get("lastname"));
+        assertEquals(BigInteger.valueOf(4L), result.get(3).get("id"));
         assertEquals(4, result.get(3).get("legs"));
         assertEquals("bear", result.get(3).get("animal_name"));
         assertEquals("Cornelia", result.get(3).get("firstname"));
@@ -350,10 +351,9 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void execute_withoutNullField_succeeds() throws DatabaseConnectionException, TableMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException, UserNotFoundException,
-            QueryStoreException, ColumnParseException, InterruptedException, KeycloakRemoteException,
-            AccessDeniedException, QueryNotFoundException {
+    public void execute_withoutNullField_succeeds() throws TableMalformedException, DatabaseNotFoundException,
+            ImageNotSupportedException, QueryMalformedException, UserNotFoundException, QueryStoreException,
+            ColumnParseException, InterruptedException, QueryNotFoundException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement("SELECT `location`, `lng` FROM `weather_location` WHERE `lat` IS NULL")
                 .build();
@@ -373,10 +373,9 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void execute_withoutNullField2_succeeds() throws DatabaseConnectionException, TableMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException, UserNotFoundException,
-            QueryStoreException, ColumnParseException, InterruptedException, KeycloakRemoteException,
-            AccessDeniedException, QueryNotFoundException {
+    public void execute_withoutNullField2_succeeds() throws TableMalformedException, DatabaseNotFoundException,
+            ImageNotSupportedException, QueryMalformedException, UserNotFoundException, QueryStoreException,
+            ColumnParseException, InterruptedException, QueryNotFoundException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement("SELECT `location` FROM `weather_location` WHERE `lat` IS NULL")
                 .build();
@@ -396,10 +395,9 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void execute_withNullField_succeeds() throws DatabaseConnectionException, TableMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException, UserNotFoundException,
-            QueryStoreException, ColumnParseException, InterruptedException, KeycloakRemoteException,
-            AccessDeniedException, QueryNotFoundException {
+    public void execute_withNullField_succeeds() throws TableMalformedException, DatabaseNotFoundException,
+            ImageNotSupportedException, QueryMalformedException, UserNotFoundException, QueryStoreException,
+            ColumnParseException, InterruptedException, QueryNotFoundException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement("SELECT `lat`, `lng` FROM `weather_location` WHERE `lat` IS NULL")
                 .build();
@@ -415,10 +413,9 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void execute_aliases_succeeds() throws DatabaseConnectionException, TableMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException, UserNotFoundException,
-            QueryStoreException, ColumnParseException, InterruptedException, KeycloakRemoteException,
-            AccessDeniedException, QueryNotFoundException {
+    public void execute_aliases_succeeds() throws TableMalformedException, DatabaseNotFoundException,
+            ImageNotSupportedException, QueryMalformedException, UserNotFoundException, QueryStoreException,
+            ColumnParseException, InterruptedException, QueryNotFoundException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement("SELECT aus.location as a, loc.location from weather_aus aus, weather_location loc")
                 .build();
@@ -452,10 +449,9 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void execute_aliasesWithDatabaseName_succeeds() throws DatabaseConnectionException, TableMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException, UserNotFoundException,
-            QueryStoreException, ColumnParseException, InterruptedException, KeycloakRemoteException,
-            AccessDeniedException, QueryNotFoundException {
+    public void execute_aliasesWithDatabaseName_succeeds() throws TableMalformedException, DatabaseNotFoundException,
+            ImageNotSupportedException, QueryMalformedException, UserNotFoundException, QueryStoreException,
+            ColumnParseException, InterruptedException, QueryNotFoundException {
         final ExecuteStatementDto request = ExecuteStatementDto.builder()
                 .statement("SELECT aus.location as a, loc.location from weather.weather_aus aus, weather.weather_location loc")
                 .build();
@@ -519,9 +515,9 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void findOne_emptySet_succeeds() throws DatabaseConnectionException, DatabaseNotFoundException,
-            ImageNotSupportedException, QueryMalformedException, UserNotFoundException, QueryStoreException,
-            QueryNotFoundException, FileStorageException, SQLException, IOException {
+    public void findOne_emptySet_succeeds() throws DatabaseNotFoundException, ImageNotSupportedException,
+            QueryMalformedException, QueryStoreException, QueryNotFoundException, FileStorageException, SQLException,
+            IOException {
         final String filename = RandomStringUtils.randomAlphabetic(40) + ".csv";
         final Query query = Query.builder()
                 .id(QUERY_1_ID)
