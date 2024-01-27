@@ -163,7 +163,7 @@ public class PersistenceEndpoint {
     @Transactional
     @Observed(name = "dbr_pid_delete")
     @PreAuthorize("hasAuthority('delete-identifier')")
-    @Operation(summary = "Delete some identifier", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Delete some identifier", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Deleted identifier"),

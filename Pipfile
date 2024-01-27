@@ -4,6 +4,13 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+mkdocs = "1.5.3"
+mkdocs-material = "9.5.5"
+mkdocs-with-pdf = "0.9.3"
+mkdocs-material-extensions = "*"
+requests = "*"
+py-dotenv = "*"
+python-dotenv = "*"
 
 [dev-packages]
 

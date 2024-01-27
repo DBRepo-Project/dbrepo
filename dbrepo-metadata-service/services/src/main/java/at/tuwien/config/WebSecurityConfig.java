@@ -1,6 +1,8 @@
 package at.tuwien.config;
 
 import at.tuwien.auth.AuthTokenFilter;
+import at.tuwien.auth.BasicAuthenticationProvider;
+import at.tuwien.gateway.KeycloakGateway;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import jakarta.servlet.http.HttpServletResponse;
@@ -12,6 +14,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
@@ -27,6 +30,11 @@ import org.springframework.web.filter.CorsFilter;
         bearerFormat = "JWT",
         scheme = "bearer"
 )
+@SecurityScheme(
+        name = "basicAuth",
+        type = SecuritySchemeType.HTTP,
+        scheme = "basic"
+)
 public class WebSecurityConfig {
 
     @Bean
@@ -35,7 +43,7 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, KeycloakGateway keycloakGateway) throws Exception {
         final OrRequestMatcher internalEndpoints = new OrRequestMatcher(
                 new AntPathRequestMatcher("/actuator/**", "GET"),
                 new AntPathRequestMatcher("/v3/api-docs.yaml"),
@@ -75,6 +83,9 @@ public class WebSecurityConfig {
                 .anyRequest().authenticated();
         /* add JWT token filter */
         http.addFilterBefore(authTokenFilter(),
+                UsernamePasswordAuthenticationFilter.class
+        );
+        http.addFilterBefore(new BasicAuthenticationFilter(new BasicAuthenticationProvider(authTokenFilter(), keycloakGateway)),
                 UsernamePasswordAuthenticationFilter.class
         );
         return http.build();

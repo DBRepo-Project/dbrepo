@@ -22,7 +22,7 @@ nav:
       - Storage Service: system-services-storage.md
       - Upload Service: system-services-upload.md
     - Databases:
-      - Auth Database: system-databases-auth.md
+      - Authentication Database: system-databases-authentication.md
       - Data Database: system-databases-data.md
       - Metadata Database: system-databases-metadata.md
       - Search Database: system-databases-search.md
@@ -33,8 +33,10 @@ nav:
     - Overview: usage-overview.md
     - Services:
       - Analyse Service: usage-analyse.md
-      - Authentication Service: usage-auth.md
+      - Authentication Service: usage-authentication.md
       - Broker Service: usage-broker.md
+      - Metadata Service: usage-metadata.md
+      - Search Service: usage-search.md
       - Storage Service: usage-storage.md
       - Upload Service: usage-upload.md
   - publications.md

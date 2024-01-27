@@ -48,10 +48,37 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
             response = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(payload, headers), TokenDto.class);
         } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable e) {
             log.error("Failed to obtain admin token: {}", e.getMessage());
-            throw new AccessDeniedException("Failed to obtain admin token: " + e.getMessage());
+            throw new AccessDeniedException("Failed to obtain admin token: " + e.getMessage(), e);
         } catch (Exception e) {
-            log.error("Failed to create user: remote host answered unexpected: {}", e.getMessage());
-            throw new KeycloakRemoteException("Failed to create user: remote host answered unexpected: " + e.getMessage(), e);
+            log.error("Failed to obtain admin token: remote host answered unexpected: {}", e.getMessage(), e);
+            throw new KeycloakRemoteException("Failed to obtain admin token: remote host answered unexpected: " + e.getMessage(), e);
+        }
+        return response.getBody();
+    }
+
+    @Override
+    public TokenDto obtainUserToken(String username, String password) throws AccessDeniedException, KeycloakRemoteException {
+        final HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        final MultiValueMap<String, String> payload = new LinkedMultiValueMap<>();
+        payload.add("username", username);
+        payload.add("password", password);
+        payload.add("grant_type", "password");
+        payload.add("scope", "openid roles attributes");
+        payload.add("client_id", "dbrepo-client");
+        payload.add("client_secret", keycloakConfig.getKeycloakClientSecret());
+        final String url = keycloakConfig.getKeycloakEndpoint() + "/realms/dbrepo/protocol/openid-connect/token";
+        log.debug("request user token from url {}", url);
+        final ResponseEntity<TokenDto> response;
+        try {
+            response = new RestTemplate()
+                    .exchange(url, HttpMethod.POST, new HttpEntity<>(payload, headers), TokenDto.class);
+        } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable e) {
+            log.error("Failed to obtain user token: {}", e.getMessage());
+            throw new AccessDeniedException("Failed to obtain user token: " + e.getMessage(), e);
+        } catch (Exception e) {
+            log.error("Failed to obtain user token: remote host answered unexpected: {}", e.getMessage(), e);
+            throw new KeycloakRemoteException("Failed to obtain user token: remote host answered unexpected: " + e.getMessage(), e);
         }
         return response.getBody();
     }

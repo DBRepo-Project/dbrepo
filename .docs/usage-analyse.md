@@ -10,7 +10,7 @@ containing GPS-data `gps.csv` already uploaded in the `dbrepo-upload` bucket of 
 ```shell
 curl -X POST \
   -d '{"filename":"gps.csv","separator":","}'
-  http://<hostname>:5000/api/analyse/determinedt
+  http://<hostname>/api/analyse/determinedt
 ```
 
 This results in the response:

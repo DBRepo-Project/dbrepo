@@ -1,4 +1,4 @@
-# Semantics Service
+# Metadata Service
 
 ## Test
 
@@ -29,6 +29,8 @@ mvn -pl rest-service clean spring-boot:run -Dspring-boot.run.profiles=local
 
 - Info: http://localhost:9099/actuator/info
 - Health: http://localhost:9099/actuator/health
+    - Readiness: http://localhost:9099/actuator/health/readiness
+    - Liveness: http://localhost:9099/actuator/health/liveness
 - Prometheus: http://localhost:9099/actuator/prometheus
 
 #### Swagger UI

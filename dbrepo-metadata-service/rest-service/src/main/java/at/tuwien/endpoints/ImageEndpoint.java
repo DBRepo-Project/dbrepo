@@ -75,7 +75,7 @@ public class ImageEndpoint {
     @Transactional
     @Observed(name = "dbr_image_create")
     @PreAuthorize("hasAuthority('create-image')")
-    @Operation(summary = "Create image", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Create image", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",
                     description = "Created image",
@@ -137,7 +137,7 @@ public class ImageEndpoint {
     @Transactional
     @Observed(name = "dbr_image_update")
     @PreAuthorize("hasAuthority('modify-image')")
-    @Operation(summary = "Update some image", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Update some image", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Updated image successfully",
@@ -166,7 +166,7 @@ public class ImageEndpoint {
     @Transactional
     @Observed(name = "dbr_image_delete")
     @PreAuthorize("hasAuthority('delete-image')")
-    @Operation(summary = "Delete some image", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Delete some image", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Deleted image successfully",

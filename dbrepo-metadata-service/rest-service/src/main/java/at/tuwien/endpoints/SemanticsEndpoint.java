@@ -93,7 +93,7 @@ public class SemanticsEndpoint {
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority('table-semantic-analyse')")
     @Observed(name = "dbr_semantic_table_analyse")
-    @Operation(summary = "Suggest table semantics", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Suggest table semantics", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Suggested table semantics successfully",
@@ -130,7 +130,7 @@ public class SemanticsEndpoint {
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority('table-semantic-analyse')")
     @Observed(name = "dbr_semantic_column_analyse")
-    @Operation(summary = "Suggest table column semantics", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Suggest table column semantics", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Suggested table column semantics successfully",
