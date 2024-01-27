@@ -61,7 +61,7 @@ public class TableEndpoint {
     @GetMapping
     @Transactional(readOnly = true)
     @Observed(name = "dbr_tables_findall")
-    @Operation(summary = "List all tables", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "List all tables", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "List tables",
@@ -97,7 +97,7 @@ public class TableEndpoint {
     @Transactional
     @PreAuthorize("hasAuthority('create-table')")
     @Observed(name = "dbr_table_create")
-    @Operation(summary = "Create a table", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Create a table", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",
                     description = "Created a new table",
@@ -150,7 +150,7 @@ public class TableEndpoint {
     @GetMapping("/{tableId}")
     @Transactional(readOnly = true)
     @Observed(name = "dbr_tables_find")
-    @Operation(summary = "Get information about table", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Get information about table", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Find table successfully",
@@ -193,7 +193,7 @@ public class TableEndpoint {
     @Transactional
     @PreAuthorize("hasAuthority('delete-table') or hasAuthority('delete-foreign-table')")
     @Observed(name = "dbr_table_delete")
-    @Operation(summary = "Delete a table", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Delete a table", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Delete table successfully",

@@ -40,7 +40,7 @@ spring:
     loadbalancer.ribbon.enabled: false
 management.endpoints.web.exposure.include: health,info,prometheus
 server:
-  port: 9099
+  port: 19099
 logging:
   pattern.console: "%d %highlight(%-5level) %msg%n"
   level:
@@ -66,6 +66,7 @@ fda:
     endpoint: "http://authentication-service:8080"
     username: fda
     password: fda
+    clientSecret: MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG
   unsupported: \*,AVG,BIT_AND,BIT_OR,BIT_XOR,COUNT,COUNTDISTINCT,GROUP_CONCAT,JSON_ARRAYAGG,JSON_OBJECTAGG,MAX,MIN,STD,STDDEV,STDDEV_POP,STDDEV_SAMP,SUM,VARIANCE,VAR_POP,VAR_SAMP,--
   website: http://localhost
   minConcurrent: 1

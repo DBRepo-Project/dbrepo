@@ -6,6 +6,7 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.auth0.jwt.interfaces.Verification;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -56,6 +57,10 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     }
 
     public UserDetails verifyJwt(String token) throws ServletException {
+        return verifyJwt(token, true);
+    }
+
+    public UserDetails verifyJwt(String token, boolean strict) throws ServletException {
         final KeyFactory kf;
         try {
             kf = KeyFactory.getInstance("RSA");
@@ -72,10 +77,12 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             throw new ServletException("Provided public key is invalid", e);
         }
         final Algorithm algorithm = Algorithm.RSA256(pubKey, null);
-        JWTVerifier verifier = JWT.require(algorithm)
-                .withIssuer(issuer)
-                .withAudience("spring")
-                .build();
+        Verification verification = JWT.require(algorithm)
+                .withAudience("spring");
+        if (strict) {
+            verification = verification.withIssuer(issuer);
+        }
+        final JWTVerifier verifier = verification.build();
         final DecodedJWT jwt = verifier.verify(token);
         final RealmAccessDto realmAccess = jwt.getClaim("realm_access").as(RealmAccessDto.class);
         return UserDetailsDto.builder()

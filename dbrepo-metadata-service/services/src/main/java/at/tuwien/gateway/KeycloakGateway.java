@@ -1,5 +1,6 @@
 package at.tuwien.gateway;
 
+import at.tuwien.api.keycloak.TokenDto;
 import at.tuwien.api.keycloak.UserCreateDto;
 import at.tuwien.api.keycloak.UserDto;
 import at.tuwien.api.user.UserPasswordDto;
@@ -8,6 +9,8 @@ import at.tuwien.exception.*;
 import java.util.UUID;
 
 public interface KeycloakGateway {
+
+    TokenDto obtainUserToken(String username, String password) throws AccessDeniedException, KeycloakRemoteException;
 
     /**
      * Creates a user at the Authentication Service with given credentials.

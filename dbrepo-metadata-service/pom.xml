@@ -75,7 +75,7 @@
         <super-csv.version>2.4.0</super-csv.version>
         <jsql-parser.version>4.6</jsql-parser.version>
         <keycloak.version>21.0.2</keycloak.version>
-        <springdoc-openapi.version>2.1.0</springdoc-openapi.version>
+        <springdoc-openapi.version>2.3.0</springdoc-openapi.version>
         <testcontainers.version>1.19.1</testcontainers.version>
         <opensearch-testcontainer.version>2.0.0</opensearch-testcontainer.version>
         <keycloak-testcontainer.version>3.2.0</keycloak-testcontainer.version>

@@ -141,7 +141,7 @@ public class DatabaseEndpoint {
     @Transactional(rollbackFor = Exception.class)
     @PreAuthorize("hasAuthority('create-database')")
     @Observed(name = "dbr_database_create")
-    @Operation(summary = "Create database", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Create database", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",
                     description = "Created a new database",
@@ -196,7 +196,7 @@ public class DatabaseEndpoint {
     @Transactional
     @PreAuthorize("hasAuthority('modify-database-visibility')")
     @Observed(name = "dbr_database_visibility")
-    @Operation(summary = "Update database", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Update database", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Visibility modified successfully",
@@ -234,7 +234,7 @@ public class DatabaseEndpoint {
     @Transactional
     @PreAuthorize("hasAuthority('modify-database-owner')")
     @Observed(name = "dbr_database_transfer")
-    @Operation(summary = "Transfer database", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Transfer database", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Transfer of ownership was successful",
@@ -272,7 +272,7 @@ public class DatabaseEndpoint {
     @GetMapping("/{id}")
     @Transactional(readOnly = true)
     @Observed(name = "dbr_database_find")
-    @Operation(summary = "Find some database", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Find some database", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Database found successfully",

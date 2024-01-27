@@ -103,7 +103,7 @@ public class IdentifierEndpoint {
     @Transactional
     @Observed(name = "dbr_identifier_create")
     @PreAuthorize("hasAuthority('create-identifier') or hasAuthority('create-foreign-identifier')")
-    @Operation(summary = "Create identifier", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Create identifier", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",
                     description = "Created identifier",

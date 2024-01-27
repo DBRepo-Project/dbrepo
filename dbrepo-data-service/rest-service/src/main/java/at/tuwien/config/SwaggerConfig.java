@@ -7,6 +7,7 @@ import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.servers.Server;
 import org.springdoc.core.models.GroupedOpenApi;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -14,6 +15,9 @@ import java.util.List;
 
 @Configuration
 public class SwaggerConfig {
+
+    @Value("${server.port}")
+    private Integer port;
 
     @Bean
     public OpenAPI springShopOpenAPI() {
@@ -32,10 +36,10 @@ public class SwaggerConfig {
                         .description("Sourcecode Documentation")
                         .url("https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services"))
                 .servers(List.of(new Server()
-                                .description("Generated server url")
-                                .url("http://localhost:9093"),
+                                .description("Development instance")
+                                .url("http://localhost:" + port),
                         new Server()
-                                .description("Sandbox")
+                                .description("Staging instance")
                                 .url("https://test.dbrepo.tuwien.ac.at")));
     }
 

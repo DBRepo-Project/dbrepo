@@ -49,7 +49,7 @@ public class AccessEndpoint {
     @Transactional
     @Observed(name = "dbr_access_give")
     @PreAuthorize("hasAuthority('create-database-access')")
-    @Operation(summary = "Give access to some database", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Give access to some database", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Granting access succeeded",
@@ -98,7 +98,7 @@ public class AccessEndpoint {
     @Transactional
     @Observed(name = "dbr_access_modify")
     @PreAuthorize("hasAuthority('update-database-access')")
-    @Operation(summary = "Modify access to some database", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Modify access to some database", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Modify access succeeded",
@@ -136,7 +136,7 @@ public class AccessEndpoint {
     @Transactional
     @Observed(name = "dbr_access_check")
     @PreAuthorize("hasAuthority('check-database-access')")
-    @Operation(summary = "Check access to some database", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Check access to some database", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Found database access",
@@ -168,7 +168,7 @@ public class AccessEndpoint {
     @Transactional
     @Observed(name = "dbr_access_delete")
     @PreAuthorize("hasAuthority('delete-database-access')")
-    @Operation(summary = "Revoke access to some database", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Revoke access to some database", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Revoked access successfully",

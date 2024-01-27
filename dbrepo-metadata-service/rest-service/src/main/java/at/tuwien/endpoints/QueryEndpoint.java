@@ -57,7 +57,7 @@ public class QueryEndpoint {
     @Transactional(readOnly = true)
     @Observed(name = "dbr_query_execute")
     @PreAuthorize("hasAuthority('execute-query')")
-    @Operation(summary = "Execute query", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Execute query", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Executed query",
@@ -121,7 +121,7 @@ public class QueryEndpoint {
     @GetMapping("/{queryId}/data")
     @Transactional(readOnly = true)
     @Observed(name = "dbr_query_reexecute")
-    @Operation(summary = "Re-execute some query", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Re-execute some query", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Executed query",
@@ -181,7 +181,7 @@ public class QueryEndpoint {
     @GetMapping("/{queryId}/data/count")
     @Transactional(readOnly = true)
     @Observed(name = "dbr_query_reexecute_count")
-    @Operation(summary = "Re-execute some query", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Re-execute some query", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Executed query",
@@ -228,7 +228,7 @@ public class QueryEndpoint {
     @GetMapping("/{queryId}/export")
     @Transactional(readOnly = true)
     @Observed(name = "dbr_query_export")
-    @Operation(summary = "Exports some query", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Exports some query", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Executed query"),

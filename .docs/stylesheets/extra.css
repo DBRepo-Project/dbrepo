@@ -9,14 +9,14 @@ figure img.img-border {
     border: 1px solid #b3b3b3;
 }
 
-.md-main .md-content a:not(.action-button),
-.md-main .md-content a:not(.action-button) {
+.md-main .md-content a:not(.action-button):not([tabindex]),
+.md-main .md-content a:not(.action-button):not([tabindex]) {
     color: var(--md-typeset-color);
     border-bottom: 2px solid var(--md-primary-fg-color);
 }
 
-.md-main .md-content a:not(.action-button):focus,
-.md-main .md-content a:not(.action-button):hover {
+.md-main .md-content a:not(.action-button):not([tabindex]):focus,
+.md-main .md-content a:not(.action-button):not([tabindex]):hover {
     color: var(--md-typeset-color);
     border-bottom: 2px solid var(--md-primary-fg-color--dark);
 }

@@ -46,7 +46,7 @@ public class ExportEndpoint {
     @GetMapping
     @Transactional(readOnly = true)
     @Observed(name = "dbr_table_export")
-    @Operation(summary = "Export table", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Export table", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",
                     description = "Created identifier",
