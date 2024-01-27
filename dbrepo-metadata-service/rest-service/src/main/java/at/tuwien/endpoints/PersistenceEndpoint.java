@@ -102,7 +102,7 @@ public class PersistenceEndpoint {
                                   @NotNull Principal principal) throws IdentifierNotFoundException,
             QueryNotFoundException, IdentifierRequestException, UserNotFoundException, QueryStoreException,
             TableMalformedException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException,
-            ImageNotSupportedException, FileStorageException, DataDbSidecarException {
+            ImageNotSupportedException, FileStorageException, DataDbSidecarException, DataProcessingException {
         log.debug("endpoint find identifier, pid={}, accept={}", pid, accept);
         final Identifier identifier = identifierService.find(pid);
         log.info("Found persistent identifier with id {}", identifier.getId());

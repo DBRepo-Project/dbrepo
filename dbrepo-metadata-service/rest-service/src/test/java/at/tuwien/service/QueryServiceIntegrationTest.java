@@ -5,7 +5,9 @@ import at.tuwien.ExportResource;
 import at.tuwien.annotations.MockAmqp;
 import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.api.database.query.ExecuteStatementDto;
+import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.database.query.QueryResultDto;
+import at.tuwien.api.database.table.TableCsvDeleteDto;
 import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.MariaDbContainerConfig;
@@ -17,6 +19,7 @@ import at.tuwien.repository.mdb.*;
 import at.tuwien.service.impl.QueryServiceImpl;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,6 +38,7 @@ import org.testcontainers.containers.MinIOContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.sql.SQLException;
@@ -178,6 +182,24 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         assertThrows(TableMalformedException.class, () -> {
             queryService.insert(DATABASE_1_ID, TABLE_1_ID, request, USER_1_PRINCIPAL);
         });
+    }
+
+    @Test
+    public void insert_csv_succeeds() throws IOException, TableNotFoundException, TableMalformedException,
+            DatabaseNotFoundException, DataProcessingException {
+        final String filename = RandomStringUtils.randomAlphabetic(40) + ".csv";
+        final ImportDto request = ImportDto.builder()
+                .quote('"')
+                .nullElement("NA")
+                .separator(';')
+                .location(filename)
+                .build();
+
+        /* mock */
+        FileUtils.copyFile(new File("./src/test/resources/csv/weather_aus.csv"), new File("/tmp/" + filename));
+
+        /* test */
+        queryService.insert(DATABASE_1_ID, TABLE_1_ID, request, USER_1_PRINCIPAL);
     }
 
     @Test
@@ -517,7 +539,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     @Test
     public void findOne_emptySet_succeeds() throws DatabaseNotFoundException, ImageNotSupportedException,
             QueryMalformedException, QueryStoreException, QueryNotFoundException, FileStorageException, SQLException,
-            IOException {
+            IOException, DataProcessingException {
         final String filename = RandomStringUtils.randomAlphabetic(40) + ".csv";
         final Query query = Query.builder()
                 .id(QUERY_1_ID)
@@ -543,6 +565,28 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         final ExportResource response = queryService.findOne(DATABASE_1_ID, QUERY_1_ID, USER_1_PRINCIPAL, filename);
         assertNotNull(response.getFilename());
         assertNotNull(response.getResource());
+    }
+
+    @Test
+    public void delete_emptyKeySet_succeeds() throws TableNotFoundException, TableMalformedException, QueryMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException {
+        final TableCsvDeleteDto request = TableCsvDeleteDto.builder()
+                .keys(Map.of())
+                .build();
+
+        /* test */
+        queryService.delete(DATABASE_1_ID, TABLE_1_ID, request, USER_1_PRINCIPAL);
+    }
+
+    @Test
+    public void delete_succeeds() throws TableNotFoundException, TableMalformedException, QueryMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException {
+        final TableCsvDeleteDto request = TableCsvDeleteDto.builder()
+                .keys(Map.of("id", "1"))
+                .build();
+
+        /* test */
+        queryService.delete(DATABASE_1_ID, TABLE_1_ID, request, USER_1_PRINCIPAL);
     }
 
     @SneakyThrows

@@ -5,12 +5,10 @@ import at.tuwien.annotations.MockAmqp;
 import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.identifier.BibliographyTypeDto;
-import at.tuwien.entities.database.Database;
 import at.tuwien.entities.identifier.Creator;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.identifier.NameIdentifierSchemeType;
 import at.tuwien.exception.*;
-import at.tuwien.repository.mdb.DatabaseRepository;
 import at.tuwien.repository.mdb.IdentifierRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,9 +39,6 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
 
     @MockBean
     private IdentifierRepository identifierRepository;
-
-    @MockBean
-    private DatabaseRepository databaseRepository;
 
     @MockBean
     private DatabaseService databaseService;
@@ -176,11 +171,9 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void create_database_succeeds()
-            throws DatabaseNotFoundException, UserNotFoundException, IdentifierAlreadyExistsException,
-            QueryNotFoundException, IdentifierPublishingNotAllowedException, RemoteUnavailableException,
-            IdentifierRequestException, ViewNotFoundException, QueryStoreException, DatabaseConnectionException,
-            ImageNotSupportedException, IdentifierNotFoundException {
+    public void create_database_succeeds() throws UserNotFoundException, QueryStoreException,
+            QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException, RemoteUnavailableException,
+            IdentifierRequestException, ViewNotFoundException {
 
         /* mock */
         when(databaseService.find(DATABASE_1_ID))
@@ -198,10 +191,9 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void create_existsSubset_succeeds() throws DatabaseNotFoundException, UserNotFoundException,
-            QueryStoreException, DatabaseConnectionException, QueryNotFoundException, ImageNotSupportedException,
-            IdentifierAlreadyExistsException, IdentifierPublishingNotAllowedException, RemoteUnavailableException,
-            IdentifierNotFoundException, IdentifierRequestException, ViewNotFoundException {
+    public void create_existsSubset_succeeds() throws UserNotFoundException, QueryStoreException,
+            QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException, RemoteUnavailableException,
+            IdentifierRequestException, ViewNotFoundException {
 
         /* mock */
         when(databaseService.find(DATABASE_2_ID))
@@ -217,10 +209,9 @@ public class IdentifierServiceUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void create_existsDatabase_succeeds() throws DatabaseNotFoundException, IdentifierAlreadyExistsException,
-            UserNotFoundException, QueryStoreException, DatabaseConnectionException, QueryNotFoundException,
-            ImageNotSupportedException, IdentifierPublishingNotAllowedException, RemoteUnavailableException,
-            IdentifierNotFoundException, IdentifierRequestException, ViewNotFoundException {
+    public void create_existsDatabase_succeeds() throws UserNotFoundException, QueryStoreException,
+            QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException, RemoteUnavailableException,
+            IdentifierRequestException, ViewNotFoundException {
 
         /* mock */
         when(databaseService.find(DATABASE_1_ID))

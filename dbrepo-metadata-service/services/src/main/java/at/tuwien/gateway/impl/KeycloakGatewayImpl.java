@@ -51,7 +51,7 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
             throw new AccessDeniedException("Failed to obtain admin token: " + e.getMessage());
         } catch (Exception e) {
             log.error("Failed to create user: remote host answered unexpected: {}", e.getMessage());
-            throw new KeycloakRemoteException("Failed to create user: remote host answered unexpected", e);
+            throw new KeycloakRemoteException("Failed to create user: remote host answered unexpected: " + e.getMessage(), e);
         }
         return response.getBody();
     }
@@ -81,7 +81,7 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
             }
         } catch (Exception e) {
             log.error("Failed to create user: remote host answered unexpected: {}", e.getMessage());
-            throw new KeycloakRemoteException("Failed to create user: remote host answered unexpected", e);
+            throw new KeycloakRemoteException("Failed to create user: remote host answered unexpected: " + e.getMessage(), e);
         }
         if (!response.getStatusCode().equals(HttpStatus.CREATED)) {
             log.error("Failed to create user: status {} was not expected", response.getStatusCode().value());
@@ -162,7 +162,7 @@ public class KeycloakGatewayImpl implements KeycloakGateway {
             throw new KeycloakRemoteException("Failed to find user: " + e.getMessage());
         } catch (Exception e) {
             log.error("Failed to create user: remote host answered unexpected: {}", e.getMessage());
-            throw new KeycloakRemoteException("Failed to create user: remote host answered unexpected", e);
+            throw new KeycloakRemoteException("Failed to create user: remote host answered unexpected: " + e.getMessage(), e);
         }
         final UserDto[] body = response.getBody();
         if (body == null || body.length != 1) {

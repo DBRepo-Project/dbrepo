@@ -16,10 +16,6 @@
             <v-list dense>
               <v-list-item>
                 <v-list-item-content>
-                  <v-list-item-title>
-                    Database Visibility
-                  </v-list-item-title>
-                  <v-list-item-content v-if="database" v-text="`${database.is_public ? 'Public' : 'Private'}`" />
                   <v-list-item-title class="mt-2">
                     Database Name
                   </v-list-item-title>
@@ -28,6 +24,14 @@
                     Database Internal Name
                   </v-list-item-title>
                   <v-list-item-content v-if="database" v-text="database.internal_name" />
+                  <v-list-item-title>
+                    Database Visibility
+                  </v-list-item-title>
+                  <v-list-item-content v-if="database" v-text="`${database.is_public ? 'Public' : 'Private'}`" />
+                  <v-list-item-title>
+                    Database Size
+                  </v-list-item-title>
+                  <v-list-item-content v-if="databaseSize" v-text="databaseSize" />
                   <v-list-item-title class="mt-2">
                     Database Owner
                   </v-list-item-title>
@@ -102,7 +106,7 @@
 
 <script>
 import DatabaseToolbar from '@/components/database/DatabaseToolbar.vue'
-import { formatTimestampUTCLabel } from '@/utils'
+import { formatTimestampUTCLabel, sizeToHumanLabel } from '@/utils'
 import DatabaseMapper from '@/api/database.mapper'
 import Summary from '@/components/identifier/Summary'
 import Select from '@/components/identifier/Select'
@@ -225,7 +229,18 @@ export default {
     },
     databaseExtraInfo () {
       return this.$config.databaseExtraInfo
+    },
+    databaseSize () {
+      if (!this.database) {
+        return null
+      }
+      let sum = 0
+      this.database.tables.forEach((t) => { sum += t.data_length })
+      return sizeToHumanLabel(sum)
     }
+  },
+  methods: {
+    sizeToHumanLabel
   }
 }
 </script>

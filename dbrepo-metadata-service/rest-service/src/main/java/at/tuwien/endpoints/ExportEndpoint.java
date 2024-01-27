@@ -68,6 +68,11 @@ public class ExportEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "409",
+                    description = "Failed to export file from sidecar",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "410",
                     description = "Blob storage operation could not be completed",
                     content = {@Content(
@@ -88,9 +93,8 @@ public class ExportEndpoint {
                                                       @NotNull @PathVariable("tableId") Long tableId,
                                                       @RequestParam(required = false) Instant timestamp,
                                                       Principal principal)
-            throws TableNotFoundException, DatabaseConnectionException, TableMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, PaginationException, FileStorageException,
-            QueryMalformedException, UserNotFoundException, NotAllowedException, DataDbSidecarException {
+            throws TableNotFoundException, DatabaseNotFoundException, FileStorageException, QueryMalformedException,
+            NotAllowedException, DataDbSidecarException, DataProcessingException {
         log.debug("endpoint export table, id={}, tableId={}, timestamp={}, {}", databaseId, tableId, timestamp, PrincipalUtil.formatForDebug(principal));
         final Database database = databaseService.find(databaseId);
         if (!database.getIsPublic()) {

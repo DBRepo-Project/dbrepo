@@ -6,13 +6,9 @@ import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.api.identifier.BibliographyTypeDto;
 import at.tuwien.api.identifier.CreatorDto;
 import at.tuwien.api.identifier.IdentifierDto;
-import at.tuwien.api.identifier.IdentifierSaveDto;
 import at.tuwien.entities.identifier.Identifier;
-import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
-import at.tuwien.service.AccessService;
 import at.tuwien.service.IdentifierService;
-import at.tuwien.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -34,7 +30,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.security.Principal;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -46,13 +41,7 @@ import static org.mockito.Mockito.*;
 public class PersistenceEndpointUnitTest extends BaseUnitTest {
 
     @MockBean
-    private AccessService accessService;
-
-    @MockBean
     private IdentifierService identifierService;
-
-    @MockBean
-    private UserService userService;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -69,10 +58,10 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void find_json0_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierRequestException, IOException, UserNotFoundException,
-            QueryStoreException, TableMalformedException, DatabaseConnectionException, QueryMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException {
+    public void find_json0_succeeds() throws IdentifierNotFoundException, QueryNotFoundException, IOException,
+            IdentifierRequestException, UserNotFoundException, QueryStoreException, TableMalformedException,
+            DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
+            FileStorageException, DataProcessingException {
         final String accept = "application/json";
         final IdentifierDto compare = objectMapper.readValue(FileUtils.readFileToString(new File("src/test/resources/json/metadata0.json"), StandardCharsets.UTF_8), IdentifierDto.class);
 
@@ -102,10 +91,10 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void find_json1_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierRequestException, IOException, UserNotFoundException,
-            QueryStoreException, TableMalformedException, DatabaseConnectionException, QueryMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException {
+    public void find_json1_succeeds() throws IdentifierNotFoundException, QueryNotFoundException, IOException,
+            IdentifierRequestException, UserNotFoundException, QueryStoreException, TableMalformedException,
+            DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
+            FileStorageException, DataProcessingException {
         final String accept = "application/json";
         final IdentifierDto compare = objectMapper.readValue(FileUtils.readFileToString(new File("src/test/resources/json/metadata1.json"), StandardCharsets.UTF_8), IdentifierDto.class);
 
@@ -155,10 +144,10 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void find_csv_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierRequestException, IOException, UserNotFoundException,
-            QueryStoreException, TableMalformedException, DatabaseConnectionException, QueryMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException {
+    public void find_csv_succeeds() throws IdentifierNotFoundException, QueryNotFoundException, IOException,
+            IdentifierRequestException, UserNotFoundException, QueryStoreException, TableMalformedException,
+            DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
+            FileStorageException, DataProcessingException {
         final String accept = "text/csv";
         final InputStreamResource compare = new InputStreamResource(FileUtils.openInputStream(new File("src/test/resources/csv/keyboard.csv")));
         final InputStreamResource mock = new InputStreamResource(FileUtils.openInputStream(new File("src/test/resources/csv/keyboard.csv")));
@@ -179,10 +168,10 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @Disabled("not testable with xml")
-    public void find_xml0_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierRequestException, IOException, UserNotFoundException,
-            QueryStoreException, TableMalformedException, DatabaseConnectionException, QueryMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException {
+    public void find_xml0_succeeds() throws IdentifierNotFoundException, QueryNotFoundException, IOException,
+            IdentifierRequestException, UserNotFoundException, QueryStoreException, TableMalformedException,
+            DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
+            FileStorageException, DataProcessingException {
         final String accept = "text/xml";
         final InputStreamResource compare = new InputStreamResource(FileUtils.openInputStream(new File("src/test/resources/xml/metadata0.xml")));
 
@@ -200,10 +189,10 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @Disabled("not testable with xml")
-    public void find_xml1_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierRequestException, IOException, UserNotFoundException,
-            QueryStoreException, TableMalformedException, DatabaseConnectionException, QueryMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException {
+    public void find_xml1_succeeds() throws IdentifierNotFoundException, QueryNotFoundException, IOException,
+            IdentifierRequestException, UserNotFoundException, QueryStoreException, TableMalformedException,
+            DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
+            FileStorageException, DataProcessingException {
         final String accept = "text/xml";
         final InputStreamResource compare = new InputStreamResource(FileUtils.openInputStream(new File("src/test/resources/xml/metadata1.xml")));
 
@@ -222,10 +211,10 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void find_bibliography_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierRequestException, IOException, UserNotFoundException,
-            QueryStoreException, TableMalformedException, DatabaseConnectionException, QueryMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException {
+    public void find_bibliography_succeeds() throws IdentifierNotFoundException, QueryNotFoundException, IOException,
+            IdentifierRequestException, UserNotFoundException, QueryStoreException, TableMalformedException,
+            DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
+            FileStorageException, DataProcessingException {
         final String accept = "text/bibliography";
         final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_apa1.txt"),
                 StandardCharsets.UTF_8);
@@ -247,9 +236,9 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithAnonymousUser
     public void find_bibliographyApa0_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierRequestException, IOException, UserNotFoundException,
-            QueryStoreException, TableMalformedException, DatabaseConnectionException, QueryMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException {
+            IOException, IdentifierRequestException, UserNotFoundException, QueryStoreException,
+            TableMalformedException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException,
+            ImageNotSupportedException, FileStorageException, DataProcessingException {
         final String accept = "text/bibliography; style=apa";
         final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_apa0.txt"),
                 StandardCharsets.UTF_8);
@@ -271,9 +260,9 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithAnonymousUser
     public void find_bibliographyApa1_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierRequestException, IOException, UserNotFoundException,
-            QueryStoreException, TableMalformedException, DatabaseConnectionException, QueryMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException {
+            IOException, IdentifierRequestException, UserNotFoundException, QueryStoreException,
+            TableMalformedException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException,
+            ImageNotSupportedException, FileStorageException, DataProcessingException {
         final String accept = "text/bibliography; style=apa";
         final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_apa1.txt"),
                 StandardCharsets.UTF_8);
@@ -295,9 +284,9 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithAnonymousUser
     public void find_bibliographyApa2_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierRequestException, IOException, UserNotFoundException,
-            QueryStoreException, TableMalformedException, DatabaseConnectionException, QueryMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException {
+            IOException, IdentifierRequestException, UserNotFoundException, QueryStoreException,
+            TableMalformedException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException,
+            ImageNotSupportedException, FileStorageException, DataProcessingException {
         final String accept = "text/bibliography; style=apa";
         final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_apa2.txt"),
                 StandardCharsets.UTF_8);
@@ -319,9 +308,9 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithAnonymousUser
     public void find_bibliographyApa3_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierRequestException, IOException, UserNotFoundException,
-            QueryStoreException, TableMalformedException, DatabaseConnectionException, QueryMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException {
+            IOException, IdentifierRequestException, UserNotFoundException, QueryStoreException,
+            TableMalformedException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException,
+            ImageNotSupportedException, FileStorageException, DataProcessingException {
         final String accept = "text/bibliography; style=apa";
         final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_apa3.txt"),
                 StandardCharsets.UTF_8);
@@ -343,9 +332,9 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithAnonymousUser
     public void find_bibliographyApa4_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierRequestException, IOException, UserNotFoundException,
-            QueryStoreException, TableMalformedException, DatabaseConnectionException, QueryMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException {
+            IOException, IdentifierRequestException, UserNotFoundException, QueryStoreException,
+            TableMalformedException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException,
+            ImageNotSupportedException, FileStorageException, DataProcessingException {
         final String accept = "text/bibliography; style=apa";
         final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_apa4.txt"),
                 StandardCharsets.UTF_8);
@@ -367,9 +356,9 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithAnonymousUser
     public void find_bibliographyIeee0_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierRequestException, IOException, UserNotFoundException,
-            QueryStoreException, TableMalformedException, DatabaseConnectionException, QueryMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException {
+            IOException, IdentifierRequestException, UserNotFoundException, QueryStoreException,
+            TableMalformedException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException,
+            ImageNotSupportedException, FileStorageException, DataProcessingException {
         final String accept = "text/bibliography; style=ieee";
         final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_ieee0.txt"),
                 StandardCharsets.UTF_8);
@@ -391,9 +380,9 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithAnonymousUser
     public void find_bibliographyIeee1_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierRequestException, IOException, UserNotFoundException,
-            QueryStoreException, TableMalformedException, DatabaseConnectionException, QueryMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException {
+            IOException, IdentifierRequestException, UserNotFoundException, QueryStoreException,
+            TableMalformedException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException,
+            ImageNotSupportedException, FileStorageException, DataProcessingException {
         final String accept = "text/bibliography; style=ieee";
         final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_ieee1.txt"),
                 StandardCharsets.UTF_8);
@@ -415,9 +404,9 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithAnonymousUser
     public void find_bibliographyIeee2_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierRequestException, IOException, UserNotFoundException,
-            QueryStoreException, TableMalformedException, DatabaseConnectionException, QueryMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException {
+            IOException, IdentifierRequestException, UserNotFoundException, QueryStoreException,
+            TableMalformedException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException,
+            ImageNotSupportedException, FileStorageException, DataProcessingException {
         final String accept = "text/bibliography; style=ieee";
         final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_ieee2.txt"),
                 StandardCharsets.UTF_8);
@@ -439,9 +428,9 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithAnonymousUser
     public void find_bibliographyIeee3_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierRequestException, IOException, UserNotFoundException,
-            QueryStoreException, TableMalformedException, DatabaseConnectionException, QueryMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException {
+            IOException, IdentifierRequestException, UserNotFoundException, QueryStoreException,
+            TableMalformedException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException,
+            ImageNotSupportedException, FileStorageException, DataProcessingException {
         final String accept = "text/bibliography; style=ieee";
         final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_ieee3.txt"),
                 StandardCharsets.UTF_8);
@@ -463,9 +452,9 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithAnonymousUser
     public void find_bibliographyBibtex0_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierRequestException, IOException, UserNotFoundException,
-            QueryStoreException, TableMalformedException, DatabaseConnectionException, QueryMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException {
+            IOException, IdentifierRequestException, UserNotFoundException, QueryStoreException,
+            TableMalformedException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException,
+            ImageNotSupportedException, FileStorageException, DataProcessingException {
         final String accept = "text/bibliography; style=bibtex";
         final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_bibtex0.txt"),
                 StandardCharsets.UTF_8);
@@ -487,9 +476,9 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithAnonymousUser
     public void find_bibliographyBibtex1_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierRequestException, IOException, UserNotFoundException,
-            QueryStoreException, TableMalformedException, DatabaseConnectionException, QueryMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException {
+            IOException, IdentifierRequestException, UserNotFoundException, QueryStoreException,
+            TableMalformedException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException,
+            ImageNotSupportedException, FileStorageException, DataProcessingException {
         final String accept = "text/bibliography; style=bibtex";
         final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_bibtex1.txt"),
                 StandardCharsets.UTF_8);
@@ -511,9 +500,9 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithAnonymousUser
     public void find_bibliographyBibtex2_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierRequestException, IOException, UserNotFoundException,
-            QueryStoreException, TableMalformedException, DatabaseConnectionException, QueryMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException {
+            IOException, IdentifierRequestException, UserNotFoundException, QueryStoreException,
+            TableMalformedException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException,
+            ImageNotSupportedException, FileStorageException, DataProcessingException {
         final String accept = "text/bibliography; style=bibtex";
         final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_bibtex2.txt"),
                 StandardCharsets.UTF_8);
@@ -535,9 +524,9 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithAnonymousUser
     public void find_bibliographyBibtex3_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierRequestException, IOException, UserNotFoundException,
-            QueryStoreException, TableMalformedException, DatabaseConnectionException, QueryMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException {
+            IOException, IdentifierRequestException, UserNotFoundException, QueryStoreException,
+            TableMalformedException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException,
+            ImageNotSupportedException, FileStorageException, DataProcessingException {
         final String accept = "text/bibliography; style=bibtex";
         final String compare = FileUtils.readFileToString(new File("src/test/resources/bibliography/style_bibtex3.txt"),
                 StandardCharsets.UTF_8);

@@ -76,10 +76,10 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void find_json_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
+    public void find_json_succeeds() throws IdentifierNotFoundException, QueryNotFoundException, IOException,
             IdentifierRequestException, UserNotFoundException, QueryStoreException, TableMalformedException,
             DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
-            FileStorageException, DataDbSidecarException {
+            FileStorageException, DataProcessingException {
         final String accept = "application/json";
 
         /* mock */
@@ -105,10 +105,10 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void find_xml_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierRequestException, IOException, UserNotFoundException,
-            QueryStoreException, TableMalformedException, DatabaseConnectionException, QueryMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException {
+    public void find_xml_succeeds() throws IdentifierNotFoundException, QueryNotFoundException, IOException,
+            IdentifierRequestException, UserNotFoundException, QueryStoreException, TableMalformedException,
+            DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
+            FileStorageException, DataProcessingException {
         final InputStreamResource resource = new InputStreamResource(FileUtils.openInputStream(
                 new File("src/test/resources/xml/datacite-example-dataset-v4.xml")));
 
@@ -123,10 +123,10 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void find_csv_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
-            RemoteUnavailableException, IOException, IdentifierRequestException, UserNotFoundException,
-            QueryStoreException, TableMalformedException, DatabaseConnectionException, QueryMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException {
+    public void find_csv_succeeds() throws IdentifierNotFoundException, QueryNotFoundException, IOException,
+            IdentifierRequestException, UserNotFoundException, QueryStoreException, TableMalformedException,
+            DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
+            FileStorageException, DataProcessingException {
         final InputStreamResource resource = new InputStreamResource(FileUtils.openInputStream(
                 new File("src/test/resources/csv/testdata.csv")));
 
@@ -141,10 +141,10 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void find_httpRedirect_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierRequestException, UserNotFoundException, QueryStoreException,
-            TableMalformedException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException,
-            ImageNotSupportedException, FileStorageException, DataDbSidecarException {
+    public void find_httpRedirect_succeeds() throws IdentifierNotFoundException, QueryNotFoundException, IOException,
+            IdentifierRequestException, UserNotFoundException, QueryStoreException, TableMalformedException,
+            DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
+            FileStorageException, DataProcessingException {
 
         /* test */
         final ResponseEntity<?> response = generic_find(null, null, null);
@@ -398,7 +398,7 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
             throws IdentifierNotFoundException, QueryNotFoundException, IdentifierRequestException,
             UserNotFoundException, QueryStoreException, TableMalformedException, DatabaseConnectionException,
             QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
-            DataDbSidecarException {
+            DataDbSidecarException, DataProcessingException {
 
         /* mock */
         when(identifierService.find(IDENTIFIER_1_ID))

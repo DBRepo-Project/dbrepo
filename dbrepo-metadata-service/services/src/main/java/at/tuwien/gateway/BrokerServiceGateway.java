@@ -19,14 +19,6 @@ public interface BrokerServiceGateway {
             BrokerVirtualHostGrantException;
 
     /**
-     * Finds all active consumers on the virtual host "dbrepo".
-     *
-     * @return The list of active consumers.
-     * @throws BrokerRemoteException The Broker Service did not respond within the 3s timeout.
-     */
-    List<ConsumerDto> findAllConsumers() throws BrokerRemoteException;
-
-    /**
      * Create virtual host at the queue service.
      *
      * @param data The virtual host.

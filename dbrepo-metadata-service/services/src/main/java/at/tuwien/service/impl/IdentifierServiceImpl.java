@@ -245,7 +245,8 @@ public class IdentifierServiceImpl implements IdentifierService {
     @Transactional(readOnly = true)
     public InputStreamResource exportResource(Long identifierId, Principal principal) throws IdentifierNotFoundException,
             QueryNotFoundException, IdentifierRequestException, QueryStoreException, QueryMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException, DataDbSidecarException {
+            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException, DataDbSidecarException,
+            DataProcessingException {
         /* check */
         final Identifier identifier = find(identifierId);
         if (identifier.getType().equals(IdentifierType.DATABASE)) {

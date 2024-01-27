@@ -141,7 +141,7 @@ public interface IdentifierService {
      */
     InputStreamResource exportResource(Long identifierId, Principal principal) throws IdentifierNotFoundException,
             QueryNotFoundException, IdentifierRequestException, QueryStoreException, QueryMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException, DataDbSidecarException;
+            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException, DataDbSidecarException, DataProcessingException;
 
     /**
      * Soft-deletes an identifier for a given id in the metadata database. Does not actually remove the entity from the

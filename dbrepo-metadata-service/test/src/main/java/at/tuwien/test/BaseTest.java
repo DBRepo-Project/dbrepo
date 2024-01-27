@@ -24,6 +24,7 @@ import at.tuwien.api.database.table.constraints.unique.UniqueDto;
 import at.tuwien.api.identifier.*;
 import at.tuwien.api.keycloak.CredentialDto;
 import at.tuwien.api.keycloak.CredentialTypeDto;
+import at.tuwien.api.keycloak.TokenDto;
 import at.tuwien.api.keycloak.UserCreateDto;
 import at.tuwien.api.maintenance.BannerMessageCreateDto;
 import at.tuwien.api.maintenance.BannerMessageTypeDto;
@@ -228,6 +229,11 @@ public abstract class BaseTest {
     public final static UUID ROLE_DEFAULT_RESEARCHER_ROLES_ID = UUID.fromString("c74cbbe7-3ab1-4472-9211-cc9045672682");
     public final static String ROLE_DEFAULT_RESEARCHER_ROLES_NAME = "default-researcher-roles";
     public final static UUID ROLE_DEFAULT_RESEARCHER_ROLES_REALM_ID = REALM_DBREPO_ID;
+
+    public final static TokenDto TOKEN_DTO = TokenDto.builder()
+            .accessToken("ey.yee.skrr")
+            .scope("openid")
+            .build();
 
     public final static String USER_BROKER_USERNAME = "guest";
     public final static String USER_BROKER_PASSWORD = "guest";

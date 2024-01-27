@@ -152,6 +152,11 @@ public class TableDataEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "409",
+                    description = "Import failed in sidecar",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "422",
                     description = "Could not import csv via sidecar",
                     content = {@Content(
@@ -163,7 +168,7 @@ public class TableDataEndpoint {
                                           @NotNull @Valid @RequestBody ImportDto data,
                                           @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
-            NotAllowedException, AccessDeniedException, DataDbSidecarException {
+            NotAllowedException, AccessDeniedException, DataDbSidecarException, DataProcessingException {
         log.debug("endpoint insert data from csv, databaseId={}, tableId={}, data={}, {}", databaseId, tableId, data, PrincipalUtil.formatForDebug(principal));
         /* check */
         endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(databaseId, tableId, principal);
