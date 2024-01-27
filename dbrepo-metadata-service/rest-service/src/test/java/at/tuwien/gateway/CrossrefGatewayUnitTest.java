@@ -1,0 +1,63 @@
+package at.tuwien.gateway;
+
+import at.tuwien.BaseUnitTest;
+import at.tuwien.annotations.MockAmqp;
+import at.tuwien.annotations.MockOpensearch;
+import at.tuwien.api.crossref.CrossrefDto;
+import at.tuwien.exception.DoiNotFoundException;
+import lombok.extern.log4j.Log4j2;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.web.client.ResourceAccessException;
+import org.springframework.web.client.RestTemplate;
+
+import static org.mockito.Mockito.*;
+
+@Log4j2
+@SpringBootTest
+@ExtendWith(SpringExtension.class)
+@MockAmqp
+@MockOpensearch
+public class CrossrefGatewayUnitTest extends BaseUnitTest {
+
+    @MockBean
+    @Qualifier("keycloakRestTemplate")
+    private RestTemplate restTemplate;
+
+    @Autowired
+    private CrossrefGateway crossrefGateway;
+
+    @Test
+    public void findById_succeeds() throws DoiNotFoundException {
+
+        /* mock */
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(CrossrefDto.class)))
+                .thenReturn(ResponseEntity.status(HttpStatus.OK)
+                        .build());
+
+        /* test */
+        crossrefGateway.findById("501100004729");
+    }
+
+    @Test
+    public void findById_fails() throws DoiNotFoundException {
+
+        /* mock */
+        doThrow(ResourceAccessException.class)
+                .when(restTemplate)
+                .exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(CrossrefDto.class));
+
+        /* test */
+        crossrefGateway.findById("501100004729");
+    }
+
+}

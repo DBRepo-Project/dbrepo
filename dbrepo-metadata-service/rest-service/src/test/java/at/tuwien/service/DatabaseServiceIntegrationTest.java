@@ -339,7 +339,7 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void obtainMetadata_tableWithoutVersioning_succeeds() throws DatabaseUnchangedException, QueryMalformedException,
+    public void obtainMetadata_tableWithoutVersioning_succeeds() throws QueryMalformedException,
             DatabaseNotFoundException, ColumnParseException {
 
         /* test */
@@ -358,8 +358,8 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void obtainMetadata_tableWithVersioning_succeeds() throws DatabaseUnchangedException, QueryMalformedException,
-            DatabaseNotFoundException, ColumnParseException {
+    public void obtainMetadata_tableWithVersioning_succeeds() throws QueryMalformedException, DatabaseNotFoundException,
+            ColumnParseException {
 
         /* test */
         final Database response = databaseService.obtainMetadata(DATABASE_1_ID);
@@ -378,8 +378,8 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void obtainMetadata_view_succeeds() throws DatabaseUnchangedException, QueryMalformedException,
-            DatabaseNotFoundException, ColumnParseException {
+    public void obtainMetadata_view_succeeds() throws QueryMalformedException, DatabaseNotFoundException,
+            ColumnParseException {
 
         /* test */
         final Database response = databaseService.obtainMetadata(DATABASE_1_ID);

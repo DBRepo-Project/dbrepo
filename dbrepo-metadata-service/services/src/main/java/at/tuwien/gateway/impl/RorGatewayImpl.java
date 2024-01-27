@@ -34,7 +34,7 @@ public class RorGatewayImpl implements RorGateway {
             response = restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(null, headers), RorDto.class);
         } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable e) {
             log.error("Failed to retrieve ROR metadata from URL {}: {}", url, e.getMessage());
-            throw new RorNotFoundException("Failed to retrieve ROR metadata from URL " + url + ": " + e.getMessage());
+            throw new RorNotFoundException("Failed to retrieve ROR metadata from URL " + url + ": " + e.getMessage(), e);
         }
         return response.getBody();
     }

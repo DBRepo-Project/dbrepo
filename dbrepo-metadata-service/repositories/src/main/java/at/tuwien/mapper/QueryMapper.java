@@ -935,15 +935,6 @@ public interface QueryMapper {
         }
     }
 
-    default String selectItemToEscapedString(SelectItem data) {
-        final String item = data.toString();
-        final int idx = item.indexOf('.');
-        if (idx == -1) {
-            return "`" + item + "`";
-        }
-        return "`" + item.substring(idx + 1) + "`";
-    }
-
     default String generateInsertFromTemporaryTableSQL(Table table) {
         final StringBuilder statement = new StringBuilder("INSERT INTO `")
                 .append(table.getDatabase().getInternalName())

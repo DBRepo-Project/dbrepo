@@ -242,7 +242,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     @Transactional(readOnly = true)
     public ExportResource tableFindAll(Long databaseId, Long tableId, Instant timestamp, Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, FileStorageException, QueryMalformedException,
-            DataDbSidecarException {
+            DataDbSidecarException, DataProcessingException {
         final String filename = RandomStringUtils.randomAlphabetic(40) + ".csv";
         /* find */
         final Database database = databaseService.find(databaseId);
@@ -264,7 +264,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     }
 
     private ExportResource retrieveBlobAsResource(Container container, String filename) throws DataDbSidecarException,
-            FileStorageException {
+            FileStorageException, DataProcessingException {
         /* upload from sidecar into blob storage */
         dataDbSidecarGateway.exportFile(container.getSidecarHost(), container.getSidecarPort(), filename);
         /* export file from blob storage */
@@ -287,14 +287,14 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     @Transactional(readOnly = true)
     public ExportResource findOne(Long databaseId, Long queryId, Principal principal)
             throws DatabaseNotFoundException, ImageNotSupportedException, FileStorageException, QueryStoreException,
-            QueryNotFoundException, QueryMalformedException, DataDbSidecarException {
+            QueryNotFoundException, QueryMalformedException, DataDbSidecarException, DataProcessingException {
         return findOne(databaseId, queryId, principal, RandomStringUtils.randomAlphabetic(40) + ".csv");
     }
 
     @Transactional(readOnly = true)
     public ExportResource findOne(Long databaseId, Long queryId, Principal principal, String filename)
             throws DatabaseNotFoundException, ImageNotSupportedException, FileStorageException, QueryStoreException,
-            QueryNotFoundException, QueryMalformedException, DataDbSidecarException {
+            QueryNotFoundException, QueryMalformedException, DataDbSidecarException, DataProcessingException {
         /* find */
         final Database database = databaseService.find(databaseId);
         final Query query = storeService.findOne(databaseId, queryId, principal);
@@ -372,7 +372,8 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     @Override
     @Transactional
     public void insert(Long databaseId, Long tableId, ImportDto data, Principal principal)
-            throws TableMalformedException, DatabaseNotFoundException, TableNotFoundException, DataDbSidecarException {
+            throws TableMalformedException, DatabaseNotFoundException, TableNotFoundException, DataDbSidecarException,
+            DataProcessingException {
         /* find */
         final Database database = databaseService.find(databaseId);
         final Table table = tableService.find(databaseId, tableId);

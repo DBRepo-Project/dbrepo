@@ -36,6 +36,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.function.UnaryOperator;
 
 @Log4j2
 @Service
@@ -216,31 +217,47 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
     @Override
     @Transactional
     public Database obtainMetadata(Long databaseId) throws DatabaseNotFoundException, QueryMalformedException,
-            DatabaseUnchangedException, ColumnParseException {
+            ColumnParseException {
         /* check */
         final Database database = findById(databaseId);
         final List<Table> diffTables;
+        final List<Table> knownTables;
         final List<View> diffViews;
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(), database.getContainer(), database);
         try {
             final Connection connection = dataSource.getConnection();
             final PreparedStatement preparedStatement0 = databaseMapper.databaseToDatabaseMetadata(connection, database);
-            diffTables = tableMapper.resultListToTableList(preparedStatement0.executeQuery(), database)
-                    .stream()
-                    .filter(table -> database.getTables()
+            final List<Table> tables = tableMapper.resultListToTableList(preparedStatement0.executeQuery(), database);
+            diffTables = tables.stream()
+                    .filter(obtainedTable -> database.getTables()
                             .stream()
-                            .noneMatch(t -> t.getInternalName().equals(table.getInternalName())))
+                            .noneMatch(t -> t.getInternalName().equals(obtainedTable.getInternalName())))
                     .toList();
-            diffViews = tableMapper.resultListToViewList(preparedStatement0.executeQuery(), database)
-                    .stream()
+            knownTables = tables.stream()
+                    .filter(table -> diffTables.stream()
+                            .noneMatch(t -> t.getInternalName().equals(table.getInternalName())))
+                    .map(obtainedTable -> {
+                        final Optional<Table> optional = database.getTables()
+                                .stream()
+                                .filter(t -> t.getInternalName().equals(obtainedTable.getInternalName()))
+                                .findFirst();
+                        if (optional.isPresent()) {
+                            final Table table = optional.get();
+                            table.setNumRows(obtainedTable.getNumRows());
+                            table.setDataLength(obtainedTable.getDataLength());
+                            table.setMaxDataLength(obtainedTable.getMaxDataLength());
+                            table.setAvgRowLength(obtainedTable.getAvgRowLength());
+                            return table;
+                        }
+                        return obtainedTable;
+                    })
+                    .toList();
+            final List<View> views = tableMapper.resultListToViewList(preparedStatement0.executeQuery(), database);
+            diffViews = views.stream()
                     .filter(view -> database.getViews()
                             .stream()
                             .noneMatch(v -> v.getInternalName().equals(view.getInternalName())))
                     .toList();
-            if (diffTables.isEmpty() && diffViews.isEmpty()) {
-                log.debug("database with id {} does not contain any unknown tables and any unknown views", databaseId);
-                throw new DatabaseUnchangedException("Database with id " + databaseId + " does not contain any unknown tables and any unknown views");
-            }
             /* default times */
             final Optional<ContainerImageDate> defaultDateFormat = containerRepository.findDefaultDateFormat();
             if (defaultDateFormat.isEmpty()) {
@@ -255,6 +272,16 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
             /* obtain table schema */
             log.info("Database with id {} contains {} unknown table(s) and {} unknown view(s)", databaseId, diffTables.size(), diffViews.size());
             log.debug("database with id {} misses table(s) in metadata database: {}", databaseId, diffTables.stream().map(Table::getInternalName).toList());
+            database.getTables().replaceAll(table -> {
+                final Optional<Table> optional = knownTables.stream()
+                        .filter(t -> t.getId().equals(table.getId()))
+                        .findFirst();
+                if (optional.isPresent()) {
+                    log.trace("found table with id {} and merged it", table.getId());
+                    return optional.get();
+                }
+                return table;
+            });
             for (Table table : diffTables) {
                 final PreparedStatement preparedStatement1 = queryMapper.obtainTableMetadataRawQuery(connection, table.getDatabase().getInternalName(), table.getInternalName());
                 table = tableMapper.resultSetTableToObtainedMetadata(preparedStatement1.executeQuery(), table,

@@ -268,7 +268,7 @@ public class QueryEndpoint {
                                     @RequestHeader(HttpHeaders.ACCEPT) String accept,
                                     Principal principal)
             throws QueryStoreException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
-            FileStorageException, QueryMalformedException, NotAllowedException, DataDbSidecarException {
+            FileStorageException, QueryMalformedException, NotAllowedException, DataDbSidecarException, DataProcessingException {
         log.debug("endpoint export query, databaseId={}, queryId={}, accept={}, {}", databaseId, queryId, accept, PrincipalUtil.formatForDebug(principal));
         final Database database = databaseService.find(databaseId);
         if (!database.getIsPublic()) {
