@@ -44,10 +44,45 @@ The command removes all the Kubernetes components associated with the chart and 
 
 ### Common parameters
 
-| Name            | Description                          | Value           |
-|-----------------|--------------------------------------|-----------------|
-| `namespace`     | Namespace which DBRepo is running in | `""`            |
-| `hostname`      | The hostname for ingress rules       | `""`            |
-| `strategyType`  | Deployments update strategy          | `RollingUpdate` |
-| `clusterDomain` | Internal cluster domain              | `cluster.local` |
+| Name            | Description                           | Value           |
+|-----------------|---------------------------------------|-----------------|
+| `namespace`     | Namespace which DBRepo is running in. | `""`            |
+| `hostname`      | The hostname for ingress rules.       | `""`            |
+| `strategyType`  | Deployments update strategy.          | `RollingUpdate` |
+| `clusterDomain` | Internal cluster domain.              | `cluster.local` |
 
+### Metadata Database
+
+The Metadata Database uses the [Bitnami MariaDB Galera](https://artifacthub.io/packages/helm/bitnami/mariadb-galera)
+Helm chart. See their documentation for the remaining overridden values.
+
+| Name                       | Description                               | Value         |
+|----------------------------|-------------------------------------------|---------------|
+| `metadataDb.host`          | Hostname.                                 | `metadata-db` |
+| `metadataDb.jdbcExtraArgs` | Extra arguments for the JDBC connections. | `""`          |
+
+### Authentication Service
+
+The Auth Service uses the [Bitnami Keycloak](https://artifacthub.io/packages/helm/bitnami/keycloak) Helm chart. See
+their documentation for the remaining overridden values.
+
+| Name                        | Description                                                     | Value                              |
+|-----------------------------|-----------------------------------------------------------------|------------------------------------|
+| `authService.client.id`     | Client id. This value is publicly known.                        | `dbrepo-client`                    |
+| `authService.client.secret` | Client secret. This value should never be known outside DBRepo. | `MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG` |
+
+### Auth Database
+
+The Auth Database uses the [Bitnami PostgreSQL HA](https://artifacthub.io/packages/helm/bitnami/postgresql-ha) Helm
+chart. See their documentation for the remaining overridden values.
+
+| Name          | Description                          | Value            |
+|---------------|--------------------------------------|------------------|
+| `authDb.host` | Hostname. Needed for other services. | `auth-db-pgpool` |
+| `authDB.port` | Port. Needed for other services.     | `5432`           |
+
+### Data Database
+
+The Data Database uses the [Bitnami MariaDB Galera](https://artifacthub.io/packages/helm/bitnami/mariadb-galera)
+Helm chart. See their documentation for the remaining overridden values. It is important to note that the Data Database 
+uses a sidecar to import/export files from the Storage Service.
