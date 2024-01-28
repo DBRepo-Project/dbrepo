@@ -1,6 +1,7 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.api.database.DatabaseCreateDto;
+import at.tuwien.api.database.DatabaseModifyImageDto;
 import at.tuwien.api.database.DatabaseModifyVisibilityDto;
 import at.tuwien.api.database.DatabaseTransferDto;
 import at.tuwien.config.QueryConfig;
@@ -36,7 +37,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.function.UnaryOperator;
 
 @Log4j2
 @Service
@@ -207,6 +207,20 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         final User user = userService.findByUsername(transferDto.getUsername());
         /* update in metadata database */
         database.setOwnedBy(user.getId());
+        final Database entity = databaseRepository.save(database);
+        /* save in open search database */
+        databaseIdxRepository.save(databaseMapper.databaseToDatabaseDto(entity));
+        log.info("Updated database owner of database with id {} in metadata database & search database", entity.getId());
+        return entity;
+    }
+
+    @Override
+    @Transactional
+    public Database modifyImage(Long databaseId, byte[] image) throws DatabaseNotFoundException {
+        /* check */
+        final Database database = findById(databaseId);
+        /* update in metadata database */
+        database.setImage(image);
         final Database entity = databaseRepository.save(database);
         /* save in open search database */
         databaseIdxRepository.save(databaseMapper.databaseToDatabaseDto(entity));

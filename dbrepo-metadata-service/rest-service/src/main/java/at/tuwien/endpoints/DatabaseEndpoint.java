@@ -4,6 +4,7 @@ import at.tuwien.api.amqp.ExchangeDto;
 import at.tuwien.api.database.*;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.config.RabbitConfig;
+import at.tuwien.config.S3Config;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.user.User;
@@ -13,6 +14,10 @@ import at.tuwien.service.*;
 import at.tuwien.utils.PrincipalUtil;
 import at.tuwien.utils.UserUtil;
 import io.micrometer.observation.annotation.Observed;
+import io.minio.GetObjectArgs;
+import io.minio.GetObjectResponse;
+import io.minio.MinioClient;
+import io.minio.errors.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -31,6 +36,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -45,16 +53,19 @@ public class DatabaseEndpoint {
     private final RabbitConfig rabbitConfig;
     private final AccessService accessService;
     private final DatabaseMapper databaseMapper;
+    private final StorageService storageService;
     private final DatabaseService databaseService;
     private final QueryStoreService queryStoreService;
     private final MessageQueueService messageQueueService;
 
     @Autowired
     public DatabaseEndpoint(DatabaseMapper databaseMapper, UserService userService, RabbitConfig rabbitConfig,
-                            DatabaseService databaseService, QueryStoreService queryStoreService,
-                            AccessService accessService, MessageQueueService messageQueueService) {
+                            StorageService storageService, DatabaseService databaseService,
+                            QueryStoreService queryStoreService, AccessService accessService,
+                            MessageQueueService messageQueueService) {
         this.userService = userService;
         this.rabbitConfig = rabbitConfig;
+        this.storageService = storageService;
         this.accessService = accessService;
         this.databaseMapper = databaseMapper;
         this.databaseService = databaseService;
@@ -218,11 +229,11 @@ public class DatabaseEndpoint {
                                                   @Valid @RequestBody DatabaseModifyVisibilityDto data,
                                                   @NotNull Principal principal) throws DatabaseNotFoundException,
             NotAllowedException {
-        log.debug("endpoint update database, id={}, data={}, {}", id, data, PrincipalUtil.formatForDebug(principal));
+        log.debug("endpoint modify database visibility, id={}, data={}, {}", id, data, PrincipalUtil.formatForDebug(principal));
         final Database database = databaseService.findById(id);
         if (!database.getOwnedBy().equals(UserUtil.getId(principal))) {
-            log.error("Failed to create database: not owner");
-            throw new NotAllowedException(("Failed to create database: not owner"));
+            log.error("Failed to modify database visibility: not owner");
+            throw new NotAllowedException("Failed to modify database visibility: not owner");
         }
         final DatabaseDto dto = databaseMapper.databaseToDatabaseDto(databaseService.visibility(id, data));
         log.trace("update database resulted in database {}", dto);
@@ -256,14 +267,63 @@ public class DatabaseEndpoint {
                                                 @Valid @RequestBody DatabaseTransferDto transferDto,
                                                 @NotNull Principal principal) throws DatabaseNotFoundException,
             UserNotFoundException, NotAllowedException {
-        log.debug("endpoint update database, id={}, transferDto={}, {}", id, transferDto, PrincipalUtil.formatForDebug(principal));
+        log.debug("endpoint transfer database, id={}, transferDto={}, {}", id, transferDto, PrincipalUtil.formatForDebug(principal));
         final Database database = databaseService.findById(id);
         final User user = userService.findByUsername(principal.getName());
         if (!database.getOwnedBy().equals(user.getId())) {
-            log.error("Failed to create database: not owner");
-            throw new NotAllowedException(("Failed to create database: not owner"));
+            log.error("Failed to transfer database: not owner");
+            throw new NotAllowedException("Failed to transfer database: not owner");
         }
         final DatabaseDto dto = databaseMapper.databaseToDatabaseDto(databaseService.transfer(id, transferDto));
+        log.trace("update database resulted in database {}", dto);
+        return ResponseEntity.accepted()
+                .body(dto);
+    }
+
+    @PutMapping("/{id}/image")
+    @Transactional
+    @PreAuthorize("hasAuthority('modify-database-image')")
+    @Observed(name = "dbr_database_image")
+    @Operation(summary = "Modify database image", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202",
+                    description = "Modify of image was successful",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = DatabaseDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Database or user could not be found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Modify of image is not permitted",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "410",
+                    description = "File was not found in the Storage Service",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
+    public ResponseEntity<DatabaseDto> modifyImage(@NotNull @PathVariable Long id,
+                                                   @Valid @RequestBody DatabaseModifyImageDto imageDto,
+                                                   @NotNull Principal principal) throws DatabaseNotFoundException,
+            UserNotFoundException, NotAllowedException, FileStorageException {
+        log.debug("endpoint modify database image, id={}, imageDto={}, {}", id, imageDto, PrincipalUtil.formatForDebug(principal));
+        final Database database = databaseService.findById(id);
+        final User user = userService.findByUsername(principal.getName());
+        if (!database.getOwnedBy().equals(user.getId())) {
+            log.error("Failed to update database image: not owner");
+            throw new NotAllowedException("Failed to update database image: not owner");
+        }
+        final DatabaseDto dto;
+        byte[] image = null;
+        if (imageDto.getKey() != null) {
+            image = storageService.getBytes(imageDto.getKey());
+        }
+        dto = databaseMapper.databaseToDatabaseDto(databaseService.modifyImage(id, image));
         log.trace("update database resulted in database {}", dto);
         return ResponseEntity.accepted()
                 .body(dto);

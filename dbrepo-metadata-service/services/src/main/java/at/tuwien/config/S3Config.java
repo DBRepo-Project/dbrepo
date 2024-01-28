@@ -27,6 +27,9 @@ public class S3Config {
     @Value("${fda.s3.exportBucket}")
     private String s3ExportBucket;
 
+    @Value("${fda.s3.staleSeconds}")
+    private Integer staleSeconds;
+
     @Bean
     public MinioClient minioClient() {
         return MinioClient.builder()
