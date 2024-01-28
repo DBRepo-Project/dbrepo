@@ -16,6 +16,12 @@
             <v-list dense>
               <v-list-item>
                 <v-list-item-content>
+                  <v-list-item-title v-if="databaseImage" class="mt-2">
+                    Database Image
+                  </v-list-item-title>
+                  <v-list-item-content v-if="databaseImage">
+                    <v-img :src="databaseImage" alt="database image" max-width="200" max-height="200" />
+                  </v-list-item-content>
                   <v-list-item-title class="mt-2">
                     Database Name
                   </v-list-item-title>
@@ -237,6 +243,12 @@ export default {
       let sum = 0
       this.database.tables.forEach((t) => { sum += t.data_length })
       return sizeToHumanLabel(sum)
+    },
+    databaseImage () {
+      if (!this.database || !this.database.image) {
+        return null
+      }
+      return `data:image/webp;base64,${this.database.image}`
     }
   },
   methods: {

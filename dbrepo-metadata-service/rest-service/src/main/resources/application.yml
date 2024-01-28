@@ -72,6 +72,8 @@ fda:
     secretAccessKey: "${S3_SECRET_ACCESS_KEY}"
     importBucket: "${S3_IMPORT_BUCKET}"
     exportBucket: "${S3_EXPORT_BUCKET}"
+    deleteStaleFilesRate: "${DELETE_STALE_FILES_RATE}"
+    staleSeconds: 3600
   jwt:
     issuer: "${JWT_ISSUER}"
     public_key: "${JWT_PUBKEY}"

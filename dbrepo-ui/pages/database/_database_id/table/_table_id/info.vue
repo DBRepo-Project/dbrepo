@@ -18,11 +18,11 @@
                 Table ID
               </v-list-item-title>
               <v-list-item-content v-if="table && table.id" v-text="table.id" />
-              <v-list-item-title>
+              <v-list-item-title v-if="table && table.data_length">
                 Table Size
               </v-list-item-title>
               <v-list-item-content v-if="table && table.data_length" v-text="sizeToHumanLabel(table.data_length)" />
-              <v-list-item-title>
+              <v-list-item-title v-if="table && table.num_rows">
                 Table Rows
               </v-list-item-title>
               <v-list-item-content v-if="table && table.num_rows" v-text="table.num_rows" />

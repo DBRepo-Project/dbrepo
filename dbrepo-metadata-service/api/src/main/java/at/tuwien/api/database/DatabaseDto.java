@@ -97,6 +97,9 @@ public class DatabaseDto {
     @Field(name = "owner", type = FieldType.Object)
     private UserDto owner;
 
+    @ToString.Exclude
+    private byte[] image;
+
     @NotNull
     @Schema(example = "2021-03-12T15:26:21Z")
     @Field(name = "created", type = FieldType.Date)
