@@ -112,7 +112,7 @@ dataDb:
       password: mariabackup
   sidecars:
     - name: sidecar
-      image: s210.dl.hpc.tuwien.ac.at/dbrepo/data-db-sidecar:latest
+      image: s210.dl.hpc.tuwien.ac.at/dbrepo/data-db-sidecar:1.4.1
       imagePullPolicy: Always
       securityContext:
         runAsUser: 1001
@@ -237,7 +237,7 @@ searchDbDashboard:
   opensearchHosts: http://search-db:9200
   extraInitContainers:
     - name: init
-      image: s210.dl.hpc.tuwien.ac.at/dbrepo/search-db-init:latest
+      image: s210.dl.hpc.tuwien.ac.at/dbrepo/search-db-init:1.4.1
       imagePullPolicy: Always
       env:
         - name: OPENSEARCH_HOST
