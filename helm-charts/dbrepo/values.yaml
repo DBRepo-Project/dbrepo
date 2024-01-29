@@ -344,7 +344,7 @@ analyseService:
   image:
     registry: s210.dl.hpc.tuwien.ac.at
     repository: dbrepo/analyse-service
-    tag: "latest"
+    tag: "1.4.1"
     pullPolicy: Always
     debug: false
   replicaCount: 2
@@ -354,7 +354,7 @@ metadataService:
   image:
     registry: s210.dl.hpc.tuwien.ac.at
     repository: dbrepo/metadata-service
-    tag: "latest"
+    tag: "1.4.1"
     pullPolicy: Always
     debug: false
   adminEmail: noreply@example.com
@@ -369,6 +369,7 @@ metadataService:
     username: ""
     password: ""
   rates:
+    deleteStaleFiles: 60
     mirror: 60
     obtainMetadata: 60
     deleteStaleQueries: 60
@@ -379,7 +380,7 @@ dataService:
   image:
     registry: s210.dl.hpc.tuwien.ac.at
     repository: dbrepo/data-service
-    tag: "latest"
+    tag: "1.4.1"
     pullPolicy: Always
     debug: false
   jwt:
@@ -394,7 +395,7 @@ searchService:
   image:
     registry: s210.dl.hpc.tuwien.ac.at
     repository: dbrepo/search-service
-    tag: "latest"
+    tag: "1.4.1"
     pullPolicy: Always
     debug: false
   replicaCount: 2
@@ -468,24 +469,8 @@ ui:
   image:
     registry: s210.dl.hpc.tuwien.ac.at
     repository: dbrepo/ui
-    tag: "latest"
+    tag: "1.4.1"
     pullPolicy: Always
-  logo: /logo.svg
-  icon: /favicon.ico
-  appleTouchIcon: /apple-touch-logo.png
-  version: 1.4.0
-  title: Database Repository
-  datacite:
-    url: https://doi.org
-  keycloak:
-    url: /api/auth/admin/
-  broker:
-    url: /admin/broker/
-    host: broker-service
-    extraInfo: ""
-    ports:
-      - 5672
-  forceSsl: false
   replicaCount: 2
   extraVolumes: [ ]
   #  - name: images-map
