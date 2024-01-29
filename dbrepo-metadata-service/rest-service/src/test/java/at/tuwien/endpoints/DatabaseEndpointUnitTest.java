@@ -16,7 +16,12 @@ import at.tuwien.service.ContainerService;
 import at.tuwien.service.MessageQueueService;
 import at.tuwien.service.QueryStoreService;
 import at.tuwien.service.impl.MariaDbServiceImpl;
+import io.minio.GetObjectArgs;
+import io.minio.GetObjectResponse;
+import io.minio.MinioClient;
+import io.minio.errors.*;
 import lombok.extern.log4j.Log4j2;
+import okhttp3.Headers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +33,10 @@ import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
@@ -70,6 +79,9 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
 
     @MockBean
     private UserRepository userRepository;
+
+    @MockBean
+    private MinioClient minioClient;
 
     @Autowired
     private DatabaseEndpoint databaseEndpoint;
@@ -273,6 +285,41 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
         assertThrows(NotAllowedException.class, () -> {
             visibility_generic(DATABASE_1_ID, DATABASE_1, DATABASE_1_DTO, request, USER_2_PRINCIPAL);
         });
+    }
+
+    @Test
+    @WithMockUser(username = USER_4_USERNAME)
+    public void modifyImage_noRole_fails() {
+        final DatabaseModifyImageDto request = DatabaseModifyImageDto.builder()
+                .key("s3key_here")
+                .build();
+
+        /* test */
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
+            databaseEndpoint.modifyImage(DATABASE_3_ID, request, USER_4_PRINCIPAL);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"modify-database-image"})
+    public void modifyImage_hasRole_succeeds() throws UserNotFoundException, DatabaseNotFoundException,
+            NotAllowedException, IOException, FileStorageException, ServerException, InsufficientDataException,
+            ErrorResponseException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException,
+            XmlParserException, InternalException {
+        final DatabaseModifyImageDto request = DatabaseModifyImageDto.builder()
+                .key("s3key_here")
+                .build();
+
+        /* mock */
+        when(databaseService.findById(DATABASE_1_ID))
+                .thenReturn(DATABASE_1);
+        when(minioClient.getObject(any(GetObjectArgs.class)))
+                .thenReturn(new GetObjectResponse(Headers.of(), "dbrepo-upload", "default", "object", InputStream.nullInputStream()));
+        when(userRepository.findByUsername(USER_1_USERNAME))
+                .thenReturn(Optional.of(USER_1));
+
+        /* test */
+        databaseEndpoint.modifyImage(DATABASE_1_ID, request, USER_1_PRINCIPAL);
     }
 
     @Test

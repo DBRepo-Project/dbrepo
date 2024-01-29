@@ -1,12 +1,14 @@
 package at.tuwien.service;
 
 import at.tuwien.api.database.DatabaseCreateDto;
+import at.tuwien.api.database.DatabaseModifyImageDto;
 import at.tuwien.api.database.DatabaseModifyVisibilityDto;
 import at.tuwien.api.database.DatabaseTransferDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
 import java.util.List;
@@ -100,6 +102,16 @@ public interface DatabaseService {
      */
     Database transfer(Long databaseId, DatabaseTransferDto transferDto) throws DatabaseNotFoundException,
             UserNotFoundException;
+
+    /**
+     * Modify image of database with given id.
+     *
+     * @param databaseId The database id.
+     * @param image      The image.
+     * @return The database, if successful.
+     * @throws DatabaseNotFoundException The database was not found in the metadata database.
+     */
+    Database modifyImage(Long databaseId, byte[] image) throws DatabaseNotFoundException;
 
     /**
      * Obtain metadata from database with given id to read table and view information (schema) and write it to the metadata database for management by DBRepo.

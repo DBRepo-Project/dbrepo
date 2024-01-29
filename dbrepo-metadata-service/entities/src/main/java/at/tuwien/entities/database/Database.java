@@ -17,6 +17,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.io.Serializable;
+import java.sql.Blob;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -130,6 +131,11 @@ public class Database implements Serializable {
 
     @Column(nullable = false)
     private Boolean isPublic;
+
+    @Lob
+    @Basic(fetch = FetchType.LAZY)
+    @Column(columnDefinition = "LONGBLOB")
+    private byte[] image;
 
     @CreatedDate
     @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP default NOW()")
