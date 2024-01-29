@@ -53,7 +53,6 @@ configured as well via the `dbrepo.config.json` values file. The important links
     "page": {
     "information": {
       "links": []
-    }
     },
     ...
 }

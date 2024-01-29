@@ -4,8 +4,8 @@ variables:
   TRIVY_CACHE_DIR: ".trivycache/"
   DOCKER_HOST: "unix:///var/run/dind/docker.sock"
   TESTCONTAINERS_RYUK_DISABLED: "false"
-  APP_VERSION: "1.4.0"
-  CHART_VERSION: "1.4.0"
+  APP_VERSION: "1.4.1"
+  CHART_VERSION: "1.4.1"
 
 image: debian:12-slim
 
@@ -502,23 +502,6 @@ release-1.4:
     - "apk add make bash"
     - "TAG=${APP_VERSION} make release"
 
-release-helm-latest:
-  stage: release
-  image: docker:24-dind
-  only:
-    refs:
-      - dev
-      - master
-  before_script:
-    - echo "$CI_REGISTRY2_PASSWORD" | docker login --username "$CI_REGISTRY2_USER" --password-stdin $CI_REGISTRY2_URL
-  script:
-    - apk add sed helm
-    - 'sed -i -e "s/^version:.*/version: \"${CHART_VERSION}-0.git.${CI_PIPELINE_ID}.${CI_COMMIT_SHORT_SHA}\"/g" ./helm-charts/dbrepo/Chart.yaml'
-    - 'sed -i -e "s/^appVersion:.*/appVersion: \"${CHART_VERSION}-0.git.${CI_PIPELINE_ID}.${CI_COMMIT_SHORT_SHA}\"/g" ./helm-charts/dbrepo/Chart.yaml'
-    - find ./helm-charts -type f -exec sed -i -e "s/__CHARTVERSION__/${CHART_VERSION}/g" {} \;
-    - helm package ./helm-charts/dbrepo --destination ./build
-    - helm push "./build/dbrepo-${CHART_VERSION}-0.git.${CI_PIPELINE_ID}.${CI_COMMIT_SHORT_SHA}.tgz" "oci://${CI_REGISTRY2_URL}/helm"
-
 release-helm-1.4:
   stage: release
   image: docker:24-dind
@@ -534,7 +517,6 @@ release-helm-1.4:
     - find ./helm-charts -type f -exec sed -i -e "s/__CHARTVERSION__/${CHART_VERSION}/g" {} \;
     - helm package ./helm-charts/dbrepo --destination ./build
     - helm push "./build/dbrepo-${CHART_VERSION}.tgz" "oci://${CI_REGISTRY2_URL}/helm"
-    - curl -sSL -X POST --form 'chart=@build/dbrepo-${CHART_VERSION}.tgz' --user mweise:${GITLAB_ACCESS_TOKEN} https://gitlab.example.com/api/v4/projects/450/packages/helm/api/stable/charts
 
 build-api-latest:
   stage: build
