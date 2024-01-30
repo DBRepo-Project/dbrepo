@@ -630,7 +630,7 @@ docs-latest:
     - cp ./.docs/redirect.html ./final/index.html
     - find .docs/ -type f -exec sed -i -e "s/__APPVERSION__/latest/g" {} \;
     - find .docs/ -type f -exec sed -i -e "s/__CHARTVERSION__/${CHART_VERSION}/g" {} \;
-    - mkdocs build && cp -r ./site ./final/latest
+    - source ./venv/bin/activate && mkdocs build && cp -r ./site ./final/latest
     - cp -r ./swagger/latest ./final/latest/swagger
   cache:
     paths:
@@ -689,7 +689,7 @@ docs-1.4:
     - mkdir -p ./final
     - find .docs/ -type f -exec sed -i -e "s/__APPVERSION__/${APP_VERSION}/g" {} \;
     - find .docs/ -type f -exec sed -i -e "s/__CHARTVERSION__/${CHART_VERSION}/g" {} \;
-    - mkdocs build && cp -r ./site ./final/${APP_VERSION}
+    - source ./venv/bin/activate && mkdocs build && cp -r ./site ./final/${APP_VERSION}
     - cp -r ./swagger/${APP_VERSION} ./final/${APP_VERSION}/swagger
   cache:
     paths:
