@@ -45,17 +45,16 @@ configured as well via the `dbrepo.config.json` values file. The important links
 
 ```json title="dbrepo.config.json"
 {
-  "title": "Database Repository",
-  "version": "__APPVERSION___DOCKER-COMPOSE",
-  "logo": {
-    "path": "/my_logo.png"
-  },
-  "page": {
+    "title": "Database Repository",
+    "version": "__APPVERSION___DOCKER-COMPOSE",
+    "logo": {
+      "path": "/my_logo.png"
+    },
+    "page": {
     "information": {
       "links": []
-    }
-  },
-  ...
+    },
+    ...
 }
 ```
 
@@ -95,26 +94,32 @@ The response looks like this:
 
 ```json
 {
-  "fieldname": "file",
-  "originalname": "gps.csv",
-  "encoding": "7bit",
-  "mimetype": "text/csv",
-  "buffer": {
-    "type": "Buffer",
-    "data": [
-      34,
-      73,
-      ...
-    ]
-  },
-  "size": 130279,
-  "etag": "9d23e73f4ed9f7e5afc80e696db69ebb"
+    "fieldname": "file",
+    "originalname": "gps.csv",
+    "encoding": "7bit",
+    "mimetype": "text/csv",
+    "buffer": {
+        "type": "Buffer",
+        "data": [
+            34,
+            73,
+            ...
+        ]
+    },
+    "size": 130279,
+    "etag": "9d23e73f4ed9f7e5afc80e696db69ebb"
 }
 ```
 
 ## Limitations
 
 (none)
+
+!!! question "Do you miss functionality? Do these limitations affect you?"
+
+    We strongly encourage you to help us implement it as we are welcoming contributors to open-source software and get
+    in [contact](../contact) with us, we happily answer requests for collaboration with attached CV and your programming 
+    experience!
 
 ## Security
 

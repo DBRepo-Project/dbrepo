@@ -1,20 +1,17 @@
 package at.tuwien.config;
 
-import io.minio.BucketExistsArgs;
-import io.minio.MakeBucketArgs;
-import io.minio.MinioClient;
-import io.minio.UploadObjectArgs;
+import io.minio.*;
+import io.minio.errors.*;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 
 @Slf4j
 @Getter
@@ -35,6 +32,9 @@ public class S3Config {
 
     @Value("${fda.s3.exportBucket}")
     private String s3ExportBucket;
+
+    @Value("${fda.s3.staleSeconds}")
+    private Integer staleSeconds;
 
     @Bean
     public MinioClient minioClient() {
@@ -71,6 +71,18 @@ public class S3Config {
         } catch (Exception e) {
             log.error("Failed to check bucket {} existence", bucket);
             throw new IOException("Failed to check bucket " + bucket + "existence: " + e.getMessage());
+        }
+    }
+
+    public boolean objectExists(String bucket, String key) {
+        try {
+            final StatObjectResponse response = minioClient().statObject(StatObjectArgs.builder()
+                    .object(key)
+                    .bucket(bucket)
+                    .build());
+            return true;
+        } catch (Exception e) {
+            return false;
         }
     }
 

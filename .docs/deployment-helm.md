@@ -29,7 +29,7 @@ about values, etc.
 ## Limitations
 
 1. MariaDB Galera does not (yet) support XA-transactions required by the authentication service (=Keycloak). Therefore
-   only a single MariaDB pod can be deployed at once for the [auth database](../system-databases-auth).
+   only a single MariaDB pod can be deployed at once for the [auth database](../system-databases-authentication).
 
 !!! question "Do you miss functionality? Do these limitations affect you?"
 

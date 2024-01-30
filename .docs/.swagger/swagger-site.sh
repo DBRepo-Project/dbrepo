@@ -8,8 +8,8 @@ services[9099]=metadata
 services[3305]=sidecar
 
 # clean up
-echo "clean up ./dist ./site"
-rm -rf ./dist ./site
+echo "clean up ./site"
+rm -rf ./site
 
 # ensure target directories are present
 echo "ensure target directory ./site are present"
@@ -17,11 +17,11 @@ mkdir -p ./site
 
 # extract static site
 echo "extract static site .docs/.swagger/dist.tar.gz"
-tar xzf .docs/.swagger/dist.tar.gz
 for key in "${!services[@]}"; do
   mkdir -p ./site/${services[$key]}
-  echo "extract static site ./dist -> ./site/${services[$key]}"
-  cp -r ./dist/* ./site/${services[$key]}
-  echo "placing .docs/.swagger/api-${services[$key]}.yaml -> ./site/${services[$key]}/api.yaml"
+  echo "extract static site ./swagger-ui.html -> ./site/${services[$key]}"
+  cp .docs/.swagger/swagger-ui.html ./site/${services[$key]}/index.html
+  cp .docs/.swagger/custom.css ./site/${services[$key]}/custom.css
+  sed -i -e "s/__SERVICENAME__/${services[$key]^} Service/g" ./site/${services[$key]}/index.html
   cp ".docs/.swagger/api-${services[$key]}.yaml" "./site/${services[$key]}/api.yaml"
 done

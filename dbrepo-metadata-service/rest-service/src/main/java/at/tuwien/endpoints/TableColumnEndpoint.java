@@ -49,7 +49,7 @@ public class TableColumnEndpoint {
     @Transactional
     @PreAuthorize("hasAuthority('modify-table-column-semantics') or hasAuthority('modify-foreign-table-column-semantics')")
     @Observed(name = "dbr_semantics_column_save")
-    @Operation(summary = "Update a table column semantic mapping", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Update a table column semantic mapping", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Updated column semantics successfully",

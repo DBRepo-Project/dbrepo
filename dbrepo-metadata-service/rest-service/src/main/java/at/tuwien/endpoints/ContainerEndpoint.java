@@ -77,7 +77,7 @@ public class ContainerEndpoint {
     @Transactional
     @Observed(name = "dbr_container_create")
     @PreAuthorize("hasAuthority('create-container')")
-    @Operation(summary = "Create container", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Create container", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",
                     description = "Created a new container",
@@ -136,7 +136,7 @@ public class ContainerEndpoint {
     @Transactional
     @Observed(name = "dbr_container_delete")
     @PreAuthorize("hasAuthority('delete-container')")
-    @Operation(summary = "Delete some container", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Delete some container", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Deleted container successfully"),

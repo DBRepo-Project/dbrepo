@@ -17,7 +17,6 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 @ToString
 public class UserAttributesDto {
 
-    @JsonIgnore
     @org.springframework.data.annotation.Transient
     @JsonProperty("theme_dark")
     @Schema(example = "false")

@@ -19,6 +19,11 @@
             <artifactId>dbrepo-metadata-service-rest-service</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>at.tuwien</groupId>
+            <artifactId>dbrepo-metadata-service-services</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
     <build>

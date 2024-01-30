@@ -205,7 +205,8 @@ export default {
               this.$toast.success('Successfully imported data')
               this.$router.push(`/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}`)
             })
-            .catch(() => {
+            .catch((error) => {
+              this.$toast.error('Failed to import data', error)
               this.loading = false
             })
             .finally(() => {

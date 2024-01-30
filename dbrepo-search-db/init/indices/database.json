@@ -583,6 +583,9 @@
       "tables": {
         "type": "object",
         "properties": {
+          "avg_row_length": {
+            "type": "long"
+          },
           "columns": {
             "properties": {
               "auto_generated": {
@@ -723,6 +726,9 @@
           },
           "database_id": {
             "type": "keyword"
+          },
+          "data_length": {
+            "type": "long"
           },
           "description": {
             "type": "text"
@@ -938,6 +944,12 @@
           },
           "name": {
             "type": "keyword"
+          },
+          "num_rows": {
+            "type": "long"
+          },
+          "max_data_length": {
+            "type": "long"
           },
           "owner": {
             "type": "object",

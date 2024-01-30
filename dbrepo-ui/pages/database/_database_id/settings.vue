@@ -4,6 +4,48 @@
     <v-progress-linear v-if="loading" />
     <v-tabs-items v-model="tab">
       <v-tab-item>
+        <v-card v-if="canModifyImage" flat tile>
+          <v-card-title>Image</v-card-title>
+          <v-card-text>
+            <v-row dense>
+              <v-col>
+                The image will be displayed in a box with maximum dimensions 200x200 pixels.
+              </v-col>
+            </v-row>
+            <v-row dense>
+              <v-col sm="6">
+                <v-file-input
+                  v-model="fileModel"
+                  accept="image/*"
+                  hint="max. 1MB file size"
+                  persistent-hint
+                  clearable
+                  :loading="loadingUpload"
+                  :show-size="1000"
+                  counter
+                  label="Teaser Image"
+                  @change="uploadFile" />
+              </v-col>
+            </v-row>
+            <v-btn
+              small
+              class="black--text mt-4"
+              :loading="loadingImage"
+              @click="updateDatabaseImage">
+              Modify Image
+            </v-btn>
+            <v-btn
+              v-if="database.image"
+              small
+              color="warning"
+              class="black--text mt-4"
+              :loading="loadingDeleteImage"
+              @click="removeDatabaseImage">
+              Remove Image
+            </v-btn>
+          </v-card-text>
+        </v-card>
+        <v-divider />
         <v-card v-if="isOwner" flat tile>
           <v-card-title>Access</v-card-title>
           <v-data-table
@@ -100,6 +142,7 @@ import DatabaseToolbar from '@/components/database/DatabaseToolbar.vue'
 import EditAccess from '@/components/dialogs/EditAccess.vue'
 import DatabaseService from '@/api/database.service'
 import UserService from '@/api/user.service'
+import UploadService from '@/api/upload.service'
 
 export default {
   components: {
@@ -114,6 +157,10 @@ export default {
       accessType: null,
       users: [],
       loading: false,
+      loadingUpload: false,
+      loadingImage: false,
+      loadingDeleteImage: false,
+      fileModel: null,
       loadingUsers: false,
       editAccessDialog: false,
       editVisibilityDialog: false,
@@ -122,6 +169,9 @@ export default {
       },
       modifyOwner: {
         id: null
+      },
+      modifyImage: {
+        key: null
       },
       visibility: [
         { text: 'Public', value: true },
@@ -214,6 +264,12 @@ export default {
         return false
       }
       return this.roles.includes('create-database-access')
+    },
+    canModifyImage () {
+      if (!this.isOwner) {
+        return false
+      }
+      return this.roles.includes('modify-database-image')
     }
   },
   watch: {
@@ -252,6 +308,50 @@ export default {
         })
         .finally(() => {
           this.loading = false
+        })
+    },
+    uploadFile () {
+      this.loadingUpload = true
+      UploadService.upload(this.fileModel)
+        .then((metadata) => {
+          console.debug('uploaded image', metadata)
+          this.modifyImage.key = metadata.s3key
+          this.loadingUpload = false
+        })
+        .finally(() => {
+          this.loadingUpload = false
+        })
+    },
+    updateDatabaseImage () {
+      this.loadingImage = true
+      DatabaseService.modifyImage(this.$route.params.database_id, this.modifyImage)
+        .then(() => {
+          this.$toast.success('Updated image successfully')
+          this.$store.dispatch('reloadDatabase')
+          this.loadingImage = false
+        })
+        .catch(() => {
+          this.$toast.error('Failed to modify image')
+          this.loadingImage = false
+        })
+        .finally(() => {
+          this.loadingImage = false
+        })
+    },
+    removeDatabaseImage () {
+      this.loadingDeleteImage = true
+      DatabaseService.modifyImage(this.$route.params.database_id, { key: null })
+        .then(() => {
+          this.$toast.success('Removed image successfully')
+          this.$store.dispatch('reloadDatabase')
+          this.loadingDeleteImage = false
+        })
+        .catch(() => {
+          this.$toast.error('Failed to delete image')
+          this.loadingDeleteImage = false
+        })
+        .finally(() => {
+          this.loadingDeleteImage = false
         })
     },
     updateDatabaseOwner () {

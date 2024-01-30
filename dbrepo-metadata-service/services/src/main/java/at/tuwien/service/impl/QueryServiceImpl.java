@@ -7,7 +7,6 @@ import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.TableCsvDeleteDto;
 import at.tuwien.api.database.table.TableCsvDto;
-import at.tuwien.config.S3Config;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.View;
@@ -18,26 +17,15 @@ import at.tuwien.gateway.DataDbSidecarGateway;
 import at.tuwien.mapper.QueryMapper;
 import at.tuwien.mapper.ViewMapper;
 import at.tuwien.querystore.Query;
-import at.tuwien.service.DatabaseService;
-import at.tuwien.service.QueryService;
-import at.tuwien.service.StoreService;
-import at.tuwien.service.TableService;
+import at.tuwien.service.*;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
-import io.minio.GetObjectArgs;
-import io.minio.MinioClient;
-import io.minio.errors.*;
 import lombok.extern.log4j.Log4j2;
 import net.sf.jsqlparser.JSQLParserException;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -51,24 +39,22 @@ import java.util.List;
 @Service
 public class QueryServiceImpl extends HibernateConnector implements QueryService {
 
-    private final S3Config s3Config;
     private final ViewMapper viewMapper;
-    private final MinioClient minioClient;
     private final QueryMapper queryMapper;
     private final StoreService storeService;
     private final TableService tableService;
+    private final StorageService storageService;
     private final DatabaseService databaseService;
     private final DataDbSidecarGateway dataDbSidecarGateway;
 
     @Autowired
-    public QueryServiceImpl(S3Config s3Config, ViewMapper viewMapper, MinioClient minioClient, QueryMapper queryMapper,
-                            TableService tableService, DatabaseService databaseService, StoreService storeService,
+    public QueryServiceImpl(ViewMapper viewMapper, QueryMapper queryMapper, TableService tableService,
+                            StorageService storageService, DatabaseService databaseService, StoreService storeService,
                             DataDbSidecarGateway dataDbSidecarGateway) {
-        this.s3Config = s3Config;
         this.viewMapper = viewMapper;
-        this.minioClient = minioClient;
         this.queryMapper = queryMapper;
         this.tableService = tableService;
+        this.storageService = storageService;
         this.storeService = storeService;
         this.databaseService = databaseService;
         this.dataDbSidecarGateway = dataDbSidecarGateway;
@@ -242,7 +228,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     @Transactional(readOnly = true)
     public ExportResource tableFindAll(Long databaseId, Long tableId, Instant timestamp, Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, FileStorageException, QueryMalformedException,
-            DataDbSidecarException {
+            DataDbSidecarException, DataProcessingException {
         final String filename = RandomStringUtils.randomAlphabetic(40) + ".csv";
         /* find */
         final Database database = databaseService.find(databaseId);
@@ -264,37 +250,25 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     }
 
     private ExportResource retrieveBlobAsResource(Container container, String filename) throws DataDbSidecarException,
-            FileStorageException {
+            FileStorageException, DataProcessingException {
         /* upload from sidecar into blob storage */
         dataDbSidecarGateway.exportFile(container.getSidecarHost(), container.getSidecarPort(), filename);
         /* export file from blob storage */
-        try {
-            final InputStream stream = minioClient.getObject(GetObjectArgs.builder().bucket(s3Config.getS3ExportBucket()).object(filename).build());
-            log.debug("found object with key {} in bucket {}", filename, s3Config.getS3ExportBucket());
-            return ExportResource.builder()
-                    .resource(new InputStreamResource(stream))
-                    .filename(filename)
-                    .build();
-        } catch (ServerException | InsufficientDataException | ErrorResponseException | IOException |
-                 NoSuchAlgorithmException | InvalidKeyException | InvalidResponseException | XmlParserException |
-                 InternalException e) {
-            log.error("Failed to find object {} in bucket {}: {}", filename, s3Config.getS3ExportBucket(), e.getMessage());
-            throw new FileStorageException("Failed to find object " + filename + " in bucket " + s3Config.getS3ExportBucket() + ": " + e.getMessage());
-        }
+        return storageService.getResource(filename);
     }
 
     @Override
     @Transactional(readOnly = true)
     public ExportResource findOne(Long databaseId, Long queryId, Principal principal)
             throws DatabaseNotFoundException, ImageNotSupportedException, FileStorageException, QueryStoreException,
-            QueryNotFoundException, QueryMalformedException, DataDbSidecarException {
+            QueryNotFoundException, QueryMalformedException, DataDbSidecarException, DataProcessingException {
         return findOne(databaseId, queryId, principal, RandomStringUtils.randomAlphabetic(40) + ".csv");
     }
 
     @Transactional(readOnly = true)
     public ExportResource findOne(Long databaseId, Long queryId, Principal principal, String filename)
             throws DatabaseNotFoundException, ImageNotSupportedException, FileStorageException, QueryStoreException,
-            QueryNotFoundException, QueryMalformedException, DataDbSidecarException {
+            QueryNotFoundException, QueryMalformedException, DataDbSidecarException, DataProcessingException {
         /* find */
         final Database database = databaseService.find(databaseId);
         final Query query = storeService.findOne(databaseId, queryId, principal);
@@ -372,7 +346,8 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
     @Override
     @Transactional
     public void insert(Long databaseId, Long tableId, ImportDto data, Principal principal)
-            throws TableMalformedException, DatabaseNotFoundException, TableNotFoundException, DataDbSidecarException {
+            throws TableMalformedException, DatabaseNotFoundException, TableNotFoundException, DataDbSidecarException,
+            DataProcessingException {
         /* find */
         final Database database = databaseService.find(databaseId);
         final Table table = tableService.find(databaseId, tableId);

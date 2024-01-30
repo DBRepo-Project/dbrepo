@@ -25,6 +25,18 @@ mvn -f ./dbrepo-metadata-service/pom.xml clean install -DskipTests
 
 We practice test-driven development and require contributors to test their code with at least 90% code coverage.
 
+## Code Documentation
+
+Before creating a merge request, make sure you:
+
+- [x] Generate the [Swagger Docs](#swagger-docs) endpoint documentation
+
+### Swagger Docs
+
+```shell
+bash .swagger/swagger-generate.sh
+```
+
 ## Code Versioning
 
 ### Branching Strategy

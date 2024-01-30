@@ -176,7 +176,7 @@ public class IdentifierServiceImpl implements IdentifierService {
             }
             case VIEW -> {
                 log.debug("identifier type: view with id {} and database with id {}", data.getViewId(), data.getDatabaseId());
-                final View view = viewService.findById(data.getViewId());
+                final View view = viewService.findById(data.getDatabaseId(), data.getViewId());
                 entity.setViewId(view.getId());
                 entity.setQuery(view.getQuery());
                 entity.setQueryNormalized(view.getQuery());
@@ -245,7 +245,8 @@ public class IdentifierServiceImpl implements IdentifierService {
     @Transactional(readOnly = true)
     public InputStreamResource exportResource(Long identifierId, Principal principal) throws IdentifierNotFoundException,
             QueryNotFoundException, IdentifierRequestException, QueryStoreException, QueryMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException, DataDbSidecarException {
+            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException, DataDbSidecarException,
+            DataProcessingException {
         /* check */
         final Identifier identifier = find(identifierId);
         if (identifier.getType().equals(IdentifierType.DATABASE)) {

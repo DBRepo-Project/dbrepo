@@ -1,6 +1,6 @@
 {
   "title": "Database Repository",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "ssl": {
     "force": false
   },
@@ -33,6 +33,11 @@
       "id": "seaweedfsadmin",
       "secret": "seaweedfsadmin"
     }
+  },
+  "upload": {
+    "endpoint": "localhost",
+    "port": 1080,
+    "useSsl": false
   },
   "database": {
     "connection": {

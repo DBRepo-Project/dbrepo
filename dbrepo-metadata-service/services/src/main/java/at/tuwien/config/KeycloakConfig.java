@@ -21,6 +21,9 @@ public class KeycloakConfig {
     @Value("${fda.keycloak.password}")
     private String keycloakPassword;
 
+    @Value("${fda.keycloak.clientSecret}")
+    private String keycloakClientSecret;
+
     @Bean("keycloakRestTemplate")
     public RestTemplate brokerRestTemplate() {
         final RestTemplate restTemplate = new RestTemplate();
