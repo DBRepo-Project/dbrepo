@@ -13,7 +13,7 @@
           v-if="!isUpdate"
           class="mb-1"
           :loading="loading"
-          :disabled="!formValid || loading"
+          :disabled="!formValid || !validPublicationMonth || !validPublicationDay || loading"
           color="primary"
           @click="save">
           <v-icon left>mdi-content-save-outline</v-icon> Create PID
@@ -286,6 +286,7 @@
                 v-model.number="identifier.publication_day"
                 type="number"
                 label="Publication day"
+                :rules="[validPublicationDay || $t('Invalid day')]"
                 clearable />
             </v-col>
             <v-col cols="2">
@@ -294,6 +295,7 @@
                 v-model.number="identifier.publication_month"
                 type="number"
                 label="Publication month"
+                :rules="[validPublicationMonth || $t('Invalid month')]"
                 clearable />
             </v-col>
             <v-col cols="2">
@@ -649,6 +651,20 @@ export default {
         return 'Table'
       }
       return ''
+    },
+    validPublicationDay () {
+      const day = this.identifier.publication_day
+      if (day === null) {
+        return true
+      }
+      return day >= 1 && day <= 31
+    },
+    validPublicationMonth () {
+      const month = this.identifier.publication_month
+      if (month === null) {
+        return true
+      }
+      return month >= 1 && month <= 12
     }
   },
   watch: {

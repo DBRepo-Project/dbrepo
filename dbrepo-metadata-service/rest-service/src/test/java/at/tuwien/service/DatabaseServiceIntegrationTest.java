@@ -2,6 +2,7 @@ package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.annotations.MockAmqp;
+import at.tuwien.annotations.MockListeners;
 import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.api.database.*;
 import at.tuwien.config.MariaDbConfig;
@@ -47,6 +48,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 @MockAmqp
+@MockListeners
 @MockOpensearch
 public class DatabaseServiceIntegrationTest extends BaseUnitTest {
 
@@ -339,7 +341,7 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void obtainMetadata_tableWithoutVersioning_succeeds() throws DatabaseUnchangedException, QueryMalformedException,
+    public void obtainMetadata_tableWithoutVersioning_succeeds() throws QueryMalformedException,
             DatabaseNotFoundException, ColumnParseException {
 
         /* test */
@@ -358,8 +360,8 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void obtainMetadata_tableWithVersioning_succeeds() throws DatabaseUnchangedException, QueryMalformedException,
-            DatabaseNotFoundException, ColumnParseException {
+    public void obtainMetadata_tableWithVersioning_succeeds() throws QueryMalformedException, DatabaseNotFoundException,
+            ColumnParseException {
 
         /* test */
         final Database response = databaseService.obtainMetadata(DATABASE_1_ID);
@@ -378,8 +380,8 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void obtainMetadata_view_succeeds() throws DatabaseUnchangedException, QueryMalformedException,
-            DatabaseNotFoundException, ColumnParseException {
+    public void obtainMetadata_view_succeeds() throws QueryMalformedException, DatabaseNotFoundException,
+            ColumnParseException {
 
         /* test */
         final Database response = databaseService.obtainMetadata(DATABASE_1_ID);

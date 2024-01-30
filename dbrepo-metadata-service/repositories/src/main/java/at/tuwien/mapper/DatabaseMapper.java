@@ -117,7 +117,7 @@ public interface DatabaseMapper {
     default PreparedStatement databaseToDatabaseMetadata(Connection connection, Database database) throws QueryMalformedException {
         final StringBuilder statement = new StringBuilder("SELECT t.`TABLE_NAME`, t.`TABLE_TYPE`, t.`TABLE_ROWS`, t.`AVG_ROW_LENGTH`, t.`DATA_LENGTH`, t.`MAX_DATA_LENGTH`, COALESCE(t.`CREATE_TIME`, NOW()) as `CREATE_TIME`, t.`UPDATE_TIME`, v.`VIEW_DEFINITION` FROM information_schema.TABLES t LEFT JOIN information_schema.VIEWS v ON t.`TABLE_NAME` = v.`TABLE_NAME` WHERE t.`TABLE_SCHEMA` = '")
                 .append(database.getInternalName())
-                .append("' AND t.`TABLE_TYPE` IN ('BASE TABLE', 'SYSTEM VERSIONED', 'VIEW') AND t.`TABLE_NAME` NOT IN ('qs_queries', '_tmp') AND t.`TABLE_NAME` NOT LIKE 'hs_%'");
+                .append("' AND t.`TABLE_TYPE` IN ('BASE TABLE', 'SYSTEM VERSIONED', 'VIEW') AND t.`TABLE_NAME` NOT IN ('qs_queries', '_tmp') AND t.`TABLE_NAME` NOT LIKE 'hs_%' AND t.`TABLE_NAME` NOT LIKE '%_temporary'");
         log.trace("statement={}", statement);
         try {
             return connection.prepareStatement(statement.toString());

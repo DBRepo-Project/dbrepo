@@ -24,6 +24,7 @@ import at.tuwien.api.database.table.constraints.unique.UniqueDto;
 import at.tuwien.api.identifier.*;
 import at.tuwien.api.keycloak.CredentialDto;
 import at.tuwien.api.keycloak.CredentialTypeDto;
+import at.tuwien.api.keycloak.TokenDto;
 import at.tuwien.api.keycloak.UserCreateDto;
 import at.tuwien.api.maintenance.BannerMessageCreateDto;
 import at.tuwien.api.maintenance.BannerMessageTypeDto;
@@ -142,7 +143,7 @@ public abstract class BaseTest {
 
     public final static String[] DEFAULT_DATABASE_HANDLING = new String[]{"default-database-handling",
             "update-database-access", "modify-database-visibility", "create-database", "modify-database-owner",
-            "delete-database-access", "check-database-access", "list-databases",
+            "delete-database-access", "check-database-access", "list-databases", "modify-database-image",
             "create-database-access", "find-database", "import-database-data"};
 
     public final static String[] ESCALATED_DATABASE_HANDLING = new String[]{"escalated-database-handling",
@@ -228,6 +229,11 @@ public abstract class BaseTest {
     public final static UUID ROLE_DEFAULT_RESEARCHER_ROLES_ID = UUID.fromString("c74cbbe7-3ab1-4472-9211-cc9045672682");
     public final static String ROLE_DEFAULT_RESEARCHER_ROLES_NAME = "default-researcher-roles";
     public final static UUID ROLE_DEFAULT_RESEARCHER_ROLES_REALM_ID = REALM_DBREPO_ID;
+
+    public final static TokenDto TOKEN_DTO = TokenDto.builder()
+            .accessToken("ey.yee.skrr")
+            .scope("openid")
+            .build();
 
     public final static String USER_BROKER_USERNAME = "guest";
     public final static String USER_BROKER_PASSWORD = "guest";
@@ -1346,6 +1352,7 @@ public abstract class BaseTest {
             .name(TABLE_1_NAME)
             .queueName(TABLE_1_QUEUE_NAME)
             .routingKey(TABLE_1_ROUTING_KEY)
+            .identifiers(List.of())
             .columns(List.of() /* TABLE_1_COLUMNS */)
             .constraints(null /* TABLE_1_CONSTRAINTS */)
             .createdBy(USER_1_ID)
@@ -1365,6 +1372,7 @@ public abstract class BaseTest {
             .name(TABLE_1_NAME)
             .queueName(TABLE_1_QUEUE_NAME)
             .routingKey(TABLE_1_ROUTING_KEY)
+            .identifiers(List.of())
             .columns(List.of() /* TABLE_1_COLUMNS */)
             .constraints(null /* TABLE_1_CONSTRAINTS */)
             .createdBy(USER_1_ID)

@@ -90,7 +90,7 @@ public class OntologyEndpoint {
     @PostMapping
     @PreAuthorize("hasAuthority('create-ontology')")
     @Observed(name = "dbr_ontologies_create")
-    @Operation(summary = "Register a new ontology", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Register a new ontology", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",
                     description = "Registered ontology successfully",
@@ -110,7 +110,7 @@ public class OntologyEndpoint {
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('update-ontology')")
     @Observed(name = "dbr_ontologies_update")
-    @Operation(summary = "Update an ontology", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Update an ontology", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Updated ontology successfully",
@@ -136,7 +136,7 @@ public class OntologyEndpoint {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('delete-ontology')")
     @Observed(name = "dbr_ontologies_delete")
-    @Operation(summary = "Delete an ontology", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Delete an ontology", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Deleted ontology successfully",
@@ -158,7 +158,7 @@ public class OntologyEndpoint {
     @GetMapping("/{id}/entity")
     @PreAuthorize("hasAuthority('execute-semantic-query')")
     @Observed(name = "dbr_ontologies_entities_find")
-    @Operation(summary = "Find entities", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Find entities", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Found entities",

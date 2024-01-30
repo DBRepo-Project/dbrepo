@@ -174,11 +174,9 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     @Transactional
-    public void create_subsetRelatedIdentifiers_succeeds()
-            throws DatabaseNotFoundException, UserNotFoundException, IdentifierAlreadyExistsException,
-            QueryNotFoundException, IdentifierPublishingNotAllowedException, RemoteUnavailableException,
-            IdentifierRequestException, ViewNotFoundException, QueryStoreException, DatabaseConnectionException,
-            ImageNotSupportedException, IdentifierNotFoundException {
+    public void create_subsetRelatedIdentifiers_succeeds() throws DatabaseNotFoundException, UserNotFoundException,
+            QueryNotFoundException, RemoteUnavailableException, IdentifierRequestException, ViewNotFoundException,
+            QueryStoreException, ImageNotSupportedException {
 
         /* mock */
         when(restTemplate.exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(QueryDto.class)))

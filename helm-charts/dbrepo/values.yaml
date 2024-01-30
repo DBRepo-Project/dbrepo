@@ -6,7 +6,7 @@ strategyType: RollingUpdate
 
 clusterDomain: cluster.local
 
-metadata-db:
+metadataDb:
   fullnameOverride: metadata-db
   image:
     debug: false
@@ -18,7 +18,7 @@ metadata-db:
   db:
     name: fda
   metrics:
-    enabled: true
+    enabled: false
   galera:
     mariabackup:
       user: mariabackup
@@ -27,7 +27,7 @@ metadata-db:
   service:
     type: ClusterIP
     annotations: { }
-    #loadBalancerIP: 1.2.3.4
+    loadBalancerIP: ""
     loadBalancerSourceRanges: [ ]
   persistence:
     enabled: false
@@ -35,7 +35,7 @@ metadata-db:
     storageClass: default
   replicaCount: 3 # uneven 3,5,7
 
-auth-service:
+authService:
   fullnameOverride: auth-service
   image:
     debug: false
@@ -71,7 +71,7 @@ auth-service:
       mountPath: /opt/bitnami/keycloak/data/import
   replicaCount: 2
 
-auth-db:
+authDb:
   fullnameOverride: auth-db
   host: auth-db-pgpool
   port: 5432
@@ -89,14 +89,14 @@ auth-db:
   service:
     type: ClusterIP
     annotations: { }
-    #loadBalancerIP: 1.2.3.4
+    loadBalancerIP: ""
     loadBalancerSourceRanges: [ ]
   persistence:
     enabled: false
     size: 10Gi
     storageClass: default
 
-data-db:
+dataDb:
   fullnameOverride: data-db
   image:
     debug: false
@@ -112,7 +112,7 @@ data-db:
       password: mariabackup
   sidecars:
     - name: sidecar
-      image: s210.dl.hpc.tuwien.ac.at/dbrepo/data-db-sidecar:latest
+      image: s210.dl.hpc.tuwien.ac.at/dbrepo/data-db-sidecar:1.4.1
       imagePullPolicy: Always
       securityContext:
         runAsUser: 1001
@@ -156,7 +156,7 @@ data-db:
     sharedStorageClass: default
   replicaCount: 3 # uneven
 
-search-db:
+searchDb:
   fullnameOverride: search-db
   host: search-db
   port: 9200
@@ -232,12 +232,12 @@ search-db:
                 ".opendistro-asynchronous-search-response*",
               ]
 
-search-db-dashboard:
+searchDbDashboard:
   fullnameOverride: search-db-dashboard
   opensearchHosts: http://search-db:9200
   extraInitContainers:
     - name: init
-      image: s210.dl.hpc.tuwien.ac.at/dbrepo/search-db-init:latest
+      image: s210.dl.hpc.tuwien.ac.at/dbrepo/search-db-init:1.4.1
       imagePullPolicy: Always
       env:
         - name: OPENSEARCH_HOST
@@ -267,7 +267,7 @@ uploadService:
     tag: v1.12
   replicaCount: 2
 
-broker-service:
+brokerService:
   fullnameOverride: broker-service
   image:
     debug: true
@@ -344,7 +344,7 @@ analyseService:
   image:
     registry: s210.dl.hpc.tuwien.ac.at
     repository: dbrepo/analyse-service
-    tag: "latest"
+    tag: "1.4.1"
     pullPolicy: Always
     debug: false
   replicaCount: 2
@@ -354,7 +354,7 @@ metadataService:
   image:
     registry: s210.dl.hpc.tuwien.ac.at
     repository: dbrepo/metadata-service
-    tag: "latest"
+    tag: "1.4.1"
     pullPolicy: Always
     debug: false
   adminEmail: noreply@example.com
@@ -369,6 +369,7 @@ metadataService:
     username: ""
     password: ""
   rates:
+    deleteStaleFiles: 60
     mirror: 60
     obtainMetadata: 60
     deleteStaleQueries: 60
@@ -379,7 +380,7 @@ dataService:
   image:
     registry: s210.dl.hpc.tuwien.ac.at
     repository: dbrepo/data-service
-    tag: "latest"
+    tag: "1.4.1"
     pullPolicy: Always
     debug: false
   jwt:
@@ -394,12 +395,12 @@ searchService:
   image:
     registry: s210.dl.hpc.tuwien.ac.at
     repository: dbrepo/search-service
-    tag: "latest"
+    tag: "1.4.1"
     pullPolicy: Always
     debug: false
   replicaCount: 2
 
-storage-service:
+storageService:
   fullnameOverride: storage-service
   master:
     enabled: true
@@ -430,7 +431,7 @@ storage-service:
       username: seaweedfsadmin
       password: seaweedfsadmin
 
-log-service:
+logService:
   fullnameOverride: log-service
   config:
     outputs: |
@@ -468,24 +469,8 @@ ui:
   image:
     registry: s210.dl.hpc.tuwien.ac.at
     repository: dbrepo/ui
-    tag: "latest"
+    tag: "1.4.1"
     pullPolicy: Always
-  logo: /logo.svg
-  icon: /favicon.ico
-  appleTouchIcon: /apple-touch-logo.png
-  version: 1.4.0
-  title: Database Repository
-  datacite:
-    url: https://doi.org
-  keycloak:
-    url: /api/auth/admin/
-  broker:
-    url: /admin/broker/
-    host: broker-service
-    extraInfo: ""
-    ports:
-      - 5672
-  forceSsl: false
   replicaCount: 2
   extraVolumes: [ ]
   #  - name: images-map

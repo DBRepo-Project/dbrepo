@@ -197,7 +197,7 @@ public class PrometheusEndpointMvcTest extends BaseUnitTest {
     }
 
     @Test
-    @WithMockUser(username = USER_1_USERNAME, authorities = {"create-database", "modify-database-visibility", "modify-database-owner", "delete-database"})
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"create-database", "modify-database-visibility", "modify-database-owner", "delete-database", "modify-database-image"})
     public void prometheusDatabaseEndpoint_succeeds() {
 
         /* mock */
@@ -231,9 +231,14 @@ public class PrometheusEndpointMvcTest extends BaseUnitTest {
         } catch (Exception e) {
             /* ignore */
         }
+        try {
+            databaseEndpoint.modifyImage(DATABASE_1_ID, DatabaseModifyImageDto.builder().build(), USER_1_PRINCIPAL);
+        } catch (Exception e) {
+            /* ignore */
+        }
 
         /* test */
-        for (String metric : List.of("dbr_database_findall", "dbr_database_count", "dbr_database_create", "dbr_database_visibility", "dbr_database_transfer", "dbr_database_find")) {
+        for (String metric : List.of("dbr_database_findall", "dbr_database_count", "dbr_database_create", "dbr_database_visibility", "dbr_database_transfer", "dbr_database_find", "dbr_database_image")) {
             assertThat(registry)
                     .hasObservationWithNameEqualTo(metric);
         }

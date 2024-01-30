@@ -95,6 +95,7 @@ CREATE TABLE IF NOT EXISTS `mdb_databases`
     description    text,
     engine         character varying(20),
     is_public      boolean                NOT NULL DEFAULT TRUE,
+    image          longblob,
     created_by     character varying(36),
     owned_by       character varying(36),
     contact_person character varying(36),

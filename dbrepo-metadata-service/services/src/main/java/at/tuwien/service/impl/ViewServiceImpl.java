@@ -53,15 +53,15 @@ public class ViewServiceImpl extends HibernateConnector implements ViewService {
     }
 
     @Override
-    public View findById(Long id) throws ViewNotFoundException, DatabaseNotFoundException {
-        final Optional<View> optional = databaseService.find(id)
+    public View findById(Long databaseId, Long viewId) throws ViewNotFoundException, DatabaseNotFoundException {
+        final Optional<View> optional = databaseService.find(databaseId)
                 .getViews()
                 .stream()
-                .filter(v -> v.getId().equals(id))
+                .filter(v -> v.getId().equals(viewId))
                 .findFirst();
         if (optional.isEmpty()) {
-            log.error("Failed to find view with id {} in metadata database", id);
-            throw new ViewNotFoundException("Failed to find view with id " + id + " in metadata database");
+            log.error("Failed to find view with id {} in metadata database", viewId);
+            throw new ViewNotFoundException("Failed to find view with id " + viewId + " in metadata database");
         }
         return optional.get();
     }

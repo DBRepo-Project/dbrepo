@@ -11,19 +11,13 @@ author: Martin Weise
     Image: [`dbrepo/authentication-service:__APPVERSION__`](https://hub.docker.com/r/dbrepo/authentication-service)
 
     * Ports: 8080/tcp
-    * Health: `http://<hostname>:8080/api/auth/health`
-    * Prometheus: `http://<hostname>:8080/api/auth/metrics`
     * UI: `http://<hostname>/api/auth/admin/`
 
 ## Overview
 
-From version 1.2 onwards we use Keycloak for authentication for managing a part of the user identity and deprecated the
-Spring Boot application instead. Going forward, the authentication will be 
-through [Keycloak by RedHat](https://quay.io/repository/keycloak/keycloak?tab=info).
-
-By default, users are created using the [UI](../system-other-ui) and the sign-up page in the UI. A new user is also
-created in the UI creates a new user in the [Auth Database](../system-databases-auth), consequently a part of the 
-user identity is managed by Keycloak.
+By default, users are created using the [User Interface](../system-other-ui) and the sign-up page in the User Interface.
+This creates a new user in the [Authentication Database](../system-databases-authentication), the user identity is then managed by the
+Authentication Service.
 
 ## Groups
 
@@ -203,6 +197,7 @@ public ResponseEntity<DatabaseBriefDto> create(@NotNull Long containerId,
 
 * No support for sending e-mails through Keycloak by default.
 * No support for temporary passwords.
+* No support for adding identifies in Keycloak directly.
 * No support for multi-factor authentication.
 
 !!! question "Do you miss functionality? Do these limitations affect you?"

@@ -102,7 +102,7 @@ public class PersistenceEndpoint {
                                   @NotNull Principal principal) throws IdentifierNotFoundException,
             QueryNotFoundException, IdentifierRequestException, UserNotFoundException, QueryStoreException,
             TableMalformedException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException,
-            ImageNotSupportedException, FileStorageException, DataDbSidecarException {
+            ImageNotSupportedException, FileStorageException, DataDbSidecarException, DataProcessingException {
         log.debug("endpoint find identifier, pid={}, accept={}", pid, accept);
         final Identifier identifier = identifierService.find(pid);
         log.info("Found persistent identifier with id {}", identifier.getId());
@@ -163,7 +163,7 @@ public class PersistenceEndpoint {
     @Transactional
     @Observed(name = "dbr_pid_delete")
     @PreAuthorize("hasAuthority('delete-identifier')")
-    @Operation(summary = "Delete some identifier", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Delete some identifier", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Deleted identifier"),

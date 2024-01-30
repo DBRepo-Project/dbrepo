@@ -25,13 +25,15 @@ author: Martin Weise
 By default, only one Data Database is deployed. You can deploy multiple (different) Data Database instances and make
 them available in the repository as follows:
 
-```console
-curl \
-   -sSL \
-   http://<hostname>/api/container \
-   -X POST \
-   -d '{"name": "Data Database 2", "imageId": 1, "host": "example.com", "port": 3306, "privilegedUsername": "root", "privilegedPassword": "s3cr3t" }'
-```
+=== "Terminal"
+
+    ```shell
+    curl \
+       -sSL \
+       http://<hostname>/api/container \
+       -X POST \
+       -d '{"name": "Data Database 2", "imageId": 1, "host": "example.com", "port": 3306, "privilegedUsername": "root", "privilegedPassword": "s3cr3t" }'
+    ```
 
 ### Settings
 
@@ -71,23 +73,27 @@ natively.
 Export all databases with `--skip-lock-tables` option for MariaDB Galera clusters as it is not supported currently by
 MariaDB Galera.
 
-```console
-mariadb \
-    -u <privilegedUsername> \
-    -p<privilegedPassword> \
-    --complete-insert \
-    --skip-lock-tables \
-    --skip-add-locks \
-    --all-databases > dump.sql
-```
+=== "Terminal"
+
+    ```shell
+    mariadb \
+        -u <privilegedUsername> \
+        -p<privilegedPassword> \
+        --complete-insert \
+        --skip-lock-tables \
+        --skip-add-locks \
+        --all-databases > dump.sql
+    ```
 
 ### Restore
 
-```console
-mariadb \
-    -u <privilegedUsername> \
-    -p<privilegedPassword> < dump.sql
-```
+=== "Terminal"
+
+    ```shell
+    mariadb \
+        -u <privilegedUsername> \
+        -p<privilegedPassword> < dump.sql
+    ```
 
 ## Limitations
 

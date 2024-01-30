@@ -5,7 +5,6 @@ import at.tuwien.ExportResource;
 import at.tuwien.annotations.MockAmqp;
 import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.entities.database.Database;
-import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.exception.*;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.QueryService;
@@ -28,7 +27,6 @@ import java.io.IOException;
 import java.security.Principal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -55,28 +53,28 @@ public class ExportEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            export_generic(DATABASE_1_ID, TABLE_1_ID, DATABASE_1, null, null, null, null);
+            export_generic(DATABASE_1_ID, TABLE_1_ID, DATABASE_1, null, null);
         });
     }
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"export-table-data"})
-    public void export_publicHasRoleNoAccess_succeeds() throws TableNotFoundException, DatabaseConnectionException,
-            TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
-            PaginationException, NotAllowedException, QueryMalformedException, UserNotFoundException, IOException {
+    public void export_publicHasRoleNoAccess_succeeds() throws TableNotFoundException, NotAllowedException,
+            QueryMalformedException, DatabaseNotFoundException, IOException, FileStorageException,
+            DataProcessingException {
 
         /* test */
-        export_generic(DATABASE_1_ID, TABLE_1_ID, DATABASE_1, null, USER_1_PRINCIPAL, USER_1_ID, null);
+        export_generic(DATABASE_1_ID, TABLE_1_ID, DATABASE_1, null, USER_1_PRINCIPAL);
     }
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"export-table-data"})
-    public void export_publicHasRoleReadAccess_succeeds() throws TableNotFoundException, DatabaseConnectionException,
-            TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
-            PaginationException, NotAllowedException, QueryMalformedException, UserNotFoundException, IOException {
+    public void export_publicHasRoleReadAccess_succeeds() throws TableNotFoundException, NotAllowedException,
+            QueryMalformedException, DatabaseNotFoundException, IOException, FileStorageException,
+            DataProcessingException {
 
         /* test */
-        export_generic(DATABASE_1_ID, TABLE_1_ID, DATABASE_1, null, USER_1_PRINCIPAL, USER_1_ID, DATABASE_1_USER_1_READ_ACCESS);
+        export_generic(DATABASE_1_ID, TABLE_1_ID, DATABASE_1, null, USER_1_PRINCIPAL);
     }
 
     @Test
@@ -86,7 +84,7 @@ public class ExportEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            export_generic(DATABASE_1_ID, TABLE_1_ID, DATABASE_1, timestamp, null, null, null);
+            export_generic(DATABASE_1_ID, TABLE_1_ID, DATABASE_1, timestamp, null);
         });
     }
 
@@ -96,7 +94,7 @@ public class ExportEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            export_generic(DATABASE_1_ID, TABLE_1_ID, DATABASE_1, timestamp, null, null, null);
+            export_generic(DATABASE_1_ID, TABLE_1_ID, DATABASE_1, timestamp, null);
         });
     }
 
@@ -110,50 +108,50 @@ public class ExportEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            export_generic(DATABASE_2_ID, TABLE_1_ID, DATABASE_2, null, null, null, null);
+            export_generic(DATABASE_2_ID, TABLE_1_ID, DATABASE_2, null, null);
         });
     }
 
     @Test
     @WithMockUser(username = USER_2_USERNAME, authorities = {"export-table-data"})
-    public void export_privateHasRoleNoAccess_fails() throws TableNotFoundException, DatabaseConnectionException,
-            TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
-            PaginationException, NotAllowedException, QueryMalformedException, UserNotFoundException, IOException {
+    public void export_privateHasRoleNoAccess_fails() throws TableNotFoundException, NotAllowedException,
+            QueryMalformedException, DatabaseNotFoundException, IOException, FileStorageException,
+            DataProcessingException {
 
         /* test */
-        export_generic(DATABASE_2_ID, TABLE_1_ID, DATABASE_2, null, USER_2_PRINCIPAL, USER_2_ID, null);
+        export_generic(DATABASE_2_ID, TABLE_1_ID, DATABASE_2, null, USER_2_PRINCIPAL);
     }
 
     @Test
     @WithMockUser(username = USER_2_USERNAME, authorities = {"export-table-data"})
-    public void export_HasRoleReadAccess_succeeds() throws TableNotFoundException, DatabaseConnectionException,
-            TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
-            PaginationException, NotAllowedException, QueryMalformedException, UserNotFoundException, IOException {
+    public void export_HasRoleReadAccess_succeeds() throws TableNotFoundException, NotAllowedException,
+            QueryMalformedException, DatabaseNotFoundException, IOException, FileStorageException,
+            DataProcessingException {
 
         /* test */
-        export_generic(DATABASE_2_ID, TABLE_1_ID, DATABASE_2, null, USER_2_PRINCIPAL, USER_2_ID, DATABASE_2_USER_1_WRITE_OWN_ACCESS);
+        export_generic(DATABASE_2_ID, TABLE_1_ID, DATABASE_2, null, USER_2_PRINCIPAL);
     }
 
     @Test
     @WithMockUser(username = USER_2_USERNAME, authorities = {"export-table-data"})
-    public void export_privateReadWithTimestamp_succeeds() throws TableNotFoundException, DatabaseConnectionException,
-            TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
-            PaginationException, NotAllowedException, QueryMalformedException, UserNotFoundException, IOException {
+    public void export_privateReadWithTimestamp_succeeds() throws TableNotFoundException, NotAllowedException,
+            QueryMalformedException, DatabaseNotFoundException, IOException, FileStorageException,
+            DataProcessingException {
         final Instant timestamp = Instant.now();
 
         /* test */
-        export_generic(DATABASE_2_ID, TABLE_1_ID, DATABASE_2, timestamp, USER_2_PRINCIPAL, USER_2_ID, DATABASE_2_USER_1_READ_ACCESS);
+        export_generic(DATABASE_2_ID, TABLE_1_ID, DATABASE_2, timestamp, USER_2_PRINCIPAL);
     }
 
     @Test
     @WithMockUser(username = USER_2_USERNAME, authorities = {"export-table-data"})
-    public void export_privateReadWithTimestampInFuture_succeeds() throws TableNotFoundException, DatabaseConnectionException,
-            TableMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
-            PaginationException, NotAllowedException, QueryMalformedException, UserNotFoundException, IOException {
+    public void export_privateReadWithTimestampInFuture_succeeds() throws TableNotFoundException, NotAllowedException,
+            QueryMalformedException, DatabaseNotFoundException, IOException, FileStorageException,
+            DataProcessingException {
         final Instant timestamp = Instant.now().plus(10, ChronoUnit.DAYS);
 
         /* test */
-        export_generic(DATABASE_2_ID, TABLE_1_ID, DATABASE_2, timestamp, USER_2_PRINCIPAL, USER_2_ID, DATABASE_2_USER_1_READ_ACCESS);
+        export_generic(DATABASE_2_ID, TABLE_1_ID, DATABASE_2, timestamp, USER_2_PRINCIPAL);
     }
 
     /* ################################################################################################### */
@@ -161,10 +159,9 @@ public class ExportEndpointUnitTest extends BaseUnitTest {
     /* ################################################################################################### */
 
     protected void export_generic(Long databaseId, Long tableId, Database database, Instant timestamp,
-                                  Principal principal, UUID userId, DatabaseAccess access) throws IOException,
-            DatabaseNotFoundException, UserNotFoundException, TableNotFoundException, DatabaseConnectionException,
-            TableMalformedException, QueryMalformedException, ImageNotSupportedException, FileStorageException,
-            PaginationException, NotAllowedException {
+                                  Principal principal) throws IOException,
+            DatabaseNotFoundException, TableNotFoundException, QueryMalformedException, FileStorageException,
+            NotAllowedException, DataProcessingException {
         final ExportResource resource = ExportResource.builder()
                 .filename("location.csv")
                 .resource(new InputStreamResource(FileUtils.openInputStream(new File("src/test/resources/weather/location.csv"))))

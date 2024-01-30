@@ -8,10 +8,8 @@ import at.tuwien.config.EndpointConfig;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.identifier.Identifier;
-import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.repository.mdb.DatabaseRepository;
-import at.tuwien.repository.mdb.IdentifierRepository;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.IdentifierService;
 import at.tuwien.service.StoreService;
@@ -38,7 +36,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
@@ -56,9 +53,6 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
 
     @MockBean
     private UserService userService;
-
-    @MockBean
-    private IdentifierRepository identifierRepository;
 
     @MockBean
     private AccessService accessService;
@@ -82,10 +76,10 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void find_json_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierRequestException, UserNotFoundException, QueryStoreException,
-            TableMalformedException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException,
-            ImageNotSupportedException, FileStorageException, DataDbSidecarException {
+    public void find_json_succeeds() throws IdentifierNotFoundException, QueryNotFoundException, IOException,
+            IdentifierRequestException, UserNotFoundException, QueryStoreException, TableMalformedException,
+            DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
+            FileStorageException, DataProcessingException {
         final String accept = "application/json";
 
         /* mock */
@@ -111,10 +105,10 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void find_xml_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierRequestException, IOException, UserNotFoundException,
-            QueryStoreException, TableMalformedException, DatabaseConnectionException, QueryMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException {
+    public void find_xml_succeeds() throws IdentifierNotFoundException, QueryNotFoundException, IOException,
+            IdentifierRequestException, UserNotFoundException, QueryStoreException, TableMalformedException,
+            DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
+            FileStorageException, DataProcessingException {
         final InputStreamResource resource = new InputStreamResource(FileUtils.openInputStream(
                 new File("src/test/resources/xml/datacite-example-dataset-v4.xml")));
 
@@ -129,10 +123,10 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void find_csv_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
-            RemoteUnavailableException, IOException, IdentifierRequestException, UserNotFoundException,
-            QueryStoreException, TableMalformedException, DatabaseConnectionException, QueryMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException {
+    public void find_csv_succeeds() throws IdentifierNotFoundException, QueryNotFoundException, IOException,
+            IdentifierRequestException, UserNotFoundException, QueryStoreException, TableMalformedException,
+            DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
+            FileStorageException, DataProcessingException {
         final InputStreamResource resource = new InputStreamResource(FileUtils.openInputStream(
                 new File("src/test/resources/csv/testdata.csv")));
 
@@ -147,10 +141,10 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void find_httpRedirect_succeeds() throws IdentifierNotFoundException, QueryNotFoundException,
-            RemoteUnavailableException, IdentifierRequestException, UserNotFoundException, QueryStoreException,
-            TableMalformedException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException,
-            ImageNotSupportedException, FileStorageException, DataDbSidecarException {
+    public void find_httpRedirect_succeeds() throws IdentifierNotFoundException, QueryNotFoundException, IOException,
+            IdentifierRequestException, UserNotFoundException, QueryStoreException, TableMalformedException,
+            DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
+            FileStorageException, DataProcessingException {
 
         /* test */
         final ResponseEntity<?> response = generic_find(null, null, null);
@@ -172,13 +166,10 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"create-identifier"})
-    public void create_hasRoleDatabase_succeeds() throws IdentifierAlreadyExistsException,
-            UserNotFoundException, QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException,
-            IdentifierPublishingNotAllowedException, IdentifierRequestException, NotAllowedException,
+    public void create_hasRoleDatabase_succeeds() throws UserNotFoundException, QueryNotFoundException,
+            DatabaseNotFoundException, RemoteUnavailableException, IdentifierRequestException, NotAllowedException,
             ViewNotFoundException, at.tuwien.exception.AccessDeniedException, QueryStoreException,
-            DatabaseConnectionException, ImageNotSupportedException, IdentifierNotFoundException,
-            TableNotFoundException, TableMalformedException, QueryMalformedException, FileStorageException,
-            DataDbSidecarException {
+            DatabaseConnectionException, ImageNotSupportedException, TableNotFoundException {
 
         /* test */
         generic_create(DATABASE_1_ID, DATABASE_1, DATABASE_1_USER_1_READ_ACCESS, IDENTIFIER_1_DTO_REQUEST, IDENTIFIER_1, USER_1_PRINCIPAL, USER_1_ID);
@@ -206,13 +197,10 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_2_USERNAME, authorities = {"create-identifier"})
-    public void create_hasRoleReadAccessQuery_succeeds() throws IdentifierAlreadyExistsException,
-            UserNotFoundException, QueryNotFoundException, DatabaseNotFoundException, RemoteUnavailableException,
-            IdentifierPublishingNotAllowedException, IdentifierRequestException, NotAllowedException,
-            at.tuwien.exception.AccessDeniedException, ViewNotFoundException, QueryStoreException,
-            DatabaseConnectionException, ImageNotSupportedException, IdentifierNotFoundException,
-            TableNotFoundException, TableMalformedException, QueryMalformedException, FileStorageException,
-            DataDbSidecarException {
+    public void create_hasRoleReadAccessQuery_succeeds() throws UserNotFoundException, TableNotFoundException,
+            AccessDeniedException, QueryStoreException, NotAllowedException, DatabaseConnectionException,
+            QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException, RemoteUnavailableException,
+            IdentifierRequestException, ViewNotFoundException {
 
         /* test */
         generic_create(DATABASE_2_ID, DATABASE_2, DATABASE_2_USER_1_READ_ACCESS, IDENTIFIER_5_DTO_REQUEST, IDENTIFIER_5, USER_2_PRINCIPAL, USER_2_ID);
@@ -265,6 +253,98 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"create-identifier"})
+    public void create_invalidView_fails() {
+        final IdentifierSaveDto request = IdentifierSaveDto.builder()
+                .tableId(1L)  // <--
+                .databaseId(DATABASE_1_ID)
+                .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_CREATE_DTO))
+                .titles(List.of(IDENTIFIER_1_TITLE_1_CREATE_DTO))
+                .relatedIdentifiers(List.of(IDENTIFIER_1_RELATED_IDENTIFIER_5_CREATE_DTO))
+                .publicationDay(IDENTIFIER_5_PUBLICATION_DAY)
+                .publicationMonth(IDENTIFIER_5_PUBLICATION_MONTH)
+                .publicationYear(IDENTIFIER_5_PUBLICATION_YEAR)
+                .creators(List.of(IDENTIFIER_5_CREATOR_1_CREATE_DTO, IDENTIFIER_5_CREATOR_2_CREATE_DTO))
+                .publisher(IDENTIFIER_5_PUBLISHER)
+                .type(IdentifierTypeDto.VIEW)
+                .build();
+
+        /* test */
+        assertThrows(IdentifierRequestException.class, () -> {
+            generic_create(DATABASE_1_ID, DATABASE_1, DATABASE_1_USER_1_READ_ACCESS, request, null, USER_1_PRINCIPAL, USER_1_ID);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"create-identifier"})
+    public void create_viewNotFound_fails() {
+        final IdentifierSaveDto request = IdentifierSaveDto.builder()
+                .viewId(9999L)  // <--
+                .databaseId(DATABASE_1_ID)
+                .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_CREATE_DTO))
+                .titles(List.of(IDENTIFIER_1_TITLE_1_CREATE_DTO))
+                .relatedIdentifiers(List.of(IDENTIFIER_1_RELATED_IDENTIFIER_5_CREATE_DTO))
+                .publicationDay(IDENTIFIER_5_PUBLICATION_DAY)
+                .publicationMonth(IDENTIFIER_5_PUBLICATION_MONTH)
+                .publicationYear(IDENTIFIER_5_PUBLICATION_YEAR)
+                .creators(List.of(IDENTIFIER_5_CREATOR_1_CREATE_DTO, IDENTIFIER_5_CREATOR_2_CREATE_DTO))
+                .publisher(IDENTIFIER_5_PUBLISHER)
+                .type(IdentifierTypeDto.VIEW)
+                .build();
+
+        /* test */
+        assertThrows(ViewNotFoundException.class, () -> {
+            generic_create(DATABASE_1_ID, DATABASE_1, DATABASE_1_USER_1_READ_ACCESS, request, null, USER_1_PRINCIPAL, USER_1_ID);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"create-identifier"})
+    public void create_invalidTable_fails() {
+        final IdentifierSaveDto request = IdentifierSaveDto.builder()
+                .viewId(1L)  // <--
+                .databaseId(DATABASE_1_ID)
+                .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_CREATE_DTO))
+                .titles(List.of(IDENTIFIER_1_TITLE_1_CREATE_DTO))
+                .relatedIdentifiers(List.of(IDENTIFIER_1_RELATED_IDENTIFIER_5_CREATE_DTO))
+                .publicationDay(IDENTIFIER_5_PUBLICATION_DAY)
+                .publicationMonth(IDENTIFIER_5_PUBLICATION_MONTH)
+                .publicationYear(IDENTIFIER_5_PUBLICATION_YEAR)
+                .creators(List.of(IDENTIFIER_5_CREATOR_1_CREATE_DTO, IDENTIFIER_5_CREATOR_2_CREATE_DTO))
+                .publisher(IDENTIFIER_5_PUBLISHER)
+                .type(IdentifierTypeDto.TABLE)
+                .build();
+
+        /* test */
+        assertThrows(IdentifierRequestException.class, () -> {
+            generic_create(DATABASE_1_ID, DATABASE_1, DATABASE_1_USER_1_READ_ACCESS, request, null, USER_1_PRINCIPAL, USER_1_ID);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"create-identifier"})
+    public void create_tableNotFound_fails() {
+        final IdentifierSaveDto request = IdentifierSaveDto.builder()
+                .tableId(9999L)  // <--
+                .databaseId(DATABASE_1_ID)
+                .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_CREATE_DTO))
+                .titles(List.of(IDENTIFIER_1_TITLE_1_CREATE_DTO))
+                .relatedIdentifiers(List.of(IDENTIFIER_1_RELATED_IDENTIFIER_5_CREATE_DTO))
+                .publicationDay(IDENTIFIER_5_PUBLICATION_DAY)
+                .publicationMonth(IDENTIFIER_5_PUBLICATION_MONTH)
+                .publicationYear(IDENTIFIER_5_PUBLICATION_YEAR)
+                .creators(List.of(IDENTIFIER_5_CREATOR_1_CREATE_DTO, IDENTIFIER_5_CREATOR_2_CREATE_DTO))
+                .publisher(IDENTIFIER_5_PUBLISHER)
+                .type(IdentifierTypeDto.TABLE)
+                .build();
+
+        /* test */
+        assertThrows(TableNotFoundException.class, () -> {
+            generic_create(DATABASE_1_ID, DATABASE_1, DATABASE_1_USER_1_READ_ACCESS, request, null, USER_1_PRINCIPAL, USER_1_ID);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"create-identifier"})
     public void create_queryForeign_fails() {
 
         /* test */
@@ -279,11 +359,10 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
 
     protected void generic_create(Long databaseId, Database database, DatabaseAccess access,
                                   IdentifierSaveDto data, Identifier identifier, Principal principal, UUID userId)
-            throws QueryNotFoundException, RemoteUnavailableException, IdentifierAlreadyExistsException,
-            UserNotFoundException, DatabaseNotFoundException, IdentifierPublishingNotAllowedException,
+            throws QueryNotFoundException, RemoteUnavailableException, UserNotFoundException, DatabaseNotFoundException,
             IdentifierRequestException, NotAllowedException, at.tuwien.exception.AccessDeniedException,
             ViewNotFoundException, QueryStoreException, DatabaseConnectionException, ImageNotSupportedException,
-            IdentifierNotFoundException, TableNotFoundException, TableMalformedException, QueryMalformedException, FileStorageException, DataDbSidecarException {
+            TableNotFoundException {
 
         /* mock */
         when(databaseRepository.findById(databaseId))
@@ -316,10 +395,10 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
     }
 
     protected ResponseEntity<?> generic_find(String accept, InputStreamResource resource, Principal principal)
-            throws IdentifierNotFoundException, QueryNotFoundException, RemoteUnavailableException,
-            IdentifierRequestException, UserNotFoundException, QueryStoreException, TableMalformedException,
-            DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
-            FileStorageException, DataDbSidecarException {
+            throws IdentifierNotFoundException, QueryNotFoundException, IdentifierRequestException,
+            UserNotFoundException, QueryStoreException, TableMalformedException, DatabaseConnectionException,
+            QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, FileStorageException,
+            DataDbSidecarException, DataProcessingException {
 
         /* mock */
         when(identifierService.find(IDENTIFIER_1_ID))

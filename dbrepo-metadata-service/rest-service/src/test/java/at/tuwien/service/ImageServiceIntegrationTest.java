@@ -2,6 +2,7 @@ package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.annotations.MockAmqp;
+import at.tuwien.annotations.MockListeners;
 import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.api.container.image.ImageCreateDto;
 import at.tuwien.exception.ImageAlreadyExistsException;
@@ -28,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 @MockAmqp
+@MockListeners
 @MockOpensearch
 public class ImageServiceIntegrationTest extends BaseUnitTest {
 

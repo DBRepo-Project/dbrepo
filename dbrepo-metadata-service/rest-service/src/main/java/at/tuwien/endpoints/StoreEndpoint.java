@@ -74,7 +74,7 @@ public class StoreEndpoint {
     @GetMapping
     @Transactional(readOnly = true)
     @Observed(name = "dbr_queries_findall")
-    @Operation(summary = "Find queries", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Find queries", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "List queries",
@@ -151,7 +151,7 @@ public class StoreEndpoint {
     @GetMapping("/{queryId}")
     @Transactional(readOnly = true)
     @Observed(name = "dbr_queries_find")
-    @Operation(summary = "Find some query", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Find some query", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "List queries",
@@ -212,7 +212,7 @@ public class StoreEndpoint {
     @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority('persist-query')")
     @Observed(name = "dbr_query_persist")
-    @Operation(summary = "Persist some query", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Persist some query", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Persist query successful",

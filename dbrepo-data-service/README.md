@@ -1,6 +1,31 @@
 # Data Service
 
-## Actuator
+## Test
+
+Run all unit and integration tests and create an HTML+TXT coverage report located in the `report` module:
+
+```bash
+mvn -pl rest-service clean test verify
+```
+
+Or run only tests 
+in [`DatabaseServiceIntegrationTest.java`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/blob/master/dbrepo-data-service/rest-service/src/test/java/at/tuwien/service/DatabaseServiceIntegrationTest.java):
+
+```bash
+mvn -pl rest-service -Dtest="DatabaseServiceIntegrationTest" clean test
+```
+
+## Run
+
+Start the Metadata Database, Data Database, Broker Service before and then run the Data Service:
+
+```bash
+mvn -pl rest-service clean spring-boot:run -Dspring-boot.run.profiles=local
+```
+
+### Endpoints
+
+#### Actuator
 
 - Info: http://localhost:9093/actuator/info
 - Health: http://localhost:9093/actuator/health
@@ -8,17 +33,10 @@
     - Liveness: http://localhost:9093/actuator/health/liveness
 - Prometheus: http://localhost:9093/actuator/prometheus
 
-## Swagger UI Endpoints
+#### Swagger UI
 
 - Swagger UI: http://localhost:9093/swagger-ui/index.html
 
-## OpenAPI Endpoints
+#### OpenAPI
 
 - OpenAPI v3 as .yaml: http://localhost:9093/v3/api-docs.yaml
-
-## Build
-
-```shell
-mvn -f ../dbrepo-metadata-service/pom.xml clean install -DskipTests
-mvn clean package -DskipTests
-```

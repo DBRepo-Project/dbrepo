@@ -5,7 +5,6 @@ import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.TableCsvDeleteDto;
 import at.tuwien.api.database.table.TableCsvDto;
-import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
@@ -15,6 +14,7 @@ import at.tuwien.utils.PrincipalUtil;
 import at.tuwien.utils.UserUtil;
 import at.tuwien.validation.EndpointValidator;
 import io.micrometer.observation.annotation.Observed;
+import io.swagger.v3.oas.annotations.ExternalDocumentation;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -55,7 +55,8 @@ public class TableDataEndpoint {
     @Transactional
     @Observed(name = "dbr_table_data_insert")
     @PreAuthorize("hasAuthority('insert-table-data')")
-    @Operation(summary = "Insert data", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Insert data", description = "Insert data directly as key-value map tuple",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Inserted data successfully"),
@@ -94,7 +95,8 @@ public class TableDataEndpoint {
     @Transactional
     @PreAuthorize("hasAuthority('delete-table-data')")
     @Observed(name = "dbr_table_data_delete")
-    @Operation(summary = "Delete data", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Delete data", description = "Delete a tuples that match a key-value map",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Deleted table data successfully"),
@@ -133,7 +135,7 @@ public class TableDataEndpoint {
     @Transactional
     @PreAuthorize("hasAuthority('insert-table-data')")
     @Observed(name = "dbr_table_data_import")
-    @Operation(summary = "Insert data from csv", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Insert data from csv", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Import table data successfully"),
@@ -152,6 +154,11 @@ public class TableDataEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "409",
+                    description = "Import failed in sidecar",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "422",
                     description = "Could not import csv via sidecar",
                     content = {@Content(
@@ -163,7 +170,7 @@ public class TableDataEndpoint {
                                           @NotNull @Valid @RequestBody ImportDto data,
                                           @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
-            NotAllowedException, AccessDeniedException, DataDbSidecarException {
+            NotAllowedException, AccessDeniedException, DataDbSidecarException, DataProcessingException {
         log.debug("endpoint insert data from csv, databaseId={}, tableId={}, data={}, {}", databaseId, tableId, data, PrincipalUtil.formatForDebug(principal));
         /* check */
         endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(databaseId, tableId, principal);
@@ -176,7 +183,7 @@ public class TableDataEndpoint {
     @RequestMapping(method = {RequestMethod.GET, RequestMethod.HEAD})
     @Transactional(readOnly = true)
     @Observed(name = "dbr_table_data_findall")
-    @Operation(summary = "Find data", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Find data", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Get table data successfully"),
@@ -232,7 +239,7 @@ public class TableDataEndpoint {
     @GetMapping("/count")
     @Transactional(readOnly = true)
     @Observed(name = "dbr_table_data_countall")
-    @Operation(summary = "Find data", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Find data", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Get table data count successfully"),

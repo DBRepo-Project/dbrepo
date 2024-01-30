@@ -341,8 +341,8 @@ export default {
             resolve(metadata)
           })
           .catch((error) => {
+            this.$toast.error('Failed to import data', error)
             this.loading = false
-            this.$toast.error('Failed to upload file')
             reject(error)
           })
           .finally(() => {

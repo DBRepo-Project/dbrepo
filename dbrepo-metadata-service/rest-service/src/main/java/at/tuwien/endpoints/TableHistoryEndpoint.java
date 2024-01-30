@@ -39,7 +39,7 @@ public class TableHistoryEndpoint {
     @RequestMapping(method = {RequestMethod.GET, RequestMethod.HEAD})
     @Transactional(readOnly = true)
     @Observed(name = "dbr_table_history_findall")
-    @Operation(summary = "Find all history", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Find all history", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Find table history successfully",

@@ -4,9 +4,11 @@ author: Martin Weise
 
 # Storage Service
 
+## Preliminary
+
 Configure the credentials to access the S3 endpoint:
 
-```console
+```shell
 $ aws configure \
     --endpoint-url http://localhost:9000
 AWS Access Key ID [None]: seaweedfsadmin
@@ -15,9 +17,11 @@ Default region name [None]:
 Default output format [None]:
 ```
 
+## Upload
+
 Upload a CSV-file into the `dbrepo-upload` bucket with the AWS CLI:
 
-```console
+```shell
 $ aws --endpoint-url http://localhost:9000 \
     s3 \
     cp /path/to/file.csv \
@@ -25,9 +29,11 @@ $ aws --endpoint-url http://localhost:9000 \
 upload: /path/to/file.csv to s3://dbrepo-upload/file.csv
 ```
 
+## List
+
 You can list the buckets:
 
-```console
+```shell
 $ aws --endpoint-url http://localhost:9000 \
     s3 \
     ls
@@ -37,13 +43,15 @@ $ aws --endpoint-url http://localhost:9000 \
 
 And list the files in the bucket `dbrepo-upload` with:
 
-```console
+```shell
 $ aws --endpoint-url http://localhost:9000 \
     s3 \
     ls \
     dbrepo-upload
 2023-12-03 16:28:05     535219 file.csv
 ```
+
+## Other
 
 Alternatively, you can use the middleware of the [User Interface](../system-other-ui/) to upload files.
 

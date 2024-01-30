@@ -129,6 +129,11 @@ spec:
                 secretKeyRef:
                   name: metadata-service-secret
                   key: keycloak-admin-password
+            - name: KEYCLOAK_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: metadata-service-secret
+                  key: keycloak-client-secret
             - name: JWT_ISSUER
               valueFrom:
                 secretKeyRef:
@@ -239,6 +244,11 @@ spec:
                 secretKeyRef:
                   name: metadata-service-secret
                   key: s3-export-bucket
+            - name: DELETE_STALE_FILES_RATE
+              valueFrom:
+                secretKeyRef:
+                  name: metadata-service-secret
+                  key: delete-stale-files-rate
             - name: MIRROR_RATE
               valueFrom:
                 secretKeyRef:
