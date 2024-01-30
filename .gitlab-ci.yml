@@ -598,7 +598,7 @@ docs-registry:
       - release-v1.3
       - release-v1.4
   script:
-    - pip install pipenv && pipenv install --dev --system --deploy
+    - pip install -r ./requirements.txt
     - python3 .docs/docker/release.py
   cache:
     paths:
