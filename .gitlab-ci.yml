@@ -624,13 +624,13 @@ docs-latest:
   script:
     - apt-get update && apt-get install -y git make sed
     - git fetch && git checkout master
-    - pip install pipenv && pipenv install --dev --deploy
+    - pip install -r ./requirements.txt
     - mkdir -p ./final
     - sed -i -e "s/__APPVERSION__/${APP_VERSION}/g" .docs/redirect.html
     - cp ./.docs/redirect.html ./final/index.html
     - find .docs/ -type f -exec sed -i -e "s/__APPVERSION__/latest/g" {} \;
     - find .docs/ -type f -exec sed -i -e "s/__CHARTVERSION__/${CHART_VERSION}/g" {} \;
-    - source ./venv/bin/activate && mkdocs build && cp -r ./site ./final/latest
+    - mkdocs build && cp -r ./site ./final/latest
     - cp -r ./swagger/latest ./final/latest/swagger
   cache:
     paths:
@@ -684,12 +684,12 @@ docs-1.4:
   script:
     - apt-get update && apt-get install -y git make sed wget
     - git fetch && git checkout release-v1.4
-    - pip install pipenv && pipenv install --dev --deploy
+    - pip install -r ./.docs/requirements.txt
     - wget https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/.docs/overrides/main.html -O .docs/overrides/main.html -q
     - mkdir -p ./final
     - find .docs/ -type f -exec sed -i -e "s/__APPVERSION__/${APP_VERSION}/g" {} \;
     - find .docs/ -type f -exec sed -i -e "s/__CHARTVERSION__/${CHART_VERSION}/g" {} \;
-    - source ./venv/bin/activate && mkdocs build && cp -r ./site ./final/${APP_VERSION}
+    - mkdocs build && cp -r ./site ./final/${APP_VERSION}
     - cp -r ./swagger/${APP_VERSION} ./final/${APP_VERSION}/swagger
   cache:
     paths:
