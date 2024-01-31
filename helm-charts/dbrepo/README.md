@@ -211,11 +211,25 @@ Helm chart. See their documentation for the remaining overridden values.
 
 ### User Interface
 
-To replace the placeholder values in
-the [`dbrepo.config.json`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/blob/release-v1.4/dbrepo-ui/dbrepo.config.json)
-you need to create a ConfigMap `my-config` and mount the `dbrepo.config.json` into `/app/dbrepo.config.json`:
+To replace e.g. the default logo with your organization's logo `my_logo.png`, encode it to
+base64 `cat my_logo.png | base64` and create a [ConfigMap](https://kubernetes.io/docs/concepts/configuration/configmap/)
+under a handy name `my-config`.
 
 ```yaml
+# my-config.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-config
+binaryData:
+  my_logo.png: |
+    <output from `cat my_logo.png | base64`>
+```
+
+Then mount it into the container:
+
+```yaml
+# values.yaml
 ui:
   extraVolumes:
     - name: config-map
@@ -223,22 +237,23 @@ ui:
         name: my-config
   extraVolumeMounts:
     - name: config-map
-      mountPath: /dbrepo.config.json
-      subPath: dbrepo.config.json
+      mountPath: /app/my_logo.png
+      subPath: my_logo.png
       readOnly: true
   ...
 ```
 
-| Name                   | Description                            | Value                      |
-|------------------------|----------------------------------------|----------------------------|
-| `ui.enabled`           | Enables/disabled the deployment.       | `enabled`                  |
-| `ui.image.registry`    | Registry to pull the image             | `s210.dl.hpc.tuwien.ac.at` |
-| `ui.image.repository`  | Repository to pull the image           | `dbrepo/ui`                |
-| `ui.image.tag`         | Tag of the image.                      | `1.4.1`                    |
-| `ui.image.pullPolicy`  | Image pull policy on deployments       | `Always`                   |
-| `ui.replicaCount`      | Number of replicas for the deployment. | `2`                        |
-| `ui.extraVolumes`      | List of extra volumes.                 | `[]`                       |
-| `ui.extraVolumeMounts` | List of extra volume mounts.           | `[]`                       |
+| Name                   | Description                                                                                                                                                                                             | Value                      |
+|------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------|
+| `ui.enabled`           | Enables/disabled the deployment.                                                                                                                                                                        | `enabled`                  |
+| `ui.image.registry`    | Registry to pull the image                                                                                                                                                                              | `s210.dl.hpc.tuwien.ac.at` |
+| `ui.image.repository`  | Repository to pull the image                                                                                                                                                                            | `dbrepo/ui`                |
+| `ui.image.tag`         | Tag of the image.                                                                                                                                                                                       | `1.4.1`                    |
+| `ui.image.pullPolicy`  | Image pull policy on deployments                                                                                                                                                                        | `Always`                   |
+| `ui.replicaCount`      | Number of replicas for the deployment.                                                                                                                                                                  | `2`                        |
+| `ui.config`            | JSON file containting the configuration of the UI. See [`dbrepo.config.json`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/blob/release-v1.4/dbrepo-ui/dbrepo.config.json) | `2`                        |
+| `ui.extraVolumes`      | List of extra volumes.                                                                                                                                                                                  | `[]`                       |
+| `ui.extraVolumeMounts` | List of extra volume mounts.                                                                                                                                                                            | `[]`                       |
 
 ## Ingress
 
