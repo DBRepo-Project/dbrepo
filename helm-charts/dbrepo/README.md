@@ -58,30 +58,30 @@ The command removes all the Kubernetes components associated with the chart and 
 The Metadata Database uses the [Bitnami MariaDB Galera](https://artifacthub.io/packages/helm/bitnami/mariadb-galera)
 Helm chart. See their documentation for the remaining overridden values.
 
-| Name                       | Description                               | Value         |
-|----------------------------|-------------------------------------------|---------------|
-| `metadataDb.host`          | Hostname.                                 | `metadata-db` |
-| `metadataDb.jdbcExtraArgs` | Extra arguments for the JDBC connections. | `""`          |
+| Name                        | Description                               | Value         |
+|-----------------------------|-------------------------------------------|---------------|
+| `metadata-db.host`          | Hostname.                                 | `metadata-db` |
+| `metadata-db.jdbcExtraArgs` | Extra arguments for the JDBC connections. | `""`          |
 
 ### Authentication Service
 
 The Auth Service uses the [Bitnami Keycloak](https://artifacthub.io/packages/helm/bitnami/keycloak) Helm chart. See
 their documentation for the remaining overridden values.
 
-| Name                        | Description                                                     | Value                              |
-|-----------------------------|-----------------------------------------------------------------|------------------------------------|
-| `authService.client.id`     | Client id. This value is publicly known.                        | `dbrepo-client`                    |
-| `authService.client.secret` | Client secret. This value should never be known outside DBRepo. | `MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG` |
+| Name                         | Description                                                     | Value                              |
+|------------------------------|-----------------------------------------------------------------|------------------------------------|
+| `auth-service.client.id`     | Client id. This value is publicly known.                        | `dbrepo-client`                    |
+| `auth-service.client.secret` | Client secret. This value should never be known outside DBRepo. | `MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG` |
 
 ### Auth Database
 
 The Auth Database uses the [Bitnami PostgreSQL HA](https://artifacthub.io/packages/helm/bitnami/postgresql-ha) Helm
 chart. See their documentation for the remaining overridden values.
 
-| Name          | Description                          | Value            |
-|---------------|--------------------------------------|------------------|
-| `authDb.host` | Hostname. Needed for other services. | `auth-db-pgpool` |
-| `authDB.port` | Port. Needed for other services.     | `5432`           |
+| Name           | Description                          | Value            |
+|----------------|--------------------------------------|------------------|
+| `auth-db.host` | Hostname. Needed for other services. | `auth-db-pgpool` |
+| `auth-db.port` | Port. Needed for other services.     | `5432`           |
 
 ### Data Database
 
@@ -95,12 +95,12 @@ The Search Database uses
 the [OpenSearch](https://artifacthub.io/packages/helm/opensearch-project-helm-charts/opensearch) Helm
 chart. See their documentation for the remaining overridden values.
 
-| Name              | Description                          | Value       |
-|-------------------|--------------------------------------|-------------|
-| `searchDb.host`   | Hostname. Needed for other services. | `search-db` |
-| `authDB.port`     | Port. Needed for other services.     | `9200`      |
-| `authDB.username` | Username. Needed for other services. | `admin`     |
-| `authDB.password` | Password. Needed for other services. | `admin`     |
+| Name                 | Description                          | Value       |
+|----------------------|--------------------------------------|-------------|
+| `search-db.host`     | Hostname. Needed for other services. | `search-db` |
+| `search-db.port`     | Port. Needed for other services.     | `9200`      |
+| `search-db.username` | Username. Needed for other services. | `admin`     |
+| `search-db.password` | Password. Needed for other services. | `admin`     |
 
 ### Search Database Dashboard
 
@@ -110,29 +110,29 @@ chart. See their documentation for the remaining overridden values.
 
 ### Upload Service
 
-| Name                             | Description                            | Value             |
-|----------------------------------|----------------------------------------|-------------------|
-| `uploadService.enabled`          | Enables/disabled the deployment.       | `true`            |
-| `uploadService.image.registry`   | Registry to pull the image             | `docker.io`       |
-| `uploadService.image.repository` | Repository to pull the image           | `tusproject/tusd` |
-| `uploadService.image.tag`        | Tag of the image.                      | `v1.12`           |
-| `uploadService.replicaCount`     | Number of replicas for the deployment. | `2`               |
+| Name                              | Description                            | Value             |
+|-----------------------------------|----------------------------------------|-------------------|
+| `upload-service.enabled`          | Enables/disabled the deployment.       | `true`            |
+| `upload-service.image.registry`   | Registry to pull the image             | `docker.io`       |
+| `upload-service.image.repository` | Repository to pull the image           | `tusproject/tusd` |
+| `upload-service.image.tag`        | Tag of the image.                      | `v1.12`           |
+| `upload-service.replicaCount`     | Number of replicas for the deployment. | `2`               |
 
 ### Broker Service
 
 The Broker Service uses the [Bitnami RabbitMQ](https://artifacthub.io/packages/helm/bitnami/rabbitmq)
 Helm chart. See their documentation for the remaining overridden values.
 
-| Name                              | Description                                                             | Value                         |
-|-----------------------------------|-------------------------------------------------------------------------|-------------------------------|
-| `brokerService.url`               | Admin API endpoint. Needed for other services.                          | `http://broker-service:15672` |
-| `brokerService.host`              | Service hostname. Needed for other services.                            | `broker-service`              |
-| `brokerService.port`              | Service port. Needed for other services.                                | `5672`                        |
-| `brokerService.virtualHost`       | Virtual host on RabbitMQ. Needed for other services.                    | `dbrepo`                      |
-| `brokerService.queueName`         | Queue name on RabbitMQ. Needed for other services.                      | `dbrepo`                      |
-| `brokerService.exchangeName`      | Exchange name on RabbitMQ. Needed for other services.                   | `dbrepo`                      |
-| `brokerService.routingKey`        | Route binding for queue to exchange defined. Needed for other services. | `dbrepo.#`                    |
-| `brokerService.connectionTimeout` | Connection timeout. Needed for other services.                          | `60000`                       |
+| Name                               | Description                                                             | Value                         |
+|------------------------------------|-------------------------------------------------------------------------|-------------------------------|
+| `broker-service.url`               | Admin API endpoint. Needed for other services.                          | `http://broker-service:15672` |
+| `broker-service.host`              | Service hostname. Needed for other services.                            | `broker-service`              |
+| `broker-service.port`              | Service port. Needed for other services.                                | `5672`                        |
+| `broker-service.virtualHost`       | Virtual host on RabbitMQ. Needed for other services.                    | `dbrepo`                      |
+| `broker-service.queueName`         | Queue name on RabbitMQ. Needed for other services.                      | `dbrepo`                      |
+| `broker-service.exchangeName`      | Exchange name on RabbitMQ. Needed for other services.                   | `dbrepo`                      |
+| `broker-service.routingKey`        | Route binding for queue to exchange defined. Needed for other services. | `dbrepo.#`                    |
+| `broker-service.connectionTimeout` | Connection timeout. Needed for other services.                          | `60000`                       |
 
 ### Analyse Service
 
@@ -173,19 +173,19 @@ Helm chart. See their documentation for the remaining overridden values.
 
 ### Data Service
 
-| Name                                    | Description                                      | Value                                                                                                                                                                                                                                                                                                                                                                                                      |
-|-----------------------------------------|--------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `metadataService.enabled`               | Enables/disabled the deployment.                 | `true`                                                                                                                                                                                                                                                                                                                                                                                                     |
-| `metadataService.image.registry`        | Registry to pull the image                       | `s210.dl.hpc.tuwien.ac.at`                                                                                                                                                                                                                                                                                                                                                                                 |
-| `metadataService.image.repository`      | Repository to pull the image                     | `dbrepo/data-service`                                                                                                                                                                                                                                                                                                                                                                                      |
-| `metadataService.image.tag`             | Tag of the image.                                | `1.4.1`                                                                                                                                                                                                                                                                                                                                                                                                    |
-| `metadataService.image.pullPolicy`      | Image pull policy on deployments                 | `Always`                                                                                                                                                                                                                                                                                                                                                                                                   |
-| `metadataService.image.debug`           | Enables/disabled the debug logging.              | `false`                                                                                                                                                                                                                                                                                                                                                                                                    |
-| `metadataService.jwt.pubkey`            | The JWT pubkey to verify JWT signature.          | `MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB` |
-| `metadataService.consumerConcurrentMin` | The number of concurrent consumers (minimum).    | `1`                                                                                                                                                                                                                                                                                                                                                                                                        |
-| `metadataService.consumerConcurrentMax` | The number of concurrent consumers (maximum).    | `5`                                                                                                                                                                                                                                                                                                                                                                                                        |
-| `metadataService.requeueRejected`       | Requeue rejected tuples into the Broker Service. | `false`                                                                                                                                                                                                                                                                                                                                                                                                    |
-| `metadataService.replicaCount`          | Number of replicas for the deployment.           | `2`                                                                                                                                                                                                                                                                                                                                                                                                        |
+| Name                                | Description                                      | Value                                                                                                                                                                                                                                                                                                                                                                                                      |
+|-------------------------------------|--------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `dataService.enabled`               | Enables/disabled the deployment.                 | `true`                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `dataService.image.registry`        | Registry to pull the image                       | `s210.dl.hpc.tuwien.ac.at`                                                                                                                                                                                                                                                                                                                                                                                 |
+| `dataService.image.repository`      | Repository to pull the image                     | `dbrepo/data-service`                                                                                                                                                                                                                                                                                                                                                                                      |
+| `dataService.image.tag`             | Tag of the image.                                | `1.4.1`                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `dataService.image.pullPolicy`      | Image pull policy on deployments                 | `Always`                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `dataService.image.debug`           | Enables/disabled the debug logging.              | `false`                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `dataService.jwt.pubkey`            | The JWT pubkey to verify JWT signature.          | `MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB` |
+| `dataService.consumerConcurrentMin` | The number of concurrent consumers (minimum).    | `1`                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `dataService.consumerConcurrentMax` | The number of concurrent consumers (maximum).    | `5`                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `dataService.requeueRejected`       | Requeue rejected tuples into the Broker Service. | `false`                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `dataService.replicaCount`          | Number of replicas for the deployment.           | `2`                                                                                                                                                                                                                                                                                                                                                                                                        |
 
 ### Search Service
 
@@ -204,10 +204,10 @@ Helm chart. See their documentation for the remaining overridden values.
 The Storage Service uses the [SeaweedFS](https://artifacthub.io/packages/helm/seaweedfs/seaweedfs)
 Helm chart. See their documentation for the remaining overridden values.
 
-| Name            | Description                                 | Value            |
-|-----------------|---------------------------------------------|------------------|
-| `auth.username` | Username for S3. Needed for other services. | `seaweedfsadmin` |
-| `auth.password` | Password for S3. Needed for other services. | `seaweedfsadmin` |
+| Name                            | Description                                 | Value            |
+|---------------------------------|---------------------------------------------|------------------|
+| `storage-service.auth.username` | Username for S3. Needed for other services. | `seaweedfsadmin` |
+| `storage-service.auth.password` | Password for S3. Needed for other services. | `seaweedfsadmin` |
 
 ### User Interface
 

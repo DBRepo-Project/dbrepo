@@ -6,7 +6,7 @@ strategyType: RollingUpdate
 
 clusterDomain: cluster.local
 
-metadataDb:
+metadata-db:
   fullnameOverride: metadata-db
   image:
     debug: false
@@ -35,7 +35,7 @@ metadataDb:
     storageClass: default
   replicaCount: 3 # uneven 3,5,7
 
-authService:
+auth-service:
   fullnameOverride: auth-service
   image:
     debug: false
@@ -71,7 +71,7 @@ authService:
       mountPath: /opt/bitnami/keycloak/data/import
   replicaCount: 2
 
-authDb:
+auth-db:
   fullnameOverride: auth-db
   host: auth-db-pgpool
   port: 5432
@@ -96,7 +96,7 @@ authDb:
     size: 10Gi
     storageClass: default
 
-dataDb:
+data-db:
   fullnameOverride: data-db
   image:
     debug: false
@@ -156,7 +156,7 @@ dataDb:
     sharedStorageClass: default
   replicaCount: 3 # uneven
 
-searchDb:
+search-db:
   fullnameOverride: search-db
   host: search-db
   port: 9200
@@ -232,7 +232,7 @@ searchDb:
                 ".opendistro-asynchronous-search-response*",
               ]
 
-searchDbDashboard:
+search-db-dashboard:
   fullnameOverride: search-db-dashboard
   opensearchHosts: http://search-db:9200
   extraInitContainers:
@@ -267,7 +267,7 @@ uploadService:
     tag: v1.12
   replicaCount: 2
 
-brokerService:
+broker-service:
   fullnameOverride: broker-service
   image:
     debug: true
@@ -327,9 +327,6 @@ brokerService:
       secret:
         secretName: broker-service-secret
   extraPlugins: rabbitmq_prometheus rabbitmq_auth_backend_oauth2 rabbitmq_auth_mechanism_ssl
-  extraEnvVars:
-    - name: BITNAMI_DEBUG
-      value: "true"
   persistence:
     enabled: false
     size: 5Gi
@@ -400,13 +397,13 @@ searchService:
     debug: false
   replicaCount: 2
 
-storageService:
+storage-service:
   fullnameOverride: storage-service
   master:
     enabled: true
   filer:
     enabled: true
-    replicas: 1
+    replicas: 2
     enablePVC: false
     storage: 25Gi
     s3:
@@ -418,10 +415,10 @@ storageService:
       existingConfigSecret: seaweedfs-s3-secret
   volume:
     enabled: true
-    replicas: 1
+    replicas: 2
   s3:
     enabled: true
-    replicas: 1
+    replicas: 2
     port: 9000
     metricsPort: 9091
     enableAuth: true
@@ -431,7 +428,7 @@ storageService:
       username: seaweedfsadmin
       password: seaweedfsadmin
 
-logService:
+log-service:
   fullnameOverride: log-service
   config:
     outputs: |
