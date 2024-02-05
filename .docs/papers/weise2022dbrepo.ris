@@ -1,0 +1,39 @@
+TY  - JOUR
+AU  - Weise, Martin
+AU  - Staudinger, Moritz
+AU  - Michlits, Cornelia
+AU  - Gergely, Eva
+AU  - Stytsenko, Kirill
+AU  - Ganguly, Raman
+AU  - Rauber, Andreas
+TI  - DBRepo: A Semantic Digital Repository for Relational Databases
+T2  - International Journal of Digital Curation
+VL  - 17
+IS  - 1
+SP  - 11
+PY  - 2022
+DA  - 2022/9/7
+PB  - Edinburgh University Library
+AB  - Data curation is a complex, multi-faceted task. While dedicated data
+      stewards are starting to take care of these activities in close
+      collaboration with researchers for many types of (usually file-based) data
+      in many institutions, this is rarely yet the case for data held in
+      relational databases. Beyond large-scale infrastructures hosting e.g.
+      climate or genome data, researchers usually have to create, build and
+      maintain their database, care about security patches, and feed data into
+      it in order to use it in their research. Data curation, if at all, usually
+      happens after a project is finished, when data may be exported for digital
+      preservation into file repository systems. We present DBRepo, a semantic
+      digital repository for relational databases in a private cloud setting
+      designed to (1) host research data stored in relational databases right
+      from the beginning of a research project, (2) provide separation of
+      concerns, allowing the researchers to focus on the domain aspects of the
+      data and their work while bringing in experts to handle classic data
+      management tasks, (3) improve findability, accessibility and reusability
+      by offering semantic mapping of metadata attributes, and (4) focus on
+      reproducibility in dynamically evolving data by supporting versioning and
+      precise identification/cite-ability for arbitrary subsets of data.
+SN  - 1746-8256
+DO  - 10.2218/ijdc.v17i1.825
+UR  - https://doi.org/10.2218/ijdc.v17i1.825
+ER  -
