@@ -1,5 +1,5 @@
-mkdocs==1.4.3
-mkdocs-material==9.1.17
+mkdocs==1.5.3
+mkdocs-material==9.5.5
 mkdocs-with-pdf==0.9.3
 mkdocs-material-extensions>=1.0.3
 requests>=2.27.0

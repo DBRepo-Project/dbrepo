@@ -1,0 +1,94 @@
+<rdf:RDF
+ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+ xmlns:z="http://www.zotero.org/namespaces/export#"
+ xmlns:dcterms="http://purl.org/dc/terms/"
+ xmlns:bib="http://purl.org/net/biblio#"
+ xmlns:foaf="http://xmlns.com/foaf/0.1/"
+ xmlns:link="http://purl.org/rss/1.0/modules/link/"
+ xmlns:dc="http://purl.org/dc/elements/1.1/"
+ xmlns:prism="http://prismstandard.org/namespaces/1.2/basic/">
+    <bib:Article rdf:about="http://ijdc.net/article/view/825">
+        <z:itemType>journalArticle</z:itemType>
+        <dcterms:isPartOf rdf:resource="urn:issn:1746-8256"/>
+        <bib:authors>
+            <rdf:Seq>
+                <rdf:li>
+                    <foaf:Person>
+                        <foaf:surname>Weise</foaf:surname>
+                        <foaf:givenName>Martin</foaf:givenName>
+                    </foaf:Person>
+                </rdf:li>
+                <rdf:li>
+                    <foaf:Person>
+                        <foaf:surname>Staudinger</foaf:surname>
+                        <foaf:givenName>Moritz</foaf:givenName>
+                    </foaf:Person>
+                </rdf:li>
+                <rdf:li>
+                    <foaf:Person>
+                        <foaf:surname>Michlits</foaf:surname>
+                        <foaf:givenName>Cornelia</foaf:givenName>
+                    </foaf:Person>
+                </rdf:li>
+                <rdf:li>
+                    <foaf:Person>
+                        <foaf:surname>Gergely</foaf:surname>
+                        <foaf:givenName>Eva</foaf:givenName>
+                    </foaf:Person>
+                </rdf:li>
+                <rdf:li>
+                    <foaf:Person>
+                        <foaf:surname>Stytsenko</foaf:surname>
+                        <foaf:givenName>Kirill</foaf:givenName>
+                    </foaf:Person>
+                </rdf:li>
+                <rdf:li>
+                    <foaf:Person>
+                        <foaf:surname>Ganguly</foaf:surname>
+                        <foaf:givenName>Raman</foaf:givenName>
+                    </foaf:Person>
+                </rdf:li>
+                <rdf:li>
+                    <foaf:Person>
+                        <foaf:surname>Rauber</foaf:surname>
+                        <foaf:givenName>Andreas</foaf:givenName>
+                    </foaf:Person>
+                </rdf:li>
+            </rdf:Seq>
+        </bib:authors>
+        <link:link rdf:resource="#item_2"/>
+        <dc:title>DBRepo: a Semantic Digital Repository for Relational Databases</dc:title>
+        <dcterms:abstract>Data curation is a complex, multi-faceted task. While dedicated data stewards are starting to take care of these activities in close collaboration with researchers for many types of (usually file-based) data in many institutions, this is rarely yet the case for data held in relational databases. Beyond large-scale infrastructures hosting e.g. climate or genome data, researchers usually have to create, build and maintain their database, care about security patches, and feed data into it in order to use it in their research. Data curation, if at all, usually happens after a project is finished, when data may be exported for digital preservation into file repository systems.
+We present DBRepo, a semantic digital repository for relational databases in a private cloud setting designed to (1) host research data stored in relational databases right from the beginning of a research project, (2) provide separation of concerns, allowing the researchers to focus on the domain aspects of the data and their work while bringing in experts to handle classic data management tasks, (3) improve findability, accessibility and reusability by offering semantic mapping of metadata attributes, and (4) focus on reproducibility in dynamically evolving data by supporting versioning and precise identification/cite-ability for arbitrary subsets of data.</dcterms:abstract>
+        <dc:date>2022-09-07</dc:date>
+        <z:shortTitle>DBRepo</z:shortTitle>
+        <z:libraryCatalog>DOI.org (Crossref)</z:libraryCatalog>
+        <dc:identifier>
+            <dcterms:URI>
+               <rdf:value>http://ijdc.net/article/view/825</rdf:value>
+            </dcterms:URI>
+        </dc:identifier>
+        <dcterms:dateSubmitted>2024-02-05 13:45:47</dcterms:dateSubmitted>
+        <bib:pages>11</bib:pages>
+    </bib:Article>
+    <bib:Journal rdf:about="urn:issn:1746-8256">
+        <prism:volume>17</prism:volume>
+        <dc:title>International Journal of Digital Curation</dc:title>
+        <dc:identifier>DOI 10.2218/ijdc.v17i1.825</dc:identifier>
+        <prism:number>1</prism:number>
+        <dcterms:alternative>IJDC</dcterms:alternative>
+        <dc:identifier>ISSN 1746-8256</dc:identifier>
+    </bib:Journal>
+    <z:Attachment rdf:about="#item_2">
+        <z:itemType>attachment</z:itemType>
+        <dc:title>Submitted Version</dc:title>
+        <dc:identifier>
+            <dcterms:URI>
+                <rdf:value>https://zenodo.org/record/6637333/files/IDCC22_DBREPO_PREPRINT.pdf</rdf:value>
+            </dcterms:URI>
+        </dc:identifier>
+        <dcterms:dateSubmitted>2024-02-05 13:45:49</dcterms:dateSubmitted>
+        <z:linkMode>1</z:linkMode>
+        <link:type>application/pdf</link:type>
+    </z:Attachment>
+</rdf:RDF>

@@ -108,6 +108,7 @@ data:
         description    text,
         engine         character varying(20),
         is_public      boolean                NOT NULL DEFAULT TRUE,
+        image          longblob,
         created_by     character varying(36),
         owned_by       character varying(36),
         contact_person character varying(36),
@@ -191,7 +192,7 @@ data:
         id        bigint                 NOT NULL AUTO_INCREMENT,
         column_id bigint                 NOT NULL,
         value     CHARACTER VARYING(255) NOT NULL,
-        FOREIGN KEY (column_id) REFERENCES mdb_columns (ID),
+        FOREIGN KEY (column_id) REFERENCES mdb_columns (ID) ON DELETE CASCADE,
         PRIMARY KEY (id)
     ) WITH SYSTEM VERSIONING;
 
@@ -200,7 +201,7 @@ data:
         id        bigint                 NOT NULL AUTO_INCREMENT,
         column_id bigint                 NOT NULL,
         value     CHARACTER VARYING(255) NOT NULL,
-        FOREIGN KEY (column_id) REFERENCES mdb_columns (ID),
+        FOREIGN KEY (column_id) REFERENCES mdb_columns (ID) ON DELETE CASCADE,
         PRIMARY KEY (id)
     ) WITH SYSTEM VERSIONING;
 
