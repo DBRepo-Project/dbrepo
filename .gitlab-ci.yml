@@ -4,8 +4,8 @@ variables:
   TRIVY_CACHE_DIR: ".trivycache/"
   DOCKER_HOST: "unix:///var/run/dind/docker.sock"
   TESTCONTAINERS_RYUK_DISABLED: "false"
-  APP_VERSION: "1.4.0"
-  CHART_VERSION: "1.4.0"
+  APP_VERSION: "1.4.1"
+  CHART_VERSION: "1.4.1"
 
 image: debian:12-slim
 
@@ -598,7 +598,7 @@ docs-registry:
       - release-v1.3
       - release-v1.4
   script:
-    - pip install -r ./requirements.txt
+    - pip install pipenv && pipenv install --dev --system --deploy
     - python3 .docs/docker/release.py
   cache:
     paths:
@@ -624,7 +624,7 @@ docs-latest:
   script:
     - apt-get update && apt-get install -y git make sed
     - git fetch && git checkout master
-    - pip install -r ./requirements.txt
+    - pip install pipenv && pipenv install --dev --system --deploy
     - mkdir -p ./final
     - sed -i -e "s/__APPVERSION__/${APP_VERSION}/g" .docs/redirect.html
     - cp ./.docs/redirect.html ./final/index.html
@@ -684,7 +684,7 @@ docs-1.4:
   script:
     - apt-get update && apt-get install -y git make sed wget
     - git fetch && git checkout release-v1.4
-    - pip install -r ./.docs/requirements.txt
+    - pip install pipenv && pipenv install --dev --system --deploy
     - wget https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/.docs/overrides/main.html -O .docs/overrides/main.html -q
     - mkdir -p ./final
     - find .docs/ -type f -exec sed -i -e "s/__APPVERSION__/${APP_VERSION}/g" {} \;
