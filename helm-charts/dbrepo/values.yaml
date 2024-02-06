@@ -6,7 +6,7 @@ strategyType: RollingUpdate
 
 clusterDomain: cluster.local
 
-metadata-db:
+metadataDb:
   fullnameOverride: metadata-db
   image:
     debug: false
@@ -35,7 +35,7 @@ metadata-db:
     storageClass: default
   replicaCount: 3 # uneven 3,5,7
 
-auth-service:
+authService:
   fullnameOverride: auth-service
   image:
     debug: false
@@ -71,7 +71,7 @@ auth-service:
       mountPath: /opt/bitnami/keycloak/data/import
   replicaCount: 2
 
-auth-db:
+authDb:
   fullnameOverride: auth-db
   host: auth-db-pgpool
   port: 5432
@@ -96,7 +96,7 @@ auth-db:
     size: 10Gi
     storageClass: default
 
-data-db:
+dataDb:
   fullnameOverride: data-db
   image:
     debug: false
@@ -156,7 +156,7 @@ data-db:
     sharedStorageClass: default
   replicaCount: 3 # uneven
 
-search-db:
+searchDb:
   fullnameOverride: search-db
   host: search-db
   port: 9200
@@ -232,7 +232,7 @@ search-db:
                 ".opendistro-asynchronous-search-response*",
               ]
 
-search-db-dashboard:
+searchDbDashboard:
   fullnameOverride: search-db-dashboard
   opensearchHosts: http://search-db:9200
   extraInitContainers:
@@ -267,7 +267,7 @@ uploadService:
     tag: v1.12
   replicaCount: 2
 
-broker-service:
+brokerService:
   fullnameOverride: broker-service
   image:
     debug: true
@@ -397,7 +397,7 @@ searchService:
     debug: false
   replicaCount: 2
 
-storage-service:
+storageService:
   fullnameOverride: storage-service
   master:
     enabled: true
@@ -428,7 +428,7 @@ storage-service:
       username: seaweedfsadmin
       password: seaweedfsadmin
 
-log-service:
+logService:
   fullnameOverride: log-service
   config:
     outputs: |
