@@ -45,7 +45,6 @@ public interface ViewMapper {
 
     ViewBriefDto viewToViewBriefDto(View data);
 
-
     default PreparedStatement viewToSelectAll(Connection connection, View view, Long page, Long size) throws QueryMalformedException {
         log.debug("mapping view query, view.query={}", view.getQuery());
         final StringBuilder statement = new StringBuilder("SELECT ");
@@ -59,12 +58,16 @@ public interface ViewMapper {
                 .append(view.getInternalName())
                 .append("`");
         /* pagination */
-        log.trace("pagination size/limit of {}", size);
-        statement.append(" LIMIT ")
-                .append(size);
-        log.trace("pagination page/offset of {}", page);
-        statement.append(" OFFSET ")
-                .append(page * size);
+        if (size != null) {
+            log.trace("pagination size/limit of {}", size);
+            statement.append(" LIMIT ")
+                    .append(size);
+            if (page != null) {
+                log.trace("pagination page/offset of {}", page);
+                statement.append(" OFFSET ")
+                        .append(page * size);
+            }
+        }
         statement.append(";");
         try {
             log.trace("mapped view query {} to prepared statement", statement);
