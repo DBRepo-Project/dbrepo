@@ -47,7 +47,7 @@ public interface ViewMapper {
 
 
     default PreparedStatement viewToSelectAll(Connection connection, View view, Long page, Long size) throws QueryMalformedException {
-        log.debug("mapping view query, view.query={}", view.getQuery());
+        log.debug("mapping view query, view.query={}, page={}, size={}", view.getQuery(), page, size);
         final StringBuilder statement = new StringBuilder("SELECT ");
         final int[] idx = new int[]{0};
         view.getColumns()

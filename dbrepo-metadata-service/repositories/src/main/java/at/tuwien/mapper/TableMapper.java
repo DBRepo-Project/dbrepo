@@ -481,7 +481,7 @@ public interface TableMapper {
     }
 
     default PreparedStatement tableToCreateHistoryViewRawQuery(Connection connection, Table data) throws QueryMalformedException {
-        final StringBuilder view = new StringBuilder("CREATE VIEW `hs_")
+        final StringBuilder view = new StringBuilder("CREATE VIEW IF NOT EXISTS `hs_")
                 .append(data.getInternalName())
                 .append("` AS SELECT * FROM (SELECT ROW_START AS inserted_at, IF(ROW_END > NOW(), NULL, ROW_END) AS deleted_at, COUNT(*) as total FROM `")
                 .append(data.getInternalName())

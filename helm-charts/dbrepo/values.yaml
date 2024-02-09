@@ -472,6 +472,7 @@ ui:
     {
       "title": "Database Repository",
       "version": "1.4.1",
+      "fluid": false,
       "ssl": {
         "force": false
       },
@@ -506,9 +507,9 @@ ui:
         }
       },
       "upload": {
-        "endpoint": "localhost",
-        "port": 1080,
-        "useSsl": false
+        "endpoint": "upload-service",
+        "port": 80,
+        "useSsl": true
       },
       "database": {
         "connection": {

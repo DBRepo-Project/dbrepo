@@ -124,7 +124,7 @@ public interface QueryMapper {
 
     default void importCsvQuery(Connection connection, Table table, ImportDto csv) throws SQLException {
         final Statement statement = connection.createStatement();
-        final StringBuilder query0 = new StringBuilder("CREATE TABLE `")
+        final StringBuilder query0 = new StringBuilder("CREATE TABLE IF NOT EXISTS `")
                 .append(table.getDatabase().getInternalName())
                 .append("`.`")
                 .append(table.getInternalName())
@@ -640,15 +640,13 @@ public interface QueryMapper {
                     .append(LocalDateTime.ofInstant(timestamp, ZoneId.of("UTC")))
                     .append("'");
         }
-        if (size != null && page != null) {
-            log.trace("pagination size/limit of {}", size);
-            statement.append(" LIMIT ")
-                    .append(size);
-            log.trace("pagination page/offset of {}", page);
-            statement.append(" OFFSET ")
-                    .append(page * size)
-                    .append(";");
-        }
+        log.trace("pagination size/limit of {}", size);
+        statement.append(" LIMIT ")
+                .append(size);
+        log.trace("pagination page/offset of {}", page);
+        statement.append(" OFFSET ")
+                .append(page * size)
+                .append(";");
         return statement.toString();
     }
 
