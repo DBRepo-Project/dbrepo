@@ -694,13 +694,12 @@ public interface QueryMapper {
         final List<SelectItem> clauses = ps.getSelectItems();
         log.trace("columns referenced in the from-clause: {}", clauses);
         /* Parse all tables */
-        final List<FromItem> tablesOrViews = new ArrayList<>();
-        tablesOrViews.add(ps.getFromItem());
-        if (ps.getJoins() != null && ps.getJoins().size() > 0) {
+        final List<FromItem> fromItems = new ArrayList<>(fromItemToFromItems(ps.getFromItem()));
+        if (ps.getJoins() != null && !ps.getJoins().isEmpty()) {
             log.trace("query contains join items: {}", ps.getJoins());
             for (net.sf.jsqlparser.statement.select.Join j : ps.getJoins()) {
                 if (j.getRightItem() != null) {
-                    tablesOrViews.add(j.getRightItem());
+                    fromItems.add(j.getRightItem());
                 }
             }
         }
@@ -711,30 +710,30 @@ public interface QueryMapper {
                 .toList();
         log.trace("columns referenced in the from-clause and join-clause(s): {}", clauses);
         /* Checking if all tables or views exist */
-        log.trace("table(s) or view(s) referenced in the statement: {}", tablesOrViews.stream().map(t -> ((net.sf.jsqlparser.schema.Table) t).getName()).collect(Collectors.toList()));
+        log.trace("table/view/join referenced in the statement: {}", fromItems.stream().map(this::fromItemToFromItems).flatMap(List::stream).collect(Collectors.toList()));
         /* Checking if all columns exist */
         for (SelectItem clause : clauses) {
             final SelectExpressionItem item = (SelectExpressionItem) clause;
             final Column column = (Column) item.getExpression();
-            final Optional<net.sf.jsqlparser.schema.Table> optionalTableOrView = tablesOrViews.stream()
+            final Optional<net.sf.jsqlparser.schema.Table> optional = fromItems.stream()
                     .map(t -> (net.sf.jsqlparser.schema.Table) t)
                     .filter(t -> {
                         if (column.getTable() == null) {
                             /* column does not reference a specific table, so there is only one table */
-                            final String tableName = ((net.sf.jsqlparser.schema.Table) tablesOrViews.get(0)).getName().replace("`", "");
-                            return tableOptionalAliasMatches(t, tableName);
+                            final String tableName = ((net.sf.jsqlparser.schema.Table) fromItems.get(0)).getName().replace("`", "");
+                            return tableMatches(t, tableName);
                         }
                         final String tableName = column.getTable().getName().replace("`", "");
-                        return tableOptionalAliasMatches(t, tableName);
+                        return tableMatches(t, tableName);
                     })
                     .findFirst();
-            if (optionalTableOrView.isEmpty()) {
-                log.error("Failed to find table or view with alias {}", column.getTable().getAlias());
-                throw new JSQLParserException("Failed to find table or view with alias " + column.getTable().getAlias());
+            if (optional.isEmpty()) {
+                log.error("Failed to find table/view {} (with designator {})", column.getTable().getName(), column.getTable().getAlias());
+                throw new JSQLParserException("Failed to find table/view " + column.getTable().getName() + " (with alias " + column.getTable().getAlias() + ")");
             }
             final Optional<TableColumn> optionalColumn = allColumns.stream()
                     .filter(c -> c.getInternalName().equals(column.getColumnName().replace("`", "")))
-                    .filter(c -> columnMatches(c, optionalTableOrView.get().getName().replace("`", "")))
+                    .filter(c -> columnMatches(c, optional.get().getName().replace("`", "")))
                     .findFirst();
             if (optionalColumn.isEmpty()) {
                 log.error("Failed to find column with name {} in {}", column.getColumnName(), allColumns.stream().map(TableColumn::getInternalName).toList());
@@ -750,22 +749,45 @@ public interface QueryMapper {
         return columns;
     }
 
-    default boolean tableOptionalAliasMatches(net.sf.jsqlparser.schema.Table table, String tableName) {
-        if (table.getAlias() == null) {
-            /* table is non-aliased */
-            final String otherTableName = table.getName()
-                    .trim()
-                    .replace("`", "");
-            log.trace("table {} has no alias", otherTableName);
-            return otherTableName.equals(tableName);
+    default List<FromItem> fromItemToFromItems(FromItem data) {
+        return fromItemToFromItems(data, 0);
+    }
+
+    default List<FromItem> fromItemToFromItems(FromItem data, Integer level) {
+        final List<FromItem> fromItems = new LinkedList<>();
+        if (data instanceof net.sf.jsqlparser.schema.Table table) {
+            fromItems.add(data);
+            log.trace("from-item {} is of type table: level ~> {}", table.getName(), level);
+            return fromItems;
         }
-        /* has alias */
-        final String alias = table.getAlias()
+        if (data instanceof SubJoin subJoin) {
+            log.trace("from-item is of type sub-join: level ~> {}", level);
+            for (Join join : subJoin.getJoinList()) {
+                fromItems.addAll(fromItemToFromItems(join.getRightItem(), level + 1));
+            }
+            fromItems.addAll(fromItemToFromItems(((SubJoin) data).getLeft(), level + 1));
+            return fromItems;
+        }
+        log.warn("unknown from-item {}", data);
+        return null;
+    }
+
+    default boolean tableMatches(net.sf.jsqlparser.schema.Table table, String otherTableName) {
+        final String tableName = table.getName()
+                .trim()
+                .replace("`", "");
+        if (table.getAlias() == null) {
+            /* table does not have designator */
+            log.trace("table {} has no designator", tableName);
+            return tableName.equals(otherTableName);
+        }
+        /* has designator */
+        final String designator = table.getAlias()
                 .getName()
                 .trim()
                 .replace("`", "");
-        log.trace("table {} has alias {}", table.getName(), alias);
-        return alias.equals(tableName);
+        log.trace("table {} has designator {}", tableName, designator);
+        return designator.equals(otherTableName);
     }
 
     @Transactional(readOnly = true)
