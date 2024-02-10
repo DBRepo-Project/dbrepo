@@ -195,7 +195,11 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
             final Connection connection = dataSource.getConnection();
             final PreparedStatement preparedStatement = viewMapper.viewToSelectAll(connection, view, page, size);
             final ResultSet resultSet = preparedStatement.executeQuery();
-            return queryMapper.resultListToQueryResultDto(view.getColumns(), resultSet);
+            final List<TableColumn> columns = view.getColumns()
+                    .stream()
+                    .map(viewMapper::viewColumnToTableColumn)
+                    .toList();
+            return queryMapper.resultListToQueryResultDto(columns, resultSet);
         } catch (SQLException e) {
             log.error("Failed to map object: {}", e.getMessage());
             throw new TableMalformedException("Failed to map object: " + e.getMessage(), e);

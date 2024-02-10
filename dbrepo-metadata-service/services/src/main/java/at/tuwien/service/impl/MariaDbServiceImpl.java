@@ -1,7 +1,6 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.api.database.DatabaseCreateDto;
-import at.tuwien.api.database.DatabaseModifyImageDto;
 import at.tuwien.api.database.DatabaseModifyVisibilityDto;
 import at.tuwien.api.database.DatabaseTransferDto;
 import at.tuwien.config.QueryConfig;
@@ -18,6 +17,7 @@ import at.tuwien.exception.*;
 import at.tuwien.mapper.DatabaseMapper;
 import at.tuwien.mapper.QueryMapper;
 import at.tuwien.mapper.TableMapper;
+import at.tuwien.mapper.ViewMapper;
 import at.tuwien.repository.mdb.ContainerRepository;
 import at.tuwien.repository.mdb.DatabaseRepository;
 import at.tuwien.repository.sdb.DatabaseIdxRepository;
@@ -42,6 +42,7 @@ import java.util.*;
 @Service
 public class MariaDbServiceImpl extends HibernateConnector implements DatabaseService {
 
+    private final ViewMapper viewMapper;
     private final QueryConfig queryConfig;
     private final QueryMapper queryMapper;
     private final TableMapper tableMapper;
@@ -53,10 +54,11 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
     private final DatabaseIdxRepository databaseIdxRepository;
 
     @Autowired
-    public MariaDbServiceImpl(QueryConfig queryConfig, QueryMapper queryMapper, TableMapper tableMapper,
-                              UserService userService, DatabaseMapper databaseMapper, ContainerService containerService,
-                              DatabaseRepository databaseRepository, ContainerRepository containerRepository,
-                              DatabaseIdxRepository databaseIdxRepository) {
+    public MariaDbServiceImpl(ViewMapper viewMapper, QueryConfig queryConfig, QueryMapper queryMapper,
+                              TableMapper tableMapper, UserService userService, DatabaseMapper databaseMapper,
+                              ContainerService containerService, DatabaseRepository databaseRepository,
+                              ContainerRepository containerRepository, DatabaseIdxRepository databaseIdxRepository) {
+        this.viewMapper = viewMapper;
         this.queryConfig = queryConfig;
         this.queryMapper = queryMapper;
         this.tableMapper = tableMapper;
@@ -322,10 +324,14 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         log.debug("database with id {} misses view(s) in metadata database: {}", databaseId, diffViews.stream().map(View::getInternalName).toList());
         for (View view : diffViews) {
             try {
-                view.setColumns(queryMapper.parseColumns(view.getQuery(), database));
+                view.setColumns(viewMapper.tableColumnsToViewColumns(view, queryMapper.parseColumns(view.getQuery(), database)));
             } catch (JSQLParserException e) {
                 log.error("Failed to map/parse columns: {}", e.getMessage());
                 throw new ColumnParseException("Failed to map/parse columns: " + e.getMessage(), e);
+            }
+            if (view.getColumns().stream().anyMatch(c -> c.getColumn().getId() == null)) {
+                log.warn("Skipping creation of view {}: referenced columns does not exist in metadata database", view.getInternalName());
+                continue;
             }
             database.getViews()
                     .add(view);

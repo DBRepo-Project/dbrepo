@@ -400,8 +400,8 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         assertEquals(DATABASE_1_OWNER, view1.getCreatedBy());
         assertNotNull(view1.getQuery());
         assertNotNull(view1.getQueryHash());
-        assertColumn(view1.getColumns().get(0), 0, "id", TableColumnType.BIGINT, null, false, true, true);
-        assertColumn(view1.getColumns().get(1), 1, "date", TableColumnType.DATE, null, false, false, false);
+        assertColumn(view1.getColumns().get(0).getColumn(), 0, "id", TableColumnType.BIGINT, null, false, true, true);
+        assertColumn(view1.getColumns().get(1).getColumn(), 1, "date", TableColumnType.DATE, null, false, false, false);
     }
 
     /* ################################################################################################### */

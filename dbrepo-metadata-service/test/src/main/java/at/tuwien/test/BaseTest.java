@@ -4908,10 +4908,19 @@ public abstract class BaseTest {
     public final static String VIEW_1_QUERY = "select `location`, `lat`, `lng` from `weather_location`";
     public final static String VIEW_1_QUERY_HASH = "dc81a6877c7c51a6a6f406e1fc2a255e44a0d49a20548596e0d583c3eb849c23";
 
-    public final static List<TableColumn> VIEW_1_COLUMNS = List.of(
-            TABLE_2_COLUMNS.get(0),
-            TABLE_2_COLUMNS.get(1),
-            TABLE_2_COLUMNS.get(2)
+    public final static List<ViewColumn> VIEW_1_COLUMNS = List.of(
+            ViewColumn.builder()
+                    .ordinalPosition(0)
+                    .column(TABLE_2_COLUMNS.get(0))
+                    .build(),
+            ViewColumn.builder()
+                    .ordinalPosition(1)
+                    .column(TABLE_2_COLUMNS.get(1))
+                    .build(),
+            ViewColumn.builder()
+                    .ordinalPosition(2)
+                    .column(TABLE_2_COLUMNS.get(2))
+                    .build()
     );
 
     public final static List<ColumnDto> VIEW_1_COLUMNS_DTO = List.of(
@@ -4974,11 +4983,23 @@ public abstract class BaseTest {
     public final static String VIEW_2_QUERY = "select `date`, `location` as loc, `rainfall`, `mintemp` from `weather_aus` where `location` = 'Albury'";
     public final static String VIEW_2_QUERY_HASH = "987fc946772ffb6d85060262dcb5df419692a1f6772ea995e3dedb53c191e984";
 
-    public final static List<TableColumn> VIEW_2_COLUMNS = List.of(
-            TABLE_1_COLUMNS.get(1),
-            TABLE_1_COLUMNS.get(2),
-            TABLE_1_COLUMNS.get(4),
-            TABLE_1_COLUMNS.get(3)
+    public final static List<ViewColumn> VIEW_2_COLUMNS = List.of(
+            ViewColumn.builder()
+                    .ordinalPosition(0)
+                    .column(TABLE_1_COLUMNS.get(1))
+                    .build(),
+            ViewColumn.builder()
+                    .ordinalPosition(1)
+                    .column(TABLE_1_COLUMNS.get(2))
+                    .build(),
+            ViewColumn.builder()
+                    .ordinalPosition(2)
+                    .column(TABLE_1_COLUMNS.get(4))
+                    .build(),
+            ViewColumn.builder()
+                    .ordinalPosition(3)
+                    .column(TABLE_1_COLUMNS.get(3))
+                    .build()
     );
 
     public final static List<ColumnDto> VIEW_2_COLUMNS_DTO = List.of(
@@ -5036,11 +5057,23 @@ public abstract class BaseTest {
     public final static String VIEW_3_QUERY = "select w.`mintemp`, w.`rainfall`, w.`location`, m.`date` from `weather_aus` w join `junit2` m on m.`location` = w.`location` and m.`date` = w.`date`";
     public final static String VIEW_3_QUERY_HASH = "bbbaa56a5206b3dc3e6cf9301b0db9344eb6f19b100c7b88550ffb597a0bd255";
 
-    public final static List<TableColumn> VIEW_3_COLUMNS = List.of(
-            TABLE_1_COLUMNS.get(3),
-            TABLE_1_COLUMNS.get(4),
-            TABLE_1_COLUMNS.get(2),
-            TABLE_1_COLUMNS.get(1)
+    public final static List<ViewColumn> VIEW_3_COLUMNS = List.of(
+            ViewColumn.builder()
+                    .ordinalPosition(0)
+                    .column(TABLE_1_COLUMNS.get(3))
+                    .build(),
+            ViewColumn.builder()
+                    .ordinalPosition(1)
+                    .column(TABLE_1_COLUMNS.get(4))
+                    .build(),
+            ViewColumn.builder()
+                    .ordinalPosition(2)
+                    .column(TABLE_1_COLUMNS.get(2))
+                    .build(),
+            ViewColumn.builder()
+                    .ordinalPosition(3)
+                    .column(TABLE_1_COLUMNS.get(1))
+                    .build()
     );
 
     public final static List<ColumnDto> VIEW_3_COLUMNS_DTO = List.of(
@@ -5100,24 +5133,75 @@ public abstract class BaseTest {
     public final static String VIEW_4_QUERY = "SELECT `animal_name`, `hair`, `feathers`, `eggs`, `milk`, `airborne`, `aquatic`, `predator`, `backbone`, `breathes`, `venomous`, `fins`, `legs`, `tail`, `domestic`, `catsize`, `class_type` FROM `zoo` WHERE `class_type` = 1";
     public final static String VIEW_4_QUERY_HASH = "3561cd0bb0b0e94d6f15ae602134252a5760d09d660a71a4fb015b6991c8ba0b";
 
-    public final static List<TableColumn> VIEW_4_COLUMNS = List.of(
-            TABLE_5_COLUMNS.get(1),
-            TABLE_5_COLUMNS.get(2),
-            TABLE_5_COLUMNS.get(3),
-            TABLE_5_COLUMNS.get(5),
-            TABLE_5_COLUMNS.get(6),
-            TABLE_5_COLUMNS.get(8),
-            TABLE_5_COLUMNS.get(10),
-            TABLE_5_COLUMNS.get(11),
-            TABLE_5_COLUMNS.get(12),
-            TABLE_5_COLUMNS.get(13),
-            TABLE_5_COLUMNS.get(14),
-            TABLE_5_COLUMNS.get(15),
-            TABLE_5_COLUMNS.get(16),
-            TABLE_5_COLUMNS.get(17),
-            TABLE_5_COLUMNS.get(18),
-            TABLE_5_COLUMNS.get(19),
-            TABLE_5_COLUMNS.get(20)
+    public final static List<ViewColumn> VIEW_4_COLUMNS = List.of(
+            ViewColumn.builder()
+                    .ordinalPosition(0)
+                    .column(TABLE_5_COLUMNS.get(1))
+                    .build(),
+            ViewColumn.builder()
+                    .ordinalPosition(1)
+                    .column(TABLE_5_COLUMNS.get(2))
+                    .build(),
+            ViewColumn.builder()
+                    .ordinalPosition(2)
+                    .column(TABLE_5_COLUMNS.get(3))
+                    .build(),
+            ViewColumn.builder()
+                    .ordinalPosition(3)
+                    .column(TABLE_5_COLUMNS.get(5))
+                    .build(),
+            ViewColumn.builder()
+                    .ordinalPosition(4)
+                    .column(TABLE_5_COLUMNS.get(6))
+                    .build(),
+            ViewColumn.builder()
+                    .ordinalPosition(5)
+                    .column(TABLE_5_COLUMNS.get(8))
+                    .build(),
+            ViewColumn.builder()
+                    .ordinalPosition(6)
+                    .column(TABLE_5_COLUMNS.get(10))
+                    .build(),
+            ViewColumn.builder()
+                    .ordinalPosition(7)
+                    .column(TABLE_5_COLUMNS.get(11))
+                    .build(),
+            ViewColumn.builder()
+                    .ordinalPosition(8)
+                    .column(TABLE_5_COLUMNS.get(12))
+                    .build(),
+            ViewColumn.builder()
+                    .ordinalPosition(9)
+                    .column(TABLE_5_COLUMNS.get(13))
+                    .build(),
+            ViewColumn.builder()
+                    .ordinalPosition(10)
+                    .column(TABLE_5_COLUMNS.get(14))
+                    .build(),
+            ViewColumn.builder()
+                    .ordinalPosition(11)
+                    .column(TABLE_5_COLUMNS.get(15))
+                    .build(),
+            ViewColumn.builder()
+                    .ordinalPosition(12)
+                    .column(TABLE_5_COLUMNS.get(16))
+                    .build(),
+            ViewColumn.builder()
+                    .ordinalPosition(13)
+                    .column(TABLE_5_COLUMNS.get(17))
+                    .build(),
+            ViewColumn.builder()
+                    .ordinalPosition(14)
+                    .column(TABLE_5_COLUMNS.get(18))
+                    .build(),
+            ViewColumn.builder()
+                    .ordinalPosition(15)
+                    .column(TABLE_5_COLUMNS.get(19))
+                    .build(),
+            ViewColumn.builder()
+                    .ordinalPosition(16)
+                    .column(TABLE_5_COLUMNS.get(20))
+                    .build()
     );
 
     public final static List<ColumnDto> VIEW_4_COLUMNS_DTO = List.of(

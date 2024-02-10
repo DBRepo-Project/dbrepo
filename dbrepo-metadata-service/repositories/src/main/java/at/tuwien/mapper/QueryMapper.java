@@ -619,12 +619,6 @@ public interface QueryMapper {
         return columnsToRawFindAllQuery(table.getInternalName(), table.getColumns(), timestamp, size, page);
     }
 
-    default String viewToRawFindAllQuery(View view, Long size, Long page) {
-        log.trace("mapping view to find all query, view={}, size={}, page={}", view, size, page);
-        /* param check */
-        return columnsToRawFindAllQuery(view.getInternalName(), view.getColumns(), null, size, page);
-    }
-
     private String columnsToRawFindAllQuery(String tableName, List<TableColumn> columns, Instant timestamp, Long size, Long page) {
         final int[] idx = new int[]{0};
         final StringBuilder statement = new StringBuilder("SELECT ");

@@ -153,7 +153,6 @@
         dfID             BIGINT,
         cName            VARCHAR(100),
         internal_name    VARCHAR(100) NOT NULL,
-        alias            VARCHAR(100),
         Datatype         ENUM ('CHAR','VARCHAR','BINARY','VARBINARY','TINYBLOB','TINYTEXT','TEXT','BLOB','MEDIUMTEXT','MEDIUMBLOB','LONGTEXT','LONGBLOB','ENUM','SET','BIT','TINYINT','BOOL','SMALLINT','MEDIUMINT','INT','BIGINT','FLOAT','DOUBLE','DECIMAL','DATE','DATETIME','TIMESTAMP','TIME','YEAR'),
         length           BIGINT       NULL,
         ordinal_position INTEGER      NOT NULL,
@@ -355,10 +354,11 @@
 
     CREATE TABLE IF NOT EXISTS `mdb_view_columns`
     (
-        id       BIGINT  NOT NULL AUTO_INCREMENT,
-        cid      BIGINT  NOT NULL,
-        vid      BIGINT  NOT NULL,
-        position INTEGER NULL,
+        id               BIGINT        NOT NULL AUTO_INCREMENT,
+        cid              BIGINT        NOT NULL,
+        vid              BIGINT        NOT NULL,
+        alias            VARCHAR(100),
+        ordinal_position INTEGER,
         PRIMARY KEY (id),
         FOREIGN KEY (vid) REFERENCES mdb_view (id),
         FOREIGN KEY (cid) REFERENCES mdb_columns (ID)
