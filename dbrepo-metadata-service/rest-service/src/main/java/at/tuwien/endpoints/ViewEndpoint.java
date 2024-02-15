@@ -294,6 +294,15 @@ public class ViewEndpoint {
                 throw new NotAllowedException("Failed to view data of private view: role missing");
             }
         }
+        /* default */
+        if (page == null) {
+            log.trace("page is null: default to 0");
+            page = 0L;
+        }
+        if (size == null) {
+            log.trace("size is null: default to 10");
+            size = 10L;
+        }
         /* find */
         log.debug("find view data for database with id {}", databaseId);
         final View view = viewService.findById(databaseId, viewId, principal);

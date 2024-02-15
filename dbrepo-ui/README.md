@@ -41,3 +41,14 @@ Optionally, generate a coverage report:
 ```bash
 yarn run coverage
 ```
+
+## Troubleshooting
+
+Watchpack Error (watcher): Error: ENOSPC: System limit for number of file watchers reached,
+watch `./dbrepo-ui/node_modules/...`
+
+* Cause: Started the local development server with `yarn dev` and the system file watchers could not be created since
+  the maximum limit is reached, debug with `cat /proc/sys/fs/inotify/max_user_watches`.
+* Solution: Increase the limit with `sudo sysctl fs.inotify.max_user_watches=131070` and verify
+  success: `sudo sysctl -p`
+* See further: [https://stackoverflow.com/questions/53930305/nodemon-error-system-limit-for-number-of-file-watchers-reached](https://stackoverflow.com/questions/53930305/nodemon-error-system-limit-for-number-of-file-watchers-reached)

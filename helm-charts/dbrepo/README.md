@@ -58,30 +58,30 @@ The command removes all the Kubernetes components associated with the chart and 
 The Metadata Database uses the [Bitnami MariaDB Galera](https://artifacthub.io/packages/helm/bitnami/mariadb-galera)
 Helm chart. See their documentation for the remaining overridden values.
 
-| Name                        | Description                               | Value         |
-|-----------------------------|-------------------------------------------|---------------|
-| `metadata-db.host`          | Hostname.                                 | `metadata-db` |
-| `metadata-db.jdbcExtraArgs` | Extra arguments for the JDBC connections. | `""`          |
+| Name                       | Description                               | Value         |
+|----------------------------|-------------------------------------------|---------------|
+| `metadataDb.host`          | Hostname.                                 | `metadata-db` |
+| `metadataDb.jdbcExtraArgs` | Extra arguments for the JDBC connections. | `""`          |
 
 ### Authentication Service
 
 The Auth Service uses the [Bitnami Keycloak](https://artifacthub.io/packages/helm/bitnami/keycloak) Helm chart. See
 their documentation for the remaining overridden values.
 
-| Name                         | Description                                                     | Value                              |
-|------------------------------|-----------------------------------------------------------------|------------------------------------|
-| `auth-service.client.id`     | Client id. This value is publicly known.                        | `dbrepo-client`                    |
-| `auth-service.client.secret` | Client secret. This value should never be known outside DBRepo. | `MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG` |
+| Name                        | Description                                                     | Value                              |
+|-----------------------------|-----------------------------------------------------------------|------------------------------------|
+| `authService.client.id`     | Client id. This value is publicly known.                        | `dbrepo-client`                    |
+| `authService.client.secret` | Client secret. This value should never be known outside DBRepo. | `MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG` |
 
 ### Auth Database
 
 The Auth Database uses the [Bitnami PostgreSQL HA](https://artifacthub.io/packages/helm/bitnami/postgresql-ha) Helm
 chart. See their documentation for the remaining overridden values.
 
-| Name           | Description                          | Value            |
-|----------------|--------------------------------------|------------------|
-| `auth-db.host` | Hostname. Needed for other services. | `auth-db-pgpool` |
-| `auth-db.port` | Port. Needed for other services.     | `5432`           |
+| Name          | Description                          | Value            |
+|---------------|--------------------------------------|------------------|
+| `authDb.host` | Hostname. Needed for other services. | `auth-db-pgpool` |
+| `authDb.port` | Port. Needed for other services.     | `5432`           |
 
 ### Data Database
 
@@ -95,12 +95,12 @@ The Search Database uses
 the [OpenSearch](https://artifacthub.io/packages/helm/opensearch-project-helm-charts/opensearch) Helm
 chart. See their documentation for the remaining overridden values.
 
-| Name                 | Description                          | Value       |
-|----------------------|--------------------------------------|-------------|
-| `search-db.host`     | Hostname. Needed for other services. | `search-db` |
-| `search-db.port`     | Port. Needed for other services.     | `9200`      |
-| `search-db.username` | Username. Needed for other services. | `admin`     |
-| `search-db.password` | Password. Needed for other services. | `admin`     |
+| Name                | Description                          | Value       |
+|---------------------|--------------------------------------|-------------|
+| `searchdb.host`     | Hostname. Needed for other services. | `search-db` |
+| `searchdb.port`     | Port. Needed for other services.     | `9200`      |
+| `searchdb.username` | Username. Needed for other services. | `admin`     |
+| `searchdb.password` | Password. Needed for other services. | `admin`     |
 
 ### Search Database Dashboard
 
@@ -110,29 +110,29 @@ chart. See their documentation for the remaining overridden values.
 
 ### Upload Service
 
-| Name                              | Description                            | Value             |
-|-----------------------------------|----------------------------------------|-------------------|
-| `upload-service.enabled`          | Enables/disabled the deployment.       | `true`            |
-| `upload-service.image.registry`   | Registry to pull the image             | `docker.io`       |
-| `upload-service.image.repository` | Repository to pull the image           | `tusproject/tusd` |
-| `upload-service.image.tag`        | Tag of the image.                      | `v1.12`           |
-| `upload-service.replicaCount`     | Number of replicas for the deployment. | `2`               |
+| Name                             | Description                            | Value             |
+|----------------------------------|----------------------------------------|-------------------|
+| `uploadService.enabled`          | Enables/disabled the deployment.       | `true`            |
+| `uploadService.image.registry`   | Registry to pull the image             | `docker.io`       |
+| `uploadService.image.repository` | Repository to pull the image           | `tusproject/tusd` |
+| `uploadService.image.tag`        | Tag of the image.                      | `v1.12`           |
+| `uploadService.replicaCount`     | Number of replicas for the deployment. | `2`               |
 
 ### Broker Service
 
 The Broker Service uses the [Bitnami RabbitMQ](https://artifacthub.io/packages/helm/bitnami/rabbitmq)
 Helm chart. See their documentation for the remaining overridden values.
 
-| Name                               | Description                                                             | Value                         |
-|------------------------------------|-------------------------------------------------------------------------|-------------------------------|
-| `broker-service.url`               | Admin API endpoint. Needed for other services.                          | `http://broker-service:15672` |
-| `broker-service.host`              | Service hostname. Needed for other services.                            | `broker-service`              |
-| `broker-service.port`              | Service port. Needed for other services.                                | `5672`                        |
-| `broker-service.virtualHost`       | Virtual host on RabbitMQ. Needed for other services.                    | `dbrepo`                      |
-| `broker-service.queueName`         | Queue name on RabbitMQ. Needed for other services.                      | `dbrepo`                      |
-| `broker-service.exchangeName`      | Exchange name on RabbitMQ. Needed for other services.                   | `dbrepo`                      |
-| `broker-service.routingKey`        | Route binding for queue to exchange defined. Needed for other services. | `dbrepo.#`                    |
-| `broker-service.connectionTimeout` | Connection timeout. Needed for other services.                          | `60000`                       |
+| Name                              | Description                                                             | Value                         |
+|-----------------------------------|-------------------------------------------------------------------------|-------------------------------|
+| `brokerService.url`               | Admin API endpoint. Needed for other services.                          | `http://broker-service:15672` |
+| `brokerService.host`              | Service hostname. Needed for other services.                            | `broker-service`              |
+| `brokerService.port`              | Service port. Needed for other services.                                | `5672`                        |
+| `brokerService.virtualHost`       | Virtual host on RabbitMQ. Needed for other services.                    | `dbrepo`                      |
+| `brokerService.queueName`         | Queue name on RabbitMQ. Needed for other services.                      | `dbrepo`                      |
+| `brokerService.exchangeName`      | Exchange name on RabbitMQ. Needed for other services.                   | `dbrepo`                      |
+| `brokerService.routingKey`        | Route binding for queue to exchange defined. Needed for other services. | `dbrepo.#`                    |
+| `brokerService.connectionTimeout` | Connection timeout. Needed for other services.                          | `60000`                       |
 
 ### Analyse Service
 
@@ -204,10 +204,10 @@ Helm chart. See their documentation for the remaining overridden values.
 The Storage Service uses the [SeaweedFS](https://artifacthub.io/packages/helm/seaweedfs/seaweedfs)
 Helm chart. See their documentation for the remaining overridden values.
 
-| Name                            | Description                                 | Value            |
-|---------------------------------|---------------------------------------------|------------------|
-| `storage-service.auth.username` | Username for S3. Needed for other services. | `seaweedfsadmin` |
-| `storage-service.auth.password` | Password for S3. Needed for other services. | `seaweedfsadmin` |
+| Name                           | Description                                 | Value            |
+|--------------------------------|---------------------------------------------|------------------|
+| `storageservice.auth.username` | Username for S3. Needed for other services. | `seaweedfsadmin` |
+| `storageservice.auth.password` | Password for S3. Needed for other services. | `seaweedfsadmin` |
 
 ### User Interface
 

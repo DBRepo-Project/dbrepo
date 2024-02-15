@@ -26,6 +26,9 @@ public class ForeignKey {
     @Column(updatable = false, nullable = false)
     private Long fkid;
 
+    @Column(updatable = false, nullable = false)
+    private String name;
+
     @ToString.Exclude
     @org.springframework.data.annotation.Transient
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)

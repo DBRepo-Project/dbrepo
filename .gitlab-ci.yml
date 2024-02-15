@@ -71,6 +71,18 @@ build-docker:
     - "docker build -t dbrepo-data-service:build --target build dbrepo-data-service"
     - "docker compose build --parallel"
 
+build-helm:
+  image: docker.io/docker:24-dind
+  stage: build
+  before_script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY_URL
+  script:
+    - apk add sed helm curl
+    - 'sed -i -e "s/^version:.*/version: \"${CHART_VERSION}\"/g" ./helm-charts/dbrepo/Chart.yaml'
+    - 'sed -i -e "s/^appVersion:.*/appVersion: \"${APP_VERSION}\"/g" ./helm-charts/dbrepo/Chart.yaml'
+    - find ./helm-charts -type f -exec sed -i -e "s/__CHARTVERSION__/${CHART_VERSION}/g" {} \;
+    - helm package ./helm-charts/dbrepo --destination ./build
+
 test-metadata-service:
   image: maven:3-openjdk-17
   stage: test
@@ -119,12 +131,13 @@ test-analyse-service:
   script:
     - "pip install pipenv"
     - "pipenv install gunicorn && pipenv install --dev --system --deploy"
-    - "cd ./dbrepo-analyse-service/ && coverage run -m pytest test/test_determine_dt.py test/test_determine_pk.py test/test_determine_stats.py --junitxml=report.xml && coverage html && coverage report > ./coverage.txt"
+    - cd ./dbrepo-analyse-service/ && coverage run -m pytest test/test_determine_dt.py test/test_determine_pk.py test/test_s3_client.py --junitxml=report.xml && coverage html --omit="test/*" && coverage report --omit="test/*" > ./coverage.txt
     - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
   artifacts:
     when: always
     paths:
       - ./dbrepo-analyse-service/report.xml
+      - ./dbrepo-analyse-service/coverage.txt
     expire_in: 1 days
     reports:
       junit: ./dbrepo-analyse-service/report.xml

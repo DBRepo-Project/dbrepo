@@ -40,12 +40,13 @@ public class MariadbListenerImpl implements DatabaseListener {
     @Override
     @Scheduled(fixedRateString = "${fda.obtainMetadataRate}", timeUnit = TimeUnit.SECONDS)
     @Transactional
-    public void updateStoredMetadata() throws QueryMalformedException, ColumnParseException,
-            DatabaseNotFoundException, TableNotFoundException {
+    public void updateStoredMetadata() throws QueryMalformedException, ColumnParseException, DatabaseNotFoundException {
         for (Long databaseId : databaseRepository.findAllOnlyIds()) {
             try {
-                databaseService.obtainMetadata(databaseId);
-            } catch (DatabaseUnchangedException e) {
+                databaseService.obtainTablesMetadata(databaseId);
+                databaseService.obtainConstraints(databaseId);
+                databaseService.obtainViewsMetadata(databaseId);
+            } catch (DatabaseUnchangedException | TableMalformedException e) {
                 /* ignore */
             }
         }

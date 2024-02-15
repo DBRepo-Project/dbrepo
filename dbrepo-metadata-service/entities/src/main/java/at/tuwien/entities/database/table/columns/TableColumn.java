@@ -73,7 +73,7 @@ public class TableColumn implements Comparable<TableColumn> {
     @Column
     private Long indexLength;
 
-    @Column
+    @Transient
     private String alias;
 
     @Column(name = "datatype", nullable = false, columnDefinition = "ENUM('CHAR','VARCHAR','BINARY','VARBINARY','TINYBLOB','TINYTEXT','TEXT','BLOB','MEDIUMTEXT','MEDIUMBLOB','LONGTEXT','LONGBLOB','ENUM','SET','BIT','TINYINT','BOOL','SMALLINT','MEDIUMINT','INT','BIGINT','FLOAT','DOUBLE','DECIMAL','DATE','DATETIME','TIMESTAMP','TIME','YEAR')")

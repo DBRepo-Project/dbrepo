@@ -132,6 +132,9 @@ public class Table {
     @Column(columnDefinition = "TIMESTAMP")
     private Instant lastModified;
 
+    @Column(name = "processed_constraints", nullable = false)
+    private Boolean processedConstraints;
+
     @Override
     public boolean equals(Object o) {
         if (o == this) {

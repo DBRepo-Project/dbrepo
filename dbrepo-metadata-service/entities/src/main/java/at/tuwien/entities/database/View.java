@@ -111,20 +111,13 @@ public class View {
         return this.internalName.equals(table.getName().replace("`", ""));
     }
 
-    /**
-     * Cascade cannot be CascadeType.PERSIST since columns already exist
-     */
     @ToString.Exclude
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
-    @JoinTable(name = "mdb_view_columns",
-            inverseJoinColumns = {
-                    @JoinColumn(name = "cid", referencedColumnName = "id"),
-            },
-            joinColumns = {
-                    @JoinColumn(name = "vid", referencedColumnName = "id"),
-            })
-    @OrderColumn(name = "position")
-    private List<TableColumn> columns;
+    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST})
+    @JoinColumns({
+            @JoinColumn(name = "vid", referencedColumnName = "id", updatable = false)
+    })
+    @OrderColumn(name = "ordinalPosition")
+    private List<ViewColumn> columns;
 
     @CreatedDate
     @Column(nullable = false, updatable = false, columnDefinition = "TIMESTAMP default NOW()")

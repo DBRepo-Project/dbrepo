@@ -13,6 +13,10 @@ import at.tuwien.entities.database.View;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.database.table.columns.TableColumnType;
+import at.tuwien.entities.database.table.constraints.Constraints;
+import at.tuwien.entities.database.table.constraints.foreignKey.ForeignKey;
+import at.tuwien.entities.database.table.constraints.foreignKey.ForeignKeyReference;
+import at.tuwien.entities.database.table.constraints.unique.Unique;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.repository.mdb.*;
@@ -341,11 +345,11 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void obtainMetadata_tableWithoutVersioning_succeeds() throws QueryMalformedException,
+    public void obtainTablesMetadata_tableWithoutVersioning_succeeds() throws QueryMalformedException,
             DatabaseNotFoundException, ColumnParseException {
 
         /* test */
-        final Database response = databaseService.obtainMetadata(DATABASE_1_ID);
+        final Database response = databaseService.obtainTablesMetadata(DATABASE_1_ID);
         final List<Table> tables = response.getTables();
         assertEquals(7, tables.size());
         final Optional<Table> optional3 = tables.stream().filter(t -> t.getInternalName().equals("weather_aut_without_versioning")).findFirst();
@@ -360,11 +364,11 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void obtainMetadata_tableWithVersioning_succeeds() throws QueryMalformedException, DatabaseNotFoundException,
+    public void obtainTablesMetadata_tableWithVersioning_succeeds() throws QueryMalformedException, DatabaseNotFoundException,
             ColumnParseException {
 
         /* test */
-        final Database response = databaseService.obtainMetadata(DATABASE_1_ID);
+        final Database response = databaseService.obtainTablesMetadata(DATABASE_1_ID);
         final List<Table> tables = response.getTables();
         assertEquals(7, tables.size());
         final Optional<Table> optional4 = tables.stream().filter(t -> t.getInternalName().equals("weather_aut")).findFirst();
@@ -380,11 +384,14 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void obtainMetadata_view_succeeds() throws QueryMalformedException, DatabaseNotFoundException,
+    public void obtainViewsMetadata_view_succeeds() throws QueryMalformedException, DatabaseNotFoundException,
             ColumnParseException {
 
+        /* mock */
+        databaseService.obtainTablesMetadata(DATABASE_1_ID); /* weather_aut is not yet in metadata-db */
+
         /* test */
-        final Database response = databaseService.obtainMetadata(DATABASE_1_ID);
+        final Database response = databaseService.obtainViewsMetadata(DATABASE_1_ID);
         final List<Table> tables = response.getTables();
         assertEquals(7, tables.size());
         final List<View> views = response.getViews();
@@ -400,13 +407,64 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         assertEquals(DATABASE_1_OWNER, view1.getCreatedBy());
         assertNotNull(view1.getQuery());
         assertNotNull(view1.getQueryHash());
-        assertColumn(view1.getColumns().get(0), 0, "id", TableColumnType.BIGINT, null, false, true, true);
-        assertColumn(view1.getColumns().get(1), 1, "date", TableColumnType.DATE, null, false, false, false);
+        assertColumn(view1.getColumns().get(0).getColumn(), 0, "id", TableColumnType.BIGINT, null, false, true, true);
+        assertColumn(view1.getColumns().get(1).getColumn(), 1, "date", TableColumnType.DATE, null, false, false, false);
+    }
+
+    @Test
+    public void obtainConstraints_inlineConstraints_succeeds() throws QueryMalformedException,
+            DatabaseNotFoundException, TableMalformedException, SQLException, ColumnParseException {
+
+        /* test */
+        generic_obtainConstraints("CREATE TABLE foreigner (id BIGINT PRIMARY KEY NOT NULL, weather_id BIGINT REFERENCES weather_aus (id), qty INT CHECK (qty > 0), firstname VARCHAR(255) UNIQUE) WITH SYSTEM VERSIONING;");
+    }
+
+    @Test
+    public void obtainConstraints_complexConstraints_succeeds() throws QueryMalformedException,
+            DatabaseNotFoundException, TableMalformedException, SQLException, ColumnParseException {
+
+        /* test */
+        generic_obtainConstraints("CREATE TABLE foreigner (id BIGINT NOT NULL, weather_id BIGINT NOT NULL, qty INT NOT NULL, firstname VARCHAR(255) NOT NULL, PRIMARY KEY (id), UNIQUE (firstname), FOREIGN KEY (weather_id) REFERENCES weather_aus (id), CONSTRAINT pos_qty CHECK (qty > 0)) WITH SYSTEM VERSIONING;");
     }
 
     /* ################################################################################################### */
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
+
+    protected void generic_obtainConstraints(String sql) throws QueryMalformedException, DatabaseNotFoundException,
+            TableMalformedException, SQLException, ColumnParseException {
+
+        /* mock */
+        MariaDbConfig.execute(DATABASE_1, sql);
+        databaseService.obtainTablesMetadata(DATABASE_1_ID);
+
+        /* test */
+        final Database response = databaseService.obtainConstraints(DATABASE_1_ID);
+        final List<Table> tables = response.getTables();
+        assertEquals(8, tables.size());
+        final Optional<Table> optional8 = tables.stream().filter(t -> t.getInternalName().equals("foreigner")).findFirst();
+        assertTrue(optional8.isPresent());
+        final Table table8 = optional8.get();
+        assertNotNull(table8.getConstraints());
+        final Constraints constraints8 = table8.getConstraints();
+        assertNotNull(constraints8.getUniques());
+        assertEquals(1, constraints8.getUniques().size());
+        final Unique unique0 = constraints8.getUniques().get(0);
+        assertEquals("foreigner", unique0.getTable().getInternalName());
+        assertEquals(1, unique0.getColumns().size());
+        assertEquals("firstname", unique0.getColumns().get(0).getInternalName());
+        assertNotNull(constraints8.getChecks());
+        assertEquals(1, constraints8.getChecks().size());
+        assertNotNull(constraints8.getForeignKeys());
+        assertEquals(1, constraints8.getForeignKeys().size());
+        final ForeignKey foreignKey0 = constraints8.getForeignKeys().get(0);
+        assertEquals("foreigner", foreignKey0.getTable().getInternalName());
+        assertEquals("weather_aus", foreignKey0.getReferencedTable().getInternalName());
+        assertEquals(1, foreignKey0.getReferences().size());
+        final ForeignKeyReference foreignKeyReference0 = foreignKey0.getReferences().get(0);
+        assertEquals("weather_id", foreignKeyReference0.getColumn().getInternalName());
+        assertEquals("id", foreignKeyReference0.getReferencedColumn().getInternalName());
+    }
 
     protected void generic_insert(String query, Long assertQueryId) throws SQLException, QueryMalformedException {
 
