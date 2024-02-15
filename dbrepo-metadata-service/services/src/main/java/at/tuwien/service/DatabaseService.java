@@ -114,7 +114,18 @@ public interface DatabaseService {
     Database modifyImage(Long databaseId, byte[] image) throws DatabaseNotFoundException;
 
     /**
-     * Obtain metadata from database with given id to read table and view information (schema) and write it to the metadata database for management by DBRepo.
+     * Obtain table schema constraints for a database by given id.
+     *
+     * @param databaseId The database id.
+     * @return The updated database.
+     * @throws DatabaseNotFoundException The database was not found in the metadata database.
+     * @throws QueryMalformedException   The inspect query (table/view) is malformed and has syntax issues.
+     * @throws TableMalformedException   The table constraints are malformed.
+     */
+    Database obtainConstraints(Long databaseId) throws DatabaseNotFoundException, QueryMalformedException, TableMalformedException;
+
+    /**
+     * Obtain metadata from database with given id to read table information (schema) and write it to the metadata database for management by DBRepo.
      *
      * @param databaseId The database id.
      * @return The updated database.
@@ -123,6 +134,19 @@ public interface DatabaseService {
      * @throws DatabaseUnchangedException The metadata database is up-to-date and knows about all tables/views in the data database(s).
      * @throws ColumnParseException       The columns could not be automatically parsed from the views.
      */
-    Database obtainMetadata(Long databaseId) throws DatabaseNotFoundException, QueryMalformedException,
-            DatabaseUnchangedException, ColumnParseException, TableNotFoundException;
+    Database obtainTablesMetadata(Long databaseId) throws DatabaseNotFoundException, QueryMalformedException,
+            DatabaseUnchangedException, ColumnParseException;
+
+    /**
+     * Obtain metadata from database with given id to read view information (schema) and write it to the metadata database for management by DBRepo.
+     *
+     * @param databaseId The database id.
+     * @return The updated database.
+     * @throws DatabaseNotFoundException  The database was not found in the metadata database.
+     * @throws QueryMalformedException    The inspect query (table/view) is malformed and has syntax issues.
+     * @throws DatabaseUnchangedException The metadata database is up-to-date and knows about all tables/views in the data database(s).
+     * @throws ColumnParseException       The columns could not be automatically parsed from the views.
+     */
+    Database obtainViewsMetadata(Long databaseId) throws DatabaseNotFoundException, QueryMalformedException,
+            DatabaseUnchangedException, ColumnParseException;
 }

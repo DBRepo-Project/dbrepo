@@ -14,7 +14,6 @@ import at.tuwien.utils.PrincipalUtil;
 import at.tuwien.utils.UserUtil;
 import at.tuwien.validation.EndpointValidator;
 import io.micrometer.observation.annotation.Observed;
-import io.swagger.v3.oas.annotations.ExternalDocumentation;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -174,6 +173,14 @@ public class TableDataEndpoint {
         log.debug("endpoint insert data from csv, databaseId={}, tableId={}, data={}, {}", databaseId, tableId, data, PrincipalUtil.formatForDebug(principal));
         /* check */
         endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(databaseId, tableId, principal);
+        if (data.getNullElement() == null) {
+            log.debug("null element not present, default to empty string");
+            data.setNullElement("");
+        }
+        if (data.getLineTermination() == null) {
+            log.debug("line termination not present, default to \\r\\n");
+            data.setLineTermination("\r\n");
+        }
         /* insert */
         queryService.insert(databaseId, tableId, data, principal);
         return ResponseEntity.accepted()
@@ -228,6 +235,15 @@ public class TableDataEndpoint {
         if (!database.getIsPublic() && !UserUtil.hasRole(principal, "view-table-data")) {
             log.error("Failed to view table data: database with id {} is private and user has no authority", databaseId);
             throw new NotAllowedException("Failed to view table data: database with id " + databaseId + " is private and user has no authority");
+        }
+        /* default */
+        if (page == null) {
+            log.trace("page is null: default to 0");
+            page = 0L;
+        }
+        if (size == null) {
+            log.trace("size is null: default to 10");
+            size = 10L;
         }
         /* find */
         final QueryResultDto response = queryService.tableFindAll(databaseId, tableId, timestamp, page, size, principal);

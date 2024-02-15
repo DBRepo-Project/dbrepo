@@ -590,7 +590,7 @@ public class PrometheusEndpointMvcTest extends BaseUnitTest {
 
         /* mock */
         try {
-            tableColumnEndpoint.update(DATABASE_1_ID, TABLE_1_ID, TABLE_1_COLUMNS.get(3).getId(), request, USER_1_PRINCIPAL, "s3cr3t");
+            tableColumnEndpoint.update(DATABASE_1_ID, TABLE_1_ID, TABLE_1_COLUMNS.get(3).getId(), request, USER_1_PRINCIPAL);
         } catch (Exception e) {
             /* ignore */
         }

@@ -1,6 +1,6 @@
-namespace:
+namespace: ""
 
-hostname:
+hostname: ""
 
 strategyType: RollingUpdate
 
@@ -156,7 +156,7 @@ dataDb:
     sharedStorageClass: default
   replicaCount: 3 # uneven
 
-searchDb:
+searchdb:
   fullnameOverride: search-db
   host: search-db
   port: 9200
@@ -397,8 +397,7 @@ searchService:
     debug: false
   replicaCount: 2
 
-storageService:
-  fullnameOverride: storage-service
+storageservice:
   master:
     enabled: true
   filer:
@@ -428,7 +427,7 @@ storageService:
       username: seaweedfsadmin
       password: seaweedfsadmin
 
-logService:
+logservice:
   fullnameOverride: log-service
   config:
     outputs: |
@@ -473,6 +472,7 @@ ui:
     {
       "title": "Database Repository",
       "version": "1.4.1",
+      "fluid": false,
       "ssl": {
         "force": false
       },
@@ -507,9 +507,9 @@ ui:
         }
       },
       "upload": {
-        "endpoint": "localhost",
-        "port": 1080,
-        "useSsl": false
+        "endpoint": "upload-service",
+        "port": 80,
+        "useSsl": true
       },
       "database": {
         "connection": {

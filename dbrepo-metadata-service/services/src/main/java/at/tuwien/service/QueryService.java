@@ -89,6 +89,7 @@ public interface QueryService {
     /**
      * Select all data known in the database-table id tuple at a given time and return a page of specific size, using
      * Instant to better abstract time concept (JDK 8) from SQL. We use the "mariadb" user for this.
+     * Precondition: page and size is not null
      *
      * @param databaseId The database id.
      * @param tableId    The table id.

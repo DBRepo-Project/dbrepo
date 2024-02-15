@@ -16,7 +16,7 @@ home: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/
 icon: https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/master/.docs/images/signet_white.png
 dependencies:
   - name: opensearch
-    alias: searchDb
+    alias: searchdb
     version: 2.15.0 # app version 2.10.0
     repository: https://opensearch-project.github.io/helm-charts/
   - name: opensearch-dashboards
@@ -44,10 +44,10 @@ dependencies:
     version: 12.5.1
     repository: https://charts.bitnami.com/bitnami
   - name: fluent-bit
-    alias: logService
+    alias: logservice
     version: 0.40.0
     repository: https://fluent.github.io/helm-charts
   - name: seaweedfs
-    alias: storageService
+    alias: storageservice
     version: 3.59.4
     repository: https://seaweedfs.github.io/seaweedfs/helm
