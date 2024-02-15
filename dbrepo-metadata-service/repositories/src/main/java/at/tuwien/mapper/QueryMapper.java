@@ -84,6 +84,7 @@ public interface QueryMapper {
         return slug.toLowerCase(Locale.ENGLISH);
     }
 
+    @Transactional(readOnly = true)
     default QueryResultDto resultListToQueryResultDto(List<TableColumn> columns, ResultSet result) throws SQLException {
         log.trace("mapping result list to query result, columns={}, result={}", columns, result);
         final List<Map<String, Object>> resultList = new LinkedList<>();
@@ -922,9 +923,9 @@ public interface QueryMapper {
                 return String.valueOf(data);
             }
             case YEAR -> {
-                final String tmp = String.valueOf(data);
-                log.trace("mapping {} -> year", tmp);
-                return tmp.substring(0, tmp.indexOf('-'));
+                final String date = String.valueOf(data);
+                log.trace("mapping {} -> year", date);
+                return Short.valueOf(date.substring(0, date.indexOf('-')));
             }
         }
         log.warn("column type {} is not known", column.getColumnType());
