@@ -40,19 +40,17 @@ public class TableServiceImpl extends HibernateConnector implements TableService
     private final TableMapper tableMapper;
     private final DatabaseMapper databaseMapper;
     private final DatabaseService databaseService;
-    private final SemanticService semanticService;
     private final DatabaseRepository databaseRepository;
     private final DatabaseIdxRepository databaseIdxRepository;
 
     @Autowired
     public TableServiceImpl(QueryMapper queryMapper, TableMapper tableMapper, DatabaseMapper databaseMapper,
-                            DatabaseService databaseService, SemanticService semanticService,
-                            DatabaseRepository databaseRepository, DatabaseIdxRepository databaseIdxRepository) {
+                            DatabaseService databaseService, DatabaseRepository databaseRepository,
+                            DatabaseIdxRepository databaseIdxRepository) {
         this.queryMapper = queryMapper;
         this.tableMapper = tableMapper;
         this.databaseMapper = databaseMapper;
         this.databaseService = databaseService;
-        this.semanticService = semanticService;
         this.databaseRepository = databaseRepository;
         this.databaseIdxRepository = databaseIdxRepository;
     }
@@ -209,49 +207,6 @@ public class TableServiceImpl extends HibernateConnector implements TableService
 
     @Override
     @Transactional
-    public TableColumn update(Long databaseId, Long tableId, Long columnId, ColumnSemanticsUpdateDto updateDto,
-                              String authorization) throws TableNotFoundException, DatabaseNotFoundException,
-            TableMalformedException {
-        final Table table = find(databaseId, tableId);
-        final TableColumn column = findColumn(table, columnId);
-        /* assign */
-        if (updateDto.getUnitUri() != null) {
-            try {
-                column.setUnit(semanticService.findUnit(updateDto.getUnitUri()));
-                log.debug("found unit with uri {} in metadata database", updateDto.getUnitUri());
-            } catch (UnitNotFoundException e) {
-                final TableColumnUnit unit = TableColumnUnit.builder()
-                        .uri(updateDto.getUnitUri())
-                        .build();
-                column.setUnit(unit);
-            }
-        } else {
-            column.setUnit(null);
-        }
-        if (updateDto.getConceptUri() != null) {
-            try {
-                column.setConcept(semanticService.findConcept(updateDto.getConceptUri()));
-                log.debug("found concept with uri {} in metadata database", updateDto.getConceptUri());
-            } catch (ConceptNotFoundException e) {
-                final TableColumnConcept concept = TableColumnConcept.builder()
-                        .uri(updateDto.getConceptUri())
-                        .build();
-                column.setConcept(concept);
-            }
-        } else {
-            column.setConcept(null);
-        }
-        /* update in metadata database */
-        table.getColumns().set(table.getColumns().indexOf(column), column);
-        databaseRepository.save(table.getDatabase());
-        /* update in open search database */
-        databaseIdxRepository.save(databaseMapper.databaseToDatabaseDto(databaseService.find(databaseId)));
-        log.info("Updated table column with id {} of table with id {} in metadata database & search database", columnId, tableId);
-        return column;
-    }
-
-    @Override
-    @Transactional
     public void deleteTable(Long databaseId, Long tableId)
             throws TableNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
             TableMalformedException, QueryMalformedException {
@@ -276,26 +231,6 @@ public class TableServiceImpl extends HibernateConnector implements TableService
         /* delete in open search database */
         databaseIdxRepository.save(databaseMapper.databaseToDatabaseDto(databaseService.find(databaseId)));
         log.info("Deleted table with id {} in open search database", table.getId());
-    }
-
-    /**
-     * Finds a column in a given table with column id
-     *
-     * @param table    The table.
-     * @param columnId The column id.
-     * @return The column, if successful.
-     * @throws TableMalformedException The requested column was not found in the table.
-     */
-    protected TableColumn findColumn(Table table, Long columnId) throws TableMalformedException {
-        final Optional<TableColumn> optional = table.getColumns()
-                .stream()
-                .filter(c -> c.getId().equals(columnId))
-                .findFirst();
-        if (optional.isEmpty()) {
-            log.error("Failed to find column with id {} in metadata database", columnId);
-            throw new TableMalformedException("Failed to find column with id " + columnId + "  in metadata database");
-        }
-        return optional.get();
     }
 
 }

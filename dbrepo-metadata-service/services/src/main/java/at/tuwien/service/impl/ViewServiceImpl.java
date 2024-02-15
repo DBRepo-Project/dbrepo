@@ -147,7 +147,7 @@ public class ViewServiceImpl extends HibernateConnector implements ViewService {
             columns = queryMapper.parseColumns(data.getQuery(), database);
         } catch (JSQLParserException e) {
             log.error("Failed to map/parse columns: {}", e.getMessage());
-            throw new QueryMalformedException(e.getMessage(), e);
+            throw new QueryMalformedException("Failed to map/parse columns: " + e.getMessage(), e);
         }
         try {
             final Connection connection = dataSource.getConnection();

@@ -85,7 +85,8 @@ public interface TableMapper {
     ColumnTypeDto columnTypeToColumnTypeDto(TableColumnType data);
 
     @Mappings({
-            @Mapping(target = "constraints", ignore = true)
+            @Mapping(target = "constraints", ignore = true),
+            @Mapping(target = "processedConstraints", expression = "java(false)"),
     })
     Table tableCreateDtoToTable(TableCreateDto data);
 
@@ -124,6 +125,7 @@ public interface TableMapper {
     default Unique columnNameListToUnique(Table table, List<String> names) throws TableMalformedException {
         return Unique.builder()
                 .table(table)
+                .name("UK_" + String.join("_", names))
                 .columns(columnNameListToTableColumn(table, names))
                 .build();
     }
@@ -131,7 +133,7 @@ public interface TableMapper {
     ReferenceType referenceTypeDtoToReferenceType(ReferenceTypeDto dto);
 
     @Transactional(readOnly = true)
-    default ForeignKey foreignKeyCreateDtoToForeignKey(Table table, ForeignKeyCreateDto data) throws TableMalformedException {
+    default ForeignKey foreignKeyCreateDtoToForeignKey(Table table, ForeignKeyCreateDto data, Integer index) throws TableMalformedException {
         final String referencedTableInternalName = nameToInternalName(data.getReferencedTable());
         final Optional<Table> optional = table.getDatabase()
                 .getTables()
@@ -142,11 +144,13 @@ public interface TableMapper {
             log.error("Failed to find referenced table with internal name {} in database with id {}", referencedTableInternalName, table.getDatabase().getId());
             throw new TableMalformedException("Failed to find referenced table with internal name " + referencedTableInternalName + " in database with id " + table.getDatabase().getId());
         }
-        final ForeignKey.ForeignKeyBuilder builder = ForeignKey.builder()
+        final ForeignKey foreignKey = ForeignKey.builder()
+                .name("fk_" + table.getInternalName() + "_" + (index + 1))
                 .table(table)
                 .onUpdate(referenceTypeDtoToReferenceType(data.getOnUpdate()))
                 .onDelete(referenceTypeDtoToReferenceType(data.getOnDelete()))
-                .referencedTable(optional.get());
+                .referencedTable(optional.get())
+                .build();
         final List<TableColumn> columns = columnNameListToTableColumn(table, data.getColumns());
         final List<TableColumn> referencedColumns = columnNameListToTableColumn(optional.get(), data.getReferencedColumns());
         if (columns.isEmpty()) {
@@ -158,7 +162,7 @@ public interface TableMapper {
             throw new TableMalformedException("There have to be equally as many columns and referenced columns in a foreign key");
         }
         final List<ForeignKeyReference> references = new ArrayList<>();
-        final ForeignKey foreignKey = builder.references(references).build();
+        foreignKey.setReferences(references);
         for (int i = 0; i < columns.size(); i++) {
             TableColumn column = columns.get(i);
             TableColumn referencedColumn = referencedColumns.get(i);
@@ -177,44 +181,43 @@ public interface TableMapper {
         if (data == null) {
             return null;
         }
-
-        ForeignKeyDto dto = new ForeignKeyDto(
-                new ArrayList<>(),
-                tableToTableBriefDto(data.getReferencedTable()),
-                new ArrayList<>(),
-                referenceTypeDtoToReferenceType(data.getOnUpdate()),
-                referenceTypeDtoToReferenceType(data.getOnDelete())
-        );
-
+        final ForeignKeyDto foreignKey = ForeignKeyDto.builder()
+                .name(data.getName())
+                .columns(new LinkedList<>())
+                .referencedColumns(new LinkedList<>())
+                .referencedTable(tableToTableBriefDto(data.getReferencedTable()))
+                .onDelete(referenceTypeDtoToReferenceType(data.getOnDelete()))
+                .onUpdate(referenceTypeDtoToReferenceType(data.getOnUpdate()))
+                .build();
         for (ForeignKeyReference reference : data.getReferences()) {
-            dto.getColumns().add(tableColumnToColumnDto(reference.getColumn()));
-            dto.getReferencedColumns().add(tableColumnToColumnDto(reference.getReferencedColumn()));
+            foreignKey.getColumns().add(tableColumnToColumnDto(reference.getColumn()));
+            foreignKey.getReferencedColumns().add(tableColumnToColumnDto(reference.getReferencedColumn()));
         }
 
-        return dto;
+        return foreignKey;
     }
 
+    @Transactional(readOnly = true)
     default Constraints constraintsCreateDtoToConstraints(Table table, ConstraintsCreateDto data)
             throws TableMalformedException {
         if (data == null) {
             return null;
         }
-        Constraints.ConstraintsBuilder builder = Constraints.builder();
+        final Constraints.ConstraintsBuilder builder = Constraints.builder();
         if (data.getUniques() != null) {
-            List<Unique> uniques = new ArrayList<>();
+            final List<Unique> uniques = new ArrayList<>();
             for (List<String> columns : data.getUniques()) {
                 uniques.add(columnNameListToUnique(table, columns));
             }
             builder.uniques(uniques);
         }
         if (data.getForeignKeys() != null) {
-            List<ForeignKey> foreignKeys = new ArrayList<>();
-            for (ForeignKeyCreateDto foreignKeyData : data.getForeignKeys()) {
-                foreignKeys.add(foreignKeyCreateDtoToForeignKey(table, foreignKeyData));
+            final List<ForeignKey> foreignKeys = new ArrayList<>();
+            for (int i = 0; i < data.getForeignKeys().size(); i++) {
+                foreignKeys.add(foreignKeyCreateDtoToForeignKey(table, data.getForeignKeys().get(i), i));
             }
             builder.foreignKeys(foreignKeys);
         }
-
         return builder.build();
     }
 
@@ -588,7 +591,10 @@ public interface TableMapper {
                     .name(resultSet.getString(10))
                     .internalName(resultSet.getString(10))
                     .build();
-            if (resultSet.getString(5) != null) {
+            /* fix boolean and set size for others */
+            if (resultSet.getString(8).equalsIgnoreCase("tinyint(1)")) {
+                column.setColumnType(TableColumnType.BOOL);
+            } else if (resultSet.getString(5) != null) {
                 column.setSize(resultSet.getLong(5));
             } else if (resultSet.getString(6) != null) {
                 column.setSize(resultSet.getLong(6));

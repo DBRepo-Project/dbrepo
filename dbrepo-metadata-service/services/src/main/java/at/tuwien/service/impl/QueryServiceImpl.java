@@ -27,10 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.List;
@@ -120,7 +117,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         return executeCountNonPersistent(databaseId, statement);
     }
 
-    private PreparedStatement prepareStatement(Connection connection, String statement) throws QueryMalformedException {
+    public PreparedStatement prepareStatement(Connection connection, String statement) throws QueryMalformedException {
         try {
             return connection.prepareStatement(statement);
         } catch (SQLException e) {
@@ -129,7 +126,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         }
     }
 
-    private QueryResultDto executeNonPersistent(Long databaseId, String statement, List<TableColumn> columns)
+    public QueryResultDto executeNonPersistent(Long databaseId, String statement, List<TableColumn> columns)
             throws QueryMalformedException, DatabaseNotFoundException, TableMalformedException {
         /* find */
         final Database database = databaseService.find(databaseId);
@@ -150,7 +147,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         }
     }
 
-    private Long executeCountNonPersistent(Long databaseId, String statement)
+    public Long executeCountNonPersistent(Long databaseId, String statement)
             throws QueryMalformedException, TableMalformedException, DatabaseNotFoundException, QueryStoreException {
         /* find */
         final Database database = databaseService.find(databaseId);
@@ -253,7 +250,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         return retrieveBlobAsResource(database.getContainer(), filename);
     }
 
-    private ExportResource retrieveBlobAsResource(Container container, String filename) throws DataDbSidecarException,
+    public ExportResource retrieveBlobAsResource(Container container, String filename) throws DataDbSidecarException,
             FileStorageException, DataProcessingException {
         /* upload from sidecar into blob storage */
         dataDbSidecarGateway.exportFile(container.getSidecarHost(), container.getSidecarPort(), filename);
@@ -331,7 +328,7 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         final Database database = databaseService.find(databaseId);
         final Table table = tableService.find(databaseId, tableId);
         /* run query */
-        if (data.getKeys().size() == 0) return;
+        if (data.getKeys().isEmpty()) return;
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(),
                 database.getContainer(), database);
         /* prepare the statement */
@@ -362,8 +359,12 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
                 database.getContainer(), database);
         try {
             final Connection connection = dataSource.getConnection();
-            queryMapper.importCsvQuery(connection, table, data);
+            final PreparedStatement statement = queryMapper.pathToRawInsertQuery(connection, table, data);
+            statement.executeUpdate();
         } catch (SQLException e) {
+            log.error("Failed to open connection to data database: {}", e.getMessage());
+            throw new TableMalformedException("Failed to open connection to data database: " + e.getMessage(), e);
+        } catch (QueryMalformedException e) {
             log.error("Failed to import csv: {}", e.getMessage());
             throw new TableMalformedException("Failed to import csv: " + e.getMessage(), e);
         } finally {

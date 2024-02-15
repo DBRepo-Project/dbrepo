@@ -11,6 +11,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 import org.mapstruct.Named;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -48,7 +49,13 @@ public interface ViewMapper {
 
     ViewBriefDto viewToViewBriefDto(View data);
 
-    TableColumn viewColumnToTableColumn(ViewColumn data);
+    @Transactional(readOnly = true)
+    default TableColumn viewColumnToTableColumn(ViewColumn data) {
+        return data.getColumn()
+                .toBuilder()
+                .alias(data.getAlias())
+                .build();
+    }
 
     default List<ViewColumn> tableColumnsToViewColumns(View view, List<TableColumn> data) {
         final int[] idx = new int[]{0};
@@ -69,7 +76,7 @@ public interface ViewMapper {
         view.getColumns()
                 .forEach(c -> statement.append(idx[0]++ > 0 ? "," : "")
                         .append("`")
-                        .append(c.getColumn().getInternalName())
+                        .append(c.getAlias() != null ? c.getAlias() : c.getColumn().getInternalName())
                         .append("`"));
         statement.append(" FROM `")
                 .append(view.getInternalName())

@@ -6,16 +6,10 @@ import at.tuwien.annotations.MockListeners;
 import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.api.database.table.TableCreateDto;
 import at.tuwien.api.database.table.columns.ColumnCreateDto;
-import at.tuwien.api.database.table.columns.ColumnTypeDto;
-import at.tuwien.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
-import at.tuwien.api.database.table.constraints.ConstraintsCreateDto;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.MariaDbContainerConfig;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
-import at.tuwien.entities.database.table.columns.TableColumnConcept;
-import at.tuwien.entities.identifier.Identifier;
-import at.tuwien.entities.identifier.IdentifierType;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.TableMapper;
 import at.tuwien.repository.mdb.*;
@@ -41,7 +35,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 
 @Log4j2
 @Testcontainers
@@ -65,9 +58,6 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
 
     @Autowired
     private LicenseRepository licenseRepository;
-
-    @Autowired
-    private IdentifierRepository identifierRepository;
 
     @Autowired
     private TableService tableService;
@@ -124,9 +114,9 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
     }
 
     @Test
-    public void create_withConstraints_succeeds() throws UserNotFoundException, TableMalformedException,
-            QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, TableNameExistsException,
-            ContainerNotFoundException, SQLException, TableNotFoundException {
+    public void create_withConstraints_succeeds() throws TableMalformedException, QueryMalformedException,
+            DatabaseNotFoundException, ImageNotSupportedException, TableNameExistsException, SQLException,
+            TableNotFoundException {
 
         /* test */
         tableService.createTable(DATABASE_1_ID, TABLE_5_CREATE_DTO, USER_1_PRINCIPAL); // table to reference
@@ -178,7 +168,7 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
             if (columnEntity.getInternalName().equals("id")) {
                 continue;
             }
-            log.trace("internalName={}, type={}", columnEntity.getInternalName(), columnEntity.getColumnType());
+            log.trace("internalName={}, type={}, size={}", columnEntity.getInternalName(), columnEntity.getColumnType(), columnEntity.getSize());
             /* correct in the metadata database */
             assertEquals(columnRequest.getNullAllowed(), columnEntity.getIsNullAllowed());
             assertEquals(columnRequest.getPrimaryKey(), columnEntity.getIsPrimaryKey());
@@ -203,23 +193,6 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
 
     @Test
     @Transactional
-    public void update_succeeds() throws TableNotFoundException, SemanticEntityPersistException,
-            TableMalformedException, QueryMalformedException, DatabaseNotFoundException,
-            SemanticEntityNotFoundException, ContainerNotFoundException {
-        final ColumnSemanticsUpdateDto request = ColumnSemanticsUpdateDto.builder()
-                .conceptUri(COLUMN_CONCEPT_PRECIPITATION_URI)
-                .build();
-
-        /* test */
-        final TableColumn response = tableService.update(DATABASE_1_ID, TABLE_1_ID, TABLE_1_COLUMNS.get(0).getId(),
-                request, "abc");
-        assertNotNull(response.getConcept());
-        final TableColumnConcept concept = response.getConcept();
-        assertEquals(COLUMN_CONCEPT_PRECIPITATION_URI, concept.getUri());
-    }
-
-    @Test
-    @Transactional
     public void delete_succeeds() throws TableNotFoundException, TableMalformedException, QueryMalformedException,
             DatabaseNotFoundException, ImageNotSupportedException {
 
@@ -230,8 +203,7 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
     @Test
     @Transactional
     public void delete_full_succeeds() throws TableNotFoundException, TableMalformedException, QueryMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, UserNotFoundException, TableNameExistsException,
-            ContainerNotFoundException {
+            DatabaseNotFoundException, ImageNotSupportedException, TableNameExistsException {
 
         /* test */
         final Table response = tableService.createTable(DATABASE_1_ID, TABLE_0_CREATE_DTO, USER_1_PRINCIPAL);

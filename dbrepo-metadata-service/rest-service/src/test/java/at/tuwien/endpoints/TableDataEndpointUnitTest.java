@@ -3,6 +3,7 @@ package at.tuwien.endpoints;
 import at.tuwien.BaseUnitTest;
 import at.tuwien.SortType;
 import at.tuwien.annotations.MockAmqp;
+import at.tuwien.annotations.MockListeners;
 import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.database.query.QueryResultDto;
@@ -36,6 +37,7 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
 @Log4j2
@@ -43,6 +45,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(SpringExtension.class)
 @MockAmqp
 @MockOpensearch
+@MockListeners
 public class TableDataEndpointUnitTest extends BaseUnitTest {
 
     @MockBean
@@ -469,7 +472,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(table);
         when(accessService.find(databaseId, userId))
                 .thenReturn(access);
-        when(queryService.tableFindAll(databaseId, tableId, timestamp, page, size, principal))
+        when(queryService.tableFindAll(eq(databaseId), eq(tableId), eq(timestamp), anyLong(), anyLong(), eq(principal)))
                 .thenReturn(QUERY_1_RESULT_DTO);
 
         /* test */

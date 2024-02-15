@@ -1334,6 +1334,7 @@ public abstract class BaseTest {
     public final static String TABLE_1_NAME = "Weather AUS";
     public final static String TABLE_1_INTERNALNAME = "weather_aus";
     public final static Boolean TABLE_1_VERSIONED = true;
+    public final static Boolean TABLE_1_PROCESSED_CONSTRAINTS = true;
     public final static String TABLE_1_DESCRIPTION = "Weather in the world";
     public final static String TABLE_1_QUEUE_NAME = TABLE_1_INTERNALNAME;
     public final static String TABLE_1_ROUTING_KEY = "dbrepo\\." + DATABASE_1_EXCHANGE + "\\." + TABLE_1_QUEUE_NAME;
@@ -1348,6 +1349,7 @@ public abstract class BaseTest {
             .created(TABLE_1_CREATED)
             .internalName(TABLE_1_INTERNALNAME)
             .isVersioned(TABLE_1_VERSIONED)
+            .processedConstraints(TABLE_1_PROCESSED_CONSTRAINTS)
             .description(TABLE_1_DESCRIPTION)
             .name(TABLE_1_NAME)
             .queueName(TABLE_1_QUEUE_NAME)
@@ -1393,6 +1395,7 @@ public abstract class BaseTest {
     public final static String TABLE_2_NAME = "Weather Location";
     public final static String TABLE_2_INTERNALNAME = "weather_location";
     public final static Boolean TABLE_2_VERSIONED = true;
+    public final static Boolean TABLE_2_PROCESSED_CONSTRAINTS = true;
     public final static String TABLE_2_DESCRIPTION = "Weather location";
     public final static String TABLE_2_QUEUE_NAME = TABLE_2_INTERNALNAME;
     public final static String TABLE_2_ROUTING_KEY = "dbrepo\\." + DATABASE_1_EXCHANGE + "\\." + TABLE_2_QUEUE_NAME;
@@ -1406,6 +1409,7 @@ public abstract class BaseTest {
             .created(TABLE_2_CREATED)
             .internalName(TABLE_2_INTERNALNAME)
             .isVersioned(TABLE_2_VERSIONED)
+            .processedConstraints(TABLE_2_PROCESSED_CONSTRAINTS)
             .description(TABLE_2_DESCRIPTION)
             .name(TABLE_2_NAME)
             .lastModified(TABLE_2_LAST_MODIFIED)
@@ -1448,6 +1452,7 @@ public abstract class BaseTest {
     public final static String TABLE_3_NAME = "Sensor";
     public final static String TABLE_3_INTERNALNAME = "sensor";
     public final static Boolean TABLE_3_VERSIONED = true;
+    public final static Boolean TABLE_3_PROCESSED_CONSTRAINTS = true;
     public final static String TABLE_3_DESCRIPTION = "Some sensor data";
     public final static String TABLE_3_QUEUE_NAME = TABLE_3_INTERNALNAME;
     public final static String TABLE_3_ROUTING_KEY = "dbrepo\\." + DATABASE_1_EXCHANGE + "\\." + TABLE_3_QUEUE_NAME;
@@ -1461,6 +1466,7 @@ public abstract class BaseTest {
             .created(TABLE_3_CREATED)
             .internalName(TABLE_3_INTERNALNAME)
             .isVersioned(TABLE_3_VERSIONED)
+            .processedConstraints(TABLE_3_PROCESSED_CONSTRAINTS)
             .description(TABLE_3_DESCRIPTION)
             .name(TABLE_3_NAME)
             .lastModified(TABLE_3_LAST_MODIFIED)
@@ -1529,6 +1535,7 @@ public abstract class BaseTest {
     public final static String TABLE_5_NAME = "zoo";
     public final static String TABLE_5_INTERNALNAME = "zoo";
     public final static Boolean TABLE_5_VERSIONED = true;
+    public final static Boolean TABLE_5_PROCESSED_CONSTRAINTS = true;
     public final static String TABLE_5_DESCRIPTION = "Some Kaggle dataset";
     public final static String TABLE_5_QUEUE_NAME = TABLE_5_INTERNALNAME;
     public final static String TABLE_5_ROUTING_KEY = "dbrepo\\." + DATABASE_2_EXCHANGE + "\\." + TABLE_5_QUEUE_NAME;
@@ -1541,6 +1548,7 @@ public abstract class BaseTest {
             .created(Instant.now())
             .internalName(TABLE_5_INTERNALNAME)
             .isVersioned(TABLE_5_VERSIONED)
+            .processedConstraints(TABLE_5_PROCESSED_CONSTRAINTS)
             .description(TABLE_5_DESCRIPTION)
             .name(TABLE_5_NAME)
             .lastModified(TABLE_5_LAST_MODIFIED)
@@ -1579,6 +1587,7 @@ public abstract class BaseTest {
     public final static String TABLE_6_NAME = "names";
     public final static String TABLE_6_INTERNALNAME = "names";
     public final static Boolean TABLE_6_VERSIONED = true;
+    public final static Boolean TABLE_6_PROCESSED_CONSTRAINTS = true;
     public final static String TABLE_6_DESCRIPTION = "Some names dataset";
     public final static String TABLE_6_QUEUE_NAME = TABLE_6_INTERNALNAME;
     public final static String TABLE_6_ROUTING_KEY = "dbrepo\\." + DATABASE_2_EXCHANGE + "\\." + TABLE_6_QUEUE_NAME;
@@ -1591,6 +1600,7 @@ public abstract class BaseTest {
             .created(TABLE_6_CREATED)
             .internalName(TABLE_6_INTERNALNAME)
             .isVersioned(TABLE_6_VERSIONED)
+            .processedConstraints(TABLE_6_PROCESSED_CONSTRAINTS)
             .description(TABLE_6_DESCRIPTION)
             .name(TABLE_6_NAME)
             .lastModified(TABLE_6_LAST_MODIFIED)
@@ -1625,6 +1635,7 @@ public abstract class BaseTest {
     public final static String TABLE_7_NAME = "likes";
     public final static String TABLE_7_INTERNAL_NAME = "likes";
     public final static Boolean TABLE_7_VERSIONED = true;
+    public final static Boolean TABLE_7_PROCESSED_CONSTRAINTS = true;
     public final static String TABLE_7_DESCRIPTION = "Some likes dataset";
     public final static String TABLE_7_QUEUE_NAME = TABLE_7_INTERNAL_NAME;
     public final static String TABLE_7_ROUTING_KEY = "dbrepo\\." + DATABASE_2_EXCHANGE + "\\." + TABLE_7_QUEUE_NAME;
@@ -1637,6 +1648,7 @@ public abstract class BaseTest {
             .created(TABLE_7_CREATED)
             .internalName(TABLE_7_INTERNAL_NAME)
             .isVersioned(TABLE_7_VERSIONED)
+            .processedConstraints(TABLE_7_PROCESSED_CONSTRAINTS)
             .description(TABLE_7_DESCRIPTION)
             .name(TABLE_7_NAME)
             .lastModified(TABLE_7_LAST_MODIFIED)
@@ -1671,6 +1683,7 @@ public abstract class BaseTest {
     public final static String TABLE_4_NAME = "Sensor";
     public final static String TABLE_4_INTERNAL_NAME = "sensor";
     public final static Boolean TABLE_4_VERSIONED = true;
+    public final static Boolean TABLE_4_PROCESSED_CONSTRAINTS = true;
     public final static String TABLE_4_DESCRIPTION = "Hello sensor";
     public final static String TABLE_4_QUEUE_NAME = TABLE_4_INTERNAL_NAME;
     public final static String TABLE_4_ROUTING_KEY = "dbrepo\\." + DATABASE_1_EXCHANGE + "\\." + TABLE_4_QUEUE_NAME;
@@ -1688,6 +1701,7 @@ public abstract class BaseTest {
             .routingKey(TABLE_4_ROUTING_KEY)
             .columns(List.of() /* TABLE_4_COLUMNS */)
             .isVersioned(TABLE_4_VERSIONED)
+            .processedConstraints(TABLE_4_PROCESSED_CONSTRAINTS)
             .createdBy(USER_1_ID)
             .ownedBy(USER_1_ID)
             .owner(USER_1)
@@ -1772,6 +1786,7 @@ public abstract class BaseTest {
     public final static String TABLE_8_NAME = "mfcc";
     public final static String TABLE_8_INTERNAL_NAME = "mfcc";
     public final static Boolean TABLE_8_VERSIONED = true;
+    public final static Boolean TABLE_8_PROCESSED_CONSTRAINTS = true;
     public final static String TABLE_8_DESCRIPTION = "Hello mfcc";
     public final static String TABLE_8_QUEUE_NAME = TABLE_8_INTERNAL_NAME;
     public final static String TABLE_8_ROUTING_KEY = "dbrepo\\." + DATABASE_3_EXCHANGE + "\\." + TABLE_8_QUEUE_NAME;
@@ -1784,6 +1799,7 @@ public abstract class BaseTest {
             .internalName(TABLE_8_INTERNAL_NAME)
             .description(TABLE_8_DESCRIPTION)
             .isVersioned(TABLE_8_VERSIONED)
+            .processedConstraints(TABLE_8_PROCESSED_CONSTRAINTS)
             .database(null /* DATABASE_1 */)
             .name(TABLE_8_NAME)
             .queueName(TABLE_8_QUEUE_NAME)
@@ -2039,7 +2055,6 @@ public abstract class BaseTest {
     public final static ColumnTypeDto COLUMN_4_1_TYPE_DTO = ColumnTypeDto.BIGINT;
     public final static Long COLUMN_4_1_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_1_NULL = false;
-    public final static Boolean COLUMN_4_1_UNIQUE = true;
     public final static Boolean COLUMN_4_1_AUTO_GENERATED = true;
     public final static String COLUMN_4_1_FOREIGN_KEY = null;
     public final static String COLUMN_4_1_CHECK = null;
@@ -2059,7 +2074,6 @@ public abstract class BaseTest {
     public final static ColumnTypeDto COLUMN_4_2_TYPE_DTO = ColumnTypeDto.VARCHAR;
     public final static Long COLUMN_4_2_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_2_NULL = true;
-    public final static Boolean COLUMN_4_2_UNIQUE = false;
     public final static Boolean COLUMN_4_2_AUTO_GENERATED = false;
     public final static String COLUMN_4_2_FOREIGN_KEY = null;
     public final static String COLUMN_4_2_CHECK = null;
@@ -2079,7 +2093,6 @@ public abstract class BaseTest {
     public final static ColumnTypeDto COLUMN_4_3_TYPE_DTO = ColumnTypeDto.BOOL;
     public final static Long COLUMN_4_3_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_3_NULL = true;
-    public final static Boolean COLUMN_4_3_UNIQUE = false;
     public final static Boolean COLUMN_4_3_AUTO_GENERATED = false;
     public final static String COLUMN_4_3_FOREIGN_KEY = null;
     public final static String COLUMN_4_3_CHECK = null;
@@ -2099,7 +2112,6 @@ public abstract class BaseTest {
     public final static ColumnTypeDto COLUMN_4_4_TYPE_DTO = ColumnTypeDto.BOOL;
     public final static Long COLUMN_4_4_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_4_NULL = true;
-    public final static Boolean COLUMN_4_4_UNIQUE = false;
     public final static Boolean COLUMN_4_4_AUTO_GENERATED = false;
     public final static String COLUMN_4_4_FOREIGN_KEY = null;
     public final static String COLUMN_4_4_CHECK = null;
@@ -2119,7 +2131,6 @@ public abstract class BaseTest {
     public final static ColumnTypeDto COLUMN_4_5_TYPE_DTO = ColumnTypeDto.BOOL;
     public final static Long COLUMN_4_5_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_5_NULL = true;
-    public final static Boolean COLUMN_4_5_UNIQUE = false;
     public final static Boolean COLUMN_4_5_AUTO_GENERATED = false;
     public final static String COLUMN_4_5_FOREIGN_KEY = null;
     public final static String COLUMN_4_5_CHECK = null;
@@ -2139,7 +2150,6 @@ public abstract class BaseTest {
     public final static ColumnTypeDto COLUMN_4_6_TYPE_DTO = ColumnTypeDto.BOOL;
     public final static Long COLUMN_4_6_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_6_NULL = true;
-    public final static Boolean COLUMN_4_6_UNIQUE = false;
     public final static Boolean COLUMN_4_6_AUTO_GENERATED = false;
     public final static String COLUMN_4_6_FOREIGN_KEY = null;
     public final static String COLUMN_4_6_CHECK = null;
@@ -2159,7 +2169,6 @@ public abstract class BaseTest {
     public final static ColumnTypeDto COLUMN_4_7_TYPE_DTO = ColumnTypeDto.BOOL;
     public final static Long COLUMN_4_7_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_7_NULL = true;
-    public final static Boolean COLUMN_4_7_UNIQUE = false;
     public final static Boolean COLUMN_4_7_AUTO_GENERATED = false;
     public final static String COLUMN_4_7_FOREIGN_KEY = null;
     public final static String COLUMN_4_7_CHECK = null;
@@ -2179,7 +2188,6 @@ public abstract class BaseTest {
     public final static ColumnTypeDto COLUMN_4_8_TYPE_DTO = ColumnTypeDto.BOOL;
     public final static Long COLUMN_4_8_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_8_NULL = true;
-    public final static Boolean COLUMN_4_8_UNIQUE = false;
     public final static Boolean COLUMN_4_8_AUTO_GENERATED = false;
     public final static String COLUMN_4_8_FOREIGN_KEY = null;
     public final static String COLUMN_4_8_CHECK = null;
@@ -2199,7 +2207,6 @@ public abstract class BaseTest {
     public final static ColumnTypeDto COLUMN_4_9_TYPE_DTO = ColumnTypeDto.BOOL;
     public final static Long COLUMN_4_9_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_9_NULL = true;
-    public final static Boolean COLUMN_4_9_UNIQUE = false;
     public final static Boolean COLUMN_4_9_AUTO_GENERATED = false;
     public final static String COLUMN_4_9_FOREIGN_KEY = null;
     public final static String COLUMN_4_9_CHECK = null;
@@ -2219,7 +2226,6 @@ public abstract class BaseTest {
     public final static ColumnTypeDto COLUMN_4_10_TYPE_DTO = ColumnTypeDto.BOOL;
     public final static Long COLUMN_4_10_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_10_NULL = true;
-    public final static Boolean COLUMN_4_10_UNIQUE = false;
     public final static Boolean COLUMN_4_10_AUTO_GENERATED = false;
     public final static String COLUMN_4_10_FOREIGN_KEY = null;
     public final static String COLUMN_4_10_CHECK = null;
@@ -2239,7 +2245,6 @@ public abstract class BaseTest {
     public final static ColumnTypeDto COLUMN_4_11_TYPE_DTO = ColumnTypeDto.BOOL;
     public final static Long COLUMN_4_11_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_11_NULL = true;
-    public final static Boolean COLUMN_4_11_UNIQUE = false;
     public final static Boolean COLUMN_4_11_AUTO_GENERATED = false;
     public final static String COLUMN_4_11_FOREIGN_KEY = null;
     public final static String COLUMN_4_11_CHECK = null;
@@ -2259,7 +2264,6 @@ public abstract class BaseTest {
     public final static ColumnTypeDto COLUMN_4_12_TYPE_DTO = ColumnTypeDto.BOOL;
     public final static Long COLUMN_4_12_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_12_NULL = true;
-    public final static Boolean COLUMN_4_12_UNIQUE = false;
     public final static Boolean COLUMN_4_12_AUTO_GENERATED = false;
     public final static String COLUMN_4_12_FOREIGN_KEY = null;
     public final static String COLUMN_4_12_CHECK = null;
@@ -2279,7 +2283,6 @@ public abstract class BaseTest {
     public final static ColumnTypeDto COLUMN_4_13_TYPE_DTO = ColumnTypeDto.BOOL;
     public final static Long COLUMN_4_13_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_13_NULL = true;
-    public final static Boolean COLUMN_4_13_UNIQUE = false;
     public final static Boolean COLUMN_4_13_AUTO_GENERATED = false;
     public final static String COLUMN_4_13_FOREIGN_KEY = null;
     public final static String COLUMN_4_13_CHECK = null;
@@ -2299,7 +2302,6 @@ public abstract class BaseTest {
     public final static ColumnTypeDto COLUMN_4_14_TYPE_DTO = ColumnTypeDto.BOOL;
     public final static Long COLUMN_4_14_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_14_NULL = true;
-    public final static Boolean COLUMN_4_14_UNIQUE = false;
     public final static Boolean COLUMN_4_14_AUTO_GENERATED = false;
     public final static String COLUMN_4_14_FOREIGN_KEY = null;
     public final static String COLUMN_4_14_CHECK = null;
@@ -2319,7 +2321,6 @@ public abstract class BaseTest {
     public final static ColumnTypeDto COLUMN_4_15_TYPE_DTO = ColumnTypeDto.BOOL;
     public final static Long COLUMN_4_15_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_15_NULL = true;
-    public final static Boolean COLUMN_4_15_UNIQUE = false;
     public final static Boolean COLUMN_4_15_AUTO_GENERATED = false;
     public final static String COLUMN_4_15_FOREIGN_KEY = null;
     public final static String COLUMN_4_15_CHECK = null;
@@ -2339,7 +2340,6 @@ public abstract class BaseTest {
     public final static ColumnTypeDto COLUMN_4_16_TYPE_DTO = ColumnTypeDto.BOOL;
     public final static Long COLUMN_4_16_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_16_NULL = true;
-    public final static Boolean COLUMN_4_16_UNIQUE = false;
     public final static Boolean COLUMN_4_16_AUTO_GENERATED = false;
     public final static String COLUMN_4_16_FOREIGN_KEY = null;
     public final static String COLUMN_4_16_CHECK = null;
@@ -2359,7 +2359,6 @@ public abstract class BaseTest {
     public final static ColumnTypeDto COLUMN_4_17_TYPE_DTO = ColumnTypeDto.INT;
     public final static Long COLUMN_4_17_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_17_NULL = true;
-    public final static Boolean COLUMN_4_17_UNIQUE = false;
     public final static Boolean COLUMN_4_17_AUTO_GENERATED = false;
     public final static String COLUMN_4_17_FOREIGN_KEY = null;
     public final static String COLUMN_4_17_CHECK = null;
@@ -2379,7 +2378,6 @@ public abstract class BaseTest {
     public final static ColumnTypeDto COLUMN_4_18_TYPE_DTO = ColumnTypeDto.DECIMAL;
     public final static Long COLUMN_4_18_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_18_NULL = true;
-    public final static Boolean COLUMN_4_18_UNIQUE = false;
     public final static Boolean COLUMN_4_18_AUTO_GENERATED = false;
     public final static String COLUMN_4_18_FOREIGN_KEY = null;
     public final static String COLUMN_4_18_CHECK = null;
@@ -2399,7 +2397,6 @@ public abstract class BaseTest {
     public final static ColumnTypeDto COLUMN_4_19_TYPE_DTO = ColumnTypeDto.BOOL;
     public final static Long COLUMN_4_19_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_19_NULL = true;
-    public final static Boolean COLUMN_4_19_UNIQUE = false;
     public final static Boolean COLUMN_4_19_AUTO_GENERATED = false;
     public final static String COLUMN_4_19_FOREIGN_KEY = null;
     public final static String COLUMN_4_19_CHECK = null;
@@ -2419,7 +2416,6 @@ public abstract class BaseTest {
     public final static ColumnTypeDto COLUMN_4_20_TYPE_DTO = ColumnTypeDto.BOOL;
     public final static Long COLUMN_4_20_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_20_NULL = true;
-    public final static Boolean COLUMN_4_20_UNIQUE = false;
     public final static Boolean COLUMN_4_20_AUTO_GENERATED = false;
     public final static String COLUMN_4_20_FOREIGN_KEY = null;
     public final static String COLUMN_4_20_CHECK = null;
@@ -2439,7 +2435,6 @@ public abstract class BaseTest {
     public final static ColumnTypeDto COLUMN_4_21_TYPE_DTO = ColumnTypeDto.DECIMAL;
     public final static Long COLUMN_4_21_DATE_FORMAT = null;
     public final static Boolean COLUMN_4_21_NULL = true;
-    public final static Boolean COLUMN_4_21_UNIQUE = false;
     public final static Boolean COLUMN_4_21_AUTO_GENERATED = false;
     public final static String COLUMN_4_21_FOREIGN_KEY = null;
     public final static String COLUMN_4_21_CHECK = null;
@@ -2459,7 +2454,6 @@ public abstract class BaseTest {
     public final static ColumnTypeDto COLUMN_5_1_TYPE_DTO = ColumnTypeDto.BIGINT;
     public final static Long COLUMN_5_1_DATE_FORMAT = null;
     public final static Boolean COLUMN_5_1_NULL = false;
-    public final static Boolean COLUMN_5_1_UNIQUE = true;
     public final static Boolean COLUMN_5_1_AUTO_GENERATED = true;
     public final static String COLUMN_5_1_FOREIGN_KEY = null;
     public final static String COLUMN_5_1_CHECK = null;
@@ -2478,7 +2472,6 @@ public abstract class BaseTest {
     public final static Long COLUMN_5_2_SIZE = 20L;
     public final static Long COLUMN_5_2_DATE_FORMAT = null;
     public final static Boolean COLUMN_5_2_NULL = false;
-    public final static Boolean COLUMN_5_2_UNIQUE = false;
     public final static Boolean COLUMN_5_2_AUTO_GENERATED = false;
     public final static String COLUMN_5_2_FOREIGN_KEY = null;
     public final static String COLUMN_5_2_CHECK = null;
@@ -2497,7 +2490,6 @@ public abstract class BaseTest {
     public final static Long COLUMN_5_3_SIZE = 40L;
     public final static Long COLUMN_5_3_DATE_FORMAT = null;
     public final static Boolean COLUMN_5_3_NULL = false;
-    public final static Boolean COLUMN_5_3_UNIQUE = false;
     public final static Boolean COLUMN_5_3_AUTO_GENERATED = false;
     public final static String COLUMN_5_3_FOREIGN_KEY = null;
     public final static String COLUMN_5_3_CHECK = null;
@@ -2515,7 +2507,6 @@ public abstract class BaseTest {
     public final static ColumnTypeDto COLUMN_5_4_TYPE_DTO = ColumnTypeDto.YEAR;
     public final static Long COLUMN_5_4_DATE_FORMAT = null;
     public final static Boolean COLUMN_5_4_NULL = true;
-    public final static Boolean COLUMN_5_4_UNIQUE = false;
     public final static Boolean COLUMN_5_4_AUTO_GENERATED = false;
     public final static String COLUMN_5_4_FOREIGN_KEY = null;
     public final static String COLUMN_5_4_CHECK = null;
@@ -2533,7 +2524,6 @@ public abstract class BaseTest {
     public final static ColumnTypeDto COLUMN_5_5_TYPE_DTO = ColumnTypeDto.TIME;
     public final static Long COLUMN_5_5_DATE_FORMAT = null;
     public final static Boolean COLUMN_5_5_NULL = true;
-    public final static Boolean COLUMN_5_5_UNIQUE = false;
     public final static Boolean COLUMN_5_5_AUTO_GENERATED = false;
     public final static String COLUMN_5_5_FOREIGN_KEY = null;
     public final static String COLUMN_5_5_CHECK = null;
@@ -2551,7 +2541,6 @@ public abstract class BaseTest {
     public final static ColumnTypeDto COLUMN_5_6_TYPE_DTO = ColumnTypeDto.BIGINT;
     public final static Long COLUMN_5_6_DATE_FORMAT = null;
     public final static Boolean COLUMN_5_6_NULL = true;
-    public final static Boolean COLUMN_5_6_UNIQUE = false;
     public final static Boolean COLUMN_5_6_AUTO_GENERATED = false;
     public final static String COLUMN_5_6_FOREIGN_KEY = null;
     public final static String COLUMN_5_6_CHECK = null;
@@ -2569,7 +2558,6 @@ public abstract class BaseTest {
     public final static ColumnTypeDto COLUMN_8_1_TYPE_DTO = ColumnTypeDto.BIGINT;
     public final static Long COLUMN_8_1_DATE_FORMAT = null;
     public final static Boolean COLUMN_8_1_NULL = false;
-    public final static Boolean COLUMN_8_1_UNIQUE = true;
     public final static Boolean COLUMN_8_1_AUTO_GENERATED = true;
     public final static String COLUMN_8_1_FOREIGN_KEY = null;
     public final static String COLUMN_8_1_CHECK = null;
@@ -2587,7 +2575,6 @@ public abstract class BaseTest {
     public final static ColumnTypeDto COLUMN_8_2_TYPE_DTO = ColumnTypeDto.INT;
     public final static Long COLUMN_8_2_DATE_FORMAT = null;
     public final static Boolean COLUMN_8_2_NULL = true;
-    public final static Boolean COLUMN_8_2_UNIQUE = false;
     public final static Boolean COLUMN_8_2_AUTO_GENERATED = false;
     public final static String COLUMN_8_2_FOREIGN_KEY = null;
     public final static String COLUMN_8_2_CHECK = null;
@@ -3105,9 +3092,11 @@ public abstract class BaseTest {
                     .build());
 
     public final static Long TABLE_1_FOREIGN_KEY_1_ID = 1L;
+    public final static String TABLE_1_FOREIGN_KEY_1_NAME = "FK_JUNIT_1";
 
     public final static ForeignKey TABLE_1_FOREIGN_KEY_1 = ForeignKey.builder()
             .fkid(TABLE_1_FOREIGN_KEY_1_ID)
+            .name(TABLE_1_FOREIGN_KEY_1_NAME)
             .referencedTable(TABLE_2)
             .table(TABLE_1)
             .references(List.of()) /* TABLE_1_FOREIGN_KEY_REFERENCE */
@@ -3125,6 +3114,7 @@ public abstract class BaseTest {
     public final static Constraints TABLE_1_CONSTRAINTS = Constraints.builder()
             .foreignKeys(List.of(TABLE_1_FOREIGN_KEY_1))
             .uniques(List.of(Unique.builder()
+                    .name("UK_1")
                     .columns(List.of(
                             TABLE_1_COLUMNS.get(0),
                             TABLE_1_COLUMNS.get(1)
@@ -3136,6 +3126,7 @@ public abstract class BaseTest {
 
     public final static Constraints TABLE_2_CONSTRAINTS = Constraints.builder()
             .uniques(List.of(Unique.builder()
+                    .name("UK_1")
                     .columns(List.of(TABLE_2_COLUMNS.get(0)))
                     .table(TABLE_2)
                     .build()))
@@ -4122,6 +4113,7 @@ public abstract class BaseTest {
 
     public final static Constraints TABLE_3_CONSTRAINTS = Constraints.builder()
             .uniques(List.of(Unique.builder()
+                    .name("UK_1")
                     .columns(List.of(TABLE_3_COLUMNS.get(0)))
                     .table(TABLE_3)
                     .build()))
@@ -4638,7 +4630,10 @@ public abstract class BaseTest {
                     .build());
 
     public final static Constraints TABLE_5_CONSTRAINTS = Constraints.builder()
-            .uniques(List.of(Unique.builder().columns(List.of(TABLE_5_COLUMNS.get(0))).build()))
+            .uniques(List.of(Unique.builder()
+                    .name("UK_1")
+                    .columns(List.of(TABLE_5_COLUMNS.get(0)))
+                    .build()))
             .build();
 
     public final static List<ForeignKeyCreateDto> TABLE_5_FOREIGN_KEYS_INVALID_CREATE = List.of(ForeignKeyCreateDto.builder()
@@ -4768,7 +4763,10 @@ public abstract class BaseTest {
                     .build());
 
     public final static Constraints TABLE_6_CONSTRAINTS = Constraints.builder()
-            .uniques(List.of(Unique.builder().columns(List.of(TABLE_6_COLUMNS.get(0))).build()))
+            .uniques(List.of(Unique.builder()
+                    .name("UK_1")
+                    .columns(List.of(TABLE_6_COLUMNS.get(0)))
+                    .build()))
             .build();
 
     public final static List<ColumnCreateDto> TABLE_6_COLUMNS_CREATE = List.of(
@@ -4845,7 +4843,6 @@ public abstract class BaseTest {
     public final static TableColumnType COLUMN_6_1_TYPE = TableColumnType.BIGINT;
     public final static Long COLUMN_6_1_DATE_FORMAT = null;
     public final static Boolean COLUMN_6_1_NULL = false;
-    public final static Boolean COLUMN_6_1_UNIQUE = false;
     public final static Boolean COLUMN_6_1_AUTO_GENERATED = false;
     public final static String COLUMN_6_1_FOREIGN_KEY = null;
     public final static String COLUMN_6_1_CHECK = null;
@@ -4862,7 +4859,6 @@ public abstract class BaseTest {
     public final static TableColumnType COLUMN_6_2_TYPE = TableColumnType.BIGINT;
     public final static Long COLUMN_6_2_DATE_FORMAT = null;
     public final static Boolean COLUMN_6_2_NULL = false;
-    public final static Boolean COLUMN_6_2_UNIQUE = false;
     public final static Boolean COLUMN_6_2_AUTO_GENERATED = false;
     public final static String COLUMN_6_2_FOREIGN_KEY = null;
     public final static String COLUMN_6_2_CHECK = null;
@@ -4908,21 +4904,6 @@ public abstract class BaseTest {
     public final static String VIEW_1_QUERY = "select `location`, `lat`, `lng` from `weather_location`";
     public final static String VIEW_1_QUERY_HASH = "dc81a6877c7c51a6a6f406e1fc2a255e44a0d49a20548596e0d583c3eb849c23";
 
-    public final static List<ViewColumn> VIEW_1_COLUMNS = List.of(
-            ViewColumn.builder()
-                    .ordinalPosition(0)
-                    .column(TABLE_2_COLUMNS.get(0))
-                    .build(),
-            ViewColumn.builder()
-                    .ordinalPosition(1)
-                    .column(TABLE_2_COLUMNS.get(1))
-                    .build(),
-            ViewColumn.builder()
-                    .ordinalPosition(2)
-                    .column(TABLE_2_COLUMNS.get(2))
-                    .build()
-    );
-
     public final static List<ColumnDto> VIEW_1_COLUMNS_DTO = List.of(
             TABLE_2_COLUMNS_DTO.get(0),
             TABLE_2_COLUMNS_DTO.get(1),
@@ -4939,8 +4920,29 @@ public abstract class BaseTest {
             .query(VIEW_1_QUERY)
             .queryHash(VIEW_1_QUERY_HASH)
             .createdBy(USER_1_ID)
-            .columns(VIEW_1_COLUMNS)
+            .columns(null) /* VIEW_1_COLUMNS */
             .build();
+
+    public final static List<ViewColumn> VIEW_1_COLUMNS = List.of(
+            ViewColumn.builder()
+                    .id(1L)
+                    .ordinalPosition(0)
+                    .column(TABLE_2_COLUMNS.get(0))
+                    .view(VIEW_1)
+                    .build(),
+            ViewColumn.builder()
+                    .id(2L)
+                    .ordinalPosition(1)
+                    .column(TABLE_2_COLUMNS.get(1))
+                    .view(VIEW_1)
+                    .build(),
+            ViewColumn.builder()
+                    .id(3L)
+                    .ordinalPosition(2)
+                    .column(TABLE_2_COLUMNS.get(2))
+                    .view(VIEW_1)
+                    .build()
+    );
 
     public final static ViewDto VIEW_1_DTO = ViewDto.builder()
             .id(VIEW_1_ID)
@@ -4980,27 +4982,8 @@ public abstract class BaseTest {
     public final static Long VIEW_2_CONTAINER_ID = CONTAINER_1_ID;
     public final static Long VIEW_2_DATABASE_ID = DATABASE_1_ID;
     public final static Boolean VIEW_2_PUBLIC = true;
-    public final static String VIEW_2_QUERY = "select `date`, `location` as loc, `rainfall`, `mintemp` from `weather_aus` where `location` = 'Albury'";
+    public final static String VIEW_2_QUERY = "select `date`, `location` as loc, `location`, `rainfall`, `mintemp` from `weather_aus` where `location` = 'Albury'";
     public final static String VIEW_2_QUERY_HASH = "987fc946772ffb6d85060262dcb5df419692a1f6772ea995e3dedb53c191e984";
-
-    public final static List<ViewColumn> VIEW_2_COLUMNS = List.of(
-            ViewColumn.builder()
-                    .ordinalPosition(0)
-                    .column(TABLE_1_COLUMNS.get(1))
-                    .build(),
-            ViewColumn.builder()
-                    .ordinalPosition(1)
-                    .column(TABLE_1_COLUMNS.get(2))
-                    .build(),
-            ViewColumn.builder()
-                    .ordinalPosition(2)
-                    .column(TABLE_1_COLUMNS.get(4))
-                    .build(),
-            ViewColumn.builder()
-                    .ordinalPosition(3)
-                    .column(TABLE_1_COLUMNS.get(3))
-                    .build()
-    );
 
     public final static List<ColumnDto> VIEW_2_COLUMNS_DTO = List.of(
             TABLE_1_COLUMNS_DTO.get(1),
@@ -5016,11 +4999,39 @@ public abstract class BaseTest {
             .internalName(VIEW_2_INTERNAL_NAME)
             .vdbid(VIEW_2_DATABASE_ID)
             .isPublic(VIEW_2_PUBLIC)
-            .columns(VIEW_2_COLUMNS)
+            .columns(null)  /* VIEW_2_COLUMNS */
             .query(VIEW_2_QUERY)
             .queryHash(VIEW_2_QUERY_HASH)
             .createdBy(USER_1_ID)
             .build();
+
+    public final static List<ViewColumn> VIEW_2_COLUMNS = List.of(
+            ViewColumn.builder()
+                    .id(4L)
+                    .ordinalPosition(0)
+                    .column(TABLE_1_COLUMNS.get(1))
+                    .view(VIEW_2)
+                    .build(),
+            ViewColumn.builder()
+                    .id(5L)
+                    .ordinalPosition(1)
+                    .alias("loc")
+                    .column(TABLE_1_COLUMNS.get(2))
+                    .view(VIEW_2)
+                    .build(),
+            ViewColumn.builder()
+                    .id(6L)
+                    .ordinalPosition(2)
+                    .column(TABLE_1_COLUMNS.get(4))
+                    .view(VIEW_2)
+                    .build(),
+            ViewColumn.builder()
+                    .id(7L)
+                    .ordinalPosition(3)
+                    .column(TABLE_1_COLUMNS.get(3))
+                    .view(VIEW_2)
+                    .build()
+    );
 
     public final static ViewDto VIEW_2_DTO = ViewDto.builder()
             .id(VIEW_2_ID)
@@ -5057,25 +5068,6 @@ public abstract class BaseTest {
     public final static String VIEW_3_QUERY = "select w.`mintemp`, w.`rainfall`, w.`location`, m.`date` from `weather_aus` w join `junit2` m on m.`location` = w.`location` and m.`date` = w.`date`";
     public final static String VIEW_3_QUERY_HASH = "bbbaa56a5206b3dc3e6cf9301b0db9344eb6f19b100c7b88550ffb597a0bd255";
 
-    public final static List<ViewColumn> VIEW_3_COLUMNS = List.of(
-            ViewColumn.builder()
-                    .ordinalPosition(0)
-                    .column(TABLE_1_COLUMNS.get(3))
-                    .build(),
-            ViewColumn.builder()
-                    .ordinalPosition(1)
-                    .column(TABLE_1_COLUMNS.get(4))
-                    .build(),
-            ViewColumn.builder()
-                    .ordinalPosition(2)
-                    .column(TABLE_1_COLUMNS.get(2))
-                    .build(),
-            ViewColumn.builder()
-                    .ordinalPosition(3)
-                    .column(TABLE_1_COLUMNS.get(1))
-                    .build()
-    );
-
     public final static List<ColumnDto> VIEW_3_COLUMNS_DTO = List.of(
             TABLE_1_COLUMNS_DTO.get(3),
             TABLE_1_COLUMNS_DTO.get(4),
@@ -5090,11 +5082,38 @@ public abstract class BaseTest {
             .internalName(VIEW_3_INTERNAL_NAME)
             .vdbid(VIEW_3_DATABASE_ID)
             .isPublic(VIEW_3_PUBLIC)
-            .columns(VIEW_3_COLUMNS)
+            .columns(null)  /* VIEW_3_COLUMNS */
             .query(VIEW_3_QUERY)
             .queryHash(VIEW_3_QUERY_HASH)
             .createdBy(USER_1_ID)
             .build();
+
+    public final static List<ViewColumn> VIEW_3_COLUMNS = List.of(
+            ViewColumn.builder()
+                    .id(8L)
+                    .ordinalPosition(0)
+                    .column(TABLE_1_COLUMNS.get(3))
+                    .view(VIEW_3)
+                    .build(),
+            ViewColumn.builder()
+                    .id(9L)
+                    .ordinalPosition(1)
+                    .column(TABLE_1_COLUMNS.get(4))
+                    .view(VIEW_3)
+                    .build(),
+            ViewColumn.builder()
+                    .id(10L)
+                    .ordinalPosition(2)
+                    .column(TABLE_1_COLUMNS.get(2))
+                    .view(VIEW_3)
+                    .build(),
+            ViewColumn.builder()
+                    .id(11L)
+                    .ordinalPosition(3)
+                    .column(TABLE_1_COLUMNS.get(1))
+                    .view(VIEW_3)
+                    .build()
+    );
 
     public final static ViewDto VIEW_3_DTO = ViewDto.builder()
             .id(VIEW_3_ID)
@@ -5133,77 +5152,6 @@ public abstract class BaseTest {
     public final static String VIEW_4_QUERY = "SELECT `animal_name`, `hair`, `feathers`, `eggs`, `milk`, `airborne`, `aquatic`, `predator`, `backbone`, `breathes`, `venomous`, `fins`, `legs`, `tail`, `domestic`, `catsize`, `class_type` FROM `zoo` WHERE `class_type` = 1";
     public final static String VIEW_4_QUERY_HASH = "3561cd0bb0b0e94d6f15ae602134252a5760d09d660a71a4fb015b6991c8ba0b";
 
-    public final static List<ViewColumn> VIEW_4_COLUMNS = List.of(
-            ViewColumn.builder()
-                    .ordinalPosition(0)
-                    .column(TABLE_5_COLUMNS.get(1))
-                    .build(),
-            ViewColumn.builder()
-                    .ordinalPosition(1)
-                    .column(TABLE_5_COLUMNS.get(2))
-                    .build(),
-            ViewColumn.builder()
-                    .ordinalPosition(2)
-                    .column(TABLE_5_COLUMNS.get(3))
-                    .build(),
-            ViewColumn.builder()
-                    .ordinalPosition(3)
-                    .column(TABLE_5_COLUMNS.get(5))
-                    .build(),
-            ViewColumn.builder()
-                    .ordinalPosition(4)
-                    .column(TABLE_5_COLUMNS.get(6))
-                    .build(),
-            ViewColumn.builder()
-                    .ordinalPosition(5)
-                    .column(TABLE_5_COLUMNS.get(8))
-                    .build(),
-            ViewColumn.builder()
-                    .ordinalPosition(6)
-                    .column(TABLE_5_COLUMNS.get(10))
-                    .build(),
-            ViewColumn.builder()
-                    .ordinalPosition(7)
-                    .column(TABLE_5_COLUMNS.get(11))
-                    .build(),
-            ViewColumn.builder()
-                    .ordinalPosition(8)
-                    .column(TABLE_5_COLUMNS.get(12))
-                    .build(),
-            ViewColumn.builder()
-                    .ordinalPosition(9)
-                    .column(TABLE_5_COLUMNS.get(13))
-                    .build(),
-            ViewColumn.builder()
-                    .ordinalPosition(10)
-                    .column(TABLE_5_COLUMNS.get(14))
-                    .build(),
-            ViewColumn.builder()
-                    .ordinalPosition(11)
-                    .column(TABLE_5_COLUMNS.get(15))
-                    .build(),
-            ViewColumn.builder()
-                    .ordinalPosition(12)
-                    .column(TABLE_5_COLUMNS.get(16))
-                    .build(),
-            ViewColumn.builder()
-                    .ordinalPosition(13)
-                    .column(TABLE_5_COLUMNS.get(17))
-                    .build(),
-            ViewColumn.builder()
-                    .ordinalPosition(14)
-                    .column(TABLE_5_COLUMNS.get(18))
-                    .build(),
-            ViewColumn.builder()
-                    .ordinalPosition(15)
-                    .column(TABLE_5_COLUMNS.get(19))
-                    .build(),
-            ViewColumn.builder()
-                    .ordinalPosition(16)
-                    .column(TABLE_5_COLUMNS.get(20))
-                    .build()
-    );
-
     public final static List<ColumnDto> VIEW_4_COLUMNS_DTO = List.of(
             TABLE_5_COLUMNS_DTO.get(1),
             TABLE_5_COLUMNS_DTO.get(2),
@@ -5234,8 +5182,113 @@ public abstract class BaseTest {
             .query(VIEW_4_QUERY)
             .queryHash(VIEW_4_QUERY_HASH)
             .createdBy(USER_1_ID)
-            .columns(VIEW_4_COLUMNS)
+            .columns(null) /* VIEW_4_COLUMNS */
             .build();
+
+    public final static List<ViewColumn> VIEW_4_COLUMNS = List.of(
+            ViewColumn.builder()
+                    .id(12L)
+                    .ordinalPosition(0)
+                    .column(TABLE_5_COLUMNS.get(1))
+                    .view(VIEW_4)
+                    .build(),
+            ViewColumn.builder()
+                    .id(13L)
+                    .ordinalPosition(1)
+                    .column(TABLE_5_COLUMNS.get(2))
+                    .view(VIEW_4)
+                    .build(),
+            ViewColumn.builder()
+                    .id(14L)
+                    .ordinalPosition(2)
+                    .column(TABLE_5_COLUMNS.get(3))
+                    .view(VIEW_4)
+                    .build(),
+            ViewColumn.builder()
+                    .id(15L)
+                    .ordinalPosition(3)
+                    .column(TABLE_5_COLUMNS.get(5))
+                    .view(VIEW_4)
+                    .build(),
+            ViewColumn.builder()
+                    .id(16L)
+                    .ordinalPosition(4)
+                    .column(TABLE_5_COLUMNS.get(6))
+                    .view(VIEW_4)
+                    .build(),
+            ViewColumn.builder()
+                    .id(17L)
+                    .ordinalPosition(5)
+                    .column(TABLE_5_COLUMNS.get(8))
+                    .view(VIEW_4)
+                    .build(),
+            ViewColumn.builder()
+                    .id(18L)
+                    .ordinalPosition(6)
+                    .column(TABLE_5_COLUMNS.get(10))
+                    .view(VIEW_4)
+                    .build(),
+            ViewColumn.builder()
+                    .id(19L)
+                    .ordinalPosition(7)
+                    .column(TABLE_5_COLUMNS.get(11))
+                    .view(VIEW_4)
+                    .build(),
+            ViewColumn.builder()
+                    .id(20L)
+                    .ordinalPosition(8)
+                    .column(TABLE_5_COLUMNS.get(12))
+                    .view(VIEW_4)
+                    .build(),
+            ViewColumn.builder()
+                    .id(21L)
+                    .ordinalPosition(9)
+                    .column(TABLE_5_COLUMNS.get(13))
+                    .view(VIEW_4)
+                    .build(),
+            ViewColumn.builder()
+                    .id(22L)
+                    .ordinalPosition(10)
+                    .column(TABLE_5_COLUMNS.get(14))
+                    .view(VIEW_4)
+                    .build(),
+            ViewColumn.builder()
+                    .id(23L)
+                    .ordinalPosition(11)
+                    .column(TABLE_5_COLUMNS.get(15))
+                    .view(VIEW_4)
+                    .build(),
+            ViewColumn.builder()
+                    .id(24L)
+                    .ordinalPosition(12)
+                    .column(TABLE_5_COLUMNS.get(16))
+                    .view(VIEW_4)
+                    .build(),
+            ViewColumn.builder()
+                    .id(25L)
+                    .ordinalPosition(13)
+                    .column(TABLE_5_COLUMNS.get(17))
+                    .view(VIEW_4)
+                    .build(),
+            ViewColumn.builder()
+                    .id(26L)
+                    .ordinalPosition(14)
+                    .column(TABLE_5_COLUMNS.get(18))
+                    .view(VIEW_4)
+                    .build(),
+            ViewColumn.builder()
+                    .id(27L)
+                    .ordinalPosition(15)
+                    .column(TABLE_5_COLUMNS.get(19))
+                    .view(VIEW_4)
+                    .build(),
+            ViewColumn.builder()
+                    .id(28L)
+                    .ordinalPosition(16)
+                    .column(TABLE_5_COLUMNS.get(20))
+                    .view(VIEW_4)
+                    .build()
+    );
 
     public final static ViewDto VIEW_4_DTO = ViewDto.builder()
             .id(VIEW_4_ID)
@@ -5270,6 +5323,7 @@ public abstract class BaseTest {
             .query(VIEW_5_QUERY)
             .queryHash(VIEW_5_QUERY_HASH)
             .createdBy(USER_1_ID)
+            .columns(null)
             .build();
 
     public final static Long QUERY_1_RESULT_ID = 1L;

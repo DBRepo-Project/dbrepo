@@ -43,4 +43,8 @@ public class ImportDto {
 
     @Schema(example = "\"")
     private Character quote;
+
+    @JsonProperty("line_termination")
+    @Schema(example = "\\r\\n")
+    private String lineTermination;
 }

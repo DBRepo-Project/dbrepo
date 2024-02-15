@@ -327,7 +327,7 @@ public class MariaDbConfig {
     }
 
     public static ColumnTypeDto typetoColumnTypeDto(String data) throws Exception {
-        if (data.toUpperCase().startsWith("TINYINT(1)")) {
+        if (data.equalsIgnoreCase("TINYINT(1)")) {
             /* boolean in MySQL */
             return ColumnTypeDto.BOOL;
         }
