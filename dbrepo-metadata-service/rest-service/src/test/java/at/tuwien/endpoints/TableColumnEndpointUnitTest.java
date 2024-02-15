@@ -12,6 +12,7 @@ import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.exception.*;
 import at.tuwien.service.AccessService;
 import at.tuwien.service.DatabaseService;
+import at.tuwien.service.TableColumnService;
 import at.tuwien.service.TableService;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
@@ -49,6 +50,9 @@ public class TableColumnEndpointUnitTest extends BaseUnitTest {
 
     @MockBean
     private TableService tableService;
+
+    @MockBean
+    private TableColumnService tableColumnService;
 
     @Autowired
     private TableColumnEndpoint tableColumnEndpoint;
@@ -95,8 +99,7 @@ public class TableColumnEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"modify-table-column-semantics"})
     public void update_publicHasRoleHasOwnWriteAccess_succeeds() throws TableNotFoundException, NotAllowedException,
-            TableMalformedException, DatabaseNotFoundException, ContainerNotFoundException,
-            SemanticEntityPersistException, SemanticEntityNotFoundException, QueryMalformedException, at.tuwien.exception.AccessDeniedException {
+            TableMalformedException, DatabaseNotFoundException, at.tuwien.exception.AccessDeniedException {
         final ColumnSemanticsUpdateDto request = ColumnSemanticsUpdateDto.builder()
                 .unitUri(UNIT_MILLIMETRE_URI)
                 .build();
@@ -148,8 +151,7 @@ public class TableColumnEndpointUnitTest extends BaseUnitTest {
     @WithMockUser(username = USER_2_USERNAME, authorities = {"modify-table-column-semantics"})
     public void update_publicHasRoleForeignHasAllWriteAccess_succeeds() throws TableNotFoundException,
             NotAllowedException, TableMalformedException, DatabaseNotFoundException,
-            ContainerNotFoundException, SemanticEntityPersistException, SemanticEntityNotFoundException,
-            QueryMalformedException, at.tuwien.exception.AccessDeniedException {
+            at.tuwien.exception.AccessDeniedException {
         final ColumnSemanticsUpdateDto request = ColumnSemanticsUpdateDto.builder()
                 .unitUri(UNIT_MILLIMETRE_URI)
                 .build();
@@ -204,9 +206,7 @@ public class TableColumnEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"modify-table-column-semantics"})
     public void update_privateHasRoleHasOwnWriteAccess_succeeds() throws TableNotFoundException, NotAllowedException,
-            TableMalformedException, DatabaseNotFoundException, ContainerNotFoundException,
-            SemanticEntityPersistException, SemanticEntityNotFoundException, QueryMalformedException,
-            at.tuwien.exception.AccessDeniedException {
+            TableMalformedException, DatabaseNotFoundException, at.tuwien.exception.AccessDeniedException {
         final ColumnSemanticsUpdateDto request = ColumnSemanticsUpdateDto.builder()
                 .unitUri(UNIT_MILLIMETRE_URI)
                 .build();
@@ -258,8 +258,7 @@ public class TableColumnEndpointUnitTest extends BaseUnitTest {
     @WithMockUser(username = USER_2_USERNAME, authorities = {"modify-table-column-semantics"})
     public void update_privateHasRoleForeignHasAllWriteAccess_succeeds() throws TableNotFoundException,
             NotAllowedException, TableMalformedException, DatabaseNotFoundException,
-            ContainerNotFoundException, SemanticEntityPersistException, SemanticEntityNotFoundException,
-            QueryMalformedException, at.tuwien.exception.AccessDeniedException {
+            at.tuwien.exception.AccessDeniedException {
         final ColumnSemanticsUpdateDto request = ColumnSemanticsUpdateDto.builder()
                 .unitUri(UNIT_MILLIMETRE_URI)
                 .build();
@@ -277,8 +276,7 @@ public class TableColumnEndpointUnitTest extends BaseUnitTest {
                                                        ColumnSemanticsUpdateDto data, UUID userId,
                                                        Principal principal, DatabaseAccess access)
             throws DatabaseNotFoundException, NotAllowedException, TableNotFoundException, TableMalformedException,
-            ContainerNotFoundException, SemanticEntityPersistException, SemanticEntityNotFoundException,
-            QueryMalformedException, at.tuwien.exception.AccessDeniedException {
+            at.tuwien.exception.AccessDeniedException {
 
         /* mock */
         if (database != null) {
@@ -292,12 +290,12 @@ public class TableColumnEndpointUnitTest extends BaseUnitTest {
         if (table != null) {
             when(tableService.find(databaseId, tableId))
                     .thenReturn(table);
-            when(tableService.update(databaseId, tableId, columnId, data, "abc"))
+            when(tableColumnService.update(databaseId, tableId, columnId, data))
                     .thenReturn(column);
         } else {
             doThrow(TableNotFoundException.class)
-                    .when(tableService)
-                    .update(databaseId, tableId, columnId, data, "abc");
+                    .when(tableColumnService)
+                    .update(databaseId, tableId, columnId, data);
             doThrow(TableNotFoundException.class)
                     .when(tableService)
                     .find(databaseId, tableId);
@@ -312,6 +310,6 @@ public class TableColumnEndpointUnitTest extends BaseUnitTest {
         }
 
         /* test */
-        return tableColumnEndpoint.update(databaseId, tableId, columnId, data, principal, "abc");
+        return tableColumnEndpoint.update(databaseId, tableId, columnId, data, principal);
     }
 }

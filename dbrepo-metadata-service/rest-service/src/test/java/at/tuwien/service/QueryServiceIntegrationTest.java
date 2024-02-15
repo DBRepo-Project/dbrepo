@@ -88,6 +88,9 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     @Autowired
     private LicenseRepository licenseRepository;
 
+    @Autowired
+    private DatabaseService databaseService;
+
     @MockBean
     private DataDbSidecarGateway dataDbSidecarGateway;
 
@@ -105,7 +108,8 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     }
 
     @BeforeEach
-    public void beforeEach() throws SQLException {
+    public void beforeEach() throws SQLException, DatabaseUnchangedException, QueryMalformedException,
+            ColumnParseException, DatabaseNotFoundException, TableMalformedException {
         TABLE_1.setColumns(TABLE_1_COLUMNS);
         TABLE_2.setColumns(TABLE_2_COLUMNS);
         TABLE_3.setColumns(TABLE_3_COLUMNS);
@@ -115,6 +119,10 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         TABLE_7.setColumns(TABLE_7_COLUMNS);
         DATABASE_1.setAccesses(List.of());
         DATABASE_2.setAccesses(List.of());
+        VIEW_1.setColumns(VIEW_1_COLUMNS);
+        VIEW_2.setColumns(VIEW_2_COLUMNS);
+        VIEW_3.setColumns(VIEW_3_COLUMNS);
+        VIEW_4.setColumns(VIEW_4_COLUMNS);
         /* metadata database */
         imageRepository.save(IMAGE_1);
         licenseRepository.save(LICENSE_1);
@@ -125,6 +133,12 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         MariaDbConfig.dropAllDatabases(CONTAINER_1);
         MariaDbConfig.createInitDatabase(CONTAINER_1, DATABASE_1);
         MariaDbConfig.createInitDatabase(CONTAINER_1, DATABASE_2);
+        databaseService.obtainTablesMetadata(DATABASE_1_ID);
+        databaseService.obtainTablesMetadata(DATABASE_2_ID);
+        databaseService.obtainConstraints(DATABASE_1_ID);
+        databaseService.obtainConstraints(DATABASE_2_ID);
+        databaseService.obtainViewsMetadata(DATABASE_1_ID);
+        databaseService.obtainViewsMetadata(DATABASE_2_ID);
     }
 
     @Test
@@ -134,7 +148,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
         /* test */
         final QueryResultDto result = queryService.tableFindAll(DATABASE_1_ID, TABLE_1_ID, Instant.now(),
-                null, null, USER_1_PRINCIPAL);
+                0L, 10L, USER_1_PRINCIPAL);
         assertEquals(3, result.getResult().size());
         assertEquals(BigInteger.valueOf(1L), result.getResult().get(0).get(TABLE_1_COLUMNS.get(0).getInternalName()));
         assertEquals(toInstant("2008-12-01"), result.getResult().get(0).get(TABLE_1_COLUMNS.get(1).getInternalName()));
@@ -195,6 +209,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
                 .nullElement("NA")
                 .separator(';')
                 .location(filename)
+                .lineTermination("\r\n")
                 .build();
 
         /* mock */
@@ -319,7 +334,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
             DatabaseNotFoundException, ImageNotSupportedException, QueryMalformedException {
 
         /* test */
-        queryService.tableFindAll(DATABASE_1_ID, TABLE_1_ID, null, null, null, USER_1_PRINCIPAL);
+        queryService.tableFindAll(DATABASE_1_ID, TABLE_1_ID, null, 0L, 10L, USER_1_PRINCIPAL);
     }
 
     @Test
@@ -328,8 +343,8 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         final Instant timestamp = DATABASE_1_CREATED.minus(1, ChronoUnit.SECONDS);
 
         /* test */
-        queryService.tableFindAll(DATABASE_1_ID, TABLE_1_ID, timestamp, null, null, USER_1_PRINCIPAL);
-        queryService.tableFindAll(DATABASE_1_ID, TABLE_1_ID, timestamp, null, null, USER_1_PRINCIPAL);
+        queryService.tableFindAll(DATABASE_1_ID, TABLE_1_ID, timestamp, 0L, 10L, USER_1_PRINCIPAL);
+        queryService.tableFindAll(DATABASE_1_ID, TABLE_1_ID, timestamp, 0L, 10L, USER_1_PRINCIPAL);
     }
 
     @Test
@@ -452,22 +467,31 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         assertEquals(9L, response.getResultNumber());
         assertNotNull(response.getResult());
         final List<Map<String, Object>> result = response.getResult();
+        assertEquals(2, result.get(0).keySet().size());
         assertEquals("Albury", result.get(0).get("a"));
         assertEquals("Albury", result.get(0).get("location"));
+        assertEquals(2, result.get(1).keySet().size());
         assertEquals("Albury", result.get(1).get("a"));
         assertEquals("Albury", result.get(1).get("location"));
+        assertEquals(2, result.get(2).keySet().size());
         assertEquals("Albury", result.get(2).get("a"));
         assertEquals("Albury", result.get(2).get("location"));
+        assertEquals(2, result.get(3).keySet().size());
         assertEquals("Albury", result.get(3).get("a"));
         assertEquals("Sydney", result.get(3).get("location"));
+        assertEquals(2, result.get(4).keySet().size());
         assertEquals("Albury", result.get(4).get("a"));
         assertEquals("Sydney", result.get(4).get("location"));
+        assertEquals(2, result.get(5).keySet().size());
         assertEquals("Albury", result.get(5).get("a"));
         assertEquals("Sydney", result.get(5).get("location"));
+        assertEquals(2, result.get(6).keySet().size());
         assertEquals("Albury", result.get(6).get("a"));
         assertEquals("Vienna", result.get(6).get("location"));
+        assertEquals(2, result.get(7).keySet().size());
         assertEquals("Albury", result.get(7).get("a"));
         assertEquals("Vienna", result.get(7).get("location"));
+        assertEquals(2, result.get(8).keySet().size());
         assertEquals("Albury", result.get(8).get("a"));
         assertEquals("Vienna", result.get(8).get("location"));
     }
@@ -523,18 +547,18 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         /* ordering */
         final String[] keys = result.get(0).keySet().toArray(new String[0]);
         assertEquals("date", keys[0]);
-        assertEquals("rainfall", keys[1]);
-        assertEquals("location", keys[2]);
+        assertEquals("loc", keys[1]);
+        assertEquals("rainfall", keys[2]);
         assertEquals("mintemp", keys[3]);
         /* values */
         assertEquals(0.6, result.get(0).get("rainfall"));
-        assertEquals("Albury", result.get(0).get("location"));
+        assertEquals("Albury", result.get(0).get("loc"));
         assertEquals(13.4, result.get(0).get("mintemp"));
         assertEquals(0.0, result.get(1).get("rainfall"));
-        assertEquals("Albury", result.get(1).get("location"));
+        assertEquals("Albury", result.get(1).get("loc"));
         assertEquals(7.4, result.get(1).get("mintemp"));
         assertEquals(0.0, result.get(2).get("rainfall"));
-        assertEquals("Albury", result.get(2).get("location"));
+        assertEquals("Albury", result.get(2).get("loc"));
         assertEquals(12.9, result.get(2).get("mintemp"));
     }
 

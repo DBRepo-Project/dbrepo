@@ -71,6 +71,10 @@ execution to the raw data. Any stale queries (query that have been executed by u
 periodically being deleted from the query store based on the `DELETE_STALE_QUERIES_RATE` environment variable (defaults
 to 60 seconds).
 
+Executing SQL queries through the Query Endpoint must fulfill some restrictions:
+
+* The SQL query does not contain at semicolon `;`
+
 ### Semantics
 
 The service provides metadata to the table columns in the [Metadata Database](../system-databases-metadata) from

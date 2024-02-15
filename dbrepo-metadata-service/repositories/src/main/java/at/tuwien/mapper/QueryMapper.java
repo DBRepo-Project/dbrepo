@@ -9,9 +9,12 @@ import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.api.database.table.TableHistoryDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.View;
+import at.tuwien.entities.database.ViewColumn;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.database.table.columns.TableColumnType;
+import at.tuwien.entities.database.table.constraints.foreignKey.ForeignKey;
+import at.tuwien.entities.database.table.constraints.foreignKey.ForeignKeyReference;
 import at.tuwien.exception.ImageNotSupportedException;
 import at.tuwien.exception.QueryMalformedException;
 import at.tuwien.exception.QueryStoreException;
@@ -47,6 +50,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Mapper(componentModel = "spring", imports = {LinkedList.class})
 public interface QueryMapper {
@@ -122,44 +126,13 @@ public interface QueryMapper {
                 .build();
     }
 
-    default void importCsvQuery(Connection connection, Table table, ImportDto csv) throws SQLException {
-        final Statement statement = connection.createStatement();
-        final StringBuilder query0 = new StringBuilder("CREATE TABLE IF NOT EXISTS `")
-                .append(table.getDatabase().getInternalName())
-                .append("`.`")
-                .append(table.getInternalName())
-                .append("_temporary`")
-                .append(" LIKE `")
-                .append(table.getDatabase().getInternalName())
-                .append("`.`")
-                .append(table.getInternalName())
-                .append("`;");
-        log.trace("mapped create temporary table statement: {}", query0);
-        statement.execute(query0.toString());
-        final String query1 = pathToRawInsertQuery(table, csv);
-        log.trace("mapped import csv statement: {}", query1);
-        statement.execute(query1.toString());
-        final String query2 = generateInsertFromTemporaryTableSQL(table);
-        log.trace("mapped import table statement: {}", query2);
-        statement.execute(query2.toString());
-        final StringBuilder query3 = new StringBuilder("DROP TABLE IF EXISTS `")
-                .append(table.getDatabase().getInternalName())
-                .append("`.`")
-                .append(table.getInternalName())
-                .append("_temporary`;");
-        log.trace("mapped drop temporary table statement: {}", query3);
-        statement.execute(query3.toString());
-
-    }
-
-    default String pathToRawInsertQuery(Table table, ImportDto data) {
+    default PreparedStatement pathToRawInsertQuery(Connection connection, Table table, ImportDto data) throws QueryMalformedException {
         final StringBuilder statement = new StringBuilder("LOAD DATA INFILE '/tmp/")
                 .append(data.getLocation())
-                .append("' INTO TABLE `")
+                .append("' REPLACE INTO TABLE `")
                 .append(table.getDatabase().getInternalName())
                 .append("`.`")
                 .append(table.getInternalName())
-                .append("_temporary")
                 .append("` CHARACTER SET utf8 FIELDS TERMINATED BY '")
                 .append(data.getSeparator())
                 .append("'");
@@ -168,7 +141,10 @@ public interface QueryMapper {
                     .append(data.getQuote())
                     .append("'");
         }
-        statement.append(data.getSkipLines() != null ? (" IGNORE " + data.getSkipLines() + " LINES") : "")
+        statement.append(" LINES TERMINATED BY '")
+                .append(data.getLineTermination())
+                .append("'")
+                .append(data.getSkipLines() != null ? (" IGNORE " + data.getSkipLines() + " LINES") : "")
                 .append(" (");
         final StringBuilder set = new StringBuilder();
         int[] idx = new int[]{0};
@@ -200,7 +176,14 @@ public interface QueryMapper {
         statement.append(")")
                 .append(set.length() != 0 ? (" SET " + set) : "")
                 .append(";");
-        return statement.toString();
+        try {
+            final PreparedStatement pstmt = connection.prepareStatement(statement.toString());
+            log.trace("mapped import csv query {} to prepared statement {}", table.getName(), pstmt);
+            return pstmt;
+        } catch (SQLException e) {
+            log.error("Failed to prepare statement {}: {}", statement, e.getMessage());
+            throw new QueryMalformedException("Failed to prepare statement:" + e.getMessage(), e);
+        }
     }
 
     default void columnToBoolSet(ImportDto data, TableColumn column, StringBuilder set) {
@@ -209,18 +192,14 @@ public interface QueryMapper {
                 .append("`")
                 .append(column.getInternalName())
                 .append("` = ");
-        if (data.getNullElement() != null) {
-            log.trace("import has null element present");
-            set.append("IF(!STRCMP(@")
-                    .append(column.getInternalName())
-                    .append(",'")
-                    .append(data.getNullElement())
-                    .append("'),NULL,");
-            columnToBoolSet2(data, column, set);
-            set.append(")");
-            return;
-        }
+        log.trace("import has null element present");
+        set.append("IF(!STRCMP(@")
+                .append(column.getInternalName())
+                .append(",'")
+                .append(data.getNullElement())
+                .append("'),NULL,");
         columnToBoolSet2(data, column, set);
+        set.append(")");
     }
 
     default void columnToBoolSet2(ImportDto data, TableColumn column, StringBuilder set) {
@@ -285,19 +264,14 @@ public interface QueryMapper {
                 .append("`")
                 .append(column.getInternalName())
                 .append("` = ");
-        if (data.getNullElement() != null) {
-            log.trace("import has null element present");
-            set.append("IF(STRCMP(@")
-                    .append(column.getInternalName())
-                    .append(",'")
-                    .append(data.getNullElement())
-                    .append("'), @")
-                    .append(column.getInternalName())
-                    .append(", NULL)");
-            return;
-        }
-        set.append("@")
-                .append(column.getInternalName());
+        log.trace("import has null element present");
+        set.append("IF(STRCMP(@")
+                .append(column.getInternalName())
+                .append(",'")
+                .append(data.getNullElement())
+                .append("'), @")
+                .append(column.getInternalName())
+                .append(", NULL)");
     }
 
     default void columnToDateSet(ImportDto data, TableColumn column, StringBuilder set) {
@@ -306,24 +280,14 @@ public interface QueryMapper {
                 .append("`")
                 .append(column.getInternalName())
                 .append("` = STR_TO_DATE(");
-        if (data.getNullElement() != null) {
-            log.trace("import has null element present");
-            set.append("IF(STRCMP(@")
-                    .append(column.getInternalName())
-                    .append(",'")
-                    .append(data.getNullElement())
-                    .append("'), @")
-                    .append(column.getInternalName())
-                    .append(", NULL), '")
-                    .append(column.getDateFormat()
-                            .getDatabaseFormat()
-                            .replace('\'', '\\'))
-                    .append("')");
-            return;
-        }
-        set.append("@")
+        log.trace("import has null element present");
+        set.append("IF(STRCMP(@")
                 .append(column.getInternalName())
-                .append(", '")
+                .append(",'")
+                .append(data.getNullElement())
+                .append("'), @")
+                .append(column.getInternalName())
+                .append(", NULL), '")
                 .append(column.getDateFormat()
                         .getDatabaseFormat()
                         .replace('\'', '\\'))
@@ -500,18 +464,18 @@ public interface QueryMapper {
             for (Map.Entry<String, Object> entry : data.getKeys().entrySet()) {
                 final Optional<TableColumn> optional = table.getColumns()
                         .stream()
-                        .filter(c -> c.getInternalName().equals(entry.getKey()))
+                        .filter(c -> c.getInternalName().equals(entry.getKey().replace("`", "")))
                         .findFirst();
                 if (optional.isEmpty()) {
-                    log.error("Failed to find column with name {}, available names: {}", entry.getKey(), data.getKeys().keySet());
-                    throw new QueryMalformedException("Failed to find column");
+                    log.error("Failed to find column with name {} in table {}", entry.getKey(), table.getInternalName());
+                    throw new QueryMalformedException("Failed to find column with name " + entry.getKey() + " in table " + table.getInternalName());
                 }
                 prepareStatementWithColumnTypeObject(pstmt, optional.get().getColumnType(), i++, entry.getValue());
             }
             return pstmt;
         } catch (SQLException e) {
-            log.error("Failed to prepare statement {}, reason: {}", statement, e.getMessage());
-            throw new QueryMalformedException("Failed to prepare statement", e);
+            log.error("Failed to prepare statement {}: {}", statement, e.getMessage());
+            throw new QueryMalformedException("Failed to prepare statement: " + e.getMessage(), e);
         }
     }
 
@@ -697,10 +661,21 @@ public interface QueryMapper {
                 }
             }
         }
-        final List<TableColumn> allColumns = database.getTables()
-                .stream()
-                .map(Table::getColumns)
-                .flatMap(List::stream)
+        final List<ViewColumn> allColumns = Stream.of(database.getViews()
+                                .stream()
+                                .map(View::getColumns)
+                                .flatMap(List::stream),
+                        database.getTables()
+                                .stream()
+                                .map(Table::getColumns)
+                                .flatMap(List::stream)
+                                .map(c -> ViewColumn.builder()
+                                        .column(c)
+                                        .alias(c.getAlias())
+                                        .ordinalPosition(c.getOrdinalPosition())
+                                        .build())
+                )
+                .flatMap(i -> i)
                 .toList();
         log.trace("columns referenced in the from-clause and join-clause(s): {}", clauses);
         /* Checking if all tables or views exist */
@@ -725,20 +700,24 @@ public interface QueryMapper {
                 log.error("Failed to find table/view {} (with designator {})", column.getTable().getName(), column.getTable().getAlias());
                 throw new JSQLParserException("Failed to find table/view " + column.getTable().getName() + " (with alias " + column.getTable().getAlias() + ")");
             }
-            final Optional<TableColumn> optionalColumn = allColumns.stream()
-                    .filter(c -> c.getInternalName().equals(column.getColumnName().replace("`", "")))
-                    .filter(c -> columnMatches(c, optional.get().getName().replace("`", "")))
+            final String columnName = column.getColumnName().replace("`", "");
+            final String tableOrView = optional.get().getName().replace("`", "");
+            final List<ViewColumn> filteredColumns = allColumns.stream()
+                    .filter(c -> (c.getAlias() != null && c.getAlias().equals(columnName)) || c.getColumn().getInternalName().equals(columnName))
+                    .toList();
+            final Optional<ViewColumn> optionalColumn = filteredColumns.stream()
+                    .filter(c -> columnMatches(c, tableOrView))
                     .findFirst();
             if (optionalColumn.isEmpty()) {
-                log.error("Failed to find column with name {} in {}", column.getColumnName(), allColumns.stream().map(TableColumn::getInternalName).toList());
-                throw new JSQLParserException("Failed to find column with name " + column.getColumnName() + " in " + allColumns.stream().map(TableColumn::getInternalName).toList());
+                log.error("Failed to find column with name {} of table/view {} in {}", columnName, tableOrView, filteredColumns.stream().map(c -> c.getColumn().getTable().getInternalName() + "." + c.getColumn().getInternalName()).toList());
+                throw new JSQLParserException("Failed to find column with name " + columnName + " of table/view " + tableOrView);
             }
-            final TableColumn aliasColumn = optionalColumn.get();
+            final ViewColumn resultColumn = optionalColumn.get();
             if (item.getAlias() != null) {
-                aliasColumn.setAlias(item.getAlias().getName().replace("`", ""));
+                resultColumn.getColumn().setAlias(item.getAlias().getName().replace("`", ""));
             }
-            log.trace("found column with internal name {} and alias {}", aliasColumn.getInternalName(), aliasColumn.getAlias());
-            columns.add(aliasColumn);
+            log.trace("found column with internal name {} and alias {}", resultColumn.getColumn().getInternalName(), resultColumn.getAlias());
+            columns.add(resultColumn.getColumn());
         }
         return columns;
     }
@@ -785,18 +764,28 @@ public interface QueryMapper {
     }
 
     @Transactional(readOnly = true)
-    default boolean columnMatches(TableColumn column, String tableOrView) {
-        if (column.getTable().getInternalName().equals(tableOrView)) {
-            /* matches table name */
+    default boolean columnMatches(ViewColumn column, String tableOrView) {
+        if (column.getView() != null && column.getView().getInternalName().equals(tableOrView)) {
+            log.trace("view {} found in column table", tableOrView);
             return true;
         }
-        if (column.getViews() == null) {
+        if (column.getColumn().getTable().getInternalName().equals(tableOrView)) {
+            log.trace("table {} found in column table", tableOrView);
+            return true;
+        }
+        if (column.getColumn().getViews() == null) {
+            log.trace("table/view {} not found among column views: empty list", tableOrView);
             return false;
         }
-        /* maybe matches one of the views */
-        return column.getViews()
+        /* maybe matches one of the other views */
+        final boolean found = column.getColumn()
+                .getViews()
                 .stream()
                 .anyMatch(v -> v.getInternalName().equals(tableOrView));
+        if (!found) {
+            log.trace("table/view {} not found among column views: {}", tableOrView, column.getColumn().getViews().stream().map(View::getInternalName).toList());
+        }
+        return found;
     }
 
     default PreparedStatement obtainTableMetadataRawQuery(Connection connection, String databaseName, String tableName) throws QueryMalformedException {
@@ -810,22 +799,31 @@ public interface QueryMapper {
             return connection.prepareStatement(statement.toString());
         } catch (SQLException e) {
             log.error("Failed to prepare statement {}: {}", statement, e.getMessage());
-            throw new QueryMalformedException("Failed to prepare statement", e);
+            throw new QueryMalformedException("Failed to prepare statement: " + e.getMessage(), e);
         }
     }
 
+    default ForeignKeyReference foreignKeyToForeignKeyReference(ForeignKey foreignKey, TableColumn column,
+                                                                TableColumn referencedColumn) {
+        return ForeignKeyReference.builder()
+                .foreignKey(foreignKey)
+                .column(column)
+                .referencedColumn(referencedColumn)
+                .build();
+    }
+
     default PreparedStatement databaseToDatabaseConstraintMetadata(Connection connection, String databaseName, String tableName) throws QueryMalformedException {
-        final StringBuilder statement = new StringBuilder("SELECT tc.`CONSTRAINT_TYPE`, cc.`CONSTRAINT_NAME`, cc.`LEVEL`, cc.`CHECK_CLAUSE`, rc.`UNIQUE_CONSTRAINT_NAME`, rc.`REFERENCED_TABLE_NAME` FROM information_schema.`TABLE_CONSTRAINTS` tc LEFT JOIN information_schema.`CHECK_CONSTRAINTS` cc ON tc.`CONSTRAINT_SCHEMA` = cc.`CONSTRAINT_SCHEMA` AND tc.`TABLE_NAME` = cc.`TABLE_NAME` AND tc.`CONSTRAINT_TYPE` = 'CHECK' LEFT JOIN information_schema.`REFERENTIAL_CONSTRAINTS` rc ON tc.`CONSTRAINT_SCHEMA` = rc.`CONSTRAINT_SCHEMA` AND tc.`TABLE_NAME` = rc.`TABLE_NAME` AND tc.`CONSTRAINT_TYPE` = 'FOREIGN KEY' WHERE tc.`TABLE_SCHEMA` = '")
+        final StringBuilder statement = new StringBuilder("SELECT tc.`CONSTRAINT_TYPE`, tc.`CONSTRAINT_NAME`, cc.`LEVEL`, cc.`CHECK_CLAUSE`, rc.`UNIQUE_CONSTRAINT_NAME`, kcu.`REFERENCED_TABLE_NAME`, kcu.`COLUMN_NAME`, kcu.`REFERENCED_COLUMN_NAME`FROM information_schema.`TABLE_CONSTRAINTS` tc LEFT JOIN information_schema.`CHECK_CONSTRAINTS` cc ON tc.`CONSTRAINT_SCHEMA` = cc.`CONSTRAINT_SCHEMA` AND tc.`TABLE_NAME` = cc.`TABLE_NAME` AND tc.`CONSTRAINT_TYPE` = 'CHECK' LEFT JOIN information_schema.`REFERENTIAL_CONSTRAINTS` rc ON tc.`CONSTRAINT_SCHEMA` = rc.`CONSTRAINT_SCHEMA` AND tc.`TABLE_NAME` = rc.`TABLE_NAME` AND tc.`CONSTRAINT_TYPE` = 'UNIQUE' LEFT JOIN information_schema.`KEY_COLUMN_USAGE` kcu ON tc.`CONSTRAINT_SCHEMA` = kcu.`CONSTRAINT_SCHEMA` AND tc.`TABLE_NAME` = kcu.`TABLE_NAME` AND (tc.`CONSTRAINT_TYPE` = 'FOREIGN KEY' OR tc.`CONSTRAINT_TYPE` = 'UNIQUE') AND kcu.`CONSTRAINT_NAME` = tc.`CONSTRAINT_NAME` AND LOWER(kcu.`COLUMN_NAME`) != 'row_end' WHERE tc.`TABLE_SCHEMA` = '")
                 .append(databaseName)
                 .append("' AND tc.`TABLE_NAME` = '")
                 .append(tableName)
                 .append("'");
-        log.trace("statement={}", statement);
+        log.trace("mapped obtain table constraint metadata statement {} to prepared statement", statement);
         try {
             return connection.prepareStatement(statement.toString());
         } catch (SQLException e) {
-            log.error("Failed to prepare statement {}, reason: {}", statement, e.getMessage());
-            throw new QueryMalformedException("Failed to prepare statement", e);
+            log.error("Failed to prepare statement {}: {}", statement, e.getMessage());
+            throw new QueryMalformedException("Failed to prepare statement: " + e.getMessage(), e);
         }
     }
 
@@ -841,7 +839,7 @@ public interface QueryMapper {
             return connection.prepareStatement(statement.toString());
         } catch (SQLException e) {
             log.error("Failed to prepare statement {}: {}", statement, e.getMessage());
-            throw new QueryMalformedException("Failed to prepare statement", e);
+            throw new QueryMalformedException("Failed to prepare statement: " + e.getMessage(), e);
         }
     }
 
@@ -863,6 +861,11 @@ public interface QueryMapper {
     default Object dataColumnToObject(Object data, TableColumn column) throws DateTimeException {
         if (data == null) {
             return null;
+        }
+        /* boolean encoding fix */
+        if (column.getColumnType().equals(TableColumnType.TINYINT) && column.getSize() == 1) {
+            log.debug("column {} is of type tinyint with size {}: map to boolean", column.getInternalName(), column.getSize());
+            column.setColumnType(TableColumnType.BOOL);
         }
         switch (column.getColumnType()) {
             case DATE -> {
@@ -902,7 +905,7 @@ public interface QueryMapper {
                 log.trace("mapping {} -> biginteger", data);
                 return new BigInteger(String.valueOf(data));
             }
-            case INT, TINYINT, SMALLINT, MEDIUMINT -> {
+            case INT, SMALLINT, MEDIUMINT, TINYINT -> {
                 log.trace("mapping {} -> integer", data);
                 return Integer.parseInt(String.valueOf(data));
             }
@@ -947,37 +950,6 @@ public interface QueryMapper {
             log.error("Failed to retrieve number: {}", e.getMessage());
             throw new QueryStoreException("Failed to retrieve number", e);
         }
-    }
-
-    default String generateInsertFromTemporaryTableSQL(Table table) {
-        final StringBuilder statement = new StringBuilder("INSERT INTO `")
-                .append(table.getDatabase().getInternalName())
-                .append("`.`")
-                .append(table.getInternalName())
-                .append("` SELECT ");
-        for (TableColumn tc : table.getColumns()) {
-            statement.append("`");
-            statement.append(tc.getInternalName()).append("`,");
-        }
-        statement.deleteCharAt(statement.length() - 1);
-        statement.append(" FROM `")
-                .append(table.getDatabase().getInternalName())
-                .append("`.`")
-                .append(table.getInternalName())
-                .append("_temporary`");
-
-        statement.append(" ON DUPLICATE KEY UPDATE ");
-        for (TableColumn tc : table.getColumns())
-            statement.append("`")
-                    .append(tc.getInternalName())
-                    .append("`")
-                    .append("=")
-                    .append("VALUES(`")
-                    .append(tc.getInternalName())
-                    .append("`),");
-        statement.deleteCharAt(statement.length() - 1);
-        statement.append(";");
-        return statement.toString();
     }
 
     default void prepareStatementWithColumnTypeObject(PreparedStatement ps, TableColumnType columnType, int idx, Object value) throws SQLException {

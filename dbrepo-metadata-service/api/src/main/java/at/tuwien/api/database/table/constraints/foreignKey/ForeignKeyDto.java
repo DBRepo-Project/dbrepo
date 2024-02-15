@@ -19,6 +19,8 @@ import java.util.List;
 @ToString
 public class ForeignKeyDto {
 
+    private String name;
+
     @org.springframework.data.annotation.Transient
     private List<ColumnDto> columns;
 

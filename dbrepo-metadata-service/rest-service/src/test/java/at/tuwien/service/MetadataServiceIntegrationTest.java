@@ -56,6 +56,9 @@ public class MetadataServiceIntegrationTest extends BaseUnitTest {
         TABLE_2.setColumns(TABLE_2_COLUMNS);
         TABLE_3.setColumns(TABLE_3_COLUMNS);
         TABLE_4.setColumns(TABLE_4_COLUMNS);
+        VIEW_1.setColumns(VIEW_1_COLUMNS);
+        VIEW_2.setColumns(VIEW_2_COLUMNS);
+        VIEW_3.setColumns(VIEW_3_COLUMNS);
         /* metadata database */
         imageRepository.save(IMAGE_1);
         userRepository.save(USER_1);

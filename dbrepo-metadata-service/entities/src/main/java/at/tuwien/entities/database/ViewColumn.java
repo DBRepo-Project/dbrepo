@@ -26,7 +26,7 @@ public class ViewColumn implements Comparable<ViewColumn> {
     @Column(updatable = false, nullable = false)
     private Long id;
 
-    @Column(updatable = false, nullable = false)
+    @Column(updatable = false)
     private String alias;
 
     @Column(nullable = false)

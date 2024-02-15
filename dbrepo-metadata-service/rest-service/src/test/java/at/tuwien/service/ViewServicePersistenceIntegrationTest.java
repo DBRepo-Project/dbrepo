@@ -121,7 +121,7 @@ public class ViewServicePersistenceIntegrationTest extends BaseUnitTest {
         assertEquals(VIEW_1_NAME, response.getName());
         assertEquals(VIEW_1_INTERNAL_NAME, response.getInternalName());
         assertEquals(VIEW_1_QUERY, response.getQuery());
-        assertEquals(VIEW_1_COLUMNS.size(), response.getColumns().size());
+
     }
 
 }

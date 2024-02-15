@@ -173,6 +173,14 @@ public class TableDataEndpoint {
         log.debug("endpoint insert data from csv, databaseId={}, tableId={}, data={}, {}", databaseId, tableId, data, PrincipalUtil.formatForDebug(principal));
         /* check */
         endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(databaseId, tableId, principal);
+        if (data.getNullElement() == null) {
+            log.debug("null element not present, default to empty string");
+            data.setNullElement("");
+        }
+        if (data.getLineTermination() == null) {
+            log.debug("line termination not present, default to \\r\\n");
+            data.setLineTermination("\r\n");
+        }
         /* insert */
         queryService.insert(databaseId, tableId, data, principal);
         return ResponseEntity.accepted()
