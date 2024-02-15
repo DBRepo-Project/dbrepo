@@ -222,7 +222,5 @@ test: test-backend test-frontend
 teardown:
 	./bin/teardown.sh
 
-docs: build-docker
-	docker compose up -d || docker compose down
-	cd .docs && bash generate_swagger.sh || docker compose down
-	docker compose down
+build-api: build-docker
+	bash .docs/.swagger/swagger-generate.sh
