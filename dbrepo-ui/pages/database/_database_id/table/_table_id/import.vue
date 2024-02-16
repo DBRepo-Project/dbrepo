@@ -205,7 +205,7 @@ export default {
     isNonNegativeInteger,
     uploadAndImport () {
       this.loading = true
-      UploadService.upload(this.fileModel)
+      UploadService.upload(this.$config.uploadEndpointUrl, this.fileModel)
         .then((metadata) => {
           console.debug('uploaded file', metadata)
           const { s3key } = metadata

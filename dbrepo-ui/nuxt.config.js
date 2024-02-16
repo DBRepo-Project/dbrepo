@@ -112,7 +112,8 @@ export default {
     brokerHost: config.broker.connection.host,
     brokerPorts: config.broker.connection.ports,
     brokerExtraInfo: config.broker.connection.extraInfo,
-    databaseExtraInfo: config.database.connection.extraInfo
+    databaseExtraInfo: config.database.connection.extraInfo,
+    uploadEndpointUrl: `http${config.upload.useSsl ? 's' : ''}://${config.upload.url}`
   },
 
   serverMiddleware: [

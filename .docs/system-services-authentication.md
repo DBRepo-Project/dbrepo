@@ -16,7 +16,8 @@ author: Martin Weise
 ## Overview
 
 By default, users are created using the [User Interface](../system-other-ui) and the sign-up page in the User Interface.
-This creates a new user in the [Authentication Database](../system-databases-authentication), the user identity is then managed by the
+This creates a new user in the [Authentication Database](../system-databases-authentication), the user identity is then
+managed by the
 Authentication Service.
 
 ## Groups
@@ -58,10 +59,10 @@ public ResponseEntity<DatabaseBriefDto> create(@NotNull Long containerId,
 
 ### Default Container Handling
 
-| Name                     | Description                          |
-|--------------------------|--------------------------------------|
-| `find-container`         | Can find a specific container        |
-| `list-containers`        | Can list all containers              |
+| Name              | Description                   |
+|-------------------|-------------------------------|
+| `find-container`  | Can find a specific container |
+| `list-containers` | Can list all containers       |
 
 ### Default Database Handling
 
@@ -73,8 +74,9 @@ public ResponseEntity<DatabaseBriefDto> create(@NotNull Long containerId,
 | `delete-database-access`     | Can delete the access to a database of a user        |
 | `find-database`              | Can find a specific database in a container          |
 | `list-databases`             | Can list all databases in a container                |
-| `modify-database-visibility` | Can modify the database visibility (public, private) |
+| `modify-database-image`      | Can update the database image                        |
 | `modify-database-owner`      | Can modify the database owner                        |
+| `modify-database-visibility` | Can modify the database visibility (public, private) |
 | `update-database-access`     | Can update the access to a database of a user        |
 
 ### Default Table Handling
@@ -208,5 +210,5 @@ public ResponseEntity<DatabaseBriefDto> create(@NotNull Long containerId,
 
 ## Security
 
-1. Mount your TLS certificate / private key pair into `/app/tls.crt` and `/app/tls.key` and 
+1. Mount your TLS certificate / private key pair into `/app/tls.crt` and `/app/tls.key` and
    set `KC_HTTPS_CERTIFICATE_FILE=/app/tls.crt` and set `KC_HTTPS_CERTIFICATE_KEY_FILE=/app/tls.key`.
