@@ -320,7 +320,7 @@ export default {
       if (!file) {
         return
       }
-      UploadService.upload(file)
+      UploadService.upload(this.$config.uploadEndpointUrl, file)
         .then((metadata) => {
           console.debug('uploaded file', metadata)
           const { s3key } = metadata
