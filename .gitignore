@@ -9,6 +9,7 @@ ready
 schema.xsd
 final/
 build/
+swagger/
 
 # docs
 .docs/.swagger/dist/

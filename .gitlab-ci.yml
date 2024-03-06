@@ -588,7 +588,13 @@ build-api-1.4:
       - release-v1.4
   script:
     - apk add bash git maven
-    - git fetch && git checkout release-v1.4
+    - git fetch
+    - git checkout v1.4.0
+    - bash .docs/.swagger/swagger-site.sh
+    - find ./site -type f -exec sed -i -e "s/__APPVERSION__/1.4.0/g" {} \;
+    - mkdir -p ./swagger/1.4.0
+    - cp -r ./site/* ./swagger/1.4.0/
+    - git checkout release-v1.4
     - bash .docs/.swagger/swagger-site.sh
     - find ./site -type f -exec sed -i -e "s/__APPVERSION__/${APP_VERSION}/g" {} \;
     - mkdir -p ./swagger/${APP_VERSION}
@@ -696,7 +702,16 @@ docs-1.4:
       - release-v1.4
   script:
     - apt-get update && apt-get install -y git make sed wget
-    - git fetch && git checkout release-v1.4
+    - git fetch
+    - git checkout v1.4.0
+    - pip install -r ./requirements.txt
+    - wget https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/.docs/overrides/main.html -O .docs/overrides/main.html -q
+    - mkdir -p ./final
+    - find .docs/ -type f -exec sed -i -e "s/__APPVERSION__/1.4.0/g" {} \;
+    - find .docs/ -type f -exec sed -i -e "s/__CHARTVERSION__/1.4.0/g" {} \;
+    - mkdocs build && cp -r ./site ./final/1.4.0
+    - cp -r ./swagger/${APP_VERSION} ./final/1.4.0/swagger
+    - git checkout release-v1.4
     - pip install -r ./requirements.txt
     - wget https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/.docs/overrides/main.html -O .docs/overrides/main.html -q
     - mkdir -p ./final
