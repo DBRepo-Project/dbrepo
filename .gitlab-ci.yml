@@ -587,12 +587,8 @@ build-api-1.4:
       - release-v1.3
       - release-v1.4
   script:
-    - apk add bash git maven
-    - git fetch && git checkout release-v1.4
-    - bash .docs/.swagger/swagger-site.sh
-    - find ./site -type f -exec sed -i -e "s/__APPVERSION__/${APP_VERSION}/g" {} \;
-    - mkdir -p ./swagger/${APP_VERSION}
-    - cp -r ./site/* ./swagger/${APP_VERSION}/
+    - apk add bash git
+    - bash .gitlab/build-api.sh v1.4.0 release-v1.4
   cache:
     paths:
       - ./swagger/${APP_VERSION}
@@ -695,6 +691,7 @@ docs-1.4:
       - release-v1.3
       - release-v1.4
   script:
+    # need to loop for release-v1.4 and tag 1.4.0
     - apt-get update && apt-get install -y git make sed wget
     - git fetch && git checkout release-v1.4
     - pip install -r ./requirements.txt
