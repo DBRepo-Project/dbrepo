@@ -2,21 +2,6 @@
 
 {% block announce %}
 <label for="version">Version</label>
-<script type="javascript">
-    function getVersion() {
-        const segments = location.pathname.split('/');
-        if (segments.length >= 4) {
-            return segments[3];
-        } else {
-            return '__APPVERSION__';
-        }
-    }
-    function switchVersion(value) {
-        if (!value) { return }
-        this.location.href = location.protocol + '//' + location.host + '/infrastructures/dbrepo/' + value + '/';
-    }
-    document.getElementById("version").value = getVersion();
-</script>
 <select style="margin-left:8px;" id="version" name="version" onchange="switchVersion(this.options[this.selectedIndex].value)">
     <option value="latest">latest</option>
     <option value="1.4.1">1.4.1</option>
