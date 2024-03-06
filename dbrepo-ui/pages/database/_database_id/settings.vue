@@ -312,7 +312,7 @@ export default {
     },
     uploadFile () {
       this.loadingUpload = true
-      UploadService.upload(this.fileModel)
+      UploadService.upload(this.$config.uploadEndpointUrl, this.fileModel)
         .then((metadata) => {
           console.debug('uploaded image', metadata)
           this.modifyImage.key = metadata.s3key

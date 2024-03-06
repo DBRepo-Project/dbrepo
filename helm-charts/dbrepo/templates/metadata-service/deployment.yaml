@@ -23,9 +23,10 @@ spec:
         service: metadata-service
     spec:
       securityContext:
-        fsGroup: 0
-        runAsUser: 0
-        runAsGroup: 0
+        runAsNonRoot: true
+        fsGroup: 1000
+        runAsUser: 1000
+        runAsGroup: 1000
       containers:
         - name: metadata-service
           image: {{ printf "%s/%s:%s" .Values.metadataService.image.registry .Values.metadataService.image.repository .Values.metadataService.image.tag }}

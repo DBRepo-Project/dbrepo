@@ -35,8 +35,7 @@
     }
   },
   "upload": {
-    "endpoint": "localhost",
-    "port": 1080,
+    "url": "localhost:80",
     "useSsl": false
   },
   "database": {
