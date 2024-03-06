@@ -719,7 +719,7 @@ docs-1.4.0:
       - release-v1.3
       - release-v1.4
   script:
-    - apt-get update && apt-get install -y git make sed wget
+    - apt-get update && apt-get install -y git
     - git fetch --tags && git checkout v1.4.0
     - pip install -r ./requirements.txt
     - wget https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/.docs/overrides/main.html -O .docs/overrides/main.html -q
