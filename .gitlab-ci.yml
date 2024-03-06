@@ -578,6 +578,30 @@ build-api-1.3:
       - ./swagger/1.3.0
     expire_in: 1 days
 
+build-api-1.4.0:
+  stage: build
+  image: docker.io/alpine:3.18
+  only:
+    refs:
+      - master
+      - release-v1.3
+      - release-v1.4
+  script:
+    - apk add bash git maven
+    - git fetch --tags && git checkout v1.4.0
+    - bash .docs/.swagger/swagger-site.sh
+    - find ./site -type f -exec sed -i -e "s/__APPVERSION__/1.4.0/g" {} \;
+    - mkdir -p ./swagger/1.4.0
+    - cp -r ./site/* ./swagger/1.4.0/
+  cache:
+    paths:
+      - ./swagger/1.4.0
+  artifacts:
+    when: always
+    paths:
+      - ./swagger/1.4.0
+    expire_in: 1 days
+
 build-api-1.4:
   stage: build
   image: docker.io/alpine:3.18
@@ -588,13 +612,7 @@ build-api-1.4:
       - release-v1.4
   script:
     - apk add bash git maven
-    - git fetch --tags
-    - git checkout v1.4.0
-    - bash .docs/.swagger/swagger-site.sh
-    - find ./site -type f -exec sed -i -e "s/__APPVERSION__/1.4.0/g" {} \;
-    - mkdir -p ./swagger/1.4.0
-    - cp -r ./site/* ./swagger/1.4.0/
-    - git checkout release-v1.4
+    - git fetch && git checkout release-v1.4
     - bash .docs/.swagger/swagger-site.sh
     - find ./site -type f -exec sed -i -e "s/__APPVERSION__/${APP_VERSION}/g" {} \;
     - mkdir -p ./swagger/${APP_VERSION}
@@ -688,6 +706,37 @@ docs-1.3:
       - ./final
     expire_in: 1 days
 
+docs-1.4.0:
+  stage: docs
+  image: docker.io/python:3.11-slim
+  needs:
+    - build-api-latest
+    - build-api-1.3
+    - build-api-1.4
+  only:
+    refs:
+      - master
+      - release-v1.3
+      - release-v1.4
+  script:
+    - apt-get update && apt-get install -y git make sed wget
+    - git fetch --tags && git checkout v1.4.0
+    - pip install -r ./requirements.txt
+    - wget https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/.docs/overrides/main.html -O .docs/overrides/main.html -q
+    - mkdir -p ./final
+    - find .docs/ -type f -exec sed -i -e "s/__APPVERSION__/1.4.0/g" {} \;
+    - find .docs/ -type f -exec sed -i -e "s/__CHARTVERSION__/1.4.0/g" {} \;
+    - mkdocs build && cp -r ./site ./final/1.4.0
+    - cp -r ./swagger/${APP_VERSION} ./final/1.4.0/swagger
+  cache:
+    paths:
+      - ./final
+  artifacts:
+    when: always
+    paths:
+      - ./final
+    expire_in: 1 days
+
 docs-1.4:
   stage: docs
   image: docker.io/python:3.11-slim
@@ -702,16 +751,7 @@ docs-1.4:
       - release-v1.4
   script:
     - apt-get update && apt-get install -y git make sed wget
-    - git fetch --tags
-    - git checkout v1.4.0
-    - pip install -r ./requirements.txt
-    - wget https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/.docs/overrides/main.html -O .docs/overrides/main.html -q
-    - mkdir -p ./final
-    - find .docs/ -type f -exec sed -i -e "s/__APPVERSION__/1.4.0/g" {} \;
-    - find .docs/ -type f -exec sed -i -e "s/__CHARTVERSION__/1.4.0/g" {} \;
-    - mkdocs build && cp -r ./site ./final/1.4.0
-    - cp -r ./swagger/${APP_VERSION} ./final/1.4.0/swagger
-    - git checkout release-v1.4
+    - git fetch && git checkout release-v1.4
     - pip install -r ./requirements.txt
     - wget https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/.docs/overrides/main.html -O .docs/overrides/main.html -q
     - mkdir -p ./final
