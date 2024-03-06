@@ -345,7 +345,7 @@ export default {
     upload () {
       this.loading = true
       return new Promise((resolve, reject) => {
-        UploadService.upload(this.fileModel)
+        UploadService.upload(this.$config.uploadEndpointUrl, this.fileModel)
           .then((metadata) => {
             console.debug('uploaded file', metadata)
             this.loading = false

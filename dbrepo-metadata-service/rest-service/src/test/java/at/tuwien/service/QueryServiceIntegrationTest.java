@@ -368,14 +368,14 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         assertEquals("boar", result.get(0).get("animal_name"));
         assertEquals("Moritz", result.get(0).get("firstname"));
         assertEquals("Staudinger", result.get(0).get("lastname"));
-        assertEquals("1990", result.get(0).get("birth"));
+        assertEquals(Short.parseShort("1990"), result.get(0).get("birth"));
         assertEquals("11:22:33", result.get(0).get("reminder"));
         assertEquals(BigInteger.valueOf(1L), result.get(1).get("id"));
         assertEquals(4, result.get(1).get("legs"));
         assertEquals("cavy", result.get(1).get("animal_name"));
         assertEquals("Moritz", result.get(1).get("firstname"));
         assertEquals("Staudinger", result.get(1).get("lastname"));
-        assertEquals("1990", result.get(1).get("birth"));
+        assertEquals(Short.parseShort("1990"), result.get(1).get("birth"));
         assertEquals("11:22:33", result.get(1).get("reminder"));
         assertEquals(BigInteger.valueOf(3L), result.get(2).get("id"));
         assertEquals(4, result.get(2).get("legs"));

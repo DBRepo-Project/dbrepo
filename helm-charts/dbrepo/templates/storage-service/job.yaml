@@ -1,12 +1,12 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: storage-service-create-buckets-job
+  name: storageservice-create-buckets-job
   namespace: {{ .Values.namespace }}
 spec:
   template:
     metadata:
-      name: storage-service-create-buckets-job
+      name: storageservice-create-buckets-job
     spec:
       restartPolicy: OnFailure
       containers:
@@ -16,11 +16,11 @@ spec:
             - name: WEED_CLUSTER_DEFAULT
               value: "sw"
             - name: WEED_CLUSTER_SW_MASTER
-              value: "storage-service-master.{{ .Release.Name }}:9333"
+              value: "storageservice-master.{{ .Release.Name }}:9333"
             - name: SEAWEEDFS_ENDPOINT
-              value: "storage-service-master.{{ .Release.Name }}:9333"
+              value: "storageservice-master.{{ .Release.Name }}:9333"
             - name: WEED_CLUSTER_SW_FILER
-              value: "storage-service-filer-client.{{ .Release.Name }}:8888"
+              value: "storageservice-filer-client.{{ .Release.Name }}:8888"
             - name: POD_IP
               valueFrom:
                 fieldRef:
@@ -34,7 +34,7 @@ spec:
                 fieldRef:
                   fieldPath: metadata.namespace
             - name: SEAWEEDFS_FULLNAME
-              value: "storage-service"
+              value: "storageservice"
           volumeMounts:
             - name: config-users
               mountPath: /etc/sw
