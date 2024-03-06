@@ -7,10 +7,6 @@ services[9093]=data
 services[9099]=metadata
 services[3305]=sidecar
 
-# clean up
-echo "clean up ./site"
-rm -rf ./site
-
 # ensure target directories are present
 echo "ensure target directory ./site are present"
 mkdir -p ./site
