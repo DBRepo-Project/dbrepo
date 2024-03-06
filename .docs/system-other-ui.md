@@ -45,17 +45,16 @@ configured as well via the `dbrepo.config.json` values file. The important links
 
 ```json title="dbrepo.config.json"
 {
-  "title": "Database Repository",
-  "version": "__APPVERSION___DOCKER-COMPOSE",
-  "logo": {
-    "path": "/my_logo.png"
-  },
-  "page": {
+    "title": "Database Repository",
+    "version": "__APPVERSION___DOCKER-COMPOSE",
+    "logo": {
+      "path": "/my_logo.png"
+    },
+    "page": {
     "information": {
       "links": []
-    }
-  },
-  ...
+    },
+    ...
 }
 ```
 
@@ -74,47 +73,27 @@ services:
 
 ### Architecture
 
-<figure markdown>
+The server-client architecture of the User Interface is shown in [Figure 3](#fig3), it is supposed to help debug the
+User Interface on development.
+
+<figure id="fig3" markdown>
 ![Architecture of the UI microservice](images/architecture-ui.svg)
-<figcaption>Figure 3: Architecture of the UI microservice</figcaption>
+<figcaption>Figure 3: Architecture of the User Interface</figcaption>
 </figure>
 
 ### Example
 
-Upload a file to the `dbrepo-upload` bucket in the [Storage Service](../system-services-storage/) using the Node.js
-middleware. The request must be sent with the `Content-Type: multipart/form-data` header and the file must be placed
-in the `file` field of the form. For example:
-
-```shell
-curl -X POST \
-  -F "file=@path/to/file/gps.csv" \
-  http://<hostname>/server-middleware/upload
-```
-
-The response looks like this:
-
-```json
-{
-  "fieldname": "file",
-  "originalname": "gps.csv",
-  "encoding": "7bit",
-  "mimetype": "text/csv",
-  "buffer": {
-    "type": "Buffer",
-    "data": [
-      34,
-      73,
-      ...
-    ]
-  },
-  "size": 130279,
-  "etag": "9d23e73f4ed9f7e5afc80e696db69ebb"
-}
-```
+See the [Usage Overview](../usage-overview/) page for detailed examples.
 
 ## Limitations
 
 (none)
+
+!!! question "Do you miss functionality? Do these limitations affect you?"
+
+    We strongly encourage you to help us implement it as we are welcoming contributors to open-source software and get
+    in [contact](../contact) with us, we happily answer requests for collaboration with attached CV and your programming 
+    experience!
 
 ## Security
 

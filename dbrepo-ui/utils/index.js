@@ -1046,6 +1046,32 @@ function timestampsToHumanDifference (date1, date2) {
   return moment.duration(other.diff(date)).humanize(true)
 }
 
+function sizeToHumanLabel (num) {
+  let number = Number(num)
+  if (!number) {
+    return '0'
+  }
+  if (number < 1000) {
+    return `${Math.floor(number)} B`
+  }
+  number = number / 1000
+  if (number < 1000) {
+    return `${Math.floor(number)} kB`
+  }
+  number = number / 1000
+  if (number < 1000) {
+    return `${Math.floor(number)} MB`
+  }
+  number = number / 1000
+  if (number < 1000) {
+    return `${number} GB`
+  }
+  number = number / 1000
+  if (number < 1000) {
+    return `${number} TB`
+  }
+}
+
 module.exports = {
   notEmpty,
   formatTimestamp,
@@ -1061,5 +1087,6 @@ module.exports = {
   formatBinaryStream,
   languages,
   formatLanguage,
-  timestampsToHumanDifference
+  timestampsToHumanDifference,
+  sizeToHumanLabel
 }

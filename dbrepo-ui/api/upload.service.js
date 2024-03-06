@@ -2,9 +2,9 @@ import Vue from 'vue'
 const tus = require('tus-js-client')
 
 class UploadService {
-  upload (file) {
+  upload (url, file) {
     return new Promise((resolve, reject) => {
-      const endpoint = `${location.protocol}//${location.host}/api/upload/files`
+      const endpoint = `${url}/api/upload/files`
       console.debug('upload endpoint', endpoint)
       if (!tus.isSupported) {
         console.error('Your browser does not support uploads!')
@@ -19,7 +19,7 @@ class UploadService {
           filetype: file.type
         },
         onError (error) {
-          console.error('Failed because: ' + error)
+          console.error('Failed to upload:', error)
           reject(error)
         },
         onProgress (bytesUploaded, bytesTotal) {

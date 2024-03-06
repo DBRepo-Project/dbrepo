@@ -249,7 +249,7 @@ export default {
         this.table.columns.map((c) => {
           return {
             value: c.internal_name,
-            text: c.name,
+            text: c.internal_name,
             sortable: false
           }
         }).forEach(header => this.headers.push(header))

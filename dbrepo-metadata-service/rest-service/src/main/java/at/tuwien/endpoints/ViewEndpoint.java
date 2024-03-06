@@ -62,7 +62,7 @@ public class ViewEndpoint {
     @GetMapping
     @Transactional(readOnly = true)
     @Observed(name = "dbr_views_findall")
-    @Operation(summary = "Find all views", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Find all views", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Find views successfully",
@@ -93,7 +93,7 @@ public class ViewEndpoint {
     @Transactional
     @PreAuthorize("hasAuthority('create-database-view')")
     @Observed(name = "dbr_view_create")
-    @Operation(summary = "Create a view", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Create a view", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",
                     description = "Create view successfully",
@@ -160,7 +160,7 @@ public class ViewEndpoint {
     @GetMapping("/{viewId}")
     @Transactional(readOnly = true)
     @Observed(name = "dbr_view_find")
-    @Operation(summary = "Find one view", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Find one view", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Find view successfully",
@@ -194,7 +194,7 @@ public class ViewEndpoint {
     @Transactional
     @PreAuthorize("hasAuthority('delete-database-view')")
     @Observed(name = "dbr_view_delete")
-    @Operation(summary = "Delete one view", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Delete one view", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Delete view successfully",
@@ -250,7 +250,7 @@ public class ViewEndpoint {
     @GetMapping("/{viewId}/data")
     @Transactional(readOnly = true)
     @Observed(name = "dbr_view_data_findall")
-    @Operation(summary = "Find view data", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Find view data", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Find data successfully",
@@ -294,6 +294,15 @@ public class ViewEndpoint {
                 throw new NotAllowedException("Failed to view data of private view: role missing");
             }
         }
+        /* default */
+        if (page == null) {
+            log.trace("page is null: default to 0");
+            page = 0L;
+        }
+        if (size == null) {
+            log.trace("size is null: default to 10");
+            size = 10L;
+        }
         /* find */
         log.debug("find view data for database with id {}", databaseId);
         final View view = viewService.findById(databaseId, viewId, principal);
@@ -307,7 +316,7 @@ public class ViewEndpoint {
     @GetMapping("/{viewId}/data/count")
     @Transactional(readOnly = true)
     @Observed(name = "dbr_view_data_count")
-    @Operation(summary = "Find view data count", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Find view data count", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Count data successfully",

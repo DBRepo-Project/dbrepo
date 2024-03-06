@@ -38,7 +38,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Log4j2
@@ -104,7 +103,7 @@ public class IdentifierEndpoint {
     @Transactional
     @Observed(name = "dbr_identifier_create")
     @PreAuthorize("hasAuthority('create-identifier') or hasAuthority('create-foreign-identifier')")
-    @Operation(summary = "Create identifier", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Create identifier", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",
                     description = "Created identifier",
@@ -163,6 +162,12 @@ public class IdentifierEndpoint {
             QueryStoreException, QueryNotFoundException, ImageNotSupportedException, UserNotFoundException,
             DatabaseConnectionException, RemoteUnavailableException {
         log.debug("endpoint create identifier, data={}, {}", data, PrincipalUtil.formatForDebug(principal));
+        /* check data */
+        if (!endpointValidator.validatePublicationDate(data)) {
+            log.error("Failed to create identifier: publication date is invalid");
+            throw new IdentifierRequestException("Failed to create identifier: publication date is invalid");
+        }
+        /* check access */
         DatabaseAccess access = null;
         try {
             access = accessService.find(data.getDatabaseId(), UserUtil.getId(principal));
@@ -172,21 +177,22 @@ public class IdentifierEndpoint {
                 throw new NotAllowedException("Failed to create identifier: insufficient role");
             }
         }
+        /* create identifier */
         final Database database = databaseService.find(data.getDatabaseId());
         switch (data.getType()) {
             case VIEW -> {
-                if (data.getDatabaseId() == null || data.getQueryId() != null || data.getViewId() == null || data.getTableId() != null) {
+                if (data.getQueryId() != null || data.getViewId() == null || data.getTableId() != null) {
                     log.error("Failed to create view identifier: only parameters database_id & view_id must be present");
                     throw new IdentifierRequestException("Failed to create view identifier: only parameters database_id & view_id must be present");
                 }
-                final View view = viewService.findById(data.getViewId());
+                final View view = viewService.findById(data.getDatabaseId(), data.getViewId());
                 if (!endpointValidator.validateOnlyMineOrReadAccessOrHasRole(view.getCreatedBy(), principal, access, "create-foreign-identifier")) {
                     log.error("Failed to create view identifier: insufficient access or role");
                     throw new IdentifierRequestException("Failed to create view identifier: insufficient access or role");
                 }
             }
             case TABLE -> {
-                if (data.getDatabaseId() == null || data.getQueryId() != null || data.getViewId() != null || data.getTableId() == null) {
+                if (data.getQueryId() != null || data.getViewId() != null || data.getTableId() == null) {
                     log.error("Failed to create table identifier: only parameters database_id & table_id must be present");
                     throw new IdentifierRequestException("Failed to create table identifier: only parameters database_id & table_id must be present");
                 }
@@ -197,7 +203,7 @@ public class IdentifierEndpoint {
                 }
             }
             case SUBSET -> {
-                if (data.getDatabaseId() == null || data.getQueryId() == null || data.getViewId() != null || data.getTableId() != null) {
+                if (data.getQueryId() == null || data.getViewId() != null || data.getTableId() != null) {
                     log.error("Failed to create subset identifier: only parameters database_id & query_id must be present");
                     throw new IdentifierRequestException("Failed to create subset identifier: only parameters database_id & query_id must be present");
                 }
@@ -209,7 +215,7 @@ public class IdentifierEndpoint {
                 }
             }
             case DATABASE -> {
-                if (data.getDatabaseId() == null || data.getQueryId() != null || data.getViewId() != null || data.getTableId() != null) {
+                if (data.getQueryId() != null || data.getViewId() != null || data.getTableId() != null) {
                     log.error("Failed to create database identifier: only parameters database_id must be present");
                     throw new IdentifierRequestException("Failed to create database identifier: only parameters database_id must be present");
                 }

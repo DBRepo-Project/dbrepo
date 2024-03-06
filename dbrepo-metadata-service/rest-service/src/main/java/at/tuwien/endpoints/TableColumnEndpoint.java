@@ -6,7 +6,7 @@ import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.TableMapper;
-import at.tuwien.service.TableService;
+import at.tuwien.service.TableColumnService;
 import at.tuwien.utils.PrincipalUtil;
 import at.tuwien.utils.UserUtil;
 import at.tuwien.validation.EndpointValidator;
@@ -35,21 +35,22 @@ import java.security.Principal;
 public class TableColumnEndpoint {
 
     private final TableMapper tableMapper;
-    private final TableService tableService;
     private final EndpointValidator endpointValidator;
+    private final TableColumnService tableColumnService;
 
     @Autowired
-    public TableColumnEndpoint(TableMapper tableMapper, TableService tableService, EndpointValidator endpointValidator) {
+    public TableColumnEndpoint(TableMapper tableMapper, EndpointValidator endpointValidator,
+                               TableColumnService tableColumnService) {
         this.tableMapper = tableMapper;
-        this.tableService = tableService;
         this.endpointValidator = endpointValidator;
+        this.tableColumnService = tableColumnService;
     }
 
     @PutMapping
     @Transactional
     @PreAuthorize("hasAuthority('modify-table-column-semantics') or hasAuthority('modify-foreign-table-column-semantics')")
     @Observed(name = "dbr_semantics_column_save")
-    @Operation(summary = "Update a table column semantic mapping", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Update a table column semantic mapping", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Updated column semantics successfully",
@@ -76,8 +77,7 @@ public class TableColumnEndpoint {
                                             @NotNull @PathVariable("tableId") Long tableId,
                                             @NotNull @PathVariable("columnId") Long columnId,
                                             @NotNull @Valid @RequestBody ColumnSemanticsUpdateDto updateDto,
-                                            @NotNull Principal principal,
-                                            @NotNull @RequestHeader("Authorization") String authorization)
+                                            @NotNull Principal principal)
             throws TableNotFoundException, TableMalformedException, DatabaseNotFoundException, NotAllowedException,
             AccessDeniedException {
         log.debug("endpoint update table, id={}, tableId={}, columnId={}, {}", id, tableId, columnId, PrincipalUtil.formatForDebug(principal));
@@ -85,11 +85,12 @@ public class TableColumnEndpoint {
             endpointValidator.validateOnlyAccess(id, principal, true);
             endpointValidator.validateOnlyOwnerOrWriteAll(id, tableId, principal);
         }
-        final TableColumn column = tableService.update(id, tableId, columnId, updateDto, authorization);
+        final TableColumn column = tableColumnService.update(id, tableId, columnId, updateDto);
         log.info("Updated table semantics of table with id {} and database with id {}", tableId, id);
-        final ColumnDto dto = tableMapper.tableColumnToColumnDto(column);
+        final ColumnDto columnDto = tableMapper.tableColumnToColumnDto(column);
+        log.trace("find table data resulted in column {}", columnDto);
         return ResponseEntity.accepted()
-                .body(dto);
+                .body(columnDto);
     }
 
 }

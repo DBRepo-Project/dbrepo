@@ -6,17 +6,25 @@ hide:
 
 # Publications
 
+!!! abstract "How to Cite DBRepo"
+
+    Please cite the following paper:
+
+    Weise, M., Staudinger, M., Michlits, C., Gergely, E., Stytsenko, K., Ganguly, R., & Rauber, A. (2022). DBRepo: a
+    Semantic Digital Repository for Relational Databases. *International Journal of Digital Curation*, 17(1), 11. 
+    DOI: [10.2218/ijdc.v17i1.825](https://doi.org/10.2218/ijdc.v17i1.825)<br />
+
+    [[BibTeX](../papers/weise2022dbrepo.bib)] &nbsp; [[RIS](../papers/weise2022dbrepo.ris)] &nbsp; [[RDF](../papers/weise2022dbrepo.rdf)] &nbsp; [[EndNote](../papers/weise2022dbrepo.xml)]
+
 ## Logos
 
 DBRepo logo in various formats:
 
-* [logo.png](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/dbrepo-ui/static/logo.png)
-* [logo.svg](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/dbrepo-ui/static/logo.svg)
+* PNG: [bigger](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/dbrepo-ui/static/logo.png)
+  ([smaller](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/dbrepo-ui/static/favicon.png))
+* SVG: [bigger](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/dbrepo-ui/static/logo.svg)
+  ([smaller](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/dbrepo-ui/static/favicon.svg))
 
-DBRepo logo (short) in various formats:
-
-* [favicon.svg](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/dbrepo-ui/static/favicon.svg)
-* [favicon.png](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/dbrepo-ui/static/favicon.png)
 
 ## Refereed
 

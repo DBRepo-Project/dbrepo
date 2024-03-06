@@ -449,11 +449,55 @@ public class TableEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_4_USERNAME)
-    public void delete_privateNoRole_succeeds() throws TableNotFoundException, DatabaseNotFoundException,
-            at.tuwien.exception.AccessDeniedException, QueueNotFoundException, BrokerRemoteException {
+    public void delete_privateNoRole_fails() {
 
         /* test */
-        generic_findById(DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_4_ID, USER_4_PRINCIPAL, null);
+        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
+            generic_delete(USER_4_PRINCIPAL, TABLE_1);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"delete-table"})
+    public void delete_succeeds() throws TableNotFoundException, TableMalformedException, NotAllowedException,
+            QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException {
+
+        /* test */
+        generic_delete(USER_1_PRINCIPAL, TABLE_1);
+    }
+
+    @Test
+    @WithMockUser(username = USER_3_USERNAME, authorities = {"delete-table"})
+    public void delete_foreign_fails() {
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            generic_delete(USER_3_PRINCIPAL, TABLE_1);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"delete-foreign-table"})
+    public void delete_foreign_succeeds() throws TableNotFoundException, TableMalformedException, NotAllowedException,
+            QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException {
+
+        /* test */
+        generic_delete(USER_2_PRINCIPAL, TABLE_1);
+    }
+
+    @Test
+    @WithMockUser(username = USER_2_USERNAME, authorities = {"delete-table"})
+    public void delete_hasIdentifiers_fails() {
+        final Table response = Table.builder()
+                .identifiers(List.of(IDENTIFIER_1))
+                .owner(USER_1)
+                .ownedBy(USER_1_ID)
+                .build();
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            generic_delete(USER_1_PRINCIPAL, response);
+        });
     }
 
     /* ################################################################################################### */
@@ -494,9 +538,8 @@ public class TableEndpointUnitTest extends BaseUnitTest {
 
     protected ResponseEntity<TableBriefDto> generic_create(Long databaseId, Database database, TableCreateDto data,
                                                            UUID userId, Principal principal, DatabaseAccess access)
-            throws DatabaseNotFoundException, NotAllowedException, UserNotFoundException, TableMalformedException,
-            QueryMalformedException, ImageNotSupportedException, AmqpException, TableNameExistsException,
-            ContainerNotFoundException, at.tuwien.exception.AccessDeniedException, TableNotFoundException {
+            throws DatabaseNotFoundException, NotAllowedException, TableMalformedException, QueryMalformedException,
+            ImageNotSupportedException, TableNameExistsException, AccessDeniedException, TableNotFoundException {
 
         /* mock */
         if (database != null) {
@@ -528,7 +571,8 @@ public class TableEndpointUnitTest extends BaseUnitTest {
     protected ResponseEntity<TableDto> generic_findById(Long databaseId, Long tableId, Database database,
                                                         Table table, UUID userId, Principal principal,
                                                         DatabaseAccess access) throws DatabaseNotFoundException,
-            TableNotFoundException, at.tuwien.exception.AccessDeniedException, QueueNotFoundException, BrokerRemoteException {
+            TableNotFoundException, at.tuwien.exception.AccessDeniedException, QueueNotFoundException,
+            BrokerRemoteException {
 
         /* mock */
         if (table != null) {
@@ -564,5 +608,17 @@ public class TableEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         return tableEndpoint.findById(databaseId, tableId, principal);
+    }
+
+    protected ResponseEntity<?> generic_delete(Principal principal, Table table) throws TableNotFoundException,
+            TableMalformedException, NotAllowedException, QueryMalformedException, DatabaseNotFoundException,
+            ImageNotSupportedException {
+
+        /* mock */
+        when(tableService.find(anyLong(), anyLong()))
+                .thenReturn(table);
+
+        /* test */
+        return tableEndpoint.delete(DATABASE_1_ID, TABLE_1_ID, principal);
     }
 }

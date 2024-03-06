@@ -2,6 +2,7 @@ package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.annotations.MockAmqp;
+import at.tuwien.annotations.MockListeners;
 import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.api.database.table.TableHistoryDto;
 import at.tuwien.config.MariaDbConfig;
@@ -36,6 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 @MockAmqp
+@MockListeners
 @MockOpensearch
 public class TableServiceIntegrationReadTest extends BaseUnitTest {
 
@@ -96,7 +98,7 @@ public class TableServiceIntegrationReadTest extends BaseUnitTest {
     }
 
     @Test
-    public void findById_succeeds() throws TableNotFoundException, DatabaseNotFoundException{
+    public void findById_succeeds() throws TableNotFoundException, DatabaseNotFoundException {
 
         /* test */
         final Table response = tableService.find(DATABASE_1_ID, TABLE_1_ID);
@@ -124,8 +126,8 @@ public class TableServiceIntegrationReadTest extends BaseUnitTest {
     }
 
     @Test
-    public void findHistory_anonymous_succeeds() throws UserNotFoundException, TableNotFoundException,
-            QueryStoreException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException {
+    public void findHistory_anonymous_succeeds() throws TableNotFoundException, QueryStoreException,
+            QueryMalformedException, DatabaseNotFoundException {
 
         /* test */
         final List<TableHistoryDto> response = tableService.findHistory(DATABASE_1_ID, TABLE_1_ID, null);
@@ -136,8 +138,8 @@ public class TableServiceIntegrationReadTest extends BaseUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void findHistory_anonymous2_succeeds() throws UserNotFoundException, TableNotFoundException,
-            QueryStoreException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException {
+    public void findHistory_anonymous2_succeeds()throws TableNotFoundException, QueryStoreException,
+            QueryMalformedException, DatabaseNotFoundException {
 
         /* test */
         final List<TableHistoryDto> response = tableService.findHistory(DATABASE_1_ID, TABLE_1_ID, null);
@@ -148,8 +150,8 @@ public class TableServiceIntegrationReadTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, roles = {"RESEARCHER"})
-    public void findHistory_researcher_succeeds() throws UserNotFoundException, TableNotFoundException,
-            QueryStoreException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException {
+    public void findHistory_researcher_succeeds() throws TableNotFoundException, QueryStoreException,
+            QueryMalformedException, DatabaseNotFoundException {
 
         /* test */
         final List<TableHistoryDto> response = tableService.findHistory(DATABASE_1_ID, TABLE_1_ID, USER_1_PRINCIPAL);
@@ -160,8 +162,8 @@ public class TableServiceIntegrationReadTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_2_USERNAME, roles = {"DEVELOPER"})
-    public void findHistory_developer_succeeds() throws UserNotFoundException, TableNotFoundException,
-            QueryStoreException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException {
+    public void findHistory_developer_succeeds()throws TableNotFoundException, QueryStoreException,
+            QueryMalformedException, DatabaseNotFoundException {
 
         /* test */
         final List<TableHistoryDto> response = tableService.findHistory(DATABASE_1_ID, TABLE_1_ID, USER_2_PRINCIPAL);
@@ -172,8 +174,8 @@ public class TableServiceIntegrationReadTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_3_USERNAME, roles = {"DATA_STEWARD"})
-    public void findHistory_dataSteward_succeeds() throws UserNotFoundException, TableNotFoundException,
-            QueryStoreException, DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException {
+    public void findHistory_dataSteward_succeeds() throws TableNotFoundException, QueryStoreException,
+            QueryMalformedException, DatabaseNotFoundException {
 
         /* test */
         final List<TableHistoryDto> response = tableService.findHistory(DATABASE_1_ID, TABLE_1_ID, USER_3_PRINCIPAL);

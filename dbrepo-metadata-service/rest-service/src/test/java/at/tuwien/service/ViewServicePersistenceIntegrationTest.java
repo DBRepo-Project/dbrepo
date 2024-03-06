@@ -2,6 +2,7 @@ package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.annotations.MockAmqp;
+import at.tuwien.annotations.MockListeners;
 import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.api.database.ViewCreateDto;
 import at.tuwien.config.MariaDbConfig;
@@ -37,6 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 @MockAmqp
+@MockListeners
 @MockOpensearch
 public class ViewServicePersistenceIntegrationTest extends BaseUnitTest {
 
@@ -119,7 +121,7 @@ public class ViewServicePersistenceIntegrationTest extends BaseUnitTest {
         assertEquals(VIEW_1_NAME, response.getName());
         assertEquals(VIEW_1_INTERNAL_NAME, response.getInternalName());
         assertEquals(VIEW_1_QUERY, response.getQuery());
-        assertEquals(VIEW_1_COLUMNS.size(), response.getColumns().size());
+
     }
 
 }

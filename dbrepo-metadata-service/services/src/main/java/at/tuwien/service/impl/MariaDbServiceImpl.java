@@ -9,20 +9,22 @@ import at.tuwien.entities.container.image.ContainerImageDate;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.View;
 import at.tuwien.entities.database.table.Table;
+import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.database.table.constraints.Constraints;
 import at.tuwien.entities.database.table.constraints.foreignKey.ForeignKey;
+import at.tuwien.entities.database.table.constraints.foreignKey.ForeignKeyReference;
+import at.tuwien.entities.database.table.constraints.foreignKey.ReferenceType;
 import at.tuwien.entities.database.table.constraints.unique.Unique;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.DatabaseMapper;
 import at.tuwien.mapper.QueryMapper;
 import at.tuwien.mapper.TableMapper;
+import at.tuwien.mapper.ViewMapper;
 import at.tuwien.repository.mdb.ContainerRepository;
 import at.tuwien.repository.mdb.DatabaseRepository;
 import at.tuwien.repository.sdb.DatabaseIdxRepository;
-import at.tuwien.service.ContainerService;
-import at.tuwien.service.DatabaseService;
-import at.tuwien.service.UserService;
+import at.tuwien.service.*;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.log4j.Log4j2;
 import net.sf.jsqlparser.JSQLParserException;
@@ -41,6 +43,7 @@ import java.util.*;
 @Service
 public class MariaDbServiceImpl extends HibernateConnector implements DatabaseService {
 
+    private final ViewMapper viewMapper;
     private final QueryConfig queryConfig;
     private final QueryMapper queryMapper;
     private final TableMapper tableMapper;
@@ -48,14 +51,17 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
     private final DatabaseMapper databaseMapper;
     private final ContainerService containerService;
     private final DatabaseRepository databaseRepository;
+    private final TableColumnService tableColumnService;
     private final ContainerRepository containerRepository;
     private final DatabaseIdxRepository databaseIdxRepository;
 
     @Autowired
-    public MariaDbServiceImpl(QueryConfig queryConfig, QueryMapper queryMapper, TableMapper tableMapper,
-                              UserService userService, DatabaseMapper databaseMapper, ContainerService containerService,
-                              DatabaseRepository databaseRepository, ContainerRepository containerRepository,
+    public MariaDbServiceImpl(ViewMapper viewMapper, QueryConfig queryConfig, QueryMapper queryMapper,
+                              TableMapper tableMapper, UserService userService, DatabaseMapper databaseMapper,
+                              ContainerService containerService, DatabaseRepository databaseRepository,
+                              TableColumnService tableColumnService, ContainerRepository containerRepository,
                               DatabaseIdxRepository databaseIdxRepository) {
+        this.viewMapper = viewMapper;
         this.queryConfig = queryConfig;
         this.queryMapper = queryMapper;
         this.tableMapper = tableMapper;
@@ -63,6 +69,7 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         this.databaseMapper = databaseMapper;
         this.containerService = containerService;
         this.databaseRepository = databaseRepository;
+        this.tableColumnService = tableColumnService;
         this.containerRepository = containerRepository;
         this.databaseIdxRepository = databaseIdxRepository;
     }
@@ -215,32 +222,90 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
 
     @Override
     @Transactional
-    public Database obtainMetadata(Long databaseId) throws DatabaseNotFoundException, QueryMalformedException,
-            DatabaseUnchangedException, ColumnParseException {
+    public Database modifyImage(Long databaseId, byte[] image) throws DatabaseNotFoundException {
+        /* check */
+        final Database database = findById(databaseId);
+        /* update in metadata database */
+        database.setImage(image);
+        final Database entity = databaseRepository.save(database);
+        /* save in open search database */
+        databaseIdxRepository.save(databaseMapper.databaseToDatabaseDto(entity));
+        log.info("Updated database owner of database with id {} in metadata database & search database", entity.getId());
+        return entity;
+    }
+
+    @Override
+    @Transactional
+    public Database obtainConstraints(Long databaseId) throws DatabaseNotFoundException, QueryMalformedException,
+            TableMalformedException {
+        /* check */
+        final Database database = findById(databaseId);
+        final List<Table> diffTables = database.getTables()
+                .stream()
+                .filter(t -> !t.getProcessedConstraints())
+                .toList();
+        /* obtain constraints */
+        log.info("Database with id {} contains {} table(s) with unknown constraint(s)", databaseId, diffTables.size());
+        final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(), database.getContainer(), database);
+        try {
+            final Connection connection = dataSource.getConnection();
+            for (Table table : diffTables) {
+                final PreparedStatement preparedStatement = queryMapper.databaseToDatabaseConstraintMetadata(connection, table.getDatabase().getInternalName(), table.getInternalName());
+                final Constraints constraints = resultSetTableToObtainedConstraintsMetadata(databaseId, table, preparedStatement.executeQuery());
+                table.setConstraints(constraints);
+                table.setProcessedConstraints(true);
+            }
+        } catch (SQLException e) {
+            log.error("Failed to obtain constraint information in database with id {}: {}", database.getId(), e.getMessage());
+            throw new QueryMalformedException("Failed to obtain constraint information in database with id " + database.getId() + ": " + e.getMessage(), e);
+        } finally {
+            dataSource.close();
+        }
+        /* update in metadata database */
+        final Database entity = databaseRepository.save(database);
+        /* save in open search database */
+        databaseIdxRepository.save(databaseMapper.databaseToDatabaseDto(entity));
+        log.info("Updated database with id {} in metadata database & search database", entity.getId());
+        return entity;
+    }
+
+    @Override
+    @Transactional
+    public Database obtainTablesMetadata(Long databaseId) throws DatabaseNotFoundException, QueryMalformedException,
+            ColumnParseException {
         /* check */
         final Database database = findById(databaseId);
         final List<Table> diffTables;
-        final List<View> diffViews;
+        final List<Table> knownTables;
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(), database.getContainer(), database);
         try {
             final Connection connection = dataSource.getConnection();
             final PreparedStatement preparedStatement0 = databaseMapper.databaseToDatabaseMetadata(connection, database);
-            diffTables = tableMapper.resultListToTableList(preparedStatement0.executeQuery(), database)
-                    .stream()
-                    .filter(table -> database.getTables()
+            final List<Table> tables = tableMapper.resultListToTableList(preparedStatement0.executeQuery(), database);
+            diffTables = tables.stream()
+                    .filter(obtainedTable -> database.getTables()
                             .stream()
+                            .noneMatch(t -> t.getInternalName().equals(obtainedTable.getInternalName())))
+                    .toList();
+            knownTables = tables.stream()
+                    .filter(table -> diffTables.stream()
                             .noneMatch(t -> t.getInternalName().equals(table.getInternalName())))
+                    .map(obtainedTable -> {
+                        final Optional<Table> optional = database.getTables()
+                                .stream()
+                                .filter(t -> t.getInternalName().equals(obtainedTable.getInternalName()))
+                                .findFirst();
+                        if (optional.isPresent()) {
+                            final Table table = optional.get();
+                            table.setNumRows(obtainedTable.getNumRows());
+                            table.setDataLength(obtainedTable.getDataLength());
+                            table.setMaxDataLength(obtainedTable.getMaxDataLength());
+                            table.setAvgRowLength(obtainedTable.getAvgRowLength());
+                            return table;
+                        }
+                        return obtainedTable;
+                    })
                     .toList();
-            diffViews = tableMapper.resultListToViewList(preparedStatement0.executeQuery(), database)
-                    .stream()
-                    .filter(view -> database.getViews()
-                            .stream()
-                            .noneMatch(v -> v.getInternalName().equals(view.getInternalName())))
-                    .toList();
-            if (diffTables.isEmpty() && diffViews.isEmpty()) {
-                log.debug("database with id {} does not contain any unknown tables and any unknown views", databaseId);
-                throw new DatabaseUnchangedException("Database with id " + databaseId + " does not contain any unknown tables and any unknown views");
-            }
             /* default times */
             final Optional<ContainerImageDate> defaultDateFormat = containerRepository.findDefaultDateFormat();
             if (defaultDateFormat.isEmpty()) {
@@ -253,8 +318,18 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
                 throw new ColumnParseException("Failed to find default timestamp format in metadata database");
             }
             /* obtain table schema */
-            log.info("Database with id {} contains {} unknown table(s) and {} unknown view(s)", databaseId, diffTables.size(), diffViews.size());
+            log.info("Database with id {} contains {} unknown table(s)", databaseId, diffTables.size());
             log.debug("database with id {} misses table(s) in metadata database: {}", databaseId, diffTables.stream().map(Table::getInternalName).toList());
+            database.getTables().replaceAll(table -> {
+                final Optional<Table> optional = knownTables.stream()
+                        .filter(t -> t.getId().equals(table.getId()))
+                        .findFirst();
+                if (optional.isPresent()) {
+                    log.trace("found table with id {} and merged it", table.getId());
+                    return optional.get();
+                }
+                return table;
+            });
             for (Table table : diffTables) {
                 final PreparedStatement preparedStatement1 = queryMapper.obtainTableMetadataRawQuery(connection, table.getDatabase().getInternalName(), table.getInternalName());
                 table = tableMapper.resultSetTableToObtainedMetadata(preparedStatement1.executeQuery(), table,
@@ -265,11 +340,54 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
                     preparedStatement2.execute();
                     log.info("Enabled system-versioning for table with name {}", table.getInternalName());
                 }
-                final PreparedStatement preparedStatement2 = queryMapper.databaseToDatabaseConstraintMetadata(connection, table.getDatabase().getInternalName(), table.getInternalName());
-                table.setConstraints(resultSetTableToObtainedConstraintsMetadata(preparedStatement2.executeQuery()));
+                table.setProcessedConstraints(false);
                 final PreparedStatement preparedStatement3 = tableMapper.tableToCreateHistoryViewRawQuery(connection, table);
                 preparedStatement3.executeUpdate();
                 database.getTables().add(table);
+            }
+        } catch (SQLException e) {
+            log.error("Failed to obtain schema information in database with id {}: {}", database.getId(), e.getMessage());
+            throw new QueryMalformedException("Failed to obtain schema information in database with id " + database.getId() + ": " + e.getMessage(), e);
+        } finally {
+            dataSource.close();
+        }
+        /* update in metadata database */
+        final Database entity = databaseRepository.save(database);
+        /* save in open search database */
+        databaseIdxRepository.save(databaseMapper.databaseToDatabaseDto(entity));
+        log.info("Updated database with id {} in metadata database & search database", entity.getId());
+        return entity;
+    }
+
+    @Override
+    @Transactional
+    public Database obtainViewsMetadata(Long databaseId) throws DatabaseNotFoundException, QueryMalformedException,
+            ColumnParseException {
+        /* check */
+        final Database database = findById(databaseId);
+        final List<View> diffViews;
+        final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(), database.getContainer(), database);
+        try {
+            final Connection connection = dataSource.getConnection();
+            final PreparedStatement preparedStatement0 = databaseMapper.databaseToDatabaseMetadata(connection, database);
+            final List<View> views = tableMapper.resultListToViewList(preparedStatement0.executeQuery(), database);
+            diffViews = views.stream()
+                    .filter(view -> database.getViews()
+                            .stream()
+                            .noneMatch(v -> v.getInternalName().equals(view.getInternalName())))
+                    .toList();
+            /* obtain table schema */
+            log.info("Database with id {} contains {} unknown view(s)", databaseId, diffViews.size());
+            /* default times */
+            final Optional<ContainerImageDate> defaultDateFormat = containerRepository.findDefaultDateFormat();
+            if (defaultDateFormat.isEmpty()) {
+                log.error("Failed to find default date format in metadata database");
+                throw new ColumnParseException("Failed to find default date format in metadata database");
+            }
+            final Optional<ContainerImageDate> defaultTimestampFormat = containerRepository.findDefaultTimestampFormat();
+            if (defaultTimestampFormat.isEmpty()) {
+                log.error("Failed to find default timestamp format in metadata database");
+                throw new ColumnParseException("Failed to find default timestamp format in metadata database");
             }
         } catch (SQLException e) {
             log.error("Failed to obtain schema information in database with id {}: {}", database.getId(), e.getMessage());
@@ -281,10 +399,14 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         log.debug("database with id {} misses view(s) in metadata database: {}", databaseId, diffViews.stream().map(View::getInternalName).toList());
         for (View view : diffViews) {
             try {
-                view.setColumns(queryMapper.parseColumns(view.getQuery(), database));
+                view.setColumns(viewMapper.tableColumnsToViewColumns(view, queryMapper.parseColumns(view.getQuery(), database)));
             } catch (JSQLParserException e) {
                 log.error("Failed to map/parse columns: {}", e.getMessage());
                 throw new ColumnParseException("Failed to map/parse columns: " + e.getMessage(), e);
+            }
+            if (view.getColumns().stream().anyMatch(c -> c.getColumn().getId() == null)) {
+                log.warn("Skipping creation of view {}: referenced columns does not exist in metadata database", view.getInternalName());
+                continue;
             }
             database.getViews()
                     .add(view);
@@ -297,16 +419,75 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         return entity;
     }
 
-    @Transactional
-    public Constraints resultSetTableToObtainedConstraintsMetadata(ResultSet resultSet) throws SQLException {
+    @Transactional(readOnly = true)
+    public Constraints resultSetTableToObtainedConstraintsMetadata(Long databaseId, Table table, ResultSet resultSet)
+            throws SQLException, DatabaseNotFoundException, TableMalformedException {
+        final Database database = find(databaseId);
         final Set<String> checks = new LinkedHashSet<>();
         final List<Unique> uniques = new LinkedList<>();
         final List<ForeignKey> foreignKeys = new LinkedList<>();
         while (resultSet.next()) {
             if (resultSet.getString(1).equals("CHECK")) {
+                /* check constraints */
                 checks.add(resultSet.getString(4));
             } else if (resultSet.getString(1).equals("FOREIGN KEY")) {
-                // TODO
+                /* foreign key constraints */
+                final List<ForeignKeyReference> foreignKeyReferences = new LinkedList<>();
+                final String foreignKeyName = resultSet.getString(2);
+                if (foreignKeys.stream().anyMatch(fk -> fk.getName().equals(foreignKeyName))) {
+                    final Optional<ForeignKey> optional = foreignKeys.stream()
+                            .filter(fk -> fk.getName().equals(foreignKeyName))
+                            .findFirst();
+                    if (optional.isEmpty()) {
+                        /* should never happen */
+                        continue;
+                    }
+                    final ForeignKey foreignKey = optional.get();
+                    foreignKey.getReferences()
+                            .add(queryMapper.foreignKeyToForeignKeyReference(foreignKey,
+                                    tableColumnService.findColumn(database, resultSet.getString(6), resultSet.getString(8)),
+                                    tableColumnService.findColumn(table, resultSet.getString(7))));
+                }
+                final ForeignKey foreignKey;
+                try {
+                    foreignKey = ForeignKey.builder()
+                            .name(foreignKeyName)
+                            .table(table)
+                            .referencedTable(find(database, resultSet.getString(6)))
+                            .references(foreignKeyReferences)
+                            .onDelete(ReferenceType.NO_ACTION)
+                            .onUpdate(ReferenceType.NO_ACTION)
+                            .build();
+                } catch (TableNotFoundException e) {
+                    /* ignore */
+                    return null;
+                }
+                final ForeignKeyReference fk = ForeignKeyReference.builder()
+                        .foreignKey(foreignKey)
+                        .column(tableColumnService.findColumn(table, resultSet.getString(7)))
+                        .referencedColumn(tableColumnService.findColumn(database, resultSet.getString(6), resultSet.getString(8)))
+                        .build();
+                foreignKey.setReferences(List.of(fk));
+                foreignKeys.add(foreignKey);
+            } else if (resultSet.getString(1).equals("UNIQUE")) {
+                /* unique constraints */
+                final String uniqueConstraintName = resultSet.getString(1);
+                final Optional<Unique> optional = uniques.stream().filter(u -> u.getName().equals(uniqueConstraintName)).findFirst();
+                if (optional.isPresent()) {
+                    log.debug("unique constraint {} already present: add column", uniqueConstraintName);
+                    optional.get()
+                            .getColumns()
+                            .add(tableColumnService.findColumn(table, resultSet.getString(7)));
+                    continue;
+                }
+                final List<TableColumn> columns = new LinkedList<>();
+                columns.add(tableColumnService.findColumn(table, resultSet.getString(7)));
+                final Unique uk = Unique.builder()
+                        .name(uniqueConstraintName)
+                        .table(table)
+                        .columns(columns)
+                        .build();
+                uniques.add(uk);
             }
         }
         final Constraints constraints = Constraints.builder()
@@ -318,6 +499,18 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
                 constraints.getChecks().size(), constraints.getUniques().size(), constraints.getForeignKeys().size());
         log.trace("mapped result set to constraints: {}", constraints);
         return constraints;
+    }
+
+    public Table find(Database database, String internalName) throws DatabaseNotFoundException, TableNotFoundException {
+        final Optional<Table> table = database.getTables()
+                .stream()
+                .filter(t -> t.getInternalName().equals(internalName))
+                .findFirst();
+        if (table.isEmpty()) {
+            log.error("Failed to find table with internal name {} in metadata database", internalName);
+            throw new TableNotFoundException("Failed to find table with internal name " + internalName + " in metadata database");
+        }
+        return table.get();
     }
 
 }

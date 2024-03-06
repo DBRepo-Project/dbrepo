@@ -6,14 +6,22 @@ author: Martin Weise
 
 !!! abstract "Abstract"
 
-    This is the full system description from a technical/developer view.
+    This is the full system description from a technical/developer view and continously being updated as the development
+    progresses.
 
-We invite all open-source developers to help us fixing bugs and introducing features to the source code. Get involved by
-sending a mail to Prof. Andreas Rauber and Projektass. Martin Weise.
-
-## Data Ingest
+## Usage
 
 <figure markdown>
 ![Data ingest](images/data-ingest.svg)
-<figcaption>Modes of data ingest</figcaption>
+<figcaption>Figure 1: Modes of data ingest</figcaption>
 </figure>
+
+More [usage examples](../usage-overview/) include how to ingest datasets, data dumps, live data, etc.
+
+## Limitations
+
+!!! question "Do you miss functionality? Do these limitations affect you?"
+
+    We strongly encourage you to help us implement it as we are welcoming contributors to open-source software and get
+    in [contact](../contact) with us, we happily answer requests for collaboration with attached CV and your programming 
+    experience!

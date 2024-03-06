@@ -2,6 +2,7 @@ package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.annotations.MockAmqp;
+import at.tuwien.annotations.MockListeners;
 import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.KeycloakGateway;
@@ -28,6 +29,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 @MockAmqp
+@MockListeners
 @MockOpensearch
 public class AuthenticationServiceIntegrationTest extends BaseUnitTest {
 

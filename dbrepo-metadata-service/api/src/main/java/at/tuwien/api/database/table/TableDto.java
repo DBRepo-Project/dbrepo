@@ -16,6 +16,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
+import java.math.BigInteger;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -97,6 +98,26 @@ public class TableDto {
     @Schema(example = "true")
     @Field(name = "is_public", type = FieldType.Boolean)
     private Boolean isPublic;
+
+    @JsonProperty("num_rows")
+    @Schema(example = "5")
+    @Field(name = "num_rows", type = FieldType.Long)
+    private Long numRows;
+
+    @JsonProperty("data_length")
+    @Schema(example = "16384", description = "in bytes")
+    @Field(name = "data_length", type = FieldType.Long)
+    private Long dataLength;
+
+    @JsonProperty("max_data_length")
+    @Schema(example = "0", description = "in bytes")
+    @Field(name = "max_data_length", type = FieldType.Long)
+    private Long maxDataLength;
+
+    @JsonProperty("avg_row_length")
+    @Schema(example = "3276", description = "in bytes")
+    @Field(name = "avg_row_length", type = FieldType.Long)
+    private Long avgRowLength;
 
     @NotNull
     @Schema(example = "2021-03-12T15:26:21Z")

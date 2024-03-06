@@ -5,7 +5,6 @@ import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.TableCsvDeleteDto;
 import at.tuwien.api.database.table.TableCsvDto;
-import at.tuwien.api.database.table.columns.ColumnDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
@@ -55,7 +54,8 @@ public class TableDataEndpoint {
     @Transactional
     @Observed(name = "dbr_table_data_insert")
     @PreAuthorize("hasAuthority('insert-table-data')")
-    @Operation(summary = "Insert data", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Insert data", description = "Insert data directly as key-value map tuple",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Inserted data successfully"),
@@ -94,7 +94,8 @@ public class TableDataEndpoint {
     @Transactional
     @PreAuthorize("hasAuthority('delete-table-data')")
     @Observed(name = "dbr_table_data_delete")
-    @Operation(summary = "Delete data", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Delete data", description = "Delete a tuples that match a key-value map",
+            security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Deleted table data successfully"),
@@ -133,7 +134,7 @@ public class TableDataEndpoint {
     @Transactional
     @PreAuthorize("hasAuthority('insert-table-data')")
     @Observed(name = "dbr_table_data_import")
-    @Operation(summary = "Insert data from csv", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Insert data from csv", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Import table data successfully"),
@@ -152,6 +153,11 @@ public class TableDataEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "409",
+                    description = "Import failed in sidecar",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "422",
                     description = "Could not import csv via sidecar",
                     content = {@Content(
@@ -163,10 +169,18 @@ public class TableDataEndpoint {
                                           @NotNull @Valid @RequestBody ImportDto data,
                                           @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
-            NotAllowedException, AccessDeniedException, DataDbSidecarException {
+            NotAllowedException, AccessDeniedException, DataDbSidecarException, DataProcessingException {
         log.debug("endpoint insert data from csv, databaseId={}, tableId={}, data={}, {}", databaseId, tableId, data, PrincipalUtil.formatForDebug(principal));
         /* check */
         endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(databaseId, tableId, principal);
+        if (data.getNullElement() == null) {
+            log.debug("null element not present, default to empty string");
+            data.setNullElement("");
+        }
+        if (data.getLineTermination() == null) {
+            log.debug("line termination not present, default to \\r\\n");
+            data.setLineTermination("\r\n");
+        }
         /* insert */
         queryService.insert(databaseId, tableId, data, principal);
         return ResponseEntity.accepted()
@@ -176,7 +190,7 @@ public class TableDataEndpoint {
     @RequestMapping(method = {RequestMethod.GET, RequestMethod.HEAD})
     @Transactional(readOnly = true)
     @Observed(name = "dbr_table_data_findall")
-    @Operation(summary = "Find data", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Find data", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Get table data successfully"),
@@ -222,6 +236,15 @@ public class TableDataEndpoint {
             log.error("Failed to view table data: database with id {} is private and user has no authority", databaseId);
             throw new NotAllowedException("Failed to view table data: database with id " + databaseId + " is private and user has no authority");
         }
+        /* default */
+        if (page == null) {
+            log.trace("page is null: default to 0");
+            page = 0L;
+        }
+        if (size == null) {
+            log.trace("size is null: default to 10");
+            size = 10L;
+        }
         /* find */
         final QueryResultDto response = queryService.tableFindAll(databaseId, tableId, timestamp, page, size, principal);
         log.trace("find table data resulted in result {}", response);
@@ -232,7 +255,7 @@ public class TableDataEndpoint {
     @GetMapping("/count")
     @Transactional(readOnly = true)
     @Observed(name = "dbr_table_data_countall")
-    @Operation(summary = "Find data", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Find data", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Get table data count successfully"),

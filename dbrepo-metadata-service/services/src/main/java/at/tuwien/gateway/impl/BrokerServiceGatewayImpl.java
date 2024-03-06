@@ -102,7 +102,7 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
             response = restTemplate.exchange(url, HttpMethod.DELETE, new HttpEntity<>(null), Void.class);
         } catch (Exception e) {
             log.error("Failed to delete user: remote host answered unexpected: {}", e.getMessage());
-            throw new BrokerRemoteException("Failed to delete user: remote host answered unexpected", e);
+            throw new BrokerRemoteException("Failed to delete user: remote host answered unexpected: " + e.getMessage(), e);
         }
         if (!response.getStatusCode().equals(HttpStatus.NO_CONTENT)) {
             log.error("Failed to delete user: {}", response.getStatusCode());
@@ -124,8 +124,8 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
             throw new BrokerRemoteException("Failed to create permissions: remote host answered unexpected", e);
         }
         if (!response.getStatusCode().equals(HttpStatus.CREATED) && !response.getStatusCode().equals(HttpStatus.NO_CONTENT)) {
-            log.error("Failed to grant virtual host permissions: {}", response.getStatusCode());
-            throw new BrokerVirtualHostGrantException("Failed to grant virtual host permissions");
+            log.error("Failed to grant virtual host permissions at broker service");
+            throw new BrokerVirtualHostGrantException("Failed to grant virtual host permissions at broker service");
         }
         log.trace("Grant virtual host permissions for user with username {}", username);
     }
@@ -143,27 +143,10 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
             throw new BrokerRemoteException("Failed to grant topic permissions: remote host answered unexpected", e);
         }
         if (!response.getStatusCode().equals(HttpStatus.CREATED) && !response.getStatusCode().equals(HttpStatus.NO_CONTENT)) {
-            log.error("Failed to grant topic permissions: {}", response.getStatusCode());
-            throw new BrokerVirtualHostGrantException("Failed to grant topic permissions");
+            log.error("Failed to grant topic permissions at broker service");
+            throw new BrokerVirtualHostGrantException("Failed to grant topic permissions at broker service");
         }
         log.trace("Grant topic permissions for user with username {}", username);
-    }
-
-    @Override
-    public List<ConsumerDto> findAllConsumers() throws BrokerRemoteException {
-        final String url = "/api/consumers/" + rabbitConfig.getVirtualHost();
-        log.trace("gateway broker find all consumers, virtual host={}", rabbitConfig.getVirtualHost());
-        log.debug("find consumers from url {}{}", gatewayConfig.getBrokerEndpoint(), url);
-        final ResponseEntity<List<ConsumerDto>> response;
-        try {
-            response = restTemplate.exchange(URI.create(url), HttpMethod.GET, HttpEntity.EMPTY,
-                    new ParameterizedTypeReference<>() {
-                    });
-        } catch (Exception e) {
-            log.error("Failed to find consumers: remote host answered unexpected: {}", e.getMessage());
-            throw new BrokerRemoteException("Failed to find consumers: remote host answered unexpected", e);
-        }
-        return response.getBody();
     }
 
     @Override
@@ -181,8 +164,8 @@ public class BrokerServiceGatewayImpl implements BrokerServiceGateway {
             throw new BrokerRemoteException("Failed to find queue: remote host answered unexpected", e);
         }
         if (!response.getStatusCode().equals(HttpStatus.OK)) {
-            log.error("Failed find queue: {}", response.getStatusCode());
-            throw new QueueNotFoundException("Failed to find queue");
+            log.error("Failed find queue at broker service");
+            throw new QueueNotFoundException("Failed to find queue at broker service");
         }
         return response.getBody();
     }

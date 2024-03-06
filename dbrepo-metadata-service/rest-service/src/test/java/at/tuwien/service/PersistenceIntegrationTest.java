@@ -2,6 +2,7 @@ package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.annotations.MockAmqp;
+import at.tuwien.annotations.MockListeners;
 import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.exception.ImageNotFoundException;
 import at.tuwien.repository.mdb.ImageRepository;
@@ -22,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 @MockAmqp
+@MockListeners
 @MockOpensearch
 public class PersistenceIntegrationTest extends BaseUnitTest {
 

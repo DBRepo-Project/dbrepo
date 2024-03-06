@@ -147,7 +147,7 @@ public class UserEndpoint {
     @Transactional
     @PreAuthorize("isAuthenticated() or hasAuthority('find-user')")
     @Observed(name = "dbr_user_find")
-    @Operation(summary = "Get a user info", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Get a user info", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Found user",
@@ -189,7 +189,7 @@ public class UserEndpoint {
     @Transactional
     @PreAuthorize("hasAuthority('modify-user-information')")
     @Observed(name = "dbr_user_modify")
-    @Operation(summary = "Modify user information", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Modify user information", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Modified user information",
@@ -240,7 +240,7 @@ public class UserEndpoint {
     @Transactional
     @PreAuthorize("hasAuthority('modify-user-theme')")
     @Observed(name = "dbr_user_theme_modify")
-    @Operation(summary = "Modify user theme", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Modify user theme", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Modified user theme",
@@ -285,7 +285,7 @@ public class UserEndpoint {
     @Transactional
     @PreAuthorize("isAuthenticated()")
     @Observed(name = "dbr_user_password_modify")
-    @Operation(summary = "Modify user password", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Modify user password", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Modified user password",

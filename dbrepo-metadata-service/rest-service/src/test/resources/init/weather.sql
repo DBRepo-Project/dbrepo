@@ -118,7 +118,7 @@ VALUES ('2022-12-24 17:00:00', 10.0),
 
 CREATE VIEW junit2 AS
 (
-select `date`, `location`, `mintemp`, `rainfall`
+select `date`, `location` as loc, `location`, `mintemp`, `rainfall`
 from `weather_aus`
 where `location` = 'Albury');
 

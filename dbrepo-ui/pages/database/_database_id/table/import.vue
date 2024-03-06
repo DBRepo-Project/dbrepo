@@ -91,6 +91,16 @@
           <v-row dense>
             <v-col cols="8">
               <v-text-field
+                v-model="tableImport.line_termination"
+                hint="Representation of a new line"
+                placeholder="e.g. \r\n"
+                clearable
+                label="Line termination" />
+            </v-col>
+          </v-row>
+          <v-row dense>
+            <v-col cols="8">
+              <v-text-field
                 v-model="tableImport.null_element"
                 hint="Representation of 'no value present'"
                 placeholder="e.g. NA"
@@ -262,8 +272,9 @@ export default {
         quote: '"',
         false_element: null,
         true_element: null,
-        null_element: 'NA',
+        null_element: '',
         separator: ',',
+        line_termination: '\\r\\n',
         skip_lines: 1
       },
       loading: false,
@@ -334,15 +345,15 @@ export default {
     upload () {
       this.loading = true
       return new Promise((resolve, reject) => {
-        UploadService.upload(this.fileModel)
+        UploadService.upload(this.$config.uploadEndpointUrl, this.fileModel)
           .then((metadata) => {
             console.debug('uploaded file', metadata)
             this.loading = false
             resolve(metadata)
           })
           .catch((error) => {
+            this.$toast.error('Failed to import data', error)
             this.loading = false
-            this.$toast.error('Failed to upload file')
             reject(error)
           })
           .finally(() => {

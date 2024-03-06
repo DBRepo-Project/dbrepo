@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.log4j.Log4j2;
@@ -106,7 +107,7 @@ public class MaintenanceEndpoint {
 
     @PostMapping("/message")
     @Observed(name = "dbr_maintenance_create")
-    @Operation(summary = "Create maintenance message")
+    @Operation(summary = "Create maintenance message", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @PreAuthorize("hasAuthority('create-maintenance-message')")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",
@@ -125,7 +126,7 @@ public class MaintenanceEndpoint {
 
     @PutMapping("/message/{id}")
     @Observed(name = "dbr_maintenance_update")
-    @Operation(summary = "Update maintenance message")
+    @Operation(summary = "Update maintenance message", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @PreAuthorize("hasAuthority('update-maintenance-message')")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
@@ -151,7 +152,7 @@ public class MaintenanceEndpoint {
 
     @DeleteMapping("/message/{id}")
     @Observed(name = "dbr_maintenance_delete")
-    @Operation(summary = "Delete maintenance message")
+    @Operation(summary = "Delete maintenance message", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @PreAuthorize("hasAuthority('delete-maintenance-message')")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",

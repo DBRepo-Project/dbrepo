@@ -4,42 +4,49 @@ author: Martin Weise
 
 # Broker Service
 
-## Authentication
+## Preliminary
 
-The RabbitMQ client can be authenticated through plain (username, password) and OAuth2 mechanisms. Note that the access
-token already contains a field `client_id=foo`, so the username is optional in `PlainCredentials()`.
+The RabbitMQ client can be authenticated through Basic Authentication (username, password) and Bearer Authentication.
 
-=== "Plain"
+!!! example "Bearer Authentication"
 
-    ``` py
-    import pika
+    Note that the encoded/signed `ACCESS_TOKEN` already contains a field `client_id=username`, so the username is
+    optional in `PlainCredentials` when using Bearer Authentication, but provided must match the username. 
 
-    credentials = pika.credentials.PlainCredentials("foo", "bar")
-    parameters = pika.ConnectionParameters('localhost', 5672, '/', credentials)
-    connection = pika.BlockingConnection(parameters)
-    channel = connection.channel()
-    channel.queue_declare(queue='test', durable=True)
-    channel.basic_publish(exchange='',
-    routing_key='test',
-    body=b'Hello World!')
-    print(" [x] Sent 'Hello World!'")
-    connection.close()
-    ```
+=== "Bearer Authentication"
 
-=== "OAuth2"
-
-    ``` py
+    ```python
     import pika
     
-    credentials = pika.credentials.PlainCredentials("", "THE_ACCESS_TOKEN")
+    # Configure client
+    credentials = pika.credentials.PlainCredentials("", "ACCESS_TOKEN")
     parameters = pika.ConnectionParameters('localhost', 5672, '/', credentials)
     connection = pika.BlockingConnection(parameters)
+
+    # Channel
     channel = connection.channel()
-    channel.queue_declare(queue='test', durable=True)
-    channel.basic_publish(exchange='',
-    routing_key='test',
-    body=b'Hello World!')
+    channel.basic_publish(exchange='dbrepo',
+        routing_key='dbrepo.database_name.table_name',
+        body=b'Hello World!')
     print(" [x] Sent 'Hello World!'")
     connection.close()
     ```
 
+=== "Basic Authentication"
+
+    ```python
+    import pika
+    
+    # Configure client
+    credentials = pika.credentials.PlainCredentials("username", "password")
+    parameters = pika.ConnectionParameters('localhost', 5672, '/', credentials)
+    connection = pika.BlockingConnection(parameters)
+
+    # Channel
+    channel = connection.channel()
+    channel.basic_publish(exchange='dbrepo',
+        routing_key='dbrepo.database_name.table_name',
+        body=b'Hello World!')
+    print(" [x] Sent 'Hello World!'")
+    connection.close()
+    ```

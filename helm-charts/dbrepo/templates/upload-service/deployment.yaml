@@ -4,7 +4,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: upload-service
-  namespace: {{ $.Values.namespace }}
+  namespace: {{ .Values.namespace }}
   labels:
     app: upload-service
     service: upload-service
@@ -23,6 +23,7 @@ spec:
         service: upload-service
     spec:
       securityContext:
+        runAsNonRoot: true
         fsGroup: 1000
         runAsUser: 1000
         runAsGroup: 1000
@@ -48,7 +49,7 @@ spec:
                   key: aws-region
           args:
             - "--base-path=/api/upload/files/"
-            - "-s3-endpoint=http://storage-service-s3:9000"
+            - "-s3-endpoint=http://storageservice-s3:9000"
             - "-s3-bucket=dbrepo-upload"
           ports:
             - containerPort: 1080

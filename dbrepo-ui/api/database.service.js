@@ -99,6 +99,20 @@ class DatabaseService {
     })
   }
 
+  modifyImage (databaseId, payload) {
+    return new Promise((resolve, reject) => {
+      api.put(`/api/database/${databaseId}/image`, payload, { headers: { Accept: 'application/json' } })
+        .then((response) => {
+          const database = response.data
+          console.debug('response database', database)
+          resolve(database)
+        }).catch((error) => {
+          displayError(error, 'Failed to modify database visibility')
+          reject(error)
+        })
+    })
+  }
+
   modifyOwner (databaseId, username) {
     return new Promise((resolve, reject) => {
       api.put(`/api/database/${databaseId}/transfer`, { username }, { headers: { Accept: 'application/json' } })

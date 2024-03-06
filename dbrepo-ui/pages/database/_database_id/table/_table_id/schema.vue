@@ -3,7 +3,7 @@
     <TableToolbar :selection="selection" />
     <v-toolbar color="secondary white--text" flat>
       <strong>
-        <v-toolbar-title v-text="title" />
+        <v-toolbar-title>Schema</v-toolbar-title>
       </strong>
     </v-toolbar>
     <v-card tile>
@@ -64,6 +64,29 @@
         </template>
       </v-data-table>
     </v-card>
+    <v-card v-if="hasConstraints" tile>
+      <v-card-subtitle>Constraints</v-card-subtitle>
+      <v-card-text>
+        <ul>
+          <li v-for="(foreignKey,i) in table.constraints.foreign_keys" :key="`fk-${i}`">
+            <strong>FOREIGN KEY</strong>
+            <span v-text="foreignKey.name" />
+            (<i v-text="foreignKeyColumns(foreignKey)" />)
+            <strong>REFERENCES</strong>
+            <a :href="`/database/${database.id}/table/${foreignKey.referenced_table.id}/schema`" v-text="foreignKeyReferencedTable(foreignKey)" />
+            (<i v-text="foreignKeyReferencedColumns(foreignKey)" />)
+          </li>
+          <li v-for="(uniqueConstraint,i) in table.constraints.uniques" :key="`uk-${i}`">
+            <strong>UNIQUE INDEX</strong>
+            (<i v-text="uniqueColumns(uniqueConstraint)" />)
+          </li>
+          <li v-for="(checkConstraint,i) in table.constraints.checks" :key="`uk-${i}`">
+            <strong>CHECK CONSTRAINT</strong>
+            (<i v-text="checkConstraint" />)
+          </li>
+        </ul>
+      </v-card-text>
+    </v-card>
     <v-dialog
       v-if="table && database"
       v-model="dialogSemantic"
@@ -81,7 +104,6 @@
 </template>
 <script>
 import TableToolbar from '@/components/table/TableToolbar.vue'
-import TableService from '@/api/table.service'
 
 export default {
   components: {
@@ -106,7 +128,6 @@ export default {
         { value: 'column_concept', text: 'Concept' },
         { value: 'column_unit', text: 'Unit' },
         { value: 'is_primary_key', text: 'Primary Key' },
-        { value: 'unique', text: 'Unique' },
         { value: 'is_null_allowed', text: 'Nullable' },
         { value: 'auto_generated', text: 'Sequence' }
       ],
@@ -129,12 +150,6 @@ export default {
     roles () {
       return this.$store.state.roles
     },
-    title () {
-      if (!this.table) {
-        return null
-      }
-      return this.table.constraints.checks.length > 0 ? `Constraints: ${this.table.constraints.checks}` : 'Schema'
-    },
     canAssignSemanticInformation () {
       if (!this.user) {
         return false
@@ -147,23 +162,11 @@ export default {
       }
       return this.roles.includes('modify-table-column-semantics') && (this.access.type === 'write_all' || this.table.owner.username === this.user.username)
     },
-    versionColor () {
-      if (this.version === null) {
-        return 'secondary white--text'
+    hasConstraints () {
+      if (!this.table || !this.table.constraints) {
+        return false
       }
-      return 'primary white--text'
-    },
-    versionFormatted () {
-      if (this.version === null) {
-        return null
-      }
-      return this.version + ' (UTC)'
-    },
-    versionISO () {
-      if (this.version === null) {
-        return null
-      }
-      return this.version.substring(0, 10) + 'T' + this.version.substring(11, 19) + 'Z'
+      return this.table.constraints.uniques.length > 0 || this.table.constraints.checks.length > 0 || this.table.constraints.foreign_keys.length > 0
     }
   },
   mounted () {
@@ -176,13 +179,6 @@ export default {
       }
       const uniqueColumnIds = this.table.constraints.uniques.map(u => u.columns.map(c => c.id)).flat()
       return uniqueColumnIds.includes(column.id)
-    },
-    columnName (column) {
-      const filter = this.columnTypes.filter(t => t.value === column.column_type)
-      if (filter.length > 0) {
-        return filter[0].text
-      }
-      return column.column_type
     },
     extra (column) {
       if (['date', 'datetime', 'timestamp', 'time'].includes(column.column_type)) {
@@ -219,21 +215,29 @@ export default {
       }
       this.dialogSemantic = false
     },
-    loadTable () {
-      if (!this.$route.params.database_id || !this.$route.params.table_id) {
-        return
+    foreignKeyColumns (foreignKey) {
+      if (!foreignKey) {
+        return null
       }
-      this.loading = true
-      TableService.findOne(this.$route.params.database_id, this.$route.params.table_id)
-        .then((table) => {
-          this.$store.commit('SET_TABLE', table)
-        })
-        .catch(() => {
-          this.loading = false
-        })
-        .finally(() => {
-          this.loading = false
-        })
+      return foreignKey.columns.map(c => c.internal_name).join(',')
+    },
+    foreignKeyReferencedTable (foreignKey) {
+      if (!foreignKey) {
+        return null
+      }
+      return foreignKey.referenced_table.internal_name
+    },
+    foreignKeyReferencedColumns (foreignKey) {
+      if (!foreignKey) {
+        return null
+      }
+      return foreignKey.referenced_columns.map(c => c.internal_name).join(',')
+    },
+    uniqueColumns (uniqueConstraint) {
+      if (!uniqueConstraint) {
+        return null
+      }
+      return uniqueConstraint.columns.map(c => c.internal_name).join(',')
     }
   }
 }

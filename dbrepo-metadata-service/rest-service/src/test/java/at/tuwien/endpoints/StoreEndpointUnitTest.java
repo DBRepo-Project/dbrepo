@@ -261,8 +261,8 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = "persist-query")
     public void persist_ownWriteAll_succeeds() throws UserNotFoundException, QueryStoreException,
-            NotAllowedException, DatabaseConnectionException, QueryNotFoundException, DatabaseNotFoundException,
-            ImageNotSupportedException, AccessDeniedException, IdentifierAlreadyPublishedException {
+            NotAllowedException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
+            AccessDeniedException, IdentifierAlreadyPublishedException {
 
         /* mock */
         when(userRepository.findByUsername(USER_1_USERNAME))
@@ -296,8 +296,7 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
     protected QueryDto persist_generic(Long databaseId, Database database, Long queryId, Query query,
                                        UUID userId, Principal principal, DatabaseAccess access)
             throws DatabaseNotFoundException, UserNotFoundException, QueryStoreException, QueryNotFoundException,
-            ImageNotSupportedException, NotAllowedException, DatabaseConnectionException,
-            AccessDeniedException, IdentifierAlreadyPublishedException {
+            ImageNotSupportedException, NotAllowedException, AccessDeniedException, IdentifierAlreadyPublishedException {
         final QueryPersistDto request = QueryPersistDto.builder()
                 .persist(true)
                 .build();
@@ -307,8 +306,9 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(database);
         when(storeService.findOne(databaseId, queryId, principal))
                 .thenReturn(query);
-        when(storeService.persist(databaseId, queryId, request))
-                .thenReturn(query);
+        doReturn(query)
+                .when(storeService)
+                .persist(databaseId, queryId, request);
         if (access != null) {
             log.trace("mock access for database with id {} and user id {}", databaseId, userId);
             when(accessService.find(databaseId, userId))

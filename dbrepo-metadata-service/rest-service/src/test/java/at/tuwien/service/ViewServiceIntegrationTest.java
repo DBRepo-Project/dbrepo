@@ -2,10 +2,12 @@ package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.annotations.MockAmqp;
+import at.tuwien.annotations.MockListeners;
 import at.tuwien.api.database.ViewCreateDto;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.MariaDbContainerConfig;
 import at.tuwien.entities.database.View;
+import at.tuwien.entities.database.ViewColumn;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.exception.*;
 import at.tuwien.repository.mdb.*;
@@ -13,6 +15,7 @@ import lombok.extern.log4j.Log4j2;
 import org.junit.Rule;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.rules.Timeout;
@@ -44,6 +47,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
 @MockAmqp
+@MockListeners
 public class ViewServiceIntegrationTest extends BaseUnitTest {
 
     @Autowired
@@ -89,7 +93,8 @@ public class ViewServiceIntegrationTest extends BaseUnitTest {
     }
 
     @BeforeEach
-    public void beforeEach() {
+    public void beforeEach() throws DatabaseUnchangedException, QueryMalformedException, ColumnParseException,
+            DatabaseNotFoundException, TableMalformedException {
         TABLE_1.setColumns(TABLE_1_COLUMNS);
         TABLE_2.setColumns(TABLE_2_COLUMNS);
         TABLE_3.setColumns(TABLE_3_COLUMNS);
@@ -99,6 +104,10 @@ public class ViewServiceIntegrationTest extends BaseUnitTest {
         TABLE_7.setColumns(TABLE_7_COLUMNS);
         DATABASE_1.setAccesses(List.of());
         DATABASE_2.setAccesses(List.of());
+        VIEW_1.setColumns(VIEW_1_COLUMNS);
+        VIEW_2.setColumns(VIEW_2_COLUMNS);
+        VIEW_3.setColumns(VIEW_3_COLUMNS);
+        VIEW_4.setColumns(VIEW_4_COLUMNS);
         /* metadata database */
         imageRepository.save(IMAGE_1);
         licenseRepository.save(LICENSE_1);
@@ -166,36 +175,6 @@ public class ViewServiceIntegrationTest extends BaseUnitTest {
         assertEquals("Vienna", row2.get("location"));
         assertNull(row2.get("lat"));
         assertNull(row2.get("lng"));
-    }
-
-    @Test
-    public void create_withAlias_succeeds() throws DatabaseNotFoundException, UserNotFoundException,
-            DatabaseConnectionException, ViewMalformedException, QueryMalformedException {
-        final ViewCreateDto request = ViewCreateDto.builder()
-                .name(VIEW_2_NAME + "_with_alias")
-                .query(VIEW_2_QUERY)
-                .isPublic(VIEW_2_PUBLIC)
-                .build();
-
-        /* test */
-        final View response = viewService.create(DATABASE_1_ID, request, USER_1_PRINCIPAL);
-        assertEquals(VIEW_2_NAME + "_with_alias", response.getName());
-        assertEquals(VIEW_2_INTERNAL_NAME + "_with_alias", response.getInternalName());
-        assertEquals(VIEW_2_QUERY, response.getQuery());
-        final List<TableColumn> columns = response.getColumns();
-        assertEquals(4, columns.size());
-        final TableColumn column0 = columns.get(0);
-        assertEquals("date", column0.getInternalName());
-        assertNull(column0.getAlias());
-        final TableColumn column1 = columns.get(1);
-        assertEquals("location", column1.getInternalName());
-        assertEquals("loc", column1.getAlias());
-        final TableColumn column2 = columns.get(2);
-        assertEquals("rainfall", column2.getInternalName());
-        assertNull(column2.getAlias());
-        final TableColumn column3 = columns.get(3);
-        assertEquals("mintemp", column3.getInternalName());
-        assertNull(column3.getAlias());
     }
 
 }

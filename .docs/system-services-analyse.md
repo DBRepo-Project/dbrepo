@@ -38,7 +38,7 @@ the [Storage Service](../system-services-storage), analysis for data types and p
 
 ### Examples
 
-See the [usage page](../usage-analyse).
+See the [usage page](../usage-analyse/) for examples.
 
 ## Limitations
 

@@ -11,19 +11,14 @@ author: Martin Weise
     Image: [`dbrepo/authentication-service:__APPVERSION__`](https://hub.docker.com/r/dbrepo/authentication-service)
 
     * Ports: 8080/tcp
-    * Health: `http://<hostname>:8080/api/auth/health`
-    * Prometheus: `http://<hostname>:8080/api/auth/metrics`
     * UI: `http://<hostname>/api/auth/admin/`
 
 ## Overview
 
-From version 1.2 onwards we use Keycloak for authentication for managing a part of the user identity and deprecated the
-Spring Boot application instead. Going forward, the authentication will be 
-through [Keycloak by RedHat](https://quay.io/repository/keycloak/keycloak?tab=info).
-
-By default, users are created using the [UI](../system-other-ui) and the sign-up page in the UI. A new user is also
-created in the UI creates a new user in the [Auth Database](../system-databases-auth), consequently a part of the 
-user identity is managed by Keycloak.
+By default, users are created using the [User Interface](../system-other-ui) and the sign-up page in the User Interface.
+This creates a new user in the [Authentication Database](../system-databases-authentication), the user identity is then
+managed by the
+Authentication Service.
 
 ## Groups
 
@@ -64,10 +59,10 @@ public ResponseEntity<DatabaseBriefDto> create(@NotNull Long containerId,
 
 ### Default Container Handling
 
-| Name                     | Description                          |
-|--------------------------|--------------------------------------|
-| `find-container`         | Can find a specific container        |
-| `list-containers`        | Can list all containers              |
+| Name              | Description                   |
+|-------------------|-------------------------------|
+| `find-container`  | Can find a specific container |
+| `list-containers` | Can list all containers       |
 
 ### Default Database Handling
 
@@ -79,8 +74,9 @@ public ResponseEntity<DatabaseBriefDto> create(@NotNull Long containerId,
 | `delete-database-access`     | Can delete the access to a database of a user        |
 | `find-database`              | Can find a specific database in a container          |
 | `list-databases`             | Can list all databases in a container                |
-| `modify-database-visibility` | Can modify the database visibility (public, private) |
+| `modify-database-image`      | Can update the database image                        |
 | `modify-database-owner`      | Can modify the database owner                        |
+| `modify-database-visibility` | Can modify the database visibility (public, private) |
 | `update-database-access`     | Can update the access to a database of a user        |
 
 ### Default Table Handling
@@ -203,6 +199,7 @@ public ResponseEntity<DatabaseBriefDto> create(@NotNull Long containerId,
 
 * No support for sending e-mails through Keycloak by default.
 * No support for temporary passwords.
+* No support for adding identifies in Keycloak directly.
 * No support for multi-factor authentication.
 
 !!! question "Do you miss functionality? Do these limitations affect you?"
@@ -213,5 +210,5 @@ public ResponseEntity<DatabaseBriefDto> create(@NotNull Long containerId,
 
 ## Security
 
-1. Mount your TLS certificate / private key pair into `/app/tls.crt` and `/app/tls.key` and 
+1. Mount your TLS certificate / private key pair into `/app/tls.crt` and `/app/tls.key` and
    set `KC_HTTPS_CERTIFICATE_FILE=/app/tls.crt` and set `KC_HTTPS_CERTIFICATE_KEY_FILE=/app/tls.key`.

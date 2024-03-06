@@ -89,6 +89,7 @@ public interface QueryService {
     /**
      * Select all data known in the database-table id tuple at a given time and return a page of specific size, using
      * Instant to better abstract time concept (JDK 8) from SQL. We use the "mariadb" user for this.
+     * Precondition: page and size is not null
      *
      * @param databaseId The database id.
      * @param tableId    The table id.
@@ -125,7 +126,7 @@ public interface QueryService {
      */
     ExportResource tableFindAll(Long databaseId, Long tableId, Instant timestamp, Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, FileStorageException, QueryMalformedException,
-            DataDbSidecarException;
+            DataDbSidecarException, DataProcessingException;
 
     /**
      * Select all data known in the view id tuple and return a page of specific size.
@@ -161,7 +162,7 @@ public interface QueryService {
      */
     ExportResource findOne(Long databaseId, Long queryId, Principal principal) throws DatabaseNotFoundException,
             ImageNotSupportedException, FileStorageException, QueryStoreException, QueryNotFoundException,
-            QueryMalformedException, DataDbSidecarException;
+            QueryMalformedException, DataDbSidecarException, DataProcessingException;
 
     /**
      * Count the total tuples for a given table id within a database id at a given time.
@@ -242,5 +243,5 @@ public interface QueryService {
      * @throws DataDbSidecarException    The data database sidecar failed to import the dataset.
      */
     void insert(Long databaseId, Long tableId, ImportDto data, Principal principal) throws TableMalformedException,
-            DatabaseNotFoundException, TableNotFoundException, DataDbSidecarException;
+            DatabaseNotFoundException, TableNotFoundException, DataDbSidecarException, DataProcessingException;
 }

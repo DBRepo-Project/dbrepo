@@ -2,6 +2,7 @@ package at.tuwien.service;
 
 import at.tuwien.BaseUnitTest;
 import at.tuwien.annotations.MockAmqp;
+import at.tuwien.annotations.MockListeners;
 import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.api.database.DatabaseCreateDto;
 import at.tuwien.api.database.DatabaseDto;
@@ -38,6 +39,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 @MockAmqp
+@MockListeners
 @MockOpensearch
 public class DatabaseServiceComponentTest extends BaseUnitTest {
 

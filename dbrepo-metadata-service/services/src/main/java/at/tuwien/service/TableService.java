@@ -84,24 +84,6 @@ public interface TableService {
             throws ImageNotSupportedException, DatabaseNotFoundException, TableMalformedException,
             TableNameExistsException, QueryMalformedException, TableNotFoundException;
 
-
-    /**
-     * Updates a table column
-     *
-     * @param databaseId The database id.
-     * @param tableId    The table id.
-     * @param columnId   The column id.
-     * @param updateDto  The update data containing unit and concept uris.
-     * @return The updated table column, if successful.
-     * @throws TableNotFoundException    The table was not found in the metadata database.
-     * @throws DatabaseNotFoundException The database was not found in the metadata database.
-     * @throws TableMalformedException   The table seems malformed by the mapper.
-     * @throws TableNotFoundException    The table is not found.
-     */
-    TableColumn update(Long databaseId, Long tableId, Long columnId, ColumnSemanticsUpdateDto updateDto,
-                       String authorization) throws TableNotFoundException, DatabaseNotFoundException,
-            TableMalformedException;
-
     /**
      * Deletes a table from the database in the metadata database and data database.
      *

@@ -4,7 +4,8 @@ author: Martin Weise
 
 ## TL;DR
 
-To install DBRepo in your existing cluster, download the sample [`values.yaml`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-deployment/-/raw/master/charts/dbrepo-core/values.yaml?inline=false)
+To install DBRepo in your existing cluster, download the
+sample [`values.yaml`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-deployment/-/raw/master/charts/dbrepo-core/values.yaml?inline=false)
 for your deployment and update the variables, especially `hostname`.
 
 ```shell
@@ -29,7 +30,9 @@ about values, etc.
 ## Limitations
 
 1. MariaDB Galera does not (yet) support XA-transactions required by the authentication service (=Keycloak). Therefore
-   only a single MariaDB pod can be deployed at once for the [auth database](../system-databases-auth).
+   only a single MariaDB pod can be deployed at once for the [auth database](../system-databases-authentication).
+2. The entire Helm deployment is rootless (=`runAsNonRoot=true`) except for
+   the [Storage Service](../system-services-storage/) which still requires a root user.
 
 !!! question "Do you miss functionality? Do these limitations affect you?"
 

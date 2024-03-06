@@ -1,12 +1,12 @@
-namespace:
+namespace: ""
 
-hostname:
+hostname: ""
 
 strategyType: RollingUpdate
 
 clusterDomain: cluster.local
 
-metadata-db:
+metadataDb:
   fullnameOverride: metadata-db
   image:
     debug: false
@@ -18,7 +18,7 @@ metadata-db:
   db:
     name: fda
   metrics:
-    enabled: true
+    enabled: false
   galera:
     mariabackup:
       user: mariabackup
@@ -27,7 +27,7 @@ metadata-db:
   service:
     type: ClusterIP
     annotations: { }
-    #loadBalancerIP: 1.2.3.4
+    loadBalancerIP: ""
     loadBalancerSourceRanges: [ ]
   persistence:
     enabled: false
@@ -35,7 +35,7 @@ metadata-db:
     storageClass: default
   replicaCount: 3 # uneven 3,5,7
 
-auth-service:
+authService:
   fullnameOverride: auth-service
   image:
     debug: false
@@ -71,7 +71,7 @@ auth-service:
       mountPath: /opt/bitnami/keycloak/data/import
   replicaCount: 2
 
-auth-db:
+authDb:
   fullnameOverride: auth-db
   host: auth-db-pgpool
   port: 5432
@@ -89,14 +89,14 @@ auth-db:
   service:
     type: ClusterIP
     annotations: { }
-    #loadBalancerIP: 1.2.3.4
+    loadBalancerIP: ""
     loadBalancerSourceRanges: [ ]
   persistence:
     enabled: false
     size: 10Gi
     storageClass: default
 
-data-db:
+dataDb:
   fullnameOverride: data-db
   image:
     debug: false
@@ -112,7 +112,7 @@ data-db:
       password: mariabackup
   sidecars:
     - name: sidecar
-      image: s210.dl.hpc.tuwien.ac.at/dbrepo/data-db-sidecar:latest
+      image: s210.dl.hpc.tuwien.ac.at/dbrepo/data-db-sidecar:1.4.1
       imagePullPolicy: Always
       securityContext:
         runAsUser: 1001
@@ -122,7 +122,7 @@ data-db:
           protocol: TCP
       env:
         - name: S3_STORAGE_ENDPOINT
-          value: http://storage-service-s3:9000
+          value: http://storageservice-s3:9000
         - name: S3_ACCESS_KEY_ID
           value: seaweedfsadmin
         - name: S3_SECRET_ACCESS_KEY
@@ -156,7 +156,7 @@ data-db:
     sharedStorageClass: default
   replicaCount: 3 # uneven
 
-search-db:
+searchdb:
   fullnameOverride: search-db
   host: search-db
   port: 9200
@@ -232,12 +232,12 @@ search-db:
                 ".opendistro-asynchronous-search-response*",
               ]
 
-search-db-dashboard:
+searchDbDashboard:
   fullnameOverride: search-db-dashboard
   opensearchHosts: http://search-db:9200
   extraInitContainers:
     - name: init
-      image: s210.dl.hpc.tuwien.ac.at/dbrepo/search-db-init:latest
+      image: s210.dl.hpc.tuwien.ac.at/dbrepo/search-db-init:1.4.1
       imagePullPolicy: Always
       env:
         - name: OPENSEARCH_HOST
@@ -267,7 +267,7 @@ uploadService:
     tag: v1.12
   replicaCount: 2
 
-broker-service:
+brokerService:
   fullnameOverride: broker-service
   image:
     debug: true
@@ -327,9 +327,6 @@ broker-service:
       secret:
         secretName: broker-service-secret
   extraPlugins: rabbitmq_prometheus rabbitmq_auth_backend_oauth2 rabbitmq_auth_mechanism_ssl
-  extraEnvVars:
-    - name: BITNAMI_DEBUG
-      value: "true"
   persistence:
     enabled: false
     size: 5Gi
@@ -344,7 +341,7 @@ analyseService:
   image:
     registry: s210.dl.hpc.tuwien.ac.at
     repository: dbrepo/analyse-service
-    tag: "latest"
+    tag: "1.4.1"
     pullPolicy: Always
     debug: false
   replicaCount: 2
@@ -354,7 +351,7 @@ metadataService:
   image:
     registry: s210.dl.hpc.tuwien.ac.at
     repository: dbrepo/metadata-service
-    tag: "latest"
+    tag: "1.4.1"
     pullPolicy: Always
     debug: false
   adminEmail: noreply@example.com
@@ -369,6 +366,7 @@ metadataService:
     username: ""
     password: ""
   rates:
+    deleteStaleFiles: 60
     mirror: 60
     obtainMetadata: 60
     deleteStaleQueries: 60
@@ -379,7 +377,7 @@ dataService:
   image:
     registry: s210.dl.hpc.tuwien.ac.at
     repository: dbrepo/data-service
-    tag: "latest"
+    tag: "1.4.1"
     pullPolicy: Always
     debug: false
   jwt:
@@ -394,18 +392,17 @@ searchService:
   image:
     registry: s210.dl.hpc.tuwien.ac.at
     repository: dbrepo/search-service
-    tag: "latest"
+    tag: "1.4.1"
     pullPolicy: Always
     debug: false
   replicaCount: 2
 
-storage-service:
-  fullnameOverride: storage-service
+storageservice:
   master:
     enabled: true
   filer:
     enabled: true
-    replicas: 1
+    replicas: 2
     enablePVC: false
     storage: 25Gi
     s3:
@@ -417,10 +414,10 @@ storage-service:
       existingConfigSecret: seaweedfs-s3-secret
   volume:
     enabled: true
-    replicas: 1
+    replicas: 2
   s3:
     enabled: true
-    replicas: 1
+    replicas: 2
     port: 9000
     metricsPort: 9091
     enableAuth: true
@@ -430,7 +427,7 @@ storage-service:
       username: seaweedfsadmin
       password: seaweedfsadmin
 
-log-service:
+logservice:
   fullnameOverride: log-service
   config:
     outputs: |
@@ -468,25 +465,114 @@ ui:
   image:
     registry: s210.dl.hpc.tuwien.ac.at
     repository: dbrepo/ui
-    tag: "latest"
+    tag: "1.4.1"
     pullPolicy: Always
-  logo: /logo.svg
-  icon: /favicon.ico
-  appleTouchIcon: /apple-touch-logo.png
-  version: 1.4.0
-  title: Database Repository
-  datacite:
-    url: https://doi.org
-  keycloak:
-    url: /api/auth/admin/
-  broker:
-    url: /admin/broker/
-    host: broker-service
-    extraInfo: ""
-    ports:
-      - 5672
-  forceSsl: false
   replicaCount: 2
+  config: |
+    {
+      "title": "Database Repository",
+      "version": "1.4.1",
+      "fluid": false,
+      "ssl": {
+        "force": false
+      },
+      "logo": {
+        "path": "/logo.svg"
+      },
+      "icon": {
+        "path": "/favicon.ico"
+      },
+      "appleTouchIcon": {
+        "path": "/apple-touch-icon.png"
+      },
+      "api": {
+        "useSsl": false
+      },
+      "broker": {
+        "connection": {
+          "host": "broker-service",
+          "ports": [
+            5672
+          ],
+          "extraInfo": null
+        }
+      },
+      "storage": {
+        "endpoint": "storageservice",
+        "port": 9000,
+        "useSsl": false,
+        "accessKey": {
+          "id": "seaweedfsadmin",
+          "secret": "seaweedfsadmin"
+        }
+      },
+      "upload": {
+        "url": "hostname:80",
+        "useSsl": false
+      },
+      "database": {
+        "connection": {
+          "extraInfo": null
+        }
+      },
+      "keycloak": {
+        "client": {
+          "id": "dbrepo-client",
+          "secret": "MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG"
+        }
+      },
+      "opensearch": {
+        "username": "admin",
+        "password": "admin"
+      },
+      "pid": {
+        "default": {
+          "publisher": "Example University"
+        }
+      },
+      "doi": {
+        "url": "https://doi.org"
+      },
+      "pages": {
+        "login": {
+          "links": [ ]
+        },
+        "information": {
+          "links": [
+            {
+              "text": "Online Documentation",
+              "blank": true,
+              "href": "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/"
+            },
+            {
+              "text": "Sourcecode Documentation",
+              "blank": true,
+              "href": "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services"
+            },
+            {
+              "text": "Docker Images",
+              "blank": true,
+              "href": "https://hub.docker.com/u/dbrepo"
+            },
+            {
+              "text": "Demo Instance (Kubernetes)",
+              "blank": true,
+              "href": "https://test.dbrepo.tuwien.ac.at/"
+            },
+            {
+              "text": "Pilot Instance (Docker Compose)",
+              "blank": true,
+              "href": "https://dbrepo1.ec.tuwien.ac.at/"
+            },
+            {
+              "text": "Paper",
+              "blank": true,
+              "href": "https://doi.org/10.2218/ijdc.v17i1.825"
+            }
+          ]
+        }
+      }
+    }
   extraVolumes: [ ]
   #  - name: images-map
   #    configMap:
@@ -573,7 +659,7 @@ ingress:
               portNumber: 15672
             - path: /admin/storage
               pathType: ImplementationSpecific
-              serviceName: storage-service-s3
+              serviceName: storageservice-s3
               portNumber: 9000
       tls:
         - secretName: dbrepo-ingress-tls-cert

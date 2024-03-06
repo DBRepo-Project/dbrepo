@@ -17,9 +17,15 @@
               <v-list-item-title>
                 Table ID
               </v-list-item-title>
-              <v-list-item-content>
-                <span v-if="table && table.id">{{ table.id }}</span>
-              </v-list-item-content>
+              <v-list-item-content v-if="table && table.id" v-text="table.id" />
+              <v-list-item-title v-if="table && table.data_length">
+                Table Size
+              </v-list-item-title>
+              <v-list-item-content v-if="table && table.data_length" v-text="sizeToHumanLabel(table.data_length)" />
+              <v-list-item-title v-if="table && table.num_rows">
+                Table Rows
+              </v-list-item-title>
+              <v-list-item-content v-if="table && table.num_rows" v-text="table.num_rows" />
               <v-list-item-title v-if="hasDescription" class="mt-2">
                 Table Description
               </v-list-item-title>
@@ -109,7 +115,7 @@
 import TableToolbar from '@/components/table/TableToolbar.vue'
 import Select from '@/components/identifier/Select'
 import Summary from '@/components/identifier/Summary'
-import { formatTimestampUTCLabel } from '@/utils'
+import { formatTimestampUTCLabel, sizeToHumanLabel } from '@/utils'
 import UserBadge from '@/components/UserBadge.vue'
 
 export default {
@@ -228,6 +234,7 @@ export default {
     }
   },
   methods: {
+    sizeToHumanLabel,
     amqpBadgeText (port) {
       if (port === 5672) {
         return 'insecure'

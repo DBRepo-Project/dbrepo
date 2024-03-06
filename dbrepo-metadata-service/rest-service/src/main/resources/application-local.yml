@@ -59,6 +59,8 @@ fda:
     secretAccessKey: seaweedfsadmin
     importBucket: dbrepo-upload
     exportBucket: dbrepo-download
+    deleteStaleFilesRate: 60
+    staleSeconds: 60
   jwt:
     issuer: http://localhost/api/auth/realms/dbrepo
     public_key: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB
@@ -66,6 +68,7 @@ fda:
     endpoint: "http://authentication-service:8080"
     username: fda
     password: fda
+    clientSecret: MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG
   unsupported: \*,AVG,BIT_AND,BIT_OR,BIT_XOR,COUNT,COUNTDISTINCT,GROUP_CONCAT,JSON_ARRAYAGG,JSON_OBJECTAGG,MAX,MIN,STD,STDDEV,STDDEV_POP,STDDEV_SAMP,SUM,VARIANCE,VAR_POP,VAR_SAMP,--
   website: http://localhost
   minConcurrent: 1

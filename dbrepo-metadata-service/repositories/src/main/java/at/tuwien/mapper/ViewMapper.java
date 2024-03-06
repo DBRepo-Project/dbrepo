@@ -4,16 +4,20 @@ import at.tuwien.api.database.ViewBriefDto;
 import at.tuwien.api.database.ViewCreateDto;
 import at.tuwien.api.database.ViewDto;
 import at.tuwien.entities.database.View;
+import at.tuwien.entities.database.ViewColumn;
+import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.exception.QueryMalformedException;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 import org.mapstruct.Named;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.text.Normalizer;
+import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
@@ -45,29 +49,45 @@ public interface ViewMapper {
 
     ViewBriefDto viewToViewBriefDto(View data);
 
+    @Transactional(readOnly = true)
+    default TableColumn viewColumnToTableColumn(ViewColumn data) {
+        return data.getColumn()
+                .toBuilder()
+                .alias(data.getAlias())
+                .build();
+    }
+
+    default List<ViewColumn> tableColumnsToViewColumns(View view, List<TableColumn> data) {
+        final int[] idx = new int[]{0};
+        return data.stream()
+                .map(c -> ViewColumn.builder()
+                        .ordinalPosition(idx[0]++)
+                        .column(c)
+                        .view(view)
+                        .alias(c.getAlias())
+                        .build())
+                .toList();
+    }
+
     default PreparedStatement viewToSelectAll(Connection connection, View view, Long page, Long size) throws QueryMalformedException {
-        log.debug("mapping view query, view.query={}", view.getQuery());
+        log.debug("mapping view query, view.query={}, page={}, size={}", view.getQuery(), page, size);
         final StringBuilder statement = new StringBuilder("SELECT ");
         final int[] idx = new int[]{0};
         view.getColumns()
                 .forEach(c -> statement.append(idx[0]++ > 0 ? "," : "")
                         .append("`")
-                        .append(c.getInternalName())
+                        .append(c.getAlias() != null ? c.getAlias() : c.getColumn().getInternalName())
                         .append("`"));
         statement.append(" FROM `")
                 .append(view.getInternalName())
                 .append("`");
         /* pagination */
-        if (size != null) {
-            log.trace("pagination size/limit of {}", size);
-            statement.append(" LIMIT ")
-                    .append(size);
-            if (page != null) {
-                log.trace("pagination page/offset of {}", page);
-                statement.append(" OFFSET ")
-                        .append(page * size);
-            }
-        }
+        log.trace("pagination size/limit of {}", size);
+        statement.append(" LIMIT ")
+                .append(size);
+        log.trace("pagination page/offset of {}", page);
+        statement.append(" OFFSET ")
+                .append(page * size);
         statement.append(";");
         try {
             log.trace("mapped view query {} to prepared statement", statement);

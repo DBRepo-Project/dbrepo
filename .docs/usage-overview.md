@@ -637,7 +637,7 @@ A user wants to import live data from e.g. sensor measurements fast and without 
 
         Beware that access tokens are short lived (default is 15 minutes) and need to be refreshed regularly with
         refresh tokens (default is 10 days). See the usage page 
-        on [how to refresh access tokens](../usage-auth/#refresh-access-token).
+        on [how to refresh access tokens](../usage-authentication/#refresh-access-token).
 
     Add a data tuple to an already existing table where the user has at least `write-own` access.
 
@@ -699,35 +699,35 @@ A user wants to create a subset and export it as csv file.
 
     Login and select a database where you have at least `read` access (this is the case for e.g. self-created 
     databases). Click the ":material-wrench: CREATE SUBSET" button :material-numeric-1-circle-outline: as seen in 
-    Figure 16.
+    Figure 17.
 
     <figure markdown>
     ![Open the create subset form](images/screenshots/export-subset-step-1.png){ .img-border }
-    <figcaption>Figure 16: Open the create subset form.</figcaption>
+    <figcaption>Figure 17: Open the create subset form.</figcaption>
     </figure>
 
     A subset can be created by using our query builder that is visible by default in the "SIMPLE" tab. First, a source 
     table :material-numeric-1-circle-outline: needs to be selected, then the columns that are part of the subset in
     :material-numeric-2-circle-outline:. Optionally the subset can be filtered. The subset query (=SQL) is displayed
-    in :material-numeric-3-circle-outline: in Figure 17. 
+    in :material-numeric-3-circle-outline: in Figure 18. 
 
     Once you are confident the query covers the desired result, click ":material-run: Create".
 
     <figure markdown>
     ![Subset query building](images/screenshots/export-subset-step-2.png){ .img-border }
-    <figcaption>Figure 17: Subset query building.</figcaption>
+    <figcaption>Figure 18: Subset query building.</figcaption>
     </figure>
 
     Once the subset is created (may take some seconds), the user is presented with the result set in
     :material-numeric-1-circle-outline:, more information on the subset can be obtained by clicking ":material-run:
-    View" on the top (c.f. Figure 18).
+    View" on the top (c.f. Figure 19).
 
     <figure markdown>
     ![Subset result set](images/screenshots/export-subset-step-3.png){ .img-border }
-    <figcaption>Figure 18: Subset result set.</figcaption>
+    <figcaption>Figure 19: Subset result set.</figcaption>
     </figure>
 
-    The subset information page in Figure 19 shows the most important metadata like subset query hash and result hash
+    The subset information page in Figure 20 shows the most important metadata like subset query hash and result hash
     (e.g. for reproducability) and subset result count. Note that although this subset is stored in the query store
     already, it is only temporarly stored there for 24 hours (default configuration). 
 
@@ -737,7 +737,7 @@ A user wants to create a subset and export it as csv file.
 
     <figure markdown>
     ![Subset information](images/screenshots/export-subset-step-4.png){ .img-border }
-    <figcaption>Figure 19: Subset information.</figcaption>
+    <figcaption>Figure 20: Subset information.</figcaption>
     </figure>
 
 === "Terminal"

@@ -2,7 +2,7 @@
 author: Martin Weise
 ---
 
-# Auth Database
+# Authentication Database
 
 ## tl;dr
 
