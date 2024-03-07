@@ -480,6 +480,7 @@ docs-docs:
     - apt-get update && apt-get install -y git make sed wget
     - make docs
     - tar czfv final.tar.gz final/
+    - ls -la ./final.tar.gz
   cache:
     policy: push
     key: ${CI_BUILD_REF_NAME}
