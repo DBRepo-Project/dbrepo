@@ -3,11 +3,14 @@
 OVERRIDES_MAIN_HTML=""
 SCRIPTS_EXTRA_JS=""
 
+function clean_cache {
+  echo "Removing cache from directory ./site"
+  rm -rf ./site
+}
+
 function generate_docs {
   BRANCH="release-$1"
   echo "==================================================="
-  echo "Removing cache from directory ./site"
-  rm -rf ./site
   echo "Building DOCS for version $1 on branch $BRANCH"
   echo "==================================================="
   git reset --hard && git checkout "$BRANCH"
@@ -26,13 +29,12 @@ function generate_docs {
   find .docs/ -type f -exec sed -i -e "s/__CHARTVERSION__/$1/g" {} \;
   mkdocs build > /dev/null && cp -r ./site "./final/$1"
   cp -r "./swagger/$1" "./final/$1/swagger"
+  clean_cache
 }
 
 function generate_api {
   BRANCH="release-$1"
   echo "==================================================="
-  echo "Removing cache from directory ./site"
-  rm -rf ./site
   echo "Building API for version $1 on branch $BRANCH"
   echo "==================================================="
   git reset --hard && git checkout "$BRANCH"
@@ -40,6 +42,7 @@ function generate_api {
   find ./site -type f -exec sed -i -e "s/__APPVERSION__/$1/g" {} \;
   mkdir -p "./swagger/$1"
   cp -r ./site/* "./swagger/$1/"
+  clean_cache
 }
 
 # usage
@@ -76,4 +79,6 @@ done
 echo "==================================================="
 echo "Moving default version $APP_VERSION docs to /"
 cp -r ./final/${APP_VERSION}/* ./final/
+echo "Compress final documentation"
+tar czfv final.tar.gz ./final
 echo "==================================================="
