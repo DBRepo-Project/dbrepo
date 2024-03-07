@@ -19,7 +19,7 @@ cache:
 stages:
 #  - build
 #  - test
-#  - docs
+  - docs
   - release
 #  - scan
 
@@ -471,7 +471,7 @@ stages:
 #    - python3 .docs/docker/release.py
 
 docs-docs:
-  stage: release
+  stage: docs
   image: docker.io/python:3.11-slim
   only:
     refs:
@@ -479,11 +479,12 @@ docs-docs:
   script:
     - apt-get update && apt-get install -y git make sed wget
     - make docs
+    - tar czfv final.tar.gz final/
   cache:
     policy: push
     key: ${CI_BUILD_REF_NAME}
     paths:
-      - ./final
+      - ./final.tar.gz
 
 #release-images:
 #  stage: release
@@ -531,13 +532,9 @@ release-docs:
     refs:
       - /^release-.*/
   script:
-    - ls -la /
-    - ls -la /cache
     - eval $(ssh-agent -s)
     - echo "$CI_KEY_PRIVATE" > /root/.ssh/id_rsa && chmod 0600 /root/.ssh/id_rsa
     - echo "$CI_KEY_PUBLIC" > /root/.ssh/id_rsa.pub
     - echo "$CI_DOC_ID" > ~/.ssh/known_hosts
-    - ls -la
-    - tar czfv final.tar.gz ./final
     - "scp -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa final.tar.gz $CI_DOC_USER@$CI_DOC_IP:final.tar.gz"
     - "ssh -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa $CI_DOC_USER@$CI_DOC_IP 'rm -rf /system/user/ifs/infrastructures/public_html/dbrepo/*; tar xzfv ./final.tar.gz; rm -f ./final.tar.gz; cp -r ./final/* /system/user/ifs/infrastructures/public_html/dbrepo; rm -rf ./final'"
