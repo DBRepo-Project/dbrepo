@@ -479,7 +479,6 @@ docs-docs:
     - apt-get update && apt-get install -y git make sed wget
     - make docs
   cache:
-    key: $CI_COMMIT_REF_SLUG
     paths:
       - ./final
 
