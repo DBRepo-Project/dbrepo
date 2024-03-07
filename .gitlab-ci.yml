@@ -10,13 +10,11 @@ variables:
 
 image: debian:12-slim
 
-default:
-  cache: &global_cache
-    key: $CI_COMMIT_REF_SLUG
-    paths:
-      - .m2/
-      - node_modules/
-    policy: pull-push
+cache:
+  policy: pull
+  key: ${CI_BUILD_REF_NAME}
+  paths:
+    - final/
 
 stages:
 #  - build
@@ -482,7 +480,8 @@ docs-docs:
     - apt-get update && apt-get install -y git make sed wget
     - make docs
   cache:
-    key: $CI_COMMIT_REF_SLUG
+    policy: push
+    key: ${CI_BUILD_REF_NAME}
     paths:
       - ./final
 
