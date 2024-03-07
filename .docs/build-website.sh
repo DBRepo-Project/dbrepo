@@ -79,6 +79,4 @@ done
 echo "==================================================="
 echo "Moving default version $APP_VERSION docs to /"
 cp -r ./final/${APP_VERSION}/* ./final/
-echo "Compress final documentation"
-tar czfv final.tar.gz ./final
 echo "==================================================="

@@ -18,7 +18,7 @@ cache:
 stages:
 #  - build
 #  - test
-  - docs
+#  - docs
   - release
 #  - scan
 
@@ -470,7 +470,7 @@ stages:
 #    - python3 .docs/docker/release.py
 
 docs-docs:
-  stage: docs
+  stage: release
   image: docker.io/python:3.11-slim
   only:
     refs:
@@ -479,13 +479,9 @@ docs-docs:
     - apt-get update && apt-get install -y git make sed wget
     - make docs
   cache:
+    key: $CI_COMMIT_REF_SLUG
     paths:
-      - ./final.tar.gz
-  artifacts:
-    when: always
-    paths:
-      - ./final.tar.gz
-    expire_in: 1 hour
+      - ./final
 
 release-images:
   stage: release
