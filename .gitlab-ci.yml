@@ -19,7 +19,7 @@ cache:
 stages:
 #  - build
 #  - test
-  - docs
+#  - docs
   - release
 #  - scan
 
@@ -471,7 +471,7 @@ stages:
 #    - python3 .docs/docker/release.py
 
 docs-docs:
-  stage: docs
+  stage: release
   image: docker.io/python:3.11-slim
   only:
     refs:
