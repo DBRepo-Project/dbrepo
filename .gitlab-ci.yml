@@ -522,6 +522,8 @@ release-docs:
   image: docker.io/finalgene/openssh:9.1
   needs:
     - docs-docs
+  dependencies:
+    - docs-docs
   only:
     refs:
       - /^release-.*/
