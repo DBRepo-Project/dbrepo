@@ -481,6 +481,11 @@ docs-docs:
   cache:
     paths:
       - ./final
+  artifacts:
+    when: always
+    paths:
+      - ./final
+    expire_in: 1 days
 
 release-images:
   stage: release
