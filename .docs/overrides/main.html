@@ -3,24 +3,9 @@
 {% block announce %}
 <label for="version">Version</label>
 <select style="margin-left:8px;" id="version" name="version" onchange="switchVersion(this.options[this.selectedIndex].value)">
+    <option value="latest">latest</option>
+    <option value="1.4.1">1.4.1</option>
     <option value="1.4.0">1.4.0</option>
     <option value="1.3.0">1.3.0</option>
-    <option value="latest">latest</option>
 </select>
-<script>
-    function getVersion() {
-        const segments = location.pathname.split('/')
-        console.debug('segments', segments)
-        if (segments.length >= 4) {
-            return segments[3]
-        } else {
-            return '__APPVERSION__'
-        }
-    }
-    function switchVersion(value) {
-        if (!value) { return }
-        this.location.href = location.protocol + '//' + location.host + '/infrastructures/dbrepo/' + value + '/'
-    }
-    document.getElementById("version").value = getVersion()
-</script>
 {% endblock %}
