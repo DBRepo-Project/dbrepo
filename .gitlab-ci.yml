@@ -468,14 +468,6 @@ docs-registry:
   script:
     - pip install -r ./requirements.txt
     - python3 .docs/docker/release.py
-  cache:
-    paths:
-      - ./final
-  artifacts:
-    when: always
-    paths:
-      - ./final
-    expire_in: 1 days
 
 docs-docs:
   stage: docs
@@ -489,11 +481,6 @@ docs-docs:
   cache:
     paths:
       - ./final
-  artifacts:
-    when: always
-    paths:
-      - ./final
-    expire_in: 1 days
 
 release-images:
   stage: release
