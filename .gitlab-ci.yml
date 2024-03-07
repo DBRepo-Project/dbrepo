@@ -508,10 +508,6 @@ stages:
 release-docs:
   stage: release
   image: docker.io/python:3.11-slim
-  needs:
-    - docs-docs
-  dependencies:
-    - docs-docs
   only:
     refs:
       - /^release-.*/
