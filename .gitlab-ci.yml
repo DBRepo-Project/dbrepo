@@ -487,9 +487,9 @@ docs-docs:
       - ./final.tar.gz
   artifacts:
     when: always
+    paths:
+      - ./final.tar.gz
     expire_in: 1 hour
-    reports:
-      container_scanning: ./final.tar.gz
 
 #release-images:
 #  stage: release
