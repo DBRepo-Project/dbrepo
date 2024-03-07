@@ -504,7 +504,7 @@ docs-registry:
 release-images:
   stage: release
   image: docker:24-dind
-  needs:
+  dependencies:
     - test-metadata-service
     - test-data-service
     - test-analyse-service
