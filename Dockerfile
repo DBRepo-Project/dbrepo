@@ -2,7 +2,7 @@ FROM python:3.11-slim as build
 
 WORKDIR /app
 
-ENV v1_TAGS="1.4.0,1.4.1"
+ENV VERSIONS="latest,1.4.1,1.4.0"
 ENV APP_VERSION="1.4.1"
 
 RUN apt-get update && apt-get install -y git

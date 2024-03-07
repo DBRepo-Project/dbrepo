@@ -1,44 +1,42 @@
 #!/bin/bash
 
+INDEX_HTML=""
+
 function generate_docs {
+  BRANCH="release-$1"
   echo "==================================================="
-  echo "Building DOCS for version $1 on branch $2"
+  echo "Building DOCS for version $1 on branch $BRANCH"
   echo "==================================================="
-  git reset --hard && git checkout "$2"
+  git reset --hard && git checkout "$BRANCH"
   pip install -r ./requirements.txt > /dev/null
   mkdir -p ./final
   find .docs/ -type f -exec sed -i -e "s/__APPVERSION__/$1/g" {} \;
   find .docs/ -type f -exec sed -i -e "s/__CHARTVERSION__/$1/g" {} \;
   if [ "$1" = "latest" ]; then
     INDEX_HTML=$(cat .docs/redirect.html)
-    OVERRIDES_MAIN_HTML=$(cat .docs/overrides/main.html)
-  else
-    echo $OVERRIDES_MAIN_HTML > .docs/overrides/main.html
   fi
   mkdocs build > /dev/null && cp -r ./site "./final/$1"
   cp -r "./swagger/$1" "./final/$1/swagger"
 }
 
 function generate_api {
+  BRANCH="release-$1"
   echo "==================================================="
-  echo "Building API for version $1 on branch $2"
+  echo "Building API for version $1 on branch $BRANCH"
   echo "==================================================="
-  git reset --hard && git checkout "$2"
+  git reset --hard && git checkout "$BRANCH"
   bash .docs/.swagger/swagger-site.sh
   find ./site -type f -exec sed -i -e "s/__APPVERSION__/$1/g" {} \;
   mkdir -p "./swagger/$1"
   cp -r ./site/* "./swagger/$1/"
 }
 
-INDEX_HTML=""
-OVERRIDES_MAIN_HTML=""
-
 # usage
-if [ -z "$v1_TAGS" ]; then
-    echo "Variable v1_TAGS not set"
+if [ -z "$VERSIONS" ]; then
+    echo "Variable VERSIONS not set"
     exit 1
 fi
-tags=(${v1_TAGS//,/ })
+versions=(${VERSIONS//,/ })
 
 # usage
 if [ -z "$APP_VERSION" ]; then
@@ -47,25 +45,14 @@ if [ -z "$APP_VERSION" ]; then
 fi
 echo "APP_VERSION=$APP_VERSION"
 
-
-echo " ~> latest"
-for i in "${!tags[@]}"; do
-  version="${tags[i]}"
-  echo " ~> $version"
-done
-
 # ensure branches exist on machine
 git fetch
 
-# latest
-generate_api "latest" "master"
-generate_docs "latest" "master"
-
 # versions
-for i in "${!tags[@]}"; do
-  version="${tags[i]}"
-  generate_api "$version" "v$version"
-  generate_docs "$version" "v$version"
+for i in "${!versions[@]}"; do
+  version="${versions[i]}"
+  generate_api "$version"
+  generate_docs "$version"
 done
 
 # finalization
