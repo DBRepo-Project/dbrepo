@@ -16,480 +16,467 @@ cache:
     - /root/.npm/
 
 stages:
-  - build
-  - test
-  - docs
+#  - build
+#  - test
+#  - docs
   - release
-  - scan
+#  - scan
 
-build-metadata-service:
-  image: maven:3-openjdk-17
-  stage: build
-  script:
-    - "mvn -f ./dbrepo-metadata-service/pom.xml clean install -Dstyle.color=always -DskipTests"
-
-build-analyse-service:
-  image: python:3.9-slim
-  stage: build
-  variables:
-    PIPENV_PIPFILE: "./dbrepo-analyse-service/Pipfile"
-  script:
-    - "pip install pipenv"
-    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
-
-build-data-service:
-  image: maven:3-openjdk-17
-  stage: build
-  needs:
-    - build-metadata-service
-  script:
-    - "mvn -f ./dbrepo-metadata-service/pom.xml clean install -Dstyle.color=always -DskipTests"
-    - "mvn -f ./dbrepo-data-service/pom.xml clean package -Dstyle.color=always -DskipTests"
-
-build-frontend:
-  image: node:14-alpine
-  stage: build
-  script:
-    - "yarn config set network-timeout 600000 -g"
-    - "yarn --cwd ./dbrepo-ui install --legacy-peer-deps"
-    - "yarn --cwd ./dbrepo-ui run build"
-
-build-search-service:
-  image: python:3.10-alpine
-  stage: build
-  script:
-    - "pip install pipenv"
-    - "cd dbrepo-search-service && pipenv install --system --deploy"
-
-build-docker:
-  image: docker.io/docker:24-dind
-  stage: build
-  before_script:
-    - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY_URL
-  script:
-    - "cp .env.unix.example .env"
-    - "docker build -t dbrepo-metadata-service:build --target build dbrepo-metadata-service"
-    - "docker build -t dbrepo-data-service:build --target build dbrepo-data-service"
-    - "docker compose build --parallel"
-
-build-helm:
-  image: docker.io/docker:24-dind
-  stage: build
-  before_script:
-    - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY_URL
-  script:
-    - apk add sed helm curl
-    - 'sed -i -e "s/^version:.*/version: \"${CHART_VERSION}\"/g" ./helm-charts/dbrepo/Chart.yaml'
-    - 'sed -i -e "s/^appVersion:.*/appVersion: \"${APP_VERSION}\"/g" ./helm-charts/dbrepo/Chart.yaml'
-    - find ./helm-charts -type f -exec sed -i -e "s/__CHARTVERSION__/${CHART_VERSION}/g" {} \;
-    - helm package ./helm-charts/dbrepo --destination ./build
-
-test-metadata-service:
-  image: maven:3-openjdk-17
-  stage: test
-  needs:
-    - build-metadata-service
-  script:
-    - "mvn -f ./dbrepo-metadata-service/pom.xml clean install -Dstyle.color=always -DskipTests"
-    - "mvn -f ./dbrepo-metadata-service/pom.xml clean test -Dstyle.color=always verify"
-    - "cat ./dbrepo-metadata-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
-  artifacts:
-    when: always
-    paths:
-      - ./dbrepo-metadata-service/report/target/site/jacoco-aggregate/
-      - ./dbrepo-metadata-service/rest-service/target/surefire-reports/
-    expire_in: 1 days
-    reports:
-      junit: ./dbrepo-metadata-service/rest-service/target/surefire-reports/TEST-*.xml
-  coverage: '/Total.*?([0-9]{1,3})%/'
-
-test-data-service:
-  image: maven:3-openjdk-17
-  stage: test
-  needs:
-    - build-data-service
-  script:
-    - "mvn -f ./dbrepo-metadata-service/pom.xml clean install -Dstyle.color=always -DskipTests"
-    - "mvn -f ./dbrepo-data-service/pom.xml clean test verify -Dstyle.color=always"
-    - "cat ./dbrepo-data-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
-  artifacts:
-    when: always
-    paths:
-      - ./dbrepo-data-service/report/target/site/jacoco-aggregate/
-      - ./dbrepo-data-service/rest-service/target/surefire-reports/
-    expire_in: 1 days
-    reports:
-      junit: ./dbrepo-data-service/rest-service/target/surefire-reports/TEST-*.xml
-  coverage: '/Total.*?([0-9]{1,3})%/'
-
-test-analyse-service:
-  image: python:3.9-slim
-  stage: test
-  variables:
-    PIPENV_PIPFILE: "./dbrepo-analyse-service/Pipfile"
-  needs:
-    - build-analyse-service
-  script:
-    - "pip install pipenv"
-    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
-    - cd ./dbrepo-analyse-service/ && coverage run -m pytest test/test_determine_dt.py test/test_determine_pk.py test/test_s3_client.py --junitxml=report.xml && coverage html --omit="test/*" && coverage report --omit="test/*" > ./coverage.txt
-    - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
-  artifacts:
-    when: always
-    paths:
-      - ./dbrepo-analyse-service/report.xml
-      - ./dbrepo-analyse-service/coverage.txt
-    expire_in: 1 days
-    reports:
-      junit: ./dbrepo-analyse-service/report.xml
-  coverage: '/TOTAL.*?([0-9]{1,3})%/'
-
-test-frontend:
-  image: node:14-alpine
-  stage: test
-  needs:
-    - build-frontend
-  script:
-    - "yarn --cwd ./dbrepo-ui install"
-    - "yarn --cwd ./dbrepo-ui run test:unit || true"
-    - "yarn --cwd ./dbrepo-ui run coverage || true"
-    - "cat ./dbrepo-ui/coverage/cobertura-coverage.xml | grep -o 'line-rate=\"[0-9.]*' | head -1 || true"
-  artifacts:
-    when: always
-    paths:
-      - ./dbrepo-ui/coverage/
-    expire_in: 1 days
-    reports:
-      coverage_report:
-        coverage_format: cobertura
-        path: ./dbrepo-ui/coverage/cobertura-coverage.xml
-  coverage: '/TOTAL.*?([0-9]{1,3})%/'
-
-scan-analyse-service:
-  image: bitnami/trivy:latest
-  stage: scan
-  only:
-    refs:
-      - master
-      - release-v1.4
-  allow_failure: true
-  script:
-    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-analyse-service-report.json docker.io/dbrepo/analyse-service:latest
-    - trivy image --insecure --exit-code 0 docker.io/dbrepo/analyse-service:latest
-    - trivy image --insecure --exit-code 1 --severity CRITICAL docker.io/dbrepo/analyse-service:latest
-  cache:
-    paths:
-      - .trivycache/
-  artifacts:
-    when: always
-    expire_in: 1 days
-    reports:
-      container_scanning: ./.trivy/trivy-analyse-service-report.json
-
-scan-authentication-service:
-  image: bitnami/trivy:latest
-  stage: scan
-  only:
-    refs:
-      - master
-      - release-v1.4
-  allow_failure: true
-  script:
-    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-authentication-service-report.json docker.io/dbrepo/authentication-service:latest
-    - trivy image --insecure --exit-code 0 docker.io/dbrepo/authentication-service:latest
-    - trivy image --insecure --exit-code 1 --severity CRITICAL docker.io/dbrepo/authentication-service:latest
-  cache:
-    paths:
-      - .trivycache/
-  artifacts:
-    when: always
-    expire_in: 1 days
-    reports:
-      container_scanning: ./.trivy/trivy-authentication-service-report.json
-
-scan-broker-service:
-  image: bitnami/trivy:latest
-  stage: scan
-  only:
-    refs:
-      - master
-      - release-v1.4
-  allow_failure: true
-  script:
-    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-broker-service-report.json docker.io/dbrepo/broker-service:latest
-    - trivy image --insecure --exit-code 0 docker.io/dbrepo/broker-service:latest
-    - trivy image --insecure --exit-code 1 --severity CRITICAL docker.io/dbrepo/broker-service:latest
-  cache:
-    paths:
-      - .trivycache/
-  artifacts:
-    when: always
-    expire_in: 1 days
-    reports:
-      container_scanning: ./.trivy/trivy-broker-service-report.json
-
-scan-gateway-service:
-  image: bitnami/trivy:latest
-  stage: scan
-  only:
-    refs:
-      - master
-      - release-v1.4
-  allow_failure: true
-  script:
-    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-gateway-service-report.json docker.io/nginx:1.25.0-alpine-slim
-    - trivy image --insecure --exit-code 0 docker.io/nginx:1.25.0-alpine-slim
-    - trivy image --insecure --exit-code 1 --severity CRITICAL docker.io/nginx:1.25.0-alpine-slim
-  cache:
-    paths:
-      - .trivycache/
-  artifacts:
-    when: always
-    expire_in: 1 days
-    reports:
-      container_scanning: ./.trivy/trivy-gateway-service-report.json
-
-scan-metadata-service:
-  image: bitnami/trivy:latest
-  stage: scan
-  only:
-    refs:
-      - master
-      - release-v1.4
-  allow_failure: true
-  script:
-    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-metadata-service-report.json docker.io/dbrepo/metadata-service:latest
-    - trivy image --insecure --exit-code 0 docker.io/dbrepo/metadata-service:latest
-    - trivy image --insecure --exit-code 1 --severity CRITICAL docker.io/dbrepo/metadata-service:latest
-  cache:
-    paths:
-      - .trivycache/
-  artifacts:
-    when: always
-    expire_in: 1 days
-    reports:
-      container_scanning: ./.trivy/trivy-metadata-service-report.json
-
-scan-data-service:
-  image: bitnami/trivy:latest
-  stage: scan
-  only:
-    refs:
-      - master
-      - release-v1.4
-  allow_failure: true
-  script:
-    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-data-service-report.json docker.io/dbrepo/data-service:latest
-    - trivy image --insecure --exit-code 0 docker.io/dbrepo/data-service:latest
-    - trivy image --insecure --exit-code 1 --severity CRITICAL docker.io/dbrepo/data-service:latest
-  cache:
-    paths:
-      - .trivycache/
-  artifacts:
-    when: always
-    expire_in: 1 days
-    reports:
-      container_scanning: ./.trivy/trivy-data-service-report.json
-
-scan-search-db:
-  image: bitnami/trivy:latest
-  stage: scan
-  only:
-    refs:
-      - master
-      - release-v1.4
-  allow_failure: true
-  script:
-    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-db-report.json docker.io/dbrepo/search-db:latest
-    - trivy image --insecure --exit-code 0 docker.io/dbrepo/search-db:latest
-    - trivy image --insecure --exit-code 1 --severity CRITICAL docker.io/dbrepo/search-db:latest
-  cache:
-    paths:
-      - .trivycache/
-  artifacts:
-    when: always
-    expire_in: 1 days
-    reports:
-      container_scanning: ./.trivy/trivy-search-db-report.json
-
-scan-search-dashboard:
-  image: bitnami/trivy:latest
-  stage: scan
-  only:
-    refs:
-      - master
-      - release-v1.4
-  allow_failure: true
-  script:
-    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-dashboard-report.json docker.io/opensearchproject/opensearch-dashboards:2.10.0
-    - trivy image --insecure --exit-code 0 docker.io/opensearchproject/opensearch-dashboards:2.10.0
-    - trivy image --insecure --exit-code 1 --severity CRITICAL docker.io/opensearchproject/opensearch-dashboards:2.10.0
-  cache:
-    paths:
-      - .trivycache/
-  artifacts:
-    when: always
-    expire_in: 1 days
-    reports:
-      container_scanning: ./.trivy/trivy-search-dashboard-report.json
-
-scan-search-db-init:
-  image: bitnami/trivy:latest
-  stage: scan
-  only:
-    refs:
-      - master
-      - release-v1.4
-  allow_failure: true
-  script:
-    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-db-init-report.json docker.io/dbrepo/search-db-init:latest
-    - trivy image --insecure --exit-code 0 docker.io/dbrepo/search-db-init:latest
-    - trivy image --insecure --exit-code 1 --severity CRITICAL docker.io/dbrepo/search-db-init:latest
-  cache:
-    paths:
-      - .trivycache/
-  artifacts:
-    when: always
-    expire_in: 1 days
-    reports:
-      container_scanning: ./.trivy/trivy-search-db-init-report.json
-
-scan-data-db:
-  image: bitnami/trivy:latest
-  stage: scan
-  only:
-    refs:
-      - master
-      - release-v1.4
-  allow_failure: true
-  script:
-    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-data-db-report.json docker.io/bitnami/mariadb:11.2.2-debian-11-r0
-    - trivy image --insecure --exit-code 0 docker.io/bitnami/mariadb:11.2.2-debian-11-r0
-    - trivy image --insecure --exit-code 1 --severity CRITICAL docker.io/bitnami/mariadb:11.2.2-debian-11-r0
-  cache:
-    paths:
-      - .trivycache/
-  artifacts:
-    when: always
-    expire_in: 1 days
-    reports:
-      container_scanning: ./.trivy/trivy-data-db-report.json
-
-scan-metadata-db:
-  image: bitnami/trivy:latest
-  stage: scan
-  only:
-    refs:
-      - master
-      - release-v1.4
-  allow_failure: true
-  script:
-    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-metadata-db-report.json docker.io/dbrepo/metadata-db:latest
-    - trivy image --insecure --exit-code 0 docker.io/dbrepo/metadata-db:latest
-    - trivy image --insecure --exit-code 1 --severity CRITICAL docker.io/dbrepo/metadata-db:latest
-  cache:
-    paths:
-      - .trivycache/
-  artifacts:
-    when: always
-    expire_in: 1 days
-    reports:
-      container_scanning: ./.trivy/trivy-metadata-db-report.json
-
-scan-ui:
-  image: bitnami/trivy:latest
-  stage: scan
-  only:
-    refs:
-      - master
-      - release-v1.4
-  allow_failure: true
-  script:
-    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-ui-report.json docker.io/dbrepo/ui:latest
-    - trivy image --insecure --exit-code 0 docker.io/dbrepo/ui:latest
-    - trivy image --insecure --exit-code 1 --severity CRITICAL docker.io/dbrepo/ui:latest
-  cache:
-    paths:
-      - .trivycache/
-  artifacts:
-    when: always
-    expire_in: 1 days
-    reports:
-      container_scanning: ./.trivy/trivy-ui-report.json
-
-scan-storage-service:
-  image: bitnami/trivy:latest
-  stage: scan
-  only:
-    refs:
-      - master
-      - release-v1.4
-  allow_failure: true
-  script:
-    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-storage-service-report.json docker.io/chrislusf/seaweedfs:3.59
-    - trivy image --insecure --exit-code 0 docker.io/chrislusf/seaweedfs:3.59
-    - trivy image --insecure --exit-code 1 --severity CRITICAL docker.io/chrislusf/seaweedfs:3.59
-  cache:
-    paths:
-      - .trivycache/
-  artifacts:
-    when: always
-    expire_in: 1 days
-    reports:
-      container_scanning: ./.trivy/trivy-storage-service-report.json
-
-scan-storage-service-init:
-  image: bitnami/trivy:latest
-  stage: scan
-  only:
-    refs:
-      - master
-      - release-v1.4
-  allow_failure: true
-  script:
-    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-storage-service-init-report.json docker.io/dbrepo/storage-service-init:latest
-    - trivy image --insecure --exit-code 0 docker.io/dbrepo/storage-service-init:latest
-    - trivy image --insecure --exit-code 1 --severity CRITICAL docker.io/dbrepo/storage-service-init:latest
-  cache:
-    paths:
-      - .trivycache/
-  artifacts:
-    when: always
-    expire_in: 1 days
-    reports:
-      container_scanning: ./.trivy/trivy-storage-service-init-report.json
-
-docs-registry:
-  stage: docs
-  image: docker.io/python:3.11-slim
-  only:
-    refs:
-      - /^release-.*/
-  script:
-    - pip install -r ./requirements.txt
-    - python3 .docs/docker/release.py
-
-docs-docs:
-  stage: docs
-  image: docker.io/python:3.11-slim
-  only:
-    refs:
-      - /^release-.*/
-  script:
-    - apt-get update && apt-get install -y git make sed wget
-    - make docs
-  cache:
-    paths:
-      - ./final
+#build-metadata-service:
+#  image: maven:3-openjdk-17
+#  stage: build
+#  script:
+#    - "mvn -f ./dbrepo-metadata-service/pom.xml clean install -Dstyle.color=always -DskipTests"
+#
+#build-analyse-service:
+#  image: python:3.9-slim
+#  stage: build
+#  variables:
+#    PIPENV_PIPFILE: "./dbrepo-analyse-service/Pipfile"
+#  script:
+#    - "pip install pipenv"
+#    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
+#
+#build-data-service:
+#  image: maven:3-openjdk-17
+#  stage: build
+#  needs:
+#    - build-metadata-service
+#  script:
+#    - "mvn -f ./dbrepo-metadata-service/pom.xml clean install -Dstyle.color=always -DskipTests"
+#    - "mvn -f ./dbrepo-data-service/pom.xml clean package -Dstyle.color=always -DskipTests"
+#
+#build-frontend:
+#  image: node:14-alpine
+#  stage: build
+#  script:
+#    - "yarn config set network-timeout 600000 -g"
+#    - "yarn --cwd ./dbrepo-ui install --legacy-peer-deps"
+#    - "yarn --cwd ./dbrepo-ui run build"
+#
+#build-search-service:
+#  image: python:3.10-alpine
+#  stage: build
+#  script:
+#    - "pip install pipenv"
+#    - "cd dbrepo-search-service && pipenv install --system --deploy"
+#
+#build-docker:
+#  image: docker.io/docker:24-dind
+#  stage: build
+#  before_script:
+#    - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY_URL
+#  script:
+#    - "cp .env.unix.example .env"
+#    - "docker build -t dbrepo-metadata-service:build --target build dbrepo-metadata-service"
+#    - "docker build -t dbrepo-data-service:build --target build dbrepo-data-service"
+#    - "docker compose build --parallel"
+#
+#build-helm:
+#  image: docker.io/docker:24-dind
+#  stage: build
+#  before_script:
+#    - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY_URL
+#  script:
+#    - apk add sed helm curl
+#    - 'sed -i -e "s/^version:.*/version: \"${CHART_VERSION}\"/g" ./helm-charts/dbrepo/Chart.yaml'
+#    - 'sed -i -e "s/^appVersion:.*/appVersion: \"${APP_VERSION}\"/g" ./helm-charts/dbrepo/Chart.yaml'
+#    - find ./helm-charts -type f -exec sed -i -e "s/__CHARTVERSION__/${CHART_VERSION}/g" {} \;
+#    - helm package ./helm-charts/dbrepo --destination ./build
+#
+#test-metadata-service:
+#  image: maven:3-openjdk-17
+#  stage: test
+#  needs:
+#    - build-metadata-service
+#  script:
+#    - "mvn -f ./dbrepo-metadata-service/pom.xml clean install -Dstyle.color=always -DskipTests"
+#    - "mvn -f ./dbrepo-metadata-service/pom.xml clean test -Dstyle.color=always verify"
+#    - "cat ./dbrepo-metadata-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
+#  artifacts:
+#    when: always
+#    paths:
+#      - ./dbrepo-metadata-service/report/target/site/jacoco-aggregate/
+#      - ./dbrepo-metadata-service/rest-service/target/surefire-reports/
+#    expire_in: 1 days
+#    reports:
+#      junit: ./dbrepo-metadata-service/rest-service/target/surefire-reports/TEST-*.xml
+#  coverage: '/Total.*?([0-9]{1,3})%/'
+#
+#test-data-service:
+#  image: maven:3-openjdk-17
+#  stage: test
+#  needs:
+#    - build-data-service
+#  script:
+#    - "mvn -f ./dbrepo-metadata-service/pom.xml clean install -Dstyle.color=always -DskipTests"
+#    - "mvn -f ./dbrepo-data-service/pom.xml clean test verify -Dstyle.color=always"
+#    - "cat ./dbrepo-data-service/report/target/site/jacoco-aggregate/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total/Jacoco Coverage Total:/'"
+#  artifacts:
+#    when: always
+#    paths:
+#      - ./dbrepo-data-service/report/target/site/jacoco-aggregate/
+#      - ./dbrepo-data-service/rest-service/target/surefire-reports/
+#    expire_in: 1 days
+#    reports:
+#      junit: ./dbrepo-data-service/rest-service/target/surefire-reports/TEST-*.xml
+#  coverage: '/Total.*?([0-9]{1,3})%/'
+#
+#test-analyse-service:
+#  image: python:3.9-slim
+#  stage: test
+#  variables:
+#    PIPENV_PIPFILE: "./dbrepo-analyse-service/Pipfile"
+#  needs:
+#    - build-analyse-service
+#  script:
+#    - "pip install pipenv"
+#    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
+#    - cd ./dbrepo-analyse-service/ && coverage run -m pytest test/test_determine_dt.py test/test_determine_pk.py test/test_s3_client.py --junitxml=report.xml && coverage html --omit="test/*" && coverage report --omit="test/*" > ./coverage.txt
+#    - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
+#  artifacts:
+#    when: always
+#    paths:
+#      - ./dbrepo-analyse-service/report.xml
+#      - ./dbrepo-analyse-service/coverage.txt
+#    expire_in: 1 days
+#    reports:
+#      junit: ./dbrepo-analyse-service/report.xml
+#  coverage: '/TOTAL.*?([0-9]{1,3})%/'
+#
+#test-frontend:
+#  image: node:14-alpine
+#  stage: test
+#  needs:
+#    - build-frontend
+#  script:
+#    - "yarn --cwd ./dbrepo-ui install"
+#    - "yarn --cwd ./dbrepo-ui run test:unit || true"
+#    - "yarn --cwd ./dbrepo-ui run coverage || true"
+#    - "cat ./dbrepo-ui/coverage/cobertura-coverage.xml | grep -o 'line-rate=\"[0-9.]*' | head -1 || true"
+#  artifacts:
+#    when: always
+#    paths:
+#      - ./dbrepo-ui/coverage/
+#    expire_in: 1 days
+#    reports:
+#      coverage_report:
+#        coverage_format: cobertura
+#        path: ./dbrepo-ui/coverage/cobertura-coverage.xml
+#  coverage: '/TOTAL.*?([0-9]{1,3})%/'
+#
+#scan-analyse-service:
+#  image: bitnami/trivy:latest
+#  stage: scan
+#  only:
+#    refs:
+#      - master
+#      - release-v1.4
+#  allow_failure: true
+#  script:
+#    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-analyse-service-report.json docker.io/dbrepo/analyse-service:latest
+#    - trivy image --insecure --exit-code 0 docker.io/dbrepo/analyse-service:latest
+#    - trivy image --insecure --exit-code 1 --severity CRITICAL docker.io/dbrepo/analyse-service:latest
+#  cache:
+#    paths:
+#      - .trivycache/
+#  artifacts:
+#    when: always
+#    expire_in: 1 days
+#    reports:
+#      container_scanning: ./.trivy/trivy-analyse-service-report.json
+#
+#scan-authentication-service:
+#  image: bitnami/trivy:latest
+#  stage: scan
+#  only:
+#    refs:
+#      - master
+#      - release-v1.4
+#  allow_failure: true
+#  script:
+#    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-authentication-service-report.json docker.io/dbrepo/authentication-service:latest
+#    - trivy image --insecure --exit-code 0 docker.io/dbrepo/authentication-service:latest
+#    - trivy image --insecure --exit-code 1 --severity CRITICAL docker.io/dbrepo/authentication-service:latest
+#  cache:
+#    paths:
+#      - .trivycache/
+#  artifacts:
+#    when: always
+#    expire_in: 1 days
+#    reports:
+#      container_scanning: ./.trivy/trivy-authentication-service-report.json
+#
+#scan-broker-service:
+#  image: bitnami/trivy:latest
+#  stage: scan
+#  only:
+#    refs:
+#      - master
+#      - release-v1.4
+#  allow_failure: true
+#  script:
+#    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-broker-service-report.json docker.io/dbrepo/broker-service:latest
+#    - trivy image --insecure --exit-code 0 docker.io/dbrepo/broker-service:latest
+#    - trivy image --insecure --exit-code 1 --severity CRITICAL docker.io/dbrepo/broker-service:latest
+#  cache:
+#    paths:
+#      - .trivycache/
+#  artifacts:
+#    when: always
+#    expire_in: 1 days
+#    reports:
+#      container_scanning: ./.trivy/trivy-broker-service-report.json
+#
+#scan-gateway-service:
+#  image: bitnami/trivy:latest
+#  stage: scan
+#  only:
+#    refs:
+#      - master
+#      - release-v1.4
+#  allow_failure: true
+#  script:
+#    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-gateway-service-report.json docker.io/nginx:1.25.0-alpine-slim
+#    - trivy image --insecure --exit-code 0 docker.io/nginx:1.25.0-alpine-slim
+#    - trivy image --insecure --exit-code 1 --severity CRITICAL docker.io/nginx:1.25.0-alpine-slim
+#  cache:
+#    paths:
+#      - .trivycache/
+#  artifacts:
+#    when: always
+#    expire_in: 1 days
+#    reports:
+#      container_scanning: ./.trivy/trivy-gateway-service-report.json
+#
+#scan-metadata-service:
+#  image: bitnami/trivy:latest
+#  stage: scan
+#  only:
+#    refs:
+#      - master
+#      - release-v1.4
+#  allow_failure: true
+#  script:
+#    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-metadata-service-report.json docker.io/dbrepo/metadata-service:latest
+#    - trivy image --insecure --exit-code 0 docker.io/dbrepo/metadata-service:latest
+#    - trivy image --insecure --exit-code 1 --severity CRITICAL docker.io/dbrepo/metadata-service:latest
+#  cache:
+#    paths:
+#      - .trivycache/
+#  artifacts:
+#    when: always
+#    expire_in: 1 days
+#    reports:
+#      container_scanning: ./.trivy/trivy-metadata-service-report.json
+#
+#scan-data-service:
+#  image: bitnami/trivy:latest
+#  stage: scan
+#  only:
+#    refs:
+#      - master
+#      - release-v1.4
+#  allow_failure: true
+#  script:
+#    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-data-service-report.json docker.io/dbrepo/data-service:latest
+#    - trivy image --insecure --exit-code 0 docker.io/dbrepo/data-service:latest
+#    - trivy image --insecure --exit-code 1 --severity CRITICAL docker.io/dbrepo/data-service:latest
+#  cache:
+#    paths:
+#      - .trivycache/
+#  artifacts:
+#    when: always
+#    expire_in: 1 days
+#    reports:
+#      container_scanning: ./.trivy/trivy-data-service-report.json
+#
+#scan-search-db:
+#  image: bitnami/trivy:latest
+#  stage: scan
+#  only:
+#    refs:
+#      - master
+#      - release-v1.4
+#  allow_failure: true
+#  script:
+#    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-db-report.json docker.io/dbrepo/search-db:latest
+#    - trivy image --insecure --exit-code 0 docker.io/dbrepo/search-db:latest
+#    - trivy image --insecure --exit-code 1 --severity CRITICAL docker.io/dbrepo/search-db:latest
+#  cache:
+#    paths:
+#      - .trivycache/
+#  artifacts:
+#    when: always
+#    expire_in: 1 days
+#    reports:
+#      container_scanning: ./.trivy/trivy-search-db-report.json
+#
+#scan-search-dashboard:
+#  image: bitnami/trivy:latest
+#  stage: scan
+#  only:
+#    refs:
+#      - master
+#      - release-v1.4
+#  allow_failure: true
+#  script:
+#    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-dashboard-report.json docker.io/opensearchproject/opensearch-dashboards:2.10.0
+#    - trivy image --insecure --exit-code 0 docker.io/opensearchproject/opensearch-dashboards:2.10.0
+#    - trivy image --insecure --exit-code 1 --severity CRITICAL docker.io/opensearchproject/opensearch-dashboards:2.10.0
+#  cache:
+#    paths:
+#      - .trivycache/
+#  artifacts:
+#    when: always
+#    expire_in: 1 days
+#    reports:
+#      container_scanning: ./.trivy/trivy-search-dashboard-report.json
+#
+#scan-search-db-init:
+#  image: bitnami/trivy:latest
+#  stage: scan
+#  only:
+#    refs:
+#      - master
+#      - release-v1.4
+#  allow_failure: true
+#  script:
+#    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-db-init-report.json docker.io/dbrepo/search-db-init:latest
+#    - trivy image --insecure --exit-code 0 docker.io/dbrepo/search-db-init:latest
+#    - trivy image --insecure --exit-code 1 --severity CRITICAL docker.io/dbrepo/search-db-init:latest
+#  cache:
+#    paths:
+#      - .trivycache/
+#  artifacts:
+#    when: always
+#    expire_in: 1 days
+#    reports:
+#      container_scanning: ./.trivy/trivy-search-db-init-report.json
+#
+#scan-data-db:
+#  image: bitnami/trivy:latest
+#  stage: scan
+#  only:
+#    refs:
+#      - master
+#      - release-v1.4
+#  allow_failure: true
+#  script:
+#    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-data-db-report.json docker.io/bitnami/mariadb:11.2.2-debian-11-r0
+#    - trivy image --insecure --exit-code 0 docker.io/bitnami/mariadb:11.2.2-debian-11-r0
+#    - trivy image --insecure --exit-code 1 --severity CRITICAL docker.io/bitnami/mariadb:11.2.2-debian-11-r0
+#  cache:
+#    paths:
+#      - .trivycache/
+#  artifacts:
+#    when: always
+#    expire_in: 1 days
+#    reports:
+#      container_scanning: ./.trivy/trivy-data-db-report.json
+#
+#scan-metadata-db:
+#  image: bitnami/trivy:latest
+#  stage: scan
+#  only:
+#    refs:
+#      - master
+#      - release-v1.4
+#  allow_failure: true
+#  script:
+#    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-metadata-db-report.json docker.io/dbrepo/metadata-db:latest
+#    - trivy image --insecure --exit-code 0 docker.io/dbrepo/metadata-db:latest
+#    - trivy image --insecure --exit-code 1 --severity CRITICAL docker.io/dbrepo/metadata-db:latest
+#  cache:
+#    paths:
+#      - .trivycache/
+#  artifacts:
+#    when: always
+#    expire_in: 1 days
+#    reports:
+#      container_scanning: ./.trivy/trivy-metadata-db-report.json
+#
+#scan-ui:
+#  image: bitnami/trivy:latest
+#  stage: scan
+#  only:
+#    refs:
+#      - master
+#      - release-v1.4
+#  allow_failure: true
+#  script:
+#    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-ui-report.json docker.io/dbrepo/ui:latest
+#    - trivy image --insecure --exit-code 0 docker.io/dbrepo/ui:latest
+#    - trivy image --insecure --exit-code 1 --severity CRITICAL docker.io/dbrepo/ui:latest
+#  cache:
+#    paths:
+#      - .trivycache/
+#  artifacts:
+#    when: always
+#    expire_in: 1 days
+#    reports:
+#      container_scanning: ./.trivy/trivy-ui-report.json
+#
+#scan-storage-service:
+#  image: bitnami/trivy:latest
+#  stage: scan
+#  only:
+#    refs:
+#      - master
+#      - release-v1.4
+#  allow_failure: true
+#  script:
+#    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-storage-service-report.json docker.io/chrislusf/seaweedfs:3.59
+#    - trivy image --insecure --exit-code 0 docker.io/chrislusf/seaweedfs:3.59
+#    - trivy image --insecure --exit-code 1 --severity CRITICAL docker.io/chrislusf/seaweedfs:3.59
+#  cache:
+#    paths:
+#      - .trivycache/
+#  artifacts:
+#    when: always
+#    expire_in: 1 days
+#    reports:
+#      container_scanning: ./.trivy/trivy-storage-service-report.json
+#
+#scan-storage-service-init:
+#  image: bitnami/trivy:latest
+#  stage: scan
+#  only:
+#    refs:
+#      - master
+#      - release-v1.4
+#  allow_failure: true
+#  script:
+#    - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-storage-service-init-report.json docker.io/dbrepo/storage-service-init:latest
+#    - trivy image --insecure --exit-code 0 docker.io/dbrepo/storage-service-init:latest
+#    - trivy image --insecure --exit-code 1 --severity CRITICAL docker.io/dbrepo/storage-service-init:latest
+#  cache:
+#    paths:
+#      - .trivycache/
+#  artifacts:
+#    when: always
+#    expire_in: 1 days
+#    reports:
+#      container_scanning: ./.trivy/trivy-storage-service-init-report.json
+#
+#docs-registry:
+#  stage: docs
+#  image: docker.io/python:3.11-slim
+#  only:
+#    refs:
+#      - /^release-.*/
+#  script:
+#    - pip install -r ./requirements.txt
+#    - python3 .docs/docker/release.py
 
 release-images:
   stage: release
   image: docker:24-dind
-  needs:
-    - test-metadata-service
-    - test-data-service
-    - test-analyse-service
-    - test-frontend
+#  needs:
+#    - test-metadata-service
+#    - test-data-service
+#    - test-analyse-service
+#    - test-frontend
   only:
     refs:
       - /^release-.*/
@@ -520,12 +507,12 @@ release-chart:
 release-docs:
   stage: release
   image: docker.io/finalgene/openssh:9.1
-  needs:
-    - docs-docs
   only:
     refs:
       - /^release-.*/
   script:
+    - apt-get update && apt-get install -y git make sed wget
+    - make docs
     - eval $(ssh-agent -s)
     - echo "$CI_KEY_PRIVATE" > /root/.ssh/id_rsa && chmod 0600 /root/.ssh/id_rsa
     - echo "$CI_KEY_PUBLIC" > /root/.ssh/id_rsa.pub
