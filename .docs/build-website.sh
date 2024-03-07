@@ -43,11 +43,11 @@ function generate_api {
 }
 
 # usage
-if [ -z "$VERSIONS" ]; then
-    echo "Variable VERSIONS not set"
+if [ -z "$DOC_VERSIONS" ]; then
+    echo "Variable DOC_VERSIONS not set"
     exit 1
 fi
-versions=(${VERSIONS//,/ })
+versions=(${DOC_VERSIONS//,/ })
 
 # usage
 if [ -z "$APP_VERSION" ]; then
