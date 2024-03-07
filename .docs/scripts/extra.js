@@ -1,10 +1,8 @@
 function getVersion() {
     const segments = location.pathname.split('/');
-    if (segments.length >= 4) {
-        console.log('version', segments[3])
+    if (segments.length > 4) {
         return segments[3];
     } else {
-        console.log('default version __APPVERSION__')
         return '__APPVERSION__';
     }
 }

@@ -11,8 +11,6 @@ function generate_docs {
   git reset --hard && git checkout "$BRANCH"
   pip install -r ./requirements.txt > /dev/null
   mkdir -p ./final
-  find .docs/ -type f -exec sed -i -e "s/__APPVERSION__/$1/g" {} \;
-  find .docs/ -type f -exec sed -i -e "s/__CHARTVERSION__/$1/g" {} \;
   if [ "$1" = "latest" ]; then
     OVERRIDES_MAIN_HTML=$(cat .docs/overrides/main.html)
     SCRIPTS_EXTRA_JS=$(cat .docs/scripts/extra.js)
@@ -20,7 +18,10 @@ function generate_docs {
     echo $OVERRIDES_MAIN_HTML > .docs/overrides/main.html
     mkdir -p .docs/scripts
     echo $SCRIPTS_EXTRA_JS > .docs/scripts/extra.js
+    sed -i -e "s/__APPVERSION__/${APP_VERSION}/g" .docs/scripts/extra.js
   fi
+  find .docs/ -type f -exec sed -i -e "s/__APPVERSION__/$1/g" {} \;
+  find .docs/ -type f -exec sed -i -e "s/__CHARTVERSION__/$1/g" {} \;
   mkdocs build > /dev/null && cp -r ./site "./final/$1"
   cp -r "./swagger/$1" "./final/$1/swagger"
 }
