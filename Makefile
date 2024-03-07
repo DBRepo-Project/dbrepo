@@ -224,3 +224,6 @@ teardown:
 
 build-api:
 	bash .docs/.swagger/swagger-generate.sh
+
+docs:
+	bash .docs/build-website.sh

@@ -6,6 +6,8 @@ SCRIPTS_EXTRA_JS=""
 function generate_docs {
   BRANCH="release-$1"
   echo "==================================================="
+  echo "Removing cache from directory ./site"
+  rm -rf ./site
   echo "Building DOCS for version $1 on branch $BRANCH"
   echo "==================================================="
   git reset --hard && git checkout "$BRANCH"
@@ -29,6 +31,8 @@ function generate_docs {
 function generate_api {
   BRANCH="release-$1"
   echo "==================================================="
+  echo "Removing cache from directory ./site"
+  rm -rf ./site
   echo "Building API for version $1 on branch $BRANCH"
   echo "==================================================="
   git reset --hard && git checkout "$BRANCH"
@@ -39,11 +43,11 @@ function generate_api {
 }
 
 # usage
-if [ -z "$VERSIONS" ]; then
-    echo "Variable VERSIONS not set"
+if [ -z "$DOC_VERSIONS" ]; then
+    echo "Variable DOC_VERSIONS not set"
     exit 1
 fi
-versions=(${VERSIONS//,/ })
+versions=(${DOC_VERSIONS//,/ })
 
 # usage
 if [ -z "$APP_VERSION" ]; then

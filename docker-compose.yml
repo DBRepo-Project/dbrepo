@@ -10,13 +10,6 @@ volumes:
   storage-service-data:
 
 services:
-  website:
-    restart: "no"
-    image: website
-    build: .
-    ports:
-      - 8000:80
-
   dbrepo-metadata-db:
     restart: "no"
     container_name: dbrepo-metadata-db
