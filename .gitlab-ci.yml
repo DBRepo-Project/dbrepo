@@ -485,11 +485,11 @@ docs-docs:
     key: ${CI_BUILD_REF_NAME}
     paths:
       - ./final.tar.gz
-    artifacts:
-      when: always
-      expire_in: 1 hour
-      reports:
-        container_scanning: ./final.tar.gz
+  artifacts:
+    when: always
+    expire_in: 1 hour
+    reports:
+      container_scanning: ./final.tar.gz
 
 #release-images:
 #  stage: release
