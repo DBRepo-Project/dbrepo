@@ -1,6 +1,5 @@
 #!/bin/bash
 
-INDEX_HTML=""
 OVERRIDES_MAIN_HTML=""
 SCRIPTS_EXTRA_JS=""
 
@@ -15,7 +14,6 @@ function generate_docs {
   find .docs/ -type f -exec sed -i -e "s/__APPVERSION__/$1/g" {} \;
   find .docs/ -type f -exec sed -i -e "s/__CHARTVERSION__/$1/g" {} \;
   if [ "$1" = "latest" ]; then
-    INDEX_HTML=$(cat .docs/redirect.html)
     OVERRIDES_MAIN_HTML=$(cat .docs/overrides/main.html)
     SCRIPTS_EXTRA_JS=$(cat .docs/scripts/extra.js)
   else
@@ -71,8 +69,6 @@ done
 
 # finalization
 echo "==================================================="
-echo "Adding index.html from branch release-latest"
-echo $INDEX_HTML > .docs/redirect.html
-sed -i -e "s/__APPVERSION__/${APP_VERSION}/g" .docs/redirect.html
-cp ./.docs/redirect.html ./final/index.html
+echo "Moving default version $APP_VERSION docs to /"
+cp -r ./final/${APP_VERSION}/* ./final/
 echo "==================================================="
