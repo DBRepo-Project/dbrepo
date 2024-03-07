@@ -222,5 +222,8 @@ test: test-backend test-frontend
 teardown:
 	./bin/teardown.sh
 
-build-api: build-docker
+build-api:
 	bash .docs/.swagger/swagger-generate.sh
+
+docs:
+	bash .docs/build-website.sh

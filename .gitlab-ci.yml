@@ -4,15 +4,18 @@ variables:
   TRIVY_CACHE_DIR: ".trivycache/"
   DOCKER_HOST: "unix:///var/run/dind/docker.sock"
   TESTCONTAINERS_RYUK_DISABLED: "false"
+  DOC_VERSIONS: "latest,1.4.1,1.4.0,1.3.0"
   APP_VERSION: "1.4.1"
   CHART_VERSION: "1.4.1"
 
 image: debian:12-slim
 
 cache:
+  policy: pull
+  key: ${CI_BUILD_REF_NAME}
   paths:
-    - /root/.m2/repository/
-    - /root/.npm/
+    - final/
+    - .m2/
 
 stages:
   - build
@@ -24,12 +27,20 @@ stages:
 build-metadata-service:
   image: maven:3-openjdk-17
   stage: build
+  only:
+    refs:
+      - dev
+      - master
   script:
     - "mvn -f ./dbrepo-metadata-service/pom.xml clean install -Dstyle.color=always -DskipTests"
 
 build-analyse-service:
   image: python:3.9-slim
   stage: build
+  only:
+    refs:
+      - dev
+      - master
   variables:
     PIPENV_PIPFILE: "./dbrepo-analyse-service/Pipfile"
   script:
@@ -39,6 +50,10 @@ build-analyse-service:
 build-data-service:
   image: maven:3-openjdk-17
   stage: build
+  only:
+    refs:
+      - dev
+      - master
   needs:
     - build-metadata-service
   script:
@@ -48,6 +63,10 @@ build-data-service:
 build-frontend:
   image: node:14-alpine
   stage: build
+  only:
+    refs:
+      - dev
+      - master
   script:
     - "yarn config set network-timeout 600000 -g"
     - "yarn --cwd ./dbrepo-ui install --legacy-peer-deps"
@@ -56,6 +75,10 @@ build-frontend:
 build-search-service:
   image: python:3.10-alpine
   stage: build
+  only:
+    refs:
+      - dev
+      - master
   script:
     - "pip install pipenv"
     - "cd dbrepo-search-service && pipenv install --system --deploy"
@@ -63,6 +86,10 @@ build-search-service:
 build-docker:
   image: docker.io/docker:24-dind
   stage: build
+  only:
+    refs:
+      - dev
+      - master
   before_script:
     - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY_URL
   script:
@@ -74,6 +101,10 @@ build-docker:
 build-helm:
   image: docker.io/docker:24-dind
   stage: build
+  only:
+    refs:
+      - dev
+      - master
   before_script:
     - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY_URL
   script:
@@ -86,6 +117,10 @@ build-helm:
 test-metadata-service:
   image: maven:3-openjdk-17
   stage: test
+  only:
+    refs:
+      - dev
+      - master
   needs:
     - build-metadata-service
   script:
@@ -105,6 +140,10 @@ test-metadata-service:
 test-data-service:
   image: maven:3-openjdk-17
   stage: test
+  only:
+    refs:
+      - dev
+      - master
   needs:
     - build-data-service
   script:
@@ -124,6 +163,10 @@ test-data-service:
 test-analyse-service:
   image: python:3.9-slim
   stage: test
+  only:
+    refs:
+      - dev
+      - master
   variables:
     PIPENV_PIPFILE: "./dbrepo-analyse-service/Pipfile"
   needs:
@@ -146,6 +189,10 @@ test-analyse-service:
 test-frontend:
   image: node:14-alpine
   stage: test
+  only:
+    refs:
+      - dev
+      - master
   needs:
     - build-frontend
   script:
@@ -170,7 +217,6 @@ scan-analyse-service:
   only:
     refs:
       - master
-      - release-v1.4
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-analyse-service-report.json docker.io/dbrepo/analyse-service:latest
@@ -191,7 +237,6 @@ scan-authentication-service:
   only:
     refs:
       - master
-      - release-v1.4
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-authentication-service-report.json docker.io/dbrepo/authentication-service:latest
@@ -212,7 +257,6 @@ scan-broker-service:
   only:
     refs:
       - master
-      - release-v1.4
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-broker-service-report.json docker.io/dbrepo/broker-service:latest
@@ -233,7 +277,6 @@ scan-gateway-service:
   only:
     refs:
       - master
-      - release-v1.4
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-gateway-service-report.json docker.io/nginx:1.25.0-alpine-slim
@@ -254,7 +297,6 @@ scan-metadata-service:
   only:
     refs:
       - master
-      - release-v1.4
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-metadata-service-report.json docker.io/dbrepo/metadata-service:latest
@@ -275,7 +317,6 @@ scan-data-service:
   only:
     refs:
       - master
-      - release-v1.4
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-data-service-report.json docker.io/dbrepo/data-service:latest
@@ -296,7 +337,6 @@ scan-search-db:
   only:
     refs:
       - master
-      - release-v1.4
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-db-report.json docker.io/dbrepo/search-db:latest
@@ -317,7 +357,6 @@ scan-search-dashboard:
   only:
     refs:
       - master
-      - release-v1.4
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-dashboard-report.json docker.io/opensearchproject/opensearch-dashboards:2.10.0
@@ -338,7 +377,6 @@ scan-search-db-init:
   only:
     refs:
       - master
-      - release-v1.4
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-search-db-init-report.json docker.io/dbrepo/search-db-init:latest
@@ -359,7 +397,6 @@ scan-data-db:
   only:
     refs:
       - master
-      - release-v1.4
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-data-db-report.json docker.io/bitnami/mariadb:11.2.2-debian-11-r0
@@ -380,7 +417,6 @@ scan-metadata-db:
   only:
     refs:
       - master
-      - release-v1.4
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-metadata-db-report.json docker.io/dbrepo/metadata-db:latest
@@ -401,7 +437,6 @@ scan-ui:
   only:
     refs:
       - master
-      - release-v1.4
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-ui-report.json docker.io/dbrepo/ui:latest
@@ -422,7 +457,6 @@ scan-storage-service:
   only:
     refs:
       - master
-      - release-v1.4
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-storage-service-report.json docker.io/chrislusf/seaweedfs:3.59
@@ -443,7 +477,6 @@ scan-storage-service-init:
   only:
     refs:
       - master
-      - release-v1.4
   allow_failure: true
   script:
     - trivy image --insecure --exit-code 0 --format template --template "@.trivy/gitlab.tpl" -o ./.trivy/trivy-storage-service-init-report.json docker.io/dbrepo/storage-service-init:latest
@@ -458,55 +491,27 @@ scan-storage-service-init:
     reports:
       container_scanning: ./.trivy/trivy-storage-service-init-report.json
 
-release-latest:
-  stage: release
-  image: docker:24-dind
-  needs:
-    - test-metadata-service
-    - test-data-service
-    - test-analyse-service
-    - test-frontend
+docs-registry:
+  stage: docs
+  image: docker.io/python:3.11-slim
   only:
     refs:
-      - master
-  before_script:
-    - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY_URL
-    - echo "$CI_REGISTRY2_PASSWORD" | docker login --username "$CI_REGISTRY2_USER" --password-stdin $CI_REGISTRY2_URL
+      - /^release-.*/
   script:
-    - "ifconfig eth0 mtu 1450 up"
-    - "apk add make bash"
-    - TAG=latest make release
+    - pip install -r ./requirements.txt
+    - python3 .docs/docker/release.py
 
-release-1.3:
+release-images:
   stage: release
   image: docker:24-dind
-  needs:
+  dependencies:
     - test-metadata-service
     - test-data-service
     - test-analyse-service
     - test-frontend
   only:
     refs:
-      - release-v1.3
-  before_script:
-    - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY_URL
-    - echo "$CI_REGISTRY2_PASSWORD" | docker login --username "$CI_REGISTRY2_USER" --password-stdin $CI_REGISTRY2_URL
-  script:
-    - "ifconfig eth0 mtu 1450 up"
-    - "apk add make bash"
-    - "TAG=1.3.0 make release"
-
-release-1.4:
-  stage: release
-  image: docker:24-dind
-  needs:
-    - test-metadata-service
-    - test-data-service
-    - test-analyse-service
-    - test-frontend
-  only:
-    refs:
-      - release-v1.4
+      - /^release-.*/
   before_script:
     - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY_URL
     - echo "$CI_REGISTRY2_PASSWORD" | docker login --username "$CI_REGISTRY2_USER" --password-stdin $CI_REGISTRY2_URL
@@ -515,12 +520,12 @@ release-1.4:
     - "apk add make bash"
     - "TAG=${APP_VERSION} make release"
 
-release-helm-1.4:
+release-chart:
   stage: release
   image: docker:24-dind
   only:
     refs:
-      - release-v1.4
+      - /^release-.*/
   before_script:
     - echo "$CI_REGISTRY2_PASSWORD" | docker login --username "$CI_REGISTRY2_USER" --password-stdin $CI_REGISTRY2_URL
   script:
@@ -531,202 +536,19 @@ release-helm-1.4:
     - helm package ./helm-charts/dbrepo --destination ./build
     - helm push "./build/dbrepo-${CHART_VERSION}.tgz" "oci://${CI_REGISTRY2_URL}/helm"
 
-build-api-latest:
-  stage: build
-  image: docker.io/alpine:3.18
-  only:
-    refs:
-      - master
-      - release-v1.3
-      - release-v1.4
-  script:
-    - apk add bash git
-    - git fetch && git checkout master
-    - bash .docs/.swagger/swagger-site.sh
-    - find ./site -type f -exec sed -i -e "s/__APPVERSION__/latest/g" {} \;
-    - mkdir -p ./swagger/latest
-    - cp -r ./site/* ./swagger/latest/
-  cache:
-    paths:
-      - ./swagger/latest
-  artifacts:
-    when: always
-    paths:
-      - ./swagger/latest
-    expire_in: 1 days
-
-build-api-1.3:
-  stage: build
-  image: docker.io/alpine:3.18
-  only:
-    refs:
-      - master
-      - release-v1.3
-      - release-v1.4
-  script:
-    - apk add bash git maven
-    - git fetch && git checkout release-v1.3
-    - bash .docs/.swagger/generate.sh
-    - mkdir -p ./swagger/1.3.0
-    - cp -r ./site/* ./swagger/1.3.0/
-  cache:
-    paths:
-      - ./swagger/1.3.0
-  artifacts:
-    when: always
-    paths:
-      - ./swagger/1.3.0
-    expire_in: 1 days
-
-build-api-1.4:
-  stage: build
-  image: docker.io/alpine:3.18
-  only:
-    refs:
-      - master
-      - release-v1.3
-      - release-v1.4
-  script:
-    - apk add bash git
-    - bash .gitlab/build-api.sh v1.4.0 release-v1.4
-  cache:
-    paths:
-      - ./swagger/${APP_VERSION}
-  artifacts:
-    when: always
-    paths:
-      - ./swagger/${APP_VERSION}
-    expire_in: 1 days
-
-docs-registry:
-  stage: docs
-  image: docker.io/python:3.11-slim
-  only:
-    refs:
-      - master
-      - release-v1.3
-      - release-v1.4
-  script:
-    - pip install -r ./requirements.txt
-    - python3 .docs/docker/release.py
-  cache:
-    paths:
-      - ./final
-  artifacts:
-    when: always
-    paths:
-      - ./final
-    expire_in: 1 days
-
-docs-latest:
-  stage: docs
-  image: docker.io/python:3.9-slim
-  needs:
-    - build-api-latest
-    - build-api-1.3
-    - build-api-1.4
-  only:
-    refs:
-      - master
-      - release-v1.3
-      - release-v1.4
-  script:
-    - apt-get update && apt-get install -y git make sed
-    - git fetch && git checkout master
-    - pip install -r ./requirements.txt
-    - mkdir -p ./final
-    - sed -i -e "s/__APPVERSION__/${APP_VERSION}/g" .docs/redirect.html
-    - cp ./.docs/redirect.html ./final/index.html
-    - find .docs/ -type f -exec sed -i -e "s/__APPVERSION__/latest/g" {} \;
-    - find .docs/ -type f -exec sed -i -e "s/__CHARTVERSION__/${CHART_VERSION}/g" {} \;
-    - mkdocs build && cp -r ./site ./final/latest
-    - cp -r ./swagger/latest ./final/latest/swagger
-  cache:
-    paths:
-      - ./final
-  artifacts:
-    when: always
-    paths:
-      - ./final
-    expire_in: 1 days
-
-docs-1.3:
-  stage: docs
-  image: docker.io/python:3.9-slim
-  needs:
-    - build-api-latest
-    - build-api-1.3
-  only:
-    refs:
-      - master
-      - release-v1.3
-      - release-v1.4
-  script:
-    - apt-get update && apt-get install -y git make wget
-    - git fetch && git checkout release-v1.3
-    - pip install -r ./requirements.txt
-    - wget https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/.docs/overrides/main.html -O .docs/overrides/main.html -q
-    - mkdir -p ./final
-    - mkdocs build && cp -r ./site ./final/1.3.0
-    - cp -r ./swagger/1.3.0 ./final/1.3.0/swagger
-  cache:
-    paths:
-      - ./final
-  artifacts:
-    when: always
-    paths:
-      - ./final
-    expire_in: 1 days
-
-docs-1.4:
-  stage: docs
-  image: docker.io/python:3.11-slim
-  needs:
-    - build-api-latest
-    - build-api-1.3
-    - build-api-1.4
-  only:
-    refs:
-      - master
-      - release-v1.3
-      - release-v1.4
-  script:
-    # need to loop for release-v1.4 and tag 1.4.0
-    - apt-get update && apt-get install -y git make sed wget
-    - git fetch && git checkout release-v1.4
-    - pip install -r ./requirements.txt
-    - wget https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/.docs/overrides/main.html -O .docs/overrides/main.html -q
-    - mkdir -p ./final
-    - find .docs/ -type f -exec sed -i -e "s/__APPVERSION__/${APP_VERSION}/g" {} \;
-    - find .docs/ -type f -exec sed -i -e "s/__CHARTVERSION__/${CHART_VERSION}/g" {} \;
-    - mkdocs build && cp -r ./site ./final/${APP_VERSION}
-    - cp -r ./swagger/${APP_VERSION} ./final/${APP_VERSION}/swagger
-  cache:
-    paths:
-      - ./final
-  artifacts:
-    when: always
-    paths:
-      - ./final
-    expire_in: 1 days
-
 release-docs:
   stage: release
-  image: docker.io/finalgene/openssh:9.1
-  needs:
-    - docs-latest
-    - docs-1.3
-    - docs-1.4
+  image: docker.io/python:3.11-slim
   only:
     refs:
-      - master
-      - release-v1.3
-      - release-v1.4
+      - /^release-.*/
   script:
+    - apt-get update && apt-get install -y git make sed wget ssh
+    - make docs
     - eval $(ssh-agent -s)
     - echo "$CI_KEY_PRIVATE" > /root/.ssh/id_rsa && chmod 0600 /root/.ssh/id_rsa
     - echo "$CI_KEY_PUBLIC" > /root/.ssh/id_rsa.pub
     - echo "$CI_DOC_ID" > ~/.ssh/known_hosts
-    - tar czfv final.tar.gz ./final
+    - tar czfv ./final.tar.gz ./final
     - "scp -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa final.tar.gz $CI_DOC_USER@$CI_DOC_IP:final.tar.gz"
     - "ssh -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa $CI_DOC_USER@$CI_DOC_IP 'rm -rf /system/user/ifs/infrastructures/public_html/dbrepo/*; tar xzfv ./final.tar.gz; rm -f ./final.tar.gz; cp -r ./final/* /system/user/ifs/infrastructures/public_html/dbrepo; rm -rf ./final'"
