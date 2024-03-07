@@ -531,6 +531,8 @@ release-docs:
     refs:
       - /^release-.*/
   script:
+    - ls -la /
+    - ls -la /cache
     - eval $(ssh-agent -s)
     - echo "$CI_KEY_PRIVATE" > /root/.ssh/id_rsa && chmod 0600 /root/.ssh/id_rsa
     - echo "$CI_KEY_PUBLIC" > /root/.ssh/id_rsa.pub
