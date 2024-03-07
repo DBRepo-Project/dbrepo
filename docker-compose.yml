@@ -12,6 +12,8 @@ volumes:
 services:
   website:
     restart: "no"
+    container_name: website
+    hostname: website
     image: website
     build: .
     ports:
