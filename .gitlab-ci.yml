@@ -10,10 +10,13 @@ variables:
 
 image: debian:12-slim
 
-cache:
-  paths:
-    - /root/.m2/repository/
-    - /root/.npm/
+default:
+  cache: &global_cache
+    key: $CI_COMMIT_REF_SLUG
+    paths:
+      - .m2/
+      - node_modules/
+    policy: pull-push
 
 stages:
 #  - build
@@ -479,43 +482,44 @@ docs-docs:
     - apt-get update && apt-get install -y git make sed wget
     - make docs
   cache:
+    key: $CI_COMMIT_REF_SLUG
     paths:
       - ./final
 
-release-images:
-  stage: release
-  image: docker:24-dind
+#release-images:
+#  stage: release
+#  image: docker:24-dind
 #  needs:
 #    - test-metadata-service
 #    - test-data-service
 #    - test-analyse-service
 #    - test-frontend
-  only:
-    refs:
-      - /^release-.*/
-  before_script:
-    - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY_URL
-    - echo "$CI_REGISTRY2_PASSWORD" | docker login --username "$CI_REGISTRY2_USER" --password-stdin $CI_REGISTRY2_URL
-  script:
-    - "ifconfig eth0 mtu 1450 up"
-    - "apk add make bash"
-    - "TAG=${APP_VERSION} make release"
+#  only:
+#    refs:
+#      - /^release-.*/
+#  before_script:
+#    - echo "$CI_REGISTRY_PASSWORD" | docker login --username "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY_URL
+#    - echo "$CI_REGISTRY2_PASSWORD" | docker login --username "$CI_REGISTRY2_USER" --password-stdin $CI_REGISTRY2_URL
+#  script:
+#    - "ifconfig eth0 mtu 1450 up"
+#    - "apk add make bash"
+#    - "TAG=${APP_VERSION} make release"
 
-release-chart:
-  stage: release
-  image: docker:24-dind
-  only:
-    refs:
-      - /^release-.*/
-  before_script:
-    - echo "$CI_REGISTRY2_PASSWORD" | docker login --username "$CI_REGISTRY2_USER" --password-stdin $CI_REGISTRY2_URL
-  script:
-    - apk add sed helm curl
-    - 'sed -i -e "s/^version:.*/version: \"${CHART_VERSION}\"/g" ./helm-charts/dbrepo/Chart.yaml'
-    - 'sed -i -e "s/^appVersion:.*/appVersion: \"${APP_VERSION}\"/g" ./helm-charts/dbrepo/Chart.yaml'
-    - find ./helm-charts -type f -exec sed -i -e "s/__CHARTVERSION__/${CHART_VERSION}/g" {} \;
-    - helm package ./helm-charts/dbrepo --destination ./build
-    - helm push "./build/dbrepo-${CHART_VERSION}.tgz" "oci://${CI_REGISTRY2_URL}/helm"
+#release-chart:
+#  stage: release
+#  image: docker:24-dind
+#  only:
+#    refs:
+#      - /^release-.*/
+#  before_script:
+#    - echo "$CI_REGISTRY2_PASSWORD" | docker login --username "$CI_REGISTRY2_USER" --password-stdin $CI_REGISTRY2_URL
+#  script:
+#    - apk add sed helm curl
+#    - 'sed -i -e "s/^version:.*/version: \"${CHART_VERSION}\"/g" ./helm-charts/dbrepo/Chart.yaml'
+#    - 'sed -i -e "s/^appVersion:.*/appVersion: \"${APP_VERSION}\"/g" ./helm-charts/dbrepo/Chart.yaml'
+#    - find ./helm-charts -type f -exec sed -i -e "s/__CHARTVERSION__/${CHART_VERSION}/g" {} \;
+#    - helm package ./helm-charts/dbrepo --destination ./build
+#    - helm push "./build/dbrepo-${CHART_VERSION}.tgz" "oci://${CI_REGISTRY2_URL}/helm"
 
 release-docs:
   stage: release
