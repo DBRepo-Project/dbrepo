@@ -13,12 +13,12 @@ function generate_docs {
   mkdir -p ./final
   if [ "$1" = "latest" ]; then
     OVERRIDES_MAIN_HTML=$(cat .docs/overrides/main.html)
+    sed -i -e "s/__APPVERSION__/${APP_VERSION}/g" .docs/scripts/extra.js
     SCRIPTS_EXTRA_JS=$(cat .docs/scripts/extra.js)
   else
     echo $OVERRIDES_MAIN_HTML > .docs/overrides/main.html
     mkdir -p .docs/scripts
     echo $SCRIPTS_EXTRA_JS > .docs/scripts/extra.js
-    sed -i -e "s/__APPVERSION__/${APP_VERSION}/g" .docs/scripts/extra.js
   fi
   find .docs/ -type f -exec sed -i -e "s/__APPVERSION__/$1/g" {} \;
   find .docs/ -type f -exec sed -i -e "s/__CHARTVERSION__/$1/g" {} \;
