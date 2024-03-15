@@ -5,8 +5,8 @@ category: Database
 sources:
   - https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services
 type: application
-version: "1.4.1-RC1"
-appVersion: "1.4.0"
+version: "1.4.2-RC1"
+appVersion: "1.4.2"
 keywords:
   - dbrepo
 maintainers:

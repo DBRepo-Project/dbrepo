@@ -1,6 +1,5 @@
 package at.tuwien.entities.database;
 
-import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.user.User;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -112,6 +111,7 @@ public class View {
     }
 
     @ToString.Exclude
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     @JoinColumns({
             @JoinColumn(name = "vid", referencedColumnName = "id", updatable = false)

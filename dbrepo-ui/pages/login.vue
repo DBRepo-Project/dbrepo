@@ -1,126 +1,153 @@
 <template>
   <div>
-    <v-toolbar v-if="!token" flat>
-      <v-toolbar-title>
-        Login
-      </v-toolbar-title>
+    <v-toolbar
+      v-if="!user"
+      variant="flat"
+      :title="$t('pages.login.name')">
     </v-toolbar>
-    <v-form v-if="!token" ref="form" v-model="valid" @submit.prevent="submit">
-      <v-card flat tile>
-        <v-card-text>
-          <v-alert
-            border="left"
-            color="info">
-            If you need an account, <a @click="signup">create one</a>.
-          </v-alert>
-          <v-row dense>
-            <v-col sm="6">
+    <v-card
+      rounded="0"
+      variant="flat">
+      <v-card-text>
+        <v-form
+          v-if="!user"
+          ref="form"
+          v-model="valid"
+          @submit.prevent="submit">
+          <v-row
+            dense>
+            <v-col
+              md="8">
               <v-text-field
                 v-model="username"
                 autocomplete="off"
                 autofocus
                 required
                 name="username"
-                :rules="[v => !!v || $t('Required')]"
-                label="Username *" />
+                persistent-hint
+                :rules="[v => !!v || $t('validation.required')]"
+                :label="$t('pages.login.username.label')"
+                :hint="$t('pages.login.username.hint')"/>
             </v-col>
           </v-row>
-          <v-row dense>
-            <v-col sm="6">
+          <v-row
+            dense>
+            <v-col
+              md="8">
               <v-text-field
                 v-model="password"
                 autocomplete="off"
                 type="password"
                 required
                 name="password"
-                :rules="[v => !!v || $t('Required')]"
-                label="Password *" />
+                persistent-hint
+                :rules="[v => !!v || $t('validation.required')]"
+                :label="$t('pages.login.password.label')"
+                :hint="$t('pages.login.password.hint')"/>
             </v-col>
           </v-row>
-        </v-card-text>
-        <v-card-actions>
-          <v-btn
-            id="login"
-            class="mb-2 ml-2"
-            :disabled="!valid"
-            color="primary"
-            type="submit"
-            name="submit"
-            :loading="loading"
-            @click="login">
-            Login
-          </v-btn>
-        </v-card-actions>
-        <v-card-subtitle class="text-right">
-          <a v-for="(link, i) in loginLinks" :key="i" class="ml-1" :href="link.href" :target="link.blank ? '_blank' : 'self'">
-            {{ link.text }} <sup v-if="link.blank"><v-icon color="primary" x-small>mdi-open-in-new</v-icon></sup>
-          </a>
-        </v-card-subtitle>
-      </v-card>
-    </v-form>
+          <v-row>
+            <v-col
+              md="8">
+              <v-btn
+                id="login"
+                class="mb-2"
+                :disabled="!valid"
+                color="primary"
+                variant="flat"
+                type="submit"
+                name="submit"
+                :loading="loading"
+                :text="$t('pages.login.submit.label')"
+                @click="login"/>
+            </v-col>
+          </v-row>
+        </v-form>
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer/>
+        <v-btn
+          v-for="(link, i) in loginLinks"
+          :key="`li-${i}`"
+          variant="plain"
+          size="small"
+          :text="link.text"
+          :href="link.href"/>
+      </v-card-actions>
+    </v-card>
   </div>
 </template>
 
 <script>
-import AuthenticationService from '@/api/authentication.service'
-import UserService from '@/api/user.service'
-import UserMapper from '@/api/user.mapper'
+import {useUserStore} from '@/stores/user'
+
 export default {
-  data () {
+  data() {
     return {
       loading: false,
-      error: false, // XXX: `error` is never changed
       valid: false,
       username: null,
-      password: null
+      password: null,
+      userStore: useUserStore()
     }
   },
   computed: {
-    token () {
-      return this.$store.state.token
+    user() {
+      return this.userStore.getUser
     },
-    refreshToken () {
-      return this.$store.state.refreshToken
-    },
-    user () {
-      return this.$store.state.user
-    },
-    loginLinks () {
-      const loginLinks = this.$config.loginLinks
-      console.debug('login links', loginLinks)
-      return loginLinks
-    }
-  },
-  mounted () {
-    if (this.token) {
-      this.$router.push('/database')
+    loginLinks() {
+      if (!this.$config.public.links) {
+        return []
+      }
+      return Object.keys(this.$config.public.links).map(key => {
+        return this.$config.public.links[key]
+      })
     }
   },
   methods: {
-    submit () {
+    submit() {
       this.$refs.form.validate()
     },
-    login () {
+    login() {
       this.loading = true
-      AuthenticationService.authenticatePlain(this.username, this.password)
-        .then(() => {
-          const userId = UserMapper.tokenToUserId(this.token)
-          UserService.findOne(userId)
-            .then(async (user) => {
-              this.$store.commit('SET_USER', user)
-              this.$vuetify.theme.dark = user.attributes.theme_dark
-              await this.$router.push('/database')
+      const authenticationService = useAuthenticationService()
+      authenticationService.authenticatePlain(this.username, this.password)
+        .then((data) => {
+          const userService = useUserService()
+          const userId = userService.tokenToUserId(data.access_token)
+          userService.findOne(userId)
+            .then((user) => {
+              switch (user.attributes.theme) {
+                case 'dark':
+                  this.$vuetify.theme.global.name = 'tuwThemeDark'
+                  break
+                case 'light':
+                  this.$vuetify.theme.global.name = 'tuwThemeLight'
+                  break
+                case 'light-contrast':
+                  this.$vuetify.theme.global.name = 'tuwThemeLightContrast'
+                  break
+                case 'dark-contrast':
+                  this.$vuetify.theme.global.name = 'tuwThemeDarkContrast'
+                  break
+              }
+              this.userStore.setUser(user)
+              this.$router.push('/database')
             })
         })
-        .catch(() => {
+        .catch((error) => {
+          console.error('Failed to login', error)
+          const {status} = error.response
+          if (status === 401) {
+            this.$toast.error(this.$t('error.user.credentials'))
+          } else {
+            this.$toast.error(`Failed to login: ${error}`)
+          }
           this.loading = false
         })
         .finally(() => {
           this.loading = false
         })
-    },
-    signup () {
-      this.$router.push('/signup')
     }
   }
 }

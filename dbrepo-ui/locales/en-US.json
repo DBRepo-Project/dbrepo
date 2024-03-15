@@ -1,33 +1,1232 @@
 {
-  "layout": {
+  "navigation": {
     "information": "Information",
-    "databases": "Databases",
-    "mydatabases": "My Databases",
-    "semantics": "Semantics",
-    "ontologies": "Ontologies",
     "search": "Search",
-    "login": "Login",
+    "ontologies": "Ontologies",
+    "my-databases": "My Databases",
     "logout": "Logout",
-    "signup": "Signup"
+    "login": "Login",
+    "signup": "Signup",
+    "databases": "Databases",
+    "tables": "Tables",
+    "subsets": "Subsets",
+    "info": "Info",
+    "data": "Data",
+    "continue": "Continue",
+    "assign": "Assign",
+    "back": "Back",
+    "schema": "Schema",
+    "persist": "Persist",
+    "cancel": "Cancel",
+    "user": "User",
+    "import": "Import",
+    "delete": "Delete",
+    "recommend": "Recommend",
+    "now": "Now",
+    "settings": "Settings",
+    "views": "Views",
+    "create": "Create",
+    "semantics": "Semantics"
   },
-  "search": {
-    "fuzzy": {
-      "placeholder": "Search ..."
+  "pages": {
+    "identifier": {
+      "title": "Identifier",
+      "pid": {
+        "title": "Persistent Identifier"
+      },
+      "titles": {
+        "title": "Titles"
+      },
+      "creators": {
+        "title": "Creators"
+      },
+      "language": {
+        "title": "Language"
+      },
+      "publication-date": {
+        "title": "Publication Date"
+      },
+      "related-identifiers": {
+        "title": "Related Identifiers"
+      },
+      "funders": {
+        "title": "Funders"
+      },
+      "licenses": {
+        "title": "Licenses"
+      },
+      "citation": {
+        "title": "Citation Recommendation"
+      },
+      "descriptions": {
+        "title": "Descriptions"
+      },
+      "publisher": {
+        "title": "Publisher"
+      },
+      "remove": {
+        "text": "Remove"
+      },
+      "subpages": {
+        "create": {
+          "publication-day": {
+            "label": "Publication Day",
+            "hint": ""
+          },
+          "publication-month": {
+            "label": "Publication Month",
+            "hint": ""
+          },
+          "publication-year": {
+            "label": "Publication Year",
+            "hint": "Required."
+          },
+          "titles": {
+            "title": {
+              "label": "Title",
+              "hint": "Required."
+            },
+            "type": {
+              "label": "Type",
+              "hint": ""
+            },
+            "language": {
+              "label": "Language",
+              "hint": ""
+            },
+            "subtitle": "A name or title by which a resource is known. May be the title of a dataset.",
+            "remove": {
+              "text": "Remove"
+            },
+            "add": {
+              "text": "Add"
+            }
+          },
+          "descriptions": {
+            "description": {
+              "label": "Description",
+              "hint": "Required."
+            },
+            "type": {
+              "label": "Type",
+              "hint": ""
+            },
+            "language": {
+              "label": "Language",
+              "hint": ""
+            },
+            "subtitle": "All additional information. May be used for technical information or detailed information associated with a dataset.",
+            "remove": {
+              "text": "Remove"
+            },
+            "add": {
+              "text": "Add"
+            }
+          },
+          "publisher": {
+            "title": "Publication Information",
+            "subtitle": "The name of the entity that holds, archives, publishes, prints, distributes, releases, issues, or produces the resource. This property will be used to formulate the citation, so consider the prominence of the role.",
+            "label": "Publisher",
+            "hint": "Required."
+          },
+          "related-identifiers": {
+            "title": "Related Identifier",
+            "subtitle": "Identifiers of related resources. These must be globally unique identifiers.",
+            "identifier": {
+              "label": "Identifier",
+              "hint": "Required."
+            },
+            "type": {
+              "label": "Type",
+              "hint": ""
+            },
+            "relation": {
+              "label": "Relation",
+              "hint": ""
+            },
+            "remove": {
+              "text": "Remove"
+            },
+            "add": {
+              "text": "Add"
+            }
+          },
+          "licenses": {
+            "title": "License",
+            "subtitle": "Identifiers of related resources. These must be globally unique identifiers.",
+            "license": {
+              "label": "License"
+            }
+          },
+          "language": {
+            "title": "Language",
+            "subtitle": "The primary language of the dataset.",
+            "language": {
+              "label": "Language",
+              "hint": ""
+            }
+          },
+          "funders": {
+            "title": "Funding Reference",
+            "subtitle": "Information about financial support (funding) for the dataset being registered.",
+            "identifier": {
+              "label": "Funder Identifier",
+              "hint": "Use a name identifier expressed as URL from ORCID*, ROR*, DOI*, ISNI, GND (schemes with * support automatic metadata retrieval)"
+            },
+            "name": {
+              "label": "Funder Name",
+              "hint": "Required."
+            },
+            "award-number": {
+              "label": "Award Number",
+              "hint": ""
+            },
+            "award-title": {
+              "label": "Award Title",
+              "hint": ""
+            },
+            "remove": {
+              "text": "Remove"
+            },
+            "add": {
+              "text": "Add"
+            }
+          },
+          "creators": {
+            "subtitle": "The main researchers involved in producing the data, in priority order.",
+            "identifier": {
+              "label": "Name Identifier",
+              "hint": "Use a name identifier expressed as URL from ORCID*, ROR*, DOI*, ISNI, GND (schemes with * support automatic metadata retrieval)"
+            },
+            "insert": {
+              "text": "Insert Myself"
+            },
+            "remove": {
+              "text": "Remove"
+            },
+            "person": {
+              "label": "Person"
+            },
+            "organization": {
+              "label": "Organization"
+            },
+            "given-name": {
+              "label": "Given Name",
+              "hint": ""
+            },
+            "family-name": {
+              "label": "Family Name",
+              "hint": ""
+            },
+            "name": {
+              "label": "Name",
+              "hint": "Required."
+            },
+            "affiliation-identifier": {
+              "label": "Affiliation Identifier",
+              "hint": "Use an affiliation identifier expressed as URL from ORCID*, ROR*, DOI*, ISNI, GND (schemes with * support automatic metadata retrieval)"
+            },
+            "affiliation": {
+              "label": "Affiliation Name",
+              "hint": ""
+            },
+            "add": "Add"
+          },
+          "summary": {
+            "title": "Summary",
+            "subtitle": "Details of the identifier that will be created to identify this record.",
+            "record": "The identifier describes",
+            "publisher": "Publisher",
+            "license": "License",
+            "no-license": "Without a license for reuse",
+            "doi": "A DOI will be minted for this identifier",
+            "no-doi": "A URI will be associated for this identifier",
+            "creators": "creator(s)"
+          }
+        }
+      }
+    },
+    "table": {
+      "title": "Table",
+      "id": {
+        "title": "ID"
+      },
+      "broker": {
+        "title": "Broker"
+      },
+      "exchange": {
+        "title": "Exchange"
+      },
+      "queue": {
+        "title": "Queue"
+      },
+      "routing-key": {
+        "title": "Routing Key"
+      },
+      "connection": {
+        "title": "Connection Details",
+        "secure": "secure",
+        "insecure": "insecure",
+        "permissions": {
+          "write": "You can write to this table.",
+          "read": "You can read all contents of this table."
+        }
+      },
+      "protocol": {
+        "title": "Protocol",
+        "name": "AMQP"
+      },
+      "size": {
+        "title": "Size"
+      },
+      "result-rows": {
+        "title": "Rows"
+      },
+      "description": {
+        "title": "Description",
+        "empty": "(no description)"
+      },
+      "owner": {
+        "title": "Owner"
+      },
+      "creation": {
+        "title": "Creation"
+      },
+      "import": {
+        "title": "Import dataset into"
+      },
+      "subpages": {
+        "import": {
+          "title": "Create table from .csv/.tsv dataset",
+          "metadata": {
+            "title": "Table Metadata"
+          },
+          "dataset": {
+            "title": "Dataset Structure",
+            "warn": "The dataset schema does not match the target table schema. You can still force the import but it is not recommended."
+          },
+          "name": {
+            "label": "Name",
+            "hint": "Required. Maximum length is 64 characters."
+          },
+          "generated": {
+            "label": "Generated Name",
+            "hint": ""
+          },
+          "description": {
+            "label": "Description",
+            "hint": "Optional. Short and concise description of the data."
+          },
+          "separator": {
+            "label": "Column Separator",
+            "hint": "Optional. Character that separates the columns.",
+            "warn": {
+              "prefix": "We analysed your .csv/.tsv dataset and found that the separator you provided",
+              "middle": "is not correct, the separator",
+              "suffix": "is more likely to be correct. It is advised to change the separator above."
+            }
+          },
+          "skip": {
+            "label": "Skip Rows",
+            "hint": "Optional. Number of rows to skip, e.g. when the first one contains header and no data."
+          },
+          "quote": {
+            "label": "Quote Encoding",
+            "hint": "Optional. Character that quotes data, e.g. double-quotes \"value\""
+          },
+          "terminator": {
+            "label": "Line Termination Encoding",
+            "hint": "Optional. Character that terminates the newlines.",
+            "warn": {
+              "prefix": "We analysed your .csv/.tsv dataset and found that the line termination encoding you provided",
+              "middle": "is not correct, the line termination encoding",
+              "suffix": "is more likely to be correct. It is advised to change the line termination encoding above."
+            }
+          },
+          "null": {
+            "label": "Null Encoding",
+            "hint": "Optional. Character sequence that represents \"no value\", e.g. NA"
+          },
+          "true": {
+            "label": "True Encoding",
+            "hint": "Optional. Character sequence that represents boolean true, e.g. 1, true, yes."
+          },
+          "false": {
+            "label": "False Encoding",
+            "hint": "Optional. Character sequence that represents boolean false, e.g. 0, false, no."
+          },
+          "file": {
+            "title": "Dataset Upload",
+            "label": "Dataset File",
+            "hint": "Required. Needs to be in .csv/.tsv file format."
+          },
+          "preview": {
+            "title": "Preview"
+          },
+          "summary": {
+            "title": "Summary",
+            "prefix": "Imported",
+            "suffix": "rows from dataset."
+          },
+          "analyse": {
+            "text": "Upload & Analyse"
+          }
+        },
+        "create": {
+          "title": "Create table schema",
+          "information": {
+            "title": "Information"
+          },
+          "name": {
+            "label": "Table Name",
+            "hint": "Required."
+          },
+          "description": {
+            "label": "Table Description",
+            "hint": ""
+          },
+          "summary": {
+            "prefix": "Created table with name",
+            "middle": "and imported",
+            "suffix": "rows from dataset."
+          }
+        },
+        "drop": {
+          "title": "Drop table",
+          "warning": {
+            "prefix": "This action cannot be undone! Type the table name",
+            "suffix": "below if you really want to drop it with all stored data."
+          },
+          "name": {
+            "label": "Table Name",
+            "hint": "Required."
+          }
+        },
+        "schema": {
+          "title": "Structure",
+          "bullet": "●",
+          "assign": "Assign",
+          "remove": {
+            "text": "Remove"
+          },
+          "internal-name": {
+            "title": "Internal Name"
+          },
+          "column-type": {
+            "title": "Column Type"
+          },
+          "extra": {
+            "title": "Extra Information"
+          },
+          "concept": {
+            "title": "Concept"
+          },
+          "unit": {
+            "title": "Measurement Unit"
+          },
+          "nullable": {
+            "title": "Nullable"
+          },
+          "sequence": {
+            "title": "Sequence"
+          },
+          "name": {
+            "label": "Name",
+            "hint": "Required."
+          },
+          "add": {
+            "text": "Add Column"
+          },
+          "type": {
+            "label": "Type",
+            "hint": "Required."
+          },
+          "size": {
+            "label": "Size"
+          },
+          "d": {
+            "label": "d"
+          },
+          "primary-key": {
+            "label": "Primary key"
+          },
+          "foreign-key": {
+            "label": "Foreign key"
+          },
+          "references": {
+            "label": "Foreign references"
+          },
+          "null": {
+            "label": "Nullable"
+          },
+          "unique": {
+            "label": "Unique"
+          },
+          "fsp": {
+            "label": "fsp"
+          },
+          "set": {
+            "label": "Set Values",
+            "hint": "Separate values by ,"
+          },
+          "enum": {
+            "label": "Enum Values",
+            "hint": "Separate values by ,"
+          },
+          "summary": {
+            "title": "Summary",
+            "text": "Successfully created table with internal name:"
+          }
+        },
+        "semantics": {
+          "title": "Assign semantic instance for table column:",
+          "subtitle": "Semantic instances help machines to get the proper context of your dataset.",
+          "recommended": "Recommended semantic instances",
+          "bullet": "●",
+          "info": "The following ontologies automatically will query the fields rdfs:label and store it for this column. You can still use other URIs that are not matching these ontologies, the URI will be displayed instead.",
+          "uri": {
+            "label": "Semantic Instance URI",
+            "hint": "This URI can be automatically resolved."
+          }
+        },
+        "versioning": {
+          "title": "Versioning",
+          "subtitle": "Select a timestamp to view the data for this specific time of day.",
+          "timestamp": {
+            "label": "Timestamp",
+            "hint": "Required. Format yyyy-MM-dd HH:mm:ss",
+            "placeholder": "e.g. 2024-03-10 17:30:00",
+            "suffix": "UTC"
+          }
+        },
+        "data": {
+          "auto": {
+            "hint": "Value is automatically generated by a sequence."
+          },
+          "primary-key": {
+            "hint": "Value is a primary key."
+          },
+          "format": {
+            "hint": "Value must be in format:"
+          },
+          "required": {
+            "hint": "Required. "
+          },
+          "float": {
+            "max": "max.",
+            "min": "min.",
+            "before": "digit(s) before the dot.",
+            "after": "digit(s) after the dot."
+          }
+        }
+      }
+    },
+    "database": {
+      "title": "Database",
+      "image": {
+        "title": "Teaser Image",
+        "alt": "Database logo/default image"
+      },
+      "name": {
+        "title": "Name"
+      },
+      "internal-name": {
+        "title": "Internal Name"
+      },
+      "visibility": {
+        "title": "Visibility"
+      },
+      "size": {
+        "title": "Size"
+      },
+      "owner": {
+        "title": "Owner"
+      },
+      "created": {
+        "title": "Created"
+      },
+      "connection": {
+        "title": "Connection",
+        "username": "username",
+        "password": "password"
+      },
+      "contact": {
+        "title": "Contact"
+      },
+      "subpages": {
+        "access": {
+          "title": "Database Access",
+          "subtitle": "Overview on users with their access to the database.",
+          "read": "You can read all contents",
+          "write-own": "You can write own tables and read all contents",
+          "write-all": "You can write own tables and read all contents",
+          "revoke": "Revoke",
+          "action": "Action",
+          "username": {
+            "label": "Username",
+            "hint": "Required"
+          },
+          "type": {
+            "label": "Access Type",
+            "hint": "Required"
+          },
+          "submit": {
+            "text": "Modify"
+          }
+        },
+        "create": {
+          "title": "Create Database",
+          "subtitle": "Choose an expressive database name and select a database engine.",
+          "name": {
+            "label": "Name",
+            "hint": "Required. The internal database name will be lowercase alphanumeric, others will be replaced with _",
+            "placeholder": "e.g. my_database, air_quality"
+          },
+          "engine": {
+            "label": "Engine",
+            "hint": "Required."
+          },
+          "submit": {
+            "text": "Create"
+          }
+        },
+        "tables": {
+          "empty": "(no tables)"
+        },
+        "tuple": {
+          "create": {
+            "text": "Create"
+          },
+          "update": {
+            "text": "Update"
+          }
+        },
+        "subsets": {
+          "empty": "(no subsets)",
+          "http": "(database not reachable, try again later)"
+        },
+        "views": {
+          "empty": "(no views)"
+        },
+        "settings": {
+          "title": "Settings",
+          "subtitle": "The image will be displayed in a box with maximum dimensions 200x200 pixels.",
+          "image": {
+            "label": "Teaser Image",
+            "hint": "max. 1MB file size"
+          },
+          "submit": {
+            "text": "Modify Image"
+          },
+          "image-remove": {
+            "text": "Remove Image"
+          },
+          "ownership": {
+            "title": "Ownership",
+            "subtitle": "User who has ownership over this database.",
+            "label": "Database Owner",
+            "hint": "Required.",
+            "submit": {
+              "text": "Transfer"
+            }
+          },
+          "visibility": {
+            "title": "Visibility",
+            "subtitle": "Private databases hide the data while metadata is still visible. Public databases are fully transparent.",
+            "visibility": {
+              "label": "Database Visibility",
+              "hint": "Required."
+            },
+            "submit": {
+              "text": "Modify"
+            }
+          }
+        }
+      }
+    },
+    "signup": {
+      "name": "Signup",
+      "email": {
+        "label": "E-Mail Address",
+        "hint": "Required."
+      },
+      "username": {
+        "label": "Username",
+        "hint": "Required."
+      },
+      "password": {
+        "label": "Password",
+        "hint": "Required."
+      },
+      "confirm": {
+        "label": "Confirm Password",
+        "hint": "Required."
+      },
+      "submit": {
+        "label": "Submit"
+      }
+    },
+    "login": {
+      "name": "Login",
+      "username": {
+        "label": "Username",
+        "hint": "Required."
+      },
+      "password": {
+        "label": "Password",
+        "hint": "Required."
+      },
+      "submit": {
+        "label": "Submit"
+      }
+    },
+    "user": {
+      "qualified-name": {
+        "label": "Qualified Name"
+      },
+      "subpages": {
+        "info": {
+          "title": "Information",
+          "subtitle": "General user metadata.",
+          "id": {
+            "label": "ID"
+          },
+          "username": {
+            "label": "Username"
+          },
+          "firstname": {
+            "label": "Given Name",
+            "hint": ""
+          },
+          "lastname": {
+            "label": "Family Name",
+            "hint": ""
+          },
+          "affiliation": {
+            "label": "Affiliation Identifier",
+            "hint": "ROR Identifier, e.g. https://ror.org/04d836q62"
+          },
+          "orcid": {
+            "label": "Personal Identifier",
+            "hint": "ORCID identifier, e.g. https://orcid.org/0000-0002-1825-0097"
+          },
+          "submit": {
+            "text": "Update"
+          }
+        },
+        "theme": {
+          "title": "Theme",
+          "subtitle": "Update the user theme when logged in.",
+          "label": "Theme",
+          "dark": "Dark",
+          "dark-contrast": "Dark - High Contrast",
+          "light": "Light",
+          "light-contrast": "Light - High Contrast",
+          "submit": {
+            "text": "Update"
+          }
+        }
+      }
+    },
+    "settings": {
+      "subpages": {
+        "authentication": {
+          "title": "User Password",
+          "subtitle": "Update the user password used for basic authentication with all interfaces.",
+          "password": {
+            "label": "Password",
+            "hint": "Required."
+          },
+          "confirm": {
+            "label": "Confirm Password",
+            "hint": "Required."
+          },
+          "submit": {
+            "text": "Update"
+          }
+        },
+        "developer": {
+          "token": {
+            "title": "Token Information",
+            "subtitle": "View your token secrets for debugging purposes.",
+            "expiry": "Expires",
+            "access": {
+              "label": "Access Token"
+            },
+            "refresh": {
+              "label": "Refresh Token"
+            }
+          },
+          "maintenance": {
+            "title": "Messages",
+            "active": "Active",
+            "type": "Type",
+            "message": "Text",
+            "action": "Action",
+            "create": {
+              "title": "Maintenance Message",
+              "type": {
+                "label": "Type",
+                "hint": "Required."
+              },
+              "message": {
+                "label": "Message",
+                "hint": "Required."
+              },
+              "start": {
+                "label": "Start Timestamp"
+              },
+              "end": {
+                "label": "End Timestamp"
+              },
+              "submit": {
+                "text": "Submit"
+              },
+              "delete": {
+                "text": "Delete"
+              }
+            },
+            "modify": {
+              "text": "Modify"
+            },
+            "add": {
+              "text": "Add"
+            }
+          }
+        }
+      }
+    },
+    "view": {
+      "title": "View",
+      "tabs": {
+        "info": "Info",
+        "data": "Data"
+      },
+      "query": {
+        "title": "Query"
+      },
+      "creator": {
+        "title": "Creator"
+      },
+      "creation": {
+        "title": "Creation"
+      },
+      "visibility": {
+        "title": "Visibility"
+      },
+      "subpages": {
+        "create": {
+          "title": "Create View",
+          "name": {
+            "label": "Name",
+            "hint": "Required."
+          },
+          "table": {
+            "label": "Data Table",
+            "hint": "Required."
+          },
+          "columns": {
+            "label": "Data Columns",
+            "hint": "Required."
+          },
+          "visibility": {
+            "warn": "The view metadata, i.e. view name, query, will still be public. The data however will only be visible to people with at least read access to this database."
+          }
+        }
+      }
+    },
+    "subset": {
+      "title": "Subset",
+      "visibility": {
+        "title": "Visibility"
+      },
+      "creator": {
+        "title": "Creator"
+      },
+      "query": {
+        "title": "Query"
+      },
+      "query-hash": {
+        "prefix": "sha256:",
+        "title": "Query Hash"
+      },
+      "executed": {
+        "title": "Created"
+      },
+      "result-hash": {
+        "title": "Result Hash"
+      },
+      "result-rows": {
+        "title": "Result Rows"
+      },
+      "tabs": {
+        "info": "Info",
+        "data": "Data"
+      },
+      "subpages": {
+        "create": {
+          "title": "Create Subset",
+          "generated": "The following query will be executed (readonly):",
+          "subtitle": "The following query will be executed:",
+          "simple": {
+            "text": "Simple"
+          },
+          "expert": {
+            "text": "Expert",
+            "warn": "It is not recommended to use comments, aggregation functions and the following operations:"
+          },
+          "name": {
+            "label": ""
+          },
+          "filter": {
+            "text": "Add Filter",
+            "column": {
+              "label": "Column",
+              "hint": "Required."
+            },
+            "operator": {
+              "label": "Operator",
+              "hint": "Required."
+            },
+            "value": {
+              "label": "Value",
+              "hint": "Required."
+            },
+            "remove": {
+              "text": "Remove"
+            },
+            "and": {
+              "text": "Add \"AND\" Filter"
+            },
+            "or": {
+              "text": "Add \"OR\" Filter"
+            }
+          }
+        }
+      }
+    },
+    "search": {
+      "type": {
+        "label": "Type",
+        "hint": ""
+      },
+      "id": {
+        "label": "ID",
+        "hint": ""
+      },
+      "name": {
+        "label": "Name",
+        "hint": ""
+      },
+      "internal-name": {
+        "label": "Internal Name",
+        "hint": ""
+      },
+      "publication-range": {
+        "hint": "Specify your custom publication year range."
+      },
+      "start-year": {
+        "label": "Start Year",
+        "hint": ""
+      },
+      "end-year": {
+        "label": "End Year",
+        "hint": ""
+      },
+      "concept-unit": {
+        "hint": "If you select a CONCEPT and UNIT, you can search across columns regardless of their unit of measurement."
+      },
+      "concept": {
+        "label": "Concept",
+        "hint": ""
+      },
+      "unit": {
+        "label": "Unit",
+        "hint": ""
+      },
+      "start": {
+        "label": "Start Value",
+        "hint": ""
+      },
+      "end": {
+        "label": "End Value",
+        "hint": ""
+      }
+    },
+    "container": {
+      "title": "Container",
+      "name": {
+        "title": "Name"
+      },
+      "internal-name": {
+        "title": "Internal Name"
+      },
+      "image-name": {
+        "title": "Image"
+      },
+      "image-tag": {
+        "title": "Version"
+      }
+    },
+    "semantics": {
+      "title": "Semantics",
+      "usages": {
+        "text": "Usages"
+      }
     }
   },
-  "databases": {
-    "recent": "Recent Databases",
-    "my": "My Databases",
-    "tooltip": {
-      "private": "Private",
-      "public": "Public"
+  "error": {
+    "import": {
+      "dataset": "Failed to import dataset."
     },
-    "toolbar": {
+    "upload": {
+      "dataset": "Failed to upload dataset."
+    },
+    "schema": {
+      "id": "Column \"id\" must be a primary key."
+    },
+    "user": {
+      "credentials": "Invalid username/password combination.",
+      "email-exists": "Account with this e-mail exists already."
+    },
+    "query": {
+      "viewmalformed": "View is malformed:",
+      "type": {
+        "exists": "Failed to build query: no such column type:",
+        "build": "Failed to build query: currently no query build support for column type:"
+      },
+      "column": {
+        "exists": "Failed to build query: data columns are missing column with name:"
+      }
+    },
+    "semantics": {
+      "timeout": "Failed to suggest semantics: request timed out"
+    },
+    "database": {
+      "querystore": "Failed to insert query into query store"
+    },
+    "table": {
+      "tablemalformed": "Failed to insert entry:",
+      "create": "Failed to create table:",
+      "connection": "Failed to load table data because database is not reachable."
+    },
+    "view": {
+      "create": "Failed to create view:"
+    },
+    "data": {
+      "value": "Failed to set column value:"
+    },
+    "transfer": "Failed to transfer the database owner."
+  },
+  "success": {
+    "signup": "Successfully created account.",
+    "query": {
+      "build": "Failed to build query: column not found",
+      "fatal": "Query with this schema is not buildable through the UI at the moment"
+    },
+    "import": {
+      "dataset": "Successfully imported dataset."
+    },
+    "upload": {
+      "dataset": "Successfully uploaded dataset.",
+      "blob": "Successfully uploaded file."
+    },
+    "analyse": {
+      "dataset": "Successfully analysed dataset."
+    },
+    "access": {
+      "created": "Successfully provisioned access.",
+      "modified": "Successfully modified access.",
+      "revoked": "Successfully revoked access."
+    },
+    "data": {
+      "add": "Successfully added data entry.",
+      "update": "Successfully updated data entry."
+    },
+    "table": {
+      "created": "Successfully created table.",
+      "semantics": "Successfully assigned semantic instance."
+    },
+    "database": {
+      "upload": "Successfully uploaded database image.",
+      "transfer": "Successfully transferred the database owner.",
+      "image": {
+        "update": "Successfully updated database image.",
+        "remove": "Successfully removed database image."
+      }
+    },
+    "pid": {
+      "created": "Successfully persisted identifier.",
+      "updated": "Successfully updated identifier."
+    },
+    "user": {
+      "info": "Successfully updated user information.",
+      "theme": "Successfully updated user theme."
+    },
+    "view": {
+      "create": "Successfully created view.",
+      "delete": "Successfully deleted view."
+    },
+    "subset": {
+      "create": "Successfully created subset."
+    }
+  },
+  "toolbars": {
+    "user": {
       "info": "Info",
-      "tables": "Tables",
-      "subsets": "Subsets",
-      "views": "Views",
-      "settings": "Settings"
+      "authentication": "Authentication",
+      "developer": "Developer"
+    },
+    "semantic": {
+      "register": {
+        "title": "Register Ontology",
+        "subtitle": "Register a new ontology endpoint."
+      },
+      "ontologies": {
+        "title": "Ontologies",
+        "text": "Ontologies",
+        "units": "Units",
+        "concepts": "Concepts"
+      },
+      "ontology": {
+        "text": "Ontology"
+      }
+    },
+    "database": {
+      "recent": "Recent Databases",
+      "links": "Important Links",
+      "public": "Public",
+      "private": "Private",
+      "current": "Current Data",
+      "history": "Historic Data",
+      "create": {
+        "text": "Database"
+      },
+      "import-csv": {
+        "permanent": "Import",
+        "xl": "CSV"
+      },
+      "create-subset": {
+        "permanent": "Subset",
+        "xl": "Create"
+      },
+      "create-view": {
+        "permanent": "View",
+        "xl": "Create"
+      },
+      "create-table": {
+        "permanent": "Table",
+        "xl": "Create"
+      },
+      "create-pid": {
+        "permanent": "PID",
+        "xl": "Get"
+      },
+      "info": {
+        "tab": "Info"
+      },
+      "tables": {
+        "tab": "Tables"
+      },
+      "subsets": {
+        "tab": "Subsets"
+      },
+      "views": {
+        "tab": "Views"
+      },
+      "settings": {
+        "tab": "Settings"
+      }
+    },
+    "identifier": {
+      "create": {
+        "xl": "Get",
+        "permanent": "PID"
+      },
+      "update": {
+        "xl": "Update",
+        "permanent": "PID"
+      }
+    },
+    "search": {
+      "fuzzy": {
+        "placeholder": "Search ..."
+      },
+      "result": "Result",
+      "results": "Results"
+    },
+    "subset": {
+      "save": {
+        "permanent": "Save"
+      },
+      "export": {
+        "data": {
+          "xl": "Result",
+          "permanent": "Data"
+        },
+        "metadata": {
+          "xl": "Result",
+          "permanent": "Metadata"
+        }
+      },
+      "pid": {
+        "xl": "Get",
+        "permanent": "PID"
+      },
+      "unsave": {
+        "permanent": "Unsave"
+      }
+    },
+    "view": {
+      "pid": {
+        "xl": "Get",
+        "permanent": "PID"
+      }
+    },
+    "table": {
+      "data": {
+        "refresh": "Refresh",
+        "add": "Add",
+        "edit": "Update",
+        "delete": "Delete",
+        "tuple": "Entry",
+        "download": "Download",
+        "version": "History",
+        "subtitle": "Provide data to be directly inserted into the dataset."
+      }
+    }
+  },
+  "validation": {
+    "required": "Required field",
+    "integer": "Greater or equal to zero",
+    "max-length": "Maximum length is: ",
+    "day": "Invalid day",
+    "month": "Invalid month",
+    "schema": {
+      "id": "Column needs to be declared as primary key",
+      "primary-key": "We create a column named id with a auto-increasing sequence starting at 1. Please specify a column with primary key if you don't want this behavior."
+    },
+    "uri": {
+      "pattern": "Invalid URI",
+      "exists": "URI exists"
+    },
+    "user": {
+      "pattern": "Only lowercase letters, min. 3 length",
+      "exists": "This username is already taken"
+    },
+    "view": {
+      "exists": "View name already exists"
+    },
+    "table": {
+      "exists": "Table name already exists"
+    },
+    "prefix": {
+      "pattern": "Invalid prefix pattern",
+      "length": "Invalid length: min. 1, max. 8",
+      "exists": "Prefix exists"
+    },
+    "pattern": {
+      "timestamp": "Must be in format yyyy-MM-dd HH:mm:ss"
     }
   }
 }

@@ -21,6 +21,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -31,7 +32,8 @@ import java.time.Instant;
 @Log4j2
 @CrossOrigin(origins = "*")
 @RestController
-@RequestMapping("/api/database/{id}/table/{tableId}/export")
+@RequestMapping(path = "/api/database/{id}/table/{tableId}/export",
+        consumes = MediaType.ALL_VALUE)
 public class ExportEndpoint {
 
     private final QueryService queryService;

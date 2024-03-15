@@ -9,22 +9,17 @@
         <p v-text="description" />
       </v-card-text>
       <div v-for="(item,idx) in entity.columns" :key="idx">
-        <v-list-item-group>
-          <v-list-item two-line :to="link(item)">
-            <v-list-item-content>
-              <v-list-item-title v-text="item.name" />
-              <v-list-item-subtitle class="mt-2" v-text="link(item)" />
-            </v-list-item-content>
-          </v-list-item>
-        </v-list-item-group>
+        <v-list-item two-line :to="link(item)">
+          <v-list-item-title v-text="item.name" />
+          <v-list-item-subtitle class="mt-2" v-text="link(item)" />
+        </v-list-item>
       </div>
-      <v-card-actions class="mt-2">
+      <v-card-actions>
         <v-spacer />
         <v-btn
-          class="mb-2"
-          @click="cancel">
-          Cancel
-        </v-btn>
+          :variant="buttonVariant"
+          :text="$t('navigation.cancel')"
+          @click="cancel" />
       </v-card-actions>
     </v-card>
   </div>
@@ -56,6 +51,14 @@ export default {
         return '(no description)'
       }
       return this.entity.description
+    },
+    inputVariant () {
+      const runtimeConfig = useRuntimeConfig()
+      return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.input.contrast : runtimeConfig.public.variant.input.normal
+    },
+    buttonVariant () {
+      const runtimeConfig = useRuntimeConfig()
+      return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.button.contrast : runtimeConfig.public.variant.button.normal
     }
   },
   methods: {

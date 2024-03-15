@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,7 +25,9 @@ import java.util.List;
 @Log4j2
 @CrossOrigin(origins = "*")
 @RestController
-@RequestMapping("/api/oai")
+@RequestMapping(path = "/api/oai",
+        consumes = MediaType.ALL_VALUE,
+        produces = MediaType.TEXT_XML_VALUE)
 public class MetadataEndpoint {
 
     private final MetadataService metadataService;
@@ -34,7 +37,7 @@ public class MetadataEndpoint {
         this.metadataService = metadataService;
     }
 
-    @GetMapping(produces = "text/xml;charset=UTF-8")
+    @GetMapping
     @Parameter(name = "verb", in = ParameterIn.QUERY, examples = {
             @ExampleObject(value = "Identify"),
             @ExampleObject(value = "ListIdentifiers"),
@@ -53,7 +56,7 @@ public class MetadataEndpoint {
         return identifyAlt();
     }
 
-    @GetMapping(params = "verb=Identify", produces = "text/xml;charset=UTF-8")
+    @GetMapping(params = "verb=Identify")
     @Observed(name = "dbr_oai_identify")
     @Operation(summary = "Identify the repository")
     @ApiResponses(value = {
@@ -68,7 +71,7 @@ public class MetadataEndpoint {
         return ResponseEntity.ok(xml);
     }
 
-    @GetMapping(params = "verb=ListIdentifiers", produces = "text/xml;charset=UTF-8")
+    @GetMapping(params = "verb=ListIdentifiers")
     @Observed(name = "dbr_oai_identifiers_list")
     @Operation(summary = "List the identifiers")
     public ResponseEntity<String> listIdentifiers(OaiListIdentifiersParameters parameters) {
@@ -78,7 +81,7 @@ public class MetadataEndpoint {
         return ResponseEntity.ok(xml);
     }
 
-    @GetMapping(params = "verb=GetRecord", produces = "text/xml;charset=UTF-8")
+    @GetMapping(params = "verb=GetRecord")
     @Observed(name = "dbr_oai_record_get")
     @Operation(summary = "Get the record")
     public ResponseEntity<String> getRecord(OaiRecordParameters parameters) {
@@ -96,7 +99,7 @@ public class MetadataEndpoint {
             log.error("Failed to get record: Identifier is empty");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(metadataService.error(OaiErrorType.NO_RECORDS_MATCH));
-        } else if(supportedIdentifierPrefixes.stream().noneMatch(identifierPrefix -> parameters.getIdentifier().startsWith(identifierPrefix))
+        } else if (supportedIdentifierPrefixes.stream().noneMatch(identifierPrefix -> parameters.getIdentifier().startsWith(identifierPrefix))
                 || parameters.getIdentifier().indexOf(':') > 3) {
             log.error("Failed to get record: Identifier does not match supported prefixes {}", supportedIdentifierPrefixes);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -113,7 +116,7 @@ public class MetadataEndpoint {
         }
     }
 
-    @GetMapping(params = "verb=ListMetadataFormats", produces = "text/xml;charset=UTF-8")
+    @GetMapping(params = "verb=ListMetadataFormats")
     @Observed(name = "dbr_oai_metadataformats_list")
     @Operation(summary = "List the metadata formats")
     public ResponseEntity<String> listMetadataFormats() {

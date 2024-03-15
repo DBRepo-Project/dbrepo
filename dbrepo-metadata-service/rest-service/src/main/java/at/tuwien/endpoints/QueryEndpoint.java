@@ -27,6 +27,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,7 +37,9 @@ import java.security.Principal;
 
 @Log4j2
 @RestController
-@RequestMapping("/api/database/{databaseId}/query")
+@RequestMapping(path = "/api/database/{databaseId}/query",
+        consumes = MediaType.ALL_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
 public class QueryEndpoint {
 
     private final QueryService queryService;
@@ -225,7 +228,7 @@ public class QueryEndpoint {
                 .body(result);
     }
 
-    @GetMapping("/{queryId}/export")
+    @GetMapping(value = "/{queryId}/export", produces = MediaType.ALL_VALUE)
     @Transactional(readOnly = true)
     @Observed(name = "dbr_query_export")
     @Operation(summary = "Exports some query", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})

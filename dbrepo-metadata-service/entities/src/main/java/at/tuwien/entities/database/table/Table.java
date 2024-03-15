@@ -1,18 +1,17 @@
 package at.tuwien.entities.database.table;
 
-import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.database.table.constraints.Constraints;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.user.User;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.OrderBy;
 import lombok.*;
 import lombok.extern.log4j.Log4j2;
 import net.sf.jsqlparser.statement.select.FromItem;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.annotations.Where;
+import org.hibernate.annotations.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -90,6 +89,7 @@ public class Table {
     })
     private Database database;
 
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "table")
     @OrderBy("ordinalPosition")
     private List<TableColumn> columns;

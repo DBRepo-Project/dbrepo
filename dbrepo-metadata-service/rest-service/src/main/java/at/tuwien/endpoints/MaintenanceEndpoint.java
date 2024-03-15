@@ -21,6 +21,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -30,7 +31,9 @@ import java.util.List;
 @Log4j2
 @CrossOrigin(origins = "*")
 @RestController
-@RequestMapping("/api/maintenance")
+@RequestMapping(path = "/api/maintenance",
+        consumes = MediaType.ALL_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
 public class MaintenanceEndpoint {
 
     private final BannerMessageMapper bannerMessageMapper;
@@ -52,12 +55,20 @@ public class MaintenanceEndpoint {
                             mediaType = "application/json",
                             array = @ArraySchema(schema = @Schema(implementation = BannerMessageDto.class)))}),
     })
-    public ResponseEntity<List<BannerMessageDto>> list() {
+    public ResponseEntity<List<BannerMessageDto>> list(@RequestParam(required = false) String filter) {
         log.debug("endpoint list active maintenance messages");
-        final List<BannerMessageDto> dtos = bannerMessageService.findAll()
-                .stream()
-                .map(bannerMessageMapper::bannerMessageToBannerMessageDto)
-                .toList();
+        List<BannerMessageDto> dtos;
+        if (filter.equals("active")) {
+            dtos = bannerMessageService.getActive()
+                    .stream()
+                    .map(bannerMessageMapper::bannerMessageToBannerMessageDto)
+                    .toList();
+        } else {
+            dtos = bannerMessageService.findAll()
+                    .stream()
+                    .map(bannerMessageMapper::bannerMessageToBannerMessageDto)
+                    .toList();
+        }
         log.trace("list maintenance messages results in dtos {}", dtos);
         return ResponseEntity.ok(dtos);
     }
@@ -83,26 +94,6 @@ public class MaintenanceEndpoint {
         final BannerMessageDto dto = bannerMessageMapper.bannerMessageToBannerMessageDto(bannerMessageService.find(messageId));
         log.trace("find one maintenance message results in dto {}", dto);
         return ResponseEntity.ok(dto);
-    }
-
-    @GetMapping("/message/active")
-    @Observed(name = "dbr_maintenance_findactive")
-    @Operation(summary = "Find active maintenance messages")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200",
-                    description = "List messages",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            array = @ArraySchema(schema = @Schema(implementation = BannerMessageBriefDto.class)))}),
-    })
-    public ResponseEntity<List<BannerMessageBriefDto>> active() {
-        log.debug("endpoint list active maintenance messages");
-        final List<BannerMessageBriefDto> dtos = bannerMessageService.getActive()
-                .stream()
-                .map(bannerMessageMapper::bannerMessageToBannerMessageBriefDto)
-                .toList();
-        log.trace("list active maintenance messages results in dtos {}", dtos);
-        return ResponseEntity.ok(dtos);
     }
 
     @PostMapping("/message")
@@ -141,7 +132,7 @@ public class MaintenanceEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<BannerMessageDto> update(@NotNull @PathVariable("id") Long messageId,
-                                                        @Valid @RequestBody BannerMessageUpdateDto data)
+                                                   @Valid @RequestBody BannerMessageUpdateDto data)
             throws BannerMessageNotFoundException {
         log.debug("endpoint update maintenance message, messageId={}, data={}", messageId, data);
         final BannerMessageDto dto = bannerMessageMapper.bannerMessageToBannerMessageDto(bannerMessageService.update(messageId, data));

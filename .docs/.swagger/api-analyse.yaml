@@ -1,5 +1,38 @@
 components:
-  schemas: {}
+  schemas:
+    DataTypesDto:
+      properties:
+        columns:
+          items:
+            $ref: '#/components/schemas/SuggestedColumnDto'
+          type: array
+        line_termination:
+          example: "\r\n"
+          type: string
+        separator:
+          example: ','
+          type: string
+      type: object
+    DetermineDataTypesDto:
+      properties:
+        enum:
+          example: false
+          type: boolean
+        enum_tol:
+          example: 0.01
+          type: double
+        filename:
+          example: s3-key-from-seaweedfs
+          type: string
+        separator:
+          example: ','
+          type: string
+      type: object
+    SuggestedColumnDto:
+      properties:
+        column_name:
+          type: string
+      type: object
 externalDocs:
   description: Sourcecode Documentation
   url: https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services
@@ -27,24 +60,17 @@ paths:
           name: body
           required: true
           schema:
-            properties:
-              enum:
-                example: true
-                type: boolean
-              enum_tol:
-                example: 0.1
-              filename:
-                example: sample.csv
-                type: string
-              separator:
-                example: ','
-                type: string
+            $ref: '#/components/schemas/DetermineDataTypesDto'
             type: object
       produces:
         - application/json
       responses:
         '200':
-          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataTypesDto'
+          description: Determined data types successfully
         '405':
           description: Invalid input
       summary: Determine datatypes

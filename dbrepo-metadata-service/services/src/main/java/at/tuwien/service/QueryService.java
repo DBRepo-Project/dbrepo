@@ -7,10 +7,12 @@ import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.TableCsvDeleteDto;
 import at.tuwien.api.database.table.TableCsvDto;
+import at.tuwien.api.database.table.TableCsvUpdateDto;
 import at.tuwien.entities.database.View;
 import at.tuwien.exception.*;
 import at.tuwien.querystore.Query;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
 import java.time.Instant;
@@ -197,6 +199,11 @@ public interface QueryService {
     Long viewCount(Long databaseId, View view, Principal principal) throws DatabaseNotFoundException,
             ImageNotSupportedException, QueryMalformedException, QueryStoreException, TableMalformedException;
 
+    @Transactional
+    void update(Long databaseId, Long tableId, TableCsvUpdateDto data, Principal principal)
+            throws ImageNotSupportedException, TableMalformedException, DatabaseNotFoundException,
+            TableNotFoundException, QueryMalformedException;
+
     /**
      * Insert data from AMQP client into a table of a table-database id tuple, we need the "root" role for this as the
      * default "mariadb" user is configured to only be allowed to execute "SELECT" statements.
@@ -210,7 +217,7 @@ public interface QueryService {
      * @throws TableNotFoundException    The table is not found in the metadata database.
      */
     void insert(Long databaseId, Long tableId, TableCsvDto data, Principal principal) throws TableMalformedException,
-            DatabaseNotFoundException, TableNotFoundException;
+            DatabaseNotFoundException, TableNotFoundException, FileStorageException;
 
     /**
      * Deletes a tuple by given constraint set

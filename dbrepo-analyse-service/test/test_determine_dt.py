@@ -28,6 +28,7 @@ class DetermineDatatypesTest(unittest.TestCase):
                 "Status": "varchar",
             },
             "separator": ",",
+            "line_termination": "\n"
         }
 
         # mock
@@ -50,6 +51,7 @@ class DetermineDatatypesTest(unittest.TestCase):
                 "Status": "varchar",
             },
             "separator": ",",
+            "line_termination": "\n"
         }
 
         # mock
@@ -72,6 +74,7 @@ class DetermineDatatypesTest(unittest.TestCase):
                 "Status": "varchar",
             },
             "separator": ",",
+            "line_termination": "\n"
         }
 
         # mock
@@ -94,6 +97,7 @@ class DetermineDatatypesTest(unittest.TestCase):
                 "enum": "varchar",  # currently not used
             },
             "separator": ",",
+            "line_termination": "\n"
         }
 
         # mock

@@ -210,7 +210,7 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
             UserNotFoundException {
         /* check */
         final Database database = findById(databaseId);
-        final User user = userService.findByUsername(transferDto.getUsername());
+        final User user = userService.find(transferDto.getId());
         /* update in metadata database */
         database.setOwnedBy(user.getId());
         final Database entity = databaseRepository.save(database);

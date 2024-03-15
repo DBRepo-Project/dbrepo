@@ -1,120 +1,127 @@
 <template>
   <v-app>
     <!-- Side Bar -->
-    <v-navigation-drawer v-model="drawer" fixed app :permanent="$vuetify.breakpoint.lgAndUp">
-      <div>
+    <v-navigation-drawer
+      v-model="drawer"
+      fixed
+      app
+      :permanent="$vuetify.display.lgAndUp">
+      <NuxtLink to="/">
         <v-img
           contain
+          alt="organization logo"
           class="logo"
+          style="margin:1em;"
           :src="logo" />
-      </div>
-      <v-list-item class="mt-2">
-        <v-list-item-content>
-          <v-list-item-subtitle v-text="version" />
-          <v-list-item-title class="text-h6" v-text="title" />
-        </v-list-item-content>
+      </NuxtLink>
+      <v-list-item
+        class="mt-2">
+        <v-list-item-title
+          class="text-h6"
+          v-text="title" />
       </v-list-item>
       <v-list nav>
         <v-list-item
           to="/"
-          router>
-          <v-list-item-action>
-            <v-icon>mdi-information-outline</v-icon>
-          </v-list-item-action>
-          <v-list-item-content>
-            <v-list-item-title>{{ $t('layout.information', { name: 'vue-i18n' }) }}</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
+          prepend-icon="mdi-information-outline"
+          :title="$t('navigation.information')" />
         <v-list-item
           to="/search"
-          router
-          exact>
-          <v-list-item-action>
-            <v-icon>mdi-magnify</v-icon>
-          </v-list-item-action>
-          <v-list-item-content>
-            <v-list-item-title>{{ $t('layout.search', { name: 'vue-i18n' }) }}</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
+          exact
+          prepend-icon="mdi-magnify"
+          :title="$t('navigation.search')" />
         <v-list-item
           v-if="canListOntologies"
           to="/semantic"
-          router>
-          <v-list-item-action>
-            <v-icon>mdi-share-variant</v-icon>
-          </v-list-item-action>
-          <v-list-item-content>
-            <v-list-item-title>{{ $t('layout.semantics', { name: 'vue-i18n' }) }}</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
+          prepend-icon="mdi-share-variant"
+          :title="$t('navigation.semantics')" />
       </v-list>
-      <div id="messages">
+      <template v-slot:append>
         <v-alert
           v-for="(message, idx) in messages"
           :key="idx"
           class="banner"
-          border="left"
+          border="start"
           tile
           :type="message.type">
           {{ message.message }}<span v-if="message.link">&nbsp;&mdash;&nbsp;<a :href="message.link" v-text="message.link_text ? message.link_text : message.link" /></span>
         </v-alert>
-      </div>
+        <div class="d-flex pa-2">
+          <v-spacer />
+          <v-btn
+            variant="plain"
+            prepend-icon="mdi-tag"
+            :href="`https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/${version}`"
+            :text="version"
+            size="x-small"
+          />
+        </div>
+      </template>
     </v-navigation-drawer>
-    <v-form ref="form" @submit.prevent="submit">
-      <v-app-bar app extension-height="64">
-        <v-app-bar-nav-icon v-if="!$vuetify.breakpoint.lgAndUp" class="mr-1" @click.stop="drawer = !drawer" />
+    <v-form
+      ref="form"
+      @submit.prevent="submit">
+      <v-app-bar
+        app
+        flat
+        class="pr-1"
+        extension-height="64">
+        <template v-slot:prepend>
+          <v-app-bar-nav-icon
+            class="mr-3"
+            @click.stop="drawer = !drawer" />
+        </template>
         <!-- Search Bar -->
         <v-text-field
+          class="fuzzy-search"
           v-model="search"
-          solo
+          :variant="searchVariant"
           flat
           single-line
           hide-details
           clearable
-          append-icon="mdi-magnify"
-          :placeholder="$t('search.fuzzy.placeholder', { name: 'vue-i18n' })"
-          @click:append="retrieve" />
+          append-inner-icon="mdi-magnify"
+          :placeholder="$t('toolbars.search.fuzzy.placeholder')"
+          @click:append-inner="retrieve" />
         <v-spacer />
         <v-btn
           v-if="!user"
           class="mr-2"
           color="secondary"
+          variant="flat"
+          prepend-icon="mdi-login"
           to="/login">
-          <v-icon left>mdi-login</v-icon>
-          {{ $t('layout.login', { name: 'vue-i18n' }) }}
+          {{ $t('navigation.login') }}
         </v-btn>
         <v-btn
           v-if="!user"
           color="primary"
+          variant="flat"
+          prepend-icon="mdi-account-plus"
           to="/signup">
-          <v-icon left>mdi-account-plus</v-icon>
-          {{ $t('layout.signup', { name: 'vue-i18n' }) }}
+          {{ $t('navigation.signup') }}
         </v-btn>
         <v-btn
           v-if="user"
           to="/user"
-          plain>
-          {{ user.username }}
-        </v-btn>
-        <v-menu v-if="user" bottom offset-y left>
-          <template v-slot:activator="{ on, attrs }">
+          variant="plain"
+          :text="user.username" />
+        <v-menu v-if="user" location="bottom">
+          <template v-slot:activator="{ props }">
             <v-btn
-              icon
-              v-bind="attrs"
-              v-on="on">
-              <v-icon>mdi-dots-vertical</v-icon>
-            </v-btn>
+              icon="mdi-dots-vertical"
+              v-bind="props" />
           </template>
           <v-list>
             <v-list-item
               v-if="user"
               :to="`/search?t=database&owner.username=${user.username}`">
-              {{ $t('layout.mydatabases', { name: 'vue-i18n' }) }}
+              {{ $t('navigation.my-databases') }}
             </v-list-item>
             <v-list-item
               v-if="user"
               @click="logout">
-              {{ $t('layout.logout', { name: 'vue-i18n' }) }}
+              {{ $t('navigation.logout') }}
             </v-list-item>
           </v-list>
         </v-menu>
@@ -122,18 +129,15 @@
     </v-form>
     <v-main>
       <v-container>
-        <nuxt />
+        <slot />
       </v-container>
     </v-main>
-    <script v-if="hasDataset" type="application/ld+json" v-text="datasetJsonLd" />
   </v-app>
 </template>
 
 <script>
-import DatabaseService from '@/api/database.service'
-import TableService from '@/api/table.service'
-import DatabaseMapper from '@/api/database.mapper'
-import IdentifierMapper from '@/api/identifier.mapper'
+import { useUserStore } from '@/stores/user'
+import { useCacheStore } from '@/stores/cache'
 
 export default {
   data () {
@@ -147,33 +151,35 @@ export default {
       loadingUser: true,
       loadingSearch: false,
       loadingDatabases: false,
-      search: null
+      search: null,
+      userStore: useUserStore(),
+      cacheStore: useCacheStore()
     }
   },
   computed: {
     user () {
-      return this.$store.state.user
+      return this.userStore.getUser
     },
     locale () {
-      return this.$store.state.locale
+      return null
     },
     messages () {
-      return this.$store.state.messages
+      return this.cacheStore.getMessages
     },
     table () {
-      return this.$store.state.table
+      return this.cacheStore.getTable
     },
     database () {
-      return this.$store.state.database
+      return this.cacheStore.getDatabase
     },
     roles () {
-      return this.$store.state.roles
+      return this.userStore.getRoles
     },
     version () {
-      return this.$config.version
+      return this.$config.public.version
     },
     title () {
-      return this.$config.title
+      return this.$config.public.title
     },
     canListOntologies () {
       if (!this.roles) {
@@ -182,42 +188,33 @@ export default {
       return this.roles.includes('list-ontologies')
     },
     logo () {
-      return this.$config.logo
+      return this.$config.public.logo
     },
-    hasDataset () {
-      return this.$route.path.startsWith('/database')
+    searchVariant () {
+      const runtimeConfig = useRuntimeConfig()
+      return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.input.contrast : 'solo-filled'
     },
-    datasetJsonLd () {
-      if (!this.hasDataset || !this.database) {
-        return {}
-      }
-      if (!('identifiers' in this.database) || this.database.identifiers.length === 0) {
-        return DatabaseMapper.databaseToJsonLd(this.database)
-      }
-      return IdentifierMapper.identifiersToJsonLd(this.database)
-    }
   },
   watch: {
-    '$i18n.locale': {
-      handler () {
-        this.$store.commit('SET_LOCALE', this.$i18n.locale)
-      }
-    },
     '$route.params.database_id': {
-      handler (id, oldId) {
-        if (id !== oldId) {
-          this.loadDatabase()
-          this.loadAccess()
+      handler (newId, oldId) {
+        if (newId === oldId) {
+          return
+        }
+        this.cacheStore.setRouteDatabase(newId)
+        if (this.user) {
+          this.userStore.setRouteAccess(newId)
         }
       },
       deep: true,
       immediate: true
     },
     '$route.params.table_id': {
-      handler (id, oldId) {
-        if (id !== oldId) {
-          this.loadTable()
+      handler (newId, oldId) {
+        if (newId === oldId) {
+          return
         }
+        this.cacheStore.setRouteTable(this.$route.params.database_id, newId)
       },
       deep: true,
       immediate: true
@@ -225,15 +222,13 @@ export default {
   },
   mounted () {
     this.initEnvironment()
-    this.$store.dispatch('reloadMessages')
-    this.$store.dispatch('reloadOntologies')
     if (this.$route.query && this.$route.query.q) {
       this.search = this.$route.query.q
     }
     if (!this.user) {
       return
     }
-    this.$vuetify.theme.dark = this.user.attributes.theme_dark
+    this.setTheme()
   },
   methods: {
     submit () {
@@ -243,103 +238,42 @@ export default {
       const redirect = ![undefined, '/', '/login'].includes(this.$router.currentRoute.path)
       this.$router.push({ path: '/login', query: redirect ? { redirect: this.$router.currentRoute.path } : {} })
     },
-    logout (message) {
-      if (typeof message === 'string') {
-        this.$toast.warning(message)
-      }
-      this.$store.dispatch('logout')
-      this.$vuetify.theme.dark = false
+    logout () {
+      this.$vuetify.theme.global.name = 'tuwThemeLight'
+      this.userStore.logout()
       this.$router.push('/database')
-    },
-    loadDatabase () {
-      if (!this.$route.params.database_id) {
-        this.$store.commit('SET_DATABASE', null)
-        return
-      }
-      this.loading = true
-      DatabaseService.findOne(this.$route.params.database_id)
-        .then((database) => {
-          this.$store.commit('SET_DATABASE', database)
-          this.loading = false
-          this.loadTable()
-        })
-        .finally(() => {
-          this.loading = false
-        })
-    },
-    loadTable () {
-      if (!this.$route.params.database_id || !this.$route.params.table_id) {
-        return
-      }
-      this.loading = true
-      TableService.findOne(this.$route.params.database_id, this.$route.params.table_id)
-        .then((table) => {
-          this.$store.commit('SET_TABLE', table)
-        })
-        .finally(() => {
-          this.loading = false
-        })
-    },
-    loadAccess () {
-      if (!this.$route.params.database_id) {
-        return
-      }
-      this.loading = true
-      DatabaseService.checkAccess(this.$route.params.database_id)
-        .then((access) => {
-          this.$store.commit('SET_ACCESS', access)
-          this.loading = false
-        })
-        .catch(() => {
-          this.loading = false
-        })
     },
     retrieve () {
       console.debug('performing fuzzy search')
       this.$router.push({ path: '/search', query: { q: this.search } })
     },
     initEnvironment () {
-      this.$store.commit('SET_TITLE', this.$config.title)
-      this.$store.commit('SET_ICON', this.$config.icon)
-      this.$store.commit('SET_CLIENT_ID', this.$config.clientId)
-      this.$store.commit('SET_CLIENT_SECRET', this.$config.clientSecret)
-      this.$store.commit('SET_SEARCH_USERNAME', this.$config.searchUsername)
-      this.$store.commit('SET_SEARCH_PASSWORD', this.$config.searchPassword)
-      this.$store.commit('SET_DOI_URL', this.$config.doiUrl)
-      console.debug('runtime config', this.$config)
       if (this.locale) {
         this.$i18n.locale = this.locale
       }
-    }
-  },
-  head () {
-    return {
-      title: this.$config.title
+    },
+    setTheme () {
+      switch (this.user.attributes.theme) {
+        case 'dark':
+          this.$vuetify.theme.global.name = 'tuwThemeDark'
+          break
+        case 'light':
+          this.$vuetify.theme.global.name = 'tuwThemeLight'
+          break
+        case 'light-contrast':
+          this.$vuetify.theme.global.name = 'tuwThemeLightContrast'
+          break
+        case 'dark-contrast':
+          this.$vuetify.theme.global.name = 'tuwThemeDarkContrast'
+          break
+      }
     }
   }
 }
 </script>
-<style>
-#messages {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-}
-.banner {
-  width: 100%;
-  margin: 8px 0 0 0;
-}
-.search-result-title,
-.search-result-subtitle {
-  overflow: hidden;
-  white-space: pre-line;
-}
+<style lang="scss">
 .v-menu__content {
   max-width: 988px !important;
-}
-.logo {
-  margin: 1em 1em 0;
 }
 .sl {
   padding-left: 36px;

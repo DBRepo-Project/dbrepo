@@ -4,6 +4,7 @@ import os
 import logging
 from flasgger import LazyJSONEncoder, Swagger
 from flask import Flask
+from flask_cors import CORS
 from opensearchpy import OpenSearch
 from config import Config
 from prometheus_flask_exporter import PrometheusMetrics
@@ -41,6 +42,8 @@ def create_app(config_class=Config):
 
     # create app object
     app = Flask(__name__)
+
+    cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 
     metrics = PrometheusMetrics(app)
     metrics.info("app_info", "Application info", version="0.0.1")

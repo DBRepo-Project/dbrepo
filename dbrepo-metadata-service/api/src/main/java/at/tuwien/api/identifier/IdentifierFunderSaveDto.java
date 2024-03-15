@@ -15,8 +15,6 @@ import lombok.extern.jackson.Jacksonized;
 @ToString
 public class IdentifierFunderSaveDto {
 
-    private Long id;
-
     @NotBlank
     @JsonProperty("funder_name")
     @Schema(example = "European Commission")
