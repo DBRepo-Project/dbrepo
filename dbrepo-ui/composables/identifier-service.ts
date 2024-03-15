@@ -203,7 +203,7 @@ export const useIdentifierService = (): any => {
       if (data.doi.startsWith('http')) {
         return data.doi
       }
-      return `${config.public.doi}/${data.doi}`
+      return `${config.public.doi.endpoint}/${data.doi}`
     }
     return `${config.public.api.client}/pid/${data.id}`
   }

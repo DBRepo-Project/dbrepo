@@ -467,6 +467,28 @@ ui:
     repository: dbrepo/ui
     tag: "1.4.1"
     pullPolicy: Always
+  public:
+    api:
+      client: http://example.com
+      server: http://example.com
+    title: "Database Repository"
+    logo: "/logo.svg"
+    icon: "/favicon.ico"
+    touch: "/apple-touch-icon.png"
+    broker:
+      host: example.com
+      port:
+        5671: true
+        5672: false
+      extra: "128.130.0.0/15"
+    database:
+      extra: "128.130.0.0/15"
+    pid:
+      default:
+        publisher: "Example University"
+    doi:
+      enabled: false
+      endpoint: https://doi.org
   replicaCount: 2
   extraVolumes: [ ]
   #  - name: images-map

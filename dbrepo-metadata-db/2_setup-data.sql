@@ -5,4 +5,6 @@ INSERT INTO `mdb_containers` (name, internal_name, image_id, host, port, ui_host
 VALUES ('MariaDB Galera 11.1.3', 'mariadb_11_1_3', 1, 'data-db', 3306, 'localhost', 3306, 'data-db-sidecar', 3305,
         'root', 'dbrepo');
 
+INSERT INTO `mdb_version` (`schema_version`) VALUES ('1.4.2');
+
 COMMIT;

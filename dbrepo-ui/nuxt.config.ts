@@ -85,19 +85,22 @@ export default defineNuxtConfig({
           publisher: "Example University"
         }
       },
-      doi: false,
+      doi: {
+        enabled: false,
+        endpoint: "https://doi.org"
+      },
       links: {
         opensearch: {
           text: "OpenSearch Admin",
-          href: "http://localhost/admin/dashboard/"
+          href: "/admin/dashboard/"
         },
         rabbitmq: {
           text: "RabbitMQ Admin",
-          href: "http://localhost/admin/broker/"
+          href: "/admin/broker/"
         },
         keycloak: {
           text: "Keycloak Admin",
-          href: "http://localhost/api/auth/"
+          href: "/api/auth/"
         }
       },
       keycloak: {

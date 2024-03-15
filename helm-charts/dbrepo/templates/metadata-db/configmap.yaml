@@ -4,16 +4,22 @@ metadata:
   name: metadata-db-setup
   namespace: {{ $.Values.namespace }}
 data:
-  02-setup-container.sql: |
+  02-setup-data.sql: |
     BEGIN;
     INSERT INTO `mdb_containers` (name, internal_name, image_id, host, port, sidecar_host, sidecar_port, privileged_username, privileged_password)
     VALUES ('MariaDB Galera 11.1.3', 'mariadb_11_1_3', 1, 'data-db', 3306, 'data-db', 3305, 'root', 'dbrepo');
     INSERT INTO `mdb_banner_messages` (type, message)
     VALUES ('INFO', 'You are currently working on our test environment. Any data upload to this system may be deleted.');
+    INSERT INTO `mdb_version` (`schema_version`) VALUES ('1.4.2');
     COMMIT;
   01-setup-schema.sql: |
     BEGIN;
-    
+
+    CREATE TABLE IF NOT EXISTS `mdb_version`
+    (
+        schema_version character varying(255) NOT NULL DEFAULT '1.4.2'
+    ) WITH SYSTEM VERSIONING;
+
     CREATE TABLE IF NOT EXISTS `mdb_users`
     (
         id               character varying(36)  NOT NULL,
@@ -24,12 +30,12 @@ data:
         orcid            character varying(255),
         affiliation      character varying(255),
         mariadb_password character varying(255) NOT NULL,
-        theme_dark       boolean,
+        theme            character varying(255) NOT NULL default ('light'),
         PRIMARY KEY (id),
         UNIQUE (username),
         UNIQUE (email)
     ) WITH SYSTEM VERSIONING;
-    
+
     CREATE TABLE IF NOT EXISTS `mdb_images`
     (
         id            bigint                 NOT NULL AUTO_INCREMENT,
@@ -44,7 +50,7 @@ data:
         PRIMARY KEY (id),
         UNIQUE (name, version)
     ) WITH SYSTEM VERSIONING;
-    
+
     CREATE TABLE IF NOT EXISTS `mdb_images_date`
     (
         id              bigint                 NOT NULL AUTO_INCREMENT,
@@ -58,7 +64,7 @@ data:
         FOREIGN KEY (iid) REFERENCES mdb_images (id),
         UNIQUE (database_format, unix_format, example)
     ) WITH SYSTEM VERSIONING;
-    
+
     CREATE TABLE IF NOT EXISTS `mdb_containers`
     (
         id                  bigint                 NOT NULL AUTO_INCREMENT,
@@ -79,7 +85,7 @@ data:
         PRIMARY KEY (id),
         FOREIGN KEY (image_id) REFERENCES mdb_images (id)
     ) WITH SYSTEM VERSIONING;
-    
+
     CREATE TABLE IF NOT EXISTS `mdb_data`
     (
         ID           bigint NOT NULL AUTO_INCREMENT,
@@ -90,7 +96,7 @@ data:
         Seperator    text,
         PRIMARY KEY (ID)
     ) WITH SYSTEM VERSIONING;
-    
+
     CREATE TABLE IF NOT EXISTS `mdb_licenses`
     (
         identifier  character varying(255) NOT NULL,
@@ -99,7 +105,7 @@ data:
         PRIMARY KEY (identifier),
         UNIQUE (uri(200))
     ) WITH SYSTEM VERSIONING;
-    
+
     CREATE TABLE IF NOT EXISTS `mdb_databases`
     (
         id             bigint                 NOT NULL AUTO_INCREMENT,
@@ -122,14 +128,14 @@ data:
         FOREIGN KEY (owned_by) REFERENCES mdb_users (id),
         FOREIGN KEY (contact_person) REFERENCES mdb_users (id)
     ) WITH SYSTEM VERSIONING;
-    
+
     CREATE TABLE IF NOT EXISTS `mdb_databases_subjects`
     (
         dbid     BIGINT                 NOT NULL,
         subjects character varying(255) NOT NULL,
         PRIMARY KEY (dbid, subjects)
     ) WITH SYSTEM VERSIONING;
-    
+
     CREATE TABLE IF NOT EXISTS `mdb_tables`
     (
         ID                    bigint                 NOT NULL AUTO_INCREMENT,
@@ -161,7 +167,7 @@ data:
         FOREIGN KEY (created_by) REFERENCES mdb_users (id),
         FOREIGN KEY (owned_by) REFERENCES mdb_users (id)
     ) WITH SYSTEM VERSIONING;
-    
+
     CREATE TABLE IF NOT EXISTS `mdb_columns`
     (
         ID               BIGINT       NOT NULL AUTO_INCREMENT,
@@ -188,7 +194,7 @@ data:
         FOREIGN KEY (tID) REFERENCES mdb_tables (ID) ON DELETE CASCADE,
         PRIMARY KEY (ID)
     ) WITH SYSTEM VERSIONING;
-    
+
     CREATE TABLE IF NOT EXISTS `mdb_columns_enums`
     (
         id        bigint                 NOT NULL AUTO_INCREMENT,
@@ -197,7 +203,7 @@ data:
         FOREIGN KEY (column_id) REFERENCES mdb_columns (ID) ON DELETE CASCADE,
         PRIMARY KEY (id)
     ) WITH SYSTEM VERSIONING;
-    
+
     CREATE TABLE IF NOT EXISTS `mdb_columns_sets`
     (
         id        bigint                 NOT NULL AUTO_INCREMENT,
@@ -206,7 +212,7 @@ data:
         FOREIGN KEY (column_id) REFERENCES mdb_columns (ID) ON DELETE CASCADE,
         PRIMARY KEY (id)
     ) WITH SYSTEM VERSIONING;
-    
+
     CREATE TABLE IF NOT EXISTS `mdb_columns_nom`
     (
         tID           bigint,
@@ -217,7 +223,7 @@ data:
         FOREIGN KEY (tID, cID) REFERENCES mdb_columns (tID, ID),
         PRIMARY KEY (tID, cID)
     ) WITH SYSTEM VERSIONING;
-    
+
     CREATE TABLE IF NOT EXISTS `mdb_columns_cat`
     (
         tID           bigint,
@@ -229,7 +235,7 @@ data:
         FOREIGN KEY (tID, cID) REFERENCES mdb_columns (tID, ID),
         PRIMARY KEY (tID, cID)
     ) WITH SYSTEM VERSIONING;
-    
+
     CREATE TABLE IF NOT EXISTS `mdb_constraints_foreign_key`
     (
         fkid      BIGINT       NOT NULL AUTO_INCREMENT,
@@ -243,7 +249,7 @@ data:
         FOREIGN KEY (tid) REFERENCES mdb_tables (id) ON DELETE CASCADE,
         FOREIGN KEY (rtid) REFERENCES mdb_tables (id)
     ) WITH SYSTEM VERSIONING;
-    
+
     CREATE TABLE IF NOT EXISTS `mdb_constraints_foreign_key_reference`
     (
         id   BIGINT NOT NULL AUTO_INCREMENT,
@@ -255,7 +261,7 @@ data:
         FOREIGN KEY (cid) REFERENCES mdb_columns (id),
         FOREIGN KEY (rcid) REFERENCES mdb_columns (id)
     ) WITH SYSTEM VERSIONING;
-    
+
     CREATE TABLE IF NOT EXISTS `mdb_constraints_unique`
     (
         uid      BIGINT       NOT NULL AUTO_INCREMENT,
@@ -265,7 +271,7 @@ data:
         PRIMARY KEY (uid),
         FOREIGN KEY (tid) REFERENCES mdb_tables (id) ON DELETE CASCADE
     );
-    
+
     CREATE TABLE IF NOT EXISTS `mdb_constraints_unique_columns`
     (
         id  BIGINT NOT NULL AUTO_INCREMENT,
@@ -275,7 +281,7 @@ data:
         FOREIGN KEY (uid) REFERENCES mdb_constraints_unique (uid),
         FOREIGN KEY (cid) REFERENCES mdb_columns (id) ON DELETE CASCADE
     ) WITH SYSTEM VERSIONING;
-    
+
     CREATE TABLE IF NOT EXISTS `mdb_constraints_checks`
     (
         id     BIGINT       NOT NULL AUTO_INCREMENT,
@@ -284,7 +290,7 @@ data:
         PRIMARY KEY (id),
         FOREIGN KEY (tid) REFERENCES mdb_tables (id) ON DELETE CASCADE
     ) WITH SYSTEM VERSIONING;
-    
+
     CREATE TABLE IF NOT EXISTS `mdb_concepts`
     (
         id          bigint       NOT NULL AUTO_INCREMENT,
@@ -295,7 +301,7 @@ data:
         PRIMARY KEY (id),
         UNIQUE (uri(200))
     ) WITH SYSTEM VERSIONING;
-    
+
     CREATE TABLE IF NOT EXISTS `mdb_units`
     (
         id          bigint       NOT NULL AUTO_INCREMENT,
@@ -306,7 +312,7 @@ data:
         PRIMARY KEY (id),
         UNIQUE (uri(200))
     ) WITH SYSTEM VERSIONING;
-    
+
     CREATE TABLE IF NOT EXISTS `mdb_columns_concepts`
     (
         id      bigint    NOT NULL,
@@ -315,7 +321,7 @@ data:
         PRIMARY KEY (id, cid),
         FOREIGN KEY (cID) REFERENCES mdb_columns (ID)
     ) WITH SYSTEM VERSIONING;
-    
+
     CREATE TABLE IF NOT EXISTS `mdb_columns_units`
     (
         id      bigint    NOT NULL,
@@ -324,7 +330,7 @@ data:
         PRIMARY KEY (id, cID),
         FOREIGN KEY (cID) REFERENCES mdb_columns (ID)
     ) WITH SYSTEM VERSIONING;
-    
+
     CREATE TABLE IF NOT EXISTS `mdb_view`
     (
         id            bigint                NOT NULL AUTO_INCREMENT,
@@ -342,7 +348,7 @@ data:
         FOREIGN KEY (vdbid) REFERENCES mdb_databases (id),
         FOREIGN KEY (created_by) REFERENCES mdb_users (id)
     ) WITH SYSTEM VERSIONING;
-    
+
     CREATE TABLE IF NOT EXISTS `mdb_banner_messages`
     (
         id            bigint                            NOT NULL AUTO_INCREMENT,
@@ -354,7 +360,7 @@ data:
         display_end   timestamp                         NULL,
         PRIMARY KEY (id)
     ) WITH SYSTEM VERSIONING;
-    
+
     CREATE TABLE IF NOT EXISTS `mdb_ontologies`
     (
         id              bigint     NOT NULL AUTO_INCREMENT,
@@ -369,7 +375,7 @@ data:
         UNIQUE (uri(200)),
         PRIMARY KEY (id)
     ) WITH SYSTEM VERSIONING;
-    
+
     CREATE TABLE IF NOT EXISTS `mdb_view_columns`
     (
         id               BIGINT NOT NULL AUTO_INCREMENT,
@@ -381,7 +387,7 @@ data:
         FOREIGN KEY (vid) REFERENCES mdb_view (id),
         FOREIGN KEY (cid) REFERENCES mdb_columns (ID)
     ) WITH SYSTEM VERSIONING;
-    
+
     CREATE TABLE IF NOT EXISTS `mdb_identifiers`
     (
         id                BIGINT                                       NOT NULL AUTO_INCREMENT,
@@ -409,7 +415,7 @@ data:
         FOREIGN KEY (dbid) REFERENCES mdb_databases (id),
         FOREIGN KEY (created_by) REFERENCES mdb_users (id)
     ) WITH SYSTEM VERSIONING;
-    
+
     CREATE TABLE IF NOT EXISTS `mdb_identifier_licenses`
     (
         pid        bigint       NOT NULL,
@@ -418,7 +424,7 @@ data:
         FOREIGN KEY (pid) REFERENCES mdb_identifiers (id),
         FOREIGN KEY (license_id) REFERENCES mdb_licenses (identifier)
     ) WITH SYSTEM VERSIONING;
-    
+
     CREATE TABLE IF NOT EXISTS `mdb_identifier_titles`
     (
         id         bigint NOT NULL AUTO_INCREMENT,
@@ -429,7 +435,7 @@ data:
         PRIMARY KEY (id),
         FOREIGN KEY (pid) REFERENCES mdb_identifiers (id)
     ) WITH SYSTEM VERSIONING;
-    
+
     CREATE TABLE IF NOT EXISTS `mdb_identifier_funders`
     (
         id                     bigint       NOT NULL AUTO_INCREMENT,
@@ -444,7 +450,7 @@ data:
         PRIMARY KEY (id),
         FOREIGN KEY (pid) REFERENCES mdb_identifiers (id)
     ) WITH SYSTEM VERSIONING;
-    
+
     CREATE TABLE IF NOT EXISTS `mdb_identifier_descriptions`
     (
         id               bigint NOT NULL AUTO_INCREMENT,
@@ -455,7 +461,7 @@ data:
         PRIMARY KEY (id),
         FOREIGN KEY (pid) REFERENCES mdb_identifiers (id)
     ) WITH SYSTEM VERSIONING;
-    
+
     CREATE TABLE IF NOT EXISTS `mdb_related_identifiers`
     (
         id       bigint       NOT NULL AUTO_INCREMENT,
@@ -467,7 +473,7 @@ data:
         FOREIGN KEY (pid) REFERENCES mdb_identifiers (id),
         UNIQUE (pid, value)
     ) WITH SYSTEM VERSIONING;
-    
+
     CREATE TABLE IF NOT EXISTS `mdb_identifier_creators`
     (
         id                                bigint       NOT NULL AUTO_INCREMENT,
@@ -486,7 +492,7 @@ data:
         PRIMARY KEY (id),
         FOREIGN KEY (pid) REFERENCES mdb_identifiers (id)
     ) WITH SYSTEM VERSIONING;
-    
+
     CREATE TABLE IF NOT EXISTS `mdb_feed`
     (
         fDBID   bigint,
@@ -498,7 +504,7 @@ data:
         FOREIGN KEY (fDBID, fID) REFERENCES mdb_tables (tDBID, ID),
         FOREIGN KEY (fUserId) REFERENCES mdb_users (id)
     ) WITH SYSTEM VERSIONING;
-    
+
     CREATE TABLE IF NOT EXISTS `mdb_update`
     (
         uUserID character varying(255) NOT NULL,
@@ -507,7 +513,7 @@ data:
         PRIMARY KEY (uUserID, uDBID),
         FOREIGN KEY (uDBID) REFERENCES mdb_databases (id)
     ) WITH SYSTEM VERSIONING;
-    
+
     CREATE TABLE IF NOT EXISTS `mdb_access`
     (
         aUserID  character varying(255) NOT NULL,
@@ -517,7 +523,7 @@ data:
         created  timestamp              NOT NULL DEFAULT NOW(),
         PRIMARY KEY (aUserID, aDBID)
     ) WITH SYSTEM VERSIONING;
-    
+
     CREATE TABLE IF NOT EXISTS `mdb_have_access`
     (
         user_id     character varying(36)                   NOT NULL,
@@ -527,23 +533,25 @@ data:
         PRIMARY KEY (user_id, database_id),
         FOREIGN KEY (user_id) REFERENCES mdb_users (id)
     ) WITH SYSTEM VERSIONING;
-    
+
     COMMIT;
     BEGIN;
-    
+
     INSERT INTO `mdb_licenses` (identifier, uri, description)
-    VALUES ('CC0-1.0', 'https://creativecommons.org/publicdomain/zero/1.0/legalcode', 'CC0 waives copyright interest in a work you''ve created and dedicates it to the world-wide public domain. Use CC0 to opt out of copyright entirely and ensure your work has the widest reach.'),
-           ('CC-BY-4.0', 'https://creativecommons.org/licenses/by/4.0/legalcode', 'The Creative Commons Attribution license allows re-distribution and re-use of a licensed work on the condition that the creator is appropriately credited.');
-    
+    VALUES ('CC0-1.0', 'https://creativecommons.org/publicdomain/zero/1.0/legalcode',
+            'CC0 waives copyright interest in a work you''ve created and dedicates it to the world-wide public domain. Use CC0 to opt out of copyright entirely and ensure your work has the widest reach.'),
+           ('CC-BY-4.0', 'https://creativecommons.org/licenses/by/4.0/legalcode',
+            'The Creative Commons Attribution license allows re-distribution and re-use of a licensed work on the condition that the creator is appropriately credited.');
+
     INSERT INTO `mdb_images` (name, version, default_port, dialect, driver_class, jdbc_method)
     VALUES ('mariadb', '11.1.3', 3306, 'org.hibernate.dialect.MariaDBDialect', 'org.mariadb.jdbc.Driver', 'mariadb');
-    
+
     INSERT INTO `mdb_images_date` (iid, database_format, unix_format, example, has_time)
     VALUES (1, '%Y-%c-%d %H:%i:%S.%f', 'yyyy-MM-dd HH:mm:ss.SSSSSS', '2022-01-30 13:44:25.499', true),
            (1, '%Y-%c-%d %H:%i:%S', 'yyyy-MM-dd HH:mm:ss', '2022-01-30 13:44:25', true),
            (1, '%Y-%c-%d', 'yyyy-MM-dd', '2022-01-30', false),
            (1, '%H:%i:%S', 'HH:mm:ss', '13:44:25', true);
-    
+
     INSERT INTO `mdb_ontologies` (prefix, uri, uri_pattern, sparql_endpoint, rdf_path)
     VALUES ('om', 'http://www.ontology-of-units-of-measure.org/resource/om-2/',
             'http://www.ontology-of-units-of-measure.org/resource/om-2/.*', null, 'rdf/om-2.0.rdf'),
@@ -561,3 +569,4 @@ data:
            ('prov', 'http://www.w3.org/ns/prov#', null, null, null),
            ('db', 'http://dbpedia.org', 'http://dbpedia.org/ontology/.*', 'http://dbpedia.org/sparql', null);
     COMMIT;
+
