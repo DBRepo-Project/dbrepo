@@ -1,21 +1,27 @@
 <template>
   <div>
     <v-form ref="form" v-model="valid" autocomplete="off" @submit.prevent="submit">
-      <v-card>
-        <v-card-title>Drop table {{ table.internal_name }}</v-card-title>
+      <v-card
+        :title="$t('pages.table.subpages.drop.title') + ' ' + table.internal_name"
+        variant="elevated">
         <v-card-text>
           <v-row dense>
             <v-col>
-              This action cannot be undone! Type the table name <code>{{ table.internal_name }}</code> below if you really want to drop it with all stored data.
+              <span v-text="$t('pages.table.subpages.drop.warning.prefix')" />
+              &nbsp;<code>{{ table.internal_name }}</code>&nbsp;
+              <span v-text="$t('pages.table.subpages.drop.warning.suffix')" />
             </v-col>
           </v-row>
-          <v-row dense>
+          <v-row>
             <v-col>
               <v-text-field
                 id="confirm"
                 v-model="confirm"
                 name="confirm"
-                label="Table Name *"
+                persistent-hint
+                :variant="inputVariant"
+                :label="$t('pages.table.subpages.drop.name.label')"
+                :hint="$t('pages.table.subpages.drop.name.hint')"
                 autofocus
                 required />
             </v-col>
@@ -24,19 +30,17 @@
         <v-card-actions>
           <v-spacer />
           <v-btn
-            class="mb-2"
-            @click="cancel">
-            Cancel
-          </v-btn>
+            :variant="buttonVariant"
+            :text="$t('navigation.cancel')"
+            @click="cancel" />
           <v-btn
-            class="mb-2 mr-1"
             color="error"
+            variant="flat"
+            :text="$t('navigation.delete')"
             :loading="loadingDelete"
             :disabled="confirm !== table.internal_name"
             type="submit"
-            @click="dropTable">
-            Delete
-          </v-btn>
+            @click="dropTable" />
         </v-card-actions>
       </v-card>
     </v-form>
@@ -44,22 +48,31 @@
 </template>
 
 <script>
-import TableService from '@/api/table.service'
+import { useCacheStore } from '@/stores/cache'
 
 export default {
   data () {
     return {
       confirm: null,
       loadingDelete: false,
-      valid: false
+      valid: false,
+      cacheStore: useCacheStore()
     }
   },
   computed: {
     table () {
-      return this.$store.state.table
+      return this.cacheStore.getTable
     },
     database () {
-      return this.$store.state.database
+      return this.cacheStore.getDatabase
+    },
+    inputVariant () {
+      const runtimeConfig = useRuntimeConfig()
+      return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.input.contrast : runtimeConfig.public.variant.input.normal
+    },
+    buttonVariant () {
+      const runtimeConfig = useRuntimeConfig()
+      return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.button.contrast : runtimeConfig.public.variant.button.normal
     }
   },
   methods: {
@@ -74,11 +87,13 @@ export default {
         return
       }
       this.loadingDelete = true
-      TableService.delete(this.database.id, this.table.id)
+      const tableService = useTableService()
+      tableService.remove(this.database.id, this.table.id)
         .then(() => {
           console.info('Deleted table with id ', this.table.id)
+          this.cacheStore.reloadDatabase()
           this.$toast.success('Successfully deleted table with id ' + this.table.id)
-          this.$emit('close', { action: 'deleted' })
+          this.$router.push(`/database/${this.$route.params.database_id}/table`)
         })
         .finally(() => {
           this.loadingDelete = false

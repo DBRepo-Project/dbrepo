@@ -1,37 +1,49 @@
 <template>
   <div v-if="view">
     <v-toolbar flat>
-      <v-toolbar-title>
-        <v-btn id="back-btn" class="mr-2" :to="`/database/${$route.params.database_id}/view`">
-          <v-icon left>mdi-arrow-left</v-icon>
-        </v-btn>
-      </v-toolbar-title>
-      <v-toolbar-title v-text="title" />
+      <v-btn
+        class="mr-2"
+        size="small"
+        icon="mdi-arrow-left"
+        :to="`/database/${$route.params.database_id}/view`" />
+      <v-toolbar-title
+        :text="title" />
       <v-spacer />
-      <v-toolbar-title>
-        <v-btn v-if="canDeleteView" class="mb-1" :loading="loadingDelete" color="error" @click="deleteView">
-          <v-icon left>mdi-delete</v-icon> Delete
-        </v-btn>
-        <v-btn v-if="canCreatePid" class="mb-1" color="primary" :to="`/database/${$route.params.database_id}/view/${$route.params.view_id}/persist`">
-          <v-icon left>mdi-content-save-outline</v-icon> Get PID
-        </v-btn>
-      </v-toolbar-title>
+      <v-btn
+        v-if="canDeleteView"
+        prepend-icon="mdi-delete"
+        class="mr-2"
+        variant="flat"
+        color="error"
+        :text="$vuetify.display.lgAndUp ? $t('navigation.delete') : ''"
+        :loading="loadingDelete"
+        @click="deleteView" />
+      <v-btn
+        v-if="canCreatePid"
+        prepend-icon="mdi-content-save-outline"
+        variant="flat"
+        color="primary"
+        :text="($vuetify.display.lgAndUp ? $t('toolbars.view.pid.xl') + ' ' : '') + $t('toolbars.view.pid.permanent')"
+        :to="`/database/${$route.params.database_id}/view/${$route.params.view_id}/persist`" />
+      <template v-slot:extension>
+        <v-tabs
+          v-model="tab"
+          color="primary">
+          <v-tab
+            :text="$t('navigation.info')"
+            :to="`/database/${$route.params.database_id}/view/${$route.params.view_id}/info`" />
+          <v-tab
+            :text="$t('navigation.data')"
+            :to="`/database/${$route.params.database_id}/view/${$route.params.view_id}/data`" />
+        </v-tabs>
+      </template>
     </v-toolbar>
-    <v-tabs v-model="tab" color="primary">
-      <v-tab :to="`/database/${$route.params.database_id}/view/${$route.params.view_id}/info`">
-        Info
-      </v-tab>
-      <v-tab :to="`/database/${$route.params.database_id}/view/${$route.params.view_id}/data`">
-        Data
-      </v-tab>
-    </v-tabs>
   </div>
 </template>
 
 <script>
-import UserUtils from '@/api/user.utils'
-import DatabaseService from '@/api/database.service'
-import IdentifierMapper from '@/api/identifier.mapper'
+import { useUserStore } from '@/stores/user'
+import { useCacheStore } from '@/stores/cache'
 
 export default {
   components: {
@@ -40,7 +52,9 @@ export default {
     return {
       tab: null,
       loading: false,
-      loadingDelete: false
+      loadingDelete: false,
+      userStore: useUserStore(),
+      cacheStore: useCacheStore()
     }
   },
   computed: {
@@ -48,7 +62,7 @@ export default {
       return this.$route.query.pid
     },
     database () {
-      return this.$store.state.database
+      return this.cacheStore.getDatabase
     },
     view () {
       if (!this.database) {
@@ -66,16 +80,17 @@ export default {
       if (!this.roles || !this.user || !this.view) {
         return false
       }
-      return this.roles.includes('create-identifier') && UserUtils.hasReadAccess(this.access)
+      const userService = useUserService()
+      return this.roles.includes('create-identifier') && userService.hasReadAccess(this.access)
     },
     access () {
-      return this.$store.state.access
+      return this.userStore.getAccess
     },
     user () {
-      return this.$store.state.user
+      return this.userStore.getUser
     },
     roles () {
-      return this.$store.state.roles
+      return this.userStore.getRoles
     },
     identifiers () {
       if (!this.view) {
@@ -93,9 +108,7 @@ export default {
           return identifier
         }
       }
-      const identifier = this.identifiers[0]
-      console.debug('defaulted to latest identifier', identifier)
-      return identifier
+      return this.identifiers[0]
     },
     title () {
       if (!this.view) {
@@ -104,17 +117,23 @@ export default {
       if (!this.identifier) {
         return this.view.name
       }
-      return IdentifierMapper.identifierPreferEnglishTitle(this.identifier)
+      const identifierService = useUserService()
+      return identifierService.identifierPreferEnglishTitle(this.identifier)
     }
   },
   methods: {
     deleteView () {
       this.loadingDelete = true
-      DatabaseService.deleteView(this.$route.params.database_id, this.$route.params.view_id)
-        .then(async () => {
-          this.$toast.success('Successfully deleted view!')
-          await this.$store.dispatch('reloadDatabase')
-          await this.$router.push(`/database/${this.$route.params.database_id}/view`)
+      const viewService = useViewService()
+      viewService.remove(this.$route.params.database_id, this.$route.params.view_id)
+        .then(() => {
+          this.$toast.success(this.$t('success.view.delete'))
+          this.cacheStore.reloadDatabase()
+          this.$router.push(`/database/${this.$route.params.database_id}/view`)
+        })
+        .catch((error) => {
+          const { code, message } = error.response.data
+          this.$toast.error(this.$t(code) + ' ' + message)
         })
         .finally(() => {
           this.loadingDelete = false

@@ -211,11 +211,11 @@ public abstract class BaseTest {
             .collect(Collectors.toList());
 
     public final static UserThemeSetDto USER_THEME_DARK_DTO = UserThemeSetDto.builder()
-            .themeDark(true)
+            .theme("dark")
             .build();
 
     public final static UserThemeSetDto USER_THEME_LIGHT_DTO = UserThemeSetDto.builder()
-            .themeDark(false)
+            .theme("light")
             .build();
 
     public final static UUID REALM_DBREPO_ID = UUID.fromString("6264bf7b-d1d3-4562-9c07-ce4364a8f9d3");
@@ -257,7 +257,7 @@ public abstract class BaseTest {
     public final static Boolean USER_1_TOTP = false;
     public final static Long USER_1_NOT_BEFORE = 0L;
     public final static Boolean USER_1_ENABLED = true;
-    public final static Boolean USER_1_THEME_DARK = false;
+    public final static String USER_1_THEME = "light";
     public final static Instant USER_1_CREATED = Instant.ofEpochSecond(1677399441L) /* 2023-02-26 08:17:21 (UTC) */;
     public final static Instant USER_1_LAST_MODIFIED = USER_1_CREATED;
     public final static UUID USER_1_REALM_ID = REALM_DBREPO_ID;
@@ -274,7 +274,7 @@ public abstract class BaseTest {
             .build();
 
     public final static UserAttributesDto USER_1_ATTRIBUTES_DTO = UserAttributesDto.builder()
-            .themeDark(USER_1_THEME_DARK)
+            .theme(USER_1_THEME)
             .orcid(USER_1_ORCID_UNCOMPRESSED)
             .affiliation(USER_1_AFFILIATION)
             .mariadbPassword(USER_1_DATABASE_PASSWORD)
@@ -301,7 +301,7 @@ public abstract class BaseTest {
             .lastname(USER_1_LASTNAME)
             .affiliation(USER_1_AFFILIATION)
             .orcid(USER_1_ORCID)
-            .themeDark(USER_1_THEME_DARK)
+            .theme(USER_1_THEME)
             .mariadbPassword(USER_1_DATABASE_PASSWORD)
             .build();
 
@@ -322,7 +322,7 @@ public abstract class BaseTest {
             .build();
 
     public final static UserThemeSetDto USER_1_THEME_SET_DTO = UserThemeSetDto.builder()
-            .themeDark(USER_1_THEME_DARK)
+            .theme(USER_1_THEME)
             .build();
 
     public final static UserPasswordDto USER_1_PASSWORD_DTO = UserPasswordDto.builder()
@@ -387,13 +387,13 @@ public abstract class BaseTest {
     public final static Boolean USER_2_TOTP = false;
     public final static Long USER_2_NOT_BEFORE = 0L;
     public final static Boolean USER_2_ENABLED = true;
-    public final static Boolean USER_2_THEME_DARK = false;
+    public final static String USER_2_THEME = "light";
     public final static Instant USER_2_CREATED = Instant.ofEpochSecond(1677399528L) /* 2023-02-26 08:18:48 (UTC) */;
     public final static Instant USER_2_LAST_MODIFIED = USER_1_CREATED;
     public final static UUID USER_2_REALM_ID = REALM_DBREPO_ID;
 
     public final static UserAttributesDto USER_2_ATTRIBUTES_DTO = UserAttributesDto.builder()
-            .themeDark(USER_2_THEME_DARK)
+            .theme(USER_2_THEME)
             .orcid(USER_2_ORCID_URL)
             .affiliation(USER_2_AFFILIATION)
             .mariadbPassword(USER_2_DATABASE_PASSWORD)
@@ -407,7 +407,7 @@ public abstract class BaseTest {
             .lastname(USER_2_LASTNAME)
             .affiliation(USER_2_AFFILIATION)
             .orcid(USER_2_ORCID_URL)
-            .themeDark(USER_2_THEME_DARK)
+            .theme(USER_2_THEME)
             .mariadbPassword(USER_2_DATABASE_PASSWORD)
             .build();
 
@@ -473,12 +473,12 @@ public abstract class BaseTest {
     public final static Boolean USER_3_TOTP = false;
     public final static Long USER_3_NOT_BEFORE = 0L;
     public final static Boolean USER_3_ENABLED = true;
-    public final static Boolean USER_3_THEME_DARK = false;
+    public final static String USER_3_THEME = "light";
     public final static Instant USER_3_CREATED = Instant.ofEpochSecond(1677399559L) /* 2023-02-26 08:19:19 (UTC) */;
     public final static UUID USER_3_REALM_ID = REALM_DBREPO_ID;
 
     public final static UserAttributesDto USER_3_ATTRIBUTES_DTO = UserAttributesDto.builder()
-            .themeDark(USER_3_THEME_DARK)
+            .theme(USER_3_THEME)
             .orcid(USER_3_ORCID_UNCOMPRESSED)
             .affiliation(USER_3_AFFILIATION)
             .mariadbPassword(USER_3_DATABASE_PASSWORD)
@@ -492,7 +492,7 @@ public abstract class BaseTest {
             .lastname(USER_3_LASTNAME)
             .affiliation(USER_3_AFFILIATION)
             .orcid(USER_3_ORCID_URL)
-            .themeDark(USER_3_THEME_DARK)
+            .theme(USER_3_THEME)
             .mariadbPassword(USER_3_DATABASE_PASSWORD)
             .build();
 
@@ -549,12 +549,12 @@ public abstract class BaseTest {
     public final static String USER_4_EMAIL = "junit4@ossdip.at";
     public final static Boolean USER_4_VERIFIED = true;
     public final static Boolean USER_4_ENABLED = true;
-    public final static Boolean USER_4_THEME_DARK = false;
+    public final static String USER_4_THEME = "light";
     public final static Instant USER_4_CREATED = Instant.ofEpochSecond(1677399592L) /* 2023-02-26 08:19:52 (UTC) */;
     public final static UUID USER_4_REALM_ID = REALM_DBREPO_ID;
 
     public final static UserAttributesDto USER_4_ATTRIBUTES_DTO = UserAttributesDto.builder()
-            .themeDark(USER_4_THEME_DARK)
+            .theme(USER_4_THEME)
             .orcid(USER_4_ORCID_URL)
             .affiliation(USER_4_AFFILIATION)
             .mariadbPassword(USER_4_DATABASE_PASSWORD)
@@ -568,7 +568,7 @@ public abstract class BaseTest {
             .lastname(USER_4_LASTNAME)
             .affiliation(USER_4_AFFILIATION)
             .orcid(USER_4_ORCID_URL)
-            .themeDark(USER_4_THEME_DARK)
+            .theme(USER_4_THEME)
             .mariadbPassword(USER_4_DATABASE_PASSWORD)
             .build();
 
@@ -610,7 +610,7 @@ public abstract class BaseTest {
     public final static String USER_5_EMAIL = "system@ossdip.at";
     public final static Boolean USER_5_VERIFIED = true;
     public final static Boolean USER_5_ENABLED = true;
-    public final static Boolean USER_5_THEME_DARK = false;
+    public final static String USER_5_THEME = "dark";
     public final static Instant USER_5_CREATED = Instant.ofEpochSecond(1677399592L) /* 2023-02-26 08:19:52 (UTC) */;
     public final static UUID USER_5_REALM_ID = REALM_DBREPO_ID;
 
@@ -639,7 +639,7 @@ public abstract class BaseTest {
             .firstname(USER_5_FIRSTNAME)
             .lastname(USER_5_LASTNAME)
             .affiliation(USER_5_AFFILIATION)
-            .themeDark(USER_5_THEME_DARK)
+            .theme(USER_5_THEME)
             .mariadbPassword(USER_5_DATABASE_PASSWORD)
             .build();
 

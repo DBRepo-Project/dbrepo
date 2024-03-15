@@ -1,0 +1,151 @@
+export const useDatabaseService = (): any => {
+  async function findAll(): Promise<DatabaseBriefDto[]> {
+    const axios = useAxiosInstance();
+    console.debug('find databases');
+    return new Promise((resolve, reject) => {
+      axios.get<DatabaseBriefDto[]>('/api/database')
+        .then((response) => {
+          console.info('Found database(s)');
+          resolve(response.data);
+        })
+        .catch((error) => {
+          console.error('Failed to find databases', error);
+          reject(error);
+        });
+    });
+  }
+
+  async function findOne(id: number): Promise<DatabaseDto | null> {
+    const axios = useAxiosInstance();
+    console.debug('find databases with id', id);
+    return new Promise((resolve, reject) => {
+      axios.get<DatabaseDto>(`/api/database/${id}`)
+        .then((response) => {
+          console.info('Found database with id', id);
+          resolve(response.data);
+        })
+        .catch((error) => {
+          console.error('Failed to find databases', error);
+          reject(error);
+        });
+    });
+  }
+
+  async function updateVisibility(id: number, payload: DatabaseModifyVisibilityDto): Promise<DatabaseDto | null> {
+    const axios = useAxiosInstance()
+    console.debug('update database visibility for database with id', id);
+    return new Promise((resolve, reject) => {
+      axios.put<DatabaseDto>(`/api/database/${id}/visibility`, payload)
+        .then((response) => {
+          console.info('Updated database visibility for database with id', id);
+          resolve(response.data);
+        })
+        .catch((error) => {
+          console.error('Failed to update database visibility for database with id', id);
+          reject(error);
+        });
+    });
+  }
+
+  async function updateImage(id: number, payload: DatabaseModifyImageDto): Promise<DatabaseDto | null> {
+    const axios = useAxiosInstance()
+    console.debug('update database image for database with id', id);
+    return new Promise((resolve, reject) => {
+      axios.put<DatabaseDto>(`/api/database/${id}/image`, payload)
+        .then((response) => {
+          console.info('Updated database image for database with id', id);
+          resolve(response.data);
+        })
+        .catch((error) => {
+          console.error('Failed to update database image for database with id', id);
+          reject(error);
+        });
+    });
+  }
+
+  async function updateOwner(id: number, payload: DatabaseTransferDto): Promise<DatabaseDto | null> {
+    const axios = useAxiosInstance()
+    console.debug('update database owner for database with id', id);
+    return new Promise((resolve, reject) => {
+      axios.put<DatabaseDto>(`/api/database/${id}/owner`, payload)
+        .then((response) => {
+          console.info('Updated database owner for database with id', id);
+          resolve(response.data);
+        })
+        .catch((error) => {
+          console.error('Failed to update database owner for database with id', id);
+          reject(error);
+        });
+    });
+  }
+
+  async function create(payload: DatabaseCreateDto): Promise<DatabaseDto | void> {
+    const axios = useAxiosInstance()
+    console.debug('create databases')
+    return new Promise((resolve, reject) => {
+      axios.post<DatabaseDto>('/api/database', payload)
+        .then((response) => {
+          console.info('Created database with id', response.data.id)
+          resolve(response.data)
+        })
+        .catch((error) => {
+          console.error('Failed to create databases', error)
+          reject(error)
+        })
+    })
+  }
+
+  function databaseToOwner (database: DatabaseDto) {
+    if (!database) {
+      return null
+    }
+    const userService = useUserService()
+    return userService.userToFullName(database.owner)
+  }
+
+  function databaseToContact (database: DatabaseDto) {
+    if (!database) {
+      return null
+    }
+    const userService = useUserService()
+    return userService.userToFullName(database.contact)
+  }
+
+  function databaseToJsonLd (database: DatabaseDto): Dataset {
+    const jsonLd: Dataset = {
+      '@context': 'https://schema.org/',
+      '@type': 'Dataset',
+      name: database.name,
+      description: 'Relational database hosted by the database repository.',
+      url: `/database/${database.id}/info`,
+      isAccessibleForFree: database.is_public,
+      creator: {
+        '@type': 'Person',
+        name: null,
+        givenName: null,
+        familyName: null,
+        sameAs: null,
+      }
+    }
+    jsonLd.creator.name = database.owner.name ? database.owner.name : database.owner.username
+    if (database.owner.given_name) {
+      jsonLd.creator.givenName = database.owner.given_name
+    }
+    if (database.owner.family_name) {
+      jsonLd.creator.familyName = database.owner.family_name
+    }
+    if (database.owner.attributes.orcid) {
+      jsonLd.creator.sameAs = database.owner.attributes.orcid
+    }
+    return jsonLd
+  }
+
+  function isOwner (database: DatabaseDto, user: UserDto): boolean {
+    if (!database || !user) {
+      return false
+    }
+    return database.owner.id === user.id
+  }
+
+  return {findAll, findOne, updateVisibility, updateImage, updateOwner, create, databaseToOwner, databaseToContact, databaseToJsonLd, isOwner}
+}

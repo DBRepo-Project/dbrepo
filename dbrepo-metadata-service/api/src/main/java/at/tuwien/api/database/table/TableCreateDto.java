@@ -3,6 +3,7 @@ package at.tuwien.api.database.table;
 import at.tuwien.api.database.table.columns.ColumnCreateDto;
 import at.tuwien.api.database.table.constraints.ConstraintsCreateDto;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import jakarta.validation.constraints.NotBlank;
@@ -21,9 +22,11 @@ import java.util.List;
 public class TableCreateDto {
 
     @NotBlank
+    @Size(min = 1, max = 64)
     @Schema(example = "Air Quality")
     private String name;
 
+    @Size(max = 180)
     @Schema(example = "Air Quality in Austria")
     private String description;
 

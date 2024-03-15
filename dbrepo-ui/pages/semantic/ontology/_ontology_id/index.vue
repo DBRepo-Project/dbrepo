@@ -20,7 +20,7 @@
       </v-toolbar-title>
     </v-toolbar>
     <v-form ref="form" v-model="valid" autocomplete="off" @submit.prevent="submit">
-      <v-card v-if="ontology" flat tile>
+      <v-card v-if="ontology" variant="flat">
         <v-card-text>
           <v-row dense>
             <v-col cols="6">
@@ -32,10 +32,10 @@
                 hint="Only lowercase alphanumeric letters, max. 8"
                 autofocus
                 :rules="[
-                  v => notEmpty(v) || $t('Required'),
-                  v => validPrefix(v) || $t('Invalid prefix pattern'),
-                  v => validPrefixLength(v,1,8) || $t('Invalid length: min. 1, max. 8'),
-                  v => validPrefixNotExists(v) || $t('Prefix exists')
+                  v => notEmpty(v) || $t('validation.required'),
+                  v => validPrefix(v) || $t('validation.prefix.pattern'),
+                  v => validPrefixLength(v,1,8) || $t('validation.prefix.length'),
+                  v => validPrefixNotExists(v) || $t('validation.prefix.exists')
                 ]"
                 required />
             </v-col>
@@ -48,9 +48,9 @@
                 name="uri"
                 label="URI *"
                 :rules="[
-                  v => notEmpty(v) || $t('Required'),
-                  v => validUri(v) || $t('Invalid URI'),
-                  v => validUriNotExists(v) || $t('URI exists')
+                  v => notEmpty(v) || $t('validation.required'),
+                  v => validUri(v) || $t('validation.uri.pattern'),
+                  v => validUriNotExists(v) || $t('validation.uri.exists')
                 ]"
                 required />
             </v-col>
@@ -63,7 +63,7 @@
                 name="sparql-endpoint"
                 label="SPARQL Endpoint"
                 :rules="[
-                  v => validUriOptional(v) || $t('Invalid URL')
+                  v => validUriOptional(v) || $t('validation.uri.pattern')
                 ]" />
             </v-col>
           </v-row>
@@ -85,13 +85,13 @@
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
   </div>
 </template>
+
 <script>
-import SemanticService from '@/api/semantic.service'
 import { notEmpty } from '@/utils'
+import { useUserStore } from '@/stores/user'
+import { useCacheStore } from '@/stores/cache'
 
 export default {
-  components: {
-  },
   data () {
     return {
       loading: false,
@@ -105,24 +105,23 @@ export default {
       valid: false,
       createOntologyDialog: false,
       items: [
-        { text: `${this.$t('layout.semantics', { name: 'vue-i18n' })}`, to: '/semantic', activeClass: '' },
-        { text: `${this.$t('layout.ontologies', { name: 'vue-i18n' })}`, to: '/semantic/ontology', activeClass: '' },
+        { text: `${this.$t('layout.semantics')}`, to: '/semantic', activeClass: '' },
+        { text: `${this.$t('layout.ontologies')}`, to: '/semantic/ontology', activeClass: '' },
         { text: `${this.$route.params.ontology_id}`, to: `/semantic/ontology/${this.$route.params.ontology_id}`, activeClass: '' }
-      ]
+      ],
+      userStore: useUserStore(),
+      cacheStore: useCacheStore()
     }
   },
   computed: {
-    token () {
-      return this.$store.state.token
-    },
     user () {
-      return this.$store.state.user
+      return this.userStore.getUser
     },
     roles () {
-      return this.$store.state.roles
+      return this.userStore.getRoles
     },
     ontologies () {
-      return this.$store.state.ontologies
+      return this.cacheStore.getOntologies
     },
     canListOntologies () {
       if (!this.roles) {
@@ -143,7 +142,8 @@ export default {
   methods: {
     loadOntology () {
       this.loading = true
-      SemanticService.findOntology(this.$route.params.ontology_id)
+      const ontologyService = useOntologyService()
+      ontologyService.findOne(this.$route.params.ontology_id)
         .then((ontology) => {
           this.ontology = ontology
           this.ontologyChangeDto = Object.assign({}, ontology)
@@ -157,9 +157,10 @@ export default {
     },
     deleteOntology () {
       this.loadingDelete = true
-      SemanticService.unregisterOntology(this.$route.params.ontology_id)
+      const ontologyService = useOntologyService()
+      ontologyService.remove(this.$route.params.ontology_id)
         .then(async () => {
-          await this.$store.dispatch('reloadOntologies')
+          // await this.$store.dispatch('reloadOntologies')
           await this.$router.push('/semantic/ontology')
         })
         .catch(() => {
@@ -176,10 +177,11 @@ export default {
         prefix: this.ontologyChangeDto.prefix,
         sparql_endpoint: this.ontologyChangeDto.sparql_endpoint
       }
-      SemanticService.updateOntology(this.$route.params.ontology_id, payload)
+      const ontologyService = useOntologyService()
+      ontologyService.update(this.$route.params.ontology_id, payload)
         .then(() => {
           this.loadOntology()
-          this.$store.dispatch('reloadOntologies')
+          // this.$store.dispatch('reloadOntologies')
           this.$toast.success('Successfully update ontology!')
         })
         .catch(() => {
@@ -231,7 +233,7 @@ export default {
     },
     close (event) {
       if (event.success) {
-        this.$store.dispatch('reloadOntologies')
+        // this.$store.dispatch('reloadOntologies')
       }
       this.createOntologyDialog = false
     },

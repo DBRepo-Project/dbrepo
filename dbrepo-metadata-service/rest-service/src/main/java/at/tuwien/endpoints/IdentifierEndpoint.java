@@ -3,7 +3,6 @@ package at.tuwien.endpoints;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.identifier.IdentifierSaveDto;
-import at.tuwien.api.identifier.IdentifierTypeDto;
 import at.tuwien.api.user.external.ExternalMetadataDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
@@ -20,7 +19,6 @@ import at.tuwien.utils.UserUtil;
 import at.tuwien.validation.EndpointValidator;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -31,19 +29,20 @@ import jakarta.validation.constraints.NotNull;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Log4j2
 @CrossOrigin(origins = "*")
 @RestController
-@RequestMapping("/api/identifier")
+@RequestMapping(path = "/api/identifier",
+        consumes = MediaType.ALL_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
 public class IdentifierEndpoint {
 
     private final UserService userService;
@@ -72,31 +71,6 @@ public class IdentifierEndpoint {
         this.identifierMapper = identifierMapper;
         this.endpointValidator = endpointValidator;
         this.identifierService = identifierService;
-    }
-
-    @GetMapping
-    @Transactional(readOnly = true)
-    @Observed(name = "dbr_identifier_findall")
-    @Operation(summary = "Find identifiers")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200",
-                    description = "List identifiers",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            array = @ArraySchema(schema = @Schema(implementation = IdentifierDto.class)))}),
-    })
-    public ResponseEntity<List<IdentifierDto>> list(@RequestParam(required = false) Long dbid,
-                                                    @RequestParam(required = false) Long qid,
-                                                    @RequestParam(required = false) Long vid,
-                                                    @RequestParam(required = false) Long tid,
-                                                    @RequestParam(required = false) IdentifierTypeDto type) {
-        log.debug("endpoint find identifiers, dbid={}, qid={}, vid={}, tid={}, type={}", dbid, qid, vid, tid, type);
-        final List<IdentifierDto> dto = identifierService.findAll(type, dbid, qid, vid, tid)
-                .stream()
-                .map(identifierMapper::identifierToIdentifierDto)
-                .collect(Collectors.toList());
-        log.info("Find identifiers resulted in {} identifiers", dto.size());
-        return ResponseEntity.ok(dto);
     }
 
     @PostMapping

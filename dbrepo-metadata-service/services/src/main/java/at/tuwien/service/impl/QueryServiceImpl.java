@@ -7,11 +7,13 @@ import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.TableCsvDeleteDto;
 import at.tuwien.api.database.table.TableCsvDto;
+import at.tuwien.api.database.table.TableCsvUpdateDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.View;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
+import at.tuwien.entities.database.table.columns.TableColumnType;
 import at.tuwien.exception.*;
 import at.tuwien.gateway.DataDbSidecarGateway;
 import at.tuwien.mapper.QueryMapper;
@@ -291,8 +293,32 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
 
     @Override
     @Transactional
+    public void update(Long databaseId, Long tableId, TableCsvUpdateDto data, Principal principal)
+            throws ImageNotSupportedException, TableMalformedException, DatabaseNotFoundException,
+            TableNotFoundException, QueryMalformedException {
+        /* find */
+        final Database database = databaseService.find(databaseId);
+        final Table table = tableService.find(databaseId, tableId);
+        /* run query */
+        if (data.getData().isEmpty() || data.getKeys().isEmpty()) return;
+        final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(),
+                database.getContainer(), database);
+        try {
+            final Connection connection = dataSource.getConnection();
+            final PreparedStatement preparedStatement = queryMapper.tableCsvDtoToRawUpdateQuery(connection, table, data);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            log.error("Failed to update tuples: {}", e.getMessage());
+            throw new TableMalformedException("Failed to update tuples: " + e.getMessage(), e);
+        } finally {
+            dataSource.close();
+        }
+    }
+
+    @Override
+    @Transactional
     public void insert(Long databaseId, Long tableId, TableCsvDto data, Principal principal)
-            throws TableMalformedException, DatabaseNotFoundException, TableNotFoundException {
+            throws TableMalformedException, DatabaseNotFoundException, TableNotFoundException, FileStorageException {
         /* find */
         final Database database = databaseService.find(databaseId);
         final Table table = tableService.find(databaseId, tableId);
@@ -300,6 +326,19 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         /* run query */
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(),
                 database.getContainer(), database);
+        /* for each LOB-like data-column, retrieve the bytes and replace the value */
+        for (String key : data.getData().keySet()) {
+            final boolean found = table.getColumns()
+                    .stream()
+                    .filter(c -> List.of(TableColumnType.BLOB, TableColumnType.LONGBLOB, TableColumnType.TINYBLOB, TableColumnType.MEDIUMBLOB).contains(c.getColumnType()))
+                    .anyMatch(c -> c.getInternalName().equals(key));
+            if (!found || data.getData().get(key) == null) {
+                continue;
+            }
+            final byte[] blob = storageService.getBytes(String.valueOf(data.getData().get(key)));
+            log.debug("replaced S3 storage key {} with blob", key);
+            data.getData().replace(key, blob);
+        }
         /* prepare the statement */
         try {
             final Connection connection = dataSource.getConnection();

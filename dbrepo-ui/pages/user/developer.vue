@@ -1,10 +1,14 @@
 <template>
   <div>
     <UserToolbar />
-    <v-tabs-items v-model="tab">
-      <v-tab-item>
-        <v-card v-if="canHandleMessages" flat tile>
-          <v-card-title>Maintenance Messages</v-card-title>
+    <v-window
+      v-model="tab">
+      <v-window-item>
+        <v-card
+          v-if="canHandleMessages"
+          :title="$t('pages.settings.subpages.developer.maintenance.title')"
+          rounded="0"
+          variant="flat">
           <v-data-table
             :headers="headers"
             :items="messages"
@@ -12,38 +16,43 @@
             :items-per-page="10">
             <template v-slot:item.action="{ item }">
               <v-btn
-                x-small
-                @click="modifyMessage(item)">
-                Modify
-              </v-btn>
+                size="x-small"
+                variant="flat"
+                :text="$t('pages.settings.subpages.developer.maintenance.modify.text')"
+                @click="modifyMessage(item)" />
             </template>
           </v-data-table>
           <v-card-text>
             <v-btn
-              small
-              color="secondary"
+              size="small"
+              variant="flat"
+              :text="$t('pages.settings.subpages.developer.maintenance.add.text')"
               :disabled="!canCreateMessage"
-              @click="createMessage">
-              Create Message
-            </v-btn>
+              @click="createMessage" />
           </v-card-text>
         </v-card>
-        <v-divider v-if="canHandleMessages" />
-        <v-card flat tile>
-          <v-card-title>Token Information</v-card-title>
+        <v-divider
+          v-if="canHandleMessages" />
+        <v-card
+          :title="$t('pages.settings.subpages.developer.token.title')"
+          :subtitle="$t('pages.settings.subpages.developer.token.subtitle')"
+          variant="flat"
+          rounded="0">
           <v-card-text>
             <v-row dense>
               <v-col xl="4">
                 <v-text-field
                   v-model="token"
                   disabled
-                  label="Access Token" />
+                  :variant="inputVariant"
+                  :label="$t('pages.settings.subpages.developer.token.access.label')" />
               </v-col>
               <v-col xl="2">
                 <v-text-field
                   v-model="tokenExpiry"
                   disabled
-                  :label="tokenExpiryLabel" />
+                  :variant="inputVariant"
+                  :label="expiryLabel(token)" />
               </v-col>
             </v-row>
             <v-row dense>
@@ -51,34 +60,39 @@
                 <v-text-field
                   v-model="refreshToken"
                   disabled
-                  label="Refresh Token" />
+                  :variant="inputVariant"
+                  :label="$t('pages.settings.subpages.developer.token.refresh.label')" />
               </v-col>
               <v-col xl="2">
                 <v-text-field
                   v-model="refreshTokenExpiry"
                   disabled
-                  :label="refreshTokenExpiryLabel" />
+                  :variant="inputVariant"
+                  :label="expiryLabel(refreshToken)" />
               </v-col>
             </v-row>
           </v-card-text>
         </v-card>
-      </v-tab-item>
-    </v-tabs-items>
+      </v-window-item>
+    </v-window>
+    <v-breadcrumbs :items="items" class="pa-0 mt-2" />
     <v-dialog
       v-model="dialog"
       persistent
       max-width="640">
-      <EditMaintenanceMessage :id="messageId" @close-dialog="closeDialog" />
+      <EditMaintenanceMessage
+        :id="messageId"
+        @close-dialog="closeDialog" />
     </v-dialog>
   </div>
 </template>
 
 <script>
-import UserToolbar from '@/components/UserToolbar'
-import MetadataService from '@/api/metadata.service'
+import UserToolbar from '@/components/user/UserToolbar'
 import EditMaintenanceMessage from '@/components/dialogs/EditMaintenanceMessage'
 import { formatTimestampUTCLabel, isActiveMessage, timestampsToHumanDifference } from '@/utils'
-import AuthenticationMapper from '@/api/authentication.mapper'
+import { useUserStore } from '@/stores/user'
+import { useCacheStore } from '@/stores/cache'
 
 export default {
   components: {
@@ -89,53 +103,56 @@ export default {
     return {
       tab: 0,
       headers: [
-        { text: 'Active', value: 'active' },
-        { text: 'Type', value: 'type' },
-        { text: 'Message', value: 'message' },
-        { text: 'Action', value: 'action' }
+        { title: this.$t('pages.settings.subpages.developer.maintenance.active'), value: 'active' },
+        { title: this.$t('pages.settings.subpages.developer.maintenance.type'), value: 'type' },
+        { title: this.$t('pages.settings.subpages.developer.maintenance.message'), value: 'message' },
+        { title: this.$t('pages.settings.subpages.developer.maintenance.action'), value: 'action' }
+      ],
+      items: [
+        {
+          title: this.$t('navigation.user'),
+          to: '/user'
+        },
+        {
+          title: this.$t('toolbars.user.developer'),
+          to: `/user/developer`,
+          disabled: true
+        }
       ],
       messages: [],
       loadingMessages: false,
       dialog: false,
-      messageId: null
+      messageId: null,
+      userStore: useUserStore(),
+      cacheStore: useCacheStore()
     }
   },
   computed: {
     token () {
-      return this.$store.state.token
+      return this.userStore.getToken
     },
     tokenExpiry () {
       if (!this.token) {
         return null
       }
-      return formatTimestampUTCLabel(AuthenticationMapper.tokenToExpiryDate(this.token))
-    },
-    tokenExpiryLabel () {
-      if (!this.token) {
-        return 'Expiry Date'
-      }
-      return `Expiry Date (${timestampsToHumanDifference(Date.now(), AuthenticationMapper.tokenToExpiryDate(this.token))})`
+      const authenticationService = useAuthenticationService()
+      return formatTimestampUTCLabel(authenticationService.tokenToExpiryDate(this.token))
     },
     refreshToken () {
-      return this.$store.state.refreshToken
+      return this.userStore.getRefreshToken
     },
     refreshTokenExpiry () {
       if (!this.refreshToken) {
         return null
       }
-      return formatTimestampUTCLabel(AuthenticationMapper.tokenToExpiryDate(this.refreshToken))
-    },
-    refreshTokenExpiryLabel () {
-      if (!this.refreshToken) {
-        return 'Expiry Date'
-      }
-      return `Expiry Date (${timestampsToHumanDifference(Date.now(), AuthenticationMapper.tokenToExpiryDate(this.refreshToken))})`
+      const authenticationService = useAuthenticationService()
+      return formatTimestampUTCLabel(authenticationService.tokenToExpiryDate(this.refreshToken))
     },
     user () {
-      return this.$store.state.user
+      return this.userStore.getUser
     },
     roles () {
-      return this.$store.state.roles
+      return this.userStore.getRoles
     },
     canCreateMessage () {
       if (!this.roles) {
@@ -151,6 +168,14 @@ export default {
     },
     canHandleMessages () {
       return this.canCreateMessage || this.canModifyMessage
+    },
+    inputVariant () {
+      const runtimeConfig = useRuntimeConfig()
+      return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.input.contrast : runtimeConfig.public.variant.input.normal
+    },
+    buttonVariant () {
+      const runtimeConfig = useRuntimeConfig()
+      return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.button.contrast : runtimeConfig.public.variant.button.normal
     }
   },
   mounted () {
@@ -167,12 +192,16 @@ export default {
       this.messageId = null
       this.dialog = true
     },
+    expiryLabel (token) {
+      const authenticationService = useAuthenticationService()
+      return this.$t('pages.settings.subpages.developer.token.expiry') + ' ' + timestampsToHumanDifference(Date.now(), authenticationService.tokenToExpiryDate(token))
+    },
     loadMessages () {
-      MetadataService.findAllMessages()
+      const messageService = useMessageService()
+      messageService.findAll()
         .then((messages) => {
           this.messages = messages.map((message) => {
             message.active = isActiveMessage(message) ? '● true' : 'false'
-            message.action = 'hello'
             return message
           })
         })
@@ -184,11 +213,10 @@ export default {
         })
     },
     closeDialog (event) {
-      this.dialog = false
       if (event.success) {
-        this.loadMessages()
-        this.$store.dispatch('reloadMessages')
+        this.cacheStore.reloadMessages()
       }
+      this.dialog = false
     }
   }
 }

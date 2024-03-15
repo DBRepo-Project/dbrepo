@@ -1,9 +1,12 @@
 <template>
   <div>
-    <v-form ref="form" v-model="valid" autocomplete="off" @submit.prevent="submit">
-      <v-card>
-        <v-card-title v-text="title" />
-        <v-card-subtitle v-if="subtitle" v-text="subtitle" />
+    <v-form
+      ref="form"
+      v-model="valid"
+      autocomplete="off"
+      @submit.prevent="submit">
+      <v-card
+        :title="$t('pages.database.subpages.access.title')">
         <v-card-text>
           <v-row>
             <v-col>
@@ -13,15 +16,18 @@
                 :items="eligibleUsers"
                 :disabled="loadingUsers"
                 :loading="loadingUsers"
-                :rules="[v => !!v || $t('Required')]"
+                :rules="[v => !!v || $t('validation.required')]"
                 required
+                :variant="inputVariant"
                 hide-no-data
                 hide-selected
                 hide-details
-                item-text="qualified_name"
                 item-value="id"
+                item-title="qualified_name"
                 single-line
-                label="Username" />
+                persistent-hint
+                :label="$t('pages.database.subpages.access.username.label')"
+                :hint="$t('pages.database.subpages.access.username.hint')" />
             </v-col>
           </v-row>
           <v-row>
@@ -29,29 +35,30 @@
               <v-select
                 v-model="modify.type"
                 :items="accessTypes"
-                :rules="[v => !!v || $t('Required')]"
+                :variant="inputVariant"
+                :rules="[v => !!v || $t('validation.required')]"
                 required
-                label="Access type" />
+                persistent-hint
+                :label="$t('pages.database.subpages.access.type.label')"
+                :hint="$t('pages.database.subpages.access.type.hint')" />
             </v-col>
           </v-row>
         </v-card-text>
         <v-card-actions>
           <v-spacer />
           <v-btn
-            class="mb-2"
-            @click="cancel">
-            Cancel
-          </v-btn>
+            :variant="buttonVariant"
+            :text="$t('navigation.cancel')"
+            @click="cancel" />
           <v-btn
             id="database"
-            class="mb-2 ml-3 mr-2 black--text"
+            variant="flat"
             :disabled="!valid || loading || accessType === modify.type"
             :color="buttonColor"
             type="submit"
+            :text="$t('pages.database.subpages.access.submit.text')"
             :loading="loading"
-            @click="updateAccess">
-            {{ buttonText }}
-          </v-btn>
+            @click="updateAccess" />
         </v-card-actions>
       </v-card>
     </v-form>
@@ -59,8 +66,7 @@
 </template>
 
 <script>
-import DatabaseService from '@/api/database.service'
-import UserService from '@/api/user.service'
+import { useCacheStore } from '@/stores/cache'
 
 export default {
   props: {
@@ -85,37 +91,20 @@ export default {
       users: [],
       error: false,
       types: [
-        { text: 'Read', value: 'read' },
-        { text: 'Write access (restricted)', value: 'write_own' },
-        { text: 'Full access', value: 'write_all' },
-        { text: 'Revoke all access', value: 'revoke' }
+        { title: this.$t('pages.database.subpages.access.read'), value: 'read' },
+        { title: this.$t('pages.database.subpages.access.write-own'), value: 'write_own' },
+        { title: this.$t('pages.database.subpages.access.write-all'), value: 'write_all' },
+        { title: this.$t('pages.database.subpages.access.revoke'), value: 'revoke' }
       ],
       modify: {
-        userId: null,
         type: null
-      }
+      },
+      cacheStore: useCacheStore()
     }
   },
   computed: {
-    token () {
-      return this.$store.state.token
-    },
-    config () {
-      if (this.token === null) {
-        return {}
-      }
-      return {
-        headers: { Authorization: `Bearer ${this.token}` }
-      }
-    },
     database () {
-      return this.$store.state.database
-    },
-    title () {
-      return (!this.isModification ? 'Give' : 'Modify') + ' database access'
-    },
-    subtitle () {
-      return (this.isModification ? `User with username ${this.username}` : false)
+      return this.cacheStore.getDatabase
     },
     accessTypes () {
       if (!this.isModification) {
@@ -128,6 +117,9 @@ export default {
       return this.users.filter(u => !this.database.accesses.map(a => a.user.id).includes(u.id))
     },
     buttonColor () {
+      if (!this.valid || this.loading || this.accessType === this.modify.type) {
+        return null
+      }
       if (this.modify.type && this.modify.type === 'revoke') {
         return 'error'
       }
@@ -136,8 +128,13 @@ export default {
     isModification () {
       return this.userId !== null
     },
-    buttonText () {
-      return (this.isModification ? 'Modify' : 'Create')
+    inputVariant () {
+      const runtimeConfig = useRuntimeConfig()
+      return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.input.contrast : runtimeConfig.public.variant.input.normal
+    },
+    buttonVariant () {
+      const runtimeConfig = useRuntimeConfig()
+      return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.button.contrast : runtimeConfig.public.variant.button.normal
     }
   },
   watch: {
@@ -171,9 +168,10 @@ export default {
       }
     },
     revokeAccess () {
-      DatabaseService.revokeAccess(this.$route.params.database_id, this.modify.userId)
+      const accessService = useAccessService()
+      accessService.remove(this.$route.params.database_id, this.userId)
         .then(() => {
-          this.$toast.success('Successfully revoked access')
+          this.$toast.success(this.$t('notifications.access.revoked'))
           this.$emit('close-dialog', { success: true })
         })
         .finally(() => {
@@ -181,9 +179,10 @@ export default {
         })
     },
     modifyAccess () {
-      DatabaseService.modifyAccess(this.$route.params.database_id, this.modify.userId, this.modify.type)
+      const accessService = useAccessService()
+      accessService.modify(this.$route.params.database_id, this.userId, this.modify)
         .then(() => {
-          this.$toast.success('Successfully modified access')
+          this.$toast.success(this.$t('notifications.access.modified'))
           this.$emit('close-dialog', { success: true })
         })
         .finally(() => {
@@ -191,9 +190,10 @@ export default {
         })
     },
     giveAccess () {
-      DatabaseService.giveAccess(this.$route.params.database_id, this.modify.userId, this.modify.type)
+      const accessService = useAccessService()
+      accessService.create(this.$route.params.database_id, this.userId, this.modify)
         .then(() => {
-          this.$toast.success('Successfully provisioned access')
+          this.$toast.success(this.$t('notifications.access.created'))
           this.$emit('close-dialog', { success: true })
         })
         .finally(() => {
@@ -202,7 +202,8 @@ export default {
     },
     loadUsers () {
       this.loadingUsers = true
-      UserService.findAll()
+      const userService = useUserService()
+      userService.findAll()
         .then((users) => {
           this.users = users.filter(u => u.username !== this.database.creator.username)
         })
@@ -212,11 +213,7 @@ export default {
     },
     init () {
       if (!this.userId) {
-        this.modify.userId = null
         this.loadUsers()
-      } else {
-        this.modify.userId = this.userId
-        /* eligible users are computed separately */
       }
       if (!this.accessType) {
         this.modify.type = null

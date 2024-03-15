@@ -32,6 +32,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,7 +46,9 @@ import static org.apache.jena.sparql.vocabulary.VocabTestQuery.query;
 
 @Log4j2
 @RestController
-@RequestMapping("/api/database/{databaseId}/query")
+@RequestMapping(path = "/api/database/{databaseId}/query",
+        consumes = MediaType.ALL_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
 public class StoreEndpoint {
 
     private final UserMapper userMapper;

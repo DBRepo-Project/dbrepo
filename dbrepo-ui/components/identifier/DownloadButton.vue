@@ -8,8 +8,6 @@
 </template>
 
 <script>
-import IdentifierService from '@/api/identifier.service'
-
 export default {
   props: {
     pid: {
@@ -39,12 +37,13 @@ export default {
   methods: {
     download () {
       this.loading = true
-      IdentifierService.export(this.pid)
+      const identifierService = useIdentifierService()
+      identifierService.findOne(this.pid, this.contentType)
         .then((data) => {
-          const url = window.URL.createObjectURL(new Blob([data]))
+          const url = URL.createObjectURL(data)
           const link = document.createElement('a')
           link.href = url
-          link.setAttribute('download', this.filename)
+          link.download = this.filename
           document.body.appendChild(link)
           link.click()
         })

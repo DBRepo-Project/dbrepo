@@ -6,12 +6,12 @@ from logging.config import dictConfig
 
 from flasgger import LazyJSONEncoder, Swagger
 from flasgger.utils import swag_from
-from flask import Flask, Response, abort, request
+from flask import Flask, Response, request
+from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from gevent.pywsgi import WSGIServer
 from opensearchpy import OpenSearch
 from prometheus_flask_exporter import PrometheusMetrics
-from requests import get
 
 from determine_dt import determine_datatypes
 from determine_pk import determine_pk
@@ -39,6 +39,8 @@ dictConfig(
 )
 
 app = Flask(__name__)
+
+cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 metrics = PrometheusMetrics(app)
 metrics.info("app_info", "Application info", version="1.3.0")

@@ -1,0 +1,31 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap");
+html,
+body {
+  font-family: "Roboto", sans-serif; }
+
+.v-badge__wrapper {
+  margin-left: 0 !important; }
+  .v-badge__wrapper .v-badge__badge {
+    margin-left: 6px !important; }
+
+.v-stepper[vertical].v-sheet {
+  box-shadow: none !important; }
+.v-stepper[vertical] .v-stepper-header {
+  box-shadow: none !important; }
+  .v-stepper[vertical] .v-stepper-header .v-stepper-item {
+    padding-top: 0;
+    padding-bottom: 0;
+    text-align: left; }
+.v-stepper[vertical] .v-window {
+  border-left: 1px solid rgb(var(--v-theme-tertiary));
+  margin-left: 36px;
+  padding-top: 0.35rem;
+  padding-bottom: 0.7rem; }
+  .v-stepper[vertical] .v-window .v-window__container {
+    padding-left: 12px; }
+
+.v-stepper-window {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important; }
+
+/*# sourceMappingURL=overrides.css.map */

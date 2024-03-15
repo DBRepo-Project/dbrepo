@@ -1,40 +1,42 @@
 <template>
   <div>
-    <v-list-item-group v-model="idx" color="primary">
-      <v-list-item v-for="(id,i) in identifiers" :key="i" :href="href(id)" two-line>
-        <v-list-item-content>
-          <v-list-item-title>{{ formatTimestampUTCLabel(id.created) }}</v-list-item-title>
-          <v-list-item-subtitle>
-            <Banner :identifier="id" />
-          </v-list-item-subtitle>
-        </v-list-item-content>
-        <v-list-item-action>
-          <v-btn v-if="canDeleteIdentifier" color="error" x-small @click="deleteDialog = true">Delete PID</v-btn>
-          <v-tooltip v-else left>
-            <template v-slot:activator="{ on, attrs }">
-              <v-icon color="primary" v-bind="attrs" v-on="on">mdi-identifier</v-icon>
-            </template>
-            Persistent identifier
-          </v-tooltip>
-        </v-list-item-action>
-      </v-list-item>
-    </v-list-item-group>
-    <v-dialog
-      v-model="deleteDialog"
-      persistent
-      max-width="480">
-      <DeleteIdentifier :identifier="localIdentifier" @close="closeDeleteDialog" />
-    </v-dialog>
+    <v-list-item
+      v-for="(id, i) in identifiers"
+      :key="`i-${i}`"
+      :value="idx"
+      :active="isActive(id)"
+      color="primary"
+      :variant="listVariant"
+      :href="href(id)"
+      :title="formatTimestampUTCLabel(id.created)"
+      lines="two">
+      <v-list-item-subtitle>
+        <Banner
+          :identifier="id" />
+      </v-list-item-subtitle>
+      <template v-slot:append>
+        <v-tooltip
+          :text="$t('pages.identifier.pid.title')"
+          left>
+          <template v-slot:activator="{ props }">
+            <v-icon
+              color="primary"
+              v-bind="props">mdi-identifier</v-icon>
+          </template>
+        </v-tooltip>
+      </template>
+    </v-list-item>
   </div>
 </template>
+
 <script>
 import Banner from '@/components/identifier/Banner'
 import { formatTimestampUTCLabel } from '@/utils'
-import DeleteIdentifier from '@/components/dialogs/DeleteIdentifier'
+import { useUserStore } from '@/stores/user'
+import { useCacheStore } from '@/stores/cache'
 
 export default {
   components: {
-    DeleteIdentifier,
     Banner
   },
   props: {
@@ -54,23 +56,28 @@ export default {
   data () {
     return {
       idx: null,
-      deleteDialog: false,
-      localIdentifier: null
+      localIdentifier: null,
+      userStore: useUserStore(),
+      cacheStore: useCacheStore()
     }
   },
   computed: {
     user () {
-      return this.$store.state.user
+      return this.userStore.getUser
     },
     roles () {
-      return this.$store.state.roles
+      return this.userStore.getRoles
     },
     canDeleteIdentifier () {
       if (!this.user) {
         return false
       }
       return this.roles.includes('delete-identifier')
-    }
+    },
+    listVariant () {
+      const runtimeConfig = useRuntimeConfig()
+      return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.list.contrast : runtimeConfig.public.variant.list.normal
+    },
   },
   watch: {
     identifier: {
@@ -96,9 +103,15 @@ export default {
       }
       return `/pid/${identifier.id}`
     },
-    async closeDeleteDialog (event) {
+    isActive (identifier) {
+      if (!identifier) {
+        return false
+      }
+      return this.identifier.id === identifier.id
+    },
+    closeDeleteDialog (event) {
       if (event.action === 'deleted') {
-        await this.$store.dispatch('reloadDatabase')
+        this.cacheStore.reloadDatabase()
       }
       this.deleteDialog = false
     },

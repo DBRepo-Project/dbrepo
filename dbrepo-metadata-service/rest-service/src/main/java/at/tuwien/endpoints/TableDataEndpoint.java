@@ -5,6 +5,7 @@ import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.TableCsvDeleteDto;
 import at.tuwien.api.database.table.TableCsvDto;
+import at.tuwien.api.database.table.TableCsvUpdateDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.exception.*;
@@ -24,6 +25,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,7 +37,9 @@ import java.time.Instant;
 @Log4j2
 @CrossOrigin(origins = "*")
 @RestController
-@RequestMapping("/api/database/{databaseId}/table/{tableId}/data")
+@RequestMapping(path = "/api/database/{databaseId}/table/{tableId}/data",
+        consumes = MediaType.ALL_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
 public class TableDataEndpoint {
 
     private final QueryService queryService;
@@ -74,18 +78,68 @@ public class TableDataEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "410",
+                    description = "Failed to import LOB-like values",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<?> insert(@NotNull @PathVariable("databaseId") Long databaseId,
                                     @NotNull @PathVariable("tableId") Long tableId,
                                     @NotNull @Valid @RequestBody TableCsvDto data,
                                     @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException, NotAllowedException,
-            AccessDeniedException {
+            AccessDeniedException, FileStorageException {
         log.debug("endpoint insert data, databaseId={}, tableId={}, data={}, {}", databaseId, tableId, data, PrincipalUtil.formatForDebug(principal));
         /* check */
         endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(databaseId, tableId, principal);
         /* insert */
         queryService.insert(databaseId, tableId, data, principal);
+        return ResponseEntity.accepted()
+                .build();
+    }
+
+    @PutMapping
+    @Transactional
+    @PreAuthorize("hasAuthority('insert-table-data')")
+    @Observed(name = "dbr_table_data_update")
+    @Operation(summary = "Update data", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202",
+                    description = "Updated data successfully"),
+            @ApiResponse(responseCode = "400",
+                    description = "Update table data is malformed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Access to the database is forbidden",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Table or database could not be found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "410",
+                    description = "Failed to import LOB-like values",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
+    public ResponseEntity<Void> update(@NotNull @PathVariable("databaseId") Long databaseId,
+                                       @NotNull @PathVariable("tableId") Long tableId,
+                                       @NotNull @Valid @RequestBody TableCsvUpdateDto data,
+                                       @NotNull Principal principal)
+            throws TableNotFoundException, DatabaseNotFoundException, TableMalformedException,
+            ImageNotSupportedException, DatabaseConnectionException, QueryMalformedException,
+            UserNotFoundException, NotAllowedException, AccessDeniedException {
+        log.debug("endpoint update data, databaseId={}, tableId={}, data={}, {}", databaseId, tableId, data, PrincipalUtil.formatForDebug(principal));
+        /* check */
+        endpointValidator.validateOnlyWriteOwnOrWriteAllAccess(databaseId, tableId, principal);
+        /* update */
+        queryService.update(databaseId, tableId, data, principal);
         return ResponseEntity.accepted()
                 .build();
     }
