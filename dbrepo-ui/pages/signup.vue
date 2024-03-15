@@ -7,7 +7,9 @@
       ref="form"
       v-model="valid"
       @submit.prevent="submit">
-      <v-card variant="flat">
+      <v-card
+        variant="flat"
+        rounded="0">
         <v-card-text>
           <v-row dense>
             <v-col sm="6">

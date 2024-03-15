@@ -101,13 +101,15 @@ export const useTableService = (): any => {
   async function exportData(databaseId: number, tableId: number, timestamp: Date): Promise<QueryResultDto> {
     const axios = useAxiosInstance()
     const config: AxiosRequestConfig = {
-      params: {timestamp},
+      params: (timestamp && { timestamp }),
       responseType: 'blob',
-      headers: {Accept: 'text/csv'}
+      headers: {
+        Accept: 'text/csv'
+      }
     }
     console.debug('export data for table with id', tableId, 'in database with id', databaseId);
     return new Promise<QueryResultDto>((resolve, reject) => {
-      axios.get<QueryResultDto>(`/api/database/${databaseId}/table/${tableId}/export`)
+      axios.get<QueryResultDto>(`/api/database/${databaseId}/table/${tableId}/export`, config)
         .then((response) => {
           console.info('Exported data for table with id', tableId, 'in database with id', databaseId)
           resolve(response.data)

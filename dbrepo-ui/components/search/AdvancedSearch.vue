@@ -91,7 +91,7 @@
               <v-autocomplete
                 v-if="field.attr_name === 'licenses'"
                 v-model="advancedSearchData[field.attr_name]"
-                :items="fetchLicenses"
+                :items="licenses"
                 :variant="inputVariant"
                 :label="field.attr_friendly_name"
                 clearable
@@ -216,6 +216,7 @@ export default {
       showAdvancedSearch: false,
       concepts: [],
       units: [],
+      licenses: [],
       yearFrom: null,
       yearFromItems: [
         { name: `Since ${new Date().getFullYear()}`, value: new Date().getFullYear() },
@@ -236,14 +237,14 @@ export default {
         unit: ['tables.columns.unit.uri']
       },
       fieldItems: [
-        { name: 'Database', value: 'database' },
-        { name: 'Table', value: 'table' },
-        { name: 'Column', value: 'column' },
-        { name: 'User', value: 'user' },
-        { name: 'Identifier', value: 'identifier' },
-        { name: 'Concept', value: 'concept' },
-        { name: 'Unit', value: 'unit' },
-        { name: 'View', value: 'view' }
+        { name: this.$t('pages.search.types.database'), value: 'database' },
+        { name: this.$t('pages.search.types.table'), value: 'table' },
+        { name: this.$t('pages.search.types.column'), value: 'column' },
+        { name: this.$t('pages.search.types.user'), value: 'user' },
+        { name: this.$t('pages.search.types.identifier'), value: 'identifier' },
+        { name: this.$t('pages.search.types.concept'), value: 'concept' },
+        { name: this.$t('pages.search.types.unit'), value: 'unit' },
+        { name: this.$t('pages.search.types.view'), value: 'view' }
       ],
       booleanItems: [
         { name: 'True', value: true },
@@ -319,6 +320,7 @@ export default {
     this.initFieldsFromRoute()
     this.initSearch(this.searchType)
     this.advancedSearch()
+    this.fetchLicenses()
     const conceptService = useConceptService()
     conceptService.findAll()
       .then((response) => {
@@ -383,12 +385,10 @@ export default {
       }
       return shouldBeRendered
     },
-    fetchLicenses () {
-      // Licenses is a nested object in the backend, but without any values.
-      // Instead, we define our custom license generator with a controlled vocabulary.
-      return [
-        'Apache-2.0', 'BSD-3-Clause', 'BSD-4-Clause', 'CC-BY-4.0', 'CC0-1.0', 'GPL-3.0-only', 'MIT'
-      ]
+    async fetchLicenses () {
+      const licenseService = useLicenseService()
+      const licenses = await licenseService.findAll()
+      this.licenses = licenses.map(l => l.identifier)
     },
     initSearch (searchType) {
       this.resetAdvancedSearchFields()

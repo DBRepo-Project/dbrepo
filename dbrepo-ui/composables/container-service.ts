@@ -5,7 +5,7 @@ export const useContainerService = (): any => {
     return new Promise<ContainerBriefDto[]>((resolve, reject) => {
       axios.get<ContainerBriefDto[]>('/api/container')
         .then((response) => {
-          console.info('Found container(s)')
+          console.info(`Found ${response.data.length} container(s)`)
           resolve(response.data)
         })
         .catch((error) => {

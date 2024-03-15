@@ -26,6 +26,9 @@ export default defineNuxtConfig({
     head: {
       charset: 'utf-8',
       viewport: 'width=device-width, initial-scale=1',
+      meta: [
+        { 'http-equiv': 'Content-Security-Policy', content: 'upgrade-insecure-requests' }
+      ],
       htmlAttrs: {
         lang: 'en-US'
       }
@@ -129,14 +132,20 @@ export default defineNuxtConfig({
   i18n: {
     lazy: true,
     langDir: 'locales',
-    strategy: 'prefix_except_default',
-    defaultLocale: 'en',
+    strategy: 'no_prefix',
+    defaultLocale: 'de',
     locales: [
       {
         "code": "en",
         "file": "en-US.json",
         "name": "English (US)",
         "iso": "en-US"
+      },
+      {
+        "code": "de",
+        "file": "de-AT.json",
+        "name": "German (AT)",
+        "iso": "de-AT"
       }
     ]
 

@@ -5,7 +5,7 @@ export const useOntologyService = (): any => {
     return new Promise<OntologyDto[]>((resolve, reject) => {
       axios.get<OntologyDto[]>('/api/semantic/ontology')
         .then((response) => {
-          console.info('Found ontologie(s)')
+          console.info(`Found ${response.data.length} ontology(s)`)
           resolve(response.data)
         })
         .catch((error) => {
@@ -37,7 +37,7 @@ export const useOntologyService = (): any => {
     return new Promise<OntologyDto>((resolve, reject) => {
       axios.post<OntologyDto>('/api/semantic/ontology', data)
         .then((response) => {
-          console.info('Created ontology')
+          console.info('Created ontology with id', response.data.id)
           resolve(response.data)
         })
         .catch((error) => {

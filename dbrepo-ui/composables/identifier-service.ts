@@ -28,7 +28,7 @@ export const useIdentifierService = (): any => {
     return new Promise<IdentifierDto>((resolve, reject) => {
       axios.post<IdentifierDto>('/api/identifier', data)
         .then((response) => {
-          console.info('Created identifier')
+          console.info('Created identifier with id', response.data.id)
           resolve(response.data)
         })
         .catch((error) => {

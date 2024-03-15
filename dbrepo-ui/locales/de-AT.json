@@ -1,0 +1,1242 @@
+{
+  "navigation": {
+    "information": "Information",
+    "search": "Suchen",
+    "ontologies": "Ontologien",
+    "my-databases": "Meine Datenbanken",
+    "logout": "Ausloggen",
+    "login": "Anmeldung",
+    "signup": "Registrierung",
+    "databases": "Datenbanken",
+    "tables": "Tabellen",
+    "subsets": "Teilmengen",
+    "info": "Info",
+    "data": "Daten",
+    "continue": "Weiter",
+    "assign": "Zuordnen",
+    "back": "Zurück",
+    "schema": "Schema",
+    "persist": "Persistieren",
+    "cancel": "Abbrechen",
+    "user": "Benutzer",
+    "import": "Importieren",
+    "delete": "Löschen",
+    "recommend": "Empfehlen",
+    "now": "Jetzt",
+    "settings": "Einstellungen",
+    "views": "Ansichten",
+    "create": "Erstellen",
+    "semantics": "Semantik"
+  },
+  "pages": {
+    "identifier": {
+      "title": "Bezeichner",
+      "pid": {
+        "title": "Persistenter Bezeichner"
+      },
+      "titles": {
+        "title": "Titel"
+      },
+      "creators": {
+        "title": "Schöpfer"
+      },
+      "language": {
+        "title": "Sprache"
+      },
+      "publication-date": {
+        "title": "Veröffentlichungsdatum"
+      },
+      "related-identifiers": {
+        "title": "Verwandte Bezeichner"
+      },
+      "funders": {
+        "title": "Geldgeber"
+      },
+      "licenses": {
+        "title": "Lizenzen"
+      },
+      "citation": {
+        "title": "Zitierempfehlung"
+      },
+      "descriptions": {
+        "title": "Beschreibungen"
+      },
+      "publisher": {
+        "title": "Herausgeber"
+      },
+      "remove": {
+        "text": "Entfernen"
+      },
+      "subpages": {
+        "create": {
+          "publication-day": {
+            "label": "Tag der Veröffentlichung",
+            "hint": ""
+          },
+          "publication-month": {
+            "label": "Veröffentlichungsmonat",
+            "hint": ""
+          },
+          "publication-year": {
+            "label": "Erscheinungsjahr",
+            "hint": "Erforderlich."
+          },
+          "titles": {
+            "title": {
+              "label": "Titel",
+              "hint": "Erforderlich."
+            },
+            "type": {
+              "label": "Typ",
+              "hint": ""
+            },
+            "language": {
+              "label": "Sprache",
+              "hint": ""
+            },
+            "subtitle": "Ein Name oder Titel, unter dem eine Ressource bekannt ist. ",
+            "remove": {
+              "text": "Entfernen"
+            },
+            "add": {
+              "text": "Hinzufügen"
+            }
+          },
+          "descriptions": {
+            "description": {
+              "label": "Beschreibung",
+              "hint": "Erforderlich."
+            },
+            "type": {
+              "label": "Typ",
+              "hint": ""
+            },
+            "language": {
+              "label": "Sprache",
+              "hint": ""
+            },
+            "subtitle": "Alle weiteren Informationen. ",
+            "remove": {
+              "text": "Entfernen"
+            },
+            "add": {
+              "text": "Hinzufügen"
+            }
+          },
+          "publisher": {
+            "title": "Veröffentlichungsinformationen",
+            "subtitle": "Der Name der Entität, die die Ressource hält, archiviert, veröffentlicht, druckt, verteilt, freigibt, herausgibt oder produziert. ",
+            "label": "Herausgeber",
+            "hint": "Erforderlich."
+          },
+          "related-identifiers": {
+            "title": "Zugehöriger Bezeichner",
+            "subtitle": "Bezeichner verwandter Ressourcen. ",
+            "identifier": {
+              "label": "Kennung",
+              "hint": "Erforderlich."
+            },
+            "type": {
+              "label": "Typ",
+              "hint": ""
+            },
+            "relation": {
+              "label": "Beziehung",
+              "hint": ""
+            },
+            "remove": {
+              "text": "Entfernen"
+            },
+            "add": {
+              "text": "Hinzufügen"
+            }
+          },
+          "licenses": {
+            "title": "Lizenz",
+            "subtitle": "Bezeichner verwandter Ressourcen. ",
+            "license": {
+              "label": "Lizenz"
+            }
+          },
+          "language": {
+            "title": "Sprache",
+            "subtitle": "Die primäre Sprache des Datensatzes.",
+            "language": {
+              "label": "Sprache",
+              "hint": ""
+            }
+          },
+          "funders": {
+            "title": "Finanzierungsreferenz",
+            "subtitle": "Informationen zur finanziellen Unterstützung (Finanzierung) für den zu registrierenden Datensatz.",
+            "identifier": {
+              "label": "Kennung des Geldgebers",
+              "hint": "Verwenden Sie eine Namenskennung, ausgedrückt als URL von ORCID*, ROR*, DOI*, ISNI, GND (Schemata mit * unterstützen den automatischen Metadatenabruf)."
+            },
+            "name": {
+              "label": "Name des Geldgebers",
+              "hint": "Erforderlich."
+            },
+            "award-number": {
+              "label": "Auszeichnungsnummer",
+              "hint": ""
+            },
+            "award-title": {
+              "label": "Auszeichnungstitel",
+              "hint": ""
+            },
+            "remove": {
+              "text": "Entfernen"
+            },
+            "add": {
+              "text": "Hinzufügen"
+            }
+          },
+          "creators": {
+            "subtitle": "Die wichtigsten Forscher, die an der Erstellung der Daten beteiligt waren, in der Reihenfolge ihrer Priorität.",
+            "identifier": {
+              "label": "Namensbezeichner",
+              "hint": "Verwenden Sie eine Namenskennung, ausgedrückt als URL von ORCID*, ROR*, DOI*, ISNI, GND (Schemata mit * unterstützen den automatischen Metadatenabruf)."
+            },
+            "insert": {
+              "text": "Füge mich ein"
+            },
+            "remove": {
+              "text": "Entfernen"
+            },
+            "person": {
+              "label": "Person"
+            },
+            "organization": {
+              "label": "Organisation"
+            },
+            "given-name": {
+              "label": "Vorname",
+              "hint": ""
+            },
+            "family-name": {
+              "label": "Familienname",
+              "hint": ""
+            },
+            "name": {
+              "label": "Name",
+              "hint": "Erforderlich."
+            },
+            "affiliation-identifier": {
+              "label": "Zugehörigkeitskennung",
+              "hint": "Verwenden Sie eine Zugehörigkeitskennung, ausgedrückt als URL von ORCID*, ROR*, DOI*, ISNI, GND (Schemata mit * unterstützen den automatischen Metadatenabruf)."
+            },
+            "affiliation": {
+              "label": "Zugehörigkeitsname",
+              "hint": ""
+            },
+            "add": "Hinzufügen"
+          },
+          "summary": {
+            "title": "Zusammenfassung",
+            "subtitle": "Details zur Kennung, die zur Identifizierung dieses Datensatzes erstellt wird.",
+            "record": "Der Bezeichner beschreibt",
+            "publisher": "Herausgeber",
+            "license": "Lizenz",
+            "no-license": "Ohne Lizenz zur Wiederverwendung",
+            "doi": "Für diesen Identifikator wird ein DOI erstellt",
+            "no-doi": "Dieser Kennung wird ein URI zugeordnet",
+            "creators": "Ersteller"
+          }
+        }
+      }
+    },
+    "table": {
+      "title": "Tisch",
+      "id": {
+        "title": "ID"
+      },
+      "broker": {
+        "title": "Makler"
+      },
+      "exchange": {
+        "title": "Austausch"
+      },
+      "queue": {
+        "title": "Warteschlange"
+      },
+      "routing-key": {
+        "title": "Routing-Schlüssel"
+      },
+      "connection": {
+        "title": "Verbindungsdetails",
+        "secure": "sicher",
+        "insecure": "unsicher",
+        "permissions": {
+          "write": "Sie können in diese Tabelle schreiben.",
+          "read": "Sie können den gesamten Inhalt dieser Tabelle lesen."
+        }
+      },
+      "protocol": {
+        "title": "Protokoll",
+        "name": "AMQP"
+      },
+      "size": {
+        "title": "Größe"
+      },
+      "result-rows": {
+        "title": "Reihen"
+      },
+      "description": {
+        "title": "Beschreibung",
+        "empty": "(Keine Beschreibung)"
+      },
+      "owner": {
+        "title": "Eigentümer"
+      },
+      "creation": {
+        "title": "Schaffung"
+      },
+      "import": {
+        "title": "Datensatz importieren in"
+      },
+      "subpages": {
+        "import": {
+          "title": "Erstellen Sie eine Tabelle aus einem CSV-/TSV-Datensatz",
+          "metadata": {
+            "title": "Tabellenmetadaten"
+          },
+          "dataset": {
+            "title": "Datensatzstruktur",
+            "warn": "Das Datensatzschema stimmt nicht mit dem Zieltabellenschema überein. "
+          },
+          "name": {
+            "label": "Name",
+            "hint": "Erforderlich. "
+          },
+          "generated": {
+            "label": "Generierter Name",
+            "hint": ""
+          },
+          "description": {
+            "label": "Beschreibung",
+            "hint": "Optional. "
+          },
+          "separator": {
+            "label": "Spaltentrennzeichen",
+            "hint": "Optional. ",
+            "warn": {
+              "prefix": "Wir haben Ihren .csv/.tsv-Datensatz analysiert und festgestellt, dass das von Ihnen angegebene Trennzeichen das ist",
+              "middle": "ist nicht korrekt, das Trennzeichen",
+              "suffix": "ist wahrscheinlicher, dass es richtig ist. "
+            }
+          },
+          "skip": {
+            "label": "Zeilen überspringen",
+            "hint": "Optional. "
+          },
+          "quote": {
+            "label": "Angebotskodierung",
+            "hint": "Optional. "
+          },
+          "terminator": {
+            "label": "Kodierung des Leitungsabschlusses",
+            "hint": "Optional. ",
+            "warn": {
+              "prefix": "Wir haben Ihren .csv/.tsv-Datensatz analysiert und festgestellt, dass die von Ihnen angegebene Leitungsabschlusscodierung vorliegt",
+              "middle": "ist nicht korrekt, die Leitungsabschlusskodierung",
+              "suffix": "ist wahrscheinlicher, dass es richtig ist. "
+            }
+          },
+          "null": {
+            "label": "Nullkodierung",
+            "hint": "Optional. "
+          },
+          "true": {
+            "label": "Echte Kodierung",
+            "hint": "Optional. "
+          },
+          "false": {
+            "label": "Falsche Kodierung",
+            "hint": "Optional. "
+          },
+          "file": {
+            "title": "Datensatz-Upload",
+            "label": "Datensatzdatei",
+            "hint": "Erforderlich. "
+          },
+          "preview": {
+            "title": "Vorschau"
+          },
+          "summary": {
+            "title": "Zusammenfassung",
+            "prefix": "Importiert",
+            "suffix": "Zeilen aus dem Datensatz."
+          },
+          "analyse": {
+            "text": "Hochladen"
+          }
+        },
+        "create": {
+          "title": "Tabellenschema erstellen",
+          "information": {
+            "title": "Information"
+          },
+          "name": {
+            "label": "Tabellenname",
+            "hint": "Erforderlich."
+          },
+          "description": {
+            "label": "Tabellenbeschreibung",
+            "hint": ""
+          },
+          "summary": {
+            "prefix": "Tabelle mit Namen erstellt",
+            "middle": "und importiert",
+            "suffix": "Zeilen aus dem Datensatz."
+          }
+        },
+        "drop": {
+          "title": "Drop-Tisch",
+          "warning": {
+            "prefix": "Diese Aktion kann nicht rückgängig gemacht werden! ",
+            "suffix": "unten, wenn Sie es wirklich mit allen gespeicherten Daten löschen möchten."
+          },
+          "name": {
+            "label": "Tabellenname",
+            "hint": "Erforderlich."
+          }
+        },
+        "schema": {
+          "title": "Struktur",
+          "bullet": "●",
+          "assign": "Zuordnen",
+          "remove": {
+            "text": "Entfernen"
+          },
+          "internal-name": {
+            "title": "Interner Name"
+          },
+          "column-type": {
+            "title": "Spaltentyp"
+          },
+          "extra": {
+            "title": "Zusatzinformation"
+          },
+          "concept": {
+            "title": "Konzept"
+          },
+          "unit": {
+            "title": "Maßeinheit"
+          },
+          "nullable": {
+            "title": "Nullbar"
+          },
+          "sequence": {
+            "title": "Reihenfolge"
+          },
+          "name": {
+            "label": "Name",
+            "hint": "Erforderlich."
+          },
+          "add": {
+            "text": "Spalte hinzufügen"
+          },
+          "type": {
+            "label": "Typ",
+            "hint": "Erforderlich."
+          },
+          "size": {
+            "label": "Größe"
+          },
+          "d": {
+            "label": "D"
+          },
+          "primary-key": {
+            "label": "Primärschlüssel"
+          },
+          "foreign-key": {
+            "label": "Unbekannter Schlüssel"
+          },
+          "references": {
+            "label": "Ausländische Referenzen"
+          },
+          "null": {
+            "label": "Nullbar"
+          },
+          "unique": {
+            "label": "Einzigartig"
+          },
+          "fsp": {
+            "label": "fsp"
+          },
+          "set": {
+            "label": "Werte festlegen",
+            "hint": "Trennen Sie die Werte durch ,"
+          },
+          "enum": {
+            "label": "Aufzählungswerte",
+            "hint": "Trennen Sie die Werte durch ,"
+          },
+          "summary": {
+            "title": "Zusammenfassung",
+            "text": "Tabelle mit internem Namen erfolgreich erstellt:"
+          }
+        },
+        "semantics": {
+          "title": "Semantische Instanz für Tabellenspalte zuweisen:",
+          "subtitle": "Semantische Instanzen helfen Maschinen dabei, den richtigen Kontext Ihres Datensatzes zu ermitteln.",
+          "recommended": "Empfohlene semantische Instanzen",
+          "bullet": "●",
+          "info": "Die folgenden Ontologien fragen automatisch die Felder rdfs:label ab und speichern sie für diese Spalte. ",
+          "uri": {
+            "label": "Semantischer Instanz-URI",
+            "hint": "Dieser URI kann automatisch aufgelöst werden."
+          }
+        },
+        "versioning": {
+          "title": "Versionierung",
+          "subtitle": "Wählen Sie einen Zeitstempel aus, um die Daten für diese bestimmte Tageszeit anzuzeigen.",
+          "timestamp": {
+            "label": "Zeitstempel",
+            "hint": "Erforderlich. ",
+            "placeholder": "z.B. ",
+            "suffix": "koordinierte Weltzeit"
+          }
+        },
+        "data": {
+          "auto": {
+            "hint": "Der Wert wird automatisch durch eine Sequenz generiert."
+          },
+          "primary-key": {
+            "hint": "Der Wert ist ein Primärschlüssel."
+          },
+          "format": {
+            "hint": "Der Wert muss folgendes Format haben:"
+          },
+          "required": {
+            "hint": "Erforderlich. "
+          },
+          "float": {
+            "max": "max.",
+            "min": "Mindest.",
+            "before": "Ziffer(n) vor dem Punkt.",
+            "after": "Ziffer(n) nach dem Punkt."
+          }
+        }
+      }
+    },
+    "database": {
+      "title": "Datenbank",
+      "image": {
+        "title": "Teaser-Bild",
+        "alt": "Datenbanklogo/Standardbild"
+      },
+      "name": {
+        "title": "Name"
+      },
+      "internal-name": {
+        "title": "Interner Name"
+      },
+      "visibility": {
+        "title": "Sichtweite"
+      },
+      "size": {
+        "title": "Größe"
+      },
+      "owner": {
+        "title": "Eigentümer"
+      },
+      "created": {
+        "title": "Erstellt"
+      },
+      "connection": {
+        "title": "Verbindung",
+        "username": "Nutzername",
+        "password": "Passwort"
+      },
+      "contact": {
+        "title": "Kontakt"
+      },
+      "subpages": {
+        "access": {
+          "title": "Datenbankzugriff",
+          "subtitle": "Übersicht über Benutzer mit ihrem Zugriff auf die Datenbank.",
+          "read": "Sie können alle Inhalte lesen",
+          "write-own": "Sie können eigene Tabellen schreiben und alle Inhalte lesen",
+          "write-all": "Sie können eigene Tabellen schreiben und alle Inhalte lesen",
+          "revoke": "Widerrufen",
+          "action": "Aktion",
+          "username": {
+            "label": "Nutzername",
+            "hint": "Erforderlich"
+          },
+          "type": {
+            "label": "Zugangsart",
+            "hint": "Erforderlich"
+          },
+          "submit": {
+            "text": "Ändern"
+          }
+        },
+        "create": {
+          "title": "Datenbank erstellen",
+          "subtitle": "Wählen Sie einen aussagekräftigen Datenbanknamen und eine Datenbank-Engine.",
+          "name": {
+            "label": "Name",
+            "hint": "Erforderlich. ",
+            "placeholder": "z.B. "
+          },
+          "engine": {
+            "label": "Motor",
+            "hint": "Erforderlich."
+          },
+          "submit": {
+            "text": "Erstellen"
+          }
+        },
+        "tables": {
+          "empty": "(keine Tabellen)"
+        },
+        "tuple": {
+          "create": {
+            "text": "Erstellen"
+          },
+          "update": {
+            "text": "Aktualisieren"
+          }
+        },
+        "subsets": {
+          "empty": "(keine Teilmengen)",
+          "http": "(Datenbank nicht erreichbar, versuchen Sie es später erneut)"
+        },
+        "views": {
+          "empty": "(keine Ansichten)"
+        },
+        "settings": {
+          "title": "Einstellungen",
+          "subtitle": "Das Bild wird in einem Feld mit den maximalen Abmessungen 200x200 Pixel angezeigt.",
+          "image": {
+            "label": "Teaser-Bild",
+            "hint": "max. "
+          },
+          "submit": {
+            "text": "Bild ändern"
+          },
+          "image-remove": {
+            "text": "Entferne Bild"
+          },
+          "ownership": {
+            "title": "Eigentum",
+            "subtitle": "Benutzer, der Eigentümer dieser Datenbank ist.",
+            "label": "Datenbankbesitzer",
+            "hint": "Erforderlich.",
+            "submit": {
+              "text": "Überweisen"
+            }
+          },
+          "visibility": {
+            "title": "Sichtweite",
+            "subtitle": "Private Datenbanken verbergen die Daten, während Metadaten weiterhin sichtbar sind. ",
+            "visibility": {
+              "label": "Datenbanksichtbarkeit",
+              "hint": "Erforderlich."
+            },
+            "submit": {
+              "text": "Ändern"
+            }
+          }
+        }
+      }
+    },
+    "signup": {
+      "name": "Melden Sie sich an",
+      "email": {
+        "label": "E-Mail-Adresse",
+        "hint": "Erforderlich."
+      },
+      "username": {
+        "label": "Nutzername",
+        "hint": "Erforderlich."
+      },
+      "password": {
+        "label": "Passwort",
+        "hint": "Erforderlich."
+      },
+      "confirm": {
+        "label": "Bestätige das Passwort",
+        "hint": "Erforderlich."
+      },
+      "submit": {
+        "label": "Absenden"
+      }
+    },
+    "login": {
+      "name": "Anmeldung",
+      "username": {
+        "label": "Nutzername",
+        "hint": "Erforderlich."
+      },
+      "password": {
+        "label": "Passwort",
+        "hint": "Erforderlich."
+      },
+      "submit": {
+        "label": "Absenden"
+      }
+    },
+    "user": {
+      "qualified-name": {
+        "label": "Qualifizierter Name"
+      },
+      "subpages": {
+        "info": {
+          "title": "Information",
+          "subtitle": "Allgemeine Benutzermetadaten.",
+          "id": {
+            "label": "ID"
+          },
+          "username": {
+            "label": "Nutzername"
+          },
+          "firstname": {
+            "label": "Vorname",
+            "hint": ""
+          },
+          "lastname": {
+            "label": "Familienname",
+            "hint": ""
+          },
+          "affiliation": {
+            "label": "Zugehörigkeitskennung",
+            "hint": "ROR-Identifikator, z.B. "
+          },
+          "orcid": {
+            "label": "Persönliche Kennung",
+            "hint": "ORCID-Kennung, z.B. "
+          },
+          "submit": {
+            "text": "Aktualisieren"
+          }
+        },
+        "theme": {
+          "title": "Thema",
+          "subtitle": "Aktualisieren Sie das Benutzerdesign, wenn Sie angemeldet sind.",
+          "label": "Thema",
+          "dark": "Dunkel",
+          "dark-contrast": "Dunkel – hoher Kontrast",
+          "light": "Licht",
+          "light-contrast": "Hell – hoher Kontrast",
+          "submit": {
+            "text": "Aktualisieren"
+          }
+        }
+      }
+    },
+    "settings": {
+      "subpages": {
+        "authentication": {
+          "title": "Benutzer-Passwort",
+          "subtitle": "Aktualisieren Sie das Benutzerkennwort, das für die Basisauthentifizierung bei allen Schnittstellen verwendet wird.",
+          "password": {
+            "label": "Passwort",
+            "hint": "Erforderlich."
+          },
+          "confirm": {
+            "label": "Bestätige das Passwort",
+            "hint": "Erforderlich."
+          },
+          "submit": {
+            "text": "Aktualisieren"
+          }
+        },
+        "developer": {
+          "token": {
+            "title": "Token-Informationen",
+            "subtitle": "Sehen Sie sich Ihre Token-Geheimnisse zu Debugging-Zwecken an.",
+            "expiry": "Läuft ab",
+            "access": {
+              "label": "Zugangstoken"
+            },
+            "refresh": {
+              "label": "Aktualisierungstoken"
+            }
+          },
+          "maintenance": {
+            "title": "Mitteilungen",
+            "active": "Aktiv",
+            "type": "Typ",
+            "message": "Text",
+            "action": "Aktion",
+            "create": {
+              "title": "Wartungsmeldung",
+              "type": {
+                "label": "Typ",
+                "hint": "Erforderlich."
+              },
+              "message": {
+                "label": "Nachricht",
+                "hint": "Erforderlich."
+              },
+              "start": {
+                "label": "Zeitstempel starten"
+              },
+              "end": {
+                "label": "Endzeitstempel"
+              },
+              "submit": {
+                "text": "Absenden"
+              },
+              "delete": {
+                "text": "Löschen"
+              }
+            },
+            "modify": {
+              "text": "Ändern"
+            },
+            "add": {
+              "text": "Hinzufügen"
+            }
+          }
+        }
+      }
+    },
+    "view": {
+      "title": "Sicht",
+      "tabs": {
+        "info": "Info",
+        "data": "Daten"
+      },
+      "query": {
+        "title": "Abfrage"
+      },
+      "creator": {
+        "title": "Schöpfer"
+      },
+      "creation": {
+        "title": "Schaffung"
+      },
+      "visibility": {
+        "title": "Sichtweite"
+      },
+      "subpages": {
+        "create": {
+          "title": "Ansicht erstellen",
+          "name": {
+            "label": "Name",
+            "hint": "Erforderlich."
+          },
+          "table": {
+            "label": "Datentabelle",
+            "hint": "Erforderlich."
+          },
+          "columns": {
+            "label": "Datenspalten",
+            "hint": "Erforderlich."
+          },
+          "visibility": {
+            "warn": "Die Ansichtsmetadaten, d. h. Ansichtsname, Abfrage, bleiben weiterhin öffentlich. "
+          }
+        }
+      }
+    },
+    "subset": {
+      "title": "Teilmenge",
+      "visibility": {
+        "title": "Sichtweite"
+      },
+      "creator": {
+        "title": "Schöpfer"
+      },
+      "query": {
+        "title": "Abfrage"
+      },
+      "query-hash": {
+        "prefix": "sha256:",
+        "title": "Abfrage-Hash"
+      },
+      "executed": {
+        "title": "Erstellt"
+      },
+      "result-hash": {
+        "title": "Ergebnis-Hash"
+      },
+      "result-rows": {
+        "title": "Ergebniszeilen"
+      },
+      "tabs": {
+        "info": "Info",
+        "data": "Daten"
+      },
+      "subpages": {
+        "create": {
+          "title": "Teilmenge erstellen",
+          "generated": "Die folgende Abfrage wird ausgeführt (schreibgeschützt):",
+          "subtitle": "Die folgende Abfrage wird ausgeführt:",
+          "simple": {
+            "text": "Einfach"
+          },
+          "expert": {
+            "text": "Experte",
+            "warn": "Von der Verwendung von Kommentaren, Aggregationsfunktionen und den folgenden Vorgängen wird abgeraten:"
+          },
+          "name": {
+            "label": ""
+          },
+          "filter": {
+            "text": "Filter hinzufügen",
+            "column": {
+              "label": "Spalte",
+              "hint": "Erforderlich."
+            },
+            "operator": {
+              "label": "Operator",
+              "hint": "Erforderlich."
+            },
+            "value": {
+              "label": "Wert",
+              "hint": "Erforderlich."
+            },
+            "remove": {
+              "text": "Entfernen"
+            },
+            "and": {
+              "text": "Fügen Sie den „AND“-Filter hinzu"
+            },
+            "or": {
+              "text": "Fügen Sie den „ODER“-Filter hinzu"
+            }
+          }
+        }
+      }
+    },
+    "search": {
+      "types": {
+        "database": "Datenbank",
+        "table": "Tabelle",
+        "column": "Spalte",
+        "user": "Benutzer",
+        "identifier": "Bezeichner",
+        "concept": "Konzept",
+        "unit": "Einheit",
+        "view": "Ansicht"
+      },
+      "type": {
+        "label": "Typ",
+        "hint": ""
+      },
+      "id": {
+        "label": "ID",
+        "hint": ""
+      },
+      "name": {
+        "label": "Name",
+        "hint": ""
+      },
+      "internal-name": {
+        "label": "Interner Name",
+        "hint": ""
+      },
+      "publication-range": {
+        "hint": "Geben Sie Ihren benutzerdefinierten Veröffentlichungsjahresbereich an."
+      },
+      "start-year": {
+        "label": "Startjahr",
+        "hint": ""
+      },
+      "end-year": {
+        "label": "Jahresende",
+        "hint": ""
+      },
+      "concept-unit": {
+        "hint": "Wenn Sie ein KONZEPT und eine EINHEIT auswählen, können Sie unabhängig von der Maßeinheit spaltenübergreifend suchen."
+      },
+      "concept": {
+        "label": "Konzept",
+        "hint": ""
+      },
+      "unit": {
+        "label": "Einheit",
+        "hint": ""
+      },
+      "start": {
+        "label": "Startwert",
+        "hint": ""
+      },
+      "end": {
+        "label": "Endwert",
+        "hint": ""
+      }
+    },
+    "container": {
+      "title": "Container",
+      "name": {
+        "title": "Name"
+      },
+      "internal-name": {
+        "title": "Interner Name"
+      },
+      "image-name": {
+        "title": "Abbild"
+      },
+      "image-tag": {
+        "title": "Ausführung"
+      }
+    },
+    "semantics": {
+      "title": "Semantik",
+      "usages": {
+        "text": "Verwendungen"
+      }
+    }
+  },
+  "error": {
+    "import": {
+      "dataset": "Der Datensatz konnte nicht importiert werden."
+    },
+    "upload": {
+      "dataset": "Der Datensatz konnte nicht hochgeladen werden."
+    },
+    "schema": {
+      "id": "Die Spalte „id“ muss ein Primärschlüssel sein."
+    },
+    "user": {
+      "credentials": "Ungültige Benutzername und Passwort Kombination.",
+      "email-exists": "Das Konto mit dieser E-Mail-Adresse existiert bereits."
+    },
+    "query": {
+      "viewmalformed": "Die Ansicht ist fehlerhaft:",
+      "type": {
+        "exists": "Abfrage konnte nicht erstellt werden: kein solcher Spaltentyp:",
+        "build": "Abfrage konnte nicht erstellt werden: Derzeit gibt es keine Abfrageerstellungsunterstützung für den Spaltentyp:"
+      },
+      "column": {
+        "exists": "Abfrage konnte nicht erstellt werden: In den Datenspalten fehlt die Spalte mit dem Namen:"
+      }
+    },
+    "semantics": {
+      "timeout": "Semantikvorschlag fehlgeschlagen: Zeitüberschreitung bei der Anfrage"
+    },
+    "database": {
+      "querystore": "Die Abfrage konnte nicht in den Abfragespeicher eingefügt werden"
+    },
+    "table": {
+      "tablemalformed": "Eintrag konnte nicht eingefügt werden:",
+      "create": "Tabelle konnte nicht erstellt werden:",
+      "connection": "Das Laden der Tabellendaten ist fehlgeschlagen, da die Datenbank nicht erreichbar ist."
+    },
+    "view": {
+      "create": "Ansicht konnte nicht erstellt werden:"
+    },
+    "data": {
+      "value": "Spaltenwert konnte nicht festgelegt werden:"
+    },
+    "transfer": "Der Datenbankeigentümer konnte nicht übertragen werden."
+  },
+  "success": {
+    "signup": "Konto erfolgreich erstellt.",
+    "query": {
+      "build": "Abfrage konnte nicht erstellt werden: Spalte nicht gefunden",
+      "fatal": "Abfragen mit diesem Schema können derzeit nicht über die Benutzeroberfläche erstellt werden"
+    },
+    "import": {
+      "dataset": "Datensatz erfolgreich importiert."
+    },
+    "upload": {
+      "dataset": "Datensatz erfolgreich hochgeladen.",
+      "blob": "Datei erfolgreich hochgeladen."
+    },
+    "analyse": {
+      "dataset": "Datensatz erfolgreich analysiert."
+    },
+    "access": {
+      "created": "Zugriff erfolgreich bereitgestellt.",
+      "modified": "Zugriff erfolgreich geändert.",
+      "revoked": "Zugriff erfolgreich widerrufen."
+    },
+    "data": {
+      "add": "Dateneingabe erfolgreich hinzugefügt.",
+      "update": "Dateneingabe erfolgreich aktualisiert."
+    },
+    "table": {
+      "created": "Tabelle erfolgreich erstellt.",
+      "semantics": "Semantische Instanz erfolgreich zugewiesen."
+    },
+    "database": {
+      "upload": "Datenbankbild erfolgreich hochgeladen.",
+      "transfer": "Der Datenbankeigentümer wurde erfolgreich übertragen.",
+      "image": {
+        "update": "Datenbankbild erfolgreich aktualisiert.",
+        "remove": "Datenbankbild erfolgreich entfernt."
+      }
+    },
+    "pid": {
+      "created": "Erfolgreich persistierter Bezeichner.",
+      "updated": "Kennung erfolgreich aktualisiert."
+    },
+    "user": {
+      "info": "Benutzerinformationen erfolgreich aktualisiert.",
+      "theme": "Benutzerthema erfolgreich aktualisiert."
+    },
+    "view": {
+      "create": "Ansicht erfolgreich erstellt.",
+      "delete": "Ansicht erfolgreich gelöscht."
+    },
+    "subset": {
+      "create": "Teilmenge erfolgreich erstellt."
+    }
+  },
+  "toolbars": {
+    "user": {
+      "info": "Info",
+      "authentication": "Authentifizierung",
+      "developer": "Entwickler"
+    },
+    "semantic": {
+      "register": {
+        "title": "Registrieren Sie die Ontologie",
+        "subtitle": "Registrieren Sie einen neuen Ontologie-Endpunkt."
+      },
+      "ontologies": {
+        "title": "Ontologien",
+        "text": "Ontologien",
+        "units": "Einheiten",
+        "concepts": "Konzepte"
+      },
+      "ontology": {
+        "text": "Ontologie"
+      }
+    },
+    "database": {
+      "recent": "Aktuelle Datenbanken",
+      "links": "Wichtige Links",
+      "public": "Öffentlich",
+      "private": "Privat",
+      "current": "Aktuelle Daten",
+      "history": "Historische Daten",
+      "create": {
+        "text": "Datenbank"
+      },
+      "import-csv": {
+        "permanent": "Importieren",
+        "xl": "CSV"
+      },
+      "create-subset": {
+        "permanent": "Teilmenge",
+        "xl": "Erstellen"
+      },
+      "create-view": {
+        "permanent": "Sicht",
+        "xl": "Erstellen"
+      },
+      "create-table": {
+        "permanent": "Tisch",
+        "xl": "Erstellen"
+      },
+      "create-pid": {
+        "permanent": "PID",
+        "xl": "Erhalten"
+      },
+      "info": {
+        "tab": "Info"
+      },
+      "tables": {
+        "tab": "Tabellen"
+      },
+      "subsets": {
+        "tab": "Teilmengen"
+      },
+      "views": {
+        "tab": "Ansichten"
+      },
+      "settings": {
+        "tab": "Einstellungen"
+      }
+    },
+    "identifier": {
+      "create": {
+        "xl": "Erhalten",
+        "permanent": "PID"
+      },
+      "update": {
+        "xl": "Aktualisieren",
+        "permanent": "PID"
+      }
+    },
+    "search": {
+      "fuzzy": {
+        "placeholder": "Suchen ..."
+      },
+      "result": "Ergebnis",
+      "results": "Ergebnisse"
+    },
+    "subset": {
+      "save": {
+        "permanent": "Speichern"
+      },
+      "export": {
+        "data": {
+          "xl": "Ergebnis",
+          "permanent": "Daten"
+        },
+        "metadata": {
+          "xl": "Ergebnis",
+          "permanent": "Metadaten"
+        }
+      },
+      "pid": {
+        "xl": "Erhalten",
+        "permanent": "PID"
+      },
+      "unsave": {
+        "permanent": "Nicht speichern"
+      }
+    },
+    "view": {
+      "pid": {
+        "xl": "Erhalten",
+        "permanent": "PID"
+      }
+    },
+    "table": {
+      "data": {
+        "refresh": "Aktualisierung",
+        "add": "Hinzufügen",
+        "edit": "Aktualisieren",
+        "delete": "Löschen",
+        "tuple": "Eintrag",
+        "download": "Herunterladen",
+        "version": "Geschichte",
+        "subtitle": "Stellen Sie Daten bereit, die direkt in den Datensatz eingefügt werden sollen."
+      }
+    }
+  },
+  "validation": {
+    "required": "Pflichtfeld",
+    "integer": "Größer oder gleich Null",
+    "max-length": "Die maximale Länge beträgt: ",
+    "day": "Ungültiger Tag",
+    "month": "Ungültiger Monat",
+    "schema": {
+      "id": "Die Spalte muss als Primärschlüssel deklariert werden",
+      "primary-key": "Wir erstellen eine Spalte mit dem Namen „id“ mit einer automatisch ansteigenden Sequenz, die bei 1 beginnt. Bitte geben Sie eine Spalte mit Primärschlüssel an, wenn Sie dieses Verhalten nicht wünschen."
+    },
+    "uri": {
+      "pattern": "Ungültiger URI",
+      "exists": "URI existiert"
+    },
+    "user": {
+      "pattern": "Nur Kleinbuchstaben, min. ",
+      "exists": "Dieser Benutzername ist bereits vergeben"
+    },
+    "view": {
+      "exists": "Der Ansichtsname existiert bereits"
+    },
+    "table": {
+      "exists": "Tabellenname existiert bereits"
+    },
+    "prefix": {
+      "pattern": "Ungültiges Präfixmuster",
+      "length": "Ungültige Länge: min. ",
+      "exists": "Präfix existiert"
+    },
+    "pattern": {
+      "timestamp": "Muss im Format jjjj-MM-tt HH:mm:ss vorliegen"
+    }
+  }
+}

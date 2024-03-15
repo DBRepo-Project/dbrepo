@@ -10,7 +10,8 @@ export const useUserStore = defineStore('user', {
       refreshToken: null,
       roles: [],
       user: null,
-      access: null
+      access: null,
+      locale: null
     }
   },
   getters: {
@@ -19,6 +20,7 @@ export const useUserStore = defineStore('user', {
     getRoles: (state) => state.roles,
     getUser: (state) => state.user,
     getAccess: (state) => state.access,
+    getLocale: (state) => state.locale
   },
   actions: {
     setToken(token) {
@@ -35,6 +37,9 @@ export const useUserStore = defineStore('user', {
     },
     setAccess(access) {
       this.access = access
+    },
+    setLocale (locale) {
+      this.locale = locale
     },
     logout() {
       this.token = null

@@ -50,11 +50,20 @@
           <v-spacer />
           <v-btn
             variant="plain"
+            text="DE"
+            size="x-small"
+            @click="setLocale('de')" />
+          <v-btn
+            variant="plain"
+            text="EN"
+            size="x-small"
+            @click="setLocale('en')" />
+          <v-btn
+            variant="plain"
             prepend-icon="mdi-tag"
             :href="`https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/${version}`"
             :text="version"
-            size="x-small"
-          />
+            size="x-small" />
         </div>
       </template>
     </v-navigation-drawer>
@@ -161,7 +170,7 @@ export default {
       return this.userStore.getUser
     },
     locale () {
-      return null
+      return this.userStore.getLocale
     },
     messages () {
       return this.cacheStore.getMessages
@@ -248,9 +257,10 @@ export default {
       this.$router.push({ path: '/search', query: { q: this.search } })
     },
     initEnvironment () {
-      if (this.locale) {
-        this.$i18n.locale = this.locale
+      if (!this.locale) {
+        this.userStore.setLocale('en')
       }
+      this.$i18n.locale = this.locale
     },
     setTheme () {
       switch (this.user.attributes.theme) {
@@ -267,6 +277,10 @@ export default {
           this.$vuetify.theme.global.name = 'tuwThemeDarkContrast'
           break
       }
+    },
+    setLocale (code) {
+      this.userStore.setLocale(code)
+      this.$i18n.locale = this.locale
     }
   }
 }

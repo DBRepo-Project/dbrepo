@@ -1,15 +1,18 @@
 export const useLicenseService = (): any => {
   async function findAll(): Promise<LicenseDto[]> {
     const axios = useAxiosInstance()
-    try {
-      console.debug('find licenses')
-      const {data} = await axios.get<LicenseDto[]>('/api/database/license')
-      console.info('Found license(s)')
-      return data
-    } catch (error) {
-      console.error('Failed to find licenses', error)
-      return []
-    }
+    console.debug('find licenses')
+    return new Promise<LicenseDto[]>((resolve, reject) => {
+      axios.get<LicenseDto[]>('/api/database/license')
+        .then((response) => {
+          console.info('Found license(s)')
+          resolve(response.data)
+        })
+        .catch((error) => {
+          console.error('Failed to find licenses')
+          reject(error)
+        })
+    })
   }
 
   return {findAll}

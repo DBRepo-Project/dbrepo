@@ -7,7 +7,7 @@ export const useCacheStore = defineStore('cache', {
       database: null,
       table: null,
       ontologies: [],
-      messages: []
+      messages: [],
     }
   },
   getters: {

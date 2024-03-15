@@ -543,9 +543,6 @@ interface ImportCsv {
 interface QueryResultDto {
   result: any;
   headers: any;
-  /**
-   * @deprecated Will be removed with v2
-   */
   id: number;
   /**
    * @deprecated Will be removed with v2

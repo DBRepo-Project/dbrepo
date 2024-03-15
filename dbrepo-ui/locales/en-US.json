@@ -906,6 +906,16 @@
       }
     },
     "search": {
+      "types": {
+        "database": "Database",
+        "table": "Table",
+        "column": "Column",
+        "user": "User",
+        "identifier": "Identifier",
+        "concept": "Concept",
+        "unit": "Unit",
+        "view": "View"
+      },
       "type": {
         "label": "Type",
         "hint": ""

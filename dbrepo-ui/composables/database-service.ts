@@ -5,7 +5,7 @@ export const useDatabaseService = (): any => {
     return new Promise((resolve, reject) => {
       axios.get<DatabaseBriefDto[]>('/api/database')
         .then((response) => {
-          console.info('Found database(s)');
+          console.info(`Found ${response.data.length} database(s)`);
           resolve(response.data);
         })
         .catch((error) => {

@@ -2,13 +2,13 @@ export const useConceptService = (): any => {
   async function findAll () {
     const axios = useAxiosInstance()
     return new Promise((resolve, reject) => {
-      axios.get('/api/semantic/concept', { headers: { Accept: 'application/json' } })
+      axios.get('/api/semantic/concept')
         .then((response) => {
-          const concepts = response.data
-          console.debug('response concepts', concepts)
-          resolve(concepts)
+          console.info('Found concept(s)')
+          resolve(response.data)
         })
         .catch((error) => {
+          console.error('Failed to find concepts', error)
           reject(error)
         })
     })

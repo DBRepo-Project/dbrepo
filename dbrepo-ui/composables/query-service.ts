@@ -8,7 +8,7 @@ export const useQueryService = (): any => {
     return new Promise<QueryDto[]>((resolve, reject) => {
       axios.get<QueryDto[]>(`/api/database/${databaseId}/query`, {params: (persisted && { persisted })})
         .then((response) => {
-          console.info('Found query(s)')
+          console.info(`Found ${response.data.length} query(s)`)
           resolve(response.data)
         })
         .catch((error) => {
@@ -78,7 +78,7 @@ export const useQueryService = (): any => {
     return new Promise<QueryResultDto>((resolve, reject) => {
       axios.post<QueryResultDto>(`/api/database/${databaseId}/query`, data, {params: (page && size && { page, size })})
         .then((response) => {
-          console.info('Executed query in database with id', databaseId)
+          console.info('Executed query with id', response.data.id, ' in database with id', databaseId)
           resolve(response.data)
         })
         .catch((error) => {
