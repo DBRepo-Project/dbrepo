@@ -221,7 +221,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void insert_date_succeeds() throws TableNotFoundException, TableMalformedException, SQLException,
-            DatabaseNotFoundException {
+            DatabaseNotFoundException, FileStorageException {
         final TableCsvDto request = TableCsvDto.builder()
                 .data(new HashMap<>() {{
                     put("id", 4L);
@@ -242,7 +242,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void insert_timestamp_succeeds() throws TableNotFoundException, TableMalformedException,
-            DatabaseNotFoundException {
+            DatabaseNotFoundException, FileStorageException {
         final TableCsvDto request = TableCsvDto.builder()
                 .data(new HashMap<>() {{
                     put("timestamp", "2023-02-10 12:15:20");
@@ -255,7 +255,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void insert_timestampMillis_succeeds() throws TableNotFoundException, TableMalformedException,
-            DatabaseNotFoundException {
+            DatabaseNotFoundException, FileStorageException {
         final TableCsvDto request = TableCsvDto.builder()
                 .data(new HashMap<>() {{
                     put("timestamp", "2023-02-10 12:15:20.613405");
@@ -268,7 +268,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void insert_withConstraints_succeeds() throws TableNotFoundException, TableMalformedException,
-            DatabaseNotFoundException {
+            DatabaseNotFoundException, FileStorageException {
         final TableCsvDto request = TableCsvDto.builder()
                 .data(Map.of("id", 4L,
                         "date", "2008-12-04",

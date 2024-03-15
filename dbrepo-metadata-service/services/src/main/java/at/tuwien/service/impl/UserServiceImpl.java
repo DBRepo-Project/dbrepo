@@ -59,7 +59,7 @@ public class UserServiceImpl implements UserService {
                 .id(id)
                 .username(data.getUsername())
                 .email(data.getEmail())
-                .themeDark(false)
+                .theme("light")
                 .mariadbPassword(getMariaDbPassword(data.getPassword()))
                 .build();
         /* create at metadata database */
@@ -92,7 +92,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public User toggleTheme(UUID id, UserThemeSetDto data) throws UserNotFoundException {
         final User entity = find(id);
-        entity.setThemeDark(data.getThemeDark());
+        entity.setTheme(data.getTheme());
         final User user = userRepository.save(entity);
         log.info("Updated theme of user with id {} in metadata database", id);
         return user;

@@ -54,8 +54,8 @@ public class User {
     })
     private List<DatabaseAccess> accesses;
 
-    @Column(name = "theme_dark", nullable = false)
-    private Boolean themeDark;
+    @Column(nullable = false)
+    private String theme;
 
     @Column(name = "mariadb_password", nullable = false)
     private String mariadbPassword;

@@ -1,18 +1,22 @@
 <template>
   <div v-if="canListOntologies">
     <v-toolbar flat>
-      <v-toolbar-title>
-        <v-btn id="back-btn" plain class="mr-2" to="/semantic">
-          <v-icon left>mdi-arrow-left</v-icon>
-        </v-btn>
-      </v-toolbar-title>
-      <v-toolbar-title>{{ ontologies.length }} {{ $t('layout.ontologies', { name: 'vue-i18n' }) }}</v-toolbar-title>
+      <v-btn
+        variant="plain"
+        size="small"
+        icon="mdi-arrow-left"
+        to="/semantic" />
+      <v-toolbar-title
+        v-text="ontologies.length + ' ' + $t('toolbars.semantic.ontologies.title')" />
       <v-spacer />
-      <v-toolbar-title>
-        <v-btn v-if="canCreateOntology" color="primary" name="create-ontology" @click.stop="createOntologyDialog = true">
-          <v-icon left>mdi-plus</v-icon> Ontology
-        </v-btn>
-      </v-toolbar-title>
+      <v-btn
+        v-if="canCreateOntology"
+        color="secondary"
+        variant="flat"
+        name="create-ontology"
+        prepend-icon="mdi-plus"
+        :text="$t('toolbars.semantic.ontology.text')"
+        @click.stop="createOntologyDialog = true" />
     </v-toolbar>
     <OntologiesList />
     <v-dialog
@@ -24,9 +28,12 @@
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
   </div>
 </template>
+
 <script>
-import OntologiesList from '@/components/OntologiesList.vue'
-import CreateOntology from '@/components/dialogs/CreateOntology.vue'
+import OntologiesList from '@/components/OntologiesList'
+import CreateOntology from '@/components/dialogs/CreateOntology'
+import { useUserStore } from '@/stores/user'
+import { useCacheStore } from '@/stores/cache'
 
 export default {
   components: {
@@ -37,23 +44,31 @@ export default {
     return {
       createOntologyDialog: false,
       items: [
-        { text: `${this.$t('layout.semantics', { name: 'vue-i18n' })}`, to: '/semantic', activeClass: '' },
-        { text: `${this.$t('layout.ontologies', { name: 'vue-i18n' })}`, to: '/semantic/ontology', activeClass: '' }
-      ]
+        {
+          title: `${this.$t('navigation.semantics')}`,
+          to: '/semantic'
+        },
+        {
+          title: `${this.$t('navigation.ontologies')}`,
+          to: '/semantic/ontology'
+        }
+      ],
+      userStore: useUserStore(),
+      cacheStore: useCacheStore()
     }
   },
   computed: {
     token () {
-      return this.$store.state.token
+      return this.userStore.getToken
     },
     user () {
-      return this.$store.state.user
+      return this.userStore.getUser
     },
     roles () {
-      return this.$store.state.roles
+      return this.userStore.getRoles
     },
     ontologies () {
-      return this.$store.state.ontologies
+      return this.cacheStore.getOntologies
     },
     canListOntologies () {
       if (!this.roles) {
@@ -71,7 +86,7 @@ export default {
   methods: {
     close (event) {
       if (event.success) {
-        this.$store.dispatch('reloadOntologies')
+        // this.$store.dispatch('reloadOntologies')
       }
       this.createOntologyDialog = false
     }

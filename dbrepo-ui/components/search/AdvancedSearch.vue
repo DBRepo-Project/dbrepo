@@ -1,40 +1,58 @@
 <template>
   <div>
-    <v-card v-if="isAdvancedSearch" flat tile>
-      <v-card-text class="pt-0 pl-4 pb-6 pr-4">
-        <v-form ref="form" v-model="valid" autocomplete="off" @submit.prevent="submit">
+    <v-card
+      v-if="isAdvancedSearch"
+      variant="flat">
+      <v-card-text
+        class="pt-2">
+        <v-form
+          ref="form"
+          v-model="valid"
+          autocomplete="off"
+          @submit.prevent="submit">
           <v-row dense>
             <v-col cols="3">
               <v-select
                 v-model="searchType"
                 :items="fieldItems"
-                item-text="name"
+                item-title="name"
                 item-value="value"
-                solo
-                label="Type" />
+                :variant="inputVariant"
+                persistent-hint
+                :label="$t('pages.search.type.label')"
+                :hint="$t('pages.search.type.hint')" />
             </v-col>
           </v-row>
-          <p>The following fields are <code>AND</code> connected.</p>
-          <v-row dense>
+          <v-row
+            dense>
             <v-col cols="3">
               <v-text-field
                 v-model="advancedSearchData.id"
                 clearable
-                label="ID" />
+                :variant="inputVariant"
+                persistent-hint
+                :label="$t('pages.search.id.label')"
+                :hint="$t('pages.search.id.hint')" />
             </v-col>
             <v-col cols="3">
               <v-text-field
                 v-if="!hideFields.hideNameField"
                 v-model="advancedSearchData.name"
                 clearable
-                label="Name" />
+                :variant="inputVariant"
+                persistent-hint
+                :label="$t('pages.search.name.label')"
+                :hint="$t('pages.search.name.hint')" />
             </v-col>
             <v-col cols="3">
               <v-text-field
                 v-if="!hideFields.hideInternalNameField"
                 v-model="advancedSearchData.internal_name"
                 clearable
-                label="Internal Name" />
+                :variant="inputVariant"
+                persistent-hint
+                :label="$t('pages.search.internal-name.label')"
+                :hint="$t('pages.search.internal-name.hint')" />
             </v-col>
           </v-row>
           <v-row v-if="!loadingFields && renderedFields" dense>
@@ -44,13 +62,15 @@
                 v-model="advancedSearchData[field.attr_name]"
                 clearable
                 :items="booleanItems"
-                item-text="name"
+                item-title="name"
                 item-value="value"
+                :variant="inputVariant"
                 :label="field.attr_friendly_name" />
               <v-text-field
                 v-if="(field.type === 'keyword' && field.attr_name !== 'column_type') || field.type === 'text' || field.type === 'date'"
                 v-model="advancedSearchData[field.attr_name]"
                 type="text"
+                :variant="inputVariant"
                 :label="field.attr_friendly_name"
                 clearable />
               <v-select
@@ -58,105 +78,134 @@
                 v-model="advancedSearchData[field.attr_name]"
                 :items="columnTypes"
                 item-value="value"
+                :variant="inputVariant"
                 clearable
                 :label="field.attr_friendly_name" />
               <v-text-field
                 v-if="field.type.startsWith('integer') || field.type.startsWith('long') || field.type.startsWith('double')"
                 v-model="advancedSearchData[field.attr_name]"
                 type="number"
+                :variant="inputVariant"
                 :label="field.attr_friendly_name"
                 clearable />
               <v-autocomplete
                 v-if="field.attr_name === 'licenses'"
                 v-model="advancedSearchData[field.attr_name]"
-                :items="fetchLicenses"
+                :items="licenses"
+                :variant="inputVariant"
                 :label="field.attr_friendly_name"
                 clearable
                 multiple />
             </v-col>
           </v-row>
-          <p v-if="isEligibleYearRangeSearch" class="mt-4">
-            Specify your custom publication year range:
-          </p>
-          <v-row v-if="isEligibleYearRangeSearch" dense>
+          <v-row
+            v-if="isEligibleYearRangeSearch"
+            dense>
+            <v-col>
+              <p v-text="$t('pages.search.publication-range.hint')" />
+            </v-col>
+          </v-row>
+          <v-row
+            v-if="isEligibleYearRangeSearch"
+            dense>
             <v-col cols="3">
               <v-text-field
                 v-model="advancedSearchData['t1']"
                 type="number"
-                label="Start Year"
+                persistent-hint
+                :label="$t('pages.search.start-year.label')"
+                :hint="$t('pages.search.start-year.hint')"
+                :variant="inputVariant"
                 required
-                :rules="[v => !!v || $t('Required')]"
+                :rules="[v => !!v || $t('validation.required')]"
                 clearable />
             </v-col>
             <v-col cols="3">
               <v-text-field
                 v-model="advancedSearchData['t2']"
                 type="number"
-                label="End Year"
+                persistent-hint
+                :label="$t('pages.search.end-year.label')"
+                :hint="$t('pages.search.end-year.hint')"
+                :variant="inputVariant"
                 clearable />
             </v-col>
           </v-row>
-          <p v-if="isEligibleUnitIndependentSearch" class="mt-4">
-            If you select a <code>concept</code> and <code>unit</code>, you can search across columns regardless of their
-            unit of measurement.
-          </p>
+          <v-row
+            dense>
+            <v-col>
+              <p
+                v-if="isEligibleUnitIndependentSearch"
+                v-text="$t('pages.search.concept-unit.hint')"
+                class="mt-4" />
+            </v-col>
+          </v-row>
           <v-row v-if="isEligibleConceptOrUnitSearch || isEligibleUnitIndependentSearch" dense>
             <v-col v-if="isEligibleConceptOrUnitSearch || isEligibleUnitIndependentSearch" cols="3">
               <v-select
                 v-model="advancedSearchData['tables.columns.concept.uri']"
                 clearable
                 :items="concepts"
-                item-text="name"
+                item-title="name"
                 item-value="uri"
-                label="Concept" />
+                :variant="inputVariant"
+                persistent-hint
+                :label="$t('pages.search.concept.label')"
+                :hint="$t('pages.search.concept.hint')" />
             </v-col>
             <v-col v-if="isEligibleConceptOrUnitSearch || isEligibleUnitIndependentSearch" cols="3">
               <v-select
                 v-model="advancedSearchData['tables.columns.unit.uri']"
                 clearable
                 :items="units"
-                item-text="name"
+                item-title="name"
                 item-value="uri"
-                label="Unit" />
+                :variant="inputVariant"
+                persistent-hint
+                :label="$t('pages.search.unit.label')"
+                :hint="$t('pages.search.unit.hint')" />
             </v-col>
             <v-col v-if="isEligibleUnitIndependentSearch" cols="3">
               <v-text-field
                 v-model="advancedSearchData['t1']"
                 clearable
+                :variant="inputVariant"
                 type="number"
-                label="Start Value" />
+                persistent-hint
+                :label="$t('pages.search.start.label')"
+                :hint="$t('pages.search.start.hint')" />
             </v-col>
             <v-col v-if="isEligibleUnitIndependentSearch" cols="3">
               <v-text-field
                 v-model="advancedSearchData['t2']"
                 clearable
+                :variant="inputVariant"
                 type="number"
-                label="End Value" />
+                persistent-hint
+                :label="$t('pages.search.end.label')"
+                :hint="$t('pages.search.end.hint')" />
             </v-col>
           </v-row>
           <v-row dense>
-            <v-btn
-              type="submit"
-              class="mr-2"
-              color="primary"
-              :loading="loading"
-              :disabled="!valid"
-              small
-              @click="advancedSearch">
-              Search
-            </v-btn>
+            <v-col>
+              <v-btn
+                type="submit"
+                color="secondary"
+                variant="flat"
+                :loading="loading"
+                :disabled="!valid"
+                size="small"
+                :text="$t('navigation.search')"
+                @click="advancedSearch" />
+            </v-col>
           </v-row>
         </v-form>
       </v-card-text>
     </v-card>
   </div>
 </template>
-<script>
-import SearchService from '@/api/search.service'
-import QueryMapper from '@/api/query.mapper'
-import SemanticService from '@/api/semantic.service'
-import SemanticMapper from '@/api/semantic.mapper'
 
+<script>
 export default {
   data () {
     return {
@@ -167,6 +216,7 @@ export default {
       showAdvancedSearch: false,
       concepts: [],
       units: [],
+      licenses: [],
       yearFrom: null,
       yearFromItems: [
         { name: `Since ${new Date().getFullYear()}`, value: new Date().getFullYear() },
@@ -175,10 +225,7 @@ export default {
         { name: `Since ${new Date().getFullYear() - 3}`, value: new Date().getFullYear() - 3 },
         { name: 'Custom', value: 'custom' }
       ],
-      columnTypes: QueryMapper.mySql8DataTypes().map((datatype) => {
-        datatype.value = datatype.value.toUpperCase()
-        return datatype
-      }),
+      columnTypes: [],
       dynamicFields: {
         database: ['is_public', 'owner.attributes.orcid', 'owner.username', 'identifier.publication_year'],
         table: [],
@@ -190,14 +237,14 @@ export default {
         unit: ['tables.columns.unit.uri']
       },
       fieldItems: [
-        { name: 'Database', value: 'database' },
-        { name: 'Table', value: 'table' },
-        { name: 'Column', value: 'column' },
-        { name: 'User', value: 'user' },
-        { name: 'Identifier', value: 'identifier' },
-        { name: 'Concept', value: 'concept' },
-        { name: 'Unit', value: 'unit' },
-        { name: 'View', value: 'view' }
+        { name: this.$t('pages.search.types.database'), value: 'database' },
+        { name: this.$t('pages.search.types.table'), value: 'table' },
+        { name: this.$t('pages.search.types.column'), value: 'column' },
+        { name: this.$t('pages.search.types.user'), value: 'user' },
+        { name: this.$t('pages.search.types.identifier'), value: 'identifier' },
+        { name: this.$t('pages.search.types.concept'), value: 'concept' },
+        { name: this.$t('pages.search.types.unit'), value: 'unit' },
+        { name: this.$t('pages.search.types.view'), value: 'view' }
       ],
       booleanItems: [
         { name: 'True', value: true },
@@ -237,6 +284,14 @@ export default {
         return null
       }
       return this.$route.query.t
+    },
+    inputVariant () {
+      const runtimeConfig = useRuntimeConfig()
+      return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.input.contrast : runtimeConfig.public.variant.input.normal
+    },
+    buttonVariant () {
+      const runtimeConfig = useRuntimeConfig()
+      return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.button.contrast : runtimeConfig.public.variant.button.normal
     }
   },
   watch: {
@@ -265,14 +320,22 @@ export default {
     this.initFieldsFromRoute()
     this.initSearch(this.searchType)
     this.advancedSearch()
-    SemanticService.findAllConcepts()
+    this.fetchLicenses()
+    const conceptService = useConceptService()
+    conceptService.findAll()
       .then((response) => {
-        this.concepts = SemanticMapper.mapConcepts(response)
+        this.concepts = conceptService.mapConcepts(response)
       })
-    SemanticService.findAllUnits()
+    const unitService = useUnitService()
+    unitService.findAll()
       .then((response) => {
-        this.units = SemanticMapper.mapUnits(response)
+        this.units = unitService.mapUnits(response)
       })
+    const queryService = useQueryService()
+    this.columnTypes = queryService.mySql8DataTypes().map((datatype) => {
+      datatype.value = datatype.value.toUpperCase()
+      return datatype
+    })
   },
   methods: {
     submit () {
@@ -302,7 +365,8 @@ export default {
         this.advancedSearchData.t2 = Number(this.advancedSearchData.t2)
       }
       this.loading = true
-      SearchService.search(this.searchType, this.advancedSearchData)
+      const searchService = useSearchService()
+      searchService.search(this.searchType, this.advancedSearchData)
         .then((response) => {
           this.$emit('search-result', response)
         })
@@ -321,18 +385,17 @@ export default {
       }
       return shouldBeRendered
     },
-    fetchLicenses () {
-      // Licenses is a nested object in the backend, but without any values.
-      // Instead, we define our custom license generator with a controlled vocabulary.
-      return [
-        'Apache-2.0', 'BSD-3-Clause', 'BSD-4-Clause', 'CC-BY-4.0', 'CC0-1.0', 'GPL-3.0-only', 'MIT'
-      ]
+    async fetchLicenses () {
+      const licenseService = useLicenseService()
+      const licenses = await licenseService.findAll()
+      this.licenses = licenses.map(l => l.identifier)
     },
     initSearch (searchType) {
       this.resetAdvancedSearchFields()
       this.$emit('search-result', [])
       this.loadingFields = true
-      SearchService.getFields(searchType)
+      const searchService = useSearchService()
+      searchService.fields(searchType)
         .then((response) => {
           this.loadingFields = false
           this.renderedFields = response.filter(field => this.shouldRenderItem(field))

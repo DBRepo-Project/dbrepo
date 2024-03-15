@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -26,7 +27,9 @@ import java.util.stream.Collectors;
 @Log4j2
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping("/api/database")
+@RequestMapping(path = "/api/database",
+        consumes = MediaType.ALL_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
 public class LicenseEndpoint {
 
     private final LicenseMapper licenseMapper;

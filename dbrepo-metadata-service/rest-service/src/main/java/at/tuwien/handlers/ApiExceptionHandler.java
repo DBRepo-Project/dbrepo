@@ -742,7 +742,7 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         final ApiErrorDto response = ApiErrorDto.builder()
                 .status(HttpStatus.EXPECTATION_FAILED)
                 .message(e.getLocalizedMessage())
-                .code("error.user.emailexists")
+                .code("error.user.email-exists")
                 .build();
         return new ResponseEntity<>(response, new HttpHeaders(), response.getStatus());
     }

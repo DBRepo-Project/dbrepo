@@ -1,465 +1,753 @@
 <template>
   <div id="persist">
     <v-toolbar flat>
-      <v-toolbar-title>
-        <v-btn id="back-btn" class="mr-2" :to="backTo">
-          <v-icon left>mdi-arrow-left</v-icon>
-        </v-btn>
-      </v-toolbar-title>
-      <v-toolbar-title v-text="pageTitle" />
+      <v-btn
+        icon="mdi-arrow-left"
+        size="small"
+        :to="backTo" />
+      <v-toolbar-title :text="pageTitle" />
       <v-spacer />
-      <v-toolbar-title>
-        <v-btn
-          v-if="!isUpdate"
-          class="mb-1"
-          :loading="loading"
-          :disabled="!formValid || !validPublicationMonth || !validPublicationDay || loading"
-          color="primary"
-          @click="save">
-          <v-icon left>mdi-content-save-outline</v-icon> Create PID
-        </v-btn>
-        <v-btn
-          v-if="isUpdate"
-          class="mb-1"
-          :loading="loading"
-          :disabled="!formValid || loading"
-          color="primary"
-          @click="save">
-          <v-icon left>mdi-content-save-outline</v-icon> Update PID
-        </v-btn>
-      </v-toolbar-title>
+      <v-btn
+        v-if="!isUpdate"
+        prepend-icon="mdi-content-save-outline"
+        class="mb-1"
+        color="primary"
+        variant="flat"
+        :loading="loading"
+        :disabled="!formValid || !validPublicationMonth || !validPublicationDay || loading"
+        :text="($vuetify.display.xl ? $t('toolbars.identifier.create.xl') + ' ' : '') + $t('toolbars.identifier.create.permanent')"
+        @click="save" />
+      <v-btn
+        v-if="isUpdate"
+        prepend-icon="mdi-content-save-outline"
+        class="mb-1"
+        color="primary"
+        variant="flat"
+        :loading="loading"
+        :disabled="!formValid || loading"
+        :text="($vuetify.display.xl ? $t('toolbars.identifier.update.xl') + ' ' : '') + $t('toolbars.identifier.update.permanent')"
+        @click="save" />
     </v-toolbar>
-    <v-form ref="form" v-model="formValid">
-      <v-card tile elevation="0">
-        <v-card-title>Creators</v-card-title>
-        <v-stepper v-for="(creator, i) in identifier.creators" :key="`c-${i}`" tile elevation="0" vertical>
-          <v-stepper-step :step="i+1" class="pt-0 pb-0">
-            <v-card-text class="pt-0 pb-0">
-              <v-row dense>
-                <v-col cols="8">
-                  <v-text-field
-                    v-model="creator.name_identifier"
-                    label="Name Identifier"
-                    clearable
-                    name="name-identifier"
-                    hint="Use a name identifier expressed as URL from ORCID*, ROR*, DOI*, ISNI, GND (schemes with * support automatic metadata retrieval)"
-                    :loading="creator.name_loading"
-                    persistent-hint
-                    required
-                    @focusout="retrieveCreator(creator)" />
-                </v-col>
-                <v-col cols="4" class="mt-5">
-                  <v-btn :disabled="!canShiftUp(creator, i)" small @click="shiftUp(i)">
-                    <v-icon small>mdi-arrow-up</v-icon>
-                  </v-btn>
-                  <v-btn :disabled="!canShiftDown(creator, i)" small @click="shiftDown(i)">
-                    <v-icon small>mdi-arrow-down</v-icon>
-                  </v-btn>
-                  <v-btn v-if="canInsertSelf" color="secondary" small @click="insertSelf(creator)">
-                    Insert Myself
-                  </v-btn>
-                  <v-btn v-if="i > 0" color="error" small @click="deleteCreator(i)">
-                    Remove
-                  </v-btn>
-                </v-col>
-              </v-row>
-            </v-card-text>
-          </v-stepper-step>
-          <v-stepper-content :step="1">
-            <v-card-text>
-              <v-row dense>
-                <v-col cols="8">
-                  <v-radio-group v-model="creator.name_type" row>
-                    <v-radio
-                      label="Person"
-                      value="Personal" />
-                    <v-radio
-                      label="Organization"
-                      value="Organizational" />
-                  </v-radio-group>
-                </v-col>
-              </v-row>
-              <v-row
-                v-if="isPerson(creator)"
-                dense>
-                <v-col cols="8">
-                  <v-text-field
-                    v-model="creator.firstname"
-                    label="Given Name"
-                    clearable
-                    hint="e.g. John"
-                    required
-                    @focusout="suggestName(creator)" />
-                </v-col>
-              </v-row>
-              <v-row
-                v-if="isPerson(creator)"
-                dense>
-                <v-col cols="8">
-                  <v-text-field
-                    v-model="creator.lastname"
-                    label="Family Name"
-                    clearable
-                    hint="e.g. Doe"
-                    required
-                    @focusout="suggestName(creator)" />
-                </v-col>
-              </v-row>
-              <v-row dense>
-                <v-col cols="8">
-                  <v-text-field
-                    v-model="creator.creator_name"
-                    label="Name *"
-                    hint="e.g. Doe, Joe"
-                    :rules="[v => !!v || $t('Required')]"
-                    required />
-                </v-col>
-              </v-row>
-              <v-row dense>
-                <v-col cols="8">
-                  <v-text-field
-                    v-model="creator.affiliation_identifier"
-                    label="Affiliation Identifier"
-                    name="affiliation-identifier"
-                    :loading="creator.affiliation_loading"
-                    hint="Use an affiliation identifier expressed as URL from ORCID*, ROR*, DOI*, ISNI, GND (schemes with * support automatic metadata retrieval)"
-                    persistent-hint
-                    clearable
-                    @focusout="retrieveAffiliation(creator)" />
-                </v-col>
-              </v-row>
-              <v-row dense>
-                <v-col cols="8">
-                  <v-text-field
-                    v-model="creator.affiliation"
-                    label="Affiliation"
-                    name="affiliation"
-                    clearable
-                    hint="e.g. Brown University" />
-                </v-col>
-              </v-row>
-            </v-card-text>
-          </v-stepper-content>
-        </v-stepper>
+    <v-form
+      ref="form"
+      v-model="formValid">
+      <v-card
+        variant="flat"
+        rounded="0"
+        :title="$t('pages.identifier.creators.title')"
+        :subtitle="$t('pages.identifier.subpages.create.creators.subtitle')">
+        <v-card-text>
+          <v-stepper
+            v-for="(creator, i) in identifier.creators"
+            :key="`c-${i}`"
+            vertical
+            multiple
+            variant="flat">
+            <v-stepper-header>
+              <v-stepper-item
+                :value="i+1" />
+            </v-stepper-header>
+            <v-stepper-window
+              direction="vertical">
+              <v-container>
+                <v-row dense>
+                  <v-col cols="8">
+                    <v-text-field
+                      v-model="creator.name_identifier"
+                      :label="$t('pages.identifier.subpages.create.creators.identifier.label')"
+                      clearable
+                      :variant="inputVariant"
+                      name="name-identifier"
+                      :hint="$t('pages.identifier.subpages.create.creators.identifier.hint')"
+                      :loading="creator.name_loading"
+                      persistent-hint
+                      required
+                      @focusout="retrieveCreator(creator)" />
+                  </v-col>
+                  <v-col cols="4">
+                    <v-btn
+                      icon="mdi-arrow-up"
+                      class="mr-2"
+                      :disabled="!canShiftUp(creator, i)"
+                      size="small"
+                      color="tertiary"
+                      :variant="buttonVariant"
+                      @click="shiftUp(i)" />
+                    <v-btn
+                      icon="mdi-arrow-down"
+                      class="mr-2"
+                      :disabled="!canShiftDown(creator, i)"
+                      size="small"
+                      color="tertiary"
+                      :variant="buttonVariant"
+                      @click="shiftDown(i)" />
+                    <v-btn
+                      v-if="canInsertSelf"
+                      class="mr-2"
+                      size="small"
+                      color="secondary"
+                      variant="flat"
+                      :text="$t('pages.identifier.subpages.create.creators.insert.text')"
+                      @click="insertSelf(creator)" />
+                    <v-btn
+                      v-if="i > 0"
+                      size="small"
+                      color="error"
+                      variant="flat"
+                      :text="$t('pages.identifier.subpages.create.creators.remove.text')"
+                      @click="deleteCreator(i)" />
+                  </v-col>
+                </v-row>
+                <v-row dense>
+                  <v-col cols="8">
+                    <v-radio-group v-model="creator.name_type" row>
+                      <v-radio
+                        :label="$t('pages.identifier.subpages.create.creators.person.label')"
+                        value="Personal" />
+                      <v-radio
+                        :label="$t('pages.identifier.subpages.create.creators.organization.label')"
+                        value="Organizational" />
+                    </v-radio-group>
+                  </v-col>
+                </v-row>
+                <v-row
+                  v-if="isPerson(creator)"
+                  dense>
+                  <v-col cols="8">
+                    <v-text-field
+                      v-model="creator.firstname"
+                      :label="$t('pages.identifier.subpages.create.creators.given-name.label')"
+                      clearable
+                      :variant="inputVariant"
+                      :hint="$t('pages.identifier.subpages.create.creators.given-name.hint')"
+                      persistent-hint
+                      required
+                      @focusout="suggestName(creator)" />
+                  </v-col>
+                </v-row>
+                <v-row
+                  v-if="isPerson(creator)"
+                  dense>
+                  <v-col cols="8">
+                    <v-text-field
+                      v-model="creator.lastname"
+                      :label="$t('pages.identifier.subpages.create.creators.family-name.label')"
+                      clearable
+                      :variant="inputVariant"
+                      :hint="$t('pages.identifier.subpages.create.creators.family-name.hint')"
+                      persistent-hint
+                      required
+                      @focusout="suggestName(creator)" />
+                  </v-col>
+                </v-row>
+                <v-row dense>
+                  <v-col cols="8">
+                    <v-text-field
+                      v-model="creator.creator_name"
+                      :label="$t('pages.identifier.subpages.create.creators.name.label')"
+                      clearable
+                      :variant="inputVariant"
+                      :hint="$t('pages.identifier.subpages.create.creators.name.hint')"
+                      persistent-hint
+                      :rules="[v => !!v || $t('validation.required')]"
+                      required />
+                  </v-col>
+                </v-row>
+                <v-row dense>
+                  <v-col cols="8">
+                    <v-text-field
+                      v-model="creator.affiliation_identifier"
+                      :label="$t('pages.identifier.subpages.create.creators.affiliation-identifier.label')"
+                      name="affiliation-identifier"
+                      :variant="inputVariant"
+                      :loading="creator.affiliation_loading"
+                      :hint="$t('pages.identifier.subpages.create.creators.affiliation-identifier.hint')"
+                      persistent-hint
+                      clearable
+                      @focusout="retrieveAffiliation(creator)" />
+                  </v-col>
+                </v-row>
+                <v-row dense>
+                  <v-col cols="8">
+                    <v-text-field
+                      v-model="creator.affiliation"
+                      :label="$t('pages.identifier.subpages.create.creators.affiliation.label')"
+                      name="affiliation"
+                      :variant="inputVariant"
+                      clearable
+                      :hint="$t('pages.identifier.subpages.create.creators.affiliation.hint')"
+                      persistent-hint />
+                  </v-col>
+                </v-row>
+              </v-container>
+            </v-stepper-window>
+          </v-stepper>
+        </v-card-text>
         <v-card-text>
           <v-row dense>
             <v-col>
-              <v-btn x-small @click="addCreator">
-                Add Creator
-              </v-btn>
+              <v-btn
+                size="small"
+                color="tertiary"
+                :variant="buttonVariant"
+                :text="$t('pages.identifier.subpages.create.creators.add')"
+                @click="addCreator" />
             </v-col>
           </v-row>
         </v-card-text>
-        <v-card-title>Titles</v-card-title>
-        <v-stepper v-for="(title, i) in identifier.titles" :key="`t-${i}`" tile elevation="0" vertical>
-          <v-stepper-step :step="i+1" class="pt-0 pb-0">
-            <v-card-text>
-              <v-row dense>
-                <v-col cols="8">
-                  <v-text-field
-                    v-model="title.title"
-                    label="Title *"
-                    :rules="[v => !!v || $t('Required')]"
-                    required />
-                </v-col>
-                <v-col v-if="i > 0" cols="2" class="mt-5">
-                  <v-btn color="error" small @click="deleteTitle(i)">
-                    Remove
-                  </v-btn>
-                </v-col>
-              </v-row>
-            </v-card-text>
-          </v-stepper-step>
-          <v-stepper-content :step="1">
-            <v-card-text>
-              <v-row dense>
-                <v-col cols="8">
-                  <v-select
-                    v-model="title.type"
-                    label="Type"
-                    clearable
-                    :items="titleType"
-                    item-text="value"
-                    item-value="value"
-                    required />
-                </v-col>
-              </v-row>
-              <v-row dense>
-                <v-col cols="8">
-                  <v-autocomplete
-                    v-model="title.language"
-                    label="Language"
-                    clearable
-                    :items="languages"
-                    item-text="name"
-                    item-value="code"
-                    required />
-                </v-col>
-              </v-row>
-            </v-card-text>
-          </v-stepper-content>
-        </v-stepper>
+      </v-card>
+      <v-card
+        variant="flat"
+        rounded="0"
+        :title="$t('pages.identifier.titles.title')"
+        :subtitle="$t('pages.identifier.subpages.create.titles.subtitle')">
+        <v-card-text>
+          <v-stepper
+            v-for="(title, i) in identifier.titles"
+            :key="`t-${i}`"
+            vertical
+            multiple
+            variant="flat">
+            <v-stepper-header>
+              <v-stepper-item
+                :value="i+1" />
+            </v-stepper-header>
+            <v-stepper-window
+              direction="vertical">
+              <v-container>
+                <v-row dense>
+                  <v-col cols="8">
+                    <v-text-field
+                      v-model="title.title"
+                      :label="$t('pages.identifier.subpages.create.titles.title.label')"
+                      clearable
+                      :variant="inputVariant"
+                      :hint="$t('pages.identifier.subpages.create.titles.title.hint')"
+                      persistent-hint
+                      :rules="[v => !!v || $t('validation.required')]"
+                      required />
+                  </v-col>
+                  <v-col cols="4">
+                    <v-btn
+                      v-if="i > 0"
+                      color="error"
+                      size="small"
+                      variant="flat"
+                      :text="$t('pages.identifier.subpages.create.titles.remove.text')"
+                      @click="deleteTitle(i)" />
+                  </v-col>
+                </v-row>
+                <v-row dense>
+                  <v-col cols="8">
+                    <v-select
+                      v-model="title.type"
+                      :label="$t('pages.identifier.subpages.create.titles.type.label')"
+                      clearable
+                      :variant="inputVariant"
+                      :hint="$t('pages.identifier.subpages.create.titles.type.hint')"
+                      variant="underlined"
+                      :items="titleType"
+                      item-title="value"
+                      item-value="value"
+                      required />
+                  </v-col>
+                </v-row>
+                <v-row dense>
+                  <v-col cols="8">
+                    <v-autocomplete
+                      v-model="title.language"
+                      :label="$t('pages.identifier.subpages.create.titles.language.label')"
+                      clearable
+                      :variant="inputVariant"
+                      :hint="$t('pages.identifier.subpages.create.titles.language.hint')"
+                      variant="underlined"
+                      :items="languages"
+                      item-title="name"
+                      item-value="code"
+                      required />
+                  </v-col>
+                </v-row>
+              </v-container>
+            </v-stepper-window>
+          </v-stepper>
+        </v-card-text>
         <v-card-text>
           <v-row dense>
             <v-col>
-              <v-btn x-small @click="addTitle">
-                Add Title
-              </v-btn>
+              <v-btn
+                size="small"
+                color="tertiary"
+                :variant="buttonVariant"
+                :text="$t('pages.identifier.subpages.create.titles.add.text')"
+                @click="addTitle" />
             </v-col>
           </v-row>
         </v-card-text>
-        <v-card-title>Descriptions</v-card-title>
-        <v-stepper v-for="(description, i) in identifier.descriptions" :key="`d-${i}`" tile elevation="0" vertical>
-          <v-stepper-step :step="i+1" class="pt-0 pb-0">
-            <v-card-text>
-              <v-row dense>
-                <v-col cols="8">
-                  <v-textarea
-                    v-model="description.description"
-                    label="Description *"
-                    :rules="[v => !!v || $t('Required')]"
-                    rows="1" />
-                </v-col>
-                <v-col v-if="i > 0" cols="2" class="mt-5">
-                  <v-btn color="error" small @click="deleteDescription(i)">
-                    Remove
-                  </v-btn>
-                </v-col>
-              </v-row>
-            </v-card-text>
-          </v-stepper-step>
-          <v-stepper-content :step="1">
-            <v-card-text>
-              <v-row dense>
-                <v-col cols="8">
-                  <v-select
-                    v-model="description.type"
-                    label="Type"
-                    clearable
-                    :items="descriptionType"
-                    item-text="value"
-                    item-value="value"
-                    required />
-                </v-col>
-              </v-row>
-              <v-row dense>
-                <v-col cols="8">
-                  <v-autocomplete
-                    v-model="description.language"
-                    label="Language"
-                    clearable
-                    :items="languages"
-                    item-text="name"
-                    item-value="code"
-                    required />
-                </v-col>
-              </v-row>
-            </v-card-text>
-          </v-stepper-content>
-        </v-stepper>
+      </v-card>
+      <v-card
+        variant="flat"
+        rounded="0"
+        :title="$t('pages.identifier.descriptions.title')"
+        :subtitle="$t('pages.identifier.subpages.create.descriptions.subtitle')">
+        <v-card-text>
+          <v-stepper
+            v-for="(description, i) in identifier.descriptions"
+            :key="`d-${i}`"
+            vertical
+            multiple
+            variant="flat">
+            <v-stepper-header>
+              <v-stepper-item
+                :value="i+1" />
+            </v-stepper-header>
+            <v-stepper-window
+              direction="vertical">
+              <v-container>
+                <v-row dense>
+                  <v-col cols="8">
+                    <v-text-field
+                      v-model="description.description"
+                      :label="$t('pages.identifier.subpages.create.descriptions.description.label')"
+                      clearable
+                      :variant="inputVariant"
+                      :hint="$t('pages.identifier.subpages.create.descriptions.description.hint')"
+                      persistent-hint
+                      :rules="[v => !!v || $t('validation.required')]"
+                      required />
+                  </v-col>
+                  <v-col cols="4">
+                    <v-btn
+                      v-if="i > 0"
+                      size="small"
+                      color="error"
+                      variant="flat"
+                      :text="$t('pages.identifier.subpages.create.descriptions.remove.text')"
+                      @click="deleteDescription(i)" />
+                  </v-col>
+                </v-row>
+                <v-row dense>
+                  <v-col cols="8">
+                    <v-select
+                      v-model="description.type"
+                      :label="$t('pages.identifier.subpages.create.descriptions.type.label')"
+                      clearable
+                      :variant="inputVariant"
+                      :hint="$t('pages.identifier.subpages.create.descriptions.type.hint')"
+                      persistent-hint
+                      variant="underlined"
+                      :items="descriptionType"
+                      item-title="value"
+                      item-value="value"
+                      required />
+                  </v-col>
+                </v-row>
+                <v-row dense>
+                  <v-col cols="8">
+                    <v-autocomplete
+                      v-model="description.language"
+                      :label="$t('pages.identifier.subpages.create.descriptions.language.label')"
+                      clearable
+                      :variant="inputVariant"
+                      :hint="$t('pages.identifier.subpages.create.descriptions.language.hint')"
+                      variant="underlined"
+                      :items="languages"
+                      item-title="name"
+                      item-value="code"
+                      required />
+                  </v-col>
+                </v-row>
+              </v-container>
+            </v-stepper-window>
+          </v-stepper>
+        </v-card-text>
         <v-card-text>
           <v-row dense>
             <v-col>
-              <v-btn x-small @click="addDescription">
-                Add Description
-              </v-btn>
+              <v-btn
+                size="small"
+                color="tertiary"
+                :variant="buttonVariant"
+                :text="$t('pages.identifier.subpages.create.descriptions.add.text')"
+                @click="addDescription" />
             </v-col>
           </v-row>
         </v-card-text>
-        <v-card-title>Publication</v-card-title>
+      </v-card>
+      <v-card
+        variant="flat"
+        rounded="0"
+        :title="$t('pages.identifier.subpages.create.publisher.title')"
+        :subtitle="$t('pages.identifier.subpages.create.publisher.subtitle')">
         <v-card-text>
-          <v-row dense>
-            <v-col cols="8">
-              <v-text-field
-                id="publisher"
-                v-model="identifier.publisher"
-                name="publisher"
-                :label="`${prefix} publisher *`"
-                :rules="[v => !!v || $t('Required')]"
-                required />
-            </v-col>
-          </v-row>
-          <v-row dense>
-            <v-col cols="2">
-              <v-text-field
-                id="publication-day"
-                v-model.number="identifier.publication_day"
-                type="number"
-                label="Publication day"
-                :rules="[validPublicationDay || $t('Invalid day')]"
-                clearable />
-            </v-col>
-            <v-col cols="2">
-              <v-text-field
-                id="publication-month"
-                v-model.number="identifier.publication_month"
-                type="number"
-                label="Publication month"
-                :rules="[validPublicationMonth || $t('Invalid month')]"
-                clearable />
-            </v-col>
-            <v-col cols="2">
-              <v-text-field
-                id="publication-year"
-                v-model.number="identifier.publication_year"
-                type="number"
-                label="Publication year *"
-                :rules="[v => !!v || $t('Required')]"
-                required />
-            </v-col>
-          </v-row>
+          <v-container>
+            <v-row dense>
+              <v-col cols="8">
+                <v-text-field
+                  v-model="identifier.publisher"
+                  name="publisher"
+                  :variant="inputVariant"
+                  :label="$t('pages.identifier.subpages.create.publisher.label')"
+                  :hint="$t('pages.identifier.subpages.create.publisher.hint')"
+                  persistent-hint
+                  :rules="[v => !!v || $t('validation.required')]"
+                  required />
+              </v-col>
+            </v-row>
+            <v-row dense>
+              <v-col cols="2">
+                <v-text-field
+                  v-model.number="identifier.publication_day"
+                  type="number"
+                  :variant="inputVariant"
+                  :label="$t('pages.identifier.subpages.create.publication-day.label')"
+                  :hint="$t('pages.identifier.subpages.create.publication-day.hint')"
+                  persistent-hint
+                  :rules="[validPublicationDay || $t('validation.day')]"
+                  clearable />
+              </v-col>
+              <v-col cols="2">
+                <v-text-field
+                  v-model.number="identifier.publication_month"
+                  type="number"
+                  :variant="inputVariant"
+                  :label="$t('pages.identifier.subpages.create.publication-month.label')"
+                  :hint="$t('pages.identifier.subpages.create.publication-month.hint')"
+                  persistent-hint
+                  :rules="[validPublicationMonth || $t('validation.month')]"
+                  clearable />
+              </v-col>
+              <v-col cols="2">
+                <v-text-field
+                  v-model.number="identifier.publication_year"
+                  type="number"
+                  :variant="inputVariant"
+                  :label="$t('pages.identifier.subpages.create.publication-year.label')"
+                  :hint="$t('pages.identifier.subpages.create.publication-year.hint')"
+                  persistent-hint
+                  :rules="[v => !!v || $t('validation.required')]"
+                  required />
+              </v-col>
+            </v-row>
+          </v-container>
         </v-card-text>
-        <v-card-title>Related Identifiers</v-card-title>
-        <v-stepper v-for="(related, i) in identifier.related_identifiers" :key="`r-${i}`" tile elevation="0" vertical>
-          <v-stepper-step :step="i+1" class="pt-0 pb-0">
-            <v-card-text>
-              <v-row dense>
-                <v-col cols="4">
-                  <v-text-field
-                    v-model="related.value"
-                    name="related"
-                    label="Identifier *"
-                    :rules="[v => !!v || $t('Required')]"
-                    required />
-                </v-col>
-                <v-col cols="2">
-                  <v-select
-                    v-model="related.type"
-                    :items="relatedTypes"
-                    item-value="value"
-                    item-text="value"
-                    label="Type"
-                    clearable />
-                </v-col>
-                <v-col cols="2">
-                  <v-select
-                    v-model="related.relation"
-                    :items="relationTypes"
-                    item-value="value"
-                    item-text="value"
-                    label="Relation"
-                    clearable />
-                </v-col>
-                <v-col cols="2" class="mt-5">
-                  <v-btn color="error" small @click="deleteRelatedIdentifier(i)">
-                    Remove
-                  </v-btn>
-                </v-col>
-              </v-row>
-            </v-card-text>
-          </v-stepper-step>
-        </v-stepper>
+      </v-card>
+      <v-card
+        variant="flat"
+        rounded="0"
+        :title="$t('pages.identifier.subpages.create.related-identifiers.title')"
+        :subtitle="$t('pages.identifier.subpages.create.related-identifiers.subtitle')">
         <v-card-text>
-          <v-row dense>
-            <v-col>
-              <v-btn x-small @click="addRelatedIdentifier">
-                Add Related Identifier
-              </v-btn>
-            </v-col>
-          </v-row>
+          <v-stepper
+            v-for="(related, i) in identifier.related_identifiers"
+            :key="`r-${i}`"
+            vertical
+            multiple
+            variant="flat">
+            <v-stepper-header>
+              <v-stepper-item
+                :value="i+1" />
+            </v-stepper-header>
+            <v-stepper-window
+              direction="vertical">
+              <v-container>
+                <v-row dense>
+                  <v-col cols="4">
+                    <v-text-field
+                      v-model="related.value"
+                      name="related"
+                      :variant="inputVariant"
+                      :label="$t('pages.identifier.subpages.create.related-identifiers.identifier.label')"
+                      :hint="$t('pages.identifier.subpages.create.related-identifiers.identifier.hint')"
+                      persistent-hint
+                      :rules="[v => !!v || $t('validation.required')]"
+                      required />
+                  </v-col>
+                  <v-col cols="2">
+                    <v-select
+                      v-model="related.type"
+                      :items="relatedTypes"
+                      item-value="value"
+                      item-title="value"
+                      :variant="inputVariant"
+                      :label="$t('pages.identifier.subpages.create.related-identifiers.type.label')"
+                      :hint="$t('pages.identifier.subpages.create.related-identifiers.type.hint')"
+                      persistent-hint
+                      clearable
+                      variant="underlined" />
+                  </v-col>
+                  <v-col cols="2">
+                    <v-select
+                      v-model="related.relation"
+                      :items="relationTypes"
+                      item-value="value"
+                      item-title="value"
+                      :variant="inputVariant"
+                      :label="$t('pages.identifier.subpages.create.related-identifiers.relation.label')"
+                      :hint="$t('pages.identifier.subpages.create.related-identifiers.relation.hint')"
+                      persistent-hint
+                      clearable
+                      variant="underlined" />
+                  </v-col>
+                  <v-col cols="2" class="mt-5">
+                    <v-btn
+                      size="small"
+                      color="error"
+                      variant="flat"
+                      :text="$t('pages.identifier.subpages.create.related-identifiers.remove.text')"
+                      @click="deleteRelatedIdentifier(i)" />
+                  </v-col>
+                </v-row>
+              </v-container>
+            </v-stepper-window>
+          </v-stepper>
         </v-card-text>
-        <v-card-title v-if="isDatabase">Licenses</v-card-title>
-        <v-card-text v-if="isDatabase">
-          <v-row dense>
-            <v-col cols="8">
-              <v-alert
-                v-if="identifier.licenses.length > 1"
-                border="left"
-                color="warning">
-                <strong>We do not recommend selecting multiple licenses.</strong> If you are sure you need multiple licenses, specify in the description which denomination (e.g. table, subset, view) has which license.
-              </v-alert>
-              <v-select
-                v-model="identifier.licenses"
-                return-object
-                :items="licenses"
-                multiple
-                item-text="identifier"
-                label="Licenses *"
-                :rules="[ v => !!v || $t('Required') ]"
-                required />
-            </v-col>
-          </v-row>
-        </v-card-text>
-        <v-card-title>Language</v-card-title>
-        <v-card-text>
-          <v-row dense>
-            <v-col cols="8">
-              <v-autocomplete
-                v-model="identifier.language"
-                label="Language"
-                clearable
-                :items="languages"
-                item-text="name"
-                item-value="code"
-                required />
-            </v-col>
-          </v-row>
-        </v-card-text>
-        <v-card-title>Funding Information</v-card-title>
-        <v-stepper v-for="(funder, i) in identifier.funders" :key="`f-${i}`" tile elevation="0" vertical>
-          <v-stepper-step :step="i+1" class="pt-0 pb-0">
-            <v-card-text class="pt-0 pb-0">
-              <v-row dense>
-                <v-col cols="8">
-                  <v-text-field
-                    v-model="funder.funder_identifier"
-                    label="Funder Identifier"
-                    name="funder-identifier"
-                    hint="Use a name identifier expressed as URL from ORCID*, ROR*, DOI*, ISNI, GND (schemes with * support automatic metadata retrieval)"
-                    :loading="funder.loading"
-                    persistent-hint
-                    required
-                    clearable
-                    @focusout="retrieveFunder(funder)" />
-                </v-col>
-                <v-col cols="4" class="mt-5">
-                  <v-btn color="error" small @click="deleteFunder(i)">
-                    Remove
-                  </v-btn>
-                </v-col>
-              </v-row>
-            </v-card-text>
-          </v-stepper-step>
-          <v-stepper-content :step="1">
-            <v-card-text>
-              <v-row dense>
-                <v-col cols="8">
-                  <v-text-field
-                    v-model="funder.funder_name"
-                    label="Name *"
-                    hint="e.g. European Commission"
-                    :rules="[v => !!v || $t('Required')]"
-                    required />
-                </v-col>
-              </v-row>
-              <v-row dense>
-                <v-col cols="8">
-                  <v-text-field
-                    v-model="funder.award_number"
-                    label="Award Number"
-                    clearable
-                    hint="e.g. CBET-106" />
-                </v-col>
-              </v-row>
-              <v-row dense>
-                <v-col cols="8">
-                  <v-text-field
-                    v-model="funder.award_title"
-                    label="Award Title"
-                    clearable />
-                </v-col>
-              </v-row>
-            </v-card-text>
-          </v-stepper-content>
-        </v-stepper>
         <v-card-text>
           <v-row dense>
             <v-col>
-              <v-btn x-small @click="addFunding">
-                Add Funding
-              </v-btn>
+              <v-btn
+                size="small"
+                color="tertiary"
+                :variant="buttonVariant"
+                :text="$t('pages.identifier.subpages.create.related-identifiers.add.text')"
+                @click="addRelatedIdentifier" />
             </v-col>
           </v-row>
+        </v-card-text>
+      </v-card>
+      <v-card
+        variant="flat"
+        rounded="0"
+        :title="$t('pages.identifier.subpages.create.licenses.title')"
+        :subtitle="$t('pages.identifier.subpages.create.licenses.subtitle')">
+        <v-card-text>
+          <v-alert
+            v-if="identifier.licenses.length > 0"
+            color="tertiary">
+            <p>
+              <a :href="identifier.licenses[0].uri" target="_blank">
+                <strong v-text="identifier.licenses[0].identifier" />&nbsp;<sup><v-icon x-small>mdi-open-in-new</v-icon></sup>
+              </a>
+            </p>
+            <p
+              v-if="identifier.licenses[0].description"
+              class="mt-2"
+              v-text="identifier.licenses[0].description" />
+          </v-alert>
+        </v-card-text>
+        <v-card-text>
+          <v-container>
+            <v-row dense>
+              <v-col cols="8">
+                <v-select
+                  v-model="identifier.licenses"
+                  return-object
+                  :items="licenses"
+                  multiple
+                  clearable
+                  :variant="inputVariant"
+                  item-title="identifier"
+                  :label="$t('pages.identifier.subpages.create.licenses.license.label')"
+                  :rules="[ v => !!v || $t('validation.required') ]"
+                  required>
+                  <template v-slot:item="{ props, item }">
+                    <v-list-item
+                      v-bind="props"
+                      :subtitle="item.raw.description" />
+                  </template>
+                </v-select>
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-card-text>
+      </v-card>
+      <v-card
+        variant="flat"
+        rounded="0"
+        :title="$t('pages.identifier.subpages.create.language.title')"
+        :subtitle="$t('pages.identifier.subpages.create.language.subtitle')">
+        <v-card-text>
+          <v-container>
+            <v-row dense>
+              <v-col cols="8">
+                <v-autocomplete
+                  v-model="identifier.language"
+                  :label="$t('pages.identifier.subpages.create.language.language.label')"
+                  clearable
+                  :variant="inputVariant"
+                  :hint="$t('pages.identifier.subpages.create.language.language.hint')"
+                  persistent-hint
+                  :items="languages"
+                  item-title="name"
+                  item-value="code"
+                  required />
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-card-text>
+      </v-card>
+      <v-card
+        variant="flat"
+        rounded="0"
+        :title="$t('pages.identifier.subpages.create.funders.title')"
+        :subtitle="$t('pages.identifier.subpages.create.funders.subtitle')">
+        <v-card-text>
+          <v-stepper
+            v-for="(funder, i) in identifier.funders"
+            :key="`f-${i}`"
+            vertical
+            multiple
+            variant="flat">
+            <v-stepper-header>
+              <v-stepper-item
+                :value="i+1" />
+            </v-stepper-header>
+            <v-stepper-window
+              direction="vertical">
+              <v-container>
+                <v-row dense>
+                  <v-col cols="8">
+                    <v-text-field
+                      v-model="funder.funder_identifier"
+                      :label="$t('pages.identifier.subpages.create.funders.identifier.label')"
+                      name="funder-identifier"
+                      :hint="$t('pages.identifier.subpages.create.funders.identifier.hint')"
+                      :loading="funder.loading"
+                      persistent-hint
+                      :variant="inputVariant"
+                      required
+                      clearable
+                      @focusout="retrieveFunder(funder)" />
+                  </v-col>
+                  <v-col cols="4" class="mt-5">
+                    <v-btn
+                      color="error"
+                      variant="flat"
+                      size="small"
+                      :text="$t('pages.identifier.subpages.create.funders.remove.text')"
+                      @click="deleteFunder(i)" />
+                  </v-col>
+                </v-row>
+                <v-row dense>
+                  <v-col cols="8">
+                    <v-text-field
+                      v-model="funder.funder_name"
+                      :label="$t('pages.identifier.subpages.create.funders.name.label')"
+                      :hint="$t('pages.identifier.subpages.create.funders.name.hint')"
+                      persistent-hint
+                      :variant="inputVariant"
+                      :rules="[v => !!v || $t('validation.required')]"
+                      required />
+                  </v-col>
+                </v-row>
+                <v-row dense>
+                  <v-col cols="8">
+                    <v-text-field
+                      v-model="funder.award_number"
+                      :variant="inputVariant"
+                      :label="$t('pages.identifier.subpages.create.funders.award-number.label')"
+                      :hint="$t('pages.identifier.subpages.create.funders.award-number.hint')"
+                      clearable />
+                  </v-col>
+                </v-row>
+                <v-row dense>
+                  <v-col cols="8">
+                    <v-text-field
+                      v-model="funder.award_title"
+                      :variant="inputVariant"
+                      :label="$t('pages.identifier.subpages.create.funders.award-title.label')"
+                      :hint="$t('pages.identifier.subpages.create.funders.award-title.hint')"
+                      clearable />
+                  </v-col>
+                </v-row>
+              </v-container>
+            </v-stepper-window>
+          </v-stepper>
+        </v-card-text>
+        <v-card-text>
+          <v-row dense>
+            <v-col>
+              <v-btn
+                size="small"
+                color="tertiary"
+                :variant="buttonVariant"
+                :text="$t('pages.identifier.subpages.create.funders.add.text')"
+                @click="addFunding" />
+            </v-col>
+          </v-row>
+        </v-card-text>
+      </v-card>
+      <v-divider />
+      <v-card
+        variant="flat"
+        rounded="0"
+        :title="$t('pages.identifier.subpages.create.summary.title')"
+        :subtitle="$t('pages.identifier.subpages.create.summary.subtitle')">
+        <v-card-text>
+            <v-list
+              density="compact">
+              <v-list-item>
+                <v-list-item-title>
+                  {{ $t('pages.identifier.subpages.create.summary.record') }} {{ resourceHumanDescription.prefix }}
+                  &quot;<strong v-text="resourceHumanDescription.info" />&quot;
+                </v-list-item-title>
+                <template v-slot:prepend>
+                  <v-icon
+                    icon="mdi-check"
+                    color="success"/>
+                </template>
+              </v-list-item>
+              <v-list-item
+                :title="identifier.creators.length + ' ' + $t('pages.identifier.subpages.create.summary.creators')">
+                <template v-slot:prepend>
+                  <v-icon
+                    icon="mdi-check"
+                    color="success"/>
+                </template>
+              </v-list-item>
+              <v-list-item>
+                <v-list-item-title
+                  v-if="identifier.licenses.length > 0">
+                  {{ $t('pages.identifier.subpages.create.summary.license') }}
+                  &quot;<strong v-text="identifier.licenses[0].identifier" />&quot;
+                </v-list-item-title>
+                <v-list-item-title
+                  v-else>
+                  {{ $t('pages.identifier.subpages.create.summary.no-license') }}
+                </v-list-item-title>
+                <template v-slot:prepend>
+                  <v-icon
+                    :icon="identifier.licenses.length > 0 ? 'mdi-check' : 'mdi-alert-outline'"
+                    :color="identifier.licenses.length > 0 ? 'success' : 'warning'"/>
+                </template>
+              </v-list-item>
+              <v-list-item
+                v-if="identifier.publisher">
+                <v-list-item-title>
+                  {{ $t('pages.identifier.subpages.create.summary.publisher') }}
+                  &quot;<strong v-text="identifier.publisher" />&quot;
+                </v-list-item-title>
+                <template v-slot:prepend>
+                  <v-icon
+                    icon="mdi-check"
+                    color="success"/>
+                </template>
+              </v-list-item>
+              <v-list-item>
+                <v-list-item-title
+                  v-if="willMintDoi">
+                  {{ $t('pages.identifier.subpages.create.summary.doi') }}
+                </v-list-item-title>
+                <v-list-item-title
+                  v-else>
+                  {{ $t('pages.identifier.subpages.create.summary.no-doi') }}
+                </v-list-item-title>
+                <template v-slot:prepend>
+                  <v-icon
+                    icon="mdi-check"
+                    color="success"/>
+                </template>
+              </v-list-item>
+            </v-list>
         </v-card-text>
       </v-card>
     </v-form>
@@ -468,10 +756,8 @@
 
 <script>
 import { formatYearUTC, formatMonthUTC, formatDayUTC, languages } from '@/utils'
-import IdentifierService from '@/api/identifier.service'
-import DatabaseService from '@/api/database.service'
-import UserMapper from '@/api/user.mapper'
-import identifierMapper from '@/api/identifier.mapper'
+import { useCacheStore } from '@/stores/cache'
+import { useUserStore } from '@/stores/user'
 
 export default {
   props: {
@@ -512,15 +798,15 @@ export default {
       licenses: [],
       identifier: {
         database_id: parseInt(this.$route.params.database_id),
-        query_id: parseInt(this.$route.params.query_id),
+        query_id: parseInt(this.$route.params.subset_id),
         view_id: parseInt(this.$route.params.view_id),
         table_id: parseInt(this.$route.params.table_id),
         titles: [],
         descriptions: [],
-        publisher: this.$config.defaultPublisher,
-        publication_year: formatYearUTC(Date.now()),
-        publication_month: formatMonthUTC(Date.now()),
-        publication_day: formatDayUTC(Date.now()),
+        publisher: this.$config.public.pid.default.publisher,
+        publication_year: parseInt(formatYearUTC(Date.now())),
+        publication_month: parseInt(formatMonthUTC(Date.now())),
+        publication_day: parseInt(formatDayUTC(Date.now())),
         licenses: [],
         type: this.type,
         creators: [],
@@ -597,12 +883,14 @@ export default {
         { value: 'Requires' },
         { value: 'IsObsoletedBy' },
         { value: 'Obsoletes' }
-      ]
+      ],
+      cacheStore: useCacheStore(),
+      userStore: useUserStore()
     }
   },
   computed: {
     user () {
-      return this.$store.state.user
+      return this.userStore.getUser.value
     },
     isSubset () {
       return this.type === 'subset'
@@ -616,17 +904,44 @@ export default {
     isTable () {
       return this.type === 'table'
     },
+    willMintDoi () {
+      return this.$config.public.doi.enabled
+    },
     backTo () {
       if (this.isSubset) {
-        return `/database/${this.$route.params.database_id}/query/${this.$route.params.query_id}`
+        return `/database/${this.$route.params.database_id}/subset/${this.$route.params.subset_id}`
       } else if (this.isDatabase) {
-        return `/database/${this.$route.params.database_id}`
+        return `/database/${this.$route.params.database_id}/info`
       } else if (this.isView) {
         return `/database/${this.$route.params.database_id}/view/${this.$route.params.view_id}`
       } else if (this.isTable) {
         return `/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}`
       }
       return null
+    },
+    resourceHumanDescription () {
+      switch (this.type) {
+        case 'subset':
+          return {
+            prefix: 'subset with query ',
+            info: this.query.query
+          }
+        case 'database':
+          return {
+            prefix: 'database with name ',
+            info: this.database.name
+          }
+        case 'view':
+          return {
+            prefix: 'view with name ',
+            info: this.view.name
+          }
+        case 'table':
+          return {
+            prefix: 'table with name ',
+            info: this.table.name
+          }
+      }
     },
     pageTitle () {
       return (this.isUpdate ? 'Update' : 'Create') + ' Identifier'
@@ -635,10 +950,10 @@ export default {
       return 'id' in this.identifier && this.identifier.id
     },
     canInsertSelf () {
-      if (!this.user.attributes || !this.user.attributes.orcid) {
+      if (!this.user) {
         return false
       }
-      return this.identifier.creators.filter(c => c.name_identifier === this.user.attributes.orcid).length === 0
+      return this.user.given_name || this.user.family_name || this.user.attributes.affiliation || this.user.attributes.orcid
     },
     prefix () {
       if (this.isSubset) {
@@ -665,6 +980,14 @@ export default {
         return true
       }
       return month >= 1 && month <= 12
+    },
+    inputVariant () {
+      const runtimeConfig = useRuntimeConfig()
+      return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.input.contrast : runtimeConfig.public.variant.input.normal
+    },
+    buttonVariant () {
+      const runtimeConfig = useRuntimeConfig()
+      return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.button.contrast : runtimeConfig.public.variant.button.normal
     }
   },
   watch: {
@@ -695,17 +1018,20 @@ export default {
         return
       }
       creator.name_loading = true
-      IdentifierService.retrieve(creator.name_identifier)
+      const identifierService = useIdentifierService()
+      identifierService.suggest(creator.name_identifier)
         .then((metadata) => {
           creator.success = true
-          creator.firstname = metadata.given_names
-          creator.lastname = metadata.family_name
-          creator.name_type = metadata.type
+          creator.firstname = metadata?.given_names
+          creator.lastname = metadata?.family_name
+          creator.name_type = metadata.type ? metadata.type : creator.name_type /* default to preset value if erroneous */
           if (metadata.type === 'Organizational' && metadata.affiliations) {
             creator.creator_name = metadata.affiliations[0].organization_name
             creator.affiliation = null
           } else {
-            creator.creator_name = (creator.lastname + ', ' + creator.firstname)
+            if (creator.firstname && creator.lastname) {
+              creator.creator_name = (creator.lastname + ', ' + creator.firstname)
+            }
             if (metadata.affiliations.length > 0) {
               creator.affiliation = metadata.affiliations[0].organization_name
             }
@@ -737,7 +1063,8 @@ export default {
         return
       }
       creator.affiliation_loading = true
-      IdentifierService.retrieve(creator.affiliation_identifier)
+      const identifierService = useIdentifierService()
+      identifierService.suggest(creator.affiliation_identifier)
         .then((metadata) => {
           creator.success = true
           if (creator.type === 'Organizational') {
@@ -760,7 +1087,8 @@ export default {
         return
       }
       funder.loading = true
-      IdentifierService.retrieve(funder.funder_identifier)
+      const identifierService = useIdentifierService()
+      identifierService.suggest(funder.funder_identifier)
         .then((metadata) => {
           if (metadata.type === 'Organizational' && metadata.affiliations) {
             funder.funder_name = metadata.affiliations[0].organization_name
@@ -848,14 +1176,14 @@ export default {
     },
     save () {
       this.loading = true
-      const payload = identifierMapper.identifierToIdentifierSave(this.identifier)
+      const identifierService = useIdentifierService()
+      const payload = identifierService.identifierToIdentifierSave(this.identifier)
       if (this.isUpdate) {
-        IdentifierService.update(this.identifier.id, payload)
+        identifierService.update(this.identifier.id, payload)
           .then(() => {
-            console.info('Updated identifier with id', this.identifier.id)
-            this.$store.dispatch('reloadDatabase')
+            this.cacheStore.reloadDatabase()
             this.$router.push(this.backTo)
-            this.$toast.success(this.prefix + ' successfully persisted')
+            this.$toast.success(this.$t('success.pid.updated'))
           })
           .catch(() => {
             this.loading = false
@@ -864,12 +1192,11 @@ export default {
             this.loading = false
           })
       } else {
-        IdentifierService.create(payload)
-          .then(async () => {
-            console.info('Created identifier')
-            await this.$store.dispatch('reloadDatabase')
-            await this.$toast.success(this.prefix + ' successfully persisted')
-            await this.$router.push(this.backTo)
+        identifierService.create(payload)
+          .then(() => {
+            this.cacheStore.reloadDatabase()
+            this.$router.push(this.backTo)
+            this.$toast.success(this.$t('success.pid.created'))
           })
           .catch(() => {
             this.loading = false
@@ -881,9 +1208,11 @@ export default {
     },
     loadLicenses () {
       this.loading = true
-      DatabaseService.findAllLicenses()
+      const licenseService = useLicenseService()
+      licenseService.findAll()
         .then((licenses) => {
           this.licenses = licenses
+          this.loading = false
         })
         .catch(() => {
           this.loading = false
@@ -902,20 +1231,23 @@ export default {
       }
     },
     insertSelf (creator) {
-      creator.name_identifier = this.user.attributes.orcid
-      this.retrieveCreator(creator)
+      if (this.user.attributes.orcid) {
+        creator.name_identifier = this.user.attributes.orcid
+        this.retrieveCreator(creator)
+        return
+      }
+      creator.firstname = this.user.given_name
+      creator.lastname = this.user.family_name
+      creator.creator_name = (creator.lastname ? creator.lastname + ', ' : '') + creator.firstname
+      creator.affiliation = this.user.attributes.affiliation
     },
     canShiftUp (creator, idx) {
-      if (this.identifier.creators.length === 1 || idx === 0) {
-        return false
-      }
-      return true
+      return !(this.identifier.creators.length === 1 || idx === 0);
+
     },
     canShiftDown (creator, idx) {
-      if (this.identifier.creators.length === 1 || idx + 1 === this.identifier.creators.length) {
-        return false
-      }
-      return true
+      return !(this.identifier.creators.length === 1 || idx + 1 === this.identifier.creators.length);
+
     },
     shiftUp (idx) {
       this.arrayMove(this.identifier.creators, idx, idx - 1)
@@ -931,8 +1263,3 @@ export default {
   }
 }
 </script>
-<style>
-#persist .v-stepper .v-stepper__step--active .v-stepper__label {
-  text-shadow: none !important;
-}
-</style>

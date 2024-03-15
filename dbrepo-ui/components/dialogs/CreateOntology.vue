@@ -1,8 +1,10 @@
 <template>
   <div>
     <v-form ref="form" v-model="valid" autocomplete="off" @submit.prevent="submit">
-      <v-card>
-        <v-card-title>Create Ontology</v-card-title>
+      <v-card
+        :title="$t('toolbars.semantic.register.title')"
+        :subtitle="$t('toolbars.semantic.register.subtitle')"
+        variant="elevated">
         <v-card-text>
           <v-row dense>
             <v-col>
@@ -12,12 +14,13 @@
                 name="prefix"
                 label="Prefix *"
                 hint="Only lowercase alphanumeric letters, max. 8"
+                :variant="inputVariant"
                 autofocus
                 :rules="[
-                  v => notEmpty(v) || $t('Required'),
-                  v => validPrefix(v) || $t('Invalid prefix pattern'),
-                  v => validPrefixLength(v,1,8) || $t('Invalid length: min. 1, max. 8'),
-                  v => !ontologies.map(o => o.prefix).includes(v) || $t('Prefix exists')
+                  v => notEmpty(v) || $t('validation.required'),
+                  v => validPrefix(v) || $t('validation.prefix.pattern'),
+                  v => validPrefixLength(v,1,8) || $t('validation.prefix.length'),
+                  v => !ontologies.map(o => o.prefix).includes(v) || $t('validation.prefix.exists')
                 ]"
                 required />
             </v-col>
@@ -29,10 +32,11 @@
                 v-model="createOntologyDto.uri"
                 name="uri"
                 label="URI *"
+                :variant="inputVariant"
                 :rules="[
-                  v => notEmpty(v) || $t('Required'),
-                  v => validUri(v) || $t('Invalid URI'),
-                  v => !ontologies.map(o => o.uri).includes(v) || $t('URI exists')
+                  v => notEmpty(v) || $t('validation.required'),
+                  v => validUri(v) || $t('validation.uri.pattern'),
+                  v => !ontologies.map(o => o.uri).includes(v) || $t('validation.uri.exists')
                 ]"
                 required />
             </v-col>
@@ -42,10 +46,11 @@
               <v-text-field
                 id="sparql-endpoint"
                 v-model="createOntologyDto.sparql_endpoint"
+                :variant="inputVariant"
                 name="sparql-endpoint"
                 label="SPARQL Endpoint"
                 :rules="[
-                  v => validUriOptional(v) || $t('Invalid URL')
+                  v => validUriOptional(v) || $t('validation.uri.pattern')
                 ]" />
             </v-col>
           </v-row>
@@ -53,20 +58,18 @@
         <v-card-actions>
           <v-spacer />
           <v-btn
-            class="mb-2"
-            @click="cancel">
-            Cancel
-          </v-btn>
+            :variant="buttonVariant"
+            :text="$t('navigation.cancel')"
+            @click="cancel" />
           <v-btn
             id="createDB"
-            class="mb-2 mr-2"
             :disabled="!valid || loading"
             color="primary"
+            variant="flat"
             type="submit"
             :loading="loading"
-            @click="create">
-            Create
-          </v-btn>
+            :text="$t('navigation.create')"
+            @click="create" />
         </v-card-actions>
       </v-card>
     </v-form>
@@ -75,7 +78,7 @@
 
 <script>
 import { notEmpty } from '@/utils'
-import SemanticService from '@/api/semantic.service'
+import { useCacheStore } from '@/stores/cache'
 
 export default {
   data () {
@@ -86,21 +89,22 @@ export default {
         uri: null,
         prefix: null,
         sparql_endpoint: null
-      }
+      },
+      cacheStore: useCacheStore()
     }
   },
   computed: {
-    token () {
-      return this.$store.state.token
-    },
-    user () {
-      return this.$store.state.user
-    },
     ontologies () {
-      return this.$store.state.ontologies
+      return this.cacheStore.getOntologies
+    },
+    inputVariant () {
+      const runtimeConfig = useRuntimeConfig()
+      return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.input.contrast : runtimeConfig.public.variant.input.normal
+    },
+    buttonVariant () {
+      const runtimeConfig = useRuntimeConfig()
+      return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.button.contrast : runtimeConfig.public.variant.button.normal
     }
-  },
-  mounted () {
   },
   methods: {
     submit () {
@@ -111,7 +115,8 @@ export default {
     },
     create () {
       this.loading = true
-      SemanticService.registerOntology(this.createOntologyDto)
+      const ontologyService = useOntologyService()
+      ontologyService.create(this.createOntologyDto)
         .then((ontology) => {
           this.$emit('close', { success: true })
         })

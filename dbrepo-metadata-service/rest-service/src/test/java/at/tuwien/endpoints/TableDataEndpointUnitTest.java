@@ -228,7 +228,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"insert-table-data"})
     public void insert_publicWriteAll_succeeds() throws TableNotFoundException, AccessDeniedException,
-            TableMalformedException, NotAllowedException, DatabaseNotFoundException {
+            TableMalformedException, NotAllowedException, DatabaseNotFoundException, FileStorageException {
 
         /* test */
         generic_insert(DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8, USER_1_ID,
@@ -238,7 +238,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"insert-table-data"})
     public void insert_privateWriteAll_succeeds() throws TableNotFoundException, AccessDeniedException,
-            TableMalformedException, NotAllowedException, DatabaseNotFoundException {
+            TableMalformedException, NotAllowedException, DatabaseNotFoundException, FileStorageException {
 
         /* test */
         generic_insert(DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_1_ID, DATABASE_1_USER_1_WRITE_ALL_ACCESS, TABLE_1_CSV_DTO, USER_1_PRINCIPAL);
@@ -247,7 +247,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"insert-table-data"})
     public void insert_privateDataNull_fails() throws TableNotFoundException, AccessDeniedException,
-            TableMalformedException, NotAllowedException, DatabaseNotFoundException {
+            TableMalformedException, NotAllowedException, DatabaseNotFoundException, FileStorageException {
 
         /* test */
         generic_insert(DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_1_ID, DATABASE_1_USER_1_WRITE_ALL_ACCESS, null, USER_1_PRINCIPAL);
@@ -443,7 +443,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     public void generic_insert(Long databaseId, Long tableId, Database database, Table table, UUID userId,
                                DatabaseAccess access, TableCsvDto data, Principal principal)
             throws DatabaseNotFoundException, TableNotFoundException, AccessDeniedException, TableMalformedException,
-            NotAllowedException {
+            NotAllowedException, FileStorageException {
 
         /* mock */
         when(databaseService.find(databaseId))
