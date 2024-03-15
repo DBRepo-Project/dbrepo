@@ -103,30 +103,6 @@ public class MaintenanceEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void active_anonymous_succeeds() {
-
-        /* test */
-        active_generic();
-    }
-
-    @Test
-    @WithMockUser(username = USER_4_USERNAME)
-    public void active_noRole_succeeds() {
-
-        /* test */
-        active_generic();
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME, authorities = {"list-maintenance-messages"})
-    public void active_hasRole_succeeds() {
-
-        /* test */
-        active_generic();
-    }
-
-    @Test
-    @WithAnonymousUser
     public void create_anonymous_fails() {
 
         /* test */
@@ -240,7 +216,7 @@ public class MaintenanceEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(List.of(BANNER_MESSAGE_1, BANNER_MESSAGE_2));
 
         /* test */
-        final ResponseEntity<List<BannerMessageDto>> response = maintenanceEndpoint.list();
+        final ResponseEntity<List<BannerMessageDto>> response = maintenanceEndpoint.list("");
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         final List<BannerMessageDto> body = response.getBody();
@@ -277,23 +253,6 @@ public class MaintenanceEndpointUnitTest extends BaseUnitTest {
         assertEquals(BANNER_MESSAGE_1_TYPE_DTO, body.getType());
         assertEquals(BANNER_MESSAGE_1_START, body.getDisplayStart());
         assertEquals(BANNER_MESSAGE_1_END, body.getDisplayEnd());
-    }
-
-    protected void active_generic() {
-
-        /* mock */
-        when(bannerMessageService.getActive())
-                .thenReturn(List.of(BANNER_MESSAGE_1));
-
-        /* test */
-        final ResponseEntity<List<BannerMessageBriefDto>> response = maintenanceEndpoint.active();
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        final List<BannerMessageBriefDto> body = response.getBody();
-        assertEquals(1, body.size());
-        final BannerMessageBriefDto message0 = body.get(0);
-        assertEquals(BANNER_MESSAGE_1_TYPE_DTO, message0.getType());
-        assertEquals(BANNER_MESSAGE_1_MESSAGE, message0.getMessage());
     }
 
     protected void create_generic(BannerMessageCreateDto data, BannerMessage message) {

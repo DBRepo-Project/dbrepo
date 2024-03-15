@@ -326,7 +326,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
     @WithMockUser(username = USER_4_USERNAME)
     public void transfer_noRole_fails() {
         final DatabaseTransferDto request = DatabaseTransferDto.builder()
-                .username(USER_4_USERNAME)
+                .id(USER_4_ID)
                 .build();
 
         /* test */
@@ -339,7 +339,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
     @WithMockUser(username = USER_2_USERNAME, authorities = {"modify-database-owner"})
     public void transfer_hasRoleForeign_fails() throws DatabaseNotFoundException {
         final DatabaseTransferDto request = DatabaseTransferDto.builder()
-                .username(USER_4_USERNAME)
+                .id(USER_4_ID)
                 .build();
 
         /* mock */
@@ -359,7 +359,7 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
     public void transfer_hasRole_succeeds() throws UserNotFoundException, DatabaseNotFoundException,
             NotAllowedException, KeycloakRemoteException, AccessDeniedException {
         final DatabaseTransferDto request = DatabaseTransferDto.builder()
-                .username(USER_4_USERNAME)
+                .id(USER_4_ID)
                 .build();
 
         /* mock */
@@ -376,10 +376,9 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"modify-database-owner"})
-    public void transfer_hasRoleUserNotExists_succeeds() throws DatabaseNotFoundException, UserNotFoundException,
-            KeycloakRemoteException, AccessDeniedException {
+    public void transfer_hasRoleUserNotExists_succeeds() throws DatabaseNotFoundException, UserNotFoundException {
         final DatabaseTransferDto request = DatabaseTransferDto.builder()
-                .username("foobar")
+                .id(UUID.randomUUID())
                 .build();
 
         /* mock */

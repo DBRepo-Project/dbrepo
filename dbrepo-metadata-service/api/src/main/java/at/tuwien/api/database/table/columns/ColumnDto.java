@@ -72,8 +72,8 @@ public class ColumnDto {
     @Schema(example = "true")
     private Boolean isPrimaryKey;
 
-    @Field(name = "index_length", type = FieldType.Long)
     @JsonProperty("index_length")
+    @Field(name = "index_length", type = FieldType.Long)
     private Long indexLength;
 
     @Field(name = "length", type = FieldType.Long)
@@ -95,22 +95,27 @@ public class ColumnDto {
     private Long d;
 
     @Schema(example = "34300")
+    @JsonProperty("data_length")
     @Field(name = "data_length", type = FieldType.Long)
     private Long dataLength;
 
     @Schema(example = "34300")
+    @JsonProperty("max_data_length")
     @Field(name = "max_data_length", type = FieldType.Long)
     private Long maxDataLength;
 
     @Schema(example = "32")
+    @JsonProperty("num_rows")
     @Field(name = "num_rows", type = FieldType.Long)
     private Long numRows;
 
     @Schema(example = "0")
+    @JsonProperty("val_min")
     @Field(name = "val_min", type = FieldType.Double)
     private BigDecimal valMin;
 
     @Schema(example = "100")
+    @JsonProperty("val_max")
     @Field(name = "val_max", type = FieldType.Double)
     private BigDecimal valMax;
 
@@ -123,6 +128,7 @@ public class ColumnDto {
     private BigDecimal median;
 
     @Schema(example = "5.32")
+    @JsonProperty("std_dev")
     @Field(name = "std_dev", type = FieldType.Double)
     private BigDecimal stdDev;
 

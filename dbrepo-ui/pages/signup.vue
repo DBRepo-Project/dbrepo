@@ -1,12 +1,15 @@
 <template>
   <div>
-    <v-toolbar flat>
-      <v-toolbar-title>
-        Signup
-      </v-toolbar-title>
-    </v-toolbar>
-    <v-form ref="form" v-model="valid" @submit.prevent="submit">
-      <v-card flat tile>
+    <v-toolbar
+      :title="$t('pages.signup.name')"
+      flat />
+    <v-form
+      ref="form"
+      v-model="valid"
+      @submit.prevent="submit">
+      <v-card
+        variant="flat"
+        rounded="0">
         <v-card-text>
           <v-row dense>
             <v-col sm="6">
@@ -17,9 +20,9 @@
                 autofocus
                 required
                 name="email"
-                :rules="[v => !!v || $t('Required')]"
-                hint="e.g. max.mustermann@work.com"
-                label="Work E-Mail Address *" />
+                :rules="[v => !!v || $t('validation.required')]"
+                :hint="$t('pages.signup.email.hint')"
+                :label="$t('pages.signup.email.label')" />
             </v-col>
           </v-row>
           <v-row dense>
@@ -29,11 +32,12 @@
                 autocomplete="off"
                 required
                 name="username"
-                :rules="[v => !!v || $t('Required'),
-                         v => /^[a-z0-9]{3,}$/.test(v) || $t('Only lowercase letters, min. 3 length'),
-                         v => !usernames.includes(v) || $t('This username is already taken')]"
-                hint="e.g. mmustermann"
-                label="Username *" />
+                :rules="[v => !!v || $t('validation.required'),
+                         v => /^[a-z0-9]{3,}$/.test(v) || $t('validation.user.pattern'),
+                         v => !usernames.includes(v) || $t('validation.user.exists')]"
+                persistent-hint
+                :hint="$t('pages.signup.username.hint')"
+                :label="$t('pages.signup.username.label')" />
             </v-col>
           </v-row>
           <v-row dense>
@@ -43,9 +47,11 @@
                 autocomplete="off"
                 required
                 name="password"
-                :rules="[v => !!v || $t('Required')]"
+                :rules="[v => !!v || $t('validation.required')]"
                 type="password"
-                label="Password *" />
+                persistent-hint
+                :label="$t('pages.signup.password.label')"
+                :hint="$t('pages.signup.password.hint')" />
             </v-col>
           </v-row>
           <v-row dense>
@@ -55,9 +61,11 @@
                 autocomplete="off"
                 required
                 name="password-confirm"
-                :rules="[v => !!v || $t('Required'), v => (!!v && v) === createAccount.password || $t('Not matching!')]"
+                :rules="[v => !!v || $t('validation.required'), v => (!!v && v) === createAccount.password || $t('Not matching!')]"
                 type="password"
-                label="Repeat Password *" />
+                persistent-hint
+                :label="$t('pages.signup.confirm.label')"
+                :hint="$t('pages.signup.confirm.hint')" />
             </v-col>
           </v-row>
         </v-card-text>
@@ -68,10 +76,9 @@
             color="primary"
             type="submit"
             name="submit"
+            :text="$t('pages.signup.submit.label')"
             :loading="loading"
-            @click="register">
-            Submit
-          </v-btn>
+            @click="register" />
         </v-card-text>
       </v-card>
     </v-form>
@@ -79,7 +86,6 @@
 </template>
 
 <script>
-import UserService from '@/api/user.service'
 export default {
   data () {
     return {
@@ -98,11 +104,6 @@ export default {
       }
     }
   },
-  computed: {
-    loadingColor () {
-      return this.error ? 'red lighten-2' : 'primary'
-    }
-  },
   mounted () {
     this.loadUsers()
   },
@@ -112,9 +113,10 @@ export default {
     },
     register () {
       this.loading = true
-      UserService.create(this.createAccount)
+      const userService = useUserService()
+      userService.create(this.createAccount)
         .then(() => {
-          this.$toast.success('Success!')
+          this.$toast.success(this.$t('success.signup'))
           this.$router.push('/login')
           this.loading = false
         })
@@ -127,7 +129,8 @@ export default {
     },
     loadUsers () {
       this.loadingUsers = true
-      UserService.findAll()
+      const userService = useUserService()
+      userService.findAll()
         .then((users) => {
           this.usernames = users.map(u => u.username)
         })

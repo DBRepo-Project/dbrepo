@@ -1,45 +1,44 @@
-FROM node:14-alpine as build
+FROM oven/bun:1.0.26-alpine as build
 MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
-
-ARG TAG=latest
-
-ENV HOST=0.0.0.0
-ENV API=http://:80
 
 WORKDIR /app
 
 COPY ./package.json ./package.json
-COPY ./yarn.lock ./yarn.lock
+COPY ./bun.lockb ./bun.lockb
 
-# Install yarn dependencies
-RUN yarn install --frozen-lockfile
+RUN bun install
 
-COPY ./nuxt.config.js ./nuxt.config.js
-COPY ./ava.config.cjs ./ava.config.cjs
-COPY ./babel.config.js ./babel.config.js
-COPY ./dbrepo.config.json ./dbrepo.config.json
+ENV NODE_ENV="production"
+
 COPY ./assets ./assets
-COPY ./api ./api
 COPY ./components ./components
+COPY ./composables ./composables
+COPY ./dto ./dto
 COPY ./layouts ./layouts
 COPY ./locales ./locales
 COPY ./pages ./pages
 COPY ./plugins ./plugins
-COPY ./server-middleware ./server-middleware
-COPY ./static ./static
-COPY ./store ./store
+COPY ./public ./public
+COPY ./server ./server
+COPY ./stores ./stores
 COPY ./utils ./utils
+COPY ./nuxt.config.ts ./nuxt.config.ts
 
-RUN yarn build
+RUN bun run build
 
-FROM node:14-alpine as runtime
+FROM oven/bun:1.0.26-alpine as runtime
 MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
 
-EXPOSE 3000
-EXPOSE 9100
+ARG TAG=""
+
+USER 1000
 
 WORKDIR /app
 
-COPY --from=build /app /app
+COPY --from=build --chown=1000:1000 /app/.output /app/.output
 
-ENTRYPOINT [ "yarn", "start" ]
+ENV NUXT_PUBLIC_VERSION="${TAG:-latest}"
+
+EXPOSE 3000
+
+ENTRYPOINT [ "bun", "run", ".output/server/index.mjs" ]

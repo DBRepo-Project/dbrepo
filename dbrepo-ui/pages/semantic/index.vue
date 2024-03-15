@@ -1,18 +1,25 @@
 <template>
   <div v-if="canListOntologies">
     <v-toolbar flat>
-      <v-toolbar-title>{{ $t('layout.semantics', { name: 'vue-i18n' }) }}</v-toolbar-title>
+      <v-toolbar-title v-text="$t('pages.semantics.title')" />
       <v-spacer />
-      <v-toolbar-title>
-        <v-btn v-if="canListOntologies" to="/semantic/ontology" color="secondary">
-          {{ ontologies.length }} Ontologies
-        </v-btn>
-      </v-toolbar-title>
+      <v-btn
+        v-if="canListOntologies"
+        to="/semantic/ontology"
+        variant="flat"
+        :text="ontologies.length + ' ' + $t('toolbars.semantic.ontologies.text')"
+        color="secondary" />
+      <template v-slot:extension>
+        <v-tabs
+          v-model="tab"
+          color="primary">
+          <v-tab
+            v-text="$t('toolbars.semantic.ontologies.concepts')" />
+          <v-tab
+            v-text="$t('toolbars.semantic.ontologies.units')" />
+        </v-tabs>
+      </template>
     </v-toolbar>
-    <v-tabs v-model="tab">
-      <v-tab>Concepts</v-tab>
-      <v-tab>Units</v-tab>
-    </v-tabs>
     <v-card flat>
       <v-card-text>
         <v-data-table
@@ -25,9 +32,11 @@
             <a :href="item.uri" target="_blank" v-text="item.uri" />
           </template>
           <template v-slot:item.action="{ item }">
-            <v-btn small :disabled="disabled(item)" @click="view(item)">
-              Usages
-            </v-btn>
+            <v-btn
+              small
+              :disabled="disabled(item)"
+              :text="$t('pages.semantics.usages.text')"
+              @click="view(item)" />
           </template>
         </v-data-table>
       </v-card-text>
@@ -35,14 +44,21 @@
     <v-dialog
       v-model="viewSemanticEntityDialog"
       max-width="640">
-      <ViewSemanticEntity :mode="mode" :entity="entity" @close="close" />
+      <ViewSemanticEntity
+        :mode="mode"
+        :entity="entity"
+        @close="close" />
     </v-dialog>
-    <v-breadcrumbs :items="items" class="pa-0 mt-2" />
+    <v-breadcrumbs
+      :items="items"
+      class="pa-0 mt-2" />
   </div>
 </template>
+
 <script>
-import SemanticService from '@/api/semantic.service'
-import ViewSemanticEntity from '@/components/dialogs/ViewSemanticEntity.vue'
+import ViewSemanticEntity from '@/components/dialogs/ViewSemanticEntity'
+import { useUserStore } from '@/stores/user'
+import { useCacheStore } from '@/stores/cache'
 
 export default {
   components: {
@@ -77,22 +93,24 @@ export default {
       units: [],
       createOntologyDialog: false,
       items: [
-        { text: `${this.$t('layout.semantics', { name: 'vue-i18n' })}`, to: '/semantic', activeClass: '' }
-      ]
+        {
+          title: `${this.$t('navigation.semantics')}`,
+          to: '/semantic'
+        }
+      ],
+      userStore: useUserStore(),
+      cacheStore: useCacheStore()
     }
   },
   computed: {
-    token () {
-      return this.$store.state.token
-    },
     user () {
-      return this.$store.state.user
+      return this.userStore.getUser
     },
     roles () {
-      return this.$store.state.roles
+      return this.userStore.getRoles
     },
     ontologies () {
-      return this.$store.state.ontologies
+      return this.cacheStore.getOntologies
     },
     rows () {
       return this.tab === 0 ? this.concepts : this.units
@@ -114,7 +132,8 @@ export default {
   methods: {
     loadConcepts () {
       this.loadingConcepts = true
-      SemanticService.findAllConcepts()
+      const conceptService = useConceptService()
+      conceptService.findAll()
         .then((concepts) => {
           concepts = concepts.map((column) => {
             column.usages = column.columns.length
@@ -131,7 +150,8 @@ export default {
     },
     loadUnits () {
       this.loadingUnits = true
-      SemanticService.findAllUnits()
+      const unitService = useUnitService()
+      unitService.findAll()
         .then((units) => {
           units = units.map((unit) => {
             unit.usages = unit.columns.length

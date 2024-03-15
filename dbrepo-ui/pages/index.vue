@@ -1,112 +1,72 @@
 <template>
   <div>
-    <v-toolbar flat>
-      <v-toolbar-title v-text="$t('databases.recent', { name: 'vue-i18n' })" />
+    <v-toolbar
+      :title="$t('toolbars.database.recent')"
+      rounded="0"
+      flat>
       <v-spacer />
-      <v-toolbar-title>
-        <v-btn v-if="canCreateDatabase" color="primary" name="create-database" @click.stop="createDbDialog = true">
-          <v-icon left>mdi-plus</v-icon> Database
-        </v-btn>
-      </v-toolbar-title>
+      <v-btn
+        v-if="canCreateDatabase"
+        class="mr-4"
+        prepend-icon="mdi-plus"
+        variant="flat"
+        :text="$t('toolbars.database.create.text')"
+        color="primary"
+        @click.stop="dialog = true" />
     </v-toolbar>
-    <v-card flat tile>
-      <v-divider class="mx-4" />
-      <v-card-text v-if="infoLinks && infoLinks.length > 0">
-        <div class="mb-2">Important Links</div>
-        <div class="text--primary">
-          <ul>
-            <li v-for="(link, i) in infoLinks" :key="i">
-              <a :href="link.href" :target="link.blank ? '_blank' : 'self'">
-                {{ link.text }} <sup v-if="link.blank"><v-icon color="primary" x-small>mdi-open-in-new</v-icon></sup>
-              </a>
-            </li>
-          </ul>
-        </div>
-      </v-card-text>
-    </v-card>
-    <DatabaseList ref="databases" :loading="loadingDatabases" :databases="databases" />
+    <DatabaseList
+      :loading="loading"
+      :databases="databases" />
     <v-dialog
-      v-model="createDbDialog"
+      v-model="dialog"
       persistent
       max-width="640">
-      <CreateDB @close="closed" />
+      <DatabaseCreate @close="closed" />
     </v-dialog>
   </div>
 </template>
 
 <script>
-import DatabaseList from '@/components/database/DatabaseList.vue'
-import CreateDB from '@/components/dialogs/CreateDB'
-import DatabaseService from '@/api/database.service'
+import DatabaseList from '@/components/database/DatabaseList'
+import DatabaseCreate from '@/components/database/DatabaseCreate'
+import { useUserStore } from '@/stores/user'
 
 export default {
   components: {
-    CreateDB,
+    DatabaseCreate,
     DatabaseList
   },
   data () {
     return {
       loading: false,
-      loadingDatabases: false,
-      createDbDialog: null,
-      databases: []
+      dialog: null,
+      databases: [],
+      userStore: useUserStore()
     }
   },
   computed: {
     roles () {
-      return this.$store.state.roles
+      return this.userStore.getRoles
     },
     canCreateDatabase () {
       if (!this.roles) {
         return false
       }
       return this.roles.includes('create-database')
-    },
-    infoLinks () {
-      const infoLinks = this.$config.infoLinks
-      console.debug('info links', infoLinks)
-      return infoLinks
-    },
-    isFiltered () {
-      return this.$route.query.f === 'my'
     }
   },
   mounted () {
-    this.loadDatabases()
+    const databaseService = useDatabaseService();
+    databaseService.findAll()
+      .then((databases) => {
+        this.databases = databases
+      })
   },
   methods: {
     closed (event) {
-      this.createDbDialog = false
+      this.dialog = false
       if (event.success) {
-        this.$router.push('/database?f=my')
-      }
-    },
-    loadDatabases () {
-      this.loadingDatabases = true
-      if (this.isFiltered) {
-        DatabaseService.findAllOnlyAccess()
-          .then((databases) => {
-            this.databases = databases
-            console.info('Found', this.databases.length, 'database(s) with access')
-          })
-          .catch(() => {
-            this.loadingDatabases = false
-          })
-          .finally(() => {
-            this.loadingDatabases = false
-          })
-      } else {
-        DatabaseService.findAll()
-          .then((databases) => {
-            this.databases = databases
-            console.info('Found', this.databases.length, 'database(s)')
-          })
-          .catch(() => {
-            this.loadingDatabases = false
-          })
-          .finally(() => {
-            this.loadingDatabases = false
-          })
+        this.$router.push(`/database/${event.database_id}/info`)
       }
     }
   }

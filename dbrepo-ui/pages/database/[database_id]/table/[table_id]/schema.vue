@@ -1,0 +1,294 @@
+<template>
+  <div>
+    <TableToolbar
+      :selection="selection" />
+    <v-toolbar
+      color="secondary"
+      :title="$t('pages.table.subpages.schema.title')"
+      variant="flat" />
+    <v-card
+      variant="flat"
+      rounded="0"
+      tile>
+      <v-data-table
+        v-if="table"
+        class="full-width"
+        disable-sort
+        hide-default-footer
+        :items-per-page="-1"
+        :headers="headers"
+        :items="table.columns">
+        <template v-slot:item.is_null_allowed="{ item }">
+          <span
+            v-if="item.is_null_allowed"
+            v-text="$t('pages.table.subpages.schema.bullet')" /> {{ item.is_null_allowed }}
+        </template>
+        <template v-slot:item.unique="{ item }">
+          <span v-if="isUnique(item)">●</span> {{ isUnique(item) }}
+        </template>
+        <template v-slot:item.extra="{ item }">
+          <pre>{{ extra(item) }}</pre>
+        </template>
+        <template v-slot:item.is_primary_key="{ item }">
+          <span v-if="item.is_primary_key">●</span> {{ item.is_primary_key }}
+        </template>
+        <template v-slot:item.auto_generated="{ item }">
+          <span v-if="item.auto_generated">●</span> {{ item.auto_generated }}
+        </template>
+        <template v-slot:item.column_concept="{ item }">
+          <v-btn
+            v-if="canAssignSemanticInformation && !hasConcept(item)"
+            size="small"
+            color="tertiary"
+            :variant="buttonVariant"
+            :text="$t('pages.table.subpages.schema.assign')"
+            @click="pick(item, 'concept')" />
+          <v-btn
+            v-if="canAssignSemanticInformation && hasConcept(item)"
+            :title="item.concept.uri"
+            color="tertiary"
+            :variant="buttonVariant"
+            size="small"
+            :text="item.concept.name ? item.concept.name : item.concept.uri"
+            @click="pick(item, 'concept')" />
+          <a
+            v-if="!canAssignSemanticInformation && hasConcept(item)"
+            :href="item.concept.uri"
+            v-text="item.concept.name ? item.concept.name : item.concept.uri" />
+        </template>
+        <template v-slot:item.column_unit="{ item }">
+          <v-btn
+            v-if="canAssignSemanticInformation && !hasUnit(item)"
+            size="small"
+            color="tertiary"
+            :variant="buttonVariant"
+            :text="$t('pages.table.subpages.schema.assign')"
+            @click="pick(item, 'unit')" />
+          <v-btn
+            v-if="canAssignSemanticInformation && hasUnit(item)"
+            :title="item.unit.uri"
+            color="tertiary"
+            :variant="buttonVariant"
+            size="small"
+            :text="item.unit.name ? item.unit.name : item.unit.uri"
+            @click="pick(item, 'unit')" />
+          <a
+            v-if="!canAssignSemanticInformation && hasUnit(item)"
+            :href="item.unit.uri"
+            v-text="item.unit.name ? item.unit.name : item.unit.uri" />
+        </template>
+      </v-data-table>
+    </v-card>
+    <v-card
+      v-if="table"
+      variant="flat"
+      rounded="0"
+      tile
+      :title="$t('pages.table.subpages.schema.title')">
+      <v-card-text>
+        <v-container>
+          <ul>
+            <li>
+              <strong>PRIMARY KEY</strong>
+              (<i v-text="primaryKeysColumns" />)
+            </li>
+            <li v-for="(foreignKey, i) in table.constraints.foreign_keys" :key="`fk-${i}`">
+              <strong>FOREIGN KEY</strong>
+              <span v-text="foreignKey.name" />
+              (<i v-text="foreignKeyColumns(foreignKey)" />)
+              <strong>REFERENCES</strong>
+              <a :href="`/database/${database.id}/table/${foreignKey.referenced_table.id}/schema`" v-text="foreignKeyReferencedTable(foreignKey)" />
+              (<i v-text="foreignKeyReferencedColumns(foreignKey)" />)
+            </li>
+            <li v-for="(uniqueConstraint, i) in table.constraints.uniques" :key="`uk-${i}`">
+              <strong>UNIQUE INDEX</strong>
+              (<i v-text="uniqueColumns(uniqueConstraint)" />)
+            </li>
+            <li v-for="(checkConstraint, i) in table.constraints.checks" :key="`uk-${i}`">
+              <strong>CHECK CONSTRAINT</strong>
+              (<i v-text="checkConstraint" />)
+            </li>
+          </ul>
+        </v-container>
+      </v-card-text>
+    </v-card>
+    <v-dialog
+      v-if="table && database"
+      v-model="dialogSemantic"
+      max-width="640">
+      <DialogsSemantics
+        :column="column"
+        :mode="mode"
+        :table-id="table.id"
+        :database="database"
+        @close="closed" />
+    </v-dialog>
+    <v-breadcrumbs
+      :items="items"
+      class="pa-0 mt-2" />
+  </div>
+</template>
+
+<script>
+import TableToolbar from '@/components/table/TableToolbar'
+import { useUserStore } from '@/stores/user'
+import { useCacheStore } from '@/stores/cache'
+
+export default {
+  components: {
+    TableToolbar
+  },
+  data () {
+    return {
+      selection: [],
+      column: null,
+      mode: null,
+      dialogSemantic: false,
+      items: [
+        {
+          title: this.$t('navigation.databases'),
+          to: '/database'
+        },
+        {
+          title: `${this.$route.params.database_id}`,
+          to: `/database/${this.$route.params.database_id}/info`
+        },
+        {
+          title: this.$t('navigation.tables'),
+          to: `/database/${this.$route.params.database_id}/table`
+        },
+        {
+          title: `${this.$route.params.table_id}`,
+          to: `/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}`
+        },
+        {
+          title: this.$t('navigation.schema'),
+          to: `/database/${this.$route.params.database_id}/table/${this.$route.params.table_id}/schema`,
+          disabled: true
+        }
+      ],
+      headers: [
+        { value: 'internal_name', title: this.$t('pages.table.subpages.schema.internal-name.title') },
+        { value: 'column_type', title: this.$t('pages.table.subpages.schema.column-type.title') },
+        { value: 'extra', title: this.$t('pages.table.subpages.schema.extra.title') },
+        { value: 'column_concept', title: this.$t('pages.table.subpages.schema.concept.title') },
+        { value: 'column_unit', title: this.$t('pages.table.subpages.schema.unit.title') },
+        { value: 'is_null_allowed', title: this.$t('pages.table.subpages.schema.nullable.title') },
+        { value: 'auto_generated', title: this.$t('pages.table.subpages.schema.sequence.title') }
+      ],
+      dateColumns: [],
+      userStore: useUserStore(),
+      cacheStore: useCacheStore()
+    }
+  },
+  computed: {
+    user () {
+      return this.userStore.getUser
+    },
+    database () {
+      return this.cacheStore.getDatabase
+    },
+    table () {
+      return this.cacheStore.getTable
+    },
+    access () {
+      return this.userStore.getAccess
+    },
+    roles () {
+      return this.userStore.getRoles
+    },
+    primaryKeysColumns () {
+      return this.table.columns.filter(c => c.is_primary_key).map(c => c.internal_name).join(', ')
+    },
+    canAssignSemanticInformation () {
+      if (!this.user) {
+        return false
+      }
+      if (this.roles.includes('modify-foreign-table-column-semantics')) {
+        return true
+      }
+      if (!this.access) {
+        return false
+      }
+      return this.roles.includes('modify-table-column-semantics') && (this.access.type === 'write_all' || this.table.owner.username === this.user.username)
+    },
+    inputVariant () {
+      const runtimeConfig = useRuntimeConfig()
+      return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.input.contrast : runtimeConfig.public.variant.input.normal
+    },
+    buttonVariant () {
+      const runtimeConfig = useRuntimeConfig()
+      return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.button.contrast : runtimeConfig.public.variant.button.normal
+    }
+  },
+  methods: {
+    isUnique (column) {
+      if (!this.table || !this.table.constraints || !this.table.constraints.uniques) {
+        return false
+      }
+      const uniqueColumnIds = this.table.constraints.uniques.map(u => u.columns.map(c => c.id)).flat()
+      return uniqueColumnIds.includes(column.id)
+    },
+    extra (column) {
+      if (['date', 'datetime', 'timestamp', 'time'].includes(column.column_type)) {
+        return `fsp=${column.date_format.unix_format}`
+      } else if (column.column_type === 'float') {
+        return `p=${column.size}`
+      } else if (['decimal', 'double'].includes(column.column_type)) {
+        return `size=${column.size} d=${column.d}`
+      } else if (column.column_type === 'enum') {
+        return `(${column.enums.join(', ')})`
+      } else if (column.column_type === 'set') {
+        return `(${column.sets.join(', ')})`
+      } else if (['int', 'char', 'varchar', 'binary', 'varbinary', 'tinyint', 'size="small"int', 'mediumint', 'bigint'].includes(column.column_type)) {
+        return column.size !== null ? `size=${column.size}` : ''
+      }
+      return null
+    },
+    hasUnit (item) {
+      return item.unit && 'uri' in item.unit
+    },
+    hasConcept (item) {
+      return item.concept && 'uri' in item.concept
+    },
+    pick (item, mode) {
+      this.column = item
+      this.mode = mode
+      this.dialogSemantic = true
+    },
+    closed (event) {
+      const { success } = event
+      console.debug('closed dialog', event)
+      if (success) {
+        this.$toast.success(this.$t('success.table.semantics'))
+        this.cacheStore.reloadTable()
+      }
+      this.dialogSemantic = false
+    },
+    foreignKeyColumns (foreignKey) {
+      if (!foreignKey) {
+        return null
+      }
+      return foreignKey.columns.map(c => c.internal_name).join(',')
+    },
+    foreignKeyReferencedTable (foreignKey) {
+      if (!foreignKey) {
+        return null
+      }
+      return foreignKey.referenced_table.internal_name
+    },
+    foreignKeyReferencedColumns (foreignKey) {
+      if (!foreignKey) {
+        return null
+      }
+      return foreignKey.referenced_columns.map(c => c.internal_name).join(',')
+    },
+    uniqueColumns (uniqueConstraint) {
+      if (!uniqueConstraint) {
+        return null
+      }
+      return uniqueConstraint.columns.map(c => c.internal_name).join(',')
+    }
+  }
+}
+</script>

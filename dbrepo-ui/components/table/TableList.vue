@@ -1,38 +1,44 @@
 <template>
   <div>
-    <v-progress-linear v-if="loading" indeterminate />
-    <v-card v-if="!loading && tables && tables.length === 0" flat>
-      <v-card-text>
-        (no tables)
-      </v-card-text>
-    </v-card>
-    <div v-for="(item,i) in tables" :key="i">
+    <v-card
+      variant="flat"
+      rounded="0"
+      v-if="tables.length === 0"
+      :text="$t('pages.database.subpages.tables.empty')" />
+    <v-card
+      variant="flat"
+      rounded="0"
+      v-for="(item, i) in tables"
+      :key="i">
       <v-divider v-if="i !== 0" class="mx-4" />
-      <v-list-item-group>
-        <v-list-item two-line :class="clazz(item)" :to="`/database/${$route.params.database_id}/table/${item.id}/info`">
-          <v-list-item-content>
-            <v-list-item-title v-text="item.name" />
-            <v-list-item-subtitle class="mt-2">
-              <span v-if="item.description" v-text="item.description" />
-              <span v-else>(no description)</span>
-            </v-list-item-subtitle>
-          </v-list-item-content>
-          <v-list-item-action v-if="item.identifiers && item.identifiers.length > 0">
-            <v-tooltip left>
-              <template v-slot:activator="{ on, attrs }">
-                <v-icon color="primary" v-bind="attrs" v-on="on">mdi-identifier</v-icon>
+      <v-list>
+        <v-list-item
+          lines="two"
+          :title="item.name"
+          :subtitle="item.description ? item.description : '(no description)'"
+          :to="`/database/${$route.params.database_id}/table/${item.id}/info`">
+          <template v-slot:append>
+            <v-tooltip
+              v-if="item.identifiers && item.identifiers.length > 0"
+              :text="$t('pages.identifier.pid.title')"
+              left>
+              <template v-slot:activator="{ props }">
+                <v-icon
+                  color="primary"
+                  v-bind="props">mdi-identifier</v-icon>
               </template>
-              Persistent identifier
             </v-tooltip>
-          </v-list-item-action>
+          </template>
         </v-list-item>
-      </v-list-item-group>
-    </div>
+      </v-list>
+    </v-card>
   </div>
 </template>
 
 <script>
 import { formatTimestampUTCLabel } from '@/utils'
+import { useUserStore } from '@/stores/user'
+import { useCacheStore } from '@/stores/cache'
 
 export default {
   data () {
@@ -46,44 +52,43 @@ export default {
       mode: 'unit',
       dialogDelete: false,
       headers: [
-        { value: 'name', text: 'Name' },
-        { value: 'column_type', text: 'Type' },
-        { value: 'column_concept', text: 'Concept' },
-        { value: 'column_unit', text: 'Unit' },
-        { value: 'is_primary_key', text: 'Primary Key' },
-        { value: 'unique', text: 'Unique' },
-        { value: 'is_null_allowed', text: 'Nullable' },
-        { value: 'auto_generated', text: 'Sequence' }
+        { value: 'name', title: 'Name' },
+        { value: 'column_type', title: 'Type' },
+        { value: 'column_concept', title: 'Concept' },
+        { value: 'column_unit', title: 'Unit' },
+        { value: 'is_primary_key', title: 'Primary Key' },
+        { value: 'unique', title: 'Unique' },
+        { value: 'is_null_allowed', title: 'Nullable' },
+        { value: 'auto_generated', title: 'Sequence' }
       ],
       columnTypes: [
         // { value: 'ENUM', text: 'Enumeration' }, // Disabled for now, not implemented, #145
-        { value: 'boolean', text: 'Boolean' },
-        { value: 'number', text: 'Number' },
-        { value: 'blob', text: 'Binary Large Object' },
-        { value: 'date', text: 'Date' },
-        { value: 'timestamp', text: 'Timestamp' },
-        { value: 'decimal', text: 'Floating Number' },
-        { value: 'string', text: 'Character Varying' },
-        { value: 'text', text: 'Text' }
-      ]
+        { value: 'boolean', title: 'Boolean' },
+        { value: 'number', title: 'Number' },
+        { value: 'blob', title: 'Binary Large Object' },
+        { value: 'date', title: 'Date' },
+        { value: 'timestamp', title: 'Timestamp' },
+        { value: 'decimal', title: 'Floating Number' },
+        { value: 'string', title: 'Character Varying' },
+        { value: 'text', title: 'Text' }
+      ],
+      userStore: useUserStore(),
+      cacheStore: useCacheStore()
     }
   },
   computed: {
-    token () {
-      return this.$store.state.token
-    },
     user () {
-      return this.$store.state.user
+      return this.userStore.getUser
     },
     database () {
-      return this.$store.state.database
+      return this.cacheStore.getDatabase
     },
     access () {
-      return this.$store.state.access
+      return this.userStore.getAccess
     },
     tables () {
       if (!this.database) {
-        return null
+        return []
       }
       return this.database.tables
     }
@@ -93,12 +98,6 @@ export default {
       this.column = item
       this.mode = mode
       this.dialogSemantic = true
-    },
-    clazz (table) {
-      return this.hasIdentifiers(table) ? 'primary--text' : null
-    },
-    hasIdentifiers (table) {
-      return table && 'identifiers' in table && table.identifiers.length > 0
     },
     closed (data) {
       console.debug('closed dialog', data)
@@ -110,17 +109,9 @@ export default {
   }
 }
 </script>
-<style scoped>
-.colTable thead th {
-  text-align: initial;
-}
-.colTable tbody tr td {
-  padding-left: 0;
-}
-.align-right {
-  text-align: right;
-}
-.full-width {
-  width: 100%;
+<style lang="scss" scoped>
+.v-list {
+  padding-top: 0;
+  padding-bottom: 0;
 }
 </style>

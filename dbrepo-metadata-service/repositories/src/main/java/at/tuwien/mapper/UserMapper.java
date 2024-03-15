@@ -78,7 +78,7 @@ public interface UserMapper {
     @Mappings({
             @Mapping(target = "attributes.orcid", source = "orcid"),
             @Mapping(target = "attributes.affiliation", source = "affiliation"),
-            @Mapping(target = "attributes.themeDark", source = "themeDark"),
+            @Mapping(target = "attributes.theme", source = "theme"),
             @Mapping(target = "attributes.mariadbPassword", source = "mariadbPassword"),
             @Mapping(target = "name", expression = "java(userToFullName(data))"),
             @Mapping(target = "qualifiedName", expression = "java(userToQualifiedName(data))"),

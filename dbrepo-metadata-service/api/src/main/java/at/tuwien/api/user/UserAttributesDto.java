@@ -18,9 +18,8 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 public class UserAttributesDto {
 
     @org.springframework.data.annotation.Transient
-    @JsonProperty("theme_dark")
-    @Schema(example = "false")
-    private Boolean themeDark;
+    @Schema(example = "light")
+    private String theme;
 
     @Field(name = "orcid", type = FieldType.Keyword)
     @Schema(example = "https://orcid.org/0000-0002-1825-0097")

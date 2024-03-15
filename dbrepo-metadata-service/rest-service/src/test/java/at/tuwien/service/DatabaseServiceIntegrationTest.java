@@ -336,7 +336,7 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
     @Test
     public void transfer_succeeds() throws DatabaseNotFoundException, UserNotFoundException {
         final DatabaseTransferDto request = DatabaseTransferDto.builder()
-                .username(USER_2_USERNAME)
+                .id(USER_2_ID)
                 .build();
 
         /* test */

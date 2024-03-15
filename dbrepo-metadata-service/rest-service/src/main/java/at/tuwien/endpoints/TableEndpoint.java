@@ -27,6 +27,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,7 +40,9 @@ import java.util.stream.Collectors;
 @Log4j2
 @CrossOrigin(origins = "*")
 @RestController
-@RequestMapping("/api/database/{databaseId}/table")
+@RequestMapping(path = "/api/database/{databaseId}/table",
+        consumes = MediaType.ALL_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
 public class TableEndpoint {
 
     private final TableMapper tableMapper;
@@ -215,8 +218,8 @@ public class TableEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))})
     })
     public ResponseEntity<?> delete(@NotNull @PathVariable("databaseId") Long databaseId,
-                                       @NotNull @PathVariable("tableId") Long tableId,
-                                       @NotNull Principal principal)
+                                    @NotNull @PathVariable("tableId") Long tableId,
+                                    @NotNull Principal principal)
             throws TableNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
             TableMalformedException, QueryMalformedException, NotAllowedException {
         log.debug("endpoint delete table, databaseId={}, tableId={}, {}", databaseId, tableId, PrincipalUtil.formatForDebug(principal));

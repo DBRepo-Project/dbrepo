@@ -15,8 +15,6 @@ import lombok.extern.jackson.Jacksonized;
 @ToString
 public class IdentifierSaveTitleDto {
 
-    private Long id;
-
     @Schema(example = "Airquality Demonstrator")
     private String title;
 

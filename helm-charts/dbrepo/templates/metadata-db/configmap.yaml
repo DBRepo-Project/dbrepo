@@ -4,15 +4,21 @@ metadata:
   name: metadata-db-setup
   namespace: {{ $.Values.namespace }}
 data:
-  02-setup-container.sql: |
+  02-setup-data.sql: |
     BEGIN;
     INSERT INTO `mdb_containers` (name, internal_name, image_id, host, port, sidecar_host, sidecar_port, privileged_username, privileged_password)
     VALUES ('MariaDB Galera 11.1.3', 'mariadb_11_1_3', 1, 'data-db', 3306, 'data-db', 3305, 'root', 'dbrepo');
     INSERT INTO `mdb_banner_messages` (type, message)
     VALUES ('INFO', 'You are currently working on our test environment. Any data upload to this system may be deleted.');
+    INSERT INTO `mdb_version` (`schema_version`) VALUES ('1.4.2');
     COMMIT;
   01-setup-schema.sql: |
     BEGIN;
+
+    CREATE TABLE IF NOT EXISTS `mdb_version`
+    (
+        schema_version character varying(255) NOT NULL DEFAULT '1.4.2'
+    ) WITH SYSTEM VERSIONING;
 
     CREATE TABLE IF NOT EXISTS `mdb_users`
     (
@@ -24,7 +30,7 @@ data:
         orcid            character varying(255),
         affiliation      character varying(255),
         mariadb_password character varying(255) NOT NULL,
-        theme_dark       boolean,
+        theme            character varying(255) NOT NULL default ('light'),
         PRIMARY KEY (id),
         UNIQUE (username),
         UNIQUE (email)
@@ -93,8 +99,9 @@ data:
 
     CREATE TABLE IF NOT EXISTS `mdb_licenses`
     (
-        identifier character varying(255) NOT NULL,
-        uri        text                   NOT NULL,
+        identifier  character varying(255) NOT NULL,
+        uri         text                   NOT NULL,
+        description text                   NOT NULL,
         PRIMARY KEY (identifier),
         UNIQUE (uri(200))
     ) WITH SYSTEM VERSIONING;
@@ -530,14 +537,11 @@ data:
     COMMIT;
     BEGIN;
 
-    INSERT INTO `mdb_licenses` (identifier, uri)
-    VALUES ('MIT', 'https://opensource.org/licenses/MIT'),
-           ('GPL-3.0-only', 'https://www.gnu.org/licenses/gpl-3.0-standalone.html'),
-           ('BSD-3-Clause', 'https://opensource.org/licenses/BSD-3-Clause'),
-           ('BSD-4-Clause', 'http://directory.fsf.org/wiki/License:BSD_4Clause'),
-           ('Apache-2.0', 'https://opensource.org/licenses/Apache-2.0'),
-           ('CC0-1.0', 'https://creativecommons.org/publicdomain/zero/1.0/legalcode'),
-           ('CC-BY-4.0', 'https://creativecommons.org/licenses/by/4.0/legalcode');
+    INSERT INTO `mdb_licenses` (identifier, uri, description)
+    VALUES ('CC0-1.0', 'https://creativecommons.org/publicdomain/zero/1.0/legalcode',
+            'CC0 waives copyright interest in a work you''ve created and dedicates it to the world-wide public domain. Use CC0 to opt out of copyright entirely and ensure your work has the widest reach.'),
+           ('CC-BY-4.0', 'https://creativecommons.org/licenses/by/4.0/legalcode',
+            'The Creative Commons Attribution license allows re-distribution and re-use of a licensed work on the condition that the creator is appropriately credited.');
 
     INSERT INTO `mdb_images` (name, version, default_port, dialect, driver_class, jdbc_method)
     VALUES ('mariadb', '11.1.3', 3306, 'org.hibernate.dialect.MariaDBDialect', 'org.mariadb.jdbc.Driver', 'mariadb');
@@ -565,3 +569,4 @@ data:
            ('prov', 'http://www.w3.org/ns/prov#', null, null, null),
            ('db', 'http://dbpedia.org', 'http://dbpedia.org/ontology/.*', 'http://dbpedia.org/sparql', null);
     COMMIT;
+
