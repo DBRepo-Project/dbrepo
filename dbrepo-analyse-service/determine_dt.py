@@ -39,8 +39,15 @@ def determine_datatypes(filename, enum=False, enum_tol=0.0001, separator=None) -
 
     # Load a file object:
     with io.BytesIO(stream.read()) as fh:
+        line_terminator = None
+        if b"\n" in fh.readline():
+            line_terminator = "\n"
+        elif b"\r" in fh.readline():
+            line_terminator = "\r"
+        elif b"\r\n" in fh.readline():
+            line_terminator = "\r\n"
         logging.info("Analysing corpus with separator: %s", separator)
-        table_set = CSVTableSet(fh, delimiter=separator)
+        table_set = CSVTableSet(fh, delimiter=separator, lineterminator=line_terminator)
 
         # A table set is a collection of tables:
         row_set = table_set.tables[0]
@@ -83,7 +90,6 @@ def determine_datatypes(filename, enum=False, enum_tol=0.0001, separator=None) -
                 r[headers[i]] = "varchar"
             else:
                 r[headers[i]] = "text"
-        fh.close()
-        s = {"columns": r, "separator": separator}
+        s = {"columns": r, "separator": separator, "line_termination": line_terminator}
         logging.info("Determined data types %s", s)
     return json.dumps(s)

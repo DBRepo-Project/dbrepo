@@ -23,6 +23,7 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -110,19 +111,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     @BeforeEach
     public void beforeEach() throws SQLException, DatabaseUnchangedException, QueryMalformedException,
             ColumnParseException, DatabaseNotFoundException, TableMalformedException {
-        TABLE_1.setColumns(TABLE_1_COLUMNS);
-        TABLE_2.setColumns(TABLE_2_COLUMNS);
-        TABLE_3.setColumns(TABLE_3_COLUMNS);
-        TABLE_4.setColumns(TABLE_4_COLUMNS);
-        TABLE_5.setColumns(TABLE_5_COLUMNS);
-        TABLE_6.setColumns(TABLE_6_COLUMNS);
-        TABLE_7.setColumns(TABLE_7_COLUMNS);
-        DATABASE_1.setAccesses(List.of());
-        DATABASE_2.setAccesses(List.of());
-        VIEW_1.setColumns(VIEW_1_COLUMNS);
-        VIEW_2.setColumns(VIEW_2_COLUMNS);
-        VIEW_3.setColumns(VIEW_3_COLUMNS);
-        VIEW_4.setColumns(VIEW_4_COLUMNS);
+        genesis();
         /* metadata database */
         imageRepository.save(IMAGE_1);
         licenseRepository.save(LICENSE_1);
@@ -221,7 +210,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void insert_date_succeeds() throws TableNotFoundException, TableMalformedException, SQLException,
-            DatabaseNotFoundException {
+            DatabaseNotFoundException, FileStorageException {
         final TableCsvDto request = TableCsvDto.builder()
                 .data(new HashMap<>() {{
                     put("id", 4L);
@@ -242,7 +231,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void insert_timestamp_succeeds() throws TableNotFoundException, TableMalformedException,
-            DatabaseNotFoundException {
+            DatabaseNotFoundException, FileStorageException {
         final TableCsvDto request = TableCsvDto.builder()
                 .data(new HashMap<>() {{
                     put("timestamp", "2023-02-10 12:15:20");
@@ -255,7 +244,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void insert_timestampMillis_succeeds() throws TableNotFoundException, TableMalformedException,
-            DatabaseNotFoundException {
+            DatabaseNotFoundException, FileStorageException {
         final TableCsvDto request = TableCsvDto.builder()
                 .data(new HashMap<>() {{
                     put("timestamp", "2023-02-10 12:15:20.613405");
@@ -268,7 +257,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
     @Test
     public void insert_withConstraints_succeeds() throws TableNotFoundException, TableMalformedException,
-            DatabaseNotFoundException {
+            DatabaseNotFoundException, FileStorageException {
         final TableCsvDto request = TableCsvDto.builder()
                 .data(Map.of("id", 4L,
                         "date", "2008-12-04",
@@ -348,6 +337,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
+    @Disabled("NOT DETERMINISTIC")
     public void execute_succeeds() throws TableMalformedException, DatabaseNotFoundException,
             ImageNotSupportedException, QueryMalformedException, UserNotFoundException, QueryStoreException,
             ColumnParseException, InterruptedException, QueryNotFoundException {

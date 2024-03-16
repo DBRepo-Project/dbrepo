@@ -53,17 +53,13 @@ public class EntityServiceIntegrationTest extends BaseUnitTest {
 
     @BeforeEach
     public void beforeEach() {
-        TABLE_1.setColumns(TABLE_1_COLUMNS);
-        TABLE_2.setColumns(TABLE_2_COLUMNS);
-        TABLE_3.setColumns(TABLE_3_COLUMNS);
-        TABLE_4.setColumns(TABLE_4_COLUMNS);
+        genesis();
         /* metadata database */
         ontologyRepository.saveAll(List.of(ONTOLOGY_1, ONTOLOGY_2, ONTOLOGY_3, ONTOLOGY_4, ONTOLOGY_5));
         imageRepository.save(IMAGE_1);
         licenseRepository.save(LICENSE_1);
         userRepository.save(USER_1);
         containerRepository.save(CONTAINER_1);
-        DATABASE_1.setAccesses(List.of());
         databaseRepository.save(DATABASE_1);
     }
 

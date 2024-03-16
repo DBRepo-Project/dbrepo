@@ -467,112 +467,29 @@ ui:
     repository: dbrepo/ui
     tag: "1.4.1"
     pullPolicy: Always
+  public:
+    api:
+      client: http://example.com
+      server: http://example.com
+    title: "Database Repository"
+    logo: "/logo.svg"
+    icon: "/favicon.ico"
+    touch: "/apple-touch-icon.png"
+    broker:
+      host: example.com
+      port:
+        5671: true
+        5672: false
+      extra: "128.130.0.0/15"
+    database:
+      extra: "128.130.0.0/15"
+    pid:
+      default:
+        publisher: "Example University"
+    doi:
+      enabled: false
+      endpoint: https://doi.org
   replicaCount: 2
-  config: |
-    {
-      "title": "Database Repository",
-      "version": "1.4.1",
-      "fluid": false,
-      "ssl": {
-        "force": false
-      },
-      "logo": {
-        "path": "/logo.svg"
-      },
-      "icon": {
-        "path": "/favicon.ico"
-      },
-      "appleTouchIcon": {
-        "path": "/apple-touch-icon.png"
-      },
-      "api": {
-        "useSsl": false
-      },
-      "broker": {
-        "connection": {
-          "host": "broker-service",
-          "ports": [
-            5672
-          ],
-          "extraInfo": null
-        }
-      },
-      "storage": {
-        "endpoint": "storageservice",
-        "port": 9000,
-        "useSsl": false,
-        "accessKey": {
-          "id": "seaweedfsadmin",
-          "secret": "seaweedfsadmin"
-        }
-      },
-      "upload": {
-        "url": "hostname:80",
-        "useSsl": false
-      },
-      "database": {
-        "connection": {
-          "extraInfo": null
-        }
-      },
-      "keycloak": {
-        "client": {
-          "id": "dbrepo-client",
-          "secret": "MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG"
-        }
-      },
-      "opensearch": {
-        "username": "admin",
-        "password": "admin"
-      },
-      "pid": {
-        "default": {
-          "publisher": "Example University"
-        }
-      },
-      "doi": {
-        "url": "https://doi.org"
-      },
-      "pages": {
-        "login": {
-          "links": [ ]
-        },
-        "information": {
-          "links": [
-            {
-              "text": "Online Documentation",
-              "blank": true,
-              "href": "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/"
-            },
-            {
-              "text": "Sourcecode Documentation",
-              "blank": true,
-              "href": "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services"
-            },
-            {
-              "text": "Docker Images",
-              "blank": true,
-              "href": "https://hub.docker.com/u/dbrepo"
-            },
-            {
-              "text": "Demo Instance (Kubernetes)",
-              "blank": true,
-              "href": "https://test.dbrepo.tuwien.ac.at/"
-            },
-            {
-              "text": "Pilot Instance (Docker Compose)",
-              "blank": true,
-              "href": "https://dbrepo1.ec.tuwien.ac.at/"
-            },
-            {
-              "text": "Paper",
-              "blank": true,
-              "href": "https://doi.org/10.2218/ijdc.v17i1.825"
-            }
-          ]
-        }
-      }
-    }
   extraVolumes: [ ]
   #  - name: images-map
   #    configMap:

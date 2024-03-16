@@ -1,28 +1,38 @@
 <template>
   <div>
-    <v-form ref="form" v-model="valid" autocomplete="off" @submit.prevent="submit">
-      <v-card>
-        <v-card-title v-text="title" />
+    <v-form
+      ref="form"
+      v-model="valid"
+      autocomplete="off"
+      @submit.prevent="submit">
+      <v-card
+        :title="$t('pages.settings.subpages.developer.maintenance.create.title')">
         <v-card-text>
           <v-row dense>
             <v-col>
               <v-select
                 v-model="localMessage.type"
                 :items="types"
-                item-text="name"
+                item-title="name"
                 item-value="value"
-                :rules="[v => !!v || $t('Required')]"
+                :rules="[v => !!v || $t('validation.required')]"
                 required
-                label="Type *" />
+                :variant="inputVariant"
+                persistent-hint
+                :label="$t('pages.settings.subpages.developer.maintenance.create.type.label')"
+                :hint="$t('pages.settings.subpages.developer.maintenance.create.type.hint')" />
             </v-col>
           </v-row>
           <v-row dense>
             <v-col>
               <v-text-field
                 v-model="localMessage.message"
-                :rules="[v => !!v || $t('Required')]"
+                :rules="[v => !!v || $t('validation.required')]"
                 required
-                label="Message *" />
+                :variant="inputVariant"
+                persistent-hint
+                :label="$t('pages.settings.subpages.developer.maintenance.create.message.label')"
+                :hint="$t('pages.settings.subpages.developer.maintenance.create.message.hint')" />
             </v-col>
           </v-row>
           <v-row dense>
@@ -30,42 +40,42 @@
               <v-text-field
                 v-model="localMessage.display_start"
                 clearable
+                :variant="inputVariant"
                 hint="YYYY-MM-dd HH:mm:ss"
-                label="Start timestamp" />
+                persistent-hint
+                :label="$t('pages.settings.subpages.developer.maintenance.create.start.label')" />
             </v-col>
             <v-col cols="6">
               <v-text-field
                 v-model="localMessage.display_end"
                 clearable
+                :variant="inputVariant"
                 hint="YYYY-MM-dd HH:mm:ss"
-                label="End timestamp" />
+                :label="$t('pages.settings.subpages.developer.maintenance.create.end.label')" />
             </v-col>
           </v-row>
         </v-card-text>
         <v-card-actions>
           <v-btn
             v-if="isModification"
-            class="ml-2"
             color="error"
-            @click="deleteMessage">
-            Delete
-          </v-btn>
+            variant="flat"
+            :text="$t('pages.settings.subpages.developer.maintenance.create.delete.text')"
+            @click="deleteMessage" />
           <v-spacer />
           <v-btn
-            class="mb-2"
-            @click="cancel">
-            Cancel
-          </v-btn>
+            :variant="buttonVariant"
+            :text="$t('navigation.cancel')"
+            @click="cancel" />
           <v-btn
             id="database"
-            class="mb-2 ml-3 mr-2"
             :disabled="!valid || loading"
-            :color="buttonColor"
+            color="primary"
             type="submit"
+            variant="flat"
+            :text="$t('pages.settings.subpages.developer.maintenance.create.submit.text')"
             :loading="loading"
-            @click="submitButton">
-            {{ buttonText }}
-          </v-btn>
+            @click="submitButton" />
         </v-card-actions>
       </v-card>
     </v-form>
@@ -73,8 +83,8 @@
 </template>
 
 <script>
-import MetadataService from '@/api/metadata.service'
 import { timestampToTimeZonedTimestamp, formatTimestampUTC } from '@/utils'
+import { useCacheStore } from '@/stores/cache'
 
 export default {
   props: {
@@ -104,27 +114,24 @@ export default {
       modify: {
         username: null,
         type: null
-      }
+      },
+      cacheStore: useCacheStore()
     }
   },
   computed: {
     database () {
-      return this.$store.state.database
-    },
-    title () {
-      return (!this.isModification ? 'Create' : 'Modify') + ' maintenance message'
-    },
-    buttonColor () {
-      if (this.modify.type && this.modify.type === 'revoke') {
-        return 'error'
-      }
-      return 'secondary'
+      return this.cacheStore.getDatabase
     },
     isModification () {
       return this.id !== null
     },
-    buttonText () {
-      return (this.isModification ? 'Modify' : 'Create') + ' message'
+    inputVariant () {
+      const runtimeConfig = useRuntimeConfig()
+      return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.input.contrast : runtimeConfig.public.variant.input.normal
+    },
+    buttonVariant () {
+      const runtimeConfig = useRuntimeConfig()
+      return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.button.contrast : runtimeConfig.public.variant.button.normal
     }
   },
   watch: {
@@ -155,7 +162,8 @@ export default {
       }
     },
     loadMessage (id) {
-      MetadataService.findMessage(id)
+      const messageService = useMessageService()
+      messageService.findOne(id)
         .then((message) => {
           message.display_start = formatTimestampUTC(message.display_start)
           message.display_end = formatTimestampUTC(message.display_end)
@@ -178,10 +186,10 @@ export default {
       if (payload.display_end) {
         payload.display_end = timestampToTimeZonedTimestamp(payload.display_end)
       }
-      MetadataService.createMessage(payload)
+      const messageService = useMessageService()
+      messageService.create(payload)
         .then(() => {
           this.$emit('close-dialog', { success: true })
-          this.$emit('reload-messages', { success: true })
         })
         .finally(() => {
           this.loading = false
@@ -197,10 +205,10 @@ export default {
       if (payload.display_end) {
         payload.display_end = timestampToTimeZonedTimestamp(payload.display_end)
       }
-      MetadataService.updateMessage(this.localMessage.id, payload)
+      const messageService = useMessageService()
+      messageService.update(this.localMessage.id, payload)
         .then(() => {
           this.$emit('close-dialog', { success: true })
-          this.$emit('reload-messages', { success: true })
         })
         .finally(() => {
           this.loading = false
@@ -208,10 +216,10 @@ export default {
     },
     deleteMessage () {
       this.loading = true
-      MetadataService.deleteMessage(this.localMessage.id)
+      const messageService = useMessageService()
+      messageService.remove(this.localMessage.id)
         .then(() => {
           this.$emit('close-dialog', { success: true })
-          this.$emit('reload-messages', { success: true })
         })
         .finally(() => {
           this.loading = false

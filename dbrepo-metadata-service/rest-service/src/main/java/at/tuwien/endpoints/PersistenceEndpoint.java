@@ -3,6 +3,7 @@ package at.tuwien.endpoints;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.api.identifier.BibliographyTypeDto;
 import at.tuwien.api.identifier.IdentifierDto;
+import at.tuwien.api.identifier.ld.LdDatasetDto;
 import at.tuwien.config.EndpointConfig;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.exception.*;
@@ -22,19 +23,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Log4j2
 @CrossOrigin(origins = "*")
 @RestController
-@RequestMapping("/api/pid")
+@RequestMapping(path = "/api/pid",
+        consumes = MediaType.ALL_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
 public class PersistenceEndpoint {
 
     private final EndpointConfig endpointConfig;
@@ -49,16 +55,75 @@ public class PersistenceEndpoint {
         this.identifierService = identifierService;
     }
 
-    @GetMapping("/{pid}")
+    @GetMapping
+    @Transactional(readOnly = true)
+    @Observed(name = "dbr_pid_findall")
+    @Operation(summary = "Find all identifiers")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Found identifiers successfully",
+                    content = {
+                            @Content(mediaType = "application/json", schema = @Schema(implementation = IdentifierDto[].class)),
+                            @Content(mediaType = "application/ld+json", schema = @Schema(implementation = LdDatasetDto[].class))
+                    }),
+            @ApiResponse(responseCode = "400",
+                    description = "Identifier could not be exported, the requested style is not known",
+                    content = {@Content(
+                            mediaType = "text/bibliography",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Identifier could not be found",
+                    content = {@Content(
+                            mediaType = "text/csv",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
+    public ResponseEntity<?> findAll(@Valid @RequestParam(value = "dbid", required = false) Long dbid,
+                                     @Valid @RequestParam(value = "qid", required = false) Long qid,
+                                     @Valid @RequestParam(value = "vid", required = false) Long vid,
+                                     @Valid @RequestParam(value = "tid", required = false) Long tid,
+                                     @RequestHeader(HttpHeaders.ACCEPT) String accept) throws NotAllowedException {
+        log.debug("endpoint find identifiers, dbid={}, qid={}, vid={}, tid={}, accept={}", dbid, qid, vid, tid, accept);
+        final List<Identifier> identifiers = identifierService.findAll()
+                .stream()
+                .filter(i -> !Objects.nonNull(dbid) || i.getDatabaseId().equals(dbid))
+                .filter(i -> !Objects.nonNull(qid) || i.getQueryId().equals(qid))
+                .filter(i -> !Objects.nonNull(vid) || i.getViewId().equals(vid))
+                .filter(i -> !Objects.nonNull(tid) || i.getTableId().equals(tid))
+                .toList();
+        if (identifiers.isEmpty()) {
+            return ResponseEntity.ok(List.of());
+        }
+        log.trace("found persistent identifiers {}", identifiers);
+        switch (accept) {
+            case "application/json":
+                log.trace("accept header matches json");
+                final List<IdentifierDto> resource1 = identifiers.stream()
+                        .map(identifierMapper::identifierToIdentifierDto)
+                        .toList();
+                log.debug("find identifier resulted in identifiers {}", resource1);
+                return ResponseEntity.ok(resource1);
+            case "application/ld+json":
+                log.trace("accept header matches json-ld");
+                final List<LdDatasetDto> resource2 = identifiers.stream()
+                        .map(i -> identifierMapper.identifierToLdDatasetDto(i, endpointConfig.getWebsiteUrl()))
+                        .toList();
+                log.debug("find identifier resulted in identifiers {}", resource2);
+                return ResponseEntity.ok(resource2);
+        }
+        throw new NotAllowedException("Must provide either application/json or application/ld+json headers");
+    }
+
+
+    @GetMapping(value = "/{pid}", produces = MediaType.ALL_VALUE)
     @Transactional(readOnly = true)
     @Observed(name = "dbr_pid_find")
     @Operation(summary = "Find some identifier")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
                     description = "Found identifier successfully",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = IdentifierDto.class)),
+                    content = {
+                            @Content(mediaType = "application/json", schema = @Schema(implementation = IdentifierDto.class)),
+                            @Content(mediaType = "application/ld+json", schema = @Schema(implementation = LdDatasetDto.class)),
                             @Content(mediaType = "text/csv"),
                             @Content(mediaType = "text/xml"),
                             @Content(mediaType = "text/bibliography"),
@@ -115,21 +180,26 @@ public class PersistenceEndpoint {
                     final IdentifierDto resource1 = identifierMapper.identifierToIdentifierDto(identifier);
                     log.debug("find identifier resulted in identifier {}", resource1);
                     return ResponseEntity.ok(resource1);
+                case "application/ld+json":
+                    log.trace("accept header matches json-ld");
+                    final LdDatasetDto resource2 = identifierMapper.identifierToLdDatasetDto(identifier, endpointConfig.getWebsiteUrl());
+                    log.debug("find identifier resulted in identifier {}", resource2);
+                    return ResponseEntity.ok(resource2);
                 case "text/csv":
                     log.trace("accept header matches csv");
-                    final InputStreamResource resource2;
+                    final InputStreamResource resource3;
                     try {
-                        resource2 = identifierService.exportResource(pid, principal);
-                        log.debug("find identifier resulted in resource {}", resource2);
-                        return ResponseEntity.ok(resource2);
+                        resource3 = identifierService.exportResource(pid, principal);
+                        log.debug("find identifier resulted in resource {}", resource3);
+                        return ResponseEntity.ok(resource3);
                     } catch (IdentifierRequestException e) {
                         /* ignore */
                     }
                 case "text/xml":
                     log.trace("accept header matches xml");
-                    final InputStreamResource resource3 = identifierService.exportMetadata(pid);
-                    log.debug("find identifier resulted in resource {}", resource3);
-                    return ResponseEntity.ok(resource3);
+                    final InputStreamResource resource4 = identifierService.exportMetadata(pid);
+                    log.debug("find identifier resulted in resource {}", resource4);
+                    return ResponseEntity.ok(resource4);
             }
             final Pattern regex = Pattern.compile("text\\/bibliography(; ?style=(apa|ieee|bibtex))?");
             final Matcher matcher = regex.matcher(accept);

@@ -1,74 +1,101 @@
 <template>
   <div>
-    <v-card>
-      <v-card-title v-text="column.name" />
+    <v-card
+      :title="title"
+      :subtitle="$t('pages.table.subpages.semantics.subtitle')"
+      variant="elevated">
       <v-card-text class="pb-0">
-        <v-alert
+        <v-row
           v-if="!entity"
-          border="left"
-          color="info"
-          dark
-          icon="mdi-share-variant"
-          class="pl-6">
-          <p>
-            The following ontologies automatically will query the fields <code>rdfs:label</code> and store it for this
-            column. You can still use other URIs that are not matching these ontologies, the URI will be displayed
-            instead.
-          </p>
-          <div v-for="(ontology,idx) in ontologies" :key="idx">
-            <v-badge inline :content="badge(ontology).text" :color="badge(ontology).color">
-              <a :href="ontology.uri" target="_blank" v-text="ontology.uri_pattern" />
-            </v-badge>
-          </div>
-        </v-alert>
-        <v-alert
-          v-if="entity"
-          border="left"
-          color="primary"
-          dark
-          icon="mdi-share-variant"
-          class="pl-6">
-          <div>
-            <a :href="entity.uri" class="white--text" target="_blank" v-text="entity.name ? entity.name : entity.uri" />
-          </div>
-          <div v-text="entity.description" />
-        </v-alert>
-        <v-btn v-if="recommendations.length === 0" small :loading="loadingSemantics" @click="recommendSemantics">
-          Recommend
-        </v-btn>
-        <p v-else>
-          Found {{ recommendations.length }} labels based on the column name <code>{{ column.internal_name }}</code>.
-        </p>
-      </v-card-text>
-      <v-card-text>
-        <v-form ref="form" v-model="valid" autocomplete="off" @submit.prevent="submit">
-          <v-list-item-group v-model="recommendation">
-            <v-list-item v-for="(item,idx) in recommendations" :key="idx" three-line>
-              <template v-slot:default="{ active, }">
-                <v-list-item-action>
-                  <v-checkbox
-                    :input-value="active"
-                    color="primary" />
-                </v-list-item-action>
-                <v-list-item-content>
+          dense>
+          <v-col>
+            <v-alert
+              border="start"
+              color="info">
+              <p
+                v-text="$t('pages.table.subpages.semantics.info')" />
+              <p
+                class="mt-1"
+                v-for="(ontology, idx) in ontologies"
+                :key="`o-${idx}`">
+                <v-badge inline :content="badge(ontology).text" :color="badge(ontology).color">
+                  <a :href="ontology.uri" v-text="ontology.uri_pattern" />
+                </v-badge>
+              </p>
+            </v-alert>
+          </v-col>
+        </v-row>
+        <v-row
+          v-else
+          dense>
+          <v-col>
+            <v-alert
+              border="start"
+              color="info">
+              <p>
+                <a
+                  :href="entity.uri"
+                  v-text="entity.name ? entity.name : entity.uri" />
+              </p>
+              <p
+                v-text="entity.description" />
+            </v-alert>
+          </v-col>
+        </v-row>
+        <v-row
+          v-if="recommendations.length === 0">
+          <v-col>
+            <v-btn
+              color="secondary"
+              variant="flat"
+              size="small"
+              :text="$t('navigation.recommend')"
+              :loading="loadingSemantics"
+              @click="recommendSemantics" />
+          </v-col>
+        </v-row>
+        <v-form
+          ref="form"
+          v-model="valid"
+          @submit.prevent="submit">
+          <v-row
+            v-if="recommendations.length > 0">
+            <v-col>
+              <v-list
+                lines="one"
+                v-model="recommendation"
+                select-strategy="single-independent">
+                <v-list-subheader
+                  v-text="$t('pages.table.subpages.semantics.recommended')" />
+                <v-list-item
+                  v-for="(item, idx) in recommendations"
+                  :key="`r-${idx}`"
+                  :value="item.uri"
+                  @click="uri = item.uri">
+                  <template v-slot:prepend="{ isActive }">
+                    <v-list-item-action start>
+                      <v-checkbox-btn :model-value="isActive"></v-checkbox-btn>
+                    </v-list-item-action>
+                  </template>
                   <v-list-item-title v-text="item.label" />
-                  <v-list-item-subtitle v-text="item.uri" />
-                  <v-list-item-subtitle class="mt-1" v-text="item.description" />
-                </v-list-item-content>
-              </template>
-            </v-list-item>
-          </v-list-item-group>
-          <v-row dense>
+                  <v-list-item-subtitle v-text="subtitle(item)" />
+                </v-list-item>
+              </v-list>
+            </v-col>
+          </v-row>
+          <v-row>
             <v-col>
               <v-text-field
                 v-model="uri"
                 :loading="loading"
                 :success="canAutomaticResolve"
-                :hint="canAutomaticResolve ? 'This URI can be automatically resolved!' : 'e.g. http://www.wikidata.org/entity/Q468777'"
                 :persistent-hint="canAutomaticResolve"
                 clearable
-                label="URI"
-                :rules="[v => isUri(v) || $t('Must start with http:// or https://')]"
+                persistent-hint
+                :variant="inputVariant"
+                :label="$t('pages.table.subpages.semantics.uri.label')"
+                :hint="canAutomaticResolve ? $t('pages.table.subpages.semantics.uri.hint') : ''"
+                :rules="[v => isUri(v) || $t('validation.uri.pattern')]"
                 @click:clear="uri = null" />
             </v-col>
           </v-row>
@@ -77,26 +104,23 @@
       <v-card-actions>
         <v-spacer />
         <v-btn
-          class="mb-2"
-          @click="cancel">
-          Cancel
-        </v-btn>
+          :variant="buttonVariant"
+          :text="$t('navigation.cancel')"
+          @click="cancel" />
         <v-btn
           color="primary"
-          class="mb-2 mr-2"
+          variant="flat"
+          :text="$t('navigation.assign')"
           :disabled="!valid"
           :loading="loadingSave"
-          @click="save">
-          Save
-        </v-btn>
+          @click="save" />
       </v-card-actions>
     </v-card>
   </div>
 </template>
 
 <script>
-import TableService from '@/api/table.service'
-import SemanticService from '@/api/semantic.service'
+import { useCacheStore } from '@/stores/cache'
 
 export default {
   props: {
@@ -128,16 +152,16 @@ export default {
       valid: false,
       loading: false,
       loadingOntologies: false,
-      loadingSemantics: false
+      loadingSemantics: false,
+      cacheStore: useCacheStore()
     }
   },
   computed: {
+    title () {
+      return this.$t('pages.table.subpages.semantics.title') + ' ' +  this.column.internal_name
+    },
     ontologies () {
-      const ontologies = this.$store.state.ontologies
-      if (!ontologies) {
-        return []
-      }
-      return ontologies.filter(o => o.sparql || o.rdf)
+      return this.cacheStore.getOntologies.filter(o => o.sparql || o.rdf)
     },
     canAutomaticResolve () {
       if (!this.uri) {
@@ -156,6 +180,14 @@ export default {
         return null
       }
       return this.column[this.mode]
+    },
+    inputVariant () {
+      const runtimeConfig = useRuntimeConfig()
+      return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.input.contrast : runtimeConfig.public.variant.input.normal
+    },
+    buttonVariant () {
+      const runtimeConfig = useRuntimeConfig()
+      return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.button.contrast : runtimeConfig.public.variant.button.normal
     }
   },
   watch: {
@@ -187,7 +219,8 @@ export default {
         unit_uri: this.mode === 'unit' ? this.uri : unitUri
       }
       this.loadingSave = true
-      TableService.updateColumn(this.database.id, this.tableId, this.column.id, payload)
+      const tableService = useTableService()
+      tableService.update(this.database.id, this.tableId, this.column.id, payload)
         .then(() => {
           this.recommendation = null
           this.$refs.form.reset()
@@ -204,9 +237,13 @@ export default {
     },
     recommendSemantics () {
       this.loadingSemantics = true
-      SemanticService.suggestTableColumn(this.database.id, this.tableId, this.column.id)
+      const tableService = useTableService()
+      tableService.suggest(this.database.id, this.tableId, this.column.id)
         .then((recommendations) => {
           this.recommendations = recommendations
+        })
+        .catch((error) => {
+          this.$toast.error(this.$t('error.semantics.timeout'))
         })
         .finally(() => {
           this.loadingSemantics = false
@@ -220,14 +257,21 @@ export default {
     },
     badge (ontology) {
       if (ontology.sparql) {
-        return { color: 'green', text: 'SPARQL' }
+        return { color: 'success', text: 'SPARQL' }
       }
       if (ontology.rdf) {
         return { color: 'secondary', text: 'RDF' }
       }
       return null
     },
+    subtitle (entity) {
+      if (entity.description) {
+        return `${entity.description} ${this.$t('pages.table.subpages.semantics.bullet')} ${entity.uri}`
+      }
+      return entity.uri
+    },
     init () {
+      this.cacheStore.reloadOntologies()
       this.uri = null
       if (this.column.unit && this.mode === 'unit') {
         this.uri = this.column.unit.uri
@@ -243,5 +287,3 @@ export default {
   }
 }
 </script>
-<style scoped>
-</style>

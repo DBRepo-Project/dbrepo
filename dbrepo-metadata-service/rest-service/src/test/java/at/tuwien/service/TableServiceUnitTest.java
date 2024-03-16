@@ -44,7 +44,7 @@ public class TableServiceUnitTest extends BaseUnitTest {
 
     @BeforeEach
     public void beforeEach() {
-        TABLE_8.setColumns(TABLE_8_COLUMNS);
+        genesis();
     }
 
     @Test

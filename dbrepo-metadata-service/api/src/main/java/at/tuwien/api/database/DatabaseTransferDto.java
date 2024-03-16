@@ -5,6 +5,8 @@ import lombok.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.jackson.Jacksonized;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @Builder
@@ -15,6 +17,6 @@ import lombok.extern.jackson.Jacksonized;
 public class DatabaseTransferDto {
 
     @NotNull
-    private String username;
+    private UUID id;
 
 }

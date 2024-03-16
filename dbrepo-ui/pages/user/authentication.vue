@@ -1,20 +1,28 @@
 <template>
-  <div v-if="token">
+  <div v-if="user">
     <UserToolbar />
-    <v-tabs-items v-model="tab">
-      <v-tab-item>
-        <v-card flat tile>
-          <v-card-title>Password Change</v-card-title>
+    <v-window v-model="tab">
+      <v-window-item>
+        <v-card
+          :title="$t('pages.settings.subpages.authentication.title')"
+          :subtitle="$t('pages.settings.subpages.authentication.subtitle')"
+          variant="flat"
+          rounded="0">
           <v-card-text>
-            <v-form v-model="valid2" @submit.prevent="submit">
+            <v-form
+              v-model="valid2"
+              @submit.prevent="submit">
               <v-row dense>
                 <v-col md="6">
                   <v-text-field
                     v-model="password"
                     type="password"
-                    :rules="[v => !!v || $t('Required')]"
+                    :rules="[v => !!v || $t('validation.required')]"
                     required
-                    label="Password *" />
+                    :variant="inputVariant"
+                    persistent-hint
+                    :label="$t('pages.settings.subpages.authentication.password.label')"
+                    :hint="$t('pages.settings.subpages.authentication.password.hint')" />
                 </v-col>
               </v-row>
               <v-row dense>
@@ -22,35 +30,39 @@
                   <v-text-field
                     v-model="password2"
                     type="password"
-                    :rules="[v => !!v || $t('Required'), v => (!!v && v) === password || $t('Not matching!')]"
+                    :rules="[v => !!v || $t('validation.required'), v => (!!v && v) === password || $t('Not matching!')]"
                     required
-                    label="Repeat Password *" />
+                    :variant="inputVariant"
+                    persistent-hint
+                    :label="$t('pages.settings.subpages.authentication.confirm.label')"
+                    :hint="$t('pages.settings.subpages.authentication.confirm.hint')" />
                 </v-col>
               </v-row>
-              <v-row dense>
+              <v-row>
                 <v-col md="6">
                   <v-btn
-                    small
-                    color="primary"
+                    size="small"
+                    color="secondary"
                     :loading="loadingUpdate"
                     :disabled="!valid2"
+                    variant="flat"
                     type="submit"
-                    @click="changePassword">
-                    Change
-                  </v-btn>
+                    :text="$t('pages.settings.subpages.authentication.submit.text')"
+                    @click="changePassword" />
                 </v-col>
               </v-row>
             </v-form>
           </v-card-text>
         </v-card>
-      </v-tab-item>
-    </v-tabs-items>
+      </v-window-item>
+    </v-window>
+    <v-breadcrumbs :items="items" class="pa-0 mt-2" />
   </div>
 </template>
 
 <script>
-import UserToolbar from '@/components/UserToolbar'
-import UserService from '@/api/user.service'
+import UserToolbar from '@/components/user/UserToolbar'
+import { useUserStore } from '@/stores/user'
 
 export default {
   components: {
@@ -62,25 +74,34 @@ export default {
       valid1: false,
       valid2: false,
       loadingUpdate: false,
+      items: [
+        {
+          title: this.$t('navigation.user'),
+          to: '/user'
+        },
+        {
+          title: this.$t('toolbars.user.authentication'),
+          to: `/user/authentication`,
+          disabled: true
+        }
+      ],
       email: null,
       password: null,
-      password2: null
+      password2: null,
+      userStore: useUserStore()
     }
   },
   computed: {
-    token () {
-      return this.$store.state.token
-    },
     user () {
-      return this.$store.state.user
+      return this.userStore.getUser
     },
-    config () {
-      if (this.token === null) {
-        return {}
-      }
-      return {
-        headers: { Authorization: `Bearer ${this.token}` }
-      }
+    inputVariant () {
+      const runtimeConfig = useRuntimeConfig()
+      return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.input.contrast : runtimeConfig.public.variant.input.normal
+    },
+    buttonVariant () {
+      const runtimeConfig = useRuntimeConfig()
+      return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.button.contrast : runtimeConfig.public.variant.button.normal
     }
   },
   mounted () {
@@ -90,7 +111,8 @@ export default {
     },
     changePassword () {
       this.loadingUpdate = true
-      UserService.updatePassword(this.user.id, this.password)
+      const userService = useUserService()
+      userService.updatePassword(this.user.id, this.password)
         .then(() => {
           this.$toast.success('Successfully changed the password')
           this.loadingUpdate = false
