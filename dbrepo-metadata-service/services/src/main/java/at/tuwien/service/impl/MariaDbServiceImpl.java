@@ -76,7 +76,7 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
 
     @Override
     public List<Database> findAll() {
-        return databaseRepository.findAll();
+        return databaseRepository.findAllDesc();
     }
 
     @Override

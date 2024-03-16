@@ -2,7 +2,6 @@
   <div>
     <DatabaseToolbar />
     <v-window
-      v-if="database"
       v-model="tab">
       <v-window-item value="1">
         <Summary
@@ -18,12 +17,14 @@
               :identifier="identifier" />
           </v-card-text>
         </v-card>
-        <v-divider v-if="hasIdentifier" />
+        <v-divider
+          v-if="hasIdentifier" />
         <v-card
           :title="$t('pages.database.title')"
           variant="flat"
           rounded="0">
-          <v-card-text>
+          <v-card-text
+            v-if="database">
             <v-list
               lines="two"
               dense>
@@ -114,7 +115,8 @@
           :title="$t('pages.container.title')"
           variant="flat"
           rounded="0">
-          <v-card-text>
+          <v-card-text
+            v-if="database">
             <v-list dense>
               <v-list-item
                 :title="$t('pages.container.name.title')"

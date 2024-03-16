@@ -38,7 +38,7 @@ export default {
   },
   data () {
     return {
-      loading: false,
+      loading: true,
       dialog: null,
       databases: [],
       userStore: useUserStore()
@@ -56,10 +56,12 @@ export default {
     }
   },
   mounted () {
+    this.loading = true
     const databaseService = useDatabaseService();
     databaseService.findAll()
       .then((databases) => {
         this.databases = databases
+        this.loading = false
       })
   },
   methods: {

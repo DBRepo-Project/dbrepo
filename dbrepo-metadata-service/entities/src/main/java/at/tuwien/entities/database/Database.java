@@ -33,7 +33,7 @@ import java.util.UUID;
         @UniqueConstraint(columnNames = {"cid", "internalName"})
 })
 @NamedQueries({
-        @NamedQuery(name = "Database.findAll", query = "select d from Database d order by d.created desc"),
+        @NamedQuery(name = "Database.findAllDesc", query = "select d from Database d order by d.created desc"),
         @NamedQuery(name = "Database.findByInternalName", query = "select d from Database d where d.internalName = ?1"),
         @NamedQuery(name = "Database.findAllOnlyIds", query = "select d.id from Database d order by d.created desc"),
         @NamedQuery(name = "Database.findReadAccess", query = "select distinct d from Database d join DatabaseAccess a on a.hdbid = d.id and a.huserid = ?1"),
