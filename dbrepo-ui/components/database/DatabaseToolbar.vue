@@ -1,15 +1,20 @@
 <template>
-  <div v-if="database">
-    <v-toolbar flat>
+  <div>
+    <v-toolbar
+      flat>
       <v-toolbar-title>
-        <span v-if="$vuetify.display.lgAndUp" v-text="database.name" />
-        <v-tooltip bottom>
+        <span
+          v-if="database && $vuetify.display.lgAndUp"
+          v-text="database.name" />
+        <v-tooltip
+          v-if="database"
+          bottom>
           <template v-slot:activator="{ props }">
             <v-icon
               class="ml-2"
               size="small"
               right
-              :color="database.is_public ? 'success' : null"
+              :color="database.is_public ? 'success' : 'chip'"
               v-bind="props">
               {{ database.is_public ? 'mdi-lock-open-outline' : 'mdi-lock-outline' }}
             </v-icon>

@@ -24,6 +24,7 @@
           v-if="!database.is_public"
           size="small"
           :color="colorVariant"
+          variant="outlined"
           :text="$t('toolbars.database.private')"
           flat />
         <v-chip
@@ -76,7 +77,13 @@ export default {
   },
   computed: {
     colorVariant () {
-      return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? '' : 'secondary'
+      return this.isContrastTheme ? '' : (this.isDarkTheme ? 'tertiary' : 'secondary')
+    },
+    isContrastTheme () {
+      return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast')
+    },
+    isDarkTheme () {
+      return this.$vuetify.theme.global.name.toLowerCase().startsWith('dark')
     }
   },
   methods: {
