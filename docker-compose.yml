@@ -301,9 +301,11 @@ services:
     build:
       context: ./dbrepo-ui
       args:
-        CI_COMMIT_BRANCH: ${CI_COMMIT_BRANCH:-dev}
-        CI_COMMIT_SHA: ${CI_COMMIT_SHA:-}
+        VERSION: ${VERSION}
+        COMMIT: ${CI_COMMIT_SHA}
       network: host
+    ports:
+      - 3000:3000
     depends_on:
       dbrepo-search-service:
         condition: service_started
