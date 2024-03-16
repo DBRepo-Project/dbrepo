@@ -167,12 +167,15 @@ export const useIdentifierService = (): any => {
     }
     const filtered = data.descriptions.filter(d => d.language && d.language === 'en')
     if (filtered.length === 0) {
-      return data.descriptions[0].description
+      return data.descriptions[0]?.description
     }
     return filtered[0].description
   }
 
-  function descriptionShort(description: string): string {
+  function descriptionShort(description: string): string | null {
+    if (!description) {
+      return null
+    }
     const targetLength = 280
     const lengthMax = 300
     if (description.length <= lengthMax) {

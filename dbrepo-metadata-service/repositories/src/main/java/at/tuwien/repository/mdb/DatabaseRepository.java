@@ -11,6 +11,8 @@ import java.util.UUID;
 @Repository
 public interface DatabaseRepository extends JpaRepository<Database, Long> {
 
+    List<Database> findAllDesc();
+
     List<Database> findReadAccess(UUID id);
 
     List<Database> findWriteAccess(UUID id);
