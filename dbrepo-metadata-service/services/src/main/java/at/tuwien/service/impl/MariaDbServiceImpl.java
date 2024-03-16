@@ -338,6 +338,7 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
                     log.debug("table with name {} is not system-versioned", table.getInternalName());
                     final PreparedStatement preparedStatement2 = queryMapper.tableEnableSystemVersioning(connection, table.getDatabase().getInternalName(), table.getInternalName());
                     preparedStatement2.execute();
+                    table.setIsVersioned(true);
                     log.info("Enabled system-versioning for table with name {}", table.getInternalName());
                 }
                 table.setConstraints(Constraints.builder()
