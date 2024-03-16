@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
 @Log4j2
@@ -489,10 +490,12 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
         /* mock */
         when(databaseRepository.findById(databaseId))
                 .thenReturn(Optional.of(database));
-        when(storeService.findOne(databaseId, queryId, principal))
-                .thenReturn(QUERY_1);
-        when(queryService.findOne(databaseId, queryId, principal))
-                .thenReturn(resource);
+        doReturn(QUERY_1)
+                .when(storeService)
+                .findOne(databaseId, queryId, principal);
+        doReturn(resource)
+                .when(queryService)
+                .findOne(databaseId, queryId, principal);
 
         /* test */
         final ResponseEntity<?> response = queryEndpoint.export(databaseId, queryId, accept, principal);

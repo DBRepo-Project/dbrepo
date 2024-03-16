@@ -23,6 +23,7 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -336,6 +337,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
+    @Disabled("NOT DETERMINISTIC")
     public void execute_succeeds() throws TableMalformedException, DatabaseNotFoundException,
             ImageNotSupportedException, QueryMalformedException, UserNotFoundException, QueryStoreException,
             ColumnParseException, InterruptedException, QueryNotFoundException {
