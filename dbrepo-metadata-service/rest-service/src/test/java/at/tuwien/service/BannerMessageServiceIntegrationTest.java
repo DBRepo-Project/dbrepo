@@ -45,6 +45,8 @@ public class BannerMessageServiceIntegrationTest extends BaseUnitTest {
 
     @BeforeEach
     public void beforeEach() {
+        genesis();
+        /* metadata database */
         bannerMessageRepository.save(BANNER_MESSAGE_1);
         bannerMessageRepository.save(BANNER_MESSAGE_2);
     }

@@ -20,7 +20,7 @@ services:
       network: host
     volumes:
       - metadata-db-data:/bitnami/mariadb
-      - ./dbrepo-metadata-db/setup-schema_local.sql:/docker-entrypoint-initdb.d/setup-schema_local.sql
+      - ./dbrepo-metadata-db/2_setup-data.sql:/docker-entrypoint-initdb.d/2_setup-data.sql
     ports:
       - "3306:3306"
     environment:
@@ -300,14 +300,19 @@ services:
     image: dbrepo-ui:latest
     build:
       context: ./dbrepo-ui
+      args:
+        TAG: ${TAG:-latest}
       network: host
-    volumes:
-      - ./dbrepo-ui/dbrepo.config.json:/app/dbrepo.config.json
     depends_on:
       dbrepo-search-service:
         condition: service_started
       dbrepo-storage-service:
         condition: service_healthy
+    healthcheck:
+      test: wget -qO- localhost:3000 | grep "Database Repository" || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 12
     logging:
       driver: json-file
 

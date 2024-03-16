@@ -2,65 +2,81 @@
   <div v-if="database">
     <v-toolbar flat>
       <v-toolbar-title>
-        <span v-if="$vuetify.breakpoint.lgAndUp" v-text="database.name" />
+        <span v-if="$vuetify.display.lgAndUp" v-text="database.name" />
         <v-tooltip bottom>
-          <template v-slot:activator="{ on, attrs }">
+          <template v-slot:activator="{ props }">
             <v-icon
-              v-if="!database.is_public"
-              class="mb-1"
+              class="ml-2"
+              size="small"
               right
-              v-bind="attrs"
-              v-on="on">
-              mdi-lock-outline
-            </v-icon>
-            <v-icon
-              v-if="database.is_public"
-              class="mb-1"
-              color="success"
-              right
-              v-bind="attrs"
-              v-on="on">
-              mdi-lock-open-outline
+              :color="database.is_public ? 'success' : null"
+              v-bind="props">
+              {{ database.is_public ? 'mdi-lock-open-outline' : 'mdi-lock-outline' }}
             </v-icon>
           </template>
-          <span>{{ $t('databases.tooltip.' + (database.is_public ? 'public' : 'private'), { name: 'vue-i18n' }) }}</span>
+          <span>{{ $t('toolbars.database.' + (database.is_public ? 'public' : 'private')) }}</span>
         </v-tooltip>
       </v-toolbar-title>
       <v-spacer />
-      <v-toolbar-title>
-        <v-btn v-if="canImportCsv" class="mb-1" :to="`/database/${$route.params.database_id}/table/import`">
-          <v-icon left>mdi-cloud-upload</v-icon> <span v-if="$vuetify.breakpoint.xlOnly">Import&nbsp;</span> csv
-        </v-btn>
-        <v-btn v-if="canCreateSubset" color="secondary" class="mb-1 white--text" :to="`/database/${$route.params.database_id}/query/create`">
-          <v-icon v-if="$vuetify.breakpoint.lgAndUp" left>mdi-wrench</v-icon> <span v-if="$vuetify.breakpoint.xlOnly">Create&nbsp;</span> Subset
-        </v-btn>
-        <v-btn v-if="canCreateView" color="secondary" class="mb-1 white--text" :to="`/database/${$route.params.database_id}/view/create`">
-          <v-icon v-if="$vuetify.breakpoint.lgAndUp" left>mdi-view-carousel-outline</v-icon> <span v-if="$vuetify.breakpoint.xlOnly">Create&nbsp;</span> View
-        </v-btn>
-        <v-btn v-if="canCreateTable" color="secondary" class="mb-1" :to="`/database/${$route.params.database_id}/table/create`">
-          <v-icon v-if="$vuetify.breakpoint.lgAndUp" left>mdi-table-large-plus</v-icon> <span v-if="$vuetify.breakpoint.xlOnly">Create&nbsp;</span> Table
-        </v-btn>
-        <v-btn v-if="canCreateIdentifier" color="primary" class="mb-1" :to="`/database/${$route.params.database_id}/persist`">
-          <v-icon v-if="$vuetify.breakpoint.lgAndUp" left>mdi-identifier</v-icon> <span v-if="$vuetify.breakpoint.xlOnly">Get&nbsp;</span> PID
-        </v-btn>
-      </v-toolbar-title>
+      <v-btn
+        v-if="canImportCsv"
+        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-cloud-upload' : null"
+        color="tertiary"
+        variant="flat"
+        :text="$t('toolbars.database.import-csv.permanent') + ($vuetify.display.xlAndUp ? ' ' + $t('toolbars.database.import-csv.xl') : '')"
+        :to="`/database/${$route.params.database_id}/table/import`" />
+      <v-btn
+        v-if="canCreateSubset"
+        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-wrench' : null"
+        color="secondary"
+        variant="flat"
+        :text="($vuetify.display.xlAndUp ? $t('toolbars.database.create-subset.xl') + ' ' : '') + $t('toolbars.database.create-subset.permanent')"
+        class="ml-2 white--text"
+        :to="`/database/${$route.params.database_id}/subset/create`" />
+      <v-btn
+        v-if="canCreateView"
+        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-view-carousel-outline' : null"
+        color="secondary"
+        variant="flat"
+        :text="($vuetify.display.xlAndUp ? $t('toolbars.database.create-view.xl') + ' ' : '') + $t('toolbars.database.create-view.permanent')"
+        class="ml-2 white--text"
+        :to="`/database/${$route.params.database_id}/view/create`" />
+      <v-btn
+        v-if="canCreateTable"
+        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-table-large-plus' : null"
+        color="secondary"
+        variant="flat"
+        :text="($vuetify.display.xlAndUp ? $t('toolbars.database.create-table.xl') + ' ' : '') + $t('toolbars.database.create-table.permanent')"
+        class="ml-2"
+        :to="`/database/${$route.params.database_id}/table/create`" />
+      <v-btn
+        v-if="canCreateIdentifier"
+        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-identifier' : null"
+        color="primary"
+        variant="flat"
+        :text="($vuetify.display.xlAndUp ? $t('toolbars.database.create-pid.xl') + ' ' : '') + $t('toolbars.database.create-pid.permanent')"
+        class="ml-2"
+        :to="`/database/${$route.params.database_id}/persist`" />
       <template v-slot:extension>
-        <v-tabs v-model="tab" color="primary">
-          <v-tab :to="`/database/${$route.params.database_id}/info`">
-            {{ $t('databases.toolbar.info', { name: 'vue-i18n' }) }}
-          </v-tab>
-          <v-tab :to="`/database/${$route.params.database_id}/table`">
-            {{ $t('databases.toolbar.tables', { name: 'vue-i18n' }) }}
-          </v-tab>
-          <v-tab :to="`/database/${$route.params.database_id}/query`">
-            {{ $t('databases.toolbar.subsets', { name: 'vue-i18n' }) }}
-          </v-tab>
-          <v-tab :to="`/database/${$route.params.database_id}/view`">
-            {{ $t('databases.toolbar.views', { name: 'vue-i18n' }) }}
-          </v-tab>
-          <v-tab v-if="isOwner" :to="`/database/${$route.params.database_id}/settings`">
-            {{ $t('databases.toolbar.settings', { name: 'vue-i18n' }) }}
-          </v-tab>
+        <v-tabs
+          v-model="tab"
+          color="primary">
+          <v-tab
+            :text="$t('toolbars.database.info.tab')"
+            :to="`/database/${$route.params.database_id}/info`" />
+          <v-tab
+            :text="$t('toolbars.database.tables.tab')"
+            :to="`/database/${$route.params.database_id}/table`" />
+          <v-tab
+            :text="$t('toolbars.database.subsets.tab')"
+            :to="`/database/${$route.params.database_id}/subset`" />
+          <v-tab
+            :text="$t('toolbars.database.views.tab')"
+            :to="`/database/${$route.params.database_id}/view`" />
+          <v-tab
+            v-if="isOwner"
+            :text="$t('toolbars.database.settings.tab')"
+            :to="`/database/${$route.params.database_id}/settings`" />
         </v-tabs>
       </template>
     </v-toolbar>
@@ -68,25 +84,30 @@
 </template>
 
 <script>
+import { useCacheStore } from '@/stores/cache'
+import { useUserStore } from '@/stores/user'
+
 export default {
   data () {
     return {
       tab: null,
-      error: false
+      error: false,
+      cacheStore: useCacheStore(),
+      userStore: useUserStore()
     }
   },
   computed: {
     database () {
-      return this.$store.state.database
+      return this.cacheStore.getDatabase
     },
     access () {
-      return this.$store.state.access
+      return this.userStore.getAccess
     },
     user () {
-      return this.$store.state.user
+      return this.userStore.getUser
     },
     roles () {
-      return this.$store.state.roles
+      return this.userStore.getRoles
     },
     canCreateIdentifier () {
       if (!this.roles) {
@@ -97,26 +118,11 @@ export default {
       }
       return this.roles.includes('create-identifier') && this.isOwner
     },
-    canDeleteIdentifier () {
-      if (!this.user) {
-        return false
-      }
-      return this.roles.includes('delete-identifier')
-    },
-    hasIdentifier () {
-      return this.database && 'identifiers' in this.database && this.database.identifiers.length > 0
-    },
     hasWriteAccess () {
       if (!this.access) {
         return false
       }
       return this.access.type === 'write_all' || this.access.type === 'write_own'
-    },
-    hasReadAccess () {
-      if (!this.access) {
-        return false
-      }
-      return this.access.type === 'read' || this.access.type === 'write_all' || this.access.type === 'write_own'
     },
     canImportCsv () {
       if (!this.user || !this.hasWriteAccess) {

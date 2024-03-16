@@ -138,7 +138,7 @@ public class UserServiceUnitTest extends BaseUnitTest {
         final User response = userService.toggleTheme(USER_1_ID, USER_1_THEME_SET_DTO);
         assertEquals(USER_1_ID, response.getId());
         assertEquals(USER_1_USERNAME, response.getUsername());
-        assertEquals(USER_1_THEME_DARK, response.getThemeDark());
+        assertEquals(USER_1_THEME, response.getTheme());
     }
 
     @Test

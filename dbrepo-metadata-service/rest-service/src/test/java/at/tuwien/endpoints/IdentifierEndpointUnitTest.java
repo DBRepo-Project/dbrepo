@@ -71,7 +71,7 @@ public class IdentifierEndpointUnitTest extends BaseUnitTest {
 
     @BeforeEach
     public void beforeEach() {
-        IDENTIFIER_1.setDatabase(DATABASE_1);
+        genesis();
     }
 
     @Test

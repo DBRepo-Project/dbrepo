@@ -31,6 +31,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,7 +47,9 @@ import java.util.stream.Collectors;
 @Log4j2
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping("/api/database")
+@RequestMapping(path = "/api/database",
+        consumes = MediaType.ALL_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE)
 public class DatabaseEndpoint {
 
     private final UserService userService;
@@ -207,7 +210,7 @@ public class DatabaseEndpoint {
     @Transactional
     @PreAuthorize("hasAuthority('modify-database-visibility')")
     @Observed(name = "dbr_database_visibility")
-    @Operation(summary = "Update database", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "Update database visibility", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Visibility modified successfully",
@@ -241,11 +244,11 @@ public class DatabaseEndpoint {
                 .body(dto);
     }
 
-    @PutMapping("/{id}/transfer")
+    @PutMapping("/{id}/owner")
     @Transactional
     @PreAuthorize("hasAuthority('modify-database-owner')")
     @Observed(name = "dbr_database_transfer")
-    @Operation(summary = "Transfer database", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "Update database owner", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Transfer of ownership was successful",
@@ -267,7 +270,7 @@ public class DatabaseEndpoint {
                                                 @Valid @RequestBody DatabaseTransferDto transferDto,
                                                 @NotNull Principal principal) throws DatabaseNotFoundException,
             UserNotFoundException, NotAllowedException {
-        log.debug("endpoint transfer database, id={}, transferDto={}, {}", id, transferDto, PrincipalUtil.formatForDebug(principal));
+        log.debug("endpoint transfer database, id={}, transferDto.id={}, {}", id, transferDto.getId(), PrincipalUtil.formatForDebug(principal));
         final Database database = databaseService.findById(id);
         final User user = userService.findByUsername(principal.getName());
         if (!database.getOwnedBy().equals(user.getId())) {
@@ -284,7 +287,7 @@ public class DatabaseEndpoint {
     @Transactional
     @PreAuthorize("hasAuthority('modify-database-image')")
     @Observed(name = "dbr_database_image")
-    @Operation(summary = "Modify database image", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @Operation(summary = "Update database image", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
                     description = "Modify of image was successful",

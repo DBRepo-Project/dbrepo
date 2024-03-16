@@ -211,11 +211,11 @@ public abstract class BaseTest {
             .collect(Collectors.toList());
 
     public final static UserThemeSetDto USER_THEME_DARK_DTO = UserThemeSetDto.builder()
-            .themeDark(true)
+            .theme("dark")
             .build();
 
     public final static UserThemeSetDto USER_THEME_LIGHT_DTO = UserThemeSetDto.builder()
-            .themeDark(false)
+            .theme("light")
             .build();
 
     public final static UUID REALM_DBREPO_ID = UUID.fromString("6264bf7b-d1d3-4562-9c07-ce4364a8f9d3");
@@ -257,7 +257,7 @@ public abstract class BaseTest {
     public final static Boolean USER_1_TOTP = false;
     public final static Long USER_1_NOT_BEFORE = 0L;
     public final static Boolean USER_1_ENABLED = true;
-    public final static Boolean USER_1_THEME_DARK = false;
+    public final static String USER_1_THEME = "light";
     public final static Instant USER_1_CREATED = Instant.ofEpochSecond(1677399441L) /* 2023-02-26 08:17:21 (UTC) */;
     public final static Instant USER_1_LAST_MODIFIED = USER_1_CREATED;
     public final static UUID USER_1_REALM_ID = REALM_DBREPO_ID;
@@ -274,7 +274,7 @@ public abstract class BaseTest {
             .build();
 
     public final static UserAttributesDto USER_1_ATTRIBUTES_DTO = UserAttributesDto.builder()
-            .themeDark(USER_1_THEME_DARK)
+            .theme(USER_1_THEME)
             .orcid(USER_1_ORCID_UNCOMPRESSED)
             .affiliation(USER_1_AFFILIATION)
             .mariadbPassword(USER_1_DATABASE_PASSWORD)
@@ -301,7 +301,7 @@ public abstract class BaseTest {
             .lastname(USER_1_LASTNAME)
             .affiliation(USER_1_AFFILIATION)
             .orcid(USER_1_ORCID)
-            .themeDark(USER_1_THEME_DARK)
+            .theme(USER_1_THEME)
             .mariadbPassword(USER_1_DATABASE_PASSWORD)
             .build();
 
@@ -322,7 +322,7 @@ public abstract class BaseTest {
             .build();
 
     public final static UserThemeSetDto USER_1_THEME_SET_DTO = UserThemeSetDto.builder()
-            .themeDark(USER_1_THEME_DARK)
+            .theme(USER_1_THEME)
             .build();
 
     public final static UserPasswordDto USER_1_PASSWORD_DTO = UserPasswordDto.builder()
@@ -387,13 +387,13 @@ public abstract class BaseTest {
     public final static Boolean USER_2_TOTP = false;
     public final static Long USER_2_NOT_BEFORE = 0L;
     public final static Boolean USER_2_ENABLED = true;
-    public final static Boolean USER_2_THEME_DARK = false;
+    public final static String USER_2_THEME = "light";
     public final static Instant USER_2_CREATED = Instant.ofEpochSecond(1677399528L) /* 2023-02-26 08:18:48 (UTC) */;
     public final static Instant USER_2_LAST_MODIFIED = USER_1_CREATED;
     public final static UUID USER_2_REALM_ID = REALM_DBREPO_ID;
 
     public final static UserAttributesDto USER_2_ATTRIBUTES_DTO = UserAttributesDto.builder()
-            .themeDark(USER_2_THEME_DARK)
+            .theme(USER_2_THEME)
             .orcid(USER_2_ORCID_URL)
             .affiliation(USER_2_AFFILIATION)
             .mariadbPassword(USER_2_DATABASE_PASSWORD)
@@ -407,7 +407,7 @@ public abstract class BaseTest {
             .lastname(USER_2_LASTNAME)
             .affiliation(USER_2_AFFILIATION)
             .orcid(USER_2_ORCID_URL)
-            .themeDark(USER_2_THEME_DARK)
+            .theme(USER_2_THEME)
             .mariadbPassword(USER_2_DATABASE_PASSWORD)
             .build();
 
@@ -473,12 +473,12 @@ public abstract class BaseTest {
     public final static Boolean USER_3_TOTP = false;
     public final static Long USER_3_NOT_BEFORE = 0L;
     public final static Boolean USER_3_ENABLED = true;
-    public final static Boolean USER_3_THEME_DARK = false;
+    public final static String USER_3_THEME = "light";
     public final static Instant USER_3_CREATED = Instant.ofEpochSecond(1677399559L) /* 2023-02-26 08:19:19 (UTC) */;
     public final static UUID USER_3_REALM_ID = REALM_DBREPO_ID;
 
     public final static UserAttributesDto USER_3_ATTRIBUTES_DTO = UserAttributesDto.builder()
-            .themeDark(USER_3_THEME_DARK)
+            .theme(USER_3_THEME)
             .orcid(USER_3_ORCID_UNCOMPRESSED)
             .affiliation(USER_3_AFFILIATION)
             .mariadbPassword(USER_3_DATABASE_PASSWORD)
@@ -492,7 +492,7 @@ public abstract class BaseTest {
             .lastname(USER_3_LASTNAME)
             .affiliation(USER_3_AFFILIATION)
             .orcid(USER_3_ORCID_URL)
-            .themeDark(USER_3_THEME_DARK)
+            .theme(USER_3_THEME)
             .mariadbPassword(USER_3_DATABASE_PASSWORD)
             .build();
 
@@ -549,12 +549,12 @@ public abstract class BaseTest {
     public final static String USER_4_EMAIL = "junit4@ossdip.at";
     public final static Boolean USER_4_VERIFIED = true;
     public final static Boolean USER_4_ENABLED = true;
-    public final static Boolean USER_4_THEME_DARK = false;
+    public final static String USER_4_THEME = "light";
     public final static Instant USER_4_CREATED = Instant.ofEpochSecond(1677399592L) /* 2023-02-26 08:19:52 (UTC) */;
     public final static UUID USER_4_REALM_ID = REALM_DBREPO_ID;
 
     public final static UserAttributesDto USER_4_ATTRIBUTES_DTO = UserAttributesDto.builder()
-            .themeDark(USER_4_THEME_DARK)
+            .theme(USER_4_THEME)
             .orcid(USER_4_ORCID_URL)
             .affiliation(USER_4_AFFILIATION)
             .mariadbPassword(USER_4_DATABASE_PASSWORD)
@@ -568,7 +568,7 @@ public abstract class BaseTest {
             .lastname(USER_4_LASTNAME)
             .affiliation(USER_4_AFFILIATION)
             .orcid(USER_4_ORCID_URL)
-            .themeDark(USER_4_THEME_DARK)
+            .theme(USER_4_THEME)
             .mariadbPassword(USER_4_DATABASE_PASSWORD)
             .build();
 
@@ -610,7 +610,7 @@ public abstract class BaseTest {
     public final static String USER_5_EMAIL = "system@ossdip.at";
     public final static Boolean USER_5_VERIFIED = true;
     public final static Boolean USER_5_ENABLED = true;
-    public final static Boolean USER_5_THEME_DARK = false;
+    public final static String USER_5_THEME = "dark";
     public final static Instant USER_5_CREATED = Instant.ofEpochSecond(1677399592L) /* 2023-02-26 08:19:52 (UTC) */;
     public final static UUID USER_5_REALM_ID = REALM_DBREPO_ID;
 
@@ -639,7 +639,7 @@ public abstract class BaseTest {
             .firstname(USER_5_FIRSTNAME)
             .lastname(USER_5_LASTNAME)
             .affiliation(USER_5_AFFILIATION)
-            .themeDark(USER_5_THEME_DARK)
+            .theme(USER_5_THEME)
             .mariadbPassword(USER_5_DATABASE_PASSWORD)
             .build();
 
@@ -1342,6 +1342,12 @@ public abstract class BaseTest {
     public final static Instant TABLE_1_CREATED = Instant.ofEpochSecond(1677399975L) /* 2023-02-26 08:26:15 (UTC) */;
     public final static Instant TABLE_1_LAST_MODIFIED = Instant.ofEpochSecond(1677399975L) /* 2023-02-26 08:26:15 (UTC) */;
 
+    public final static Constraints TABLE_1_CONSTRAINTS = Constraints.builder()
+            .foreignKeys(new LinkedList<>())
+            .uniques(new LinkedList<>())
+            .checks(new LinkedHashSet<>())
+            .build();
+
     public final static Table TABLE_1 = Table.builder()
             .id(TABLE_1_ID)
             .tdbid(DATABASE_1_ID)
@@ -1356,7 +1362,7 @@ public abstract class BaseTest {
             .routingKey(TABLE_1_ROUTING_KEY)
             .identifiers(List.of())
             .columns(List.of() /* TABLE_1_COLUMNS */)
-            .constraints(null /* TABLE_1_CONSTRAINTS */)
+            .constraints(TABLE_1_CONSTRAINTS)
             .createdBy(USER_1_ID)
             .creator(USER_1)
             .ownedBy(USER_1_ID)
@@ -1402,6 +1408,12 @@ public abstract class BaseTest {
     public final static Instant TABLE_2_CREATED = Instant.ofEpochSecond(1677400007L) /* 2023-02-26 08:26:47 (UTC) */;
     public final static Instant TABLE_2_LAST_MODIFIED = Instant.ofEpochSecond(1677400007L) /* 2023-02-26 08:26:47 (UTC) */;
 
+    public final static Constraints TABLE_2_CONSTRAINTS = Constraints.builder()
+            .uniques(new LinkedList<>())
+            .foreignKeys(new LinkedList<>())
+            .checks(new LinkedHashSet<>())
+            .build();
+
     public final static Table TABLE_2 = Table.builder()
             .id(TABLE_2_ID)
             .tdbid(DATABASE_1_ID)
@@ -1416,7 +1428,7 @@ public abstract class BaseTest {
             .queueName(TABLE_2_QUEUE_NAME)
             .routingKey(TABLE_2_ROUTING_KEY)
             .columns(List.of() /* TABLE_2_COLUMNS */)
-            .constraints(null /* TABLE_2_CONSTRAINTS */)
+            .constraints(TABLE_2_CONSTRAINTS)
             .createdBy(USER_2_ID)
             .ownedBy(USER_2_ID)
             .owner(USER_2)
@@ -1459,6 +1471,12 @@ public abstract class BaseTest {
     public final static Instant TABLE_3_CREATED = Instant.ofEpochSecond(1677400031L) /* 2023-02-26 08:27:11 (UTC) */;
     public final static Instant TABLE_3_LAST_MODIFIED = Instant.ofEpochSecond(1677400031L) /* 2023-02-26 08:27:11 (UTC) */;
 
+    public final static Constraints TABLE_3_CONSTRAINTS = Constraints.builder()
+            .uniques(new LinkedList<>())
+            .foreignKeys(new LinkedList<>())
+            .checks(new LinkedHashSet<>())
+            .build();
+
     public final static Table TABLE_3 = Table.builder()
             .id(TABLE_3_ID)
             .tdbid(DATABASE_1_ID)
@@ -1473,7 +1491,7 @@ public abstract class BaseTest {
             .queueName(TABLE_3_QUEUE_NAME)
             .routingKey(TABLE_3_ROUTING_KEY)
             .columns(List.of() /* TABLE_3_COLUMNS */)
-            .constraints(null /* TABLE_3_CONSTRAINTS */)
+            .constraints(TABLE_3_CONSTRAINTS)
             .createdBy(USER_3_ID)
             .ownedBy(USER_3_ID)
             .owner(USER_3)
@@ -1690,6 +1708,12 @@ public abstract class BaseTest {
     public final static Instant TABLE_4_CREATED = Instant.ofEpochSecond(1677400175L) /* 2023-02-26 08:29:35 (UTC) */;
     public final static Instant TABLE_4_LAST_MODIFIED = Instant.ofEpochSecond(1677400175L) /* 2023-02-26 08:29:35 (UTC) */;
 
+    public final static Constraints TABLE_4_CONSTRAINTS = Constraints.builder()
+            .uniques(List.of())
+            .foreignKeys(List.of())
+            .checks(Set.of())
+            .build();
+
     public final static Table TABLE_4 = Table.builder()
             .id(TABLE_4_ID)
             .tdbid(DATABASE_1_ID)
@@ -1706,6 +1730,7 @@ public abstract class BaseTest {
             .ownedBy(USER_1_ID)
             .owner(USER_1)
             .created(TABLE_4_CREATED)
+            .constraints(TABLE_4_CONSTRAINTS)
             .lastModified(TABLE_4_LAST_MODIFIED)
             .build();
 
@@ -3099,7 +3124,7 @@ public abstract class BaseTest {
             .name(TABLE_1_FOREIGN_KEY_1_NAME)
             .referencedTable(TABLE_2)
             .table(TABLE_1)
-            .references(List.of()) /* TABLE_1_FOREIGN_KEY_REFERENCE */
+            .references(new LinkedList<>()) /* TABLE_1_FOREIGN_KEY_REFERENCE */
             .build();
 
     public final static Long TABLE_1_FOREIGN_KEY_REFERENCE_ID = 1L;
@@ -3111,25 +3136,18 @@ public abstract class BaseTest {
             .referencedColumn(TABLE_1_COLUMNS.get(0))
             .build();
 
-    public final static Constraints TABLE_1_CONSTRAINTS = Constraints.builder()
-            .foreignKeys(List.of(TABLE_1_FOREIGN_KEY_1))
-            .uniques(List.of(Unique.builder()
-                    .name("UK_1")
-                    .columns(List.of(
-                            TABLE_1_COLUMNS.get(0),
-                            TABLE_1_COLUMNS.get(1)
-                    ))
-                    .table(TABLE_1)
-                    .build()))
-            .checks(Set.of("`mintemp` > 0"))
+    public final static Unique TABLE_1_UNIQUE_CONSTRAINT_1 = Unique.builder()
+            .name("UK_1")
+            .columns(new LinkedList<>())
+            .table(TABLE_1)
             .build();
 
-    public final static Constraints TABLE_2_CONSTRAINTS = Constraints.builder()
-            .uniques(List.of(Unique.builder()
-                    .name("UK_1")
-                    .columns(List.of(TABLE_2_COLUMNS.get(0)))
-                    .table(TABLE_2)
-                    .build()))
+    public final static String TABLE_1_CHECK_1 = "`mintemp` > 0";
+
+    public final static Unique TABLE_2_UNIQUE_CONSTRAINT_1 = Unique.builder()
+            .name("UK_1")
+            .columns(List.of(TABLE_2_COLUMNS.get(0)))
+            .table(TABLE_2)
             .build();
 
     public final static List<TableColumn> TABLE_3_COLUMNS = List.of(TableColumn.builder()
@@ -4111,12 +4129,10 @@ public abstract class BaseTest {
                     .sets(List.of())
                     .build());
 
-    public final static Constraints TABLE_3_CONSTRAINTS = Constraints.builder()
-            .uniques(List.of(Unique.builder()
-                    .name("UK_1")
-                    .columns(List.of(TABLE_3_COLUMNS.get(0)))
-                    .table(TABLE_3)
-                    .build()))
+    public final static Unique TABLE_3_UNIQUE_CONSTRAINT_1 = Unique.builder()
+            .name("UK_1")
+            .columns(List.of(TABLE_3_COLUMNS.get(0)))
+            .table(TABLE_3)
             .build();
 
     public final static ConstraintsDto TABLE_3_CONSTRAINTS_DTO = ConstraintsDto.builder()
@@ -5308,7 +5324,7 @@ public abstract class BaseTest {
     public final static String VIEW_5_NAME = "Mock View";
     public final static String VIEW_5_INTERNAL_NAME = "mock_view";
     public final static Long VIEW_5_CONTAINER_ID = CONTAINER_2_ID;
-    public final static Long VIEW_5_DATABASE_ID = DATABASE_2_ID;
+    public final static Long VIEW_5_DATABASE_ID = DATABASE_3_ID;
     public final static Boolean VIEW_5_PUBLIC = true;
     public final static String VIEW_5_QUERY = "SELECT `location`, `lat`, `lng` FROM `weather_location` WHERE `location` = 'Albury'";
     public final static String VIEW_5_QUERY_HASH = "120f32478aaff874c25ab32eceb9f00b64cc9d422831046f2f5d43953aca01e7";
@@ -5325,6 +5341,26 @@ public abstract class BaseTest {
             .createdBy(USER_1_ID)
             .columns(null)
             .build();
+
+    public final static List<ViewColumn> VIEW_5_COLUMNS = List.of(
+            ViewColumn.builder()
+                    .id(29L)
+                    .ordinalPosition(0)
+                    .column(TABLE_2_COLUMNS.get(0))
+                    .view(VIEW_5)
+                    .build(),
+            ViewColumn.builder()
+                    .id(30L)
+                    .ordinalPosition(1)
+                    .column(TABLE_2_COLUMNS.get(1))
+                    .view(VIEW_5)
+                    .build(),
+            ViewColumn.builder()
+                    .id(31L)
+                    .ordinalPosition(2)
+                    .column(TABLE_2_COLUMNS.get(2))
+                    .view(VIEW_5)
+                    .build());
 
     public final static Long QUERY_1_RESULT_ID = 1L;
     public final static List<Map<String, Object>> QUERY_1_RESULT_RESULT = List.of(

@@ -51,9 +51,7 @@ public class PersistenceEndpointUnitTest extends BaseUnitTest {
 
     @BeforeEach
     public void beforeEach() {
-        IDENTIFIER_1.setDatabase(DATABASE_1);
-        IDENTIFIER_5.setDatabase(DATABASE_2);
-        IDENTIFIER_6.setDatabase(DATABASE_3);
+        genesis();
     }
 
     @Test

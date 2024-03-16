@@ -10,8 +10,7 @@ author: Martin Weise
 
     Image: [`dbrepo/ui:__APPVERSION__`](https://hub.docker.com/r/dbrepo/ui)
 
-    * Ports: 3000/tcp, 9100/tcp
-    * Prometheus: `http://<hostname>:9100/metrics`
+    * Ports: 3000/tcp
     * UI: `http://<hostname>/`
 
 ## Overview
@@ -28,11 +27,10 @@ users, databases and how to import your data.
 
 ### Settings
 
-The User Interface can be configured extensively with 
-the [`dbrepo.config.json`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/master/dbrepo-ui/dbrepo.config.json)
-configuration file, mounted directly into the container with e.g. docker compose. As a small example, you can configure
-the logo :material-numeric-1-circle-outline: in Figure 2. Make sure you mount the logo as image as well, in this example
-we want to mount a custom logo `my_logo.png` into the container and specify the name.
+The User Interface is configured in the `runtimeConfig` section of the `nuxt.config.ts` file during build time. For the
+runtime, you need to override those values through environment variables or by mounting a `.env` file. As a small
+example, you can configure the logo :material-numeric-1-circle-outline: in Figure 2. Make sure you mount the logo as
+image as well, in this example we want to mount a custom logo `my_logo.png` into the container and specify the name.
 
 <figure markdown>
 ![Architecture of the UI microservice](images/screenshots/ui-config-step-1.png){ .img-border }
@@ -40,22 +38,12 @@ we want to mount a custom logo `my_logo.png` into the container and specify the 
 </figure>
 
 Text values like the version :material-numeric-2-circle-outline: and title :material-numeric-3-circle-outline: can be
-configured as well via the `dbrepo.config.json` values file. The important links section 
-:material-numeric-4-circle-outline: can be modified or removed entirely by setting `page.information.links` to `[]`.
+configured as well via the Nuxt runtime configuration through single environment variables or `.env` files
 
-```json title="dbrepo.config.json"
-{
-    "title": "Database Repository",
-    "version": "__APPVERSION___DOCKER-COMPOSE",
-    "logo": {
-      "path": "/my_logo.png"
-    },
-    "page": {
-    "information": {
-      "links": []
-    },
-    ...
-}
+```yaml title=".env"
+NUXT_PUBLIC_TITLE="My overriden title"
+NUXT_PUBLIC_LOGO="/app/.output/public/my_logo.png"
+...
 ```
 
 To work, you need to mount the `my_logo.png` file into the `dbrepo-ui` container via the `docker-compose.yml` file (or
@@ -66,8 +54,7 @@ services:
   dbrepo-ui:
     image: docker.io/dbrepo/ui:__APPVERSION__
     volumes:
-      - ./my_logo.png:/app/static/my_logo.png
-      - ./dbrepo.conf.json:/app/dbrepo.conf.json
+      - ./my_logo.png:/app/.output/public/my_logo.png
   ...
 ```
 
@@ -80,6 +67,13 @@ User Interface on development.
 ![Architecture of the UI microservice](images/architecture-ui.svg)
 <figcaption>Figure 3: Architecture of the User Interface</figcaption>
 </figure>
+
+* Runtime: [Bun 1+](https://bun.sh/) (preferred), *alternatively* Node.js 18+
+* Builder: [Vite](https://vitejs.dev/)
+* Server: [Nuxt.js 3+](https://nuxt.com/)
+* Components: [Vue.js 3+](https://vuejs.org/)
+* Frontend: [Vuetify 3+](https://vuetifyjs.com/en/)
+* State: [Pinia](https://pinia.vuejs.org/)
 
 ### Example
 

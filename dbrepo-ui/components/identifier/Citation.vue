@@ -1,33 +1,27 @@
 <template>
   <div v-if="identifier">
-    <v-list-item-title class="mt-2">
-      Citation
-    </v-list-item-title>
-    <v-list-item-content>
-      <v-row no-gutters>
-        <v-col v-if="!loading" md="10">
-          <pre v-text="citation" />
-        </v-col>
-        <v-col
-          md="2"
-          class="hidden-md-and-down cite-style">
-          <v-select
-            v-model="style"
-            :items="styles"
-            item-text="style"
-            item-value="accept"
-            dense
-            outlined
-            single-line />
-        </v-col>
-      </v-row>
-    </v-list-item-content>
+    <v-row no-gutters>
+      <v-col v-if="!loading" md="10">
+        <pre v-text="citation" />
+      </v-col>
+      <v-col
+        v-if="!$vuetify.display.mdAndDown"
+        md="2"
+        class="cite-style">
+        <v-select
+          v-model="style"
+          :items="styles"
+          item-title="style"
+          item-value="accept"
+          dense
+          variant="outlined"
+          single-line />
+      </v-col>
+    </v-row>
   </div>
 </template>
 
 <script>
-import IdentifierService from '@/api/identifier.service'
-
 export default {
   props: {
     identifier: {
@@ -67,7 +61,8 @@ export default {
         return
       }
       this.loading = true
-      IdentifierService.findAccept(this.identifier.id, accept)
+      const identifierService = useIdentifierService()
+      identifierService.findOne(this.identifier.id, accept)
         .then((citation) => {
           this.citation = citation
         })

@@ -44,6 +44,8 @@ public class ImageServiceIntegrationTest extends BaseUnitTest {
 
     @BeforeEach
     public void beforeEach() {
+        genesis();
+        /* metadata database */
         imageRepository.save(IMAGE_1);
     }
 

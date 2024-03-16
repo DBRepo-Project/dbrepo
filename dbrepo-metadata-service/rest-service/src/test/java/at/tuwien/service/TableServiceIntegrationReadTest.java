@@ -64,11 +64,7 @@ public class TableServiceIntegrationReadTest extends BaseUnitTest {
 
     @BeforeEach
     public void beforeEach() throws SQLException {
-        TABLE_1.setColumns(TABLE_1_COLUMNS);
-        TABLE_2.setColumns(TABLE_2_COLUMNS);
-        TABLE_3.setColumns(TABLE_3_COLUMNS);
-        TABLE_4.setColumns(TABLE_4_COLUMNS);
-        DATABASE_1.setAccesses(List.of());
+        genesis();
         /* metadata database */
         imageRepository.save(IMAGE_1);
         licenseRepository.save(LICENSE_1);

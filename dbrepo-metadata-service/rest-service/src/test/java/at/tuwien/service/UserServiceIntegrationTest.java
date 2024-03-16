@@ -45,6 +45,8 @@ public class UserServiceIntegrationTest extends BaseUnitTest {
 
     @BeforeEach
     public void beforeEach() {
+        genesis();
+        /* metadata database */
         userRepository.save(USER_1);
     }
 
@@ -123,8 +125,7 @@ public class UserServiceIntegrationTest extends BaseUnitTest {
     }
 
     @Test
-    public void updatePassword_succeeds() throws KeycloakRemoteException, AccessDeniedException, UserNotFoundException,
-            UserAlreadyExistsException, UserEmailAlreadyExistsException {
+    public void updatePassword_succeeds() throws UserNotFoundException {
         final UserPasswordDto request = UserPasswordDto.builder()
                 .password(USER_3_PASSWORD)
                 .build();
@@ -155,24 +156,18 @@ public class UserServiceIntegrationTest extends BaseUnitTest {
     @Test
     @Transactional
     public void toggleTheme_succeeds() throws UserNotFoundException {
-        final UserThemeSetDto request = UserThemeSetDto.builder()
-                .themeDark(true)
-                .build();
 
         /* test */
-        final User response = userService.toggleTheme(USER_1_ID, request);
-        assertTrue(response.getThemeDark());
+        final User response = userService.toggleTheme(USER_1_ID, USER_THEME_DARK_DTO);
+        assertEquals(USER_THEME_DARK_DTO.getTheme(), response.getTheme());
     }
 
     @Test
     public void toggleTheme_fails() {
-        final UserThemeSetDto request = UserThemeSetDto.builder()
-                .themeDark(true)
-                .build();
 
         /* test */
         assertThrows(UserNotFoundException.class, () -> {
-            userService.toggleTheme(USER_2_ID, request);
+            userService.toggleTheme(USER_2_ID, USER_THEME_DARK_DTO);
         });
     }
 

@@ -72,8 +72,9 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void findAll_publicAnonymous_succeeds() throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
-            ContainerNotFoundException, DatabaseConnectionException, TableMalformedException, UserNotFoundException, NotAllowedException, AccessDeniedException {
+    public void findAll_publicAnonymous_succeeds() throws QueryStoreException, DatabaseNotFoundException,
+            ImageNotSupportedException, ContainerNotFoundException, DatabaseConnectionException,
+            TableMalformedException, UserNotFoundException, NotAllowedException, AccessDeniedException {
 
         /* test */
         findAll_generic(DATABASE_3_ID, DATABASE_3, null);
@@ -81,8 +82,9 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME)
-    public void findAll_noRole_succeeds() throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
-            ContainerNotFoundException, DatabaseConnectionException, TableMalformedException, UserNotFoundException, NotAllowedException, AccessDeniedException {
+    public void findAll_noRole_succeeds() throws QueryStoreException, DatabaseNotFoundException,
+            ImageNotSupportedException, ContainerNotFoundException, DatabaseConnectionException,
+            TableMalformedException, UserNotFoundException, NotAllowedException, AccessDeniedException {
 
         /* test */
         findAll_generic(DATABASE_1_ID, DATABASE_1, USER_1_PRINCIPAL);
@@ -90,8 +92,9 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"list-queries"})
-    public void findAll_hasRole_succeeds() throws QueryStoreException, DatabaseNotFoundException, ImageNotSupportedException,
-            ContainerNotFoundException, DatabaseConnectionException, TableMalformedException, UserNotFoundException, NotAllowedException, AccessDeniedException {
+    public void findAll_hasRole_succeeds() throws QueryStoreException, DatabaseNotFoundException,
+            ImageNotSupportedException, ContainerNotFoundException, DatabaseConnectionException,
+            TableMalformedException, UserNotFoundException, NotAllowedException, AccessDeniedException {
 
         /* test */
         findAll_generic(DATABASE_1_ID, DATABASE_1, USER_1_PRINCIPAL);
@@ -229,15 +232,15 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = "persist-query")
     public void persist_ownRead_succeeds() throws UserNotFoundException, QueryStoreException,
-            NotAllowedException, DatabaseConnectionException, QueryNotFoundException, DatabaseNotFoundException,
-            ImageNotSupportedException, AccessDeniedException, IdentifierAlreadyPublishedException {
+            NotAllowedException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
+            AccessDeniedException, IdentifierAlreadyPublishedException {
 
         /* mock */
         when(userRepository.findByUsername(USER_1_USERNAME))
                 .thenReturn(Optional.of(USER_1));
 
         /* test */
-        final QueryDto response = persist_generic(DATABASE_1_ID, DATABASE_1, QUERY_1_ID, QUERY_1, USER_1_ID, USER_1_PRINCIPAL, DATABASE_1_USER_1_READ_ACCESS);
+        final QueryDto response = persist_generic(USER_1_ID, USER_1_PRINCIPAL, DATABASE_1_USER_1_READ_ACCESS);
         assertEquals(QUERY_1_ID, response.getId());
         assertEquals(QUERY_1_STATEMENT, response.getQuery());
     }
@@ -245,15 +248,15 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = "persist-query")
     public void persist_ownWriteOwn_succeeds() throws UserNotFoundException, QueryStoreException,
-            NotAllowedException, DatabaseConnectionException, QueryNotFoundException, DatabaseNotFoundException,
-            ImageNotSupportedException, AccessDeniedException, IdentifierAlreadyPublishedException {
+            NotAllowedException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
+            AccessDeniedException, IdentifierAlreadyPublishedException {
 
         /* mock */
         when(userRepository.findByUsername(USER_1_USERNAME))
                 .thenReturn(Optional.of(USER_1));
 
         /* test */
-        final QueryDto response = persist_generic(DATABASE_1_ID, DATABASE_1, QUERY_1_ID, QUERY_1, USER_1_ID, USER_1_PRINCIPAL, DATABASE_1_USER_1_WRITE_OWN_ACCESS);
+        final QueryDto response = persist_generic(USER_1_ID, USER_1_PRINCIPAL, DATABASE_1_USER_1_WRITE_OWN_ACCESS);
         assertEquals(QUERY_1_ID, response.getId());
         assertEquals(QUERY_1_STATEMENT, response.getQuery());
     }
@@ -269,7 +272,7 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(Optional.of(USER_1));
 
         /* test */
-        final QueryDto response = persist_generic(DATABASE_1_ID, DATABASE_1, QUERY_1_ID, QUERY_1, USER_1_ID, USER_1_PRINCIPAL, DATABASE_1_USER_1_WRITE_ALL_ACCESS);
+        final QueryDto response = persist_generic(USER_1_ID, USER_1_PRINCIPAL, DATABASE_1_USER_1_WRITE_ALL_ACCESS);
         assertEquals(QUERY_1_ID, response.getId());
         assertEquals(QUERY_1_STATEMENT, response.getQuery());
     }
@@ -277,15 +280,15 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
     @Test
     @WithMockUser(username = USER_2_USERNAME, authorities = "persist-query")
     public void persist_foreignWriteAll_succeeds() throws UserNotFoundException, QueryStoreException,
-            NotAllowedException, DatabaseConnectionException, QueryNotFoundException, DatabaseNotFoundException,
-            ImageNotSupportedException, AccessDeniedException, IdentifierAlreadyPublishedException {
+            NotAllowedException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
+            AccessDeniedException, IdentifierAlreadyPublishedException {
 
         /* mock */
         when(userRepository.findByUsername(USER_1_USERNAME))
                 .thenReturn(Optional.of(USER_1));
 
         /* test */
-        persist_generic(DATABASE_1_ID, DATABASE_1, QUERY_1_ID, QUERY_1, USER_2_ID, USER_2_PRINCIPAL, DATABASE_1_USER_2_WRITE_ALL_ACCESS);
+        persist_generic(USER_2_ID, USER_2_PRINCIPAL, DATABASE_1_USER_2_WRITE_ALL_ACCESS);
 
     }
 
@@ -293,8 +296,7 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
 
-    protected QueryDto persist_generic(Long databaseId, Database database, Long queryId, Query query,
-                                       UUID userId, Principal principal, DatabaseAccess access)
+    protected QueryDto persist_generic(UUID userId, Principal principal, DatabaseAccess access)
             throws DatabaseNotFoundException, UserNotFoundException, QueryStoreException, QueryNotFoundException,
             ImageNotSupportedException, NotAllowedException, AccessDeniedException, IdentifierAlreadyPublishedException {
         final QueryPersistDto request = QueryPersistDto.builder()
@@ -302,25 +304,25 @@ public class StoreEndpointUnitTest extends BaseUnitTest {
                 .build();
 
         /* mock */
-        when(databaseService.find(databaseId))
-                .thenReturn(database);
-        when(storeService.findOne(databaseId, queryId, principal))
-                .thenReturn(query);
-        doReturn(query)
+        when(databaseService.find(DATABASE_1_ID))
+                .thenReturn(DATABASE_1);
+        when(storeService.findOne(DATABASE_1_ID, QUERY_1_ID, principal))
+                .thenReturn(QUERY_1);
+        doReturn(QUERY_1)
                 .when(storeService)
-                .persist(databaseId, queryId, request);
+                .persist(DATABASE_1_ID, QUERY_1_ID, request);
         if (access != null) {
-            log.trace("mock access for database with id {} and user id {}", databaseId, userId);
-            when(accessService.find(databaseId, userId))
+            log.trace("mock access for database with id {} and user id {}", DATABASE_1_ID, userId);
+            when(accessService.find(DATABASE_1_ID, userId))
                     .thenReturn(access);
         } else {
-            log.trace("mock no access for database with id {} and user id {}", databaseId, userId);
-            when(accessService.find(databaseId, userId))
+            log.trace("mock no access for database with id {} and user id {}", DATABASE_1_ID, userId);
+            when(accessService.find(DATABASE_1_ID, userId))
                     .thenThrow(NotAllowedException.class);
         }
 
         /* test */
-        final ResponseEntity<QueryDto> response = storeEndpoint.persist(databaseId, queryId, request, principal);
+        final ResponseEntity<QueryDto> response = storeEndpoint.persist(DATABASE_1_ID, QUERY_1_ID, request, principal);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
         assertNotNull(response.getBody());
         return response.getBody();

@@ -204,7 +204,7 @@ public class UserEndpointUnitTest extends BaseUnitTest {
     @WithAnonymousUser
     public void theme_anonymous_fails() {
         final UserThemeSetDto request = UserThemeSetDto.builder()
-                .themeDark(USER_1_THEME_DARK)
+                .theme(USER_1_THEME)
                 .build();
 
         /* test */
@@ -217,7 +217,7 @@ public class UserEndpointUnitTest extends BaseUnitTest {
     @WithMockUser(username = USER_4_USERNAME)
     public void theme_noRole_fails() {
         final UserThemeSetDto request = UserThemeSetDto.builder()
-                .themeDark(USER_1_THEME_DARK)
+                .theme(USER_1_THEME)
                 .build();
 
         /* test */
@@ -230,7 +230,7 @@ public class UserEndpointUnitTest extends BaseUnitTest {
     @WithMockUser(username = USER_2_USERNAME, authorities = {"modify-user-theme"})
     public void theme_hasRoleForeign_fails() {
         final UserThemeSetDto request = UserThemeSetDto.builder()
-                .themeDark(USER_1_THEME_DARK)
+                .theme(USER_1_THEME)
                 .build();
 
         /* test */
@@ -243,7 +243,7 @@ public class UserEndpointUnitTest extends BaseUnitTest {
     @WithMockUser(username = USER_1_USERNAME, authorities = {"modify-user-theme"})
     public void theme_succeeds() throws UserNotFoundException, ForeignUserException {
         final UserThemeSetDto request = UserThemeSetDto.builder()
-                .themeDark(USER_1_THEME_DARK)
+                .theme(USER_1_THEME)
                 .build();
 
         /* test */

@@ -10,6 +10,7 @@ import at.tuwien.api.database.query.ImportDto;
 import at.tuwien.api.database.query.QueryPersistDto;
 import at.tuwien.api.database.table.TableCsvDeleteDto;
 import at.tuwien.api.database.table.TableCsvDto;
+import at.tuwien.api.database.table.TableCsvUpdateDto;
 import at.tuwien.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
 import at.tuwien.config.MetricsConfig;
 import at.tuwien.endpoints.*;
@@ -222,7 +223,7 @@ public class PrometheusEndpointMvcTest extends BaseUnitTest {
             /* ignore */
         }
         try {
-            databaseEndpoint.transfer(DATABASE_1_ID, DatabaseTransferDto.builder().username(USER_2_USERNAME).build(), USER_1_PRINCIPAL);
+            databaseEndpoint.transfer(DATABASE_1_ID, DatabaseTransferDto.builder().id(USER_2_ID).build(), USER_1_PRINCIPAL);
         } catch (Exception e) {
             /* ignore */
         }
@@ -268,11 +269,6 @@ public class PrometheusEndpointMvcTest extends BaseUnitTest {
 
         /* mock */
         try {
-            identifierEndpoint.list(DATABASE_1_ID, null, null, null, IDENTIFIER_1_TYPE_DTO);
-        } catch (Exception e) {
-            /* ignore */
-        }
-        try {
             identifierEndpoint.create(IDENTIFIER_1_DTO_REQUEST, USER_1_PRINCIPAL);
         } catch (Exception e) {
             /* ignore */
@@ -284,7 +280,7 @@ public class PrometheusEndpointMvcTest extends BaseUnitTest {
         }
 
         /* test */
-        for (String metric : List.of("dbr_identifier_findall", "dbr_identifier_create", "dbr_identifier_retrieve")) {
+        for (String metric : List.of("dbr_identifier_create", "dbr_identifier_retrieve")) {
             assertThat(registry)
                     .hasObservationWithNameEqualTo(metric);
         }
@@ -350,17 +346,12 @@ public class PrometheusEndpointMvcTest extends BaseUnitTest {
 
         /* mock */
         try {
-            maintenanceEndpoint.list();
+            maintenanceEndpoint.list("");
         } catch (Exception e) {
             /* ignore */
         }
         try {
             maintenanceEndpoint.find(BANNER_MESSAGE_1_ID);
-        } catch (Exception e) {
-            /* ignore */
-        }
-        try {
-            maintenanceEndpoint.active();
         } catch (Exception e) {
             /* ignore */
         }
@@ -381,7 +372,7 @@ public class PrometheusEndpointMvcTest extends BaseUnitTest {
         }
 
         /* test */
-        for (String metric : List.of("dbr_maintenance_findall", "dbr_maintenance_find", "dbr_maintenance_findactive", "dbr_maintenance_create", "dbr_maintenance_update", "dbr_maintenance_delete")) {
+        for (String metric : List.of("dbr_maintenance_findall", "dbr_maintenance_find", "dbr_maintenance_create", "dbr_maintenance_update", "dbr_maintenance_delete")) {
             assertThat(registry)
                     .hasObservationWithNameEqualTo(metric);
         }
@@ -611,6 +602,11 @@ public class PrometheusEndpointMvcTest extends BaseUnitTest {
             /* ignore */
         }
         try {
+            tableDataEndpoint.update(DATABASE_1_ID, TABLE_1_ID, TableCsvUpdateDto.builder().build(), USER_1_PRINCIPAL);
+        } catch (Exception e) {
+            /* ignore */
+        }
+        try {
             tableDataEndpoint.delete(DATABASE_1_ID, TABLE_1_ID, TableCsvDeleteDto.builder().build(), USER_1_PRINCIPAL);
         } catch (Exception e) {
             /* ignore */
@@ -632,7 +628,7 @@ public class PrometheusEndpointMvcTest extends BaseUnitTest {
         }
 
         /* test */
-        for (String metric : List.of("dbr_table_data_insert", "dbr_table_data_delete", "dbr_table_data_import", "dbr_table_data_findall", "dbr_table_data_countall")) {
+        for (String metric : List.of("dbr_table_data_insert", "dbr_table_data_update", "dbr_table_data_delete", "dbr_table_data_import", "dbr_table_data_findall", "dbr_table_data_countall")) {
             assertThat(registry)
                     .hasObservationWithNameEqualTo(metric);
         }

@@ -24,4 +24,7 @@ public class License {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String uri;
 
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
 }

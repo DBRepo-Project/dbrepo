@@ -44,6 +44,8 @@ public class LicenseServiceIntegrationTest extends BaseUnitTest {
 
     @BeforeEach
     public void beforeEach() {
+        genesis();
+        /* metadata database */
         licenseRepository.save(LICENSE_1);
     }
 

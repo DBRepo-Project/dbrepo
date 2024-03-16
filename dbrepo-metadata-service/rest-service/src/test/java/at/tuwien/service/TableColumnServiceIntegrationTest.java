@@ -65,19 +65,7 @@ public class TableColumnServiceIntegrationTest extends BaseUnitTest {
 
     @BeforeEach
     public void beforeEach() throws SQLException {
-        TABLE_1.setColumns(TABLE_1_COLUMNS);
-        TABLE_1_FOREIGN_KEY_1.setReferences(List.of(TABLE_1_FOREIGN_KEY_REFERENCE));
-        TABLE_1.setConstraints(TABLE_1_CONSTRAINTS);
-        TABLE_2.setColumns(TABLE_2_COLUMNS);
-        TABLE_2.setConstraints(TABLE_2_CONSTRAINTS);
-        TABLE_3.setColumns(TABLE_3_COLUMNS);
-        TABLE_3.setConstraints(TABLE_3_CONSTRAINTS);
-        TABLE_4.setColumns(TABLE_4_COLUMNS);
-        DATABASE_1.setAccesses(List.of());
-        TABLE_1.setDatabase(DATABASE_1);
-        TABLE_2.setDatabase(DATABASE_1);
-        TABLE_3.setDatabase(DATABASE_1);
-        TABLE_4.setDatabase(DATABASE_1);
+        genesis();
         /* metadata database */
         imageRepository.save(IMAGE_1);
         licenseRepository.save(LICENSE_1);

@@ -6,6 +6,7 @@ import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.TableCsvDeleteDto;
 import at.tuwien.api.database.table.TableCsvDto;
+import at.tuwien.api.database.table.TableCsvUpdateDto;
 import at.tuwien.api.database.table.TableHistoryDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.View;
@@ -29,16 +30,14 @@ import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectItem;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.SerializationUtils;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 import org.mapstruct.Named;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringReader;
+import java.io.*;
 import java.math.BigInteger;
 import java.sql.Date;
 import java.sql.*;
@@ -103,7 +102,8 @@ public interface QueryMapper {
                 if (List.of(TableColumnType.BLOB, TableColumnType.TINYBLOB, TableColumnType.MEDIUMBLOB, TableColumnType.LONGBLOB).contains(column.getColumnType())) {
                     log.debug("column {} is of type blob", columnOrAlias);
                     final Blob blob = result.getBlob(idx[0]++);
-                    map.put(columnOrAlias, Hex.encodeHexString(blob.getBytes(1, (int) blob.length())).toUpperCase());
+                    final String value = blob == null ? null : Hex.encodeHexString(blob.getBytes(1, (int) blob.length())).toUpperCase();
+                    map.put(columnOrAlias, value);
                     continue;
                 }
                 final Object object = dataColumnToObject(result.getObject(idx[0]++), column);
@@ -953,7 +953,73 @@ public interface QueryMapper {
         }
     }
 
-    default void prepareStatementWithColumnTypeObject(PreparedStatement ps, TableColumnType columnType, int idx, Object value) throws SQLException {
+    default PreparedStatement tableCsvDtoToRawUpdateQuery(Connection connection, Table table, TableCsvUpdateDto data)
+            throws TableMalformedException, ImageNotSupportedException, QueryMalformedException {
+        log.trace("mapping table csv to update query, table={}, data={}", table, data);
+        int i = 1;
+        if (table.getColumns().isEmpty()) {
+            log.error("Column size is zero");
+            throw new TableMalformedException("Columns are not known");
+        }
+        /* check image */
+        if (!table.getDatabase().getContainer().getImage().getName().equals("mariadb")) {
+            log.error("Currently only MariaDB is supported");
+            throw new ImageNotSupportedException("Image not supported.");
+        }
+        /* parameterized query for prepared statement */
+        final StringBuilder statement = new StringBuilder("UPDATE `")
+                .append(table.getInternalName())
+                .append("` SET ");
+        final int[] idx = new int[]{0};
+        data.getData()
+                .forEach((key, value) -> {
+                    statement.append(idx[0]++ == 0 ? "" : ", ")
+                            .append("`")
+                            .append(key)
+                            .append("` = ?");
+                });
+        statement.append(" WHERE ");
+        final int[] jdx = new int[]{0};
+        data.getKeys()
+                .forEach((key, value) -> {
+                    statement.append(jdx[0] == 0 ? "" : ", ")
+                            .append("`")
+                            .append(key)
+                            .append("` ");
+                    if (value == null) {
+                        statement.append(" IS NULL");
+                    } else {
+                        statement.append(" = '")
+                                .append(value)
+                                .append("'");
+                    }
+                    jdx[0]++;
+                });
+        statement.append(";");
+        try {
+            final PreparedStatement pstmt = connection.prepareStatement(statement.toString());
+            for (Map.Entry<String, Object> entry : data.getData().entrySet()) {
+                if (entry.getValue() == null) {
+                    log.trace("entry is null, preparing null");
+                    pstmt.setNull(i++, Types.NULL);
+                } else if (entry.getValue().equals(true) || entry.getValue().equals(false)) {
+                    log.trace("entry is not null, preparing boolean");
+                    pstmt.setBoolean(i++, Boolean.parseBoolean(String.valueOf(entry.getValue())));
+                } else {
+                    log.trace("entry is not null, preparing string");
+                    pstmt.setString(i++, String.valueOf(entry.getValue()));
+                }
+            }
+            log.trace("mapped update query {} to prepared statement {}", statement, pstmt);
+            return pstmt;
+        } catch (SQLException e) {
+            log.error("failed to prepare statement {}, reason: {}", statement, e.getMessage());
+            throw new QueryMalformedException("Failed to prepare statement", e);
+        }
+    }
+
+    default void prepareStatementWithColumnTypeObject(PreparedStatement ps, TableColumnType columnType, int idx,
+                                                      Object value) throws SQLException {
         switch (columnType) {
             case BLOB, TINYBLOB, MEDIUMBLOB, LONGBLOB:
                 log.trace("prepare statement idx {} blob", idx);
@@ -962,7 +1028,12 @@ public interface QueryMapper {
                     break;
                 }
                 try {
-                    ps.setBlob(idx, FileUtils.openInputStream(new File(String.valueOf(value))));
+                    final ByteArrayOutputStream boas = new ByteArrayOutputStream();
+                    try (ObjectOutputStream ois = new ObjectOutputStream(boas)) {
+                        ois.writeObject(value);
+                        ps.setBlob(idx, new ByteArrayInputStream(boas.toByteArray()));
+                    }
+
                 } catch (IOException e) {
                     log.error("Failed to set blob: {}", e.getMessage());
                     throw new SQLException("Failed to set blob: " + e.getMessage(), e);

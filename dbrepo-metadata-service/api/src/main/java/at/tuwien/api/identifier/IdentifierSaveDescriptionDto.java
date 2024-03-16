@@ -15,8 +15,6 @@ import lombok.extern.jackson.Jacksonized;
 @ToString
 public class IdentifierSaveDescriptionDto {
 
-    private Long id;
-
     @Schema(example = "Air quality reports at Stephansplatz, Vienna")
     private String description;
 

@@ -4,8 +4,6 @@
   </div>
 </template>
 <script>
-import IdentifierMapper from '@/api/identifier.mapper'
-
 export default {
   props: {
     identifier: {
@@ -17,13 +15,16 @@ export default {
   },
   computed: {
     prefix () {
-      return IdentifierMapper.identifierToDisplayAcronym(this.identifier)
+      const identifierService = useIdentifierService()
+      return identifierService.identifierToDisplayAcronym(this.identifier)
     },
     displayName () {
-      return IdentifierMapper.identifierToDisplayName(this.identifier)
+      const identifierService = useIdentifierService()
+      return identifierService.identifierToDisplayName(this.identifier)
     },
     href () {
-      return IdentifierMapper.identifierToUrl(this.identifier)
+      const identifierService = useIdentifierService()
+      return identifierService.identifierToUrl(this.identifier)
     }
   }
 }
