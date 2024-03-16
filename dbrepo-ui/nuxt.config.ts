@@ -45,15 +45,16 @@ export default defineNuxtConfig({
   ],
   runtimeConfig: {
     public: {
-      title: "Database Repository",
-      logo: "/logo.svg",
-      icon: "/favicon.ico",
-      touch: "/apple-touch-icon.png",
-      version: "bun-dev",
+      commit: 'aeeeeb0bb727616adba057c0907e6c3306a2f45b',
+      title: 'Database Repository',
+      logo: '/logo.svg',
+      icon: '/favicon.ico',
+      touch: '/apple-touch-icon.png',
+      version: 'bun-dev',
       broker: {
-        host: "localhost",
+        host: 'localhost',
         port: {
-          "5672": false
+          '5672': false
         },
         extra: null
       },
@@ -72,11 +73,11 @@ export default defineNuxtConfig({
         }
       },
       api: {
-        client: "http://localhost",
-        server: "http://gateway-service",
+        client: 'http://localhost',
+        server: 'http://gateway-service',
       },
       database: {
-        unsupported: "*,AVG,BIT_AND,BIT_OR,BIT_XOR,COUNT,COUNTDISTINCT,GROUP_CONCAT,JSON_ARRAYAGG,JSON_OBJECTAGG,MAX,MIN,STD,STDDEV,STDDEV_POP,STDDEV_SAMP,SUM,VARIANCE,VAR_POP,VAR_SAMP,--",
+        unsupported: '*,AVG,BIT_AND,BIT_OR,BIT_XOR,COUNT,COUNTDISTINCT,GROUP_CONCAT,JSON_ARRAYAGG,JSON_OBJECTAGG,MAX,MIN,STD,STDDEV,STDDEV_POP,STDDEV_SAMP,SUM,VARIANCE,VAR_POP,VAR_SAMP,--',
         image: {
           width: 400,
           height: 400
@@ -85,31 +86,31 @@ export default defineNuxtConfig({
       },
       pid: {
         default: {
-          publisher: "Example University"
+          publisher: 'Example University'
         }
       },
       doi: {
         enabled: false,
-        endpoint: "https://doi.org"
+        endpoint: 'https://doi.org'
       },
       links: {
         opensearch: {
-          text: "OpenSearch Admin",
-          href: "/admin/dashboard/"
+          text: 'OpenSearch Admin',
+          href: '/admin/dashboard/'
         },
         rabbitmq: {
-          text: "RabbitMQ Admin",
-          href: "/admin/broker/"
+          text: 'RabbitMQ Admin',
+          href: '/admin/broker/'
         },
         keycloak: {
-          text: "Keycloak Admin",
-          href: "/api/auth/"
+          text: 'Keycloak Admin',
+          href: '/api/auth/'
         }
       },
       keycloak: {
         client: {
-          id: "dbrepo-client",
-          secret: "MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG"
+          id: 'dbrepo-client',
+          secret: 'MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG'
         }
       }
     }
@@ -136,16 +137,16 @@ export default defineNuxtConfig({
     defaultLocale: 'de',
     locales: [
       {
-        "code": "en",
-        "file": "en-US.json",
-        "name": "English (US)",
-        "iso": "en-US"
+        'code': 'en',
+        'file': 'en-US.json',
+        'name': 'English (US)',
+        'iso': 'en-US'
       },
       {
-        "code": "de",
-        "file": "de-AT.json",
-        "name": "German (AT)",
-        "iso": "de-AT"
+        'code': 'de',
+        'file': 'de-AT.json',
+        'name': 'German (AT)',
+        'iso': 'de-AT'
       }
     ]
 

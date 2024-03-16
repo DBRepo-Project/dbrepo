@@ -60,6 +60,12 @@
             @click="setLocale('en')" />
           <v-btn
             variant="plain"
+            :text="commitShort"
+            size="x-small"
+            prepend-icon="mdi-source-commit"
+            :href="`https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/commit/${commit}`" />
+          <v-btn
+            variant="plain"
             prepend-icon="mdi-tag"
             :href="`https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/${version}`"
             :text="version"
@@ -115,7 +121,9 @@
           to="/user"
           variant="plain"
           :text="user.username" />
-        <v-menu v-if="user" location="bottom">
+        <v-menu
+          v-if="user"
+          location="bottom">
           <template v-slot:activator="{ props }">
             <v-btn
               icon="mdi-dots-vertical"
@@ -144,6 +152,12 @@
   </v-app>
 </template>
 
+<script setup>
+const config = useRuntimeConfig()
+useServerHead({
+  title: config.public.title
+})
+</script>
 <script>
 import { useUserStore } from '@/stores/user'
 import { useCacheStore } from '@/stores/cache'
@@ -189,6 +203,12 @@ export default {
     },
     title () {
       return this.$config.public.title
+    },
+    commit () {
+      return this.$config.public.commit
+    },
+    commitShort () {
+      return this.$config.public.commit.substr(0, 8)
     },
     canListOntologies () {
       if (!this.roles) {
