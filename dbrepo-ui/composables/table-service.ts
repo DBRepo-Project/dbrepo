@@ -169,6 +169,22 @@ export const useTableService = (): any => {
     });
   }
 
+  async function history(databaseId: number, tableId: number): Promise<TableHistoryDto[]> {
+    const axios = useAxiosInstance()
+    console.debug('Load history of table with id', tableId, 'in database with id', databaseId)
+    return new Promise<TableHistoryDto[]>((resolve, reject) => {
+      axios.get<TableHistoryDto[]>(`/api/database/${databaseId}/table/${tableId}/history`)
+        .then((response) => {
+          console.info('Loaded history of table with id', tableId, 'in database with id', databaseId)
+          resolve(response.data)
+        })
+        .catch((error) => {
+          console.error('Failed to load history', error)
+          reject(error)
+        })
+    });
+  }
+
   async function suggest(databaseId: number, tableId: number, columnId: number): Promise<TableColumnEntityDto[]> {
     const axios = useAxiosInstance()
     console.debug('suggest semantic entities for table column with id', columnId, 'of table with id', tableId, 'of database with id', databaseId)
@@ -224,6 +240,7 @@ export const useTableService = (): any => {
     create,
     remove,
     removeTuple,
+    history,
     suggest,
     isOwner,
     tableNameToInternalName

@@ -550,6 +550,12 @@ interface QueryResultDto {
   result_number: number | null;
 }
 
+interface TableHistoryDto {
+  timestamp: Date;
+  event: string;
+  total: number;
+}
+
 interface TableCreateDto {
   name: string;
   description: string;

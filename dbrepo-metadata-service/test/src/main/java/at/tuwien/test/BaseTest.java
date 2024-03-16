@@ -1342,6 +1342,12 @@ public abstract class BaseTest {
     public final static Instant TABLE_1_CREATED = Instant.ofEpochSecond(1677399975L) /* 2023-02-26 08:26:15 (UTC) */;
     public final static Instant TABLE_1_LAST_MODIFIED = Instant.ofEpochSecond(1677399975L) /* 2023-02-26 08:26:15 (UTC) */;
 
+    public final static Constraints TABLE_1_CONSTRAINTS = Constraints.builder()
+            .foreignKeys(new LinkedList<>())
+            .uniques(new LinkedList<>())
+            .checks(new LinkedHashSet<>())
+            .build();
+
     public final static Table TABLE_1 = Table.builder()
             .id(TABLE_1_ID)
             .tdbid(DATABASE_1_ID)
@@ -1356,7 +1362,7 @@ public abstract class BaseTest {
             .routingKey(TABLE_1_ROUTING_KEY)
             .identifiers(List.of())
             .columns(List.of() /* TABLE_1_COLUMNS */)
-            .constraints(null /* TABLE_1_CONSTRAINTS */)
+            .constraints(TABLE_1_CONSTRAINTS)
             .createdBy(USER_1_ID)
             .creator(USER_1)
             .ownedBy(USER_1_ID)
@@ -1402,6 +1408,12 @@ public abstract class BaseTest {
     public final static Instant TABLE_2_CREATED = Instant.ofEpochSecond(1677400007L) /* 2023-02-26 08:26:47 (UTC) */;
     public final static Instant TABLE_2_LAST_MODIFIED = Instant.ofEpochSecond(1677400007L) /* 2023-02-26 08:26:47 (UTC) */;
 
+    public final static Constraints TABLE_2_CONSTRAINTS = Constraints.builder()
+            .uniques(new LinkedList<>())
+            .foreignKeys(new LinkedList<>())
+            .checks(new LinkedHashSet<>())
+            .build();
+
     public final static Table TABLE_2 = Table.builder()
             .id(TABLE_2_ID)
             .tdbid(DATABASE_1_ID)
@@ -1416,7 +1428,7 @@ public abstract class BaseTest {
             .queueName(TABLE_2_QUEUE_NAME)
             .routingKey(TABLE_2_ROUTING_KEY)
             .columns(List.of() /* TABLE_2_COLUMNS */)
-            .constraints(null /* TABLE_2_CONSTRAINTS */)
+            .constraints(TABLE_2_CONSTRAINTS)
             .createdBy(USER_2_ID)
             .ownedBy(USER_2_ID)
             .owner(USER_2)
@@ -1459,6 +1471,12 @@ public abstract class BaseTest {
     public final static Instant TABLE_3_CREATED = Instant.ofEpochSecond(1677400031L) /* 2023-02-26 08:27:11 (UTC) */;
     public final static Instant TABLE_3_LAST_MODIFIED = Instant.ofEpochSecond(1677400031L) /* 2023-02-26 08:27:11 (UTC) */;
 
+    public final static Constraints TABLE_3_CONSTRAINTS = Constraints.builder()
+            .uniques(new LinkedList<>())
+            .foreignKeys(new LinkedList<>())
+            .checks(new LinkedHashSet<>())
+            .build();
+
     public final static Table TABLE_3 = Table.builder()
             .id(TABLE_3_ID)
             .tdbid(DATABASE_1_ID)
@@ -1473,7 +1491,7 @@ public abstract class BaseTest {
             .queueName(TABLE_3_QUEUE_NAME)
             .routingKey(TABLE_3_ROUTING_KEY)
             .columns(List.of() /* TABLE_3_COLUMNS */)
-            .constraints(null /* TABLE_3_CONSTRAINTS */)
+            .constraints(TABLE_3_CONSTRAINTS)
             .createdBy(USER_3_ID)
             .ownedBy(USER_3_ID)
             .owner(USER_3)
@@ -1690,6 +1708,12 @@ public abstract class BaseTest {
     public final static Instant TABLE_4_CREATED = Instant.ofEpochSecond(1677400175L) /* 2023-02-26 08:29:35 (UTC) */;
     public final static Instant TABLE_4_LAST_MODIFIED = Instant.ofEpochSecond(1677400175L) /* 2023-02-26 08:29:35 (UTC) */;
 
+    public final static Constraints TABLE_4_CONSTRAINTS = Constraints.builder()
+            .uniques(List.of())
+            .foreignKeys(List.of())
+            .checks(Set.of())
+            .build();
+
     public final static Table TABLE_4 = Table.builder()
             .id(TABLE_4_ID)
             .tdbid(DATABASE_1_ID)
@@ -1706,6 +1730,7 @@ public abstract class BaseTest {
             .ownedBy(USER_1_ID)
             .owner(USER_1)
             .created(TABLE_4_CREATED)
+            .constraints(TABLE_4_CONSTRAINTS)
             .lastModified(TABLE_4_LAST_MODIFIED)
             .build();
 
@@ -3099,7 +3124,7 @@ public abstract class BaseTest {
             .name(TABLE_1_FOREIGN_KEY_1_NAME)
             .referencedTable(TABLE_2)
             .table(TABLE_1)
-            .references(List.of()) /* TABLE_1_FOREIGN_KEY_REFERENCE */
+            .references(new LinkedList<>()) /* TABLE_1_FOREIGN_KEY_REFERENCE */
             .build();
 
     public final static Long TABLE_1_FOREIGN_KEY_REFERENCE_ID = 1L;
@@ -3111,25 +3136,18 @@ public abstract class BaseTest {
             .referencedColumn(TABLE_1_COLUMNS.get(0))
             .build();
 
-    public final static Constraints TABLE_1_CONSTRAINTS = Constraints.builder()
-            .foreignKeys(List.of(TABLE_1_FOREIGN_KEY_1))
-            .uniques(List.of(Unique.builder()
-                    .name("UK_1")
-                    .columns(List.of(
-                            TABLE_1_COLUMNS.get(0),
-                            TABLE_1_COLUMNS.get(1)
-                    ))
-                    .table(TABLE_1)
-                    .build()))
-            .checks(Set.of("`mintemp` > 0"))
+    public final static Unique TABLE_1_UNIQUE_CONSTRAINT_1 = Unique.builder()
+            .name("UK_1")
+            .columns(new LinkedList<>())
+            .table(TABLE_1)
             .build();
 
-    public final static Constraints TABLE_2_CONSTRAINTS = Constraints.builder()
-            .uniques(List.of(Unique.builder()
-                    .name("UK_1")
-                    .columns(List.of(TABLE_2_COLUMNS.get(0)))
-                    .table(TABLE_2)
-                    .build()))
+    public final static String TABLE_1_CHECK_1 = "`mintemp` > 0";
+
+    public final static Unique TABLE_2_UNIQUE_CONSTRAINT_1 = Unique.builder()
+            .name("UK_1")
+            .columns(List.of(TABLE_2_COLUMNS.get(0)))
+            .table(TABLE_2)
             .build();
 
     public final static List<TableColumn> TABLE_3_COLUMNS = List.of(TableColumn.builder()
@@ -4111,12 +4129,10 @@ public abstract class BaseTest {
                     .sets(List.of())
                     .build());
 
-    public final static Constraints TABLE_3_CONSTRAINTS = Constraints.builder()
-            .uniques(List.of(Unique.builder()
-                    .name("UK_1")
-                    .columns(List.of(TABLE_3_COLUMNS.get(0)))
-                    .table(TABLE_3)
-                    .build()))
+    public final static Unique TABLE_3_UNIQUE_CONSTRAINT_1 = Unique.builder()
+            .name("UK_1")
+            .columns(List.of(TABLE_3_COLUMNS.get(0)))
+            .table(TABLE_3)
             .build();
 
     public final static ConstraintsDto TABLE_3_CONSTRAINTS_DTO = ConstraintsDto.builder()
@@ -5308,7 +5324,7 @@ public abstract class BaseTest {
     public final static String VIEW_5_NAME = "Mock View";
     public final static String VIEW_5_INTERNAL_NAME = "mock_view";
     public final static Long VIEW_5_CONTAINER_ID = CONTAINER_2_ID;
-    public final static Long VIEW_5_DATABASE_ID = DATABASE_2_ID;
+    public final static Long VIEW_5_DATABASE_ID = DATABASE_3_ID;
     public final static Boolean VIEW_5_PUBLIC = true;
     public final static String VIEW_5_QUERY = "SELECT `location`, `lat`, `lng` FROM `weather_location` WHERE `location` = 'Albury'";
     public final static String VIEW_5_QUERY_HASH = "120f32478aaff874c25ab32eceb9f00b64cc9d422831046f2f5d43953aca01e7";
@@ -5325,6 +5341,26 @@ public abstract class BaseTest {
             .createdBy(USER_1_ID)
             .columns(null)
             .build();
+
+    public final static List<ViewColumn> VIEW_5_COLUMNS = List.of(
+            ViewColumn.builder()
+                    .id(29L)
+                    .ordinalPosition(0)
+                    .column(TABLE_2_COLUMNS.get(0))
+                    .view(VIEW_5)
+                    .build(),
+            ViewColumn.builder()
+                    .id(30L)
+                    .ordinalPosition(1)
+                    .column(TABLE_2_COLUMNS.get(1))
+                    .view(VIEW_5)
+                    .build(),
+            ViewColumn.builder()
+                    .id(31L)
+                    .ordinalPosition(2)
+                    .column(TABLE_2_COLUMNS.get(2))
+                    .view(VIEW_5)
+                    .build());
 
     public final static Long QUERY_1_RESULT_ID = 1L;
     public final static List<Map<String, Object>> QUERY_1_RESULT_RESULT = List.of(

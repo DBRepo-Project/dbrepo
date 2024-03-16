@@ -52,13 +52,7 @@ public class MetadataServiceIntegrationTest extends BaseUnitTest {
 
     @BeforeEach
     public void beforeEach() {
-        TABLE_1.setColumns(TABLE_1_COLUMNS);
-        TABLE_2.setColumns(TABLE_2_COLUMNS);
-        TABLE_3.setColumns(TABLE_3_COLUMNS);
-        TABLE_4.setColumns(TABLE_4_COLUMNS);
-        VIEW_1.setColumns(VIEW_1_COLUMNS);
-        VIEW_2.setColumns(VIEW_2_COLUMNS);
-        VIEW_3.setColumns(VIEW_3_COLUMNS);
+        genesis();
         /* metadata database */
         imageRepository.save(IMAGE_1);
         userRepository.save(USER_1);

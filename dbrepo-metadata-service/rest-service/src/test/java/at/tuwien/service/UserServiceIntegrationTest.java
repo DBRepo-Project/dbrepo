@@ -45,6 +45,8 @@ public class UserServiceIntegrationTest extends BaseUnitTest {
 
     @BeforeEach
     public void beforeEach() {
+        genesis();
+        /* metadata database */
         userRepository.save(USER_1);
     }
 

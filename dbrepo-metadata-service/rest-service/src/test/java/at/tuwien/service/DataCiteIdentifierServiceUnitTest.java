@@ -89,10 +89,7 @@ public class DataCiteIdentifierServiceUnitTest extends BaseUnitTest {
 
     @BeforeEach
     public void beforeEach() {
-        TABLE_1.setColumns(TABLE_1_COLUMNS);
-        TABLE_2.setColumns(TABLE_2_COLUMNS);
-        TABLE_3.setColumns(TABLE_3_COLUMNS);
-        TABLE_4.setColumns(TABLE_4_COLUMNS);
+        genesis();
         /* metadata database */
         licenseRepository.save(LICENSE_1);
         imageRepository.save(IMAGE_1);

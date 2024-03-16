@@ -340,6 +340,11 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
                     preparedStatement2.execute();
                     log.info("Enabled system-versioning for table with name {}", table.getInternalName());
                 }
+                table.setConstraints(Constraints.builder()
+                                .checks(new LinkedHashSet<>())
+                                .foreignKeys(new LinkedList<>())
+                                .uniques(new LinkedList<>())
+                        .build());
                 table.setProcessedConstraints(false);
                 final PreparedStatement preparedStatement3 = tableMapper.tableToCreateHistoryViewRawQuery(connection, table);
                 preparedStatement3.executeUpdate();
@@ -354,7 +359,7 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
         /* update in metadata database */
         final Database entity = databaseRepository.save(database);
         /* save in open search database */
-        databaseIdxRepository.save(databaseMapper.databaseToDatabaseDto(entity));
+        databaseIdxRepository.save(databaseMapper.databaseToDatabaseDto(database));
         log.info("Updated database with id {} in metadata database & search database", entity.getId());
         return entity;
     }

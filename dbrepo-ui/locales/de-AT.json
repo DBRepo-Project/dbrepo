@@ -490,8 +490,11 @@
           }
         },
         "versioning": {
-          "title": "Versionierung",
+          "title": "Verlauf",
           "subtitle": "Wählen Sie einen Zeitstempel aus, um die Daten für diese bestimmte Tageszeit anzuzeigen.",
+          "chart": {
+            "title": "Datenereignisse"
+          },
           "timestamp": {
             "label": "Zeitstempel",
             "hint": "Erforderlich. ",
@@ -1195,13 +1198,13 @@
     },
     "table": {
       "data": {
-        "refresh": "Aktualisierung",
+        "refresh": "Aktualisieren",
         "add": "Hinzufügen",
         "edit": "Aktualisieren",
         "delete": "Löschen",
         "tuple": "Eintrag",
         "download": "Herunterladen",
-        "version": "Geschichte",
+        "version": "Verlauf",
         "subtitle": "Stellen Sie Daten bereit, die direkt in den Datensatz eingefügt werden sollen."
       }
     }

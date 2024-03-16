@@ -110,19 +110,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
     @BeforeEach
     public void beforeEach() throws SQLException, DatabaseUnchangedException, QueryMalformedException,
             ColumnParseException, DatabaseNotFoundException, TableMalformedException {
-        TABLE_1.setColumns(TABLE_1_COLUMNS);
-        TABLE_2.setColumns(TABLE_2_COLUMNS);
-        TABLE_3.setColumns(TABLE_3_COLUMNS);
-        TABLE_4.setColumns(TABLE_4_COLUMNS);
-        TABLE_5.setColumns(TABLE_5_COLUMNS);
-        TABLE_6.setColumns(TABLE_6_COLUMNS);
-        TABLE_7.setColumns(TABLE_7_COLUMNS);
-        DATABASE_1.setAccesses(List.of());
-        DATABASE_2.setAccesses(List.of());
-        VIEW_1.setColumns(VIEW_1_COLUMNS);
-        VIEW_2.setColumns(VIEW_2_COLUMNS);
-        VIEW_3.setColumns(VIEW_3_COLUMNS);
-        VIEW_4.setColumns(VIEW_4_COLUMNS);
+        genesis();
         /* metadata database */
         imageRepository.save(IMAGE_1);
         licenseRepository.save(LICENSE_1);

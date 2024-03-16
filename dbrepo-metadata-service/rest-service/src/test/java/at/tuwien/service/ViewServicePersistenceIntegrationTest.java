@@ -7,6 +7,7 @@ import at.tuwien.annotations.MockOpensearch;
 import at.tuwien.api.database.ViewCreateDto;
 import at.tuwien.config.MariaDbConfig;
 import at.tuwien.config.MariaDbContainerConfig;
+import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.View;
 import at.tuwien.exception.*;
 import at.tuwien.repository.mdb.*;
@@ -71,25 +72,14 @@ public class ViewServicePersistenceIntegrationTest extends BaseUnitTest {
 
     @BeforeEach
     public void beforeEach() {
-        TABLE_1.setDatabase(DATABASE_1);
-        TABLE_2.setDatabase(DATABASE_1);
-        TABLE_3.setDatabase(DATABASE_1);
-        TABLE_4.setDatabase(DATABASE_1);
-        VIEW_1.setDatabase(DATABASE_1);
-        VIEW_2.setDatabase(DATABASE_1);
-        VIEW_3.setDatabase(DATABASE_1);
-        TABLE_1.setColumns(TABLE_1_COLUMNS);
-        TABLE_2.setColumns(TABLE_2_COLUMNS);
-        TABLE_3.setColumns(TABLE_3_COLUMNS);
-        TABLE_4.setColumns(TABLE_4_COLUMNS);
-        TABLE_5.setColumns(TABLE_5_COLUMNS);
-        TABLE_6.setColumns(TABLE_6_COLUMNS);
-        TABLE_7.setColumns(TABLE_7_COLUMNS);
+        genesis();
         /* metadata database */
         imageRepository.save(IMAGE_1);
         licenseRepository.save(LICENSE_1);
         userRepository.saveAll(List.of(USER_1, USER_2, USER_3));
         containerRepository.saveAll(List.of(CONTAINER_1, CONTAINER_2));
+        final Database db1 = DATABASE_1;
+        final Database db2 = DATABASE_2;
         databaseRepository.saveAll(List.of(DATABASE_1, DATABASE_2));
     }
 

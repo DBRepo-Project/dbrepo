@@ -490,8 +490,11 @@
           }
         },
         "versioning": {
-          "title": "Versioning",
+          "title": "History",
           "subtitle": "Select a timestamp to view the data for this specific time of day.",
+          "chart": {
+            "title": "Data Events"
+          },
           "timestamp": {
             "label": "Timestamp",
             "hint": "Required. Format yyyy-MM-dd HH:mm:ss",
