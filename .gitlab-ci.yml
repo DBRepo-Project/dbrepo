@@ -480,7 +480,7 @@ release-images:
   script:
     - "ifconfig eth0 mtu 1450 up"
     - "apk add make bash"
-    - "TAG=${APP_VERSION} make release"
+    - "COMMIT=${CI_COMMIT_SHA} TAG=${APP_VERSION} make release"
 
 release-chart:
   stage: release

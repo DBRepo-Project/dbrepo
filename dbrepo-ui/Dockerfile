@@ -39,7 +39,7 @@ WORKDIR /app
 COPY --from=build --chown=1000:1000 /app/.output /app/.output
 
 ENV NUXT_PUBLIC_VERSION="${TAG:-latest}"
-ENV NUXT_PUBLIC_COMMIT="${CI_COMMIT_SHA:-deadbeef}"
+ENV NUXT_PUBLIC_COMMIT="${COMMIT:-deadbeef}"
 
 EXPOSE 3000
 
