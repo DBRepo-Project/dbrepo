@@ -29,7 +29,7 @@ RUN bun run build
 FROM oven/bun:1.0.26-alpine as runtime
 MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
 
-ARG APP_VERSION=""
+ARG CI_COMMIT_BRANCH=""
 ARG CI_COMMIT_SHA=""
 
 USER 1000
@@ -38,7 +38,7 @@ WORKDIR /app
 
 COPY --from=build --chown=1000:1000 /app/.output /app/.output
 
-ENV NUXT_PUBLIC_VERSION="${APP_VERSION:-latest}"
+ENV NUXT_PUBLIC_VERSION="${CI_COMMIT_BRANCH:8:8}"
 ENV NUXT_PUBLIC_COMMIT="${CI_COMMIT_SHA:-}"
 
 EXPOSE 3000
