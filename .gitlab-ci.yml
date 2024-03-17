@@ -18,11 +18,25 @@ cache:
     - .m2/
 
 stages:
+  - lint
   - build
   - test
   - docs
   - release
   - scan
+
+lint-yaml:
+  image: bash:5.2-alpine3.19
+  stage: build
+  only:
+    refs:
+      - dev
+      - master
+  script:
+    - "apk add yq cmp"
+    - "yq '.services.[] | .environment' docker-compose.yml > ./doc.txt"
+    - "yq '.services.[] | .environment' docker-compose.prod.yml > ./other.txt"
+    - "cmp --silent ./doc.txt ./other.txt"
 
 build-metadata-service:
   image: maven:3-openjdk-17
