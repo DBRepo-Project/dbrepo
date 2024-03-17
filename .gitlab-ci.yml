@@ -33,7 +33,7 @@ lint-yaml:
       - dev
       - master
   script:
-    - "apk add yq cmp"
+    - "apk add yq"
     - "yq '.services.[] | .environment' docker-compose.yml > ./doc.txt"
     - "yq '.services.[] | .environment' docker-compose.prod.yml > ./other.txt"
     - "cmp --silent ./doc.txt ./other.txt"
