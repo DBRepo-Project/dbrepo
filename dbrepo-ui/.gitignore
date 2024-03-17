@@ -9,6 +9,10 @@ yarn-error.log*
 secrets/
 server.keystore
 
+# generated
+.output/
+assets/.sass-cache/
+
 # Runtime data
 ready
 pids
