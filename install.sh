@@ -29,7 +29,7 @@ if [[ $SKIP_CHECKS -eq 0 ]]; then
   else
     echo "vCPU ${CPU} OK"
   fi
-  RAM=$(free -g -t | awk 'NR==2 {print $4}')
+  RAM=$(free -g -t | awk 'NR==2 {print $7}')
   if [[ $RAM -lt $MIN_RAM ]]; then
     echo "You do not have enough RAM free resources:"
     echo ""
