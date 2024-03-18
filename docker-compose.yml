@@ -209,7 +209,7 @@ services:
     restart: "no"
     container_name: dbrepo-broker-service
     hostname: broker-service
-    image: docker.io/bitnami/rabbitmq:3.10
+    image: docker.io/bitnami/rabbitmq:3.12-debian-12
     ports:
       - "5672:5672"
       - "15672:15672"
