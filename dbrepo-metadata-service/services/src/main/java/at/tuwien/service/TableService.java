@@ -82,7 +82,7 @@ public interface TableService {
      */
     Table createTable(Long databaseId, TableCreateDto createDto, Principal principal)
             throws ImageNotSupportedException, DatabaseNotFoundException, TableMalformedException,
-            TableNameExistsException, QueryMalformedException, TableNotFoundException;
+            TableNameExistsException, QueryMalformedException, TableNotFoundException, UserNotFoundException;
 
     /**
      * Deletes a table from the database in the metadata database and data database.

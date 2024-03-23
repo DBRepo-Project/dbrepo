@@ -536,10 +536,11 @@ public class TableEndpointUnitTest extends BaseUnitTest {
         return tableEndpoint.list(databaseId, principal);
     }
 
-    protected ResponseEntity<TableBriefDto> generic_create(Long databaseId, Database database, TableCreateDto data,
+    protected ResponseEntity<TableDto> generic_create(Long databaseId, Database database, TableCreateDto data,
                                                            UUID userId, Principal principal, DatabaseAccess access)
             throws DatabaseNotFoundException, NotAllowedException, TableMalformedException, QueryMalformedException,
-            ImageNotSupportedException, TableNameExistsException, AccessDeniedException, TableNotFoundException {
+            ImageNotSupportedException, TableNameExistsException, AccessDeniedException, TableNotFoundException,
+            UserNotFoundException {
 
         /* mock */
         if (database != null) {

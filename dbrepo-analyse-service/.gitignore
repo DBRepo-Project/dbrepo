@@ -6,7 +6,6 @@ __pycache__
 .DS_Store
 
 # Environment
-.env
 .flaskenv
 *.pyc
 *.pyo

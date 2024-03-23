@@ -19,15 +19,19 @@ import java.util.List;
 @ToString
 public class ForeignKeyDto {
 
+    @NonNull
     private String name;
 
+    @NonNull
     @org.springframework.data.annotation.Transient
     private List<ColumnDto> columns;
 
+    @NonNull
     @JsonProperty("referenced_table")
     @org.springframework.data.annotation.Transient
     private TableBriefDto referencedTable;
 
+    @NonNull
     @JsonProperty("referenced_columns")
     @org.springframework.data.annotation.Transient
     private List<ColumnDto> referencedColumns;

@@ -31,12 +31,9 @@ nav:
       - Search Database Dashboard: system-other-search-dashboard.md
   - Usage:
     - Overview: usage-overview.md
+    - Python Library: usage-python.md
     - Services:
-      - Analyse Service: usage-analyse.md
       - Authentication Service: usage-authentication.md
-      - Broker Service: usage-broker.md
-      - Metadata Service: usage-metadata.md
-      - Search Service: usage-search.md
       - Storage Service: usage-storage.md
       - Upload Service: usage-upload.md
   - publications.md
@@ -59,6 +56,7 @@ theme:
     - navigation.sections
     - content.code.annotate
     - content.code.copy
+    - content.tooltips
   icon:
     repo: fontawesome/brands/git-alt
   palette:

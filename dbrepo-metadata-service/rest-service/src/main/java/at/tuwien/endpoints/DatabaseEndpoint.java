@@ -76,7 +76,7 @@ public class DatabaseEndpoint {
         this.messageQueueService = messageQueueService;
     }
 
-    @GetMapping
+    @RequestMapping(method = {RequestMethod.GET, RequestMethod.HEAD})
     @Transactional(readOnly = true)
     @Observed(name = "dbr_database_findall")
     @Operation(summary = "List databases")
@@ -85,7 +85,7 @@ public class DatabaseEndpoint {
                     description = "List of databases",
                     content = {@Content(
                             mediaType = "application/json",
-                            array = @ArraySchema(schema = @Schema(implementation = DatabaseBriefDto.class)))}),
+                            array = @ArraySchema(schema = @Schema(implementation = DatabaseDto.class)))}),
             @ApiResponse(responseCode = "404",
                     description = "User not found",
                     content = {@Content(
@@ -110,45 +110,11 @@ public class DatabaseEndpoint {
                     .collect(Collectors.toList());
         }
         log.trace("list databases resulted in databases {}", dtos);
-        return ResponseEntity.ok(dtos);
-    }
-
-    @RequestMapping(method = RequestMethod.HEAD)
-    @Transactional(readOnly = true)
-    @Observed(name = "dbr_database_count")
-    @Operation(summary = "Count databases")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200",
-                    description = "Count databases"),
-            @ApiResponse(responseCode = "404",
-                    description = "User not found",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-    })
-    public ResponseEntity<List<DatabaseDto>> count(@NotNull Principal principal,
-                                                   @RequestParam(required = false) String filter)
-            throws UserNotFoundException {
-        log.debug("endpoint list databases, filter={}, {}", filter, PrincipalUtil.formatForDebug(principal));
-        final List<DatabaseDto> dtos;
-        if (principal != null && filter != null) {
-            final User user = userService.findByUsername(principal.getName());
-            dtos = databaseService.findAccess(user.getId())
-                    .stream()
-                    .map(databaseMapper::databaseToDatabaseDto)
-                    .collect(Collectors.toList());
-        } else {
-            dtos = databaseService.findAll()
-                    .stream()
-                    .map(databaseMapper::databaseToDatabaseDto)
-                    .collect(Collectors.toList());
-        }
-        log.trace("list databases resulted in databases {}", dtos);
         final HttpHeaders headers = new HttpHeaders();
-        headers.set("x-count", "" + dtos.size());
+        headers.set("X-Count", "" + dtos.size());
         return ResponseEntity.status(HttpStatus.OK)
                 .headers(headers)
-                .build();
+                .body(dtos);
     }
 
     @PostMapping
@@ -161,7 +127,7 @@ public class DatabaseEndpoint {
                     description = "Created a new database",
                     content = {@Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = DatabaseBriefDto.class))}),
+                            schema = @Schema(implementation = DatabaseDto.class))}),
             @ApiResponse(responseCode = "400",
                     description = "Database create query is malformed or image is not supported",
                     content = {@Content(
@@ -188,8 +154,8 @@ public class DatabaseEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<DatabaseBriefDto> create(@Valid @RequestBody DatabaseCreateDto createDto,
-                                                   @NotNull Principal principal)
+    public ResponseEntity<DatabaseDto> create(@Valid @RequestBody DatabaseCreateDto createDto,
+                                              @NotNull Principal principal)
             throws ContainerNotFoundException, DatabaseMalformedException, UserNotFoundException,
             DatabaseNotFoundException, DatabaseConnectionException, QueryMalformedException, NotAllowedException,
             QueryStoreException {
@@ -200,7 +166,7 @@ public class DatabaseEndpoint {
         accessService.create(database.getId(), user.getId(), DatabaseGiveAccessDto.builder()
                 .type(AccessTypeDto.WRITE_ALL)
                 .build());
-        final DatabaseBriefDto dto = databaseMapper.databaseToDatabaseBriefDto(database);
+        final DatabaseDto dto = databaseMapper.databaseToDatabaseDto(database);
         log.trace("create database resulted in database {}", dto);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(dto);

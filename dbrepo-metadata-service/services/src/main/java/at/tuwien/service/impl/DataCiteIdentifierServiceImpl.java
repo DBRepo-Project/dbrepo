@@ -83,7 +83,7 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
     @Override
     @Transactional(rollbackFor = {Exception.class})
     public Identifier create(IdentifierSaveDto data, Principal principal) throws QueryNotFoundException,
-            IdentifierRequestException, RemoteUnavailableException, UserNotFoundException, DatabaseNotFoundException,
+            IdentifierRequestException, UserNotFoundException, DatabaseNotFoundException,
             ViewNotFoundException, QueryStoreException, ImageNotSupportedException {
         final Identifier identifier = identifierService.create(data, principal);
         /* https://stackoverflow.com/questions/55090541/spring-data-jpa-lombok-unsupportedoperationexception-during-saving */

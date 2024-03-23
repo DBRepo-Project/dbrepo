@@ -49,6 +49,7 @@ public class QueryDto {
     @Schema(example = "SELECT `id` FROM `air_quality`")
     private String query;
 
+    @NotBlank
     @JsonProperty("query_normalized")
     @Schema(example = "SELECT `id` FROM `air_quality`")
     private String queryNormalized;
@@ -56,6 +57,7 @@ public class QueryDto {
     @Schema(example = "query")
     private QueryTypeDto type;
 
+    @NotNull
     private List<IdentifierDto> identifiers;
 
     @NotBlank(message = "query hash is required")

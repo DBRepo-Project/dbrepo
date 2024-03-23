@@ -26,6 +26,9 @@ build-metadata-service:
 build-analyse-service:
 	bash ./dbrepo-analyse-service/build.sh
 
+build-lib-python:
+	bash ./lib/python/build.sh
+
 build-docker:
 	bash ./bin/build-docker.sh
 
@@ -131,7 +134,7 @@ release-storage-service-init: tag-storage-service-init
 	docker push "${REPOSITORY_1_URL}/storage-service-init:${TAG}"
 	docker push "${REPOSITORY_2_URL}/storage-service-init:${TAG}"
 
-test-backend: test-metadata-service test-analyse-service test-data-service
+test-backend: test-metadata-service test-analyse-service test-data-service test-lib-python
 
 test-data-service: build-data-service
 	mvn -f ./dbrepo-data-service/pom.xml clean test verify
@@ -141,6 +144,9 @@ test-metadata-service: build-metadata-service
 
 test-analyse-service: build-analyse-service
 	bash ./dbrepo-analyse-service/test.sh
+
+test-lib-python: build-lib-python
+	bash ./lib/python/test.sh
 
 scan: scan-analyse-service scan-authentication-service scan-broker-service scan-gateway-service scan-metadata-db scan-metadata-service scan-search-db scan-ui scan-data-service scan-data-db scan-search-dashboard scan-search-service
 
@@ -227,3 +233,4 @@ build-api:
 
 docs:
 	bash .docs/build-website.sh
+	bash ./lib/python/build-website.sh

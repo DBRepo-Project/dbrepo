@@ -94,7 +94,6 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         final String statement = queryMapper.queryToRawTimestampedQuery(query.getQuery(), query.getCreated(), true, page, size);
         final QueryResultDto dto = executeNonPersistent(databaseId, statement, columns);
         dto.setId(query.getId());
-        dto.setResultNumber(query.getResultNumber());
         return dto;
     }
 
@@ -149,8 +148,8 @@ public class QueryServiceImpl extends HibernateConnector implements QueryService
         }
     }
 
-    public Long executeCountNonPersistent(Long databaseId, String statement)
-            throws QueryMalformedException, TableMalformedException, DatabaseNotFoundException, QueryStoreException {
+    public Long executeCountNonPersistent(Long databaseId, String statement) throws QueryMalformedException,
+            TableMalformedException, DatabaseNotFoundException, QueryStoreException {
         /* find */
         final Database database = databaseService.find(databaseId);
         /* run query */

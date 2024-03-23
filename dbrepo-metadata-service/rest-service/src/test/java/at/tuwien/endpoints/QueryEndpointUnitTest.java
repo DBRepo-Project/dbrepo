@@ -13,6 +13,7 @@ import at.tuwien.querystore.Query;
 import at.tuwien.repository.mdb.DatabaseRepository;
 import at.tuwien.service.QueryService;
 import at.tuwien.service.StoreService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
@@ -34,8 +35,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @Log4j2
 @SpringBootTest
@@ -168,7 +168,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         generic_reExecute(DATABASE_3_ID, QUERY_4_ID, QUERY_4, QUERY_4_RESULT_ID, QUERY_4_RESULT_DTO,
-                null, DATABASE_3);
+                null, DATABASE_3, true);
     }
 
     @Test
@@ -179,7 +179,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         generic_reExecute(DATABASE_3_ID, QUERY_4_ID, QUERY_4, QUERY_4_RESULT_ID, QUERY_4_RESULT_DTO,
-                USER_2_PRINCIPAL, DATABASE_3);
+                USER_2_PRINCIPAL, DATABASE_3, true);
     }
 
     @Test
@@ -190,7 +190,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         generic_reExecute(DATABASE_3_ID, QUERY_4_ID, QUERY_4, QUERY_4_RESULT_ID, QUERY_4_RESULT_DTO,
-                USER_2_PRINCIPAL, DATABASE_3);
+                USER_2_PRINCIPAL, DATABASE_3, true);
     }
 
     @Test
@@ -319,7 +319,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
         /* test */
         assertThrows(NotAllowedException.class, () -> {
             generic_reExecute(DATABASE_2_ID, QUERY_1_ID, QUERY_1, QUERY_1_RESULT_ID, QUERY_1_RESULT_DTO,
-                    null, DATABASE_2);
+                    null, DATABASE_2, true);
         });
     }
 
@@ -334,7 +334,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         generic_reExecute(DATABASE_2_ID, QUERY_1_ID, QUERY_1, QUERY_1_RESULT_ID, QUERY_1_RESULT_DTO,
-                USER_2_PRINCIPAL, DATABASE_2);
+                USER_2_PRINCIPAL, DATABASE_2, true);
     }
 
     @Test
@@ -348,7 +348,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         generic_reExecute(DATABASE_2_ID, QUERY_1_ID, QUERY_1, QUERY_1_RESULT_ID, QUERY_1_RESULT_DTO,
-                USER_2_PRINCIPAL, DATABASE_2);
+                USER_2_PRINCIPAL, DATABASE_2, true);
     }
 
     @Test
@@ -363,7 +363,7 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         generic_reExecute(DATABASE_2_ID, QUERY_1_ID, QUERY_1, QUERY_1_RESULT_ID, QUERY_1_RESULT_DTO,
-                USER_2_PRINCIPAL, DATABASE_2);
+                USER_2_PRINCIPAL, DATABASE_2, true);
     }
 
     @Test
@@ -447,13 +447,12 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(QUERY_1_RESULT_ID, response.getBody().getId());
-        assertEquals(QUERY_1_RESULT_NUMBER, response.getBody().getResultNumber());
         assertEquals(QUERY_1_RESULT_NUMBER, response.getBody().getResult().size());
         assertEquals(QUERY_1_RESULT_RESULT, response.getBody().getResult());
     }
 
     protected void generic_reExecute(Long databaseId, Long queryId, Query query, Long resultId,
-                                     QueryResultDto result, Principal principal, Database database)
+                                     QueryResultDto result, Principal principal, Database database, boolean isGet)
             throws QueryStoreException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
             TableMalformedException, QueryMalformedException, ColumnParseException, SortException, NotAllowedException,
             PaginationException, at.tuwien.exception.AccessDeniedException {
@@ -469,11 +468,14 @@ public class QueryEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(query);
         when(queryService.reExecute(databaseId, query, page, size, sortDirection, sortColumn, principal))
                 .thenReturn(result);
+        final HttpServletRequest request = mock(HttpServletRequest.class);
+        when(request.getMethod())
+                .thenReturn(isGet ? "GET" : "HEAD");
 
         /* test */
         final ResponseEntity<QueryResultDto> response = queryEndpoint.reExecute(databaseId, queryId,
-                principal, page, size, sortDirection, sortColumn);
-        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
+                principal, request, page, size, sortDirection, sortColumn);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(resultId, response.getBody().getId());
     }

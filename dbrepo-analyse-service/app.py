@@ -1,3 +1,5 @@
+import dataclasses
+import json
 import logging
 from _csv import Error
 
@@ -12,6 +14,8 @@ from flask_sqlalchemy import SQLAlchemy
 from gevent.pywsgi import WSGIServer
 from opensearchpy import OpenSearch
 from prometheus_flask_exporter import PrometheusMetrics
+
+from botocore.exceptions import ClientError
 
 from determine_dt import determine_datatypes
 from determine_pk import determine_pk
@@ -60,7 +64,6 @@ opensearch_client = OpenSearch(
     http_auth=("admin", "admin"),
     use_ssl=False,
 )
-
 
 swagger_config = {
     "headers": [],
@@ -114,98 +117,82 @@ def health():
     return Response(res, mimetype="application/json"), 200
 
 
-@app.route("/api/analyse/determinedt", methods=["POST"], endpoint="analyze_determinedt")
-@swag_from("as-yml/determinedt.yml")
-def determinedt():
-    logging.debug("endpoint determine datatype, body=%s", request)
-    input_json = request.get_json()
+@app.route("/api/analyse/datatypes", methods=["GET"], endpoint="analyze_analyse_datatypes")
+@swag_from("as-yml/analyse_datatypes.yml")
+def analyse_datatypes():
+    filename: str = request.args.get('filename')
+    separator: str = request.args.get('separator')
+    enum: bool = request.args.get('enum', False)
+    enum_tol: float = request.args.get('enum_tol')
+
+    if filename is None or separator is None:
+        return Response(
+            json.dumps({'success': False, 'message': "Missing required query parameters 'filename' and 'separator'"}),
+            mimetype="application/json"), 400
+
     try:
-        filename = str(input_json["filename"])
-        enum = False
-        if "enum" in input_json:
-            enum = bool(input_json["enum"])
-            logging.info("Enum is present in payload and set to %s", enum)
-        enum_tol = 0.001
-        if "enum_tol" in input_json:
-            enum_tol = float(input_json["enum_tol"])
-            logging.info(
-                "Enum toleration is present in payload and set to %s", enum_tol
-            )
-        separator = None
-        if "separator" in input_json:
-            separator = str(input_json["separator"])
-            logging.info("Seperator is present in payload and set to %s", separator)
         res = determine_datatypes(filename, enum, enum_tol, separator)
         logging.debug("determine datatype resulted in datatypes %s", res)
-        return Response(res, mimetype="application/json"), 200
+        return Response(res, mimetype="application/json"), 202
     except OSError as e:
-        logging.error("Failed to determine data types: %s", e)
+        logging.error(f"Failed to determine data types: {e}")
         res = dumps({"success": False, "message": str(e)})
-        return Response(res, mimetype="application/json"), 409
-    except Error as e:
-        logging.error("Failed to determine separator %s", e)
+        return Response(res, mimetype="application/json"), 400
+    except ClientError as e:
+        logging.error(f"Failed to determine separator: {e}")
         res = dumps({"success": False, "message": str(e)})
-        return Response(res, mimetype="application/json"), 422
+        return Response(res, mimetype="application/json"), 404
     except Exception as e:
-        logging.error("Failed to determine data types: %s", e)
+        logging.error(f"Failed to determine data types: {e}")
         res = dumps({"success": False, "message": str(e)})
         return Response(res, mimetype="application/json"), 500
 
 
-@app.route("/api/analyse/determinepk", methods=["POST"], endpoint="analyze_determinepk")
-@swag_from("as-yml/determinepk.yml")
-def determinepk():
-    logging.debug("endpoint determine primary key, body=%s", request)
-    input_json = request.get_json()
+@app.route("/api/analyse/keys", methods=["GET"], endpoint="analyze_analyse_keys")
+@swag_from("as-yml/analyse_keys.yml")
+def analyse_keys():
+    filename: str = request.args.get("filename")
+    separator: str = request.args.get('separator')
+
+    if filename is None or separator is None:
+        return Response(
+            json.dumps({'success': False, 'message': "Missing required query parameters 'filename' and 'separator'"}),
+            400)
+
     try:
-        filepath = str(input_json["filepath"])
-        seperator = ","
-        if "seperator" in input_json:
-            seperator = str(input_json["seperator"])
-        res = determine_pk(filepath, seperator)
-        logging.debug("determined list of primary keys: %s", res)
-        return Response(res, mimetype="application/json"), 200
+        res = {
+            'keys': determine_pk(filename, separator)
+        }
+        logging.info(f"Determined list of primary keys: {res}")
+        return Response(dumps(res), mimetype="application/json"), 202
+    except OSError as e:
+        logging.error(f"Failed to determine primary key: {e}")
+        res = dumps({"success": False, "message": str(e)})
+        return Response(res, mimetype="application/json"), 404
     except Exception as e:
-        logging.error("Failed to determine primary key: %s", e)
+        logging.error(f"Failed to determine primary key: {e}")
         res = dumps({"success": False, "message": str(e)})
         return Response(res, mimetype="application/json"), 500
 
 
-@app.route("/api/analyse/determinestats", methods=["POST"], endpoint="analyse_determinestats")
-@swag_from("as-yml/determine_stats.yml")
-def determinestats():
-    logging.debug(
-        "endpoint to determine the statistical properties, body = %s", request
-    )
-    input_json = request.get_json()
-    if "filepath" not in input_json:
-        return {"message": "Missing 'filepath'", "status": 400}, 400
+@app.route("/api/analyse/database/<database_id>/table/<table_id>/statistics", methods=["GET"],
+           endpoint="analyse_analyse_table_stat")
+@swag_from("as-yml/analyse_table_stat.yml")
+def analyse_table_stat(database_id: int = None, table_id: int = None):
+    if database_id is None:
+        return Response(dumps({"message": "Missing path variable 'database_id'", "status": 400}),
+                        mimetype="application/json"), 400
+    if table_id is None:
+        return Response(dumps({"message": "Missing path variable 'table_id'", "status": 400}),
+                        mimetype="application/json"), 400
 
-    filepath = str(input_json["filepath"])
-    separator = str(input_json.get("separator", ","))
-    return determine_stats(filepath, separator)
-
-
-@app.route("/api/analyse/determinestat", methods=["POST"], endpoint="analyse_determinestat")
-@swag_from("as-yml/determine_stat.yml")
-def determinestat():
-    input_json = request.get_json()
-
-    if "database_id" not in input_json:
-        return {"message": "Missing 'database_id'", "status": 400}, 400
-    if "table_id" not in input_json:
-        return {"message": "Missing 'table_id'", "status": 400}, 400
-
-    res = determine_stats(
-        db,
-        opensearch_client,
-        database_id=input_json["database_id"],
-        table_id=input_json["table_id"],
-    )
-    if res:
-        return {"message": "Analysed statistical properties.", "status": 200}
-    else:
-        return {"message": "Database or table does not exist.", "status": 400}, 400
+    try:
+        res = determine_stats(db, opensearch_client, database_id=database_id, table_id=table_id)
+        logging.info(f"Analysed table statistics: {res}")
+        return Response(json.dumps(dataclasses.asdict(res)), mimetype="application/json"), 202
+    except OSError:
+        return Response(dumps({"message": "Database or table does not exist.", "status": 404}),
+                        mimetype="application/json"), 404
 
 
 rest_server_port = 5000

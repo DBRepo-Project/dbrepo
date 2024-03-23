@@ -9,10 +9,7 @@ import at.tuwien.api.orcid.OrcidDto;
 import at.tuwien.api.ror.RorDto;
 import at.tuwien.api.user.external.ExternalMetadataDto;
 import at.tuwien.api.user.external.affiliation.ExternalAffiliationDto;
-import at.tuwien.exception.DoiNotFoundException;
-import at.tuwien.exception.OrcidNotFoundException;
-import at.tuwien.exception.RemoteUnavailableException;
-import at.tuwien.exception.RorNotFoundException;
+import at.tuwien.exception.*;
 import at.tuwien.gateway.CrossrefGateway;
 import at.tuwien.gateway.OrcidGateway;
 import at.tuwien.gateway.RorGateway;
@@ -62,8 +59,8 @@ public class MetadataServiceUnitTest extends BaseUnitTest {
     private ObjectMapper objectMapper;
 
     @Test
-    public void findByUrl_orcid_succeeds() throws OrcidNotFoundException, RemoteUnavailableException,
-            RorNotFoundException, IOException, DoiNotFoundException {
+    public void findByUrl_orcid_succeeds() throws OrcidNotFoundException,
+            RorNotFoundException, IOException, DoiNotFoundException, IdentifierNotFoundException {
         final OrcidDto orcid = objectMapper
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
                 .readValue(new File("src/test/resources/json/orcid_jdoe.json"), OrcidDto.class);
@@ -93,8 +90,8 @@ public class MetadataServiceUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void findByUrl_doi_succeeds() throws OrcidNotFoundException, RemoteUnavailableException,
-            RorNotFoundException, IOException, DoiNotFoundException {
+    public void findByUrl_doi_succeeds() throws OrcidNotFoundException,
+            RorNotFoundException, IOException, DoiNotFoundException, IdentifierNotFoundException {
         final CrossrefDto doi = objectMapper
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
                 .readValue(new File("src/test/resources/json/doi_ec.json"), CrossrefDto.class);
@@ -126,8 +123,8 @@ public class MetadataServiceUnitTest extends BaseUnitTest {
     }
 
     @Test
-    public void findByUrl_ror_succeeds() throws OrcidNotFoundException, RemoteUnavailableException,
-            RorNotFoundException, IOException, DoiNotFoundException {
+    public void findByUrl_ror_succeeds() throws OrcidNotFoundException,
+            RorNotFoundException, IOException, DoiNotFoundException, IdentifierNotFoundException {
         final RorDto ror = objectMapper
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
                 .readValue(new File("src/test/resources/json/ror_tuw.json"), RorDto.class);
@@ -170,7 +167,7 @@ public class MetadataServiceUnitTest extends BaseUnitTest {
     public void findByUrl_isniMalformed_fails() {
 
         /* test */
-        assertThrows(RemoteUnavailableException.class, () -> {
+        assertThrows(IdentifierNotFoundException.class, () -> {
             metadataService.findByUrl("https://isni.org/isni/0000000506791090");
         });
     }

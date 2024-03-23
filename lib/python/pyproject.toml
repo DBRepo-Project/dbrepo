@@ -1,0 +1,39 @@
+[project]
+name = "dbrepo"
+version = "__APPVERSION__"
+description = "DBRepo Python Library"
+keywords = [
+    "DBRepo",
+    "Database Repository"
+]
+authors = [
+    { name = "Martin Weise, TU Wien", email = "martin.weise@tuwien.ac.at" }
+]
+readme = "README.md"
+license = { file = "LICENSE" }
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Topic :: Software Development :: Libraries",
+    "Programming Language :: Python :: 3.11",
+    "Operating System :: OS Independent",
+    "License :: OSI Approved :: Apache Software License",
+]
+requires-python = ">=3.11"
+dependencies = [
+    "requests >= 2.31",
+    "dataclasses",
+    "dataclasses-json",
+    "tuspy"
+]
+
+[build-system]
+requires = [
+    "setuptools >= 61.0"
+]
+build-backend = "setuptools.build_meta"
+
+[project.urls]
+Homepage = "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.4.2/"
+Documentation = "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.4.2/sphinx/"
+Issues = "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/issues"
+Source = "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/"

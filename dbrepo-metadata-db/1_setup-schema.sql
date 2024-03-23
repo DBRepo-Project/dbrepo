@@ -452,8 +452,8 @@ CREATE TABLE IF NOT EXISTS `mdb_related_identifiers`
     id       bigint       NOT NULL AUTO_INCREMENT,
     pid      bigint       NOT NULL,
     value    varchar(255) NOT NULL,
-    type     varchar(255),
-    relation varchar(255),
+    type     varchar(255) NOT NULL,
+    relation varchar(255) NOT NULL,
     PRIMARY KEY (id), /* must be a single id from persistent identifier concept */
     FOREIGN KEY (pid) REFERENCES mdb_identifiers (id),
     UNIQUE (pid, value)
