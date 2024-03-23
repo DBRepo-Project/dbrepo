@@ -4,14 +4,12 @@ import at.tuwien.api.identifier.*;
 import at.tuwien.api.identifier.ld.LdCreatorDto;
 import at.tuwien.api.identifier.ld.LdDatasetDto;
 import at.tuwien.entities.identifier.*;
-import lombok.extern.log4j.Log4j2;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 import org.mapstruct.Named;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 @Mapper(componentModel = "spring", uses = {DatabaseMapper.class})
@@ -20,8 +18,6 @@ public interface IdentifierMapper {
     org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(IdentifierMapper.class);
 
     Identifier identifierDtoToIdentifier(IdentifierDto data);
-
-    IdentifierBriefDto identifierToIdentifierBriefDto(Identifier data);
 
     @Mappings({
             @Mapping(target = "database.identifiers", ignore = true),

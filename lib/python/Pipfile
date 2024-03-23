@@ -1,0 +1,23 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+pika = "*"
+requests = "~=2.31"
+dataclasses = "*"
+dataclasses-json = "*"
+tuspy = "*"
+
+[dev-packages]
+build = "~=1.1"
+setuptools = "*"
+twine = "*"
+coverage = "*"
+pytest = "*"
+requests-mock = "*"
+furo = "*"
+
+[requires]
+python_version = "3.11"

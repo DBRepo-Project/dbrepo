@@ -476,6 +476,19 @@ public class DatabaseServiceIntegrationTest extends BaseUnitTest {
         final Database response = databaseService.create(createDto, USER_1_PRINCIPAL);
         assertEquals(database.getName(), response.getName());
         assertTrue(response.getInternalName().startsWith(database.getInternalName()));
+        assertNotNull(response.getContainer());
+        assertNotNull(response.getTables());
+        assertNotNull(response.getViews());
+        assertNotNull(response.getAccesses());
+        assertNotNull(response.getAccesses());
+        assertNotNull(response.getIdentifiers());
+        assertNotNull(response.getSubsets());
+        assertNotNull(response.getCreator());
+        assertNotNull(response.getContact());
+        assertNotNull(response.getOwner());
+        assertNull(response.getImage());
+        assertNotNull(response.getExchangeName());
+        assertEquals(database.getIsPublic(), response.getIsPublic());
         return response;
     }
 

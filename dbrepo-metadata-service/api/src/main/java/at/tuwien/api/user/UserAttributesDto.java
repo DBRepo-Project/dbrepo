@@ -3,6 +3,7 @@ package at.tuwien.api.user;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 import org.springframework.data.elasticsearch.annotations.Field;
@@ -17,6 +18,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 @ToString
 public class UserAttributesDto {
 
+    @NotNull
     @org.springframework.data.annotation.Transient
     @Schema(example = "light")
     private String theme;

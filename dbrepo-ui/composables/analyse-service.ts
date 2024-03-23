@@ -3,7 +3,7 @@ export const useAnalyseService = (): any => {
     const axios = useAxiosInstance()
     console.debug('suggest data types for columns')
     return new Promise<DataTypesDto[]>((resolve, reject) => {
-      axios.post<DataTypesDto[]>('/api/analyse/determinedt', data)
+      axios.get<DataTypesDto[]>('/api/analyse/datatypes', { params: data })
         .then((response) => {
           console.info('Suggested data types for column(s)')
           resolve(response.data)

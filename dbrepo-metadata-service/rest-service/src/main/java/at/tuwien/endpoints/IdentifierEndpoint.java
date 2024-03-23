@@ -84,11 +84,6 @@ public class IdentifierEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = IdentifierDto.class))}),
-            @ApiResponse(responseCode = "204",
-                    description = "Identifier could not be created",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "400",
                     description = "Identifier form contains invalid request data",
                     content = {@Content(
@@ -109,21 +104,6 @@ public class IdentifierEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "406",
-                    description = "Creating identifier not allowed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "409",
-                    description = "Identifier for this resource already exists",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "502",
-                    description = "Query information could not be retrieved",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "503",
                     description = "DataCite system did not respond",
                     content = {@Content(
@@ -134,7 +114,7 @@ public class IdentifierEndpoint {
                                                 @NotNull Principal principal) throws DatabaseNotFoundException,
             NotAllowedException, IdentifierRequestException, ViewNotFoundException, TableNotFoundException,
             QueryStoreException, QueryNotFoundException, ImageNotSupportedException, UserNotFoundException,
-            DatabaseConnectionException, RemoteUnavailableException {
+            DatabaseConnectionException {
         log.debug("endpoint create identifier, data={}, {}", data, PrincipalUtil.formatForDebug(principal));
         /* check data */
         if (!endpointValidator.validatePublicationDate(data)) {
@@ -213,9 +193,14 @@ public class IdentifierEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = IdentifierDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Failed to find metadata for identifier",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<ExternalMetadataDto> retrieve(@NotNull @Valid @RequestParam String url)
-            throws OrcidNotFoundException, RorNotFoundException, RemoteUnavailableException, DoiNotFoundException {
+            throws OrcidNotFoundException, RorNotFoundException, DoiNotFoundException, IdentifierNotFoundException {
         return ResponseEntity.ok(metadataService.findByUrl(url));
     }
 

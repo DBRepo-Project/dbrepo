@@ -6,6 +6,7 @@ import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -21,6 +22,6 @@ public class ConstraintsCreateDto {
     @JsonProperty("foreign_keys")
     private List<ForeignKeyCreateDto> foreignKeys = null;
 
-    private List<String> checks = null;
+    private Set<String> checks = null;
 
 }

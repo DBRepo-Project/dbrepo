@@ -2,12 +2,10 @@ package at.tuwien.service.impl;
 
 import at.tuwien.api.database.table.TableCreateDto;
 import at.tuwien.api.database.table.TableHistoryDto;
-import at.tuwien.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
-import at.tuwien.entities.database.table.columns.TableColumn;
-import at.tuwien.entities.database.table.columns.TableColumnConcept;
-import at.tuwien.entities.database.table.columns.TableColumnUnit;
+import at.tuwien.entities.database.table.constraints.Constraints;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.DatabaseMapper;
 import at.tuwien.mapper.QueryMapper;
@@ -15,8 +13,8 @@ import at.tuwien.mapper.TableMapper;
 import at.tuwien.repository.mdb.DatabaseRepository;
 import at.tuwien.repository.sdb.DatabaseIdxRepository;
 import at.tuwien.service.DatabaseService;
-import at.tuwien.service.SemanticService;
 import at.tuwien.service.TableService;
+import at.tuwien.service.UserService;
 import at.tuwien.utils.UserUtil;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.log4j.Log4j2;
@@ -29,6 +27,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,17 +37,19 @@ public class TableServiceImpl extends HibernateConnector implements TableService
 
     private final QueryMapper queryMapper;
     private final TableMapper tableMapper;
+    private final UserService userService;
     private final DatabaseMapper databaseMapper;
     private final DatabaseService databaseService;
     private final DatabaseRepository databaseRepository;
     private final DatabaseIdxRepository databaseIdxRepository;
 
     @Autowired
-    public TableServiceImpl(QueryMapper queryMapper, TableMapper tableMapper, DatabaseMapper databaseMapper,
-                            DatabaseService databaseService, DatabaseRepository databaseRepository,
-                            DatabaseIdxRepository databaseIdxRepository) {
+    public TableServiceImpl(QueryMapper queryMapper, TableMapper tableMapper, UserService userService,
+                            DatabaseMapper databaseMapper, DatabaseService databaseService,
+                            DatabaseRepository databaseRepository, DatabaseIdxRepository databaseIdxRepository) {
         this.queryMapper = queryMapper;
         this.tableMapper = tableMapper;
+        this.userService = userService;
         this.databaseMapper = databaseMapper;
         this.databaseService = databaseService;
         this.databaseRepository = databaseRepository;
@@ -131,7 +132,7 @@ public class TableServiceImpl extends HibernateConnector implements TableService
     @Transactional
     public Table createTable(Long databaseId, TableCreateDto createDto, Principal principal)
             throws ImageNotSupportedException, DatabaseNotFoundException, TableMalformedException,
-            TableNameExistsException, QueryMalformedException, TableNotFoundException {
+            TableNameExistsException, QueryMalformedException, TableNotFoundException, UserNotFoundException {
         /* find */
         final Database database = databaseService.find(databaseId);
         if (!database.getContainer().getImage().getName().equals("mariadb")) {
@@ -148,6 +149,7 @@ public class TableServiceImpl extends HibernateConnector implements TableService
             throw new TableNameExistsException("Failed to create table with name " + internalName + ": exists in metadata database");
         }
         final Table table = tableMapper.tableCreateDtoToTable(createDto);
+        final User owner = userService.find(UserUtil.getId(principal));
         /* run query */
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(), database.getContainer(), database);
         final Boolean generatedSequence;
@@ -163,9 +165,11 @@ public class TableServiceImpl extends HibernateConnector implements TableService
             table.setIsVersioned(true);
             table.setTdbid(databaseId);
             table.setDatabase(database);
-            table.setConstraints(null);
+            table.setCreator(owner);
             table.setCreatedBy(UserUtil.getId(principal));
+            table.setOwner(owner);
             table.setOwnedBy(UserUtil.getId(principal));
+            table.setIdentifiers(new LinkedList<>());
             /* map columns */
             table.setColumns(createDto.getColumns()
                     .stream()

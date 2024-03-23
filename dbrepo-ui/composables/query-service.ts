@@ -104,14 +104,14 @@ export const useQueryService = (): any => {
     })
   }
 
-  async function reExecuteCount(databaseId: number, queryId: number): Promise<QueryResultDto> {
+  async function reExecuteCount(databaseId: number, queryId: number): Promise<number> {
     const axios = useAxiosInstance()
     console.debug('re-execute query in database with id', databaseId)
-    return new Promise<QueryResultDto>((resolve, reject) => {
-      axios.get<QueryResultDto>(`/api/database/${databaseId}/query/${queryId}/data/count`)
+    return new Promise<number>((resolve, reject) => {
+      axios.head<void>(`/api/database/${databaseId}/query/${queryId}/data`)
         .then((response) => {
           console.info('Re-executed query in database with id', databaseId)
-          resolve(response.data)
+          resolve(Number(response.headers['X-Count']))
         })
         .catch((error) => {
           console.error('Failed to re-execute query', error)

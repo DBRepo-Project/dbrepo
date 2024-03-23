@@ -23,10 +23,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -199,7 +201,7 @@ public class ViewEndpoint {
     @Observed(name = "dbr_view_delete")
     @Operation(summary = "Delete one view", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200",
+            @ApiResponse(responseCode = "202",
                     description = "Delete view successfully",
                     content = {@Content}),
             @ApiResponse(responseCode = "400",
@@ -250,7 +252,7 @@ public class ViewEndpoint {
                 .build();
     }
 
-    @GetMapping("/{viewId}/data")
+    @RequestMapping(value = "/{viewId}/data", method = {RequestMethod.GET, RequestMethod.HEAD})
     @Transactional(readOnly = true)
     @Observed(name = "dbr_view_data_findall")
     @Operation(summary = "Find view data", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
@@ -279,10 +281,12 @@ public class ViewEndpoint {
     public ResponseEntity<QueryResultDto> data(@NotNull @PathVariable("databaseId") Long databaseId,
                                                @NotNull @PathVariable("viewId") Long viewId,
                                                Principal principal,
+                                               @NotNull HttpServletRequest request,
                                                @RequestParam(required = false) Long page,
                                                @RequestParam(required = false) Long size)
             throws DatabaseNotFoundException, NotAllowedException, ViewNotFoundException, PaginationException,
-            TableMalformedException, QueryMalformedException, UserNotFoundException {
+            TableMalformedException, QueryMalformedException, UserNotFoundException, QueryStoreException,
+            ImageNotSupportedException {
         log.debug("endpoint find view data, databaseId={}, viewId={}, page={}, size={}, {}", databaseId, viewId, page, size, PrincipalUtil.formatForDebug(principal));
         /* check */
         endpointValidator.validateDataParams(page, size);
@@ -309,59 +313,20 @@ public class ViewEndpoint {
         /* find */
         log.debug("find view data for database with id {}", databaseId);
         final View view = viewService.findById(databaseId, viewId, principal);
-        final QueryResultDto result = queryService.viewFindAll(databaseId, view, page, size, principal);
-        log.trace("execute view data for view with id {}", viewId);
-        log.debug("find view data resulted in result {}", result);
+        final Long count = queryService.viewCount(databaseId, view, principal);
+        final HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Count", "" + count);
+        if (request.getMethod().equals("GET")) {
+            final QueryResultDto result = queryService.viewFindAll(databaseId, view, page, size, principal);
+            log.trace("execute view data for view with id {}", viewId);
+            log.debug("find view data resulted in result {}", result);
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(result);
+        }
         return ResponseEntity.ok()
-                .body(result);
-    }
-
-    @GetMapping("/{viewId}/data/count")
-    @Transactional(readOnly = true)
-    @Observed(name = "dbr_view_data_count")
-    @Operation(summary = "Find view data count", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200",
-                    description = "Count data successfully",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = Long.class))}),
-            @ApiResponse(responseCode = "400",
-                    description = "Pagination not in valid range or find data query is malformed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "403",
-                    description = "Count data not allowed",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "404",
-                    description = "Database, view, container or user could not be found",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "409",
-                    description = "Could not count query data",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))})
-    })
-    public ResponseEntity<Long> count(@NotNull @PathVariable("databaseId") Long databaseId,
-                                      @NotNull @PathVariable("viewId") Long viewId,
-                                      Principal principal)
-            throws DatabaseNotFoundException, ViewNotFoundException, QueryStoreException, TableMalformedException,
-            QueryMalformedException, ImageNotSupportedException, UserNotFoundException {
-        log.debug("endpoint find view data count, databaseId={}, viewId={}, {}", databaseId, viewId, PrincipalUtil.formatForDebug(principal));
-        /* find */
-        databaseService.find(databaseId);
-        log.debug("find view data count for database with id {}", databaseId);
-        final View view = viewService.findById(databaseId, viewId, principal);
-        final Long result = queryService.viewCount(databaseId, view, principal);
-        log.trace("execute view data count for view with id {}", viewId);
-        log.debug("find view data count resulted in result {}", result);
-        return ResponseEntity.ok()
-                .body(result);
+                .headers(headers)
+                .build();
     }
 
 }
