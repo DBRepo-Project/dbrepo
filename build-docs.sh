@@ -17,7 +17,7 @@ function generate_sphinx {
   pip install -r ./requirements.txt > /dev/null
   mkdir -p ./final
   if [ "$1" = "latest" ]; then
-    sed -i -e "s/__APPVERSION__/$1/g" ./lib/python/setup.py ./lib/python/pyproject.toml ./lib/python/docs/conf.py ./lib/python/docs/index.rst ./lib/python/docs/index.rst
+    sed -i -e "s/__APPVERSION__/${APP_VERSION}/g" ./lib/python/setup.py ./lib/python/pyproject.toml ./lib/python/docs/conf.py ./lib/python/docs/index.rst ./lib/python/docs/index.rst
   fi
   sphinx-apidoc -o ./lib/python/docs/source ./lib/python/dbrepo
   sphinx-build -M html ./lib/python/docs/ ./lib/python/docs/build/
