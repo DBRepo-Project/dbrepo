@@ -17,7 +17,7 @@ services:
     image: docker.io/dbrepo/metadata-db:latest
     volumes:
       - metadata-db-data:/bitnami/mariadb
-      - ./dist/setup-schema_local.sql:/docker-entrypoint-initdb.d/setup-schema_local.sql
+      - ./dist/2_setup-data.sql:/docker-entrypoint-initdb.d/2_setup-data.sql
     ports:
       - "3306:3306"
     environment:
