@@ -4,6 +4,7 @@
 VERSION="latest"
 MIN_CPU=8
 MIN_RAM=8
+MIN_MAP_COUNT=262144
 SKIP_CHECKS=${SKIP_CHECKS:-0}
 
 # checks
@@ -39,6 +40,17 @@ if [[ $SKIP_CHECKS -eq 0 ]]; then
   else
     echo "RAM ${RAM}GB OK"
   fi
+  MAX_MAP_COUNT=$(cat /etc/sysctl.conf | grep -oP "vm.max_map_count=.*" | grep -oP "[0-9]+")
+  if [[ $MAX_MAP_COUNT -lt $MIN_MAP_COUNT ]]; then
+    echo "You do not have enough max. map counts:"
+    echo ""
+    echo "  - we found max. ${MAX_MAP_COUNT} map count instead of necessary ${MIN_MAP_COUNT}"
+    echo "  - update your /etc/sysctl.conf file and add the line 'vm.max_map_count=${MIN_MAP_COUNT}' at the end and apply it with 'sysctl -p'"
+    echo "  - if you believe this is a mistake, skip startup checks with the SKIP_CHECKS=1 flag"
+    exit 4
+  else
+    echo "MAP COUNT ${MAX_MAP_COUNT} OK"
+  fi
 else
   echo "[✨] Skipping checks ..."
 fi
@@ -60,13 +72,6 @@ curl -sSL -o ./dist/s3_config.json "https://gitlab.phaidra.org/fair-data-austria
 
 echo "[📦] Pulling images for version ${VERSION} ..."
 docker compose pull
-
-MAX_MAP_COUNT=$(cat /proc/sys/vm/max_map_count)
-if [ "$MAX_MAP_COUNT" -lt 262144 ]; then
-  echo "[🚀] Preparing environment ..."
-  sudo echo "vm.max_map_count=262144" >> /etc/sysctl.conf
-  sudo sysctl -p
-fi
 
 echo "[✨] Starting DBRepo ..."
 docker compose up -d

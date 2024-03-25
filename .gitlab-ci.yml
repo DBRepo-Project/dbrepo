@@ -127,6 +127,16 @@ build-helm:
     - find ./helm-charts -type f -exec sed -i -e "s/__CHARTVERSION__/${CHART_VERSION}/g" {} \;
     - helm package ./helm-charts/dbrepo --destination ./build
 
+test-install-script:
+  image: docker.io/docker:24-dind
+  stage: test
+  only:
+    refs:
+      - /^release-.*/
+  script:
+    - apk add bash
+    - bash install.sh
+
 test-metadata-service:
   image: maven:3-openjdk-17
   stage: test
