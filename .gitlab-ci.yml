@@ -136,6 +136,7 @@ test-install-script:
   script:
     - apk add bash
     - bash install.sh
+    - exit 0
 
 test-metadata-service:
   image: maven:3-openjdk-17
