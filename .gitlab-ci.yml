@@ -23,6 +23,7 @@ stages:
   - test
   - docs
   - release
+  - verify
   - scan
 
 lint-yaml:
@@ -127,9 +128,9 @@ build-helm:
     - find ./helm-charts -type f -exec sed -i -e "s/__CHARTVERSION__/${CHART_VERSION}/g" {} \;
     - helm package ./helm-charts/dbrepo --destination ./build
 
-test-install-script:
+verify-install-script:
   image: docker.io/docker:24-dind
-  stage: test
+  stage: verify
   only:
     refs:
       - /^release-.*/
