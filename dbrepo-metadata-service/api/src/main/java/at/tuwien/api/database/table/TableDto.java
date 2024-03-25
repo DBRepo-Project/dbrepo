@@ -36,6 +36,7 @@ public class TableDto {
     private Long id;
 
     @NotNull
+    @JsonProperty("database_id")
     @Field(name = "database_id", type = FieldType.Keyword)
     private Long tdbid;
 
@@ -129,6 +130,7 @@ public class TableDto {
     @Field(name = "columns", type = FieldType.Object)
     private List<ColumnDto> columns;
 
+    @NotNull
     @Field(name = "constraints", type = FieldType.Object)
     private ConstraintsDto constraints;
 

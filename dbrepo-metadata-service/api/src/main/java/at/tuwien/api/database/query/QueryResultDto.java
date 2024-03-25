@@ -28,8 +28,4 @@ public class QueryResultDto {
     @NotNull(message = "query id is required")
     private Long id;
 
-    @Schema(example = "1")
-    @JsonProperty("result_number")
-    private Long resultNumber;
-
 }

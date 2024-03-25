@@ -1,0 +1,103 @@
+tags:
+  - analyse-endpoint
+summary: "Determine datatypes"
+description: "This is a simple API which returns the datatypes of a (path) csv file"
+consumes:
+  - "application/json"
+produces:
+  - "application/json"
+parameters:
+  - name: filename
+    in: query
+    required: true
+    example: filename_s3_key
+    schema:
+      type: string
+  - name: separator
+    in: query
+    required: true
+    example: ","
+    schema:
+      type: string
+  - name: enum
+    in: query
+    required: false
+    example: "false"
+    schema:
+      type: boolean
+  - name: enum_tol
+    in: query
+    required: false
+    example: "2.5"
+    schema:
+      type: float
+responses:
+  202:
+    description: Determined data types successfully
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/DataTypesDto'
+  400:
+    description: "Failed to determine data types"
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/ErrorDto'
+  404:
+    description: "Failed to find file in Storage Service"
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/ErrorDto'
+  500:
+    description: "Unexpected system error"
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/ErrorDto'
+components:
+  schemas:
+    DetermineDataTypesDto:
+      required:
+        - filename
+        - separator
+      type: object
+      properties:
+        enum:
+          type: boolean
+          example: false
+        enum_tol:
+          type: double
+          example: 0.01
+        filename:
+          type: string
+          example: s3-key-from-seaweedfs
+        separator:
+          type: string
+          example: ","
+    DataTypesDto:
+      type: object
+      properties:
+        columns:
+          $ref: '#/components/schemas/SuggestedColumnDto'
+        line_termination:
+          type: string
+          example: "\r\n"
+        separator:
+          type: string
+          example: ","
+    SuggestedColumnDto:
+      type: object
+      properties:
+        column_name:
+          type: string
+    ErrorDto:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: Message

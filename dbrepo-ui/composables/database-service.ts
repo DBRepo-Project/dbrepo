@@ -1,12 +1,29 @@
 export const useDatabaseService = (): any => {
-  async function findAll(): Promise<DatabaseBriefDto[]> {
+  async function findAll(): Promise<DatabaseDto[]> {
     const axios = useAxiosInstance();
     console.debug('find databases');
-    return new Promise((resolve, reject) => {
-      axios.get<DatabaseBriefDto[]>('/api/database')
+    return new Promise<DatabaseDto[]>((resolve, reject) => {
+      axios.get<DatabaseDto[]>('/api/database')
         .then((response) => {
           console.info(`Found ${response.data.length} database(s)`);
           resolve(response.data);
+        })
+        .catch((error) => {
+          console.error('Failed to find databases', error);
+          reject(error);
+        });
+    });
+  }
+
+  async function findCount(): Promise<number> {
+    const axios = useAxiosInstance();
+    console.debug('find databases count');
+    return new Promise<number>((resolve, reject) => {
+      axios.head<number>('/api/database')
+        .then((response) => {
+          const count: number = Number(response.headers['x-count'])
+          console.info(`Found ${count} database(s)`);
+          resolve(count);
         })
         .catch((error) => {
           console.error('Failed to find databases', error);
@@ -95,7 +112,7 @@ export const useDatabaseService = (): any => {
     })
   }
 
-  function databaseToOwner (database: DatabaseDto) {
+  function databaseToOwner(database: DatabaseDto) {
     if (!database) {
       return null
     }
@@ -103,7 +120,7 @@ export const useDatabaseService = (): any => {
     return userService.userToFullName(database.owner)
   }
 
-  function databaseToContact (database: DatabaseDto) {
+  function databaseToContact(database: DatabaseDto) {
     if (!database) {
       return null
     }
@@ -111,7 +128,7 @@ export const useDatabaseService = (): any => {
     return userService.userToFullName(database.contact)
   }
 
-  function databaseToJsonLd (database: DatabaseDto): Dataset {
+  function databaseToJsonLd(database: DatabaseDto): Dataset {
     const jsonLd: Dataset = {
       '@context': 'https://schema.org/',
       '@type': 'Dataset',
@@ -140,12 +157,23 @@ export const useDatabaseService = (): any => {
     return jsonLd
   }
 
-  function isOwner (database: DatabaseDto, user: UserDto): boolean {
+  function isOwner(database: DatabaseDto, user: UserDto): boolean {
     if (!database || !user) {
       return false
     }
     return database.owner.id === user.id
   }
 
-  return {findAll, findOne, updateVisibility, updateImage, updateOwner, create, databaseToOwner, databaseToContact, databaseToJsonLd, isOwner}
+  return {
+    findAll,
+    findOne,
+    updateVisibility,
+    updateImage,
+    updateOwner,
+    create,
+    databaseToOwner,
+    databaseToContact,
+    databaseToJsonLd,
+    isOwner
+  }
 }

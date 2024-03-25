@@ -19,9 +19,11 @@ public class RelatedIdentifierSaveDto {
     @Schema(example = "10.70124/dc4zh-9ce78")
     private String value;
 
+    @NotNull
     @Schema(example = "DOI")
     private RelatedTypeDto type;
 
+    @NotNull
     @Schema(example = "Cites")
     private RelationTypeDto relation;
 

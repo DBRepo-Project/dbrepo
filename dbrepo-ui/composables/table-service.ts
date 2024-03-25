@@ -86,7 +86,7 @@ export const useTableService = (): any => {
     const axios = useAxiosInstance()
     console.debug('get data count for table with id', tableId, 'in database with id', databaseId);
     return new Promise<number>((resolve, reject) => {
-      axios.get<number>(`/api/database/${databaseId}/table/${tableId}/data/count`, {params: mapFilter(timestamp, null, null)})
+      axios.head<number>(`/api/database/${databaseId}/table/${tableId}/data`, {params: mapFilter(timestamp, null, null)})
         .then((response) => {
           console.info('Got data count for table with id', tableId, 'in database with id', databaseId)
           resolve(response.data)

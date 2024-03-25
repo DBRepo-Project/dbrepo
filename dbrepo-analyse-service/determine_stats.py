@@ -1,21 +1,34 @@
+from dataclasses import dataclass, field
+from dataclasses_json import dataclass_json
+
 from pandas import DataFrame
 from sqlalchemy import create_engine, text
 
 
-def determine_stats(db, os, **kwargs):
+@dataclass_json
+@dataclass(init=True, eq=True)
+class TableStats:
+    columns: dict[str, {"val_min": float, "val_max": float, "mean": float, "median": float,
+                        "std_dev": float}] = field(default_factory=dict)
+
+
+def determine_stats(db, os, **kwargs) -> TableStats:
     database_id = kwargs.get("database_id")
     table_id = kwargs.get("table_id")
 
-    with db.engine.connect() as connection:
-        database_name = connection.execute(
-            text(f"SELECT internal_name FROM mdb_databases WHERE id={database_id}")
-        ).fetchone()[0]
-        table_name = connection.execute(
-            text(f"SELECT internal_name FROM mdb_tables WHERE id={table_id}")
-        ).fetchone()[0]
+    try:
+        with db.engine.connect() as connection:
+            database_name = connection.execute(
+                text(f"SELECT internal_name FROM mdb_databases WHERE id={database_id}")
+            ).fetchone()[0]
+            table_name = connection.execute(
+                text(f"SELECT internal_name FROM mdb_tables WHERE id={table_id}")
+            ).fetchone()[0]
+    except Exception:
+        raise OSError(f"Failed to get database name and table name")
 
     if not database_name or not table_name:
-        return False
+        raise OSError(f"Failed to get database name and table name")
 
     data_db_host = kwargs.get("data_db_host", "data-db")
     data_db_port = kwargs.get("data_db_port", 3306)
@@ -30,6 +43,7 @@ def determine_stats(db, os, **kwargs):
         rows = result.fetchall()
 
     df = DataFrame(rows, columns=result.keys())
+    stats = TableStats()
     for column, dtype in df.dtypes.items():
         # Check if the column has a numeric data type
         if dtype.kind in "fi":
@@ -41,6 +55,9 @@ def determine_stats(db, os, **kwargs):
                 "median": df[column].median(),
                 "std_dev": df[column].std(),
             }
+            stats.columns[column] = {"val_min": float(df[column].min()), "val_max": float(df[column].max()),
+                                     "mean": float(df[column].mean()), "median": float(df[column].median()),
+                                     "std_dev": float(df[column].std())}
 
             # Store statistical properties to the metadata db and index to OS
             # TODO: use prepared statements to eliminate SQL injection
@@ -93,4 +110,4 @@ def determine_stats(db, os, **kwargs):
                 refresh=True,
             )
 
-    return True
+    return stats

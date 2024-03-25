@@ -209,7 +209,7 @@ services:
     restart: "no"
     container_name: dbrepo-broker-service
     hostname: broker-service
-    image: docker.io/bitnami/rabbitmq:3.10
+    image: docker.io/bitnami/rabbitmq:3.12-debian-12
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -416,9 +416,7 @@ services:
     restart: "no"
     container_name: dbrepo-upload-service
     hostname: upload-service
-    image: docker.io/tusproject/tusd:v1.12
-    ports:
-      - "1080:1080"
+    image: docker.io/tusproject/tusd:v2.4.0
     command:
       - "--base-path=/api/upload/files/"
       - "-s3-endpoint=${STORAGE_ENDPOINT:-http://storage-service:9000}"
@@ -431,7 +429,7 @@ services:
       dbrepo-storage-service:
         condition: service_healthy
     healthcheck:
-      test: wget -qO- localhost:1080/metrics | grep "tusd" || exit 1
+      test: wget -qO- localhost:8080/metrics | grep "tusd" || exit 1
       interval: 10s
       timeout: 5s
       retries: 12

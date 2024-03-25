@@ -6,7 +6,9 @@ import at.tuwien.api.database.DatabaseTransferDto;
 import at.tuwien.config.QueryConfig;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.container.image.ContainerImageDate;
+import at.tuwien.entities.database.AccessType;
 import at.tuwien.entities.database.Database;
+import at.tuwien.entities.database.DatabaseAccess;
 import at.tuwien.entities.database.View;
 import at.tuwien.entities.database.table.Table;
 import at.tuwien.entities.database.table.columns.TableColumn;
@@ -28,6 +30,7 @@ import at.tuwien.service.*;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.log4j.Log4j2;
 import net.sf.jsqlparser.JSQLParserException;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -125,17 +128,30 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
 
     @Override
     @Transactional
-    public Database create(DatabaseCreateDto createDto, Principal principal) throws ContainerNotFoundException,
+    public Database create(DatabaseCreateDto data, Principal principal) throws ContainerNotFoundException,
             DatabaseMalformedException, UserNotFoundException, QueryMalformedException {
         /* start the object */
-        final Database database = databaseMapper.databaseCreateDtoToDatabase(createDto);
-        final Container container = containerService.find(database.getCid());
+        final Container container = containerService.find(data.getCid());
         final User owner = userService.findByUsername(principal.getName());
-        database.setContainer(container);
-        database.setOwnedBy(owner.getId());
-        database.setCreatedBy(owner.getId());
-        database.setContactPerson(owner.getId());
-        database.setExchangeName("dbrepo");
+        final Database database = Database.builder()
+                .isPublic(data.getIsPublic())
+                .name(data.getName())
+                .internalName(databaseMapper.nameToInternalName(data.getName()) + "_" + RandomStringUtils.randomAlphabetic(4).toLowerCase())
+                .cid(data.getCid())
+                .container(container)
+                .ownedBy(owner.getId())
+                .owner(owner)
+                .createdBy(owner.getId())
+                .creator(owner)
+                .contactPerson(owner.getId())
+                .contact(owner)
+                .exchangeName("dbrepo")
+                .tables(new LinkedList<>())
+                .views(new LinkedList<>())
+                .subsets(new LinkedList<>())
+                .accesses(new LinkedList<>())
+                .identifiers(new LinkedList<>())
+                .build();
         final ComboPooledDataSource dataSource = getPrivilegedDataSource(container.getImage(), container);
         try {
             final Connection connection = dataSource.getConnection();
@@ -342,9 +358,9 @@ public class MariaDbServiceImpl extends HibernateConnector implements DatabaseSe
                     log.info("Enabled system-versioning for table with name {}", table.getInternalName());
                 }
                 table.setConstraints(Constraints.builder()
-                                .checks(new LinkedHashSet<>())
-                                .foreignKeys(new LinkedList<>())
-                                .uniques(new LinkedList<>())
+                        .checks(new LinkedHashSet<>())
+                        .foreignKeys(new LinkedList<>())
+                        .uniques(new LinkedList<>())
                         .build());
                 table.setProcessedConstraints(false);
                 final PreparedStatement preparedStatement3 = tableMapper.tableToCreateHistoryViewRawQuery(connection, table);

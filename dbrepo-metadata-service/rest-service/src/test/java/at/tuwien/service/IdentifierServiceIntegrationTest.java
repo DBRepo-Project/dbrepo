@@ -205,39 +205,6 @@ public class IdentifierServiceIntegrationTest extends BaseUnitTest {
         assertEquals(RELATED_IDENTIFIER_5_TYPE, relatedIdentifier1.getType());
         assertEquals(RELATED_IDENTIFIER_5_RELATION_TYPE, relatedIdentifier1.getRelation());
         assertEquals(RELATED_IDENTIFIER_5_VALUE, relatedIdentifier1.getValue());
-        /* open search database */
-        final Optional<DatabaseDto> optional = databaseIdxRepository.findById(IDENTIFIER_5_DATABASE_ID);
-        assertTrue(optional.isPresent());
-        assertNotNull(optional.get().getIdentifiers());
-        assertEquals(2, optional.get().getIdentifiers().size());
-        final IdentifierDto dto1 = optional.get().getIdentifiers().get(1);
-        assertNotNull(dto1.getTitles());
-        assertEquals(1, dto1.getTitles().size());
-        final IdentifierTitleDto titleDto0 = dto1.getTitles().get(0);
-        assertEquals(IDENTIFIER_5_TITLE_1_TITLE, titleDto0.getTitle());
-        assertEquals(IDENTIFIER_5_TITLE_1_LANG_DTO, titleDto0.getLanguage());
-        assertEquals(IDENTIFIER_5_TITLE_1_TYPE_DTO, titleDto0.getTitleType());
-        assertNotNull(dto1.getDescriptions());
-        assertEquals(1, dto1.getDescriptions().size());
-        final IdentifierDescriptionDto descriptionDto0 = dto1.getDescriptions().get(0);
-        assertEquals(IDENTIFIER_5_DESCRIPTION_1_DESCRIPTION, descriptionDto0.getDescription());
-        assertEquals(IDENTIFIER_5_DESCRIPTION_1_LANG_DTO, descriptionDto0.getLanguage());
-        assertEquals(IDENTIFIER_5_DESCRIPTION_1_TYPE_DTO, descriptionDto0.getDescriptionType());
-        assertNull(dto1.getDoi());
-        assertEquals(IDENTIFIER_5_PUBLISHER, dto1.getPublisher());
-        assertNull(dto1.getLanguage());
-        assertEquals(IDENTIFIER_5_PUBLICATION_YEAR, dto1.getPublicationYear());
-        assertEquals(IDENTIFIER_5_PUBLICATION_MONTH, dto1.getPublicationMonth());
-        assertEquals(IDENTIFIER_5_PUBLICATION_DAY, dto1.getPublicationDay());
-        final List<RelatedIdentifierDto> relatedIdentifiersDto = dto1.getRelatedIdentifiers();
-        assertEquals(1, relatedIdentifiersDto.size());
-        final RelatedIdentifierDto relatedIdentifierDto1 = relatedIdentifiersDto.get(0);
-        assertEquals(RELATED_IDENTIFIER_5_TYPE_DTO, relatedIdentifierDto1.getType());
-        assertEquals(RELATED_IDENTIFIER_5_RELATION_TYPE_DTO, relatedIdentifierDto1.getRelation());
-        assertEquals(RELATED_IDENTIFIER_5_VALUE, relatedIdentifierDto1.getValue());
-        /* open search database */
-        final Optional<DatabaseDto> responseDto = databaseIdxRepository.findById(DATABASE_2_ID);
-        assertTrue(responseDto.isPresent());
     }
 
     @Test

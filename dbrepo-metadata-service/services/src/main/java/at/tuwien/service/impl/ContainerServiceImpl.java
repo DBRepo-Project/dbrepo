@@ -58,6 +58,12 @@ public class ContainerServiceImpl implements ContainerService {
                 .image(optional2.get())
                 .name(data.getName())
                 .internalName(containerMapper.containerToInternalContainerName(data.getName()))
+                .host(data.getHost())
+                .port(data.getPort())
+                .sidecarHost(data.getSidecarHost())
+                .sidecarPort(data.getSidecarPort())
+                .privilegedUsername(data.getPrivilegedUsername())
+                .privilegedPassword(data.getPrivilegedPassword())
                 .build();
         log.info("Created container with id {} in metadata database", container.getId());
         return container;

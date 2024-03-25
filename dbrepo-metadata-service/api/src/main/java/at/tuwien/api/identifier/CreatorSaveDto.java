@@ -16,11 +16,9 @@ import lombok.extern.jackson.Jacksonized;
 @ToString
 public class CreatorSaveDto {
 
-    @NotBlank
     @Schema(example = "Josiah")
     private String firstname;
 
-    @NotBlank
     @Schema(example = "Carberry")
     private String lastname;
 
@@ -29,7 +27,6 @@ public class CreatorSaveDto {
     @Schema(example = "Carberry, Josiah")
     private String creatorName;
 
-    @NotBlank
     @JsonProperty("name_type")
     @Schema(example = "Personal")
     private NameTypeDto nameType;

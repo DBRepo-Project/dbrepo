@@ -136,7 +136,7 @@ export default {
       try {
         this.loading = true
         const tableService = useTableService()
-        this.history = await tableService.history(this.table.tdbid, this.table.id)
+        this.history = await tableService.history(this.table.database_id, this.table.id)
         // this.chartData.labels = history.map(d => format(new Date(d.timestamp), 'dd.MM.yyyy HH:mm:ss'))
         // this.chartData.datasets = [{
         //   // backgroundColor: 'red',

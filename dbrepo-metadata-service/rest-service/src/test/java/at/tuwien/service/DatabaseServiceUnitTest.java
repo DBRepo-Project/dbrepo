@@ -48,7 +48,7 @@ public class DatabaseServiceUnitTest extends BaseUnitTest {
     @Test
     public void findAll_succeeds() {
         /* mock */
-        when(databaseRepository.findAll())
+        when(databaseRepository.findAllDesc())
                 .thenReturn(List.of(DATABASE_1));
 
         /* test */

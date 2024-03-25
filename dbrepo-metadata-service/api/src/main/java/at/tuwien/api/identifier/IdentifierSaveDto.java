@@ -4,6 +4,7 @@ import at.tuwien.api.database.LanguageTypeDto;
 import at.tuwien.api.database.LicenseDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -41,6 +42,7 @@ public class IdentifierSaveDto {
     @Schema(example = "database")
     private IdentifierTypeDto type;
 
+    @NotNull
     private List<IdentifierSaveTitleDto> titles;
 
     private List<IdentifierSaveDescriptionDto> descriptions;
@@ -57,6 +59,7 @@ public class IdentifierSaveDto {
     @Schema(example = "12")
     private Integer publicationMonth;
 
+    @NotBlank
     @Schema(example = "TU Wien")
     private String publisher;
 

@@ -41,7 +41,7 @@ export const useAxiosInstance = () => {
           config.headers.Authorization = `Bearer ${response.access_token}`
           return config
         })
-        .error((error: AxiosError) => {
+        .catch((error: AxiosError) => {
           if (parseKeycloakError(error)?.error == 'invalid_grant') {
             console.error('Invalid user credentials: perform logout')
             userStore.logout()

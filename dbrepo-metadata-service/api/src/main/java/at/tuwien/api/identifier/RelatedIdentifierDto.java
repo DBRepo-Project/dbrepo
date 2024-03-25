@@ -34,10 +34,12 @@ public class RelatedIdentifierDto {
     @Field(name = "value", type = FieldType.Keyword)
     private String value;
 
+    @NotNull
     @Schema(example = "DOI")
     @Field(name = "type", type = FieldType.Keyword)
     private RelatedTypeDto type;
 
+    @NotNull
     @Schema(example = "Cites")
     @Field(name = "relation", type = FieldType.Keyword)
     private RelationTypeDto relation;
@@ -47,18 +49,6 @@ public class RelatedIdentifierDto {
     @NotNull
     @org.springframework.data.annotation.Transient
     private UserDto creator;
-
-    @NotNull
-    @Field(name = "created", type = FieldType.Date)
-    @Schema(example = "2021-03-12T15:26:21Z")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
-    private Instant created;
-
-    @JsonProperty("last_modified")
-    @Schema(example = "2021-03-12T15:26:21Z")
-    @org.springframework.data.annotation.Transient
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
-    private Instant lastModified;
 
 }
 

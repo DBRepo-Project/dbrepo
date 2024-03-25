@@ -16,6 +16,7 @@ import at.tuwien.service.AccessService;
 import at.tuwien.service.DatabaseService;
 import at.tuwien.service.TableService;
 import at.tuwien.service.impl.QueryServiceImpl;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -38,6 +39,7 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @Log4j2
@@ -259,8 +261,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(PaginationException.class, () -> {
-            generic_getAll(DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8, null, null, null, null, null,
-                    3L, null, null);
+            generic_getAll(DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8, null, null, null, null, null, 3L, null, null, true);
         });
     }
 
@@ -270,8 +271,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(PaginationException.class, () -> {
-            generic_getAll(DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8, null, null, null, null, 3L,
-                    null, null, null);
+            generic_getAll(DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8, null, null, null, null, 3L, null, null, null, true);
         });
     }
 
@@ -281,8 +281,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(PaginationException.class, () -> {
-            generic_getAll(DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8, null, null, null, null, -3L,
-                    3L, null, null);
+            generic_getAll(DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8, null, null, null, null, -3L, 3L, null, null, true);
         });
     }
 
@@ -292,8 +291,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(PaginationException.class, () -> {
-            generic_getAll(DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8, null, null, null, null, 3L,
-                    -3L, null, null);
+            generic_getAll(DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8, null, null, null, null, 3L, -3L, null, null, true);
         });
     }
 
@@ -303,8 +301,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(PaginationException.class, () -> {
-            generic_getAll(DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8, null, null, null, null, 0L,
-                    0L, null, null);
+            generic_getAll(DATABASE_3_ID, TABLE_8_ID, DATABASE_3, TABLE_8, null, null, null, null, 0L, 0L, null, null, true);
         });
     }
 
@@ -314,7 +311,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            generic_getAll(DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, null, null, null, null, null, null, null, null);
+            generic_getAll(DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, null, null, null, null, null, null, null, null, true);
         });
     }
 
@@ -324,7 +321,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            generic_getAll(DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_4_ID, DATABASE_1_USER_1_READ_ACCESS, USER_4_PRINCIPAL, null, null, null, null, null);
+            generic_getAll(DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_4_ID, DATABASE_1_USER_1_READ_ACCESS, USER_4_PRINCIPAL, null, null, null, null, null, true);
         });
     }
 
@@ -334,7 +331,7 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            generic_getCount(DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_4_ID, DATABASE_1_USER_1_READ_ACCESS, USER_4_PRINCIPAL, null);
+            generic_getAll(DATABASE_1_ID, TABLE_1_ID, DATABASE_1, TABLE_1, USER_4_ID, DATABASE_1_USER_1_READ_ACCESS, USER_4_PRINCIPAL, null, null, null, null, null, false);
         });
     }
 
@@ -371,11 +368,11 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
                                 DatabaseAccess access, Principal principal, Instant timestamp, Long page, Long size,
                                 SortType sortDirection, String sortColumn) throws TableNotFoundException, SortException,
             TableMalformedException, NotAllowedException, QueryMalformedException, DatabaseNotFoundException,
-            ImageNotSupportedException, PaginationException, AccessDeniedException {
+            ImageNotSupportedException, PaginationException, AccessDeniedException, QueryStoreException {
 
         /* test */
         generic_getAll(databaseId, tableId, database, table, userId, access, principal, timestamp,
-                page, size, sortDirection, sortColumn);
+                page, size, sortDirection, sortColumn, true);
     }
 
     public static Stream<Arguments> getCount_succeeds_parameters() {
@@ -409,10 +406,11 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
     public void getCount_succeeds(String test, Long databaseId, Long tableId, Database database, Table table,
                                   UUID userId, DatabaseAccess access, Principal principal, Instant timestamp)
             throws TableNotFoundException, QueryStoreException, TableMalformedException, NotAllowedException,
-            QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, AccessDeniedException {
+            QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, AccessDeniedException,
+            SortException, PaginationException {
 
         /* test */
-        generic_getCount(databaseId, tableId, database, table, userId, access, principal, timestamp);
+        generic_getAll(databaseId, tableId, database, table, userId, access, principal, timestamp, null, null, null, null, false);
     }
 
 
@@ -461,9 +459,9 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
 
     public void generic_getAll(Long databaseId, Long tableId, Database database, Table table, UUID userId,
                                DatabaseAccess access, Principal principal, Instant timestamp, Long page, Long size,
-                               SortType sortDirection, String sortColumn) throws TableMalformedException,
+                               SortType sortDirection, String sortColumn, boolean isGet) throws TableMalformedException,
             NotAllowedException, PaginationException, TableNotFoundException, SortException, QueryMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, AccessDeniedException {
+            DatabaseNotFoundException, ImageNotSupportedException, AccessDeniedException, QueryStoreException {
 
         /* mock */
         when(databaseService.find(databaseId))
@@ -474,38 +472,25 @@ public class TableDataEndpointUnitTest extends BaseUnitTest {
                 .thenReturn(access);
         when(queryService.tableFindAll(eq(databaseId), eq(tableId), eq(timestamp), anyLong(), anyLong(), eq(principal)))
                 .thenReturn(QUERY_1_RESULT_DTO);
+        when(queryService.tableCount(eq(databaseId), eq(tableId), eq(timestamp), eq(principal)))
+                .thenReturn(QUERY_1_RESULT_NUMBER);
+        final HttpServletRequest request = mock(HttpServletRequest.class);
+        when(request.getMethod())
+                .thenReturn(isGet ? "GET" : "HEAD");
 
         /* test */
         final ResponseEntity<QueryResultDto> response = dataEndpoint.getAll(databaseId, tableId,
-                principal, timestamp, page, size, sortDirection, sortColumn);
+                principal, request, timestamp, page, size, sortDirection, sortColumn);
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals(QUERY_1_RESULT_ID, response.getBody().getId());
-        assertEquals(QUERY_1_RESULT_NUMBER, response.getBody().getResultNumber());
-        assertEquals(QUERY_1_RESULT_RESULT, response.getBody().getResult());
-    }
-
-    public void generic_getCount(Long databaseId, Long tableId, Database database, Table table, UUID userId,
-                                 DatabaseAccess access, Principal principal, Instant timestamp)
-            throws TableMalformedException, NotAllowedException, TableNotFoundException, QueryStoreException,
-            QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException, AccessDeniedException {
-
-        /* mock */
-        when(databaseService.find(databaseId))
-                .thenReturn(database);
-        when(tableService.find(databaseId, tableId))
-                .thenReturn(table);
-        when(accessService.find(databaseId, userId))
-                .thenReturn(access);
-        when(queryService.tableCount(databaseId, tableId, timestamp, principal))
-                .thenReturn(QUERY_1_RESULT_NUMBER);
-
-        /* test */
-        final ResponseEntity<Long> response = dataEndpoint.getCount(databaseId, tableId,
-                principal, timestamp);
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals(QUERY_1_RESULT_NUMBER, response.getBody());
+        assertNotNull(response.getHeaders().get("X-Count"));
+        assertEquals(1, response.getHeaders().get("X-Count").size());
+        assertEquals(QUERY_1_RESULT_NUMBER, Long.parseLong(response.getHeaders().get("X-Count").get(0)));
+        if (isGet) {
+            assertNotNull(response.getBody());
+            assertEquals(QUERY_1_RESULT_ID, response.getBody().getId());
+            assertEquals(QUERY_1_RESULT_NUMBER, response.getBody().getResult().size());
+            assertEquals(QUERY_1_RESULT_RESULT, response.getBody().getResult());
+        }
     }
 
 }

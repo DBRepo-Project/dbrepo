@@ -62,6 +62,7 @@ public class ContainerDto {
     @Field(name = "ui_port", type = FieldType.Integer)
     private Integer uiPort;
 
+    @NotNull
     private ImageDto image;
 
     @NotNull
