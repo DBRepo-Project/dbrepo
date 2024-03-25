@@ -128,12 +128,12 @@ public class TableEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<TableBriefDto> create(@NotNull @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<TableDto> create(@NotNull @PathVariable("databaseId") Long databaseId,
                                                 @NotNull @Valid @RequestBody TableCreateDto createDto,
                                                 @NotNull Principal principal)
             throws ImageNotSupportedException, DatabaseNotFoundException, TableMalformedException,
             TableNameExistsException, QueryMalformedException, NotAllowedException, AccessDeniedException,
-            TableNotFoundException {
+            TableNotFoundException, UserNotFoundException {
         log.debug("endpoint create table, databaseId={}, createDto={}, {}", databaseId, createDto, PrincipalUtil.formatForDebug(principal));
         /* checks */
         if (createDto.getName().isBlank()) {
@@ -143,7 +143,7 @@ public class TableEndpoint {
         endpointValidator.validateOnlyAccess(databaseId, principal, true);
         endpointValidator.validateColumnCreateConstraints(createDto);
         final Table table = tableService.createTable(databaseId, createDto, principal);
-        final TableBriefDto dto = tableMapper.tableToTableBriefDto(table);
+        final TableDto dto = tableMapper.tableToTableDto(table);
         log.trace("create table resulted in table {}", dto);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(dto);

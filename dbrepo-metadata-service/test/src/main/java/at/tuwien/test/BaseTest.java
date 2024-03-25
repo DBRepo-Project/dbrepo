@@ -1037,15 +1037,6 @@ public abstract class BaseTest {
     public final static UUID DATABASE_2_OWNER = USER_2_ID;
     public final static UUID DATABASE_2_CREATOR = USER_2_ID;
 
-    public final static DatabaseBriefDto DATABASE_2_DTO_BRIEF = DatabaseBriefDto.builder()
-            .id(DATABASE_2_ID)
-            .container(CONTAINER_2_DTO_BRIEF)
-            .created(DATABASE_2_CREATED)
-            .isPublic(DATABASE_2_PUBLIC)
-            .name(DATABASE_2_NAME)
-            .internalName(DATABASE_2_INTERNALNAME)
-            .build();
-
     public final static DatabaseCreateDto DATABASE_2_CREATE = DatabaseCreateDto.builder()
             .name(DATABASE_2_NAME)
             .isPublic(DATABASE_2_PUBLIC)
@@ -1072,14 +1063,6 @@ public abstract class BaseTest {
             .exchangeName(DATABASE_3_EXCHANGE)
             .tables(List.of()) /* TABLE_3, TABLE_3, TABLE_3 */
             .views(List.of())
-            .build();
-
-    public final static DatabaseBriefDto DATABASE_3_DTO_BRIEF = DatabaseBriefDto.builder()
-            .id(DATABASE_3_ID)
-            .created(DATABASE_3_CREATED)
-            .isPublic(DATABASE_3_PUBLIC)
-            .name(DATABASE_3_NAME)
-            .internalName(DATABASE_3_INTERNALNAME)
             .build();
 
     public final static DatabaseCreateDto DATABASE_3_CREATE = DatabaseCreateDto.builder()
@@ -1112,18 +1095,6 @@ public abstract class BaseTest {
             .owner(USER_4_DTO)
             .tables(List.of())
             .views(List.of())
-            .build();
-
-    public final static DatabaseBriefDto DATABASE_4_DTO_BRIEF = DatabaseBriefDto.builder()
-            .id(DATABASE_4_ID)
-            .created(Instant.now().minus(4, HOURS))
-            .isPublic(DATABASE_4_PUBLIC)
-            .name(DATABASE_4_NAME)
-            .description(DATABASE_4_DESCRIPTION)
-            .internalName(DATABASE_4_INTERNALNAME)
-            .created(DATABASE_4_CREATED)
-            .creator(USER_4_BRIEF_DTO)
-            .owner(USER_4_BRIEF_DTO)
             .build();
 
     public final static TableCreateDto TABLE_0_CREATE_DTO = TableCreateDto.builder()
@@ -2803,7 +2774,6 @@ public abstract class BaseTest {
 
     public final static QueryResultDto QUERY_4_RESULT_DTO = QueryResultDto.builder()
             .id(QUERY_4_RESULT_ID)
-            .resultNumber(QUERY_4_RESULT_NUMBER)
             .result(QUERY_4_RESULT_RESULT)
             .build();
 
@@ -4137,6 +4107,8 @@ public abstract class BaseTest {
 
     public final static ConstraintsDto TABLE_3_CONSTRAINTS_DTO = ConstraintsDto.builder()
             .uniques(List.of(UniqueDto.builder().columns(List.of(TABLE_3_COLUMNS_DTO.get(0))).build()))
+            .foreignKeys(List.of())
+            .checks(Set.of())
             .build();
 
     public final static List<TableColumn> TABLE_5_COLUMNS = List.of(TableColumn.builder()
@@ -4835,7 +4807,7 @@ public abstract class BaseTest {
             .referencedColumns(List.of(COLUMN_4_1_NAME))
             .build());
 
-    public final static List<String> TABLE_6_CHECKS_CREATE = List.of(
+    public final static Set<String> TABLE_6_CHECKS_CREATE = Set.of(
             COLUMN_5_2_NAME + " != " + COLUMN_5_3_NAME);
 
     public final static ConstraintsCreateDto TABLE_6_CONSTRAINTS_CREATE = ConstraintsCreateDto.builder()
@@ -5376,7 +5348,6 @@ public abstract class BaseTest {
 
     public final static QueryResultDto QUERY_1_RESULT_DTO = QueryResultDto.builder()
             .id(QUERY_1_RESULT_ID)
-            .resultNumber(QUERY_1_RESULT_NUMBER)
             .result(QUERY_1_RESULT_RESULT)
             .build();
 
@@ -6809,15 +6780,6 @@ public abstract class BaseTest {
             .identifiers(List.of(IDENTIFIER_1_DTO, IDENTIFIER_2_DTO, IDENTIFIER_3_DTO, IDENTIFIER_4_DTO))
             .tables(List.of(TABLE_1_DTO, TABLE_2_DTO, TABLE_3_DTO, TABLE_4_DTO))
             .views(List.of(VIEW_1_DTO, VIEW_2_DTO, VIEW_3_DTO))
-            .build();
-
-    public final static DatabaseBriefDto DATABASE_1_DTO_BRIEF = DatabaseBriefDto.builder()
-            .id(DATABASE_1_ID)
-            .container(CONTAINER_1_DTO_BRIEF)
-            .created(Instant.now().minus(1, HOURS))
-            .isPublic(DATABASE_1_PUBLIC)
-            .name(DATABASE_1_NAME)
-            .internalName(DATABASE_1_INTERNALNAME)
             .build();
 
     public final static DatabaseAccess DATABASE_1_USER_1_READ_ACCESS = DatabaseAccess.builder()

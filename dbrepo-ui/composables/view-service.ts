@@ -47,14 +47,15 @@ export const useViewService = (): any => {
     })
   }
 
-  async function reExecuteCount(databaseId: number, viewId: number): Promise<QueryResultDto> {
+  async function reExecuteCount(databaseId: number, viewId: number): Promise<number> {
     const axios = useAxiosInstance()
     console.debug('re-execute view with id', viewId, 'in database with id', databaseId)
-    return new Promise<QueryResultDto>((resolve, reject) => {
-      axios.get<QueryResultDto>(`/api/database/${databaseId}/view/${viewId}/data/count`)
+    return new Promise<number>((resolve, reject) => {
+      axios.head<number>(`/api/database/${databaseId}/view/${viewId}/data`)
         .then((response) => {
+          const count: number = Number(response.headers['X-Count'])
           console.info('Re-executed view with id', viewId, 'in database with id', databaseId)
-          resolve(response.data)
+          resolve(count)
         })
         .catch((error) => {
           console.error('Failed to re-execute view', error)

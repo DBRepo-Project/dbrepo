@@ -458,7 +458,8 @@ export default {
           this.$toast.success(this.$t('success.analyse.dataset'))
           this.$emit('analyse', {columns: this.columns, filename, line_termination})
         })
-        .catch(() => {
+        .catch((error) => {
+          console.error('Failed to analyse dataset', error)
           this.loading = false
         })
         .finally(() => {

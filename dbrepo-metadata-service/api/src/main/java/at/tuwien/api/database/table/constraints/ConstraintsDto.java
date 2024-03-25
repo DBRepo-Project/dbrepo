@@ -9,6 +9,7 @@ import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -27,5 +28,5 @@ public class ConstraintsDto {
     private List<ForeignKeyDto> foreignKeys;
 
     @org.springframework.data.annotation.Transient
-    private List<String> checks;
+    private Set<String> checks;
 }

@@ -350,9 +350,9 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
         /* test */
         final QueryResultDto response = queryService.execute(DATABASE_2_ID, request, USER_1_PRINCIPAL, 0L, 100L, null, null);
-        assertEquals(4L, response.getResultNumber());
         assertNotNull(response.getResult());
         final List<Map<String, Object>> result = response.getResult();
+        assertEquals(4L, result.size());
         assertEquals(BigInteger.valueOf(1L), result.get(0).get("id"));
         assertEquals(4, result.get(0).get("legs"));
         assertEquals("boar", result.get(0).get("animal_name"));
@@ -393,9 +393,9 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         /* test */
         final QueryResultDto response = queryService.execute(DATABASE_1_ID, request, USER_1_PRINCIPAL,
                 0L, 100L, null, null);
-        assertEquals(1L, response.getResultNumber());
         assertNotNull(response.getResult());
         final List<Map<String, Object>> result = response.getResult();
+        assertEquals(1L, result.size());
         assertEquals("Vienna", result.get(0).get("location"));
         assertNull(result.get(0).get("lat"));
         assertNull(result.get(0).get("lng"));
@@ -415,9 +415,9 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         /* test */
         final QueryResultDto response = queryService.execute(DATABASE_1_ID, request, USER_1_PRINCIPAL,
                 0L, 100L, null, null);
-        assertEquals(1L, response.getResultNumber());
         assertNotNull(response.getResult());
         final List<Map<String, Object>> result = response.getResult();
+        assertEquals(1L, result.size());
         assertEquals("Vienna", result.get(0).get("location"));
         assertNull(result.get(0).get("lat"));
         assertNull(result.get(0).get("lng"));
@@ -437,7 +437,7 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         /* test */
         final QueryResultDto response = queryService.execute(DATABASE_1_ID, request, USER_1_PRINCIPAL,
                 0L, 100L, null, null);
-        assertEquals(1L, response.getResultNumber());
+        assertEquals(1L, response.getResult().size());
         assertNotNull(response.getResult());
     }
 
@@ -454,9 +454,9 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
 
         /* test */
         final QueryResultDto response = queryService.execute(DATABASE_1_ID, request, USER_1_PRINCIPAL, 0L, 100L, null, null);
-        assertEquals(9L, response.getResultNumber());
         assertNotNull(response.getResult());
         final List<Map<String, Object>> result = response.getResult();
+        assertEquals(9L, result.size());
         assertEquals(2, result.get(0).keySet().size());
         assertEquals("Albury", result.get(0).get("a"));
         assertEquals("Albury", result.get(0).get("location"));
@@ -500,9 +500,9 @@ public class QueryServiceIntegrationTest extends BaseUnitTest {
         /* test */
         final QueryResultDto response = queryService.execute(DATABASE_1_ID, request, USER_1_PRINCIPAL,
                 0L, 100L, null, null);
-        assertEquals(9L, response.getResultNumber());
         assertNotNull(response.getResult());
         final List<Map<String, Object>> result = response.getResult();
+        assertEquals(9L, result.size());
         assertEquals("Albury", result.get(0).get("a"));
         assertEquals("Albury", result.get(0).get("location"));
         assertEquals("Albury", result.get(1).get("a"));

@@ -68,11 +68,13 @@ public class DatabaseDto {
     @Field(name = "views", type = FieldType.Object)
     private List<ViewDto> views;
 
+    @NotNull
     @JsonProperty("is_public")
     @Schema(example = "true")
     @Field(name = "is_public", type = FieldType.Boolean)
     private Boolean isPublic;
 
+    @NotNull
     @Field(name = "container", type = FieldType.Object)
     private ContainerDto container;
 

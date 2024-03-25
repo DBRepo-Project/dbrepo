@@ -1,0 +1,77 @@
+tags:
+  - analyse-endpoint
+summary: Determine table statistics
+operationId: determine_table_stat
+parameters:
+  - name: database_id
+    in: path
+    required: true
+    example: 1
+    schema:
+      type: integer
+      format: int64
+  - name: table_id
+    in: path
+    required: true
+    example: 1
+    schema:
+      type: integer
+      format: int64
+responses:
+  202:
+    description: Determined statistics
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/TableStats'
+  400:
+    description: "Missing parameters"
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/ErrorDto'
+  404:
+    description: "Table not found"
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/ErrorDto'
+components:
+  schemas:
+    TableStats:
+      required:
+        - columns
+      type: object
+      properties:
+        columns:
+          type: object
+          properties:
+            column_name:
+              $ref: '#/components/schemas/Stats'
+    Stats:
+      type: object
+      properties:
+        val_min:
+          type: float
+          example: "0.0"
+        val_max:
+          type: float
+          example: "1.0"
+        mean:
+          type: float
+          example: "0.3"
+        median:
+          type: float
+          example: "0.45"
+        std_dev:
+          type: float
+          example: "0.12"
+    ErrorDto:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: Message

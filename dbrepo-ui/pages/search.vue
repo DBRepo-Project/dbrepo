@@ -3,7 +3,12 @@
     <v-toolbar
       variant="flat">
       <v-toolbar-title>
-        <span v-if="header" v-text="header" />
+        <span
+          v-if="header"
+          v-text="header" />
+        <v-skeleton-loader
+          v-if="!header"
+          type="heading" />
       </v-toolbar-title>
       <v-spacer />
       <v-btn

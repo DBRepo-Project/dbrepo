@@ -8,7 +8,7 @@ author: Martin Weise
 
 !!! debug "Debug Information"
 
-    Image: [`bitnami/rabbitmq:3.10`](https://hub.docker.com/r/bitnami/rabbitmq)
+    Image: [`bitnami/rabbitmq:3.12.13-debian-12-r2`](https://hub.docker.com/r/bitnami/rabbitmq)
 
     * Ports: 5672/tcp, 15672/tcp, 15692/tcp
     * AMQP: `amqp://<hostname>:5672`

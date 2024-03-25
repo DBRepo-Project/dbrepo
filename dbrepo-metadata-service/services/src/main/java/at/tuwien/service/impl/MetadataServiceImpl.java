@@ -154,7 +154,7 @@ public class MetadataServiceImpl implements MetadataService {
 
     @Override
     public ExternalMetadataDto findByUrl(String url) throws OrcidNotFoundException, RorNotFoundException,
-            RemoteUnavailableException, DoiNotFoundException {
+            DoiNotFoundException, IdentifierNotFoundException {
         if (url.contains("orcid.org")) {
             final OrcidDto orcidDto = orcidGateway.findByUrl(url);
             return externalMapper.orcidDtoToExternalMetadataDto(orcidDto);
@@ -178,7 +178,7 @@ public class MetadataServiceImpl implements MetadataService {
             return externalMapper.crossrefDtoToExternalMetadataDto(crossrefDto);
         }
         log.error("Failed to find metadata: unsupported identifier {}", url);
-        throw new RemoteUnavailableException("Failed to find metadata: unsupported identifier " + url);
+        throw new IdentifierNotFoundException("Failed to find metadata: unsupported identifier " + url);
     }
 
 }

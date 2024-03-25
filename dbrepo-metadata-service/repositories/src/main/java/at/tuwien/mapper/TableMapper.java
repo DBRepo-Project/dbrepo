@@ -61,7 +61,7 @@ public interface TableMapper {
             @Mapping(target = "internalName", expression = "java(data.getInternalName())"),
             @Mapping(target = "queueName", expression = "java(data.getQueueName())"),
             @Mapping(target = "routingKey", expression = "java(data.getRoutingKey())"),
-            @Mapping(source = "description", target = "description")
+            @Mapping(target = "isPublic", source = "database.isPublic")
     })
     TableDto tableToTableDto(Table data);
 
@@ -204,6 +204,9 @@ public interface TableMapper {
             return null;
         }
         final Constraints.ConstraintsBuilder builder = Constraints.builder();
+        if (data.getChecks() != null) {
+            builder.checks(data.getChecks());
+        }
         if (data.getUniques() != null) {
             final List<Unique> uniques = new ArrayList<>();
             for (List<String> columns : data.getUniques()) {

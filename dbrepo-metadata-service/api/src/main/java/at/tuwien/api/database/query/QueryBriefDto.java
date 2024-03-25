@@ -1,6 +1,5 @@
 package at.tuwien.api.database.query;
 
-import at.tuwien.api.identifier.IdentifierBriefDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.user.UserDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -75,7 +74,7 @@ public class QueryBriefDto {
     @Schema(example = "query")
     private QueryTypeDto type;
 
-    private List<IdentifierBriefDto> identifiers;
+    private List<IdentifierDto> identifiers;
 
     @NotNull
     @Schema(example = "2021-03-12T15:26:21Z")
