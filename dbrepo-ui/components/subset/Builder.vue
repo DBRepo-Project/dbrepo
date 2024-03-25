@@ -30,6 +30,7 @@
           :text="$t('pages.subset.subpages.create.expert.text')" />
       </v-tabs>
     </v-toolbar>
+    <TimeDrift />
     <v-card
       rounded="0"
       variant="flat">
@@ -258,6 +259,7 @@
 </template>
 
 <script>
+import TimeDrift from '@/components/TimeDrift'
 import Raw from '@/components/subset/Raw'
 import Results from '@/components/subset/Results'
 import { useCacheStore } from '@/stores/cache'
@@ -267,7 +269,8 @@ import { format } from 'sql-formatter'
 export default {
   components: {
     Raw,
-    Results
+    Results,
+    TimeDrift
   },
   props: {
     mode: {
