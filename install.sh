@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # preset
-VERSION="1.4.1"
+VERSION="latest"
 MIN_CPU=8
 MIN_RAM=8
 SKIP_CHECKS=${SKIP_CHECKS:-0}
