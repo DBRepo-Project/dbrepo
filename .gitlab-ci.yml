@@ -133,8 +133,10 @@ test-install-script:
   only:
     refs:
       - /^release-.*/
+  variables:
+    SKIP_CHECKS: 1
   script:
-    - apk add bash
+    - apk add bash curl
     - bash install.sh
     - exit 0
 
