@@ -88,7 +88,7 @@ tag-storage-service-init:
 	docker tag dbrepo-storage-service-init:latest "${REPOSITORY_1_URL}/storage-service-init:${TAG}"
 	docker tag dbrepo-storage-service-init:latest "${REPOSITORY_2_URL}/storage-service-init:${TAG}"
 
-release: build-docker tag release-analyse-service release-authentication-service release-metadata-db release-ui release-metadata-service release-data-service release-search-db release-search-db-init release-search-service release-data-db-sidecar
+release: build-docker tag release-analyse-service release-authentication-service release-metadata-db release-ui release-metadata-service release-data-service release-search-db release-search-db-init release-search-service release-data-db-sidecar release-storage-service-init
 
 release-analyse-service: tag-analyse-service
 	docker push "${REPOSITORY_1_URL}/analyse-service:${TAG}"
@@ -232,5 +232,4 @@ build-api:
 	bash .docs/.swagger/swagger-generate.sh
 
 docs:
-	bash .docs/build-website.sh
-	bash ./lib/python/build-website.sh
+	bash ./build-docs.sh

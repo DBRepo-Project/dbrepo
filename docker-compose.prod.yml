@@ -277,13 +277,16 @@ services:
     container_name: dbrepo-ui
     hostname: ui
     image: docker.io/dbrepo/ui:latest
-    volumes:
-      - ./dist/dbrepo.config.json:/app/dbrepo.config.json
     depends_on:
       dbrepo-search-service:
         condition: service_started
       dbrepo-storage-service:
         condition: service_healthy
+    healthcheck:
+      test: wget -qO- localhost:3000 | grep "Database Repository" || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 12
     logging:
       driver: json-file
 

@@ -1,4 +1,7 @@
 #!/bin/bash
+
+# preset
+VERSION="1.4.1"
 MIN_CPU=8
 MIN_RAM=8
 SKIP_CHECKS=${SKIP_CHECKS:-0}
@@ -26,7 +29,7 @@ if [[ $SKIP_CHECKS -eq 0 ]]; then
   else
     echo "vCPU ${CPU} OK"
   fi
-  RAM=$(free -g -t | awk 'NR==2 {print $4}')
+  RAM=$(free -g -t | awk 'NR==2 {print $7}')
   if [[ $RAM -lt $MIN_RAM ]]; then
     echo "You do not have enough RAM free resources:"
     echo ""
@@ -43,19 +46,19 @@ fi
 # environment
 echo "[🚀] Gathering environment ..."
 mkdir -p ./dist
-curl -sSL -o ./docker-compose.yml https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/master/docker-compose.prod.yml
-curl -sSL -o ./dist/setup-schema_local.sql https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/master/dbrepo-metadata-db/setup-schema_local.sql
-curl -sSL -o ./dist/rabbitmq.conf https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/master/dbrepo-broker-service/rabbitmq.conf
-curl -sSL -o ./dist/enabled_plugins https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/master/dbrepo-broker-service/enabled_plugins
-curl -sSL -o ./dist/cert.pem https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/master/dbrepo-broker-service/cert.pem
-curl -sSL -o ./dist/pubkey.pem https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/master/dbrepo-broker-service/pubkey.pem
-curl -sSL -o ./dist/definitions.json https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/master/dbrepo-broker-service/definitions.json
-curl -sSL -o ./dist/dbrepo.conf https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/master/dbrepo-gateway-service/dbrepo.conf
-curl -sSL -o ./dist/opensearch_dashboards.yml https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/master/dbrepo-search-db/opensearch_dashboards.yml
-curl -sSL -o ./dist/dbrepo.config.json https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/master/dbrepo-ui/dbrepo.config.json
-curl -sSL -o ./dist/s3_config.json https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/master/dbrepo-storage-service/s3_config.json
+curl -sSL -o ./docker-compose.yml "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${VERSION}/docker-compose.prod.yml"
+curl -sSL -o ./dist/setup-schema_local.sql "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${VERSION}/dbrepo-metadata-db/setup-schema_local.sql"
+curl -sSL -o ./dist/rabbitmq.conf "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${VERSION}/dbrepo-broker-service/rabbitmq.conf"
+curl -sSL -o ./dist/enabled_plugins "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${VERSION}/dbrepo-broker-service/enabled_plugins"
+curl -sSL -o ./dist/cert.pem "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${VERSION}/dbrepo-broker-service/cert.pem"
+curl -sSL -o ./dist/pubkey.pem "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${VERSION}/dbrepo-broker-service/pubkey.pem"
+curl -sSL -o ./dist/definitions.json "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${VERSION}/dbrepo-broker-service/definitions.json"
+curl -sSL -o ./dist/dbrepo.conf "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${VERSION}/dbrepo-gateway-service/dbrepo.conf"
+curl -sSL -o ./dist/opensearch_dashboards.yml "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${VERSION}/dbrepo-search-db/opensearch_dashboards.yml"
+curl -sSL -o ./dist/dbrepo.config.json "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${VERSION}/dbrepo-ui/dbrepo.config.json"
+curl -sSL -o ./dist/s3_config.json "https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-${VERSION}/dbrepo-storage-service/s3_config.json"
 
-echo "[📦] Pulling images ..."
+echo "[📦] Pulling images for version ${VERSION} ..."
 docker compose pull
 
 MAX_MAP_COUNT=$(cat /proc/sys/vm/max_map_count)
@@ -75,5 +78,5 @@ if [ $? -eq 0 ]; then
   echo ""
   echo "  docker compose logs -f"
   echo ""
-  echo "Read about next steps online: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/latest/deployment-docker-compose/#next-steps"
+  echo "Read about next steps online: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/${VERSION}/deployment-docker-compose/#next-steps"
 fi

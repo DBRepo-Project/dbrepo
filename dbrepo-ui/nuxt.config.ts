@@ -45,7 +45,7 @@ export default defineNuxtConfig({
   ],
   runtimeConfig: {
     public: {
-      commit: 'aeeeeb0bb727616adba057c0907e6c3306a2f45b',
+      commit: '',
       title: 'Database Repository',
       logo: '/logo.svg',
       icon: '/favicon.ico',

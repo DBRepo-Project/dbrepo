@@ -4,8 +4,25 @@ OVERRIDES_MAIN_HTML=""
 SCRIPTS_EXTRA_JS=""
 
 function clean_cache {
-  echo "Removing cache from directory ./site"
-  rm -rf ./site
+  echo "Removing cache from directory ./site ./lib/python/docs/build"
+  rm -rf ./site ./lib/python/docs/build
+}
+
+function generate_sphinx {
+  BRANCH="release-$1"
+  echo "==================================================="
+  echo "Building LIB for version $1 on branch $BRANCH"
+  echo "==================================================="
+  git reset --hard && git checkout "$BRANCH"
+  pip install -r ./requirements.txt > /dev/null
+  mkdir -p ./final
+  if [ "$1" = "latest" ]; then
+    sed -i -e "s/__APPVERSION__/${APP_VERSION}/g" ./lib/python/setup.py ./lib/python/pyproject.toml ./lib/python/docs/conf.py ./lib/python/docs/index.rst ./lib/python/docs/index.rst
+  fi
+  sphinx-apidoc -o ./lib/python/docs/source ./lib/python/dbrepo
+  sphinx-build -M html ./lib/python/docs/ ./lib/python/docs/build/
+  cp -r ./lib/python/docs/build/html "./final/$1/sphinx"
+  clean_cache
 }
 
 function generate_docs {
@@ -66,6 +83,7 @@ git fetch
 
 generate_api "latest"
 generate_docs "latest"
+generate_sphinx "latest"
 
 # versions
 for i in "${!versions[@]}"; do
