@@ -4,7 +4,7 @@ import at.tuwien.api.database.query.QueryBriefDto;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.query.QueryPersistDto;
 import at.tuwien.api.error.ApiErrorDto;
-import at.tuwien.api.identifier.IdentifierBriefDto;
+import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.user.UserDto;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.exception.*;
@@ -41,8 +41,6 @@ import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static org.apache.jena.sparql.vocabulary.VocabTestQuery.query;
 
 @Log4j2
 @RestController
@@ -84,6 +82,11 @@ public class StoreEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             array = @ArraySchema(schema = @Schema(implementation = QueryBriefDto.class)))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Find all queries is not permitted",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "404",
                     description = "Database, container or user could not be found",
                     content = {@Content(
@@ -126,9 +129,9 @@ public class StoreEndpoint {
         /* find all from data database */
         final List<Query> queries = storeService.findAll(databaseId, persisted, principal);
         /* add identifiers and creator from metadata database */
-        final List<IdentifierBriefDto> identifiers = identifierService.findAllSubsetIdentifiers()
+        final List<IdentifierDto> identifiers = identifierService.findAllSubsetIdentifiers()
                 .stream()
-                .map(identifierMapper::identifierToIdentifierBriefDto)
+                .map(identifierMapper::identifierToIdentifierDto)
                 .toList();
         final List<UserDto> users = userService.findAll()
                 .stream()
@@ -161,6 +164,11 @@ public class StoreEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = QueryDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Find query is not permitted",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
             @ApiResponse(responseCode = "404",
                     description = "Database, query or user could not be found",
                     content = {@Content(
@@ -217,7 +225,7 @@ public class StoreEndpoint {
     @Observed(name = "dbr_query_persist")
     @Operation(summary = "Persist some query", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200",
+            @ApiResponse(responseCode = "202",
                     description = "Persist query successful",
                     content = {@Content(
                             mediaType = "application/json",

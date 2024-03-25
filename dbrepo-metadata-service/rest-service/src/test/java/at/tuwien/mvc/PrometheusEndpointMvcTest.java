@@ -208,11 +208,6 @@ public class PrometheusEndpointMvcTest extends BaseUnitTest {
             /* ignore */
         }
         try {
-            databaseEndpoint.count(USER_1_PRINCIPAL, null);
-        } catch (Exception e) {
-            /* ignore */
-        }
-        try {
             databaseEndpoint.create(DATABASE_1_CREATE, USER_1_PRINCIPAL);
         } catch (Exception e) {
             /* ignore */
@@ -239,7 +234,7 @@ public class PrometheusEndpointMvcTest extends BaseUnitTest {
         }
 
         /* test */
-        for (String metric : List.of("dbr_database_findall", "dbr_database_count", "dbr_database_create", "dbr_database_visibility", "dbr_database_transfer", "dbr_database_find", "dbr_database_image")) {
+        for (String metric : List.of("dbr_database_findall", "dbr_database_create", "dbr_database_visibility", "dbr_database_transfer", "dbr_database_find", "dbr_database_image")) {
             assertThat(registry)
                     .hasObservationWithNameEqualTo(metric);
         }
@@ -488,12 +483,7 @@ public class PrometheusEndpointMvcTest extends BaseUnitTest {
             /* ignore */
         }
         try {
-            queryEndpoint.reExecute(DATABASE_1_ID, QUERY_1_ID, USER_1_PRINCIPAL, null, null, null, null);
-        } catch (Exception e) {
-            /* ignore */
-        }
-        try {
-            queryEndpoint.reExecuteCount(DATABASE_1_ID, QUERY_1_ID, USER_1_PRINCIPAL);
+            queryEndpoint.reExecute(DATABASE_1_ID, QUERY_1_ID, USER_1_PRINCIPAL, null, null, null, null, null);
         } catch (Exception e) {
             /* ignore */
         }
@@ -504,7 +494,7 @@ public class PrometheusEndpointMvcTest extends BaseUnitTest {
         }
 
         /* test */
-        for (String metric : List.of("dbr_query_execute", "dbr_query_reexecute", "dbr_query_reexecute_count", "dbr_query_export")) {
+        for (String metric : List.of("dbr_query_execute", "dbr_query_reexecute", "dbr_query_export")) {
             assertThat(registry)
                     .hasObservationWithNameEqualTo(metric);
         }
@@ -617,18 +607,13 @@ public class PrometheusEndpointMvcTest extends BaseUnitTest {
             /* ignore */
         }
         try {
-            tableDataEndpoint.getAll(DATABASE_1_ID, TABLE_1_ID, USER_1_PRINCIPAL, null, null, null, null, null);
-        } catch (Exception e) {
-            /* ignore */
-        }
-        try {
-            tableDataEndpoint.getCount(DATABASE_1_ID, TABLE_1_ID, USER_1_PRINCIPAL, null);
+            tableDataEndpoint.getAll(DATABASE_1_ID, TABLE_1_ID, USER_1_PRINCIPAL, null, null, null, null, null, null);
         } catch (Exception e) {
             /* ignore */
         }
 
         /* test */
-        for (String metric : List.of("dbr_table_data_insert", "dbr_table_data_update", "dbr_table_data_delete", "dbr_table_data_import", "dbr_table_data_findall", "dbr_table_data_countall")) {
+        for (String metric : List.of("dbr_table_data_insert", "dbr_table_data_update", "dbr_table_data_delete", "dbr_table_data_import", "dbr_table_data_findall")) {
             assertThat(registry)
                     .hasObservationWithNameEqualTo(metric);
         }
@@ -763,18 +748,13 @@ public class PrometheusEndpointMvcTest extends BaseUnitTest {
             /* ignore */
         }
         try {
-            viewEndpoint.data(DATABASE_1_ID, VIEW_1_ID, USER_1_PRINCIPAL, null, null);
-        } catch (Exception e) {
-            /* ignore */
-        }
-        try {
-            viewEndpoint.count(DATABASE_1_ID, VIEW_1_ID, USER_1_PRINCIPAL);
+            viewEndpoint.data(DATABASE_1_ID, VIEW_1_ID, USER_1_PRINCIPAL, null, null, null);
         } catch (Exception e) {
             /* ignore */
         }
 
         /* test */
-        for (String metric : List.of("dbr_views_findall", "dbr_view_create", "dbr_view_find", "dbr_view_delete", "dbr_view_data_findall", "dbr_view_data_count")) {
+        for (String metric : List.of("dbr_views_findall", "dbr_view_create", "dbr_view_find", "dbr_view_delete", "dbr_view_data_findall")) {
             assertThat(registry)
                     .hasObservationWithNameEqualTo(metric);
         }

@@ -21,6 +21,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.log4j.Log4j2;
@@ -121,12 +122,12 @@ public class QueryEndpoint {
                 .body(result);
     }
 
-    @GetMapping("/{queryId}/data")
+    @RequestMapping(value = "/{queryId}/data", method = {RequestMethod.GET, RequestMethod.HEAD})
     @Transactional(readOnly = true)
     @Observed(name = "dbr_query_reexecute")
     @Operation(summary = "Re-execute some query", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "202",
+            @ApiResponse(responseCode = "200",
                     description = "Executed query",
                     content = {@Content(
                             mediaType = "application/json",
@@ -160,6 +161,7 @@ public class QueryEndpoint {
     public ResponseEntity<QueryResultDto> reExecute(@NotNull @PathVariable("databaseId") Long databaseId,
                                                     @NotNull @PathVariable("queryId") Long queryId,
                                                     Principal principal,
+                                                    @NotNull HttpServletRequest request,
                                                     @RequestParam(value = "page", required = false) Long page,
                                                     @RequestParam(value = "size", required = false) Long size,
                                                     @RequestParam(required = false) SortType sortDirection,
@@ -173,59 +175,21 @@ public class QueryEndpoint {
         endpointValidator.validateOnlyAccessOrPublic(databaseId, principal);
         /* execute */
         final Query query = storeService.findOne(databaseId, queryId, principal);
-        final QueryResultDto result = queryService.reExecute(databaseId, query, page, size, sortDirection, sortColumn,
-                principal);
-        result.setId(queryId);
-        log.trace("re-execute query resulted in result {}", result);
-        return ResponseEntity.status(HttpStatus.ACCEPTED)
-                .body(result);
-    }
-
-    @GetMapping("/{queryId}/data/count")
-    @Transactional(readOnly = true)
-    @Observed(name = "dbr_query_reexecute_count")
-    @Operation(summary = "Re-execute some query", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "202",
-                    description = "Executed query",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = QueryResultDto.class))}),
-            @ApiResponse(responseCode = "400",
-                    description = "Image is not supported",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "403",
-                    description = "Execute query not permitted",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "404",
-                    description = "Database or query could not be found",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "417",
-                    description = "Could not parse columns",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))})
-    })
-    public ResponseEntity<Long> reExecuteCount(@NotNull @PathVariable("databaseId") Long databaseId,
-                                               @NotNull @PathVariable("queryId") Long queryId,
-                                               Principal principal)
-            throws QueryStoreException, QueryNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
-            QueryMalformedException, TableMalformedException, ColumnParseException, NotAllowedException,
-            AccessDeniedException {
-        log.debug("endpoint re-execute query count, databaseId={}, queryId={}, {}", databaseId, queryId, PrincipalUtil.formatForDebug(principal));
-        endpointValidator.validateOnlyAccessOrPublic(databaseId, principal);
-        /* execute */
-        final Query query = storeService.findOne(databaseId, queryId, principal);
-        final Long result = queryService.reExecuteCount(databaseId, query, principal);
-        log.trace("re-execute query count resulted in result {}", result);
-        return ResponseEntity.status(HttpStatus.ACCEPTED)
-                .body(result);
+        final Long count = queryService.reExecuteCount(databaseId, query, principal);
+        final HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Count", "" + count);
+        if (request.getMethod().equals("GET")) {
+            final QueryResultDto result = queryService.reExecute(databaseId, query, page, size, sortDirection, sortColumn,
+                    principal);
+            result.setId(queryId);
+            log.trace("re-execute query resulted in result {}", result);
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(result);
+        }
+        return ResponseEntity.ok()
+                .headers(headers)
+                .build();
     }
 
     @GetMapping(value = "/{queryId}/export", produces = MediaType.ALL_VALUE)

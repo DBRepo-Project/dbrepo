@@ -21,10 +21,13 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -84,7 +87,7 @@ public class TableDataEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<?> insert(@NotNull @PathVariable("databaseId") Long databaseId,
+    public ResponseEntity<Void> insert(@NotNull @PathVariable("databaseId") Long databaseId,
                                     @NotNull @PathVariable("tableId") Long tableId,
                                     @NotNull @Valid @RequestBody TableCsvDto data,
                                     @NotNull Principal principal)
@@ -246,7 +249,7 @@ public class TableDataEndpoint {
     @Observed(name = "dbr_table_data_findall")
     @Operation(summary = "Find data", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "202",
+            @ApiResponse(responseCode = "200",
                     description = "Get table data successfully"),
             @ApiResponse(responseCode = "400",
                     description = "Table data is malformed or image is not supported",
@@ -263,8 +266,8 @@ public class TableDataEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "422",
-                    description = "Could not import csv via sidecar",
+            @ApiResponse(responseCode = "409",
+                    description = "Result number could not be retrieved from the query store",
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
@@ -272,6 +275,7 @@ public class TableDataEndpoint {
     public ResponseEntity<QueryResultDto> getAll(@NotNull @PathVariable("databaseId") Long databaseId,
                                                  @NotNull @PathVariable("tableId") Long tableId,
                                                  @NotNull Principal principal,
+                                                 @NotNull HttpServletRequest request,
                                                  @RequestParam(required = false) Instant timestamp,
                                                  @RequestParam(required = false) Long page,
                                                  @RequestParam(required = false) Long size,
@@ -279,7 +283,7 @@ public class TableDataEndpoint {
                                                  @RequestParam(required = false) String sortColumn)
             throws TableNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
             TableMalformedException, PaginationException, QueryMalformedException, SortException, NotAllowedException,
-            AccessDeniedException {
+            AccessDeniedException, QueryStoreException {
         log.debug("endpoint find table data, databaseId={}, tableId={}, timestamp={}, page={}, size={}, sortDirection={}, sortColumn={}, {}",
                 databaseId, tableId, timestamp, page, size, sortDirection, sortColumn, PrincipalUtil.formatForDebug(principal));
         /* check */
@@ -300,60 +304,19 @@ public class TableDataEndpoint {
             size = 10L;
         }
         /* find */
-        final QueryResultDto response = queryService.tableFindAll(databaseId, tableId, timestamp, page, size, principal);
-        log.trace("find table data resulted in result {}", response);
-        return ResponseEntity.ok()
-                .body(response);
-    }
-
-    @GetMapping("/count")
-    @Transactional(readOnly = true)
-    @Observed(name = "dbr_table_data_countall")
-    @Operation(summary = "Find data", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "202",
-                    description = "Get table data count successfully"),
-            @ApiResponse(responseCode = "400",
-                    description = "Table data is malformed or image is not supported",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "403",
-                    description = "Access to the database is forbidden",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "404",
-                    description = "Table or database could not be found",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "422",
-                    description = "Could not import csv via sidecar",
-                    content = {@Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-    })
-    public ResponseEntity<Long> getCount(@NotNull @PathVariable("databaseId") Long databaseId,
-                                         @NotNull @PathVariable("tableId") Long tableId,
-                                         @NotNull Principal principal,
-                                         @RequestParam(required = false) Instant timestamp)
-            throws TableNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
-            TableMalformedException, QueryStoreException, QueryMalformedException, NotAllowedException,
-            AccessDeniedException {
-        log.debug("endpoint find table data, databaseId={}, tableId={}, timestamp={}, {}", databaseId, tableId, timestamp, PrincipalUtil.formatForDebug(principal));
-        /* check */
-        endpointValidator.validateOnlyAccessOrPublic(databaseId, principal);
-        final Database database = databaseService.find(databaseId);
-        if (!database.getIsPublic() && !UserUtil.hasRole(principal, "view-table-data")) {
-            log.error("Failed to view table data: database with id {} is private and user has no authority", databaseId);
-            throw new NotAllowedException("Failed to view table data: database with id " + databaseId + " is private and user has no authority");
-        }
-        /* find */
         final Long count = queryService.tableCount(databaseId, tableId, timestamp, principal);
-        log.debug("find table data count resulted in {} tuple(s)", count);
+        final HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Count", "" + count);
+        if (request.getMethod().equals("GET")) {
+            final QueryResultDto response = queryService.tableFindAll(databaseId, tableId, timestamp, page, size, principal);
+            log.trace("find table data resulted in result {}", response);
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(response);
+        }
         return ResponseEntity.ok()
-                .body(count);
+                .headers(headers)
+                .build();
     }
 
 }

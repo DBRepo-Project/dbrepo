@@ -20,8 +20,7 @@ def determine_pk(filename, separator=","):
     response = s3_client.get_file('dbrepo-upload', filename)
     stream = response['Body']
     if response['ContentLength'] == 0:
-        logging.warning(f'Failed to determine primary key: file {filename} has empty body')
-        return json.dumps({'columns': [], 'separator': ','})
+        raise OSError(f'Failed to determine primary key: file {filename} has empty body')
     sizeInKb = math.ceil(response['ContentLength'] / 1000)
     if sizeInKb < 400:  # precise if lower than 400kB
         pk = {}
@@ -36,10 +35,7 @@ def determine_pk(filename, separator=","):
             k = k + 1
         csvdata = pd.read_csv(stream, sep=separator)
         for i in colindex:
-            if (
-                pd.Series(csvdata.iloc[:, i]).is_unique
-                and pd.Series(csvdata.iloc[:, i]).notnull().values.any()
-            ):
+            if pd.Series(csvdata.iloc[:, i]).is_unique and pd.Series(csvdata.iloc[:, i]).notnull().values.any():
                 j = j + 1
                 pk.update({list(colnames)[i]: j})
     else:  # stochastic pk determination
@@ -65,11 +61,8 @@ def determine_pk(filename, separator=","):
             skiprows=lambda k: k > 0 and random.random() > p,
         )
         for i in colindex:
-            if (
-                pd.Series(csvdata.iloc[:, i]).is_unique
-                and pd.Series(csvdata.iloc[:, i]).notnull().values.any()
-            ):
+            if pd.Series(csvdata.iloc[:, i]).is_unique and pd.Series(csvdata.iloc[:, i]).notnull().values.any():
                 j = j + 1
                 pk.update({list(colnames)[i]: j})
         logging.info(f"Determined primary key {pk}")
-    return json.dumps(pk)
+    return pk

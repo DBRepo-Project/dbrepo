@@ -55,7 +55,7 @@ public class PersistenceEndpoint {
         this.identifierService = identifierService;
     }
 
-    @GetMapping
+    @GetMapping(produces = {MediaType.APPLICATION_JSON_VALUE, "application/ld+json"})
     @Transactional(readOnly = true)
     @Observed(name = "dbr_pid_findall")
     @Operation(summary = "Find all identifiers")
@@ -66,22 +66,17 @@ public class PersistenceEndpoint {
                             @Content(mediaType = "application/json", schema = @Schema(implementation = IdentifierDto[].class)),
                             @Content(mediaType = "application/ld+json", schema = @Schema(implementation = LdDatasetDto[].class))
                     }),
-            @ApiResponse(responseCode = "400",
+            @ApiResponse(responseCode = "406",
                     description = "Identifier could not be exported, the requested style is not known",
                     content = {@Content(
-                            mediaType = "text/bibliography",
-                            schema = @Schema(implementation = ApiErrorDto.class))}),
-            @ApiResponse(responseCode = "404",
-                    description = "Identifier could not be found",
-                    content = {@Content(
-                            mediaType = "text/csv",
+                            mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<?> findAll(@Valid @RequestParam(value = "dbid", required = false) Long dbid,
                                      @Valid @RequestParam(value = "qid", required = false) Long qid,
                                      @Valid @RequestParam(value = "vid", required = false) Long vid,
                                      @Valid @RequestParam(value = "tid", required = false) Long tid,
-                                     @RequestHeader(HttpHeaders.ACCEPT) String accept) throws NotAllowedException {
+                                     @RequestHeader(HttpHeaders.ACCEPT) String accept) throws FormatNotAvailableException {
         log.debug("endpoint find identifiers, dbid={}, qid={}, vid={}, tid={}, accept={}", dbid, qid, vid, tid, accept);
         final List<Identifier> identifiers = identifierService.findAll()
                 .stream()
@@ -110,11 +105,13 @@ public class PersistenceEndpoint {
                 log.debug("find identifier resulted in identifiers {}", resource2);
                 return ResponseEntity.ok(resource2);
         }
-        throw new NotAllowedException("Must provide either application/json or application/ld+json headers");
+        throw new FormatNotAvailableException("Must provide either application/json or application/ld+json headers");
     }
 
 
-    @GetMapping(value = "/{pid}", produces = MediaType.ALL_VALUE)
+    @GetMapping(value = "/{pid}", produces = {MediaType.APPLICATION_JSON_VALUE, "application/ld+json",
+            MediaType.TEXT_XML_VALUE, "text/csv", "text/bibliography", "text/bibliography; style=apa",
+            "text/bibliography; style=ieee", "text/bibliography; style=bibtex"})
     @Transactional(readOnly = true)
     @Observed(name = "dbr_pid_find")
     @Operation(summary = "Find some identifier")

@@ -1,42 +1,23 @@
-interface DatabaseBriefDto {
-  id: number;
-  name: string;
-  internal_name: string;
-  is_public: boolean;
-  exchange_name: string;
-  exchange_type: string;
-  description: string;
-  creator: UserBriefDto;
-  owner: UserBriefDto;
-  created: Date;
-  container: ContainerBriefDto;
-  image: any;
-  accesses: any[];
-  identifier: any[];
-  tables: TableBriefDto[];
-  views: any[];
-}
-
 interface DatabaseDto {
   id: number;
   name: string;
-  internal_name: string;
-  is_public: boolean;
-  exchange_name: string;
-  exchange_type: string;
-  description: string;
   creator: UserDto;
   owner: UserDto;
   contact: UserDto;
   created: Date;
-  identifiers: IdentifierDto[];
-  subsets: IdentifierDto[];
+  exchange_name: string;
+  internal_name: string;
+  is_public: boolean;
+  description: string | null;
   container: ContainerBriefDto;
-  image: ImageDto;
+  identifiers: IdentifierDto[] | [];
+  subsets: IdentifierDto[] | [];
+  image: string;
   accesses: DatabaseAccessDto[];
   identifier: IdentifierDto[];
   tables: TableDto[];
   views: ViewDto[];
+  exchange_type: string | null;
 }
 
 interface DatabaseCreateDto {
@@ -65,15 +46,15 @@ interface UserDto {
   id: string;
   username: string;
   attributes: UserAttributesDto;
-  name: string;
-  qualified_name: string;
-  given_name: string;
-  family_name: string;
+  name: string | null;
+  qualified_name: string | null;
+  given_name: string | null;
+  family_name: string | null;
 }
 
 interface UserAttributesDto {
-  orcid: string;
-  affiliation: string;
+  orcid: string | null;
+  affiliation: string | null;
   theme: string;
 }
 
@@ -130,7 +111,7 @@ interface ColumnBriefDto {
 
 interface TableDto {
   id: number;
-  tdbid: number;
+  database_id: number;
   name: string;
   identifiers: IdentifierDto[];
   creator: UserDto;
@@ -152,10 +133,19 @@ interface TableDto {
   avg_row_length: number;
 }
 
+interface ForeignKeyDto {
+  name: string;
+  columns: ColumnDto[];
+  referenced_table: TableDto;
+  referenced_columns: ColumnDto[];
+  on_update: string | null;
+  on_delete: string | null;
+}
+
 interface ConstraintsDto {
   uniques: UniqueDto[];
-  checks: any;
-  foreign_keys: any;
+  checks: string[];
+  foreign_keys: ForeignKeyDto[];
 }
 
 interface DetermineDataTypesDto {
@@ -180,18 +170,18 @@ interface UniqueDto {
 interface IdentifierSaveDto {
   type: string;
   titles: IdentifierSaveTitleDto[];
-  descriptions: IdentifierSaveDescriptionDto[];
-  funders: IdentifierFunderSaveDto[];
-  licenses: LicenseDto[];
+  descriptions: IdentifierSaveDescriptionDto[] | [];
+  funders: IdentifierFunderSaveDto[] | [];
+  licenses: LicenseDto[] | [];
   publisher: string;
-  language: string;
+  language: string | null;
   creators: CreatorSaveDto[];
-  database_id: number;
-  query_id: number;
-  view_id: number;
-  table_id: number;
-  publication_day: number;
-  publication_month: number;
+  database_id: number | null;
+  query_id: number | null;
+  view_id: number | null;
+  table_id: number | null;
+  publication_day: number | null;
+  publication_month: number | null;
   publication_year: number;
   related_identifiers: RelatedIdentifierSaveDto[];
 }
@@ -220,31 +210,31 @@ interface IdentifierFunderSaveDto {
 interface IdentifierDto {
   id: number;
   type: string;
-  titles: IdentifierTitleDto[];
-  descriptions: IdentifierDescriptionDto[];
-  funders: IdentifierFunderDto[];
-  query: string;
-  execution: Date;
-  doi: string;
-  publisher: string;
-  language: string;
-  licenses: LicenseDto[];
-  creators: CreatorDto[];
+  titles: IdentifierTitleDto[] | [];
+  descriptions: IdentifierDescriptionDto[] | [];
+  funders: IdentifierFunderDto[] | [];
+  query: string | null;
+  execution: Date | null;
+  doi: string | null;
+  publisher: string | null;
+  language: string | null;
+  licenses: LicenseDto[] | [];
+  creators: CreatorDto[] | [];
   created: Date;
-  database_id: number;
-  query_id: number;
-  table_id: number;
-  view_id: number;
-  query_normalized: string;
-  related_identifiers: RelatedIdentifierDto[];
-  query_hash: string;
-  result_hash: string;
+  database_id: number | null;
+  query_id: number | null;
+  table_id: number | null;
+  view_id: number | null;
+  query_normalized: string | null;
+  related_identifiers: RelatedIdentifierDto[] | [];
+  query_hash: string | null;
+  result_hash: string | null;
   /**
    * @deprecated
    */
-  result_number: number;
-  publication_day: number;
-  publication_month: number;
+  result_number: number | null;
+  publication_day: number | null;
+  publication_month: number | null;
   publication_year: number;
   last_modified: Date;
 }
@@ -468,7 +458,7 @@ interface KeycloakErrorDto {
 
 interface ViewBriefDto {
   id: number;
-  vdbid: number;
+  database_id: number;
   name: string;
   identifier: any[];
   query: string;
@@ -541,13 +531,9 @@ interface ImportCsv {
 }
 
 interface QueryResultDto {
+  id: number | null;
   result: any;
   headers: any;
-  id: number;
-  /**
-   * @deprecated Will be removed with v2
-   */
-  result_number: number | null;
 }
 
 interface TableHistoryDto {

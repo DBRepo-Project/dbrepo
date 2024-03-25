@@ -34,6 +34,7 @@ public class IdentifierDto {
     @Field(name = "id", type = FieldType.Keyword)
     private Long id;
 
+    @NotNull
     @JsonProperty("database_id")
     @Schema(example = "1")
     @Field(name = "database_id", type = FieldType.Keyword)
@@ -58,6 +59,7 @@ public class IdentifierDto {
     @Field(name = "type", type = FieldType.Keyword)
     private IdentifierTypeDto type;
 
+    @NotNull
     @Field(name = "titles", type = FieldType.Object)
     private List<IdentifierTitleDto> titles;
 
@@ -88,19 +90,16 @@ public class IdentifierDto {
     @Field(name = "query_hash", type = FieldType.Text)
     private String queryHash;
 
-    @NotNull
     @Field(name = "execution", type = FieldType.Date)
     @Schema(example = "2021-03-12T15:26:21Z")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
     private Instant execution;
 
-    @NotBlank
     @JsonProperty("result_hash")
     @Field(name = "result_hash", type = FieldType.Text)
     @Schema(example = "34fe82cda2c53f13f8d90cfd7a3469e3a939ff311add50dce30d9136397bf8e5")
     private String resultHash;
 
-    @NotNull
     @JsonProperty("result_number")
     @Field(name = "result_number", type = FieldType.Long)
     @Schema(example = "1")
@@ -110,6 +109,7 @@ public class IdentifierDto {
     @Field(name = "doi", type = FieldType.Keyword)
     private String doi;
 
+    @NotBlank
     @Schema(example = "TU Wien")
     @Field(name = "publisher", type = FieldType.Text)
     private String publisher;

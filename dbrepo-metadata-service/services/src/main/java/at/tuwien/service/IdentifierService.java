@@ -91,8 +91,6 @@ public interface IdentifierService {
      * @return The created identifier from the metadata database if successful.
      * @throws QueryNotFoundException     The query was not found in the data database.
      * @throws IdentifierRequestException The identifier requested could not be created.
-     * @throws RemoteUnavailableException The connection to the Query Store could not be established by
-     *                                    the database connector.
      * @throws UserNotFoundException      The user was not found in the metadata database.
      * @throws DatabaseNotFoundException  The database was not found in the metadata database.
      * @throws ViewNotFoundException      The view with id was not found.
@@ -100,7 +98,7 @@ public interface IdentifierService {
      * @throws ImageNotSupportedException The image is not supported.
      */
     Identifier create(IdentifierSaveDto data, Principal principal) throws QueryNotFoundException,
-            IdentifierRequestException, RemoteUnavailableException, UserNotFoundException, DatabaseNotFoundException,
+            IdentifierRequestException, UserNotFoundException, DatabaseNotFoundException,
             ViewNotFoundException, QueryStoreException, ImageNotSupportedException;
 
     /**

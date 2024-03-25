@@ -141,6 +141,7 @@ services:
       KEYCLOAK_HOST: "${KEYCLOAK_HOST:-http://authentication-service:8080}"
       KEYCLOAK_ADMIN: "${KEYCLOAK_ADMIN:-fda}"
       KEYCLOAK_ADMIN_PASSWORD: "${KEYCLOAK_ADMIN_PASSWORD:-fda}"
+      KEYCLOAK_CLIENT_SECRET: "${KEYCLOAK_CLIENT_SECRET:-MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}"
       DATACITE_URL: "${DATACITE_URL:-https://api.test.datacite.org}"
       DATACITE_PREFIX: "${DATACITE_PREFIX:-}"
       DATACITE_USERNAME: "${DATACITE_USERNAME:-}"
@@ -150,6 +151,7 @@ services:
       S3_SECRET_ACCESS_KEY: "${STORAGE_PASSWORD:-seaweedfsadmin}"
       S3_IMPORT_BUCKET: "${STORAGE_IMPORT_BUCKET:-dbrepo-upload}"
       S3_EXPORT_BUCKET: "${STORAGE_EXPORT_BUCKET:-dbrepo-download}"
+      DELETE_STALE_FILES_RATE: "${DELETE_STALE_FILES_RATE:-60}"
       MIRROR_RATE: ${METADATA_SERVICE_MIRROR_RATE:-60}
       OBTAIN_METADATA_RATE: ${METADATA_SERVICE_OBTAIN_METADATA_RATE:-60}
       DELETE_STALE_QUERIES_RATE: ${METADATA_SERVICE_DELETE_STALE_QUERIES_RATE:-60}
@@ -195,7 +197,7 @@ services:
     restart: "no"
     container_name: dbrepo-broker-service
     hostname: broker-service
-    image: docker.io/bitnami/rabbitmq:3.10
+    image: docker.io/bitnami/rabbitmq:3.12-debian-12
     ports:
       - "5672:5672"
       - "15672:15672"

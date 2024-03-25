@@ -18,11 +18,21 @@ cache:
     - .m2/
 
 stages:
+  - lint
   - build
   - test
   - docs
   - release
   - scan
+
+lint-yaml:
+  image: bash:5.2-alpine3.19
+  stage: build
+  script:
+    - "apk add yq"
+    - "yq '.services.[] | .environment' docker-compose.yml > ./doc.txt"
+    - "yq '.services.[] | .environment' docker-compose.prod.yml > ./other.txt"
+    - "cmp --silent ./doc.txt ./other.txt"
 
 build-metadata-service:
   image: maven:3-openjdk-17
@@ -41,6 +51,18 @@ build-analyse-service:
       - /^release-.*/
   variables:
     PIPENV_PIPFILE: "./dbrepo-analyse-service/Pipfile"
+  script:
+    - "pip install pipenv"
+    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
+
+build-lib:
+  image: python:3.11-slim
+  stage: build
+  except:
+    refs:
+      - /^release-.*/
+  variables:
+    PIPENV_PIPFILE: "./lib/python/Pipfile"
   script:
     - "pip install pipenv"
     - "pipenv install gunicorn && pipenv install --dev --system --deploy"
@@ -172,6 +194,31 @@ test-analyse-service:
     expire_in: 1 days
     reports:
       junit: ./dbrepo-analyse-service/report.xml
+  coverage: '/TOTAL.*?([0-9]{1,3})%/'
+
+test-lib:
+  image: python:3.11-slim
+  stage: test
+  except:
+    refs:
+      - /^release-.*/
+  variables:
+    PIPENV_PIPFILE: "./lib/python/Pipfile"
+  needs:
+    - build-lib
+  script:
+    - "pip install pipenv"
+    - "pipenv install gunicorn && pipenv install --dev --system --deploy"
+    - cd ./lib/python/ && coverage run -m pytest tests/test_database.py --junitxml=report.xml && coverage html --omit="test/*" && coverage report --omit="test/*" > ./coverage.txt
+    - "cat ./coverage.txt | grep -o 'TOTAL[^%]*%'"
+  artifacts:
+    when: always
+    paths:
+      - ./lib/python/report.xml
+      - ./lib/python/coverage.txt
+    expire_in: 1 days
+    reports:
+      junit: ./lib/python/report.xml
   coverage: '/TOTAL.*?([0-9]{1,3})%/'
 
 scan-analyse-service:
@@ -514,3 +561,22 @@ release-docs:
     - tar czfv ./final.tar.gz ./final
     - "scp -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa final.tar.gz $CI_DOC_USER@$CI_DOC_IP:final.tar.gz"
     - "ssh -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa $CI_DOC_USER@$CI_DOC_IP 'rm -rf /system/user/ifs/infrastructures/public_html/dbrepo/*; tar xzfv ./final.tar.gz; rm -f ./final.tar.gz; cp -r ./final/* /system/user/ifs/infrastructures/public_html/dbrepo; rm -rf ./final'"
+
+release-libs:
+  stage: lint
+  image: docker.io/python:3.11-alpine
+  only:
+    refs:
+      - /^release-[0-9]+.*/
+  variables:
+    PIPENV_PIPFILE: "./dbrepo-analyse-service/Pipfile"
+  script:
+    - apk add sed
+    - pip install pipenv
+    - pipenv install gunicorn && pipenv install --dev --system --deploy
+    - pip install twine build
+    - 'sed -i -e "s/__APPVERSION__/${APP_VERSION}rc18/g" ./lib/python/pyproject.toml ./lib/python/setup.py ./lib/python/README.md'
+    - python -m build --sdist ./lib/python
+    - python -m build --wheel ./lib/python
+    - printf "[diskutils]\nindex-servers =\n    pypi\n\n[pypi]\nusername = __token__\npassword = ${CI_PIPY_TOKEN}\nrepository = https://upload.pypi.org/legacy/" > .pypirc
+    - python -m twine upload --config-file .pypirc --verbose --repository pypi ./lib/python/dist/dbrepo-*

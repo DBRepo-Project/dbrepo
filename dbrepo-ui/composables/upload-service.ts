@@ -35,7 +35,9 @@ export const useUploadService = (): any => {
               console.error('Failed to match file name', matches)
               reject(new Error('Failed to match file name'))
             } else {
-              resolve(matches[0].replace('files/', ''))
+              const filename = matches[0].replace('files/', '')
+              console.debug('Filename cropped as', filename)
+              resolve(filename)
             }
           }
         }
