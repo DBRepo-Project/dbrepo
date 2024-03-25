@@ -231,14 +231,5 @@ teardown:
 build-api:
 	bash .docs/.swagger/swagger-generate.sh
 
-build-mkdocs:
-	bash .docs/build-website.sh
-
-build-sphinx:
-	pwd
-	ls -la .
-	ls la -la lib
-	ls la -la lib/python
-	bash ./lib/python/build-website.sh
-
-docs: build-mkdocs build-sphinx
+docs:
+	bash ./build-docs.sh
