@@ -3,9 +3,7 @@ components:
     DataTypesDto:
       properties:
         columns:
-          items:
-            $ref: '#/components/schemas/SuggestedColumnDto'
-          type: array
+          $ref: '#/components/schemas/SuggestedColumnDto'
         line_termination:
           example: "\r\n"
           type: string
@@ -27,11 +25,63 @@ components:
         separator:
           example: ','
           type: string
+      required:
+        - filename
+        - separator
+      type: object
+    ErrorDto:
+      properties:
+        message:
+          example: Message
+          type: string
+        success:
+          example: false
+          type: boolean
+      type: object
+    KeysDto:
+      properties:
+        keys:
+          items:
+            properties:
+              column_name:
+                format: int64
+                type: integer
+          type: array
+      required:
+        - keys
+      type: object
+    Stats:
+      properties:
+        mean:
+          example: '0.3'
+          type: float
+        median:
+          example: '0.45'
+          type: float
+        std_dev:
+          example: '0.12'
+          type: float
+        val_max:
+          example: '1.0'
+          type: float
+        val_min:
+          example: '0.0'
+          type: float
       type: object
     SuggestedColumnDto:
       properties:
         column_name:
           type: string
+      type: object
+    TableStats:
+      properties:
+        columns:
+          properties:
+            column_name:
+              $ref: '#/components/schemas/Stats'
+          type: object
+      required:
+        - columns
       type: object
 externalDocs:
   description: Sourcecode Documentation
@@ -48,142 +98,154 @@ info:
   version: __APPVERSION__
 openapi: 3.0.0
 paths:
-  /api/analyse/determinedt:
-    post:
+  /api/analyse/database/{database_id}/table/{table_id}/statistics:
+    get:
+      operationId: determine_table_stat
+      parameters:
+        - example: 1
+          in: path
+          name: database_id
+          required: true
+          schema:
+            format: int64
+            type: integer
+        - example: 1
+          in: path
+          name: table_id
+          required: true
+          schema:
+            format: int64
+            type: integer
+      responses:
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TableStats'
+          description: Determined statistics
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Missing parameters
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Table not found
+      summary: Determine table statistics
+      tags:
+        - analyse-endpoint
+  /api/analyse/datatypes:
+    get:
       consumes:
         - application/json
       description: This is a simple API which returns the datatypes of a (path) csv
         file
       parameters:
-        - description: to-do description
-          in: body
-          name: body
+        - example: filename_s3_key
+          in: query
+          name: filename
           required: true
           schema:
-            $ref: '#/components/schemas/DetermineDataTypesDto'
-            type: object
+            type: string
+        - example: ','
+          in: query
+          name: separator
+          required: true
+          schema:
+            type: string
+        - example: 'false'
+          in: query
+          name: enum
+          required: false
+          schema:
+            type: boolean
+        - example: '2.5'
+          in: query
+          name: enum_tol
+          required: false
+          schema:
+            type: float
       produces:
         - application/json
       responses:
-        '200':
+        '202':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/DataTypesDto'
           description: Determined data types successfully
-        '405':
-          description: Invalid input
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Failed to determine data types
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Failed to find file in Storage Service
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Unexpected system error
       summary: Determine datatypes
       tags:
         - analyse-endpoint
-  /api/analyse/determinepk:
-    post:
+  /api/analyse/keys:
+    get:
       consumes:
         - application/json
       description: This is a simple API which returns the primary keys + ranking of
         a (path) csv file
       parameters:
-        - description: to-do description
-          in: body
-          name: body
+        - example: filename_s3_key
+          in: query
+          name: filename
           required: true
           schema:
-            properties:
-              filepath:
-                example: /data/testdt08.csv
-                type: string
-              seperator:
-                example: ','
-                type: string
-            type: object
+            type: string
+        - example: ','
+          in: query
+          name: separator
+          required: true
+          schema:
+            type: string
       produces:
         - application/json
       responses:
-        '200':
-          description: OK
-        '405':
-          description: Invalid input
-      summary: Determine primary keys
-      tags:
-        - analyse-endpoint
-  /api/analyse/determinestat:
-    post:
-      operationId: determinestat
-      requestBody:
-        content:
-          application/json:
-            schema:
-              properties:
-                database_id:
-                  example: 1
-                  type: integer
-                table_id:
-                  example: 1
-                  type: integer
-              required:
-                - database_id
-                - table_id
-              type: object
-      responses:
-        '200':
+        '202':
           content:
             application/json:
               schema:
-                properties:
-                  message:
-                    example: Analysed statistical properties
-                    type: string
-                  status:
-                    example: '200'
-                    type: integer
-                required:
-                  - message
-                  - status
-                type: object
-          description: Determined statistics
+                $ref: '#/components/schemas/KeysDto'
+          description: Determined keys successfully
         '400':
-          description: Invalid input
-          ontent:
+          content:
             application/json:
               schema:
-                properties:
-                  message:
-                    example: Analysed statistical properties
-                    type: string
-                  status:
-                    example: '200'
-                    type: integer
-                required:
-                  - message
-                  - status
-                type: object
-      summary: Determine statistics
-      tags:
-        - analyse-endpoint
-  /api/analyse/determinestats:
-    post:
-      operationId: determinestats
-      requestBody:
-        content:
-          application/json:
-            schema:
-              properties:
-                filepath:
-                  example: file.csv
-                  type: string
-                separator:
-                  example: ','
-                  type: string
-              required:
-                - filepath
-                - separator
-              type: object
-      responses:
-        '200':
-          description: Determined statistics
-        '400':
-          description: Invalid input
-      summary: Determine statistics
+                $ref: '#/components/schemas/ErrorDto'
+          description: Failed to determine keys
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Failed to find file in Storage Service or is empty
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDto'
+          description: Unexpected system error
+      summary: Determine primary keys
       tags:
         - analyse-endpoint
   /health:
