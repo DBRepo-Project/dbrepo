@@ -20,6 +20,8 @@ minio = "*"
 flask-sqlalchemy = "*"
 opensearch-py = "*"
 pymysql = "*"
+dataclasses = "*"
+dataclasses-json = "*"
 
 [dev-packages]
 coverage = "*"

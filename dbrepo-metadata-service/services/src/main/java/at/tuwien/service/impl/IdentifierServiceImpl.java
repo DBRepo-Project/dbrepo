@@ -154,7 +154,7 @@ public class IdentifierServiceImpl implements IdentifierService {
     @Override
     @Transactional
     public Identifier create(IdentifierSaveDto data, Principal principal) throws QueryNotFoundException,
-            IdentifierRequestException, RemoteUnavailableException, UserNotFoundException, DatabaseNotFoundException,
+            IdentifierRequestException, UserNotFoundException, DatabaseNotFoundException,
             ViewNotFoundException, QueryStoreException, ImageNotSupportedException {
         /* create identifier */
         final Identifier entity = identifierMapper.identifierCreateDtoToIdentifier(data);

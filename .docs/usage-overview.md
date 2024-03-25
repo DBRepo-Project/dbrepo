@@ -4,6 +4,9 @@ author: Martin Weise
 
 # Overview
 
+We developed a Python Library for communicating with DBRepo from e.g. Jupyter Notebooks. See
+the [Python Library](../usage-python) page for more details.
+
 We give usage examples of the most important use-cases we identified.
 
 |                                                           |         UI         |      Terminal      |        JDBC        |       Python       |
@@ -63,31 +66,17 @@ A user wants to create an account in DBRepo.
     curl -sSL \
       -X POST \
       -H "Content-Type: application/json" \
-      -d '{"username":"foo","email":"foo.bar@example.com","password":"bar"}' \
-      http://localhost/api/user | jq .id
+      -d '{"username": "foo","email": "foo.bar@example.com", "password":"bar"}' \
+      http://<hostname>/api/user | jq .id
     ```
-
-    To login in DBRepo, obtain an access token:
-
-    ```bash
-    curl -sSL \
-      -X POST \
-      -d 'username=foo&password=bar&grant_type=password&client_id=dbrepo-client&scope=openid&client_secret=MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG' \
-      http://localhost/api/auth/realms/dbrepo/protocol/openid-connect/token | jq .access_token
-    ```
-
-    !!! note
-
-        Please note that the `client_secret` is different for your DBRepo instance. This is a default client secret that
-        likely has been replaced. Please contact your DBRepo administrator to get the `client_secret` for your instance.
-        Similar you need to replace `localhost` with your actual DBRepo instance hostname, e.g. `test.dbrepo.tuwien.ac.at`.
 
     You can view your user information by sending a request to the user endpoint with your access token.
 
     ```bash
     curl -sSL \
-      -H "Authorization: Bearer ACCESS_TOKEN" \
-      http://localhost/api/user/USER_ID | jq
+      -H "Content-Type: application/json" \
+      -u "foo:bar" \
+      http://<hostname>/api/user/14824cc5-186b-423d-a7b7-a252aed42b59 | jq
     ```
 
     To change your password in all components of DBRepo:
@@ -95,9 +84,10 @@ A user wants to create an account in DBRepo.
     ```bash
     curl -sSL \
       -X PUT \
-      -H "Authorization: Bearer ACCESS_TOKEN" \
-      -d '{"password":"s3cr3tp4ss0rd"}' \
-      http://localhost/api/user/USER_ID/password | jq
+      -H "Content-Type: application/json" \
+      -u "foo:bar" \
+      -d '{"password": "s3cr3tp4ss0rd"}' \
+      http://<hostname>/api/user/USER_ID/password | jq
     ```
 
 === "Python"
@@ -105,62 +95,34 @@ A user wants to create an account in DBRepo.
     To create a new user account in DBRepo with the Terminal, provide your details in the following REST HTTP-API call.
 
     ```python
-    import requests
-    
-    response = requests.post("http://localhost/api/user", json={
-        "username": "foo",
-        "password": "bar",
-        "email": "foo.bar@example.com"
-    })
-    user_id = response.json()["id"]
-    print(user_id)
+    from dbrepo.RestClient import RestClient
+
+    client = RestClient(endpoint="http://<hostname>")
+    user = client.create_user(username="foo", password="bar",
+                              email="foo@example.com")
+    print(f"user id: {user.id}")
     ```
-
-    To login in DBRepo, obtain an access token:
-
-    ```python
-    import requests
-    
-    response = requests.post("http://localhost/api/auth/realms/dbrepo/protocol/openid-connect/token", json={
-        "username": "foo",
-        "password": "bar",
-        "grant_type": "password",
-        "client_id": "dbrepo-client",
-        "scope": "openid",
-        "client_secret": "MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG"
-    })
-    access_token = response.json()["access_token"]
-    print(access_token)
-    ```
-
-    !!! note
-
-        Please note that the `client_secret` is different for your DBRepo instance. This is a default client secret that
-        likely has been replaced. Please contact your DBRepo administrator to get the `client_secret` for your instance.
-        Similar you need to replace `localhost` with your actual DBRepo instance hostname, e.g. `test.dbrepo.tuwien.ac.at`.
 
     You can view your user information by sending a request to the user endpoint with your access token.
 
     ```python
-    import requests
-    
-    response = requests.get("http://localhost/api/user/" + user_id, header={
-        "Authorization": "Bearer " + access_token
-    })
-    user_id = response.json()["id"]
-    print(user_id)
+    from dbrepo.RestClient import RestClient
+
+    client = RestClient(endpoint="http://<hostname>", username="foo",
+                        password="bar")
+    user = client.get_user(user_id="57ea75c6-2a1d-4516-89f4-296b8b62539b")
+    print(f"user info: {user}")
     ```
 
     To change your password in all components of DBRepo:
 
     ```python
-    import requests
-    
-    requests.put("http://localhost/api/user/" + user_id + "/password", header={
-        "Authorization": "Bearer " + access_token
-    }, json={
-        "password": "s3cr3tp4ssw0rd"
-    })
+    from dbrepo.RestClient import RestClient
+
+    client = RestClient(endpoint="http://<hostname>", username="foo",
+                        password="bar")
+    client.update_user_password(user_id="57ea75c6-2a1d-4516-89f4-296b8b62539b",
+                                password="baz")
     ```
 
 ## Create Database
@@ -194,26 +156,12 @@ A user wants to create a database in DBRepo.
 
 === "Terminal"
 
-    Obtain an access token:
-
-    ```bash
-    curl -sSL \
-      -X POST \
-      -d 'username=foo&password=bar&grant_type=password&client_id=dbrepo-client&scope=openid&client_secret=MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG' \
-      http://localhost/api/auth/realms/dbrepo/protocol/openid-connect/token | jq .access_token
-    ```
-
-    !!! note
-
-        Please note that the `client_secret` is different for your DBRepo instance. This is a default client secret that
-        likely has been replaced. Please contact your DBRepo administrator to get the `client_secret` for your instance.
-        Similar you need to replace `localhost` with your actual DBRepo instance hostname, e.g. `test.dbrepo.tuwien.ac.at`.
-
     Then list all available containers with their database engine descriptions and obtain a container id.
 
     ```bash
     curl -sSL \
-      http://localhost/api/container | jq
+      -H "Content-Type: application/json" \
+      http://<hostname>/api/container | jq
     ```
 
     Create a public databse with the container id from the previous step. You can also create a private database in this
@@ -222,59 +170,35 @@ A user wants to create a database in DBRepo.
     ```bash
     curl -sSL \
       -X POST \
-      -H "Authorization: Bearer ACCESS_TOKEN" \
-      -d '{"name":"Danube Water Quality Measurements","container_id":1,"is_public":true}' \
-      http://localhost/api/database | jq .id
+      -H "Content-Type: application/json" \
+      -u "foo:bar" \
+      -d '{"name":"Danube Water Quality Measurements", "container_id":1, "is_public":true}' \
+      http://<hostname>/api/database | jq .id
     ```
 
 === "Python"
 
-    Obtain an access token:
+    List all available containers with their database engine descriptions and obtain a container id.
 
     ```python
-    import requests
-    
-    response = requests.post("http://localhost/api/auth/realms/dbrepo/protocol/openid-connect/token", json={
-        "username": "foo",
-        "password": "bar",
-        "grant_type": "password",
-        "client_id": "dbrepo-client",
-        "scope": "openid",
-        "client_secret": "MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG"
-    })
-    access_token = response.json()["access_token"]
-    print(access_token)
-    ```
+    from dbrepo.RestClient import RestClient
 
-    !!! note
-
-        Please note that the `client_secret` is different for your DBRepo instance. This is a default client secret that
-        likely has been replaced. Please contact your DBRepo administrator to get the `client_secret` for your instance.
-        Similar you need to replace `localhost` with your actual DBRepo instance hostname, e.g. `test.dbrepo.tuwien.ac.at`.
-
-    Then list all available containers with their database engine descriptions and obtain a container id.
-
-    ```python
-    import requests
-    
-    response = requests.get("http://localhost/api/container")
-    print(response.json())
+    client = RestClient(endpoint="http://<hostname>", username="foo",
+                        password="bar")
+    containers = client.get_containers()
+    print(containers)
     ```
 
     Create a public databse with the container id from the previous step. You can also create a private database in this
     step, others can still see the metadata.
 
     ```python
-    import requests
-    
-    response = requests.post("http://localhost/api/database", headers={
-        "Authorization": "Bearer " + access_token
-    }, json={
-        "name": "Danube Water Quality Measurements",
-        "container_id": 1,
-        "is_public": True
-    })
-    print(response.json()["id"])
+    from dbrepo.RestClient import RestClient
+
+    client = RestClient(endpoint="http://<hostname>", username="foo",
+                        password="bar")
+    database = client.create_database(name="Test", container_id=1, is_public=True)
+    print(f"database id: {database.id}")
     ```
 
 ## Import Dataset
@@ -366,28 +290,13 @@ access to. This is the default for self-created databases like above in [Create 
 
 === "Terminal"
 
-    Obtain an access token:
-
-    ```bash
-    curl -sSL \
-      -X POST \
-      -d 'username=foo&password=bar&grant_type=password&client_id=dbrepo-client&scope=openid&client_secret=MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG' \
-      http://localhost/api/auth/realms/dbrepo/protocol/openid-connect/token | jq .access_token
-    ```
-
-    !!! note
-
-        Please note that the `client_secret` is different for your DBRepo instance. This is a default client secret that
-        likely has been replaced. Please contact your DBRepo administrator to get the `client_secret` for your instance.
-        Similar you need to replace `localhost` with your actual DBRepo instance hostname, e.g. `test.dbrepo.tuwien.ac.at`.
-
     Select a database where you have at least `write-all` access (this is the case for e.g. self-created databases).
 
     Upload the dataset via the [`tusc`](https://github.com/adhocore/tusc.sh) terminal application or use Python and
     copy the file key.
 
     ```bash
-    tusc -H http://localhost/api/upload/files -f danube.csv -b /dbrepo-upload/
+    tusc -H http://<hostname>/api/upload/files -f danube.csv -b /dbrepo-upload/
     ```
 
     Analyse the dataset and get the table column names and datatype suggestion.
@@ -395,9 +304,10 @@ access to. This is the default for self-created databases like above in [Create 
     ```bash
     curl -sSL \
       -X POST \
-      -H "Authorization: Bearer ACCESS_TOKEN" \
+      -H "Content-Type: application/json" \
+      -u "foo:bar" \
       -d '{"filename":"FILEKEY","separator":","}' \
-      http://localhost/api/analyse/determinedt | jq
+      http://<hostname>/api/analyse/datatypes | jq
     ```
 
     Provide the table name and optionally a table description along with the table columns.
@@ -405,9 +315,10 @@ access to. This is the default for self-created databases like above in [Create 
     ```bash
     curl -sSL \
       -X POST \
-      -H "Authorization: Bearer ACCESS_TOKEN" \
+      -H "Content-Type: application/json" \
+      -u "foo:bar" \
       -d '{"name":"Danube water levels","description":"Measurements of the river danube water levels","columns":[{"name":"datetime","type":"timestamp","dfid":1,"primary_key":false,"null_allowed":true},{"name":"level","type":"bigint","size":255,"primary_key":false,"null_allowed":true}]}' \
-      http://localhost/api/database/1/table | jq .id
+      http://<hostname>/api/database/1/table | jq .id
     ```
 
     Next, provide the dataset metadata that is necessary for import into the table by providing the dataset separator
@@ -422,9 +333,10 @@ access to. This is the default for self-created databases like above in [Create 
     ```bash
     curl -sSL \
       -X POST \
-      -H "Authorization: Bearer ACCESS_TOKEN" \
+      -H "Content-Type: application/json" \
+      -u "foo:bar" \
       -d '{"location":"FILEKEY","separator":",","quote":"\"","skip_lines":1,"null_element":"NA"}' \
-      http://localhost/api/database/1/table/1/data/import | jq
+      http://<hostname>/api/database/1/table/1/data/import | jq
     ```
 
     When you are finished with the table schema definition, the dataset is imported and a table is created. View the
@@ -432,75 +344,42 @@ access to. This is the default for self-created databases like above in [Create 
 
     ```bash
     curl -sSL \
-      http://localhost/api/database/1/table/1/data?page=0&size=10 | jq
+      -H "Content-Type: application/json" \
+      -u "foo:bar" \
+      http://<hostname>/api/database/1/table/1/data?page=0&size=10 | jq
     ```
 
 === "Python"
 
-    Obtain an access token:
-
-    ```python
-    import requests
-    
-    response = requests.post("http://localhost/api/auth/realms/dbrepo/protocol/openid-connect/token", json={
-        "username": "foo",
-        "password": "bar",
-        "grant_type": "password",
-        "client_id": "dbrepo-client",
-        "scope": "openid",
-        "client_secret": "MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG"
-    })
-    access_token = response.json()["access_token"]
-    print(access_token)
-    ```
-
-    !!! note
-
-        Please note that the `client_secret` is different for your DBRepo instance. This is a default client secret that
-        likely has been replaced. Please contact your DBRepo administrator to get the `client_secret` for your instance.
-        Similar you need to replace `localhost` with your actual DBRepo instance hostname, e.g. `test.dbrepo.tuwien.ac.at`.
-
     Select a database where you have at least `write-all` access (this is the case for e.g. self-created databases).
-
-    Upload the dataset via the Python [`boto3`](https://boto3.amazonaws.com/v1/documentation/api/latest/index.html) 
-    client to the `dbrepo-upload` bucket.
+    Upload the dataset to analyse the dataset and get the table column names and datatype suggestion.
 
     ```python
-    import boto3
-    import os
-    
-    client = boto3.client(service_name='s3', endpoint_url='http://localhost:9000',
-                          aws_access_key_id='seaweedfsadmin',
-                          aws_secret_access_key='seaweedfsadmin')
-    filepath = os.path.join('/path/to', 'your_dataset.csv')
-    client.upload_file(filepath, 'dbrepo-upload', 'your_dataset.csv')
-    ```
+    from dbrepo.RestClient import RestClient
 
-    Analyse the dataset and get the table column names and datatype suggestion.
-
-    ```python
-    import requests
-
-    response = requests.post("http://localhost/api/analyse/determinedt", headers={
-        "Authorization": "Bearer " + access_token
-    }, json={
-        "filename": "your_dataset.csv",
-        "separator": ","
-    })
-    print(response.json()["columns"])
+    client = RestClient(endpoint="http://<hostname>", username="foo",
+                        password="bar")
+    analysis = client.analyse_datatypes(file_path="/path/to/dataset.csv",
+                                        separator=",")
+    print(f"analysis: {analysis}")
+    # separator=, columns={(id, bigint), ...}, line_termination=\n
     ```
 
     Provide the table name and optionally a table description along with the table columns.
 
     ```python
-    import requests
+    from dbrepo.RestClient import RestClient
 
-    response = requests.post("http://localhost/api/database/1/table", headers={
-        "Authorization": "Bearer " + access_token
-    }, json={"name": "Danube water levels", "description": "Measurements of the river danube water levels",
-             "columns": [{"name": "datetime", "type": "timestamp", "dfid": 1, "primary_key": False, "null_allowed": True},
-                         {"name": "level", "type": "bigint", "size": 255, "primary_key": False, "null_allowed": True}]})
-    print(response.json()["id"])
+    client = RestClient(endpoint="http://<hostname>", username="foo",
+                        password="bar")
+    table = client.create_table(database_id=1,
+                                name="Sensor Data",
+                                constraints=CreateTableConstraints(),
+                                columns=[CreateTableColumn(name="id",
+                                                           type=ColumnType.BIGINT,
+                                                           primary_key=True,
+                                                           null_allowed=False)])
+    print(f"table id: {table.id}")
     ```
 
     Next, provide the dataset metadata that is necessary for import into the table by providing the dataset separator
@@ -513,28 +392,24 @@ access to. This is the default for self-created databases like above in [Create 
     (e.g. `0` or `NO`), provide this information.
 
     ```python
-    import requests
+    from dbrepo.RestClient import RestClient
 
-    response = requests.post("http://localhost/api/database/1/table/1/data/import", headers={
-        "Authorization": "Bearer " + access_token
-    }, json={
-        "location": "your_dataset.csv",
-        "separator": ",",
-        "quote": "\"",
-        "skip_lines": 1,
-        "null_element": "NA"
-    })
+    client = RestClient(endpoint="http://<hostname>", username="foo",
+                        password="bar")
+    client.import_table_data(database_id=1, table_id=3,
+                             file_path="/path/to/dataset.csv", separator=",",
+                             skip_lines=1, line_encoding="\n")
     ```
 
     When you are finished with the table schema definition, the dataset is imported and a table is created. View the
     table data:
 
     ```python
-    import requests
+    from dbrepo.RestClient import RestClient
 
-    response = requests.get("http://localhost/api/database/1/table/1/data?page=0&size=10", headers={
-        "Authorization": "Bearer " + access_token
-    })
+    client = RestClient(endpoint="http://<hostname>", username="foo",
+                        password="bar")
+    client.get_table_data(database_id=1, table_id=3)
     ```
 
 ## Import Database Dump
@@ -618,35 +493,15 @@ A user wants to import live data from e.g. sensor measurements fast and without 
 
 === "Terminal"
 
-    Obtain an access token:
-
-    ```bash
-    curl -sSL \
-      -X POST \
-      -d 'username=foo&password=bar&grant_type=password&client_id=dbrepo-client&scope=openid&client_secret=MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG' \
-      http://localhost/api/auth/realms/dbrepo/protocol/openid-connect/token | jq .access_token
-    ```
-
-    !!! note
-
-        Please note that the `client_secret` is different for your DBRepo instance. This is a default client secret that
-        likely has been replaced. Please contact your DBRepo administrator to get the `client_secret` for your instance.
-        Similar you need to replace `localhost` with your actual DBRepo instance hostname, e.g. `test.dbrepo.tuwien.ac.at`.
-
-    !!! warning
-
-        Beware that access tokens are short lived (default is 15 minutes) and need to be refreshed regularly with
-        refresh tokens (default is 10 days). See the usage page 
-        on [how to refresh access tokens](../usage-authentication/#refresh-access-token).
-
     Add a data tuple to an already existing table where the user has at least `write-own` access.
 
     ```bash
     curl -sSL \
       -X POST \
-      -H "Authorization: Bearer ACCESS_TOKEN" \
-      -d '{"data":{"column1":"value1","column2":"value2"}}' \
-      http://localhost/api/database/1/table/1/data
+      -H "Content-Type: application/json" \
+      -u "foo:bar" \
+      -d '{"data":{"column1": "value1", "column2": "value2"}}' \
+      http://<hostname>/api/database/1/table/1/data
     ```
 
 === "JDBC API"
@@ -676,19 +531,12 @@ A user wants to import live data from e.g. sensor measurements fast and without 
     </figure>
 
     ```python
-    import pika
-    import json
+    from dbrepo.AmqpClient import AmqpClient
 
-    credentials = pika.credentials.PlainCredentials('foo', 'bar')
-    # credentials = pika.credentials.PlainCredentials('', 'ACCESS_TOKEN')
-    parameters = pika.ConnectionParameters('localhost', 5672, '/', credentials)
-    connection = pika.BlockingConnection(parameters)
-    channel = connection.channel()
-    channel.basic_publish(exchange='dbrepo',
-        routing_key='dbrepo.test_fiyg.dabube_water_levels',
-        body=json.dumps({"data":{"column1":"value1","column2":"value2"}}))
-    print(" [x] Sent tuple!")
-    connection.close()
+    client = AmqpClient(broker_host="test.dbrepo.tuwien.ac.at", username="foo",
+                        password="bar")
+    client.publish(exchange="dbrepo", routing_key="dbrepo.database_feed.test",
+                   data={'precipitation': 2.4})
     ```
 
 ## Export Subset
@@ -742,30 +590,16 @@ A user wants to create a subset and export it as csv file.
 
 === "Terminal"
 
-    Obtain an access token:
-
-    ```bash
-    curl -sSL \
-      -X POST \
-      -d 'username=foo&password=bar&grant_type=password&client_id=dbrepo-client&scope=openid&client_secret=MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG' \
-      http://localhost/api/auth/realms/dbrepo/protocol/openid-connect/token | jq .access_token
-    ```
-
-    !!! note
-
-        Please note that the `client_secret` is different for your DBRepo instance. This is a default client secret that
-        likely has been replaced. Please contact your DBRepo administrator to get the `client_secret` for your instance.
-        Similar you need to replace `localhost` with your actual DBRepo instance hostname, e.g. `test.dbrepo.tuwien.ac.at`.
-
     A subset can be created by passing a SQL query to a database where you have at least `read` access (this is the case
     for e.g. self-created databases).
 
     ```bash
     curl -sSL \
       -X POST \
-      -H "Authorization: Bearer ACCESS_TOKEN" \
+      -H "Content-Type: application/json" \
+      -u "foo:bar" \
       -d '{"statement":"SELECT `id`,`datetime`,`level` FROM `danube_water_levels`"}' \
-      http://localhost/api/database/1/query?page=0&sort=10 | jq .id
+      http://<hostname>/api/database/1/query?page=0&sort=10 | jq .id
     ```
 
     !!! note
@@ -776,8 +610,9 @@ A user wants to create a subset and export it as csv file.
 
     ```bash
     curl -sSL \
-      -H "Authorization: Bearer ACCESS_TOKEN" \
-      http://localhost/api/database/1/query/1 | jq
+      -H "Content-Type: application/json" \
+      -u "foo:bar" \
+      http://<hostname>/api/database/1/query/1 | jq
     ```
 
     The subset information shows the most important metadata like subset query hash and result hash (e.g. for 
@@ -790,19 +625,20 @@ A user wants to create a subset and export it as csv file.
     ```bash
     curl -sSL \
       -X PUT \
-      -H "Authorization: Bearer ACCESS_TOKEN" \
-      -d '{"persist":true}' \
-      http://localhost/api/database/1/query/1 | jq
+      -H "Content-Type: application/json" \
+      -u "foo:bar" \
+      -d '{"persist": true}' \
+      http://<hostname>/api/database/1/query/1 | jq
     ```
 
     The subset can be exported to a `subset_export.csv` file (this also works for non-persisted subsets).
 
     ```bash
     curl -sSL \
-      -H "Authorization: Bearer ACCESS_TOKEN" \
+      -u "foo:bar" \
       -H "Accept: text/csv" \
       -o subset_export.csv \
-      http://localhost/api/database/1/query/1
+      http://<hostname>/api/database/1/query/1
     ```
 
 === "JDBC"
@@ -827,56 +663,34 @@ A user wants to create a subset and export it as csv file.
 
 === "Python"
 
-    Obtain an access token:
-
-    ```python
-    import requests
-    
-    response = requests.post("http://localhost/api/auth/realms/dbrepo/protocol/openid-connect/token", json={
-        "username": "foo",
-        "password": "bar",
-        "grant_type": "password",
-        "client_id": "dbrepo-client",
-        "scope": "openid",
-        "client_secret": "MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG"
-    })
-    access_token = response.json()["access_token"]
-    print(access_token)
-    ```
-
-    !!! note
-
-        Please note that the `client_secret` is different for your DBRepo instance. This is a default client secret that
-        likely has been replaced. Please contact your DBRepo administrator to get the `client_secret` for your instance.
-        Similar you need to replace `localhost` with your actual DBRepo instance hostname, e.g. `test.dbrepo.tuwien.ac.at`.
-
     A subset can be created by passing a SQL query to a database where you have at least `read` access (this is the case
     for e.g. self-created databases).
 
     ```python
-    import requests
+    from dbrepo.RestClient import RestClient
 
-    response = requests.post("http://localhost/api/database/1/query?page=0&sort=10", headers={
-        "Authorization": "Bearer " + access_token
-    }, json={
-        "statement": "SELECT `id`,`datetime`,`level` FROM `danube_water_levels`"
-    })
-    query_id = response.json()["id"]
+    client = RestClient(endpoint="http://<hostname>", username="foo",
+                        password="bar")
+    subset = client.execute_query(database_id=1,
+                                  query="SELECT `id`,`datetime` FROM `danube_water_levels`")
+    print(f"subset id: {subset.id}")
     ```
 
     !!! note
 
-        An optional field `"timestamp":"2024-01-16 23:00:00"` can be provided to execute a query with a system time of
+        An optional field `timestamp="2024-01-16 23:00:00"` can be provided to execute a query with a system time of
         2024-01-16 23:00:00 (UTC). Make yourself familiar with the concept
         of [System Versioned Tables](https://mariadb.com/kb/en/system-versioned-tables/) for more information.
 
-    ```python
-    import requests
+    The subset information can be shown:
 
-    response = requests.get("http://localhost/api/database/1/query/1", headers={
-        "Authorization": "Bearer " + access_token
-    })
-    print(response.json())
+    ```python
+    from dbrepo.RestClient import RestClient
+
+    client = RestClient(endpoint="http://<hostname>", username="foo",
+                        password="bar")
+    subset = client.get_query(database_id=1, query_id=6)
+    print(subset)
     ```
 
     The subset information shows the most important metadata like subset query hash and result hash (e.g. for 
@@ -887,31 +701,21 @@ A user wants to create a subset and export it as csv file.
     persist it.
 
     ```python
-    import requests
-    
-    response = requests.put("http://localhost/api/database/1/query/1", headers={
-        "Authorization": "Bearer " + access_token
-    }, json={
-        "persist": True
-    })
+    from dbrepo.RestClient import RestClient
+
+    client = RestClient(endpoint="http://<hostname>", username="foo",
+                        password="bar")
+    client.update_query(database_id=1, query_id=6, persist=True)
     ```
 
     The subset can be exported to a `subset_export.csv` file (this also works for non-persisted subsets).
 
     ```python
-    import requests
+    from dbrepo.RestClient import RestClient
 
-    headers = {
-        "Authorization": "Bearer " + access_token,
-        "Accept": "text/csv"
-    }
-    
-    with requests.Session() as s:
-        response = s.get("http://localhost/api/database/1/query/1",
-                         headers=headers, stream=True)
-        decoded_content = response.content.decode('utf-8')
-        with open("subset_export.csv", "w") as f:
-            f.write(decoded_content)
+    client = RestClient(endpoint="http://<hostname>", username="foo",
+                        password="bar")
+    client.get_query_data(database_id=1, query_id=6, file_path='subset_export.csv')
     ```
 
 ## Assign Database PID
@@ -997,30 +801,16 @@ A user wants to assign a persistent identifier to a database owned by them.
 
 === "Terminal"
 
-    Obtain an access token:
-
-    ```bash
-    curl -sSL \
-      -X POST \
-      -d 'username=foo&password=bar&grant_type=password&client_id=dbrepo-client&scope=openid&client_secret=MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG' \
-      http://localhost/api/auth/realms/dbrepo/protocol/openid-connect/token | jq .access_token
-    ```
-
-    !!! note
-
-        Please note that the `client_secret` is different for your DBRepo instance. This is a default client secret that
-        likely has been replaced. Please contact your DBRepo administrator to get the `client_secret` for your instance.
-        Similar you need to replace `localhost` with your actual DBRepo instance hostname, e.g. `test.dbrepo.tuwien.ac.at`.
-
     Create a persistent identifier for a database where you are the owner (this is the case for self-created databases)
     using the HTTP API:
 
     ```bash
     curl -sSL \
       -X POST \
-      -H "Authorization: Bearer ACCESS_TOKEN" \
-      -d '{"type": "database", "titles": [{"title": "Danube water level measurements", "language": "en"},{"title": "Donau Wasserstandsmessungen", "language": "de", "type": "TranslatedTitle"}], "descriptions": [{"description": "This dataset contains hourly measurements of the water level in Vienna from 1983 to 2015", "language": "en", "type": "Abstract"}], "funders": [{ "funder_name": "Austrian Science Fund", "funder_identifier": "https://doi.org/10.13039/100000001", "funder_identifier_type": "Crossref Funder ID", "scheme_uri": "http://doi.org/"}], "licenses": [{"identifier": "CC-BY-4.0", "uri": "https://creativecommons.org/licenses/by/4.0/legalcode"}], "visibility": "everyone", "publisher": "Example University", "creators": [{"firstname": "Martin", "lastname": "Weise", "affiliation": "TU Wien", "creator_name": "Weise, Martin", "name_type": "Personal", "name_identifier": "0000-0003-4216-302X", "name_identifier_scheme": "ORCID", "affiliation_identifier": "https://ror.org/04d836q62", "affiliation_identifier_scheme": "ROR"}], "database_id": 1, "publication_day": 16, "publication_month": 1, "publication_year": 2024, "related_identifiers": [{"value": "10.5334/dsj-2022-004", "type": "DOI", "relation": "Cites"}]}' \
-      http://localhost/api/identifier | jq .id
+      -H "Content-Type: application/json" \
+      -u "foo:bar" \
+      -d '{"type": "database", "titles": [{"title": "Danube water level measurements", "language": "en"},{"title": "Donau Wasserstandsmessungen", "language": "de", "type": "TranslatedTitle"}], "descriptions": [{"description": "This dataset contains hourly measurements of the water level in Vienna from 1983 to 2015", "language": "en", "type": "Abstract"}], "funders": [{ "funder_name": "Austrian Science Fund", "funder_identifier": "https://doi.org/10.13039/100000001", "funder_identifier_type": "Crossref Funder ID", "scheme_uri": "http://doi.org/"}], "licenses": [{"identifier": "CC-BY-4.0", "uri": "https://creativecommons.org/licenses/by/4.0/legalcode"}], "publisher": "Example University", "creators": [{"firstname": "Martin", "lastname": "Weise", "affiliation": "TU Wien", "creator_name": "Weise, Martin", "name_type": "Personal", "name_identifier": "0000-0003-4216-302X", "name_identifier_scheme": "ORCID", "affiliation_identifier": "https://ror.org/04d836q62", "affiliation_identifier_scheme": "ROR"}], "database_id": 1, "publication_day": 16, "publication_month": 1, "publication_year": 2024, "related_identifiers": [{"value": "10.5334/dsj-2022-004", "type": "DOI", "relation": "Cites"}]}' \
+      http://<hostname>/api/identifier | jq .id
     ```
 
 === "JDBC"
@@ -1044,99 +834,39 @@ A user wants to assign a persistent identifier to a database owned by them.
 
 === "Python"
 
-    Obtain an access token:
-
-    ```python
-    import requests
-    
-    response = requests.post("http://localhost/api/auth/realms/dbrepo/protocol/openid-connect/token", json={
-        "username": "foo",
-        "password": "bar",
-        "grant_type": "password",
-        "client_id": "dbrepo-client",
-        "scope": "openid",
-        "client_secret": "MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG"
-    })
-    access_token = response.json()["access_token"]
-    print(access_token)
-    ```
-
-    !!! note
-
-        Please note that the `client_secret` is different for your DBRepo instance. This is a default client secret that
-        likely has been replaced. Please contact your DBRepo administrator to get the `client_secret` for your instance.
-        Similar you need to replace `localhost` with your actual DBRepo instance hostname, e.g. `test.dbrepo.tuwien.ac.at`.
-
     Create a persistent identifier for a database where you are the owner (this is the case for self-created databases)
     using the HTTP API:
 
     ```python
-    import requests
-
-    response = requests.post("http://localhost/api/database/1/query/1", headers={
-        "Authorization": "Bearer " + access_token
-    }, json={
-        "type": "database",
-        "titles": [
-            {
-                "title": "Danube water level measurements",
-                "language": "en"
-            },
-            {
-                "title": "Donau Wasserstandsmessungen",
-                "language": "de",
-                "type": "TranslatedTitle"
-            }
-        ],
-        "descriptions": [
-            {
-                "description": "This dataset contains hourly measurements of the water level in Vienna from 1983 to 2015",
-                "language": "en",
-                "type": "Abstract"
-            }
-        ],
-        "funders": [
-            {
-                "funder_name": "Austrian Science Fund",
-                "funder_identifier": "https://doi.org/10.13039/100000001",
-                "funder_identifier_type": "Crossref Funder ID",
-                "scheme_uri": "http://doi.org/"
-            }
-        ],
-        "licenses": [
-            {
-                "identifier": "CC-BY-4.0",
-                "uri": "https://creativecommons.org/licenses/by/4.0/legalcode"
-            }
-        ],
-        "visibility": "everyone",
-        "publisher": "Example University",
-        "creators": [
-            {
-                "firstname": "Martin",
-                "lastname": "Weise",
-                "affiliation": "TU Wien",
-                "creator_name": "Weise, Martin",
-                "name_type": "Personal",
-                "name_identifier": "0000-0003-4216-302X",
-                "name_identifier_scheme": "ORCID",
-                "affiliation_identifier": "https://ror.org/04d836q62",
-                "affiliation_identifier_scheme": "ROR"
-            }
-        ],
-        "database_id": 1,
-        "publication_day": 16,
-        "publication_month": 1,
-        "publication_year": 2024,
-        "related_identifiers": [
-            {
-                "value": "10.5334/dsj-2022-004",
-                "type": "DOI",
-                "relation": "Cites"
-            }
-        ]
-    })
-    pid = response.json()["id"]
+    from dbrepo.RestClient import RestClient
+    from python.dbrepo.api.dto import IdentifierType, CreateIdentifierFunder, CreateIdentifierDescription, \
+        CreateIdentifierTitle, Identifier, CreateIdentifierCreator, CreateRelatedIdentifier, RelatedIdentifierType, \
+        RelatedIdentifierRelation
+    
+    client = RestClient(endpoint="http://<hostname>", username="foo",
+                        password="bar")
+    identifier = client.create_identifier(
+        database_id=1,
+        type=IdentifierType.DATABASE,
+        creators=[CreateIdentifierCreator(
+            creator_name="Weise, Martin",
+            name_identifier="https://orcid.org/0000-0003-4216-302X")],
+        titles=[CreateIdentifierTitle(
+            title="Danube river water measurements")],
+        descriptions=[CreateIdentifierDescription(
+            description="This dataset contains hourly measurements of the water \
+             level in Vienna from 1983 to 2015")],
+        funders=[CreateIdentifierFunder(
+            funder_name="Austrian Science Fund",
+            funder_identifier="https://doi.org/10.13039/100000001")],
+        licenses=[Identifier(identifier="CC-BY-4.0")],
+        publisher="TU Wien",
+        publication_year=2024,
+        related_identifiers=[CreateRelatedIdentifier(
+            value="https://doi.org/10.5334/dsj-2022-004",
+            type=RelatedIdentifierType.DOI,
+            relation=RelatedIdentifierRelation.CITES)])
+    print(f"identifier id: {identifier.id}")
     ```
 
 ## Private Database &amp; Access
@@ -1169,30 +899,16 @@ A user wants a public database to be private and only give specific users access
 
 === "Terminal"
 
-    Obtain an access token:
-
-    ```bash
-    curl -sSL \
-      -X POST \
-      -d 'username=foo&password=bar&grant_type=password&client_id=dbrepo-client&scope=openid&client_secret=MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG' \
-      http://localhost/api/auth/realms/dbrepo/protocol/openid-connect/token | jq .access_token
-    ```
-
-    !!! note
-
-        Please note that the `client_secret` is different for your DBRepo instance. This is a default client secret that
-        likely has been replaced. Please contact your DBRepo administrator to get the `client_secret` for your instance.
-        Similar you need to replace `localhost` with your actual DBRepo instance hostname, e.g. `test.dbrepo.tuwien.ac.at`.
-
     To change the visibility of a database where you are the owner (this is the case for self-created databases), send
     a request to the HTTP API:
 
     ```bash
     curl -sSL \
       -X PUT \
-      -H "Authorization: Bearer ACCESS_TOKEN" \
-      -d '{"is_public":true}' \
-      http://localhost/api/database/1/visibility
+      -H "Content-Type: application/json" \
+      -u "foo:bar" \
+      -d '{"is_public": true}' \
+      http://<hostname>/api/database/1/visibility
     ```
 
     To give a user (with id `e9bf38a0-a254-4040-87e3-92e0f09e29c8` access to this database (e.g. read access), update
@@ -1201,9 +917,10 @@ A user wants a public database to be private and only give specific users access
     ```bash
     curl -sSL \
       -X POST \
-      -H "Authorization: Bearer ACCESS_TOKEN" \
-      -d '{"type":"read"}' \
-      http://localhost/api/database/1/access/e9bf38a0-a254-4040-87e3-92e0f09e29c8
+      -H "Content-Type: application/json" \
+      -u "foo:bar" \
+      -d '{"type": "read"}' \
+      http://<hostname>/api/database/1/access/e9bf38a0-a254-4040-87e3-92e0f09e29c8
     ```
 
     In case the user already has access, use the method `PUT`.
@@ -1230,49 +947,29 @@ A user wants a public database to be private and only give specific users access
 
 === "Python"
 
-    Obtain an access token:
-
-    ```python
-    import requests
-    
-    response = requests.post("http://localhost/api/auth/realms/dbrepo/protocol/openid-connect/token", json={
-        "username": "foo",
-        "password": "bar",
-        "grant_type": "password",
-        "client_id": "dbrepo-client",
-        "scope": "openid",
-        "client_secret": "MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG"
-    })
-    access_token = response.json()["access_token"]
-    print(access_token)
-    ```
-
-    !!! note
-
-        Please note that the `client_secret` is different for your DBRepo instance. This is a default client secret that
-        likely has been replaced. Please contact your DBRepo administrator to get the `client_secret` for your instance.
-        Similar you need to replace `localhost` with your actual DBRepo instance hostname, e.g. `test.dbrepo.tuwien.ac.at`.
-
     To change the visibility of a database where you are the owner (this is the case for self-created databases), send
     a request to the HTTP API:
 
     ```python
-    requests.put("http://localhost/api/database/1/visibility", headers={
-        "Authorization": "Bearer " + access_token
-    }, json={
-        "is_public": True
-    })
+    from dbrepo.RestClient import RestClient
+
+    client = RestClient(endpoint="http://<hostname>", username="foo",
+                        password="bar")
+    client.update_database_visibility(database_id=1, is_public=False)
     ```
 
     To give a user (with id `e9bf38a0-a254-4040-87e3-92e0f09e29c8` access to this database (e.g. read access), update
     their access using the HTTP API:
 
     ```python
-    requests.post("http://localhost/api/database/1/access/e9bf38a0-a254-4040-87e3-92e0f09e29c8", headers={
-        "Authorization": "Bearer " + access_token
-    }, json={
-        "type": "read"
-    })
+    from dbrepo.RestClient import RestClient
+    from python.dbrepo.api.dto import AccessType
+    
+    client = RestClient(endpoint="http://<hostname>", username="foo",
+                        password="bar")
+    client.create_database_access(database_id=1,
+                                  type=AccessType.READ,
+                                  user_id="e9bf38a0-a254-4040-87e3-92e0f09e29c8")
     ```
 
-    In case the user already has access, use the method `put`.
+    In case the user already has access, use the method `update_database_access` or revoke `delete_database_access`.

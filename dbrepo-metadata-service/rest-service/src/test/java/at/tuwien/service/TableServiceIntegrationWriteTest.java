@@ -104,7 +104,7 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
     @Test
     public void create_withConstraints_succeeds() throws TableMalformedException, QueryMalformedException,
             DatabaseNotFoundException, ImageNotSupportedException, TableNameExistsException, SQLException,
-            TableNotFoundException {
+            TableNotFoundException, UserNotFoundException {
 
         /* test */
         tableService.createTable(DATABASE_1_ID, TABLE_5_CREATE_DTO, USER_1_PRINCIPAL); // table to reference
@@ -191,7 +191,7 @@ public class TableServiceIntegrationWriteTest extends BaseUnitTest {
     @Test
     @Transactional
     public void delete_full_succeeds() throws TableNotFoundException, TableMalformedException, QueryMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, TableNameExistsException {
+            DatabaseNotFoundException, ImageNotSupportedException, TableNameExistsException, UserNotFoundException {
 
         /* test */
         final Table response = tableService.createTable(DATABASE_1_ID, TABLE_0_CREATE_DTO, USER_1_PRINCIPAL);

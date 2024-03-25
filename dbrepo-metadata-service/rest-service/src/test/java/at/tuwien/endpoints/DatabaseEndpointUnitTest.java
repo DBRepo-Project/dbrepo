@@ -187,47 +187,6 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void count_anonymous_succeeds() throws UserNotFoundException {
-
-        /* pre-condition */
-        assertFalse(DATABASE_1_PUBLIC);
-
-        /* test */
-        count_generic(DATABASE_1_ID, List.of(DATABASE_1), null, null, null);
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME, authorities = {"list-databases"})
-    public void count_hasRole_succeeds() throws UserNotFoundException {
-
-        /* pre-condition */
-        assertTrue(DATABASE_3_PUBLIC);
-
-        /* mock */
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
-
-        /* test */
-        count_generic(DATABASE_3_ID, List.of(DATABASE_3), USER_1_PRINCIPAL, USER_1_ID, "access");
-    }
-
-    @Test
-    @WithMockUser(username = USER_1_USERNAME, authorities = {"list-databases"})
-    public void count_hasRoleForeign_succeeds() throws UserNotFoundException {
-
-        /* pre-condition */
-        assertTrue(DATABASE_3_PUBLIC);
-
-        /* mock */
-        when(userRepository.findByUsername(USER_1_USERNAME))
-                .thenReturn(Optional.of(USER_1));
-
-        /* test */
-        count_generic(DATABASE_3_ID, List.of(DATABASE_3), USER_1_PRINCIPAL, USER_1_ID, "access");
-    }
-
-    @Test
-    @WithAnonymousUser
     public void visibility_anonymous_fails() {
         final DatabaseModifyVisibilityDto request = DatabaseModifyVisibilityDto.builder()
                 .isPublic(true)
@@ -396,8 +355,8 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void findById_anonymous_succeeds() throws NotAllowedException, DatabaseNotFoundException,
-            ExchangeNotFoundException, BrokerRemoteException {
+    public void findById_anonymous_succeeds() throws DatabaseNotFoundException, ExchangeNotFoundException,
+            BrokerRemoteException {
 
         /* test */
         findById_generic(DATABASE_1_ID, DATABASE_1, null);
@@ -415,8 +374,8 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"find-database"})
-    public void findById_hasRole_succeeds() throws NotAllowedException, DatabaseNotFoundException,
-            ExchangeNotFoundException, BrokerRemoteException {
+    public void findById_hasRole_succeeds() throws DatabaseNotFoundException, ExchangeNotFoundException,
+            BrokerRemoteException {
 
         /* pre-condition */
         assertTrue(DATABASE_3_PUBLIC);
@@ -427,8 +386,8 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"find-database"})
-    public void findById_hasRoleForeign_succeeds() throws NotAllowedException, DatabaseNotFoundException,
-            ExchangeNotFoundException, BrokerRemoteException {
+    public void findById_hasRoleForeign_succeeds() throws DatabaseNotFoundException, ExchangeNotFoundException,
+            BrokerRemoteException {
 
         /* pre-condition */
         assertTrue(DATABASE_3_PUBLIC);
@@ -439,8 +398,8 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"find-database"})
-    public void findById_ownerSeesAccessRights_succeeds() throws NotAllowedException, DatabaseNotFoundException,
-            ExchangeNotFoundException, BrokerRemoteException {
+    public void findById_ownerSeesAccessRights_succeeds() throws DatabaseNotFoundException, ExchangeNotFoundException,
+            BrokerRemoteException {
 
         /* mock */
         when(accessService.list(DATABASE_1_ID))
@@ -475,36 +434,11 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
         assertEquals(databases.size(), body.size());
     }
 
-    public void count_generic(Long databaseId, List<Database> databases, Principal principal, UUID userId,
-                              String filter) throws UserNotFoundException {
-
-        /* mock */
-        when(identifierRepository.findByDatabaseId(databaseId))
-                .thenReturn(List.of());
-        if (principal != null) {
-            when(databaseService.findAccess(userId))
-                    .thenReturn(databases);
-        } else {
-            when(databaseService.findAll())
-                    .thenReturn(databases);
-        }
-
-        /* test */
-        final ResponseEntity<List<DatabaseDto>> response = databaseEndpoint.count(principal, filter);
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNull(response.getBody());
-        final List<String> headerCount = response.getHeaders().get("x-count");
-        assertNotNull(headerCount);
-        assertEquals(headerCount.size(), 1);
-        assertEquals(headerCount.get(0), "" + databases.size());
-    }
-
     public void create_generic(Long databaseId, DatabaseCreateDto data, String username,
-                               Principal principal) throws UserNotFoundException, DatabaseNameExistsException,
-            NotAllowedException, ContainerConnectionException, DatabaseMalformedException, QueryStoreException,
-            DatabaseConnectionException, QueryMalformedException, DatabaseNotFoundException, ImageNotSupportedException,
-            AmqpException, BrokerVirtualHostModificationException, ContainerNotFoundException,
-            BrokerVirtualHostGrantException, KeycloakRemoteException, AccessDeniedException, BrokerRemoteException {
+                               Principal principal) throws UserNotFoundException, NotAllowedException,
+            DatabaseMalformedException, QueryStoreException, DatabaseConnectionException, QueryMalformedException,
+            DatabaseNotFoundException, ContainerNotFoundException, BrokerVirtualHostGrantException,
+            BrokerRemoteException {
 
         /* mock */
         doNothing()
@@ -515,14 +449,14 @@ public class DatabaseEndpointUnitTest extends BaseUnitTest {
                 .setVirtualHostPermissions(username);
 
         /* test */
-        final ResponseEntity<DatabaseBriefDto> response = databaseEndpoint.create(data, principal);
+        final ResponseEntity<DatabaseDto> response = databaseEndpoint.create(data, principal);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertNotNull(response.getBody());
     }
 
     public void visibility_generic(Long databaseId, Database database, DatabaseDto dto,
                                    DatabaseModifyVisibilityDto data, Principal principal) throws NotAllowedException,
-            DatabaseNotFoundException, UserNotFoundException {
+            DatabaseNotFoundException {
 
         /* mock */
         if (database != null) {

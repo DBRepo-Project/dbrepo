@@ -52,11 +52,11 @@ public interface MetadataService {
      *
      * @param url The user identifier.
      * @return The user metadata.
-     * @throws OrcidNotFoundException     The provided identifier is of ORCID type and does not exist.
-     * @throws RorNotFoundException       The provided identifier is of ROR type and does not exist.
-     * @throws RemoteUnavailableException The remote service is not supported.
-     * @throws DoiNotFoundException       The doi was not found.
+     * @throws OrcidNotFoundException      The provided identifier is of ORCID type and does not exist.
+     * @throws RorNotFoundException        The provided identifier is of ROR type and does not exist.
+     * @throws IdentifierNotFoundException The identifier is not supported.
+     * @throws DoiNotFoundException        The doi was not found.
      */
     ExternalMetadataDto findByUrl(String url) throws OrcidNotFoundException, RorNotFoundException,
-            RemoteUnavailableException, DoiNotFoundException;
+            DoiNotFoundException, IdentifierNotFoundException;
 }

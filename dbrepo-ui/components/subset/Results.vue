@@ -42,7 +42,7 @@ export default {
         showFirstLastPage: true,
         itemsPerPageOptions: [10, 25, 50, 100]
       },
-      total: -1
+      total: null
     }
   },
   computed: {
@@ -150,9 +150,6 @@ export default {
       })
       console.debug('query result', data)
       this.result.rows = data.result
-      if (this.total < 0 && data.result_number != null) {
-        this.total = data.result_number
-      }
     }
   }
 }

@@ -42,7 +42,7 @@
               </v-list-item>
               <v-list-item
                 :title="$t('pages.view.visibility.title')">
-                {{ view.is_public ? $t('layout.public') : $t('layout.private') }}
+                {{ view.is_public ? $t('toolbars.database.public') : $t('toolbars.database.private') }}
               </v-list-item>
             </v-list>
           </v-card-text>

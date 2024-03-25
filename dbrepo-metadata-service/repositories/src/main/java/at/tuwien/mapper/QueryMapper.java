@@ -193,14 +193,18 @@ public interface QueryMapper {
                 .append("`")
                 .append(column.getInternalName())
                 .append("` = ");
-        log.trace("import has null element present");
-        set.append("IF(!STRCMP(@")
-                .append(column.getInternalName())
-                .append(",'")
-                .append(data.getNullElement())
-                .append("'),NULL,");
+        if (data.getNullElement() != null) {
+            log.trace("import has null element present");
+            set.append("IF(!STRCMP(@")
+                    .append(column.getInternalName())
+                    .append(",'")
+                    .append(data.getNullElement())
+                    .append("'),NULL,");
+            columnToBoolSet2(data, column, set);
+            set.append(")");
+            return;
+        }
         columnToBoolSet2(data, column, set);
-        set.append(")");
     }
 
     default void columnToBoolSet2(ImportDto data, TableColumn column, StringBuilder set) {
@@ -265,14 +269,19 @@ public interface QueryMapper {
                 .append("`")
                 .append(column.getInternalName())
                 .append("` = ");
-        log.trace("import has null element present");
-        set.append("IF(STRCMP(@")
-                .append(column.getInternalName())
-                .append(",'")
-                .append(data.getNullElement())
-                .append("'), @")
-                .append(column.getInternalName())
-                .append(", NULL)");
+        if (data.getNullElement() != null) {
+            log.trace("import has null element present");
+            set.append("IF(STRCMP(@")
+                    .append(column.getInternalName())
+                    .append(",'")
+                    .append(data.getNullElement())
+                    .append("'), @")
+                    .append(column.getInternalName())
+                    .append(", NULL)");
+            return;
+        }
+        set.append("@")
+                .append(column.getInternalName());
     }
 
     default void columnToDateSet(ImportDto data, TableColumn column, StringBuilder set) {
@@ -281,14 +290,24 @@ public interface QueryMapper {
                 .append("`")
                 .append(column.getInternalName())
                 .append("` = STR_TO_DATE(");
-        log.trace("import has null element present");
-        set.append("IF(STRCMP(@")
+        if (data.getNullElement() != null) {
+            log.trace("import has null element present");
+            set.append("IF(STRCMP(@")
+                    .append(column.getInternalName())
+                    .append(",'")
+                    .append(data.getNullElement())
+                    .append("'), @")
+                    .append(column.getInternalName())
+                    .append(", NULL), '")
+                    .append(column.getDateFormat()
+                            .getDatabaseFormat()
+                            .replace('\'', '\\'))
+                    .append("')");
+            return;
+        }
+        set.append("@")
                 .append(column.getInternalName())
-                .append(",'")
-                .append(data.getNullElement())
-                .append("'), @")
-                .append(column.getInternalName())
-                .append(", NULL), '")
+                .append(", '")
                 .append(column.getDateFormat()
                         .getDatabaseFormat()
                         .replace('\'', '\\'))

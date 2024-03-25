@@ -1,0 +1,20 @@
+# IDE
+.idea/
+
+# generated
+dist/
+dbrepo.egg-info/
+build/
+
+# coverage
+coverage.txt
+.coverage
+report.xml
+
+# environment
+.env
+.venv/
+venv/
+
+# secrets
+../.pypirc

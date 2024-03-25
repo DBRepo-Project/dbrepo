@@ -6,7 +6,6 @@ import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.entities.database.*;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.QueryMalformedException;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.http.auth.BasicUserPrincipal;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -21,7 +20,7 @@ import java.text.Normalizer;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
-@Mapper(componentModel = "spring", uses = {ContainerMapper.class, UserMapper.class, ImageMapper.class, UserMapper.class, TableMapper.class, IdentifierMapper.class, ViewMapper.class}, imports = {RandomStringUtils.class})
+@Mapper(componentModel = "spring", uses = {ContainerMapper.class, UserMapper.class, ImageMapper.class, UserMapper.class, TableMapper.class, IdentifierMapper.class, ViewMapper.class})
 public interface DatabaseMapper {
 
     org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(DatabaseMapper.class);
@@ -53,22 +52,9 @@ public interface DatabaseMapper {
 
     @Mappings({
             @Mapping(target = "id", source = "id"),
-            @Mapping(target = "image", source = "container.image"),
-            @Mapping(target = "created", source = "created", dateFormat = "dd-MM-yyyy HH:mm"),
-            @Mapping(target = "container", ignore = true),
-    })
-    DatabaseBriefDto databaseToDatabaseBriefDto(Database data);
-
-    @Mappings({
-            @Mapping(target = "id", source = "id"),
             @Mapping(target = "created", source = "created", dateFormat = "dd-MM-yyyy HH:mm"),
     })
     DatabaseDto databaseToDatabaseDto(Database data);
-
-    @Mappings({
-            @Mapping(target = "internalName", expression = "java(nameToInternalName(data.getName()) + \"_\" + RandomStringUtils.randomAlphabetic(4).toLowerCase())"),
-    })
-    Database databaseCreateDtoToDatabase(DatabaseCreateDto data);
 
     AccessType accessTypeDtoToAccessType(AccessTypeDto data);
 

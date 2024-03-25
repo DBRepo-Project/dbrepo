@@ -22,8 +22,7 @@ class DeterminePrimaryKeyTest(unittest.TestCase):
 
         # test
         response = determine_pk('largefile_idfirst.csv')
-        data = json.loads(response)
-        self.assertEqual(1, int(data['id']))
+        self.assertEqual(1, int(response['id']))
 
     # @Test
     def test_determine_pk_largeFileIdInBetween_succeeds(self):
@@ -33,8 +32,7 @@ class DeterminePrimaryKeyTest(unittest.TestCase):
 
         # test
         response = determine_pk('largefile_idinbtw.csv')
-        data = json.loads(response)
-        self.assertEqual(1, int(data['id']))
+        self.assertEqual(1, int(response['id']))
 
     # @Test
     def test_determine_pk_largeFileNoPrimaryKey_fails(self):
@@ -44,8 +42,7 @@ class DeterminePrimaryKeyTest(unittest.TestCase):
 
         # test
         response = determine_pk('largefile_no_pk.csv')
-        data = json.loads(response)
-        self.assertEqual({}, data)
+        self.assertEqual({}, response)
 
     # @Test
     def test_determine_pk_largeFileNullInUnique_fails(self):
@@ -55,8 +52,7 @@ class DeterminePrimaryKeyTest(unittest.TestCase):
 
         # test
         response = determine_pk('largefile_nullinunique.csv')
-        data = json.loads(response)
-        self.assertFalse('uniquestr' in data)
+        self.assertFalse('uniquestr' in response)
 
     # @Test
     def test_determine_pk_smallFileIdFirst_fails(self):
@@ -66,8 +62,7 @@ class DeterminePrimaryKeyTest(unittest.TestCase):
 
         # test
         response = determine_pk('smallfile_idfirst.csv')
-        data = json.loads(response)
-        self.assertEqual(1, int(data['id']))
+        self.assertEqual(1, int(response['id']))
 
     # @Test
     def test_determine_pk_smallFileIdIntBetween_fails(self):
@@ -77,8 +72,7 @@ class DeterminePrimaryKeyTest(unittest.TestCase):
 
         # test
         response = determine_pk('smallfile_idinbtw.csv')
-        data = json.loads(response)
-        self.assertEqual(1, int(data['id']))
+        self.assertEqual(1, int(response['id']))
 
     # @Test
     def test_determine_pk_smallFileNoPrimaryKey_fails(self):
@@ -88,8 +82,7 @@ class DeterminePrimaryKeyTest(unittest.TestCase):
 
         # test
         response = determine_pk('smallfile_no_pk.csv')
-        data = json.loads(response)
-        self.assertEqual({}, data)
+        self.assertEqual({}, response)
 
     # @Test
     def test_determine_pk_smallFileNullInUnique_fails(self):
@@ -99,8 +92,7 @@ class DeterminePrimaryKeyTest(unittest.TestCase):
 
         # test
         response = determine_pk('smallfile_nullinunique.csv')
-        data = json.loads(response)
-        self.assertFalse('uniquestr' in data)
+        self.assertFalse('uniquestr' in response)
 
 
 if __name__ == '__main__':
