@@ -1,26 +1,26 @@
 from __future__ import annotations
 
-import datetime
+from dataclasses import field
 from enum import Enum
-from typing import List, Optional
-from dataclasses import dataclass, field
-from dataclasses_json import dataclass_json
+import datetime
+from typing import List, Optional, Any, Annotated
+from pydantic import BaseModel, ConfigDict, PlainSerializer
+
+Timestamp = Annotated[
+    datetime.datetime, PlainSerializer(lambda v: v.strftime('%Y-%m-%d %H:%M:%S'), return_type=str)
+]
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class ImageDate:
+class ImageDate(BaseModel):
     id: int
-    example: str
+    example: Timestamp
     database_format: str
     unix_format: str
     has_time: bool
-    created_at: str
+    created_at: Timestamp
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class Image:
+class Image(BaseModel):
     id: int
     registry: str
     name: str
@@ -32,43 +32,33 @@ class Image:
     date_formats: Optional[List[ImageDate]] = field(default_factory=list)
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class ImageBrief:
+class ImageBrief(BaseModel):
     id: int
     name: str
     version: str
     jdbc_method: str
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class CreateDatabase:
-    name: int
+class CreateDatabase(BaseModel):
+    name: str
     container_id: int
     is_public: bool
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class CreateUser:
+class CreateUser(BaseModel):
     username: str
     email: str
     password: str
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class UpdateUser:
-    firstname: str
-    lastname: str
-    affiliation: str
-    orcid: str
+class UpdateUser(BaseModel):
+    firstname: Optional[str] = None
+    lastname: Optional[str] = None
+    affiliation: Optional[str] = None
+    orcid: Optional[str] = None
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class UserBrief:
+class UserBrief(BaseModel):
     id: str
     username: str
     name: str
@@ -78,15 +68,13 @@ class UserBrief:
     family_name: str
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class Container:
+class Container(BaseModel):
     id: int
     name: str
     host: str
     port: int
     image: Image
-    created: str
+    created: Timestamp
     internal_name: str
     sidecar_host: str
     sidecar_port: int
@@ -94,21 +82,17 @@ class Container:
     ui_port: Optional[int] = None
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class ContainerBrief:
+class ContainerBrief(BaseModel):
     id: int
     name: str
     image: ImageBrief
-    created: str
+    created: Timestamp
     internal_name: str
     running: Optional[bool] = None
     hash: Optional[str] = None
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class ColumnBrief:
+class ColumnBrief(BaseModel):
     id: int
     name: str
     alias: str
@@ -118,9 +102,7 @@ class ColumnBrief:
     column_type: ColumnType
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class TableBrief:
+class TableBrief(BaseModel):
     id: int
     name: str
     description: str
@@ -130,17 +112,13 @@ class TableBrief:
     is_versioned: bool
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class UserAttributes:
+class UserAttributes(BaseModel):
     theme: str
     orcid: Optional[str] = None
     affiliation: Optional[str] = None
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class User:
+class User(BaseModel):
     id: str
     username: str
     attributes: UserAttributes
@@ -150,21 +128,15 @@ class User:
     name: Optional[str] = None
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class UpdateUserTheme:
+class UpdateUserTheme(BaseModel):
     theme: str
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class UpdateUserPassword:
+class UpdateUserPassword(BaseModel):
     password: str
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class UserBrief:
+class UserBrief(BaseModel):
     id: str
     username: str
     name: Optional[str] = None
@@ -413,63 +385,50 @@ class Language(str, Enum):
     ZU = "zu"
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class DatabaseAccess:
+class DatabaseAccess(BaseModel):
     type: AccessType
     user: User
-    created: str
+    created: Timestamp
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class CreateAccess:
+class CreateAccess(BaseModel):
     type: AccessType
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class UpdateAccess:
+class UpdateAccess(BaseModel):
     type: AccessType
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class IdentifierTitle:
+class IdentifierTitle(BaseModel):
+    """
+    Title of an identifier. See external documentation: https://support.datacite.org/docs/datacite-metadata-schema-v44-mandatory-properties#3-title.
+    """
     id: int
     title: str
     language: Optional[Language] = None
     type: Optional[TitleType] = None
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class CreateIdentifierTitle:
+class CreateIdentifierTitle(BaseModel):
     title: str
     language: Optional[Language] = None
     type: Optional[TitleType] = None
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class IdentifierDescription:
+class IdentifierDescription(BaseModel):
     id: int
     description: str
     language: Optional[Language] = None
     type: Optional[DescriptionType] = None
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class CreateIdentifierDescription:
+class CreateIdentifierDescription(BaseModel):
     description: str
     language: Optional[Language] = None
     type: Optional[DescriptionType] = None
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class IdentifierFunder:
+class IdentifierFunder(BaseModel):
     id: int
     funder_name: str
     funder_identifier: Optional[str] = None
@@ -479,9 +438,7 @@ class IdentifierFunder:
     award_title: Optional[str] = None
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class CreateIdentifierFunder:
+class CreateIdentifierFunder(BaseModel):
     funder_name: str
     funder_identifier: Optional[str] = None
     funder_identifier_type: Optional[str] = None
@@ -490,36 +447,26 @@ class CreateIdentifierFunder:
     award_title: Optional[str] = None
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class License:
+class License(BaseModel):
     identifier: str
     uri: str
     description: str
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class CreateData:
+class CreateData(BaseModel):
     data: dict
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class UpdateData:
+class UpdateData(BaseModel):
     data: dict
     keys: dict
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class DeleteData:
+class DeleteData(BaseModel):
     keys: dict
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class Import:
+class Import(BaseModel):
     location: str
     separator: str
     quote: Optional[str] = None
@@ -530,37 +477,27 @@ class Import:
     line_termination: Optional[str] = None
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class UpdateColumn:
+class UpdateColumn(BaseModel):
     concept_uri: Optional[str] = None
     unit_uri: Optional[str] = None
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class ModifyVisibility:
+class ModifyVisibility(BaseModel):
     is_public: bool
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class ModifyOwner:
+class ModifyOwner(BaseModel):
     id: str
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class CreateTable:
+class CreateTable(BaseModel):
     name: str
     constraints: CreateTableConstraints
     columns: List[CreateTableColumn] = field(default_factory=list)
     description: Optional[str] = None
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class CreateTableColumn:
+class CreateTableColumn(BaseModel):
     name: str
     type: ColumnType
     primary_key: bool
@@ -573,17 +510,13 @@ class CreateTableColumn:
     sets: Optional[List[str]] = None
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class CreateTableConstraints:
+class CreateTableConstraints(BaseModel):
     uniques: List[List[str]] = field(default_factory=list)
     checks: List[str] = field(default_factory=list)
     foreign_keys: List[CreateForeignKey] = field(default_factory=list)
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class IdentifierCreator:
+class IdentifierCreator(BaseModel):
     id: int
     creator_name: str
     firstname: Optional[str] = None
@@ -598,9 +531,7 @@ class IdentifierCreator:
     affiliation_identifier_scheme_uri: Optional[str] = None
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class CreateIdentifierCreator:
+class CreateIdentifierCreator(BaseModel):
     creator_name: str
     firstname: Optional[str] = None
     lastname: Optional[str] = None
@@ -614,31 +545,25 @@ class CreateIdentifierCreator:
     affiliation_identifier_scheme_uri: Optional[str] = None
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class RelatedIdentifier:
+class RelatedIdentifier(BaseModel):
     id: int
     value: str
     type: RelatedIdentifierType
     relation: RelatedIdentifierRelation
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class CreateRelatedIdentifier:
+class CreateRelatedIdentifier(BaseModel):
     value: str
     type: RelatedIdentifierType
     relation: RelatedIdentifierRelation
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class CreateIdentifier:
+class CreateIdentifier(BaseModel):
     type: IdentifierType
     creators: List[CreateIdentifierCreator]
     publication_year: int
     titles: Optional[List[CreateIdentifierTitle]] = field(default_factory=list)
-    descriptions: Optional[List[CreateIdentifierTitle]] = field(default_factory=list)
+    descriptions: Optional[List[CreateIdentifierDescription]] = field(default_factory=list)
     funders: Optional[List[CreateIdentifierFunder]] = field(default_factory=list)
     doi: Optional[str] = None
     publisher: Optional[str] = None
@@ -658,15 +583,13 @@ class CreateIdentifier:
     publication_month: Optional[int] = None
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class Identifier:
+class Identifier(BaseModel):
     id: int
     type: IdentifierType
     creators: List[IdentifierCreator]
-    created: str
+    created: Timestamp
     publication_year: int
-    last_modified: str
+    last_modified: Timestamp
     titles: Optional[List[IdentifierTitle]] = field(default_factory=list)
     descriptions: Optional[List[IdentifierDescription]] = field(default_factory=list)
     funders: Optional[List[IdentifierFunder]] = field(default_factory=list)
@@ -688,59 +611,49 @@ class Identifier:
     publication_month: Optional[int] = None
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class View:
+class View(BaseModel):
     id: int
     database_id: int
     name: str
     query: str
     query_hash: str
-    created: str
+    created: Timestamp
     creator: User
     internal_name: str
     is_public: bool
     initial_view: bool
-    last_modified: str
+    last_modified: Timestamp
     identifiers: List[Identifier] = field(default_factory=list)
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class CreateView:
+class CreateView(BaseModel):
     name: str
     query: str
     is_public: bool
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class Result:
-    result: List[any]
-    headers: List[str]
+class Result(BaseModel):
+    result: Any
+    headers: Any
     id: Optional[int] = None
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class ViewBrief:
+class ViewBrief(BaseModel):
     id: int
     database_id: int
     name: str
     identifier: List[Identifier]
     query: str
     query_hash: str
-    created: str
+    created: Timestamp
     creator: User
     internal_name: str
     is_public: bool
     initial_view: bool
-    last_modified: str
+    last_modified: Timestamp
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class ColumnBrief:
+class ColumnBrief(BaseModel):
     id: int
     name: str
     alias: str
@@ -750,34 +663,26 @@ class ColumnBrief:
     column_type: str
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class Concept:
+class Concept(BaseModel):
     id: int
     uri: str
-    created: str
+    created: Timestamp
     columns: List[ColumnBrief] = field(default_factory=list)
     name: Optional[str] = None
     description: Optional[str] = None
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class DatatypeAnalysis:
+class DatatypeAnalysis(BaseModel):
     separator: str
     columns: dict[str, ColumnType]
     line_termination: Optional[str] = None
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class KeyAnalysis:
+class KeyAnalysis(BaseModel):
     keys: dict[str, int]
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class ColumnStatistic:
+class ColumnStatistic(BaseModel):
     val_min: float
     val_max: float
     mean: float
@@ -785,28 +690,22 @@ class ColumnStatistic:
     std_dev: float
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class TableStatistics:
+class TableStatistics(BaseModel):
     columns: dict[str, ColumnStatistic]
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class Unit:
+class Unit(BaseModel):
     id: int
     uri: str
-    created: str
+    created: Timestamp
     columns: List[ColumnBrief] = field(default_factory=list)
     name: Optional[str] = None
     description: Optional[str] = None
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class ExecuteQuery:
+class ExecuteQuery(BaseModel):
     statement: str
-    timestamp: datetime.datetime
+    timestamp: Timestamp
 
 
 class TitleType(str, Enum):
@@ -895,18 +794,6 @@ class DescriptionType(str, Enum):
     OTHER = "Other"
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class IdentifierTitle:
-    """
-    Title of an identifier. See external documentation: https://support.datacite.org/docs/datacite-metadata-schema-v44-mandatory-properties#3-title.
-    """
-    id: int
-    title: str
-    language: Optional[str] = None
-    type: Optional[str] = None
-
-
 class QueryType(str, Enum):
     """
     Enumeration of query types.
@@ -952,34 +839,28 @@ class IdentifierType(str, Enum):
     """The identifier identifies a subset."""
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class Query:
+class Query(BaseModel):
     id: int
     creator: User
-    execution: str
+    execution: Timestamp
     query: str
     type: QueryType
-    created: str
+    created: Timestamp
     database_id: int
     query_hash: str
     is_persisted: bool
     result_hash: str
     query_normalized: str
-    last_modified: str
+    last_modified: Timestamp
     result_number: Optional[int] = None
     identifiers: List[Identifier] = field(default_factory=list)
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class UpdateQuery:
+class UpdateQuery(BaseModel):
     persist: bool
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class Column:
+class Column(BaseModel):
     id: int
     name: str
     database_id: int
@@ -1010,15 +891,13 @@ class Column:
     std_dev: Optional[float] = None
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class Table:
+class Table(BaseModel):
     id: int
     database_id: int
     name: str
     creator: User
     owner: User
-    created: str
+    created: Timestamp
     columns: List[Column]
     constraints: Constraints
     internal_name: str
@@ -1036,15 +915,13 @@ class Table:
     avg_row_length: Optional[int] = None
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class Database:
+class Database(BaseModel):
     id: int
     name: str
     creator: User
     owner: User
     contact: User
-    created: str
+    created: Timestamp
     exchange_name: str
     internal_name: str
     is_public: bool
@@ -1059,17 +936,13 @@ class Database:
     exchange_type: Optional[str] = None
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class Unique:
+class Unique(BaseModel):
     uid: int
     table: Table
     columns: List[Column]
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class ForeignKey:
+class ForeignKey(BaseModel):
     name: str
     columns: List[Column]
     referenced_table: Table
@@ -1078,9 +951,7 @@ class ForeignKey:
     on_delete: Optional[str] = None
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class CreateForeignKey:
+class CreateForeignKey(BaseModel):
     columns: List[Column]
     referenced_table: Table
     referenced_columns: List[Column]
@@ -1088,9 +959,7 @@ class CreateForeignKey:
     on_delete: Optional[str] = None
 
 
-@dataclass_json
-@dataclass(init=True, eq=True)
-class Constraints:
+class Constraints(BaseModel):
     uniques: Optional[List[Unique]] = None
     foreign_keys: Optional[List[ForeignKey]] = None
     checks: Optional[List[str]] = None

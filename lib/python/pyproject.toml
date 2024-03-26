@@ -21,8 +21,7 @@ classifiers = [
 requires-python = ">=3.11"
 dependencies = [
     "requests >= 2.31",
-    "dataclasses",
-    "dataclasses-json",
+    "pydantic",
     "tuspy"
 ]
 

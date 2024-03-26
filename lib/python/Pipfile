@@ -6,8 +6,7 @@ name = "pypi"
 [packages]
 pika = "*"
 requests = "~=2.31"
-dataclasses = "*"
-dataclasses-json = "*"
+pydantic = "*"
 tuspy = "*"
 
 [dev-packages]

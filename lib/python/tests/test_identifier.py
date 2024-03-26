@@ -1,4 +1,7 @@
 import unittest
+from datetime import datetime
+from json import dumps
+
 import requests_mock
 import dataclasses
 
@@ -21,8 +24,8 @@ class IdentifierTest(unittest.TestCase):
                              view_id=32,
                              publication_year=2024,
                              publisher='TU Wien',
-                             created='2022-01-01 00:00:00',
-                             last_modified='2022-01-01 00:00:00',
+                             created=datetime.fromtimestamp(1640991600),
+                             last_modified=datetime.fromtimestamp(1640991600),
                              type=IdentifierType.VIEW,
                              language=Language.EN,
                              descriptions=[IdentifierDescription(id=2, description='Test Description')],
@@ -33,7 +36,7 @@ class IdentifierTest(unittest.TestCase):
                                                    type=RelatedIdentifierType.DOI)],
                              creators=[IdentifierCreator(id=5, creator_name='Carberry, Josiah')])
             # mock
-            mock.post('/api/identifier', json=dataclasses.asdict(exp), status_code=201)
+            mock.post('/api/identifier', json=exp.model_dump_json(), status_code=201)
             # test
             client = RestClient(username="a", password="b")
             response = client.create_identifier(database_id=1, type=IdentifierType.VIEW,
@@ -130,13 +133,13 @@ class IdentifierTest(unittest.TestCase):
                              database_id=1,
                              publication_year=2024,
                              publisher='TU Wien',
-                             created='2022-01-01 00:00:00',
-                             last_modified='2022-01-01 00:00:00',
+                             created=datetime.fromtimestamp(1640991600),
+                             last_modified=datetime.fromtimestamp(1640991600),
                              type=IdentifierType.VIEW,
                              creators=[IdentifierCreator(id=5, creator_name='Carberry, Josiah',
                                                          name_identifier='https://orcid.org/0000-0002-1825-0097')])
             # mock
-            mock.get('/api/identifier?url=https://orcid.org/0000-0002-1825-0097', json=dataclasses.asdict(exp))
+            mock.get('/api/identifier?url=https://orcid.org/0000-0002-1825-0097', json=exp.model_dump_json())
             # test
             response = RestClient().suggest_identifier("https://orcid.org/0000-0002-1825-0097")
             self.assertEqual(exp, response)
@@ -158,8 +161,8 @@ class IdentifierTest(unittest.TestCase):
                               view_id=32,
                               publication_year=2024,
                               publisher='TU Wien',
-                              created='2022-01-01 00:00:00',
-                              last_modified='2022-01-01 00:00:00',
+                              created=datetime.fromtimestamp(1640991600),
+                              last_modified=datetime.fromtimestamp(1640991600),
                               type=IdentifierType.VIEW,
                               language=Language.EN,
                               descriptions=[IdentifierDescription(id=2, description='Test Description')],
@@ -171,7 +174,7 @@ class IdentifierTest(unittest.TestCase):
                                                     type=RelatedIdentifierType.DOI)],
                               creators=[IdentifierCreator(id=5, creator_name='Carberry, Josiah')])]
             # mock
-            mock.get('/api/pid', json=[dataclasses.asdict(exp[0])], headers={"Accept": "application/json"})
+            mock.get('/api/pid', json=dumps([exp[0].model_dump()]), headers={"Accept": "application/json"})
             # test
             response = RestClient().get_identifiers()
             self.assertEqual(exp, response)
