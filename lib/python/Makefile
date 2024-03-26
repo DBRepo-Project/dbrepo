@@ -1,7 +1,7 @@
 all:
 
 clean:
-	rm -rf ./python/dist/* ./docs/build/*
+	rm -rf ./python/dist/* ./docs/build/* ./dist/*
 
 install:
 	pipenv install
