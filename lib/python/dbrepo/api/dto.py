@@ -13,7 +13,7 @@ Timestamp = Annotated[
 
 class ImageDate(BaseModel):
     id: int
-    example: Timestamp
+    example: str
     database_format: str
     unix_format: str
     has_time: bool
@@ -71,11 +71,11 @@ class UserBrief(BaseModel):
 class Container(BaseModel):
     id: int
     name: str
+    internal_name: str
     host: str
     port: int
     image: Image
     created: Timestamp
-    internal_name: str
     sidecar_host: str
     sidecar_port: int
     ui_host: Optional[str] = None

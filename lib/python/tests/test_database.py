@@ -64,7 +64,7 @@ class DatabaseTest(unittest.TestCase):
                                                 created_at=datetime.fromtimestamp(timestamp=1711389734,
                                                                                   # 2024-03-25 18:02:14 UTC
                                                                                   ),
-                                                example=datetime.fromtimestamp(timestamp=1711389734),
+                                                example="2024-03-25 18:02:14",
                                                 database_format='%Y-%c-%d %H:%i:%S',
                                                 unix_format='yyyy-MM-dd HH:mm:ss',
                                                 has_time=True)]

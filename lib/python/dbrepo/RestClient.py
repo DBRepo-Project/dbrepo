@@ -275,6 +275,24 @@ class RestClient:
             return TypeAdapter(List[ContainerBrief]).validate_json(body)
         raise ResponseCodeError(f'Failed to find containers: response code: {response.status_code} is not 200 (OK)')
 
+    def get_container(self, container_id: int) -> Container:
+        """
+        Get a container with given id.
+
+        :returns: List of containers, if successful.
+
+        :raises NotExistsError: If the container does not exist.
+        :raises ResponseCodeError: If something went wrong with the retrieval.
+        """
+        url = f'/api/container/{container_id}'
+        response = self._wrapper(method="get", url=url)
+        if response.status_code == 200:
+            body = response.json()
+            return Container.parse_raw(body)
+        if response.status_code == 404:
+            raise NotExistsError(f'Failed to get container: not found')
+        raise ResponseCodeError(f'Failed to get container: response code: {response.status_code} is not 200 (OK)')
+
     def get_databases(self) -> List[Database]:
         """
         Get all databases.
