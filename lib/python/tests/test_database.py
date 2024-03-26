@@ -3,12 +3,11 @@ import unittest
 from json import dumps
 
 import requests_mock
-import dataclasses
+import datetime
 
 from pydantic_core import ValidationError
 
 from dbrepo.RestClient import RestClient
-from datetime import datetime
 from dbrepo.api.dto import Database, User, Container, Image, UserAttributes, DatabaseAccess, AccessType
 from dbrepo.api.exceptions import ResponseCodeError, NotExistsError, ForbiddenError, MalformedError, AuthenticationError
 
@@ -36,8 +35,7 @@ class DatabaseTest(unittest.TestCase):
                            attributes=UserAttributes(theme='light')),
                 contact=User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
                              attributes=UserAttributes(theme='light')),
-                created=datetime.fromtimestamp(1704099600),
-                # 2024-01-01 00:00:00,
+                created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                 exchange_name='dbrepo',
                 internal_name='test_abcd',
                 is_public=True,
@@ -49,8 +47,7 @@ class DatabaseTest(unittest.TestCase):
                     port=3306,
                     sidecar_host='data-db-sidecar',
                     sidecar_port=3305,
-                    created=datetime.fromtimestamp(1704099600),
-                    # 2024-01-01 00:00:00,
+                    created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                     image=Image(
                         id=1,
                         registry='docker.io',
@@ -61,9 +58,8 @@ class DatabaseTest(unittest.TestCase):
                         jdbc_method='mariadb',
                         default_port=3306,
                         date_formats=[ImageDate(id=1,
-                                                created_at=datetime.fromtimestamp(timestamp=1711389734,
-                                                                                  # 2024-03-25 18:02:14 UTC
-                                                                                  ),
+                                                created_at=datetime.datetime(2024, 3, 25, 18, 2, 14, 0,
+                                                                             datetime.timezone.utc),
                                                 example="2024-03-25 18:02:14",
                                                 database_format='%Y-%c-%d %H:%i:%S',
                                                 unix_format='yyyy-MM-dd HH:mm:ss',
@@ -89,8 +85,7 @@ class DatabaseTest(unittest.TestCase):
                        attributes=UserAttributes(theme='light')),
             contact=User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
                          attributes=UserAttributes(theme='light')),
-            created=datetime.fromtimestamp(1704099600),
-            # 2024-01-01 00:00:00,
+            created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
             exchange_name='dbrepo',
             internal_name='test_abcd',
             is_public=True,
@@ -102,8 +97,7 @@ class DatabaseTest(unittest.TestCase):
                 port=3306,
                 sidecar_host='data-db-sidecar',
                 sidecar_port=3305,
-                created=datetime.fromtimestamp(1704099600),
-                # 2024-01-01 00:00:00,
+                created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                 image=Image(
                     id=1,
                     registry='docker.io',
@@ -159,8 +153,7 @@ class DatabaseTest(unittest.TestCase):
                        attributes=UserAttributes(theme='light')),
             contact=User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
                          attributes=UserAttributes(theme='light')),
-            created=datetime.fromtimestamp(1704099600),
-            # 2024-01-01 00:00:00,
+            created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
             exchange_name='dbrepo',
             internal_name='test_abcd',
             is_public=True,
@@ -172,8 +165,7 @@ class DatabaseTest(unittest.TestCase):
                 port=3306,
                 sidecar_host='data-db-sidecar',
                 sidecar_port=3305,
-                created=datetime.fromtimestamp(1704099600),
-                # 2024-01-01 00:00:00,
+                created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                 image=Image(
                     id=1,
                     registry='docker.io',
@@ -236,8 +228,7 @@ class DatabaseTest(unittest.TestCase):
                        attributes=UserAttributes(theme='light')),
             contact=User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
                          attributes=UserAttributes(theme='light')),
-            created=datetime.fromtimestamp(1704099600),
-            # 2024-01-01 00:00:00,
+            created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
             exchange_name='dbrepo',
             internal_name='test_abcd',
             is_public=True,
@@ -249,8 +240,7 @@ class DatabaseTest(unittest.TestCase):
                 port=3306,
                 sidecar_host='data-db-sidecar',
                 sidecar_port=3305,
-                created=datetime.fromtimestamp(1704099600),
-                # 2024-01-01 00:00:00,
+                created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                 image=Image(
                     id=1,
                     registry='docker.io',
@@ -313,8 +303,7 @@ class DatabaseTest(unittest.TestCase):
                        attributes=UserAttributes(theme='light')),
             contact=User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
                          attributes=UserAttributes(theme='light')),
-            created=datetime.fromtimestamp(1704099600),
-            # 2024-01-01 00:00:00,
+            created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
             exchange_name='dbrepo',
             internal_name='test_abcd',
             is_public=True,
@@ -326,8 +315,7 @@ class DatabaseTest(unittest.TestCase):
                 port=3306,
                 sidecar_host='data-db-sidecar',
                 sidecar_port=3305,
-                created=datetime.fromtimestamp(1704099600),
-                # 2024-01-01 00:00:00,
+                created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                 image=Image(
                     id=1,
                     registry='docker.io',
@@ -384,8 +372,8 @@ class DatabaseTest(unittest.TestCase):
                 pass
 
     def test_get_database_access_succeeds(self):
-        exp = DatabaseAccess(type=AccessType.READ, created=datetime.fromtimestamp(1704099600),
-                             # 2024-01-01 00:00:00,
+        exp = DatabaseAccess(type=AccessType.READ,
+                             created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                              user=User(id='abdbf897-e599-4e5a-a3f0-7529884ea011', username='other',
                                        attributes=UserAttributes(theme='light')))
         with requests_mock.Mocker() as mock:
@@ -416,8 +404,8 @@ class DatabaseTest(unittest.TestCase):
                 pass
 
     def test_create_database_access_succeeds(self):
-        exp = DatabaseAccess(type=AccessType.READ, created=datetime.fromtimestamp(1704099600),
-                             # 2024-01-01 00:00:00,
+        exp = DatabaseAccess(type=AccessType.READ,
+                             created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                              user=User(id='abdbf897-e599-4e5a-a3f0-7529884ea011', username='other',
                                        attributes=UserAttributes(theme='light')))
         with requests_mock.Mocker() as mock:
@@ -478,8 +466,8 @@ class DatabaseTest(unittest.TestCase):
                 pass
 
     def test_update_database_access_succeeds(self):
-        exp = DatabaseAccess(type=AccessType.READ, created=datetime.fromtimestamp(1704099600),
-                             # 2024-01-01 00:00:00
+        exp = DatabaseAccess(type=AccessType.READ,
+                             created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                              user=User(id='abdbf897-e599-4e5a-a3f0-7529884ea011', username='other',
                                        attributes=UserAttributes(theme='light')))
         with requests_mock.Mocker() as mock:

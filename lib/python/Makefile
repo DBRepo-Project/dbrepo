@@ -18,7 +18,7 @@ build: clean
 	python3 -m build --wheel .
 
 deploy: build
-	python3 -m twine upload --config-file ./.pypirc --verbose --repository pypi ./dist/dbrepo-*
+	python3 -m twine upload --config-file ~/.pypirc --verbose --repository pypi ./dist/dbrepo-*
 
 deploy-test: build
 	python3 -m twine upload --config-file ./.pypirc --verbose --repository testpypi ./dist/dbrepo-*

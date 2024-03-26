@@ -1,9 +1,9 @@
 import unittest
-from datetime import datetime
+
 from json import dumps
 
 import requests_mock
-import dataclasses
+import datetime
 
 from dbrepo.RestClient import RestClient
 
@@ -25,7 +25,7 @@ class TableTest(unittest.TestCase):
                                  attributes=UserAttributes(theme='light')),
                     owner=User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
                                attributes=UserAttributes(theme='light')),
-                    created=datetime.fromtimestamp(1640991600),
+                    created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                     is_versioned=True,
                     created_by='8638c043-5145-4be8-a3e4-4b79991b0a16',
                     queue_name='test',
@@ -129,7 +129,7 @@ class TableTest(unittest.TestCase):
                                       attributes=UserAttributes(theme='light')),
                          owner=User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
                                     attributes=UserAttributes(theme='light')),
-                         created=datetime.fromtimestamp(1640991600),
+                         created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                          is_versioned=True,
                          created_by='8638c043-5145-4be8-a3e4-4b79991b0a16',
                          queue_name='test',
@@ -163,7 +163,7 @@ class TableTest(unittest.TestCase):
                                      attributes=UserAttributes(theme='light')),
                         owner=User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
                                    attributes=UserAttributes(theme='light')),
-                        created=datetime.fromtimestamp(1640991600),
+                        created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                         is_versioned=True,
                         created_by='8638c043-5145-4be8-a3e4-4b79991b0a16',
                         queue_name='test',
@@ -552,11 +552,11 @@ class TableTest(unittest.TestCase):
                          is_public=True,
                          concept=Concept(id=2,
                                          uri="http://dbpedia.org/page/Category:Precipitation",
-                                         created='2023-01-12 00:00:00',
+                                         created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                                          name="Precipitation"),
                          unit=Unit(id=2,
                                    uri="http://www.wikidata.org/entity/Q119856947",
-                                   created='2023-01-12 00:00:00',
+                                   created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                                    name="liters per square meter"),
                          is_null_allowed=False)
             # mock

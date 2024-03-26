@@ -1,8 +1,9 @@
 import unittest
-from datetime import datetime
+
 from json import dumps
 
 import requests_mock
+import datetime
 
 from dbrepo.RestClient import RestClient
 
@@ -102,9 +103,9 @@ class QueryTest(unittest.TestCase):
             exp = Query(id=6,
                         creator=User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
                                      attributes=UserAttributes(theme='light')),
-                        execution=datetime.fromtimestamp(1640991600),
-                        created=datetime.fromtimestamp(1640991600),
-                        last_modified=datetime.fromtimestamp(1640991600),
+                        execution=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
+                        created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
+                        last_modified=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                         query='SELECT id, username FROM some_table WHERE id IN (1,2)',
                         query_normalized='SELECT id, username FROM some_table WHERE id IN (1,2)',
                         type=QueryType.QUERY,
@@ -174,9 +175,9 @@ class QueryTest(unittest.TestCase):
             exp = [Query(id=6,
                          creator=User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
                                       attributes=UserAttributes(theme='light')),
-                         execution=datetime.fromtimestamp(1640991600),
-                         created=datetime.fromtimestamp(1640991600),
-                         last_modified=datetime.fromtimestamp(1640991600),
+                         execution=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
+                         created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
+                         last_modified=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                          query='SELECT id, username FROM some_table WHERE id IN (1,2)',
                          query_normalized='SELECT id, username FROM some_table WHERE id IN (1,2)',
                          type=QueryType.QUERY,

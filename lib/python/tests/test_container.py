@@ -3,15 +3,11 @@ import unittest
 from json import dumps
 
 import requests_mock
-import dataclasses
-
-from pydantic_core import ValidationError
+import datetime
 
 from dbrepo.RestClient import RestClient
-from datetime import datetime
-from dbrepo.api.dto import Database, User, Container, Image, UserAttributes, DatabaseAccess, AccessType, ContainerBrief, \
-    ImageBrief
-from dbrepo.api.exceptions import ResponseCodeError, NotExistsError, ForbiddenError, MalformedError, AuthenticationError
+from dbrepo.api.dto import Container, Image, ContainerBrief, ImageBrief
+from dbrepo.api.exceptions import ResponseCodeError, NotExistsError
 
 from dbrepo.api.dto import ImageDate
 
@@ -33,7 +29,7 @@ class ContainerTest(unittest.TestCase):
                                name="MariaDB 10.11.3",
                                internal_name="mariadb_10_11_3",
                                running=True,
-                               created=datetime(2024, 3, 26, 10, 11),
+                               created=datetime.datetime(2024, 3, 26, 10, 11, 0, 0, datetime.timezone.utc),
                                image=ImageBrief(id=1,
                                                 name="mariadb",
                                                 version="10.11.3",
@@ -66,7 +62,7 @@ class ContainerTest(unittest.TestCase):
                             port=12345,
                             sidecar_host="data-db-sidecar",
                             sidecar_port=3305,
-                            created=datetime(2024, 3, 26, 10, 11),
+                            created=datetime.datetime(2024, 3, 26, 10, 11, 0, 0, datetime.timezone.utc),
                             image=Image(id=1,
                                         registry="docker.io",
                                         name="mariadb",
@@ -81,19 +77,22 @@ class ContainerTest(unittest.TestCase):
                                                       database_format="%Y-%c-%d %H:%i:%S",
                                                       unix_format="yyyy-MM-dd HH:mm:ss",
                                                       has_time=True,
-                                                      created_at=datetime(2024, 3, 26, 10, 26)),
+                                                      created_at=datetime.datetime(2024, 3, 26, 10, 26, 0, 0,
+                                                                                   datetime.timezone.utc)),
                                             ImageDate(id=2,
                                                       example="2024-03-26",
                                                       database_format="%Y-%c-%d",
                                                       unix_format="yyyy-MM-dd",
                                                       has_time=False,
-                                                      created_at=datetime(2024, 3, 26)),
+                                                      created_at=datetime.datetime(2024, 3, 26, 0, 0, 0, 0,
+                                                                                   datetime.timezone.utc)),
                                             ImageDate(id=3,
                                                       example="10:25:01",
                                                       database_format="%Y-%c-%d",
                                                       unix_format="yyyy-MM-dd",
                                                       has_time=False,
-                                                      created_at=datetime(2024, 3, 26))
+                                                      created_at=datetime.datetime(2024, 3, 26, 0, 0, 0, 0,
+                                                                                   datetime.timezone.utc)),
                                         ]),
                             hash="f829dd8a884182d0da846f365dee1221fd16610a14c81b8f9f295ff162749e50")
             # mock

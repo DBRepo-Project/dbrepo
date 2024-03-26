@@ -1,13 +1,13 @@
 import unittest
-from datetime import datetime
+
 from json import dumps
 
 import requests_mock
-import dataclasses
+import datetime
 
 from dbrepo.RestClient import RestClient
 
-from dbrepo.api.dto import Table, UserAttributes, User, Column, Constraints, View, Result
+from dbrepo.api.dto import UserAttributes, User, View, Result
 from dbrepo.api.exceptions import ForbiddenError, NotExistsError, MalformedError, AuthenticationError
 
 
@@ -33,8 +33,8 @@ class ViewTest(unittest.TestCase):
                         creator=User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
                                      attributes=UserAttributes(theme='light')),
                         is_public=True,
-                        created=datetime.fromtimestamp(1640991600),
-                        last_modified=datetime.fromtimestamp(1640991600),
+                        created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
+                        last_modified=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                         identifiers=[])]
             # mock
             mock.get('/api/database/1/view', json=dumps([exp[0].model_dump()]))
@@ -74,8 +74,8 @@ class ViewTest(unittest.TestCase):
                        creator=User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
                                     attributes=UserAttributes(theme='light')),
                        is_public=True,
-                       created=datetime.fromtimestamp(1640991600),
-                       last_modified=datetime.fromtimestamp(1640991600),
+                       created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
+                       last_modified=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                        identifiers=[])
             # mock
             mock.get('/api/database/1/view/3', json=exp.model_dump_json())
@@ -115,8 +115,8 @@ class ViewTest(unittest.TestCase):
                        creator=User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
                                     attributes=UserAttributes(theme='light')),
                        is_public=True,
-                       created=datetime.fromtimestamp(1640991600),
-                       last_modified=datetime.fromtimestamp(1640991600),
+                       created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
+                       last_modified=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                        identifiers=[])
             # mock
             mock.post('/api/database/1/view', json=exp.model_dump_json(), status_code=201)

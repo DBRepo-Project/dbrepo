@@ -1,9 +1,9 @@
 import unittest
-from datetime import datetime
+
 from json import dumps
 
 import requests_mock
-import dataclasses
+import datetime
 
 from dbrepo.RestClient import RestClient
 
@@ -24,8 +24,8 @@ class IdentifierTest(unittest.TestCase):
                              view_id=32,
                              publication_year=2024,
                              publisher='TU Wien',
-                             created=datetime.fromtimestamp(1640991600),
-                             last_modified=datetime.fromtimestamp(1640991600),
+                             created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
+                             last_modified=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                              type=IdentifierType.VIEW,
                              language=Language.EN,
                              descriptions=[IdentifierDescription(id=2, description='Test Description')],
@@ -133,8 +133,8 @@ class IdentifierTest(unittest.TestCase):
                              database_id=1,
                              publication_year=2024,
                              publisher='TU Wien',
-                             created=datetime.fromtimestamp(1640991600),
-                             last_modified=datetime.fromtimestamp(1640991600),
+                             created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
+                             last_modified=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                              type=IdentifierType.VIEW,
                              creators=[IdentifierCreator(id=5, creator_name='Carberry, Josiah',
                                                          name_identifier='https://orcid.org/0000-0002-1825-0097')])
@@ -161,8 +161,8 @@ class IdentifierTest(unittest.TestCase):
                               view_id=32,
                               publication_year=2024,
                               publisher='TU Wien',
-                              created=datetime.fromtimestamp(1640991600),
-                              last_modified=datetime.fromtimestamp(1640991600),
+                              created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
+                              last_modified=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                               type=IdentifierType.VIEW,
                               language=Language.EN,
                               descriptions=[IdentifierDescription(id=2, description='Test Description')],
