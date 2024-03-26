@@ -1,6 +1,6 @@
 [project]
 name = "dbrepo"
-version = "1.4.2rc21"
+version = "1.4.2rc4"
 description = "DBRepo Python Library"
 keywords = [
     "DBRepo",
