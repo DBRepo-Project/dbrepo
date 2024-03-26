@@ -75,9 +75,9 @@ class DatabaseTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             # mock
             mock.get('/api/database', json=dumps([exp[0].model_dump()]))
-        # test
-        response = RestClient().get_databases()
-        self.assertEqual(exp, response)
+            # test
+            response = RestClient().get_databases()
+            self.assertEqual(exp, response)
 
     def test_get_database_succeeds(self):
         exp = Database(

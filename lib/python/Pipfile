@@ -4,13 +4,13 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-pika = "*"
 requests = "~=2.31"
+pika = "*"
 pydantic = "*"
 tuspy = "*"
 
 [dev-packages]
-build = "~=1.1"
+build = "*"
 setuptools = "*"
 twine = "*"
 coverage = "*"
