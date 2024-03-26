@@ -7,7 +7,7 @@ from typing import List, Optional, Any, Annotated
 from pydantic import BaseModel, ConfigDict, PlainSerializer
 
 Timestamp = Annotated[
-    datetime.datetime, PlainSerializer(lambda v: v.strftime('%Y-%m-%dT%H:%M:%S.%fZ'), return_type=str)
+    datetime.datetime, PlainSerializer(lambda v: v.isoformat(timespec='milliseconds'), return_type=str)
 ]
 
 class ImageDate(BaseModel):
