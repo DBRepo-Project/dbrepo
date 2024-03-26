@@ -21,6 +21,6 @@ deploy: build
 	python3 -m twine upload --config-file ~/.pypirc --verbose --repository pypi ./dist/dbrepo-*
 
 deploy-test: build
-	python3 -m twine upload --config-file ./.pypirc --verbose --repository testpypi ./dist/dbrepo-*
+	python3 -m twine upload --config-file ~/.pypirc --verbose --repository testpypi ./dist/dbrepo-*
 
 FORCE: ;
