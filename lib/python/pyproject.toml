@@ -1,6 +1,6 @@
 [project]
 name = "dbrepo"
-version = "__APPVERSION__"
+version = "1.4.2rc5"
 description = "DBRepo Python Library"
 keywords = [
     "DBRepo",
@@ -21,8 +21,8 @@ classifiers = [
 requires-python = ">=3.11"
 dependencies = [
     "requests >= 2.31",
-    "dataclasses",
-    "dataclasses-json",
+    "pika",
+    "pydantic",
     "tuspy"
 ]
 

@@ -1027,7 +1027,8 @@
       "create": "Failed to create view:"
     },
     "data": {
-      "value": "Failed to set column value:"
+      "value": "Failed to set column value:",
+      "drift": "Your browser clock is not synchronized with UTC and seems to be off by:"
     },
     "transfer": "Failed to transfer the database owner."
   },
