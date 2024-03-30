@@ -1,6 +1,9 @@
 import unittest
+
+from json import dumps
+
 import requests_mock
-import dataclasses
+import datetime
 
 from dbrepo.RestClient import RestClient
 
@@ -17,10 +20,10 @@ class QueryTest(unittest.TestCase):
                          headers=[{'id': 0, 'username': 1}],
                          id=None)
             # mock
-            mock.post('/api/database/1/query', json=dataclasses.asdict(exp), status_code=202)
+            mock.post('/api/database/1/query', json=exp.model_dump_json(), status_code=202)
             # test
             client = RestClient(username="a", password="b")
-            response = client.execute_query(database_id=1, page=0, size=10, timestamp=None,
+            response = client.execute_query(database_id=1, page=0, size=10,
                                             query="SELECT id, username FROM some_table WHERE id IN (1,2)")
             self.assertEqual(exp, response)
 
@@ -100,9 +103,9 @@ class QueryTest(unittest.TestCase):
             exp = Query(id=6,
                         creator=User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
                                      attributes=UserAttributes(theme='light')),
-                        execution='2024-01-01 00:00:00',
-                        created='2024-01-01 00:00:00',
-                        last_modified='2024-01-01 00:00:00',
+                        execution=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
+                        created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
+                        last_modified=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                         query='SELECT id, username FROM some_table WHERE id IN (1,2)',
                         query_normalized='SELECT id, username FROM some_table WHERE id IN (1,2)',
                         type=QueryType.QUERY,
@@ -113,7 +116,7 @@ class QueryTest(unittest.TestCase):
                         result_number=None,
                         identifiers=[])
             # mock
-            mock.get('/api/database/1/query/6', json=dataclasses.asdict(exp))
+            mock.get('/api/database/1/query/6', json=exp.model_dump_json())
             # test
             response = RestClient().get_query(database_id=1, query_id=6)
             self.assertEqual(exp, response)
@@ -158,23 +161,23 @@ class QueryTest(unittest.TestCase):
             except MetadataConsistencyError:
                 pass
 
-    def test_find_queries_empty_succeeds(self):
+    def test_get_queries_empty_succeeds(self):
         with requests_mock.Mocker() as mock:
             exp = []
             # mock
-            mock.get('/api/database/1/query', json=[])
+            mock.get('/api/database/1/query', json=dumps([]))
             # test
             response = RestClient().get_queries(database_id=1)
             self.assertEqual(exp, response)
 
-    def test_find_queries_succeeds(self):
+    def test_get_queries_succeeds(self):
         with requests_mock.Mocker() as mock:
             exp = [Query(id=6,
                          creator=User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
                                       attributes=UserAttributes(theme='light')),
-                         execution='2024-01-01 00:00:00',
-                         created='2024-01-01 00:00:00',
-                         last_modified='2024-01-01 00:00:00',
+                         execution=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
+                         created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
+                         last_modified=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                          query='SELECT id, username FROM some_table WHERE id IN (1,2)',
                          query_normalized='SELECT id, username FROM some_table WHERE id IN (1,2)',
                          type=QueryType.QUERY,
@@ -185,12 +188,12 @@ class QueryTest(unittest.TestCase):
                          result_number=None,
                          identifiers=[])]
             # mock
-            mock.get('/api/database/1/query', json=[dataclasses.asdict(exp[0])])
+            mock.get('/api/database/1/query', json=dumps([exp[0].model_dump()]))
             # test
             response = RestClient().get_queries(database_id=1)
             self.assertEqual(exp, response)
 
-    def test_find_queries_not_allowed_fails(self):
+    def test_get_queries_not_allowed_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.get('/api/database/1/query', status_code=403)
@@ -200,7 +203,7 @@ class QueryTest(unittest.TestCase):
             except ForbiddenError:
                 pass
 
-    def test_find_queries_not_found_fails(self):
+    def test_get_queries_not_found_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.get('/api/database/1/query', status_code=404)
@@ -210,7 +213,7 @@ class QueryTest(unittest.TestCase):
             except NotExistsError:
                 pass
 
-    def test_find_queries_not_valid_fails(self):
+    def test_get_queries_not_valid_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.get('/api/database/1/query', status_code=501)
@@ -220,7 +223,7 @@ class QueryTest(unittest.TestCase):
             except QueryStoreError:
                 pass
 
-    def test_find_queries_malformed_fails(self):
+    def test_get_queries_malformed_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
             mock.get('/api/database/1/query', status_code=423)
@@ -236,7 +239,7 @@ class QueryTest(unittest.TestCase):
                          headers=[{'id': 0, 'username': 1}],
                          id=6)
             # mock
-            mock.get('/api/database/1/query/6/data', json=dataclasses.asdict(exp))
+            mock.get('/api/database/1/query/6/data', json=exp.model_dump_json())
             # test
             response = RestClient().get_query_data(database_id=1, query_id=6)
             self.assertEqual(exp, response)

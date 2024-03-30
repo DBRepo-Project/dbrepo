@@ -53,6 +53,7 @@
         class="mb-1 ml-2"
         @click.stop="pick" />
     </v-toolbar>
+    <TimeDrift />
     <v-card tile>
       <v-progress-linear v-if="loadingData > 0 || error" :indeterminate="!error" :color="loadingColor" />
       <v-card
@@ -102,6 +103,7 @@
 
 <script>
 import TimeTravel from '@/components/dialogs/TimeTravel'
+import TimeDrift from '@/components/TimeDrift'
 import TableToolbar from '@/components/table/TableToolbar'
 import { formatTimestampUTC, formatDateUTC, formatTimestamp } from '@/utils'
 import { useUserStore } from '@/stores/user'
@@ -114,7 +116,8 @@ export default {
     BlobDownload,
     EditTuple,
     TimeTravel,
-    TableToolbar
+    TableToolbar,
+    TimeDrift
   },
   data () {
     return {

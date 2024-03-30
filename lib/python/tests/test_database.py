@@ -1,11 +1,17 @@
+import datetime
 import unittest
+from json import dumps
+
 import requests_mock
-import dataclasses
+import datetime
+
+from pydantic_core import ValidationError
 
 from dbrepo.RestClient import RestClient
-
 from dbrepo.api.dto import Database, User, Container, Image, UserAttributes, DatabaseAccess, AccessType
 from dbrepo.api.exceptions import ResponseCodeError, NotExistsError, ForbiddenError, MalformedError, AuthenticationError
+
+from dbrepo.api.dto import ImageDate
 
 
 class DatabaseTest(unittest.TestCase):
@@ -13,7 +19,7 @@ class DatabaseTest(unittest.TestCase):
     def test_get_databases_empty_succeeds(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/database', json=[])
+            mock.get('/api/database', json=dumps([]))
             # test
             response = RestClient().get_databases()
             self.assertEqual([], response)
@@ -29,7 +35,7 @@ class DatabaseTest(unittest.TestCase):
                            attributes=UserAttributes(theme='light')),
                 contact=User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
                              attributes=UserAttributes(theme='light')),
-                created='2024-01-01 00:00:00',
+                created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                 exchange_name='dbrepo',
                 internal_name='test_abcd',
                 is_public=True,
@@ -41,7 +47,7 @@ class DatabaseTest(unittest.TestCase):
                     port=3306,
                     sidecar_host='data-db-sidecar',
                     sidecar_port=3305,
-                    created='2024-01-01 00:00:00',
+                    created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                     image=Image(
                         id=1,
                         registry='docker.io',
@@ -50,14 +56,21 @@ class DatabaseTest(unittest.TestCase):
                         dialect='org.hibernate.dialect.MariaDBDialect',
                         driver_class='org.mariadb.jdbc.Driver',
                         jdbc_method='mariadb',
-                        default_port=3306
+                        default_port=3306,
+                        date_formats=[ImageDate(id=1,
+                                                created_at=datetime.datetime(2024, 3, 25, 18, 2, 14, 0,
+                                                                             datetime.timezone.utc),
+                                                example="2024-03-25 18:02:14",
+                                                database_format='%Y-%c-%d %H:%i:%S',
+                                                unix_format='yyyy-MM-dd HH:mm:ss',
+                                                has_time=True)]
                     )
                 )
             )
         ]
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/database', json=[dataclasses.asdict(exp[0])])
+            mock.get('/api/database', json=dumps([exp[0].model_dump()]))
             # test
             response = RestClient().get_databases()
             self.assertEqual(exp, response)
@@ -72,7 +85,7 @@ class DatabaseTest(unittest.TestCase):
                        attributes=UserAttributes(theme='light')),
             contact=User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
                          attributes=UserAttributes(theme='light')),
-            created='2024-01-01 00:00:00',
+            created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
             exchange_name='dbrepo',
             internal_name='test_abcd',
             is_public=True,
@@ -84,7 +97,7 @@ class DatabaseTest(unittest.TestCase):
                 port=3306,
                 sidecar_host='data-db-sidecar',
                 sidecar_port=3305,
-                created='2024-01-01 00:00:00',
+                created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                 image=Image(
                     id=1,
                     registry='docker.io',
@@ -99,7 +112,7 @@ class DatabaseTest(unittest.TestCase):
         )
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/database/1', json=dataclasses.asdict(exp))
+            mock.get('/api/database/1', json=exp.model_dump_json())
             # test
             response = RestClient().get_database(1)
             self.assertEqual(exp, response)
@@ -117,7 +130,7 @@ class DatabaseTest(unittest.TestCase):
     def test_get_database_invalid_dto_fails(self):
         try:
             exp = Database()
-        except TypeError as e:
+        except ValidationError as e:
             pass
 
     def test_get_database_unauthorized_fails(self):
@@ -140,7 +153,7 @@ class DatabaseTest(unittest.TestCase):
                        attributes=UserAttributes(theme='light')),
             contact=User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
                          attributes=UserAttributes(theme='light')),
-            created='2024-01-01 00:00:00',
+            created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
             exchange_name='dbrepo',
             internal_name='test_abcd',
             is_public=True,
@@ -152,7 +165,7 @@ class DatabaseTest(unittest.TestCase):
                 port=3306,
                 sidecar_host='data-db-sidecar',
                 sidecar_port=3305,
-                created='2024-01-01 00:00:00',
+                created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                 image=Image(
                     id=1,
                     registry='docker.io',
@@ -167,7 +180,7 @@ class DatabaseTest(unittest.TestCase):
         )
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post('/api/database', json=dataclasses.asdict(exp), status_code=201)
+            mock.post('/api/database', json=exp.model_dump_json(), status_code=201)
             # test
             client = RestClient(username="a", password="b")
             response = client.create_database(name='test', container_id=1, is_public=True)
@@ -215,7 +228,7 @@ class DatabaseTest(unittest.TestCase):
                        attributes=UserAttributes(theme='light')),
             contact=User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
                          attributes=UserAttributes(theme='light')),
-            created='2024-01-01 00:00:00',
+            created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
             exchange_name='dbrepo',
             internal_name='test_abcd',
             is_public=True,
@@ -227,7 +240,7 @@ class DatabaseTest(unittest.TestCase):
                 port=3306,
                 sidecar_host='data-db-sidecar',
                 sidecar_port=3305,
-                created='2024-01-01 00:00:00',
+                created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                 image=Image(
                     id=1,
                     registry='docker.io',
@@ -242,7 +255,7 @@ class DatabaseTest(unittest.TestCase):
         )
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/1', json=dataclasses.asdict(exp), status_code=202)
+            mock.put('/api/database/1', json=exp.model_dump_json(), status_code=202)
             # test
             client = RestClient(username="a", password="b")
             response = client.update_database_visibility(database_id=1, is_public=True)
@@ -290,7 +303,7 @@ class DatabaseTest(unittest.TestCase):
                        attributes=UserAttributes(theme='light')),
             contact=User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
                          attributes=UserAttributes(theme='light')),
-            created='2024-01-01 00:00:00',
+            created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
             exchange_name='dbrepo',
             internal_name='test_abcd',
             is_public=True,
@@ -302,7 +315,7 @@ class DatabaseTest(unittest.TestCase):
                 port=3306,
                 sidecar_host='data-db-sidecar',
                 sidecar_port=3305,
-                created='2024-01-01 00:00:00',
+                created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                 image=Image(
                     id=1,
                     registry='docker.io',
@@ -317,7 +330,7 @@ class DatabaseTest(unittest.TestCase):
         )
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/1/owner', json=dataclasses.asdict(exp), status_code=202)
+            mock.put('/api/database/1/owner', json=exp.model_dump_json(), status_code=202)
             # test
             client = RestClient(username="a", password="b")
             response = client.update_database_owner(database_id=1, user_id='abdbf897-e599-4e5a-a3f0-7529884ea011')
@@ -359,12 +372,13 @@ class DatabaseTest(unittest.TestCase):
                 pass
 
     def test_get_database_access_succeeds(self):
-        exp = DatabaseAccess(type=AccessType.READ, created='2024-01-01 00:00:00',
+        exp = DatabaseAccess(type=AccessType.READ,
+                             created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                              user=User(id='abdbf897-e599-4e5a-a3f0-7529884ea011', username='other',
                                        attributes=UserAttributes(theme='light')))
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/database/1/access', json=dataclasses.asdict(exp))
+            mock.get('/api/database/1/access', json=exp.model_dump_json())
             # test
             response = RestClient().get_database_access(database_id=1)
             self.assertEqual(response, AccessType.READ)
@@ -390,12 +404,13 @@ class DatabaseTest(unittest.TestCase):
                 pass
 
     def test_create_database_access_succeeds(self):
-        exp = DatabaseAccess(type=AccessType.READ, created='2024-01-01 00:00:00',
+        exp = DatabaseAccess(type=AccessType.READ,
+                             created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                              user=User(id='abdbf897-e599-4e5a-a3f0-7529884ea011', username='other',
                                        attributes=UserAttributes(theme='light')))
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post('/api/database/1/access/abdbf897-e599-4e5a-a3f0-7529884ea011', json=dataclasses.asdict(exp),
+            mock.post('/api/database/1/access/abdbf897-e599-4e5a-a3f0-7529884ea011', json=exp.model_dump_json(),
                       status_code=202)
             # test
             client = RestClient(username="a", password="b")
@@ -451,12 +466,13 @@ class DatabaseTest(unittest.TestCase):
                 pass
 
     def test_update_database_access_succeeds(self):
-        exp = DatabaseAccess(type=AccessType.READ, created='2024-01-01 00:00:00',
+        exp = DatabaseAccess(type=AccessType.READ,
+                             created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                              user=User(id='abdbf897-e599-4e5a-a3f0-7529884ea011', username='other',
                                        attributes=UserAttributes(theme='light')))
         with requests_mock.Mocker() as mock:
             # mock
-            mock.put('/api/database/1/access/abdbf897-e599-4e5a-a3f0-7529884ea011', json=dataclasses.asdict(exp),
+            mock.put('/api/database/1/access/abdbf897-e599-4e5a-a3f0-7529884ea011', json=exp.model_dump_json(),
                      status_code=202)
             # test
             client = RestClient(username="a", password="b")
