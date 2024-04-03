@@ -589,7 +589,7 @@ release-libs:
     - pip install pipenv
     - pipenv install gunicorn && pipenv install --dev --system --deploy
     - pip install twine build
-    - 'sed -i -e "s/__APPVERSION__/${APP_VERSION}rc18/g" ./lib/python/pyproject.toml ./lib/python/setup.py ./lib/python/README.md'
+    - 'sed -i -e "s/__APPVERSION__/${APP_VERSION}/g" ./lib/python/pyproject.toml ./lib/python/setup.py ./lib/python/README.md'
     - python -m build --sdist ./lib/python
     - python -m build --wheel ./lib/python
     - printf "[diskutils]\nindex-servers =\n    pypi\n\n[pypi]\nusername = __token__\npassword = ${CI_PIPY_TOKEN}\nrepository = https://upload.pypi.org/legacy/" > .pypirc
