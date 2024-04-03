@@ -88,6 +88,7 @@ for i in "${!versions[@]}"; do
   version="${versions[i]}"
   generate_api "$version"
   generate_docs "$version"
+  generate_sphinx "$version" || true
 done
 
 
