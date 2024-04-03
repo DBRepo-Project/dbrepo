@@ -1,4 +1,4 @@
-import type {AxiosRequestConfig} from 'axios'
+import type {AxiosError, AxiosRequestConfig} from 'axios'
 
 export const useIdentifierService = (): any => {
   async function findOne(id: number, accept: string | null): Promise<IdentifierDto> {
@@ -31,7 +31,7 @@ export const useIdentifierService = (): any => {
           console.info('Created identifier with id', response.data.id)
           resolve(response.data)
         })
-        .catch((error) => {
+        .catch((error: AxiosError) => {
           console.error('Failed to create identifier', error)
           reject(error)
         })
@@ -393,8 +393,8 @@ export const useIdentifierService = (): any => {
       '@context': 'https://schema.org/',
       '@type': 'Dataset',
       description: table.description,
-      url: `${config.public.api.client}/database/${table.tdbid}/table/${table.id}/info`,
-      citation: `${config.public.api.client}/database/${table.tdbid}/table/${table.id}/info`,
+      url: `${config.public.api.client}/database/${table.database_id}/table/${table.id}/info`,
+      citation: `${config.public.api.client}/database/${table.database_id}/table/${table.id}/info`,
       hasPart: [],
       version: table.created
     }
@@ -421,12 +421,12 @@ export const useIdentifierService = (): any => {
       meta.push({
         rel: 'item',
         type: 'application/json',
-        href: `${config.public.api.client}/api/database/${table.tdbid}/table/${table.id}/data`
+        href: `${config.public.api.client}/api/database/${table.database_id}/table/${table.id}/data`
       })
       meta.push({
         rel: 'item',
         type: 'text/csv',
-        href: `${config.public.api.client}/api/database/${table.tdbid}/table/${table.id}/data`
+        href: `${config.public.api.client}/api/database/${table.database_id}/table/${table.id}/data`
       })
     }
     return {
@@ -554,8 +554,6 @@ export const useIdentifierService = (): any => {
     suggest,
     identifierToCreators,
     identifierToIdentifierSave,
-    identifierToIdentifierScheme,
-    identifierToPreferFirstLicenseUri,
     identifierPreferEnglishDescription,
     descriptionShort,
     identifierPreferEnglishTitle,

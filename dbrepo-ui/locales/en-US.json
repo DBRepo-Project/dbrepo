@@ -998,6 +998,9 @@
     "schema": {
       "id": "Column \"id\" must be a primary key."
     },
+    "identifier": {
+      "requestinvalid": "Failed to create identifier:"
+    },
     "user": {
       "credentials": "Invalid username/password combination.",
       "email-exists": "Account with this e-mail exists already."
