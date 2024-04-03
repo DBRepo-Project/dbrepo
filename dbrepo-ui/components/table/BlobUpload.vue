@@ -9,6 +9,8 @@
   </div>
 </template>
 <script>
+import {localizedMessage} from '@/utils'
+
 export default {
   props: {
     column: {
@@ -40,8 +42,7 @@ export default {
           this.$emit('blob', { column: this.column, s3key: this.value })
         })
         .catch((error) => {
-          console.error(`Failed to set column value: ${this.column.internal_name}`, error)
-          this.$toast.error(this.$t('error.data.value') + ' ' + this.column.internal_name)
+          this.$toast.error(localizedMessage(this.$t, error, null))
         })
     }
   }

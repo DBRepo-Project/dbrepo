@@ -44,6 +44,7 @@
 <script>
 import { useUserStore } from '@/stores/user'
 import { useCacheStore } from '@/stores/cache'
+import {localizedMessage} from '@/utils'
 
 export default {
   components: {
@@ -132,8 +133,7 @@ export default {
           this.$router.push(`/database/${this.$route.params.database_id}/view`)
         })
         .catch((error) => {
-          const { code, message } = error.response.data
-          this.$toast.error(this.$t(code) + ' ' + message)
+          this.$toast.error(localizedMessage(this.$t, error, null))
         })
         .finally(() => {
           this.loadingDelete = false

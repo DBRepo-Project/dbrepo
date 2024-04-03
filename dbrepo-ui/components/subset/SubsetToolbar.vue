@@ -12,6 +12,16 @@
         :text="title" />
       <v-spacer />
       <v-btn
+        v-if="result_visibility && subset && subset.result_number"
+        class="mb-1 ml-2"
+        color="tertiary"
+        :variant="buttonVariant"
+        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-download' : null"
+        :loading="downloadLoading"
+        @click.stop="downloadSubset">
+        {{ ($vuetify.display.xlAndUp ? $t('toolbars.subset.export.data.xl') + ' ' : '') + $t('toolbars.subset.export.data.permanent') }}
+      </v-btn>
+      <v-btn
         v-if="canPersistQuery"
         :loading="loadingSave"
         color="secondary"
@@ -29,22 +39,12 @@
         :text="$t('toolbars.subset.unsave.permanent')"
         :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-trash-can-outline' : null"
         @click.stop="forget" />
-      <v-btn
-        v-if="result_visibility && subset && subset.result_number"
-        class="mb-1 ml-2"
-        color="tertiary"
-        variant="flat"
-        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-download' : null"
-        :loading="downloadLoading"
-        @click.stop="downloadSubset">
-        {{ ($vuetify.display.xlAndUp ? $t('toolbars.subset.export.data.xl') + ' ' : '') + $t('toolbars.subset.export.data.permanent') }}
-      </v-btn>
       <DownloadButton
         v-if="identifiers.length > 0"
         :pid="identifier.id"
         class="mb-1 ml-2"
         color="tertiary"
-        variant="flat"
+        :variant="buttonVariant"
         prepend-icon="mdi-code-tags">
         {{ ($vuetify.display.xlAndUp ? $t('toolbars.subset.export.metadata.xl') + ' ' : '') + $t('toolbars.subset.export.metadata.permanent') }}
       </DownloadButton>
@@ -176,6 +176,10 @@ export default {
       }
       const identifierService = useIdentifierService()
       return identifierService.identifierPreferEnglishTitle(this.identifier)
+    },
+    buttonVariant () {
+      const runtimeConfig = useRuntimeConfig()
+      return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.button.contrast : runtimeConfig.public.variant.button.normal
     }
   },
   mounted () {

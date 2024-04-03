@@ -337,9 +337,9 @@ public class EndpointValidator {
             return false;
         }
         if (identifier.getPublicationMonth() != null && identifier.getPublicationDay() != null) {
-            final String paddedMonth = identifier.getPublicationMonth() < 9 ? "0" + identifier.getPublicationMonth() : "" + identifier.getPublicationMonth();
-            final boolean result = GenericValidator.isDate(identifier.getPublicationYear() + "-" + paddedMonth + "-"
-                    + identifier.getPublicationDay(), "yyyy-MM-dd", true);
+            final String paddedMonth = identifier.getPublicationMonth() <= 9 ? "0" + identifier.getPublicationMonth() : "" + identifier.getPublicationMonth();
+            final String paddedDay = identifier.getPublicationDay() <= 9 ? "0" + identifier.getPublicationDay() : "" + identifier.getPublicationDay();
+            final boolean result = GenericValidator.isDate(identifier.getPublicationYear() + "-" + paddedMonth + "-" + paddedDay, "yyyy-MM-dd", true);
             if (!result) {
                 log.trace("publication date {}-{}-{} needs to be valid", identifier.getPublicationYear(), paddedMonth,
                         identifier.getPublicationDay());

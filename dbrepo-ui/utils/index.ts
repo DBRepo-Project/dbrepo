@@ -1,21 +1,31 @@
-import { format } from 'date-fns'
+import {format} from 'date-fns'
 import moment from 'moment'
+import type {AxiosError} from 'axios'
 
-export function notEmpty (str: string) {
+
+export function notEmpty(str: string) {
   if (!str) {
     return false
   }
   return str.trim().length > 0
 }
 
-export function notFile (files: [File[]]) {
+export function localizedMessage(t: any, error: AxiosError<ApiErrorDto>, message: string | null): string {
+  if (error.response && error.response.data) {
+    const data = error.response.data as ApiErrorDto
+    return `${t(data.code)}: ${data.message}`
+  }
+  return `${error.message}: ${message}`
+}
+
+export function notFile(files: [File[]]) {
   if (!files) {
     return false
   }
   return files.length === 1
 }
 
-export function castNumberOptional (str: string): string | number {
+export function castNumberOptional(str: string): string | number {
   const num = Number(str)
   const ss = String(num)
   if (str !== ss) {
@@ -44,11 +54,11 @@ export function castNumberOptional (str: string): string | number {
  " "                     : false
  ""                      : false
  */
-export function isNonNegativeInteger (str: any) {
+export function isNonNegativeInteger(str: any) {
   return str >>> 0 === parseFloat(str)
 }
 
-export function formatDateUTC (str: string) {
+export function formatDateUTC(str: string) {
   if (!str) {
     return null
   }
@@ -56,7 +66,7 @@ export function formatDateUTC (str: string) {
   return format(new Date(date), 'yyyy-MM-dd')
 }
 
-export function formatYearUTC (str: string) {
+export function formatYearUTC(str: string) {
   if (!str) {
     return null
   }
@@ -64,7 +74,7 @@ export function formatYearUTC (str: string) {
   return format(new Date(date), 'yyyy')
 }
 
-export function formatMonthUTC (str: string) {
+export function formatMonthUTC(str: string) {
   if (!str) {
     return null
   }
@@ -72,7 +82,7 @@ export function formatMonthUTC (str: string) {
   return format(new Date(date), 'MM')
 }
 
-export function formatDayUTC (str: string) {
+export function formatDayUTC(str: string) {
   if (!str) {
     return null
   }
@@ -80,14 +90,14 @@ export function formatDayUTC (str: string) {
   return format(new Date(date), 'dd')
 }
 
-export function formatTimestamp (str: string) {
+export function formatTimestamp(str: string) {
   if (!str) {
     return null
   }
   return format(new Date(str), 'yyyy-MM-dd HH:mm:ss')
 }
 
-export function formatTimestampUTCLabel (str: string) {
+export function formatTimestampUTCLabel(str: string) {
   if (!str) {
     return null
   }
@@ -95,7 +105,7 @@ export function formatTimestampUTCLabel (str: string) {
   return format(new Date(date), 'yyyy-MM-dd HH:mm:ss') + ' (UTC)'
 }
 
-export function formatTimestampUTC (str: string) {
+export function formatTimestampUTC(str: string) {
   if (!str) {
     return null
   }
@@ -103,7 +113,7 @@ export function formatTimestampUTC (str: string) {
   return format(new Date(date), 'yyyy-MM-dd HH:mm:ss')
 }
 
-export function languages () {
+export function languages() {
   return [
     {
       code: 'ab',
@@ -1018,7 +1028,7 @@ export function languages () {
   ]
 }
 
-export function formatLanguage (code: string) {
+export function formatLanguage(code: string) {
   const filter = languages().filter(l => l.code === code)
   if (filter.length === 0) {
     return null
@@ -1026,7 +1036,7 @@ export function formatLanguage (code: string) {
   return filter[0].name
 }
 
-export function isActiveMessage (message: any) {
+export function isActiveMessage(message: any) {
   if (!message) {
     return false
   }
@@ -1045,20 +1055,20 @@ export function isActiveMessage (message: any) {
   return false
 }
 
-export function timestampToTimeZonedTimestamp (str: string) {
+export function timestampToTimeZonedTimestamp(str: string) {
   if (str === null) {
     return null
   }
   return format(new Date(str), 'yyyy-MM-dd\'T\'HH:mm:ss.SSS\'Z\'')
 }
 
-export function timestampsToHumanDifference (date1: string, date2: string) {
+export function timestampsToHumanDifference(date1: string, date2: string) {
   const date = moment(date1)
   const other = moment(date2)
   return moment.duration(other.diff(date)).humanize(true)
 }
 
-export function sizeToHumanLabel (num: number) {
+export function sizeToHumanLabel(num: number) {
   let number = Number(num)
   if (!number) {
     return '0'
