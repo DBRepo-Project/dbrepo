@@ -833,7 +833,8 @@
             "hint": "Required."
           },
           "visibility": {
-            "warn": "The view metadata, i.e. view name, query, will still be public. The data however will only be visible to people with at least read access to this database."
+            "label": "Data Visibility",
+            "hint": "Required. When private, the view metadata will still be public but the data will only be visible to people with at least read access to this database."
           }
         }
       }
@@ -998,6 +999,9 @@
     "schema": {
       "id": "Column \"id\" must be a primary key."
     },
+    "identifier": {
+      "requestinvalid": "Failed to create identifier:"
+    },
     "user": {
       "credentials": "Invalid username/password combination.",
       "email-exists": "Account with this e-mail exists already."
@@ -1027,7 +1031,8 @@
       "create": "Failed to create view:"
     },
     "data": {
-      "value": "Failed to set column value:"
+      "value": "Failed to set column value:",
+      "drift": "Your browser clock is not synchronized with UTC and seems to be off by:"
     },
     "transfer": "Failed to transfer the database owner."
   },

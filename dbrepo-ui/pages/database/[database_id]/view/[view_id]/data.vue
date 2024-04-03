@@ -6,6 +6,7 @@
       :title="$t('toolbars.database.current')"
       flat>
     </v-toolbar>
+    <TimeDrift />
     <v-card tile>
       <QueryResults
         id="query-results"
@@ -19,12 +20,14 @@
 </template>
 
 <script>
+import TimeDrift from '@/components/TimeDrift'
 import QueryResults from '@/components/subset/Results'
 import { useCacheStore } from '@/stores/cache'
 
 export default {
   components: {
-    QueryResults
+    QueryResults,
+    TimeDrift
   },
   data () {
     return {

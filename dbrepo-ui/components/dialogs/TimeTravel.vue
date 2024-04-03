@@ -35,7 +35,7 @@
           @click="cancel" />
         <v-btn
           color="tertiary"
-          variant="flat"
+          :variant="buttonVariant"
           :text="$t('navigation.now')"
           @click="reset" />
         <v-btn
@@ -106,6 +106,10 @@ export default {
           this.history ? { backgroundColor: this.$vuetify.theme.current.colors.primary, data: this.history.map(d => d.total) } : { data: [] }
         ]
       }
+    },
+    buttonVariant () {
+      const runtimeConfig = useRuntimeConfig()
+      return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.button.contrast : runtimeConfig.public.variant.button.normal
     }
   },
   mounted() {

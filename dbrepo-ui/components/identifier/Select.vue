@@ -109,12 +109,6 @@ export default {
       }
       return this.identifier.id === identifier.id
     },
-    closeDeleteDialog (event) {
-      if (event.action === 'deleted') {
-        this.cacheStore.reloadDatabase()
-      }
-      this.deleteDialog = false
-    },
     init () {
       if (!this.identifiers || this.identifiers.length === 0 || !this.identifier) {
         return null
