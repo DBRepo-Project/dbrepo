@@ -14,7 +14,7 @@ function generate_sphinx {
   echo "Building LIB for version $1 on branch $BRANCH"
   echo "==================================================="
   git reset --hard && git checkout "$BRANCH"
-  pipenv install gunicorn && pipenv install --dev --system --deploy > /dev/null
+  pip install -r ./requirements.txt > /dev/null
   mkdir -p ./final
   sed -i -e "s/__APPVERSION__/${APP_VERSION}/g" ./lib/python/setup.py ./lib/python/pyproject.toml ./lib/python/docs/conf.py ./lib/python/docs/index.rst ./lib/python/docs/index.rst
   sphinx-apidoc -o ./lib/python/docs/source ./lib/python/dbrepo

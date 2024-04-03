@@ -567,7 +567,6 @@ release-docs:
       - /^release-.*/
   script:
     - apt-get update && apt-get install -y git make sed wget ssh
-    - pip install pipenv
     - make docs
     - eval $(ssh-agent -s)
     - echo "$CI_KEY_PRIVATE" > /root/.ssh/id_rsa && chmod 0600 /root/.ssh/id_rsa
