@@ -1,10 +1,10 @@
-import VueToast, { useToast } from 'vue-toast-notification';
+import VueToast, {useToast} from 'vue-toast-notification';
 import 'vue-toast-notification/dist/theme-default.css';
 
 const config: any = {
   position: 'top-right',
   duration: 6000,
-  dismissible: true
+  dismissible: false /* allow copy of error message */
 }
 
 export default defineNuxtPlugin((app) => {

@@ -998,6 +998,9 @@
     "schema": {
       "id": "Die Spalte „id“ muss ein Primärschlüssel sein."
     },
+    "identifier": {
+      "requestinvalid": "Bezeichner konnte nicht erstellt werden:"
+    },
     "user": {
       "credentials": "Ungültige Benutzername und Passwort Kombination.",
       "email-exists": "Das Konto mit dieser E-Mail-Adresse existiert bereits."

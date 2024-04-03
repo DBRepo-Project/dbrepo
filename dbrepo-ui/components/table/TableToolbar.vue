@@ -13,7 +13,7 @@
         v-if="canImportCsv"
         :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-cloud-upload' : null"
         color="tertiary"
-        variant="flat"
+        :variant="buttonVariant"
         :text="$t('toolbars.database.import-csv.permanent') + ($vuetify.display.xlAndUp ? ' ' + $t('toolbars.database.import-csv.xl') : '')"
         class="ml-2"
         :to="`/database/${$route.params.database_id}/table/${$route.params.table_id}/import`" />
@@ -158,6 +158,10 @@ export default {
         return false
       }
       return this.database.owner.id === this.user.id || this.table.owner.id === this.user.id
+    },
+    buttonVariant () {
+      const runtimeConfig = useRuntimeConfig()
+      return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.button.contrast : runtimeConfig.public.variant.button.normal
     }
   },
   methods: {
