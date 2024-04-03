@@ -216,7 +216,7 @@ interface IdentifierDto {
   query: string | null;
   execution: Date | null;
   doi: string | null;
-  publisher: string | null;
+  publisher: string;
   language: string | null;
   licenses: LicenseDto[] | [];
   creators: CreatorDto[] | [];

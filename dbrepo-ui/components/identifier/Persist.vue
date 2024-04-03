@@ -70,7 +70,7 @@
                       class="mr-2"
                       :disabled="!canShiftUp(creator, i)"
                       size="small"
-                      color="tertiary"
+                      :color="canShiftUp(creator, i) ? 'tertiary' : ''"
                       :variant="buttonVariant"
                       @click="shiftUp(i)" />
                     <v-btn
@@ -78,7 +78,7 @@
                       class="mr-2"
                       :disabled="!canShiftDown(creator, i)"
                       size="small"
-                      color="tertiary"
+                      :color="canShiftUp(creator, i) ? 'tertiary' : ''"
                       :variant="buttonVariant"
                       @click="shiftDown(i)" />
                     <v-btn

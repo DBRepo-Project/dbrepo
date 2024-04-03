@@ -244,7 +244,7 @@
 </template>
 
 <script>
-import { isNonNegativeInteger } from '@/utils'
+import {isNonNegativeInteger, localizedMessage} from '@/utils'
 import { useCacheStore } from '@/stores/cache'
 
 export default {
@@ -418,7 +418,6 @@ export default {
           this.analyse(s3key)
         })
         .catch((error) => {
-          console.error('Failed to upload', error)
           this.$toast.error(this.$t('error.upload.dataset'))
           this.loading = false
         })
@@ -459,7 +458,7 @@ export default {
           this.$emit('analyse', {columns: this.columns, filename, line_termination})
         })
         .catch((error) => {
-          console.error('Failed to analyse dataset', error)
+          this.$toast.error(localizedMessage(this.$t, error, null))
           this.loading = false
         })
         .finally(() => {

@@ -136,6 +136,7 @@
 
 <script>
 import BlobUpload from '@/components/table/BlobUpload'
+import {localizedMessage} from '@/utils'
 
 export default {
   components: {
@@ -311,9 +312,7 @@ export default {
           this.$toast.success(this.$t('success.data.add'))
         })
         .catch((error) => {
-          const { code, message } = error.response.data
-          console.error('Failed to insert tuple', error)
-          this.$toast.error(this.$t(code) + ' ' + message)
+          this.$toast.error(localizedMessage(this.$t, error, null))
         })
     },
     onUpload (event) {

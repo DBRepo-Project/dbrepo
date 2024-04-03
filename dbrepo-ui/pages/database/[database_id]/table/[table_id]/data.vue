@@ -53,6 +53,7 @@
         class="mb-1 ml-2"
         @click.stop="pick" />
     </v-toolbar>
+    <TimeDrift />
     <v-card tile>
       <v-progress-linear v-if="loadingData > 0 || error" :indeterminate="!error" :color="loadingColor" />
       <v-card
@@ -102,8 +103,9 @@
 
 <script>
 import TimeTravel from '@/components/dialogs/TimeTravel'
+import TimeDrift from '@/components/TimeDrift'
 import TableToolbar from '@/components/table/TableToolbar'
-import { formatTimestampUTC, formatDateUTC, formatTimestamp } from '@/utils'
+import {formatTimestampUTC, formatDateUTC, formatTimestamp, localizedMessage} from '@/utils'
 import { useUserStore } from '@/stores/user'
 import { useCacheStore } from '@/stores/cache'
 import EditTuple from '@/components/dialogs/EditTuple'
@@ -114,7 +116,8 @@ export default {
     BlobDownload,
     EditTuple,
     TimeTravel,
-    TableToolbar
+    TableToolbar,
+    TimeDrift
   },
   data () {
     return {
@@ -395,9 +398,7 @@ export default {
         this.dateColumns = this.table.columns.filter(c => (c.column_type === 'date' || c.column_type === 'timestamp'))
         console.debug('date columns are', this.dateColumns)
       } catch (error) {
-        console.error('Failed to map table details', error)
-        const { message } = error.response
-        this.$toast.error('Failed to map table details: ' + message)
+        this.$toast.error(localizedMessage(this.$t, error, 'Failed to map table details'))
       }
       this.loading = false
     },
@@ -427,7 +428,7 @@ export default {
           })
         })
         .catch((error) => {
-          console.error('load data resulted in error', error)
+          this.$toast.error(localizedMessage(this.$t, error, 'Failed to load data'))
           this.error = true
         })
         .finally(() => {

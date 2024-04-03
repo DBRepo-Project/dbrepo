@@ -121,6 +121,7 @@
 
 <script>
 import { useCacheStore } from '@/stores/cache'
+import {localizedMessage} from '@/utils'
 
 export default {
   props: {

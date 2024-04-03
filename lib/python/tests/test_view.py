@@ -1,10 +1,13 @@
 import unittest
+
+from json import dumps
+
 import requests_mock
-import dataclasses
+import datetime
 
 from dbrepo.RestClient import RestClient
 
-from dbrepo.api.dto import Table, UserAttributes, User, Column, Constraints, View, Result
+from dbrepo.api.dto import UserAttributes, User, View, Result
 from dbrepo.api.exceptions import ForbiddenError, NotExistsError, MalformedError, AuthenticationError
 
 
@@ -13,7 +16,7 @@ class ViewTest(unittest.TestCase):
     def test_get_views_empty_succeeds(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/database/1/view', json=[])
+            mock.get('/api/database/1/view', json=dumps([]))
             # test
             response = RestClient().get_views(database_id=1)
             self.assertEqual([], response)
@@ -30,11 +33,11 @@ class ViewTest(unittest.TestCase):
                         creator=User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
                                      attributes=UserAttributes(theme='light')),
                         is_public=True,
-                        created='2024-01-01 00:00:00',
-                        last_modified='2024-01-01 00:00:00',
+                        created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
+                        last_modified=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                         identifiers=[])]
             # mock
-            mock.get('/api/database/1/view', json=[dataclasses.asdict(exp[0])])
+            mock.get('/api/database/1/view', json=dumps([exp[0].model_dump()]))
             # test
             response = RestClient().get_views(database_id=1)
             self.assertEqual(exp, response)
@@ -71,11 +74,11 @@ class ViewTest(unittest.TestCase):
                        creator=User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
                                     attributes=UserAttributes(theme='light')),
                        is_public=True,
-                       created='2024-01-01 00:00:00',
-                       last_modified='2024-01-01 00:00:00',
+                       created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
+                       last_modified=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                        identifiers=[])
             # mock
-            mock.get('/api/database/1/view/3', json=dataclasses.asdict(exp))
+            mock.get('/api/database/1/view/3', json=exp.model_dump_json())
             # test
             response = RestClient().get_view(database_id=1, view_id=3)
             self.assertEqual(exp, response)
@@ -112,11 +115,11 @@ class ViewTest(unittest.TestCase):
                        creator=User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
                                     attributes=UserAttributes(theme='light')),
                        is_public=True,
-                       created='2024-01-01 00:00:00',
-                       last_modified='2024-01-01 00:00:00',
+                       created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
+                       last_modified=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                        identifiers=[])
             # mock
-            mock.post('/api/database/1/view', json=dataclasses.asdict(exp), status_code=201)
+            mock.post('/api/database/1/view', json=exp.model_dump_json(), status_code=201)
             # test
             client = RestClient(username="a", password="b")
             response = client.create_view(database_id=1, name="Data", is_public=True,
@@ -216,7 +219,7 @@ class ViewTest(unittest.TestCase):
                          headers=[{'id': 0, 'username': 1}],
                          id=None)
             # mock
-            mock.get('/api/database/1/view/3/data', json=dataclasses.asdict(exp))
+            mock.get('/api/database/1/view/3/data', json=exp.model_dump_json())
             # test
             response = RestClient().get_view_data(database_id=1, view_id=3)
             self.assertEqual(exp, response)

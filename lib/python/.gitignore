@@ -6,6 +6,9 @@ dist/
 dbrepo.egg-info/
 build/
 
+# secrets
+.pypirc
+
 # coverage
 coverage.txt
 .coverage

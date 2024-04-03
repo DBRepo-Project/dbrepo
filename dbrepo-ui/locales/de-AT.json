@@ -998,6 +998,9 @@
     "schema": {
       "id": "Die Spalte „id“ muss ein Primärschlüssel sein."
     },
+    "identifier": {
+      "requestinvalid": "Bezeichner konnte nicht erstellt werden:"
+    },
     "user": {
       "credentials": "Ungültige Benutzername und Passwort Kombination.",
       "email-exists": "Das Konto mit dieser E-Mail-Adresse existiert bereits."
@@ -1027,7 +1030,8 @@
       "create": "Ansicht konnte nicht erstellt werden:"
     },
     "data": {
-      "value": "Spaltenwert konnte nicht festgelegt werden:"
+      "value": "Spaltenwert konnte nicht festgelegt werden:",
+      "drift": "Ihre Browser-Uhrzeit ist nicht synchron mit UTC und scheint falschzugehen um:"
     },
     "transfer": "Der Datenbankeigentümer konnte nicht übertragen werden."
   },

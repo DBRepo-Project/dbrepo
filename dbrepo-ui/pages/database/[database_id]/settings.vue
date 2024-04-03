@@ -488,9 +488,6 @@ export default {
         .finally(() => {
           this.loadingUsers = false
         })
-    },
-    reloadDatabase () {
-      this.cacheStore.reloadDatabase()
     }
   }
 }

@@ -15,6 +15,7 @@
         @click.stop="dialog = true" />
     </v-toolbar>
     <DatabaseList
+      v-cloak
       :loading="loading"
       :databases="databases" />
     <v-dialog

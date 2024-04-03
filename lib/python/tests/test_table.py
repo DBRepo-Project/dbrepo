@@ -1,6 +1,9 @@
 import unittest
+
+from json import dumps
+
 import requests_mock
-import dataclasses
+import datetime
 
 from dbrepo.RestClient import RestClient
 
@@ -22,7 +25,7 @@ class TableTest(unittest.TestCase):
                                  attributes=UserAttributes(theme='light')),
                     owner=User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
                                attributes=UserAttributes(theme='light')),
-                    created='2024-01-01 00:00:00',
+                    created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                     is_versioned=True,
                     created_by='8638c043-5145-4be8-a3e4-4b79991b0a16',
                     queue_name='test',
@@ -41,7 +44,7 @@ class TableTest(unittest.TestCase):
                                     is_null_allowed=False)])
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post('/api/database/1/table', json=dataclasses.asdict(exp), status_code=201)
+            mock.post('/api/database/1/table', json=exp.model_dump_json(), status_code=201)
             # test
             client = RestClient(username="a", password="b")
             response = client.create_table(database_id=1, name="Test", description="Test Table", columns=[],
@@ -110,7 +113,7 @@ class TableTest(unittest.TestCase):
     def test_get_tables_empty_succeeds(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/database/1/table', json=[])
+            mock.get('/api/database/1/table', json=dumps([]))
             # test
             response = RestClient().get_tables(database_id=1)
             self.assertEqual([], response)
@@ -126,7 +129,7 @@ class TableTest(unittest.TestCase):
                                       attributes=UserAttributes(theme='light')),
                          owner=User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
                                     attributes=UserAttributes(theme='light')),
-                         created='2024-01-01 00:00:00',
+                         created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                          is_versioned=True,
                          created_by='8638c043-5145-4be8-a3e4-4b79991b0a16',
                          queue_name='test',
@@ -144,7 +147,7 @@ class TableTest(unittest.TestCase):
                                          is_public=True,
                                          is_null_allowed=False)])]
             # mock
-            mock.get('/api/database/1/table', json=[dataclasses.asdict(exp[0])])
+            mock.get('/api/database/1/table', json=dumps([exp[0].model_dump()]))
             # test
             response = RestClient().get_tables(database_id=1)
             self.assertEqual(exp, response)
@@ -160,7 +163,7 @@ class TableTest(unittest.TestCase):
                                      attributes=UserAttributes(theme='light')),
                         owner=User(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise',
                                    attributes=UserAttributes(theme='light')),
-                        created='2024-01-01 00:00:00',
+                        created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                         is_versioned=True,
                         created_by='8638c043-5145-4be8-a3e4-4b79991b0a16',
                         queue_name='test',
@@ -178,7 +181,7 @@ class TableTest(unittest.TestCase):
                                         is_public=True,
                                         is_null_allowed=False)])
             # mock
-            mock.get('/api/database/1/table/2', json=dataclasses.asdict(exp))
+            mock.get('/api/database/1/table/2', json=exp.model_dump_json())
             # test
             response = RestClient().get_table(database_id=1, table_id=2)
             self.assertEqual(exp, response)
@@ -249,7 +252,7 @@ class TableTest(unittest.TestCase):
                          headers=[{'id': 0, 'username': 1}],
                          id=None)
             # mock
-            mock.get('/api/database/1/table/9/data', json=dataclasses.asdict(exp))
+            mock.get('/api/database/1/table/9/data', json=exp.model_dump_json())
             # test
             response = RestClient().get_table_data(database_id=1, table_id=9)
             self.assertEqual(exp, response)
@@ -549,15 +552,15 @@ class TableTest(unittest.TestCase):
                          is_public=True,
                          concept=Concept(id=2,
                                          uri="http://dbpedia.org/page/Category:Precipitation",
-                                         created='2023-01-12 00:00:00',
+                                         created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                                          name="Precipitation"),
                          unit=Unit(id=2,
                                    uri="http://www.wikidata.org/entity/Q119856947",
-                                   created='2023-01-12 00:00:00',
+                                   created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                                    name="liters per square meter"),
                          is_null_allowed=False)
             # mock
-            mock.put('/api/database/1/table/2/column/1', json=dataclasses.asdict(exp), status_code=202)
+            mock.put('/api/database/1/table/2/column/1', json=exp.model_dump_json(), status_code=202)
             # test
             client = RestClient(username="a", password="b")
             response = client.update_table_column(database_id=1, table_id=2, column_id=1,
@@ -621,7 +624,7 @@ class TableTest(unittest.TestCase):
             exp = TableStatistics(
                 columns={"id": ColumnStatistic(val_min=1.0, val_max=9.0, mean=5.0, median=5.0, std_dev=2.73)})
             # mock
-            mock.get('/api/analyse/database/1/table/2/statistics', json=dataclasses.asdict(exp), status_code=202)
+            mock.get('/api/analyse/database/1/table/2/statistics', json=exp.model_dump_json(), status_code=202)
             # test
             response = RestClient().analyse_table_statistics(database_id=1, table_id=2)
             self.assertEqual(exp, response)
