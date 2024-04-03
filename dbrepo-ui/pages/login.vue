@@ -80,6 +80,7 @@
 
 <script>
 import {useUserStore} from '@/stores/user'
+import {localizedMessage} from '@/utils'
 
 export default {
   data() {
@@ -141,7 +142,7 @@ export default {
           if (status === 401) {
             this.$toast.error(this.$t('error.user.credentials'))
           } else {
-            this.$toast.error(`Failed to login: ${error}`)
+            this.$toast.error(localizedMessage(this.$t, error, null))
           }
           this.loading = false
         })

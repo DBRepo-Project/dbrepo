@@ -11,11 +11,11 @@
       <v-spacer />
       <v-btn
         v-if="user"
-        :disabled="!valid || isExecuted"
+        :disabled="!canExecute"
         color="secondary"
         variant="flat"
         :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-run' : null"
-        :text="$t('navigation.continue')"
+        :text="$t('navigation.create')"
         @click="execute" />
     </v-toolbar>
     <v-toolbar flat>
@@ -35,51 +35,60 @@
       rounded="0"
       variant="flat">
       <v-card-text>
-        <v-window v-model="tabs">
-          <v-window-item
-            value="0">
-            <v-form
-              ref="formView"
-              v-model="validView"
-              @submit.prevent="preventView">
-              <v-row
-                v-if="isView"
-                class="mt-1"
-                dense>
-                <v-col md="8">
-                  <v-text-field
-                    v-model="view.name"
-                    :disabled="isExecuted"
-                    type="text"
-                    clearable
-                    persistent-hint
-                    :variant="inputVariant"
-                    :label="$t('pages.view.subpages.create.name.label')"
-                    :hint="$t('pages.view.subpages.create.name.hint')"
-                    :rules="[v => !!v || $t('validation.required'),
+        <v-form
+          ref="formView"
+          v-model="valid"
+          @submit.prevent="prevent">
+          <v-row
+            v-if="isView"
+            class="mt-1"
+            dense>
+            <v-col md="8">
+              <v-text-field
+                v-model="view.name"
+                :disabled="isExecuted"
+                type="text"
+                clearable
+                persistent-hint
+                :variant="inputVariant"
+                :label="$t('pages.view.subpages.create.name.label')"
+                :hint="$t('pages.view.subpages.create.name.hint')"
+                :rules="[v => !!v || $t('validation.required'),
                      v => !validViewName(v) || $t('validation.view.exists')]"
-                    required />
-                </v-col>
-              </v-row>
-              <v-row
-                v-if="isView && !view.is_public"
-                dense>
-                <v-col>
-                  <v-alert
-                    :text="$t('pages.view.subpages.create.visibility.warn')"
-                    border="start"
-                    color="warning" />
-                </v-col>
-              </v-row>
-              <v-row
-                v-if="isView"
-                dense>
-                <v-col cols="6">
-                  <v-switch
-                    v-model="view.is_public"
-                    :label="view.is_public ? $t('toolbars.database.public') : $t('toolbars.database.private')" />
-                </v-col>
-              </v-row>
+                required />
+            </v-col>
+          </v-row>
+          <v-row
+            v-if="isView && !view.is_public"
+            dense>
+            <v-col>
+              <v-alert
+                :text="$t('pages.view.subpages.create.visibility.warn')"
+                border="start"
+                color="warning" />
+            </v-col>
+          </v-row>
+          <v-row
+            v-if="isView"
+            dense>
+            <v-col md="8">
+              <v-select
+                v-model="view.is_public"
+                :items="visibilities"
+                persistent-hint
+                :variant="inputVariant"
+                required
+                clearable
+                :label="$t('pages.view.subpages.create.visibility.label')"
+                :hint="$t('pages.view.subpages.create.visibility.hint')"
+                :rules="[v => !!v || $t('validation.required')]" />
+            </v-col>
+          </v-row>
+          <v-window
+            class="mt-4"
+            v-model="tabs">
+            <v-window-item
+              value="0">
               <v-row dense>
                 <v-col md="4">
                   <v-select
@@ -89,6 +98,7 @@
                     item-title="name"
                     return-object
                     persistent-hint
+                    clearable
                     :variant="inputVariant"
                     :label="$t('pages.view.subpages.create.table.label')"
                     :hint="$t('pages.view.subpages.create.table.hint')"
@@ -101,6 +111,7 @@
                     :disabled="!table || isExecuted"
                     :items="columns"
                     persistent-hint
+                    clearable
                     :variant="inputVariant"
                     :label="$t('pages.view.subpages.create.columns.label')"
                     :hint="$t('pages.view.subpages.create.columns.hint')"
@@ -209,7 +220,8 @@
               </div>
               <v-row
                 dense>
-                <v-col v-text="$t('pages.subset.subpages.create.subtitle')" />
+                <v-col
+                  v-text="$t('pages.subset.subpages.create.generated')" />
               </v-row>
               <v-row
                 id="query-raw"
@@ -221,34 +233,34 @@
                     class="mt-2" />
                 </v-col>
               </v-row>
-            </v-form>
-          </v-window-item>
-          <v-window-item
-            value="1">
-            <v-row
-              v-if="hasUnsupported"
-              dense>
-              <v-col>
-                <v-alert
-                  border="start"
-                  color="warning">
-                  <span v-text="$t('pages.subset.subpages.create.expert.warn')" />
-                  <pre style="white-space:inherit;" v-text="unsupported.join(', ')" />
-                </v-alert>
-              </v-col>
-            </v-row>
-            <v-row dense>
-              <v-col v-text="$t('pages.subset.subpages.create.subtitle')" />
-            </v-row>
-            <v-row dense>
-              <v-col>
-                <Raw
-                  class="mt-2"
-                  @sql="updateSql" />
-              </v-col>
-            </v-row>
-          </v-window-item>
-        </v-window>
+            </v-window-item>
+            <v-window-item
+              value="1">
+              <v-row
+                v-if="hasUnsupported"
+                dense>
+                <v-col>
+                  <v-alert
+                    border="start"
+                    color="warning">
+                    <span v-text="$t('pages.subset.subpages.create.expert.warn')" />
+                    <pre style="white-space:inherit;" v-text="unsupported.join(', ')" />
+                  </v-alert>
+                </v-col>
+              </v-row>
+              <v-row dense>
+                <v-col v-text="$t('pages.subset.subpages.create.subtitle')" />
+              </v-row>
+              <v-row dense>
+                <v-col>
+                  <Raw
+                    class="mt-2"
+                    @sql="updateSql" />
+                </v-col>
+              </v-row>
+            </v-window-item>
+          </v-window>
+        </v-form>
       </v-card-text>
     </v-card>
     <Results
@@ -265,6 +277,7 @@ import Results from '@/components/subset/Results'
 import { useCacheStore } from '@/stores/cache'
 import { useUserStore } from '@/stores/user'
 import { format } from 'sql-formatter'
+import { localizedMessage } from '@/utils'
 
 export default {
   components: {
@@ -286,6 +299,10 @@ export default {
       views: [],
       timestamp: null,
       executeDifferentTimestamp: false,
+      visibilities: [
+        { title: this.$t('toolbars.database.public'), value: true },
+        { title: this.$t('toolbars.database.private'), value: false },
+      ],
       operators: [
         '=',
         '<',
@@ -330,8 +347,7 @@ export default {
       ],
       tableDetails: null,
       resultId: null,
-      validView: false,
-      validSubset: false,
+      valid: false,
       errorKeyword: null,
       query: {
         raw: null,
@@ -402,7 +418,7 @@ export default {
     },
     valid () {
       if (this.isView) {
-        return this.validView && !this.hasUnsupported
+        return this.valid && !this.hasUnsupported
       }
       return this.sql.length > 0 && !this.hasUnsupported
     },
@@ -424,6 +440,12 @@ export default {
         }
       }
       return false
+    },
+    canExecute () {
+      if (this.isView) {
+        return this.view.name !== null && this.view.is_public !== null && this.view.query !== null
+      }
+      return this.valid
     },
     inputVariant () {
       const runtimeConfig = useRuntimeConfig()
@@ -450,7 +472,7 @@ export default {
     this.selectTable()
   },
   methods: {
-    preventView () {
+    prevent () {
       this.$refs.formView.validate()
     },
     validViewName (name) {
@@ -491,8 +513,7 @@ export default {
           this.$router.push(`/database/${this.$route.params.database_id}/subset/${subset.id}/data`)
         })
         .catch((error) => {
-          const { code } = error.response.data
-          this.$toast.error(this.$t(code))
+          this.$toast.error(localizedMessage(this.$t, error, null))
         })
     },
     createView () {
@@ -508,8 +529,7 @@ export default {
           this.$router.push(`/database/${this.$route.params.database_id}/view/${view.id}/data`)
         })
         .catch((error) => {
-          console.error('Failed to create view', error)
-          this.$toast.error(this.$t('error.view.create'))
+          this.$toast.error(localizedMessage(this.$t, error, this.$t('error.view.create')))
           this.loadingQuery = false
         })
         .finally(() => {
@@ -527,6 +547,9 @@ export default {
         return
       }
       this.query.raw = raw
+      if (this.isView) {
+        this.view.query = raw
+      }
       this.query.formatted = formatted
     },
     canAdd (idx) {
@@ -560,6 +583,9 @@ export default {
       const { raw } = event
       if (raw) {
         this.query.raw = raw
+        if (this.isView) {
+          this.view.query = raw
+        }
         this.query.formatted = format(raw, {
           language: 'mysql',
           keywordCase: 'upper'
