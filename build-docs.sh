@@ -16,9 +16,7 @@ function generate_sphinx {
   git reset --hard && git checkout "$BRANCH"
   pip install -r ./requirements.txt > /dev/null
   mkdir -p ./final
-  if [ "$1" = "latest" ]; then
-    sed -i -e "s/__APPVERSION__/${APP_VERSION}/g" ./lib/python/setup.py ./lib/python/pyproject.toml ./lib/python/docs/conf.py ./lib/python/docs/index.rst ./lib/python/docs/index.rst
-  fi
+  sed -i -e "s/__APPVERSION__/${APP_VERSION}/g" ./lib/python/setup.py ./lib/python/pyproject.toml ./lib/python/docs/conf.py ./lib/python/docs/index.rst ./lib/python/docs/index.rst
   sphinx-apidoc -o ./lib/python/docs/source ./lib/python/dbrepo
   sphinx-build -M html ./lib/python/docs/ ./lib/python/docs/build/
   cp -r ./lib/python/docs/build/html "./final/$1/sphinx"
