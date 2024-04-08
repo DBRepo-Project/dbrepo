@@ -1,39 +1,210 @@
-{{- if .Values.ingress.enabled }}
-{{- range .Values.ingress.data }}
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: dbrepo-{{ .name }}
-  {{- with .annotations }}
-  annotations:
-      {{- toYaml . | nindent 4 }}
-  {{- end }}
-  namespace: {{ $.Values.namespace }}
+  name: dbrepo-ingress-basic
+  annotations: {{ toYaml .Values.ingress.annotations.basic | nindent 4 }}
+  namespace: {{ .Values.namespace }}
 spec:
-  ingressClassName: nginx
-  {{- if .tls }}
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- if .Values.ingress.tls.enabled }}
   tls:
-    {{- range .tls }}
     - hosts:
-        - "{{ $.Values.hostname }}"
-      secretName: {{ .secretName }}
-    {{- end }}
+        - {{ .Values.hostname }}
+      secretName: {{ .Values.ingress.tls.secretName }}
   {{- end }}
   rules:
-  {{- range .hosts }}
-  - host: "{{ $.Values.hostname }}"
-    http:
-      paths:
-      {{- range .paths }}
-      - path: {{ .path }}
-        pathType: {{ .pathType }}
-        backend:
-          service:
-            name: {{ .serviceName }}
-            port:
-              number: {{ .portNumber }}
-      {{- end}}
-  {{- end}}
-{{- end}}
-{{- end}}
+    - host: {{ .Values.hostname }}
+      http:
+        paths:
+          - path: /api/analyse
+            pathType: Prefix
+            backend:
+              service:
+                name: analyse-service
+                port:
+                  number: 80
+          - path: /api/search
+            pathType: Prefix
+            backend:
+              service:
+                name: search-service
+                port:
+                  number: 80
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: metadata-service
+                port:
+                  number: 80
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ui
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dbrepo-ingress-upload
+  annotations: {{ toYaml .Values.ingress.annotations.upload | nindent 4 }}
+  namespace: {{ .Values.namespace }}
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- if .Values.ingress.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ .Values.hostname }}
+      secretName: {{ .Values.ingress.tls.secretName }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.hostname }}
+      http:
+        paths:
+          - path: /api/upload
+            pathType: Prefix
+            backend:
+              service:
+                name: upload-service
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dbrepo-ingress-dashboard
+  annotations: {{ toYaml .Values.ingress.annotations.secure | nindent 4 }}
+  namespace: {{ .Values.namespace }}
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- if .Values.ingress.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ .Values.hostname }}
+      secretName: {{ .Values.ingress.tls.secretName }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.hostname }}
+      http:
+        paths:
+          - path: /admin/dashboard
+            pathType: Prefix
+            backend:
+              service:
+                name: search-db-dashboard
+                port:
+                  number: 5601
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dbrepo-ingress-rewrite-api
+  annotations: {{ toYaml .Values.ingress.annotations.rewriteApi | nindent 4 }}
+  namespace: {{ .Values.namespace }}
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- if .Values.ingress.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ .Values.hostname }}
+      secretName: {{ .Values.ingress.tls.secretName }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.hostname }}
+      http:
+        paths:
+          - path: /api/broker/(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: broker-service
+                port:
+                  number: 15672
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dbrepo-ingress-rewrite-root
+  annotations: {{ toYaml .Values.ingress.annotations.rewriteRoot | nindent 4 }}
+  namespace: {{ .Values.namespace }}
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- if .Values.ingress.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ .Values.hostname }}
+      secretName: {{ .Values.ingress.tls.secretName }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.hostname }}
+      http:
+        paths:
+          - path: /admin/broker/(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: broker-service
+                port:
+                  number: 15672
+          - path: /admin/storage
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: storageservice-s3
+                port:
+                  number: 9000
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dbrepo-ingress-rewrite-root-secure
+  annotations: {{ toYaml .Values.ingress.annotations.rewriteRoot | nindent 4 }}
+  namespace: {{ .Values.namespace }}
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- if .Values.ingress.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ .Values.hostname }}
+      secretName: {{ .Values.ingress.tls.secretName }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.hostname }}
+      http:
+        paths:
+          - path: /api/auth/(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: auth-service
+                port:
+                  number: 443
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dbrepo-ingress-pid
+  annotations: {{ toYaml .Values.ingress.annotations.rewritePid | nindent 4 }}
+  namespace: {{ .Values.namespace }}
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- if .Values.ingress.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ .Values.hostname }}
+      secretName: {{ .Values.ingress.tls.secretName }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.hostname }}
+      http:
+        paths:
+          - path: /pid/(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: metadata-service
+                port:
+                  number: 80

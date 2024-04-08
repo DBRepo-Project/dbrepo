@@ -1,6 +1,6 @@
-namespace: ""
+namespace: dbrepo
 
-hostname: ""
+hostname: dbrepo.local
 
 strategyType: RollingUpdate
 
@@ -30,10 +30,8 @@ metadataDb:
     loadBalancerIP: ""
     loadBalancerSourceRanges: [ ]
   persistence:
-    enabled: false
-    size: 10Gi
-    storageClass: default
-  replicaCount: 3 # uneven 3,5,7
+    enabled: true
+  replicaCount: 1 # uneven 3,5,7
 
 authService:
   fullnameOverride: auth-service
@@ -47,7 +45,7 @@ authService:
   extraStartupArgs: "--import-realm"
   tls:
     enabled: true
-    existingSecret: dbrepo-ingress-tls-cert
+    existingSecret: ingress-cert
     usePem: true
   metrics:
     enabled: true
@@ -69,7 +67,7 @@ authService:
   extraVolumeMounts:
     - name: config-map
       mountPath: /opt/bitnami/keycloak/data/import
-  replicaCount: 2
+  replicaCount: 1
 
 authDb:
   fullnameOverride: auth-db
@@ -81,6 +79,7 @@ authDb:
     password: metrics # implicit requirement for metrics container
     repmgrPassword: repmgr # implicit requirement for rolling updates
     database: keycloak
+    replicaCount: 1
   pgpool:
     adminUsername: admin
     adminPassword: admin
@@ -92,9 +91,8 @@ authDb:
     loadBalancerIP: ""
     loadBalancerSourceRanges: [ ]
   persistence:
-    enabled: false
+    enabled: true
     size: 10Gi
-    storageClass: default
 
 dataDb:
   fullnameOverride: data-db
@@ -112,8 +110,8 @@ dataDb:
       password: mariabackup
   sidecars:
     - name: sidecar
-      image: s210.dl.hpc.tuwien.ac.at/dbrepo/data-db-sidecar:1.4.1
-      imagePullPolicy: Always
+      image: dbrepo-data-db-sidecar:latest
+      imagePullPolicy: Never
       securityContext:
         runAsUser: 1001
         runAsGroup: 1001
@@ -150,11 +148,9 @@ dataDb:
       persistentVolumeClaim:
         claimName: data-db-shared
   persistence:
-    enabled: false
+    enabled: true
     size: 10Gi
-    storageClass: default
-    sharedStorageClass: default
-  replicaCount: 3 # uneven
+  replicaCount: 1 # uneven
 
 searchdb:
   fullnameOverride: search-db
@@ -165,12 +161,13 @@ searchdb:
   password: admin
   clusterName: search-db
   masterService: search-db
+  replicas: 1
   image:
     debug: false
   sysctlInit:
     enabled: true
   persistence:
-    enabled: false
+    enabled: true
     size: 10Gi
   service:
     type: ClusterIP
@@ -237,8 +234,8 @@ searchDbDashboard:
   opensearchHosts: http://search-db:9200
   extraInitContainers:
     - name: init
-      image: s210.dl.hpc.tuwien.ac.at/dbrepo/search-db-init:1.4.1
-      imagePullPolicy: Always
+      image: dbrepo-search-db-init:latest
+      imagePullPolicy: Never
       env:
         - name: OPENSEARCH_HOST
           value: http://search-db:9200
@@ -253,11 +250,11 @@ searchDbDashboard:
   extraVolumes:
     - name: tls
       secret:
-        secretName: dbrepo-ingress-tls-cert
+        secretName: ingress-cert
     - name: config
       secret:
         secretName: search-db-dashboard-secret
-  replicaCount: 2
+  replicaCount: 1
 
 uploadService:
   enabled: true
@@ -265,7 +262,7 @@ uploadService:
     registry: docker.io
     repository: tusproject/tusd
     tag: v1.12
-  replicaCount: 2
+  replicaCount: 1
 
 brokerService:
   fullnameOverride: broker-service
@@ -284,7 +281,7 @@ brokerService:
       enabled: false
       sslOptionsVerify: true
       failIfNoPeerCert: true
-      existingSecret: dbrepo-ingress-tls-cert
+      existingSecret: ingress-cert
     username: broker
     password: broker
   extraConfiguration: |-
@@ -330,29 +327,24 @@ brokerService:
   persistence:
     enabled: false
     size: 5Gi
-    storageClass: default
   service:
     type: ClusterIP
     # loadBalancerIP:
-  replicaCount: 3
+  replicaCount: 1
 
 analyseService:
   enabled: true
   image:
-    registry: s210.dl.hpc.tuwien.ac.at
-    repository: dbrepo/analyse-service
-    tag: "1.4.1"
-    pullPolicy: Always
+    name: dbrepo-analyse-service:latest
+    pullPolicy: Never
     debug: false
-  replicaCount: 2
+  replicaCount: 1
 
 metadataService:
   enabled: true
   image:
-    registry: s210.dl.hpc.tuwien.ac.at
-    repository: dbrepo/metadata-service
-    tag: "1.4.1"
-    pullPolicy: Always
+    name: dbrepo-metadata-service:latest
+    pullPolicy: Never
     debug: false
   adminEmail: noreply@example.com
   authService:
@@ -370,39 +362,35 @@ metadataService:
     mirror: 60
     obtainMetadata: 60
     deleteStaleQueries: 60
-  replicaCount: 2
+  replicaCount: 1
 
 dataService:
   enabled: true
   image:
-    registry: s210.dl.hpc.tuwien.ac.at
-    repository: dbrepo/data-service
-    tag: "1.4.1"
-    pullPolicy: Always
+    name: dbrepo-data-service:latest
+    pullPolicy: Never
     debug: false
   jwt:
     pubkey: "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB"
   consumerConcurrentMin: 1
   consumerConcurrentMax: 5
   requeueRejected: false
-  replicaCount: 2
+  replicaCount: 1
 
 searchService:
   enabled: true
   image:
-    registry: s210.dl.hpc.tuwien.ac.at
-    repository: dbrepo/search-service
-    tag: "1.4.1"
-    pullPolicy: Always
+    name: dbrepo-search-service:latest
+    pullPolicy: Never
     debug: false
-  replicaCount: 2
+  replicaCount: 1
 
 storageservice:
   master:
     enabled: true
   filer:
     enabled: true
-    replicas: 2
+    replicas: 1
     enablePVC: false
     storage: 25Gi
     s3:
@@ -414,7 +402,7 @@ storageservice:
       existingConfigSecret: seaweedfs-s3-secret
   volume:
     enabled: true
-    replicas: 2
+    replicas: 1
   s3:
     enabled: true
     replicas: 2
@@ -463,14 +451,13 @@ logservice:
 ui:
   enabled: true
   image:
-    registry: s210.dl.hpc.tuwien.ac.at
-    repository: dbrepo/ui
-    tag: "1.4.1"
-    pullPolicy: Always
+    name: dbrepo-ui:latest
+    pullPolicy: Never
+    debug: false
   public:
     api:
-      client: http://example.com
-      server: http://example.com
+      client: {}
+      server: {}
     title: "Database Repository"
     logo: "/logo.svg"
     icon: "/favicon.ico"
@@ -489,7 +476,7 @@ ui:
     doi:
       enabled: false
       endpoint: https://doi.org
-  replicaCount: 2
+  replicaCount: 1
   extraVolumes: [ ]
   #  - name: images-map
   #    configMap:
@@ -500,115 +487,32 @@ ui:
   #    subPath: logo.svg
 
 ingress:
-  enabled: false
-  data:
-    - name: ingress
-      annotations:
-        cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
-      hosts:
-        - paths:
-            - path: /api/analyse
-              pathType: Prefix
-              serviceName: analyse-service
-              portNumber: 80
-            - path: /api/search
-              pathType: Prefix
-              serviceName: search-service
-              portNumber: 80
-            - path: /api
-              pathType: Prefix
-              serviceName: metadata-service
-              portNumber: 80
-            - path: /
-              pathType: Prefix
-              serviceName: ui
-              portNumber: 80
-      tls:
-        - secretName: dbrepo-ingress-tls-cert
-    - name: ingress-upload
-      annotations:
-        cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
-        nginx.ingress.kubernetes.io/proxy-body-size: 2G
-      hosts:
-        - paths:
-            - path: /api/upload
-              pathType: Prefix
-              serviceName: upload-service
-              portNumber: 80
-      tls:
-        - secretName: dbrepo-ingress-tls-cert
-    - name: ingress-secure
-      annotations:
-        cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
-        nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-        nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
-      hosts:
-        - paths:
-            - path: /admin/dashboard
-              pathType: Prefix
-              serviceName: search-db-dashboard
-              portNumber: 5601
-      tls:
-        - secretName: dbrepo-ingress-tls-cert
-    - name: ingress-api
-      annotations:
-        cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
-        nginx.ingress.kubernetes.io/use-regex: "true"
-        nginx.ingress.kubernetes.io/rewrite-target: /api/$1
-      hosts:
-        - paths:
-            - path: /api/broker/(.*)
-              pathType: ImplementationSpecific
-              serviceName: broker-service
-              portNumber: 15672
-      tls:
-        - secretName: dbrepo-ingress-tls-cert
-    - name: ingress-root
-      annotations:
-        cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
-        nginx.ingress.kubernetes.io/use-regex: "true"
-        nginx.ingress.kubernetes.io/rewrite-target: /$1
-      hosts:
-        - paths:
-            - path: /admin/broker/(.*)
-              pathType: ImplementationSpecific
-              serviceName: broker-service
-              portNumber: 15672
-            - path: /admin/storage
-              pathType: ImplementationSpecific
-              serviceName: storageservice-s3
-              portNumber: 9000
-      tls:
-        - secretName: dbrepo-ingress-tls-cert
-    - name: ingress-root-secure
-      annotations:
-        cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
-        nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-        nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
-        nginx.ingress.kubernetes.io/use-regex: "true"
-        nginx.ingress.kubernetes.io/rewrite-target: /$1
-      hosts:
-        - paths:
-            - path: /api/auth/(.*)
-              pathType: ImplementationSpecific
-              serviceName: auth-service
-              portNumber: 443
-            - path: /retrieve/(.*)
-              pathType: ImplementationSpecific
-              serviceName: search-db
-              portNumber: 9200
-      tls:
-        - secretName: dbrepo-ingress-tls-cert
-    - name: ingress-pid
-      annotations:
-        cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
-        nginx.ingress.kubernetes.io/use-regex: "true"
-        nginx.ingress.kubernetes.io/rewrite-target: /api/pid/$1
-      hosts:
-        - paths:
-            - path: /pid/(.*)
-              pathType: ImplementationSpecific
-              serviceName: metadata-service
-              portNumber: 80
-      tls:
-        - secretName: dbrepo-ingress-tls-cert
+  enabled: true
+  className: nginx
+  tls:
+    enabled: true
+    secretName: ingress-cert
+  annotations:
+    basic: {}
+#      cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
+    secure:
+#      cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
+      nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+      nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    upload:
+#      cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
+      nginx.ingress.kubernetes.io/proxy-body-size: 2G
+    rewriteApi:
+#      cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
+      nginx.ingress.kubernetes.io/use-regex: "true"
+      nginx.ingress.kubernetes.io/rewrite-target: /api/$1
+    rewriteRoot:
+#      cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
+      nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+      nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+      nginx.ingress.kubernetes.io/use-regex: "true"
+      nginx.ingress.kubernetes.io/rewrite-target: /$1
+    rewritePid:
+#      cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
+      nginx.ingress.kubernetes.io/use-regex: "true"
+      nginx.ingress.kubernetes.io/rewrite-target: /api/pid/$1

@@ -17,9 +17,9 @@ helm install my-release "oci://s210.dl.hpc.tuwien.ac.at/dbrepo/helm/dbrepo" --va
 
 * Kubernetes 1.24+
 * Kubernetes 3.8.0+
-* PV provisioner support in the underlying infrastructure
-* Ingress support in the underlying infrastructure
-* TLS certificate provisioner support in the underlying infrastructure, e.g. [cert-manager](https://cert-manager.io/)
+* Optional PV provisioner support in the underlying infrastructure (for persistence).
+* Optional ingress support in the underlying infrastructure: e.g. [NGINX](https://docs.nginx.com/nginx-ingress-controller/) (for the UI).
+* Optional certificate provisioner support in the underlying infrastructure: e.g. [cert-manager](https://cert-manager.io/) (for production use).
 
 ## Installing the Chart
 

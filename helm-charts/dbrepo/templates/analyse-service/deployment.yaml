@@ -4,14 +4,14 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: analyse-service
-  namespace: {{ $.Values.namespace }}
+  namespace: {{ .Values.namespace }}
   labels:
     app: analyse-service
     service: analyse-service
 spec:
   replicas: {{ .Values.analyseService.replicaCount }}
   strategy:
-    type: {{ $.Values.strategyType }}
+    type: {{ .Values.strategyType }}
   selector:
     matchLabels:
       app: analyse-service
@@ -29,7 +29,7 @@ spec:
         runAsGroup: 1000
       containers:
         - name: analyse-service
-          image: {{ printf "%s/%s:%s" .Values.analyseService.image.registry .Values.analyseService.image.repository .Values.analyseService.image.tag }}
+          image: {{ .Values.analyseService.image.name }}
           imagePullPolicy: {{ .Values.analyseService.image.pullPolicy | default "IfNotPresent" }}
           ports:
             - containerPort: 5000

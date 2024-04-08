@@ -11,7 +11,7 @@ metadata:
 spec:
   replicas: {{ .Values.ui.replicaCount }}
   strategy:
-    type: {{ $.Values.strategyType }}
+    type: {{ .Values.strategyType }}
   selector:
     matchLabels:
       app: ui
@@ -29,7 +29,7 @@ spec:
         runAsGroup: 1000
       containers:
         - name: ui
-          image: {{ printf "%s/%s:%s" .Values.ui.image.registry .Values.ui.image.repository .Values.ui.image.tag }}
+          image: {{ .Values.ui.image.name }}
           imagePullPolicy: {{ .Values.ui.image.pullPolicy | default "IfNotPresent" }}
           ports:
             - containerPort: 3000
