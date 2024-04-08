@@ -1,0 +1,5 @@
+# generated
+*.crt
+*.key
+*.srl
+*.csr

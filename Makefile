@@ -1,6 +1,8 @@
 .PHONY: all
 
 TAG ?= latest
+APP_VERSION ?= 1.4.2
+CHART_VERSION ?= 1.4.2
 REPOSITORY_1_URL ?= docker.io/dbrepo
 REPOSITORY_2_URL ?= s210.dl.hpc.tuwien.ac.at/dbrepo
 
@@ -230,6 +232,55 @@ teardown:
 
 build-api:
 	bash .docs/.swagger/swagger-generate.sh
+
+helm-build:
+	cp ./helm-charts/dbrepo/Chart.tpl.yaml ./helm-charts/dbrepo/Chart.yaml
+	sed -i -e "s/__CHART_VERSION__/\"${CHART_VERSION}\"/g" ./helm-charts/dbrepo/Chart.yaml
+	sed -i -e "s/__APP_VERSION__/\"${APP_VERSION}\"/g" ./helm-charts/dbrepo/Chart.yaml
+	#helm dependency update ./helm-charts/dbrepo
+	helm package ./helm-charts/dbrepo --destination ./build
+
+cluster-start:
+	minikube start --driver="docker" --memory="12g" --cpus="8" # 2 CPUs for Control Plane + 6
+	minikube addons disable metrics-server
+	minikube addons enable ingress && minikube addons enable dashboard
+	./helm-charts/dbrepo/hack/add-hosts.sh
+	#CERT_MANAGER_VERSION=1.14.4 ./helm-charts/dbrepo/hack/install-cert-manager.sh
+
+cluster-test: cluster-start cluster-image-pull cluster-install
+	bash ./helm-charts/dbrepo/test.sh
+	minikube stop
+
+cluster-stop:
+	minikube stop
+
+cluster-image-pull:
+	docker image save -o ui.tar dbrepo-ui:latest
+	docker image save -o data-service.tar dbrepo-data-service:latest
+	docker image save -o search-db-init.tar dbrepo-search-db-init:latest
+	docker image save -o search-service.tar dbrepo-search-service:latest
+	docker image save -o analyse-service.tar dbrepo-analyse-service:latest
+	docker image save -o data-db-sidecar.tar dbrepo-data-db-sidecar:latest
+	docker image save -o metadata-service.tar dbrepo-metadata-service:latest
+	echo "[INFO] Saved local images"
+	minikube image load ui.tar
+	minikube image load data-service.tar
+	minikube image load search-db-init.tar
+	minikube image load search-service.tar
+	minikube image load analyse-service.tar
+	minikube image load data-db-sidecar.tar
+	minikube image load metadata-service.tar
+	echo "[INFO] Imported local images"
+	rm -f ./ui.tar ./data-service.tar ./search-service.tar ./analyse-service.tar ./data-db-sidecar.tar ./metadata-service.tar
+
+cluster-install: helm-build
+	helm upgrade --install dbrepo -n dbrepo ./build/dbrepo-${CHART_VERSION}.tgz --create-namespace --cleanup-on-fail
+
+cluster-uninstall:
+	helm uninstall -n dbrepo dbrepo
+
+cluster-dashboard:
+	minikube dashboard
 
 docs:
 	bash ./build-docs.sh
