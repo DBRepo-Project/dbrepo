@@ -241,7 +241,7 @@ helm-build:
 	helm package ./helm-charts/dbrepo --destination ./build
 
 cluster-start:
-	minikube start --driver="kvm2" --memory="24g" --cpus="8" # 2 CPUs for Control Plane + 6
+	minikube start --driver="docker" --memory="24g" --cpus="8" # 2 CPUs for Control Plane + 6
 	minikube addons disable metrics-server
 	minikube addons enable ingress && minikube addons enable dashboard
 	./helm-charts/dbrepo/hack/add-hosts.sh
