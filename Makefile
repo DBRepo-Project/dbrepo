@@ -241,11 +241,15 @@ helm-build:
 	helm package ./helm-charts/dbrepo --destination ./build
 
 cluster-start:
-	minikube start --driver="docker" --memory="24g" --cpus="8" # 2 CPUs for Control Plane + 6
+	minikube start --driver="docker" --memory="12g" --cpus="8" # 2 CPUs for Control Plane + 6
 	minikube addons disable metrics-server
 	minikube addons enable ingress && minikube addons enable dashboard
 	./helm-charts/dbrepo/hack/add-hosts.sh
 	#CERT_MANAGER_VERSION=1.14.4 ./helm-charts/dbrepo/hack/install-cert-manager.sh
+
+cluster-test: cluster-start cluster-image-pull cluster-install
+	bash ./helm-charts/dbrepo/test.sh
+	minikube stop
 
 cluster-stop:
 	minikube stop

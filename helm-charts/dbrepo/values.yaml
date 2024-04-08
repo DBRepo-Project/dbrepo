@@ -30,8 +30,7 @@ metadataDb:
     loadBalancerIP: ""
     loadBalancerSourceRanges: [ ]
   persistence:
-    enabled: false
-    size: 10Gi
+    enabled: true
   replicaCount: 1 # uneven 3,5,7
 
 authService:
@@ -92,7 +91,7 @@ authDb:
     loadBalancerIP: ""
     loadBalancerSourceRanges: [ ]
   persistence:
-    enabled: false
+    enabled: true
     size: 10Gi
 
 dataDb:
@@ -149,7 +148,7 @@ dataDb:
       persistentVolumeClaim:
         claimName: data-db-shared
   persistence:
-    enabled: false
+    enabled: true
     size: 10Gi
   replicaCount: 1 # uneven
 
@@ -168,7 +167,7 @@ searchdb:
   sysctlInit:
     enabled: true
   persistence:
-    enabled: false
+    enabled: true
     size: 10Gi
   service:
     type: ClusterIP
@@ -491,7 +490,7 @@ ingress:
   enabled: true
   className: nginx
   tls:
-    enabled: false
+    enabled: true
     secretName: ingress-cert
   annotations:
     basic: {}
