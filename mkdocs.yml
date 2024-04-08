@@ -36,6 +36,10 @@ nav:
       - Authentication Service: usage-authentication.md
       - Storage Service: usage-storage.md
       - Upload Service: usage-upload.md
+  - Development:
+    - Overview: dev-overview.md
+    - Application Guide: dev-guide-app.md
+    - Infrastructure Guide: dev-guide-infra.md
   - publications.md
   - contact.md
 extra_css:
@@ -86,6 +90,8 @@ markdown_extensions:
   - admonition
   - pymdownx.details
   - pymdownx.superfences
+  - pymdownx.tasklist:
+      custom_checkbox: true
   - pymdownx.tabbed:
       alternate_style: true
   - toc:

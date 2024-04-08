@@ -3,7 +3,6 @@ kind: PersistentVolumeClaim
 metadata:
   name: data-db-shared
 spec:
-  storageClassName: {{ .Values.dataDb.persistence.sharedStorageClass }}
   accessModes:
     - ReadWriteMany
   resources:

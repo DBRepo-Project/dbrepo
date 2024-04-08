@@ -1,10 +1,6 @@
-1. Get the application URL by running these commands:
 {{- if .Values.ingress.enabled }}
-{{- range $ingress := .Values.ingress.data }}
-{{- range $host := $ingress.hosts }}
-  {{- range .paths }}
-  http{{ if $ingress.tls }}s{{ end }}://{{ $host.host }}{{ .path }}
-  {{- end }}
-{{- end }}
-{{- end }}
+1. Get the application URL by running these commands:
+  https://{{ .Values.hostname }}
+{{- else }}
+Enable ingress to access the UI with `ingress.enabled: true`.
 {{- end }}

@@ -4,14 +4,14 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: data-service
-  namespace: {{ $.Values.namespace }}
+  namespace: {{ .Values.namespace }}
   labels:
     app: data-service
     service: data-service
 spec:
-  replicas: {{ .Values.metadataService.replicaCount }}
+  replicas: {{ .Values.dataService.replicaCount }}
   strategy:
-    type: {{ $.Values.strategyType }}
+    type: {{ .Values.strategyType }}
   selector:
     matchLabels:
       app: data-service
@@ -28,7 +28,7 @@ spec:
         runAsGroup: 1000
       containers:
         - name: data-service
-          image: {{ printf "%s/%s:%s" .Values.dataService.image.registry .Values.dataService.image.repository .Values.dataService.image.tag }}
+          image: {{ .Values.dataService.image.name }}
           imagePullPolicy: {{ .Values.dataService.image.pullPolicy | default "IfNotPresent" }}
           ports:
             - containerPort: 9093

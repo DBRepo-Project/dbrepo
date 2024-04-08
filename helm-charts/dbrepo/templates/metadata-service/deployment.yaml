@@ -4,14 +4,14 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: metadata-service
-  namespace: {{ $.Values.namespace }}
+  namespace: {{ .Values.namespace }}
   labels:
     app: metadata-service
     service: metadata-service
 spec:
   replicas: {{ .Values.metadataService.replicaCount }}
   strategy:
-    type: {{ $.Values.strategyType }}
+    type: {{ .Values.strategyType }}
   selector:
     matchLabels:
       app: metadata-service
@@ -29,7 +29,7 @@ spec:
         runAsGroup: 1000
       containers:
         - name: metadata-service
-          image: {{ printf "%s/%s:%s" .Values.metadataService.image.registry .Values.metadataService.image.repository .Values.metadataService.image.tag }}
+          image: {{ .Values.metadataService.image.name }}
           imagePullPolicy: {{ .Values.metadataService.image.pullPolicy | default "IfNotPresent" }}
           securityContext:
             runAsUser: 1000
