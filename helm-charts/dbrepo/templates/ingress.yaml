@@ -7,10 +7,12 @@ metadata:
   namespace: {{ .Values.namespace }}
 spec:
   ingressClassName: {{ .Values.ingress.className }}
+  {{- if .Values.ingress.tls.enabled }}
   tls:
     - hosts:
         - {{ .Values.hostname }}
-      secretName: dbrepo-ingress-tls-cert
+      secretName: {{ .Values.ingress.tls.secretName }}
+  {{- end }}
   rules:
     - host: {{ .Values.hostname }}
       http:
@@ -48,15 +50,16 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: dbrepo-ingress-upload
-  annotations: {{ toYaml .Values.ingress.annotations.basic | nindent 4 }}
-  {{ toYaml .Values.ingress.annotations.upload | nindent 4 }}
+  annotations: {{ toYaml .Values.ingress.annotations.upload | nindent 4 }}
   namespace: {{ .Values.namespace }}
 spec:
   ingressClassName: {{ .Values.ingress.className }}
+  {{- if .Values.ingress.tls.enabled }}
   tls:
     - hosts:
         - {{ .Values.hostname }}
-      secretName: dbrepo-ingress-tls-cert
+      secretName: {{ .Values.ingress.tls.secretName }}
+  {{- end }}
   rules:
     - host: {{ .Values.hostname }}
       http:
@@ -77,10 +80,12 @@ metadata:
   namespace: {{ .Values.namespace }}
 spec:
   ingressClassName: {{ .Values.ingress.className }}
+  {{- if .Values.ingress.tls.enabled }}
   tls:
     - hosts:
         - {{ .Values.hostname }}
-      secretName: dbrepo-ingress-tls-cert
+      secretName: {{ .Values.ingress.tls.secretName }}
+  {{- end }}
   rules:
     - host: {{ .Values.hostname }}
       http:
@@ -97,15 +102,16 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: dbrepo-ingress-rewrite-api
-  annotations: {{ toYaml .Values.ingress.annotations.secure | nindent 4 }}
-  {{ toYaml .Values.ingress.annotations.rewriteApi | nindent 4 }}
+  annotations: {{ toYaml .Values.ingress.annotations.rewriteApi | nindent 4 }}
   namespace: {{ .Values.namespace }}
 spec:
   ingressClassName: {{ .Values.ingress.className }}
+  {{- if .Values.ingress.tls.enabled }}
   tls:
     - hosts:
         - {{ .Values.hostname }}
-      secretName: dbrepo-ingress-tls-cert
+      secretName: {{ .Values.ingress.tls.secretName }}
+  {{- end }}
   rules:
     - host: {{ .Values.hostname }}
       http:
@@ -126,10 +132,12 @@ metadata:
   namespace: {{ .Values.namespace }}
 spec:
   ingressClassName: {{ .Values.ingress.className }}
+  {{- if .Values.ingress.tls.enabled }}
   tls:
     - hosts:
         - {{ .Values.hostname }}
-      secretName: dbrepo-ingress-tls-cert
+      secretName: {{ .Values.ingress.tls.secretName }}
+  {{- end }}
   rules:
     - host: {{ .Values.hostname }}
       http:
@@ -153,15 +161,16 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: dbrepo-ingress-rewrite-root-secure
-  annotations: {{ toYaml .Values.ingress.annotations.secure | nindent 4 }}
-  {{ toYaml .Values.ingress.annotations.rewriteRoot | nindent 4 }}
+  annotations: {{ toYaml .Values.ingress.annotations.rewriteRoot | nindent 4 }}
   namespace: {{ .Values.namespace }}
 spec:
   ingressClassName: {{ .Values.ingress.className }}
+  {{- if .Values.ingress.tls.enabled }}
   tls:
     - hosts:
         - {{ .Values.hostname }}
-      secretName: dbrepo-ingress-tls-cert
+      secretName: {{ .Values.ingress.tls.secretName }}
+  {{- end }}
   rules:
     - host: {{ .Values.hostname }}
       http:
@@ -182,10 +191,12 @@ metadata:
   namespace: {{ .Values.namespace }}
 spec:
   ingressClassName: {{ .Values.ingress.className }}
+  {{- if .Values.ingress.tls.enabled }}
   tls:
     - hosts:
         - {{ .Values.hostname }}
-      secretName: dbrepo-ingress-tls-cert
+      secretName: {{ .Values.ingress.tls.secretName }}
+  {{- end }}
   rules:
     - host: {{ .Values.hostname }}
       http:

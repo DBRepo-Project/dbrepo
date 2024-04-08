@@ -10,7 +10,7 @@ metadata:
 spec:
   type: ClusterIP
   ports:
-    - name: "nuxt"
+    - name: ""
       port: 80
       targetPort: 3000
       protocol: TCP

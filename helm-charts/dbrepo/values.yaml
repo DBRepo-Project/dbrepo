@@ -1,6 +1,6 @@
 namespace: dbrepo
 
-hostname: localhost
+hostname: dbrepo.app
 
 strategyType: RollingUpdate
 
@@ -161,6 +161,7 @@ searchdb:
   password: admin
   clusterName: search-db
   masterService: search-db
+  replicas: 1
   image:
     debug: false
   sysctlInit:
@@ -253,7 +254,7 @@ searchDbDashboard:
     - name: config
       secret:
         secretName: search-db-dashboard-secret
-  replicaCount: 2
+  replicaCount: 1
 
 uploadService:
   enabled: true
@@ -261,7 +262,7 @@ uploadService:
     registry: docker.io
     repository: tusproject/tusd
     tag: v1.12
-  replicaCount: 2
+  replicaCount: 1
 
 brokerService:
   fullnameOverride: broker-service
@@ -488,20 +489,28 @@ ui:
 ingress:
   enabled: true
   className: nginx
+  tls:
+    enabled: true
+    secretName: ingress-tls-cert
   annotations:
-    basic:
-      cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
+    basic: {}
+#      cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
     secure:
+#      cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
       nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
       nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
     upload:
+#      cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
       nginx.ingress.kubernetes.io/proxy-body-size: 2G
     rewriteApi:
+#      cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
       nginx.ingress.kubernetes.io/use-regex: "true"
       nginx.ingress.kubernetes.io/rewrite-target: /api/$1
     rewriteRoot:
+#      cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
       nginx.ingress.kubernetes.io/use-regex: "true"
       nginx.ingress.kubernetes.io/rewrite-target: /$1
     rewritePid:
+#      cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
       nginx.ingress.kubernetes.io/use-regex: "true"
       nginx.ingress.kubernetes.io/rewrite-target: /api/pid/$1

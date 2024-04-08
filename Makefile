@@ -241,9 +241,9 @@ helm-build:
 	helm package ./helm-charts/dbrepo --destination ./build
 
 cluster-start:
-	minikube start --memory="8g" --cpus="8"
+	minikube start --driver="kvm2" --memory="24g" --cpus="8" # 2 CPUs for Control Plane + 6
 	minikube addons disable metrics-server
-	minikube addons enable ingress
+	minikube addons enable ingress && minikube addons enable dashboard
 	#CERT_MANAGER_VERSION=1.14.4 ./helm-charts/dbrepo/hack/install-cert-manager.sh
 
 cluster-stop:
