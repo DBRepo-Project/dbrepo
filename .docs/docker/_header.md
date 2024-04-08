@@ -2,21 +2,20 @@
 
 * **Maintained by**:
 
-  [the DBRepo Maintainers](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/graphs/dev)
+  [the DBRepo Maintainers](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/graphs/master)
 
 * **Where to get help**:
 
-  [the official documentation](https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/latest/),
+  [the official documentation](https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/),
 
 # Supported tags
 
-* [`1.3`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/blob/master/dbrepo-DIR/Dockerfile/)
-* [`latest`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/blob/dev/dbrepo-DIR/Dockerfile/)
+* [`1.4.x`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/blob/release-__APP_VERSION__/dbrepo-DIR/Dockerfile/)
+* [`latest`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/blob/release-latest/dbrepo-DIR/Dockerfile/)
 
 # Non-supported tags
 
-* `1.2`
-* `1.1`
+* [`1.3.0`](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/blob/release-1.3.0/dbrepo-DIR/Dockerfile/)
 
 # Quick reference (cont.)
 
@@ -30,8 +29,8 @@
 
 * **Source of this description:**
 
-  [docs repo's `.docs/docker` directory](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tree/dev/.docs/docker)
-  ([history](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/commits/dev/.docs/docker))
+  [docs repo's `.docs/docker` directory](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/tree/release-__APP_VERSION__/.docs/docker)
+  ([history](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/commits/release-__APP_VERSION__/.docs/docker))
 
 # What is DBRepo?
 
