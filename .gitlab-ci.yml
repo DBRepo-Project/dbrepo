@@ -522,9 +522,9 @@ docs-registry:
     refs:
       - /^release-.*/
   script:
-    - apk add sed
+    - apt-get update && apt-get install -y sed
     - pip install -r ./requirements.txt
-    - find ./docs -type f -exec sed -i -e "s/__APP_VERSION__/${APP_VERSION}/g" {} \;
+    - find .docs -type f -exec sed -i -e "s/__APP_VERSION__/${APP_VERSION}/g" {} \;
     - python3 .docs/docker/release.py
 
 release-images:
