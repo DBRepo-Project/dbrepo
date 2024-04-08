@@ -1,6 +1,5 @@
 .PHONY: all
 
-TAG ?= latest
 APP_VERSION ?= 1.4.2
 CHART_VERSION ?= 1.4.2
 REPOSITORY_1_URL ?= docker.io/dbrepo
@@ -47,94 +46,94 @@ build-helm:
 tag: tag-analyse-service tag-authentication-service tag-metadata-db tag-ui tag-metadata-service tag-data-service tag-search-db tag-search-db-init tag-search-service tag-data-db-sidecar
 
 tag-analyse-service:
-	docker tag dbrepo-analyse-service:latest "${REPOSITORY_1_URL}/analyse-service:${TAG}"
-	docker tag dbrepo-analyse-service:latest "${REPOSITORY_2_URL}/analyse-service:${TAG}"
+	docker tag dbrepo-analyse-service:latest "${REPOSITORY_1_URL}/analyse-service:${APP_VERSION}"
+	docker tag dbrepo-analyse-service:latest "${REPOSITORY_2_URL}/analyse-service:${APP_VERSION}"
 
 tag-authentication-service:
-	docker tag dbrepo-authentication-service:latest "${REPOSITORY_1_URL}/authentication-service:${TAG}"
-	docker tag dbrepo-authentication-service:latest "${REPOSITORY_2_URL}/authentication-service:${TAG}"
+	docker tag dbrepo-authentication-service:latest "${REPOSITORY_1_URL}/authentication-service:${APP_VERSION}"
+	docker tag dbrepo-authentication-service:latest "${REPOSITORY_2_URL}/authentication-service:${APP_VERSION}"
 
 tag-metadata-db:
-	docker tag dbrepo-metadata-db:latest "${REPOSITORY_1_URL}/metadata-db:${TAG}"
-	docker tag dbrepo-metadata-db:latest "${REPOSITORY_2_URL}/metadata-db:${TAG}"
+	docker tag dbrepo-metadata-db:latest "${REPOSITORY_1_URL}/metadata-db:${APP_VERSION}"
+	docker tag dbrepo-metadata-db:latest "${REPOSITORY_2_URL}/metadata-db:${APP_VERSION}"
 
 tag-ui:
-	docker tag dbrepo-ui:latest "${REPOSITORY_1_URL}/ui:${TAG}"
-	docker tag dbrepo-ui:latest "${REPOSITORY_2_URL}/ui:${TAG}"
+	docker tag dbrepo-ui:latest "${REPOSITORY_1_URL}/ui:${APP_VERSION}"
+	docker tag dbrepo-ui:latest "${REPOSITORY_2_URL}/ui:${APP_VERSION}"
 
 tag-data-service:
-	docker tag dbrepo-data-service:latest "${REPOSITORY_1_URL}/data-service:${TAG}"
-	docker tag dbrepo-data-service:latest "${REPOSITORY_2_URL}/data-service:${TAG}"
+	docker tag dbrepo-data-service:latest "${REPOSITORY_1_URL}/data-service:${APP_VERSION}"
+	docker tag dbrepo-data-service:latest "${REPOSITORY_2_URL}/data-service:${APP_VERSION}"
 
 tag-metadata-service:
-	docker tag dbrepo-metadata-service:latest "${REPOSITORY_1_URL}/metadata-service:${TAG}"
-	docker tag dbrepo-metadata-service:latest "${REPOSITORY_2_URL}/metadata-service:${TAG}"
+	docker tag dbrepo-metadata-service:latest "${REPOSITORY_1_URL}/metadata-service:${APP_VERSION}"
+	docker tag dbrepo-metadata-service:latest "${REPOSITORY_2_URL}/metadata-service:${APP_VERSION}"
 
 tag-search-db:
-	docker tag dbrepo-search-db:latest "${REPOSITORY_1_URL}/search-db:${TAG}"
-	docker tag dbrepo-search-db:latest "${REPOSITORY_2_URL}/search-db:${TAG}"
+	docker tag dbrepo-search-db:latest "${REPOSITORY_1_URL}/search-db:${APP_VERSION}"
+	docker tag dbrepo-search-db:latest "${REPOSITORY_2_URL}/search-db:${APP_VERSION}"
 
 tag-data-db-sidecar:
-	docker tag dbrepo-data-db-sidecar:latest "${REPOSITORY_1_URL}/data-db-sidecar:${TAG}"
-	docker tag dbrepo-data-db-sidecar:latest "${REPOSITORY_2_URL}/data-db-sidecar:${TAG}"
+	docker tag dbrepo-data-db-sidecar:latest "${REPOSITORY_1_URL}/data-db-sidecar:${APP_VERSION}"
+	docker tag dbrepo-data-db-sidecar:latest "${REPOSITORY_2_URL}/data-db-sidecar:${APP_VERSION}"
 
 tag-search-db-init:
-	docker tag dbrepo-search-db-init:latest "${REPOSITORY_1_URL}/search-db-init:${TAG}"
-	docker tag dbrepo-search-db-init:latest "${REPOSITORY_2_URL}/search-db-init:${TAG}"
+	docker tag dbrepo-search-db-init:latest "${REPOSITORY_1_URL}/search-db-init:${APP_VERSION}"
+	docker tag dbrepo-search-db-init:latest "${REPOSITORY_2_URL}/search-db-init:${APP_VERSION}"
 
 tag-search-service:
-	docker tag dbrepo-search-service:latest "${REPOSITORY_1_URL}/search-service:${TAG}"
-	docker tag dbrepo-search-service:latest "${REPOSITORY_2_URL}/search-service:${TAG}"
+	docker tag dbrepo-search-service:latest "${REPOSITORY_1_URL}/search-service:${APP_VERSION}"
+	docker tag dbrepo-search-service:latest "${REPOSITORY_2_URL}/search-service:${APP_VERSION}"
 
 tag-storage-service-init:
-	docker tag dbrepo-storage-service-init:latest "${REPOSITORY_1_URL}/storage-service-init:${TAG}"
-	docker tag dbrepo-storage-service-init:latest "${REPOSITORY_2_URL}/storage-service-init:${TAG}"
+	docker tag dbrepo-storage-service-init:latest "${REPOSITORY_1_URL}/storage-service-init:${APP_VERSION}"
+	docker tag dbrepo-storage-service-init:latest "${REPOSITORY_2_URL}/storage-service-init:${APP_VERSION}"
 
 release: build-docker tag release-analyse-service release-authentication-service release-metadata-db release-ui release-metadata-service release-data-service release-search-db release-search-db-init release-search-service release-data-db-sidecar release-storage-service-init
 
 release-analyse-service: tag-analyse-service
-	docker push "${REPOSITORY_1_URL}/analyse-service:${TAG}"
-	docker push "${REPOSITORY_2_URL}/analyse-service:${TAG}"
+	docker push "${REPOSITORY_1_URL}/analyse-service:${APP_VERSION}"
+	docker push "${REPOSITORY_2_URL}/analyse-service:${APP_VERSION}"
 
 release-authentication-service: tag-authentication-service
-	docker push "${REPOSITORY_1_URL}/authentication-service:${TAG}"
-	docker push "${REPOSITORY_2_URL}/authentication-service:${TAG}"
+	docker push "${REPOSITORY_1_URL}/authentication-service:${APP_VERSION}"
+	docker push "${REPOSITORY_2_URL}/authentication-service:${APP_VERSION}"
 
 release-metadata-db: tag-metadata-db
-	docker push "${REPOSITORY_1_URL}/metadata-db:${TAG}"
-	docker push "${REPOSITORY_2_URL}/metadata-db:${TAG}"
+	docker push "${REPOSITORY_1_URL}/metadata-db:${APP_VERSION}"
+	docker push "${REPOSITORY_2_URL}/metadata-db:${APP_VERSION}"
 
 release-ui: tag-ui
-	docker push "${REPOSITORY_1_URL}/ui:${TAG}"
-	docker push "${REPOSITORY_2_URL}/ui:${TAG}"
+	docker push "${REPOSITORY_1_URL}/ui:${APP_VERSION}"
+	docker push "${REPOSITORY_2_URL}/ui:${APP_VERSION}"
 
 release-data-service: tag-data-service
-	docker push "${REPOSITORY_1_URL}/data-service:${TAG}"
-	docker push "${REPOSITORY_2_URL}/data-service:${TAG}"
+	docker push "${REPOSITORY_1_URL}/data-service:${APP_VERSION}"
+	docker push "${REPOSITORY_2_URL}/data-service:${APP_VERSION}"
 
 release-search-db: tag-search-db
-	docker push "${REPOSITORY_1_URL}/search-db:${TAG}"
-	docker push "${REPOSITORY_2_URL}/search-db:${TAG}"
+	docker push "${REPOSITORY_1_URL}/search-db:${APP_VERSION}"
+	docker push "${REPOSITORY_2_URL}/search-db:${APP_VERSION}"
 
 release-search-db-init: tag-search-db-init
-	docker push "${REPOSITORY_1_URL}/search-db-init:${TAG}"
-	docker push "${REPOSITORY_2_URL}/search-db-init:${TAG}"
+	docker push "${REPOSITORY_1_URL}/search-db-init:${APP_VERSION}"
+	docker push "${REPOSITORY_2_URL}/search-db-init:${APP_VERSION}"
 
 release-data-db-sidecar: tag-data-db-sidecar
-	docker push "${REPOSITORY_1_URL}/data-db-sidecar:${TAG}"
-	docker push "${REPOSITORY_2_URL}/data-db-sidecar:${TAG}"
+	docker push "${REPOSITORY_1_URL}/data-db-sidecar:${APP_VERSION}"
+	docker push "${REPOSITORY_2_URL}/data-db-sidecar:${APP_VERSION}"
 
 release-metadata-service: tag-metadata-service
-	docker push "${REPOSITORY_1_URL}/metadata-service:${TAG}"
-	docker push "${REPOSITORY_2_URL}/metadata-service:${TAG}"
+	docker push "${REPOSITORY_1_URL}/metadata-service:${APP_VERSION}"
+	docker push "${REPOSITORY_2_URL}/metadata-service:${APP_VERSION}"
 
 release-search-service: tag-search-service
-	docker push "${REPOSITORY_1_URL}/search-service:${TAG}"
-	docker push "${REPOSITORY_2_URL}/search-service:${TAG}"
+	docker push "${REPOSITORY_1_URL}/search-service:${APP_VERSION}"
+	docker push "${REPOSITORY_2_URL}/search-service:${APP_VERSION}"
 
 release-storage-service-init: tag-storage-service-init
-	docker push "${REPOSITORY_1_URL}/storage-service-init:${TAG}"
-	docker push "${REPOSITORY_2_URL}/storage-service-init:${TAG}"
+	docker push "${REPOSITORY_1_URL}/storage-service-init:${APP_VERSION}"
+	docker push "${REPOSITORY_2_URL}/storage-service-init:${APP_VERSION}"
 
 test-backend: test-metadata-service test-analyse-service test-data-service test-lib-python
 
