@@ -508,7 +508,9 @@ docs-registry:
     refs:
       - /^release-.*/
   script:
+    - apk add sed
     - pip install -r ./requirements.txt
+    - find ./docs -type f -exec sed -i -e "s/__APP_VERSION__/${APP_VERSION}/g" {} \;
     - python3 .docs/docker/release.py
 
 release-images:
