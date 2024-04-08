@@ -1,6 +1,6 @@
 namespace: dbrepo
 
-hostname: dbrepo.app
+hostname: dbrepo.local
 
 strategyType: RollingUpdate
 
@@ -46,7 +46,7 @@ authService:
   extraStartupArgs: "--import-realm"
   tls:
     enabled: true
-    existingSecret: dbrepo-ingress-tls-cert
+    existingSecret: ingress-cert
     usePem: true
   metrics:
     enabled: true
@@ -80,6 +80,7 @@ authDb:
     password: metrics # implicit requirement for metrics container
     repmgrPassword: repmgr # implicit requirement for rolling updates
     database: keycloak
+    replicaCount: 1
   pgpool:
     adminUsername: admin
     adminPassword: admin
@@ -250,7 +251,7 @@ searchDbDashboard:
   extraVolumes:
     - name: tls
       secret:
-        secretName: dbrepo-ingress-tls-cert
+        secretName: ingress-cert
     - name: config
       secret:
         secretName: search-db-dashboard-secret
@@ -281,7 +282,7 @@ brokerService:
       enabled: false
       sslOptionsVerify: true
       failIfNoPeerCert: true
-      existingSecret: dbrepo-ingress-tls-cert
+      existingSecret: ingress-cert
     username: broker
     password: broker
   extraConfiguration: |-
@@ -456,8 +457,8 @@ ui:
     debug: false
   public:
     api:
-      client: http://example.com
-      server: http://example.com
+      client: {}
+      server: {}
     title: "Database Repository"
     logo: "/logo.svg"
     icon: "/favicon.ico"
@@ -490,8 +491,8 @@ ingress:
   enabled: true
   className: nginx
   tls:
-    enabled: true
-    secretName: ingress-tls-cert
+    enabled: false
+    secretName: ingress-cert
   annotations:
     basic: {}
 #      cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
