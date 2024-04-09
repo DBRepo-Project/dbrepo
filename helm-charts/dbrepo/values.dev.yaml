@@ -1,6 +1,6 @@
 namespace: dbrepo
 
-hostname: example.com
+hostname: dbrepo.local
 
 strategyType: RollingUpdate
 
@@ -234,7 +234,7 @@ searchDbDashboard:
   opensearchHosts: http://search-db:9200
   extraInitContainers:
     - name: init
-      image: s210.dl.hpc.tuwien.ac.at/dbrepo/search-db-init:1.4.2
+      image: dbrepo-search-db-init:latest
       imagePullPolicy: Never
       env:
         - name: OPENSEARCH_HOST
@@ -260,7 +260,7 @@ uploadService:
   enabled: true
   image:
     registry: docker.io
-    repository: docker.io/tusproject/tusd
+    repository: tusproject/tusd
     tag: v1.12
   replicaCount: 1
 
@@ -335,7 +335,7 @@ brokerService:
 analyseService:
   enabled: true
   image:
-    name: s210.dl.hpc.tuwien.ac.at/dbrepo/analyse-service:1.4.2
+    name: dbrepo-analyse-service:latest
     pullPolicy: Never
     debug: false
   replicaCount: 1
@@ -343,7 +343,7 @@ analyseService:
 metadataService:
   enabled: true
   image:
-    name: s210.dl.hpc.tuwien.ac.at/dbrepo/metadata-service:1.4.2
+    name: dbrepo-metadata-service:latest
     pullPolicy: Never
     debug: false
   adminEmail: noreply@example.com
@@ -367,7 +367,7 @@ metadataService:
 dataService:
   enabled: true
   image:
-    name: s210.dl.hpc.tuwien.ac.at/dbrepo/data-service:1.4.2
+    name: dbrepo-data-service:latest
     pullPolicy: Never
     debug: false
   jwt:
@@ -380,7 +380,7 @@ dataService:
 searchService:
   enabled: true
   image:
-    name: s210.dl.hpc.tuwien.ac.at/dbrepo/search-service:1.4.2
+    name: dbrepo-search-service:latest
     pullPolicy: Never
     debug: false
   replicaCount: 1
@@ -418,7 +418,7 @@ storageservice:
 ui:
   enabled: true
   image:
-    name: s210.dl.hpc.tuwien.ac.at/dbrepo/ui:1.4.2
+    name: dbrepo-ui:latest
     pullPolicy: Never
     debug: false
   public:
