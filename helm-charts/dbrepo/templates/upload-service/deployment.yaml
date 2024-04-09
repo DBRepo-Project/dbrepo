@@ -31,6 +31,11 @@ spec:
         - name: upload-service
           image: {{ printf "%s/%s:%s" .Values.uploadService.image.registry .Values.uploadService.image.repository .Values.uploadService.image.tag }}
           imagePullPolicy: {{ .Values.uploadService.image.pullPolicy | default "IfNotPresent" }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
           env:
             - name: AWS_ACCESS_KEY_ID
               valueFrom:

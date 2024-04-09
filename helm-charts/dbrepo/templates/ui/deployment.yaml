@@ -31,6 +31,11 @@ spec:
         - name: ui
           image: {{ .Values.ui.image.name }}
           imagePullPolicy: {{ .Values.ui.image.pullPolicy | default "IfNotPresent" }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
           ports:
             - containerPort: 3000
               protocol: TCP
