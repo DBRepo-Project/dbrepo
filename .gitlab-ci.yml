@@ -583,7 +583,7 @@ release-libs:
   image: docker.io/python:3.11-alpine
   only:
     refs:
-      - /^release-[0-9]+.*/
+      - /^release-.*/
   variables:
     PIPENV_PIPFILE: "./dbrepo-analyse-service/Pipfile"
   script:
@@ -591,8 +591,5 @@ release-libs:
     - pip install pipenv
     - pipenv install gunicorn && pipenv install --dev --system --deploy
     - pip install twine build
-    - 'sed -i -e "s/__APPVERSION__/${APP_VERSION}/g" ./lib/python/pyproject.toml ./lib/python/setup.py ./lib/python/README.md'
-    - python -m build --sdist ./lib/python
-    - python -m build --wheel ./lib/python
-    - cat ${CI_PIPYRC} | base64 -d > .pypirc
-    - python -m twine upload --config-file .pypirc --verbose --repository pypi ./lib/python/dist/dbrepo-*
+    - ./lib/python/package.sh
+    - ./lib/python/release.sh
