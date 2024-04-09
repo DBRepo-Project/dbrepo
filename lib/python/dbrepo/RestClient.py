@@ -1,5 +1,3 @@
-import dataclasses
-import datetime
 import sys
 import os
 import logging
@@ -48,7 +46,7 @@ class RestClient:
         else:
             self.secure = secure
 
-    def _wrapper(self, method: str, url: str, params: [(str,)] = None, payload=None, headers=None,
+    def _wrapper(self, method: str, url: str, params: [(str,)] = None, payload=None, headers: dict = None,
                  force_auth: bool = False, stream: bool = False) -> requests.Response:
         if force_auth and (self.username is None or self.password is None):
             raise AuthenticationError(f"Failed to perform request: authentication required")
@@ -110,7 +108,7 @@ class RestClient:
         response = self._wrapper(method="get", url=url)
         if response.status_code == 200:
             body = response.json()
-            return TypeAdapter(List[User]).validate_json(body)
+            return TypeAdapter(List[User]).validate_python(body)
         raise ResponseCodeError(f'Failed to find users: response code: {response.status_code} is not 200 (OK)')
 
     def get_user(self, user_id: str) -> User:
@@ -272,7 +270,7 @@ class RestClient:
         response = self._wrapper(method="get", url=url)
         if response.status_code == 200:
             body = response.json()
-            return TypeAdapter(List[ContainerBrief]).validate_json(body)
+            return TypeAdapter(List[ContainerBrief]).validate_python(body)
         raise ResponseCodeError(f'Failed to find containers: response code: {response.status_code} is not 200 (OK)')
 
     def get_container(self, container_id: int) -> Container:
@@ -305,7 +303,7 @@ class RestClient:
         response = self._wrapper(method="get", url=url)
         if response.status_code == 200:
             body = response.json()
-            return TypeAdapter(List[Database]).validate_json(body)
+            return TypeAdapter(List[Database]).validate_python(body)
         raise ResponseCodeError(f'Failed to find databases: response code: {response.status_code} is not 200 (OK)')
 
     def get_databases_count(self) -> int:
@@ -470,7 +468,7 @@ class RestClient:
         response = self._wrapper(method="get", url=url)
         if response.status_code == 200:
             body = response.json()
-            return TypeAdapter(List[Table]).validate_json(body)
+            return TypeAdapter(List[Table]).validate_python(body)
         raise ResponseCodeError(f'Failed to find tables: response code: {response.status_code} is not 200 (OK)')
 
     def get_table(self, database_id: int, table_id: int) -> Table:
@@ -534,7 +532,7 @@ class RestClient:
         response = self._wrapper(method="get", url=url)
         if response.status_code == 200:
             body = response.json()
-            return TypeAdapter(List[View]).validate_json(body)
+            return TypeAdapter(List[View]).validate_python(body)
         if response.status_code == 403:
             raise ForbiddenError(f'Failed to find views: not allowed')
         if response.status_code == 404:
@@ -1265,7 +1263,7 @@ class RestClient:
         response = self._wrapper(method="get", url=url)
         if response.status_code == 200:
             body = response.json()
-            return TypeAdapter(List[Query]).validate_json(body)
+            return TypeAdapter(List[Query]).validate_python(body)
         if response.status_code == 403 or response.status_code == 405:
             raise ForbiddenError(f'Failed to find queries: not allowed')
         if response.status_code == 404:
@@ -1393,7 +1391,7 @@ class RestClient:
         response = self._wrapper(method="get", url=url)
         if response.status_code == 200:
             body = response.json()
-            return TypeAdapter(List[License]).validate_json(body)
+            return TypeAdapter(List[License]).validate_python(body)
         raise ResponseCodeError(f'Failed to get licenses: response code: {response.status_code} is not 200 (OK)')
 
     def get_identifiers(self, ld: bool = False) -> List[Identifier] | str:
@@ -1417,7 +1415,7 @@ class RestClient:
                 return response.json()
             else:
                 body = response.json()
-                return TypeAdapter(List[Identifier]).validate_json(body)
+                return TypeAdapter(List[Identifier]).validate_python(body)
         if response.status_code == 406:
             raise MalformedError(
                 f'Failed to get identifiers: accept header must be application/json or application/ld+json')

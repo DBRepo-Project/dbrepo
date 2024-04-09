@@ -1,6 +1,4 @@
-import datetime
 import unittest
-from json import dumps
 
 import requests_mock
 import datetime
@@ -17,7 +15,7 @@ class ContainerTest(unittest.TestCase):
     def test_get_containers_empty_succeeds(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/container', json=dumps([]))
+            mock.get('/api/container', json=[])
             # test
             response = RestClient().get_containers()
             self.assertEqual([], response)
@@ -37,7 +35,7 @@ class ContainerTest(unittest.TestCase):
                                hash="f829dd8a884182d0da846f365dee1221fd16610a14c81b8f9f295ff162749e50")
             ]
             # mock
-            mock.get('/api/container', json=dumps([exp[0].model_dump()]))
+            mock.get('/api/container', json=[exp[0].model_dump()])
             # test
             response = RestClient().get_containers()
             self.assertEqual(exp, response)
