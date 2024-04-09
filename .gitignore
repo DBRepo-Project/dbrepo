@@ -21,7 +21,6 @@ final/
 .$*
 
 # Notebooks
-.jupyter/
 .pytest_cache/
 __pycache__/
 
