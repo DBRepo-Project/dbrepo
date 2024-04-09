@@ -1,6 +1,4 @@
-import dataclasses
 import unittest
-from json import dumps
 
 import requests_mock
 
@@ -24,7 +22,7 @@ class UserTest(unittest.TestCase):
     def test_get_users_empty_succeeds(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('http://gateway-service/api/user', json=dumps([]))
+            mock.get('http://gateway-service/api/user', json=[])
             # test
             response = RestClient().get_users()
             self.assertEqual([], response)
@@ -36,7 +34,7 @@ class UserTest(unittest.TestCase):
                      attributes=UserAttributes(theme='dark'))
             ]
             # mock
-            mock.get('http://gateway-service/api/user', json=dumps([exp[0].model_dump()]))
+            mock.get('http://gateway-service/api/user', json=[exp[0].model_dump()])
             # test
             response = RestClient().get_users()
             self.assertEqual(exp, response)

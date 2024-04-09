@@ -1,3 +1,5 @@
+{{- if .Values.metadataDb.enabled }}
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -569,4 +571,4 @@ data:
            ('prov', 'http://www.w3.org/ns/prov#', null, null, null),
            ('db', 'http://dbpedia.org', 'http://dbpedia.org/ontology/.*', 'http://dbpedia.org/sparql', null);
     COMMIT;
-
+{{- end }}
