@@ -110,8 +110,8 @@ dataDb:
       password: mariabackup
   sidecars:
     - name: sidecar
-      image: dbrepo-data-db-sidecar:latest
-      imagePullPolicy: Never
+      image: s210.dl.hpc.tuwien.ac.at/dbrepo/data-db-sidecar:1.4.2
+      imagePullPolicy: Always
       securityContext:
         runAsUser: 1001
         runAsGroup: 1001
@@ -235,7 +235,7 @@ searchDbDashboard:
   extraInitContainers:
     - name: init
       image: s210.dl.hpc.tuwien.ac.at/dbrepo/search-db-init:1.4.2
-      imagePullPolicy: Never
+      imagePullPolicy: Always
       env:
         - name: OPENSEARCH_HOST
           value: http://search-db:9200
@@ -336,7 +336,7 @@ analyseService:
   enabled: true
   image:
     name: s210.dl.hpc.tuwien.ac.at/dbrepo/analyse-service:1.4.2
-    pullPolicy: Never
+    pullPolicy: Always
     debug: false
   replicaCount: 1
 
@@ -344,7 +344,7 @@ metadataService:
   enabled: true
   image:
     name: s210.dl.hpc.tuwien.ac.at/dbrepo/metadata-service:1.4.2
-    pullPolicy: Never
+    pullPolicy: Always
     debug: false
   adminEmail: noreply@example.com
   authService:
@@ -368,7 +368,7 @@ dataService:
   enabled: true
   image:
     name: s210.dl.hpc.tuwien.ac.at/dbrepo/data-service:1.4.2
-    pullPolicy: Never
+    pullPolicy: Always
     debug: false
   jwt:
     pubkey: "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB"
@@ -381,7 +381,7 @@ searchService:
   enabled: true
   image:
     name: s210.dl.hpc.tuwien.ac.at/dbrepo/search-service:1.4.2
-    pullPolicy: Never
+    pullPolicy: Always
     debug: false
   replicaCount: 1
 
@@ -419,7 +419,7 @@ ui:
   enabled: true
   image:
     name: s210.dl.hpc.tuwien.ac.at/dbrepo/ui:1.4.2
-    pullPolicy: Never
+    pullPolicy: Always
     debug: false
   public:
     api:
