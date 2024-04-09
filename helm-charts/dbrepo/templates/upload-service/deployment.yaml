@@ -33,6 +33,8 @@ spec:
           imagePullPolicy: {{ .Values.uploadService.image.pullPolicy | default "IfNotPresent" }}
           securityContext:
             allowPrivilegeEscalation: false
+            seccompProfile:
+              type: {{ .Values.uploadService.profileType | default "RuntimeDefault" }}
             capabilities:
               drop:
                 - ALL

@@ -115,6 +115,12 @@ dataDb:
       securityContext:
         runAsUser: 1001
         runAsGroup: 1001
+        allowPrivilegeEscalation: false
+        seccompProfile:
+          type: RuntimeDefault
+        capabilities:
+          drop:
+            - ALL
       ports:
         - containerPort: 3305
           protocol: TCP
@@ -240,6 +246,15 @@ searchDbDashboard:
     - name: init
       image: s210.dl.hpc.tuwien.ac.at/dbrepo/search-db-init:1.4.2
       imagePullPolicy: Always
+      securityContext:
+        runAsUser: 1001
+        runAsGroup: 1001
+        allowPrivilegeEscalation: false
+        seccompProfile:
+          type: RuntimeDefault
+        capabilities:
+          drop:
+            - ALL
       env:
         - name: OPENSEARCH_HOST
           value: http://search-db:9200
