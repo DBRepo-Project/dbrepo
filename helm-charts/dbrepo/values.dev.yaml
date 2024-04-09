@@ -115,6 +115,12 @@ dataDb:
       securityContext:
         runAsUser: 1001
         runAsGroup: 1001
+        allowPrivilegeEscalation: false
+        seccompProfile:
+          type: RuntimeDefault
+        capabilities:
+          drop:
+            - ALL
       ports:
         - containerPort: 3305
           protocol: TCP
@@ -151,6 +157,10 @@ dataDb:
     enabled: true
     size: 10Gi
   replicaCount: 1 # uneven
+
+dataDbSidecar:
+  persistence:
+    storageClass:
 
 searchdb:
   fullnameOverride: search-db
@@ -236,6 +246,15 @@ searchDbDashboard:
     - name: init
       image: dbrepo-search-db-init:latest
       imagePullPolicy: Never
+      securityContext:
+        runAsUser: 1001
+        runAsGroup: 1001
+        allowPrivilegeEscalation: false
+        seccompProfile:
+          type: RuntimeDefault
+        capabilities:
+          drop:
+            - ALL
       env:
         - name: OPENSEARCH_HOST
           value: http://search-db:9200
