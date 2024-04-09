@@ -154,7 +154,7 @@ dataDb:
 
 dataDbSidecar:
   persistence:
-    storageClass: ""
+    storageClass:
 
 searchdb:
   fullnameOverride: search-db

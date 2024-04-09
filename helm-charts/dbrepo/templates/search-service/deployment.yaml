@@ -31,6 +31,11 @@ spec:
         - name: search-service
           image: {{ .Values.searchService.image.name }}
           imagePullPolicy: {{ .Values.searchService.image.pullPolicy | default "IfNotPresent" }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
           ports:
             - containerPort: 4000
               protocol: TCP
@@ -76,6 +81,6 @@ spec:
                 - "curl -sSL localhost:4000/health | grep 'UP' || exit 1"
             initialDelaySeconds: 10
             periodSeconds: 30
-          volumeMounts: []
-      volumes: []
+          volumeMounts: [ ]
+      volumes: [ ]
 {{- end }}
