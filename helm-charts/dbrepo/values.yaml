@@ -7,6 +7,7 @@ strategyType: RollingUpdate
 clusterDomain: cluster.local
 
 metadataDb:
+  enabled: true
   fullnameOverride: metadata-db
   image:
     debug: false
@@ -34,6 +35,7 @@ metadataDb:
   replicaCount: 1 # uneven 3,5,7
 
 authService:
+  enabled: true
   fullnameOverride: auth-service
   image:
     debug: false
@@ -70,6 +72,7 @@ authService:
   replicaCount: 1
 
 authDb:
+  enabled: true
   fullnameOverride: auth-db
   host: auth-db-pgpool
   port: 5432
@@ -95,6 +98,7 @@ authDb:
     size: 10Gi
 
 dataDb:
+  enabled: true
   fullnameOverride: data-db
   image:
     debug: false
@@ -163,6 +167,7 @@ dataDbSidecar:
     storageClass:
 
 searchdb:
+  enabled: true
   fullnameOverride: search-db
   host: search-db
   port: 9200
@@ -240,6 +245,7 @@ searchdb:
               ]
 
 searchDbDashboard:
+  enabled: true
   fullnameOverride: search-db-dashboard
   opensearchHosts: http://search-db:9200
   extraInitContainers:
@@ -284,6 +290,7 @@ uploadService:
   replicaCount: 1
 
 brokerService:
+  enabled: true
   fullnameOverride: broker-service
   image:
     debug: true
@@ -405,6 +412,7 @@ searchService:
   replicaCount: 1
 
 storageservice:
+  enabled: true
   master:
     enabled: true
   filer:
