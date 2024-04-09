@@ -273,7 +273,7 @@ cluster-image-pull:
 	rm -f ./ui.tar ./data-service.tar ./search-service.tar ./analyse-service.tar ./data-db-sidecar.tar ./metadata-service.tar
 
 cluster-install: helm-build
-	helm upgrade --install dbrepo -n dbrepo ./build/dbrepo-${CHART_VERSION}.tgz --create-namespace --cleanup-on-fail
+	helm upgrade --install dbrepo -n dbrepo ./build/dbrepo-${CHART_VERSION}.tgz --values ./helm-charts/dbrepo/values.dev.yaml --create-namespace --cleanup-on-fail
 
 cluster-uninstall:
 	helm uninstall -n dbrepo dbrepo
