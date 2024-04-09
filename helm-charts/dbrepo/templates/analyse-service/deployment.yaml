@@ -31,6 +31,11 @@ spec:
         - name: analyse-service
           image: {{ .Values.analyseService.image.name }}
           imagePullPolicy: {{ .Values.analyseService.image.pullPolicy | default "IfNotPresent" }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
           ports:
             - containerPort: 5000
               protocol: TCP
