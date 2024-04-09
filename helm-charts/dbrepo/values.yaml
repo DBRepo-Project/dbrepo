@@ -260,7 +260,7 @@ uploadService:
   enabled: true
   image:
     registry: docker.io
-    repository: docker.io/tusproject/tusd
+    repository: tusproject/tusd
     tag: v1.12
   replicaCount: 1
 
