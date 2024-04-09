@@ -1,7 +1,5 @@
 import unittest
 
-from json import dumps
-
 import requests_mock
 import datetime
 
@@ -113,7 +111,7 @@ class TableTest(unittest.TestCase):
     def test_get_tables_empty_succeeds(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/database/1/table', json=dumps([]))
+            mock.get('/api/database/1/table', json=[])
             # test
             response = RestClient().get_tables(database_id=1)
             self.assertEqual([], response)
@@ -147,7 +145,7 @@ class TableTest(unittest.TestCase):
                                          is_public=True,
                                          is_null_allowed=False)])]
             # mock
-            mock.get('/api/database/1/table', json=dumps([exp[0].model_dump()]))
+            mock.get('/api/database/1/table', json=[exp[0].model_dump()])
             # test
             response = RestClient().get_tables(database_id=1)
             self.assertEqual(exp, response)

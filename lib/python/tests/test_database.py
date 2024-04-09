@@ -1,6 +1,4 @@
-import datetime
 import unittest
-from json import dumps
 
 import requests_mock
 import datetime
@@ -19,7 +17,7 @@ class DatabaseTest(unittest.TestCase):
     def test_get_databases_empty_succeeds(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/database', json=dumps([]))
+            mock.get('/api/database', json=[])
             # test
             response = RestClient().get_databases()
             self.assertEqual([], response)
@@ -70,7 +68,7 @@ class DatabaseTest(unittest.TestCase):
         ]
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/database', json=dumps([exp[0].model_dump()]))
+            mock.get('/api/database', json=[exp[0].model_dump()])
             # test
             response = RestClient().get_databases()
             self.assertEqual(exp, response)

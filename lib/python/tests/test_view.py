@@ -1,7 +1,5 @@
 import unittest
 
-from json import dumps
-
 import requests_mock
 import datetime
 
@@ -16,7 +14,7 @@ class ViewTest(unittest.TestCase):
     def test_get_views_empty_succeeds(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/database/1/view', json=dumps([]))
+            mock.get('/api/database/1/view', json=[])
             # test
             response = RestClient().get_views(database_id=1)
             self.assertEqual([], response)
@@ -37,7 +35,7 @@ class ViewTest(unittest.TestCase):
                         last_modified=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                         identifiers=[])]
             # mock
-            mock.get('/api/database/1/view', json=dumps([exp[0].model_dump()]))
+            mock.get('/api/database/1/view', json=[exp[0].model_dump()])
             # test
             response = RestClient().get_views(database_id=1)
             self.assertEqual(exp, response)

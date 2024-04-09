@@ -1,7 +1,5 @@
 import unittest
 
-from json import dumps
-
 import requests_mock
 import datetime
 
@@ -165,7 +163,7 @@ class QueryTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             exp = []
             # mock
-            mock.get('/api/database/1/query', json=dumps([]))
+            mock.get('/api/database/1/query', json=[])
             # test
             response = RestClient().get_queries(database_id=1)
             self.assertEqual(exp, response)
@@ -188,7 +186,7 @@ class QueryTest(unittest.TestCase):
                          result_number=None,
                          identifiers=[])]
             # mock
-            mock.get('/api/database/1/query', json=dumps([exp[0].model_dump()]))
+            mock.get('/api/database/1/query', json=[exp[0].model_dump()])
             # test
             response = RestClient().get_queries(database_id=1)
             self.assertEqual(exp, response)

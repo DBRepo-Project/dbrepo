@@ -1,7 +1,5 @@
 import unittest
 
-from json import dumps
-
 import requests_mock
 import datetime
 
@@ -174,7 +172,7 @@ class IdentifierTest(unittest.TestCase):
                                                     type=RelatedIdentifierType.DOI)],
                               creators=[IdentifierCreator(id=5, creator_name='Carberry, Josiah')])]
             # mock
-            mock.get('/api/pid', json=dumps([exp[0].model_dump()]), headers={"Accept": "application/json"})
+            mock.get('/api/pid', json=[exp[0].model_dump()], headers={"Accept": "application/json"})
             # test
             response = RestClient().get_identifiers()
             self.assertEqual(exp, response)
