@@ -42,10 +42,6 @@ dependencies:
     alias: brokerService
     version: 12.5.1
     repository: https://charts.bitnami.com/bitnami
-  - name: fluent-bit
-    alias: logservice
-    version: 0.40.0
-    repository: https://fluent.github.io/helm-charts
   - name: seaweedfs
     alias: storageservice
     version: 3.59.4

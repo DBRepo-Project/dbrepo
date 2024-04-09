@@ -152,6 +152,10 @@ dataDb:
     size: 10Gi
   replicaCount: 1 # uneven
 
+dataDbSidecar:
+  persistence:
+    storageClass: ""
+
 searchdb:
   fullnameOverride: search-db
   host: search-db
