@@ -11,7 +11,7 @@ metadata:
 spec:
   replicas: {{ .Values.uploadService.replicaCount }}
   strategy:
-    type: {{ $.Values.strategyType }}
+    type: {{ .Values.strategyType }}
   selector:
     matchLabels:
       app: upload-service
