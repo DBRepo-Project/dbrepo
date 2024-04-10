@@ -1,18 +1,28 @@
-DBRepo Python Library
-=====================
+DBRepo Python Library documentation
+===================================
 
-.. image:: https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/badges/release.svg
-    :alt: DBRepo latest release version
-    :target: https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services
+Use the DBRepo SDK to create, update, configure and manage DBRepo services such as the Data Service to get data as
+Pandas `DataFrame <https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html>`_ for analysis. The DBRepo SDK
+provides an object-oriented API as well as low-level access to DBRepo services.
 
-.. image:: https://img.shields.io/pypi/dm/dbrepo
-    :alt: PyPI downloads per month
-    :target: https://pypi.org/project/dbrepo/__APPVERSION__/
+.. note::
+   The SDK has been implemented and documented for DBRepo version 1.4.2, earlier versions are not supported.
 
-.. warning::
-   This documentation is a work in progress.
+Quickstart
+----------
 
-REST Client
+Find numerous quickstart examples on
+the `DBRepo website <https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/__APPVERSION__/usage-overview/>`_.
+
+AMQP API Client
+-----------
+
+.. toctree::
+   :maxdepth: 2
+
+   guide/amqp-client
+
+REST API Client
 -----------
 
 .. toctree::
@@ -20,13 +30,13 @@ REST Client
 
    guide/rest-client
 
-AMQP Client
+Upload API Client
 -----------
 
 .. toctree::
    :maxdepth: 2
 
-   guide/amqp-client
+   guide/upload-client
 
 Indices and tables
 ==================

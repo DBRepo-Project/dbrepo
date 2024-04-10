@@ -2,8 +2,8 @@ import dataclasses
 import os
 import pika
 import sys
-import logging
 import json
+import logging
 
 from dbrepo.api.dto import CreateData
 
@@ -32,16 +32,18 @@ class AmqpClient:
                  broker_virtual_host: str = '/',
                  username: str = None,
                  password: str = None) -> None:
+        logging.getLogger('requests').setLevel(logging.INFO)
+        logging.getLogger('urllib3').setLevel(logging.INFO)
         logging.basicConfig(format='%(asctime)s %(name)-12s %(levelname)-6s %(message)s', level=logging.DEBUG,
                             stream=sys.stdout)
-        self.broker_host = os.environ.get('DBREPO_BROKER_HOST', broker_host)
-        self.broker_port = os.environ.get('DBREPO_BROKER_PORT', broker_port)
-        if os.environ.get('DBREPO_BROKER_VIRTUAL_HOST') is not None:
-            self.broker_virtual_host = os.environ.get('DBREPO_BROKER_VIRTUAL_HOST')
+        self.broker_host = os.environ.get('AMQP_API_HOST', broker_host)
+        self.broker_port = os.environ.get('AMQP_API_PORT', broker_port)
+        if os.environ.get('AMQP_API_VIRTUAL_HOST') is not None:
+            self.broker_virtual_host = os.environ.get('AMQP_API_VIRTUAL_HOST')
         else:
             self.broker_virtual_host = broker_virtual_host
-        self.username = os.environ.get('DBREPO_USERNAME', username)
-        self.password = os.environ.get('DBREPO_PASSWORD', password)
+        self.username = os.environ.get('AMQP_API_USERNAME', username)
+        self.password = os.environ.get('AMQP_API_PASSWORD', password)
 
     def publish(self, exchange: str, routing_key: str, data=dict) -> None:
         """

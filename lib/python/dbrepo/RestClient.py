@@ -7,6 +7,7 @@ from pydantic import TypeAdapter
 from tusclient.client import TusClient
 from pandas import DataFrame
 
+from dbrepo.UploadClient import UploadClient
 from dbrepo.api.dto import *
 from dbrepo.api.exceptions import ResponseCodeError, UsernameExistsError, EmailExistsError, NotExistsError, \
     ForbiddenError, MalformedError, NameExistsError, QueryStoreError, MetadataConsistencyError, ExternalSystemError, \
@@ -16,8 +17,8 @@ from dbrepo.api.exceptions import ResponseCodeError, UsernameExistsError, EmailE
 class RestClient:
     """
     The RestClient class for communicating with the DBRepo REST API. All parameters can be set also via environment \
-    variables, e.g. set endpoint with DBREPO_ENDPOINT, username with DBREPO_USERNAME, etc. You can override the \
-    constructor parameters with the environment variables.
+    variables, e.g. set endpoint with REST_API_ENDPOINT, username with REST_API_USERNAME, etc. You can override \
+    the constructor parameters with the environment variables.
 
     :param endpoint: The REST API endpoint. Optional. Default: "http://gateway-service"
     :param username: The REST API username. Optional.
@@ -39,11 +40,11 @@ class RestClient:
         logging.getLogger('urllib3').setLevel(logging.INFO)
         logging.basicConfig(format='%(asctime)s %(name)-12s %(levelname)-6s %(message)s', level=logging.DEBUG,
                             stream=sys.stdout)
-        self.endpoint = os.environ.get('DBREPO_ENDPOINT', endpoint)
-        self.username = os.environ.get('DBREPO_USERNAME', username)
-        self.password = os.environ.get('DBREPO_PASSWORD', password)
-        if os.environ.get('DBREPO_SECURE') is not None:
-            self.secure = os.environ.get('DBREPO_SECURE') == 'True'
+        self.endpoint = os.environ.get('REST_API_ENDPOINT', endpoint)
+        self.username = os.environ.get('REST_API_USERNAME', username)
+        self.password = os.environ.get('REST_API_PASSWORD', password)
+        if os.environ.get('REST_API_SECURE') is not None:
+            self.secure = os.environ.get('REST_API_SECURE') == 'True'
         else:
             self.secure = secure
 
@@ -87,9 +88,11 @@ class RestClient:
             raise UploadError(f'Failed to upload the file to {self.endpoint}')
         return filename
 
-    def whoami(self) -> str:
+    def whoami(self) -> str | None:
         """
         Print the username.
+
+        :returns: The username, if set.
         """
         if self.username is not None:
             logging.info(f"{self.username}")
@@ -746,8 +749,8 @@ class RestClient:
         :raises NotExistsError: If the table does not exist.
         :raises MalformedError: If the payload is rejected by the service (e.g. LOB data could not be imported).
         """
-        upload = UploadClient(endpoint=self.endpoint)
-        filename = upload.upload(file_path=file_path)
+        client = UploadClient(endpoint=self.endpoint)
+        filename = client.upload(file_path=file_path)
         url = f'/api/database/{database_id}/table/{table_id}/data/import'
         response = self._wrapper(method="post", url=url, force_auth=True,
                                  payload=Import(location=filename, separator=separator, quote=quote,

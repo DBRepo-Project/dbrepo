@@ -1,8 +1,5 @@
-REST Client
-===========
-
-.. warning::
-   This documentation is a work in progress.
+REST API Client
+===============
 
 .. automodule:: dbrepo.RestClient
     :members:

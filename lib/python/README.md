@@ -32,33 +32,33 @@ print(f"Analysis result: {analysis}")
 
 # create table
 table = client.create_table(database_id=1,
-    name="Sensor Data",
-    constraints=CreateTableConstraints(
-        checks=['precipitation >= 0'],
-        uniques=[['precipitation']]),
-    columns=[CreateTableColumn(name="date",
-                               type=ColumnType.DATE,
-                               dfid=3,  # YYYY-MM-dd
-                               primary_key=True,
-                               null_allowed=False),
-             CreateTableColumn(name="precipitation",
-                               type=ColumnType.DECIMAL,
-                               size=10,
-                               d=4,
-                               primary_key=False,
-                               null_allowed=True),
-             CreateTableColumn(name="lat",
-                               type=ColumnType.DECIMAL,
-                               size=10,
-                               d=4,
-                               primary_key=False,
-                               null_allowed=True),
-             CreateTableColumn(name="lng",
-                               type=ColumnType.DECIMAL,
-                               size=10,
-                               d=4,
-                               primary_key=False,
-                               null_allowed=True)])
+                            name="Sensor Data",
+                            constraints=CreateTableConstraints(
+                                checks=['precipitation >= 0'],
+                                uniques=[['precipitation']]),
+                            columns=[CreateTableColumn(name="date",
+                                                       type=ColumnType.DATE,
+                                                       dfid=3,  # YYYY-MM-dd
+                                                       primary_key=True,
+                                                       null_allowed=False),
+                                     CreateTableColumn(name="precipitation",
+                                                       type=ColumnType.DECIMAL,
+                                                       size=10,
+                                                       d=4,
+                                                       primary_key=False,
+                                                       null_allowed=True),
+                                     CreateTableColumn(name="lat",
+                                                       type=ColumnType.DECIMAL,
+                                                       size=10,
+                                                       d=4,
+                                                       primary_key=False,
+                                                       null_allowed=True),
+                                     CreateTableColumn(name="lng",
+                                                       type=ColumnType.DECIMAL,
+                                                       size=10,
+                                                       d=4,
+                                                       primary_key=False,
+                                                       null_allowed=True)])
 print(f"Create table result {table}")
 # -> (id=1, internal_name=sensor_data, ...)
 
@@ -83,7 +83,25 @@ print(f"Finished.")
   queries ([docs](https://www.ifs.tuwien.ac.at/infrastructures/dbrepo//usage-overview/#export-subset))
 - Get data from tables/views/subsets
 
-## Future
+## Configure
+
+All credentials can optionally be set/overridden with environment variables. This is especially useful when sharing 
+Jupyter Notebooks by creating an invisible `.env` file and loading it:
+
+```
+REST_API_ENDPOINT="https://test.dbrepo.tuwien.ac.at"
+REST_API_USERNAME="foo"
+REST_API_PASSWORD="bar"
+REST_API_SECURE="True"
+AMQP_API_HOST="https://test.dbrepo.tuwien.ac.at"
+AMQP_API_PORT="5672"
+AMQP_API_USERNAME="foo"
+AMQP_API_PASSWORD="bar"
+AMQP_API_VIRTUAL_HOST="/"
+REST_UPLOAD_ENDPOINT="https://test.dbrepo.tuwien.ac.at/api/upload/files"
+```
+
+## Roadmap
 
 - Searching
 
