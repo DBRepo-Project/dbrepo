@@ -34,7 +34,7 @@ class IdentifierTest(unittest.TestCase):
                                                    type=RelatedIdentifierType.DOI)],
                              creators=[IdentifierCreator(id=5, creator_name='Carberry, Josiah')])
             # mock
-            mock.post('/api/identifier', json=exp.model_dump_json(), status_code=201)
+            mock.post('/api/identifier', json=exp.model_dump(), status_code=201)
             # test
             client = RestClient(username="a", password="b")
             response = client.create_identifier(database_id=1, type=IdentifierType.VIEW,
@@ -137,7 +137,7 @@ class IdentifierTest(unittest.TestCase):
                              creators=[IdentifierCreator(id=5, creator_name='Carberry, Josiah',
                                                          name_identifier='https://orcid.org/0000-0002-1825-0097')])
             # mock
-            mock.get('/api/identifier?url=https://orcid.org/0000-0002-1825-0097', json=exp.model_dump_json())
+            mock.get('/api/identifier?url=https://orcid.org/0000-0002-1825-0097', json=exp.model_dump())
             # test
             response = RestClient().suggest_identifier("https://orcid.org/0000-0002-1825-0097")
             self.assertEqual(exp, response)

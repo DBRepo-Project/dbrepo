@@ -13,7 +13,7 @@ class AnalyseTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             exp = KeyAnalysis(keys={'id': 0, 'firstname': 1, 'lastname': 2})
             # mock
-            mock.get('/api/analyse/keys', json=exp.model_dump_json(), status_code=202)
+            mock.get('/api/analyse/keys', json=exp.model_dump(), status_code=202)
             # test
             response = RestClient().analyse_keys(file_path='f705a7bd0cb2d5e37ab2b425036810a2', separator=',',
                                                  upload=False)

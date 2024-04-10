@@ -1,9 +1,11 @@
 import unittest
+from json import dumps
 
 import requests_mock
 import datetime
 
 from dbrepo.RestClient import RestClient
+from pandas import DataFrame
 
 from dbrepo.api.dto import Table, CreateTableConstraints, UserAttributes, User, Column, Constraints, ColumnType, Result, \
     Concept, Unit, TableStatistics, ColumnStatistic
@@ -42,7 +44,7 @@ class TableTest(unittest.TestCase):
                                     is_null_allowed=False)])
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post('/api/database/1/table', json=exp.model_dump_json(), status_code=201)
+            mock.post('/api/database/1/table', json=exp.model_dump(), status_code=201)
             # test
             client = RestClient(username="a", password="b")
             response = client.create_table(database_id=1, name="Test", description="Test Table", columns=[],
@@ -179,7 +181,7 @@ class TableTest(unittest.TestCase):
                                         is_public=True,
                                         is_null_allowed=False)])
             # mock
-            mock.get('/api/database/1/table/2', json=exp.model_dump_json())
+            mock.get('/api/database/1/table/2', json=exp.model_dump())
             # test
             response = RestClient().get_table(database_id=1, table_id=2)
             self.assertEqual(exp, response)
@@ -250,10 +252,23 @@ class TableTest(unittest.TestCase):
                          headers=[{'id': 0, 'username': 1}],
                          id=None)
             # mock
-            mock.get('/api/database/1/table/9/data', json=exp.model_dump_json())
+            mock.get('/api/database/1/table/9/data', json=exp.model_dump())
             # test
             response = RestClient().get_table_data(database_id=1, table_id=9)
             self.assertEqual(exp, response)
+
+    def test_get_table_data_dataframe_succeeds(self):
+        with requests_mock.Mocker() as mock:
+            res = Result(result=[{'id': 1, 'username': 'foo'}, {'id': 2, 'username': 'bar'}],
+                         headers=[{'id': 0, 'username': 1}],
+                         id=None)
+            exp = DataFrame.from_records(res.model_dump()['result'])
+            # mock
+            mock.get('/api/database/1/table/9/data', json=res.model_dump())
+            # test
+            response = RestClient().get_table_data(database_id=1, table_id=9, df=True)
+            self.assertEqual(exp.shape, response.shape)
+            self.assertTrue(DataFrame.equals(exp, response))
 
     def test_get_table_data_malformed_fails(self):
         with requests_mock.Mocker() as mock:
@@ -558,7 +573,7 @@ class TableTest(unittest.TestCase):
                                    name="liters per square meter"),
                          is_null_allowed=False)
             # mock
-            mock.put('/api/database/1/table/2/column/1', json=exp.model_dump_json(), status_code=202)
+            mock.put('/api/database/1/table/2/column/1', json=exp.model_dump(), status_code=202)
             # test
             client = RestClient(username="a", password="b")
             response = client.update_table_column(database_id=1, table_id=2, column_id=1,
@@ -622,7 +637,7 @@ class TableTest(unittest.TestCase):
             exp = TableStatistics(
                 columns={"id": ColumnStatistic(val_min=1.0, val_max=9.0, mean=5.0, median=5.0, std_dev=2.73)})
             # mock
-            mock.get('/api/analyse/database/1/table/2/statistics', json=exp.model_dump_json(), status_code=202)
+            mock.get('/api/analyse/database/1/table/2/statistics', json=exp.model_dump(), status_code=202)
             # test
             response = RestClient().analyse_table_statistics(database_id=1, table_id=2)
             self.assertEqual(exp, response)

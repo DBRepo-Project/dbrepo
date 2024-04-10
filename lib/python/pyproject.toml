@@ -23,7 +23,8 @@ dependencies = [
     "requests >= 2.31",
     "pika",
     "pydantic",
-    "tuspy"
+    "tuspy",
+    "pandas"
 ]
 
 [build-system]

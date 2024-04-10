@@ -94,7 +94,7 @@ class ContainerTest(unittest.TestCase):
                                         ]),
                             hash="f829dd8a884182d0da846f365dee1221fd16610a14c81b8f9f295ff162749e50")
             # mock
-            mock.get('/api/container/1', json=exp.model_dump_json())
+            mock.get('/api/container/1', json=exp.model_dump())
             # test
             response = RestClient().get_container(container_id=1)
             self.assertEqual(exp, response)
