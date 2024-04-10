@@ -1,9 +1,12 @@
 import unittest
+from json import dumps
+from typing import Any
 
 import requests_mock
 import datetime
 
 from dbrepo.RestClient import RestClient
+from pandas import DataFrame
 
 from dbrepo.api.dto import Result, Query, User, UserAttributes, QueryType
 from dbrepo.api.exceptions import MalformedError, NotExistsError, ForbiddenError, QueryStoreError, \
@@ -18,7 +21,7 @@ class QueryTest(unittest.TestCase):
                          headers=[{'id': 0, 'username': 1}],
                          id=None)
             # mock
-            mock.post('/api/database/1/query', json=exp.model_dump_json(), status_code=202)
+            mock.post('/api/database/1/query', json=exp.model_dump(), status_code=202)
             # test
             client = RestClient(username="a", password="b")
             response = client.execute_query(database_id=1, page=0, size=10,
@@ -114,7 +117,7 @@ class QueryTest(unittest.TestCase):
                         result_number=None,
                         identifiers=[])
             # mock
-            mock.get('/api/database/1/query/6', json=exp.model_dump_json())
+            mock.get('/api/database/1/query/6', json=exp.model_dump())
             # test
             response = RestClient().get_query(database_id=1, query_id=6)
             self.assertEqual(exp, response)
@@ -237,10 +240,23 @@ class QueryTest(unittest.TestCase):
                          headers=[{'id': 0, 'username': 1}],
                          id=6)
             # mock
-            mock.get('/api/database/1/query/6/data', json=exp.model_dump_json())
+            mock.get('/api/database/1/query/6/data', json=exp.model_dump())
             # test
             response = RestClient().get_query_data(database_id=1, query_id=6)
             self.assertEqual(exp, response)
+
+    def test_get_query_data_dataframe_succeeds(self):
+        with requests_mock.Mocker() as mock:
+            res = Result(result=[{'id': 1, 'username': 'foo'}, {'id': 2, 'username': 'bar'}],
+                         headers=[{'id': 0, 'username': 1}],
+                         id=6)
+            exp = DataFrame.from_records(res.model_dump()['result'])
+            # mock
+            mock.get('/api/database/1/query/6/data', json=res.model_dump())
+            # test
+            response = RestClient().get_query_data(database_id=1, query_id=6, df=True)
+            self.assertEqual(exp.shape, response.shape)
+            self.assertTrue(DataFrame.equals(exp, response))
 
     def test_get_query_data_not_allowed_fails(self):
         with requests_mock.Mocker() as mock:

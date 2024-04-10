@@ -53,7 +53,7 @@ class UserTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             exp = UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise')
             # mock
-            mock.post('http://gateway-service/api/user', json=exp.model_dump_json(), status_code=201)
+            mock.post('http://gateway-service/api/user', json=exp.model_dump(), status_code=201)
             # test
             response = RestClient().create_user(username='mweise', password='s3cr3t', email='mweise@example.com')
             self.assertEqual(exp, response)
@@ -62,7 +62,7 @@ class UserTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             exp = UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise')
             # mock
-            mock.post('http://gateway-service/api/user', json=exp.model_dump_json(), status_code=400)
+            mock.post('http://gateway-service/api/user', json=exp.model_dump(), status_code=400)
             # test
             try:
                 response = RestClient().create_user(username='mweise', password='s3cr3t', email='mweise@example.com')
@@ -73,7 +73,7 @@ class UserTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             exp = UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise')
             # mock
-            mock.post('http://gateway-service/api/user', json=exp.model_dump_json(), status_code=403)
+            mock.post('http://gateway-service/api/user', json=exp.model_dump(), status_code=403)
             # test
             try:
                 response = RestClient().create_user(username='mweise', password='s3cr3t', email='mweise@example.com')
@@ -84,7 +84,7 @@ class UserTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             exp = UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise')
             # mock
-            mock.post('http://gateway-service/api/user', json=exp.model_dump_json(), status_code=409)
+            mock.post('http://gateway-service/api/user', json=exp.model_dump(), status_code=409)
             # test
             try:
                 response = RestClient().create_user(username='mweise', password='s3cr3t', email='mweise@example.com')
@@ -95,7 +95,7 @@ class UserTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             exp = UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise')
             # mock
-            mock.post('http://gateway-service/api/user', json=exp.model_dump_json(), status_code=404)
+            mock.post('http://gateway-service/api/user', json=exp.model_dump(), status_code=404)
             # test
             try:
                 response = RestClient().create_user(username='mweise', password='s3cr3t', email='mweise@example.com')
@@ -106,7 +106,7 @@ class UserTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             exp = UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise')
             # mock
-            mock.post('http://gateway-service/api/user', json=exp.model_dump_json(), status_code=417)
+            mock.post('http://gateway-service/api/user', json=exp.model_dump(), status_code=417)
             # test
             try:
                 response = RestClient().create_user(username='mweise', password='s3cr3t', email='mweise@example.com')
@@ -119,7 +119,7 @@ class UserTest(unittest.TestCase):
                        attributes=UserAttributes(theme='dark'))
             # mock
             mock.get('http://gateway-service/api/user/8638c043-5145-4be8-a3e4-4b79991b0a16',
-                     json=exp.model_dump_json())
+                     json=exp.model_dump())
             # test
             response = RestClient().get_user(user_id='8638c043-5145-4be8-a3e4-4b79991b0a16')
             self.assertEqual(exp, response)
@@ -140,7 +140,7 @@ class UserTest(unittest.TestCase):
                        attributes=UserAttributes(theme='dark'))
             # mock
             mock.put('http://gateway-service/api/user/8638c043-5145-4be8-a3e4-4b79991b0a16', status_code=202,
-                     json=exp.model_dump_json())
+                     json=exp.model_dump())
             # test
             client = RestClient(username="a", password="b")
             response = client.update_user(user_id='8638c043-5145-4be8-a3e4-4b79991b0a16', firstname='Martin')
@@ -195,7 +195,7 @@ class UserTest(unittest.TestCase):
                        attributes=UserAttributes(theme='dark'))
             # mock
             mock.put('http://gateway-service/api/user/8638c043-5145-4be8-a3e4-4b79991b0a16/theme', status_code=202,
-                     json=exp.model_dump_json())
+                     json=exp.model_dump())
             # test
             client = RestClient(username="a", password="b")
             response = client.update_user_theme(user_id='8638c043-5145-4be8-a3e4-4b79991b0a16', theme='dark')
@@ -250,7 +250,7 @@ class UserTest(unittest.TestCase):
                        attributes=UserAttributes(theme='dark'))
             # mock
             mock.put('http://gateway-service/api/user/8638c043-5145-4be8-a3e4-4b79991b0a16/password', status_code=202,
-                     json=exp.model_dump_json())
+                     json=exp.model_dump())
             # test
             client = RestClient(username="a", password="b")
             response = client.update_user_password(user_id='8638c043-5145-4be8-a3e4-4b79991b0a16',

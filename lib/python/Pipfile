@@ -8,6 +8,7 @@ requests = "~=2.31"
 pika = "*"
 pydantic = "*"
 tuspy = "*"
+pandas = "*"
 
 [dev-packages]
 build = "*"

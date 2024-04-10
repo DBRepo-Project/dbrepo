@@ -5,7 +5,9 @@ import logging
 import requests
 from pydantic import TypeAdapter
 from tusclient.client import TusClient
+from pandas import DataFrame
 
+from dbrepo.UploadClient import UploadClient
 from dbrepo.api.dto import *
 from dbrepo.api.exceptions import ResponseCodeError, UsernameExistsError, EmailExistsError, NotExistsError, \
     ForbiddenError, MalformedError, NameExistsError, QueryStoreError, MetadataConsistencyError, ExternalSystemError, \
@@ -15,8 +17,8 @@ from dbrepo.api.exceptions import ResponseCodeError, UsernameExistsError, EmailE
 class RestClient:
     """
     The RestClient class for communicating with the DBRepo REST API. All parameters can be set also via environment \
-    variables, e.g. set endpoint with DBREPO_ENDPOINT, username with DBREPO_USERNAME, etc. You can override the \
-    constructor parameters with the environment variables.
+    variables, e.g. set endpoint with REST_API_ENDPOINT, username with REST_API_USERNAME, etc. You can override \
+    the constructor parameters with the environment variables.
 
     :param endpoint: The REST API endpoint. Optional. Default: "http://gateway-service"
     :param username: The REST API username. Optional.
@@ -38,11 +40,11 @@ class RestClient:
         logging.getLogger('urllib3').setLevel(logging.INFO)
         logging.basicConfig(format='%(asctime)s %(name)-12s %(levelname)-6s %(message)s', level=logging.DEBUG,
                             stream=sys.stdout)
-        self.endpoint = os.environ.get('DBREPO_ENDPOINT', endpoint)
-        self.username = os.environ.get('DBREPO_USERNAME', username)
-        self.password = os.environ.get('DBREPO_PASSWORD', password)
-        if os.environ.get('DBREPO_SECURE') is not None:
-            self.secure = os.environ.get('DBREPO_SECURE') == 'True'
+        self.endpoint = os.environ.get('REST_API_ENDPOINT', endpoint)
+        self.username = os.environ.get('REST_API_USERNAME', username)
+        self.password = os.environ.get('REST_API_PASSWORD', password)
+        if os.environ.get('REST_API_SECURE') is not None:
+            self.secure = os.environ.get('REST_API_SECURE') == 'True'
         else:
             self.secure = secure
 
@@ -86,9 +88,11 @@ class RestClient:
             raise UploadError(f'Failed to upload the file to {self.endpoint}')
         return filename
 
-    def whoami(self) -> str:
+    def whoami(self) -> str | None:
         """
         Print the username.
+
+        :returns: The username, if set.
         """
         if self.username is not None:
             logging.info(f"{self.username}")
@@ -124,7 +128,7 @@ class RestClient:
         response = self._wrapper(method="get", url=url)
         if response.status_code == 200:
             body = response.json()
-            return User.parse_raw(body)
+            return User.model_validate(body)
         if response.status_code == 404:
             raise NotExistsError(f'Failed to find user with id {user_id}')
         raise ResponseCodeError(
@@ -151,7 +155,7 @@ class RestClient:
                                  payload=CreateUser(username=username, password=password, email=email))
         if response.status_code == 201:
             body = response.json()
-            return UserBrief.parse_raw(body)
+            return UserBrief.model_validate(body)
         if response.status_code == 403:
             raise ForbiddenError(f'Failed to update user password: not allowed')
         if response.status_code == 404:
@@ -186,7 +190,7 @@ class RestClient:
                                                     orcid=orcid))
         if response.status_code == 202:
             body = response.json()
-            return User.parse_raw(body)
+            return User.model_validate(body)
         if response.status_code == 400:
             raise ResponseCodeError(f'Failed to update user: invalid values')
         if response.status_code == 403:
@@ -215,7 +219,7 @@ class RestClient:
         response = self._wrapper(method="put", url=url, force_auth=True, payload=UpdateUserTheme(theme=theme))
         if response.status_code == 202:
             body = response.json()
-            return User.parse_raw(body)
+            return User.model_validate(body)
         if response.status_code == 400:
             raise ResponseCodeError(f'Failed to update user theme: invalid values')
         if response.status_code == 403:
@@ -244,7 +248,7 @@ class RestClient:
         response = self._wrapper(method="put", url=url, force_auth=True, payload=UpdateUserPassword(password=password))
         if response.status_code == 202:
             body = response.json()
-            return User.parse_raw(body)
+            return User.model_validate(body)
         if response.status_code == 400:
             raise ResponseCodeError(f'Failed to update user password: invalid values')
         if response.status_code == 403:
@@ -286,7 +290,7 @@ class RestClient:
         response = self._wrapper(method="get", url=url)
         if response.status_code == 200:
             body = response.json()
-            return Container.parse_raw(body)
+            return Container.model_validate(body)
         if response.status_code == 404:
             raise NotExistsError(f'Failed to get container: not found')
         raise ResponseCodeError(f'Failed to get container: response code: {response.status_code} is not 200 (OK)')
@@ -333,7 +337,7 @@ class RestClient:
         response = self._wrapper(method="get", url=url)
         if response.status_code == 200:
             body = response.json()
-            return Database.parse_raw(body)
+            return Database.model_validate(body)
         if response.status_code == 404:
             raise NotExistsError(f'Failed to find database with id {database_id}')
         raise ResponseCodeError(
@@ -359,7 +363,7 @@ class RestClient:
                                  payload=CreateDatabase(name=name, container_id=container_id, is_public=is_public))
         if response.status_code == 201:
             body = response.json()
-            return Database.parse_raw(body)
+            return Database.model_validate(body)
         if response.status_code == 403:
             raise ForbiddenError(f'Failed to create database: not allowed')
         if response.status_code == 404:
@@ -385,7 +389,7 @@ class RestClient:
         response = self._wrapper(method="put", url=url, force_auth=True, payload=ModifyVisibility(is_public=is_public))
         if response.status_code == 202:
             body = response.json()
-            return Database.parse_raw(body)
+            return Database.model_validate(body)
         if response.status_code == 403:
             raise ForbiddenError(f'Failed to update database visibility: not allowed')
         if response.status_code == 404:
@@ -409,7 +413,7 @@ class RestClient:
         response = self._wrapper(method="put", url=url, force_auth=True, payload=ModifyOwner(id=user_id))
         if response.status_code == 202:
             body = response.json()
-            return Database.parse_raw(body)
+            return Database.model_validate(body)
         if response.status_code == 403:
             raise ForbiddenError(f'Failed to update database visibility: not allowed')
         if response.status_code == 404:
@@ -442,7 +446,7 @@ class RestClient:
                                                      columns=columns, constraints=constraints))
         if response.status_code == 201:
             body = response.json()
-            return Table.parse_raw(body)
+            return Table.model_validate(body)
         if response.status_code == 400:
             raise MalformedError(f'Failed to create table: service rejected malformed payload')
         if response.status_code == 403:
@@ -488,7 +492,7 @@ class RestClient:
         response = self._wrapper(method="get", url=url)
         if response.status_code == 200:
             body = response.json()
-            return Table.parse_raw(body)
+            return Table.model_validate(body)
         if response.status_code == 403:
             raise ForbiddenError(f'Failed to find table: not allowed')
         if response.status_code == 404:
@@ -556,7 +560,7 @@ class RestClient:
         response = self._wrapper(method="get", url=url)
         if response.status_code == 200:
             body = response.json()
-            return View.parse_raw(body)
+            return View.model_validate(body)
         if response.status_code == 403:
             raise ForbiddenError(f'Failed to find view: not allowed')
         if response.status_code == 404:
@@ -584,7 +588,7 @@ class RestClient:
                                  payload=CreateView(name=name, query=query, is_public=is_public))
         if response.status_code == 201:
             body = response.json()
-            return View.parse_raw(body)
+            return View.model_validate(body)
         if response.status_code == 400 or response.status_code == 423:
             raise MalformedError(f'Failed to create view: service rejected malformed payload')
         if response.status_code == 403 or response.status_code == 405:
@@ -616,7 +620,8 @@ class RestClient:
             raise NotExistsError(f'Failed to delete view: not found')
         raise ResponseCodeError(f'Failed to delete view: response code: {response.status_code} is not 202 (ACCEPTED)')
 
-    def get_view_data(self, database_id: int, view_id: int, page: int = 0, size: int = 10) -> Result:
+    def get_view_data(self, database_id: int, view_id: int, page: int = 0, size: int = 10,
+                      df: bool = False) -> Result | DataFrame:
         """
         Get data of a view in a database with given database id and view id.
 
@@ -624,6 +629,7 @@ class RestClient:
         :param view_id: The view id.
         :param page: The result pagination number. Optional. Default: 0.
         :param size: The result pagination size. Optional. Default: 10.
+        :param df: If true, the result is returned as Pandas DataFrame. Optional. Default: False.
 
         :returns: The result of the view query, if successful.
 
@@ -639,7 +645,10 @@ class RestClient:
         response = self._wrapper(method="get", url=url, params=params)
         if response.status_code == 200:
             body = response.json()
-            return Result.parse_raw(body)
+            res = Result.model_validate(body)
+            if df:
+                return DataFrame.from_records(res.result)
+            return res
         if response.status_code == 400:
             raise MalformedError(f'Failed to get view data: service rejected malformed payload')
         if response.status_code == 403:
@@ -649,7 +658,7 @@ class RestClient:
         raise ResponseCodeError(f'Failed to get view data: response code: {response.status_code} is not 200 (OK)')
 
     def get_table_data(self, database_id: int, table_id: int, page: int = 0, size: int = 10,
-                       timestamp: datetime.datetime = None) -> Result:
+                       timestamp: datetime.datetime = None, df: bool = False) -> Result | DataFrame:
         """
         Get data of a table in a database with given database id and table id.
 
@@ -658,6 +667,7 @@ class RestClient:
         :param page: The result pagination number. Optional. Default: 0.
         :param size: The result pagination size. Optional. Default: 10.
         :param timestamp: The query execution time. Optional.
+        :param df: If true, the result is returned as Pandas DataFrame. Optional. Default: False.
 
         :returns: The result of the view query, if successful.
 
@@ -676,7 +686,10 @@ class RestClient:
         response = self._wrapper(method="get", url=url, params=params)
         if response.status_code == 200:
             body = response.json()
-            return Result.parse_raw(body)
+            res = Result.model_validate(body)
+            if df:
+                return DataFrame.from_records(res.result)
+            return res
         if response.status_code == 400:
             raise MalformedError(f'Failed to get table data: service rejected malformed payload')
         if response.status_code == 403:
@@ -736,8 +749,8 @@ class RestClient:
         :raises NotExistsError: If the table does not exist.
         :raises MalformedError: If the payload is rejected by the service (e.g. LOB data could not be imported).
         """
-        upload = UploadClient(endpoint=self.endpoint)
-        filename = upload.upload(file_path=file_path)
+        client = UploadClient(endpoint=self.endpoint)
+        filename = client.upload(file_path=file_path)
         url = f'/api/database/{database_id}/table/{table_id}/data/import'
         response = self._wrapper(method="post", url=url, force_auth=True,
                                  payload=Import(location=filename, separator=separator, quote=quote,
@@ -790,7 +803,7 @@ class RestClient:
         response = self._wrapper(method="get", url=url, params=params)
         if response.status_code == 202:
             body = response.json()
-            return DatatypeAnalysis.parse_raw(body)
+            return DatatypeAnalysis.model_validate(body)
         if response.status_code == 400 or response.status_code == 500:
             raise MalformedError(f'Failed to analyse data types: service rejected malformed payload')
         if response.status_code == 404:
@@ -826,7 +839,7 @@ class RestClient:
         response = self._wrapper(method="get", url=url, params=params)
         if response.status_code == 202:
             body = response.json()
-            return KeyAnalysis.parse_raw(body)
+            return KeyAnalysis.model_validate(body)
         if response.status_code == 400 or response.status_code == 500:
             raise MalformedError(f'Failed to analyse data types: service rejected malformed payload')
         if response.status_code == 404:
@@ -851,7 +864,7 @@ class RestClient:
         response = self._wrapper(method="get", url=url)
         if response.status_code == 202:
             body = response.json()
-            return TableStatistics.parse_raw(body)
+            return TableStatistics.model_validate(body)
         if response.status_code == 400:
             raise MalformedError(f'Failed to analyse table statistics: service rejected malformed payload')
         if response.status_code == 404:
@@ -994,7 +1007,7 @@ class RestClient:
         response = self._wrapper(method="get", url=url)
         if response.status_code == 200:
             body = response.json()
-            return DatabaseAccess.parse_raw(body).type
+            return DatabaseAccess.model_validate(body).type
         if response.status_code == 403:
             raise ForbiddenError(f'Failed to get database access: not allowed')
         if response.status_code == 404:
@@ -1020,7 +1033,7 @@ class RestClient:
         response = self._wrapper(method="post", url=url, force_auth=True, payload=CreateAccess(type=type))
         if response.status_code == 202:
             body = response.json()
-            return DatabaseAccess.parse_raw(body).type
+            return DatabaseAccess.model_validate(body).type
         if response.status_code == 400:
             raise MalformedError(f'Failed to create database access: service rejected malformed payload')
         if response.status_code == 403 or response.status_code == 405:
@@ -1049,7 +1062,7 @@ class RestClient:
         response = self._wrapper(method="put", url=url, force_auth=True, payload=UpdateAccess(type=type))
         if response.status_code == 202:
             body = response.json()
-            return DatabaseAccess.parse_raw(body).type
+            return DatabaseAccess.model_validate(body).type
         if response.status_code == 400:
             raise MalformedError(f'Failed to update database access: service rejected malformed payload')
         if response.status_code == 403 or response.status_code == 405:
@@ -1113,7 +1126,7 @@ class RestClient:
                                  payload=ExecuteQuery(statement=query, timestamp=timestamp))
         if response.status_code == 202:
             body = response.json()
-            return Result.parse_raw(body)
+            return Result.model_validate(body)
         if response.status_code == 400:
             raise MalformedError(f'Failed to execute query: service rejected malformed payload')
         if response.status_code == 403:
@@ -1128,7 +1141,7 @@ class RestClient:
             f'Failed to execute query: response code: {response.status_code} is not 202 (ACCEPTED)')
 
     def get_query_data(self, database_id: int, query_id: int, page: int = 0, size: int = 10,
-                       file_path: str = None) -> Result:
+                       df: bool = False) -> Result | DataFrame:
         """
         Re-executes a query in a database with given database id and query id.
 
@@ -1137,7 +1150,7 @@ class RestClient:
         :param page: The result pagination number. Optional. Default: 0.
         :param size: The result pagination size. Optional. Default: 10.
         :param size: The result pagination size. Optional. Default: 10.
-        :param file_path: The file path where the result should be saved. Optional.
+        :param df: If true, the result is returned as Pandas DataFrame. Optional. Default: False.
 
         :returns: The result set, if successful.
 
@@ -1148,22 +1161,17 @@ class RestClient:
         :raises QueryStoreError: The query store rejected the query.
         :raises MetadataConsistencyError: The service failed to parse columns from the metadata database.
         """
-        stream = False
         headers = {}
         url = f'/api/database/{database_id}/query/{query_id}/data'
         if page is not None and size is not None:
             url += f'?page={page}&size={size}'
-        if file_path is not None:
-            stream = True
-            headers = {'Accept': 'text/csv'}
-        response = self._wrapper(method="get", url=url, headers=headers, stream=stream)
+        response = self._wrapper(method="get", url=url, headers=headers)
         if response.status_code == 200:
-            if file_path is None:
-                body = response.json()
-                return Result.parse_raw(body)
-            else:
-                with open(file_path, "w") as f:
-                    f.write(response.content.decode("utf-8"))
+            body = response.json()
+            res = Result.model_validate(body)
+            if df:
+                return DataFrame.from_records(res.result)
+            return res
         if response.status_code == 400:
             raise MalformedError(f'Failed to re-execute query: service rejected malformed payload')
         if response.status_code == 403 or response.status_code == 405:
@@ -1233,7 +1241,7 @@ class RestClient:
         response = self._wrapper(method="get", url=url)
         if response.status_code == 200:
             body = response.json()
-            return Query.parse_raw(body)
+            return Query.model_validate(body)
         if response.status_code == 404:
             raise NotExistsError(f'Failed to find query: not found')
         if response.status_code == 403 or response.status_code == 405:
@@ -1295,7 +1303,7 @@ class RestClient:
         response = self._wrapper(method="put", url=url, force_auth=True, payload=UpdateQuery(persist=persist))
         if response.status_code == 202:
             body = response.json()
-            return Query.parse_raw(body)
+            return Query.model_validate(body)
         if response.status_code == 403 or response.status_code == 405:
             raise ForbiddenError(f'Failed to update query: not allowed')
         if response.status_code == 404:
@@ -1349,7 +1357,7 @@ class RestClient:
         response = self._wrapper(method="post", url=url, force_auth=True, payload=payload)
         if response.status_code == 201:
             body = response.json()
-            return Identifier.parse_raw(body)
+            return Identifier.model_validate(body)
         if response.status_code == 400:
             raise MalformedError(f'Failed to create identifier: service rejected malformed payload')
         if response.status_code == 403 or response.status_code == 405:
@@ -1376,7 +1384,7 @@ class RestClient:
         response = self._wrapper(method="get", url=url)
         if response.status_code == 200:
             body = response.json()
-            return Identifier.parse_raw(body)
+            return Identifier.model_validate(body)
         if response.status_code == 404:
             raise NotExistsError(f'Failed to suggest identifier: not found or not supported')
         raise ResponseCodeError(f'Failed to suggest identifier: response code: {response.status_code} is not 200 (OK)')
@@ -1442,7 +1450,7 @@ class RestClient:
                                  payload=UpdateColumn(concept_uri=concept_uri, unit_uri=unit_uri))
         if response.status_code == 202:
             body = response.json()
-            return Column.parse_raw(body)
+            return Column.model_validate(body)
         if response.status_code == 400:
             raise MalformedError(f'Failed to update column: service rejected malformed payload')
         if response.status_code == 403:
