@@ -5,7 +5,7 @@
     --md-primary-fg-color--dark: #00537c /* darken 10% */;
 }
 
-figure img.img-border {
+img.img-border {
     border: 1px solid #b3b3b3;
 }
 
@@ -23,9 +23,4 @@ figure img.img-border {
 
 .md-banner {
     background-color: var(--md-primary-fg-color--dark);
-}
-
-[data-md-component=announce] .md-banner__inner {
-    margin-top: 0.2rem;
-    margin-bottom: 0.2rem;
 }

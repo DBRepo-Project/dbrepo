@@ -1,0 +1,147 @@
+{% extends "main.html" %}
+
+<!-- Render hero under tabs -->
+{% block tabs %}
+{{ super() }}
+
+<!-- Additional styles for landing page -->
+<style>
+
+    /* Application header should be static for the landing page */
+    .md-header {
+        position: initial;
+    }
+
+    .md-content > article h1 {
+        display: none;
+        visibility: hidden;
+    }
+
+    /*!* Remove spacing, as we cannot hide it completely *!*/
+    .md-main__inner {
+        margin-top: 0;
+    }
+
+    /*!* Hide main content for now *!*/
+    /*.md-content {*/
+    /*  display: none;*/
+    /*}*/
+
+    /*!* Hide table of contents *!*/
+    /*@media screen and (min-width: 60em) {*/
+    /*  .md-sidebar--secondary {*/
+    /*    display: none;*/
+    /*  }*/
+    /*}*/
+
+    /*!* Hide navigation *!*/
+    /*@media screen and (min-width: 76.25em) {*/
+    /*  .md-sidebar--primary {*/
+    /*    display: none;*/
+    /*  }*/
+    /*}*/
+</style>
+
+<!-- Hero for landing page -->
+<section class="mdx-container">
+    <div class="md-grid md-typeset">
+        <div class="mdx-hero">
+
+            <!-- Hero image -->
+            <div class="mdx-hero__image">
+                <img
+                        src="images/hero.png"
+                        alt=""
+                        class="img-border"
+                        width="100%"
+                        draggable="false"/>
+            </div>
+
+            <!-- Hero content -->
+            <div class="mdx-hero__content" style="margin-top:24px;margin-bottom:24px;">
+                <h1>DBRepo: A Database Repository to Support Research</h1>
+                <p>Set up in a few minutes.</p>
+                <a
+                        href="{{ page.next_page.url | url }}"
+                        title="{{ page.next_page.title | e }}"
+                        style="margin-right: 10px;"
+                        class="action-button md-button md-button--primary">
+                    Get started
+                </a>
+                <a
+                        href="{{ 'insiders/' | url }}"
+                        title="Material for MkDocs Insiders"
+                        class="action-button md-button md-button--secondary">
+                    Learn more
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+<section>
+    <div class="md-grid md-typeset">
+        <div class="mdx-spotlight">
+            <figure class="mdx-spotlight__feature">
+                <a href="setup/setting-up-site-search/" tabindex="-1" title="Built-in search">
+                    <img src="images/screenshots/jupyterhub4.png"
+                         alt="Built-in search" loading="lazy"
+                         width="500"
+                         height="327">
+                </a>
+                <figcaption class="md-typeset">
+                    <h2>Built-in search</h2>
+                    <p>Reusable datasets</p>
+                    <p>
+                        <a href="setup/setting-up-site-search/" aria-label="Built-in search">Learn more</a>
+                    </p>
+                </figcaption>
+            </figure>
+            <figure class="mdx-spotlight__feature">
+                <a href="setup/setting-up-site-search/" tabindex="-1" title="Built-in search">
+                    <img src="images/screenshots/jupyterhub4.png"
+                         alt="Built-in search" loading="lazy"
+                         width="500"
+                         height="327">
+                </a>
+                <figcaption class="md-typeset">
+                    <h2>Citable datasets</h2>
+                    <p>OAI-PMH, Google Datasets, FAIR Signposting</p>
+                    <p>
+                        <a href="setup/setting-up-site-search/" aria-label="Built-in search">Learn more</a>
+                    </p>
+                </figcaption>
+            </figure>
+            <figure class="mdx-spotlight__feature">
+                <a href="setup/setting-up-site-search/" tabindex="-1" title="Built-in search">
+                    <img src="images/screenshots/jupyterhub4.png"
+                         alt="Built-in search" loading="lazy"
+                         width="500"
+                         height="327">
+                </a>
+                <figcaption class="md-typeset">
+                    <h2>Powerful API for Data Scientists</h2>
+                    <p>Python Library, Pandas, Juypter Notebook, etc.</p>
+                    <p>
+                        <a href="setup/setting-up-site-search/" aria-label="Built-in search">Learn more</a>
+                    </p>
+                </figcaption>
+            </figure>
+            <figure class="mdx-spotlight__feature">
+                <a href="setup/setting-up-site-search/" tabindex="-1" title="Built-in search">
+                    <img src="images/screenshots/jupyterhub4.png"
+                         alt="Built-in search" loading="lazy"
+                         width="500"
+                         height="327">
+                </a>
+                <figcaption class="md-typeset">
+                    <h2>Cloud Native</h2>
+                    <p>Easy deployment</p>
+                    <p>
+                        <a href="setup/setting-up-site-search/" aria-label="Built-in search">Learn more</a>
+                    </p>
+                </figcaption>
+            </figure>
+        </div>
+    </div>
+</section>
+{% endblock %}

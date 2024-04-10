@@ -1,11 +1,13 @@
 ---
-title: Home
+template: home.html
 author: Martin Weise
 hide:
 - navigation
+- toc
+social:
+  cards_layout_options:
+    title: Documentation that simply works
 ---
-
-# DBRepo: A Database Repository to Support Research
 
 ## Problem Statement
 
@@ -13,9 +15,6 @@ Digital repositories see themselves more frequently encountered with the problem
 collection. Challenges revolve around organizing, searching and retrieving content stored within databases and
 constitute a major technical burden as their internal representation greatly differs from static documents most digital
 repositories are designed for.
-
-[System Description](./system){ .action-button .md-button .md-button--secondary }
-[How to use](./usage-overview){ .action-button .md-button .md-button--primary }
 
 ## Application Areas
 
