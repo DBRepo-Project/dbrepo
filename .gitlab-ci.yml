@@ -587,9 +587,8 @@ release-libs:
   variables:
     PIPENV_PIPFILE: "./dbrepo-analyse-service/Pipfile"
   script:
-    - apk add sed
-    - pip install pipenv
+    - apk add sed bash
+    - pip install pipenv twine build
     - pipenv install gunicorn && pipenv install --dev --system --deploy
-    - pip install twine build
-    - ./lib/python/package.sh
-    - ./lib/python/release.sh
+    - bash ./lib/python/package.sh
+    - bash ./lib/python/release.sh
