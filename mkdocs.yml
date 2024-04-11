@@ -5,7 +5,6 @@ repo_name: fda-services
 site_author: Research Unit Data Science, Technische Universit&auml;t Wien
 copyright: CC-BY 4.0 Technische Universit&auml;t Wien & Universit&auml;t Wien
 docs_dir: .docs
-use_directory_urls: true
 nav:
   - Home: index.md
   - Deployment:
@@ -106,6 +105,7 @@ extra:
   homepage: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/
   version:
     default: 1.4.2
+    index: "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/versions.json"
     provider: mike
   social:
     - icon: simple/artifacthub
