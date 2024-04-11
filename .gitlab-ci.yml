@@ -577,6 +577,11 @@ release-docs:
     - tar czf ./final.tar.gz ./final
     - "scp -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa final.tar.gz $CI_DOC_USER@$CI_DOC_IP:final.tar.gz"
     - "ssh -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa $CI_DOC_USER@$CI_DOC_IP 'rm -rf /system/user/ifs/infrastructures/public_html/dbrepo/*; tar xzf ./final.tar.gz; rm -f ./final.tar.gz; cp -r ./final/* /system/user/ifs/infrastructures/public_html/dbrepo; rm -rf ./final'"
+  artifacts:
+    when: always
+    paths:
+      - ./final.tar.gz
+    expire_in: 1 days
 
 release-libs:
   stage: release
