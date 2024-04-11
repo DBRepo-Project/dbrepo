@@ -105,7 +105,6 @@ extra:
   homepage: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/
   version:
     default: 1.4.2
-    index: "https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/versions.json"
     provider: mike
   social:
     - icon: simple/artifacthub
