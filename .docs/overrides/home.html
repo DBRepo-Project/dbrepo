@@ -1,0 +1,164 @@
+{% extends "main.html" %}
+
+<!-- Render hero under tabs -->
+{% block tabs %}
+{{ super() }}
+
+<!-- Additional styles for landing page -->
+<style>
+
+    /* Application header should be static for the landing page */
+    .md-header {
+        position: initial;
+    }
+
+    .md-content > article h1 {
+        display: none;
+        visibility: hidden;
+    }
+
+    /*!* Remove spacing, as we cannot hide it completely *!*/
+    .md-main__inner {
+        margin-top: 0;
+    }
+
+    /*!* Hide main content for now *!*/
+    /*.md-content {*/
+    /*  display: none;*/
+    /*}*/
+
+    /*!* Hide table of contents *!*/
+    /*@media screen and (min-width: 60em) {*/
+    /*  .md-sidebar--secondary {*/
+    /*    display: none;*/
+    /*  }*/
+    /*}*/
+
+    /*!* Hide navigation *!*/
+    /*@media screen and (min-width: 76.25em) {*/
+    /*  .md-sidebar--primary {*/
+    /*    display: none;*/
+    /*  }*/
+    /*}*/
+</style>
+
+<!-- Hero for landing page -->
+<section class="mdx-container">
+    <div class="md-grid md-typeset">
+        <div class="mdx-hero">
+
+            <!-- Hero image -->
+            <div class="mdx-hero__image">
+                <img
+                        src="images/hero.png"
+                        alt=""
+                        class="img-border"
+                        width="100%"
+                        draggable="false"/>
+            </div>
+
+            <!-- Hero content -->
+            <div class="mdx-hero__content" style="margin-top:24px;margin-bottom:24px;">
+                <h1>DBRepo: A Database Repository to Support Research</h1>
+                <p>Set up in a few minutes.</p>
+                <a
+                        href="{{ page.next_page.url | url }}"
+                        title="{{ page.next_page.title | e }}"
+                        style="margin-right: 10px;"
+                        class="action-button md-button md-button--primary">
+                    Get started
+                </a>
+                <a
+                        href="{{ 'insiders/' | url }}"
+                        title="Material for MkDocs Insiders"
+                        class="action-button md-button md-button--secondary">
+                    Learn more
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+<section>
+    <div class="md-grid md-typeset">
+        <div class="mdx-spotlight">
+            <figure class="mdx-spotlight__feature">
+                <a href="../system-services-search/" tabindex="-1" title="Built-in search">
+                    <img src="images/screenshots/feature-search.png"
+                         alt="Built-in search" loading="lazy"
+                         width="500"
+                         height="327">
+                </a>
+                <figcaption class="md-typeset">
+                    <h2>Built-in search</h2>
+                    <p>DBRepo makes your dataset <strong>searchable</strong> without extra effort: most metadata is
+                        <strong>generated</strong> automatically for data in your databases. The fast and powerful
+                        OpenSearch database allows a <strong>fast retrieval</strong> of any information.</p>
+                    <p>Adding <strong>semantic mapping</strong> through a suggestion-feature, allows machines to
+                        properly understand the context of your data.</p>
+                    <p>
+                        <a href="../system-services-search/" aria-label="Built-in search">Learn more</a>
+                    </p>
+                </figcaption>
+            </figure>
+            <figure class="mdx-spotlight__feature">
+                <a href="../system-services-metadata/" tabindex="-1" title="Built-in search">
+                    <img src="images/screenshots/feature-identifiers.png"
+                         alt="Built-in search" loading="lazy"
+                         width="500"
+                         height="327">
+                </a>
+                <figcaption class="md-typeset">
+                    <h2>Citable datasets</h2>
+                    <p>Adopting the recommendations of the <strong>RDA-WGDC</strong>, arbitrary subsets can be
+                        precisely, <strong>persistently identified</strong> using system-versioned tables of MariaDB and
+                        the <strong>DOI</strong> schema.</p>
+                    <p>External systems i.e. <strong>metadata harvesters</strong> (OpenAIRE, Google Datasets) can access
+                        these datasets through OAI-PMH, JSON-LD and <strong>FAIR Signposting</strong> protocols.</p>
+                    <p>
+                        <a href="../system-services-metadata/" aria-label="Built-in search">Learn more</a>
+                    </p>
+                </figcaption>
+            </figure>
+            <figure class="mdx-spotlight__feature">
+                <a href="../usage-python/" tabindex="-1" title="Built-in search">
+                    <img src="images/screenshots/feature-jupyter.png"
+                         alt="Built-in search" loading="lazy"
+                         width="500"
+                         height="327">
+                </a>
+                <figcaption class="md-typeset">
+                    <h2>Powerful API for Data Scientists</h2>
+                    <p>With our <strong>strongly typed</strong> Python Library, Data Scientists can import, export and
+                        <strong>work with data</strong> from Jupyter Notebook or Python script, optionally using
+                        <strong>Pandas DataFrames</strong>.
+                    </p>
+                    <p>For example: the <strong>AMQP API Client</strong> can collect continuous data from edge devices
+                        like sensors and store them <strong>asynchronous</strong> in DBRepo.</p>
+                    <p>
+                        <a href="../usage-python/" aria-label="Built-in search">Learn more</a>
+                    </p>
+                </figcaption>
+            </figure>
+            <figure class="mdx-spotlight__feature">
+                <a href="../deployment-helm/" tabindex="-1" title="Built-in search">
+                    <img src="images/screenshots/feature-cloud.png"
+                         alt="Built-in search" loading="lazy"
+                         width="500"
+                         height="327">
+                </a>
+                <figcaption class="md-typeset">
+                    <h2>Cloud Native</h2>
+                    <p>Our <strong>lightweight</strong> Helm chart allows for installations on <strong>any cloud
+                        provider</strong> that has an underlying PV storage provider. DBRepo can be installed from the
+                        Artifacthub repository.</p>
+                    <p>Databases are managed as <strong>MariaDB Galera</strong> Cluster with high degree of replication,
+                        ensuring your data is always <strong>accessible</strong>.</p>
+                    <p>
+                        <a href="../deployment-helm/" aria-label="Built-in search">Learn more</a>
+                    </p>
+                </figcaption>
+            </figure>
+        </div>
+    </div>
+</section>
+{% endblock %}

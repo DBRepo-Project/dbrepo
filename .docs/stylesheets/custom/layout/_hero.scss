@@ -1,0 +1,88 @@
+// ----------------------------------------------------------------------------
+// Rules
+// ----------------------------------------------------------------------------
+
+// Landing page container
+.mdx-container {
+  padding-top: 0.25rem;
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1123 258'><path d='M1124,2c0,0 0,256 0,256l-1125,0l0,-48c0,0 16,5 55,5c116,0 197,-92 325,-92c121,0 114,46 254,46c140,0 214,-167 572,-166Z' style='fill: hsla(0, 0%, 100%, 1)' /></svg>") no-repeat bottom,
+  linear-gradient(
+                  to bottom,
+                  var(--md-primary-fg-color),
+                  hsla(230, 15%, 25%, 1) 99%,
+                  var(--md-default-bg-color) 99%
+  );
+
+  // Adjust background for slate theme
+  [data-md-color-scheme="slate"] & {
+    background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1123 258'><path d='M1124,2c0,0 0,256 0,256l-1125,0l0,-48c0,0 16,5 55,5c116,0 197,-92 325,-92c121,0 114,46 254,46c140,0 214,-167 572,-166Z' style='fill: hsla(230, 15%, 14%, 1)' /></svg>") no-repeat bottom,
+    linear-gradient(
+                    to bottom,
+                    var(--md-primary-fg-color),
+                    hsla(230, 15%, 25%, 1) 99%,
+                    var(--md-default-bg-color) 99%
+    );
+  }
+}
+
+// Landing page hero
+.mdx-hero {
+  margin: 0 16px;
+  color: var(--md-primary-bg-color);
+
+  // Hero headline
+  h1 {
+    margin-bottom: 20px;
+    font-weight: 700;
+    color: currentcolor;
+
+  }
+
+  // Hero content
+  &__content {
+    padding-bottom: 120px;
+  }
+}
+
+.mdx-spotlight__feature {
+  flex-direction: row-reverse;
+}
+
+// Landing page spotlight
+.mdx-spotlight {
+
+  .mdx-spotlight__feature {
+    width: 100%;
+    display: flex;
+    flex: 1 0 48%;
+    flex-flow: row nowrap;
+    gap: 3.2rem;
+    margin: 0 0 3.2rem;
+
+    &:nth-child(odd) {
+      flex-direction: row-reverse;
+    }
+
+    & > figcaption {
+      text-align: left;
+      font-style: inherit;
+      max-width: inherit;
+      margin: 1em auto 0 .8rem;
+    }
+
+    & > a {
+      margin: 2rem 0;
+      display: block;
+      flex-shrink: 0;
+
+      & > img {
+        border-radius: .2rem;
+        box-shadow: var(--md-shadow-z2);
+        display: block;
+        height: auto;
+        max-width: 100%;
+        width: 25rem;
+      }
+    }
+  }
+}
