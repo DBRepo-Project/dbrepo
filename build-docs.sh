@@ -35,8 +35,7 @@ function generate_docs {
   fi
   find .docs/ -type f -exec sed -i -e "s/__APPVERSION__/$1/g" {} \;
   find .docs/ -type f -exec sed -i -e "s/__CHARTVERSION__/$1/g" {} \;
-  mike set-default $APP_VERSION
-  mike deploy $1 && cp -r ./site "./final/$1"
+  mkdocs build > /dev/null && cp -r ./site "./final/$1"
   cp -r "./swagger/$1" "./final/$1/swagger"
   echo $VERSIONS_JSON > "./final/$1/versions.json"
   clean_cache
