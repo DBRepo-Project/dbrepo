@@ -100,6 +100,15 @@ markdown_extensions:
           - .docs/overrides/.icons
 extra:
   homepage: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/
+  version:
+    default: 1.4.2
+    provider: mike
   social:
+    - icon: simple/artifacthub
+      link: https://artifacthub.io/packages/helm/dbrepo/dbrepo
+    - icon: fontawesome/brands/docker
+      link: https://hub.docker.com/search?q=dbrepo
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/dbrepo/
     - icon: fontawesome/brands/gitlab
       link: https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services
