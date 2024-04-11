@@ -46,6 +46,10 @@ fda-ui/
 
 # Generated
 ready
+final/
+
+# never
+lib/
 
 # crt
 *.crt
@@ -54,6 +58,7 @@ ready
 
 # Environment
 .env
+venv/
 
 # X509
 root.crt
