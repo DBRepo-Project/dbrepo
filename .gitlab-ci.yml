@@ -4,7 +4,7 @@ variables:
   TRIVY_CACHE_DIR: ".trivycache/"
   DOCKER_HOST: "unix:///var/run/dind/docker.sock"
   TESTCONTAINERS_RYUK_DISABLED: "false"
-  DOC_VERSIONS: "latest,1.4.2,1.4.1,1.4.0,1.3.0"
+  DOC_VERSIONS: "1.3.0,1.4.0,1.4.1,1.4.2,latest"
   APP_VERSION: "1.4.2"
   CHART_VERSION: "1.4.2"
 
