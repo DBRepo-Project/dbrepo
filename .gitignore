@@ -8,6 +8,7 @@ target/
 ready
 schema.xsd
 swagger/
+final/
 
 # docs
 .docs/.swagger/dist/
@@ -47,6 +48,9 @@ fda-ui/
 # Generated
 ready
 
+# newer
+lib/
+
 # crt
 *.crt
 *.key
@@ -54,6 +58,7 @@ ready
 
 # Environment
 .env
+venv/
 
 # X509
 root.crt
