@@ -88,6 +88,6 @@ done
 
 # finalization
 echo "==================================================="
-echo "Moving default version $APP_VERSION docs to /"
-cp -r ./final/${APP_VERSION}/* ./final/
+echo "Moving redirect to /"
+cp ./final/${APP_VERSION}/redirect.html ./final/index.html
 echo "==================================================="
