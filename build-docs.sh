@@ -1,7 +1,6 @@
 #!/bin/bash
 
-OVERRIDES_MAIN_HTML=""
-SCRIPTS_EXTRA_JS=""
+VERSIONS_JSON=""
 
 function clean_cache {
   echo "Removing cache from directory ./site ./lib/python/docs/build"
@@ -32,18 +31,13 @@ function generate_docs {
   pip install -r ./requirements.txt > /dev/null
   mkdir -p ./final
   if [ "$1" = "latest" ]; then
-    OVERRIDES_MAIN_HTML=$(cat .docs/overrides/main.html)
-    sed -i -e "s/__APPVERSION__/${APP_VERSION}/g" .docs/scripts/extra.js
-    SCRIPTS_EXTRA_JS=$(cat .docs/scripts/extra.js)
-  else
-    echo $OVERRIDES_MAIN_HTML > .docs/overrides/main.html
-    mkdir -p .docs/scripts
-    echo $SCRIPTS_EXTRA_JS > .docs/scripts/extra.js
+    VERSIONS_JSON=$(cat ./versions.json)
   fi
   find .docs/ -type f -exec sed -i -e "s/__APPVERSION__/$1/g" {} \;
   find .docs/ -type f -exec sed -i -e "s/__CHARTVERSION__/$1/g" {} \;
   mkdocs build > /dev/null && cp -r ./site "./final/$1"
   cp -r "./swagger/$1" "./final/$1/swagger"
+  echo $VERSIONS_JSON > "./final/$1/versions.json"
   clean_cache
 }
 
