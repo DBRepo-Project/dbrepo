@@ -20,10 +20,10 @@ hide:
 
 DBRepo logo in various formats:
 
-* PNG: [bigger](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/dbrepo-ui/static/logo.png)
-  ([smaller](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/dbrepo-ui/static/favicon.png))
-* SVG: [bigger](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/dbrepo-ui/static/logo.svg)
-  ([smaller](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/dev/dbrepo-ui/static/favicon.svg))
+* PNG: [bigger](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-__APPVERSION__/dbrepo-ui/public/logo.png?inline=true)
+  ([smaller](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-__APPVERSION__/dbrepo-ui/public/favicon.png?inline=true))
+* SVG: [bigger](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-__APPVERSION__/dbrepo-ui/public/logo.svg?inline=true)
+  ([smaller](https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/release-__APPVERSION__/dbrepo-ui/public/favicon.svg?inline=true))
 
 
 ## Refereed
