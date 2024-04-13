@@ -100,7 +100,7 @@ export default defineNuxtConfig({
         },
         rabbitmq: {
           text: 'RabbitMQ Admin',
-          href: '/api/broker/'
+          href: '/admin/broker/'
         },
         keycloak: {
           text: 'Keycloak Admin',

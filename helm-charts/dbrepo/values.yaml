@@ -324,22 +324,13 @@ brokerService:
     auth_oauth2.resource_server_id = rabbitmq
     auth_oauth2.preferred_username_claims.1 = client_id
     auth_oauth2.default_key = t2OCeCheJ9uwoBbNQjG_nN6WKiLcceTIAZmiTbGODFM
-    auth_oauth2.signing_keys.t2OCeCheJ9uwoBbNQjG_nN6WKiLcceTIAZmiTbGODFM = /etc/rabbitmq/cert.pem
-    auth_oauth2.signing_keys.id2 = /etc/rabbitmq/pubkey.pem
+    auth_oauth2.signing_keys.t2OCeCheJ9uwoBbNQjG_nN6WKiLcceTIAZmiTbGODFM = /app/cert.pem
+    auth_oauth2.signing_keys.id2 = /app/pubkey.pem
     auth_oauth2.algorithms.1 = HS256
     auth_oauth2.algorithms.2 = RS256
   loadDefinition:
     enabled: true
     existingSecret: broker-service-secret
-  extraVolumeMounts:
-    - name: secret-map
-      mountPath: /etc/rabbitmq/pubkey.pem
-      subPath: pubkey.pem
-      readOnly: true
-    - name: secret-map
-      mountPath: /etc/rabbitmq/cert.pem
-      subPath: cert.pem
-      readOnly: true
   extraVolumes:
     - name: secret-map
       secret:
@@ -350,6 +341,7 @@ brokerService:
     size: 5Gi
   service:
     type: ClusterIP
+    managerPortEnabled: true
     # loadBalancerIP:
   replicaCount: 1
 
@@ -496,6 +488,10 @@ ingress:
       nginx.ingress.kubernetes.io/use-regex: "true"
       nginx.ingress.kubernetes.io/rewrite-target: /api/$1
     rewriteRoot:
+#      cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
+      nginx.ingress.kubernetes.io/use-regex: "true"
+      nginx.ingress.kubernetes.io/rewrite-target: /$1
+    rewriteRootSecure:
 #      cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
       nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
       nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"

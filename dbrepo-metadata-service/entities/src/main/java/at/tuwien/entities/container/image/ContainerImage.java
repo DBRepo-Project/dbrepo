@@ -22,7 +22,6 @@ import java.util.List;
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@OnDelete(action = OnDeleteAction.CASCADE)
 @Table(name = "mdb_images", uniqueConstraints = @UniqueConstraint(columnNames = {"name", "version"}))
 public class ContainerImage {
 

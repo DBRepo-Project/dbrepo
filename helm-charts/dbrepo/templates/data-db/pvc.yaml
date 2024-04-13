@@ -1,5 +1,4 @@
 {{- if .Values.dataDb.enabled }}
-{{- if .Values.dataDb.persistence.enabled }}
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -14,5 +13,4 @@ spec:
   resources:
     requests:
       storage: 8Gi
-{{- end }}
 {{- end }}

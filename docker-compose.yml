@@ -301,8 +301,8 @@ services:
     build:
       context: ./dbrepo-ui
       args:
-        VERSION: ${VERSION}
-        COMMIT: ${CI_COMMIT_SHA}
+        APP_VERSION: ${APP_VERSION:-latest}
+        COMMIT: ${CI_COMMIT_SHA:-}
       network: host
     depends_on:
       dbrepo-search-service:
