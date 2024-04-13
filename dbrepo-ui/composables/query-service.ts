@@ -110,8 +110,9 @@ export const useQueryService = (): any => {
     return new Promise<number>((resolve, reject) => {
       axios.head<void>(`/api/database/${databaseId}/query/${queryId}/data`)
         .then((response) => {
+          const count: number = Number(response.headers['x-count'])
           console.info('Re-executed query in database with id', databaseId)
-          resolve(Number(response.headers['X-Count']))
+          resolve(count)
         })
         .catch((error) => {
           console.error('Failed to re-execute query', error)

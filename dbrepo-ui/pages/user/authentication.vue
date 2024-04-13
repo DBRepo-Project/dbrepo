@@ -61,7 +61,7 @@
 </template>
 
 <script>
-import UserToolbar from '@/components/user/UserToolbar'
+import UserToolbar from '@/components/user/UserToolbar.vue'
 import { useUserStore } from '@/stores/user'
 
 export default {

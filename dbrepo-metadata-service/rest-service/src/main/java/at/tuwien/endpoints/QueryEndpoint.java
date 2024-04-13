@@ -178,6 +178,7 @@ public class QueryEndpoint {
         final Long count = queryService.reExecuteCount(databaseId, query, principal);
         final HttpHeaders headers = new HttpHeaders();
         headers.set("X-Count", "" + count);
+        headers.set("Access-Control-Expose-Headers", "X-Count");
         if (request.getMethod().equals("GET")) {
             final QueryResultDto result = queryService.reExecute(databaseId, query, page, size, sortDirection, sortColumn,
                     principal);

@@ -316,7 +316,7 @@ brokerService:
     default_permissions.configure = .*
     default_permissions.read = .*
     default_permissions.write = .*
-    load_definitions = /etc/rabbitmq/definitions.json
+    load_definitions = /app/load_definition.json
     log.console = true
     listeners.tcp.1 = 0.0.0.0:5672
     auth_backends.1 = rabbit_auth_backend_oauth2
@@ -330,13 +330,8 @@ brokerService:
     auth_oauth2.algorithms.2 = RS256
   loadDefinition:
     enabled: true
-    file: /etc/rabbitmq/definitions.json
     existingSecret: broker-service-secret
   extraVolumeMounts:
-    - name: secret-map
-      mountPath: /etc/rabbitmq/definitions.json
-      subPath: definitions.json
-      readOnly: true
     - name: secret-map
       mountPath: /etc/rabbitmq/pubkey.pem
       subPath: pubkey.pem

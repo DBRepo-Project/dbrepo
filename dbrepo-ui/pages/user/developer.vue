@@ -88,8 +88,8 @@
 </template>
 
 <script>
-import UserToolbar from '@/components/user/UserToolbar'
-import EditMaintenanceMessage from '@/components/dialogs/EditMaintenanceMessage'
+import UserToolbar from '@/components/user/UserToolbar.vue'
+import EditMaintenanceMessage from '@/components/dialogs/EditMaintenanceMessage.vue'
 import { formatTimestampUTCLabel, isActiveMessage, timestampsToHumanDifference } from '@/utils'
 import { useUserStore } from '@/stores/user'
 import { useCacheStore } from '@/stores/cache'

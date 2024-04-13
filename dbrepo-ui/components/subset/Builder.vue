@@ -271,9 +271,9 @@
 </template>
 
 <script>
-import TimeDrift from '@/components/TimeDrift'
-import Raw from '@/components/subset/Raw'
-import Results from '@/components/subset/Results'
+import TimeDrift from '@/components/TimeDrift.vue'
+import Raw from '@/components/subset/Raw.vue'
+import Results from '@/components/subset/Results.vue'
 import { useCacheStore } from '@/stores/cache'
 import { useUserStore } from '@/stores/user'
 import { format } from 'sql-formatter'

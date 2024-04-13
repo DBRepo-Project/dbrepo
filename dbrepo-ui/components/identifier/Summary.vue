@@ -168,12 +168,12 @@
 </template>
 
 <script>
-import Citation from '@/components/identifier/Citation'
-import IsniIcon from '@/components/icons/IsniIcon'
-import OrcidIcon from '@/components/icons/OrcidIcon'
-import RorIcon from '@/components/icons/RorIcon'
-import Banner from '@/components/identifier/Banner'
-import Persist from '@/components/identifier/Persist'
+import Citation from '@/components/identifier/Citation.vue'
+import IsniIcon from '@/components/icons/IsniIcon.vue'
+import OrcidIcon from '@/components/icons/OrcidIcon.vue'
+import RorIcon from '@/components/icons/RorIcon.vue'
+import Banner from '@/components/identifier/Banner.vue'
+import Persist from '@/components/identifier/Persist.vue'
 import { formatLanguage } from '@/utils'
 import { useCacheStore } from '@/stores/cache'
 

@@ -112,6 +112,7 @@ public class DatabaseEndpoint {
         log.trace("list databases resulted in databases {}", dtos);
         final HttpHeaders headers = new HttpHeaders();
         headers.set("X-Count", "" + dtos.size());
+        headers.set("Access-Control-Expose-Headers", "X-Count");
         return ResponseEntity.status(HttpStatus.OK)
                 .headers(headers)
                 .body(dtos);

@@ -7,7 +7,7 @@
 </template>
 
 <script>
-import SubsetList from '@/components/subset/SubsetList'
+import SubsetList from '@/components/subset/SubsetList.vue'
 
 export default {
   components: {

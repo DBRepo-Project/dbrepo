@@ -46,7 +46,7 @@ dependencies:
     condition: authDb.enabled
   - name: rabbitmq
     alias: brokerService
-    version: 12.5.1
+    version: 14.0.0
     repository: https://charts.bitnami.com/bitnami
     condition: brokerService.enabled
   - name: seaweedfs

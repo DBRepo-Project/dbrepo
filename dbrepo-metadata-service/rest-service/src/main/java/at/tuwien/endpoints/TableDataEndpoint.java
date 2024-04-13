@@ -307,6 +307,7 @@ public class TableDataEndpoint {
         final Long count = queryService.tableCount(databaseId, tableId, timestamp, principal);
         final HttpHeaders headers = new HttpHeaders();
         headers.set("X-Count", "" + count);
+        headers.set("Access-Control-Expose-Headers", "X-Count");
         if (request.getMethod().equals("GET")) {
             final QueryResultDto response = queryService.tableFindAll(databaseId, tableId, timestamp, page, size, principal);
             log.trace("find table data resulted in result {}", response);

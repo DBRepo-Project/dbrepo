@@ -8,11 +8,12 @@ export const useAxiosInstance = () => {
   const userStore = useUserStore()
   if (!instance) {
     instance = axios.create({
-      timeout: 3000,
+      timeout: 10000,
       params: {},
       headers: {
         Accept: 'application/json',
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
       },
       baseURL: config.public.api.client
     });

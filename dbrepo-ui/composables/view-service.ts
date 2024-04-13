@@ -53,7 +53,7 @@ export const useViewService = (): any => {
     return new Promise<number>((resolve, reject) => {
       axios.head<number>(`/api/database/${databaseId}/view/${viewId}/data`)
         .then((response) => {
-          const count: number = Number(response.headers['X-Count'])
+          const count: number = Number(response.headers['x-count'])
           console.info('Re-executed view with id', viewId, 'in database with id', databaseId)
           resolve(count)
         })

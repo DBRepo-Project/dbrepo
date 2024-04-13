@@ -18,8 +18,8 @@
 </template>
 
 <script>
-import QueryResults from '@/components/subset/Results'
-import SubsetToolbar from '@/components/subset/SubsetToolbar'
+import QueryResults from '@/components/subset/Results.vue'
+import SubsetToolbar from '@/components/subset/SubsetToolbar.vue'
 import { formatTimestampUTCLabel } from '@/utils'
 import { useCacheStore } from '@/stores/cache'
 

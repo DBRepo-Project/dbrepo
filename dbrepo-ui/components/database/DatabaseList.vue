@@ -14,7 +14,7 @@
 </template>
 
 <script>
-import DatabaseSkeleton from '@/components/database/DatabaseSkeleton'
+import DatabaseSkeleton from '@/components/database/DatabaseSkeleton.vue'
 
 export default {
   components: {

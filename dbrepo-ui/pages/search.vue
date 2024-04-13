@@ -71,8 +71,8 @@
 </template>
 
 <script>
-import DatabaseCreate from '@/components/database/DatabaseCreate'
-import AdvancedSearch from '@/components/search/AdvancedSearch'
+import DatabaseCreate from '@/components/database/DatabaseCreate.vue'
+import AdvancedSearch from '@/components/search/AdvancedSearch.vue'
 import { useUserStore } from '@/stores/user'
 
 export default {

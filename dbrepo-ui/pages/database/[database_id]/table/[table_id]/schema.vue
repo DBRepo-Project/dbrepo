@@ -130,7 +130,7 @@
 </template>
 
 <script>
-import TableToolbar from '@/components/table/TableToolbar'
+import TableToolbar from '@/components/table/TableToolbar.vue'
 import { useUserStore } from '@/stores/user'
 import { useCacheStore } from '@/stores/cache'
 

@@ -103,10 +103,10 @@ if (data.value) {
 }
 </script>
 <script>
-import Summary from '@/components/identifier/Summary'
-import SubsetToolbar from '@/components/subset/SubsetToolbar'
-import Select from '@/components/identifier/Select'
-import UserBadge from '@/components/user/UserBadge'
+import Summary from '@/components/identifier/Summary.vue'
+import SubsetToolbar from '@/components/subset/SubsetToolbar.vue'
+import Select from '@/components/identifier/Select.vue'
+import UserBadge from '@/components/user/UserBadge.vue'
 import { formatTimestampUTCLabel } from '@/utils'
 import { useUserStore } from '@/stores/user'
 import { useCacheStore } from '@/stores/cache'

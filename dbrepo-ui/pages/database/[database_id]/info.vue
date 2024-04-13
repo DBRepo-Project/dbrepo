@@ -158,10 +158,10 @@ if (data.value) {
 }
 </script>
 <script>
-import DatabaseToolbar from '@/components/database/DatabaseToolbar'
-import Summary from '@/components/identifier/Summary'
-import Select from '@/components/identifier/Select'
-import UserBadge from '@/components/user/UserBadge'
+import DatabaseToolbar from '@/components/database/DatabaseToolbar.vue'
+import Summary from '@/components/identifier/Summary.vue'
+import Select from '@/components/identifier/Select.vue'
+import UserBadge from '@/components/user/UserBadge.vue'
 import { formatTimestampUTCLabel, sizeToHumanLabel } from '@/utils'
 import { useUserStore } from '@/stores/user'
 import { useCacheStore } from '@/stores/cache'

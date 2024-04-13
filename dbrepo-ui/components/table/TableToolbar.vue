@@ -73,8 +73,8 @@
 </template>
 
 <script>
-import EditTuple from '@/components/dialogs/EditTuple'
-import DropTable from '@/components/dialogs/DropTable'
+import EditTuple from '@/components/dialogs/EditTuple.vue'
+import DropTable from '@/components/dialogs/DropTable.vue'
 import { useCacheStore } from '@/stores/cache'
 import { useUserStore } from '@/stores/user'
 

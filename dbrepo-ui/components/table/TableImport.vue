@@ -399,6 +399,7 @@ export default {
               this.rowCount = rowCount
             })
           this.step = this.stepStart + 2
+          this.loading = false
         })
         .catch((error) => {
           console.error('Failed to import csv', error)
@@ -410,6 +411,7 @@ export default {
         })
     },
     uploadAndAnalyse() {
+      this.loading = true
       this.previousFile = this.fileModel[0]
       const uploadService = useUploadService()
       return uploadService.create(this.previousFile)
@@ -421,17 +423,14 @@ export default {
           this.$toast.error(this.$t('error.upload.dataset'))
           this.loading = false
         })
-        .finally(() => {
-          this.loading = false
-        })
     },
     analyse(filename) {
-      this.loading = true
       const analyseService = useAnalyseService()
       const payload = { filename }
       if (this.tableImport.separator) {
         payload.separator = this.tableImport.separator
       }
+      this.loading = true
       analyseService.suggest(payload)
         .then((analysis) => {
           const {columns, separator, line_termination} = analysis
@@ -456,6 +455,7 @@ export default {
           this.step = this.stepStart + 2
           this.$toast.success(this.$t('success.analyse.dataset'))
           this.$emit('analyse', {columns: this.columns, filename, line_termination})
+          this.loading = false
         })
         .catch((error) => {
           this.$toast.error(localizedMessage(this.$t, error, null))

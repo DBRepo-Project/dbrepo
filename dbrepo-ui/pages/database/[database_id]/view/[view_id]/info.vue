@@ -84,10 +84,10 @@ if (data.value) {
 }
 </script>
 <script>
-import ViewToolbar from '@/components/view/ViewToolbar'
-import Summary from '@/components/identifier/Summary'
-import Select from '@/components/identifier/Select'
-import UserBadge from '~/components/user/UserBadge'
+import ViewToolbar from '@/components/view/ViewToolbar.vue'
+import Summary from '@/components/identifier/Summary.vue'
+import Select from '@/components/identifier/Select.vue'
+import UserBadge from '@/components/user/UserBadge.vue'
 import { formatTimestampUTCLabel } from '@/utils'
 import { useUserStore } from '@/stores/user'
 import { useCacheStore } from '@/stores/cache'

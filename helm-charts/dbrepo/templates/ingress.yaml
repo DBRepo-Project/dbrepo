@@ -101,8 +101,8 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: dbrepo-ingress-rewrite-api
-  annotations: {{ toYaml .Values.ingress.annotations.rewriteApi | nindent 4 }}
+  name: dbrepo-ingress-rewrite-root
+  annotations: {{ toYaml .Values.ingress.annotations.rewriteRoot | nindent 4 }}
   namespace: {{ .Values.namespace }}
 spec:
   ingressClassName: {{ .Values.ingress.className }}
@@ -127,41 +127,8 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: dbrepo-ingress-rewrite-root
-  annotations: {{ toYaml .Values.ingress.annotations.rewriteRoot | nindent 4 }}
-  namespace: {{ .Values.namespace }}
-spec:
-  ingressClassName: {{ .Values.ingress.className }}
-  {{- if .Values.ingress.tls.enabled }}
-  tls:
-    - hosts:
-        - {{ .Values.hostname }}
-      secretName: {{ .Values.ingress.tls.secretName }}
-  {{- end }}
-  rules:
-    - host: {{ .Values.hostname }}
-      http:
-        paths:
-          - path: /admin/broker/(.*)
-            pathType: ImplementationSpecific
-            backend:
-              service:
-                name: broker-service
-                port:
-                  number: 15672
-          - path: /admin/storage
-            pathType: ImplementationSpecific
-            backend:
-              service:
-                name: storageservice-s3
-                port:
-                  number: 9000
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
   name: dbrepo-ingress-rewrite-root-secure
-  annotations: {{ toYaml .Values.ingress.annotations.rewriteRoot | nindent 4 }}
+  annotations: {{ toYaml .Values.ingress.annotations.rewriteRootSecure | nindent 4 }}
   namespace: {{ .Values.namespace }}
 spec:
   ingressClassName: {{ .Values.ingress.className }}

@@ -1,4 +1,4 @@
-import type {AxiosRequestConfig} from 'axios'
+import type {AxiosRequestConfig, AxiosResponse} from 'axios'
 
 export const useTableService = (): any => {
 
@@ -87,9 +87,10 @@ export const useTableService = (): any => {
     console.debug('get data count for table with id', tableId, 'in database with id', databaseId);
     return new Promise<number>((resolve, reject) => {
       axios.head<number>(`/api/database/${databaseId}/table/${tableId}/data`, {params: mapFilter(timestamp, null, null)})
-        .then((response) => {
-          console.info('Got data count for table with id', tableId, 'in database with id', databaseId)
-          resolve(response.data)
+        .then((response: AxiosResponse<void>) => {
+          const count: number = Number(response.headers['x-count'])
+          console.info('Found' +  count + 'in table with id', tableId, 'in database with id', databaseId)
+          resolve(count)
         })
         .catch((error) => {
           console.error('Failed to get data count')

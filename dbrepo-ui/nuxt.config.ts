@@ -74,7 +74,7 @@ export default defineNuxtConfig({
       },
       api: {
         client: 'http://localhost',
-        server: 'http://gateway-service',
+        server: 'http://localhost',
       },
       database: {
         unsupported: '*,AVG,BIT_AND,BIT_OR,BIT_XOR,COUNT,COUNTDISTINCT,GROUP_CONCAT,JSON_ARRAYAGG,JSON_OBJECTAGG,MAX,MIN,STD,STDDEV,STDDEV_POP,STDDEV_SAMP,SUM,VARIANCE,VAR_POP,VAR_SAMP,--',
@@ -100,7 +100,7 @@ export default defineNuxtConfig({
         },
         rabbitmq: {
           text: 'RabbitMQ Admin',
-          href: '/admin/broker/'
+          href: '/api/broker/'
         },
         keycloak: {
           text: 'Keycloak Admin',

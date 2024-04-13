@@ -75,7 +75,7 @@
 </template>
 
 <script>
-import DownloadButton from '@/components/identifier/DownloadButton'
+import DownloadButton from '@/components/identifier/DownloadButton.vue'
 import { formatTimestampUTCLabel } from '@/utils'
 import { useUserStore } from '@/stores/user'
 import { useCacheStore } from '@/stores/cache'

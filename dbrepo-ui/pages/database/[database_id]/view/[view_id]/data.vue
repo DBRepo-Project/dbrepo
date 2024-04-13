@@ -20,8 +20,8 @@
 </template>
 
 <script>
-import TimeDrift from '@/components/TimeDrift'
-import QueryResults from '@/components/subset/Results'
+import TimeDrift from '@/components/TimeDrift.vue'
+import QueryResults from '@/components/subset/Results.vue'
 import { useCacheStore } from '@/stores/cache'
 
 export default {

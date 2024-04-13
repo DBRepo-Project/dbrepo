@@ -30,7 +30,7 @@
 </template>
 
 <script>
-import Banner from '@/components/identifier/Banner'
+import Banner from '@/components/identifier/Banner.vue'
 import { formatTimestampUTCLabel } from '@/utils'
 import { useUserStore } from '@/stores/user'
 import { useCacheStore } from '@/stores/cache'

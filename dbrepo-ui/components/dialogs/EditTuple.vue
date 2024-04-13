@@ -135,7 +135,7 @@
 </template>
 
 <script>
-import BlobUpload from '@/components/table/BlobUpload'
+import BlobUpload from '@/components/table/BlobUpload.vue'
 import {localizedMessage} from '@/utils'
 
 export default {

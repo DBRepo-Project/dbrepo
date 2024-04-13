@@ -316,6 +316,7 @@ public class ViewEndpoint {
         final Long count = queryService.viewCount(databaseId, view, principal);
         final HttpHeaders headers = new HttpHeaders();
         headers.set("X-Count", "" + count);
+        headers.set("Access-Control-Expose-Headers", "X-Count");
         if (request.getMethod().equals("GET")) {
             final QueryResultDto result = queryService.viewFindAll(databaseId, view, page, size, principal);
             log.trace("execute view data for view with id {}", viewId);

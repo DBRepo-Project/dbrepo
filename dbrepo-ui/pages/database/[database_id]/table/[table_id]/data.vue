@@ -102,14 +102,14 @@
 </template>
 
 <script>
-import TimeTravel from '@/components/dialogs/TimeTravel'
-import TimeDrift from '@/components/TimeDrift'
-import TableToolbar from '@/components/table/TableToolbar'
+import TimeTravel from '@/components/dialogs/TimeTravel.vue'
+import TimeDrift from '@/components/TimeDrift.vue'
+import TableToolbar from '@/components/table/TableToolbar.vue'
 import {formatTimestampUTC, formatDateUTC, formatTimestamp, localizedMessage} from '@/utils'
 import { useUserStore } from '@/stores/user'
 import { useCacheStore } from '@/stores/cache'
-import EditTuple from '@/components/dialogs/EditTuple'
-import BlobDownload from "~/components/table/BlobDownload.vue";
+import EditTuple from '@/components/dialogs/EditTuple.vue'
+import BlobDownload from '@/components/table/BlobDownload.vue'
 
 export default {
   components: {

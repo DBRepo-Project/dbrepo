@@ -12,7 +12,7 @@
 </template>
 
 <script>
-import Persist from '@/components/identifier/Persist'
+import Persist from '@/components/identifier/Persist.vue'
 import { useUserStore } from '@/stores/user'
 import { useCacheStore } from '@/stores/cache'
 

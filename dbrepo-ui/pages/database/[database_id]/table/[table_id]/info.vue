@@ -164,10 +164,10 @@ if (data.value) {
 }
 </script>
 <script>
-import TableToolbar from '@/components/table/TableToolbar'
-import Select from '@/components/identifier/Select'
-import Summary from '@/components/identifier/Summary'
-import UserBadge from '@/components/user/UserBadge'
+import TableToolbar from '@/components/table/TableToolbar.vue'
+import Select from '@/components/identifier/Select.vue'
+import Summary from '@/components/identifier/Summary.vue'
+import UserBadge from '@/components/user/UserBadge.vue'
 import { formatTimestampUTCLabel, sizeToHumanLabel } from '@/utils'
 import { useUserStore } from '@/stores/user'
 import { useCacheStore } from '@/stores/cache'

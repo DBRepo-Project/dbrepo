@@ -141,7 +141,7 @@
 </template>
 
 <script>
-import TableSchema from '@/components/table/TableSchema'
+import TableSchema from '@/components/table/TableSchema.vue'
 import { notEmpty } from '@/utils'
 import { useUserStore } from '@/stores/user'
 import { useCacheStore } from '@/stores/cache'

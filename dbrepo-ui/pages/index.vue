@@ -28,8 +28,8 @@
 </template>
 
 <script>
-import DatabaseList from '@/components/database/DatabaseList'
-import DatabaseCreate from '@/components/database/DatabaseCreate'
+import DatabaseList from '@/components/database/DatabaseList.vue'
+import DatabaseCreate from '@/components/database/DatabaseCreate.vue'
 import { useUserStore } from '@/stores/user'
 
 export default {
