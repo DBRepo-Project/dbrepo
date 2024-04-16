@@ -6,9 +6,11 @@ import at.tuwien.api.database.query.ExecuteStatementDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.entities.database.Database;
+import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.exception.*;
 import at.tuwien.querystore.Query;
 import at.tuwien.service.DatabaseService;
+import at.tuwien.service.IdentifierService;
 import at.tuwien.service.QueryService;
 import at.tuwien.service.StoreService;
 import at.tuwien.utils.PrincipalUtil;
@@ -35,6 +37,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.List;
 
 @Log4j2
 @RestController
@@ -171,8 +174,8 @@ public class QueryEndpoint {
             AccessDeniedException, QueryNotFoundException {
         log.debug("endpoint re-execute query, databaseId={}, queryId={}, page={}, size={}, sortDirection={}, sortColumn={}, {}",
                 databaseId, queryId, page, size, sortDirection, sortColumn, PrincipalUtil.formatForDebug(principal));
+        final Database database = databaseService.findById(databaseId);
         endpointValidator.validateDataParams(page, size, sortDirection, sortColumn);
-        endpointValidator.validateOnlyAccessOrPublic(databaseId, principal);
         /* execute */
         final Query query = storeService.findOne(databaseId, queryId, principal);
         final Long count = queryService.reExecuteCount(databaseId, query, principal);

@@ -16,6 +16,7 @@ import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.database.table.columns.TableColumnType;
 import at.tuwien.entities.database.table.constraints.foreignKey.ForeignKey;
 import at.tuwien.entities.database.table.constraints.foreignKey.ForeignKeyReference;
+import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.exception.ImageNotSupportedException;
 import at.tuwien.exception.QueryMalformedException;
 import at.tuwien.exception.QueryStoreException;
@@ -69,6 +70,12 @@ public interface QueryMapper {
             @Mapping(target = "identifiers", expression = "java(new LinkedList())")
     })
     QueryBriefDto queryToQueryBriefDto(Query data);
+
+    @Mappings({
+            @Mapping(target = "id", source = "queryId"),
+            @Mapping(target = "isPersisted", expression = "java(true)"),
+    })
+    Query identifierToQuery(Identifier data);
 
     @Named("internalMapping")
     default String nameToInternalName(String data) {

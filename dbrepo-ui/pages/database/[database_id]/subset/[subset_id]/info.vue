@@ -17,6 +17,7 @@
     <v-divider
       v-if="subset && identifier" />
     <v-card
+      v-if="subset"
       variant="flat"
       rounded="0"
       :title="$t('pages.subset.title')">

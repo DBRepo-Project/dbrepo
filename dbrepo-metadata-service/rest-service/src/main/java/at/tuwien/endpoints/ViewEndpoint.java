@@ -291,7 +291,8 @@ public class ViewEndpoint {
         /* check */
         endpointValidator.validateDataParams(page, size);
         final Database database = databaseService.find(databaseId);
-        if (!database.getIsPublic()) {
+        final View view = viewService.findById(databaseId, viewId, principal);
+        if (!database.getIsPublic() && !view.getIsPublic()) {
             if (principal == null) {
                 log.error("Failed to view data of private view: principal is null");
                 throw new NotAllowedException("Failed to view data of private view: principal is null");
@@ -312,7 +313,6 @@ public class ViewEndpoint {
         }
         /* find */
         log.debug("find view data for database with id {}", databaseId);
-        final View view = viewService.findById(databaseId, viewId, principal);
         final Long count = queryService.viewCount(databaseId, view, principal);
         final HttpHeaders headers = new HttpHeaders();
         headers.set("X-Count", "" + count);

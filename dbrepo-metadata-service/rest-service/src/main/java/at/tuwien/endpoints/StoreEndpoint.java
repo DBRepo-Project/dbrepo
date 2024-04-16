@@ -6,16 +6,15 @@ import at.tuwien.api.database.query.QueryPersistDto;
 import at.tuwien.api.error.ApiErrorDto;
 import at.tuwien.api.identifier.IdentifierDto;
 import at.tuwien.api.user.UserDto;
+import at.tuwien.entities.database.Database;
 import at.tuwien.entities.identifier.Identifier;
+import at.tuwien.entities.identifier.IdentifierType;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.IdentifierMapper;
 import at.tuwien.mapper.QueryMapper;
 import at.tuwien.mapper.UserMapper;
 import at.tuwien.querystore.Query;
-import at.tuwien.service.AccessService;
-import at.tuwien.service.IdentifierService;
-import at.tuwien.service.StoreService;
-import at.tuwien.service.UserService;
+import at.tuwien.service.*;
 import at.tuwien.utils.PrincipalUtil;
 import at.tuwien.utils.UserUtil;
 import at.tuwien.validation.EndpointValidator;
@@ -54,19 +53,21 @@ public class StoreEndpoint {
     private final UserService userService;
     private final StoreService storeService;
     private final AccessService accessService;
+    private final DatabaseService databaseService;
     private final IdentifierMapper identifierMapper;
     private final EndpointValidator endpointValidator;
     private final IdentifierService identifierService;
 
     @Autowired
     public StoreEndpoint(UserMapper userMapper, QueryMapper queryMapper, UserService userService, StoreService storeService,
-                         AccessService accessService, IdentifierMapper identifierMapper,
+                         AccessService accessService, DatabaseService databaseService, IdentifierMapper identifierMapper,
                          EndpointValidator endpointValidator, IdentifierService identifierService) {
         this.userMapper = userMapper;
         this.queryMapper = queryMapper;
         this.userService = userService;
         this.storeService = storeService;
         this.accessService = accessService;
+        this.databaseService = databaseService;
         this.identifierMapper = identifierMapper;
         this.endpointValidator = endpointValidator;
         this.identifierService = identifierService;
@@ -125,14 +126,23 @@ public class StoreEndpoint {
             DatabaseConnectionException, TableMalformedException, UserNotFoundException, NotAllowedException,
             AccessDeniedException {
         log.debug("endpoint list queries, databaseId={}, persisted={}, {}", databaseId, persisted, PrincipalUtil.formatForDebug(principal));
-        endpointValidator.validateOnlyAccessOrPublic(databaseId, principal);
+        final Database database = databaseService.findById(databaseId);
         /* find all from data database */
-        final List<Query> queries = storeService.findAll(databaseId, persisted, principal);
-        /* add identifiers and creator from metadata database */
         final List<IdentifierDto> identifiers = identifierService.findAllSubsetIdentifiers()
                 .stream()
                 .map(identifierMapper::identifierToIdentifierDto)
                 .toList();
+        final List<Query> queries;
+        if (!database.getIsPublic() && principal == null) {
+            queries = identifierService.findAllSubsetIdentifiers()
+                    .stream()
+                    .filter(i -> i.getType().equals(IdentifierType.SUBSET))
+                    .map(queryMapper::identifierToQuery)
+                    .toList();
+        } else {
+            queries = storeService.findAll(databaseId, persisted, principal);
+        }
+        /* add identifiers and creator from metadata database */
         final List<UserDto> users = userService.findAll()
                 .stream()
                 .map(userMapper::userToUserDto)

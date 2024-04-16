@@ -66,6 +66,7 @@
             :text="$t('navigation.info')"
             :to="`/database/${$route.params.database_id}/subset/${$route.params.subset_id}/info`" />
           <v-tab
+            v-if="canViewData"
             :text="$t('navigation.data')"
             :to="`/database/${$route.params.database_id}/subset/${$route.params.subset_id}/data`" />
         </v-tabs>
@@ -119,6 +120,12 @@ export default {
         return []
       }
       return this.database.subsets.filter(s => s.query_id === Number(this.$route.params.subset_id))
+    },
+    canViewData () {
+      if (!this.database) {
+        return false
+      }
+      return this.database.is_public
     },
     identifier () {
       /* mount pid */
