@@ -8,8 +8,7 @@
       color="info" />
     <v-form
       ref="form"
-      v-model="valid"
-      :disabled="disabled">
+      v-model="valid">
       <v-row
         v-for="(c, idx) in columns"
         :key="`r-${idx}`"
@@ -27,7 +26,7 @@
             :hint="$t('pages.table.subpages.schema.name.hint')" />
         </v-col>
         <v-col cols="2">
-          <v-select
+          <v-autocomplete
             v-model="c.type"
             :items="columnTypes"
             item-title="text"
@@ -157,18 +156,11 @@
       <v-row>
         <v-col>
           <v-btn
-            :color="disabled ? '' : 'tertiary'"
-            :variant="buttonVariant"
-            size="small"
-            class="mr-2"
-            :disabled="disabled"
-            :text="$t('navigation.back')"
-            @click="back" />
-          <v-btn
             color="secondary"
             variant="flat"
             size="small"
-            :disabled="disabled"
+            :loading="loading"
+            :disabled="submitDisabled"
             :text="submitText"
             @click="submit" />
         </v-col>
@@ -188,13 +180,19 @@ export default {
         return []
       }
     },
-    back: {
+    disabled: {
       type: Boolean,
       default () {
         return false
       }
     },
-    disabled: {
+    submitDisabled: {
+      type: Boolean,
+      default () {
+        return false
+      }
+    },
+    loading: {
       type: Boolean,
       default () {
         return false
@@ -380,5 +378,3 @@ export default {
   }
 }
 </script>
-<style scoped>
-</style>

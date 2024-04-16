@@ -23,10 +23,16 @@
                 required
                 clearable
                 persistent-hint
-                :base-color="suggestedAnalyseSeparator && providedSeparator !== analysedSeparator ? 'warning' : ''"
                 :variant="inputVariant"
                 :hint="$t('pages.table.subpages.import.separator.hint')"
-                :label="$t('pages.table.subpages.import.separator.label')"/>
+                :label="$t('pages.table.subpages.import.separator.label')">
+                <template
+                  v-if="suggestedAnalyseSeparator && providedSeparator !== analysedSeparator"
+                  v-slot:prepend>
+                  <v-icon
+                    color="warning">mdi-alert-outline</v-icon>
+                </template>
+              </v-select>
             </v-col>
           </v-row>
           <v-row dense>
@@ -64,14 +70,20 @@
               <v-select
                 v-model="tableImport.line_termination"
                 :items="lineTerminationItems"
-                :base-color="suggestedAnalyseLineTerminator && providedTerminator !== analysedTerminator ? 'warning' : ''"
                 item-title="name"
                 item-value="value"
                 clearable
                 persistent-hint
                 :variant="inputVariant"
                 :hint="$t('pages.table.subpages.import.terminator.hint')"
-                :label="$t('pages.table.subpages.import.terminator.label')"/>
+                :label="$t('pages.table.subpages.import.terminator.label')">
+                <template
+                  v-if="suggestedAnalyseLineTerminator && providedTerminator !== analysedTerminator"
+                  v-slot:prepend>
+                  <v-icon
+                    color="warning">mdi-alert-outline</v-icon>
+                </template>
+              </v-select>
             </v-col>
           </v-row>
           <v-row dense>

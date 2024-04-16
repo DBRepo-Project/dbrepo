@@ -625,7 +625,7 @@ public class PrometheusEndpointMvcTest extends BaseUnitTest {
 
         /* mock */
         try {
-            tableEndpoint.list(DATABASE_1_ID, USER_1_PRINCIPAL);
+            tableEndpoint.list(DATABASE_1_ID, USER_1_PRINCIPAL, null);
         } catch (Exception e) {
             /* ignore */
         }

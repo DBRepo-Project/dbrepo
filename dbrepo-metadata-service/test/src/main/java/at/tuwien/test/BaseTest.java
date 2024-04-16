@@ -1061,7 +1061,7 @@ public abstract class BaseTest {
             .name(DATABASE_3_NAME)
             .internalName(DATABASE_3_INTERNALNAME)
             .exchangeName(DATABASE_3_EXCHANGE)
-            .tables(List.of()) /* TABLE_3, TABLE_3, TABLE_3 */
+            .tables(List.of()) /* TABLE_8 */
             .views(List.of())
             .build();
 

@@ -2,11 +2,11 @@ import type {AxiosRequestConfig, AxiosResponse} from 'axios'
 
 export const useTableService = (): any => {
 
-  function findAll(databaseId: number): Promise<TableBriefDto> {
+  function findAll(databaseId: number, internalName: string): Promise<TableBriefDto[]> {
     const axios = useAxiosInstance()
     console.debug('find tables')
-    return new Promise<TableBriefDto>((resolve, reject) => {
-      axios.get<TableBriefDto>(`/api/database/${databaseId}/table`)
+    return new Promise<TableBriefDto[]>((resolve, reject) => {
+      axios.get<TableBriefDto[]>(`/api/database/${databaseId}/table`, {params: (internalName && {internal_name: internalName})})
         .then((response) => {
           console.info('Found tables(s)')
           resolve(response.data)
@@ -68,7 +68,7 @@ export const useTableService = (): any => {
 
   async function getData(databaseId: number, tableId: number, page: number, size: number, timestamp: Date): Promise<QueryResultDto> {
     const axios = useAxiosInstance()
-    console.debug('get data for table with id', tableId, 'in database with id', databaseId);
+    console.debug('get data for table with id', tableId, 'in database with id', databaseId, 'page', page, 'size', size);
     return new Promise<QueryResultDto>((resolve, reject) => {
       axios.get<QueryResultDto>(`/api/database/${databaseId}/table/${tableId}/data`, {params: mapFilter(timestamp, page, size)})
         .then((response) => {
@@ -89,7 +89,7 @@ export const useTableService = (): any => {
       axios.head<number>(`/api/database/${databaseId}/table/${tableId}/data`, {params: mapFilter(timestamp, null, null)})
         .then((response: AxiosResponse<void>) => {
           const count: number = Number(response.headers['x-count'])
-          console.info('Found' +  count + 'in table with id', tableId, 'in database with id', databaseId)
+          console.info('Found' + count + 'in table with id', tableId, 'in database with id', databaseId)
           resolve(count)
         })
         .catch((error) => {
@@ -102,7 +102,7 @@ export const useTableService = (): any => {
   async function exportData(databaseId: number, tableId: number, timestamp: Date): Promise<QueryResultDto> {
     const axios = useAxiosInstance()
     const config: AxiosRequestConfig = {
-      params: (timestamp && { timestamp }),
+      params: (timestamp && {timestamp}),
       responseType: 'blob',
       headers: {
         Accept: 'text/csv'
@@ -143,9 +143,9 @@ export const useTableService = (): any => {
     console.debug('delete table with id', tableId, 'in database with id', databaseId)
     return new Promise<void>((resolve, reject) => {
       axios.delete<void>(`/api/database/${databaseId}/table/${tableId}`)
-        .then((response) => {
+        .then(() => {
           console.info('Deleted table with id', tableId, 'in database with id', databaseId)
-          resolve(response.data)
+          resolve()
         })
         .catch((error) => {
           console.error('Failed to delete table', error)
@@ -190,7 +190,7 @@ export const useTableService = (): any => {
     const axios = useAxiosInstance()
     console.debug('suggest semantic entities for table column with id', columnId, 'of table with id', tableId, 'of database with id', databaseId)
     return new Promise<TableColumnEntityDto[]>((resolve, reject) => {
-      axios.get<TableColumnEntityDto[]>(`/api/semantic/database/${databaseId}/table/${tableId}/column/${columnId}`, { timeout: 10000 })
+      axios.get<TableColumnEntityDto[]>(`/api/semantic/database/${databaseId}/table/${tableId}/column/${columnId}`, {timeout: 10000})
         .then((response) => {
           console.info('Suggested semantic entities for table column with id', columnId, 'of table with id', tableId, 'of database with id', databaseId)
           resolve(response.data)
@@ -219,11 +219,11 @@ export const useTableService = (): any => {
   }
 
   function mapFilter(timestamp: Date | null, page: number | null, size: number | null) {
-    if (!timestamp) {
-      if (!page || !size) {
-        return null
+    if (page !== null && size !== null) {
+      if (!timestamp) {
+        return {page, size}
       }
-      return {page, size}
+      return {page, size, timestamp}
     }
     if (!page || !size) {
       return {timestamp}

@@ -111,7 +111,7 @@ export const useQueryService = (): any => {
       axios.head<void>(`/api/database/${databaseId}/query/${queryId}/data`)
         .then((response) => {
           const count: number = Number(response.headers['x-count'])
-          console.info('Re-executed query in database with id', databaseId)
+          console.info('Found', count, 'tuples for query', queryId, 'in database with id', databaseId)
           resolve(count)
         })
         .catch((error) => {

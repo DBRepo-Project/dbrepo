@@ -54,7 +54,7 @@ export const useViewService = (): any => {
       axios.head<number>(`/api/database/${databaseId}/view/${viewId}/data`)
         .then((response) => {
           const count: number = Number(response.headers['x-count'])
-          console.info('Re-executed view with id', viewId, 'in database with id', databaseId)
+          console.info('Found', count, 'tuples for view with id', viewId, 'in database with id', databaseId)
           resolve(count)
         })
         .catch((error) => {

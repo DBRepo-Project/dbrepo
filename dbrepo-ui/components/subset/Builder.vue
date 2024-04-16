@@ -37,7 +37,6 @@
       <v-card-text>
         <v-form
           ref="formView"
-          v-model="valid"
           @submit.prevent="prevent">
           <v-row
             v-if="isView"
@@ -347,7 +346,6 @@ export default {
       ],
       tableDetails: null,
       resultId: null,
-      valid: false,
       errorKeyword: null,
       query: {
         raw: null,

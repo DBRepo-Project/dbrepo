@@ -49,20 +49,13 @@
                 </v-row>
                 <v-row dense>
                   <v-col md="8">
-                    <v-text-field
-                      v-model="generatedTableName"
-                      :rules="[
-                        v => notEmpty(v) || $t('validation.required'),
-                        v => generatedTableName.length <= 64 || ($t('validation.max-length') + 64),
-                      ]"
-                      disabled
-                      clearable
-                      counter="64"
-                      persistent-counter
-                      persistent-hint
-                      :variant="inputVariant"
-                      :hint="$t('pages.table.subpages.import.generated.hint')"
-                      :label="$t('pages.table.subpages.import.generated.label')"/>
+                    <v-alert
+                      v-if="generatedTableName"
+                      class="mt-1"
+                      border="start"
+                      color="info">
+                      {{ $t('pages.table.subpages.import.generated.label') + ' ' + generatedTableName }}
+                    </v-alert>
                   </v-col>
                 </v-row>
                 <v-row dense>
@@ -102,11 +95,11 @@
               v-if="step >= 4">
               <TableSchema
                 ref="schema"
-                :back="true"
                 :submit-text="$t('navigation.continue')"
+                :submit-disabled="!validStep1"
                 :columns="tableCreate.columns"
+                :loading="loadingCreateAndImport"
                 @schema-valid="schemaValidity"
-                @back="onBack"
                 @close="createEmptyTableAndImport"/>
             </v-container>
           </v-stepper-window>
@@ -173,6 +166,7 @@ export default {
       error: false,
       fileModel: null,
       rowCount: null,
+      loadingCreateAndImport: false,
       file: {
         filename: null,
         path: null
@@ -332,7 +326,24 @@ export default {
         }
         delete c.unique
       })
-      this.createTableAndImport(this.tableCreate)
+      const tableService = useTableService()
+      this.loadingCreateAndImport = true
+      tableService.findAll(this.$route.params.database_id, this.generatedTableName)
+        .then((response) => {
+          if (response.length !== 0) {
+            /* table does exist */
+            tableService.remove(this.$route.params.database_id, response[0].id)
+              .then(() => {
+                this.createTableAndImport(this.tableCreate)
+              })
+              .catch((error) => {
+                this.$toast.error(this.$t('error.import.dataset') + ': ' + error.response.data.message)
+                this.loadingCreateAndImport = false
+              })
+          } else {
+            this.createTableAndImport(this.tableCreate)
+          }
+        })
     },
     createTableAndImport(table) {
       const tableService = useTableService()
@@ -343,27 +354,27 @@ export default {
             .then(() => {
               this.$toast.success(this.$t('success.import.dataset'))
               this.cacheStore.reloadDatabase()
-              tableService.getCount(this.$route.params.database_id, table.id, null)
-                .then((rowCount) => {
-                  this.rowCount = rowCount
-                  this.step = 5
-                })
+              this.loadingCreateAndImport = true
             })
             .catch((error) => {
               console.error('Failed to import csv', error)
               this.$toast.error(this.$t('error.import.dataset') + ': ' + error.response.data.message)
               this.loading = false
               this.$refs.schema.loading = false
+              this.loadingCreateAndImport = false
             })
             .finally(() => {
               this.loading = false
+              this.loadingCreateAndImport = false
             })
         })
         .catch(() => {
           this.$refs.schema.loading = false
+          this.loadingCreateAndImport = false
         })
         .finally(() => {
           this.loading = false
+          this.loadingCreateAndImport = false
         })
     },
     schemaValidity(event) {

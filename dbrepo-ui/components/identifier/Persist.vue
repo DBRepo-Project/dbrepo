@@ -24,7 +24,7 @@
         color="primary"
         variant="flat"
         :loading="loading"
-        :disabled="!formValid || loading"
+        :disabled="!formValid || !validPublicationMonth || !validPublicationDay || loading"
         :text="($vuetify.display.xl ? $t('toolbars.identifier.update.xl') + ' ' : '') + $t('toolbars.identifier.update.permanent')"
         @click="save" />
     </v-toolbar>
@@ -57,11 +57,9 @@
                       :label="$t('pages.identifier.subpages.create.creators.identifier.label')"
                       clearable
                       :variant="inputVariant"
-                      name="name-identifier"
                       :hint="$t('pages.identifier.subpages.create.creators.identifier.hint')"
                       :loading="creator.name_loading"
                       persistent-hint
-                      required
                       @focusout="retrieveCreator(creator)" />
                   </v-col>
                   <v-col cols="4">
@@ -100,7 +98,9 @@
                 </v-row>
                 <v-row dense>
                   <v-col cols="8">
-                    <v-radio-group v-model="creator.name_type" row>
+                    <v-radio-group
+                      v-model="creator.name_type"
+                      row>
                       <v-radio
                         :label="$t('pages.identifier.subpages.create.creators.person.label')"
                         value="Personal" />
@@ -121,7 +121,6 @@
                       :variant="inputVariant"
                       :hint="$t('pages.identifier.subpages.create.creators.given-name.hint')"
                       persistent-hint
-                      required
                       @focusout="suggestName(creator)" />
                   </v-col>
                 </v-row>
@@ -136,7 +135,6 @@
                       :variant="inputVariant"
                       :hint="$t('pages.identifier.subpages.create.creators.family-name.hint')"
                       persistent-hint
-                      required
                       @focusout="suggestName(creator)" />
                   </v-col>
                 </v-row>
@@ -158,7 +156,6 @@
                     <v-text-field
                       v-model="creator.affiliation_identifier"
                       :label="$t('pages.identifier.subpages.create.creators.affiliation-identifier.label')"
-                      name="affiliation-identifier"
                       :variant="inputVariant"
                       :loading="creator.affiliation_loading"
                       :hint="$t('pages.identifier.subpages.create.creators.affiliation-identifier.hint')"
@@ -172,7 +169,6 @@
                     <v-text-field
                       v-model="creator.affiliation"
                       :label="$t('pages.identifier.subpages.create.creators.affiliation.label')"
-                      name="affiliation"
                       :variant="inputVariant"
                       clearable
                       :hint="$t('pages.identifier.subpages.create.creators.affiliation.hint')"
@@ -248,8 +244,7 @@
                       variant="underlined"
                       :items="titleType"
                       item-title="value"
-                      item-value="value"
-                      required />
+                      item-value="value" />
                   </v-col>
                 </v-row>
                 <v-row dense>
@@ -263,8 +258,7 @@
                       variant="underlined"
                       :items="languages"
                       item-title="name"
-                      item-value="code"
-                      required />
+                      item-value="code" />
                   </v-col>
                 </v-row>
               </v-container>
@@ -337,8 +331,7 @@
                       variant="underlined"
                       :items="descriptionType"
                       item-title="value"
-                      item-value="value"
-                      required />
+                      item-value="value" />
                   </v-col>
                 </v-row>
                 <v-row dense>
@@ -352,8 +345,7 @@
                       variant="underlined"
                       :items="languages"
                       item-title="name"
-                      item-value="code"
-                      required />
+                      item-value="code" />
                   </v-col>
                 </v-row>
               </v-container>
@@ -384,7 +376,6 @@
               <v-col cols="8">
                 <v-text-field
                   v-model="identifier.publisher"
-                  name="publisher"
                   :variant="inputVariant"
                   :label="$t('pages.identifier.subpages.create.publisher.label')"
                   :hint="$t('pages.identifier.subpages.create.publisher.hint')"
@@ -454,7 +445,6 @@
                   <v-col cols="4">
                     <v-text-field
                       v-model="related.value"
-                      name="related"
                       :variant="inputVariant"
                       :label="$t('pages.identifier.subpages.create.related-identifiers.identifier.label')"
                       :hint="$t('pages.identifier.subpages.create.related-identifiers.identifier.hint')"
@@ -578,8 +568,7 @@
                   persistent-hint
                   :items="languages"
                   item-title="name"
-                  item-value="code"
-                  required />
+                  item-value="code" />
               </v-col>
             </v-row>
           </v-container>
@@ -609,12 +598,10 @@
                     <v-text-field
                       v-model="funder.funder_identifier"
                       :label="$t('pages.identifier.subpages.create.funders.identifier.label')"
-                      name="funder-identifier"
                       :hint="$t('pages.identifier.subpages.create.funders.identifier.hint')"
                       :loading="funder.loading"
                       persistent-hint
                       :variant="inputVariant"
-                      required
                       clearable
                       @focusout="retrieveFunder(funder)" />
                   </v-col>

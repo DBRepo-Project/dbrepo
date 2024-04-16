@@ -1,13 +1,14 @@
 <template>
   <div>
-    <v-data-table
+    <v-data-table-server
       flat
       :headers="headers"
-      :items="result.rows"
       :loading="loading > 0"
-      :options.sync="options"
+      :options="options"
+      :items="result.rows"
+      :items-length="total"
       :footer-props="footerProps"
-      :server-items-length="total" />
+      @update:options="updateOptions" />
   </div>
 </template>
 
@@ -42,7 +43,7 @@ export default {
         showFirstLastPage: true,
         itemsPerPageOptions: [10, 25, 50, 100]
       },
-      total: null
+      total: null,
     }
   },
   computed: {
@@ -150,6 +151,11 @@ export default {
       })
       console.debug('query result', data)
       this.result.rows = data.result
+    },
+    updateOptions ({ page, itemsPerPage, sortBy }) {
+      this.options.page = page
+      this.options.itemsPerPage = itemsPerPage
+      this.reExecute(this.id)
     }
   }
 }

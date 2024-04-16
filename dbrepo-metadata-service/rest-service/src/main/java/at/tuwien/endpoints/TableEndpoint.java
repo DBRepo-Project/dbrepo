@@ -34,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -83,15 +84,26 @@ public class TableEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<List<TableBriefDto>> list(@NotNull @PathVariable("databaseId") Long databaseId,
-                                                    Principal principal)
+                                                    Principal principal,
+                                                    @RequestParam(required = false) String internalName)
             throws DatabaseNotFoundException, NotAllowedException, AccessDeniedException {
-        log.debug("endpoint list tables, databaseId={}, {}", databaseId, PrincipalUtil.formatForDebug(principal));
+        log.debug("endpoint list tables, databaseId={}, internalName={} {}", databaseId, internalName,
+                PrincipalUtil.formatForDebug(principal));
         endpointValidator.validateOnlyPrivateAccess(databaseId, principal);
         endpointValidator.validateOnlyPrivateHasRole(databaseId, principal, "list-tables");
-        final List<TableBriefDto> dto = tableService.findAll(databaseId)
-                .stream()
-                .map(tableMapper::tableToTableBriefDto)
-                .collect(Collectors.toList());
+        List<TableBriefDto> dto = new LinkedList<>();
+        if (internalName != null) {
+            try {
+                dto = List.of(tableMapper.tableToTableBriefDto(tableService.find(databaseId, internalName)));
+            } catch (TableNotFoundException e) {
+                /* ignore */
+            }
+        } else {
+            dto = tableService.findAll(databaseId)
+                    .stream()
+                    .map(tableMapper::tableToTableBriefDto)
+                    .collect(Collectors.toList());
+        }
         log.trace("list tables resulted in tables {}", dto);
         return ResponseEntity.ok(dto);
     }
@@ -129,8 +141,8 @@ public class TableEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<TableDto> create(@NotNull @PathVariable("databaseId") Long databaseId,
-                                                @NotNull @Valid @RequestBody TableCreateDto createDto,
-                                                @NotNull Principal principal)
+                                           @NotNull @Valid @RequestBody TableCreateDto createDto,
+                                           @NotNull Principal principal)
             throws ImageNotSupportedException, DatabaseNotFoundException, TableMalformedException,
             TableNameExistsException, QueryMalformedException, NotAllowedException, AccessDeniedException,
             TableNotFoundException, UserNotFoundException {

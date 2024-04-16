@@ -66,7 +66,66 @@ public class TableEndpointUnitTest extends BaseUnitTest {
             at.tuwien.exception.AccessDeniedException {
 
         /* test */
-        generic_list(DATABASE_3_ID, DATABASE_3, null, null, null);
+        final ResponseEntity<List<TableBriefDto>> response = generic_list(DATABASE_3_ID, DATABASE_3, null, null, null,
+                true, null);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        final List<TableBriefDto> body = response.getBody();
+        assertEquals(1, body.size());
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void list_publicAnonymousFilter_succeeds() throws NotAllowedException, DatabaseNotFoundException,
+            at.tuwien.exception.AccessDeniedException, TableNotFoundException {
+
+        /* mock */
+        when(tableService.find(eq(DATABASE_3_ID), anyString()))
+                .thenReturn(TABLE_8);
+
+        /* test */
+        final ResponseEntity<List<TableBriefDto>> response = generic_list(DATABASE_3_ID, DATABASE_3, null, null, null,
+                true, TABLE_8_INTERNAL_NAME);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        final List<TableBriefDto> body = response.getBody();
+        assertEquals(1, body.size());
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void list_publicAnonymousFilter_fails() throws NotAllowedException, DatabaseNotFoundException,
+            at.tuwien.exception.AccessDeniedException, TableNotFoundException {
+
+        /* mock */
+        doThrow(TableNotFoundException.class)
+                .when(tableService)
+                .find(eq(DATABASE_3_ID), anyString());
+
+        /* test */
+        final ResponseEntity<List<TableBriefDto>> response = generic_list(DATABASE_3_ID, DATABASE_3, null, null, null,
+                true, "i_do_not_exist");
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        final List<TableBriefDto> body = response.getBody();
+        assertEquals(0, body.size());
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void list_publicAnonymousFilterHead_fails() throws NotAllowedException, DatabaseNotFoundException,
+            at.tuwien.exception.AccessDeniedException, TableNotFoundException {
+
+        /* mock */
+        doThrow(TableNotFoundException.class)
+                .when(tableService)
+                .find(eq(DATABASE_3_ID), anyString());
+
+        /* test */
+        final ResponseEntity<List<TableBriefDto>> response = generic_list(DATABASE_3_ID, DATABASE_3, null, null, null,
+                false, "i_do_not_exist");
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertNull(response.getBody());
     }
 
     @Test
@@ -75,7 +134,7 @@ public class TableEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
-            generic_list(DATABASE_3_ID, null, USER_1_ID, USER_1_PRINCIPAL, DATABASE_3_USER_1_READ_ACCESS);
+            generic_list(DATABASE_3_ID, null, USER_1_ID, USER_1_PRINCIPAL, DATABASE_3_USER_1_READ_ACCESS, true, null);
         });
     }
 
@@ -85,7 +144,8 @@ public class TableEndpointUnitTest extends BaseUnitTest {
             at.tuwien.exception.AccessDeniedException {
 
         /* test */
-        final ResponseEntity<List<TableBriefDto>> response = generic_list(DATABASE_3_ID, DATABASE_3, USER_1_ID, USER_1_PRINCIPAL, DATABASE_1_USER_1_READ_ACCESS);
+        final ResponseEntity<List<TableBriefDto>> response = generic_list(DATABASE_3_ID, DATABASE_3, USER_1_ID,
+                USER_1_PRINCIPAL, DATABASE_1_USER_1_READ_ACCESS, true, null);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final List<TableBriefDto> body = response.getBody();
         assertNotNull(body);
@@ -97,7 +157,7 @@ public class TableEndpointUnitTest extends BaseUnitTest {
     public void list_publicNoRole_succeeds() throws NotAllowedException, DatabaseNotFoundException, at.tuwien.exception.AccessDeniedException {
 
         /* test */
-        generic_list(DATABASE_3_ID, DATABASE_3, USER_4_ID, USER_4_PRINCIPAL, null);
+        generic_list(DATABASE_3_ID, DATABASE_3, USER_4_ID, USER_4_PRINCIPAL, null, true, null);
     }
 
     @Test
@@ -312,7 +372,7 @@ public class TableEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(NotAllowedException.class, () -> {
-            generic_list(DATABASE_1_ID, DATABASE_1, null, null, null);
+            generic_list(DATABASE_1_ID, DATABASE_1, null, null, null, true, null);
         });
     }
 
@@ -322,7 +382,7 @@ public class TableEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
-            generic_list(DATABASE_1_ID, null, USER_1_ID, USER_1_PRINCIPAL, DATABASE_1_USER_1_READ_ACCESS);
+            generic_list(DATABASE_1_ID, null, USER_1_ID, USER_1_PRINCIPAL, DATABASE_1_USER_1_READ_ACCESS, true, null);
         });
     }
 
@@ -332,7 +392,8 @@ public class TableEndpointUnitTest extends BaseUnitTest {
             at.tuwien.exception.AccessDeniedException {
 
         /* test */
-        final ResponseEntity<List<TableBriefDto>> response = generic_list(DATABASE_1_ID, DATABASE_1, USER_1_ID, USER_1_PRINCIPAL, DATABASE_1_USER_1_READ_ACCESS);
+        final ResponseEntity<List<TableBriefDto>> response = generic_list(DATABASE_1_ID, DATABASE_1, USER_1_ID,
+                USER_1_PRINCIPAL, DATABASE_1_USER_1_READ_ACCESS, true, null);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final List<TableBriefDto> body = response.getBody();
         assertNotNull(body);
@@ -345,7 +406,7 @@ public class TableEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(AccessDeniedException.class, () -> {
-            generic_list(DATABASE_1_ID, DATABASE_1, USER_4_ID, USER_4_PRINCIPAL, null);
+            generic_list(DATABASE_1_ID, DATABASE_1, USER_4_ID, USER_4_PRINCIPAL, null, true, null);
         });
     }
 
@@ -505,7 +566,8 @@ public class TableEndpointUnitTest extends BaseUnitTest {
     /* ################################################################################################### */
 
     protected ResponseEntity<List<TableBriefDto>> generic_list(Long databaseId, Database database, UUID userId,
-                                                               Principal principal, DatabaseAccess access)
+                                                               Principal principal, DatabaseAccess access,
+                                                               boolean isGet, String internalName)
             throws DatabaseNotFoundException, NotAllowedException, at.tuwien.exception.AccessDeniedException {
 
         /* mock */
@@ -533,11 +595,11 @@ public class TableEndpointUnitTest extends BaseUnitTest {
         }
 
         /* test */
-        return tableEndpoint.list(databaseId, principal);
+        return tableEndpoint.list(databaseId, principal, internalName);
     }
 
     protected ResponseEntity<TableDto> generic_create(Long databaseId, Database database, TableCreateDto data,
-                                                           UUID userId, Principal principal, DatabaseAccess access)
+                                                      UUID userId, Principal principal, DatabaseAccess access)
             throws DatabaseNotFoundException, NotAllowedException, TableMalformedException, QueryMalformedException,
             ImageNotSupportedException, TableNameExistsException, AccessDeniedException, TableNotFoundException,
             UserNotFoundException {
