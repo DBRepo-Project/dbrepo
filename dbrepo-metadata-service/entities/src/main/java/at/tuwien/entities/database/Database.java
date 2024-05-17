@@ -17,7 +17,6 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.io.Serializable;
-import java.sql.Blob;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -56,7 +55,7 @@ public class Database implements Serializable {
     @Column(name = "created_by", columnDefinition = "VARCHAR(36)")
     private UUID createdBy;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumns({
             @JoinColumn(name = "created_by", referencedColumnName = "ID", insertable = false, updatable = false)
     })
@@ -67,7 +66,7 @@ public class Database implements Serializable {
     @Column(name = "owned_by", columnDefinition = "VARCHAR(36)")
     private UUID ownedBy;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumns({
             @JoinColumn(name = "owned_by", referencedColumnName = "ID", insertable = false, updatable = false)
     })
@@ -76,7 +75,7 @@ public class Database implements Serializable {
     @Column(nullable = false)
     private Long cid;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumns({
             @JoinColumn(name = "cid", referencedColumnName = "id", insertable = false, updatable = false)
     })
@@ -99,26 +98,26 @@ public class Database implements Serializable {
     @Column(name = "contact_person", columnDefinition = "VARCHAR(36)")
     private UUID contactPerson;
 
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumns({
             @JoinColumn(name = "contact_person", referencedColumnName = "ID", updatable = false, insertable = false)
     })
     private User contact;
 
     @ToString.Exclude
-    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "database")
+    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE}, mappedBy = "database")
     @Where(clause = "identifier_type='DATABASE'")
     @OrderBy("id DESC")
     private List<Identifier> identifiers;
 
     @ToString.Exclude
-    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "database")
+    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE}, mappedBy = "database")
     @Where(clause = "identifier_type='SUBSET'")
     @OrderBy("id DESC")
     private List<Identifier> subsets;
 
     @ToString.Exclude
-    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "database", orphanRemoval = true)
+    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL, CascadeType.PERSIST}, mappedBy = "database", orphanRemoval = true)
     private List<Table> tables;
 
     @ToString.Exclude

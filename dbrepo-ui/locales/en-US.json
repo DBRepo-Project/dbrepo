@@ -3,11 +3,11 @@
     "information": "Information",
     "search": "Search",
     "ontologies": "Ontologies",
-    "my-databases": "My Databases",
     "logout": "Logout",
     "login": "Login",
     "signup": "Signup",
     "databases": "Databases",
+    "identifiers": "Identifiers",
     "tables": "Tables",
     "subsets": "Subsets",
     "info": "Info",
@@ -26,7 +26,11 @@
     "settings": "Settings",
     "views": "Views",
     "create": "Create",
-    "semantics": "Semantics"
+    "semantics": "Semantics",
+    "yes": "Yes",
+    "no": "No",
+    "mine": "(mine)",
+    "loading": "Loading"
   },
   "pages": {
     "identifier": {
@@ -34,8 +38,12 @@
       "pid": {
         "title": "Persistent Identifier"
       },
+      "draft": {
+        "title": "Draft Identifier"
+      },
       "titles": {
-        "title": "Titles"
+        "title": "Titles",
+        "none": "(no title)"
       },
       "creators": {
         "title": "Creators"
@@ -59,7 +67,8 @@
         "title": "Citation Recommendation"
       },
       "descriptions": {
-        "title": "Descriptions"
+        "title": "Descriptions",
+        "none": "(no description)"
       },
       "publisher": {
         "title": "Publisher"
@@ -101,6 +110,16 @@
             "add": {
               "text": "Add"
             }
+          },
+          "pid": {
+            "title": "Persistent Identifier",
+            "subtitle": "Do you already have a DOI for this dataset?",
+            "label": "Provide your existing DOI here",
+            "hint": "A DOI allows your upload to be easily and unambiguously cited. Example: 10.1234/foo.bar",
+            "mint": "A PID will be minted after saving."
+          },
+          "doi": {
+            "mint": "A DOI will be created after saving."
           },
           "descriptions": {
             "description": {
@@ -310,8 +329,8 @@
             "hint": "Required. Maximum length is 64 characters."
           },
           "generated": {
-            "label": "Generated Name",
-            "hint": ""
+            "label": "Preview Table Name",
+            "hint": "Readonly."
           },
           "description": {
             "label": "Description",
@@ -387,8 +406,7 @@
           },
           "summary": {
             "prefix": "Created table with name",
-            "middle": "and imported",
-            "suffix": "rows from dataset."
+            "suffix": "and imported dataset successfully."
           }
         },
         "drop": {
@@ -493,7 +511,9 @@
           "title": "History",
           "subtitle": "Select a timestamp to view the data for this specific time of day.",
           "chart": {
-            "title": "Data Events"
+            "title": "Data Events",
+            "ylabel": "# Events",
+            "xlabel": "Timestamp"
           },
           "timestamp": {
             "label": "Timestamp",
@@ -717,6 +737,11 @@
             "text": "Update"
           }
         },
+        "language": {
+          "label": "Language",
+          "en": "English (EN)",
+          "de": "German (DE)"
+        },
         "theme": {
           "title": "Theme",
           "subtitle": "Update the user theme when logged in.",
@@ -834,6 +859,7 @@
           },
           "visibility": {
             "label": "Data Visibility",
+            "warn": "Only people with at least read access can view the data.",
             "hint": "Required. When private, the view metadata will still be public but the data will only be visible to people with at least read access to this database."
           }
         }
@@ -990,6 +1016,103 @@
     }
   },
   "error": {
+    "access": {
+      "missing": "Failed to find access in metadata database."
+    },
+    "axios": {
+      "connection": "Failed to establish connection."
+    },
+    "concept": {
+      "missing": "Failed to find concept in metadata database."
+    },
+    "container": {
+      "exists": "Container already exists in metadata database.",
+      "missing": "Failed to find container in metadata database."
+    },
+    "data": {
+      "invalid": "Failed to communicate with data service.",
+      "connection": "Failed to establish connection to data service.",
+      "value": "Failed to set column value:",
+      "drift": "Your browser clock is not synchronized with UTC and seems to be off by:"
+    },
+    "database": {
+      "connection": "Failed to establis connection to the database.",
+      "invalid": "Failed to perform action in database.",
+      "querystore": "Failed to insert query into query store",
+      "missing": "Failed to find database in metadata database.",
+      "create":  "Failed to establish connection with metadata service."
+    },
+    "doi": {
+      "missing": "Failed to find DOI in metadata database."
+    },
+    "exchange": {
+      "missing": "Failed to find exchange in broker service."
+    },
+    "semantic": {
+      "filter": "Failed to filter semantic entity in metadata service.",
+      "missing": "Failed to find semantic entity in metadata service."
+    },
+    "storage": {
+      "missing": "Failed to find dataset in storage service.",
+      "invalid": "Failed to establish connection with storage service."
+    },
+    "identifier": {
+      "format": "Failed to transform identifier into the requested format in metadata service.",
+      "missing": "Failed to find identifier in metadata database.",
+      "unsupported": "Failed to find metadata from unsupported metadata provider.",
+      "form": "Please provide all required values in the form"
+    },
+    "image": {
+      "exists": "Image already exists in metadata database.",
+      "missing": "Failed to find image in metadata database.",
+      "invalid": "Image metadata is malformed."
+    },
+    "license": {
+      "missing": "Failed to find license in metadata database."
+    },
+    "request": {
+      "invalid": "Request payload was rejected by the metadata service.",
+      "forbidden": "Request is forbidden, roles or authentication missing.",
+      "pagination": "Request contains invalid pagination information.",
+      "sort": "Request contains invalid sort information."
+    },
+    "message": {
+      "missing": "Failed to find message in metadata database."
+    },
+    "ontology": {
+      "missing": "Failed to find ontology in metadata database."
+    },
+    "orcid": {
+      "missing": "Failed to find ORCID in metadata provider."
+    },
+    "query": {
+      "missing": "Failed to find query in data service.",
+      "invalid": "Query is invalid (e.g. contains forbidden keywords).",
+      "type.exists": "Failed to build query: no such column type:",
+      "type.build": "Failed to build query: currently no query build support for column type:",
+      "column.exists": "Failed to build query: data columns are missing column with name:"
+    },
+    "store": {
+      "invalid": "Failed to create query store in the database.",
+      "clean": "Failed to sweep query store in the database.",
+      "insert": "Failed to insert query into database query store.",
+      "persist": "Failed to persist query in the database query store."
+    },
+    "metadata": {
+      "privileged": "Failed to fetch privileged metadata in the data service.",
+      "connection": "Failed to establish connection to the metadata service.",
+      "invalid": "Failed to obtain authentication metadata in the data service."
+    },
+    "sidecar": {
+      "export": "Failed to export dataset to the database sidecar.",
+      "import": "Failed to import dataset from the database sidecar."
+    },
+    "queue": {
+      "missing": "Failed to find queue in broker service."
+    },
+    "ror": {
+      "missing": "Failed to find ROR in metadata provider."
+    },
     "import": {
       "dataset": "Failed to import dataset."
     },
@@ -999,42 +1122,43 @@
     "schema": {
       "id": "Column \"id\" must be a primary key."
     },
-    "identifier": {
-      "requestinvalid": "Failed to create identifier:"
-    },
     "user": {
+      "exists": "User with username exists in auth database.",
+      "missing": "Failed to find user in auth database.",
       "credentials": "Invalid username/password combination.",
-      "email-exists": "Account with this e-mail exists already."
+      "email-exists": "Account with this e-mail exists already.",
+      "setup": "Please change your password."
     },
-    "query": {
-      "viewmalformed": "View is malformed:",
-      "type": {
-        "exists": "Failed to build query: no such column type:",
-        "build": "Failed to build query: currently no query build support for column type:"
-      },
-      "column": {
-        "exists": "Failed to build query: data columns are missing column with name:"
-      }
+    "search": {
+      "connection": "Failed to establish connection to the search service.",
+      "invalid": "Malformed search request."
     },
     "semantics": {
-      "timeout": "Failed to suggest semantics: request timed out"
+      "timeout": "Failed to suggest semantics: request timed out.",
+      "uri": "Semantic URI is malformed."
     },
-    "database": {
-      "querystore": "Failed to insert query into query store"
+    "subset": {
+      "format": "Failed to map subset into requested format."
+    },
+    "pagination": {
+      "malformed": "Invalid pagination request."
     },
     "table": {
-      "tablemalformed": "Failed to insert entry:",
+      "missing": "Failed to find table in metadata database.",
+      "exists": "Table with this name exists already.",
+      "invalid": "Failed to parse columns in the data service.",
+      "malformed": "Failed to insert entry:",
       "create": "Failed to create table:",
       "connection": "Failed to load table data because database is not reachable."
     },
+    "unit": {
+      "missing": "Failed to find semantic unit in metadata database."
+    },
     "view": {
-      "create": "Failed to create view:"
-    },
-    "data": {
-      "value": "Failed to set column value:",
-      "drift": "Your browser clock is not synchronized with UTC and seems to be off by:"
-    },
-    "transfer": "Failed to transfer the database owner."
+      "create": "Failed to create view:",
+      "missing": "Failed to find view in metadata database.",
+      "invalid": "Failed to map view query to columns in data service."
+    }
   },
   "success": {
     "signup": "Successfully created account.",
@@ -1074,8 +1198,11 @@
       }
     },
     "pid": {
-      "created": "Successfully persisted identifier.",
-      "updated": "Successfully updated identifier."
+      "saved": "Successfully saved identifier.",
+      "created": "Successfully created identifier.",
+      "published": "Successfully published identifier.",
+      "updated": "Successfully updated identifier.",
+      "deleted": "Successfully deleted identifier."
     },
     "user": {
       "info": "Successfully updated user information.",
@@ -1116,13 +1243,16 @@
       "public": "Public",
       "private": "Private",
       "current": "Current Data",
-      "history": "Historic Data",
       "create": {
         "text": "Database"
       },
       "import-csv": {
         "permanent": "Import",
         "xl": "CSV"
+      },
+      "dashboard": {
+        "permanent": "Visualize",
+        "xl": "Data"
       },
       "create-subset": {
         "permanent": "Subset",
@@ -1158,7 +1288,15 @@
     },
     "identifier": {
       "create": {
-        "xl": "Get",
+        "xl": "Save",
+        "permanent": "PID"
+      },
+      "delete": {
+        "xl": "Delete",
+        "permanent": "PID"
+      },
+      "publish": {
+        "xl": "Publish",
         "permanent": "PID"
       },
       "update": {
@@ -1219,6 +1357,9 @@
     "integer": "Greater or equal to zero",
     "max-length": "Maximum length is: ",
     "day": "Invalid day",
+    "doi": {
+      "invalid": "Invalid DOI. Must start with 10.xyz"
+    },
     "month": "Invalid month",
     "schema": {
       "id": "Column needs to be declared as primary key",

@@ -1,20 +1,27 @@
 <template>
   <div>
     <v-toolbar
-      v-if="table"
       flat>
       <v-btn
         size="small"
         icon="mdi-arrow-left"
         :to="`/database/${$route.params.database_id}/table`" />
-      <v-toolbar-title v-if="$vuetify.display.lgAndUp" v-text="table.name" />
+      <v-toolbar-title>
+        <v-skeleton-loader
+          v-if="!table && $vuetify.display.lgAndUp"
+          type="subtitle"
+          width="200" />
+        <span
+          v-if="table && $vuetify.display.lgAndUp"
+          v-text="table.name" />
+      </v-toolbar-title>
       <v-spacer />
       <v-btn
         v-if="canImportCsv"
         :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-cloud-upload' : null"
         color="tertiary"
         :variant="buttonVariant"
-        :text="$t('toolbars.database.import-csv.permanent') + ($vuetify.display.xlAndUp ? ' ' + $t('toolbars.database.import-csv.xl') : '')"
+        :text="$t('toolbars.database.import-csv.permanent') + ($vuetify.display.lgAndUp ? ' ' + $t('toolbars.database.import-csv.xl') : '')"
         class="ml-2"
         :to="`/database/${$route.params.database_id}/table/${$route.params.table_id}/import`" />
       <v-btn
@@ -22,7 +29,7 @@
         :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-wrench' : null"
         color="secondary"
         variant="flat"
-        :text="($vuetify.display.xlAndUp ? $t('toolbars.database.create-subset.xl') + ' ' : '') + $t('toolbars.database.create-subset.permanent')"
+        :text="($vuetify.display.lgAndUp ? $t('toolbars.database.create-subset.xl') + ' ' : '') + $t('toolbars.database.create-subset.permanent')"
         class="ml-2"
         :to="`/database/${$route.params.database_id}/subset/create?tid=${$route.params.table_id}`" />
       <v-btn
@@ -30,7 +37,7 @@
         :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-view-carousel' : null"
         color="secondary"
         variant="flat"
-        :text="($vuetify.display.xlAndUp ? $t('toolbars.database.create-view.xl') + ' ' : '') + $t('toolbars.database.create-view.permanent')"
+        :text="($vuetify.display.lgAndUp ? $t('toolbars.database.create-view.xl') + ' ' : '') + $t('toolbars.database.create-view.permanent')"
         class="ml-2"
         :to="`/database/${$route.params.database_id}/view/create?tid=${$route.params.table_id}`" />
       <v-btn
@@ -38,7 +45,7 @@
         :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-delete' : null"
         color="error"
         variant="flat"
-        :text="($vuetify.display.xlAndUp ? 'Drop ' : '') + 'Table'"
+        :text="($vuetify.display.lgAndUp ? 'Drop ' : '') + 'Table'"
         class="ml-2"
         @click="dropTableDialog = true" />
       <v-btn
@@ -46,7 +53,7 @@
         :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-content-save-outline' : null"
         color="primary"
         variant="flat"
-        :text="($vuetify.display.xlAndUp ? 'Get ' : '') + 'PID'"
+        :text="($vuetify.display.lgAndUp ? 'Get ' : '') + 'PID'"
         class="ml-2"
         :to="`/database/${$route.params.database_id}/table/${$route.params.table_id}/persist`" />
       <template v-slot:extension>
@@ -73,8 +80,8 @@
 </template>
 
 <script>
-import EditTuple from '@/components/dialogs/EditTuple'
-import DropTable from '@/components/dialogs/DropTable'
+import EditTuple from '@/components/dialogs/EditTuple.vue'
+import DropTable from '@/components/dialogs/DropTable.vue'
 import { useCacheStore } from '@/stores/cache'
 import { useUserStore } from '@/stores/user'
 
@@ -111,7 +118,7 @@ export default {
       return this.userStore.getRoles
     },
     canExecuteQuery () {
-      if (!this.roles) {
+      if (!this.roles || !this.table || !this.user) {
         return false
       }
       const userService = useUserService()
@@ -128,7 +135,7 @@ export default {
       return tableService.isOwner(this.table, this.user) && this.roles.includes('delete-table') && this.table.identifiers.length === 0
     },
     canCreateView () {
-      if (!this.user) {
+      if (!this.roles || !this.table || !this.user) {
         return false
       }
       const databaseService = useDatabaseService()
@@ -142,13 +149,13 @@ export default {
       if (this.database.is_public) {
         return true
       }
-      if (!this.roles || !this.roles.includes('view-table-data') || !this.access) {
+      if (!this.roles || !this.table || !this.user || !this.roles.includes('view-table-data') || !this.access) {
         return false
       }
       return this.access.type === 'read' || this.access.type === 'write_own' || this.access.type === 'write_all'
     },
     canImportCsv () {
-      if (!this.roles) {
+      if (!this.roles || !this.table || !this.user) {
         return false
       }
       return this.roles.includes('insert-table-data')

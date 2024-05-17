@@ -32,8 +32,6 @@ class AmqpClient:
                  broker_virtual_host: str = '/',
                  username: str = None,
                  password: str = None) -> None:
-        logging.getLogger('requests').setLevel(logging.INFO)
-        logging.getLogger('urllib3').setLevel(logging.INFO)
         logging.basicConfig(format='%(asctime)s %(name)-12s %(levelname)-6s %(message)s', level=logging.DEBUG,
                             stream=sys.stdout)
         self.broker_host = os.environ.get('AMQP_API_HOST', broker_host)

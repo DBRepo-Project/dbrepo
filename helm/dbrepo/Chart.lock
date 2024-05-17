@@ -1,0 +1,24 @@
+dependencies:
+- name: opensearch
+  repository: https://opensearch-project.github.io/helm-charts/
+  version: 2.15.0
+- name: keycloak
+  repository: https://charts.bitnami.com/bitnami
+  version: 17.3.3
+- name: mariadb-galera
+  repository: https://charts.bitnami.com/bitnami
+  version: 11.0.1
+- name: mariadb-galera
+  repository: https://charts.bitnami.com/bitnami
+  version: 11.0.1
+- name: rabbitmq
+  repository: https://charts.bitnami.com/bitnami
+  version: 14.0.0
+- name: seaweedfs
+  repository: https://seaweedfs.github.io/seaweedfs/helm
+  version: 3.59.4
+- name: tusd
+  repository: https://charts.sagikazarmark.dev
+  version: 0.1.2
+digest: sha256:f724e33944ae5284b9417a3424a4af9cd67eb8bea0baa0ebeddc76f4c0c9c63a
+generated: "2024-05-17T21:25:35.919266246+02:00"

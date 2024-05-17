@@ -8,8 +8,8 @@
   </div>
 </template>
 <script>
-import TableList from '@/components/table/TableList'
-import DatabaseToolbar from '@/components/database/DatabaseToolbar'
+import TableList from '@/components/table/TableList.vue'
+import DatabaseToolbar from '@/components/database/DatabaseToolbar.vue'
 
 export default {
   name: 'Tables',

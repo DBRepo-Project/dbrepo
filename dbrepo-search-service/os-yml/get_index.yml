@@ -1,0 +1,50 @@
+tags:
+  - search-endpoint
+summary: Gets the index
+operationId: get_index
+description: Gets the index
+consumes:
+  - application/json
+produces:
+  - application/json
+parameters:
+  - in: path
+    name: type
+    schema:
+      type: string
+      enum: [ database, table, view, column, user, identifier, concept, unit ]
+    required: true
+    description: The search type.
+  - in: "body"
+    name: "body"
+    required: true
+    schema:
+      type: "object"
+      properties:
+        search_term:
+          type: "string"
+          example: "air quality"
+        field_value_pairs:
+          type: "object"
+        t1:
+          type: "integer"
+          example: 0
+        t2:
+          type: "integer"
+          example: 100
+responses:
+  200:
+    description: OK, contains the elements formatted as an array of JSON arrays
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            results:
+              type: array
+              items:
+                type: object
+            type:
+              type: string
+              enum: [ database, table, view, column, user, identifier, concept, unit ]
+              description: "Same as the requested type"

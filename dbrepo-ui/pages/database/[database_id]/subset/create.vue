@@ -7,7 +7,8 @@
 
 <script>
 import { useUserStore } from '@/stores/user'
-import Builder from '@/components/subset/Builder'
+import Builder from '@/components/subset/Builder.vue'
+
 export default {
   components: {
     Builder

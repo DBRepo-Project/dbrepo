@@ -3,11 +3,11 @@
     "information": "Information",
     "search": "Suchen",
     "ontologies": "Ontologien",
-    "my-databases": "Meine Datenbanken",
     "logout": "Ausloggen",
-    "login": "Anmeldung",
-    "signup": "Registrierung",
+    "login": "Anmelden",
+    "signup": "Registrieren",
     "databases": "Datenbanken",
+    "identifiers": "Identifikatoren",
     "tables": "Tabellen",
     "subsets": "Teilmengen",
     "info": "Info",
@@ -25,20 +25,28 @@
     "now": "Jetzt",
     "settings": "Einstellungen",
     "views": "Ansichten",
-    "create": "Erstellen",
-    "semantics": "Semantik"
+    "create": "Erstelle",
+    "semantics": "Semantik",
+    "yes": "Ja",
+    "no": "Nein",
+    "mine": "(Meine)",
+    "loading": "Lade"
   },
   "pages": {
     "identifier": {
-      "title": "Bezeichner",
+      "title": "Kennung",
       "pid": {
         "title": "Persistenter Bezeichner"
       },
+      "draft": {
+        "title": "Entwurfskennung"
+      },
       "titles": {
-        "title": "Titel"
+        "title": "Titel",
+        "none": "(Kein Titel)"
       },
       "creators": {
-        "title": "Schöpfer"
+        "title": "Ersteller"
       },
       "language": {
         "title": "Sprache"
@@ -59,7 +67,8 @@
         "title": "Zitierempfehlung"
       },
       "descriptions": {
-        "title": "Beschreibungen"
+        "title": "Beschreibungen",
+        "none": "(Keine Beschreibung)"
       },
       "publisher": {
         "title": "Herausgeber"
@@ -102,6 +111,16 @@
               "text": "Hinzufügen"
             }
           },
+          "pid": {
+            "title": "Persistenter Bezeichner",
+            "subtitle": "Haben Sie bereits einen DOI für diesen Datensatz?",
+            "label": "Geben Sie hier Ihren bestehenden DOI an",
+            "hint": "Ein DOI ermöglicht die einfache und eindeutige Zitierung Ihres Uploads. ",
+            "mint": "Nach dem Speichern wird ein PID erstellt."
+          },
+          "doi": {
+            "mint": "Nach dem Speichern wird ein DOI erstellt."
+          },
           "descriptions": {
             "description": {
               "label": "Beschreibung",
@@ -130,7 +149,7 @@
             "hint": "Erforderlich."
           },
           "related-identifiers": {
-            "title": "Zugehöriger Bezeichner",
+            "title": "Verwandter Bezeichner",
             "subtitle": "Bezeichner verwandter Ressourcen. ",
             "identifier": {
               "label": "Kennung",
@@ -247,18 +266,18 @@
       }
     },
     "table": {
-      "title": "Tisch",
+      "title": "Tabelle",
       "id": {
         "title": "ID"
       },
       "broker": {
-        "title": "Makler"
+        "title": "Broker"
       },
       "exchange": {
-        "title": "Austausch"
+        "title": "Exchange"
       },
       "queue": {
-        "title": "Warteschlange"
+        "title": "Queue"
       },
       "routing-key": {
         "title": "Routing-Schlüssel"
@@ -310,8 +329,8 @@
             "hint": "Erforderlich. "
           },
           "generated": {
-            "label": "Generierter Name",
-            "hint": ""
+            "label": "Vorschau des Tabellennamens",
+            "hint": "Schreibgeschützt."
           },
           "description": {
             "label": "Beschreibung",
@@ -369,7 +388,7 @@
             "suffix": "Zeilen aus dem Datensatz."
           },
           "analyse": {
-            "text": "Hochladen"
+            "text": "Hochladen und analysieren"
           }
         },
         "create": {
@@ -387,12 +406,11 @@
           },
           "summary": {
             "prefix": "Tabelle mit Namen erstellt",
-            "middle": "und importiert",
-            "suffix": "Zeilen aus dem Datensatz."
+            "suffix": "und importierter Datensatz erfolgreich."
           }
         },
         "drop": {
-          "title": "Drop-Tisch",
+          "title": "Tabelle Löschen",
           "warning": {
             "prefix": "Diese Aktion kann nicht rückgängig gemacht werden! ",
             "suffix": "unten, wenn Sie es wirklich mit allen gespeicherten Daten löschen möchten."
@@ -490,10 +508,12 @@
           }
         },
         "versioning": {
-          "title": "Verlauf",
+          "title": "Geschichte",
           "subtitle": "Wählen Sie einen Zeitstempel aus, um die Daten für diese bestimmte Tageszeit anzuzeigen.",
           "chart": {
-            "title": "Datenereignisse"
+            "title": "Datenereignisse",
+            "ylabel": "# Veranstaltungen",
+            "xlabel": "Zeitstempel"
           },
           "timestamp": {
             "label": "Zeitstempel",
@@ -537,7 +557,7 @@
         "title": "Interner Name"
       },
       "visibility": {
-        "title": "Sichtweite"
+        "title": "Sichtbarkeit"
       },
       "size": {
         "title": "Größe"
@@ -609,7 +629,7 @@
           "http": "(Datenbank nicht erreichbar, versuchen Sie es später erneut)"
         },
         "views": {
-          "empty": "(keine Ansichten)"
+          "empty": "(keine Aufrufe)"
         },
         "settings": {
           "title": "Einstellungen",
@@ -634,7 +654,7 @@
             }
           },
           "visibility": {
-            "title": "Sichtweite",
+            "title": "Sichtbarkeit",
             "subtitle": "Private Datenbanken verbergen die Daten, während Metadaten weiterhin sichtbar sind. ",
             "visibility": {
               "label": "Datenbanksichtbarkeit",
@@ -666,7 +686,7 @@
         "hint": "Erforderlich."
       },
       "submit": {
-        "label": "Absenden"
+        "label": "Einreichen"
       }
     },
     "login": {
@@ -680,7 +700,7 @@
         "hint": "Erforderlich."
       },
       "submit": {
-        "label": "Absenden"
+        "label": "Einreichen"
       }
     },
     "user": {
@@ -717,8 +737,13 @@
             "text": "Aktualisieren"
           }
         },
+        "language": {
+          "label": "Sprache",
+          "en": "Englisch (EN)",
+          "de": "Deutsch (DE)"
+        },
         "theme": {
-          "title": "Thema",
+          "title": "Theme",
           "subtitle": "Aktualisieren Sie das Benutzerdesign, wenn Sie angemeldet sind.",
           "label": "Thema",
           "dark": "Dunkel",
@@ -783,7 +808,7 @@
                 "label": "Endzeitstempel"
               },
               "submit": {
-                "text": "Absenden"
+                "text": "Einreichen"
               },
               "delete": {
                 "text": "Löschen"
@@ -800,7 +825,7 @@
       }
     },
     "view": {
-      "title": "Sicht",
+      "title": "Ansicht",
       "tabs": {
         "info": "Info",
         "data": "Daten"
@@ -809,13 +834,13 @@
         "title": "Abfrage"
       },
       "creator": {
-        "title": "Schöpfer"
+        "title": "Ersteller"
       },
       "creation": {
-        "title": "Schaffung"
+        "title": "Erstellt"
       },
       "visibility": {
-        "title": "Sichtweite"
+        "title": "Sichtbarkeit"
       },
       "subpages": {
         "create": {
@@ -833,7 +858,9 @@
             "hint": "Erforderlich."
           },
           "visibility": {
-            "warn": "Die Ansichtsmetadaten, d. h. Ansichtsname, Abfrage, bleiben weiterhin öffentlich. "
+            "label": "Datensichtbarkeit",
+            "warn": "Nur Personen mit mindestens Leserechten können die Daten einsehen.",
+            "hint": "Erforderlich. "
           }
         }
       }
@@ -844,7 +871,7 @@
         "title": "Sichtweite"
       },
       "creator": {
-        "title": "Schöpfer"
+        "title": "Ersteller"
       },
       "query": {
         "title": "Abfrage"
@@ -914,10 +941,10 @@
         "table": "Tabelle",
         "column": "Spalte",
         "user": "Benutzer",
-        "identifier": "Bezeichner",
+        "identifier": "Kennung",
         "concept": "Konzept",
         "unit": "Einheit",
-        "view": "Ansicht"
+        "view": "View"
       },
       "type": {
         "label": "Typ",
@@ -936,7 +963,7 @@
         "hint": ""
       },
       "publication-range": {
-        "hint": "Geben Sie Ihren benutzerdefinierten Veröffentlichungsjahresbereich an."
+        "hint": "Geben Sie Ihren benutzerdefinierten Veröffentlichungsjahrbereich an."
       },
       "start-year": {
         "label": "Startjahr",
@@ -975,7 +1002,7 @@
         "title": "Interner Name"
       },
       "image-name": {
-        "title": "Abbild"
+        "title": "Bild"
       },
       "image-tag": {
         "title": "Ausführung"
@@ -989,6 +1016,103 @@
     }
   },
   "error": {
+    "access": {
+      "missing": "Der Zugriff in der Metadatendatenbank konnte nicht gefunden werden."
+    },
+    "axios": {
+      "connection": "Es konnte keine Verbindung hergestellt werden."
+    },
+    "concept": {
+      "missing": "Das Konzept konnte in der Metadatendatenbank nicht gefunden werden."
+    },
+    "container": {
+      "exists": "Der Container ist bereits in der Metadatendatenbank vorhanden.",
+      "missing": "Der Container konnte in der Metadatendatenbank nicht gefunden werden."
+    },
+    "data": {
+      "invalid": "Die Kommunikation mit dem Datendienst ist fehlgeschlagen.",
+      "connection": "Es konnte keine Verbindung zum Datendienst hergestellt werden.",
+      "value": "Spaltenwert konnte nicht festgelegt werden:",
+      "drift": "Die Uhr Ihres Browsers ist nicht mit UTC synchronisiert und scheint um Folgendes eingestellt zu sein:"
+    },
+    "database": {
+      "connection": "Es konnte keine Verbindung zur Datenbank hergestellt werden.",
+      "invalid": "Aktion in der Datenbank konnte nicht ausgeführt werden.",
+      "querystore": "Die Abfrage konnte nicht in den Abfragespeicher eingefügt werden",
+      "missing": "Die Datenbank konnte nicht in der Metadatendatenbank gefunden werden.",
+      "create":  "Es konnte keine Verbindung zum Metadatendienst hergestellt werden."
+    },
+    "doi": {
+      "missing": "DOI konnte in der Metadatendatenbank nicht gefunden werden."
+    },
+    "exchange": {
+      "missing": "Im Broker-Service konnte keine Börse gefunden werden."
+    },
+    "semantic": {
+      "filter": "Die semantische Entität konnte im Metadatendienst nicht gefiltert werden.",
+      "missing": "Die semantische Entität konnte im Metadatendienst nicht gefunden werden."
+    },
+    "storage": {
+      "missing": "Datensatz im Speicherdienst konnte nicht gefunden werden.",
+      "invalid": "Es konnte keine Verbindung zum Speicherdienst hergestellt werden."
+    },
+    "identifier": {
+      "format": "Die Kennung konnte im Metadatendienst nicht in das angeforderte Format umgewandelt werden.",
+      "missing": "Die Kennung konnte in der Metadatendatenbank nicht gefunden werden.",
+      "unsupported": "Es konnten keine Metadaten von einem nicht unterstützten Metadatenanbieter gefunden werden.",
+      "form": "Bitte geben Sie im Formular alle erforderlichen Werte ein"
+    },
+    "image": {
+      "exists": "Das Bild ist bereits in der Metadatendatenbank vorhanden.",
+      "missing": "Das Bild konnte nicht in der Metadatendatenbank gefunden werden.",
+      "invalid": "Bildmetadaten sind fehlerhaft."
+    },
+    "license": {
+      "missing": "Die Lizenz konnte in der Metadatendatenbank nicht gefunden werden."
+    },
+    "request": {
+      "invalid": "Die Anforderungsnutzlast wurde vom Metadatendienst abgelehnt.",
+      "forbidden": "Anfrage ist unzulässig, Rollen oder Authentifizierung fehlen.",
+      "pagination": "Die Anfrage enthält ungültige Paginierungsinformationen.",
+      "sort": "Die Anfrage enthält ungültige Sortierinformationen."
+    },
+    "message": {
+      "missing": "Die Nachricht konnte in der Metadatendatenbank nicht gefunden werden."
+    },
+    "ontology": {
+      "missing": "Die Ontologie konnte in der Metadatendatenbank nicht gefunden werden."
+    },
+    "orcid": {
+      "missing": "ORCID konnte im Metadatenanbieter nicht gefunden werden."
+    },
+    "query": {
+      "missing": "Die Abfrage konnte im Datendienst nicht gefunden werden.",
+      "invalid": "Die Abfrage ist ungültig (enthält beispielsweise verbotene Schlüsselwörter).",
+      "type.exists": "Abfrage konnte nicht erstellt werden: kein solcher Spaltentyp:",
+      "type.build": "Abfrage konnte nicht erstellt werden: Derzeit gibt es keine Abfrageerstellungsunterstützung für den Spaltentyp:",
+      "column.exists": "Abfrage konnte nicht erstellt werden: In den Datenspalten fehlt die Spalte mit dem Namen:"
+    },
+    "store": {
+      "invalid": "Der Abfragespeicher in der Datenbank konnte nicht erstellt werden.",
+      "clean": "Der Abfragespeicher in der Datenbank konnte nicht durchsucht werden.",
+      "insert": "Die Abfrage konnte nicht in den Abfragespeicher der Datenbank eingefügt werden.",
+      "persist": "Die Abfrage konnte nicht im Abfragespeicher der Datenbank gespeichert werden."
+    },
+    "metadata": {
+      "privileged": "Das Abrufen privilegierter Metadaten im Datendienst ist fehlgeschlagen.",
+      "connection": "Es konnte keine Verbindung zum Metadatendienst hergestellt werden.",
+      "invalid": "Es konnten keine Authentifizierungsmetadaten im Datendienst abgerufen werden."
+    },
+    "sidecar": {
+      "export": "Der Datensatz konnte nicht in den Datenbank-Sidecar exportiert werden.",
+      "import": "Der Datensatz konnte nicht aus dem Datenbank-Sidecar importiert werden."
+    },
+    "queue": {
+      "missing": "Die Warteschlange im Broker-Dienst konnte nicht gefunden werden."
+    },
+    "ror": {
+      "missing": "ROR konnte im Metadatenanbieter nicht gefunden werden."
+    },
     "import": {
       "dataset": "Der Datensatz konnte nicht importiert werden."
     },
@@ -998,42 +1122,43 @@
     "schema": {
       "id": "Die Spalte „id“ muss ein Primärschlüssel sein."
     },
-    "identifier": {
-      "requestinvalid": "Bezeichner konnte nicht erstellt werden:"
-    },
     "user": {
+      "exists": "Benutzer mit Benutzername ist in der Authentifizierungsdatenbank vorhanden.",
+      "missing": "Benutzer konnte in der Authentifizierungsdatenbank nicht gefunden werden.",
       "credentials": "Ungültige Benutzername und Passwort Kombination.",
-      "email-exists": "Das Konto mit dieser E-Mail-Adresse existiert bereits."
+      "email-exists": "Das Konto mit dieser E-Mail-Adresse existiert bereits.",
+      "setup": "Bitte ändern Sie Ihr Passwort."
     },
-    "query": {
-      "viewmalformed": "Die Ansicht ist fehlerhaft:",
-      "type": {
-        "exists": "Abfrage konnte nicht erstellt werden: kein solcher Spaltentyp:",
-        "build": "Abfrage konnte nicht erstellt werden: Derzeit gibt es keine Abfrageerstellungsunterstützung für den Spaltentyp:"
-      },
-      "column": {
-        "exists": "Abfrage konnte nicht erstellt werden: In den Datenspalten fehlt die Spalte mit dem Namen:"
-      }
+    "search": {
+      "connection": "Es konnte keine Verbindung zum Suchdienst hergestellt werden.",
+      "invalid": "Ungültige Suchanfrage."
     },
     "semantics": {
-      "timeout": "Semantikvorschlag fehlgeschlagen: Zeitüberschreitung bei der Anfrage"
+      "timeout": "Semantikvorschlag fehlgeschlagen: Zeitüberschreitung bei der Anfrage.",
+      "uri": "Der semantische URI ist fehlerhaft."
     },
-    "database": {
-      "querystore": "Die Abfrage konnte nicht in den Abfragespeicher eingefügt werden"
+    "subset": {
+      "format": "Die Teilmenge konnte nicht dem angeforderten Format zugeordnet werden."
+    },
+    "pagination": {
+      "malformed": "Ungültige Paginierungsanforderung."
     },
     "table": {
-      "tablemalformed": "Eintrag konnte nicht eingefügt werden:",
+      "missing": "Die Tabelle konnte in der Metadatendatenbank nicht gefunden werden.",
+      "exists": "Die Tabelle mit diesem Namen existiert bereits.",
+      "invalid": "Die Spalten im Datendienst konnten nicht analysiert werden.",
+      "malformed": "Eintrag konnte nicht eingefügt werden:",
       "create": "Tabelle konnte nicht erstellt werden:",
       "connection": "Das Laden der Tabellendaten ist fehlgeschlagen, da die Datenbank nicht erreichbar ist."
     },
+    "unit": {
+      "missing": "Die semantische Einheit konnte in der Metadatendatenbank nicht gefunden werden."
+    },
     "view": {
-      "create": "Ansicht konnte nicht erstellt werden:"
-    },
-    "data": {
-      "value": "Spaltenwert konnte nicht festgelegt werden:",
-      "drift": "Ihre Browser-Uhrzeit ist nicht synchron mit UTC und scheint falschzugehen um:"
-    },
-    "transfer": "Der Datenbankeigentümer konnte nicht übertragen werden."
+      "create": "Ansicht konnte nicht erstellt werden:",
+      "missing": "Die Ansicht konnte in der Metadatendatenbank nicht gefunden werden.",
+      "invalid": "Die Ansichtsabfrage konnte den Spalten im Datendienst nicht zugeordnet werden."
+    }
   },
   "success": {
     "signup": "Konto erfolgreich erstellt.",
@@ -1073,8 +1198,11 @@
       }
     },
     "pid": {
-      "created": "Erfolgreich persistierter Bezeichner.",
-      "updated": "Kennung erfolgreich aktualisiert."
+      "saved": "Kennung erfolgreich gespeichert.",
+      "created": "Kennung erfolgreich erstellt.",
+      "published": "Identifikator erfolgreich veröffentlicht.",
+      "updated": "Kennung erfolgreich aktualisiert.",
+      "deleted": "Kennung erfolgreich gelöscht."
     },
     "user": {
       "info": "Benutzerinformationen erfolgreich aktualisiert.",
@@ -1115,7 +1243,6 @@
       "public": "Öffentlich",
       "private": "Privat",
       "current": "Aktuelle Daten",
-      "history": "Historische Daten",
       "create": {
         "text": "Datenbank"
       },
@@ -1123,17 +1250,21 @@
         "permanent": "Importieren",
         "xl": "CSV"
       },
+      "dashboard": {
+        "permanent": "Visualisiere",
+        "xl": "Daten"
+      },
       "create-subset": {
         "permanent": "Teilmenge",
-        "xl": "Erstellen"
+        "xl": "Erstelle"
       },
       "create-view": {
-        "permanent": "Sicht",
-        "xl": "Erstellen"
+        "permanent": "Ansicht",
+        "xl": "Erstelle"
       },
       "create-table": {
-        "permanent": "Tisch",
-        "xl": "Erstellen"
+        "permanent": "Tabelle",
+        "xl": "Erstelle"
       },
       "create-pid": {
         "permanent": "PID",
@@ -1157,7 +1288,15 @@
     },
     "identifier": {
       "create": {
-        "xl": "Erhalten",
+        "xl": "Speichern",
+        "permanent": "PID"
+      },
+      "delete": {
+        "xl": "Löschen",
+        "permanent": "PID"
+      },
+      "publish": {
+        "xl": "Veröffentlichen",
         "permanent": "PID"
       },
       "update": {
@@ -1202,13 +1341,13 @@
     },
     "table": {
       "data": {
-        "refresh": "Aktualisieren",
+        "refresh": "Aktualisierung",
         "add": "Hinzufügen",
         "edit": "Aktualisieren",
         "delete": "Löschen",
         "tuple": "Eintrag",
         "download": "Herunterladen",
-        "version": "Verlauf",
+        "version": "Geschichte",
         "subtitle": "Stellen Sie Daten bereit, die direkt in den Datensatz eingefügt werden sollen."
       }
     }
@@ -1218,6 +1357,9 @@
     "integer": "Größer oder gleich Null",
     "max-length": "Die maximale Länge beträgt: ",
     "day": "Ungültiger Tag",
+    "doi": {
+      "invalid": "Ungültiger DOI. "
+    },
     "month": "Ungültiger Monat",
     "schema": {
       "id": "Die Spalte muss als Primärschlüssel deklariert werden",

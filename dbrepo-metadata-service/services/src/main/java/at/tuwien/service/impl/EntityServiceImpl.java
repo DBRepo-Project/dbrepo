@@ -32,36 +32,32 @@ public class EntityServiceImpl implements EntityService {
 
     private final Dataset dataset;
     private final JenaConfig jenaConfig;
-    private final TableService tableService;
     private final OntologyMapper ontologyMapper;
     private final OntologyService ontologyService;
 
     @Autowired
-    public EntityServiceImpl(Dataset dataset, JenaConfig jenaConfig, TableService tableService,
-                             OntologyMapper ontologyMapper, OntologyService ontologyService) {
+    public EntityServiceImpl(Dataset dataset, JenaConfig jenaConfig, OntologyMapper ontologyMapper,
+                             OntologyService ontologyService) {
         this.dataset = dataset;
         this.jenaConfig = jenaConfig;
-        this.tableService = tableService;
         this.ontologyMapper = ontologyMapper;
         this.ontologyService = ontologyService;
     }
 
-    public void validateOntology(Ontology ontology) throws OntologyInvalidException {
+    public void validateOntology(Ontology ontology) throws MalformedException {
         if (ontology.getRdfPath() == null && ontology.getSparqlEndpoint() == null) {
             log.error("Ontology with uri {} is invalid: no RDF file present and no SPARQL endpoint found", ontology.getUri());
-            throw new OntologyInvalidException("Ontology with uri " + ontology.getUri() + " is invalid: no RDF file present and no SPARQL endpoint found");
+            throw new MalformedException("Ontology with uri " + ontology.getUri() + " is invalid: no RDF file present and no SPARQL endpoint found");
         }
     }
 
     @Override
-    public List<EntityDto> findByLabel(Ontology ontology, String label) throws QueryMalformedException,
-            OntologyInvalidException {
+    public List<EntityDto> findByLabel(Ontology ontology, String label) throws MalformedException {
         return findByLabel(ontology, label, 10);
     }
 
     @Override
-    public List<EntityDto> findByLabel(Ontology ontology, String label, Integer limit) throws QueryMalformedException,
-            OntologyInvalidException {
+    public List<EntityDto> findByLabel(Ontology ontology, String label, Integer limit) throws MalformedException {
         /* check */
         validateOntology(ontology);
         /* find */
@@ -91,17 +87,15 @@ public class EntityServiceImpl implements EntityService {
             }
         } catch (QueryParseException | IllegalArgumentException | RiotException e) {
             log.error("Failed to parse query: {}", e.getMessage());
-            throw new QueryMalformedException("Failed to parse query: " + e.getMessage(), e);
+            throw new MalformedException("Failed to parse query: " + e.getMessage(), e);
         }
         return results;
     }
 
     @Override
-    public List<EntityDto> findByUri(Ontology ontology, String uri) throws QueryMalformedException,
-            OntologyInvalidException {
-        /* check */
-        validateOntology(ontology);
+    public List<EntityDto> findByUri(String uri) throws MalformedException, OntologyNotFoundException {
         /* find */
+        final Ontology ontology = ontologyService.find(uri);
         final List<Ontology> ontologies = ontologyService.findAll();
         final String statement = ontologyMapper.ontologyToFindByUriQuery(ontologies, ontology, uri);
         log.trace("execute sparql query:\n{}", statement);
@@ -126,17 +120,15 @@ public class EntityServiceImpl implements EntityService {
             return results;
         } catch (QueryParseException | IllegalArgumentException | RiotException e) {
             log.error("Failed to parse query: {}", e.getMessage());
-            throw new QueryMalformedException("Failed to parse query: " + e.getMessage(), e);
+            throw new MalformedException("Failed to parse query: " + e.getMessage(), e);
         }
     }
 
     @Override
-    public EntityDto findOneByUri(Ontology ontology, String uri) throws QueryMalformedException,
-            SemanticEntityNotFoundException, OntologyInvalidException {
-        /* check */
-        validateOntology(ontology);
+    public EntityDto findOneByUri(String uri) throws MalformedException, SemanticEntityNotFoundException,
+            OntologyNotFoundException {
         /* find */
-        final List<EntityDto> results = findByUri(ontology, uri);
+        final List<EntityDto> results = findByUri(uri);
         if (results.size() != 1) {
             log.error("None or multiple entities found for uri {}", uri);
             throw new SemanticEntityNotFoundException("None or multiple entities found for uri " + uri);
@@ -146,46 +138,31 @@ public class EntityServiceImpl implements EntityService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<EntityDto> suggestTableSemantics(Long databaseId, Long tableId) throws TableNotFoundException,
-            QueryMalformedException, DatabaseNotFoundException, OntologyInvalidException {
-        final Table table = tableService.find(databaseId, tableId);
+    public List<EntityDto> suggestByTable(Table table) throws MalformedException {
         final List<EntityDto> suggestions = new LinkedList<>();
         for (Ontology ontology : ontologyService.findAllProcessable()) {
             suggestions.addAll(findByLabel(ontology, table.getName(), 3));
         }
-        log.debug("suggested {} semantic entit{}", suggestions.size(), suggestions.size() == 1 ? "y" : "ies");
         return suggestions;
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<TableColumnEntityDto> suggestTableColumnSemantics(Long databaseId, Long tableId, Long columnId)
-            throws QueryMalformedException, TableColumnNotFoundException, TableNotFoundException,
-            DatabaseNotFoundException, OntologyInvalidException {
-        final Optional<TableColumn> optional = tableService.find(databaseId, tableId)
-                .getColumns()
-                .stream()
-                .filter(c -> c.getId().equals(columnId))
-                .findFirst();
-        if (optional.isEmpty()) {
-            log.error("Failed to find column with id {}", columnId);
-            throw new TableColumnNotFoundException("Failed to find column with id " + columnId);
-        }
+    public List<TableColumnEntityDto> suggestByColumn(TableColumn tableColumn) throws MalformedException {
         final List<TableColumnEntityDto> suggestions = new LinkedList<>();
         for (Ontology ontology : ontologyService.findAllProcessable()) {
-            suggestions.addAll(findByLabel(ontology, optional.get().getName(), 3)
+            suggestions.addAll(findByLabel(ontology, tableColumn.getName(), 3)
                     .stream()
                     .map(e -> TableColumnEntityDto.builder()
-                            .databaseId(databaseId)
-                            .tableId(tableId)
-                            .columnId(optional.get().getId())
+                            .databaseId(tableColumn.getTable().getDatabase().getId())
+                            .tableId(tableColumn.getTable().getId())
+                            .columnId(tableColumn.getId())
                             .label(e.getLabel())
                             .uri(e.getUri())
                             .description(e.getDescription())
                             .build())
                     .toList());
         }
-        log.debug("suggested {} semantic entit{}", suggestions.size(), suggestions.size() == 1 ? "y" : "ies");
         return suggestions;
     }
 

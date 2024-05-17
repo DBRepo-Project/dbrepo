@@ -84,6 +84,12 @@ export default {
     },
     isDarkTheme () {
       return this.$vuetify.theme.global.name.toLowerCase().startsWith('dark')
+    },
+    identifiers () {
+      if (!this.database || !this.database.identifiers) {
+        return []
+      }
+      return this.database.identifiers.filter(i => i.status === 'published')
     }
   },
   methods: {
@@ -140,10 +146,10 @@ export default {
       return this.identifier(database).funders
     },
     identifier (database) {
-      if (!database || !database.identifiers || database.identifiers.length === 0) {
+      if (!database || !this.identifiers || this.identifiers.length === 0) {
         return null
       }
-      return database.identifiers[0]
+      return this.identifiers[0]
     },
   }
 }

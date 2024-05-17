@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class JenaConfig {
 
-    @Value("${fda.connectionTimeout}")
+    @Value("${dbrepo.connectionTimeout}")
     private Integer connectionTimeout;
 
     @Bean

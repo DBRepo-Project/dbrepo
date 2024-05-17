@@ -8,7 +8,7 @@ from dbrepo.RestClient import RestClient
 from dbrepo.api.dto import Identifier, IdentifierType, CreateIdentifierTitle, CreateIdentifierCreator, \
     IdentifierCreator, IdentifierTitle, IdentifierDescription, CreateIdentifierDescription, Language, \
     CreateIdentifierFunder, CreateRelatedIdentifier, RelatedIdentifierRelation, RelatedIdentifierType, IdentifierFunder, \
-    RelatedIdentifier
+    RelatedIdentifier, UserBrief, IdentifierStatusType
 from dbrepo.api.exceptions import MalformedError, ForbiddenError, NotExistsError, ExternalSystemError, \
     AuthenticationError
 
@@ -32,23 +32,24 @@ class IdentifierTest(unittest.TestCase):
                              related_identifiers=[
                                  RelatedIdentifier(id=7, value='10.12345/abc', relation=RelatedIdentifierRelation.CITES,
                                                    type=RelatedIdentifierType.DOI)],
-                             creators=[IdentifierCreator(id=5, creator_name='Carberry, Josiah')])
+                             creators=[IdentifierCreator(id=5, creator_name='Carberry, Josiah')],
+                             status=IdentifierStatusType.PUBLISHED,
+                             creator=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'))
             # mock
             mock.post('/api/identifier', json=exp.model_dump(), status_code=201)
             # test
             client = RestClient(username="a", password="b")
-            response = client.create_identifier(database_id=1, type=IdentifierType.VIEW,
-                                                titles=[CreateIdentifierTitle(title='Test Title')],
-                                                publisher='TU Wien', publication_year=2024,
-                                                language=Language.EN,
-                                                funders=[CreateIdentifierFunder(funder_name='FWF')],
-                                                related_identifiers=[CreateRelatedIdentifier(value='10.12345/abc',
-                                                                                             relation=RelatedIdentifierRelation.CITES,
-                                                                                             type=RelatedIdentifierType.DOI)],
-                                                descriptions=[
-                                                    CreateIdentifierDescription(description='Test Description')],
-                                                creators=[
-                                                    CreateIdentifierCreator(creator_name='Carberry, Josiah')])
+            response = client.create_identifier(
+                database_id=1, type=IdentifierType.VIEW,
+                titles=[CreateIdentifierTitle(title='Test Title')],
+                publisher='TU Wien', publication_year=2024,
+                language=Language.EN,
+                funders=[CreateIdentifierFunder(funder_name='FWF')],
+                related_identifiers=[CreateRelatedIdentifier(value='10.12345/abc',
+                                                             relation=RelatedIdentifierRelation.CITES,
+                                                             type=RelatedIdentifierType.DOI)],
+                descriptions=[CreateIdentifierDescription(description='Test Description')],
+                creators=[CreateIdentifierCreator(creator_name='Carberry, Josiah')])
             self.assertEqual(exp, response)
 
     def test_create_identifier_malformed_fails(self):
@@ -58,11 +59,12 @@ class IdentifierTest(unittest.TestCase):
             # test
             try:
                 client = RestClient(username="a", password="b")
-                response = client.create_identifier(database_id=1, type=IdentifierType.VIEW,
-                                                    titles=[CreateIdentifierTitle(title='Test Title')],
-                                                    publisher='TU Wien', publication_year=2024,
-                                                    creators=[
-                                                        CreateIdentifierCreator(creator_name='Carberry, Josiah')])
+                response = client.create_identifier(
+                    database_id=1, type=IdentifierType.VIEW,
+                    titles=[CreateIdentifierTitle(title='Test Title')],
+                    descriptions=[CreateIdentifierDescription(description='Test')],
+                    publisher='TU Wien', publication_year=2024,
+                    creators=[CreateIdentifierCreator(creator_name='Carberry, Josiah')])
             except MalformedError:
                 pass
 
@@ -73,11 +75,12 @@ class IdentifierTest(unittest.TestCase):
             # test
             try:
                 client = RestClient(username="a", password="b")
-                response = client.create_identifier(database_id=1, type=IdentifierType.VIEW,
-                                                    titles=[CreateIdentifierTitle(title='Test Title')],
-                                                    publisher='TU Wien', publication_year=2024,
-                                                    creators=[
-                                                        CreateIdentifierCreator(creator_name='Carberry, Josiah')])
+                response = client.create_identifier(
+                    database_id=1, type=IdentifierType.VIEW,
+                    titles=[CreateIdentifierTitle(title='Test Title')],
+                    descriptions=[CreateIdentifierDescription(description='Test')],
+                    publisher='TU Wien', publication_year=2024,
+                    creators=[CreateIdentifierCreator(creator_name='Carberry, Josiah')])
             except ForbiddenError:
                 pass
 
@@ -88,11 +91,12 @@ class IdentifierTest(unittest.TestCase):
             # test
             try:
                 client = RestClient(username="a", password="b")
-                response = client.create_identifier(database_id=1, type=IdentifierType.VIEW,
-                                                    titles=[CreateIdentifierTitle(title='Test Title')],
-                                                    publisher='TU Wien', publication_year=2024,
-                                                    creators=[
-                                                        CreateIdentifierCreator(creator_name='Carberry, Josiah')])
+                response = client.create_identifier(
+                    database_id=1, type=IdentifierType.VIEW,
+                    titles=[CreateIdentifierTitle(title='Test Title')],
+                    descriptions=[CreateIdentifierDescription(description='Test')],
+                    publisher='TU Wien', publication_year=2024,
+                    creators=[CreateIdentifierCreator(creator_name='Carberry, Josiah')])
             except NotExistsError:
                 pass
 
@@ -103,11 +107,12 @@ class IdentifierTest(unittest.TestCase):
             # test
             try:
                 client = RestClient(username="a", password="b")
-                response = client.create_identifier(database_id=1, type=IdentifierType.VIEW,
-                                                    titles=[CreateIdentifierTitle(title='Test Title')],
-                                                    publisher='TU Wien', publication_year=2024,
-                                                    creators=[
-                                                        CreateIdentifierCreator(creator_name='Carberry, Josiah')])
+                response = client.create_identifier(
+                    database_id=1, type=IdentifierType.VIEW,
+                    titles=[CreateIdentifierTitle(title='Test Title')],
+                    descriptions=[CreateIdentifierDescription(description='Test')],
+                    publisher='TU Wien', publication_year=2024,
+                    creators=[CreateIdentifierCreator(creator_name='Carberry, Josiah')])
             except ExternalSystemError:
                 pass
 
@@ -117,11 +122,12 @@ class IdentifierTest(unittest.TestCase):
             mock.post('/api/identifier', status_code=503)
             # test
             try:
-                response = RestClient().create_identifier(database_id=1, type=IdentifierType.VIEW,
-                                                          titles=[CreateIdentifierTitle(title='Test Title')],
-                                                          publisher='TU Wien', publication_year=2024,
-                                                          creators=[
-                                                              CreateIdentifierCreator(creator_name='Carberry, Josiah')])
+                response = RestClient().create_identifier(
+                    database_id=1, type=IdentifierType.VIEW,
+                    titles=[CreateIdentifierTitle(title='Test Title')],
+                    descriptions=[CreateIdentifierDescription(description='Test')],
+                    publisher='TU Wien', publication_year=2024,
+                    creators=[CreateIdentifierCreator(creator_name='Carberry, Josiah')])
             except AuthenticationError:
                 pass
 
@@ -131,11 +137,16 @@ class IdentifierTest(unittest.TestCase):
                              database_id=1,
                              publication_year=2024,
                              publisher='TU Wien',
+                             titles=[IdentifierTitle(id=10, title='Test Title')],
+                             descriptions=[IdentifierDescription(id=10, description='Test')],
                              created=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                              last_modified=datetime.datetime(2024, 1, 1, 0, 0, 0, 0, datetime.timezone.utc),
                              type=IdentifierType.VIEW,
                              creators=[IdentifierCreator(id=5, creator_name='Carberry, Josiah',
-                                                         name_identifier='https://orcid.org/0000-0002-1825-0097')])
+                                                         name_identifier='https://orcid.org/0000-0002-1825-0097')],
+                             status=IdentifierStatusType.DRAFT,
+                             creator=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise')
+                             )
             # mock
             mock.get('/api/identifier?url=https://orcid.org/0000-0002-1825-0097', json=exp.model_dump())
             # test
@@ -166,11 +177,12 @@ class IdentifierTest(unittest.TestCase):
                               descriptions=[IdentifierDescription(id=2, description='Test Description')],
                               titles=[IdentifierTitle(id=3, title='Test Title')],
                               funders=[IdentifierFunder(id=4, funder_name='FWF')],
-                              related_identifiers=[
-                                  RelatedIdentifier(id=7, value='10.12345/abc',
-                                                    relation=RelatedIdentifierRelation.CITES,
-                                                    type=RelatedIdentifierType.DOI)],
-                              creators=[IdentifierCreator(id=5, creator_name='Carberry, Josiah')])]
+                              related_identifiers=[RelatedIdentifier(id=7, value='10.12345/abc',
+                                                                     relation=RelatedIdentifierRelation.CITES,
+                                                                     type=RelatedIdentifierType.DOI)],
+                              creators=[IdentifierCreator(id=5, creator_name='Carberry, Josiah')],
+                              status=IdentifierStatusType.PUBLISHED,
+                              creator=UserBrief(id='8638c043-5145-4be8-a3e4-4b79991b0a16', username='mweise'))]
             # mock
             mock.get('/api/pid', json=[exp[0].model_dump()], headers={"Accept": "application/json"})
             # test

@@ -1,3 +1,5 @@
+import {axiosErrorToApiError} from '@/utils'
+
 export const useSearchService = (): any => {
   async function fields(type: string): Promise<FieldsResultDto[]> {
     const axios = useAxiosInstance()
@@ -11,26 +13,42 @@ export const useSearchService = (): any => {
         })
         .catch((error) => {
           console.error('Failed to find fields', error)
-          reject(error)
+          reject(axiosErrorToApiError(error))
         })
     })
   }
 
-  async function search(type: string, data: SearchDto): Promise<SearchResultDto> {
+  async function fuzzy_search(term: string): Promise<SearchResultDto> {
     const axios = useAxiosInstance()
-    console.debug('search for type', type)
+    console.debug('fuzzy search for term', term)
     return new Promise<SearchResultDto>((resolve, reject) => {
-      axios.post<SearchResultDto>(`/api/search${type ? `/${type}` : ''}`, data)
+      axios.get<SearchResultDto>(`/api/search?q=${term}`)
+        .then((response) => {
+          console.info('Searched for term', term)
+          resolve(response.data)
+        })
+        .catch((error) => {
+          console.error('Failed to search', error)
+          reject(axiosErrorToApiError(error))
+        })
+    })
+  }
+
+  async function general_search(type: string, data: any): Promise<SearchResultDto> {
+    const axios = useAxiosInstance()
+    console.debug('general search for type', type)
+    return new Promise<SearchResultDto>((resolve, reject) => {
+      axios.post<SearchResultDto>(`/api/search/${type}`, data)
         .then((response) => {
           console.info('Searched for type', type)
           resolve(response.data)
         })
         .catch((error) => {
           console.error('Failed to search', error)
-          reject(error)
+          reject(axiosErrorToApiError(error))
         })
     })
   }
 
-  return {fields, search}
+  return {fields, fuzzy_search, general_search}
 }

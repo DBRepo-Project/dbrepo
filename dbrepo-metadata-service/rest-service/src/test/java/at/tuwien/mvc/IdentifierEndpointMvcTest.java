@@ -1,8 +1,6 @@
 package at.tuwien.mvc;
 
-import at.tuwien.BaseUnitTest;
-import at.tuwien.annotations.MockAmqp;
-import at.tuwien.annotations.MockOpensearch;
+import at.tuwien.test.AbstractUnitTest;
 import at.tuwien.gateway.OrcidGateway;
 import com.mchange.io.FileUtils;
 import lombok.extern.log4j.Log4j2;
@@ -28,9 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(SpringExtension.class)
 @AutoConfigureMockMvc
 @SpringBootTest
-@MockAmqp
-@MockOpensearch
-public class IdentifierEndpointMvcTest extends BaseUnitTest {
+public class IdentifierEndpointMvcTest extends AbstractUnitTest {
 
     @MockBean
     private OrcidGateway orcidGateway;

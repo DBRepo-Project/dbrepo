@@ -1,32 +1,29 @@
-FROM python:3.10-alpine
+FROM python:3.11-alpine
+MAINTAINER Martin Weise <martin.weise@tuwien.ac.at>
 
-RUN apk add bash curl && adduser -D alpine
+RUN apk add bash curl
 
 WORKDIR /home/alpine
 
 COPY Pipfile Pipfile.lock ./
 
+COPY ./lib ./lib
+
 RUN pip install pipenv && \
     pipenv install gunicorn && \
     pipenv install --system --deploy
 
-COPY ./app ./app
-COPY ./omlib ./omlib
-COPY ./scripts ./scripts
-COPY ./us-yml ./us-yml
-COPY config.py wsgi.py friendly_names_overrides.json ./
+USER 1001
 
-ENV FLASK_APP=wsgi.py
-ENV COLLECTION="['database','table','column','identifier','unit','concept','user','view']"
-ENV OPENSEARCH_HOST=localhost
-ENV OPENSEARCH_PORT=9200
-ENV OPENSEARCH_USERNAME=admin
-ENV OPENSEARCH_PASSWORD=admin
-ENV LOG_LEVEL=info
+WORKDIR /app
 
-RUN chown -R alpine:alpine ./
-USER alpine
+COPY --chown=1001 ./clients ./clients
+COPY --chown=1001 ./omlib ./omlib
+COPY --chown=1001 ./os-yml ./os-yml
+COPY --chown=1001 ./app.py ./app.py
+COPY --chown=1001 ./friendly_names_overrides.json ./friendly_names_overrides.json
 
-EXPOSE 4000
+# non-root port
+EXPOSE 8080
 
-ENTRYPOINT ["sh", "./scripts/docker-entrypoint.sh"]
+ENTRYPOINT [ "gunicorn", "--log-level", "debug", "--workers", "4", "--bind", ":8080", "app:app" ]

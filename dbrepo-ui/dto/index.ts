@@ -143,6 +143,7 @@ interface ForeignKeyDto {
 }
 
 interface ConstraintsDto {
+  primary_key: string[];
   uniques: UniqueDto[];
   checks: string[];
   foreign_keys: ForeignKeyDto[];
@@ -167,23 +168,30 @@ interface UniqueDto {
   columns: ColumnDto[];
 }
 
+interface IdentifierCreateDto {
+  database_id: number;
+  doi: string | null;
+}
+
 interface IdentifierSaveDto {
+  id: number;
   type: string;
-  titles: IdentifierSaveTitleDto[];
+  doi: string | null;
+  titles: IdentifierSaveTitleDto[] | [];
   descriptions: IdentifierSaveDescriptionDto[] | [];
   funders: IdentifierFunderSaveDto[] | [];
   licenses: LicenseDto[] | [];
-  publisher: string;
+  publisher: string | null;
   language: string | null;
-  creators: CreatorSaveDto[];
+  creators: CreatorSaveDto[] | [];
   database_id: number | null;
   query_id: number | null;
   view_id: number | null;
   table_id: number | null;
   publication_day: number | null;
   publication_month: number | null;
-  publication_year: number;
-  related_identifiers: RelatedIdentifierSaveDto[];
+  publication_year: number | null;
+  related_identifiers: RelatedIdentifierSaveDto[] | [];
 }
 
 interface IdentifierSaveTitleDto {
@@ -235,6 +243,7 @@ interface IdentifierDto {
   result_number: number | null;
   publication_day: number | null;
   publication_month: number | null;
+  value: string | null;
   publication_year: number;
   last_modified: Date;
 }
@@ -420,7 +429,6 @@ interface TableCsvDeleteDto {
 
 interface ExecuteStatementDto {
   statement: string;
-  timstamp: Date | null;
 }
 
 interface ApiErrorDto {
@@ -552,6 +560,18 @@ interface TableCreateDto {
 interface ColumnCreateDto {
   name: string;
   type: string;
+  size: number | null;
+  d: number | null;
+  dfid: number | null;
+  enums: string[];
+  sets: string[];
+  index_length: number;
+  null_allowed: boolean;
+}
+
+interface InternalColumnDto {
+  name: string;
+  type: string;
   size: number;
   d: number;
   dfid: number;
@@ -560,10 +580,14 @@ interface ColumnCreateDto {
   primary_key: boolean;
   index_length: number;
   null_allowed: boolean;
+  unique: boolean;
+  sets_values: string;
+  enums_values: string;
 }
 
 interface ConstraintsCreateDto {
-  uniques: string[];
+  primary_key: string[];
+  uniques: string[][];
   checks: string[];
   foreign_keys: ForeignKeyCreateDto[];
 }
@@ -670,13 +694,6 @@ interface BannerMessageDto {
 
 interface FieldsResultDto {
   results: FieldDto[]
-}
-
-interface SearchDto {
-  field_value_pairs: Map<string, string>;
-  search_term: string | null;
-  t1: number | null;
-  t2: number | null;
 }
 
 interface FieldDto {

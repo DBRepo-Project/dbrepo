@@ -1,4 +1,5 @@
-import type {AxiosRequestConfig} from 'axios'
+import type {AxiosError, AxiosRequestConfig, AxiosResponse} from 'axios'
+import {axiosErrorToApiError} from '@/utils'
 
 export const useTableService = (): any => {
 
@@ -13,7 +14,7 @@ export const useTableService = (): any => {
         })
         .catch((error) => {
           console.error('Failed to find tables', error)
-          reject(error)
+          reject(axiosErrorToApiError(error))
         })
     })
   }
@@ -28,8 +29,8 @@ export const useTableService = (): any => {
           resolve(response.data)
         })
         .catch((error) => {
-          console.error('Failed to find table with id', tableId, 'in database with id', databaseId)
-          reject(error)
+          console.error('Failed to find table')
+          reject(axiosErrorToApiError(error))
         })
     })
   }
@@ -44,8 +45,8 @@ export const useTableService = (): any => {
           resolve(response.data)
         })
         .catch((error) => {
-          console.error('Failed to update column with id', columnId, 'table with id', tableId, 'in database with id', databaseId)
-          reject(error)
+          console.error('Failed to update column', error)
+          reject(axiosErrorToApiError(error))
         })
     })
   }
@@ -61,7 +62,7 @@ export const useTableService = (): any => {
         })
         .catch((error) => {
           console.error('Failed to import csv', error)
-          reject(error)
+          reject(axiosErrorToApiError(error))
         })
     })
   }
@@ -76,8 +77,8 @@ export const useTableService = (): any => {
           resolve(response.data)
         })
         .catch((error) => {
-          console.error('Failed to get data')
-          reject(error)
+          console.error('Failed to get data', error)
+          reject(axiosErrorToApiError(error))
         })
     })
   }
@@ -86,14 +87,15 @@ export const useTableService = (): any => {
     const axios = useAxiosInstance()
     console.debug('get data count for table with id', tableId, 'in database with id', databaseId);
     return new Promise<number>((resolve, reject) => {
-      axios.head<number>(`/api/database/${databaseId}/table/${tableId}/data`, {params: mapFilter(timestamp, null, null)})
-        .then((response) => {
-          console.info('Got data count for table with id', tableId, 'in database with id', databaseId)
-          resolve(response.data)
+      axios.head<void>(`/api/database/${databaseId}/table/${tableId}/data`, {params: mapFilter(timestamp, null, null)})
+        .then((response: AxiosResponse<void>) => {
+          const count: number = Number(response.headers['x-count'])
+          console.info('Found' + count + 'in table with id', tableId, 'in database with id', databaseId)
+          resolve(count)
         })
         .catch((error) => {
-          console.error('Failed to get data count')
-          reject(error)
+          console.error('Failed to get data count', error)
+          reject(axiosErrorToApiError(error))
         })
     })
   }
@@ -101,7 +103,7 @@ export const useTableService = (): any => {
   async function exportData(databaseId: number, tableId: number, timestamp: Date): Promise<QueryResultDto> {
     const axios = useAxiosInstance()
     const config: AxiosRequestConfig = {
-      params: (timestamp && { timestamp }),
+      params: (timestamp && {timestamp}),
       responseType: 'blob',
       headers: {
         Accept: 'text/csv'
@@ -115,24 +117,24 @@ export const useTableService = (): any => {
           resolve(response.data)
         })
         .catch((error) => {
-          console.error('Failed to export data')
-          reject(error)
+          console.error('Failed to export data', error)
+          reject(axiosErrorToApiError(error))
         })
     })
   }
 
   async function create(databaseId: number, data: TableCreateDto): Promise<TableDto> {
     const axios = useAxiosInstance()
-    console.debug('create table in database with id', databaseId)
+    console.debug('create table in database with id', databaseId, data)
     return new Promise<TableDto>((resolve, reject) => {
       axios.post<TableDto>(`/api/database/${databaseId}/table`, data)
         .then((response) => {
           console.info('Created table in database with id', databaseId)
           resolve(response.data)
         })
-        .catch((error) => {
-          console.error('Failed to create table in database with id', databaseId)
-          reject(error)
+        .catch((error: AxiosError) => {
+          console.error('Failed to create table', error)
+          reject(axiosErrorToApiError(error))
         })
     });
   }
@@ -148,7 +150,7 @@ export const useTableService = (): any => {
         })
         .catch((error) => {
           console.error('Failed to delete table', error)
-          reject(error)
+          reject(axiosErrorToApiError(error))
         })
     });
   }
@@ -164,7 +166,7 @@ export const useTableService = (): any => {
         })
         .catch((error) => {
           console.error('Failed to delete tuple(s)', error)
-          reject(error)
+          reject(axiosErrorToApiError(error))
         })
     });
   }
@@ -180,7 +182,7 @@ export const useTableService = (): any => {
         })
         .catch((error) => {
           console.error('Failed to load history', error)
-          reject(error)
+          reject(axiosErrorToApiError(error))
         })
     });
   }
@@ -189,16 +191,44 @@ export const useTableService = (): any => {
     const axios = useAxiosInstance()
     console.debug('suggest semantic entities for table column with id', columnId, 'of table with id', tableId, 'of database with id', databaseId)
     return new Promise<TableColumnEntityDto[]>((resolve, reject) => {
-      axios.get<TableColumnEntityDto[]>(`/api/semantic/database/${databaseId}/table/${tableId}/column/${columnId}`, { timeout: 10000 })
+      axios.get<TableColumnEntityDto[]>(`/api/semantic/database/${databaseId}/table/${tableId}/column/${columnId}`, {timeout: 10000})
         .then((response) => {
           console.info('Suggested semantic entities for table column with id', columnId, 'of table with id', tableId, 'of database with id', databaseId)
           resolve(response.data)
         })
         .catch((error) => {
           console.error('Failed to suggest semantic entities', error)
-          reject(error)
+          reject(axiosErrorToApiError(error))
         })
     })
+  }
+
+  function prepareColumns(columns: InternalColumnDto[]): ColumnCreateDto[] {
+    return columns.map((c: InternalColumnDto) => {
+      const column: ColumnCreateDto = {
+        name: c.name,
+        type: c.type,
+        size: c.size ? c.size : null,
+        d: c.d ? c.d : null,
+        dfid: c.dfid ? c.dfid : null,
+        enums: c.enums_values ? c.enums_values.split(',') : [],
+        sets: c.sets_values ? c.sets_values.split(',') : [],
+        index_length: c.index_length,
+        null_allowed: c.null_allowed
+      }
+      return column
+    })
+  }
+
+  function prepareConstraints(columns: InternalColumnDto[]): ConstraintsCreateDto {
+    const primaryKeyColumns = columns.filter(column => column.primary_key)
+    const uniqueColumns = columns.filter(column => column.unique)
+    return {
+      primary_key: primaryKeyColumns.length > 0 ? primaryKeyColumns.map(column => column.name) : [],
+      uniques: uniqueColumns.length > 0 ? columns.filter(column => column.unique).map(c => [c.name]) : [],
+      foreign_keys: [],
+      checks: []
+    }
   }
 
   function isOwner(table: TableDto, user: UserDto) {
@@ -219,14 +249,12 @@ export const useTableService = (): any => {
 
   function mapFilter(timestamp: Date | null, page: number | null, size: number | null) {
     if (!timestamp) {
-      if (!page || !size) {
-        return null
-      }
       return {page, size}
     }
     if (!page || !size) {
       return {timestamp}
     }
+    return {timestamp, page, size}
   }
 
   return {
@@ -242,6 +270,8 @@ export const useTableService = (): any => {
     removeTuple,
     history,
     suggest,
+    prepareColumns,
+    prepareConstraints,
     isOwner,
     tableNameToInternalName
   }

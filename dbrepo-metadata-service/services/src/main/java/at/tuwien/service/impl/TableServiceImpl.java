@@ -1,240 +1,320 @@
 package at.tuwien.service.impl;
 
 import at.tuwien.api.database.table.TableCreateDto;
-import at.tuwien.api.database.table.TableHistoryDto;
+import at.tuwien.api.database.table.TableStatisticDto;
+import at.tuwien.api.database.table.columns.ColumnCreateDto;
+import at.tuwien.api.database.table.columns.ColumnStatisticDto;
+import at.tuwien.api.database.table.columns.ColumnTypeDto;
+import at.tuwien.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
+import at.tuwien.config.RabbitConfig;
+import at.tuwien.entities.container.image.ContainerImageDate;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
-import at.tuwien.entities.database.table.constraints.Constraints;
+import at.tuwien.entities.database.table.columns.TableColumn;
+import at.tuwien.entities.database.table.columns.TableColumnConcept;
+import at.tuwien.entities.database.table.columns.TableColumnType;
+import at.tuwien.entities.database.table.columns.TableColumnUnit;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
-import at.tuwien.mapper.DatabaseMapper;
-import at.tuwien.mapper.QueryMapper;
+import at.tuwien.gateway.DataServiceGateway;
+import at.tuwien.gateway.SearchServiceGateway;
+import at.tuwien.mapper.OntologyMapper;
 import at.tuwien.mapper.TableMapper;
-import at.tuwien.repository.mdb.DatabaseRepository;
-import at.tuwien.repository.sdb.DatabaseIdxRepository;
-import at.tuwien.service.DatabaseService;
-import at.tuwien.service.TableService;
-import at.tuwien.service.UserService;
-import at.tuwien.utils.UserUtil;
-import com.mchange.v2.c3p0.ComboPooledDataSource;
+import at.tuwien.repository.DatabaseRepository;
+import at.tuwien.service.*;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Log4j2
 @Service
-public class TableServiceImpl extends HibernateConnector implements TableService {
+public class TableServiceImpl implements TableService {
 
-    private final QueryMapper queryMapper;
     private final TableMapper tableMapper;
     private final UserService userService;
-    private final DatabaseMapper databaseMapper;
+    private final UnitService unitService;
+    private final RabbitConfig rabbitConfig;
+    private final EntityService entityService;
+    private final ConceptService conceptService;
+    private final OntologyMapper ontologyMapper;
     private final DatabaseService databaseService;
+    private final DataServiceGateway dataServiceGateway;
     private final DatabaseRepository databaseRepository;
-    private final DatabaseIdxRepository databaseIdxRepository;
+    private final SearchServiceGateway searchServiceGateway;
 
     @Autowired
-    public TableServiceImpl(QueryMapper queryMapper, TableMapper tableMapper, UserService userService,
-                            DatabaseMapper databaseMapper, DatabaseService databaseService,
-                            DatabaseRepository databaseRepository, DatabaseIdxRepository databaseIdxRepository) {
-        this.queryMapper = queryMapper;
+    public TableServiceImpl(TableMapper tableMapper, UserService userService, UnitService unitService,
+                            RabbitConfig rabbitConfig, EntityService entityService, ConceptService conceptService,
+                            OntologyMapper ontologyMapper, DatabaseService databaseService,
+                            DataServiceGateway dataServiceGateway, DatabaseRepository databaseRepository,
+                            SearchServiceGateway searchServiceGateway) {
         this.tableMapper = tableMapper;
         this.userService = userService;
-        this.databaseMapper = databaseMapper;
+        this.unitService = unitService;
+        this.rabbitConfig = rabbitConfig;
+        this.entityService = entityService;
+        this.conceptService = conceptService;
+        this.ontologyMapper = ontologyMapper;
         this.databaseService = databaseService;
+        this.dataServiceGateway = dataServiceGateway;
         this.databaseRepository = databaseRepository;
-        this.databaseIdxRepository = databaseIdxRepository;
+        this.searchServiceGateway = searchServiceGateway;
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Table find(Long databaseId, Long tableId) throws DatabaseNotFoundException, TableNotFoundException {
-        final Optional<Table> table = databaseService.find(databaseId)
+    public Table findById(Long databaseId, Long tableId) throws TableNotFoundException,
+            DatabaseNotFoundException {
+        final Optional<Table> table = databaseService.findById(databaseId)
                 .getTables()
                 .stream()
                 .filter(t -> t.getId().equals(tableId))
                 .findFirst();
         if (table.isEmpty()) {
-            log.error("Failed to find table with id {} in metadata database", tableId);
-            throw new TableNotFoundException("Failed to find table with id " + tableId + " in metadata database");
+            log.error("Failed to find table with id {}", tableId);
+            throw new TableNotFoundException("Failed to find table with id " + tableId);
         }
         return table.get();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Table find(Long databaseId, String internalName) throws DatabaseNotFoundException, TableNotFoundException {
-        final Optional<Table> table = databaseService.find(databaseId)
+    public Table findByName(Long databaseId, String internalName) throws TableNotFoundException,
+            DatabaseNotFoundException {
+        final Optional<Table> table = databaseService.findById(databaseId)
                 .getTables()
                 .stream()
                 .filter(t -> t.getInternalName().equals(internalName))
                 .findFirst();
         if (table.isEmpty()) {
-            log.error("Failed to find table with internal name {} in metadata database", internalName);
-            throw new TableNotFoundException("Failed to find table with internal name " + internalName + " in metadata database");
+            log.error("Failed to find table with internal name {}", internalName);
+            throw new TableNotFoundException("Failed to find table with internal name " + internalName);
         }
         return table.get();
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public List<Table> findAll() {
-        return databaseService.findAll()
-                .stream()
-                .map(Database::getTables)
-                .flatMap(List::stream)
-                .distinct()
-                .toList();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<TableHistoryDto> findHistory(Long databaseId, Long tableId, Principal principal)
-            throws DatabaseNotFoundException, TableNotFoundException, QueryStoreException, QueryMalformedException {
-        /* find */
-        final Database database = databaseService.find(databaseId);
-        final Table table = find(databaseId, tableId);
-        /* run query */
-        final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(),
-                database.getContainer(), database);
-        /* use jpa to select one */
-        try {
-            final Connection connection = dataSource.getConnection();
-            final PreparedStatement preparedStatement = queryMapper.historyRawQuery(connection, table);
-            final ResultSet resultSet = preparedStatement.executeQuery();
-            return queryMapper.resultListToTableHistoryDto(resultSet);
-        } catch (SQLException e) {
-            log.error("Failed to map table history: {}", e.getMessage());
-            throw new QueryStoreException("Failed to map table history: " + e.getMessage(), e);
-        } finally {
-            dataSource.close();
-        }
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<Table> findAll(Long databaseId) throws DatabaseNotFoundException {
-        return databaseService.find(databaseId)
-                .getTables();
-    }
-
-    @Override
     @Transactional
-    public Table createTable(Long databaseId, TableCreateDto createDto, Principal principal)
-            throws ImageNotSupportedException, DatabaseNotFoundException, TableMalformedException,
-            TableNameExistsException, QueryMalformedException, TableNotFoundException, UserNotFoundException {
-        /* find */
-        final Database database = databaseService.find(databaseId);
-        if (!database.getContainer().getImage().getName().equals("mariadb")) {
-            log.error("Currently only MariaDB is supported");
-            throw new ImageNotSupportedException("Currently only MariaDB is supported");
+    public Table createTable(Database database, TableCreateDto data, Principal principal) throws ServiceException,
+            ServiceConnectionException, UserNotFoundException, TableNotFoundException, DatabaseNotFoundException,
+            TableExistsException, SearchServiceException, SearchServiceConnectionException, MalformedException {
+        final User owner = userService.findByUsername(principal.getName());
+        /* check */
+        if (data.getConstraints().getPrimaryKey().isEmpty()) {
+            final List<ColumnCreateDto> columns = new LinkedList<>();
+            columns.add(ColumnCreateDto.builder()
+                    .name("id")
+                    .type(ColumnTypeDto.BIGINT)
+                    .nullAllowed(false)
+                    .build());
+            columns.addAll(data.getColumns());
+            data.setNeedSequence(true);
+            data.setColumns(columns);
+            data.getConstraints()
+                    .setPrimaryKey(Set.of("id"));
+            log.debug("no primary key provided: generate primary key column with sequence");
+        } else {
+            log.trace("primary key provided: no column with sequence needed");
+            data.setNeedSequence(false);
         }
-        final String internalName = tableMapper.nameToInternalName(createDto.getName());
-        final Optional<Table> optional = database.getTables()
-                .stream()
-                .filter(t -> t.getInternalName().equals(internalName))
-                .findFirst();
-        if (optional.isPresent()) {
-            log.error("Failed to create table with name {}: exists in metadata database", internalName);
-            throw new TableNameExistsException("Failed to create table with name " + internalName + ": exists in metadata database");
-        }
-        final Table table = tableMapper.tableCreateDtoToTable(createDto);
-        final User owner = userService.find(UserUtil.getId(principal));
-        /* run query */
-        final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(), database.getContainer(), database);
-        final Boolean generatedSequence;
+        /* map table */
+        final Table table = Table.builder()
+                .isVersioned(true)
+                .name(data.getName())
+                .internalName(tableMapper.nameToInternalName(data.getName()))
+                .description(data.getDescription())
+                .queueName(rabbitConfig.getQueueName())
+                .tdbid(database.getId())
+                .database(database)
+                .createdBy(owner.getId())
+                .creator(owner)
+                .ownedBy(owner.getId())
+                .owner(owner)
+                .identifiers(new LinkedList<>())
+                .columns(new LinkedList<>())
+                .build();
         try {
-            final Connection connection = dataSource.getConnection();
-            generatedSequence = tableMapper.tableToCreateTableRawQuery(connection, createDto);
-            /* create history view */
-            int[] idx = {0};
-            /* map table */
-            table.setInternalName(tableMapper.nameToInternalName(table.getName()));
-            table.setQueueName("dbrepo");
-            table.setRoutingKey("dbrepo." + database.getInternalName() + "." + table.getInternalName());
-            table.setIsVersioned(true);
-            table.setTdbid(databaseId);
-            table.setDatabase(database);
-            table.setCreator(owner);
-            table.setCreatedBy(UserUtil.getId(principal));
-            table.setOwner(owner);
-            table.setOwnedBy(UserUtil.getId(principal));
-            table.setIdentifiers(new LinkedList<>());
-            /* map columns */
-            table.setColumns(createDto.getColumns()
-                    .stream()
-                    .map(column -> tableMapper.columnCreateDtoToTableColumn(column, database.getContainer().getImage()))
-                    .map(column -> tableMapper.tableColumnToTableColumn(table, column, generatedSequence))
-                    .toList());
             /* set the ordinal position for the columns */
             table.getColumns()
-                    .forEach(column -> {
-                        column.setOrdinalPosition(idx[0]++);
-                    });
+                    .addAll(data.getColumns()
+                            .stream()
+                            .map(c -> {
+                                final TableColumn column = tableMapper.columnCreateDtoToTableColumn(c, database.getContainer().getImage());
+                                if (data.isNeedSequence() && column.getName().equals("id")) {
+                                    column.setAutoGenerated(true);
+                                }
+                                if (List.of(TableColumnType.TIME, TableColumnType.TIMESTAMP, TableColumnType.DATE, TableColumnType.DATETIME).contains(column.getColumnType())) {
+                                    final Optional<ContainerImageDate> optional = database.getContainer()
+                                            .getImage()
+                                            .getDateFormats()
+                                            .stream()
+                                            .filter(df -> df.getId().equals(c.getDfid()))
+                                            .findFirst();
+                                    if (optional.isEmpty()) {
+                                        log.error("Failed to find date format with id {} in metadata database", c.getDfid());
+                                        throw new IllegalArgumentException("Failed to find date format in metadata database");
+                                    }
+                                    column.setDateFormat(optional.get());
+                                    log.debug("column is of temporal type: added date format with id {}", column.getDateFormat().getId());
+                                }
+                                return column;
+                            })
+                            .toList());
             /* set constraints */
-            table.setConstraints(tableMapper.constraintsCreateDtoToConstraints(table, createDto.getConstraints()));
-            final PreparedStatement preparedStatement = tableMapper.tableToCreateHistoryViewRawQuery(connection, table);
-            preparedStatement.executeUpdate();
-        } catch (SQLException e) {
-            log.error("Failed to create table or history view: {}", e.getMessage());
-            throw new TableMalformedException("Failed to create table or history view", e);
-        } finally {
-            dataSource.close();
+            table.setConstraints(tableMapper.constraintsCreateDtoToConstraints(data.getConstraints(), database, table));
+        } catch (IllegalArgumentException e) {
+            throw new MalformedException(e);
         }
+        log.debug("map constraints: {}", table.getConstraints());
+        for (int i = 0; i < data.getConstraints().getUniques().size(); i++) {
+            if (data.getConstraints().getUniques().get(i).size() != table.getConstraints().getUniques().get(i).getColumns().size()) {
+                log.error("Failed to create table: some unique constraint(s) reference non-existing table columns: {}", data.getConstraints().getUniques().get(i));
+                throw new MalformedException("Failed to create table: some unique constraint(s) reference non-existing table columns");
+            }
+        }
+        int[] idx = {0};
+        table.getColumns()
+                .forEach(column -> {
+                    column.setTable(table);
+                    column.setOrdinalPosition(idx[0]++);
+                });
         database.getTables().add(table);
-        /* create in metadata database */
-        final Optional<Table> optionalEntity = databaseRepository.save(database)
-                .getTables()
+        /* create in data service */
+        dataServiceGateway.createTable(database.getId(), data);
+        /* update in metadata database */
+        final Database entity = databaseRepository.save(database);
+        final Optional<Table> optional = entity.getTables()
                 .stream()
-                .filter(t -> t.getDatabase().getId().equals(databaseId))
                 .filter(t -> t.getInternalName().equals(table.getInternalName()))
                 .findFirst();
-        if (optionalEntity.isEmpty()) {
-            log.error("Failed to find table of database with id {} and internal name {}", databaseId, table.getInternalName());
-            throw new TableNotFoundException("Failed to find table of database with id " + databaseId + " and internal name " + table.getInternalName());
+        if (optional.isEmpty()) {
+            log.error("Failed to find created table");
+            throw new TableNotFoundException("Failed to find created table");
         }
-        /* create in open search database */
-        databaseIdxRepository.save(databaseMapper.databaseToDatabaseDto(databaseService.find(databaseId)));
-        log.info("Created table with id {} in metadata database & search database", optionalEntity.get().getId());
-        return optionalEntity.get();
+        /* update in search service */
+        searchServiceGateway.update(entity);
+        log.info("Created table with id {}", optional.get().getId());
+        return optional.get();
     }
 
     @Override
     @Transactional
-    public void deleteTable(Long databaseId, Long tableId)
-            throws TableNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
-            TableMalformedException, QueryMalformedException {
-        /* find */
-        final Database database = databaseService.find(databaseId);
-        final Table table = find(databaseId, tableId);
-        /* run query */
-        final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(), database.getContainer(), database);
-        try {
-            final Connection connection = dataSource.getConnection();
-            tableMapper.tableToDropTableRawQuery(connection, table);
-        } catch (SQLException e) {
-            log.error("Failed to drop table: {}", e.getMessage());
-            throw new TableMalformedException("Failed to drop table: " + e.getMessage(), e);
-        } finally {
-            dataSource.close();
+    public void deleteTable(Table table) throws ServiceException, ServiceConnectionException,
+            DatabaseNotFoundException, TableNotFoundException, SearchServiceException,
+            SearchServiceConnectionException {
+        /* delete at data service */
+        dataServiceGateway.deleteTable(table.getDatabase().getId(), table.getId());
+        /* update in metadata database */
+        table.getDatabase().getTables().remove(table);
+        final Database database = databaseRepository.save(table.getDatabase());
+        /* update in search service */
+        searchServiceGateway.update(database);
+        log.info("Deleted table with id {}", table.getId());
+    }
+
+    @Override
+    @Transactional
+    public TableColumn update(TableColumn column, ColumnSemanticsUpdateDto data) throws ServiceException,
+            ServiceConnectionException, DatabaseNotFoundException, SearchServiceException,
+            SearchServiceConnectionException, MalformedException, OntologyNotFoundException,
+            SemanticEntityNotFoundException {
+        /* assign */
+        if (data.getUnitUri() != null) {
+            TableColumnUnit unit;
+            try {
+                unit = unitService.find(data.getUnitUri());
+            } catch (UnitNotFoundException e) {
+                unit = ontologyMapper.entityDtoToTableColumnUnit(entityService.findOneByUri(data.getUnitUri()));
+            }
+            column.setUnit(unit);
+        } else {
+            column.setUnit(null);
         }
-        /* delete in metadata database */
-        database.getTables().remove(table);
-        databaseRepository.save(database);
-        log.info("Deleted table with id {} in metadata database", table.getId());
-        /* delete in open search database */
-        databaseIdxRepository.save(databaseMapper.databaseToDatabaseDto(databaseService.find(databaseId)));
-        log.info("Deleted table with id {} in open search database", table.getId());
+        if (data.getConceptUri() != null) {
+            TableColumnConcept concept;
+            try {
+                concept = conceptService.find(data.getConceptUri());
+            } catch (ConceptNotFoundException e) {
+                concept = ontologyMapper.entityDtoToTableColumnConcept(entityService.findOneByUri(data.getConceptUri()));
+            }
+            column.setConcept(concept);
+        } else {
+            column.setConcept(null);
+        }
+        /* update in metadata database */
+        final Table table = column.getTable();
+        table.getColumns()
+                .set(table.getColumns().indexOf(column), column);
+        final Database database = databaseRepository.save(table.getDatabase());
+        /* update in open search service */
+        searchServiceGateway.update(database);
+        log.info("Updated table column semantics");
+        return column;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public TableColumn findColumnById(Table table, Long columnId) throws MalformedException {
+        final Optional<TableColumn> optional = table.getColumns()
+                .stream()
+                .filter(c -> c.getId().equals(columnId))
+                .findFirst();
+        if (optional.isEmpty()) {
+            log.error("Failed to find column with id {}", columnId);
+            throw new MalformedException("Failed to find column in metadata database");
+        }
+        return optional.get();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public TableColumn findColumnByName(Table table, String name) throws MalformedException {
+        final Optional<TableColumn> optional = table.getColumns()
+                .stream()
+                .filter(c -> c.getInternalName().equals(name))
+                .findFirst();
+        if (optional.isEmpty()) {
+            log.error("Failed to find column with name {} in table with name {}", name, table.getInternalName());
+            throw new MalformedException("Failed to find column in metadata database");
+        }
+        return optional.get();
+    }
+
+    @Override
+    @Transactional
+    public void updateStatistics(Table table, TableStatisticDto data) throws MalformedException, SearchServiceException,
+            DatabaseNotFoundException, SearchServiceConnectionException {
+        final List<String> notFound = data.getColumns()
+                .keySet()
+                .stream()
+                .filter(key -> table.getColumns().stream().noneMatch(c -> c.getInternalName().equals(key)))
+                .toList();
+        if (!notFound.isEmpty()) {
+            log.error("Failed to update statistics: column(s) not found: {}", notFound);
+            throw new MalformedException("Failed to update statistics: column(s) not found");
+        }
+        table.getColumns()
+                .forEach(column -> {
+                    if (!data.getColumns().containsKey(column.getInternalName())) {
+                        return;
+                    }
+                    final ColumnStatisticDto statistic = data.getColumns().get(column.getInternalName());
+                    column.setMean(statistic.getMean());
+                    column.setMedian(statistic.getMedian());
+                    column.setMin(statistic.getMin());
+                    column.setMax(statistic.getMax());
+                });
+        /* update in metadata database */
+        final Database database = table.getDatabase();
+        database.getTables()
+                .set(database.getTables().indexOf(table), table);
+        /* update in open search service */
+        searchServiceGateway.update(database);
+        log.info("Updated table statistics");
     }
 
 }

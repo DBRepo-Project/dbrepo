@@ -5,6 +5,7 @@ import at.tuwien.oaipmh.OaiErrorType;
 import at.tuwien.oaipmh.OaiListIdentifiersParameters;
 import at.tuwien.oaipmh.OaiRecordParameters;
 import at.tuwien.service.MetadataService;
+import at.tuwien.utils.XmlUtil;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -25,9 +26,7 @@ import java.util.List;
 @Log4j2
 @CrossOrigin(origins = "*")
 @RestController
-@RequestMapping(path = "/api/oai",
-        consumes = MediaType.ALL_VALUE,
-        produces = MediaType.TEXT_XML_VALUE)
+@RequestMapping(path = "/api/oai")
 public class MetadataEndpoint {
 
     private final MetadataService metadataService;
@@ -37,14 +36,14 @@ public class MetadataEndpoint {
         this.metadataService = metadataService;
     }
 
-    @GetMapping
+    @GetMapping(produces = MediaType.TEXT_XML_VALUE)
     @Parameter(name = "verb", in = ParameterIn.QUERY, examples = {
             @ExampleObject(value = "Identify"),
             @ExampleObject(value = "ListIdentifiers"),
             @ExampleObject(value = "GetRecord"),
             @ExampleObject(value = "ListMetadataFormats"),
     })
-    @Observed(name = "dbr_oai_identify")
+    @Observed(name = "dbrepo_metadata_oai_identify")
     @Operation(summary = "Identify the repository")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -56,8 +55,8 @@ public class MetadataEndpoint {
         return identifyAlt();
     }
 
-    @GetMapping(params = "verb=Identify")
-    @Observed(name = "dbr_oai_identify")
+    @GetMapping(params = "verb=Identify", produces = MediaType.TEXT_XML_VALUE)
+    @Observed(name = "dbrepo_metadata_oai_identify")
     @Operation(summary = "Identify the repository")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -68,21 +67,21 @@ public class MetadataEndpoint {
         log.debug("endpoint identify repository, verb=Identify");
         final String xml = metadataService.identify();
         log.trace("identify repository resulted in xml {}", xml);
-        return ResponseEntity.ok(xml);
+        return ResponseEntity.ok(XmlUtil.pretty(xml));
     }
 
-    @GetMapping(params = "verb=ListIdentifiers")
-    @Observed(name = "dbr_oai_identifiers_list")
+    @GetMapping(params = "verb=ListIdentifiers", produces = MediaType.TEXT_XML_VALUE)
+    @Observed(name = "dbrepo_metadata_oai_identifiers_list")
     @Operation(summary = "List the identifiers")
     public ResponseEntity<String> listIdentifiers(OaiListIdentifiersParameters parameters) {
         log.debug("endpoint list identifiers, verb=ListIdentifiers, parameters={}", parameters);
         final String xml = metadataService.listIdentifiers(parameters);
         log.trace("list identifiers resulted in xml {}", xml);
-        return ResponseEntity.ok(xml);
+        return ResponseEntity.ok(XmlUtil.pretty(xml));
     }
 
-    @GetMapping(params = "verb=GetRecord")
-    @Observed(name = "dbr_oai_record_get")
+    @GetMapping(params = "verb=GetRecord", produces = MediaType.TEXT_XML_VALUE)
+    @Observed(name = "dbrepo_metadata_oai_record_get")
     @Operation(summary = "Get the record")
     public ResponseEntity<String> getRecord(OaiRecordParameters parameters) {
         log.debug("endpoint get record, verb=GetRecord, parameters={}", parameters);
@@ -91,39 +90,39 @@ public class MetadataEndpoint {
             log.trace("metadataPrefix does not match supported list: {}", supportedMetadataFormats);
             log.error("Failed to get record: Format {} is not supported", parameters.getMetadataPrefix());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(metadataService.error(OaiErrorType.CANNOT_DISSEMINATE_FORMAT));
+                    .body(XmlUtil.pretty(metadataService.error(OaiErrorType.CANNOT_DISSEMINATE_FORMAT)));
         }
         log.trace("metadata prefix {} is supported", parameters.getMetadataPrefix());
         final List<String> supportedIdentifierPrefixes = List.of("doi", "oai");
         if (parameters.getIdentifier() == null) {
             log.error("Failed to get record: Identifier is empty");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(metadataService.error(OaiErrorType.NO_RECORDS_MATCH));
+                    .body(XmlUtil.pretty(metadataService.error(OaiErrorType.NO_RECORDS_MATCH)));
         } else if (supportedIdentifierPrefixes.stream().noneMatch(identifierPrefix -> parameters.getIdentifier().startsWith(identifierPrefix))
                 || parameters.getIdentifier().indexOf(':') > 3) {
             log.error("Failed to get record: Identifier does not match supported prefixes {}", supportedIdentifierPrefixes);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(metadataService.error(OaiErrorType.NO_RECORDS_MATCH));
+                    .body(XmlUtil.pretty(metadataService.error(OaiErrorType.NO_RECORDS_MATCH)));
         }
         log.trace("identifier prefix of {} is supported", parameters.getIdentifier());
         try {
             final String xml = metadataService.getRecord(parameters);
             log.trace("get record resulted in xml {}", xml);
-            return ResponseEntity.ok(xml);
+            return ResponseEntity.ok(XmlUtil.pretty(xml));
         } catch (IdentifierNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(metadataService.error(OaiErrorType.ID_DOES_NOT_EXIST));
+                    .body(XmlUtil.pretty(metadataService.error(OaiErrorType.ID_DOES_NOT_EXIST)));
         }
     }
 
-    @GetMapping(params = "verb=ListMetadataFormats")
-    @Observed(name = "dbr_oai_metadataformats_list")
+    @GetMapping(params = "verb=ListMetadataFormats", produces = MediaType.TEXT_XML_VALUE)
+    @Observed(name = "dbrepo_metadata_oai_metadataformats_list")
     @Operation(summary = "List the metadata formats")
     public ResponseEntity<String> listMetadataFormats() {
         log.debug("endpoint list metadata formats, verb=ListMetadataFormats");
         final String xml = metadataService.listMetadataFormats();
         log.trace("list metadata formats resulted in xml {}", xml);
-        return ResponseEntity.ok(xml);
+        return ResponseEntity.ok(XmlUtil.pretty(xml));
     }
 
 }

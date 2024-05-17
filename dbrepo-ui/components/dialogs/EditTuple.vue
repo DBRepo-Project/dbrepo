@@ -1,6 +1,5 @@
 <template>
-  <div
-    v-if="localTuple">
+  <div>
     <v-form
       ref="form"
       v-model="valid"
@@ -17,7 +16,7 @@
             <v-col>
               <v-text-field
                 v-if="isNumber(column)"
-                v-model.number="localTuple[column.internal_name]"
+                v-model.number="tuple[column.internal_name]"
                 :disabled="(!edit && column.auto_generated)"
                 persistent-hint
                 :variant="inputVariant"
@@ -25,10 +24,9 @@
                 :hint="hint(column)"
                 :rules="rules(column)"
                 :required="required(column)"
-                type="number" />
-              <v-text-field
+                type="number" /><v-text-field
                 v-if="isTextField(column)"
-                v-model="localTuple[column.internal_name]"
+                v-model="tuple[column.internal_name]"
                 :disabled="disabled(column)"
                 :clearable="!required(column)"
                 :counter="maxLength(column) !== null"
@@ -42,7 +40,7 @@
                 type="text" />
               <v-text-field
                 v-if="isFloatingPoint(column)"
-                v-model="localTuple[column.internal_name]"
+                v-model="tuple[column.internal_name]"
                 :disabled="disabled(column)"
                 step=".1"
                 :clearable="!required(column)"
@@ -53,13 +51,9 @@
                 :label="column.internal_name"
                 :hint="hint(column)"
                 type="number" />
-              <BlobUpload
-                :column="column"
-                v-if="isFileField(column)"
-                @blob="onUpload" />
               <v-textarea
                 v-if="isTextArea(column)"
-                v-model="localTuple[column.internal_name]"
+                v-model="tuple[column.internal_name]"
                 :disabled="disabled(column)"
                 rows="3"
                 :clearable="!required(column)"
@@ -69,19 +63,13 @@
                 :variant="inputVariant"
                 :label="column.internal_name"
                 :hint="hint(column)" />
-              <v-text-field
-                v-if="isTimeField(column)"
-                v-model="localTuple[column.internal_name]"
-                :clearable="!required(column)"
-                :required="required(column)"
-                persistent-hint
-                :variant="inputVariant"
-                :label="column.internal_name"
-                :hint="hint(column)"
-                type="text" />
+              <BlobUpload
+                v-if="isFileField(column)"
+                :column="column"
+                @blob="onUpload" />
               <v-select
                 v-if="isSet(column) || isEnum(column)"
-                v-model="localTuple[column.internal_name]"
+                v-model="tuple[column.internal_name]"
                 persistent-hint
                 :variant="inputVariant"
                 :label="column.internal_name"
@@ -92,7 +80,7 @@
                 :items="isSet(column) ? column.sets : column.enums" />
               <v-select
                 v-if="isBoolean(column)"
-                v-model="localTuple[column.internal_name]"
+                v-model="tuple[column.internal_name]"
                 persistent-hint
                 :variant="inputVariant"
                 :label="column.internal_name"
@@ -101,6 +89,15 @@
                 :required="required(column)"
                 :items="bools"
                 :clearable="!required(column)" />
+              <v-text-field
+                v-if="isTimeField(column)"
+                v-model="tuple[column.internal_name]"
+                :clearable="!required(column)"
+                :required="required(column)"
+                persistent-hint
+                :variant="inputVariant"
+                :label="column.internal_name"
+                :hint="hint(column)" />
             </v-col>
           </v-row>
         </v-card-text>
@@ -114,7 +111,8 @@
             v-if="!edit"
             id="addTuple"
             variant="flat"
-            :disabled="!valid"
+            :disabled="!valid || loading"
+            :loading="loading"
             color="primary"
             type="submit"
             :text="$t('pages.database.subpages.tuple.create.text')"
@@ -123,7 +121,8 @@
             v-if="edit"
             id="updateTuple"
             variant="flat"
-            :disabled="!valid"
+            :disabled="!valid || loading"
+            :loading="loading"
             color="primary"
             type="submit"
             :text="$t('pages.database.subpages.tuple.update.text')"
@@ -135,8 +134,7 @@
 </template>
 
 <script>
-import BlobUpload from '@/components/table/BlobUpload'
-import {localizedMessage} from '@/utils'
+import BlobUpload from '@/components/table/BlobUpload.vue'
 
 export default {
   components: {
@@ -145,11 +143,15 @@ export default {
   props: {
     tuple: {
       type: Object,
-      default: null
+      default: () => {
+        return null
+      }
     },
     edit: {
       type: Boolean,
-      default: false
+      default: () => {
+        return false
+      }
     },
     table: {
       type: Object,
@@ -169,11 +171,9 @@ export default {
       loading: false,
       error: false,
       menu: false,
-      localTuple: null,
-      localDisplay: null,
       bools: [
-        { text: 'true', value: true },
-        { text: 'false', value: false }
+        { title: 'true', value: true },
+        { title: 'false', value: false }
       ]
     }
   },
@@ -189,16 +189,6 @@ export default {
       const runtimeConfig = useRuntimeConfig()
       return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.button.contrast : runtimeConfig.public.variant.button.normal
     }
-  },
-  watch: {
-    tuple (val) {
-      this.localTuple = Object.assign({}, val)
-      this.localDisplay = Object.assign({}, val)
-    }
-  },
-  mounted () {
-    this.localTuple = Object.assign({}, this.tuple)
-    this.localDisplay = Object.assign({}, this.tuple)
   },
   methods: {
     submit () {
@@ -220,7 +210,7 @@ export default {
       if (['double', 'decimal'].includes(column_type)) {
         hint += ' ' + this.$t('pages.table.subpages.data.format.hint') + ` ${'d'.repeat(size)}.${'f'.repeat(d)}`
       }
-      if (['date', 'datetime', 'timestamp', 'time'].includes(column_type)) {
+      if (['date', 'datetime', 'timestamp', 'time'].includes(column_type) && date_format) {
         hint += ' ' + this.$t('pages.table.subpages.data.format.hint') + ' ' + date_format.unix_format
       }
       if (['year'].includes(column_type)) {
@@ -261,7 +251,7 @@ export default {
         return []
       }
       const rules = []
-      rules.push(v => !!v || this.$t('validation.required'))
+      rules.push(v => v !== null || this.$t('validation.required'))
       if (column.column_type === 'decimal' || column.column_type === 'double') {
         rules.push(v => !(!v || v.split('.')[0].length > column.size) || `${this.$t('pages.table.subpages.data.float.max')} ${column.size} ${this.$t('pages.table.subpages.data.float.before')}`)
         rules.push(v => !(!v || v.split('.')[1].length > column.d) || `${this.$t('pages.table.subpages.data.float.max')} ${column.d} ${this.$t('pages.table.subpages.data.float.after')}`)
@@ -282,15 +272,24 @@ export default {
     },
     updateTuple () {
       const constraints = {}
-      this.table.columns
-        .filter(c => c.is_primary_key)
-        .forEach((c) => {
-          constraints[c.internal_name] = this.tuple[c.internal_name]
+      this.table.constraints.primary_key
+        .forEach((pk) => {
+          constraints[pk] = this.tuple[pk]
         })
       const tupleService = useTupleService()
-      tupleService.update(this.$route.params.database_id, this.$route.params.table_id, { data: this.localTuple, keys: constraints })
+      this.loading = true
+      tupleService.update(this.$route.params.database_id, this.$route.params.table_id, { data: this.tuple, keys: constraints })
         .then(() => {
           this.$toast.success(this.$t('success.data.update'))
+          this.$emit('close', { success: true })
+          this.loading = false
+        })
+        .catch(({message}) => {
+          this.$toast.error(message)
+          this.loading = false
+        })
+        .finally(() => {
+          this.loading = false
         })
     },
     addTuple () {
@@ -298,27 +297,32 @@ export default {
       this.table.columns
         .filter(c => c.is_primary_key)
         .forEach((c) => {
-          constraints[c.internal_name] = this.localTuple[c.internal_name]
+          constraints[c.internal_name] = this.tuple[c.internal_name]
         })
       this.table.columns.forEach((column) => {
-        if (!(column.internal_name in this.localTuple)) {
-          this.localTuple[column.internal_name] = null
-          this.localDisplay[column.internal_name] = null
+        if (!(column.internal_name in this.tuple)) {
+          this.tuple[column.internal_name] = null
         }
       })
       const tupleService = useTupleService()
-      tupleService.create(this.$route.params.database_id, this.$route.params.table_id, { data: this.localTuple })
+      this.loading = true
+      tupleService.create(this.$route.params.database_id, this.$route.params.table_id, { data: this.tuple })
         .then(() => {
           this.$toast.success(this.$t('success.data.add'))
+          this.$emit('close', { success: true })
+          this.loading = false
         })
-        .catch((error) => {
-          this.$toast.error(localizedMessage(this.$t, error, null))
+        .catch(({message}) => {
+            this.$toast.error(message)
+          this.loading = false
+        })
+        .finally(() => {
+          this.loading = false
         })
     },
-    onUpload (event) {
-      const { column, s3key } = event
+    onUpload ({column, s3key}) {
       this.$toast.success(this.$t('success.upload.blob'))
-      this.localTuple[column.internal_name] = s3key
+      this.tuple[column.internal_name] = s3key
     }
   }
 }

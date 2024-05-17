@@ -3,10 +3,7 @@ package at.tuwien.service;
 import at.tuwien.api.semantics.OntologyCreateDto;
 import at.tuwien.api.semantics.OntologyModifyDto;
 import at.tuwien.entities.semantics.Ontology;
-import at.tuwien.exception.AccessDeniedException;
-import at.tuwien.exception.KeycloakRemoteException;
 import at.tuwien.exception.OntologyNotFoundException;
-import at.tuwien.exception.UserNotFoundException;
 
 import java.security.Principal;
 import java.util.List;
@@ -30,11 +27,13 @@ public interface OntologyService {
     /**
      * Finds an ontology in the metadata database with given id.
      *
-     * @param id The ontology id.
+     * @param ontologyId The ontology id.
      * @return The ontology, if successful.
      * @throws OntologyNotFoundException The ontology was not found in the metadata database.
      */
-    Ontology find(Long id) throws OntologyNotFoundException;
+    Ontology find(Long ontologyId) throws OntologyNotFoundException;
+
+    Ontology find(String entityUri) throws OntologyNotFoundException;
 
     /**
      * Registers an ontology in the metadata database.
@@ -48,18 +47,16 @@ public interface OntologyService {
     /**
      * Updates an ontology in the metadata database with given id.
      *
-     * @param id   The ontology id.
-     * @param data The ontology data.
+     * @param ontology The ontology.
+     * @param data     The ontology data.
      * @return The updated ontology, if successful.
-     * @throws OntologyNotFoundException The ontology was not found in the metadata database.
      */
-    Ontology update(Long id, OntologyModifyDto data) throws OntologyNotFoundException;
+    Ontology update(Ontology ontology, OntologyModifyDto data);
 
     /**
      * Unregisters an ontology in the metadata database with given id.
      *
-     * @param id The ontology id.
-     * @throws OntologyNotFoundException The ontology was not found in the metadata database.
+     * @param ontology The ontology.
      */
-    void delete(Long id) throws OntologyNotFoundException;
+    void delete(Ontology ontology);
 }

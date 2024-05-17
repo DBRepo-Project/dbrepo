@@ -1,14 +1,12 @@
 package at.tuwien.service;
 
 import at.tuwien.api.database.DatabaseCreateDto;
-import at.tuwien.api.database.DatabaseModifyImageDto;
 import at.tuwien.api.database.DatabaseModifyVisibilityDto;
 import at.tuwien.api.database.DatabaseTransferDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
 import java.util.List;
@@ -25,31 +23,19 @@ public interface DatabaseService {
     List<Database> findAll();
 
     /**
-     * Finds all databases where the user with given id has access to.
+     * Finds all databases stored in the metadata database.
      *
      * @param userId The user id.
-     * @return The list of databases.
+     * @return List of databases.
      */
-    List<Database> findAccess(UUID userId);
+    List<Database> findAllAccess(UUID userId);
 
     /**
-     * Finds a specific database for a given id in the metadata database.
-     *
-     * @param databaseId The database id.
+     * @param internalName The database internal name.
      * @return The database if found.
      * @throws DatabaseNotFoundException The database was not found.
      */
-    Database find(Long databaseId) throws DatabaseNotFoundException;
-
-    /**
-     * Finds a specific database for a given id in the metadata database.
-     *
-     * @param databaseId The database id.
-     * @param userId     The user id.
-     * @return The database, if successful.
-     * @throws DatabaseNotFoundException The database was not found in the metadata database.
-     */
-    Database findPublicOrMineById(Long databaseId, UUID userId) throws DatabaseNotFoundException;
+    Database findByInternalName(String internalName) throws DatabaseNotFoundException;
 
     /**
      * Find a database by id, only used in the authentication service
@@ -64,89 +50,54 @@ public interface DatabaseService {
      * Creates a new database with minimal metadata in the metadata database and creates a new database on the container.
      *
      * @param createDto The metadata.
+     * @param user      The user.
      * @return The database, if successful.
-     * @throws ContainerNotFoundException The container was not found in the metadata database.
-     * @throws DatabaseMalformedException The query string is malformed.
-     * @throws UserNotFoundException      The current user could not be loaded in the metadata database.
-     * @throws QueryMalformedException    The mapped creation query resulted in an invalid query statement and thus was rejected by the database engine.
+     * @throws UserNotFoundException      If the container/user was not found in the metadata database.
+     * @throws ServiceException           If the data service returned non-successfully.
+     * @throws ServiceConnectionException If failing to connect to the data service/search service.
      */
-    Database create(DatabaseCreateDto createDto, Principal principal) throws ContainerNotFoundException,
-            DatabaseMalformedException, UserNotFoundException, QueryMalformedException;
+    Database create(DatabaseCreateDto createDto, User user) throws UserNotFoundException, ContainerNotFoundException,
+            ServiceException, ServiceConnectionException, DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException;
 
     /**
      * Updates the user's password.
      *
-     * @param user The user.
-     * @throws QueryMalformedException The mapped query is malformed.
+     * @param database The database.
+     * @param user     The user.
+     * @throws ServiceException           If the data service returned non-successfully.
+     * @throws ServiceConnectionException If failing to connect to the data service.
      */
-    void updatePassword(User user) throws QueryMalformedException;
+    void updatePassword(Database database, User user) throws ServiceException, ServiceConnectionException, DatabaseNotFoundException;
 
     /**
      * Updates the visibility of the database.
      *
-     * @param databaseId The database id.
-     * @param data       The visibility
+     * @param database The database.
+     * @param data     The visibility
      * @return The database, if successful.
-     * @throws DatabaseNotFoundException The database was not found in the metadata database.
+     * @throws NotFoundException          The database was not found in the metadata database.
+     * @throws ServiceConnectionException If failing to connect to the search service.
      */
-    Database visibility(Long databaseId, DatabaseModifyVisibilityDto data) throws DatabaseNotFoundException;
+    Database modifyVisibility(Database database, DatabaseModifyVisibilityDto data) throws DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException;
 
     /**
      * Transfer ownership of a database
      *
-     * @param databaseId  The database id.
-     * @param transferDto The payload with the new owner.
+     * @param database The database.
+     * @param user     The payload with the new owner.
      * @return The database, if successful.
      * @throws DatabaseNotFoundException The database was not found in the metadata database.
-     * @throws UserNotFoundException     The new user was not found in the metadata database.
      */
-    Database transfer(Long databaseId, DatabaseTransferDto transferDto) throws DatabaseNotFoundException,
-            UserNotFoundException;
+    Database modifyOwner(Database database, User user) throws DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException;
 
     /**
      * Modify image of database with given id.
      *
-     * @param databaseId The database id.
-     * @param image      The image.
+     * @param database The database.
+     * @param image    The image.
      * @return The database, if successful.
-     * @throws DatabaseNotFoundException The database was not found in the metadata database.
      */
-    Database modifyImage(Long databaseId, byte[] image) throws DatabaseNotFoundException;
+    Database modifyImage(Database database, byte[] image) throws DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException;
 
-    /**
-     * Obtain table schema constraints for a database by given id.
-     *
-     * @param databaseId The database id.
-     * @return The updated database.
-     * @throws DatabaseNotFoundException The database was not found in the metadata database.
-     * @throws QueryMalformedException   The inspect query (table/view) is malformed and has syntax issues.
-     * @throws TableMalformedException   The table constraints are malformed.
-     */
-    Database obtainConstraints(Long databaseId) throws DatabaseNotFoundException, QueryMalformedException, TableMalformedException;
 
-    /**
-     * Obtain metadata from database with given id to read table information (schema) and write it to the metadata database for management by DBRepo.
-     *
-     * @param databaseId The database id.
-     * @return The updated database.
-     * @throws DatabaseNotFoundException  The database was not found in the metadata database.
-     * @throws QueryMalformedException    The inspect query (table/view) is malformed and has syntax issues.
-     * @throws DatabaseUnchangedException The metadata database is up-to-date and knows about all tables/views in the data database(s).
-     * @throws ColumnParseException       The columns could not be automatically parsed from the views.
-     */
-    Database obtainTablesMetadata(Long databaseId) throws DatabaseNotFoundException, QueryMalformedException,
-            DatabaseUnchangedException, ColumnParseException;
-
-    /**
-     * Obtain metadata from database with given id to read view information (schema) and write it to the metadata database for management by DBRepo.
-     *
-     * @param databaseId The database id.
-     * @return The updated database.
-     * @throws DatabaseNotFoundException  The database was not found in the metadata database.
-     * @throws QueryMalformedException    The inspect query (table/view) is malformed and has syntax issues.
-     * @throws DatabaseUnchangedException The metadata database is up-to-date and knows about all tables/views in the data database(s).
-     * @throws ColumnParseException       The columns could not be automatically parsed from the views.
-     */
-    Database obtainViewsMetadata(Long databaseId) throws DatabaseNotFoundException, QueryMalformedException,
-            DatabaseUnchangedException, ColumnParseException;
 }

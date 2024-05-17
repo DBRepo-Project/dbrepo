@@ -2,26 +2,19 @@ app.version: '@project.version@'
 spring:
   main.banner-mode: off
   datasource:
-    url: jdbc:mariadb://localhost:3306/fda
-    driver-class-name: org.mariadb.jdbc.Driver
-    username: root
-    password: dbrepo
+    url: jdbc:h2:mem:fda;DB_CLOSE_ON_EXIT=FALSE;INIT=CREATE SCHEMA IF NOT EXISTS FDA;NON_KEYWORDS=value
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: password
   rabbitmq:
-    host: broker-service
+    host: localhost
     virtual-host: dbrepo
     password: guest
     username: guest
     port: 5672
   jpa:
     show-sql: false
-    database-platform: org.hibernate.dialect.MariaDBDialect
-    hibernate:
-      search:
-        default:
-          elasticsearch:
-            host: localhost
-      ddl-auto: validate
-      use-new-id-generator-mappings: false
+    database-platform: org.hibernate.dialect.H2Dialect
     open-in-view: false
     properties:
       hibernate:
@@ -29,33 +22,48 @@ spring:
         jdbc:
           time_zone: UTC
   application:
-    name: search-startup-agent
-  opensearch:
-    username: admin
-    password: admin
-    host: localhost
-    port: 9200
-    protocol: http
+    name: data-service
   cloud:
     loadbalancer.ribbon.enabled: false
-management.endpoints.web.exposure.include: health,info,prometheus
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  health:
+    readinessState:
+      enabled: true
+    livenessState:
+      enabled: true
 server:
-  port: 9093
+  port: 19093
 logging:
   pattern.console: "%d %highlight(%-5level) %msg%n"
   level:
     root: warn
     at.tuwien.: trace
-    org.opensearch.client.: trace
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
-fda:
+dbrepo:
+  endpoints:
+    gatewayService: http://localhost
+    storageService: http://localhost:9000
+    authService: http://localhost:8080
+  s3:
+    accessKeyId: seaweedfsadmin
+    secretAccessKey: seaweedfsadmin
+    importBucket: dbrepo-upload
+    exportBucket: dbrepo-download
+  admin:
+    username: admin
+    password: admin
   jwt:
-    issuer: http://localhost/realms/dbrepo
     public_key: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB
-  minConcurrent: 1
-  maxConcurrent: 5
-  requeueRejected: true
-  queueName: default
-  exchangeName: dbrepo
-  routingKey: "#"
-  connectionTimeout: 60000
+  keycloak:
+    username: fda
+    password: fda
+    client: dbrepo-client
+    clientSecret: MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG

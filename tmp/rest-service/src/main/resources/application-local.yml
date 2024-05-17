@@ -1,0 +1,79 @@
+app.version: '@project.version@'
+spring:
+  main.banner-mode: off
+  datasource:
+    url: jdbc:mariadb://localhost:3306/fda
+    driver-class-name: org.mariadb.jdbc.Driver
+    username: root
+    password: dbrepo
+  rabbitmq:
+    host: localhost
+    virtual-host: dbrepo
+    password: guest
+    username: guest
+    port: 5672
+  jpa:
+    show-sql: false
+    database-platform: org.hibernate.dialect.MariaDBDialect
+    open-in-view: false
+    properties:
+      hibernate:
+        default_schema: fda
+        jdbc:
+          time_zone: UTC
+  application:
+    name: search-startup-agent
+  cloud:
+    loadbalancer.ribbon.enabled: false
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  health:
+    readinessState:
+      enabled: true
+    livenessState:
+      enabled: true
+server:
+  port: 19093
+logging:
+  pattern.console: "%d %highlight(%-5level) %msg%n"
+  level:
+    root: warn
+    at.tuwien.: trace
+    org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
+dbrepo:
+  endpoints:
+    gatewayService: http://localhost
+    brokerService: http://localhost:15672
+    storageService: http://localhost:9000
+    authService: http://localhost:8080
+  s3:
+    accessKeyId: seaweedfsadmin
+    secretAccessKey: seaweedfsadmin
+    importBucket: dbrepo-upload
+    exportBucket: dbrepo-download
+    staleSeconds: 3600
+  admin:
+    username: admin
+    password: admin
+  jwt:
+    issuer: http://localhost/realms/dbrepo
+    public_key: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB
+  keycloak:
+    username: fda
+    password: fda
+    client: dbrepo-client
+    clientSecret: MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG
+  minConcurrent: 1
+  maxConcurrent: 5
+  requeueRejected: "false"
+  queueName: default
+  exchangeName: dbrepo
+  routingKey: "#"
+  connectionTimeout: 60000

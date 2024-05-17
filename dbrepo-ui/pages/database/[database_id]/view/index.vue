@@ -9,8 +9,8 @@
 </template>
 
 <script>
-import DatabaseToolbar from '@/components/database/DatabaseToolbar'
-import ViewList from '@/components/view/ViewList'
+import DatabaseToolbar from '@/components/database/DatabaseToolbar.vue'
+import ViewList from '@/components/view/ViewList.vue'
 
 export default {
   name: 'Views',

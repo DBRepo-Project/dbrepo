@@ -3,7 +3,7 @@ package at.tuwien.exception;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-@ResponseStatus(code = HttpStatus.CONFLICT, reason = "Container name exists")
+@ResponseStatus(code = HttpStatus.CONFLICT, reason = "error.container.exists")
 public class ContainerAlreadyExistsException extends Exception {
 
     public ContainerAlreadyExistsException(String message) {

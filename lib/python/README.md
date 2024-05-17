@@ -1,6 +1,6 @@
 # DBRepo Python Library
 
-Official client library for [DBRepo](https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/__APPVERSION__/), a database
+Official client library for [DBRepo](https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/1.4.3/), a database
 repository to support research based
 on [requests](https://pypi.org/project/requests/), [pydantic](https://pypi.org/project/pydantic/), [tuspy](https://pypi.org/project/tuspy/)
 and [pika](https://pypi.org/project/pika/).

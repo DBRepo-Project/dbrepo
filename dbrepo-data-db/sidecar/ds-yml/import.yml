@@ -10,7 +10,9 @@ parameters:
     name: filename
     description: Name of the object file to import from the Storage Service
     required: true
-
+security:
+- bearerAuth: []
+- basicAuth: []
 responses:
   202:
     description: Imported the .csv
@@ -19,3 +21,12 @@ responses:
     description: The Storage Service could not be contacted or .csv was not found.
 tags:
   - sidecar
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

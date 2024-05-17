@@ -3,19 +3,15 @@ package at.tuwien.service.impl;
 import at.tuwien.api.database.ViewCreateDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.View;
-import at.tuwien.entities.database.ViewColumn;
-import at.tuwien.entities.database.table.columns.TableColumn;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
-import at.tuwien.mapper.DatabaseMapper;
+import at.tuwien.gateway.DataServiceGateway;
+import at.tuwien.gateway.SearchServiceGateway;
 import at.tuwien.mapper.QueryMapper;
 import at.tuwien.mapper.ViewMapper;
-import at.tuwien.repository.mdb.DatabaseRepository;
-import at.tuwien.repository.sdb.DatabaseIdxRepository;
-import at.tuwien.service.DatabaseService;
+import at.tuwien.repository.DatabaseRepository;
 import at.tuwien.service.ViewService;
-import at.tuwien.utils.UserUtil;
 import com.google.common.hash.Hashing;
-import com.mchange.v2.c3p0.ComboPooledDataSource;
 import lombok.extern.log4j.Log4j2;
 import net.sf.jsqlparser.JSQLParserException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,149 +19,85 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
-import java.security.Principal;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
 @Log4j2
 @Service
-public class ViewServiceImpl extends HibernateConnector implements ViewService {
+public class ViewServiceImpl implements ViewService {
 
     private final ViewMapper viewMapper;
     private final QueryMapper queryMapper;
-    private final DatabaseMapper databaseMapper;
-    private final DatabaseService databaseService;
+    private final DataServiceGateway dataServiceGateway;
     private final DatabaseRepository databaseRepository;
-    private final DatabaseIdxRepository databaseIdxRepository;
+    private final SearchServiceGateway searchServiceGateway;
 
     @Autowired
-    public ViewServiceImpl(ViewMapper viewMapper, QueryMapper queryMapper, DatabaseMapper databaseMapper,
-                           DatabaseService databaseService, DatabaseRepository databaseRepository,
-                           DatabaseIdxRepository databaseIdxRepository) {
+    public ViewServiceImpl(ViewMapper viewMapper, QueryMapper queryMapper, DataServiceGateway dataServiceGateway,
+                           DatabaseRepository databaseRepository, SearchServiceGateway searchServiceGateway) {
         this.viewMapper = viewMapper;
         this.queryMapper = queryMapper;
-        this.databaseMapper = databaseMapper;
-        this.databaseService = databaseService;
+        this.dataServiceGateway = dataServiceGateway;
         this.databaseRepository = databaseRepository;
-        this.databaseIdxRepository = databaseIdxRepository;
+        this.searchServiceGateway = searchServiceGateway;
     }
 
     @Override
-    public View findById(Long databaseId, Long viewId) throws ViewNotFoundException, DatabaseNotFoundException {
-        final Optional<View> optional = databaseService.find(databaseId)
-                .getViews()
+    public View findById(Database database, Long viewId) throws ViewNotFoundException {
+        final Optional<View> optional = database.getViews()
                 .stream()
                 .filter(v -> v.getId().equals(viewId))
                 .findFirst();
         if (optional.isEmpty()) {
-            log.error("Failed to find view with id {} in metadata database", viewId);
-            throw new ViewNotFoundException("Failed to find view with id " + viewId + " in metadata database");
+            log.error("Failed to find view with id {}", viewId);
+            throw new ViewNotFoundException("Failed to find view with id " + viewId);
         }
         return optional.get();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<View> findAll(Long databaseId, Principal principal) throws UserNotFoundException,
-            DatabaseNotFoundException {
-        if (principal == null) {
-            final List<View> views = databaseService.find(databaseId)
-                    .getViews()
+    public List<View> findAll(Database database, User user) {
+        if (user == null) {
+            return database.getViews()
                     .stream()
-                    .filter(v -> v.getDatabase().getId().equals(databaseId))
+                    .filter(View::getIsPublic)
                     .toList();
-            log.debug("list {} public view(s)", views.size());
-            return views;
         }
-        final List<View> views = databaseService.find(databaseId)
-                .getViews()
+        return database.getViews()
                 .stream()
-                .filter(v -> v.getDatabase().getId().equals(databaseId) || v.getCreatedBy().equals(UserUtil.getId(principal)))
+                .filter(v -> v.getIsPublic() || v.getCreatedBy().equals(user.getId()))
                 .toList();
-        log.debug("list {} public or private self-owned view(s)", views.size());
-        return views;
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public View findById(Long databaseId, Long id, Principal principal) throws ViewNotFoundException,
-            UserNotFoundException, DatabaseNotFoundException {
-        final Optional<View> optional = findAll(databaseId, principal)
-                .stream()
-                .filter(v -> v.getId().equals(id))
-                .findFirst();
-        if (optional.isEmpty()) {
-            log.error("Failed to find view with id {} in metadata database", id);
-            throw new ViewNotFoundException("Failed to find view with id " + id + " in metadata database");
-        }
-        return optional.get();
     }
 
     @Override
     @Transactional
-    public void delete(Long databaseId, Long id, Principal principal) throws ViewNotFoundException,
-            UserNotFoundException, DatabaseNotFoundException, DatabaseConnectionException, QueryMalformedException, ViewMalformedException {
-        /* find */
-        final View view = findById(databaseId, id, principal);
-        final Database database = databaseService.find(databaseId);
-        /* delete view */
-        final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(),
-                database.getContainer(), database);
-        try {
-            final Connection connection = dataSource.getConnection();
-            final PreparedStatement createViewStatement = viewMapper.viewToRawDeleteViewQuery(connection, view);
-            createViewStatement.executeUpdate();
-        } catch (SQLException e) {
-            log.error("Failed to delete view: {}", e.getMessage());
-            throw new ViewMalformedException("Failed to delete view", e);
-        } finally {
-            dataSource.close();
-        }
+    public void delete(View view) throws ServiceException, ServiceConnectionException, DatabaseNotFoundException,
+            ViewNotFoundException, SearchServiceException, SearchServiceConnectionException {
+        /* delete in data service */
+        dataServiceGateway.deleteView(view.getDatabase().getId(), view.getId());
         /* delete in metadata database */
-        database.getViews().remove(view);
-        databaseRepository.save(database);
-        /* delete in opensearch database */
-        databaseIdxRepository.save(databaseMapper.databaseToDatabaseDto(databaseService.find(databaseId)));
-        log.info("Deleted view with id {} in metadata database & search database", id);
+        view.getDatabase().getViews().remove(view);
+        final Database database = databaseRepository.save(view.getDatabase());
+        /* update in search service */
+        searchServiceGateway.update(database);
+        log.info("Deleted view with id {}", view.getId());
     }
 
     @Override
     @Transactional
-    public View create(Long databaseId, ViewCreateDto data, Principal principal)
-            throws DatabaseNotFoundException, DatabaseConnectionException, QueryMalformedException,
-            ViewMalformedException, UserNotFoundException {
-        /* find */
-        final Database database = databaseService.find(databaseId);
-        /* create view */
-        final ComboPooledDataSource dataSource = getPrivilegedDataSource(database.getContainer().getImage(),
-                database.getContainer(), database);
-        final List<TableColumn> columns;
-        try {
-            columns = queryMapper.parseColumns(data.getQuery(), database);
-        } catch (JSQLParserException e) {
-            log.error("Failed to map/parse columns: {}", e.getMessage());
-            throw new QueryMalformedException("Failed to map/parse columns: " + e.getMessage(), e);
-        }
-        try {
-            final Connection connection = dataSource.getConnection();
-            final PreparedStatement createViewStatement = viewMapper.viewCreateDtoToRawCreateViewQuery(connection, data);
-            createViewStatement.executeUpdate();
-        } catch (SQLException e) {
-            log.error("Failed to create view: {}", e.getMessage());
-            throw new ViewMalformedException("Failed to create view: " + e.getMessage(), e);
-        } finally {
-            dataSource.close();
-        }
-        /* save in metadata database */
-        final View entity = View.builder()
-                .vdbid(databaseId)
+    public View create(Database database, User creator, ViewCreateDto data) throws MalformedException, ServiceException,
+            ServiceConnectionException, DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException {
+        /* create in metadata database */
+        final View view = View.builder()
+                .vdbid(database.getId())
                 .database(database)
                 .name(data.getName())
                 .internalName(viewMapper.nameToInternalName(data.getName()))
-                .createdBy(UserUtil.getId(principal))
+                .createdBy(creator.getId())
+                .creator(creator)
+                .identifiers(new LinkedList<>())
                 .query(data.getQuery())
                 .queryHash(Hashing.sha256()
                         .hashString(data.getQuery(), StandardCharsets.UTF_8)
@@ -173,21 +105,28 @@ public class ViewServiceImpl extends HibernateConnector implements ViewService {
                 .isInitialView(false)
                 .isPublic(data.getIsPublic())
                 .build();
-        entity.setColumns(viewMapper.tableColumnsToViewColumns(entity, columns));
+        /* create in data service */
+        data.setName(view.getInternalName());
+        dataServiceGateway.createView(database.getId(), data);
+        try {
+            view.setColumns(viewMapper.tableColumnsToViewColumns(view, queryMapper.parseColumns(data.getQuery(), database)));
+        } catch (JSQLParserException e) {
+            throw new MalformedException("Failed to parse columns from view: " + e.getMessage(), e);
+        }
         database.getViews()
-                .add(entity);
-        final Optional<View> optional = databaseRepository.save(database)
-                .getViews()
+                .add(view);
+        database = databaseRepository.save(database);
+        final Optional<View> optional = database.getViews()
                 .stream()
-                .filter(v -> v.getInternalName().equals(entity.getInternalName()))
+                .filter(v -> v.getInternalName().equals(view.getInternalName()))
                 .findFirst();
         if (optional.isEmpty()) {
-            log.error("Failed to find created view from database with id {}", databaseId);
-            throw new ViewMalformedException("Failed to find created view from database with id " + databaseId);
+            log.error("Failed to find created view");
+            throw new MalformedException("Failed to find created view");
         }
-        /* save in opensearch database */
-        databaseIdxRepository.save(databaseMapper.databaseToDatabaseDto(databaseService.find(databaseId)));
-        log.info("Created view with id {} in metadata database & search database", optional.get().getId());
+        /* update in search service */
+        searchServiceGateway.update(database);
+        log.info("Created view with id {}", optional.get().getId());
         return optional.get();
     }
 

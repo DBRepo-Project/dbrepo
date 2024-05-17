@@ -6,8 +6,6 @@ import at.tuwien.entities.database.table.Table;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -24,6 +22,7 @@ import java.util.List;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @EntityListeners(AuditingEntityListener.class)
 @jakarta.persistence.Table(name = "mdb_columns", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"tid", "internalName"})
@@ -66,9 +65,6 @@ public class TableColumn implements Comparable<TableColumn> {
 
     @Column(nullable = false)
     private String internalName;
-
-    @Column(nullable = false, columnDefinition = "BOOLEAN default false")
-    private Boolean isPrimaryKey;
 
     @Column
     private Long indexLength;
@@ -123,10 +119,10 @@ public class TableColumn implements Comparable<TableColumn> {
     private Long d;
 
     @Column(name = "val_min")
-    private BigDecimal valMin;
+    private BigDecimal min;
 
     @Column(name = "val_max")
-    private BigDecimal valMax;
+    private BigDecimal max;
 
     @Column
     private BigDecimal mean;
@@ -144,22 +140,5 @@ public class TableColumn implements Comparable<TableColumn> {
     @Override
     public int compareTo(TableColumn tableColumn) {
         return Integer.compare(this.ordinalPosition, tableColumn.getOrdinalPosition());
-    }
-
-    /**
-     * KEEP THIS FUNCTION HERE! IT WILL BREAK CODE!
-     * Custom equality function implementation.
-     *
-     * @param object The other column.
-     * @return True if columns are equal, false otherwise
-     */
-    public boolean equals(Object object) {
-        if (object == null) {
-            return false;
-        }
-        if (!(object instanceof final TableColumn other)) {
-            return false;
-        }
-        return this.getId().equals(other.getId()) && this.getTable().equals(other.getTable());
     }
 }

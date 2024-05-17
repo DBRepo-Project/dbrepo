@@ -7,6 +7,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import jakarta.persistence.*;
+
 import java.time.Instant;
 import java.util.List;
 
@@ -34,8 +35,7 @@ public class TableColumnConcept {
     @Column(updatable = false, nullable = false)
     private Long id;
 
-    @EqualsAndHashCode.Include
-    @Column(nullable = false, unique = true, columnDefinition = "TEXT")
+    @Column(updatable = false, nullable = false, columnDefinition = "TEXT")
     private String uri;
 
     @Column(columnDefinition = "VARCHAR(255)")
@@ -50,8 +50,7 @@ public class TableColumnConcept {
     private Instant created;
 
     @ToString.Exclude
-    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE})
-    @org.springframework.data.annotation.Transient
+    @OneToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "mdb_columns_concepts",
             inverseJoinColumns = {
                     @JoinColumn(name = "cid", referencedColumnName = "id", insertable = false, updatable = false)

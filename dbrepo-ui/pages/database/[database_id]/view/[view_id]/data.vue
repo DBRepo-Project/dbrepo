@@ -5,6 +5,13 @@
       color="secondary"
       :title="$t('toolbars.database.current')"
       flat>
+      <v-btn
+        :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-refresh' : null"
+        variant="flat"
+        :text="$t('toolbars.table.data.refresh')"
+        class="mb-1 ml-2"
+        :loading="loadingData"
+        @click="reload" />
     </v-toolbar>
     <TimeDrift />
     <v-card tile>
@@ -20,8 +27,8 @@
 </template>
 
 <script>
-import TimeDrift from '@/components/TimeDrift'
-import QueryResults from '@/components/subset/Results'
+import TimeDrift from '@/components/TimeDrift.vue'
+import QueryResults from '@/components/subset/Results.vue'
 import { useCacheStore } from '@/stores/cache'
 
 export default {
@@ -31,6 +38,7 @@ export default {
   },
   data () {
     return {
+      loadingData: false,
       items: [
         {
           title: this.$t('navigation.databases'),
@@ -71,10 +79,13 @@ export default {
     if (!this.view) {
       return
     }
-    this.$refs.queryResults.reExecute(this.view.id)
-    this.$refs.queryResults.reExecuteCount(this.view.id)
+    this.reload()
+  },
+  methods: {
+    reload () {
+      this.$refs.queryResults.reExecute(this.view.id)
+      this.$refs.queryResults.reExecuteCount(this.view.id)
+    }
   }
 }
 </script>
-<style>
-</style>

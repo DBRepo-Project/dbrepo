@@ -9,7 +9,6 @@
   </div>
 </template>
 <script>
-import {localizedMessage} from '@/utils'
 
 export default {
   props: {
@@ -33,16 +32,15 @@ export default {
         return
       }
       const uploadService = useUploadService()
-      uploadService.upload(this.file[0])
-        .then((metadata) => {
-          console.debug('uploaded file', metadata)
-          const { s3key } = metadata
-          this.filename = metadata.file.name
-          this.value = s3key
-          this.$emit('blob', { column: this.column, s3key: this.value })
+      uploadService.create(this.file[0])
+        .then((filename) => {
+          console.debug('uploaded file', filename)
+          this.filename = filename
+          this.value = filename
+          this.$emit('blob', { column: this.column, s3key: filename })
         })
         .catch((error) => {
-          this.$toast.error(localizedMessage(this.$t, error, null))
+          this.$toast.error(this.$t(error.code))
         })
     }
   }

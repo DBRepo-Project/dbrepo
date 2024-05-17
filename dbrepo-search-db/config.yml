@@ -26,32 +26,16 @@ config:
           challenge: true
         authentication_backend:
           type: intern
-      jwt_auth_domain:
-        description: "Authenticate via Json Web Token"
-        # Enables or disables authentication on the REST layer. Default is true (enabled).
+      openid_auth_domain:
         http_enabled: true
-        # Enables or disables authentication on the transport layer. Default is true (enabled).
         transport_enabled: true
-        # Determines the order in which an authentication domain is queried with an authentication request when multiple
-        # backends are configured in combination. Once authentication succeeds, any remaining domains do not need to be
-        # queried. Its value is an integer.
         order: 1
         http_authenticator:
-          # https://opensearch.org/docs/latest/security/authentication-backends/openid-connect/#configure-openid-connect-integration
           type: openid
           challenge: false
           config:
-            # The HTTP header that stores the token. Typically the Authorization header with the
-            # Bearer schema: Authorization: Bearer <token>. Optional. Default is Authorization.
-            jwt_header: Authorization
-            # The key in the JSON payload that stores the user’s name. If not defined, the subject registered claim is
-            # used. Most IdP providers use the preferred_username claim. Optional.
             subject_key: client_id
-            # The key in the JSON payload that stores the user’s roles. The value of this key must be a comma-separated
-            # list of roles. Required only if you want to use roles in the JWT.
             roles_key: roles
-            jwks_uri: https://test.dbrepo.tuwien.ac.at/api/auth/realms/dbrepo/protocol/openid-connect/certs
+            openid_connect_url: http://auth-service:8080/api/auth/realms/dbrepo/.well-known/openid-configuration
         authentication_backend:
-          # No further authentication against any backend system is performed. Use noop if the HTTP authenticator has
-          # already authenticated the user completely, as in the case of JWT or client certificate authentication.
           type: noop
