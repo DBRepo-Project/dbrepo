@@ -616,7 +616,7 @@ release-docs:
   before_script:
     - "apk add git make sed wget openssh"
   script:
-    - make docs
+    - make gen-docs-doc
     - eval $(ssh-agent -s)
     - echo "$CI_KEY_PRIVATE" > /root/.ssh/id_rsa && chmod 0600 /root/.ssh/id_rsa
     - echo "$CI_KEY_PUBLIC" > /root/.ssh/id_rsa.pub
