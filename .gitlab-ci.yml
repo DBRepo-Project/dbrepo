@@ -570,25 +570,6 @@ release-images:
   script:
     - "make release"
 
-release-images-unstable:
-  stage: release
-  image: docker:24-dind
-  dependencies:
-    - test-metadata-service
-    - test-data-service
-    - test-analyse-service
-  only:
-    refs:
-      - master
-      - dev
-  before_script:
-    - "echo ${CI_REGISTRY_PASSWORD} | docker login --username ${CI_REGISTRY_USER} --password-stdin $CI_REGISTRY_URL"
-    - "echo ${CI_REGISTRY2_PASSWORD} | docker login --username ${CI_REGISTRY2_USER} --password-stdin $CI_REGISTRY2_URL"
-    - "ifconfig eth0 mtu 1450 up"
-    - "apk add make bash"
-  script:
-    - "CI_COMMIT_BRANCH=release-unstable make release-images"
-
 release-chart:
   stage: release
   image: docker:24-dind
