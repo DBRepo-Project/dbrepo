@@ -1,4 +1,4 @@
-{{- if .Values.analyseService.enabled }}
+{{- if .Values.analyseservice.enabled }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -9,7 +9,7 @@ metadata:
     app: analyse-service
     service: analyse-service
 spec:
-  replicas: {{ .Values.analyseService.replicaCount }}
+  replicas: {{ .Values.analyseservice.replicaCount }}
   strategy:
     type: {{ .Values.strategyType }}
   selector:
@@ -29,15 +29,15 @@ spec:
         runAsGroup: 1001
       containers:
         - name: analyse-service
-          image: {{ .Values.analyseService.image.name }}
-          imagePullPolicy: {{ .Values.analyseService.image.pullPolicy | default "IfNotPresent" }}
+          image: {{ .Values.analyseservice.image.name }}
+          imagePullPolicy: {{ .Values.analyseservice.image.pullPolicy | default "IfNotPresent" }}
           securityContext:
             allowPrivilegeEscalation: false
             runAsNonRoot: true
             runAsUser: 1001
             runAsGroup: 1001
             seccompProfile:
-              type: {{ .Values.analyseService.profileType | default "RuntimeDefault" }}
+              type: {{ .Values.analyseservice.profileType | default "RuntimeDefault" }}
             capabilities:
               drop:
                 - ALL

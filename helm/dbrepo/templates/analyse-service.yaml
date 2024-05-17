@@ -1,4 +1,4 @@
-{{- if .Values.analyseService.enabled }}
+{{- if .Values.analyseservice.enabled }}
 ---
 apiVersion: v1
 kind: Service

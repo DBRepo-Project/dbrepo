@@ -28,17 +28,12 @@ dependencies:
     alias: datadb
     version: 11.0.1
     repository: https://charts.bitnami.com/bitnami
-    condition: datasb.enabled
+    condition: datadb.enabled
   - name: mariadb-galera
     alias: metadatadb
     version: 11.0.1
     repository: https://charts.bitnami.com/bitnami
     condition: metadatadb.enabled
-  - name: postgresql-ha
-    alias: authdb
-    version: 12.1.7
-    repository: https://charts.bitnami.com/bitnami
-    condition: authdb.enabled
   - name: rabbitmq
     alias: brokerservice
     version: 14.0.0

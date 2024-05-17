@@ -1,15 +1,51 @@
+# Copyright the DBRepo developers
+# SPDX-License-Identifier: APACHE-2.0
+
+## @section Common parameters
+##
+
+## @param namespace The namespace to install the chart
+##
 namespace: dbrepo
+## @param hostname The hostname.
+##
 hostname: example.com
+## @param gateway The gateway endpoint.
+##
 gateway: https://example.com
-
+## @param strategyType The image pull
+##
 strategyType: RollingUpdate
-
+## @param clusterDomain The cluster domain.
+##
 clusterDomain: cluster.local
 
+## @section Internal Admin User
+
+## @param admin.username The internal admin username.
+## @param admin.password The internal admin password.
+##
 admin:
   username: admin
   password: admin
 
+## @section Metadata Database
+
+## @param metadatadb.enabled Enable the Metadata Database.
+## @skip metadatadb.fullnameOverride
+## @param metadatadb.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
+## @param metadatadb.host The hostname for the microservices.
+## @param metadatadb.rootUser.user The root username.
+## @param metadatadb.rootUser.password The root user password.
+## @param metadatadb.jdbcExtraArgs The extra arguments for JDBC connections in the microservices.
+## @param metadatadb.db.name The database name.
+## @skip metadatadb.metrics.enabled The Prometheus settings.
+## @skip metadatadb.galera The Galera settings.
+## @skip metadatadb.initdbScriptsConfigMap The initial database scripts.
+## @skip metadatadb.service The initial database scripts.
+## @param metadatadb.persistence.enabled Enable persistent storage. Requires PV-provisioner.
+## @param metadatadb.replicaCount The number of replicas, should be uneven (2n+1).
+##
 metadatadb:
   enabled: true
   fullnameOverride: metadata-db
@@ -35,9 +71,31 @@ metadatadb:
     loadBalancerIP: ""
     loadBalancerSourceRanges: [ ]
   persistence:
-    enabled: true
-  replicaCount: 1 # uneven 3,5,7
+    enabled: false
+  replicaCount: 3
 
+## @section Auth Service
+
+## @param authservice.enabled Enable the Auth Service.
+## @skip authservice.fullnameOverride
+## @param authservice.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
+## @param authservice.endpoint The hostname for the microservices.
+## @param authservice.auth.adminUser The admin username.
+## @param authservice.auth.adminPassword The admin user password.
+## @skip authservice.postgresql
+## @skip authservice.extraStartupArgs
+## @param authservice.jwt.pubkey The JWT public key from the `dbrepo-client`.
+## @param authservice.tls.enabled Enable TLS/SSL communication. Required for HTTPS.
+## @param authservice.tls.existingSecret The secret containing the `tls.crt`, `tls.key` and `ca.crt`.
+## @param authservice.tls.usePem Use PEM certificates as input instead of PKS12/JKS stores.
+## @param authservice.metrics.enabled Enable the Prometheus metrics export sidecar container.
+## @param authservice.client.id The client id for the microservices.
+## @param authservice.client.secret The client secret for the microservices.
+## @skip authservice.extraEnvVarsCM
+## @skip authservice.extraVolumes
+## @skip authservice.extraVolumeMounts
+## @skip authservice.replicaCount The number of replicas.
+##
 authservice:
   enabled: true
   fullnameOverride: auth-service
@@ -48,7 +106,9 @@ authservice:
     adminUser: fda
     adminPassword: fda
   postgresql:
-    enabled: false # not needed
+    enabled: true
+    auth:
+      postgresPassword: postgres
   extraStartupArgs: "--import-realm"
   jwt:
     pubkey: "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB"
@@ -57,14 +117,7 @@ authservice:
     existingSecret: ingress-cert
     usePem: true
   metrics:
-    enabled: true
-  externalDatabase:
-    existingSecret: auth-service-secret
-    existingSecretDatabaseKey: db-name
-    existingSecretHostKey: db-host
-    existingSecretPortKey: db-port
-    existingSecretUserKey: db-username
-    existingSecretPasswordKey: db-password
+    enabled: false
   client:
     id: dbrepo-client
     secret: MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG
@@ -78,32 +131,22 @@ authservice:
       mountPath: /opt/bitnami/keycloak/data/import
   replicaCount: 1
 
-authdb:
-  enabled: true
-  fullnameOverride: auth-db
-  host: auth-db-pgpool
-  port: 5432
-  postgresql:
-    postgresPassword: postgres
-    username: metrics # implicit requirement for metrics container
-    password: metrics # implicit requirement for metrics container
-    repmgrPassword: repmgr # implicit requirement for rolling updates
-    database: keycloak
-    replicaCount: 1
-  pgpool:
-    adminUsername: admin
-    adminPassword: admin
-  metrics:
-    enabled: true
-  service:
-    type: ClusterIP
-    annotations: { }
-    loadBalancerIP: ""
-    loadBalancerSourceRanges: [ ]
-  persistence:
-    enabled: true
-    size: 10Gi
+## @section Data Database
 
+## @param datadb.enabled Enable the Data Database.
+## @skip datadb.fullnameOverride
+## @param datadb.image.debug Set the logging level to `trace`. Otherwise, set to `info`.
+## @skip datadb.extraFlags
+## @param datadb.rootUser.user The root username.
+## @param datadb.rootUser.password The root user password.
+## @skip datadb.metrics.enabled The Prometheus settings.
+## @skip datadb.galera The Galera settings.
+## @skip datadb.service
+## @skip datadb.sidecars
+## @skip datadb.extraVolumeMounts
+## @skip datadb.extraVolumes
+## @param datadb.replicaCount The number of replicas, should be uneven (2n+1).
+##
 datadb:
   enabled: true
   fullnameOverride: data-db
@@ -169,11 +212,29 @@ datadb:
       mountPath: /tmp
   extraVolumes:
     - name: s3
-      emptyDir: {}
-  s3:
-    enabled: true
-  replicaCount: 1 # uneven
+      emptyDir: { }
+  replicaCount: 3
 
+## @section Search Database
+
+## @param searchdb.enabled Enable the Search Database.
+## @skip searchdb.fullnameOverride
+## @param searchdb.host The hostname for the microservices.
+## @param searchdb.port The port for the microservices.
+## @skip searchdb.protocol
+## @param searchdb.username The admin username.
+## @param searchdb.password The admin user password.
+## @skip searchdb.clusterName
+## @skip searchdb.masterService
+## @param searchdb.replicas The number of replicas.
+## @skip searchdb.sysctlInit
+## @param searchdb.persistence.enabled Enable persistent storage. Requires PV-provisioner.
+## @skip searchdb.service
+## @skip searchdb.extraEnvs
+## @skip searchdb.extraVolumeMounts
+## @skip searchdb.extraVolumes
+## @skip searchdb.config
+##
 searchdb:
   enabled: true
   fullnameOverride: search-db
@@ -184,14 +245,11 @@ searchdb:
   password: admin
   clusterName: search-db
   masterService: search-db
-  replicas: 1
-  image:
-    debug: false
+  replicas: 3
   sysctlInit:
     enabled: true
   persistence:
     enabled: true
-    size: 10Gi
   service:
     type: ClusterIP
     annotations: { }
@@ -252,6 +310,15 @@ searchdb:
                 ".opendistro-asynchronous-search-response*",
               ]
 
+## @section Upload Service
+
+## @param uploadservice.enabled Enable the Upload Service.
+## @skip uploadservice.fullnameOverride
+## @skip uploadservice.image
+## @skip uploadservice.containerArgs
+## @skip uploadservice.envFrom
+## @param uploadservice.replicaCount The number of replicas.
+##
 uploadservice:
   enabled: true
   fullnameOverride: upload-service
@@ -265,8 +332,30 @@ uploadservice:
   envFrom:
     - secretRef:
         name: upload-service-secret
-  replicaCount: 1
+  replicaCount: 2
 
+## @section Broker Service
+
+## @param brokerservice.enabled Enable the Broker Service.
+## @skip brokerservice.fullnameOverride
+## @skip brokerservice.image
+## @param brokerservice.endpoint The management api endpoint for the microservices.
+## @param brokerservice.host The hostname for the microservices.
+## @param brokerservice.port The port for the microservices.
+## @param brokerservice.virtualHost The default virtual host name.
+## @param brokerservice.queueName The default queue name.
+## @param brokerservice.exchangeName The default exchange name.
+## @param brokerservice.routingKey The default routing key binding from the default queue to the default exchange.
+## @param brokerservice.connectionTimeout The connection timeout in ms.
+## @skip brokerservice.auth
+## @skip brokerservice.extraConfiguration
+## @skip brokerservice.loadDefinition
+## @skip brokerservice.extraVolumes
+## @skip brokerservice.extraPlugins
+## @param brokerservice.persistence.enabled Enable persistent storage. Requires PV-provisioner.
+## @skip brokerservice.service
+## @param brokerservice.replicaCount The number of replicas.
+##
 brokerservice:
   enabled: true
   fullnameOverride: broker-service
@@ -321,14 +410,20 @@ brokerservice:
   extraPlugins: rabbitmq_prometheus rabbitmq_auth_backend_oauth2 rabbitmq_auth_mechanism_ssl
   persistence:
     enabled: false
-    size: 5Gi
   service:
     type: ClusterIP
     managerPortEnabled: true
     # loadBalancerIP:
-  replicaCount: 1
+  replicaCount: 2
 
-analyseService:
+## @section Analyse Service
+
+## @param analyseservice.enabled Enable the Broker Service.
+## @skip analyseservice.image
+## @param analyseservice.s3.endpoint The S3-capable endpoint the microservice connects to.
+## @param analyseservice.replicaCount The number of replicas.
+##
+analyseservice:
   enabled: true
   image:
     name: s210.dl.hpc.tuwien.ac.at/dbrepo/analyse-service:1.4.3
@@ -336,8 +431,28 @@ analyseService:
     debug: false
   s3:
     endpoint: http://storageservice-s3:9000
-  replicaCount: 1
+  replicaCount: 2
 
+## @section Metadata Service
+
+## @param metadataservice.enabled Enable the Metadata Service.
+## @skip metadataservice.image
+## @param metadataservice.admin.email The OAI-PMH exposed admin e-mail.
+## @param metadataservice.deletedRecord The OAI-PMH exposed delete policy.
+## @param metadataservice.repositoryName The OAI-PMH exposed repository name.
+## @param metadataservice.granularity The OAI-PMH exposed record granularity.
+## @param metadataservice.datacite.enabled Enable the DataCite account for minting DOIs.
+## @param metadataservice.datacite.url The DataCite api endpoint url.
+## @param metadataservice.datacite.prefix The DataCite prefix.
+## @param metadataservice.datacite.username The DataCite api username.
+## @param metadataservice.datacite.password The DataCite api user password.
+## @param metadataservice.sparql.connectionTimeout The connection timeout for sparql queries fetching remote data in ms.
+## @param metadataservice.s3.endpoint The S3-capable endpoint the microservice connects to.
+## @skip metadataservice.s3.bucket
+## @param metadataservice.s3.auth.username The S3-capable endpoint username (or access key id).
+## @param metadataservice.s3.auth.password The S3-capable endpoint user password (or access key secret).
+## @param metadataservice.replicaCount The number of replicas.
+##
 metadataservice:
   enabled: true
   image:
@@ -365,8 +480,24 @@ metadataservice:
     auth:
       username: seaweedfsadmin
       password: seaweedfsadmin
-  replicaCount: 1
+  replicaCount: 2
 
+## @section Data Service
+
+## @param dataservice.enabled Enable the Metadata Service.
+## @param dataservice.endpoint The endpoint for the microservices.
+## @skip dataservice.image
+## @param dataservice.grant.read The default database permissions for users with read access.
+## @param dataservice.grant.write The default database permissions for users with write access.
+## @param dataservice.s3.endpoint The S3-capable endpoint the microservice connects to.
+## @skip dataservice.s3.bucket
+## @param dataservice.s3.auth.username The S3-capable endpoint username (or access key id).
+## @param dataservice.s3.auth.password The S3-capable endpoint user password (or access key secret).
+## @param dataservice.consumerConcurrentMin The minimum broker service consumer number.
+## @param dataservice.consumerConcurrentMax The maximum broker service consumer number.
+## @param dataservice.requeueRejected Enable re-queueing of rejected messages to the broker service.
+## @param dataservice.replicaCount The number of replicas.
+##
 dataservice:
   enabled: true
   endpoint: http://data-service
@@ -388,8 +519,16 @@ dataservice:
   consumerConcurrentMin: 1
   consumerConcurrentMax: 5
   requeueRejected: false
-  replicaCount: 1
+  replicaCount: 2
 
+## @section Search Service
+
+## @param searchservice.enabled Enable the Search Service.
+## @param searchservice.endpoint The endpoint for the microservices.
+## @skip searchservice.image
+## @skip searchservice.init
+## @param searchservice.replicaCount The number of replicas.
+##
 searchservice:
   enabled: true
   endpoint: http://search-service
@@ -401,8 +540,17 @@ searchservice:
     image:
       name: s210.dl.hpc.tuwien.ac.at/dbrepo/search-service-init:1.4.3
       pullPolicy: Always
-  replicaCount: 1
+  replicaCount: 2
 
+## @section Storage Service
+
+## @param storageservice.enabled Enable the Storage Service.
+## @skip storageservice.master
+## @skip storageservice.filer
+## @skip storageservice.volume
+## @skip storageservice.s3
+## @skip storageservice.init
+##
 storageservice:
   enabled: true
   master:
@@ -440,6 +588,29 @@ storageservice:
     image: s210.dl.hpc.tuwien.ac.at/dbrepo/storage-service-init:1.4.3
     pullPolicy: Always
 
+## @section User Interface
+
+## @param ui.enabled Enable the User Interface.
+## @skip ui.image
+## @param ui.public.api.client The endpoint for the client api.
+## @param ui.public.api.server The endpoint for the server api.
+## @param ui.public.title The user interface title.
+## @param ui.public.logo The user interface logo.
+## @param ui.public.icon The user interface icon.
+## @param ui.public.touch The user interface apple touch icon.
+## @param ui.public.broker.host The displayed broker hostname.
+## @param ui.public.broker.port.5671 Enable display of the broker 5671 port and mark it as secure (SSL/TLS).
+## @param ui.public.broker.port.5672 Enable display of the broker 5672 port and mark it as insecure (no SSL/TLS).
+## @param ui.public.broker.extra Extra metadata displayed.
+## @param ui.public.database.extra Extra metadata displayed.
+## @skip ui.public.links
+## @param ui.public.pid.default.publisher The default dataset publisher for persisted identifiers.
+## @param ui.public.doi.enabled Enable the display that DOIs are minted.
+## @param ui.public.doi.endpoint The DOI proxy.
+## @param ui.replicaCount The number of replicas.
+## @skip ui.extraVolumes
+## @skip ui.extraVolumeMounts
+##
 ui:
   enabled: true
   image:
@@ -459,7 +630,7 @@ ui:
       port:
         5671: true
         5672: false
-      extra: "128.130.0.0/15"
+      extra: ""
     database:
       extra: "128.130.0.0/15"
     links:
@@ -475,7 +646,7 @@ ui:
     doi:
       enabled: false
       endpoint: https://doi.org
-  replicaCount: 1
+  replicaCount: 2
   extraVolumes: [ ]
   #  - name: images-map
   #    configMap:
@@ -485,36 +656,43 @@ ui:
   #    mountPath: /static/logo.svg
   #    subPath: logo.svg
 
+## @section Ingress
+
+## @param ingress.enabled Enable the ingress.
+## @skip ingress.className
+## @skip ingress.tls
+## @skip ingress.annotations
+##
 ingress:
-  enabled: true
+  enabled: false
   className: nginx
   tls:
     enabled: true
     secretName: ingress-cert
   annotations:
-    basic: {}
-#      nginx.org/path-regex: "case_sensitive"
-#      nginx.ingress.kubernetes.io/use-regex: "true"
-#      cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
+    basic: { }
+    #      nginx.org/path-regex: "case_sensitive"
+    #      nginx.ingress.kubernetes.io/use-regex: "true"
+    #      cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
     rewriteApi:
-#      nginx.org/path-regex: "case_sensitive"
-#      cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
+      #      nginx.org/path-regex: "case_sensitive"
+      #      cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
       nginx.ingress.kubernetes.io/use-regex: "true"
       nginx.ingress.kubernetes.io/rewrite-target: /api/$1
     rewriteRoot:
-#      nginx.org/path-regex: "case_sensitive"
-#      cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
+      #      nginx.org/path-regex: "case_sensitive"
+      #      cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
       nginx.ingress.kubernetes.io/use-regex: "true"
       nginx.ingress.kubernetes.io/rewrite-target: /$1
     rewriteRootSecure:
-#      nginx.org/path-regex: "case_sensitive"
-#      cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
+      #      nginx.org/path-regex: "case_sensitive"
+      #      cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
       nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
       nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
       nginx.ingress.kubernetes.io/use-regex: "true"
       nginx.ingress.kubernetes.io/rewrite-target: /$1
     rewritePid:
-#      nginx.org/path-regex: "case_sensitive"
-#      cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
+      #      nginx.org/path-regex: "case_sensitive"
+      #      cert-manager.io/cluster-issuer: letsencrypt-cluster-issuer
       nginx.ingress.kubernetes.io/use-regex: "true"
       nginx.ingress.kubernetes.io/rewrite-target: /api/identifier/$1
