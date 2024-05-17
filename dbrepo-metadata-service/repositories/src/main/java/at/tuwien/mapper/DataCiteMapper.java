@@ -10,6 +10,7 @@ import org.mapstruct.MappingTarget;
 import org.mapstruct.Mappings;
 import org.springframework.context.annotation.Profile;
 
+import java.util.LinkedList;
 import java.util.List;
 
 @Profile("doi")
@@ -32,13 +33,14 @@ public interface DataCiteMapper {
     })
     DataCiteCreateDoi identifierToDataCiteCreateDoi(Identifier identifier);
 
-    default DataCiteCreateDoi identifierToDataCiteCreateDoi(Identifier identifier, String url, String prefix) {
+    default DataCiteCreateDoi identifierToDataCiteCreateDoi(Identifier identifier, String url, String prefix,
+                                                            DataCiteDoiEvent event) {
         return addParametersToCreateDoi(
                 identifierToDataCiteCreateDoi(identifier),
                 url,
                 prefix,
                 DataCiteDoiTypes.DATASET,
-                DataCiteDoiEvent.PUBLISH
+                event
         );
     }
 
@@ -57,6 +59,9 @@ public interface DataCiteMapper {
     }
 
     default List<DataCiteDoiTitle> identifierToDataCiteDoiTitleList(Identifier data) {
+        if (data.getTitles() == null) {
+            return new LinkedList<>();
+        }
         return data.getTitles()
                 .stream()
                 .map(this::identifierTitleToDataCiteDoiTitle)

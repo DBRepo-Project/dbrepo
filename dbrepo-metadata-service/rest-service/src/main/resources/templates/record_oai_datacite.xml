@@ -6,11 +6,13 @@
         </header>
         <metadata>
             <oai_datacite xmlns="http://schema.datacite.org/oai/oai-1.1/"
+                          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                           xsi:schemaLocation="http://schema.datacite.org/oai/oai-1.1/ http://schema.datacite.org/oai/oai-1.1/oai.xsd">
                 <schemaVersion>4</schemaVersion>
                 <payload>
-                    <resource xmlns="http://datacite.org/schema/kernel-4"
-                              xsi:schemaLocation="http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4.4/metadata.xsd">
+                    <resource xmlns="http://datacite.org/schema/kernel-4/"
+                              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                              xsi:schemaLocation="http://datacite.org/schema/kernel-4/ http://schema.datacite.org/meta/kernel-4.4/metadata.xsd">
                         <identifier th:attr="identifierType=${identifierType}">[[${pid}]]</identifier>
                         <creators th:if="${not #lists.isEmpty(identifier.creators)}">
                             <creator th:each="creator: ${identifier.creators}">
@@ -49,7 +51,7 @@
                         </descriptions>
                         <fundingReferences>
                             <fundingReference th:each="funder: ${identifier.funders}">
-                                <funderName>[[${funder.funderName}</funderName>
+                                <funderName>[[${funder.funderName}]]</funderName>
                                 <funderIdentifier th:if="${funder.funderIdentifier != null}" th:attr="funderIdentifierType=${funder.funderIdentifierType}">[[${funder.funderIdentifier}]]</funderIdentifier>
                                 <awardNumber th:if="${funder.awardNumber != null}">[[${funder.awardNumber}]]</awardNumber>
                                 <awardTitle th:if="${funder.awardTitle}">[[${funder.awardTitle}]]</awardTitle>

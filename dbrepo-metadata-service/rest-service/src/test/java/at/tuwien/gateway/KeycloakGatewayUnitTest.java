@@ -1,10 +1,6 @@
 package at.tuwien.gateway;
 
-import at.tuwien.BaseUnitTest;
-import at.tuwien.annotations.MockAmqp;
-import at.tuwien.annotations.MockOpensearch;
-import at.tuwien.api.amqp.ExchangeDto;
-import at.tuwien.api.amqp.QueueDto;
+import at.tuwien.test.AbstractUnitTest;
 import at.tuwien.api.keycloak.TokenDto;
 import at.tuwien.api.keycloak.UserDto;
 import at.tuwien.exception.*;
@@ -31,9 +27,7 @@ import static org.mockito.Mockito.*;
 @Log4j2
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
-@MockAmqp
-@MockOpensearch
-public class KeycloakGatewayUnitTest extends BaseUnitTest {
+public class KeycloakGatewayUnitTest extends AbstractUnitTest {
 
     @MockBean
     @Qualifier("keycloakRestTemplate")
@@ -43,7 +37,7 @@ public class KeycloakGatewayUnitTest extends BaseUnitTest {
     private KeycloakGatewayImpl keycloakGateway;
 
     @Test
-    public void obtainToken_succeeds() throws KeycloakRemoteException, AccessDeniedException {
+    public void obtainToken_succeeds() throws ServiceException, ServiceConnectionException {
 
         /* mock */
         when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(TokenDto.class)))
@@ -63,7 +57,7 @@ public class KeycloakGatewayUnitTest extends BaseUnitTest {
                 .exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(TokenDto.class));
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
+        assertThrows(ServiceConnectionException.class, () -> {
             keycloakGateway.obtainToken();
         });
     }
@@ -77,14 +71,13 @@ public class KeycloakGatewayUnitTest extends BaseUnitTest {
                 .exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(TokenDto.class));
 
         /* test */
-        assertThrows(KeycloakRemoteException.class, () -> {
+        assertThrows(ServiceConnectionException.class, () -> {
             keycloakGateway.obtainToken();
         });
     }
 
     @Test
-    public void createUser_succeeds() throws KeycloakRemoteException, AccessDeniedException,
-            UserEmailAlreadyExistsException, UserAlreadyExistsException {
+    public void createUser_succeeds() throws UserExistsException, ServiceException, ServiceConnectionException, EmailExistsException {
 
         /* mock */
         when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(TokenDto.class)))
@@ -110,7 +103,7 @@ public class KeycloakGatewayUnitTest extends BaseUnitTest {
                         .build());
 
         /* test */
-        assertThrows(KeycloakRemoteException.class, () -> {
+        assertThrows(ServiceException.class, () -> {
             keycloakGateway.createUser(USER_1_KEYCLOAK_SIGNUP_REQUEST);
         });
     }
@@ -127,7 +120,7 @@ public class KeycloakGatewayUnitTest extends BaseUnitTest {
                 .exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(Void.class));
 
         /* test */
-        assertThrows(UserEmailAlreadyExistsException.class, () -> {
+        assertThrows(EmailExistsException.class, () -> {
             keycloakGateway.createUser(USER_1_KEYCLOAK_SIGNUP_REQUEST);
         });
     }
@@ -144,7 +137,7 @@ public class KeycloakGatewayUnitTest extends BaseUnitTest {
                 .exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(Void.class));
 
         /* test */
-        assertThrows(UserAlreadyExistsException.class, () -> {
+        assertThrows(UserExistsException.class, () -> {
             keycloakGateway.createUser(USER_1_KEYCLOAK_SIGNUP_REQUEST);
         });
     }
@@ -161,7 +154,7 @@ public class KeycloakGatewayUnitTest extends BaseUnitTest {
                 .exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(Void.class));
 
         /* test */
-        assertThrows(KeycloakRemoteException.class, () -> {
+        assertThrows(ServiceConnectionException.class, () -> {
             keycloakGateway.createUser(USER_1_KEYCLOAK_SIGNUP_REQUEST);
         });
     }
@@ -178,7 +171,7 @@ public class KeycloakGatewayUnitTest extends BaseUnitTest {
                 .exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(Void.class));
 
         /* test */
-        assertThrows(KeycloakRemoteException.class, () -> {
+        assertThrows(ServiceConnectionException.class, () -> {
             keycloakGateway.createUser(USER_1_KEYCLOAK_SIGNUP_REQUEST);
         });
     }
@@ -195,13 +188,13 @@ public class KeycloakGatewayUnitTest extends BaseUnitTest {
                         .build());
 
         /* test */
-        assertThrows(KeycloakRemoteException.class, () -> {
+        assertThrows(ServiceException.class, () -> {
             keycloakGateway.deleteUser(USER_1_ID);
         });
     }
 
     @Test
-    public void deleteUser_succeeds() throws UserNotFoundException, KeycloakRemoteException, AccessDeniedException {
+    public void deleteUser_succeeds() throws ServiceException, ServiceConnectionException, UserNotFoundException {
 
         /* mock */
         when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(TokenDto.class)))
@@ -227,7 +220,7 @@ public class KeycloakGatewayUnitTest extends BaseUnitTest {
                 .exchange(anyString(), eq(HttpMethod.DELETE), any(HttpEntity.class), eq(Void.class));
 
         /* test */
-        assertThrows(KeycloakRemoteException.class, () -> {
+        assertThrows(ServiceConnectionException.class, () -> {
             keycloakGateway.deleteUser(USER_1_ID);
         });
     }
@@ -261,13 +254,13 @@ public class KeycloakGatewayUnitTest extends BaseUnitTest {
                 .exchange(anyString(), eq(HttpMethod.DELETE), any(HttpEntity.class), eq(Void.class));
 
         /* test */
-        assertThrows(KeycloakRemoteException.class, () -> {
+        assertThrows(ServiceException.class, () -> {
             keycloakGateway.deleteUser(USER_1_ID);
         });
     }
 
     @Test
-    public void updateUserCredentials_succeeds() throws KeycloakRemoteException, AccessDeniedException {
+    public void updateUserCredentials_succeeds() throws ServiceException, ServiceConnectionException {
 
         /* mock */
         when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(TokenDto.class)))
@@ -293,7 +286,7 @@ public class KeycloakGatewayUnitTest extends BaseUnitTest {
                         .build());
 
         /* test */
-        assertThrows(KeycloakRemoteException.class, () -> {
+        assertThrows(ServiceException.class, () -> {
             keycloakGateway.updateUserCredentials(USER_1_ID, USER_1_PASSWORD_DTO);
         });
     }
@@ -310,7 +303,7 @@ public class KeycloakGatewayUnitTest extends BaseUnitTest {
                 .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class));
 
         /* test */
-        assertThrows(KeycloakRemoteException.class, () -> {
+        assertThrows(ServiceConnectionException.class, () -> {
             keycloakGateway.updateUserCredentials(USER_1_ID, USER_1_PASSWORD_DTO);
         });
     }
@@ -327,7 +320,7 @@ public class KeycloakGatewayUnitTest extends BaseUnitTest {
                 .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class));
 
         /* test */
-        assertThrows(KeycloakRemoteException.class, () -> {
+        assertThrows(ServiceException.class, () -> {
             keycloakGateway.updateUserCredentials(USER_1_ID, USER_1_PASSWORD_DTO);
         });
     }
@@ -361,7 +354,7 @@ public class KeycloakGatewayUnitTest extends BaseUnitTest {
                 .exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserDto[].class));
 
         /* test */
-        assertThrows(KeycloakRemoteException.class, () -> {
+        assertThrows(ServiceConnectionException.class, () -> {
             keycloakGateway.findByUsername(USER_1_USERNAME);
         });
     }
@@ -378,7 +371,7 @@ public class KeycloakGatewayUnitTest extends BaseUnitTest {
                 .exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(UserDto[].class));
 
         /* test */
-        assertThrows(KeycloakRemoteException.class, () -> {
+        assertThrows(ServiceException.class, () -> {
             keycloakGateway.findByUsername(USER_1_USERNAME);
         });
     }

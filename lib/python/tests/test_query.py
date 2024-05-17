@@ -21,7 +21,7 @@ class QueryTest(unittest.TestCase):
                          headers=[{'id': 0, 'username': 1}],
                          id=None)
             # mock
-            mock.post('/api/database/1/query', json=exp.model_dump(), status_code=202)
+            mock.post('/api/database/1/subset', json=exp.model_dump(), status_code=202)
             # test
             client = RestClient(username="a", password="b")
             response = client.execute_query(database_id=1, page=0, size=10,
@@ -31,7 +31,7 @@ class QueryTest(unittest.TestCase):
     def test_execute_query_malformed_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post('/api/database/1/query', status_code=400)
+            mock.post('/api/database/1/subset', status_code=400)
             # test
             try:
                 client = RestClient(username="a", password="b")
@@ -43,7 +43,7 @@ class QueryTest(unittest.TestCase):
     def test_execute_query_not_allowed_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post('/api/database/1/query', status_code=403)
+            mock.post('/api/database/1/subset', status_code=403)
             # test
             try:
                 client = RestClient(username="a", password="b")
@@ -55,7 +55,7 @@ class QueryTest(unittest.TestCase):
     def test_execute_query_not_found_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post('/api/database/1/query', status_code=404)
+            mock.post('/api/database/1/subset', status_code=404)
             # test
             try:
                 client = RestClient(username="a", password="b")
@@ -67,7 +67,7 @@ class QueryTest(unittest.TestCase):
     def test_execute_query_not_valid_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post('/api/database/1/query', status_code=409)
+            mock.post('/api/database/1/subset', status_code=409)
             # test
             try:
                 client = RestClient(username="a", password="b")
@@ -79,7 +79,7 @@ class QueryTest(unittest.TestCase):
     def test_execute_query_not_expected_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post('/api/database/1/query', status_code=417)
+            mock.post('/api/database/1/subset', status_code=417)
             # test
             try:
                 client = RestClient(username="a", password="b")
@@ -91,7 +91,7 @@ class QueryTest(unittest.TestCase):
     def test_execute_query_not_auth_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.post('/api/database/1/query', status_code=417)
+            mock.post('/api/database/1/subset', status_code=417)
             # test
             try:
                 response = RestClient().execute_query(database_id=1,
@@ -117,7 +117,7 @@ class QueryTest(unittest.TestCase):
                         result_number=None,
                         identifiers=[])
             # mock
-            mock.get('/api/database/1/query/6', json=exp.model_dump())
+            mock.get('/api/database/1/subset/6', json=exp.model_dump())
             # test
             response = RestClient().get_query(database_id=1, query_id=6)
             self.assertEqual(exp, response)
@@ -125,7 +125,7 @@ class QueryTest(unittest.TestCase):
     def test_find_query_not_allowed_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/database/1/query/6', status_code=403)
+            mock.get('/api/database/1/subset/6', status_code=403)
             # test
             try:
                 response = RestClient().get_query(database_id=1, query_id=6)
@@ -135,7 +135,7 @@ class QueryTest(unittest.TestCase):
     def test_find_query_not_found_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/database/1/query/6', status_code=404)
+            mock.get('/api/database/1/subset/6', status_code=404)
             # test
             try:
                 response = RestClient().get_query(database_id=1, query_id=6)
@@ -145,7 +145,7 @@ class QueryTest(unittest.TestCase):
     def test_find_query_not_valid_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/database/1/query/6', status_code=501)
+            mock.get('/api/database/1/subset/6', status_code=501)
             # test
             try:
                 response = RestClient().get_query(database_id=1, query_id=6)
@@ -155,7 +155,7 @@ class QueryTest(unittest.TestCase):
     def test_find_query_not_expected_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/database/1/query/6', status_code=417)
+            mock.get('/api/database/1/subset/6', status_code=417)
             # test
             try:
                 response = RestClient().get_query(database_id=1, query_id=6)
@@ -166,7 +166,7 @@ class QueryTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             exp = []
             # mock
-            mock.get('/api/database/1/query', json=[])
+            mock.get('/api/database/1/subset', json=[])
             # test
             response = RestClient().get_queries(database_id=1)
             self.assertEqual(exp, response)
@@ -189,7 +189,7 @@ class QueryTest(unittest.TestCase):
                          result_number=None,
                          identifiers=[])]
             # mock
-            mock.get('/api/database/1/query', json=[exp[0].model_dump()])
+            mock.get('/api/database/1/subset', json=[exp[0].model_dump()])
             # test
             response = RestClient().get_queries(database_id=1)
             self.assertEqual(exp, response)
@@ -197,7 +197,7 @@ class QueryTest(unittest.TestCase):
     def test_get_queries_not_allowed_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/database/1/query', status_code=403)
+            mock.get('/api/database/1/subset', status_code=403)
             # test
             try:
                 response = RestClient().get_queries(database_id=1)
@@ -207,7 +207,7 @@ class QueryTest(unittest.TestCase):
     def test_get_queries_not_found_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/database/1/query', status_code=404)
+            mock.get('/api/database/1/subset', status_code=404)
             # test
             try:
                 response = RestClient().get_queries(database_id=1)
@@ -217,7 +217,7 @@ class QueryTest(unittest.TestCase):
     def test_get_queries_not_valid_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/database/1/query', status_code=501)
+            mock.get('/api/database/1/subset', status_code=501)
             # test
             try:
                 response = RestClient().get_queries(database_id=1)
@@ -227,7 +227,7 @@ class QueryTest(unittest.TestCase):
     def test_get_queries_malformed_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/database/1/query', status_code=423)
+            mock.get('/api/database/1/subset', status_code=423)
             # test
             try:
                 response = RestClient().get_queries(database_id=1)
@@ -240,7 +240,7 @@ class QueryTest(unittest.TestCase):
                          headers=[{'id': 0, 'username': 1}],
                          id=6)
             # mock
-            mock.get('/api/database/1/query/6/data', json=exp.model_dump())
+            mock.get('/api/database/1/subset/6/data', json=exp.model_dump())
             # test
             response = RestClient().get_query_data(database_id=1, query_id=6)
             self.assertEqual(exp, response)
@@ -252,7 +252,7 @@ class QueryTest(unittest.TestCase):
                          id=6)
             exp = DataFrame.from_records(res.model_dump()['result'])
             # mock
-            mock.get('/api/database/1/query/6/data', json=res.model_dump())
+            mock.get('/api/database/1/subset/6/data', json=res.model_dump())
             # test
             response = RestClient().get_query_data(database_id=1, query_id=6, df=True)
             self.assertEqual(exp.shape, response.shape)
@@ -261,7 +261,7 @@ class QueryTest(unittest.TestCase):
     def test_get_query_data_not_allowed_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/database/1/query/6/data', status_code=403)
+            mock.get('/api/database/1/subset/6/data', status_code=403)
             # test
             try:
                 response = RestClient().get_query_data(database_id=1, query_id=6)
@@ -271,7 +271,7 @@ class QueryTest(unittest.TestCase):
     def test_get_query_data_not_found_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/database/1/query/6/data', status_code=404)
+            mock.get('/api/database/1/subset/6/data', status_code=404)
             # test
             try:
                 response = RestClient().get_query_data(database_id=1, query_id=6)
@@ -281,7 +281,7 @@ class QueryTest(unittest.TestCase):
     def test_get_query_data_not_valid_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/database/1/query/6/data', status_code=409)
+            mock.get('/api/database/1/subset/6/data', status_code=409)
             # test
             try:
                 response = RestClient().get_query_data(database_id=1, query_id=6)
@@ -291,7 +291,7 @@ class QueryTest(unittest.TestCase):
     def test_get_query_data_not_consistent_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.get('/api/database/1/query/6/data', status_code=417)
+            mock.get('/api/database/1/subset/6/data', status_code=417)
             # test
             try:
                 response = RestClient().get_query_data(database_id=1, query_id=6)
@@ -302,7 +302,7 @@ class QueryTest(unittest.TestCase):
         with requests_mock.Mocker() as mock:
             exp = 2
             # mock
-            mock.head('/api/database/1/query/6/data', headers={'X-Count': str(exp)})
+            mock.head('/api/database/1/subset/6/data', headers={'X-Count': str(exp)})
             # test
             response = RestClient().get_query_data_count(database_id=1, query_id=6)
             self.assertEqual(exp, response)
@@ -310,7 +310,7 @@ class QueryTest(unittest.TestCase):
     def test_get_query_data_count_not_allowed_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.head('/api/database/1/query/6/data', status_code=403)
+            mock.head('/api/database/1/subset/6/data', status_code=403)
             # test
             try:
                 response = RestClient().get_query_data_count(database_id=1, query_id=6)
@@ -320,7 +320,7 @@ class QueryTest(unittest.TestCase):
     def test_get_query_data_count_not_found_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.head('/api/database/1/query/6/data', status_code=404)
+            mock.head('/api/database/1/subset/6/data', status_code=404)
             # test
             try:
                 response = RestClient().get_query_data_count(database_id=1, query_id=6)
@@ -330,7 +330,7 @@ class QueryTest(unittest.TestCase):
     def test_get_query_data_count_not_valid_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.head('/api/database/1/query/6/data', status_code=409)
+            mock.head('/api/database/1/subset/6/data', status_code=409)
             # test
             try:
                 response = RestClient().get_query_data_count(database_id=1, query_id=6)
@@ -340,7 +340,7 @@ class QueryTest(unittest.TestCase):
     def test_get_query_data_count_not_consistent_fails(self):
         with requests_mock.Mocker() as mock:
             # mock
-            mock.head('/api/database/1/query/6/data', status_code=417)
+            mock.head('/api/database/1/subset/6/data', status_code=417)
             # test
             try:
                 response = RestClient().get_query_data_count(database_id=1, query_id=6)

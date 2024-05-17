@@ -3,21 +3,22 @@ import boto3
 import logging
 import sys
 
+from flask import current_app
 from botocore.exceptions import ClientError
 
 
 class S3Client:
 
     def __init__(self):
-        endpoint_url = os.getenv('S3_STORAGE_ENDPOINT', 'http://localhost:9000')
-        aws_access_key_id = os.getenv('S3_ACCESS_KEY_ID', 'seaweedfsadmin')
-        aws_secret_access_key = os.getenv('S3_SECRET_ACCESS_KEY', 'seaweedfsadmin')
+        endpoint_url = current_app.config['S3_ENDPOINT']
+        aws_access_key_id = current_app.config['S3_ACCESS_KEY_ID']
+        aws_secret_access_key = current_app.config['S3_SECRET_ACCESS_KEY']
         logging.info(
             f"retrieve file from S3, endpoint_url={endpoint_url}, aws_access_key_id={aws_access_key_id}, aws_secret_access_key=(hidden)")
         self.client = boto3.client(service_name='s3', endpoint_url=endpoint_url, aws_access_key_id=aws_access_key_id,
                                    aws_secret_access_key=aws_secret_access_key)
-        self.bucket_exists_or_exit("dbrepo-upload")
-        self.bucket_exists_or_exit("dbrepo-download")
+        self.bucket_exists_or_exit(current_app.config['S3_IMPORT_BUCKET'])
+        self.bucket_exists_or_exit(current_app.config['S3_EXPORT_BUCKET'])
 
     def upload_file(self, filename) -> bool:
         """
@@ -28,7 +29,7 @@ class S3Client:
         """
         filepath = os.path.join("/tmp/", filename)
         try:
-            self.client.upload_file(filepath, "dbrepo-download", filename)
+            self.client.upload_file(filepath, current_app.config['S3_EXPORT_BUCKET'], filename)
             logging.info(f"Uploaded .csv {filepath} with key {filename} into bucket dbrepo-download")
             return True
         except ClientError as e:
@@ -42,11 +43,12 @@ class S3Client:
         :param filename: The filename.
         :return: True if the file was downloaded and saved.
         """
-        self.file_exists("dbrepo-upload", filename)
+        self.file_exists(current_app.config['S3_IMPORT_BUCKET'], filename)
         filepath = os.path.join("/tmp/", filename)
+        bucket = current_app.config['S3_IMPORT_BUCKET']
         try:
-            self.client.download_file("dbrepo-upload", filename, filepath)
-            logging.info(f"Downloaded .csv with key {filename} into {filepath} from bucket dbrepo-upload")
+            self.client.download_file(bucket, filename, filepath)
+            logging.info(f"Downloaded .csv with key {filename} into {filepath} from bucket {bucket}")
             return True
         except ClientError as e:
             logging.error(e)

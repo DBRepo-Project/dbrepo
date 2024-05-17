@@ -4,14 +4,22 @@ import at.tuwien.api.amqp.QueueDto;
 import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.TableCreateDto;
 import at.tuwien.api.database.table.TableDto;
+import at.tuwien.api.database.table.TableStatisticDto;
+import at.tuwien.api.database.table.columns.ColumnCreateDto;
+import at.tuwien.api.database.table.columns.ColumnDto;
+import at.tuwien.api.database.table.columns.ColumnTypeDto;
+import at.tuwien.api.database.table.columns.concepts.ColumnSemanticsUpdateDto;
 import at.tuwien.api.error.ApiErrorDto;
+import at.tuwien.api.semantics.EntityDto;
+import at.tuwien.api.semantics.TableColumnEntityDto;
 import at.tuwien.config.RabbitConfig;
+import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.table.Table;
+import at.tuwien.entities.database.table.columns.TableColumn;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.TableMapper;
-import at.tuwien.service.MessageQueueService;
-import at.tuwien.service.TableService;
-import at.tuwien.utils.PrincipalUtil;
+import at.tuwien.service.*;
 import at.tuwien.utils.UserUtil;
 import at.tuwien.validation.EndpointValidator;
 import io.micrometer.observation.annotation.Observed;
@@ -26,45 +34,50 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Log4j2
 @CrossOrigin(origins = "*")
 @RestController
-@RequestMapping(path = "/api/database/{databaseId}/table",
-        consumes = MediaType.ALL_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(path = "/api/database/{databaseId}/table")
 public class TableEndpoint {
 
     private final TableMapper tableMapper;
+    private final UserService userService;
     private final TableService tableService;
     private final RabbitConfig rabbitMqConfig;
+    private final EntityService entityService;
+    private final BrokerService messageQueueService;
+    private final DatabaseService databaseService;
     private final EndpointValidator endpointValidator;
-    private final MessageQueueService messageQueueService;
 
     @Autowired
-    public TableEndpoint(TableMapper tableMapper, TableService tableService, RabbitConfig rabbitMqConfig,
-                         EndpointValidator endpointValidator, MessageQueueService messageQueueService) {
+    public TableEndpoint(TableMapper tableMapper, UserService userService, TableService tableService,
+                         RabbitConfig rabbitMqConfig, EntityService entityService, BrokerService messageQueueService,
+                         DatabaseService databaseService, EndpointValidator endpointValidator) {
         this.tableMapper = tableMapper;
+        this.userService = userService;
         this.tableService = tableService;
         this.rabbitMqConfig = rabbitMqConfig;
-        this.endpointValidator = endpointValidator;
+        this.entityService = entityService;
         this.messageQueueService = messageQueueService;
+        this.databaseService = databaseService;
+        this.endpointValidator = endpointValidator;
     }
 
     @GetMapping
     @Transactional(readOnly = true)
-    @Observed(name = "dbr_tables_findall")
+    @Observed(name = "dbrepo_metadata_tables_findall")
     @Operation(summary = "List all tables", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -84,34 +97,175 @@ public class TableEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<List<TableBriefDto>> list(@NotNull @PathVariable("databaseId") Long databaseId,
-                                                    Principal principal,
-                                                    @RequestParam(required = false) String internalName)
-            throws DatabaseNotFoundException, NotAllowedException, AccessDeniedException {
-        log.debug("endpoint list tables, databaseId={}, internalName={} {}", databaseId, internalName,
-                PrincipalUtil.formatForDebug(principal));
-        endpointValidator.validateOnlyPrivateAccess(databaseId, principal);
-        endpointValidator.validateOnlyPrivateHasRole(databaseId, principal, "list-tables");
-        List<TableBriefDto> dto = new LinkedList<>();
-        if (internalName != null) {
-            try {
-                dto = List.of(tableMapper.tableToTableBriefDto(tableService.find(databaseId, internalName)));
-            } catch (TableNotFoundException e) {
-                /* ignore */
-            }
-        } else {
-            dto = tableService.findAll(databaseId)
-                    .stream()
-                    .map(tableMapper::tableToTableBriefDto)
-                    .collect(Collectors.toList());
-        }
+                                                    Principal principal) throws NotAllowedException,
+            DatabaseNotFoundException, UserNotFoundException, AccessNotFoundException {
+        log.debug("endpoint list tables, databaseId={}", databaseId);
+        final Database database = databaseService.findById(databaseId);
+        endpointValidator.validateOnlyPrivateAccess(database, principal);
+        endpointValidator.validateOnlyPrivateHasRole(database, principal, "list-tables");
+        final List<TableBriefDto> dto = database.getTables()
+                .stream()
+                .map(tableMapper::tableToTableBriefDto)
+                .collect(Collectors.toList());
         log.trace("list tables resulted in tables {}", dto);
         return ResponseEntity.ok(dto);
     }
 
-    @PostMapping
+    @GetMapping("/{tableId}/suggest")
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasAuthority('table-semantic-analyse')")
+    @Observed(name = "dbrepo_metadata_semantic_table_analyse")
+    @Operation(summary = "Suggest table semantics", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Suggested table semantics successfully",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            array = @ArraySchema(schema = @Schema(implementation = TableColumnEntityDto.class)))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Could not find the table",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "417",
+                    description = "Generated query is malformed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "422",
+                    description = "Ontology does not have rdf or sparql endpoint",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
+    public ResponseEntity<List<EntityDto>> analyseTable(@NotNull @PathVariable("databaseId") Long databaseId,
+                                                        @NotNull @PathVariable("tableId") Long tableId)
+            throws MalformedException, TableNotFoundException, DatabaseNotFoundException {
+        log.debug("endpoint analyse table semantics, databaseId={}, tableId={}", databaseId, tableId);
+        final Table table = tableService.findById(databaseId, tableId);
+        final List<EntityDto> dtos = entityService.suggestByTable(table);
+        log.trace("analyse table semantics resulted in dtos {}", dtos);
+        return ResponseEntity.ok()
+                .body(dtos);
+    }
+
+    @PutMapping("/{tableId}")
     @Transactional
+    @PreAuthorize("hasAuthority('admin')")
+    @Observed(name = "dbrepo_metadata_statistic_table_update")
+    @Operation(summary = "Update table statistics", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202",
+                    description = "Updated table statistics successfully"),
+    })
+    public ResponseEntity<Void> updateStatistic(@NotNull @PathVariable("databaseId") Long databaseId,
+                                                @NotNull @PathVariable("tableId") Long tableId,
+                                                @NotNull @Valid @RequestBody TableStatisticDto data)
+            throws MalformedException, TableNotFoundException, DatabaseNotFoundException, SearchServiceException,
+            SearchServiceConnectionException {
+        log.debug("endpoint update table statistics, databaseId={}, tableId={}, data.columns.size={}", databaseId,
+                tableId, data.getColumns().size());
+        final Table table = tableService.findById(databaseId, tableId);
+        tableService.updateStatistics(table, data);
+        return ResponseEntity.accepted()
+                .build();
+    }
+
+    @PutMapping("/{tableId}/column/{columnId}")
+    @Transactional
+    @PreAuthorize("hasAuthority('modify-table-column-semantics') or hasAuthority('modify-foreign-table-column-semantics')")
+    @Observed(name = "dbrepo_metadata_semantics_column_save")
+    @Operation(summary = "Update a table column semantic mapping", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202",
+                    description = "Updated column semantics successfully",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ColumnDto.class))}),
+            @ApiResponse(responseCode = "400",
+                    description = "Update semantic concept query is malformed or update unit of measurement query is malformed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "403",
+                    description = "Access to the database is forbidden",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Table or database could not be found",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
+    public ResponseEntity<ColumnDto> update(@NotNull @PathVariable("databaseId") Long databaseId,
+                                            @NotNull @PathVariable("tableId") Long tableId,
+                                            @NotNull @PathVariable("columnId") Long columnId,
+                                            @NotNull @Valid @RequestBody ColumnSemanticsUpdateDto updateDto,
+                                            @NotNull Principal principal) throws NotAllowedException,
+            MalformedException, ServiceException, ServiceConnectionException, UserNotFoundException,
+            TableNotFoundException, DatabaseNotFoundException, AccessNotFoundException, SearchServiceException,
+            SearchServiceConnectionException, OntologyNotFoundException, SemanticEntityNotFoundException {
+        log.debug("endpoint update table, databaseId={}, tableId={}, columnId={}", databaseId, tableId, columnId);
+        final User user = userService.findByUsername(principal.getName());
+        final Table table = tableService.findById(databaseId, tableId);
+        if (!UserUtil.hasRole(principal, "modify-foreign-table-column-semantics")) {
+            endpointValidator.validateOnlyAccess(table.getDatabase(), principal, true);
+            endpointValidator.validateOnlyOwnerOrWriteAll(table, user);
+        }
+        TableColumn column = tableService.findColumnById(table, columnId);
+        column = tableService.update(column, updateDto);
+        log.info("Updated table semantics of table with id {}", tableId);
+        final ColumnDto columnDto = tableMapper.tableColumnToColumnDto(column);
+        log.trace("find table data resulted in column {}", columnDto);
+        return ResponseEntity.accepted()
+                .body(columnDto);
+    }
+
+    @GetMapping("/{tableId}/column/{columnId}/suggest")
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasAuthority('table-semantic-analyse')")
+    @Observed(name = "dbrepo_metadata_semantic_column_analyse")
+    @Operation(summary = "Suggest table column semantics", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Suggested table column semantics successfully",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            array = @ArraySchema(schema = @Schema(implementation = TableColumnEntityDto.class)))}),
+            @ApiResponse(responseCode = "404",
+                    description = "Could not find the table column",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "417",
+                    description = "Generated query is malformed",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "422",
+                    description = "Ontology does not have rdf or sparql endpoint",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+    })
+    public ResponseEntity<List<TableColumnEntityDto>> analyseTableColumn(@NotNull @PathVariable("databaseId") Long databaseId,
+                                                                         @NotNull @PathVariable("tableId") Long tableId,
+                                                                         @NotNull @PathVariable("columnId") Long columnId)
+            throws MalformedException, TableNotFoundException, DatabaseNotFoundException {
+        log.debug("endpoint analyse table column semantics, databaseId={}, tableId={}, columnId={}", databaseId, tableId, columnId);
+        final Table table = tableService.findById(databaseId, tableId);
+        TableColumn column = tableService.findColumnById(table, columnId);
+        final List<TableColumnEntityDto> dtos = entityService.suggestByColumn(column);
+        log.trace("analyse table semantics resulted in dtos {}", dtos);
+        return ResponseEntity.ok()
+                .body(dtos);
+    }
+
+    @PostMapping
+    @Transactional(rollbackFor = {ServiceConnectionException.class, DatabaseNotFoundException.class, ServiceException.class})
     @PreAuthorize("hasAuthority('create-table')")
-    @Observed(name = "dbr_table_create")
+    @Observed(name = "dbrepo_metadata_table_create")
     @Operation(summary = "Create a table", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",
@@ -141,30 +295,34 @@ public class TableEndpoint {
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
     public ResponseEntity<TableDto> create(@NotNull @PathVariable("databaseId") Long databaseId,
-                                           @NotNull @Valid @RequestBody TableCreateDto createDto,
-                                           @NotNull Principal principal)
-            throws ImageNotSupportedException, DatabaseNotFoundException, TableMalformedException,
-            TableNameExistsException, QueryMalformedException, NotAllowedException, AccessDeniedException,
-            TableNotFoundException, UserNotFoundException {
-        log.debug("endpoint create table, databaseId={}, createDto={}, {}", databaseId, createDto, PrincipalUtil.formatForDebug(principal));
-        /* checks */
-        if (createDto.getName().isBlank()) {
-            log.error("Failed create table: table name is blank");
-            throw new TableMalformedException("Failed create table: table name is blank");
+                                           @NotNull @Valid @RequestBody TableCreateDto data,
+                                           @NotNull Principal principal) throws NotAllowedException, MalformedException,
+            ServiceException, ServiceConnectionException, DatabaseNotFoundException, UserNotFoundException,
+            AccessNotFoundException, TableNotFoundException, TableExistsException, SearchServiceException,
+            SearchServiceConnectionException {
+        log.debug("endpoint create table, databaseId={}, data.name={}", databaseId, data.getName());
+        final Database database = databaseService.findById(databaseId);
+        endpointValidator.validateOnlyAccess(database, principal, true);
+        endpointValidator.validateColumnCreateConstraints(data);
+        final List<ColumnCreateDto> failedDateColumns = data.getColumns()
+                .stream()
+                .filter(column -> List.of(ColumnTypeDto.DATE, ColumnTypeDto.DATETIME, ColumnTypeDto.TIME, ColumnTypeDto.TIMESTAMP).contains(column.getType()))
+                .filter(column -> Objects.isNull(column.getDfid()))
+                .toList();
+        if (!failedDateColumns.isEmpty()) {
+            log.error("Failed to create table: date column(s) {} do not contain date format id", failedDateColumns.stream().map(ColumnCreateDto::getName).toList());
+            throw new MalformedException("Failed to create table: date column(s) " + failedDateColumns.stream().map(ColumnCreateDto::getName).toList() + " do not contain date format id");
         }
-        endpointValidator.validateOnlyAccess(databaseId, principal, true);
-        endpointValidator.validateColumnCreateConstraints(createDto);
-        final Table table = tableService.createTable(databaseId, createDto, principal);
+        final Table table = tableService.createTable(database, data, principal);
         final TableDto dto = tableMapper.tableToTableDto(table);
-        log.trace("create table resulted in table {}", dto);
+        log.debug("create table resulted in table.id={}", dto.getId());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(dto);
     }
 
-
     @GetMapping("/{tableId}")
     @Transactional(readOnly = true)
-    @Observed(name = "dbr_tables_find")
+    @Observed(name = "dbrepo_metadata_tables_find")
     @Operation(summary = "Get information about table", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -190,24 +348,39 @@ public class TableEndpoint {
     })
     public ResponseEntity<TableDto> findById(@NotNull @PathVariable("databaseId") Long databaseId,
                                              @NotNull @PathVariable("tableId") Long tableId,
-                                             Principal principal) throws TableNotFoundException,
-            DatabaseNotFoundException, QueueNotFoundException, BrokerRemoteException {
-        log.debug("endpoint find table, databaseId={}, tableId={}, {}", databaseId, tableId, PrincipalUtil.formatForDebug(principal));
-        final Table table = tableService.find(databaseId, tableId);
+                                             Principal principal) throws ServiceException,
+            ServiceConnectionException, TableNotFoundException, DatabaseNotFoundException, QueueNotFoundException {
+        log.debug("endpoint find table, databaseId={}, tableId={}", databaseId, tableId);
+        final Table table = tableService.findById(databaseId, tableId);
         final TableDto dto = tableMapper.tableToTableDto(table);
+        final HttpHeaders headers = new HttpHeaders();
         if (principal != null) {
             /* extra effort only when logged-in */
             final QueueDto queue = messageQueueService.findQueue(rabbitMqConfig.getQueueName());
             dto.setQueueType(queue.getType());
+            final Authentication authentication = (Authentication) principal;
+            if (authentication.isAuthenticated() && authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("admin"))) {
+                headers.set("X-Username", table.getDatabase().getContainer().getPrivilegedUsername());
+                headers.set("X-Password", table.getDatabase().getContainer().getPrivilegedPassword());
+                headers.set("X-Host", table.getDatabase().getContainer().getHost());
+                headers.set("X-Port", "" + table.getDatabase().getContainer().getPort());
+                headers.set("X-Type", table.getDatabase().getContainer().getImage().getJdbcMethod());
+                headers.set("X-Database", table.getDatabase().getInternalName());
+                headers.set("X-Sidecar-Host", table.getDatabase().getContainer().getSidecarHost());
+                headers.set("X-Sidecar-Port", "" + table.getDatabase().getContainer().getSidecarPort());
+                headers.set("Access-Control-Expose-Headers", "X-Username X-Password X-Host X-Port X-Type X-Database X-Sidecar-Host X-Sidecar-Port");
+            }
         }
         log.trace("find table resulted in table {}", dto);
-        return ResponseEntity.ok(dto);
+        return ResponseEntity.status(HttpStatus.OK)
+                .headers(headers)
+                .body(dto);
     }
 
     @DeleteMapping("/{tableId}")
     @Transactional
     @PreAuthorize("hasAuthority('delete-table') or hasAuthority('delete-foreign-table')")
-    @Observed(name = "dbr_table_delete")
+    @Observed(name = "dbrepo_metadata_table_delete")
     @Operation(summary = "Delete a table", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
@@ -231,15 +404,15 @@ public class TableEndpoint {
     })
     public ResponseEntity<?> delete(@NotNull @PathVariable("databaseId") Long databaseId,
                                     @NotNull @PathVariable("tableId") Long tableId,
-                                    @NotNull Principal principal)
-            throws TableNotFoundException, DatabaseNotFoundException, ImageNotSupportedException,
-            TableMalformedException, QueryMalformedException, NotAllowedException {
-        log.debug("endpoint delete table, databaseId={}, tableId={}, {}", databaseId, tableId, PrincipalUtil.formatForDebug(principal));
-        final Table table = tableService.find(databaseId, tableId);
+                                    @NotNull Principal principal) throws NotAllowedException,
+            ServiceException, ServiceConnectionException, TableNotFoundException, DatabaseNotFoundException,
+            SearchServiceException, SearchServiceConnectionException {
+        log.debug("endpoint delete table, databaseId={}, tableId={}", databaseId, tableId);
+        final Table table = tableService.findById(databaseId, tableId);
         /* roles */
-        if (!table.getOwner().getUsername().equals(principal.getName()) && !UserUtil.hasRole(principal, "delete-foreign-table")) {
-            log.error("Failed to delete table: not owned by user with id {}", UserUtil.getId(principal));
-            throw new NotAllowedException("Failed to delete table: not owned by user with id " + UserUtil.getId(principal));
+        if (!table.getOwner().equals(principal) && !UserUtil.hasRole(principal, "delete-foreign-table")) {
+            log.error("Failed to delete table: not owned by current user");
+            throw new NotAllowedException("Failed to delete table: not owned by current user");
         }
         /* check */
         if (!table.getIdentifiers().isEmpty()) {
@@ -247,7 +420,7 @@ public class TableEndpoint {
             throw new NotAllowedException("Failed to delete table: identifier already associated");
         }
         /* delete table */
-        tableService.deleteTable(databaseId, tableId);
+        tableService.deleteTable(table);
         return ResponseEntity.accepted()
                 .build();
     }

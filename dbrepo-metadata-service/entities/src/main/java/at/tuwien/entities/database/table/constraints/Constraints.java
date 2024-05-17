@@ -1,6 +1,7 @@
 package at.tuwien.entities.database.table.constraints;
 
 import at.tuwien.entities.database.table.constraints.foreignKey.ForeignKey;
+import at.tuwien.entities.database.table.constraints.primaryKey.PrimaryKey;
 import at.tuwien.entities.database.table.constraints.unique.Unique;
 import lombok.*;
 
@@ -18,11 +19,9 @@ import java.util.Set;
 public class Constraints {
 
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "table")
-    @OrderColumn(name = "position")
     private List<Unique> uniques;
 
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "table")
-    @OrderColumn(name = "position")
     private List<ForeignKey> foreignKeys;
 
     @ElementCollection(fetch = FetchType.LAZY)
@@ -30,4 +29,7 @@ public class Constraints {
             @JoinColumn(name = "tid"),
     })
     private Set<String> checks;
+
+    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST}, mappedBy = "table")
+    private List<PrimaryKey> primaryKey;
 }

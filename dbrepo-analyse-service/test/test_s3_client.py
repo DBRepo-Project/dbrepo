@@ -1,15 +1,7 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Jan  9 08:46:04 2023
-
-@author: Martin Weise
-"""
 import unittest
 
-from botocore.exceptions import ClientError
-
 from clients.s3_client import S3Client
+from botocore.exceptions import ClientError
 
 
 class S3ClientTest(unittest.TestCase):
@@ -54,14 +46,14 @@ class S3ClientTest(unittest.TestCase):
         S3Client().upload_file(filename="testdt01.csv", path="./data/", bucket="dbrepo-upload")
 
         # test
-        S3Client().download_file(filename="testdt01.csv")
+        S3Client().download_file(filename="testdt01.csv", bucket="dbrepo-upload")
 
     # @Test
     def test_download_file_notFound_fails(self):
 
         # test
         try:
-            S3Client().download_file(filename="testdt01.csv")
+            S3Client().download_file(filename="testdt01.csv", bucket="dbrepo-upload")
         except ClientError:
             pass
         except Exception:

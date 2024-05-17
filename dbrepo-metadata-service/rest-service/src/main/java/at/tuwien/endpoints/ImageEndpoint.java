@@ -9,10 +9,8 @@ import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.exception.ImageAlreadyExistsException;
 import at.tuwien.exception.ImageInvalidException;
 import at.tuwien.exception.ImageNotFoundException;
-import at.tuwien.exception.UserNotFoundException;
 import at.tuwien.mapper.ImageMapper;
 import at.tuwien.service.impl.ImageServiceImpl;
-import at.tuwien.utils.PrincipalUtil;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -26,7 +24,6 @@ import jakarta.validation.constraints.NotNull;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,9 +37,7 @@ import java.util.stream.Collectors;
 @RestController
 @CrossOrigin(origins = "*")
 @ControllerAdvice
-@RequestMapping(path = "/api/image",
-        consumes = MediaType.ALL_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(path = "/api/image")
 public class ImageEndpoint {
 
     private final ImageServiceImpl imageService;
@@ -56,7 +51,7 @@ public class ImageEndpoint {
 
     @GetMapping
     @Transactional(readOnly = true)
-    @Observed(name = "dbr_image_findall")
+    @Observed(name = "dbrepo_metadata_image_findall")
     @Operation(summary = "Find all images")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -65,8 +60,8 @@ public class ImageEndpoint {
                             mediaType = "application/json",
                             array = @ArraySchema(schema = @Schema(implementation = ContainerImage.class)))}),
     })
-    public ResponseEntity<List<ImageBriefDto>> findAll(@NotNull Principal principal) {
-        log.debug("endpoint find all images, {}", PrincipalUtil.formatForDebug(principal));
+    public ResponseEntity<List<ImageBriefDto>> findAll() {
+        log.debug("endpoint find all images");
         final List<ContainerImage> containers = imageService.getAll();
         return ResponseEntity.ok()
                 .body(containers.stream()
@@ -76,7 +71,7 @@ public class ImageEndpoint {
 
     @PostMapping
     @Transactional
-    @Observed(name = "dbr_image_create")
+    @Observed(name = "dbrepo_metadata_image_create")
     @PreAuthorize("hasAuthority('create-image')")
     @Operation(summary = "Create image", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
@@ -99,7 +94,7 @@ public class ImageEndpoint {
     public ResponseEntity<ImageDto> create(@Valid @RequestBody ImageCreateDto data,
                                            @NotNull Principal principal) throws ImageAlreadyExistsException,
             ImageInvalidException {
-        log.debug("endpoint create image, data={}, {}", data, PrincipalUtil.formatForDebug(principal));
+        log.debug("endpoint create image, data={}", data);
         if (data.getDefaultPort() == null) {
             log.error("Failed to create image, default port is null");
             throw new ImageInvalidException("Failed to create image, default port is null");
@@ -111,9 +106,9 @@ public class ImageEndpoint {
                 .body(dto);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{imageId}")
     @Transactional(readOnly = true)
-    @Observed(name = "dbr_image_find")
+    @Observed(name = "dbrepo_metadata_image_find")
     @Operation(summary = "Find some image")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -127,18 +122,18 @@ public class ImageEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<ImageDto> findById(@NotNull @PathVariable Long id) throws ImageNotFoundException {
-        log.debug("endpoint find image, id={}", id);
-        final ContainerImage image = imageService.find(id);
+    public ResponseEntity<ImageDto> findById(@NotNull @PathVariable("imageId") Long imageId) throws ImageNotFoundException {
+        log.debug("endpoint find image, id={}", imageId);
+        final ContainerImage image = imageService.find(imageId);
         final ImageDto dto = imageMapper.containerImageToImageDto(image);
         log.trace("find image resulted in image {}", dto);
         return ResponseEntity.ok()
                 .body(dto);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/{imageId}")
     @Transactional
-    @Observed(name = "dbr_image_update")
+    @Observed(name = "dbrepo_metadata_image_update")
     @PreAuthorize("hasAuthority('modify-image')")
     @Operation(summary = "Update some image", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
@@ -153,21 +148,21 @@ public class ImageEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<ImageDto> update(@NotNull @PathVariable Long id,
-                                           @RequestBody @Valid ImageChangeDto changeDto,
-                                           @NotNull Principal principal)
+    public ResponseEntity<ImageDto> update(@NotNull @PathVariable("imageId") Long imageId,
+                                           @RequestBody @Valid ImageChangeDto changeDto)
             throws ImageNotFoundException {
-        log.debug("endpoint update image, id={}, changeDto={}, {}", id, changeDto, PrincipalUtil.formatForDebug(principal));
-        final ContainerImage image = imageService.update(id, changeDto);
+        log.debug("endpoint update image, id={}, changeDto={}", imageId, changeDto);
+        ContainerImage image = imageService.find(imageId);
+        image = imageService.update(image, changeDto);
         final ImageDto dto = imageMapper.containerImageToImageDto(image);
         log.trace("update image resulted in image {}", dto);
         return ResponseEntity.accepted()
                 .body(dto);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{imageId}")
     @Transactional
-    @Observed(name = "dbr_image_delete")
+    @Observed(name = "dbrepo_metadata_image_delete")
     @PreAuthorize("hasAuthority('delete-image')")
     @Operation(summary = "Delete some image", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
@@ -180,11 +175,10 @@ public class ImageEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<?> delete(@NotNull @PathVariable("id") Long id,
-                                    @NotNull Principal principal) throws ImageNotFoundException {
-        log.debug("endpoint delete image, id={}, {}", id, PrincipalUtil.formatForDebug(principal));
-        imageService.find(id);
-        imageService.delete(id);
+    public ResponseEntity<?> delete(@NotNull @PathVariable("imageId") Long imageId) throws ImageNotFoundException {
+        log.debug("endpoint delete image, id={}", imageId);
+        final ContainerImage image = imageService.find(imageId);
+        imageService.delete(image);
         return ResponseEntity.accepted()
                 .build();
     }

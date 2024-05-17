@@ -6,14 +6,12 @@ import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.exception.ImageAlreadyExistsException;
 import at.tuwien.exception.ImageNotFoundException;
 import at.tuwien.mapper.ImageMapper;
-import at.tuwien.repository.mdb.ImageRepository;
+import at.tuwien.repository.ImageRepository;
 import at.tuwien.service.ImageService;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -73,33 +71,26 @@ public class ImageServiceImpl implements ImageService {
 
     @Override
     @Transactional
-    public ContainerImage update(Long imageId, ImageChangeDto changeDto) throws ImageNotFoundException {
-        final ContainerImage image = find(imageId);
+    public ContainerImage update(ContainerImage image, ImageChangeDto changeDto) {
         if (!changeDto.getDefaultPort().equals(image.getDefaultPort())) {
             image.setDefaultPort(changeDto.getDefaultPort());
             log.debug("default port changed from {} to {} for image with id {}", image.getDefaultPort(),
-                    changeDto.getDefaultPort(), imageId);
+                    changeDto.getDefaultPort(), image.getId());
         }
         image.setDialect(changeDto.getDialect());
         image.setDriverClass(changeDto.getDriverClass());
         image.setJdbcMethod(changeDto.getJdbcMethod());
         /* update metadata db */
-        final ContainerImage out = imageRepository.save(image);
-        log.info("Updated image with id {} in metadata database", out.getId());
-        return out;
+        image = imageRepository.save(image);
+        log.info("Updated image with id {} in metadata database", image.getId());
+        return image;
     }
 
     @Override
     @Transactional
-    public void delete(Long imageId) throws ImageNotFoundException {
-        find(imageId);
-        try {
-            imageRepository.deleteById(imageId);
-            log.info("Deleted image with id {} in metadata database", imageId);
-        } catch (EntityNotFoundException | EmptyResultDataAccessException | DataIntegrityViolationException e) {
-            log.error("Failed to delete image with id {} with constraint: {}", imageId, e.getMessage());
-            throw new ImageNotFoundException("Failed to delete image with id " + imageId + " with constraint", e);
-        }
+    public void delete(ContainerImage image) {
+        imageRepository.deleteById(image.getId());
+        log.info("Deleted image with id {} in metadata database", image.getId());
     }
 
 }

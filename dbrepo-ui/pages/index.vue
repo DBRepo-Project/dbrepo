@@ -66,11 +66,8 @@ export default {
       })
   },
   methods: {
-    closed (event) {
+    closed () {
       this.dialog = false
-      if (event.success) {
-        this.$router.push(`/database/${event.database_id}/info`)
-      }
     }
   }
 }

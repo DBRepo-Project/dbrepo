@@ -1,5 +1,5 @@
 <template>
-  <div v-if="user">
+  <div>
     <UserToolbar />
     <v-window v-model="tab">
       <v-window-item>

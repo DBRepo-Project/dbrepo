@@ -1,17 +1,15 @@
 package at.tuwien.endpoints;
 
-import at.tuwien.BaseUnitTest;
-import at.tuwien.annotations.MockAmqp;
-import at.tuwien.annotations.MockOpensearch;
+import at.tuwien.test.AbstractUnitTest;
 import at.tuwien.api.database.AccessTypeDto;
 import at.tuwien.api.database.DatabaseAccessDto;
-import at.tuwien.api.database.DatabaseGiveAccessDto;
-import at.tuwien.api.database.DatabaseModifyAccessDto;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.AccessMapper;
-import at.tuwien.repository.mdb.DatabaseRepository;
+import at.tuwien.repository.DatabaseRepository;
+import at.tuwien.repository.UserRepository;
 import at.tuwien.service.AccessService;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
@@ -36,15 +34,16 @@ import static org.mockito.Mockito.*;
 @Log4j2
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
-@MockAmqp
-@MockOpensearch
-public class AccessEndpointUnitTest extends BaseUnitTest {
+public class AccessEndpointUnitTest extends AbstractUnitTest {
 
     @MockBean
     private AccessService accessService;
 
     @MockBean
     private DatabaseRepository databaseRepository;
+
+    @MockBean
+    private UserRepository userRepository;
 
     @Autowired
     private AccessEndpoint accessEndpoint;
@@ -58,7 +57,7 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            generic_create(DATABASE_1_ID, DATABASE_1, null, USER_2_ID, null);
+            generic_create(null, USER_2_ID, null, null);
         });
     }
 
@@ -68,32 +67,23 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            generic_create(DATABASE_1_ID, DATABASE_1, null, USER_4_ID, USER_4_PRINCIPAL);
+            generic_create(USER_2_PRINCIPAL, USER_4_ID, USER_4_USERNAME, USER_4);
         });
     }
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"create-database-access"})
-    public void create_succeeds() throws UserNotFoundException, QueryMalformedException, DatabaseNotFoundException,
-            DatabaseMalformedException, NotAllowedException, KeycloakRemoteException, AccessDeniedException {
+    public void create_succeeds() throws ServiceException, ServiceConnectionException, NotAllowedException,
+            DatabaseNotFoundException, UserNotFoundException, AccessNotFoundException, SearchServiceException,
+            SearchServiceConnectionException {
 
         /* mock */
         doNothing()
                 .when(accessService)
-                .create(eq(DATABASE_1_ID), eq(USER_2_ID), any(DatabaseGiveAccessDto.class));
+                .create(eq(DATABASE_1), eq(USER_2), any(AccessTypeDto.class));
 
         /* test */
-        generic_create(DATABASE_1_ID, DATABASE_1, null, USER_2_ID, USER_1_PRINCIPAL);
-    }
-
-    @Test
-    @WithAnonymousUser
-    public void find_anonymous_fails() {
-
-        /* test */
-        assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            generic_find(DATABASE_1_ID, DATABASE_1, null, null, null);
-        });
+        generic_create(USER_2_PRINCIPAL, USER_2_ID, USER_2_USERNAME, USER_2);
     }
 
     @Test
@@ -101,18 +91,37 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
     public void find_hasRoleNoAccess_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
-            generic_find(DATABASE_1_ID, DATABASE_1, null, USER_2_ID, USER_2_PRINCIPAL);
+        assertThrows(AccessNotFoundException.class, () -> {
+            generic_find(DATABASE_1_ID, DATABASE_1, null, USER_2_PRINCIPAL, USER_2_ID, USER_2);
         });
     }
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"check-database-access"})
-    public void find_hasRoleHasAccess_succeeds() throws NotAllowedException, AccessDeniedException,
-            DatabaseNotFoundException {
+    public void find_hasRoleHasAccess_succeeds() throws UserNotFoundException, DatabaseNotFoundException,
+            AccessNotFoundException, NotAllowedException {
 
         /* test */
-        generic_find(DATABASE_1_ID, DATABASE_1, DATABASE_1_USER_1_READ_ACCESS, USER_1_ID, USER_1_PRINCIPAL);
+        generic_find(DATABASE_1_ID, DATABASE_1, DATABASE_1_USER_1_READ_ACCESS, USER_1_PRINCIPAL, USER_1_ID, USER_1);
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"check-database-access"})
+    public void find_hasRoleHasAccessForeign_fails() {
+
+        /* test */
+        assertThrows(NotAllowedException.class, () -> {
+            generic_find(DATABASE_1_ID, DATABASE_1, DATABASE_1_USER_1_READ_ACCESS, USER_1_PRINCIPAL, USER_2_ID, USER_2);
+        });
+    }
+
+    @Test
+    @WithMockUser(username = USER_1_USERNAME, authorities = {"admin"})
+    public void find_hasRoleHasAccessForeign_succeeds() throws UserNotFoundException, NotAllowedException,
+            DatabaseNotFoundException, AccessNotFoundException {
+
+        /* test */
+        generic_find(DATABASE_1_ID, DATABASE_1, DATABASE_1_USER_1_READ_ACCESS, USER_LOCAL_ADMIN_PRINCIPAL, USER_1_ID, USER_1);
     }
 
     @Test
@@ -121,7 +130,7 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            generic_update(DATABASE_1_ID, DATABASE_1, null, USER_4_ID, null);
+            generic_update(null, USER_4_USERNAME, USER_4, null, null);
         });
     }
 
@@ -130,8 +139,8 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
     public void update_hasRoleNoAccess_fails() {
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
-            generic_update(DATABASE_1_ID, DATABASE_1, null, USER_4_ID, USER_1_PRINCIPAL);
+        assertThrows(NotAllowedException.class, () -> {
+            generic_update(null, USER_4_USERNAME, USER_4, USER_1_PRINCIPAL, USER_1);
         });
     }
 
@@ -141,22 +150,23 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            generic_update(DATABASE_1_ID, DATABASE_1, null, USER_4_ID, USER_4_PRINCIPAL);
+            generic_update(null, USER_4_USERNAME, USER_4, USER_4_PRINCIPAL, USER_4);
         });
     }
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"update-database-access"})
-    public void update_succeeds() throws UserNotFoundException, NotAllowedException, QueryMalformedException,
-            DatabaseNotFoundException, DatabaseMalformedException, KeycloakRemoteException, AccessDeniedException {
+    public void update_succeeds() throws NotAllowedException, ServiceException, ServiceConnectionException,
+            AccessNotFoundException, DatabaseNotFoundException, UserNotFoundException, SearchServiceException,
+            SearchServiceConnectionException {
 
         /* mock */
         doNothing()
                 .when(accessService)
-                .update(eq(DATABASE_1_ID), eq(USER_2_ID), any(DatabaseModifyAccessDto.class));
+                .update(eq(DATABASE_1), eq(USER_2), any(AccessTypeDto.class));
 
         /* test */
-        generic_update(DATABASE_1_ID, DATABASE_1, DATABASE_1_USER_2_WRITE_OWN_ACCESS, USER_2_ID, USER_1_PRINCIPAL);
+        generic_update(DATABASE_1_USER_2_WRITE_OWN_ACCESS, USER_2_USERNAME, USER_2, USER_2_PRINCIPAL, USER_2);
     }
 
     @Test
@@ -165,7 +175,7 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            generic_revoke(DATABASE_1_ID, DATABASE_1_USER_1_WRITE_ALL_ACCESS, USER_2_ID, USER_1_PRINCIPAL);
+            generic_revoke(USER_1_PRINCIPAL, USER_1);
         });
     }
 
@@ -175,76 +185,80 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
 
         /* test */
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
-            generic_revoke(DATABASE_1_ID, DATABASE_1_USER_1_WRITE_ALL_ACCESS, USER_2_ID, USER_4_PRINCIPAL);
+            generic_revoke(USER_4_PRINCIPAL, USER_4);
         });
     }
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"delete-database-access"})
-    public void revoke_succeeds() throws UserNotFoundException, QueryMalformedException, DatabaseNotFoundException,
-            DatabaseMalformedException, NotAllowedException, AccessDeniedException {
+    public void revoke_succeeds() throws NotAllowedException, ServiceException, ServiceConnectionException,
+            UserNotFoundException, DatabaseNotFoundException, AccessNotFoundException, SearchServiceException,
+            SearchServiceConnectionException {
 
         /* mock */
         doNothing()
                 .when(accessService)
-                .delete(DATABASE_1_ID, USER_2_ID);
+                .delete(DATABASE_1, USER_2);
 
         /* test */
-        generic_revoke(DATABASE_1_ID, DATABASE_1_USER_1_WRITE_ALL_ACCESS, USER_2_ID, USER_1_PRINCIPAL);
+        generic_revoke(USER_1_PRINCIPAL, USER_1);
     }
 
     /* ################################################################################################### */
     /* ## GENERIC TEST CASES                                                                            ## */
     /* ################################################################################################### */
 
-    protected void generic_create(Long databaseId, Database database, DatabaseAccess access, UUID userId,
-                                  Principal principal) throws UserNotFoundException, QueryMalformedException,
-            DatabaseNotFoundException, DatabaseMalformedException, NotAllowedException, KeycloakRemoteException,
-            AccessDeniedException {
-        final DatabaseGiveAccessDto request = DatabaseGiveAccessDto.builder()
-                .type(AccessTypeDto.READ)
-                .build();
+    protected void generic_create(Principal principal, UUID userId, String username, User user)
+            throws NotAllowedException, ServiceException, ServiceConnectionException, UserNotFoundException,
+            DatabaseNotFoundException, AccessNotFoundException, SearchServiceException,
+            SearchServiceConnectionException {
 
         /* mock */
-        when(databaseRepository.findById(databaseId))
-                .thenReturn(Optional.of(database));
-        if (access != null) {
-            log.trace("mock access {} for user with id {} for database with id {}", access.getType(), userId, databaseId);
-            when(accessService.find(databaseId, userId))
-                    .thenReturn(access);
+        when(databaseRepository.findById(DATABASE_1_ID))
+                .thenReturn(Optional.of(DATABASE_1));
+        doThrow(AccessNotFoundException.class)
+                .when(accessService)
+                .find(DATABASE_1, user);
+        if (user != null) {
+            when(userRepository.findByUsername(username))
+                    .thenReturn(Optional.of(user));
         } else {
-            log.trace("mock no access for user with id {} for database with id {}", userId, databaseId);
-            doThrow(AccessDeniedException.class)
-                    .when(accessService)
-                    .find(databaseId, userId);
+            when(userRepository.findByUsername(anyString()))
+                    .thenReturn(Optional.empty());
         }
 
         /* test */
-        final ResponseEntity<?> response = accessEndpoint.create(databaseId, userId, request, principal);
+        final ResponseEntity<?> response = accessEndpoint.create(DATABASE_1_ID, userId, UPDATE_DATABASE_ACCESS_READ_DTO, principal);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
         assertNull(response.getBody());
     }
 
-    protected void generic_find(Long databaseId, Database database, DatabaseAccess access, UUID userId,
-                                Principal principal) throws NotAllowedException, AccessDeniedException,
-            DatabaseNotFoundException {
+    protected void generic_find(Long databaseId, Database database, DatabaseAccess access, Principal principal,
+                                UUID userId, User user) throws UserNotFoundException, DatabaseNotFoundException,
+            AccessNotFoundException, NotAllowedException {
 
         /* mock */
         when(databaseRepository.findById(databaseId))
                 .thenReturn(Optional.of(database));
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.of(user));
         if (access != null) {
             log.trace("mock access {} for user with id {} for database with id {}", access.getType(), userId, databaseId);
-            when(accessService.find(databaseId, userId))
+            when(accessService.find(database, user))
                     .thenReturn(access);
         } else {
             log.trace("mock no access for user with id {} for database with id {}", userId, databaseId);
-            doThrow(AccessDeniedException.class)
+            doThrow(AccessNotFoundException.class)
                     .when(accessService)
-                    .find(databaseId, userId);
+                    .find(database, user);
+        }
+        if (principal != null) {
+            when(userRepository.findByUsername(principal.getName()))
+                    .thenReturn(Optional.of(user));
         }
 
         /* test */
-        final ResponseEntity<DatabaseAccessDto> response = accessEndpoint.find(databaseId, principal);
+        final ResponseEntity<DatabaseAccessDto> response = accessEndpoint.find(databaseId, userId, principal);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         final DatabaseAccessDto dto = response.getBody();
@@ -253,52 +267,61 @@ public class AccessEndpointUnitTest extends BaseUnitTest {
         assertEquals(accessMapper.accessType(access.getType()), dto.getType());
     }
 
-    protected void generic_update(Long databaseId, Database database, DatabaseAccess access, UUID userId,
-                                  Principal principal) throws NotAllowedException, UserNotFoundException,
-            QueryMalformedException, DatabaseNotFoundException, DatabaseMalformedException, AccessDeniedException,
-            KeycloakRemoteException {
-        final DatabaseModifyAccessDto request = DatabaseModifyAccessDto.builder()
-                .type(AccessTypeDto.READ)
-                .build();
+    protected void generic_update(DatabaseAccess access, String otherUsername, User otherUser, Principal principal,
+                                  User user) throws NotAllowedException, ServiceException, ServiceConnectionException,
+            AccessNotFoundException, UserNotFoundException, DatabaseNotFoundException, SearchServiceException,
+            SearchServiceConnectionException {
 
         /* mock */
-        when(databaseRepository.findById(databaseId))
-                .thenReturn(Optional.of(database));
+        when(databaseRepository.findById(DATABASE_1_ID))
+                .thenReturn(Optional.of(DATABASE_1));
         if (access != null) {
-            log.trace("mock access {} for user with id {} for database with id {}", access.getType(), userId, databaseId);
-            when(accessService.find(databaseId, userId))
+            log.trace("mock access {} for user with id {} for database with id {}", access.getType(), USER_1_ID, DATABASE_1_ID);
+            when(accessService.find(DATABASE_1, USER_1))
                     .thenReturn(access);
         } else {
-            log.trace("mock no access for user with id {} for database with id {}", userId, databaseId);
-            doThrow(AccessDeniedException.class)
+            log.trace("mock no access for user with id {} for database with id {}", USER_1_ID, DATABASE_1_ID);
+            doThrow(AccessNotFoundException.class)
                     .when(accessService)
-                    .find(databaseId, userId);
+                    .find(DATABASE_1, USER_1);
+        }
+        if (otherUsername != null) {
+            when(userRepository.findByUsername(otherUsername))
+                    .thenReturn(Optional.of(otherUser));
+        } else {
+            when(userRepository.findByUsername(anyString()))
+                    .thenReturn(Optional.empty());
+        }
+        if (principal != null) {
+            when(userRepository.findByUsername(principal.getName()))
+                    .thenReturn(Optional.of(user));
+        } else {
+            when(userRepository.findByUsername(anyString()))
+                    .thenReturn(Optional.empty());
         }
 
         /* test */
-        final ResponseEntity<?> response = accessEndpoint.update(databaseId, userId, request, principal);
+        final ResponseEntity<?> response = accessEndpoint.update(DATABASE_1_ID, USER_1_ID, UPDATE_DATABASE_ACCESS_READ_DTO, principal);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
         assertNull(response.getBody());
     }
 
-    protected void generic_revoke(Long databaseId, DatabaseAccess access, UUID userId, Principal principal)
-            throws NotAllowedException, UserNotFoundException, QueryMalformedException, DatabaseNotFoundException,
-            DatabaseMalformedException, AccessDeniedException {
+    protected void generic_revoke(Principal principal, User user) throws ServiceConnectionException,
+            NotAllowedException, ServiceException, UserNotFoundException, DatabaseNotFoundException,
+            AccessNotFoundException, SearchServiceException, SearchServiceConnectionException {
 
         /* mock */
-        if (access != null) {
-            log.trace("mock access {} for user with id {} for database with id {}", access.getType(), userId, databaseId);
-            when(accessService.find(databaseId, userId))
-                    .thenReturn(access);
-        } else {
-            log.trace("mock no access for user with id {} for database with id {}", userId, databaseId);
-            doThrow(AccessDeniedException.class)
-                    .when(accessService)
-                    .find(databaseId, userId);
+        when(accessService.find(any(Database.class), eq(user)))
+                .thenReturn(DATABASE_1_USER_1_READ_ACCESS);
+        when(databaseRepository.findById(DATABASE_1_ID))
+                .thenReturn(Optional.of(DATABASE_1));
+        if (principal != null) {
+            when(userRepository.findByUsername(principal.getName()))
+                    .thenReturn(Optional.of(user));
         }
 
         /* test */
-        final ResponseEntity<?> response = accessEndpoint.revoke(databaseId, userId, principal);
+        final ResponseEntity<?> response = accessEndpoint.revoke(DATABASE_1_ID, USER_1_ID, principal);
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
         assertNull(response.getBody());
     }

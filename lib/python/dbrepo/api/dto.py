@@ -7,12 +7,12 @@ from typing import List, Optional, Any, Annotated
 from pydantic import BaseModel, ConfigDict, PlainSerializer
 
 Timestamp = Annotated[
-    datetime.datetime, PlainSerializer(lambda v: v.isoformat(timespec='milliseconds'), return_type=str)
+    datetime.datetime, PlainSerializer(lambda v: v.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z', return_type=str)
 ]
+
 
 class ImageDate(BaseModel):
     id: int
-    example: str
     database_format: str
     unix_format: str
     has_time: bool
@@ -75,8 +75,8 @@ class Container(BaseModel):
     port: int
     image: Image
     created: Timestamp
-    sidecar_host: str
-    sidecar_port: int
+    sidecar_host: Optional[str] = None
+    sidecar_port: Optional[int] = None
     ui_host: Optional[str] = None
     ui_port: Optional[int] = None
 
@@ -558,17 +558,17 @@ class CreateRelatedIdentifier(BaseModel):
 
 
 class CreateIdentifier(BaseModel):
+    database_id: int
     type: IdentifierType
     creators: List[CreateIdentifierCreator]
     publication_year: int
-    titles: Optional[List[CreateIdentifierTitle]] = field(default_factory=list)
-    descriptions: Optional[List[CreateIdentifierDescription]] = field(default_factory=list)
+    publisher: str
+    titles: List[CreateIdentifierTitle]
+    descriptions: List[CreateIdentifierDescription]
     funders: Optional[List[CreateIdentifierFunder]] = field(default_factory=list)
     doi: Optional[str] = None
-    publisher: Optional[str] = None
     language: Optional[str] = None
     licenses: Optional[List[License]] = field(default_factory=list)
-    database_id: Optional[int] = None
     query_id: Optional[int] = None
     table_id: Optional[int] = None
     view_id: Optional[int] = None
@@ -584,19 +584,21 @@ class CreateIdentifier(BaseModel):
 
 class Identifier(BaseModel):
     id: int
+    database_id: int
     type: IdentifierType
-    creators: List[IdentifierCreator]
+    creator: UserBrief
+    status: IdentifierStatusType
     created: Timestamp
-    publication_year: int
     last_modified: Timestamp
-    titles: Optional[List[IdentifierTitle]] = field(default_factory=list)
-    descriptions: Optional[List[IdentifierDescription]] = field(default_factory=list)
+    publication_year: int
+    publisher: str
+    creators: List[IdentifierCreator]
+    titles: List[IdentifierTitle]
+    descriptions: List[IdentifierDescription]
     funders: Optional[List[IdentifierFunder]] = field(default_factory=list)
     doi: Optional[str] = None
-    publisher: Optional[str] = None
     language: Optional[str] = None
     licenses: Optional[List[License]] = field(default_factory=list)
-    database_id: Optional[int] = None
     query_id: Optional[int] = None
     table_id: Optional[int] = None
     view_id: Optional[int] = None
@@ -652,21 +654,10 @@ class ViewBrief(BaseModel):
     last_modified: Timestamp
 
 
-class ColumnBrief(BaseModel):
-    id: int
-    name: str
-    alias: str
-    database_id: int
-    table_id: int
-    internal_name: str
-    column_type: str
-
-
 class Concept(BaseModel):
     id: int
     uri: str
     created: Timestamp
-    columns: List[ColumnBrief] = field(default_factory=list)
     name: Optional[str] = None
     description: Optional[str] = None
 
@@ -689,6 +680,12 @@ class ColumnStatistic(BaseModel):
     std_dev: float
 
 
+class ApiError(BaseModel):
+    status: str
+    message: str
+    code: str
+
+
 class TableStatistics(BaseModel):
     columns: dict[str, ColumnStatistic]
 
@@ -697,7 +694,6 @@ class Unit(BaseModel):
     id: int
     uri: str
     created: Timestamp
-    columns: List[ColumnBrief] = field(default_factory=list)
     name: Optional[str] = None
     description: Optional[str] = None
 
@@ -821,6 +817,17 @@ class IdentifierType(str, Enum):
     """The identifier is identifying a table."""
 
 
+class IdentifierStatusType(str, Enum):
+    """
+    Enumeration of identifier status types.
+    """
+    PUBLISHED = "published"
+    """The identifier is published and immutable."""
+
+    DRAFT = "draft"
+    """The identifier is a draft and can still be edited."""
+
+
 class IdentifierType(str, Enum):
     """
     Enumeration of identifier types.
@@ -866,7 +873,6 @@ class Column(BaseModel):
     table_id: int
     internal_name: str
     auto_generated: bool
-    is_primary_key: bool
     column_type: ColumnType
     is_public: bool
     is_null_allowed: bool
@@ -914,6 +920,12 @@ class Table(BaseModel):
     avg_row_length: Optional[int] = None
 
 
+class TableMinimal(BaseModel):
+    id: int
+    database_id: int
+    name: str
+
+
 class Database(BaseModel):
     id: int
     name: str
@@ -937,14 +949,14 @@ class Database(BaseModel):
 
 class Unique(BaseModel):
     uid: int
-    table: Table
+    table: TableMinimal
     columns: List[Column]
 
 
 class ForeignKey(BaseModel):
     name: str
     columns: List[Column]
-    referenced_table: Table
+    referenced_table: TableMinimal
     referenced_columns: List[Column]
     on_update: Optional[str] = None
     on_delete: Optional[str] = None
@@ -959,6 +971,7 @@ class CreateForeignKey(BaseModel):
 
 
 class Constraints(BaseModel):
-    uniques: Optional[List[Unique]] = None
-    foreign_keys: Optional[List[ForeignKey]] = None
-    checks: Optional[List[str]] = None
+    uniques: List[Unique]
+    foreign_keys: List[ForeignKey]
+    checks: List[str]
+    primary_key: List[str]

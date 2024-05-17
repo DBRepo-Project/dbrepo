@@ -155,14 +155,23 @@ export default {
       }
       return this.view.identifiers
     },
+    filteredIdentifiers () {
+      if (!this.identifiers) {
+        return []
+      }
+      if (!this.user) {
+        return this.identifiers.filter(i => i.status === 'published')
+      }
+      return this.identifiers.filter(i => i.status === 'published' || i.creator.id === this.user.id)
+    },
     identifier () {
       if (this.pid) {
-        const filter = this.identifiers.filter(i => i.id === Number(this.pid))
+        const filter = this.filteredIdentifiers.filter(i => i.id === Number(this.pid))
         if (filter.length > 0) {
           return filter[0]
         }
       }
-      return this.identifiers[0]
+      return this.filteredIdentifiers[0]
     },
     views () {
       if (!this.database) {
@@ -174,7 +183,7 @@ export default {
       return this.$route.query.pid
     },
     hasIdentifier () {
-      return this.identifiers.length > 0
+      return this.identifier
     },
     creator () {
       if (!this.view) {

@@ -1,19 +1,20 @@
 import {format} from 'sql-formatter'
 import type {AxiosRequestConfig} from 'axios'
+import {axiosErrorToApiError} from '@/utils'
 
 export const useQueryService = (): any => {
   async function findAll(databaseId: number, persisted: boolean): Promise<QueryDto[]> {
     const axios = useAxiosInstance()
     console.debug('find queries')
     return new Promise<QueryDto[]>((resolve, reject) => {
-      axios.get<QueryDto[]>(`/api/database/${databaseId}/query`, {params: (persisted && { persisted })})
+      axios.get<QueryDto[]>(`/api/database/${databaseId}/subset`, {params: (persisted && {persisted})})
         .then((response) => {
           console.info(`Found ${response.data.length} query(s)`)
           resolve(response.data)
         })
         .catch((error) => {
           console.error('Failed to find queries', error)
-          reject(error)
+          reject(axiosErrorToApiError(error))
         })
     })
   }
@@ -22,14 +23,14 @@ export const useQueryService = (): any => {
     const axios = useAxiosInstance()
     console.debug('find query with id', queryId, 'in database with id', databaseId)
     return new Promise<QueryDto>((resolve, reject) => {
-      axios.get<QueryDto>(`/api/database/${databaseId}/query/${queryId}`)
+      axios.get<QueryDto>(`/api/database/${databaseId}/subset/${queryId}`)
         .then((response) => {
           console.info('Found query with id', queryId, 'in database with id', databaseId)
           resolve(response.data)
         })
         .catch((error) => {
           console.error('Failed to find query', error)
-          reject(error)
+          reject(axiosErrorToApiError(error))
         })
     })
   }
@@ -38,14 +39,14 @@ export const useQueryService = (): any => {
     const axios = useAxiosInstance()
     console.debug('update query with id', queryId, 'in database with id', databaseId)
     return new Promise<QueryDto>((resolve, reject) => {
-      axios.put<QueryDto>(`/api/database/${databaseId}/query/${queryId}`, data)
+      axios.put<QueryDto>(`/api/database/${databaseId}/subset/${queryId}`, data)
         .then((response) => {
           console.info('Updated query with id', queryId, 'in database with id', databaseId)
           resolve(response.data)
         })
         .catch((error) => {
           console.error('Failed to update query', error)
-          reject(error)
+          reject(axiosErrorToApiError(error))
         })
     })
   }
@@ -60,46 +61,46 @@ export const useQueryService = (): any => {
     }
     console.debug('export query with id', queryId, 'in database with id', databaseId)
     return new Promise<any>((resolve, reject) => {
-      axios.get<any>(`/api/database/${databaseId}/query/${queryId}/export`, config)
+      axios.get<any>(`/api/database/${databaseId}/subset/${queryId}`, config)
         .then((response) => {
           console.info('Exported query with id', queryId, 'in database with id', databaseId)
           resolve(response.data)
         })
         .catch((error) => {
           console.error('Failed to export query', error)
-          reject(error)
+          reject(axiosErrorToApiError(error))
         })
     })
   }
 
-  async function execute(databaseId: number, data: ExecuteStatementDto, page: number | null, size: number | null): Promise<QueryResultDto> {
+  async function execute(databaseId: number, data: ExecuteStatementDto, timestamp: Date | null, page: number, size: number): Promise<QueryResultDto> {
     const axios = useAxiosInstance()
     console.debug('execute query in database with id', databaseId)
     return new Promise<QueryResultDto>((resolve, reject) => {
-      axios.post<QueryResultDto>(`/api/database/${databaseId}/query`, data, {params: (page && size && { page, size })})
+      axios.post<QueryResultDto>(`/api/database/${databaseId}/subset`, data, {params: mapFilter(timestamp, page, size)})
         .then((response) => {
           console.info('Executed query with id', response.data.id, ' in database with id', databaseId)
           resolve(response.data)
         })
         .catch((error) => {
           console.error('Failed to execute query', error)
-          reject(error)
+          reject(axiosErrorToApiError(error))
         })
     })
   }
 
-  async function reExecuteData(databaseId: number, queryId: number, page: number | null, size: number | null): Promise<QueryResultDto> {
+  async function reExecuteData(databaseId: number, queryId: number, page: number, size: number): Promise<QueryResultDto> {
     const axios = useAxiosInstance()
     console.debug('re-execute query in database with id', databaseId)
     return new Promise<QueryResultDto>((resolve, reject) => {
-      axios.get<QueryResultDto>(`/api/database/${databaseId}/query/${queryId}/data`, {params: (page && size && { page, size })})
+      axios.get<QueryResultDto>(`/api/database/${databaseId}/subset/${queryId}/data`, { params: mapFilter(null, page, size)})
         .then((response) => {
           console.info('Re-executed query in database with id', databaseId)
           resolve(response.data)
         })
         .catch((error) => {
           console.error('Failed to re-execute query', error)
-          reject(error)
+          reject(axiosErrorToApiError(error))
         })
     })
   }
@@ -108,7 +109,7 @@ export const useQueryService = (): any => {
     const axios = useAxiosInstance()
     console.debug('re-execute query in database with id', databaseId)
     return new Promise<number>((resolve, reject) => {
-      axios.head<void>(`/api/database/${databaseId}/query/${queryId}/data`)
+      axios.head<void>(`/api/database/${databaseId}/subset/${queryId}/data`)
         .then((response) => {
           const count: number = Number(response.headers['x-count'])
           console.info('Found', count, 'tuples for query', queryId, 'in database with id', databaseId)
@@ -116,7 +117,7 @@ export const useQueryService = (): any => {
         })
         .catch((error) => {
           console.error('Failed to re-execute query', error)
-          reject(error)
+          reject(axiosErrorToApiError(error))
         })
     })
   }
@@ -182,6 +183,13 @@ export const useQueryService = (): any => {
         keywordCase: 'upper'
       })
     }
+  }
+
+  function mapFilter(timestamp: Date | null, page: number, size: number) {
+    if (!timestamp) {
+      return {page, size}
+    }
+    return {timestamp, page, size}
   }
 
   function mySql8DataTypes(): MySql8DataType[] {

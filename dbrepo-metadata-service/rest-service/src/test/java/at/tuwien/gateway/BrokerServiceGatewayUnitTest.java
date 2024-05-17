@@ -1,8 +1,6 @@
 package at.tuwien.gateway;
 
-import at.tuwien.BaseUnitTest;
-import at.tuwien.annotations.MockAmqp;
-import at.tuwien.annotations.MockOpensearch;
+import at.tuwien.test.AbstractUnitTest;
 import at.tuwien.api.amqp.ExchangeDto;
 import at.tuwien.api.amqp.QueueDto;
 import at.tuwien.exception.*;
@@ -27,9 +25,7 @@ import static org.mockito.Mockito.*;
 @Log4j2
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
-@MockAmqp
-@MockOpensearch
-public class BrokerServiceGatewayUnitTest extends BaseUnitTest {
+public class BrokerServiceGatewayUnitTest extends AbstractUnitTest {
 
     @MockBean
     @Qualifier("brokerRestTemplate")
@@ -39,49 +35,7 @@ public class BrokerServiceGatewayUnitTest extends BaseUnitTest {
     private BrokerServiceGateway brokerServiceGateway;
 
     @Test
-    public void createVirtualHost_succeeds() throws BrokerVirtualHostModificationException, BrokerRemoteException {
-        final ResponseEntity<Void> mock = ResponseEntity.status(HttpStatus.CREATED)
-                .build();
-
-        /* mock */
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(Void.class)))
-                .thenReturn(mock);
-
-        /* test */
-        brokerServiceGateway.createVirtualHost(VIRTUAL_HOST_CREATE_DTO);
-    }
-
-    @Test
-    public void createVirtualHost_fails() {
-        final ResponseEntity<Void> mock = ResponseEntity.status(HttpStatus.NO_CONTENT)
-                .build();
-
-        /* mock */
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(Void.class)))
-                .thenReturn(mock);
-
-        /* test */
-        assertThrows(BrokerVirtualHostModificationException.class, () -> {
-            brokerServiceGateway.createVirtualHost(VIRTUAL_HOST_CREATE_DTO);
-        });
-    }
-
-    @Test
-    public void createVirtualHost_unexpected_fails() {
-
-        /* mock */
-        doThrow(RestClientException.class)
-                .when(restTemplate)
-                .exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(Void.class));
-
-        /* test */
-        assertThrows(BrokerRemoteException.class, () -> {
-            brokerServiceGateway.createVirtualHost(VIRTUAL_HOST_CREATE_DTO);
-        });
-    }
-
-    @Test
-    public void grantPermission_exchangeNoRightsBefore_succeeds() throws BrokerVirtualHostGrantException, BrokerRemoteException {
+    public void grantTopicPermission_exchangeNoRightsBefore_succeeds() throws ServiceException, ServiceConnectionException {
         final ResponseEntity<Void> mock = ResponseEntity.status(HttpStatus.CREATED)
                 .build();
 
@@ -90,11 +44,11 @@ public class BrokerServiceGatewayUnitTest extends BaseUnitTest {
                 .thenReturn(mock);
 
         /* test */
-        brokerServiceGateway.grantPermission(USER_1_USERNAME, VIRTUAL_HOST_EXCHANGE_UPDATE_DTO);
+        brokerServiceGateway.grantTopicPermission(USER_1_USERNAME, VIRTUAL_HOST_EXCHANGE_UPDATE_DTO);
     }
 
     @Test
-    public void grantPermission_exchangeRightsSame_succeeds() throws BrokerVirtualHostGrantException, BrokerRemoteException {
+    public void grantTopicPermission_exchangeRightsSame_succeeds() throws ServiceException, ServiceConnectionException {
         final ResponseEntity<Void> mock = ResponseEntity.status(HttpStatus.NO_CONTENT)
                 .build();
 
@@ -103,11 +57,11 @@ public class BrokerServiceGatewayUnitTest extends BaseUnitTest {
                 .thenReturn(mock);
 
         /* test */
-        brokerServiceGateway.grantPermission(USER_1_USERNAME, VIRTUAL_HOST_EXCHANGE_UPDATE_DTO);
+        brokerServiceGateway.grantTopicPermission(USER_1_USERNAME, VIRTUAL_HOST_EXCHANGE_UPDATE_DTO);
     }
 
     @Test
-    public void grantPermission_invalidResponseCode_fails() {
+    public void grantTopicPermission_invalidResponseCode_fails() {
         final ResponseEntity<Void> mock = ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .build();
 
@@ -116,13 +70,13 @@ public class BrokerServiceGatewayUnitTest extends BaseUnitTest {
                 .thenReturn(mock);
 
         /* test */
-        assertThrows(BrokerVirtualHostGrantException.class, () -> {
-            brokerServiceGateway.grantPermission(USER_1_USERNAME, VIRTUAL_HOST_EXCHANGE_UPDATE_DTO);
+        assertThrows(ServiceException.class, () -> {
+            brokerServiceGateway.grantTopicPermission(USER_1_USERNAME, VIRTUAL_HOST_EXCHANGE_UPDATE_DTO);
         });
     }
 
     @Test
-    public void grantPermission_virtualHostNoRightsBefore_succeeds() throws BrokerRemoteException, BrokerVirtualHostGrantException {
+    public void grantVirtualHostPermission_virtualHostNoRightsBefore_succeeds() throws ServiceConnectionException, ServiceException {
         final ResponseEntity<Void> mock = ResponseEntity.status(HttpStatus.CREATED)
                 .build();
 
@@ -131,11 +85,11 @@ public class BrokerServiceGatewayUnitTest extends BaseUnitTest {
                 .thenReturn(mock);
 
         /* test */
-        brokerServiceGateway.grantPermission(USER_1_USERNAME, VIRTUAL_HOST_GRANT_DTO);
+        brokerServiceGateway.grantVirtualHostPermission(USER_1_USERNAME, VIRTUAL_HOST_GRANT_DTO);
     }
 
     @Test
-    public void grantPermission_virtualHostRightsSame_succeeds() throws BrokerRemoteException, BrokerVirtualHostGrantException {
+    public void grantVirtualHostPermission_virtualHostRightsSame_succeeds() throws ServiceConnectionException, ServiceException {
         final ResponseEntity<Void> mock = ResponseEntity.status(HttpStatus.NO_CONTENT)
                 .build();
 
@@ -144,11 +98,11 @@ public class BrokerServiceGatewayUnitTest extends BaseUnitTest {
                 .thenReturn(mock);
 
         /* test */
-        brokerServiceGateway.grantPermission(USER_1_USERNAME, VIRTUAL_HOST_GRANT_DTO);
+        brokerServiceGateway.grantVirtualHostPermission(USER_1_USERNAME, VIRTUAL_HOST_GRANT_DTO);
     }
 
     @Test
-    public void grantPermission_invalidResponseCode2_fails() {
+    public void grantVirtualHostPermission_invalidResponseCode2_fails() {
         final ResponseEntity<Void> mock = ResponseEntity.status(HttpStatus.ACCEPTED)
                 .build();
 
@@ -157,13 +111,13 @@ public class BrokerServiceGatewayUnitTest extends BaseUnitTest {
                 .thenReturn(mock);
 
         /* test */
-        assertThrows(BrokerVirtualHostGrantException.class, () -> {
-            brokerServiceGateway.grantPermission(USER_1_USERNAME, VIRTUAL_HOST_GRANT_DTO);
+        assertThrows(ServiceException.class, () -> {
+            brokerServiceGateway.grantVirtualHostPermission(USER_1_USERNAME, VIRTUAL_HOST_GRANT_DTO);
         });
     }
 
     @Test
-    public void grantPermission_unexpected_fails() {
+    public void grantVirtualHostPermission_unexpected_fails() {
 
         /* mock */
         doThrow(RestClientException.class)
@@ -171,13 +125,13 @@ public class BrokerServiceGatewayUnitTest extends BaseUnitTest {
                 .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class));
 
         /* test */
-        assertThrows(BrokerRemoteException.class, () -> {
-            brokerServiceGateway.grantPermission(USER_1_USERNAME, VIRTUAL_HOST_GRANT_DTO);
+        assertThrows(ServiceException.class, () -> {
+            brokerServiceGateway.grantVirtualHostPermission(USER_1_USERNAME, VIRTUAL_HOST_GRANT_DTO);
         });
     }
 
     @Test
-    public void grantPermission_unexpected2_fails() {
+    public void grantTopicPermission_unexpected2_fails() {
 
         /* mock */
         doThrow(RestClientException.class)
@@ -185,50 +139,8 @@ public class BrokerServiceGatewayUnitTest extends BaseUnitTest {
                 .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class));
 
         /* test */
-        assertThrows(BrokerRemoteException.class, () -> {
-            brokerServiceGateway.grantPermission(USER_1_USERNAME, VIRTUAL_HOST_EXCHANGE_UPDATE_DTO);
-        });
-    }
-
-    @Test
-    public void createUser_succeeds() throws BrokerRemoteException, BrokerVirtualHostModificationException {
-        final ResponseEntity<Void> mock = ResponseEntity.status(HttpStatus.NO_CONTENT)
-                .build();
-
-        /* mock */
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class)))
-                .thenReturn(mock);
-
-        /* test */
-        brokerServiceGateway.createUser(USER_1_USERNAME, USER_1_PASSWORD);
-    }
-
-    @Test
-    public void createUser_invalidResponseCode_fails() {
-        final ResponseEntity<Void> mock = ResponseEntity.status(HttpStatus.ACCEPTED)
-                .build();
-
-        /* mock */
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class)))
-                .thenReturn(mock);
-
-        /* test */
-        assertThrows(BrokerVirtualHostModificationException.class, () -> {
-            brokerServiceGateway.createUser(USER_1_USERNAME, USER_1_PASSWORD);
-        });
-    }
-
-    @Test
-    public void createUser_unexpected_fails() {
-
-        /* mock */
-        doThrow(RestClientException.class)
-                .when(restTemplate)
-                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class));
-
-        /* test */
-        assertThrows(BrokerRemoteException.class, () -> {
-            brokerServiceGateway.createUser(USER_1_USERNAME, USER_1_PASSWORD);
+        assertThrows(ServiceException.class, () -> {
+            brokerServiceGateway.grantTopicPermission(USER_1_USERNAME, VIRTUAL_HOST_EXCHANGE_UPDATE_DTO);
         });
     }
 
@@ -242,7 +154,7 @@ public class BrokerServiceGatewayUnitTest extends BaseUnitTest {
                 .thenReturn(mock);
 
         /* test */
-        assertThrows(QueueNotFoundException.class, () -> {
+        assertThrows(ServiceException.class, () -> {
             brokerServiceGateway.findQueue("dbrepo");
         });
     }
@@ -256,13 +168,13 @@ public class BrokerServiceGatewayUnitTest extends BaseUnitTest {
                 .exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(QueueDto.class));
 
         /* test */
-        assertThrows(BrokerRemoteException.class, () -> {
+        assertThrows(ServiceException.class, () -> {
             brokerServiceGateway.findQueue("dbrepo");
         });
     }
 
     @Test
-    public void findQueue_succeeds() throws QueueNotFoundException, BrokerRemoteException {
+    public void findQueue_succeeds() throws ServiceConnectionException, ServiceException, QueueNotFoundException {
         final ResponseEntity<QueueDto> mock = ResponseEntity.status(HttpStatus.OK)
                 .build();
 
@@ -284,13 +196,13 @@ public class BrokerServiceGatewayUnitTest extends BaseUnitTest {
                 .thenReturn(mock);
 
         /* test */
-        assertThrows(ExchangeNotFoundException.class, () -> {
+        assertThrows(ServiceException.class, () -> {
             brokerServiceGateway.findExchange("dbrepo");
         });
     }
 
     @Test
-    public void findExchange_succeeds() throws BrokerRemoteException, ExchangeNotFoundException {
+    public void findExchange_succeeds() throws ServiceConnectionException, ServiceException, ExchangeNotFoundException {
         final ResponseEntity<ExchangeDto> mock = ResponseEntity.status(HttpStatus.OK)
                 .build();
 
@@ -311,55 +223,13 @@ public class BrokerServiceGatewayUnitTest extends BaseUnitTest {
                 .exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(ExchangeDto.class));
 
         /* test */
-        assertThrows(BrokerRemoteException.class, () -> {
+        assertThrows(ServiceException.class, () -> {
             brokerServiceGateway.findExchange("dbrepo");
         });
     }
 
     @Test
-    public void deleteUser_succeeds() throws BrokerRemoteException, BrokerVirtualHostModificationException {
-        final ResponseEntity<Void> mock = ResponseEntity.status(HttpStatus.NO_CONTENT)
-                .build();
-
-        /* mock */
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.DELETE), any(HttpEntity.class), eq(Void.class)))
-                .thenReturn(mock);
-
-        /* test */
-        brokerServiceGateway.deleteUser(USER_1_USERNAME);
-    }
-
-    @Test
-    public void deleteUser_fails() {
-        final ResponseEntity<Void> mock = ResponseEntity.status(HttpStatus.OK)
-                .build();
-
-        /* mock */
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.DELETE), any(HttpEntity.class), eq(Void.class)))
-                .thenReturn(mock);
-
-        /* test */
-        assertThrows(BrokerVirtualHostModificationException.class, () -> {
-            brokerServiceGateway.deleteUser(USER_1_USERNAME);
-        });
-    }
-
-    @Test
-    public void deleteUser_unexpected_fails() {
-
-        /* mock */
-        doThrow(RestClientException.class)
-                .when(restTemplate)
-                .exchange(anyString(), eq(HttpMethod.DELETE), any(HttpEntity.class), eq(Void.class));
-
-        /* test */
-        assertThrows(BrokerRemoteException.class, () -> {
-            brokerServiceGateway.deleteUser(USER_1_USERNAME);
-        });
-    }
-
-    @Test
-    public void grantTopicPermission_succeeds() throws BrokerRemoteException, BrokerVirtualHostGrantException {
+    public void grantExchangePermission_succeeds() throws ServiceConnectionException, ServiceException {
         final ResponseEntity<Void> mock = ResponseEntity.status(HttpStatus.CREATED)
                 .build();
 
@@ -368,11 +238,11 @@ public class BrokerServiceGatewayUnitTest extends BaseUnitTest {
                 .thenReturn(mock);
 
         /* test */
-        brokerServiceGateway.grantTopicPermission(USER_1_USERNAME, USER_1_RABBITMQ_GRANT_TOPIC_DTO);
+        brokerServiceGateway.grantExchangePermission(USER_1_USERNAME, USER_1_RABBITMQ_GRANT_TOPIC_DTO);
     }
 
     @Test
-    public void grantTopicPermission_exists_succeeds() throws BrokerRemoteException, BrokerVirtualHostGrantException {
+    public void grantExchangePermission_exists_succeeds() throws ServiceConnectionException, ServiceException {
         final ResponseEntity<Void> mock = ResponseEntity.status(HttpStatus.NO_CONTENT)
                 .build();
 
@@ -381,11 +251,11 @@ public class BrokerServiceGatewayUnitTest extends BaseUnitTest {
                 .thenReturn(mock);
 
         /* test */
-        brokerServiceGateway.grantTopicPermission(USER_1_USERNAME, USER_1_RABBITMQ_GRANT_TOPIC_DTO);
+        brokerServiceGateway.grantExchangePermission(USER_1_USERNAME, USER_1_RABBITMQ_GRANT_TOPIC_DTO);
     }
 
     @Test
-    public void grantTopicPermission_unexpected2_fails() {
+    public void grantExchangePermission_unexpected2_fails() {
         final ResponseEntity<Void> mock = ResponseEntity.status(HttpStatus.BAD_GATEWAY)
                 .build();
 
@@ -394,13 +264,13 @@ public class BrokerServiceGatewayUnitTest extends BaseUnitTest {
                 .thenReturn(mock);
 
         /* test */
-        assertThrows(BrokerVirtualHostGrantException.class, () -> {
-            brokerServiceGateway.grantTopicPermission(USER_1_USERNAME, USER_1_RABBITMQ_GRANT_TOPIC_DTO);
+        assertThrows(ServiceException.class, () -> {
+            brokerServiceGateway.grantExchangePermission(USER_1_USERNAME, USER_1_RABBITMQ_GRANT_TOPIC_DTO);
         });
     }
 
     @Test
-    public void grantTopicPermission_unexpected_fails() {
+    public void grantExchangePermission_unexpected_fails() {
 
         /* mock */
         doThrow(RestClientException.class)
@@ -408,8 +278,8 @@ public class BrokerServiceGatewayUnitTest extends BaseUnitTest {
                 .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class));
 
         /* test */
-        assertThrows(BrokerRemoteException.class, () -> {
-            brokerServiceGateway.grantTopicPermission(USER_1_USERNAME, USER_1_RABBITMQ_GRANT_TOPIC_DTO);
+        assertThrows(ServiceException.class, () -> {
+            brokerServiceGateway.grantExchangePermission(USER_1_USERNAME, USER_1_RABBITMQ_GRANT_TOPIC_DTO);
         });
     }
 

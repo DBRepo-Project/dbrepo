@@ -1,5 +1,5 @@
 <template>
-  <div v-if="user">
+  <div>
     <UserToolbar />
     <v-window v-model="tab">
       <v-window-item>
@@ -26,6 +26,28 @@
                     disabled
                     :variant="inputVariant"
                     :label="$t('pages.user.subpages.info.username.label')"  />
+                </v-col>
+              </v-row>
+              <v-row dense>
+                <v-col cols="6">
+                  <v-select
+                    v-model="model.theme"
+                    :items="themes"
+                    item-title="name"
+                    item-value="value"
+                    :variant="inputVariant"
+                    :label="$t('pages.user.subpages.theme.label')" />
+                </v-col>
+              </v-row>
+              <v-row dense>
+                <v-col cols="6">
+                  <v-select
+                    v-model="model.language"
+                    :items="languages"
+                    item-title="name"
+                    item-value="value"
+                    :variant="inputVariant"
+                    :label="$t('pages.user.subpages.language.label')" />
                 </v-col>
               </v-row>
               <v-row dense>
@@ -94,38 +116,6 @@
             </v-card-text>
           </v-card>
         </v-form>
-        <v-divider />
-        <v-card
-          :title="$t('pages.user.subpages.theme.title')"
-          :subtitle="$t('pages.user.subpages.theme.subtitle')"
-          rounded="0"
-          variant="flat">
-          <v-card-text>
-            <v-row dense>
-              <v-col cols="6">
-                <v-select
-                  v-model="theme"
-                  :items="themes"
-                  item-title="name"
-                  item-value="value"
-                  :variant="inputVariant"
-                  :label="$t('pages.user.subpages.theme.label')" />
-              </v-col>
-            </v-row>
-            <v-row dense>
-              <v-col>
-                <v-btn
-                  size="small"
-                  :disabled="!canModifyTheme"
-                  variant="flat"
-                  color="secondary"
-                  :loading="loadingTheme"
-                  :text="$t('pages.user.subpages.theme.submit.text')"
-                  @click="updateTheme" />
-              </v-col>
-            </v-row>
-          </v-card-text>
-        </v-card>
       </v-window-item>
     </v-window>
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
@@ -154,13 +144,19 @@ export default {
         id: null,
         username: null,
         firstname: null,
-        lastname: null
+        lastname: null,
+        theme: null,
+        language: null
       },
       themes: [
         { name: this.$t('pages.user.subpages.theme.light'), value: 'light' },
         { name: this.$t('pages.user.subpages.theme.light-contrast'), value: 'light-contrast' },
         { name: this.$t('pages.user.subpages.theme.dark'), value: 'dark' },
         { name: this.$t('pages.user.subpages.theme.dark-contrast'), value: 'dark-contrast' },
+      ],
+      languages: [
+        { name: this.$t('pages.user.subpages.language.en'), value: 'en' },
+        { name: this.$t('pages.user.subpages.language.de'), value: 'de' }
       ],
       items: [
         {
@@ -182,6 +178,9 @@ export default {
     },
     roles () {
       return this.userStore.getRoles
+    },
+    locale () {
+      return this.userStore.getLocale
     },
     canModifyTheme () {
       return this.roles.includes('modify-user-theme')
@@ -210,7 +209,9 @@ export default {
         firstname: this.model.firstname,
         lastname: this.model.lastname,
         orcid: this.model.orcid,
-        affiliation: this.model.affiliation
+        affiliation: this.model.affiliation,
+        theme: this.model.theme,
+        language: this.model.language,
       }
       const userService = useUserService()
       userService.update(this.user.id, payload)
@@ -218,57 +219,45 @@ export default {
           console.info('Updated user information')
           this.$toast.success(this.$t('success.user.info'))
           this.userStore.setUser(user)
-        })
-        .catch(() => {
-          this.loadingUpdate = false
-        })
-        .finally(() => {
-          this.loadingUpdate = false
-        })
-    },
-    updateTheme () {
-      this.loadingTheme = true
-      const userService = useUserService()
-      userService.updateTheme(this.user.id, { theme: this.theme })
-        .then((user) => {
-          console.info('Updated user theme')
-          this.$toast.success(this.$t('success.user.theme'))
-          this.userStore.setUser(user)
-          this.loadingTheme = false
-          switch (this.theme) {
+          /* language */
+          this.userStore.setLocale(this.model.language)
+          this.$i18n.locale = this.locale
+          /* theme */
+          switch (this.model.theme) {
             case 'dark':
               this.$vuetify.theme.global.name = 'tuwThemeDark'
-              return
+              break
             case 'light':
               this.$vuetify.theme.global.name = 'tuwThemeLight'
-              return
+              break
             case 'light-contrast':
               this.$vuetify.theme.global.name = 'tuwThemeLightContrast'
-              return
+              break
             case 'dark-contrast':
               this.$vuetify.theme.global.name = 'tuwThemeDarkContrast'
-              return
+              break
           }
         })
         .catch(() => {
-          this.loadingTheme = false
+          this.loadingUpdate = false
         })
         .finally(() => {
-          this.loadingTheme = false
+          this.loadingUpdate = false
         })
     },
     init () {
       if (!this.user) {
         return
       }
-      this.theme = this.user.attributes.theme
       this.model = {
         id: this.user.id,
         username: this.user.username,
         firstname: this.user.given_name,
         lastname: this.user.family_name,
         orcid: this.user.attributes.orcid,
-        affiliation: this.user.attributes.affiliation
+        affiliation: this.user.attributes.affiliation,
+        theme: this.user.attributes.theme,
+        language: this.user.attributes.language
       }
     },
     retrieve () {

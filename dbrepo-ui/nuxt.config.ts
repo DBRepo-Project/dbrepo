@@ -56,7 +56,7 @@ export default defineNuxtConfig({
         port: {
           '5672': false
         },
-        extra: null
+        extra: ''
       },
       variant: {
         input: {
@@ -74,7 +74,7 @@ export default defineNuxtConfig({
       },
       api: {
         client: 'http://localhost',
-        server: 'http://localhost',
+        server: 'http://gateway-service',
       },
       database: {
         unsupported: '*,AVG,BIT_AND,BIT_OR,BIT_XOR,COUNT,COUNTDISTINCT,GROUP_CONCAT,JSON_ARRAYAGG,JSON_OBJECTAGG,MAX,MIN,STD,STDDEV,STDDEV_POP,STDDEV_SAMP,SUM,VARIANCE,VAR_POP,VAR_SAMP,--',
@@ -82,7 +82,7 @@ export default defineNuxtConfig({
           width: 400,
           height: 400
         },
-        extra: null
+        extra: ''
       },
       pid: {
         default: {
@@ -94,10 +94,6 @@ export default defineNuxtConfig({
         endpoint: 'https://doi.org'
       },
       links: {
-        opensearch: {
-          text: 'OpenSearch Admin',
-          href: '/admin/dashboard/'
-        },
         rabbitmq: {
           text: 'RabbitMQ Admin',
           href: '/admin/broker/'

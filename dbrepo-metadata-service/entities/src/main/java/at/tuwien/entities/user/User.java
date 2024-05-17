@@ -6,6 +6,7 @@ import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.UUID;
 
@@ -47,6 +48,9 @@ public class User {
     @Column
     private String affiliation;
 
+    @Column
+    private String language;
+
     @ToString.Exclude
     @OneToMany(fetch = FetchType.LAZY)
     @JoinColumns({
@@ -57,7 +61,22 @@ public class User {
     @Column(nullable = false)
     private String theme;
 
+    @ToString.Exclude
     @Column(name = "mariadb_password", nullable = false)
     private String mariadbPassword;
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) {
+            return true;
+        }
+        if (o instanceof Principal principal) {
+            return this.getUsername().equals(principal.getName());
+        }
+        if (!(o instanceof User other)) {
+            return false;
+        }
+        return this.getId().equals(other.getId());
+    }
 
 }

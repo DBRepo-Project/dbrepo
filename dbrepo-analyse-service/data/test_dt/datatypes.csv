@@ -1,4 +1,4 @@
-int,float,string,boolean,boolean,date,time,enum
+int,float,string,boolean,bool,date,time,enum
 1,0.130457876864591,DsMBTXUn,1,true,2018-10-04,04-10-2018 05:37:23,em
 2,0.438786739510644,TpALAVzF,0,true,2020-03-27,27-03-2020 13:00:48,mk
 3,0.097481830967851,UzyBMAcO,0,true,2017-02-23,23-02-2017 19:58:36,mk

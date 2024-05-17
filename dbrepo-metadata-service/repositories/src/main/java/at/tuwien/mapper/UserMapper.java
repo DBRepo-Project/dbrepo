@@ -1,7 +1,6 @@
 package at.tuwien.mapper;
 
 import at.tuwien.api.auth.SignupRequestDto;
-import at.tuwien.api.auth.TokenIntrospectDto;
 import at.tuwien.api.keycloak.*;
 import at.tuwien.api.user.*;
 import at.tuwien.api.user.UserDto;
@@ -21,17 +20,6 @@ import java.util.stream.Collectors;
 public interface UserMapper {
 
     org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(UserMapper.class);
-
-    @Mappings({
-            @Mapping(target = "id", expression = "java(data.getId().toString())")
-    })
-    UserDetailsDto userBriefDtoToUserDetailsDto(UserBriefDto data);
-
-    default GrantedAuthority grantedAuthorityDtoToGrantedAuthority(GrantedAuthorityDto data) {
-        final GrantedAuthority authority = new SimpleGrantedAuthority(data.getAuthority());
-        log.trace("mapped granted authority {} to granted authority {}", data, authority);
-        return authority;
-    }
 
     default UpdateCredentialsDto passwordToUpdateCredentialsDto(String password) {
         return UpdateCredentialsDto.builder()
@@ -76,14 +64,17 @@ public interface UserMapper {
 
     /* keep */
     @Mappings({
+            @Mapping(target = "attributes.language", source = "language"),
             @Mapping(target = "attributes.orcid", source = "orcid"),
             @Mapping(target = "attributes.affiliation", source = "affiliation"),
             @Mapping(target = "attributes.theme", source = "theme"),
-            @Mapping(target = "attributes.mariadbPassword", source = "mariadbPassword"),
             @Mapping(target = "name", expression = "java(userToFullName(data))"),
             @Mapping(target = "qualifiedName", expression = "java(userToQualifiedName(data))"),
     })
     UserDto userToUserDto(User data);
+
+    /* keep */
+    User userDtoToUserDto(UserDto data);
 
     /* keep */
     @Named("userToFullName")
@@ -115,16 +106,6 @@ public interface UserMapper {
                 .append(data.getUsername());
         return name.toString()
                 .trim();
-    }
-
-    default UserDetailsDto tokenIntrospectDtoToUserDetailsDto(TokenIntrospectDto data) {
-        return UserDetailsDto.builder()
-                .id(data.getSub())
-                .username(data.getUsername())
-                .authorities(Arrays.stream(data.getRealmAccess().getRoles())
-                        .map(SimpleGrantedAuthority::new)
-                        .collect(Collectors.toList()))
-                .build();
     }
 
     User signupRequestDtoToUser(SignupRequestDto data);

@@ -21,6 +21,11 @@ This service communicates between the [Search Database](../system-databases-sear
 the [User Interface](../system-other-ui) to allow structured search of databases, tables, columns, users, identifiers,
 views, semantic concepts &amp; units of measurements used in databases.
 
+<figure markdown>
+![Built-in search](images/screenshots/feature-search.png){ .img-border }
+<figcaption>Figure 1: Faceted browsing</figcaption>
+</figure>
+
 ## Index
 
 There is only one 
@@ -29,7 +34,7 @@ that holds all the metadata information which is mirrored from the [Metadata Dat
 
 <figure markdown>
 ![Mirroring statistical properties in Metadata Database and Search Database](images/statistics-mirror.png)
-<figcaption>Figure 1: Statistical properties in Metadata Database and Search Database</figcaption>
+<figcaption>Figure 2: Statistical properties in Metadata Database and Search Database</figcaption>
 </figure>
 
 ## Faceted Browsing
@@ -54,7 +59,7 @@ the units of measurements can be transformed.
 
 <figure markdown>
 ![Two tables with compatible semantic concepts (Temperature) and units of measurement (left is in degree Celsius, right is in degree Fahrenheit)](images/statistics-example.png)
-<figcaption>Figure 2: Two tables with compatible semantic concepts and units of measurement</figcaption>
+<figcaption>Figure 3: Two tables with compatible semantic concepts and units of measurement</figcaption>
 </figure>
 
 In short, the search service transforms the statistical properties not in the target unit of measurements is transformed
@@ -66,7 +71,7 @@ between 32 - 50 &deg;F"* instead.
 
 <figure markdown>
 ![Unit independent search query transformation](images/statistics-example-unit-independent-search.png)
-<figcaption>Figure 3: Unit independent search query transformation</figcaption>
+<figcaption>Figure 4: Unit independent search query transformation</figcaption>
 </figure>
 
 ## Examples

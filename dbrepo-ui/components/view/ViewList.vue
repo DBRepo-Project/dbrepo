@@ -19,7 +19,7 @@
           </v-list-item-subtitle>
           <template v-slot:append>
             <v-tooltip
-              v-if="view.identifiers && view.identifiers.length > 0"
+              v-if="hasPublishedIdentifier(view)"
               :text="$t('pages.identifier.pid.title')"
               left>
               <template v-slot:activator="{ props }">
@@ -66,14 +66,15 @@ export default {
       return this.database.views
     }
   },
-  mounted () {
-  },
   methods: {
     clazz (view) {
-      return this.hasIdentifiers(view) ? 'primary-text' : null
+      return this.hasPublishedIdentifier(view) ? 'primary-text' : null
     },
-    hasIdentifiers (view) {
-      return view && 'identifiers' in view && view.identifiers.length > 0
+    hasPublishedIdentifier (view) {
+      if (!view.identifiers) {
+        return null
+      }
+      return view.identifiers.filter(i => i.status === 'published').length > 0
     }
   }
 }

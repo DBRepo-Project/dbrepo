@@ -23,14 +23,8 @@
             v-if="item.is_null_allowed"
             v-text="$t('pages.table.subpages.schema.bullet')" /> {{ item.is_null_allowed }}
         </template>
-        <template v-slot:item.unique="{ item }">
-          <span v-if="isUnique(item)">●</span> {{ isUnique(item) }}
-        </template>
         <template v-slot:item.extra="{ item }">
           <pre>{{ extra(item) }}</pre>
-        </template>
-        <template v-slot:item.is_primary_key="{ item }">
-          <span v-if="item.is_primary_key">●</span> {{ item.is_primary_key }}
         </template>
         <template v-slot:item.auto_generated="{ item }">
           <span v-if="item.auto_generated">●</span> {{ item.auto_generated }}
@@ -198,7 +192,7 @@ export default {
       return this.userStore.getRoles
     },
     primaryKeysColumns () {
-      return this.table.columns.filter(c => c.is_primary_key).map(c => c.internal_name).join(', ')
+      return this.table.constraints.primary_key.join(', ')
     },
     canAssignSemanticInformation () {
       if (!this.user) {
@@ -222,13 +216,6 @@ export default {
     }
   },
   methods: {
-    isUnique (column) {
-      if (!this.table || !this.table.constraints || !this.table.constraints.uniques) {
-        return false
-      }
-      const uniqueColumnIds = this.table.constraints.uniques.map(u => u.columns.map(c => c.id)).flat()
-      return uniqueColumnIds.includes(column.id)
-    },
     extra (column) {
       if (['date', 'datetime', 'timestamp', 'time'].includes(column.column_type)) {
         return `fsp=${column.date_format.unix_format}`

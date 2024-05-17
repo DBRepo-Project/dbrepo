@@ -1,8 +1,8 @@
 import json
 import logging
-import pandas as pd
+import pandas
 import random
-import numpy as np
+import numpy
 import math
 from determine_dt import determine_datatypes
 from clients.s3_client import S3Client
@@ -33,9 +33,9 @@ def determine_pk(filename, separator=","):
                 pk.update({item: j})
                 colindex.remove(k)
             k = k + 1
-        csvdata = pd.read_csv(stream, sep=separator)
+        csvdata = pandas.read_csv(stream, sep=separator)
         for i in colindex:
-            if pd.Series(csvdata.iloc[:, i]).is_unique and pd.Series(csvdata.iloc[:, i]).notnull().values.any():
+            if pandas.Series(csvdata.iloc[:, i]).is_unique and pandas.Series(csvdata.iloc[:, i]).notnull().values.any():
                 j = j + 1
                 pk.update({list(colnames)[i]: j})
     else:  # stochastic pk determination
@@ -51,17 +51,17 @@ def determine_pk(filename, separator=","):
                 pk.update({item: j})
                 colindex.remove(k)
             k = k + 1
-        p = np.log10(
+        p = numpy.log10(
             int(response["ContentLength"])
         )  # logarithmic scaled percentage of random inspected rows
-        csvdata = pd.read_csv(
+        csvdata = pandas.read_csv(
             filepath_or_buffer=stream,
             sep=separator,
             header=0,
             skiprows=lambda k: k > 0 and random.random() > p,
         )
         for i in colindex:
-            if pd.Series(csvdata.iloc[:, i]).is_unique and pd.Series(csvdata.iloc[:, i]).notnull().values.any():
+            if pandas.Series(csvdata.iloc[:, i]).is_unique and pandas.Series(csvdata.iloc[:, i]).notnull().values.any():
                 j = j + 1
                 pk.update({list(colnames)[i]: j})
         logging.info(f"Determined primary key {pk}")

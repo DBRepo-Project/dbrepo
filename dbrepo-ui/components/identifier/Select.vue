@@ -1,27 +1,39 @@
 <template>
   <div>
     <v-list-item
-      v-for="(id, i) in identifiers"
+      v-for="(identifier, i) in displayIdentifiers"
       :key="`i-${i}`"
       :value="idx"
-      :active="isActive(id)"
-      color="primary"
+      :active="isActive(identifier)"
+      :color="color(identifier)"
       :variant="listVariant"
-      :href="href(id)"
-      :title="formatTimestampUTCLabel(id.created)"
+      :href="href(identifier)"
+      :title="formatTimestampUTCLabel(identifier.created)"
       lines="two">
       <v-list-item-subtitle>
         <Banner
-          :identifier="id" />
+          :identifier="identifier" />
       </v-list-item-subtitle>
       <template v-slot:append>
         <v-tooltip
+          v-if="identifier.status === 'published'"
           :text="$t('pages.identifier.pid.title')"
           left>
-          <template v-slot:activator="{ props }">
+          <template
+            v-slot:activator="{ props }">
             <v-icon
               color="primary"
               v-bind="props">mdi-identifier</v-icon>
+          </template>
+        </v-tooltip>
+        <v-tooltip
+          v-else
+          :text="$t('pages.identifier.draft.title')"
+          left>
+          <template
+            v-slot:activator="{ props }">
+            <v-icon
+              v-bind="props">mdi-pencil-outline</v-icon>
           </template>
         </v-tooltip>
       </template>
@@ -56,7 +68,6 @@ export default {
   data () {
     return {
       idx: null,
-      localIdentifier: null,
       userStore: useUserStore(),
       cacheStore: useCacheStore()
     }
@@ -68,16 +79,19 @@ export default {
     roles () {
       return this.userStore.getRoles
     },
-    canDeleteIdentifier () {
-      if (!this.user) {
-        return false
+    displayIdentifiers () {
+      if (!this.identifiers) {
+        return []
       }
-      return this.roles.includes('delete-identifier')
+      if (!this.user) {
+        return this.identifiers.filter(i => i.status === 'published')
+      }
+      return this.identifiers.filter(i => i.status === 'published' || i.creator.id === this.user.id)
     },
     listVariant () {
       const runtimeConfig = useRuntimeConfig()
       return this.$vuetify.theme.global.name.toLowerCase().endsWith('contrast') ? runtimeConfig.public.variant.list.contrast : runtimeConfig.public.variant.list.normal
-    },
+    }
   },
   watch: {
     identifier: {
@@ -85,11 +99,6 @@ export default {
         this.init()
       },
       deep: true
-    },
-    idx: {
-      handler () {
-        this.localIdentifier = this.identifiers[this.idx]
-      }
     }
   },
   mounted () {
@@ -98,10 +107,19 @@ export default {
   methods: {
     formatTimestampUTCLabel,
     href (identifier) {
-      if (this.canDeleteIdentifier) {
-        return null
+      if (identifier.status === 'published') {
+        return `/pid/${identifier.id}`
       }
-      return `/pid/${identifier.id}`
+      switch (identifier.type) {
+        case 'database':
+          return `/database/${identifier.database_id}/persist/${identifier.id}`
+        case 'subset':
+          return `/database/${identifier.database_id}/subset/${identifier.query_id}/persist/${identifier.id}`
+        case 'table':
+          return `/database/${identifier.database_id}/table/${identifier.table_id}/persist/${identifier.id}`
+        case 'view':
+          return `/database/${identifier.database_id}/view/${identifier.view_id}/persist/${identifier.id}`
+      }
     },
     isActive (identifier) {
       if (!identifier) {
@@ -109,12 +127,17 @@ export default {
       }
       return this.identifier.id === identifier.id
     },
+    color (identifier) {
+      if (!identifier) {
+        return false
+      }
+      return identifier.status === 'published' ? 'primary' : null
+    },
     init () {
-      if (!this.identifiers || this.identifiers.length === 0 || !this.identifier) {
+      if (!this.identifiers) {
         return null
       }
       this.idx = this.identifiers.map(i => i.id).indexOf(this.identifier.id)
-      this.localIdentifier = this.identifier
     }
   }
 }

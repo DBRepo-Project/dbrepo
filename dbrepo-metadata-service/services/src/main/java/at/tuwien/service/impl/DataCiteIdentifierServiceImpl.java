@@ -4,18 +4,23 @@ import at.tuwien.api.datacite.DataCiteBody;
 import at.tuwien.api.datacite.DataCiteData;
 import at.tuwien.api.datacite.doi.DataCiteCreateDoi;
 import at.tuwien.api.datacite.doi.DataCiteDoi;
+import at.tuwien.api.datacite.doi.DataCiteDoiEvent;
 import at.tuwien.api.identifier.BibliographyTypeDto;
+import at.tuwien.api.identifier.IdentifierCreateDto;
 import at.tuwien.api.identifier.IdentifierSaveDto;
 import at.tuwien.api.identifier.IdentifierTypeDto;
 import at.tuwien.config.DataCiteConfig;
 import at.tuwien.config.EndpointConfig;
+import at.tuwien.entities.database.Database;
 import at.tuwien.entities.identifier.Identifier;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.DataCiteMapper;
-import at.tuwien.repository.mdb.IdentifierRepository;
+import at.tuwien.mapper.IdentifierMapper;
+import at.tuwien.repository.IdentifierRepository;
 import at.tuwien.service.IdentifierService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.ParameterizedTypeReference;
@@ -26,10 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.DefaultUriBuilderFactory;
 
-import java.security.Principal;
-import java.util.LinkedList;
 import java.util.List;
 
 @Slf4j
@@ -38,23 +40,25 @@ import java.util.List;
 @Service
 public class DataCiteIdentifierServiceImpl implements IdentifierService {
 
+    private final RestTemplate restTemplate;
     private final DataCiteConfig dataCiteConfig;
     private final DataCiteMapper dataCiteMapper;
     private final EndpointConfig endpointConfig;
     private final IdentifierService identifierService;
-    private final RestTemplateBuilder restTemplateBuilder;
     private final IdentifierRepository identifierRepository;
 
-    public DataCiteIdentifierServiceImpl(DataCiteConfig dataCiteConfig, DataCiteMapper dataCiteMapper,
-                                         EndpointConfig endpointConfig, IdentifierRepository identifierRepository,
-                                         RestTemplateBuilder restTemplateBuilder, IdentifierServiceImpl identifierService) {
+    private final ParameterizedTypeReference<DataCiteBody<DataCiteDoi>> dataCiteBodyParameterizedTypeReference = new ParameterizedTypeReference<>() {
+    };
+
+    public DataCiteIdentifierServiceImpl(@Qualifier("dataCiteRestTemplate") RestTemplate restTemplate,
+                                         DataCiteConfig dataCiteConfig, DataCiteMapper dataCiteMapper,
+                                         EndpointConfig endpointConfig, IdentifierServiceImpl identifierService,
+                                         IdentifierRepository identifierRepository) {
+        this.restTemplate = restTemplate;
         this.dataCiteConfig = dataCiteConfig;
         this.dataCiteMapper = dataCiteMapper;
         this.endpointConfig = endpointConfig;
         this.identifierService = identifierService;
-        this.restTemplateBuilder = restTemplateBuilder.basicAuthentication(dataCiteConfig.getUsername(),
-                        dataCiteConfig.getPassword())
-                .uriTemplateHandler(new DefaultUriBuilderFactory(dataCiteConfig.getUrl()));
         this.identifierRepository = identifierRepository;
     }
 
@@ -62,6 +66,15 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
     @Transactional(readOnly = true)
     public List<Identifier> findAll(IdentifierTypeDto type, Long databaseId, Long queryId, Long viewId, Long tableId) {
         return identifierService.findAll(type, databaseId, queryId, viewId, tableId);
+    }
+
+    @Override
+    @Transactional
+    public Identifier publish(Long identifierId) throws MalformedException, ServiceConnectionException,
+            IdentifierNotFoundException {
+        final Identifier identifier = find(identifierId);
+        identifier.setDoi(remoteSave(identifier, DataCiteDoiEvent.PUBLISH));
+        return identifierRepository.save(identifier);
     }
 
     @Override
@@ -82,32 +95,34 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional(rollbackFor = {Exception.class})
-    public Identifier create(IdentifierSaveDto data, Principal principal) throws QueryNotFoundException,
-            IdentifierRequestException, UserNotFoundException, DatabaseNotFoundException,
-            ViewNotFoundException, QueryStoreException, ImageNotSupportedException {
-        final Identifier identifier = identifierService.create(data, principal);
-        /* https://stackoverflow.com/questions/55090541/spring-data-jpa-lombok-unsupportedoperationexception-during-saving */
-        if (identifier.getCreators() != null) {
-            identifier.setCreators(new LinkedList<>(identifier.getCreators()));
-        }
-        if (identifier.getTitles() != null) {
-            identifier.setTitles(new LinkedList<>(identifier.getTitles()));
-        }
-        if (identifier.getDescriptions() != null) {
-            identifier.setDescriptions(new LinkedList<>(identifier.getDescriptions()));
-        }
-        if (identifier.getFunders() != null) {
-            identifier.setFunders(new LinkedList<>(identifier.getFunders()));
-        }
-        if (identifier.getLicenses() != null) {
-            identifier.setLicenses(new LinkedList<>(identifier.getLicenses()));
-        }
-        if (identifier.getRelatedIdentifiers() != null) {
-            identifier.setRelatedIdentifiers(new LinkedList<>(identifier.getRelatedIdentifiers()));
-        }
-        /* end fix */
-        final RestTemplate restTemplate = restTemplateBuilder.build();
+    public Identifier save(Database database, User user, IdentifierSaveDto data) throws ServiceException,
+            ServiceConnectionException, MalformedException, DatabaseNotFoundException, IdentifierNotFoundException,
+            ViewNotFoundException, QueryNotFoundException, SearchServiceException, SearchServiceConnectionException {
+        data.setDoi(remoteSave(identifierService.save(database, user, data), DataCiteDoiEvent.REGISTER));
+        return identifierService.save(database, user, data);
+    }
 
+    @Override
+    @Transactional(rollbackFor = {Exception.class})
+    public Identifier create(Database database, User user, IdentifierCreateDto data) throws ServiceException,
+            ServiceConnectionException, IdentifierNotFoundException, MalformedException, ViewNotFoundException,
+            DatabaseNotFoundException, QueryNotFoundException, SearchServiceException,
+            SearchServiceConnectionException {
+        data.setDoi(remoteSave(identifierService.create(database, user, data), DataCiteDoiEvent.REGISTER));
+        return identifierService.create(database, user, data);
+    }
+
+    /**
+     * Saves the PID remotely in DataCite Fabrica
+     *
+     * @param identifier The identifier information
+     * @param event      The PID status event, e.g. publish
+     * @return The DOI for this PID.
+     * @throws MalformedException
+     * @throws ServiceConnectionException
+     */
+    public String remoteSave(Identifier identifier, DataCiteDoiEvent event) throws MalformedException,
+            ServiceConnectionException {
         final HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBasicAuth(dataCiteConfig.getUsername(), dataCiteConfig.getPassword());
@@ -117,36 +132,33 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
                                 .type("dois")
                                 .attributes(dataCiteMapper.identifierToDataCiteCreateDoi(identifier,
                                         endpointConfig.getWebsiteUrl() + "/pid/" + identifier.getId(),
-                                        dataCiteConfig.getPrefix()))
+                                        dataCiteConfig.getPrefix(), event))
                                 .build())
                         .build(),
                 headers
         );
         final String url = dataCiteConfig.getUrl() + "/dois";
-        log.debug("request doi from url {}", url);
+        log.trace("request doi from url {}", url);
         try {
             ResponseEntity<DataCiteBody<DataCiteDoi>> response = restTemplate.exchange(url, HttpMethod.POST,
-                    request,
-                    new ParameterizedTypeReference<>() {
-                    }
-            );
-
+                    request, dataCiteBodyParameterizedTypeReference);
             if (response.getStatusCode() != HttpStatus.CREATED || response.getBody() == null) {
-                log.error("Could not successfully create DOI. Response: {}", response);
-                throw new IdentifierRequestException("Could not successfully create DOI.");
+                log.error("Failed to mint doi: {}", response);
+                throw new ServiceException("Failed to mint doi: " + response.getBody());
             }
-
-            identifier.setDoi(response.getBody().getData().getAttributes().getDoi());
-            this.identifierRepository.save(identifier);
+            return response.getBody()
+                    .getData()
+                    .getAttributes()
+                    .getDoi();
         } catch (HttpClientErrorException e) {
-            log.error("Invalid DOI metadata.", e);
-            throw new IdentifierRequestException("Invalid DOI metadata.", e);
+            log.error("Failed to mint doi: malformed metadata: {}", e.getMessage());
+            throw new MalformedException("Failed to mint doi: malformed metadata: " + e.getMessage(), e);
         } catch (RestClientException e) {
-            log.error("Could not fulfil request to DataCite server.", e);
-            throw new InternalError("Could not fulfil request to DataCite server.", e);
+            log.error("Failed to mint doi: {}", e.getMessage());
+            throw new ServiceConnectionException("Failed to mint doi: " + e.getMessage(), e);
+        } catch (ServiceException e) {
+            throw new RuntimeException(e);
         }
-
-        return identifier;
     }
 
     @Override
@@ -173,30 +185,29 @@ public class DataCiteIdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional(readOnly = true)
-    public InputStreamResource exportMetadata(Long id) throws IdentifierNotFoundException {
-        return identifierService.exportMetadata(id);
+    public InputStreamResource exportMetadata(Identifier identifier) {
+        return identifierService.exportMetadata(identifier);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public String exportBibliography(Long id, BibliographyTypeDto style)
-            throws IdentifierNotFoundException, IdentifierRequestException {
-        return identifierService.exportBibliography(id, style);
+    public String exportBibliography(Identifier identifier, BibliographyTypeDto style) throws MalformedException {
+        return identifierService.exportBibliography(identifier, style);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public InputStreamResource exportResource(Long identifierId, Principal principal)
-            throws IdentifierNotFoundException, QueryNotFoundException, FileStorageException,
-            IdentifierRequestException, QueryStoreException, QueryMalformedException, DatabaseNotFoundException,
-            ImageNotSupportedException, DataDbSidecarException, DataProcessingException {
-        return identifierService.exportResource(identifierId, principal);
+    public InputStreamResource exportResource(Identifier identifier) throws ServiceException,
+            ServiceConnectionException, IdentifierNotFoundException, QueryNotFoundException {
+        return identifierService.exportResource(identifier);
     }
 
     @Override
     @Transactional
-    public void delete(Long identifierId) throws IdentifierNotFoundException, DatabaseNotFoundException {
-        identifierService.delete(identifierId);
+    public void delete(Identifier identifier) throws ServiceException, ServiceConnectionException,
+            DatabaseNotFoundException, IdentifierNotFoundException, SearchServiceException,
+            SearchServiceConnectionException {
+        identifierService.delete(identifier);
     }
 
 }

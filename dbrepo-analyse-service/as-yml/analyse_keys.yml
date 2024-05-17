@@ -1,6 +1,7 @@
 tags:
   - analyse-endpoint
 summary: "Determine primary keys"
+operationId: analyse_keys
 description: "This is a simple API which returns the primary keys + ranking of a (path) csv file"
 consumes:
   - "application/json"

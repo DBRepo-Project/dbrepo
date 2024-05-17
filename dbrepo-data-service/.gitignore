@@ -1,11 +1,8 @@
 HELP.md
 target/
-out/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
-!**/src/main/**/out/
-!**/src/test/**/out/
 
 ### Environment ###
 .env
@@ -13,6 +10,9 @@ out/
 ### Generated ###
 ready
 mapping.xml
+schema.xsd
+*.versionsBackup
+metrics.txt
 
 ### STS ###
 .apt_generated

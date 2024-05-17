@@ -1,19 +1,20 @@
-import type {AxiosRequestConfig, AxiosResponse} from 'axios'
+import type {AxiosError, AxiosRequestConfig, AxiosResponse} from 'axios'
+import {axiosErrorToApiError} from '@/utils'
 
 export const useTableService = (): any => {
 
-  function findAll(databaseId: number, internalName: string): Promise<TableBriefDto[]> {
+  function findAll(databaseId: number): Promise<TableBriefDto> {
     const axios = useAxiosInstance()
     console.debug('find tables')
-    return new Promise<TableBriefDto[]>((resolve, reject) => {
-      axios.get<TableBriefDto[]>(`/api/database/${databaseId}/table`, {params: (internalName && {internal_name: internalName})})
+    return new Promise<TableBriefDto>((resolve, reject) => {
+      axios.get<TableBriefDto>(`/api/database/${databaseId}/table`)
         .then((response) => {
           console.info('Found tables(s)')
           resolve(response.data)
         })
         .catch((error) => {
           console.error('Failed to find tables', error)
-          reject(error)
+          reject(axiosErrorToApiError(error))
         })
     })
   }
@@ -28,8 +29,8 @@ export const useTableService = (): any => {
           resolve(response.data)
         })
         .catch((error) => {
-          console.error('Failed to find table with id', tableId, 'in database with id', databaseId)
-          reject(error)
+          console.error('Failed to find table')
+          reject(axiosErrorToApiError(error))
         })
     })
   }
@@ -44,8 +45,8 @@ export const useTableService = (): any => {
           resolve(response.data)
         })
         .catch((error) => {
-          console.error('Failed to update column with id', columnId, 'table with id', tableId, 'in database with id', databaseId)
-          reject(error)
+          console.error('Failed to update column', error)
+          reject(axiosErrorToApiError(error))
         })
     })
   }
@@ -61,14 +62,14 @@ export const useTableService = (): any => {
         })
         .catch((error) => {
           console.error('Failed to import csv', error)
-          reject(error)
+          reject(axiosErrorToApiError(error))
         })
     })
   }
 
   async function getData(databaseId: number, tableId: number, page: number, size: number, timestamp: Date): Promise<QueryResultDto> {
     const axios = useAxiosInstance()
-    console.debug('get data for table with id', tableId, 'in database with id', databaseId, 'page', page, 'size', size);
+    console.debug('get data for table with id', tableId, 'in database with id', databaseId);
     return new Promise<QueryResultDto>((resolve, reject) => {
       axios.get<QueryResultDto>(`/api/database/${databaseId}/table/${tableId}/data`, {params: mapFilter(timestamp, page, size)})
         .then((response) => {
@@ -76,8 +77,8 @@ export const useTableService = (): any => {
           resolve(response.data)
         })
         .catch((error) => {
-          console.error('Failed to get data')
-          reject(error)
+          console.error('Failed to get data', error)
+          reject(axiosErrorToApiError(error))
         })
     })
   }
@@ -86,15 +87,15 @@ export const useTableService = (): any => {
     const axios = useAxiosInstance()
     console.debug('get data count for table with id', tableId, 'in database with id', databaseId);
     return new Promise<number>((resolve, reject) => {
-      axios.head<number>(`/api/database/${databaseId}/table/${tableId}/data`, {params: mapFilter(timestamp, null, null)})
+      axios.head<void>(`/api/database/${databaseId}/table/${tableId}/data`, {params: mapFilter(timestamp, null, null)})
         .then((response: AxiosResponse<void>) => {
           const count: number = Number(response.headers['x-count'])
           console.info('Found' + count + 'in table with id', tableId, 'in database with id', databaseId)
           resolve(count)
         })
         .catch((error) => {
-          console.error('Failed to get data count')
-          reject(error)
+          console.error('Failed to get data count', error)
+          reject(axiosErrorToApiError(error))
         })
     })
   }
@@ -116,24 +117,24 @@ export const useTableService = (): any => {
           resolve(response.data)
         })
         .catch((error) => {
-          console.error('Failed to export data')
-          reject(error)
+          console.error('Failed to export data', error)
+          reject(axiosErrorToApiError(error))
         })
     })
   }
 
   async function create(databaseId: number, data: TableCreateDto): Promise<TableDto> {
     const axios = useAxiosInstance()
-    console.debug('create table in database with id', databaseId)
+    console.debug('create table in database with id', databaseId, data)
     return new Promise<TableDto>((resolve, reject) => {
       axios.post<TableDto>(`/api/database/${databaseId}/table`, data)
         .then((response) => {
           console.info('Created table in database with id', databaseId)
           resolve(response.data)
         })
-        .catch((error) => {
-          console.error('Failed to create table in database with id', databaseId)
-          reject(error)
+        .catch((error: AxiosError) => {
+          console.error('Failed to create table', error)
+          reject(axiosErrorToApiError(error))
         })
     });
   }
@@ -143,13 +144,13 @@ export const useTableService = (): any => {
     console.debug('delete table with id', tableId, 'in database with id', databaseId)
     return new Promise<void>((resolve, reject) => {
       axios.delete<void>(`/api/database/${databaseId}/table/${tableId}`)
-        .then(() => {
+        .then((response) => {
           console.info('Deleted table with id', tableId, 'in database with id', databaseId)
-          resolve()
+          resolve(response.data)
         })
         .catch((error) => {
           console.error('Failed to delete table', error)
-          reject(error)
+          reject(axiosErrorToApiError(error))
         })
     });
   }
@@ -165,7 +166,7 @@ export const useTableService = (): any => {
         })
         .catch((error) => {
           console.error('Failed to delete tuple(s)', error)
-          reject(error)
+          reject(axiosErrorToApiError(error))
         })
     });
   }
@@ -181,7 +182,7 @@ export const useTableService = (): any => {
         })
         .catch((error) => {
           console.error('Failed to load history', error)
-          reject(error)
+          reject(axiosErrorToApiError(error))
         })
     });
   }
@@ -197,9 +198,37 @@ export const useTableService = (): any => {
         })
         .catch((error) => {
           console.error('Failed to suggest semantic entities', error)
-          reject(error)
+          reject(axiosErrorToApiError(error))
         })
     })
+  }
+
+  function prepareColumns(columns: InternalColumnDto[]): ColumnCreateDto[] {
+    return columns.map((c: InternalColumnDto) => {
+      const column: ColumnCreateDto = {
+        name: c.name,
+        type: c.type,
+        size: c.size ? c.size : null,
+        d: c.d ? c.d : null,
+        dfid: c.dfid ? c.dfid : null,
+        enums: c.enums_values ? c.enums_values.split(',') : [],
+        sets: c.sets_values ? c.sets_values.split(',') : [],
+        index_length: c.index_length,
+        null_allowed: c.null_allowed
+      }
+      return column
+    })
+  }
+
+  function prepareConstraints(columns: InternalColumnDto[]): ConstraintsCreateDto {
+    const primaryKeyColumns = columns.filter(column => column.primary_key)
+    const uniqueColumns = columns.filter(column => column.unique)
+    return {
+      primary_key: primaryKeyColumns.length > 0 ? primaryKeyColumns.map(column => column.name) : [],
+      uniques: uniqueColumns.length > 0 ? columns.filter(column => column.unique).map(c => [c.name]) : [],
+      foreign_keys: [],
+      checks: []
+    }
   }
 
   function isOwner(table: TableDto, user: UserDto) {
@@ -219,15 +248,13 @@ export const useTableService = (): any => {
   }
 
   function mapFilter(timestamp: Date | null, page: number | null, size: number | null) {
-    if (page !== null && size !== null) {
-      if (!timestamp) {
-        return {page, size}
-      }
-      return {page, size, timestamp}
+    if (!timestamp) {
+      return {page, size}
     }
     if (!page || !size) {
       return {timestamp}
     }
+    return {timestamp, page, size}
   }
 
   return {
@@ -243,6 +270,8 @@ export const useTableService = (): any => {
     removeTuple,
     history,
     suggest,
+    prepareColumns,
+    prepareConstraints,
     isOwner,
     tableNameToInternalName
   }

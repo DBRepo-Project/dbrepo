@@ -15,8 +15,10 @@ import at.tuwien.mapper.MetadataMapper;
 import at.tuwien.oaipmh.OaiErrorType;
 import at.tuwien.oaipmh.OaiListIdentifiersParameters;
 import at.tuwien.oaipmh.OaiRecordParameters;
+import at.tuwien.repository.IdentifierRepository;
 import at.tuwien.service.IdentifierService;
 import at.tuwien.service.MetadataService;
+import at.tuwien.utils.XmlUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,9 +26,21 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
 
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -40,12 +54,13 @@ public class MetadataServiceImpl implements MetadataService {
     private final TemplateEngine templateEngine;
     private final CrossrefGateway crossrefGateway;
     private final IdentifierService identifierService;
+    private final IdentifierRepository identifierRepository;
 
     @Autowired
     public MetadataServiceImpl(RorGateway rorGateway, OrcidGateway orcidGateway, ExternalMapper externalMapper,
                                MetadataConfig metadataConfig, MetadataMapper metadataMapper,
                                TemplateEngine templateEngine, CrossrefGateway crossrefGateway,
-                               IdentifierService identifierService) {
+                               IdentifierService identifierService, IdentifierRepository identifierRepository) {
         this.rorGateway = rorGateway;
         this.orcidGateway = orcidGateway;
         this.externalMapper = externalMapper;
@@ -54,15 +69,18 @@ public class MetadataServiceImpl implements MetadataService {
         this.templateEngine = templateEngine;
         this.crossrefGateway = crossrefGateway;
         this.identifierService = identifierService;
+        this.identifierRepository = identifierRepository;
     }
 
     @Override
     public String identify() {
+        final Optional<Identifier> optional = identifierRepository.findEarliest();
+        final String earliest = optional.map(o -> o.getCreated().toString()).orElse(null);
         final Context context = new Context();
         context.setVariable("repositoryName", metadataConfig.getRepositoryName());
         context.setVariable("baseURL", metadataConfig.getBaseUrl());
         context.setVariable("adminEmail", metadataConfig.getAdminEmail());
-        context.setVariable("earliestDatestamp", metadataConfig.getEarliestDatestamp());
+        context.setVariable("earliestDatestamp", earliest);
         context.setVariable("deletedRecord", metadataConfig.getDeletedRecord());
         context.setVariable("granularity", metadataConfig.getGranularity());
         final String body = templateEngine.process("identify.xml", context);
@@ -116,7 +134,7 @@ public class MetadataServiceImpl implements MetadataService {
         final StringBuilder builder = new StringBuilder("<ListMetadataFormats>");
         builder.append(templateEngine.process("metadata-format.xml", new Context()));
         builder.append("</ListMetadataFormats>");
-        return parseResponse("verb=\"ListMetadataFormats\"", builder.toString());
+        return XmlUtil.pretty(parseResponse("verb=\"ListMetadataFormats\"", builder.toString()));
     }
 
     @Override
@@ -126,7 +144,7 @@ public class MetadataServiceImpl implements MetadataService {
         context.setVariable("message", type.getErrorText());
         final String body = templateEngine.process("error.xml", context);
         log.trace("mapped error {}", type);
-        return parseResponse(body);
+        return XmlUtil.pretty(parseResponse(body));
     }
 
     private String requestUrl() {
@@ -149,12 +167,12 @@ public class MetadataServiceImpl implements MetadataService {
             context.setVariable("request", "<request " + parameterString + ">" + requestUrl() + "</request>");
         }
         context.setVariable("body", body);
-        return templateEngine.process("_header.xml", context);
+        return XmlUtil.pretty(templateEngine.process("_header.xml", context));
     }
 
     @Override
     public ExternalMetadataDto findByUrl(String url) throws OrcidNotFoundException, RorNotFoundException,
-            DoiNotFoundException, IdentifierNotFoundException {
+            DoiNotFoundException, IdentifierNotSupportedException {
         if (url.contains("orcid.org")) {
             final OrcidDto orcidDto = orcidGateway.findByUrl(url);
             return externalMapper.orcidDtoToExternalMetadataDto(orcidDto);
@@ -178,7 +196,7 @@ public class MetadataServiceImpl implements MetadataService {
             return externalMapper.crossrefDtoToExternalMetadataDto(crossrefDto);
         }
         log.error("Failed to find metadata: unsupported identifier {}", url);
-        throw new IdentifierNotFoundException("Failed to find metadata: unsupported identifier " + url);
+        throw new IdentifierNotSupportedException("Failed to find metadata: unsupported identifier " + url);
     }
 
 }

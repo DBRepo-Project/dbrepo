@@ -111,7 +111,7 @@ public class View {
     }
 
     @ToString.Exclude
-    @OnDelete(action = OnDeleteAction.CASCADE)
+//    @OnDelete(action = OnDeleteAction.CASCADE)
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     @JoinColumns({
             @JoinColumn(name = "vid", referencedColumnName = "id", updatable = false)

@@ -49,11 +49,11 @@ export const useUserStore = defineStore('user', {
       this.access = null
     },
     setRouteAccess(databaseId) {
-      if (!databaseId) {
+      if (!databaseId || !this.user || !this.user.id) {
         return
       }
       const accessService = useAccessService()
-      accessService.findOne(databaseId)
+      accessService.findOne(databaseId, this.user.id)
         .then(access => this.access = access)
     }
   }

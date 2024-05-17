@@ -22,6 +22,10 @@ import java.util.List;
 public class IdentifierSaveDto {
 
     @NotNull
+    @Schema(example = "1")
+    private Long id;
+
+    @NotNull
     @JsonProperty("database_id")
     @Schema(example = "1")
     private Long databaseId;
@@ -42,7 +46,11 @@ public class IdentifierSaveDto {
     @Schema(example = "database")
     private IdentifierTypeDto type;
 
+    @Schema(example = "10.1111/11111111")
+    private String doi;
+
     @NotNull
+    @NotEmpty
     private List<IdentifierSaveTitleDto> titles;
 
     private List<IdentifierSaveDescriptionDto> descriptions;

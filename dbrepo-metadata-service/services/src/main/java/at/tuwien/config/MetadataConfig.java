@@ -17,16 +17,13 @@ public class MetadataConfig {
     @Value("${dbrepo.admin-email}")
     private String adminEmail;
 
-    @Value("${dbrepo.earliest-datestamp}")
-    private String earliestDatestamp;
-
     @Value("${dbrepo.deleted-record}")
     private String deletedRecord;
 
     @Value("${dbrepo.granularity}")
     private String granularity;
 
-    @Value("${fda.pid.base}")
+    @Value("${dbrepo.pid.base}")
     private String pidBase;
 
 }

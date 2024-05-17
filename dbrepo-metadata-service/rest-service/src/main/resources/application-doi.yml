@@ -1,4 +1,4 @@
-fda:
+dbrepo:
   datacite:
     url: "${DATACITE_URL}"
     prefix: "${DATACITE_PREFIX}"

@@ -3,7 +3,7 @@ export const useUnitService = (): any => {
     const axios = useAxiosInstance()
     console.debug('find units')
     return new Promise<UnitDto[]>((resolve, reject) => {
-      axios.get<UnitDto[]>('/api/semantic/unit')
+      axios.get<UnitDto[]>('/api/unit')
         .then((response) => {
           console.info('Found unit(s)')
           resolve(response.data)

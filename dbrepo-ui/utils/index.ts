@@ -1,6 +1,7 @@
 import {format} from 'date-fns'
 import moment from 'moment'
 import type {AxiosError} from 'axios'
+import type {Api} from "@vitejs/plugin-vue";
 
 
 export function notEmpty(str: string) {
@@ -8,14 +9,6 @@ export function notEmpty(str: string) {
     return false
   }
   return str.trim().length > 0
-}
-
-export function localizedMessage(t: any, error: AxiosError<ApiErrorDto>, message: string | null): string {
-  if (error.response && error.response.data) {
-    const data = error.response.data as ApiErrorDto
-    return `${t(data.code)}: ${data.message}`
-  }
-  return `${error.message}: ${message}`
 }
 
 export function notFile(files: [File[]]) {
@@ -1053,6 +1046,19 @@ export function isActiveMessage(message: any) {
     return true
   }
   return false
+}
+
+export function axiosErrorToApiError(error: AxiosError): ApiErrorDto {
+  if (error.response?.data) {
+    const errorObj: ApiErrorDto = (error.response?.data as ApiErrorDto)
+    return errorObj
+  }
+  const errorObj: ApiErrorDto = {
+    status: error.code ? error.code : 'NOT_SET',
+    code: 'error.axios.connection',
+    message: error.message
+  }
+  return errorObj
 }
 
 export function timestampToTimeZonedTimestamp(str: string) {

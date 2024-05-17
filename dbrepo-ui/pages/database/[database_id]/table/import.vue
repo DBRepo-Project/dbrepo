@@ -49,13 +49,20 @@
                 </v-row>
                 <v-row dense>
                   <v-col md="8">
-                    <v-alert
-                      v-if="generatedTableName"
-                      class="mt-1"
-                      border="start"
-                      color="info">
-                      {{ $t('pages.table.subpages.import.generated.label') + ' ' + generatedTableName }}
-                    </v-alert>
+                    <v-text-field
+                      v-model="generatedTableName"
+                      :rules="[
+                        v => notEmpty(v) || $t('validation.required'),
+                        v => generatedTableName.length <= 64 || ($t('validation.max-length') + 64),
+                      ]"
+                      disabled
+                      clearable
+                      counter="64"
+                      persistent-counter
+                      persistent-hint
+                      :variant="inputVariant"
+                      :hint="$t('pages.table.subpages.import.generated.hint')"
+                      :label="$t('pages.table.subpages.import.generated.label')"/>
                   </v-col>
                 </v-row>
                 <v-row dense>
@@ -95,11 +102,10 @@
               v-if="step >= 4">
               <TableSchema
                 ref="schema"
+                :back="false"
+                :loading="loading"
                 :submit-text="$t('navigation.continue')"
-                :submit-disabled="!validStep1"
                 :columns="tableCreate.columns"
-                :loading="loadingCreateAndImport"
-                @schema-valid="schemaValidity"
                 @close="createEmptyTableAndImport"/>
             </v-container>
           </v-stepper-window>
@@ -109,19 +115,16 @@
               :value="5"/>
           </v-stepper-header>
           <v-stepper-window
-            v-if="table"
+            v-if="step >= 5"
             direction="vertical">
             <v-container>
               <v-row dense>
                 <v-col>
                   <v-alert
-                    v-if="rowCount !== null"
                     border="start"
                     color="success">
                     {{ $t('pages.table.subpages.create.summary.prefix') }}
                     <strong v-text="table.internal_name"/>
-                    {{ $t('pages.table.subpages.create.summary.middle') }}
-                    <strong v-text="rowCount"/>
                     {{ $t('pages.table.subpages.create.summary.suffix') }}
                   </v-alert>
                 </v-col>
@@ -133,8 +136,9 @@
                     color="secondary"
                     size="small"
                     variant="flat"
+                    :loading="loadingContinue"
                     :text="$t('navigation.data')"
-                    :to="`/database/${$route.params.database_id}/table/${table.id}/data`"/>
+                    @click="onContinue"/>
                 </v-col>
               </v-row>
             </v-container>
@@ -164,9 +168,9 @@ export default {
       validStep3: false,
       validStep4: false,
       error: false,
+      loadingContinue: false,
       fileModel: null,
       rowCount: null,
-      loadingCreateAndImport: false,
       file: {
         filename: null,
         path: null
@@ -208,12 +212,7 @@ export default {
       tableCreate: {
         name: null,
         description: '',
-        columns: [],
-        constraints: {
-          uniques: [],
-          checks: [],
-          foreign_keys: []
-        }
+        columns: []
       },
       tableImport: {
         location: null,
@@ -285,9 +284,6 @@ export default {
   },
   methods: {
     notEmpty,
-    onBack() {
-      this.step = 1
-    },
     submit() {
       this.$refs.form.validate()
     },
@@ -306,83 +302,63 @@ export default {
           this.loading = false
         })
     },
-    createEmptyTableAndImport() {
-      /* make enum values to array */
-      const validColumns = this.tableCreate.columns.map((column) => {
-        // validate `id` column: must be a PK
-        if (column.name === 'id' && (!column.primary_key)) {
-          this.$toast.error(this.$t('error.schema.id'))
-          return false
-        }
-        return true
-      })
-      // bail out if there is a problem with one of the columns
-      if (!validColumns.every(Boolean)) {
+    createEmptyTableAndImport({success, columns, constraints}) {
+      if (!success) {
         return
       }
-      this.tableCreate.columns.forEach(c => {
-        if (c.unique) {
-          this.tableCreate.constraints.uniques.push([c.name])
-        }
-        delete c.unique
-      })
-      const tableService = useTableService()
-      this.loadingCreateAndImport = true
-      tableService.findAll(this.$route.params.database_id, this.generatedTableName)
-        .then((response) => {
-          if (response.length !== 0) {
-            /* table does exist */
-            tableService.remove(this.$route.params.database_id, response[0].id)
-              .then(() => {
-                this.createTableAndImport(this.tableCreate)
-              })
-              .catch((error) => {
-                this.$toast.error(this.$t('error.import.dataset') + ': ' + error.response.data.message)
-                this.loadingCreateAndImport = false
-              })
-          } else {
-            this.createTableAndImport(this.tableCreate)
-          }
-        })
+      const payload = Object.assign({}, this.tableCreate)
+      payload.columns = columns
+      payload.constraints = constraints
+      this.createTable(payload)
+        .then(table => this.import(table))
     },
-    createTableAndImport(table) {
+    createTable(payload) {
+      this.loading = true
       const tableService = useTableService()
-      tableService.create(this.$route.params.database_id, table)
+      return new Promise((resolve, reject) => {
+        if (this.table) {
+          resolve(this.table)
+          return
+        }
+        tableService.create(this.$route.params.database_id, payload)
         .then((table) => {
           this.table = table
-          tableService.importCsv(this.$route.params.database_id, table.id, this.tableImport)
-            .then(() => {
-              this.$toast.success(this.$t('success.import.dataset'))
-              this.cacheStore.reloadDatabase()
-              this.loadingCreateAndImport = true
-            })
-            .catch((error) => {
-              console.error('Failed to import csv', error)
-              this.$toast.error(this.$t('error.import.dataset') + ': ' + error.response.data.message)
-              this.loading = false
-              this.$refs.schema.loading = false
-              this.loadingCreateAndImport = false
-            })
-            .finally(() => {
-              this.loading = false
-              this.loadingCreateAndImport = false
-            })
+          resolve(table)
         })
-        .catch(() => {
-          this.$refs.schema.loading = false
-          this.loadingCreateAndImport = false
+        .catch((error) => {
+          console.error('Failed to create table', error)
+          this.$toast.error(this.$t(error.code))
+          this.loading = false
+          reject(error)
         })
         .finally(() => {
           this.loading = false
-          this.loadingCreateAndImport = false
+        })
+      })
+    },
+    import(table) {
+      this.loading = true
+      const tableService = useTableService()
+      tableService.importCsv(this.$route.params.database_id, table.id, this.tableImport)
+        .then(() => {
+          this.step = 5
+          this.$toast.success(this.$t('success.import.dataset'))
+          this.cacheStore.reloadDatabase()
+        })
+        .catch((error) => {
+          console.error('Failed to import csv', error)
+          this.$toast.error(this.$t(error.code))
+          this.loading = false
+        })
+        .finally(() => {
+          this.loading = false
         })
     },
     schemaValidity(event) {
       const {valid} = event
       this.validStep4 = valid
     },
-    onAnalyse(event) {
-      const {columns, filename, line_termination} = event
+    onAnalyse({columns, filename, line_termination}) {
       console.debug('analysed', columns)
       this.tableCreate.columns = columns
       this.tableImport.location = filename
@@ -390,6 +366,10 @@ export default {
       if (filename) {
         this.step = 4
       }
+    },
+    async onContinue () {
+      this.loadingContinue = true
+      await this.$router.push(`/database/${this.$route.params.database_id}/table/${this.table.id}/data`)
     }
   }
 }

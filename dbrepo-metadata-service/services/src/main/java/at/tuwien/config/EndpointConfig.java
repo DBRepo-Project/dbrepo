@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class EndpointConfig {
 
-    @Value("${fda.website}")
+    @Value("${dbrepo.website}")
     private String websiteUrl;
 
 }

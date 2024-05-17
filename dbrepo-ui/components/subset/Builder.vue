@@ -14,6 +14,7 @@
         :disabled="!canExecute"
         color="secondary"
         variant="flat"
+        :loading="loadingQuery"
         :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-run' : null"
         :text="$t('navigation.create')"
         @click="execute" />
@@ -36,8 +37,9 @@
       variant="flat">
       <v-card-text>
         <v-form
-          ref="formView"
-          @submit.prevent="prevent">
+          ref="form"
+          v-model="valid"
+          @submit.prevent>
           <v-row
             v-if="isView"
             class="mt-1"
@@ -262,10 +264,6 @@
         </v-form>
       </v-card-text>
     </v-card>
-    <Results
-      ref="queryResults"
-      :result-id="resultId"
-      :type="mode" />
   </div>
 </template>
 
@@ -276,7 +274,6 @@ import Results from '@/components/subset/Results.vue'
 import { useCacheStore } from '@/stores/cache'
 import { useUserStore } from '@/stores/user'
 import { format } from 'sql-formatter'
-import { localizedMessage } from '@/utils'
 
 export default {
   components: {
@@ -346,6 +343,7 @@ export default {
       ],
       tableDetails: null,
       resultId: null,
+      valid: false,
       errorKeyword: null,
       query: {
         raw: null,
@@ -359,6 +357,7 @@ export default {
       select: [],
       clauses: [],
       tabs: 0,
+      loadingQuery: false,
       cacheStore: useCacheStore(),
       userStore: useUserStore()
     }
@@ -443,7 +442,7 @@ export default {
       if (this.isView) {
         return this.view.name !== null && this.view.is_public !== null && this.view.query !== null
       }
-      return this.valid
+      return this.query.raw !== null
     },
     inputVariant () {
       const runtimeConfig = useRuntimeConfig()
@@ -470,9 +469,6 @@ export default {
     this.selectTable()
   },
   methods: {
-    prevent () {
-      this.$refs.formView.validate()
-    },
     validViewName (name) {
       if (!name) {
         return false
@@ -503,15 +499,17 @@ export default {
         this.timestamp = null
       }
       /* pre-check */
+      this.loadingQuery = true
       const queryService = useQueryService()
-      queryService.execute(this.$route.params.database_id, { statement: this.sql, timestamp: this.timestamp }, 0, 1)
-        .then((subset) => {
-          this.$refs.queryResults.executeFirstTime(this, this.sql, this.timestamp)
+      queryService.execute(this.$route.params.database_id, { statement: this.sql }, this.timestamp, 0, 1)
+        .then(async (subset) => {
           this.$toast.success(this.$t('success.subset.create'))
-          this.$router.push(`/database/${this.$route.params.database_id}/subset/${subset.id}/data`)
+          await this.$router.push(`/database/${this.$route.params.database_id}/subset/${subset.id}/data`)
+          this.loadingQuery = false
         })
         .catch((error) => {
-          this.$toast.error(localizedMessage(this.$t, error, null))
+          this.$toast.error(this.$t(error.message))
+          this.loadingQuery = false
         })
     },
     createView () {
@@ -519,18 +517,15 @@ export default {
       this.view.query = this.sql
       const viewService = useViewService()
       viewService.create(this.$route.params.database_id, this.view)
-        .then((view) => {
+        .then(async (view) => {
           this.resultId = view.id
-          Promise.all([this.$refs.queryResults.reExecute(this.resultId), this.$refs.queryResults.reExecuteCount(this.resultId)])
           this.cacheStore.reloadDatabase()
           this.$toast.success(this.$t('success.view.create'))
-          this.$router.push(`/database/${this.$route.params.database_id}/view/${view.id}/data`)
-        })
-        .catch((error) => {
-          this.$toast.error(localizedMessage(this.$t, error, this.$t('error.view.create')))
+          await this.$router.push(`/database/${this.$route.params.database_id}/view/${view.id}/data`)
           this.loadingQuery = false
         })
-        .finally(() => {
+        .catch((error) => {
+          this.$toast.error(this.$t(error.code))
           this.loadingQuery = false
         })
     },

@@ -50,16 +50,6 @@
           <v-spacer />
           <v-btn
             variant="plain"
-            text="DE"
-            size="x-small"
-            @click="setLocale('de')" />
-          <v-btn
-            variant="plain"
-            text="EN"
-            size="x-small"
-            @click="setLocale('en')" />
-          <v-btn
-            variant="plain"
             :text="commitShort"
             size="x-small"
             prepend-icon="mdi-source-commit"
@@ -75,7 +65,7 @@
     </v-navigation-drawer>
     <v-form
       ref="form"
-      @submit.prevent="submit">
+      @submit.prevent="retrieve">
       <v-app-bar
         app
         flat
@@ -132,8 +122,15 @@
           <v-list>
             <v-list-item
               v-if="user"
-              :to="`/search?t=database&owner.username=${user.username}`">
-              {{ $t('navigation.my-databases') }}
+              exact
+              :to="`/search?type=database&owner.username=${user.username}`">
+              {{ $t('navigation.databases') + ' ' + $t('navigation.mine')}}
+            </v-list-item>
+            <v-list-item
+              v-if="user"
+              exact
+              :to="`/search?type=identifier&identifiers.creator.username=${user.username}`">
+              {{ $t('navigation.identifiers') + ' ' + $t('navigation.mine') }}
             </v-list-item>
             <v-list-item
               v-if="user"
@@ -258,11 +255,9 @@ export default {
       return
     }
     this.setTheme()
+    this.cacheStore.reloadMessages()
   },
   methods: {
-    submit () {
-      this.$refs.form.validate()
-    },
     login () {
       const redirect = ![undefined, '/', '/login'].includes(this.$router.currentRoute.path)
       this.$router.push({ path: '/login', query: redirect ? { redirect: this.$router.currentRoute.path } : {} })
