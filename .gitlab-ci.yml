@@ -614,7 +614,7 @@ release-docs:
     refs:
       - /^release-.*/
   before_script:
-    - "apk add git make sed wget openssh"
+    - "apk add git make sed wget openssh alpine-sdk"
     - "pip install -r ./requirements.txt"
   script:
     - make gen-docs-doc
@@ -629,6 +629,7 @@ release-docs:
 release-libs:
   stage: release
   image: docker.io/python:3.11-alpine
+  when: manual
   only:
     refs:
       - /^release-.*/
