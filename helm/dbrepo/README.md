@@ -95,13 +95,14 @@ The command removes all the Kubernetes components associated with the chart and 
 
 ### Data Database
 
-| Name                       | Description                                                 | Value    |
-| -------------------------- | ----------------------------------------------------------- | -------- |
-| `datadb.enabled`           | Enable the Data Database.                                   | `true`   |
-| `datadb.image.debug`       | Set the logging level to `trace`. Otherwise, set to `info`. | `false`  |
-| `datadb.rootUser.user`     | The root username.                                          | `root`   |
-| `datadb.rootUser.password` | The root user password.                                     | `dbrepo` |
-| `datadb.replicaCount`      | The number of replicas, should be uneven (2n+1).            | `3`      |
+| Name                         | Description                                                 | Value    |
+| ---------------------------- | ----------------------------------------------------------- | -------- |
+| `datadb.enabled`             | Enable the Data Database.                                   | `true`   |
+| `datadb.image.debug`         | Set the logging level to `trace`. Otherwise, set to `info`. | `false`  |
+| `datadb.rootUser.user`       | The root username.                                          | `root`   |
+| `datadb.rootUser.password`   | The root user password.                                     | `dbrepo` |
+| `datadb.persistence.enabled` | Enable persistent storage. Requires PV-provisioner.         | `false`  |
+| `datadb.replicaCount`        | The number of replicas, should be uneven (2n+1).            | `3`      |
 
 ### Search Database
 
@@ -113,7 +114,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | `searchdb.username`            | The admin username.                                 | `admin`     |
 | `searchdb.password`            | The admin user password.                            | `admin`     |
 | `searchdb.replicas`            | The number of replicas.                             | `3`         |
-| `searchdb.persistence.enabled` | Enable persistent storage. Requires PV-provisioner. | `true`      |
+| `searchdb.persistence.enabled` | Enable persistent storage. Requires PV-provisioner. | `false`     |
 
 ### Upload Service
 
@@ -164,7 +165,7 @@ The command removes all the Kubernetes components associated with the chart and 
 | `metadataservice.s3.endpoint`              | The S3-capable endpoint the microservice connects to.                 | `http://storageservice-s3:9000` |
 | `metadataservice.s3.auth.username`         | The S3-capable endpoint username (or access key id).                  | `seaweedfsadmin`                |
 | `metadataservice.s3.auth.password`         | The S3-capable endpoint user password (or access key secret).         | `seaweedfsadmin`                |
-| `metadataservice.replicaCount`             | The number of replicas.                                               | `1`                             |
+| `metadataservice.replicaCount`             | The number of replicas.                                               | `2`                             |
 
 ### Data Service
 

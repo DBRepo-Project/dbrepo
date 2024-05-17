@@ -129,7 +129,7 @@ authservice:
   extraVolumeMounts:
     - name: config-map
       mountPath: /opt/bitnami/keycloak/data/import
-  replicaCount: 1
+  replicaCount: 2
 
 ## @section Data Database
 
@@ -145,6 +145,7 @@ authservice:
 ## @skip datadb.sidecars
 ## @skip datadb.extraVolumeMounts
 ## @skip datadb.extraVolumes
+## @param datadb.persistence.enabled Enable persistent storage. Requires PV-provisioner.
 ## @param datadb.replicaCount The number of replicas, should be uneven (2n+1).
 ##
 datadb:
@@ -213,6 +214,8 @@ datadb:
   extraVolumes:
     - name: s3
       emptyDir: { }
+  persistence:
+    enabled: false
   replicaCount: 3
 
 ## @section Search Database
@@ -249,7 +252,7 @@ searchdb:
   sysctlInit:
     enabled: true
   persistence:
-    enabled: true
+    enabled: false
   service:
     type: ClusterIP
     annotations: { }

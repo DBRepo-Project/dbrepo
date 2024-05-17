@@ -45,94 +45,6 @@
             },
             "type": "object"
         },
-        "authdb": {
-            "properties": {
-                "enabled": {
-                    "type": "boolean"
-                },
-                "fullnameOverride": {
-                    "type": "string"
-                },
-                "host": {
-                    "type": "string"
-                },
-                "metrics": {
-                    "properties": {
-                        "enabled": {
-                            "type": "boolean"
-                        }
-                    },
-                    "type": "object"
-                },
-                "persistence": {
-                    "properties": {
-                        "enabled": {
-                            "type": "boolean"
-                        },
-                        "size": {
-                            "type": "string"
-                        }
-                    },
-                    "type": "object"
-                },
-                "pgpool": {
-                    "properties": {
-                        "adminPassword": {
-                            "type": "string"
-                        },
-                        "adminUsername": {
-                            "type": "string"
-                        }
-                    },
-                    "type": "object"
-                },
-                "port": {
-                    "type": "integer"
-                },
-                "postgresql": {
-                    "properties": {
-                        "database": {
-                            "type": "string"
-                        },
-                        "password": {
-                            "type": "string"
-                        },
-                        "postgresPassword": {
-                            "type": "string"
-                        },
-                        "replicaCount": {
-                            "type": "integer"
-                        },
-                        "repmgrPassword": {
-                            "type": "string"
-                        },
-                        "username": {
-                            "type": "string"
-                        }
-                    },
-                    "type": "object"
-                },
-                "service": {
-                    "properties": {
-                        "annotations": {
-                            "properties": {},
-                            "type": "object"
-                        },
-                        "loadBalancerIP": {
-                            "type": "string"
-                        },
-                        "loadBalancerSourceRanges": {
-                            "type": "array"
-                        },
-                        "type": {
-                            "type": "string"
-                        }
-                    },
-                    "type": "object"
-                }
-            },
-            "type": "object"
-        },
         "authservice": {
             "properties": {
                 "auth": {
@@ -162,29 +74,6 @@
                 },
                 "endpoint": {
                     "type": "string"
-                },
-                "externalDatabase": {
-                    "properties": {
-                        "existingSecret": {
-                            "type": "string"
-                        },
-                        "existingSecretDatabaseKey": {
-                            "type": "string"
-                        },
-                        "existingSecretHostKey": {
-                            "type": "string"
-                        },
-                        "existingSecretPasswordKey": {
-                            "type": "string"
-                        },
-                        "existingSecretPortKey": {
-                            "type": "string"
-                        },
-                        "existingSecretUserKey": {
-                            "type": "string"
-                        }
-                    },
-                    "type": "object"
                 },
                 "extraEnvVarsCM": {
                     "type": "string"
@@ -254,6 +143,14 @@
                 },
                 "postgresql": {
                     "properties": {
+                        "auth": {
+                            "properties": {
+                                "postgresPassword": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
+                        },
                         "enabled": {
                             "type": "boolean"
                         }
@@ -376,9 +273,6 @@
                     "properties": {
                         "enabled": {
                             "type": "boolean"
-                        },
-                        "size": {
-                            "type": "string"
                         }
                     },
                     "type": "object"
@@ -440,16 +334,12 @@
                 "extraVolumes": {
                     "items": {
                         "properties": {
+                            "emptyDir": {
+                                "properties": {},
+                                "type": "object"
+                            },
                             "name": {
                                 "type": "string"
-                            },
-                            "persistentVolumeClaim": {
-                                "properties": {
-                                    "claimName": {
-                                        "type": "string"
-                                    }
-                                },
-                                "type": "object"
                             }
                         },
                         "type": "object"
@@ -491,6 +381,14 @@
                     },
                     "type": "object"
                 },
+                "persistence": {
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean"
+                        }
+                    },
+                    "type": "object"
+                },
                 "replicaCount": {
                     "type": "integer"
                 },
@@ -501,14 +399,6 @@
                         },
                         "user": {
                             "type": "string"
-                        }
-                    },
-                    "type": "object"
-                },
-                "s3": {
-                    "properties": {
-                        "enabled": {
-                            "type": "boolean"
                         }
                     },
                     "type": "object"
@@ -560,6 +450,28 @@
                             "image": {
                                 "type": "string"
                             },
+                            "livenessProbe": {
+                                "properties": {
+                                    "exec": {
+                                        "properties": {
+                                            "command": {
+                                                "items": {
+                                                    "type": "string"
+                                                },
+                                                "type": "array"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "initialDelaySeconds": {
+                                        "type": "integer"
+                                    },
+                                    "periodSeconds": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
+                            },
                             "name": {
                                 "type": "string"
                             },
@@ -579,6 +491,28 @@
                                     "type": "object"
                                 },
                                 "type": "array"
+                            },
+                            "readinessProbe": {
+                                "properties": {
+                                    "exec": {
+                                        "properties": {
+                                            "command": {
+                                                "items": {
+                                                    "type": "string"
+                                                },
+                                                "type": "array"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "initialDelaySeconds": {
+                                        "type": "integer"
+                                    },
+                                    "periodSeconds": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
                             },
                             "securityContext": {
                                 "properties": {
@@ -1078,14 +1012,6 @@
                 "host": {
                     "type": "string"
                 },
-                "image": {
-                    "properties": {
-                        "debug": {
-                            "type": "boolean"
-                        }
-                    },
-                    "type": "object"
-                },
                 "masterService": {
                     "type": "string"
                 },
@@ -1096,9 +1022,6 @@
                     "properties": {
                         "enabled": {
                             "type": "boolean"
-                        },
-                        "size": {
-                            "type": "string"
                         }
                     },
                     "type": "object"
