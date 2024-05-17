@@ -588,7 +588,7 @@ release-images:
     - "ifconfig eth0 mtu 1450 up"
     - "apk add make bash"
   script:
-    - "make release"
+    - "make release-images"
 
 release-chart:
   stage: release
@@ -598,11 +598,11 @@ release-chart:
       - /^release-.*/
   before_script:
     - "echo ${CI_REGISTRY2_PASSWORD} | docker login --username ${CI_REGISTRY2_USER} --password-stdin $CI_REGISTRY2_URL"
-    - "echo ${CI_GPG_KEYRING} | base64 -d > ~/keyring.gpg"
+    - "echo ${CI_GPG_KEYRING} | base64 -d > /root/.gnupg/pubring.gpg"
     - "apk add sed helm curl"
     - "helm plugin install https://github.com/sigstore/helm-sigstore"
   script:
-    - "helm package --sign --key 'Martin Weise' ./helm/dbrepo --keyring ~/keyring.gpg --destination ./build"
+    - "helm package --sign --key 'Martin Weise' ./helm/dbrepo --keyring /root/.gnupg/pubring.gpg --destination ./build"
     - "helm push ./build/dbrepo-${CHART_VERSION}.tgz oci://${CI_REGISTRY2_URL}/helm"
     - "helm sigstore upload ./build/dbrepo-${CHART_VERSION}.tgz"
 
@@ -613,7 +613,7 @@ release-docs:
     refs:
       - /^release-.*/
   before_script:
-    - "apt-get update && apt-get install -y git make sed wget ssh"
+    - "apk add git make sed wget ssh"
   script:
     - make docs
     - eval $(ssh-agent -s)
