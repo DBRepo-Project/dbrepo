@@ -12,7 +12,7 @@ maintainers:
   - name: Martin Weise
     email: martin.weise@tuwien.ac.at
 home: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/
-icon: https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/master/.docs/images/signet_white.png
+icon: https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services/-/raw/master/dbrepo-ui/public/favicon.png
 dependencies:
   - name: opensearch
     alias: searchdb
