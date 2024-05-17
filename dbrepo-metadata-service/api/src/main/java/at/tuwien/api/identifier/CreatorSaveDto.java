@@ -2,6 +2,7 @@ package at.tuwien.api.identifier;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import jakarta.validation.constraints.NotBlank;
@@ -15,6 +16,10 @@ import lombok.extern.jackson.Jacksonized;
 @Jacksonized
 @ToString
 public class CreatorSaveDto {
+
+    @NotNull
+    @Schema(example = "1")
+    private Long id;
 
     @Schema(example = "Josiah")
     private String firstname;

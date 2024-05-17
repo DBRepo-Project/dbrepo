@@ -4,6 +4,7 @@ import at.tuwien.api.database.LanguageTypeDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.jackson.Jacksonized;
 
@@ -15,6 +16,10 @@ import lombok.extern.jackson.Jacksonized;
 @Jacksonized
 @ToString
 public class IdentifierSaveDescriptionDto {
+
+    @NotNull
+    @Schema(example = "1")
+    private Long id;
 
     @NotBlank
     @Schema(example = "Air quality reports at Stephansplatz, Vienna")

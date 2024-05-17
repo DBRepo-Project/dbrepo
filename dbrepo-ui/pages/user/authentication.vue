@@ -1,5 +1,5 @@
 <template>
-  <div v-if="user">
+  <div>
     <UserToolbar />
     <v-window v-model="tab">
       <v-window-item>
@@ -61,7 +61,7 @@
 </template>
 
 <script>
-import UserToolbar from '@/components/user/UserToolbar'
+import UserToolbar from '@/components/user/UserToolbar.vue'
 import { useUserStore } from '@/stores/user'
 
 export default {

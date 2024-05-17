@@ -1,14 +1,16 @@
 package at.tuwien.endpoints;
 
 import at.tuwien.api.database.DatabaseAccessDto;
-import at.tuwien.api.database.DatabaseGiveAccessDto;
-import at.tuwien.api.database.DatabaseModifyAccessDto;
+import at.tuwien.api.database.UpdateDatabaseAccessDto;
 import at.tuwien.api.error.ApiErrorDto;
+import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
 import at.tuwien.mapper.DatabaseMapper;
 import at.tuwien.service.AccessService;
-import at.tuwien.utils.PrincipalUtil;
+import at.tuwien.service.DatabaseService;
+import at.tuwien.service.UserService;
 import at.tuwien.utils.UserUtil;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
@@ -22,7 +24,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,23 +35,26 @@ import java.util.UUID;
 @Log4j2
 @RestController
 @CrossOrigin(origins = "*")
-@RequestMapping(path = "/api/database/{id}/access",
-        consumes = MediaType.ALL_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(path = "/api/database/{databaseId}/access")
 public class AccessEndpoint {
 
+    private final UserService userService;
     private final AccessService accessService;
     private final DatabaseMapper databaseMapper;
+    private final DatabaseService databaseService;
 
     @Autowired
-    public AccessEndpoint(AccessService accessService, DatabaseMapper databaseMapper) {
+    public AccessEndpoint(UserService userService, AccessService accessService, DatabaseMapper databaseMapper,
+                          DatabaseService databaseService) {
+        this.userService = userService;
         this.accessService = accessService;
         this.databaseMapper = databaseMapper;
+        this.databaseService = databaseService;
     }
 
     @PostMapping("/{userId}")
     @Transactional
-    @Observed(name = "dbr_access_give")
+    @Observed(name = "dbrepo_metadata_access_give")
     @PreAuthorize("hasAuthority('create-database-access')")
     @Operation(summary = "Give access to some database", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
@@ -77,29 +81,46 @@ public class AccessEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "502",
+                    description = "Access could not be created due to connection error",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "503",
+                    description = "Access could not be created in the data service",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<?> create(@NotBlank @PathVariable("id") Long databaseId,
+    public ResponseEntity<?> create(@NotBlank @PathVariable("databaseId") Long databaseId,
                                     @NotBlank @PathVariable("userId") UUID userId,
-                                    @Valid @RequestBody DatabaseGiveAccessDto accessDto,
-                                    @NotNull Principal principal)
-            throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException, QueryMalformedException,
-            DatabaseMalformedException {
-        log.debug("endpoint give access to database, databaseId={}, userId={}, accessDto={}, {}", databaseId, userId, accessDto, PrincipalUtil.formatForDebug(principal));
+                                    @Valid @RequestBody UpdateDatabaseAccessDto data,
+                                    @NotNull Principal principal) throws NotAllowedException, ServiceException,
+            ServiceConnectionException, DatabaseNotFoundException, UserNotFoundException, AccessNotFoundException,
+            SearchServiceException, SearchServiceConnectionException {
+        log.debug("endpoint give access to database, databaseId={}, userId={}, access.type={}", databaseId, userId,
+                data.getType());
+        final Database database = databaseService.findById(databaseId);
+        final User user = userService.findByUsername(principal.getName());
+        if (database.getOwner().equals(user)) {
+            log.error("Failed to give access to user with id {}: not owner", userId);
+            throw new NotAllowedException("Failed to give access to user with id " + userId + ": not owner");
+        }
         try {
-            accessService.find(databaseId, userId);
+            accessService.find(database, user);
             log.error("Failed to give access to user with id {}: already has access", userId);
             throw new NotAllowedException("Failed to give access to user with id " + userId + ": already has access");
-        } catch (AccessDeniedException e) {
+        } catch (AccessNotFoundException e) {
             /* ignore */
         }
-        accessService.create(databaseId, userId, accessDto);
+        accessService.create(database, user, data.getType());
         return ResponseEntity.accepted()
                 .build();
     }
 
     @PutMapping("/{userId}")
     @Transactional
-    @Observed(name = "dbr_access_modify")
+    @Observed(name = "dbrepo_metadata_access_modify")
     @PreAuthorize("hasAuthority('update-database-access')")
     @Operation(summary = "Modify access to some database", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
@@ -121,24 +142,41 @@ public class AccessEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "502",
+                    description = "Access could not be updated due to connection error in the data service",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "503",
+                    description = "Access could not be updated in the data service",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<?> update(@NotBlank @PathVariable("id") Long databaseId,
+    public ResponseEntity<?> update(@NotBlank @PathVariable("databaseId") Long databaseId,
                                     @NotBlank @PathVariable("userId") UUID userId,
-                                    @Valid @RequestBody DatabaseModifyAccessDto accessDto,
-                                    @NotNull Principal principal)
-            throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException, QueryMalformedException,
-            DatabaseMalformedException, AccessDeniedException {
-        log.debug("endpoint modify access to database, databaseId={}, userId={}, accessDto={}, {}", databaseId, userId, accessDto, PrincipalUtil.formatForDebug(principal));
-        accessService.find(databaseId, userId);
-        accessService.update(databaseId, userId, accessDto);
+                                    @Valid @RequestBody UpdateDatabaseAccessDto data,
+                                    @NotNull Principal principal) throws NotAllowedException,
+            ServiceException, ServiceConnectionException, DatabaseNotFoundException, UserNotFoundException,
+            AccessNotFoundException, SearchServiceException, SearchServiceConnectionException {
+        log.debug("endpoint modify database access, databaseId={}, userId={}, access.type={}", databaseId, userId,
+                data.getType());
+        final Database database = databaseService.findById(databaseId);
+        final User user = userService.findByUsername(principal.getName());
+        if (database.getOwner().equals(user)) {
+            log.error("Failed to give access to user with id {}: not owner", userId);
+            throw new NotAllowedException("Failed to give access to user with id " + userId + ": not owner");
+        }
+        accessService.find(database, user);
+        accessService.update(database, user, data.getType());
         return ResponseEntity.accepted()
                 .build();
     }
 
-    @GetMapping
-    @Transactional
-    @Observed(name = "dbr_access_check")
-    @PreAuthorize("hasAuthority('check-database-access')")
+    @RequestMapping(value = "/{userId}", method = {RequestMethod.GET, RequestMethod.HEAD})
+    @Transactional(readOnly = true)
+    @Observed(name = "dbrepo_metadata_access_get")
+    @PreAuthorize("hasAuthority('check-database-access') or hasAuthority('admin')")
     @Operation(summary = "Check access to some database", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -157,11 +195,22 @@ public class AccessEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<DatabaseAccessDto> find(@NotBlank @PathVariable("id") Long databaseId,
-                                                  @NotNull Principal principal) throws NotAllowedException,
-            AccessDeniedException, DatabaseNotFoundException {
-        log.debug("endpoint check access to database, databaseId={}, {}", databaseId, PrincipalUtil.formatForDebug(principal));
-        final DatabaseAccess access = accessService.find(databaseId, UserUtil.getId(principal));
+    public ResponseEntity<DatabaseAccessDto> find(@NotBlank @PathVariable("databaseId") Long databaseId,
+                                                  @NotBlank @PathVariable("userId") UUID userId,
+                                                  @NotNull Principal principal) throws DatabaseNotFoundException,
+            UserNotFoundException, AccessNotFoundException, NotAllowedException {
+        log.debug("endpoint get database access, databaseId={}, userId={}, principal.name={}", databaseId, userId,
+                principal.getName());
+        if (!userId.equals(UserUtil.getId(principal))) {
+            if (!UserUtil.hasRole(principal, "admin")) {
+                log.error("Failed to find access: foreign user");
+                throw new NotAllowedException("Failed to find access: foreign user");
+            }
+            log.trace("principal is allowed to check foreign user access");
+        }
+        final Database database = databaseService.findById(databaseId);
+        final User user = userService.findById(userId);
+        final DatabaseAccess access = accessService.find(database, user);
         final DatabaseAccessDto dto = databaseMapper.databaseAccessToDatabaseAccessDto(access);
         log.trace("check access resulted in dto {}", dto);
         return ResponseEntity.ok(dto);
@@ -169,7 +218,7 @@ public class AccessEndpoint {
 
     @DeleteMapping("/{userId}")
     @Transactional
-    @Observed(name = "dbr_access_delete")
+    @Observed(name = "dbrepo_metadata_access_delete")
     @PreAuthorize("hasAuthority('delete-database-access')")
     @Operation(summary = "Revoke access to some database", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
@@ -191,15 +240,31 @@ public class AccessEndpoint {
                     content = {@Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "502",
+                    description = "Access could not be created due to connection error",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
+            @ApiResponse(responseCode = "503",
+                    description = "Access could not be revoked in the data service",
+                    content = {@Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<?> revoke(@NotBlank @PathVariable("id") Long databaseId,
+    public ResponseEntity<?> revoke(@NotBlank @PathVariable("databaseId") Long databaseId,
                                     @NotBlank @PathVariable("userId") UUID userId,
-                                    @NotNull Principal principal)
-            throws DatabaseNotFoundException, UserNotFoundException, NotAllowedException, QueryMalformedException,
-            DatabaseMalformedException, AccessDeniedException {
-        log.debug("endpoint revoke access to database, databaseId={}, userId={}, {}", databaseId, userId, PrincipalUtil.formatForDebug(principal));
-        accessService.find(databaseId, userId);
-        accessService.delete(databaseId, userId);
+                                    @NotNull Principal principal) throws NotAllowedException, ServiceException,
+            ServiceConnectionException, DatabaseNotFoundException, UserNotFoundException, AccessNotFoundException,
+            SearchServiceException, SearchServiceConnectionException {
+        log.debug("endpoint revoke database access, databaseId={}, userId={}", databaseId, userId);
+        final Database database = databaseService.findById(databaseId);
+        final User user = userService.findByUsername(principal.getName());
+        if (!database.getOwner().equals(user)) {
+            log.error("Failed to revoke access to user with id {}: not owner", user.getId());
+            throw new NotAllowedException("Failed to revoke access to user with id " + user.getId() + ": not owner");
+        }
+        accessService.find(database, user);
+        accessService.delete(database, user);
         return ResponseEntity.accepted()
                 .build();
     }

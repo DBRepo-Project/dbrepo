@@ -3,19 +3,15 @@
 @author: Martin Weise
 """
 import json
-import csv
 import logging
 import io
-from clients.s3_client import S3Client
+import pandas
 
-import messytables, pandas as pd
-from messytables import (
-    CSVTableSet,
-    type_guess,
-    headers_guess,
-    headers_processor,
-    offset_processor,
-)
+from numpy import dtype, max, min
+from flask import current_app
+from pandas._libs.tslibs.parsing import DateParseError
+
+from clients.s3_client import S3Client
 
 
 def determine_datatypes(filename, enum=False, enum_tol=0.0001, separator=None) -> {}:
@@ -23,73 +19,75 @@ def determine_datatypes(filename, enum=False, enum_tol=0.0001, separator=None) -
     # Enum is not SQL standard, hence, it might not be supported by all db-engines.
     # However, it can be used in Postgres and MySQL.
     s3_client = S3Client()
-    s3_client.file_exists('dbrepo-upload', filename)
-    response = s3_client.get_file('dbrepo-upload', filename)
+    s3_client.file_exists(current_app.config['S3_IMPORT_BUCKET'], filename)
+    response = s3_client.get_file(current_app.config['S3_IMPORT_BUCKET'], filename)
     stream = response['Body']
     if response['ContentLength'] == 0:
         logging.warning(f'Failed to determine data types: file {filename} has empty body')
         return json.dumps({'columns': [], 'separator': ','})
-    if separator is None:
-        logging.info("Attempt to guess separator for from first line")
-        with io.BytesIO(stream.read()) as fh:
-            line = next(fh)
-            dialect = csv.Sniffer().sniff(line.decode("utf-8"))
-            separator = dialect.delimiter
-            logging.info("determined separator: %s", separator)
 
-    # Load a file object:
     with io.BytesIO(stream.read()) as fh:
         line_terminator = None
-        if b"\n" in fh.readline():
+
+        line = peek_line(fh)
+        if b"\n" in line:
             line_terminator = "\n"
-        elif b"\r" in fh.readline():
+        elif b"\r" in line:
             line_terminator = "\r"
-        elif b"\r\n" in fh.readline():
+        elif b"\r\n" in line:
             line_terminator = "\r\n"
         logging.info("Analysing corpus with separator: %s", separator)
-        table_set = CSVTableSet(fh, delimiter=separator, lineterminator=line_terminator)
 
-        # A table set is a collection of tables:
-        row_set = table_set.tables[0]
+        # index_col=False -> prevent shared index & count length correct
+        df = pandas.read_csv(fh, delimiter=separator, nrows=100, lineterminator=line_terminator, index_col=False)
 
-        # guess header names and the offset of the header:
-        offset, headers = headers_guess(row_set.sample)
-        row_set.register_processor(headers_processor(headers))
-
-        # add one to begin with content, not the header:
-        row_set.register_processor(offset_processor(offset + 1))
-
-        # guess column types:
-        types = type_guess(row_set.sample, strict=True)
+        if b"," in line:
+            separator = ","
+        elif b";" in line:
+            separator = ";"
+        elif b"\t" in line:
+            separator = "\t"
 
         r = {}
 
-        for i in range(0, (len(types))):
-            if type(types[i]) == messytables.types.BoolType:
-                r[headers[i]] = "bool"
-            elif type(types[i]) == messytables.types.IntegerType:
-                r[headers[i]] = "bigint"
-            elif type(types[i]) == messytables.types.DateType:
-                if (
-                    "%H" in types[i].format
-                    or "%M" in types[i].format
-                    or "%S" in types[i].format
-                    or "%Z" in types[i].format
-                ):
-                    r[
-                        headers[i]
-                    ] = "timestamp"  # todo: guesses date format too, return it
+        for name, dataType in df.dtypes.items():
+            if dataType == dtype('float64'):
+                r[name] = 'decimal'
+            elif dataType == dtype('int64'):
+                min_val = min(df[name])
+                max_val = max(df[name])
+                if 0 <= min_val <= 1 and 0 <= max_val <= 1:
+                    r[name] = 'bool'
+                    continue
+                r[name] = 'bigint'
+            elif dataType == dtype('O'):
+                try:
+                    pandas.to_datetime(df[name], format='mixed')
+                    r[name] = 'timestamp'
+                    continue
+                except DateParseError:
+                    pass
+                max_size = max(df[name].astype(str).map(len))
+                if max_size <= 1:
+                    r[name] = 'char'
+                if 0 <= max_size <= 255:
+                    r[name] = 'varchar'
                 else:
-                    r[headers[i]] = "date"
-            elif (
-                type(types[i]) == messytables.types.DecimalType
-                or type(types[i]) == messytables.types.FloatType
-            ):
-                r[headers[i]] = "decimal"
-            elif type(types[i]) == messytables.types.StringType:
-                r[headers[i]] = "varchar"
+                    r[name] = 'text'
+            elif dataType == dtype('bool'):
+                r[name] = 'bool'
+            elif dataType == dtype('datetime64'):
+                r[name] = 'datetime'
             else:
-                r[headers[i]] = "text"
+                logging.warning(f'default to \'text\' for column {name} and type {dtype}')
+                r[name] = 'text'
         s = {"columns": r, "separator": separator, "line_termination": line_terminator}
         logging.info("Determined data types %s", s)
     return json.dumps(s)
+
+
+def peek_line(f) -> bytes:
+    pos = f.tell()
+    line: bytes = f.readline()
+    f.seek(pos)
+    return line

@@ -1,11 +1,13 @@
-import os
+import logging
 
 import pytest
-import logging
+from app import app
+from flask import current_app
 
 from testcontainers.opensearch import OpenSearchContainer
 
-@pytest.fixture(scope="session")
+
+@pytest.fixture(scope="session", autouse=True)
 def session(request):
     """
     Create one OpenSearch container per test run only (admin:admin)
@@ -16,10 +18,10 @@ def session(request):
     container = OpenSearchContainer()
     logging.debug("[fixture] starting opensearch container")
     container.start()
-    # set the environment for the client
-    os.environ['SEARCH_HOST'] = container.get_container_host_ip()
-    os.environ['SEARCH_PORT'] = container.get_exposed_port(9200)
-    client = container.get_client()
+
+    with app.app_context():
+        current_app.config['OPENSEARCH_HOST'] = container.get_container_host_ip()
+        current_app.config['OPENSEARCH_PORT'] = container.get_exposed_port(9200)
 
     # destructor
     def stop_opensearch():
@@ -27,7 +29,6 @@ def session(request):
 
     request.addfinalizer(stop_opensearch)
     return container
-
 
 # @pytest.fixture(scope="function", autouse=True)
 # def cleanup(request, session):

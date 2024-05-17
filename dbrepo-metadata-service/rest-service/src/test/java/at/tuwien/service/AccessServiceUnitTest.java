@@ -1,136 +1,522 @@
 package at.tuwien.service;
 
-import at.tuwien.BaseUnitTest;
-import at.tuwien.annotations.MockAmqp;
-import at.tuwien.annotations.MockListeners;
-import at.tuwien.annotations.MockOpensearch;
+import at.tuwien.exception.*;
+import at.tuwien.test.AbstractUnitTest;
 import at.tuwien.api.database.AccessTypeDto;
-import at.tuwien.api.database.DatabaseModifyAccessDto;
+import at.tuwien.api.database.DatabaseDto;
 import at.tuwien.entities.database.AccessType;
+import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.DatabaseAccess;
-import at.tuwien.exception.AccessDeniedException;
-import at.tuwien.exception.DatabaseNotFoundException;
-import at.tuwien.exception.NotAllowedException;
-import at.tuwien.repository.mdb.DatabaseRepository;
-import at.tuwien.repository.mdb.UserRepository;
+import at.tuwien.repository.DatabaseRepository;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.RestTemplate;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @Log4j2
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
-@MockAmqp
-@MockListeners
-@MockOpensearch
-public class AccessServiceUnitTest extends BaseUnitTest {
+public class AccessServiceUnitTest extends AbstractUnitTest {
 
     @MockBean
     private DatabaseRepository databaseRepository;
 
     @MockBean
-    private UserRepository userRepository;
+    @Qualifier("dataServiceRestTemplate")
+    private RestTemplate dataServiceRestTemplate;
+
+    @MockBean
+    @Qualifier("searchServiceRestTemplate")
+    private RestTemplate searchServiceRestTemplate;
 
     @Autowired
     private AccessService accessService;
 
     @BeforeEach
     public void beforeEach() {
-        DATABASE_1.setAccesses(List.of(DATABASE_1_USER_1_READ_ACCESS, DATABASE_1_USER_2_WRITE_OWN_ACCESS, DATABASE_1_USER_3_WRITE_ALL_ACCESS));
+        genesis();
     }
 
     @Test
-    public void list_succeeds() throws DatabaseNotFoundException {
-
-        /* mock */
-        when(databaseRepository.findById(DATABASE_1_ID))
-                .thenReturn(Optional.of(DATABASE_1));
+    public void list_succeeds() {
 
         /* test */
-        final List<DatabaseAccess> response = accessService.list(DATABASE_1_ID);
-        assertEquals(3, response.size());
+        accessService.list(DATABASE_1);
     }
 
     @Test
-    public void list_empty_succeeds() throws DatabaseNotFoundException {
+    public void find_succeeds() throws AccessNotFoundException {
 
         /* mock */
-        DATABASE_1.setAccesses(List.of());
-        doReturn(Optional.of(DATABASE_1))
-                .when(databaseRepository)
-                .findById(DATABASE_1_ID);
-        /* test */
-        final List<DatabaseAccess> response = accessService.list(DATABASE_1_ID);
-        assertEquals(0, response.size());
-    }
-
-    @Test
-    public void find_succeeds() throws AccessDeniedException, DatabaseNotFoundException {
-
-        /* mock */
-        when(databaseRepository.findById(DATABASE_1_ID))
-                .thenReturn(Optional.of(DATABASE_1));
 
         /* test */
-        final DatabaseAccess response = accessService.find(DATABASE_1_ID, USER_1_ID);
+        final DatabaseAccess response = accessService.find(DATABASE_1, USER_1);
         assertEquals(AccessType.READ, response.getType());
     }
 
     @Test
-    public void find_fails() {
+    public void create_succeeds() throws ServiceException, ServiceConnectionException,
+            DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException {
 
         /* mock */
-        DATABASE_1.setAccesses(List.of());
-        when(databaseRepository.findById(DATABASE_1_ID))
-                .thenReturn(Optional.of(DATABASE_1));
+        when(databaseRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_1);
+        when(dataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(Void.class)))
+                .thenReturn(ResponseEntity.status(HttpStatus.CREATED)
+                        .build());
+        when(searchServiceRestTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseDto.class)))
+                .thenReturn(ResponseEntity.status(HttpStatus.ACCEPTED)
+                        .build());
 
         /* test */
-        assertThrows(AccessDeniedException.class, () -> {
-            accessService.find(DATABASE_1_ID, USER_1_ID);
+        accessService.create(DATABASE_1, USER_1, AccessTypeDto.WRITE_ALL);
+    }
+
+    @Test
+    public void create_dataService400_fails() {
+
+        /* mock */
+        doThrow(HttpClientErrorException.BadRequest.class)
+                .when(dataServiceRestTemplate)
+                .exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(Void.class));
+
+        /* test */
+        assertThrows(ServiceException.class, () -> {
+            accessService.create(DATABASE_1, USER_1, AccessTypeDto.WRITE_ALL);
         });
     }
 
     @Test
-    public void find_databaseNotFound_fails() {
+    public void create_dataService403_fails() {
 
         /* mock */
-        when(databaseRepository.findById(DATABASE_1_ID))
-                .thenReturn(Optional.empty());
+        doThrow(HttpClientErrorException.Unauthorized.class)
+                .when(dataServiceRestTemplate)
+                .exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(Void.class));
+
+        /* test */
+        assertThrows(ServiceException.class, () -> {
+            accessService.create(DATABASE_1, USER_1, AccessTypeDto.WRITE_ALL);
+        });
+    }
+
+    @Test
+    public void create_dataService404_fails() {
+
+        /* mock */
+        doThrow(HttpClientErrorException.NotFound.class)
+                .when(dataServiceRestTemplate)
+                .exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(Void.class));
 
         /* test */
         assertThrows(DatabaseNotFoundException.class, () -> {
-            accessService.find(DATABASE_1_ID, USER_1_ID);
+            accessService.create(DATABASE_1, USER_1, AccessTypeDto.WRITE_ALL);
         });
     }
 
     @Test
-    public void update_isOwner_fails() {
-        final DatabaseModifyAccessDto request = DatabaseModifyAccessDto.builder()
-                .type(AccessTypeDto.READ)
-                .build();
+    public void create_dataService500_fails() {
+
+        /* mock */
+        doThrow(HttpServerErrorException.InternalServerError.class)
+                .when(dataServiceRestTemplate)
+                .exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(Void.class));
+
+        /* test */
+        assertThrows(ServiceConnectionException.class, () -> {
+            accessService.create(DATABASE_1, USER_1, AccessTypeDto.WRITE_ALL);
+        });
+    }
+
+    @Test
+    public void create_searchService400_fails() {
+
+        /* mock */
+        when(databaseRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_1);
+        when(dataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(Void.class)))
+                .thenReturn(ResponseEntity.status(HttpStatus.CREATED)
+                        .build());
+        doThrow(HttpClientErrorException.BadRequest.class)
+                .when(searchServiceRestTemplate)
+                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseDto.class));
+
+        /* test */
+        assertThrows(SearchServiceException.class, () -> {
+            accessService.create(DATABASE_1, USER_1, AccessTypeDto.WRITE_ALL);
+        });
+    }
+
+    @Test
+    public void create_searchService403_fails() {
+
+        /* mock */
+        when(databaseRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_1);
+        when(dataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(Void.class)))
+                .thenReturn(ResponseEntity.status(HttpStatus.CREATED)
+                        .build());
+        doThrow(HttpClientErrorException.Unauthorized.class)
+                .when(searchServiceRestTemplate)
+                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseDto.class));
+
+        /* test */
+        assertThrows(SearchServiceException.class, () -> {
+            accessService.create(DATABASE_1, USER_1, AccessTypeDto.WRITE_ALL);
+        });
+    }
+
+    @Test
+    public void create_searchService404_fails() {
+
+        /* mock */
+        when(databaseRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_1);
+        when(dataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(Void.class)))
+                .thenReturn(ResponseEntity.status(HttpStatus.CREATED)
+                        .build());
+        doThrow(HttpClientErrorException.NotFound.class)
+                .when(searchServiceRestTemplate)
+                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseDto.class));
+
+        /* test */
+        assertThrows(DatabaseNotFoundException.class, () -> {
+            accessService.create(DATABASE_1, USER_1, AccessTypeDto.WRITE_ALL);
+        });
+    }
+
+    @Test
+    public void create_searchService500_fails() {
+
+        /* mock */
+        when(databaseRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_1);
+        when(dataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(Void.class)))
+                .thenReturn(ResponseEntity.status(HttpStatus.CREATED)
+                        .build());
+        doThrow(HttpServerErrorException.InternalServerError.class)
+                .when(searchServiceRestTemplate)
+                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseDto.class));
+
+        /* test */
+        assertThrows(SearchServiceConnectionException.class, () -> {
+            accessService.create(DATABASE_1, USER_1, AccessTypeDto.WRITE_ALL);
+        });
+    }
+
+    @Test
+    public void update_succeeds() throws ServiceException, ServiceConnectionException, AccessNotFoundException,
+            DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException {
+
+        /* mock */
+        when(databaseRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_1);
+        when(dataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class)))
+                .thenReturn(ResponseEntity.status(HttpStatus.ACCEPTED)
+                        .build());
+        when(searchServiceRestTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseDto.class)))
+                .thenReturn(ResponseEntity.status(HttpStatus.ACCEPTED)
+                        .build());
+
+        /* test */
+        accessService.update(DATABASE_1, USER_1, AccessTypeDto.WRITE_ALL);
+    }
+
+    @Test
+    public void update_dataService400_fails() {
+
+        /* mock */
+        doThrow(HttpClientErrorException.BadRequest.class)
+                .when(dataServiceRestTemplate)
+                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class));
+
+        /* test */
+        assertThrows(ServiceException.class, () -> {
+            accessService.update(DATABASE_1, USER_1, AccessTypeDto.WRITE_ALL);
+        });
+    }
+
+    @Test
+    public void update_dataService403_fails() {
+
+        /* mock */
+        doThrow(HttpClientErrorException.Unauthorized.class)
+                .when(dataServiceRestTemplate)
+                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class));
+
+        /* test */
+        assertThrows(ServiceException.class, () -> {
+            accessService.update(DATABASE_1, USER_1, AccessTypeDto.WRITE_ALL);
+        });
+    }
+
+    @Test
+    public void update_dataService404_fails() {
+
+        /* mock */
+        doThrow(HttpClientErrorException.NotFound.class)
+                .when(dataServiceRestTemplate)
+                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class));
+
+        /* test */
+        assertThrows(AccessNotFoundException.class, () -> {
+            accessService.update(DATABASE_1, USER_1, AccessTypeDto.WRITE_ALL);
+        });
+    }
+
+    @Test
+    public void update_dataService500_fails() {
+
+        /* mock */
+        doThrow(HttpServerErrorException.InternalServerError.class)
+                .when(dataServiceRestTemplate)
+                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class));
+
+        /* test */
+        assertThrows(ServiceConnectionException.class, () -> {
+            accessService.update(DATABASE_1, USER_1, AccessTypeDto.WRITE_ALL);
+        });
+    }
+
+    @Test
+    public void update_searchService400_fails() {
+
+        /* mock */
+        when(databaseRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_1);
+        when(dataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class)))
+                .thenReturn(ResponseEntity.status(HttpStatus.ACCEPTED)
+                        .build());
+        doThrow(HttpClientErrorException.BadRequest.class)
+                .when(searchServiceRestTemplate)
+                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseDto.class));
+
+        /* test */
+        assertThrows(SearchServiceException.class, () -> {
+            accessService.update(DATABASE_1, USER_1, AccessTypeDto.WRITE_ALL);
+        });
+    }
+
+    @Test
+    public void update_searchService403_fails() {
+
+        /* mock */
+        when(databaseRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_1);
+        when(dataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class)))
+                .thenReturn(ResponseEntity.status(HttpStatus.ACCEPTED)
+                        .build());
+        doThrow(HttpClientErrorException.Unauthorized.class)
+                .when(searchServiceRestTemplate)
+                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseDto.class));
+
+        /* test */
+        assertThrows(SearchServiceException.class, () -> {
+            accessService.update(DATABASE_1, USER_1, AccessTypeDto.WRITE_ALL);
+        });
+    }
+
+    @Test
+    public void update_searchService404_fails() {
+
+        /* mock */
+        when(databaseRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_1);
+        when(dataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class)))
+                .thenReturn(ResponseEntity.status(HttpStatus.ACCEPTED)
+                        .build());
+        doThrow(HttpClientErrorException.NotFound.class)
+                .when(searchServiceRestTemplate)
+                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseDto.class));
+
+        /* test */
+        assertThrows(DatabaseNotFoundException.class, () -> {
+            accessService.update(DATABASE_1, USER_1, AccessTypeDto.WRITE_ALL);
+        });
+    }
+
+    @Test
+    public void update_searchService500_fails() {
+
+        /* mock */
+        when(databaseRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_1);
+        when(dataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Void.class)))
+                .thenReturn(ResponseEntity.status(HttpStatus.ACCEPTED)
+                        .build());
+        doThrow(HttpServerErrorException.InternalServerError.class)
+                .when(searchServiceRestTemplate)
+                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseDto.class));
+
+        /* test */
+        assertThrows(SearchServiceConnectionException.class, () -> {
+            accessService.update(DATABASE_1, USER_1, AccessTypeDto.WRITE_ALL);
+        });
+    }
+
+    @Test
+    public void delete_succeeds() throws ServiceException, ServiceConnectionException, AccessNotFoundException,
+            DatabaseNotFoundException, SearchServiceException, SearchServiceConnectionException {
 
         /* mock */
         when(databaseRepository.findById(DATABASE_1_ID))
                 .thenReturn(Optional.of(DATABASE_1));
-        when(userRepository.findById(USER_1_ID))
-                .thenReturn(Optional.of(USER_1));
+        when(databaseRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_1);
+        when(dataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.DELETE), any(HttpEntity.class), eq(Void.class)))
+                .thenReturn(ResponseEntity.status(HttpStatus.ACCEPTED)
+                        .build());
+        when(searchServiceRestTemplate.exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseDto.class)))
+                .thenReturn(ResponseEntity.status(HttpStatus.ACCEPTED)
+                        .build());
 
         /* test */
-        assertThrows(NotAllowedException.class, () -> {
-            accessService.update(DATABASE_1_ID, USER_1_ID, request);
+        accessService.delete(DATABASE_1, USER_1);
+    }
+
+    @Test
+    public void delete_dataService403_fails() {
+
+        /* mock */
+        doThrow(HttpClientErrorException.Unauthorized.class)
+                .when(dataServiceRestTemplate)
+                .exchange(anyString(), eq(HttpMethod.DELETE), any(HttpEntity.class), eq(Void.class));
+
+        /* test */
+        assertThrows(ServiceException.class, () -> {
+            accessService.delete(DATABASE_1, USER_1);
+        });
+    }
+
+    @Test
+    public void delete_dataService404_fails() {
+
+        /* mock */
+        doThrow(HttpClientErrorException.NotFound.class)
+                .when(dataServiceRestTemplate)
+                .exchange(anyString(), eq(HttpMethod.DELETE), any(HttpEntity.class), eq(Void.class));
+
+        /* test */
+        assertThrows(AccessNotFoundException.class, () -> {
+            accessService.delete(DATABASE_1, USER_1);
+        });
+    }
+
+    @Test
+    public void delete_dataService500_fails() {
+
+        /* mock */
+        doThrow(HttpServerErrorException.InternalServerError.class)
+                .when(dataServiceRestTemplate)
+                .exchange(anyString(), eq(HttpMethod.DELETE), any(HttpEntity.class), eq(Void.class));
+
+        /* test */
+        assertThrows(ServiceConnectionException.class, () -> {
+            accessService.delete(DATABASE_1, USER_1);
+        });
+    }
+
+    @Test
+    public void delete_searchService400_fails() {
+
+        /* mock */
+        when(databaseRepository.findById(DATABASE_1_ID))
+                .thenReturn(Optional.of(DATABASE_1));
+        when(databaseRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_1);
+        when(dataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.DELETE), any(HttpEntity.class), eq(Void.class)))
+                .thenReturn(ResponseEntity.status(HttpStatus.ACCEPTED)
+                        .build());
+        doThrow(HttpClientErrorException.BadRequest.class)
+                .when(searchServiceRestTemplate)
+                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseDto.class));
+
+        /* test */
+        assertThrows(SearchServiceException.class, () -> {
+            accessService.delete(DATABASE_1, USER_1);
+        });
+    }
+
+    @Test
+    public void delete_searchService403_fails() {
+
+        /* mock */
+        when(databaseRepository.findById(DATABASE_1_ID))
+                .thenReturn(Optional.of(DATABASE_1));
+        when(databaseRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_1);
+        when(dataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.DELETE), any(HttpEntity.class), eq(Void.class)))
+                .thenReturn(ResponseEntity.status(HttpStatus.ACCEPTED)
+                        .build());
+        doThrow(HttpClientErrorException.Unauthorized.class)
+                .when(searchServiceRestTemplate)
+                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseDto.class));
+
+        /* test */
+        assertThrows(SearchServiceException.class, () -> {
+            accessService.delete(DATABASE_1, USER_1);
+        });
+    }
+
+    @Test
+    public void delete_searchService404_fails() {
+
+        /* mock */
+        when(databaseRepository.findById(DATABASE_1_ID))
+                .thenReturn(Optional.of(DATABASE_1));
+        when(databaseRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_1);
+        when(dataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.DELETE), any(HttpEntity.class), eq(Void.class)))
+                .thenReturn(ResponseEntity.status(HttpStatus.ACCEPTED)
+                        .build());
+        doThrow(HttpClientErrorException.NotFound.class)
+                .when(searchServiceRestTemplate)
+                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseDto.class));
+
+        /* test */
+        assertThrows(DatabaseNotFoundException.class, () -> {
+            accessService.delete(DATABASE_1, USER_1);
+        });
+    }
+
+    @Test
+    public void delete_searchService500_fails() {
+
+        /* mock */
+        when(databaseRepository.findById(DATABASE_1_ID))
+                .thenReturn(Optional.of(DATABASE_1));
+        when(databaseRepository.save(any(Database.class)))
+                .thenReturn(DATABASE_1);
+        when(dataServiceRestTemplate.exchange(anyString(), eq(HttpMethod.DELETE), any(HttpEntity.class), eq(Void.class)))
+                .thenReturn(ResponseEntity.status(HttpStatus.ACCEPTED)
+                        .build());
+        doThrow(HttpServerErrorException.InternalServerError.class)
+                .when(searchServiceRestTemplate)
+                .exchange(anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(DatabaseDto.class));
+
+        /* test */
+        assertThrows(SearchServiceConnectionException.class, () -> {
+            accessService.delete(DATABASE_1, USER_1);
         });
     }
 

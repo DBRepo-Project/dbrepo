@@ -12,7 +12,7 @@
         :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-plus' : null"
         variant="flat"
         :text="$t('toolbars.table.data.add')"
-        class="mb-1 ml-2"
+        class="ml-2"
         @click="addTuple" />
       <v-btn
         v-if="canEditTuple"
@@ -20,7 +20,7 @@
         color="warning"
         variant="flat"
         :text="$t('toolbars.table.data.edit')"
-        class="mb-1 ml-2"
+        class="ml-2"
         @click="editTuple" />
       <v-btn
         v-if="canDeleteTuple"
@@ -28,7 +28,7 @@
         color="error"
         variant="flat"
         :text="$t('toolbars.table.data.delete')"
-        class="mb-1 ml-2"
+        class="ml-2"
         :loading="loadingDelete"
         @click="deleteItems" />
       <v-btn
@@ -36,48 +36,51 @@
         variant="flat"
         :loading="downloadLoading"
         :text="$t('toolbars.table.data.download')"
-        class="mb-1 ml-2"
+        class="ml-2"
         @click.stop="download" />
       <v-btn
         :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-refresh' : null"
         variant="flat"
         :text="$t('toolbars.table.data.refresh')"
-        class="mb-1 ml-2"
-        :disabled="loadingData !== 0"
-        :loading="loadingData > 0"
+        class="ml-2"
+        :disabled="loadingData"
+        :loading="loadingData"
         @click="reload" />
       <v-btn
         :prepend-icon="$vuetify.display.lgAndUp ? 'mdi-update' : null"
         variant="flat"
         :text="$t('toolbars.table.data.version')"
-        class="mb-1 ml-2"
+        class="ml-2"
         @click.stop="pick" />
     </v-toolbar>
     <TimeDrift />
     <v-card tile>
-      <v-progress-linear v-if="loadingData > 0 || error" :indeterminate="!error" :color="loadingColor" />
       <v-card
         v-if="error"
         variant="flat">
         <v-card-text
           v-text="$t('error.table.connection')" />
       </v-card>
-      <v-data-table
+      <v-data-table-server
         v-if="!error"
+        v-model="selection"
         flat
+        :show-select="canModify"
+        return-object
         :headers="headers"
         :items="rows"
+        :items-length="total"
+        :loading="loadingData"
         :options.sync="options"
-        :server-items-length="total"
-        :footer-props="footerProps">
-        <template v-if="canModify" v-slot:item.selection="{ item }">
-          <input v-model="selection" type="checkbox" :value="item" @click="edit = true">
-        </template>
-        <template v-for="(blobColumn, idx) in blobColumns" v-slot:[blobColumn]="{ item }">
+        :footer-props="footerProps"
+        @update:options="loadData">
+        <template
+          v-for="(blobColumn, idx) in blobColumns"
+          v-slot:[blobColumn]="{ item }">
           <BlobDownload
             :blob="item[blobColumn.substring(5)]" />
         </template>
-      </v-data-table>
+      </v-data-table-server>
     </v-card>
     <v-dialog
       v-model="pickVersionDialog"
@@ -88,13 +91,23 @@
         @close="pickVersion" />
     </v-dialog>
     <v-dialog
+      v-model="addTupleDialog"
+      persistent
+      max-width="640">
+      <EditTuple
+        :table="table"
+        :tuple="tuple"
+        :edit="false"
+        @close="close" />
+    </v-dialog>
+    <v-dialog
       v-model="editTupleDialog"
       persistent
       max-width="640">
       <EditTuple
         :table="table"
         :tuple="tuple"
-        :edit="edit"
+        :edit="true"
         @close="close" />
     </v-dialog>
     <v-breadcrumbs :items="items" class="pa-0 mt-2" />
@@ -102,14 +115,14 @@
 </template>
 
 <script>
-import TimeTravel from '@/components/dialogs/TimeTravel'
-import TimeDrift from '@/components/TimeDrift'
-import TableToolbar from '@/components/table/TableToolbar'
-import {formatTimestampUTC, formatDateUTC, formatTimestamp, localizedMessage} from '@/utils'
+import TimeTravel from '@/components/dialogs/TimeTravel.vue'
+import TimeDrift from '@/components/TimeDrift.vue'
+import TableToolbar from '@/components/table/TableToolbar.vue'
+import {formatTimestampUTC, formatDateUTC, formatTimestamp} from '@/utils'
 import { useUserStore } from '@/stores/user'
 import { useCacheStore } from '@/stores/cache'
-import EditTuple from '@/components/dialogs/EditTuple'
-import BlobDownload from "~/components/table/BlobDownload.vue";
+import EditTuple from '@/components/dialogs/EditTuple.vue'
+import BlobDownload from '@/components/table/BlobDownload.vue'
 
 export default {
   components: {
@@ -122,10 +135,12 @@ export default {
   data () {
     return {
       loading: true,
-      loadingData: 0,
+      loadingData: false,
+      loadingCount: false,
       loadingDelete: false,
+      addTupleDialog: false,
       editTupleDialog: false,
-      total: -1,
+      total: 0,
       footerProps: {
         showFirstLastPage: true,
         itemsPerPageOptions: [10, 25, 50, 100]
@@ -138,8 +153,8 @@ export default {
       version: null,
       lastReload: new Date(),
       tab: null,
-      edit: false,
       error: false,
+      tuple: null,
       options: {
         page: 1,
         itemsPerPage: 10
@@ -262,17 +277,11 @@ export default {
       }
       const userService = useUserService()
       return userService.hasWriteAccess(this.table, this.access, this.user) && this.roles.includes('delete-table-data')
-    },
-    tuple () {
-      return this.edit ? this.selection[0] : {}
-    },
+    }
   },
   watch: {
     version () {
       this.reload()
-    },
-    options () {
-      this.loadData()
     },
     table (newTable, oldTable) {
       if (newTable !== oldTable && oldTable === null) {
@@ -286,16 +295,14 @@ export default {
   },
   methods: {
     addTuple () {
-      const data = {}
-      this.edit = false
+      this.tuple = {}
       this.table.columns.forEach((c) => {
-        data[c.internal_name] = null
+        this.tuple[c.internal_name] = null
       })
-      this.selection = []
-      this.editTupleDialog = true
+      this.addTupleDialog = true
     },
     editTuple () {
-      this.edit = true
+      this.tuple = this.selection[0]
       this.editTupleDialog = true
     },
     deleteItems () {
@@ -317,12 +324,16 @@ export default {
             })
         }
         const tupleService = useTupleService()
-        wait.push(tupleService.remove(this.$route.params.database_id, this.$route.params.table_id, { keys: constraints }))
+        wait.push(tupleService.remove(this.$route.params.database_id, this.$route.params.table_id, { keys: constraints })
+          .catch(({message}) => {
+            this.$toast.error(message)
+          }))
       }
       Promise.all(wait)
         .then(() => {
           this.$toast.success(`Deleted ${this.selection.length} row(s)`)
           this.$emit('modified', { success: true, action: 'delete' })
+          this.selection = []
           this.reload()
         })
       this.loadingDelete = false
@@ -340,7 +351,8 @@ export default {
             document.body.appendChild(link)
             link.click()
           })
-          .catch(() => {
+          .catch((error) => {
+            this.$toast.error(this.$t(error.code))
             this.downloadLoading = false
           })
           .finally(() => {
@@ -398,19 +410,21 @@ export default {
         this.dateColumns = this.table.columns.filter(c => (c.column_type === 'date' || c.column_type === 'timestamp'))
         console.debug('date columns are', this.dateColumns)
       } catch (error) {
-        this.$toast.error(localizedMessage(this.$t, error, 'Failed to map table details'))
+        this.$toast.error(this.$t(error.code))
       }
       this.loading = false
     },
     reload () {
       this.lastReload = new Date()
-      this.loadData()
+      this.loadData({ page: this.options.page, itemsPerPage: this.options.itemsPerPage, sortBy: null})
       this.loadCount()
     },
-    loadData () {
-      this.loadingData++
+    loadData ({ page, itemsPerPage, sortBy }) {
+      this.options.page = page
+      this.options.itemsPerPage = itemsPerPage
       const tableService = useTableService()
-      tableService.getData(this.$route.params.database_id, this.$route.params.table_id, (this.options.page - 1), this.options.itemsPerPage, (this.versionISO || this.lastReload.toISOString()))
+      this.loadingData = true
+      tableService.getData(this.$route.params.database_id, this.$route.params.table_id, (page - 1), itemsPerPage, (this.versionISO || this.lastReload.toISOString()))
         .then((data) => {
           this.rows = data.result.map((row) => {
             for (const col in row) {
@@ -426,36 +440,38 @@ export default {
             }
             return row
           })
+          this.loadingData = false
         })
         .catch((error) => {
-          this.$toast.error(localizedMessage(this.$t, error, 'Failed to load data'))
+          this.$toast.error(this.$t(error.code))
           this.error = true
-        })
-        .finally(() => {
-          this.loadingData--
+          this.loadingData = false
         })
     },
     loadCount () {
-      this.loadingData++
       const tableService = useTableService()
+      this.loadingCount = true
       tableService.getCount(this.$route.params.database_id, this.$route.params.table_id, (this.versionISO || this.lastReload.toISOString()))
         .then((count) => {
           this.total = count
+          this.loadingCount = false
         })
-        .catch(() => {
-          this.loadingData--
-        })
-        .finally(() => {
-          this.loadingData--
+        .catch((error) => {
+          this.$toast.error(this.$t(error.code))
+          this.loadingCount = false
         })
     },
     isFileField (column) {
       return ['blob', 'longblob', 'mediumblob', 'tinyblob'].includes(column.column_type)
     },
-    close (event) {
-      console.debug('closed edit/create tuple dialog', event)
+    close ({ success }) {
+      console.debug('closed edit/create tuple dialog')
+      this.addTupleDialog = false
       this.editTupleDialog = false
-      this.reload()
+      if (success) {
+        this.reload()
+        this.selection = []
+      }
     }
   }
 }

@@ -10,49 +10,44 @@ import java.util.UUID;
 
 public interface KeycloakGateway {
 
-    TokenDto obtainUserToken(String username, String password) throws AccessDeniedException, KeycloakRemoteException;
+    TokenDto obtainUserToken(String username, String password) throws ServiceConnectionException,
+            CredentialsInvalidException, AccountNotSetupException;
+
+    TokenDto refreshUserToken(String refreshToken) throws ServiceConnectionException,
+            CredentialsInvalidException;
 
     /**
      * Creates a user at the Authentication Service with given credentials.
      *
      * @param data The user credentials.
-     * @throws AccessDeniedException           The admin token could not be obtained.
-     * @throws KeycloakRemoteException         The Authentication Service was not able to respond within the 3s timeout.
-     * @throws UserAlreadyExistsException      The user already exists at the Authentication Service.
-     * @throws UserEmailAlreadyExistsException The user email already exists in the metadata database.
+     * @throws UserExistsException      The user already exists at the Authentication Service.
+     * @throws EmailExistsException The user email already exists in the metadata database.
      */
-    void createUser(UserCreateDto data) throws AccessDeniedException, KeycloakRemoteException, UserAlreadyExistsException, UserEmailAlreadyExistsException;
+    void createUser(UserCreateDto data) throws ServiceException, ServiceConnectionException, EmailExistsException, UserExistsException;
 
     /**
      * Deletes a user at the Authentication Service with given user id.
      *
      * @param id The user id.
-     * @throws KeycloakRemoteException The Authentication Service was not able to respond within the 3s timeout.
-     * @throws AccessDeniedException   The admin token could not be obtained.
-     * @throws UserNotFoundException   The user was not found at the Authentication Service.
      */
-    void deleteUser(UUID id) throws KeycloakRemoteException, AccessDeniedException, UserNotFoundException;
+    void deleteUser(UUID id) throws ServiceException, ServiceConnectionException, UserNotFoundException;
 
     /**
      * Update the credentials for a given user.
      *
      * @param id       The user id.
      * @param password The user credential.
-     * @throws AccessDeniedException   The admin token could not be obtained.
-     * @throws KeycloakRemoteException The Authentication Service was not able to respond within the 3s timeout.
      */
-    void updateUserCredentials(UUID id, UserPasswordDto password) throws AccessDeniedException,
-            KeycloakRemoteException;
+    void updateUserCredentials(UUID id, UserPasswordDto password) throws ServiceException, ServiceConnectionException;
 
     /**
      * Finds a user in the metadata database by given username.
      *
      * @param username The user username.
      * @return The updated user.
-     * @throws AccessDeniedException   The admin token could not be obtained.
-     * @throws UserNotFoundException   The user was not found,
-     * @throws KeycloakRemoteException The Authentication Service was not able to respond within the 3s timeout.
      */
-    UserDto findByUsername(String username) throws AccessDeniedException, UserNotFoundException,
-            KeycloakRemoteException;
+    UserDto findByUsername(String username) throws ServiceException, ServiceConnectionException, UserNotFoundException;
+
+    UserDto findById(UUID id) throws ServiceException, ServiceConnectionException,
+            UserNotFoundException;
 }

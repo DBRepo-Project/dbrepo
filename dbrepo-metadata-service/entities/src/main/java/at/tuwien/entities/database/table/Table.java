@@ -1,8 +1,8 @@
 package at.tuwien.entities.database.table;
 
 import at.tuwien.entities.database.table.columns.TableColumn;
-import at.tuwien.entities.database.table.constraints.Constraints;
 import at.tuwien.entities.database.Database;
+import at.tuwien.entities.database.table.constraints.Constraints;
 import at.tuwien.entities.identifier.Identifier;
 import at.tuwien.entities.user.User;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -75,9 +75,6 @@ public class Table {
     @Column(name = "queue_name", nullable = false, updatable = false)
     private String queueName;
 
-    @Column(name = "routing_key", nullable = false, updatable = false)
-    private String routingKey;
-
     @Column(name = "tdescription", columnDefinition = "TEXT")
     private String description;
 
@@ -131,9 +128,6 @@ public class Table {
     @LastModifiedDate
     @Column(columnDefinition = "TIMESTAMP")
     private Instant lastModified;
-
-    @Column(name = "processed_constraints", nullable = false)
-    private Boolean processedConstraints;
 
     @Override
     public boolean equals(Object o) {

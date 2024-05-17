@@ -8,7 +8,7 @@
           <v-row dense>
             <v-col>
               <span v-text="$t('pages.table.subpages.drop.warning.prefix')" />
-              &nbsp;<code>{{ table.internal_name }}</code>&nbsp;
+              &nbsp;<code class="code-key">{{ table.internal_name }}</code>&nbsp;
               <span v-text="$t('pages.table.subpages.drop.warning.suffix')" />
             </v-col>
           </v-row>
@@ -102,3 +102,8 @@ export default {
   }
 }
 </script>
+<style scoped>
+.code-key {
+  padding: 2px 4px;
+}
+</style>

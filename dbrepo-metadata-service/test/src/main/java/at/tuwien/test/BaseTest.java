@@ -1,26 +1,36 @@
 package at.tuwien.test;
 
 import at.tuwien.api.amqp.*;
+import at.tuwien.api.auth.LoginRequestDto;
 import at.tuwien.api.auth.SignupRequestDto;
 import at.tuwien.api.container.ContainerBriefDto;
 import at.tuwien.api.container.ContainerDto;
 import at.tuwien.api.container.image.*;
+import at.tuwien.api.container.internal.PrivilegedContainerDto;
 import at.tuwien.api.database.*;
+import at.tuwien.api.database.internal.CreateDatabaseDto;
+import at.tuwien.api.database.internal.PrivilegedDatabaseDto;
+import at.tuwien.api.database.internal.PrivilegedViewDto;
 import at.tuwien.api.database.query.QueryBriefDto;
 import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.database.query.QueryResultDto;
 import at.tuwien.api.database.table.TableBriefDto;
 import at.tuwien.api.database.table.TableCreateDto;
-import at.tuwien.api.database.table.TableCsvDto;
 import at.tuwien.api.database.table.TableDto;
+import at.tuwien.api.database.table.TableStatisticDto;
 import at.tuwien.api.database.table.columns.ColumnCreateDto;
 import at.tuwien.api.database.table.columns.ColumnDto;
+import at.tuwien.api.database.table.columns.ColumnStatisticDto;
 import at.tuwien.api.database.table.columns.ColumnTypeDto;
 import at.tuwien.api.database.table.columns.concepts.*;
 import at.tuwien.api.database.table.constraints.ConstraintsCreateDto;
 import at.tuwien.api.database.table.constraints.ConstraintsDto;
 import at.tuwien.api.database.table.constraints.foreignKey.ForeignKeyCreateDto;
 import at.tuwien.api.database.table.constraints.unique.UniqueDto;
+import at.tuwien.api.database.table.internal.PrivilegedTableDto;
+import at.tuwien.api.datacite.DataCiteBody;
+import at.tuwien.api.datacite.DataCiteData;
+import at.tuwien.api.datacite.doi.DataCiteDoi;
 import at.tuwien.api.identifier.*;
 import at.tuwien.api.keycloak.CredentialDto;
 import at.tuwien.api.keycloak.CredentialTypeDto;
@@ -43,6 +53,7 @@ import at.tuwien.api.semantics.OntologyCreateDto;
 import at.tuwien.api.semantics.OntologyModifyDto;
 import at.tuwien.api.user.*;
 import at.tuwien.api.user.UserDetailsDto;
+import at.tuwien.api.user.internal.UpdateUserPasswordDto;
 import at.tuwien.entities.container.Container;
 import at.tuwien.entities.container.image.ContainerImage;
 import at.tuwien.entities.container.image.ContainerImageDate;
@@ -52,22 +63,18 @@ import at.tuwien.entities.database.table.columns.TableColumn;
 import at.tuwien.entities.database.table.columns.TableColumnConcept;
 import at.tuwien.entities.database.table.columns.TableColumnType;
 import at.tuwien.entities.database.table.columns.TableColumnUnit;
-import at.tuwien.entities.database.table.constraints.Constraints;
-import at.tuwien.entities.database.table.constraints.foreignKey.ForeignKey;
-import at.tuwien.entities.database.table.constraints.foreignKey.ForeignKeyReference;
-import at.tuwien.entities.database.table.constraints.unique.Unique;
 import at.tuwien.entities.identifier.*;
 import at.tuwien.entities.maintenance.BannerMessage;
 import at.tuwien.entities.maintenance.BannerMessageType;
 import at.tuwien.entities.semantics.Ontology;
 import at.tuwien.entities.user.User;
-import at.tuwien.querystore.Query;
-import at.tuwien.test.utils.ArrayUtil;
+import at.tuwien.test.utils.ArrayUtils;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.security.Principal;
 import java.time.Instant;
@@ -120,11 +127,11 @@ import static java.time.temporal.ChronoUnit.MINUTES;
  * <ul>
  * </ul>
  * <br />
- * User 1 (authorities=default researcher)
+ * User 1 (read)
  * <br />
- * User 2 (authorities=default developer)
+ * User 2 (write-own)
  * <br />
- * User 3 (authorities=default data-steward)
+ * User 3 (write-all)
  */
 public abstract class BaseTest {
 
@@ -150,10 +157,10 @@ public abstract class BaseTest {
             "delete-database"};
 
     public final static String[] DEFAULT_IDENTIFIER_HANDLING = new String[]{"default-identifier-handling",
-            "create-identifier", "find-identifier", "list-identifiers"};
+            "create-identifier", "find-identifier", "list-identifiers", "publish-identifier", "delete-identifier"};
 
     public final static String[] ESCALATED_IDENTIFIER_HANDLING = new String[]{"escalated-identifier-handling",
-            "modify-identifier-metadata", "delete-identifier", "update-foreign-identifier", "create-foreign-identifier"};
+            "modify-identifier-metadata", "update-foreign-identifier", "create-foreign-identifier"};
 
     public final static String[] DEFAULT_QUERY_HANDLING = new String[]{"default-query-handling", "view-table-data",
             "execute-query", "view-table-history", "list-database-views", "list-queries", "view-database-view-data",
@@ -173,18 +180,24 @@ public abstract class BaseTest {
 
     public final static String[] ESCALATED_USER_HANDLING = new String[]{"escalated-user-handling", "find-user"};
 
-    public final static String[] DEFAULT_RESEARCHER_ROLES = ArrayUtil.merge(List.of(new String[]{"default-researcher-roles"},
+    public final static String[] DEFAULT_RESEARCHER_ROLES = ArrayUtils.merge(List.of(new String[]{"default-researcher-roles"},
             DEFAULT_CONTAINER_HANDLING, DEFAULT_DATABASE_HANDLING, DEFAULT_IDENTIFIER_HANDLING, DEFAULT_QUERY_HANDLING,
             DEFAULT_TABLE_HANDLING, DEFAULT_USER_HANDLING, DEFAULT_SEMANTICS_HANDLING));
 
-    public final static String[] DEFAULT_DEVELOPER_ROLES = ArrayUtil.merge(List.of(new String[]{"default-developer-roles"},
+    public final static String[] DEFAULT_DEVELOPER_ROLES = ArrayUtils.merge(List.of(new String[]{"default-developer-roles"},
             DEFAULT_CONTAINER_HANDLING, DEFAULT_DATABASE_HANDLING, DEFAULT_IDENTIFIER_HANDLING, DEFAULT_QUERY_HANDLING,
             DEFAULT_TABLE_HANDLING, DEFAULT_USER_HANDLING, ESCALATED_USER_HANDLING, ESCALATED_CONTAINER_HANDLING,
             ESCALATED_DATABASE_HANDLING, ESCALATED_IDENTIFIER_HANDLING, ESCALATED_QUERY_HANDLING,
             ESCALATED_TABLE_HANDLING));
 
-    public final static String[] DEFAULT_DATA_STEWARD_ROLES = ArrayUtil.merge(List.of(new String[]{"default-data-steward-roles"},
+    public final static String[] DEFAULT_DATA_STEWARD_ROLES = ArrayUtils.merge(List.of(new String[]{"default-data-steward-roles"},
             ESCALATED_IDENTIFIER_HANDLING, DEFAULT_SEMANTICS_HANDLING, ESCALATED_SEMANTICS_HANDLING));
+
+    public final static String[] DEFAULT_LOCAL_ADMIN_ROLES = new String[]{"admin"};
+
+    public final static List<GrantedAuthorityDto> AUTHORITY_LOCAL_ADMIN_ROLES = Arrays.stream(DEFAULT_LOCAL_ADMIN_ROLES)
+            .map(GrantedAuthorityDto::new)
+            .collect(Collectors.toList());
 
     public final static List<GrantedAuthorityDto> AUTHORITY_DEFAULT_RESEARCHER_ROLES = Arrays.stream(DEFAULT_RESEARCHER_ROLES)
             .map(GrantedAuthorityDto::new)
@@ -196,6 +209,10 @@ public abstract class BaseTest {
 
     public final static List<GrantedAuthorityDto> AUTHORITY_DEFAULT_DATA_STEWARD_ROLES = Arrays.stream(DEFAULT_DATA_STEWARD_ROLES)
             .map(GrantedAuthorityDto::new)
+            .collect(Collectors.toList());
+
+    public final static List<GrantedAuthority> AUTHORITY_DEFAULT_LOCAL_ADMIN_AUTHORITIES = AUTHORITY_LOCAL_ADMIN_ROLES.stream()
+            .map(a -> new SimpleGrantedAuthority(a.getAuthority()))
             .collect(Collectors.toList());
 
     public final static List<GrantedAuthority> AUTHORITY_DEFAULT_RESEARCHER_AUTHORITIES = AUTHORITY_DEFAULT_RESEARCHER_ROLES.stream()
@@ -210,14 +227,6 @@ public abstract class BaseTest {
             .map(a -> new SimpleGrantedAuthority(a.getAuthority()))
             .collect(Collectors.toList());
 
-    public final static UserThemeSetDto USER_THEME_DARK_DTO = UserThemeSetDto.builder()
-            .theme("dark")
-            .build();
-
-    public final static UserThemeSetDto USER_THEME_LIGHT_DTO = UserThemeSetDto.builder()
-            .theme("light")
-            .build();
-
     public final static UUID REALM_DBREPO_ID = UUID.fromString("6264bf7b-d1d3-4562-9c07-ce4364a8f9d3");
     public final static String REALM_DBREPO_NAME = "dbrepo";
     public final static Boolean REALM_DBREPO_ENABLED = true;
@@ -230,13 +239,145 @@ public abstract class BaseTest {
     public final static String ROLE_DEFAULT_RESEARCHER_ROLES_NAME = "default-researcher-roles";
     public final static UUID ROLE_DEFAULT_RESEARCHER_ROLES_REALM_ID = REALM_DBREPO_ID;
 
+    public final static UpdateDatabaseAccessDto UPDATE_DATABASE_ACCESS_READ_DTO = UpdateDatabaseAccessDto.builder()
+            .type(AccessTypeDto.READ)
+            .build();
+
+    public final static UpdateDatabaseAccessDto UPDATE_DATABASE_ACCESS_WRITE_OWN_DTO = UpdateDatabaseAccessDto.builder()
+            .type(AccessTypeDto.WRITE_OWN)
+            .build();
+
+    public final static UpdateDatabaseAccessDto UPDATE_DATABASE_ACCESS_WRITE_ALL_DTO = UpdateDatabaseAccessDto.builder()
+            .type(AccessTypeDto.WRITE_ALL)
+            .build();
+
     public final static TokenDto TOKEN_DTO = TokenDto.builder()
             .accessToken("ey.yee.skrr")
             .scope("openid")
             .build();
 
+    public final static Long CONCEPT_1_ID = 1L;
+    public final static String CONCEPT_1_NAME = "precipitation";
+    public final static String CONCEPT_1_URI = "http://www.wikidata.org/entity/Q25257";
+    public final static String CONCEPT_1_DESCRIPTION = null;
+    public final static Instant CONCEPT_1_CREATED = Instant.ofEpochSecond(1701976048L) /* 2023-12-07 19:07:27 */;
+
+    public final static ConceptSaveDto CONCEPT_1_SAVE_DTO = ConceptSaveDto.builder()
+            .uri(CONCEPT_1_URI)
+            .name(CONCEPT_1_NAME)
+            .description(CONCEPT_1_DESCRIPTION)
+            .build();
+
+    public final static ConceptDto CONCEPT_1_DTO = ConceptDto.builder()
+            .id(CONCEPT_1_ID)
+            .uri(CONCEPT_1_URI)
+            .name(CONCEPT_1_NAME)
+            .description(CONCEPT_1_DESCRIPTION)
+            .build();
+
+    public final static TableColumnConcept CONCEPT_1 = TableColumnConcept.builder()
+            .id(CONCEPT_1_ID)
+            .uri(CONCEPT_1_URI)
+            .name(CONCEPT_1_NAME)
+            .description(CONCEPT_1_DESCRIPTION)
+            .created(CONCEPT_1_CREATED)
+            .build();
+
+    public final static Long CONCEPT_2_ID = 2L;
+    public final static String CONCEPT_2_NAME = "FAIR data";
+    public final static String CONCEPT_2_URI = "http://www.wikidata.org/entity/Q29032648";
+    public final static String CONCEPT_2_DESCRIPTION = "data compliant with the terms of the FAIR Data Principles";
+    public final static Instant CONCEPT_2_CREATED = Instant.now();
+
+    public final static ConceptSaveDto CONCEPT_2_SAVE_DTO = ConceptSaveDto.builder()
+            .uri(CONCEPT_2_URI)
+            .name(CONCEPT_2_NAME)
+            .description(CONCEPT_2_DESCRIPTION)
+            .build();
+
+    public final static ConceptDto CONCEPT_2_DTO = ConceptDto.builder()
+            .id(CONCEPT_2_ID)
+            .uri(CONCEPT_2_URI)
+            .name(CONCEPT_2_NAME)
+            .description(CONCEPT_2_DESCRIPTION)
+            .build();
+
+    public final static TableColumnConcept CONCEPT_2 = TableColumnConcept.builder()
+            .id(CONCEPT_2_ID)
+            .uri(CONCEPT_2_URI)
+            .name(CONCEPT_2_NAME)
+            .description(CONCEPT_2_DESCRIPTION)
+            .created(CONCEPT_2_CREATED)
+            .build();
+
+    public final static Long UNIT_1_ID = 1L;
+    public final static String UNIT_1_NAME = "millimetre";
+    public final static String UNIT_1_URI = "http://www.ontology-of-units-of-measure.org/resource/om-2/millimetre";
+    public final static String UNIT_1_DESCRIPTION = "The millimetre is a unit of length defined as 1.0e-3 metre.";
+    public final static Instant UNIT_1_CREATED = Instant.ofEpochSecond(1701976282L) /* 2023-12-07 19:11:22 */;
+
+    public final static UnitSaveDto UNIT_1_SAVE_DTO = UnitSaveDto.builder()
+            .uri(UNIT_1_URI)
+            .name(UNIT_1_NAME)
+            .description(UNIT_1_DESCRIPTION)
+            .build();
+
+    public final static UnitDto UNIT_1_DTO = UnitDto.builder()
+            .id(UNIT_1_ID)
+            .uri(UNIT_1_URI)
+            .name(UNIT_1_NAME)
+            .description(UNIT_1_DESCRIPTION)
+            .build();
+
+    public final static TableColumnUnit UNIT_1 = TableColumnUnit.builder()
+            .id(UNIT_1_ID)
+            .uri(UNIT_1_URI)
+            .name(UNIT_1_NAME)
+            .description(UNIT_1_DESCRIPTION)
+            .created(UNIT_1_CREATED)
+            .build();
+
+    public final static Long UNIT_2_ID = 2L;
+    public final static String UNIT_2_NAME = "tonne";
+    public final static String UNIT_2_URI = "http://www.ontology-of-units-of-measure.org/resource/om-2/tonne";
+    public final static String UNIT_2_DESCRIPTION = "The tonne is a unit of mass defined as 1000 kilogram.";
+    public final static Instant UNIT_2_CREATED = Instant.ofEpochSecond(1701976462L) /* 2023-12-07 19:14:22 */;
+
+    public final static UnitSaveDto UNIT_2_SAVE_DTO = UnitSaveDto.builder()
+            .uri(UNIT_2_URI)
+            .name(UNIT_2_NAME)
+            .description(UNIT_2_DESCRIPTION)
+            .build();
+
+    public final static UnitDto UNIT_2_DTO = UnitDto.builder()
+            .id(UNIT_2_ID)
+            .uri(UNIT_2_URI)
+            .name(UNIT_2_NAME)
+            .description(UNIT_2_DESCRIPTION)
+            .build();
+
+    public final static TableColumnUnit UNIT_2 = TableColumnUnit.builder()
+            .id(UNIT_2_ID)
+            .uri(UNIT_2_URI)
+            .name(UNIT_2_NAME)
+            .description(UNIT_2_DESCRIPTION)
+            .created(UNIT_2_CREATED)
+            .build();
+
     public final static String USER_BROKER_USERNAME = "guest";
     public final static String USER_BROKER_PASSWORD = "guest";
+
+    public final static String USER_LOCAL_ADMIN_USERNAME = "admin";
+    public final static String USER_LOCAL_ADMIN_PASSWORD = "admin";
+
+    public final static UserDetails USER_LOCAL_ADMIN_DETAILS = UserDetailsDto.builder()
+            .username(USER_LOCAL_ADMIN_USERNAME)
+            .password(USER_LOCAL_ADMIN_PASSWORD)
+            .authorities(AUTHORITY_DEFAULT_LOCAL_ADMIN_AUTHORITIES)
+            .build();
+
+    public final static Principal USER_LOCAL_ADMIN_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_LOCAL_ADMIN_DETAILS,
+            USER_LOCAL_ADMIN_PASSWORD, USER_LOCAL_ADMIN_DETAILS.getAuthorities());
 
     public final static UUID USER_1_ID = UUID.fromString("cd5bab0d-7799-4069-85fb-c5d738572a0b");
     public final static String USER_1_EMAIL = "john.doe@example.com";
@@ -246,6 +387,7 @@ public abstract class BaseTest {
     public final static String USER_1_DATABASE_PASSWORD = "*440BA4FD1A87A0999647DB67C0EE258198B247BA" /* junit1 */;
     public final static String USER_1_FIRSTNAME = "John";
     public final static String USER_1_LASTNAME = "Doe";
+    public final static String USER_1_QUALIFIED_NAME = "@" + USER_1_USERNAME + " — " + USER_1_FIRSTNAME + " " + USER_1_LASTNAME;
     public final static String USER_1_NAME = "John Doe";
     public final static String USER_1_AFFILIATION = "TU Graz";
     public final static String USER_1_ORCID = "000000034216302X";
@@ -258,6 +400,7 @@ public abstract class BaseTest {
     public final static Long USER_1_NOT_BEFORE = 0L;
     public final static Boolean USER_1_ENABLED = true;
     public final static String USER_1_THEME = "light";
+    public final static String USER_1_LANGUAGE = "en";
     public final static Instant USER_1_CREATED = Instant.ofEpochSecond(1677399441L) /* 2023-02-26 08:17:21 (UTC) */;
     public final static Instant USER_1_LAST_MODIFIED = USER_1_CREATED;
     public final static UUID USER_1_REALM_ID = REALM_DBREPO_ID;
@@ -273,11 +416,17 @@ public abstract class BaseTest {
             .write("")
             .build();
 
+    public final static UpdateUserPasswordDto USER_1_UPDATE_PASSWORD_DTO = UpdateUserPasswordDto.builder()
+            .username(USER_1_USERNAME)
+            .password(USER_1_PASSWORD)
+            .build();
+
     public final static UserAttributesDto USER_1_ATTRIBUTES_DTO = UserAttributesDto.builder()
             .theme(USER_1_THEME)
             .orcid(USER_1_ORCID_UNCOMPRESSED)
             .affiliation(USER_1_AFFILIATION)
             .mariadbPassword(USER_1_DATABASE_PASSWORD)
+            .language(USER_1_LANGUAGE)
             .build();
 
     public final static CredentialDto USER_1_KEYCLOAK_CREDENTIAL_1 = CredentialDto.builder()
@@ -293,6 +442,16 @@ public abstract class BaseTest {
             .credentials(List.of(USER_1_KEYCLOAK_CREDENTIAL_1))
             .build();
 
+    public final static PrivilegedUserDto USER_1_PRIVILEGED_DTO = PrivilegedUserDto.builder()
+            .id(USER_1_ID)
+            .username(USER_1_USERNAME)
+            .password(USER_1_PASSWORD)
+            .attributes(USER_1_ATTRIBUTES_DTO)
+            .firstname(USER_1_FIRSTNAME)
+            .lastname(USER_1_LASTNAME)
+            .qualifiedName(USER_1_QUALIFIED_NAME)
+            .build();
+
     public final static User USER_1 = User.builder()
             .id(USER_1_ID)
             .username(USER_1_USERNAME)
@@ -303,6 +462,7 @@ public abstract class BaseTest {
             .orcid(USER_1_ORCID)
             .theme(USER_1_THEME)
             .mariadbPassword(USER_1_DATABASE_PASSWORD)
+            .language(USER_1_LANGUAGE)
             .build();
 
     public final static UserDto USER_1_DTO = UserDto.builder()
@@ -312,6 +472,7 @@ public abstract class BaseTest {
             .lastname(USER_1_LASTNAME)
             .attributes(USER_1_ATTRIBUTES_DTO)
             .name(USER_1_NAME)
+            .qualifiedName(USER_1_QUALIFIED_NAME)
             .build();
 
     public final static UserUpdateDto USER_1_UPDATE_DTO = UserUpdateDto.builder()
@@ -319,10 +480,8 @@ public abstract class BaseTest {
             .lastname(USER_1_LASTNAME)
             .affiliation(USER_1_AFFILIATION)
             .orcid(USER_1_ORCID)
-            .build();
-
-    public final static UserThemeSetDto USER_1_THEME_SET_DTO = UserThemeSetDto.builder()
             .theme(USER_1_THEME)
+            .language(USER_1_LANGUAGE)
             .build();
 
     public final static UserPasswordDto USER_1_PASSWORD_DTO = UserPasswordDto.builder()
@@ -363,14 +522,9 @@ public abstract class BaseTest {
             .email(USER_1_EMAIL)
             .build();
 
-    public final static at.tuwien.api.amqp.UserDetailsDto USER_1_DETAILS_DTO = at.tuwien.api.amqp.UserDetailsDto.builder()
-            .name(USER_1_USERNAME)
-            .tags(new String[]{})
-            .build();
-
-    public final static at.tuwien.api.amqp.UserDetailsDto USER_1_DETAILS_WITH_TAGS_DTO = at.tuwien.api.amqp.UserDetailsDto.builder()
-            .name(USER_1_USERNAME)
-            .tags(new String[]{"administrator"})
+    public final static LoginRequestDto USER_1_LOGIN_REQUEST_DTO = LoginRequestDto.builder()
+            .username(USER_1_USERNAME)
+            .password(USER_1_PASSWORD)
             .build();
 
     public final static UUID USER_2_ID = UUID.fromString("eeb9a51b-4cd8-4039-90bf-e24f17372f7c");
@@ -383,11 +537,13 @@ public abstract class BaseTest {
     public final static String USER_2_ORCID_URL = "https://orcid.org/0000-0002-9272-6225";
     public final static String USER_2_PASSWORD = "junit2";
     public final static String USER_2_DATABASE_PASSWORD = "*9AA70A8B0EEFAFCB5BED5BDEF6EE264D5DA915AE" /* junit2 */;
+    public final static String USER_2_QUALIFIED_NAME = "@" + USER_2_USERNAME + " — " + USER_2_FIRSTNAME + " " + USER_2_LASTNAME;
     public final static Boolean USER_2_VERIFIED = true;
     public final static Boolean USER_2_TOTP = false;
     public final static Long USER_2_NOT_BEFORE = 0L;
     public final static Boolean USER_2_ENABLED = true;
     public final static String USER_2_THEME = "light";
+    public final static String USER_2_LANGUAGE = "de";
     public final static Instant USER_2_CREATED = Instant.ofEpochSecond(1677399528L) /* 2023-02-26 08:18:48 (UTC) */;
     public final static Instant USER_2_LAST_MODIFIED = USER_1_CREATED;
     public final static UUID USER_2_REALM_ID = REALM_DBREPO_ID;
@@ -397,6 +553,7 @@ public abstract class BaseTest {
             .orcid(USER_2_ORCID_URL)
             .affiliation(USER_2_AFFILIATION)
             .mariadbPassword(USER_2_DATABASE_PASSWORD)
+            .language(USER_2_LANGUAGE)
             .build();
 
     public final static User USER_2 = User.builder()
@@ -409,6 +566,7 @@ public abstract class BaseTest {
             .orcid(USER_2_ORCID_URL)
             .theme(USER_2_THEME)
             .mariadbPassword(USER_2_DATABASE_PASSWORD)
+            .language(USER_2_LANGUAGE)
             .build();
 
     public final static UserDto USER_2_DTO = UserDto.builder()
@@ -455,6 +613,16 @@ public abstract class BaseTest {
             .tags(new String[]{})
             .build();
 
+    public final static PrivilegedUserDto USER_2_PRIVILEGED_DTO = PrivilegedUserDto.builder()
+            .id(USER_2_ID)
+            .username(USER_2_USERNAME)
+            .password(USER_2_PASSWORD)
+            .attributes(USER_2_ATTRIBUTES_DTO)
+            .firstname(USER_2_FIRSTNAME)
+            .lastname(USER_2_LASTNAME)
+            .qualifiedName(USER_2_QUALIFIED_NAME)
+            .build();
+
     public final static Principal USER_2_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_2_DETAILS,
             USER_2_PASSWORD, USER_2_DETAILS.getAuthorities());
 
@@ -469,6 +637,7 @@ public abstract class BaseTest {
     public final static String USER_3_EMAIL = "system@example.com";
     public final static String USER_3_PASSWORD = "password";
     public final static String USER_3_DATABASE_PASSWORD = "*D65FCA043964B63E849DD6334699ECB065905DA4" /* junit3 */;
+    public final static String USER_3_QUALIFIED_NAME = "@" + USER_3_USERNAME + " — " + USER_3_FIRSTNAME + " " + USER_3_LASTNAME;
     public final static Boolean USER_3_VERIFIED = true;
     public final static Boolean USER_3_TOTP = false;
     public final static Long USER_3_NOT_BEFORE = 0L;
@@ -537,6 +706,16 @@ public abstract class BaseTest {
             .tags(new String[]{})
             .build();
 
+    public final static PrivilegedUserDto USER_3_PRIVILEGED_DTO = PrivilegedUserDto.builder()
+            .id(USER_3_ID)
+            .username(USER_3_USERNAME)
+            .password(USER_3_PASSWORD)
+            .attributes(USER_3_ATTRIBUTES_DTO)
+            .firstname(USER_3_FIRSTNAME)
+            .lastname(USER_3_LASTNAME)
+            .qualifiedName(USER_3_QUALIFIED_NAME)
+            .build();
+
     public final static UUID USER_4_ID = UUID.fromString("791d58c5-bfab-4520-b4fc-b44d4ab9feb0");
     public final static String USER_4_USERNAME = "junit4";
     public final static String USER_4_FIRSTNAME = "JUnit";
@@ -546,6 +725,7 @@ public abstract class BaseTest {
     public final static String USER_4_ORCID_URL = null;
     public final static String USER_4_PASSWORD = "junit4";
     public final static String USER_4_DATABASE_PASSWORD = "*C20EF5C6875857DEFA9BE6E9B62DD76AAAE51882" /* junit4 */;
+    public final static String USER_4_QUALIFIED_NAME = "@" + USER_4_USERNAME + " — " + USER_4_FIRSTNAME + " " + USER_4_LASTNAME;
     public final static String USER_4_EMAIL = "junit4@ossdip.at";
     public final static Boolean USER_4_VERIFIED = true;
     public final static Boolean USER_4_ENABLED = true;
@@ -592,11 +772,21 @@ public abstract class BaseTest {
             .username(USER_4_USERNAME)
             .email(USER_4_EMAIL)
             .password(USER_4_PASSWORD)
-            .authorities(List.of())
+            .authorities(new LinkedList<>())
             .build();
 
     public final static Principal USER_4_PRINCIPAL = new UsernamePasswordAuthenticationToken(USER_4_DETAILS,
             USER_4_PASSWORD, USER_4_DETAILS.getAuthorities());
+
+    public final static PrivilegedUserDto USER_4_PRIVILEGED_DTO = PrivilegedUserDto.builder()
+            .id(USER_4_ID)
+            .username(USER_4_USERNAME)
+            .password(USER_4_PASSWORD)
+            .attributes(USER_4_ATTRIBUTES_DTO)
+            .firstname(USER_4_FIRSTNAME)
+            .lastname(USER_4_LASTNAME)
+            .qualifiedName(USER_4_QUALIFIED_NAME)
+            .build();
 
     public final static UUID USER_5_ID = UUID.fromString("28ff851d-d7bc-4422-959c-edd7a5b15630");
     public final static String USER_5_USERNAME = "system";
@@ -706,7 +896,6 @@ public abstract class BaseTest {
             .id(IMAGE_DATE_1_ID)
             .unixFormat(IMAGE_DATE_1_UNIX_FORMAT)
             .databaseFormat(IMAGE_DATE_1_DATABASE_FORMAT)
-            .example(IMAGE_DATE_1_EXAMPLE)
             .hasTime(IMAGE_DATE_1_HAS_TIME)
             .build();
 
@@ -748,7 +937,6 @@ public abstract class BaseTest {
             .id(IMAGE_DATE_2_ID)
             .unixFormat(IMAGE_DATE_2_UNIX_FORMAT)
             .databaseFormat(IMAGE_DATE_2_DATABASE_FORMAT)
-            .example(IMAGE_DATE_2_EXAMPLE)
             .hasTime(IMAGE_DATE_2_HAS_TIME)
             .build();
 
@@ -772,7 +960,6 @@ public abstract class BaseTest {
             .id(IMAGE_DATE_3_ID)
             .unixFormat(IMAGE_DATE_3_UNIX_FORMAT)
             .databaseFormat(IMAGE_DATE_3_DATABASE_FORMAT)
-            .example(IMAGE_DATE_3_EXAMPLE)
             .hasTime(IMAGE_DATE_3_HAS_TIME)
             .build();
 
@@ -796,13 +983,13 @@ public abstract class BaseTest {
             .id(IMAGE_DATE_4_ID)
             .unixFormat(IMAGE_DATE_4_UNIX_FORMAT)
             .databaseFormat(IMAGE_DATE_4_DATABASE_FORMAT)
-            .example(IMAGE_DATE_4_EXAMPLE)
             .hasTime(IMAGE_DATE_4_HAS_TIME)
             .build();
 
     public final static ContainerImage IMAGE_1 = ContainerImage.builder()
             .id(IMAGE_1_ID)
             .name(IMAGE_1_NAME)
+            .registry(IMAGE_1_REGISTRY)
             .version(IMAGE_1_VERSION)
             .dialect(IMAGE_1_DIALECT)
             .jdbcMethod(IMAGE_1_JDBC)
@@ -858,10 +1045,10 @@ public abstract class BaseTest {
             .uiHost(CONTAINER_1_UI_HOST)
             .uiPort(CONTAINER_1_UI_PORT)
             .uiAdditionalFlags(CONTAINER_1_UI_ADDITIONAL_FLAGS)
-            .sidecarHost(CONTAINER_1_SIDECAR_HOST)
-            .sidecarPort(CONTAINER_1_SIDECAR_PORT)
             .privilegedUsername(CONTAINER_1_PRIVILEGED_USERNAME)
             .privilegedPassword(CONTAINER_1_PRIVILEGED_PASSWORD)
+            .sidecarHost(CONTAINER_1_SIDECAR_HOST)
+            .sidecarPort(CONTAINER_1_SIDECAR_PORT)
             .build();
 
     public final static ContainerDto CONTAINER_1_DTO = ContainerDto.builder()
@@ -872,8 +1059,6 @@ public abstract class BaseTest {
             .created(CONTAINER_1_CREATED)
             .host(CONTAINER_1_HOST)
             .port(CONTAINER_1_PORT)
-            .sidecarHost(CONTAINER_1_SIDECAR_HOST)
-            .sidecarPort(CONTAINER_1_SIDECAR_PORT)
             .build();
 
     public final static ContainerBriefDto CONTAINER_1_DTO_BRIEF = ContainerBriefDto.builder()
@@ -882,6 +1067,20 @@ public abstract class BaseTest {
             .internalName(CONTAINER_1_INTERNALNAME)
             .created(CONTAINER_1_CREATED)
             .running(CONTAINER_1_RUNNING)
+            .build();
+
+    public final static PrivilegedContainerDto CONTAINER_1_PRIVILEGED_DTO = PrivilegedContainerDto.builder()
+            .id(CONTAINER_1_ID)
+            .name(CONTAINER_1_NAME)
+            .internalName(CONTAINER_1_INTERNALNAME)
+            .image(CONTAINER_1_IMAGE_DTO)
+            .created(CONTAINER_1_CREATED)
+            .host(CONTAINER_1_HOST)
+            .port(CONTAINER_1_PORT)
+            .sidecarHost(CONTAINER_1_SIDECAR_HOST)
+            .sidecarPort(CONTAINER_1_SIDECAR_PORT)
+            .username(CONTAINER_1_PRIVILEGED_USERNAME)
+            .password(CONTAINER_1_PRIVILEGED_PASSWORD)
             .build();
 
     public final static Long CONTAINER_2_ID = 2L;
@@ -907,8 +1106,6 @@ public abstract class BaseTest {
             .created(CONTAINER_2_CREATED)
             .host(CONTAINER_2_HOST)
             .port(CONTAINER_2_PORT)
-            .sidecarHost(CONTAINER_2_SIDECAR_HOST)
-            .sidecarPort(CONTAINER_2_SIDECAR_PORT)
             .privilegedUsername(CONTAINER_2_PRIVILEGED_USERNAME)
             .privilegedPassword(CONTAINER_2_PRIVILEGED_PASSWORD)
             .build();
@@ -921,8 +1118,6 @@ public abstract class BaseTest {
             .created(CONTAINER_2_CREATED)
             .host(CONTAINER_2_HOST)
             .port(CONTAINER_2_PORT)
-            .sidecarHost(CONTAINER_1_SIDECAR_HOST)
-            .sidecarPort(CONTAINER_1_SIDECAR_PORT)
             .build();
 
     public final static ContainerBriefDto CONTAINER_2_DTO_BRIEF = ContainerBriefDto.builder()
@@ -954,8 +1149,6 @@ public abstract class BaseTest {
             .created(CONTAINER_3_CREATED)
             .host(CONTAINER_3_HOST)
             .port(CONTAINER_3_PORT)
-            .sidecarHost(CONTAINER_3_SIDECAR_HOST)
-            .sidecarPort(CONTAINER_3_SIDECAR_PORT)
             .privilegedUsername(CONTAINER_3_PRIVILEGED_USERNAME)
             .privilegedPassword(CONTAINER_3_PRIVILEGED_PASSWORD)
             .build();
@@ -981,8 +1174,6 @@ public abstract class BaseTest {
             .created(CONTAINER_4_CREATED)
             .host(CONTAINER_4_HOST)
             .port(CONTAINER_4_PORT)
-            .sidecarHost(CONTAINER_4_SIDECAR_HOST)
-            .sidecarPort(CONTAINER_4_SIDECAR_PORT)
             .privilegedUsername(CONTAINER_4_PRIVILEGED_USERNAME)
             .privilegedPassword(CONTAINER_4_PRIVILEGED_PASSWORD)
             .build();
@@ -1012,7 +1203,9 @@ public abstract class BaseTest {
     public final static Instant DATABASE_1_CREATED = Instant.ofEpochSecond(1677399741L) /* 2023-02-26 08:22:21 (UTC) */;
     public final static Instant DATABASE_1_LAST_MODIFIED = Instant.ofEpochSecond(1677399741L) /* 2023-02-26 08:22:21 (UTC) */;
     public final static UUID DATABASE_1_OWNER = USER_1_ID;
-    public final static UUID DATABASE_1_CREATOR = USER_1_ID;
+    public final static UUID DATABASE_1_CREATED_BY = USER_1_ID;
+    public final static UserDto DATABASE_1_CREATOR_DTO = USER_1_DTO;
+    public final static UserDto DATABASE_1_OWNER_DTO = USER_1_DTO;
 
     public final static GrantExchangePermissionsDto USER_1_RABBITMQ_GRANT_TOPIC_DTO = GrantExchangePermissionsDto.builder()
             .exchange("dbrepo")
@@ -1026,6 +1219,15 @@ public abstract class BaseTest {
             .cid(CONTAINER_1_ID)
             .build();
 
+    public final static CreateDatabaseDto DATABASE_1_CREATE_INTERNAL = CreateDatabaseDto.builder()
+            .internalName(DATABASE_1_INTERNALNAME)
+            .containerId(CONTAINER_1_ID)
+            .username(USER_1_USERNAME)
+            .password(USER_1_PASSWORD)
+            .privilegedUsername(CONTAINER_1_PRIVILEGED_USERNAME)
+            .privilegedPassword(CONTAINER_1_PRIVILEGED_PASSWORD)
+            .build();
+
     public final static Long DATABASE_2_ID = 2L;
     public final static String DATABASE_2_NAME = "Zoo";
     public final static String DATABASE_2_DESCRIPTION = "Zoo data";
@@ -1036,6 +1238,14 @@ public abstract class BaseTest {
     public final static Instant DATABASE_2_LAST_MODIFIED = Instant.ofEpochSecond(1677399772L) /* 2023-02-26 08:22:52 (UTC) */;
     public final static UUID DATABASE_2_OWNER = USER_2_ID;
     public final static UUID DATABASE_2_CREATOR = USER_2_ID;
+
+    public final static PrivilegedDatabaseDto DATABASE_2_PRIVILEGED_DTO = PrivilegedDatabaseDto.builder()
+            .id(DATABASE_2_ID)
+            .name(DATABASE_2_NAME)
+            .internalName(DATABASE_2_INTERNALNAME)
+            .container(CONTAINER_1_PRIVILEGED_DTO)
+            .views(new LinkedList<>())
+            .build();
 
     public final static DatabaseCreateDto DATABASE_2_CREATE = DatabaseCreateDto.builder()
             .name(DATABASE_2_NAME)
@@ -1052,17 +1262,22 @@ public abstract class BaseTest {
     public final static Instant DATABASE_3_CREATED = Instant.ofEpochSecond(1677399792L) /* 2023-02-26 08:23:12 (UTC) */;
     public final static Instant DATABASE_3_LAST_MODIFIED = Instant.ofEpochSecond(1677399792L) /* 2023-02-26 08:23:12 (UTC) */;
     public final static UUID DATABASE_3_OWNER = USER_3_ID;
-    public final static UUID DATABASE_3_CREATOR = USER_3_ID;
+    public final static UUID DATABASE_3_CREATOR_ID = USER_3_ID;
+    public final static User DATABASE_3_CREATOR = USER_3;
+    public final static UserDto DATABASE_3_CREATOR_DTO = USER_3_DTO;
+    public final static UserDto DATABASE_3_OWNER_DTO = USER_3_DTO;
 
     public final static DatabaseDto DATABASE_3_DTO = DatabaseDto.builder()
             .id(DATABASE_3_ID)
             .created(DATABASE_3_CREATED)
             .isPublic(DATABASE_3_PUBLIC)
             .name(DATABASE_3_NAME)
+            .container(CONTAINER_1_DTO)
             .internalName(DATABASE_3_INTERNALNAME)
             .exchangeName(DATABASE_3_EXCHANGE)
-            .tables(List.of()) /* TABLE_3, TABLE_3, TABLE_3 */
-            .views(List.of())
+            .tables(new LinkedList<>()) /* TABLE_3, TABLE_3, TABLE_3 */
+            .views(new LinkedList<>())
+            .identifiers(new LinkedList<>())
             .build();
 
     public final static DatabaseCreateDto DATABASE_3_CREATE = DatabaseCreateDto.builder()
@@ -1093,211 +1308,181 @@ public abstract class BaseTest {
             .created(DATABASE_4_CREATED)
             .creator(USER_4_DTO)
             .owner(USER_4_DTO)
-            .tables(List.of())
-            .views(List.of())
+            .tables(new LinkedList<>())
+            .views(new LinkedList<>())
+            .identifiers(new LinkedList<>())
             .build();
 
     public final static TableCreateDto TABLE_0_CREATE_DTO = TableCreateDto.builder()
             .name("full")
             .description("full example")
             .constraints(ConstraintsCreateDto.builder()
-                    .uniques(List.of())
-                    .foreignKeys(List.of())
+                    .uniques(new LinkedList<>())
+                    .foreignKeys(new LinkedList<>())
                     .build())
             .columns(List.of(ColumnCreateDto.builder()
                             .name("col1a")
                             .type(ColumnTypeDto.CHAR)
                             .nullAllowed(true)
-                            .primaryKey(false)
                             .build(),
                     ColumnCreateDto.builder()
                             .name("col1b")
                             .type(ColumnTypeDto.CHAR)
                             .nullAllowed(true)
-                            .primaryKey(false)
                             .size(50L)
                             .build(),
                     ColumnCreateDto.builder()
                             .name("col2a")
                             .type(ColumnTypeDto.VARCHAR)
                             .nullAllowed(true)
-                            .primaryKey(false)
                             .build(),
                     ColumnCreateDto.builder()
                             .name("col2b")
                             .type(ColumnTypeDto.VARCHAR)
                             .nullAllowed(true)
-                            .primaryKey(false)
                             .size(1024L)
                             .build(),
                     ColumnCreateDto.builder()
                             .name("col3")
                             .type(ColumnTypeDto.BINARY)
                             .nullAllowed(true)
-                            .primaryKey(false)
                             .build(),
                     ColumnCreateDto.builder()
                             .name("col4")
                             .type(ColumnTypeDto.VARBINARY)
                             .nullAllowed(true)
-                            .primaryKey(false)
                             .size(200L)
                             .build(),
                     ColumnCreateDto.builder()
                             .name("col5")
                             .type(ColumnTypeDto.TINYBLOB)
                             .nullAllowed(true)
-                            .primaryKey(false)
                             .build(),
                     ColumnCreateDto.builder()
                             .name("col6")
                             .type(ColumnTypeDto.TINYTEXT)
                             .nullAllowed(true)
-                            .primaryKey(false)
                             .build(),
                     ColumnCreateDto.builder()
                             .name("col7")
                             .type(ColumnTypeDto.TEXT)
                             .nullAllowed(true)
-                            .primaryKey(false)
                             .build(),
                     ColumnCreateDto.builder()
                             .name("col8")
                             .type(ColumnTypeDto.BLOB)
                             .nullAllowed(true)
-                            .primaryKey(false)
                             .build(),
                     ColumnCreateDto.builder()
                             .name("col9")
                             .type(ColumnTypeDto.MEDIUMTEXT)
                             .nullAllowed(true)
-                            .primaryKey(false)
                             .build(),
                     ColumnCreateDto.builder()
                             .name("col10")
                             .type(ColumnTypeDto.MEDIUMBLOB)
                             .nullAllowed(true)
-                            .primaryKey(false)
                             .build(),
                     ColumnCreateDto.builder()
                             .name("col11")
                             .type(ColumnTypeDto.LONGTEXT)
                             .nullAllowed(true)
-                            .primaryKey(false)
                             .build(),
                     ColumnCreateDto.builder()
                             .name("col12")
                             .type(ColumnTypeDto.LONGBLOB)
                             .nullAllowed(true)
-                            .primaryKey(false)
                             .build(),
                     ColumnCreateDto.builder()
                             .name("col13")
                             .type(ColumnTypeDto.ENUM)
                             .nullAllowed(true)
-                            .primaryKey(false)
                             .enums(List.of("val1", "val2"))
                             .build(),
                     ColumnCreateDto.builder()
                             .name("col14")
                             .type(ColumnTypeDto.SET)
                             .nullAllowed(true)
-                            .primaryKey(false)
                             .sets(List.of("val1", "val2"))
                             .build(),
                     ColumnCreateDto.builder()
                             .name("col15")
                             .type(ColumnTypeDto.BIT)
                             .nullAllowed(true)
-                            .primaryKey(false)
                             .build(),
                     ColumnCreateDto.builder()
                             .name("col16")
                             .type(ColumnTypeDto.TINYINT)
                             .nullAllowed(true)
-                            .primaryKey(false)
                             .build(),
                     ColumnCreateDto.builder()
                             .name("col17")
                             .type(ColumnTypeDto.BOOL)
                             .nullAllowed(true)
-                            .primaryKey(false)
                             .build(),
                     ColumnCreateDto.builder()
                             .name("col18")
                             .type(ColumnTypeDto.SMALLINT)
                             .nullAllowed(true)
-                            .primaryKey(false)
                             .build(),
                     ColumnCreateDto.builder()
                             .name("col19")
                             .type(ColumnTypeDto.MEDIUMINT)
                             .nullAllowed(true)
-                            .primaryKey(false)
                             .build(),
                     ColumnCreateDto.builder()
                             .name("col20")
                             .type(ColumnTypeDto.INT)
                             .nullAllowed(true)
-                            .primaryKey(false)
                             .build(),
                     ColumnCreateDto.builder()
                             .name("col21")
                             .type(ColumnTypeDto.BIGINT)
                             .nullAllowed(true)
-                            .primaryKey(false)
                             .build(),
                     ColumnCreateDto.builder()
                             .name("col22")
                             .type(ColumnTypeDto.FLOAT)
                             .nullAllowed(true)
-                            .primaryKey(false)
                             .build(),
                     ColumnCreateDto.builder()
                             .name("col23")
                             .type(ColumnTypeDto.DOUBLE)
                             .nullAllowed(true)
-                            .primaryKey(false)
                             .build(),
                     ColumnCreateDto.builder()
                             .name("col24")
                             .type(ColumnTypeDto.DECIMAL)
                             .nullAllowed(true)
-                            .primaryKey(false)
                             .build(),
                     ColumnCreateDto.builder()
                             .name("col25")
                             .type(ColumnTypeDto.DATE)
                             .nullAllowed(true)
-                            .primaryKey(false)
                             .dfid(IMAGE_DATE_1_ID)
                             .build(),
                     ColumnCreateDto.builder()
                             .name("col26")
                             .type(ColumnTypeDto.DATETIME)
                             .nullAllowed(true)
-                            .primaryKey(false)
                             .dfid(IMAGE_DATE_3_ID)
                             .build(),
                     ColumnCreateDto.builder()
                             .name("col27")
                             .type(ColumnTypeDto.TIMESTAMP)
                             .nullAllowed(true)
-                            .primaryKey(false)
                             .dfid(IMAGE_DATE_3_ID)
                             .build(),
                     ColumnCreateDto.builder()
                             .name("col28")
                             .type(ColumnTypeDto.TIME)
                             .nullAllowed(true)
-                            .primaryKey(false)
                             .dfid(IMAGE_DATE_4_ID)
                             .build(),
                     ColumnCreateDto.builder()
                             .name("col29")
                             .type(ColumnTypeDto.YEAR)
                             .nullAllowed(true)
-                            .primaryKey(false)
                             .build()))
             .build();
 
@@ -1308,15 +1493,35 @@ public abstract class BaseTest {
     public final static Boolean TABLE_1_PROCESSED_CONSTRAINTS = true;
     public final static String TABLE_1_DESCRIPTION = "Weather in the world";
     public final static String TABLE_1_QUEUE_NAME = TABLE_1_INTERNALNAME;
-    public final static String TABLE_1_ROUTING_KEY = "dbrepo\\." + DATABASE_1_EXCHANGE + "\\." + TABLE_1_QUEUE_NAME;
+    public final static String TABLE_1_ROUTING_KEY = "dbrepo\\." + DATABASE_1_ID + "\\." + TABLE_1_ID;
     public final static Long TABLE_1_DATABASE_ID = DATABASE_1_ID;
     public final static Instant TABLE_1_CREATED = Instant.ofEpochSecond(1677399975L) /* 2023-02-26 08:26:15 (UTC) */;
     public final static Instant TABLE_1_LAST_MODIFIED = Instant.ofEpochSecond(1677399975L) /* 2023-02-26 08:26:15 (UTC) */;
 
-    public final static Constraints TABLE_1_CONSTRAINTS = Constraints.builder()
+    public final static ConstraintsDto TABLE_1_CONSTRAINT_DTO = ConstraintsDto.builder()
+            .checks(new LinkedHashSet<>())
+            .primaryKey(new LinkedHashSet<>(Set.of("id")))
             .foreignKeys(new LinkedList<>())
             .uniques(new LinkedList<>())
-            .checks(new LinkedHashSet<>())
+            .build();
+
+    public final static PrivilegedTableDto TABLE_1_PRIVILEGED_DTO = PrivilegedTableDto.builder()
+            .id(TABLE_1_ID)
+            .tdbid(DATABASE_1_ID)
+            .database(null) /* DATABASE_1_PRIVILEGED_DTO */
+            .created(TABLE_1_CREATED)
+            .internalName(TABLE_1_INTERNALNAME)
+            .isVersioned(TABLE_1_VERSIONED)
+            .description(TABLE_1_DESCRIPTION)
+            .name(TABLE_1_NAME)
+            .queueName(TABLE_1_QUEUE_NAME)
+            .routingKey(TABLE_1_ROUTING_KEY)
+            .identifiers(new LinkedList<>())
+            .columns(new LinkedList<>() /* TABLE_1_COLUMNS_DTO */)
+            .constraints(TABLE_1_CONSTRAINT_DTO)
+            .createdBy(USER_1_ID)
+            .owner(USER_1_DTO)
+            .isPublic(DATABASE_1_PUBLIC)
             .build();
 
     public final static Table TABLE_1 = Table.builder()
@@ -1326,14 +1531,11 @@ public abstract class BaseTest {
             .created(TABLE_1_CREATED)
             .internalName(TABLE_1_INTERNALNAME)
             .isVersioned(TABLE_1_VERSIONED)
-            .processedConstraints(TABLE_1_PROCESSED_CONSTRAINTS)
             .description(TABLE_1_DESCRIPTION)
             .name(TABLE_1_NAME)
             .queueName(TABLE_1_QUEUE_NAME)
-            .routingKey(TABLE_1_ROUTING_KEY)
-            .identifiers(List.of())
-            .columns(List.of() /* TABLE_1_COLUMNS */)
-            .constraints(TABLE_1_CONSTRAINTS)
+            .identifiers(new LinkedList<>())
+            .columns(new LinkedList<>() /* TABLE_1_COLUMNS */)
             .createdBy(USER_1_ID)
             .creator(USER_1)
             .ownedBy(USER_1_ID)
@@ -1351,12 +1553,81 @@ public abstract class BaseTest {
             .name(TABLE_1_NAME)
             .queueName(TABLE_1_QUEUE_NAME)
             .routingKey(TABLE_1_ROUTING_KEY)
-            .identifiers(List.of())
-            .columns(List.of() /* TABLE_1_COLUMNS */)
-            .constraints(null /* TABLE_1_CONSTRAINTS */)
+            .identifiers(new LinkedList<>())
+            .columns(new LinkedList<>() /* TABLE_1_COLUMNS_DTO */)
+            .constraints(TABLE_1_CONSTRAINT_DTO)
             .createdBy(USER_1_ID)
             .owner(USER_1_DTO)
             .build();
+
+    public final static List<ColumnDto> TABLE_1_COLUMNS_DTO = List.of(ColumnDto.builder()
+                    .id(1L)
+                    .table(TABLE_1_DTO)
+                    .name("id")
+                    .internalName("id")
+                    .ordinalPosition(0)
+                    .columnType(ColumnTypeDto.BIGINT)
+                    .isNullAllowed(false)
+                    .autoGenerated(false)
+                    .enums(null)
+                    .sets(null)
+                    .build(),
+            ColumnDto.builder()
+                    .id(2L)
+                    .table(TABLE_1_DTO)
+                    .name("Date")
+                    .internalName("date")
+                    .ordinalPosition(1)
+                    .columnType(ColumnTypeDto.DATE)
+                    .dateFormat(IMAGE_DATE_1_DTO)
+                    .isNullAllowed(true)
+                    .autoGenerated(false)
+                    .enums(null)
+                    .sets(null)
+                    .build(),
+            ColumnDto.builder()
+                    .id(3L)
+                    .table(TABLE_1_DTO)
+                    .name("Location")
+                    .internalName("location")
+                    .ordinalPosition(2)
+                    .columnType(ColumnTypeDto.VARCHAR)
+                    .size(255L)
+                    .isNullAllowed(true)
+                    .autoGenerated(false)
+                    .enums(null)
+                    .sets(null)
+                    .build(),
+            ColumnDto.builder()
+                    .id(4L)
+                    .table(TABLE_1_DTO)
+                    .name("MinTemp")
+                    .internalName("mintemp")
+                    .ordinalPosition(3)
+                    .columnType(ColumnTypeDto.DECIMAL)
+                    .size(10L)
+                    .d(0L)
+                    .isNullAllowed(true)
+                    .autoGenerated(false)
+                    .enums(null)
+                    .sets(null)
+                    .build(),
+            ColumnDto.builder()
+                    .id(5L)
+                    .table(TABLE_1_DTO)
+                    .name("Rainfall")
+                    .internalName("rainfall")
+                    .ordinalPosition(4)
+                    .columnType(ColumnTypeDto.DECIMAL)
+                    .size(10L)
+                    .d(0L)
+                    .concept(CONCEPT_1_DTO)
+                    .unit(UNIT_1_DTO)
+                    .isNullAllowed(true)
+                    .autoGenerated(false)
+                    .enums(null)
+                    .sets(null)
+                    .build());
 
     public final static TableBriefDto TABLE_1_BRIEF_DTO = TableBriefDto.builder()
             .id(TABLE_1_ID)
@@ -1364,7 +1635,7 @@ public abstract class BaseTest {
             .isVersioned(TABLE_1_VERSIONED)
             .description(TABLE_1_DESCRIPTION)
             .name(TABLE_1_NAME)
-            .columns(List.of() /* TABLE_1_COLUMNS */)
+            .columns(new LinkedList<>() /* TABLE_1_COLUMNS */)
             .owner(USER_1_BRIEF_DTO)
             .build();
 
@@ -1375,14 +1646,15 @@ public abstract class BaseTest {
     public final static Boolean TABLE_2_PROCESSED_CONSTRAINTS = true;
     public final static String TABLE_2_DESCRIPTION = "Weather location";
     public final static String TABLE_2_QUEUE_NAME = TABLE_2_INTERNALNAME;
-    public final static String TABLE_2_ROUTING_KEY = "dbrepo\\." + DATABASE_1_EXCHANGE + "\\." + TABLE_2_QUEUE_NAME;
+    public final static String TABLE_2_ROUTING_KEY = "dbrepo\\." + DATABASE_1_ID + "\\." + TABLE_2_ID;
     public final static Instant TABLE_2_CREATED = Instant.ofEpochSecond(1677400007L) /* 2023-02-26 08:26:47 (UTC) */;
     public final static Instant TABLE_2_LAST_MODIFIED = Instant.ofEpochSecond(1677400007L) /* 2023-02-26 08:26:47 (UTC) */;
 
-    public final static Constraints TABLE_2_CONSTRAINTS = Constraints.builder()
-            .uniques(new LinkedList<>())
-            .foreignKeys(new LinkedList<>())
+    public final static ConstraintsDto TABLE_2_CONSTRAINT_DTO = ConstraintsDto.builder()
             .checks(new LinkedHashSet<>())
+            .primaryKey(new LinkedHashSet<>(Set.of("location")))
+            .foreignKeys(new LinkedList<>())
+            .uniques(new LinkedList<>())
             .build();
 
     public final static Table TABLE_2 = Table.builder()
@@ -1392,17 +1664,32 @@ public abstract class BaseTest {
             .created(TABLE_2_CREATED)
             .internalName(TABLE_2_INTERNALNAME)
             .isVersioned(TABLE_2_VERSIONED)
-            .processedConstraints(TABLE_2_PROCESSED_CONSTRAINTS)
             .description(TABLE_2_DESCRIPTION)
             .name(TABLE_2_NAME)
             .lastModified(TABLE_2_LAST_MODIFIED)
             .queueName(TABLE_2_QUEUE_NAME)
-            .routingKey(TABLE_2_ROUTING_KEY)
-            .columns(List.of() /* TABLE_2_COLUMNS */)
-            .constraints(TABLE_2_CONSTRAINTS)
+            .columns(new LinkedList<>() /* TABLE_2_COLUMNS */)
             .createdBy(USER_2_ID)
             .ownedBy(USER_2_ID)
             .owner(USER_2)
+            .build();
+
+    public final static PrivilegedTableDto TABLE_2_PRIVILEGED_DTO = PrivilegedTableDto.builder()
+            .id(TABLE_2_ID)
+            .tdbid(DATABASE_1_ID)
+            .database(null) /* DATABASE_1_PRIVILEGED_DTO */
+            .created(TABLE_2_CREATED)
+            .internalName(TABLE_2_INTERNALNAME)
+            .isVersioned(TABLE_2_VERSIONED)
+            .description(TABLE_2_DESCRIPTION)
+            .name(TABLE_2_NAME)
+            .queueName(TABLE_2_QUEUE_NAME)
+            .routingKey(TABLE_2_ROUTING_KEY)
+            .identifiers(new LinkedList<>())
+            .columns(new LinkedList<>() /* TABLE_2_COLUMNS_DTO */)
+            .constraints(TABLE_2_CONSTRAINT_DTO)
+            .createdBy(USER_1_ID)
+            .owner(USER_1_DTO)
             .build();
 
     public final static TableDto TABLE_2_DTO = TableDto.builder()
@@ -1415,8 +1702,8 @@ public abstract class BaseTest {
             .name(TABLE_2_NAME)
             .queueName(TABLE_2_QUEUE_NAME)
             .routingKey(TABLE_2_ROUTING_KEY)
-            .columns(List.of() /* TABLE_2_COLUMNS */)
-            .constraints(null /* TABLE_2_CONSTRAINTS */)
+            .columns(new LinkedList<>() /* TABLE_2_COLUMNS_DTO */)
+            .constraints(ConstraintsDto.builder().build())
             .createdBy(USER_2_ID)
             .owner(USER_2_DTO)
             .build();
@@ -1427,7 +1714,7 @@ public abstract class BaseTest {
             .isVersioned(TABLE_2_VERSIONED)
             .description(TABLE_2_DESCRIPTION)
             .name(TABLE_2_NAME)
-            .columns(List.of() /* TABLE_2_COLUMNS */)
+            .columns(new LinkedList<>() /* TABLE_2_COLUMNS */)
             .owner(USER_2_BRIEF_DTO)
             .build();
 
@@ -1438,15 +1725,9 @@ public abstract class BaseTest {
     public final static Boolean TABLE_3_PROCESSED_CONSTRAINTS = true;
     public final static String TABLE_3_DESCRIPTION = "Some sensor data";
     public final static String TABLE_3_QUEUE_NAME = TABLE_3_INTERNALNAME;
-    public final static String TABLE_3_ROUTING_KEY = "dbrepo\\." + DATABASE_1_EXCHANGE + "\\." + TABLE_3_QUEUE_NAME;
+    public final static String TABLE_3_ROUTING_KEY = "dbrepo\\." + DATABASE_1_ID + "\\." + TABLE_3_ID;
     public final static Instant TABLE_3_CREATED = Instant.ofEpochSecond(1677400031L) /* 2023-02-26 08:27:11 (UTC) */;
     public final static Instant TABLE_3_LAST_MODIFIED = Instant.ofEpochSecond(1677400031L) /* 2023-02-26 08:27:11 (UTC) */;
-
-    public final static Constraints TABLE_3_CONSTRAINTS = Constraints.builder()
-            .uniques(new LinkedList<>())
-            .foreignKeys(new LinkedList<>())
-            .checks(new LinkedHashSet<>())
-            .build();
 
     public final static Table TABLE_3 = Table.builder()
             .id(TABLE_3_ID)
@@ -1455,14 +1736,11 @@ public abstract class BaseTest {
             .created(TABLE_3_CREATED)
             .internalName(TABLE_3_INTERNALNAME)
             .isVersioned(TABLE_3_VERSIONED)
-            .processedConstraints(TABLE_3_PROCESSED_CONSTRAINTS)
             .description(TABLE_3_DESCRIPTION)
             .name(TABLE_3_NAME)
             .lastModified(TABLE_3_LAST_MODIFIED)
             .queueName(TABLE_3_QUEUE_NAME)
-            .routingKey(TABLE_3_ROUTING_KEY)
-            .columns(List.of() /* TABLE_3_COLUMNS */)
-            .constraints(TABLE_3_CONSTRAINTS)
+            .columns(new LinkedList<>() /* TABLE_3_COLUMNS */)
             .createdBy(USER_3_ID)
             .ownedBy(USER_3_ID)
             .owner(USER_3)
@@ -1478,8 +1756,8 @@ public abstract class BaseTest {
             .name(TABLE_3_NAME)
             .queueName(TABLE_3_QUEUE_NAME)
             .routingKey(TABLE_3_ROUTING_KEY)
-            .columns(List.of() /* TABLE_3_COLUMNS */)
-            .constraints(null /* TABLE_3_CONSTRAINTS */)
+            .columns(new LinkedList<>() /* TABLE_3_COLUMNS_DTO */)
+            .constraints(ConstraintsDto.builder().build())
             .createdBy(USER_3_ID)
             .owner(USER_3_DTO)
             .build();
@@ -1490,11 +1768,14 @@ public abstract class BaseTest {
             .isVersioned(TABLE_3_VERSIONED)
             .description(TABLE_3_DESCRIPTION)
             .name(TABLE_3_NAME)
-            .columns(List.of() /* TABLE_3_COLUMNS */)
+            .columns(new LinkedList<>() /* TABLE_3_COLUMNS */)
             .owner(USER_3_BRIEF_DTO)
             .build();
 
     public final static ConstraintsCreateDto TABLE_3_CONSTRAINTS_CREATE_DTO = ConstraintsCreateDto.builder()
+            .checks(new LinkedHashSet<>())
+            .primaryKey(new LinkedHashSet<>())
+            .foreignKeys(new LinkedList<>())
             .uniques(List.of(List.of("id")))
             .build();
 
@@ -1509,14 +1790,14 @@ public abstract class BaseTest {
     public final static TableCreateDto TABLE_3_CREATE_DTO = TableCreateDto.builder()
             .name(TABLE_3_NAME)
             .description(TABLE_3_DESCRIPTION)
-            .columns(List.of())
+            .columns(new LinkedList<>())
             .constraints(TABLE_3_CONSTRAINTS_CREATE_DTO)
             .build();
 
     public final static TableCreateDto TABLE_3_INVALID_CREATE_DTO = TableCreateDto.builder()
             .name(TABLE_3_NAME)
             .description(TABLE_3_DESCRIPTION)
-            .columns(List.of())
+            .columns(new LinkedList<>())
             .constraints(TABLE_3_CONSTRAINTS_INVALID_CREATE_DTO)
             .build();
 
@@ -1527,7 +1808,7 @@ public abstract class BaseTest {
     public final static Boolean TABLE_5_PROCESSED_CONSTRAINTS = true;
     public final static String TABLE_5_DESCRIPTION = "Some Kaggle dataset";
     public final static String TABLE_5_QUEUE_NAME = TABLE_5_INTERNALNAME;
-    public final static String TABLE_5_ROUTING_KEY = "dbrepo\\." + DATABASE_2_EXCHANGE + "\\." + TABLE_5_QUEUE_NAME;
+    public final static String TABLE_5_ROUTING_KEY = "dbrepo\\." + DATABASE_2_ID + "\\." + TABLE_5_ID;
     public final static Instant TABLE_5_CREATED = Instant.ofEpochSecond(1677400067L) /* 2023-02-26 08:27:47 (UTC) */;
     public final static Instant TABLE_5_LAST_MODIFIED = Instant.ofEpochSecond(1677400067L) /* 2023-02-26 08:27:47 (UTC) */;
 
@@ -1537,14 +1818,11 @@ public abstract class BaseTest {
             .created(Instant.now())
             .internalName(TABLE_5_INTERNALNAME)
             .isVersioned(TABLE_5_VERSIONED)
-            .processedConstraints(TABLE_5_PROCESSED_CONSTRAINTS)
             .description(TABLE_5_DESCRIPTION)
             .name(TABLE_5_NAME)
             .lastModified(TABLE_5_LAST_MODIFIED)
             .queueName(TABLE_5_QUEUE_NAME)
-            .routingKey(TABLE_5_ROUTING_KEY)
-            .columns(List.of() /* needs to be set in the junit tests */)
-            .constraints(null) /* TABLE_5_CONSTRAINTS */
+            .columns(new LinkedList<>() /* needs to be set in the junit tests */)
             .createdBy(USER_1_ID)
             .ownedBy(USER_1_ID)
             .owner(USER_1)
@@ -1560,16 +1838,10 @@ public abstract class BaseTest {
             .name(TABLE_5_NAME)
             .queueName(TABLE_5_QUEUE_NAME)
             .routingKey(TABLE_5_ROUTING_KEY)
-            .columns(List.of() /* needs to be set in the junit tests */)
-            .constraints(null) /* TABLE_5_CONSTRAINTS */
+            .columns(new LinkedList<>() /* TABLE_5_COLUMNS_DTO */)
+            .constraints(ConstraintsDto.builder().build())
             .createdBy(USER_1_ID)
             .owner(USER_1_DTO)
-            .build();
-
-    public final static TableCsvDto TABLE_5_CSV_DTO = TableCsvDto.builder()
-            .data(new HashMap<>() {{
-                put("id", "102");
-            }})
             .build();
 
     public final static Long TABLE_6_ID = 6L;
@@ -1579,7 +1851,7 @@ public abstract class BaseTest {
     public final static Boolean TABLE_6_PROCESSED_CONSTRAINTS = true;
     public final static String TABLE_6_DESCRIPTION = "Some names dataset";
     public final static String TABLE_6_QUEUE_NAME = TABLE_6_INTERNALNAME;
-    public final static String TABLE_6_ROUTING_KEY = "dbrepo\\." + DATABASE_2_EXCHANGE + "\\." + TABLE_6_QUEUE_NAME;
+    public final static String TABLE_6_ROUTING_KEY = "dbrepo\\." + DATABASE_2_ID + "\\." + TABLE_6_ID;
     public final static Instant TABLE_6_CREATED = Instant.ofEpochSecond(1677400117L) /* 2023-02-26 08:28:37 (UTC) */;
     public final static Instant TABLE_6_LAST_MODIFIED = Instant.ofEpochSecond(1677400117L) /* 2023-02-26 08:28:37 (UTC) */;
 
@@ -1589,14 +1861,11 @@ public abstract class BaseTest {
             .created(TABLE_6_CREATED)
             .internalName(TABLE_6_INTERNALNAME)
             .isVersioned(TABLE_6_VERSIONED)
-            .processedConstraints(TABLE_6_PROCESSED_CONSTRAINTS)
             .description(TABLE_6_DESCRIPTION)
             .name(TABLE_6_NAME)
             .lastModified(TABLE_6_LAST_MODIFIED)
             .queueName(TABLE_6_QUEUE_NAME)
-            .routingKey(TABLE_6_ROUTING_KEY)
-            .columns(List.of() /* needs to be set in the junit tests */)
-            .constraints(null) /* TABLE_6_CONSTRAINTS */
+            .columns(new LinkedList<>() /* needs to be set in the junit tests */)
             .createdBy(USER_1_ID)
             .ownedBy(USER_1_ID)
             .owner(USER_1)
@@ -1613,8 +1882,8 @@ public abstract class BaseTest {
             .name(TABLE_6_NAME)
             .queueName(TABLE_6_QUEUE_NAME)
             .routingKey(TABLE_6_ROUTING_KEY)
-            .columns(List.of() /* needs to be set in the junit tests */)
-            .constraints(null) /* TABLE_6_CONSTRAINTS */
+            .columns(new LinkedList<>() /* TABLE_6_COLUMNS_DTO */)
+            .constraints(ConstraintsDto.builder().build())
             .createdBy(USER_1_ID)
             .owner(USER_1_DTO)
             .created(TABLE_6_CREATED)
@@ -1627,7 +1896,7 @@ public abstract class BaseTest {
     public final static Boolean TABLE_7_PROCESSED_CONSTRAINTS = true;
     public final static String TABLE_7_DESCRIPTION = "Some likes dataset";
     public final static String TABLE_7_QUEUE_NAME = TABLE_7_INTERNAL_NAME;
-    public final static String TABLE_7_ROUTING_KEY = "dbrepo\\." + DATABASE_2_EXCHANGE + "\\." + TABLE_7_QUEUE_NAME;
+    public final static String TABLE_7_ROUTING_KEY = "dbrepo\\." + DATABASE_2_ID + "\\." + TABLE_7_ID;
     public final static Instant TABLE_7_CREATED = Instant.ofEpochSecond(1677400147L) /* 2023-02-26 08:29:07 (UTC) */;
     public final static Instant TABLE_7_LAST_MODIFIED = Instant.ofEpochSecond(1677400147L) /* 2023-02-26 08:29:07 (UTC) */;
 
@@ -1637,14 +1906,11 @@ public abstract class BaseTest {
             .created(TABLE_7_CREATED)
             .internalName(TABLE_7_INTERNAL_NAME)
             .isVersioned(TABLE_7_VERSIONED)
-            .processedConstraints(TABLE_7_PROCESSED_CONSTRAINTS)
             .description(TABLE_7_DESCRIPTION)
             .name(TABLE_7_NAME)
             .lastModified(TABLE_7_LAST_MODIFIED)
             .queueName(TABLE_7_QUEUE_NAME)
-            .routingKey(TABLE_7_ROUTING_KEY)
-            .columns(List.of() /* TABLE_7_COLUMNS */)
-            .constraints(null) /* TABLE_7_CONSTRAINTS */
+            .columns(new LinkedList<>() /* TABLE_7_COLUMNS */)
             .createdBy(USER_1_ID)
             .ownedBy(USER_1_ID)
             .owner(USER_1)
@@ -1661,8 +1927,8 @@ public abstract class BaseTest {
             .name(TABLE_7_NAME)
             .queueName(TABLE_7_QUEUE_NAME)
             .routingKey(TABLE_7_ROUTING_KEY)
-            .columns(List.of() /* TABLE_7_COLUMNS */)
-            .constraints(null) /* TABLE_7_CONSTRAINTS */
+            .columns(new LinkedList<>() /* TABLE_7_COLUMNS_DTO */)
+            .constraints(ConstraintsDto.builder().build())
             .createdBy(USER_1_ID)
             .owner(USER_1_DTO)
             .created(TABLE_7_CREATED)
@@ -1675,15 +1941,9 @@ public abstract class BaseTest {
     public final static Boolean TABLE_4_PROCESSED_CONSTRAINTS = true;
     public final static String TABLE_4_DESCRIPTION = "Hello sensor";
     public final static String TABLE_4_QUEUE_NAME = TABLE_4_INTERNAL_NAME;
-    public final static String TABLE_4_ROUTING_KEY = "dbrepo\\." + DATABASE_1_EXCHANGE + "\\." + TABLE_4_QUEUE_NAME;
+    public final static String TABLE_4_ROUTING_KEY = "dbrepo\\." + DATABASE_1_ID + "\\." + TABLE_4_ID;
     public final static Instant TABLE_4_CREATED = Instant.ofEpochSecond(1677400175L) /* 2023-02-26 08:29:35 (UTC) */;
     public final static Instant TABLE_4_LAST_MODIFIED = Instant.ofEpochSecond(1677400175L) /* 2023-02-26 08:29:35 (UTC) */;
-
-    public final static Constraints TABLE_4_CONSTRAINTS = Constraints.builder()
-            .uniques(List.of())
-            .foreignKeys(List.of())
-            .checks(Set.of())
-            .build();
 
     public final static Table TABLE_4 = Table.builder()
             .id(TABLE_4_ID)
@@ -1693,15 +1953,12 @@ public abstract class BaseTest {
             .database(null /* DATABASE_1 */)
             .name(TABLE_4_NAME)
             .queueName(TABLE_4_QUEUE_NAME)
-            .routingKey(TABLE_4_ROUTING_KEY)
-            .columns(List.of() /* TABLE_4_COLUMNS */)
+            .columns(new LinkedList<>() /* TABLE_4_COLUMNS */)
             .isVersioned(TABLE_4_VERSIONED)
-            .processedConstraints(TABLE_4_PROCESSED_CONSTRAINTS)
             .createdBy(USER_1_ID)
             .ownedBy(USER_1_ID)
             .owner(USER_1)
             .created(TABLE_4_CREATED)
-            .constraints(TABLE_4_CONSTRAINTS)
             .lastModified(TABLE_4_LAST_MODIFIED)
             .build();
 
@@ -1713,7 +1970,8 @@ public abstract class BaseTest {
             .name(TABLE_4_NAME)
             .queueName(TABLE_4_QUEUE_NAME)
             .routingKey(TABLE_4_ROUTING_KEY)
-            .columns(List.of() /* TABLE_4_COLUMNS */)
+            .columns(new LinkedList<>() /* TABLE_4_COLUMNS_DTO */)
+            .constraints(ConstraintsDto.builder().build())
             .isVersioned(TABLE_4_VERSIONED)
             .createdBy(USER_1_ID)
             .owner(USER_1_DTO)
@@ -1725,7 +1983,7 @@ public abstract class BaseTest {
             .internalName(TABLE_4_INTERNAL_NAME)
             .description(TABLE_4_DESCRIPTION)
             .name(TABLE_4_NAME)
-            .columns(List.of() /* TABLE_4_COLUMNS */)
+            .columns(new LinkedList<>() /* TABLE_4_COLUMNS */)
             .isVersioned(TABLE_4_VERSIONED)
             .owner(USER_1_BRIEF_DTO)
             .build();
@@ -1739,7 +1997,6 @@ public abstract class BaseTest {
                     .columnType(TableColumnType.TIMESTAMP)
                     .isNullAllowed(false)
                     .autoGenerated(false)
-                    .isPrimaryKey(true)
                     .build(),
             TableColumn.builder()
                     .id(45L)
@@ -1750,8 +2007,43 @@ public abstract class BaseTest {
                     .columnType(TableColumnType.DECIMAL)
                     .isNullAllowed(true)
                     .autoGenerated(false)
-                    .isPrimaryKey(false)
                     .build());
+
+    public final static List<ColumnCreateDto> TABLE_4_COLUMNS_CREATE_DTO = List.of(ColumnCreateDto.builder()
+                    .name("Timestamp")
+                    .type(ColumnTypeDto.TIMESTAMP)
+                    .dfid(IMAGE_DATE_4_ID)
+                    .nullAllowed(false)
+                    .build(),
+            ColumnCreateDto.builder()
+                    .name("Value")
+                    .type(ColumnTypeDto.DECIMAL)
+                    .nullAllowed(true)
+                    .size(10L)
+                    .d(10L)
+                    .build());
+
+    public final static ConstraintsCreateDto TABLE_4_CONSTRAINTS_CREATE_DTO = ConstraintsCreateDto.builder()
+            .checks(new LinkedHashSet<>())
+            .primaryKey(new LinkedHashSet<>())
+            .foreignKeys(new LinkedList<>())
+            .uniques(List.of(List.of("Timestamp")))
+            .build();
+
+    public final static TableCreateDto TABLE_4_CREATE_DTO = TableCreateDto.builder()
+            .name(TABLE_4_NAME)
+            .description(TABLE_4_DESCRIPTION)
+            .columns(TABLE_4_COLUMNS_CREATE_DTO)
+            .constraints(TABLE_4_CONSTRAINTS_CREATE_DTO)
+            .build();
+
+    public final static at.tuwien.api.database.table.internal.TableCreateDto TABLE_4_CREATE_INTERNAL_DTO = at.tuwien.api.database.table.internal.TableCreateDto.builder()
+            .name(TABLE_4_NAME)
+            .description(TABLE_4_DESCRIPTION)
+            .columns(TABLE_4_COLUMNS_CREATE_DTO)
+            .constraints(TABLE_4_CONSTRAINTS_CREATE_DTO)
+            .needSequence(false)
+            .build();
 
     public final static List<ColumnDto> TABLE_4_COLUMNS_DTO = List.of(ColumnDto.builder()
                     .id(44L)
@@ -1763,7 +2055,6 @@ public abstract class BaseTest {
                     .dateFormat(IMAGE_DATE_3_DTO)
                     .isNullAllowed(false)
                     .autoGenerated(false)
-                    .isPrimaryKey(true)
                     .build(),
             ColumnDto.builder()
                     .id(45L)
@@ -1775,32 +2066,30 @@ public abstract class BaseTest {
                     .dateFormat(null)
                     .isNullAllowed(true)
                     .autoGenerated(false)
-                    .isPrimaryKey(false)
                     .build());
 
     public final static Long TABLE_8_ID = 8L;
+    public final static Long TABLE_8_DATABASE_ID = DATABASE_3_ID;
     public final static String TABLE_8_NAME = "mfcc";
     public final static String TABLE_8_INTERNAL_NAME = "mfcc";
     public final static Boolean TABLE_8_VERSIONED = true;
     public final static Boolean TABLE_8_PROCESSED_CONSTRAINTS = true;
     public final static String TABLE_8_DESCRIPTION = "Hello mfcc";
     public final static String TABLE_8_QUEUE_NAME = TABLE_8_INTERNAL_NAME;
-    public final static String TABLE_8_ROUTING_KEY = "dbrepo\\." + DATABASE_3_EXCHANGE + "\\." + TABLE_8_QUEUE_NAME;
+    public final static String TABLE_8_ROUTING_KEY = "dbrepo\\." + DATABASE_3_ID + "\\." + TABLE_8_ID;
     public final static Instant TABLE_8_CREATED = Instant.ofEpochSecond(1688400185L) /* 2023-02-26 08:29:35 (UTC) */;
     public final static Instant TABLE_8_LAST_MODIFIED = Instant.ofEpochSecond(1688400185L) /* 2023-02-26 08:29:35 (UTC) */;
 
     public final static Table TABLE_8 = Table.builder()
             .id(TABLE_8_ID)
-            .tdbid(DATABASE_1_ID)
+            .tdbid(TABLE_8_DATABASE_ID)
             .internalName(TABLE_8_INTERNAL_NAME)
             .description(TABLE_8_DESCRIPTION)
             .isVersioned(TABLE_8_VERSIONED)
-            .processedConstraints(TABLE_8_PROCESSED_CONSTRAINTS)
             .database(null /* DATABASE_1 */)
             .name(TABLE_8_NAME)
             .queueName(TABLE_8_QUEUE_NAME)
-            .routingKey(TABLE_8_ROUTING_KEY)
-            .columns(List.of() /* TABLE_8_COLUMNS */)
+            .columns(new LinkedList<>() /* TABLE_8_COLUMNS */)
             .createdBy(USER_1_ID)
             .ownedBy(USER_1_ID)
             .owner(USER_1)
@@ -1808,10 +2097,35 @@ public abstract class BaseTest {
             .lastModified(TABLE_8_LAST_MODIFIED)
             .build();
 
-    public final static TableCsvDto TABLE_8_CSV_DTO = TableCsvDto.builder()
-            .data(new HashMap<>() {{
-                put("value", "2.1");
-            }})
+    public final static TableDto TABLE_8_DTO = TableDto.builder()
+            .id(TABLE_8_ID)
+            .tdbid(TABLE_8_DATABASE_ID)
+            .internalName(TABLE_8_INTERNAL_NAME)
+            .description(TABLE_8_DESCRIPTION)
+            .isVersioned(TABLE_8_VERSIONED)
+            .name(TABLE_8_NAME)
+            .queueName(TABLE_8_QUEUE_NAME)
+            .columns(new LinkedList<>() /* TABLE_8_COLUMNS */)
+            .createdBy(USER_1_ID)
+            .creator(USER_1_DTO)
+            .owner(USER_1_DTO)
+            .created(TABLE_8_CREATED)
+            .build();
+
+    public final static PrivilegedTableDto TABLE_8_PRIVILEGED_DTO = PrivilegedTableDto.builder()
+            .id(TABLE_8_ID)
+            .tdbid(TABLE_8_DATABASE_ID)
+            .internalName(TABLE_8_INTERNAL_NAME)
+            .description(TABLE_8_DESCRIPTION)
+            .isVersioned(TABLE_8_VERSIONED)
+            .name(TABLE_8_NAME)
+            .queueName(TABLE_8_QUEUE_NAME)
+            .columns(new LinkedList<>() /* TABLE_8_COLUMNS */)
+            .createdBy(USER_1_ID)
+            .creator(USER_1_DTO)
+            .owner(USER_1_DTO)
+            .created(TABLE_8_CREATED)
+            .isPublic(DATABASE_3_PUBLIC)
             .build();
 
     public final static String QUEUE_NAME = "dbrepo";
@@ -1934,114 +2248,6 @@ public abstract class BaseTest {
             .sparqlEndpoint(ONTOLOGY_5_SPARQL_ENDPOINT)
             .build();
 
-    public final static Long COLUMN_CONCEPT_PRECIPITATION_ID = 1L;
-    public final static String COLUMN_CONCEPT_PRECIPITATION_NAME = "precipitation";
-    public final static String COLUMN_CONCEPT_PRECIPITATION_URI = "http://www.wikidata.org/entity/Q25257";
-    public final static String COLUMN_CONCEPT_PRECIPITATION_DESCRIPTION = null;
-    public final static Instant COLUMN_CONCEPT_PRECIPITATION_CREATED = Instant.ofEpochSecond(1701976048L) /* 2023-12-07 19:07:27 */;
-
-    public final static ConceptSaveDto COLUMN_CONCEPT_PRECIPITATION_SAVE_DTO = ConceptSaveDto.builder()
-            .uri(COLUMN_CONCEPT_PRECIPITATION_URI)
-            .name(COLUMN_CONCEPT_PRECIPITATION_NAME)
-            .description(COLUMN_CONCEPT_PRECIPITATION_DESCRIPTION)
-            .build();
-
-    public final static ConceptDto COLUMN_CONCEPT_PRECIPITATION_DTO = ConceptDto.builder()
-            .id(COLUMN_CONCEPT_PRECIPITATION_ID)
-            .uri(COLUMN_CONCEPT_PRECIPITATION_URI)
-            .name(COLUMN_CONCEPT_PRECIPITATION_NAME)
-            .description(COLUMN_CONCEPT_PRECIPITATION_DESCRIPTION)
-            .build();
-
-    public final static TableColumnConcept COLUMN_CONCEPT_PRECIPITATION = TableColumnConcept.builder()
-            .id(COLUMN_CONCEPT_PRECIPITATION_ID)
-            .uri(COLUMN_CONCEPT_PRECIPITATION_URI)
-            .name(COLUMN_CONCEPT_PRECIPITATION_NAME)
-            .description(COLUMN_CONCEPT_PRECIPITATION_DESCRIPTION)
-            .created(COLUMN_CONCEPT_PRECIPITATION_CREATED)
-            .build();
-
-    public final static Long COLUMN_CONCEPT_FAIR_DATA_ID = 2L;
-    public final static String COLUMN_CONCEPT_FAIR_DATA_NAME = "FAIR data";
-    public final static String COLUMN_CONCEPT_FAIR_DATA_URI = "http://www.wikidata.org/entity/Q29032648";
-    public final static String COLUMN_CONCEPT_FAIR_DATA_DESCRIPTION = "data compliant with the terms of the FAIR Data Principles";
-    public final static Instant COLUMN_CONCEPT_FAIR_DATA_CREATED = Instant.now();
-
-    public final static ConceptSaveDto COLUMN_CONCEPT_FAIR_DATA_SAVE_DTO = ConceptSaveDto.builder()
-            .uri(COLUMN_CONCEPT_FAIR_DATA_URI)
-            .name(COLUMN_CONCEPT_FAIR_DATA_NAME)
-            .description(COLUMN_CONCEPT_FAIR_DATA_DESCRIPTION)
-            .build();
-
-    public final static ConceptDto COLUMN_CONCEPT_FAIR_DATA_DTO = ConceptDto.builder()
-            .id(COLUMN_CONCEPT_FAIR_DATA_ID)
-            .uri(COLUMN_CONCEPT_FAIR_DATA_URI)
-            .name(COLUMN_CONCEPT_FAIR_DATA_NAME)
-            .description(COLUMN_CONCEPT_FAIR_DATA_DESCRIPTION)
-            .build();
-
-    public final static TableColumnConcept COLUMN_CONCEPT_FAIR_DATA = TableColumnConcept.builder()
-            .id(COLUMN_CONCEPT_FAIR_DATA_ID)
-            .uri(COLUMN_CONCEPT_FAIR_DATA_URI)
-            .name(COLUMN_CONCEPT_FAIR_DATA_NAME)
-            .description(COLUMN_CONCEPT_FAIR_DATA_DESCRIPTION)
-            .created(COLUMN_CONCEPT_FAIR_DATA_CREATED)
-            .build();
-
-    public final static Long UNIT_MILLIMETRE_ID = 1L;
-    public final static String UNIT_MILLIMETRE_NAME = "millimetre";
-    public final static String UNIT_MILLIMETRE_URI = "http://www.ontology-of-units-of-measure.org/resource/om-2/millimetre";
-    public final static String UNIT_MILLIMETRE_DESCRIPTION = "The millimetre is a unit of length defined as 1.0e-3 metre.";
-    public final static Instant UNIT_MILLIMETRE_CREATED = Instant.ofEpochSecond(1701976282L) /* 2023-12-07 19:11:22 */;
-
-    public final static UnitSaveDto UNIT_MILLIMETRE_SAVE_DTO = UnitSaveDto.builder()
-            .uri(UNIT_MILLIMETRE_URI)
-            .name(UNIT_MILLIMETRE_NAME)
-            .description(UNIT_MILLIMETRE_DESCRIPTION)
-            .build();
-
-    public final static UnitDto UNIT_MILLIMETRE_DTO = UnitDto.builder()
-            .id(UNIT_MILLIMETRE_ID)
-            .uri(UNIT_MILLIMETRE_URI)
-            .name(UNIT_MILLIMETRE_NAME)
-            .description(UNIT_MILLIMETRE_DESCRIPTION)
-            .build();
-
-    public final static TableColumnUnit UNIT_MILLIMETRE = TableColumnUnit.builder()
-            .id(UNIT_MILLIMETRE_ID)
-            .uri(UNIT_MILLIMETRE_URI)
-            .name(UNIT_MILLIMETRE_NAME)
-            .description(UNIT_MILLIMETRE_DESCRIPTION)
-            .created(UNIT_MILLIMETRE_CREATED)
-            .build();
-
-    public final static Long UNIT_TONNE_ID = 2L;
-    public final static String UNIT_TONNE_NAME = "tonne";
-    public final static String UNIT_TONNE_URI = "http://www.ontology-of-units-of-measure.org/resource/om-2/tonne";
-    public final static String UNIT_TONNE_DESCRIPTION = "The tonne is a unit of mass defined as 1000 kilogram.";
-    public final static Instant UNIT_TONNE_CREATED = Instant.ofEpochSecond(1701976462L) /* 2023-12-07 19:14:22 */;
-
-    public final static UnitSaveDto UNIT_TONNE_SAVE_DTO = UnitSaveDto.builder()
-            .uri(UNIT_TONNE_URI)
-            .name(UNIT_TONNE_NAME)
-            .description(UNIT_TONNE_DESCRIPTION)
-            .build();
-
-    public final static UnitDto UNIT_TONNE_DTO = UnitDto.builder()
-            .id(UNIT_TONNE_ID)
-            .uri(UNIT_TONNE_URI)
-            .name(UNIT_TONNE_NAME)
-            .description(UNIT_TONNE_DESCRIPTION)
-            .build();
-
-    public final static TableColumnUnit UNIT_TONNE = TableColumnUnit.builder()
-            .id(UNIT_TONNE_ID)
-            .uri(UNIT_TONNE_URI)
-            .name(UNIT_TONNE_NAME)
-            .description(UNIT_TONNE_DESCRIPTION)
-            .created(UNIT_TONNE_CREATED)
-            .build();
-
     public final static Long COLUMN_4_1_ID = 45L;
     public final static Integer COLUMN_4_1_ORDINALPOS = 0;
     public final static Boolean COLUMN_4_1_PRIMARY = true;
@@ -2054,8 +2260,8 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_4_1_AUTO_GENERATED = true;
     public final static String COLUMN_4_1_FOREIGN_KEY = null;
     public final static String COLUMN_4_1_CHECK = null;
-    public final static List<String> COLUMN_4_1_ENUM_VALUES_ARR = List.of();
-    public final static List<String> COLUMN_4_1_SET_VALUES_ARR = List.of();
+    public final static List<String> COLUMN_4_1_ENUM_VALUES_ARR = new LinkedList<>();
+    public final static List<String> COLUMN_4_1_SET_VALUES_ARR = new LinkedList<>();
     public final static List<String> COLUMN_4_1_ENUM_VALUES = null;
     public final static List<String> COLUMN_4_1_ENUM_VALUES_DTO = null;
     public final static List<String> COLUMN_4_1_SET_VALUES = null;
@@ -2073,8 +2279,8 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_4_2_AUTO_GENERATED = false;
     public final static String COLUMN_4_2_FOREIGN_KEY = null;
     public final static String COLUMN_4_2_CHECK = null;
-    public final static List<String> COLUMN_4_2_ENUM_VALUES_ARR = List.of();
-    public final static List<String> COLUMN_4_2_SET_VALUES_ARR = List.of();
+    public final static List<String> COLUMN_4_2_ENUM_VALUES_ARR = new LinkedList<>();
+    public final static List<String> COLUMN_4_2_SET_VALUES_ARR = new LinkedList<>();
     public final static List<String> COLUMN_4_2_ENUM_VALUES = null;
     public final static List<String> COLUMN_4_2_ENUM_VALUES_DTO = null;
     public final static List<String> COLUMN_4_2_SET_VALUES = null;
@@ -2092,8 +2298,8 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_4_3_AUTO_GENERATED = false;
     public final static String COLUMN_4_3_FOREIGN_KEY = null;
     public final static String COLUMN_4_3_CHECK = null;
-    public final static List<String> COLUMN_4_3_ENUM_VALUES_ARR = List.of();
-    public final static List<String> COLUMN_4_3_SET_VALUES_ARR = List.of();
+    public final static List<String> COLUMN_4_3_ENUM_VALUES_ARR = new LinkedList<>();
+    public final static List<String> COLUMN_4_3_SET_VALUES_ARR = new LinkedList<>();
     public final static List<String> COLUMN_4_3_ENUM_VALUES = null;
     public final static List<String> COLUMN_4_3_ENUM_VALUES_DTO = null;
     public final static List<String> COLUMN_4_3_SET_VALUES = null;
@@ -2111,8 +2317,8 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_4_4_AUTO_GENERATED = false;
     public final static String COLUMN_4_4_FOREIGN_KEY = null;
     public final static String COLUMN_4_4_CHECK = null;
-    public final static List<String> COLUMN_4_4_ENUM_VALUES_ARR = List.of();
-    public final static List<String> COLUMN_4_4_SET_VALUES_ARR = List.of();
+    public final static List<String> COLUMN_4_4_ENUM_VALUES_ARR = new LinkedList<>();
+    public final static List<String> COLUMN_4_4_SET_VALUES_ARR = new LinkedList<>();
     public final static List<String> COLUMN_4_4_ENUM_VALUES = null;
     public final static List<String> COLUMN_4_4_ENUM_VALUES_DTO = null;
     public final static List<String> COLUMN_4_4_SET_VALUES = null;
@@ -2130,8 +2336,8 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_4_5_AUTO_GENERATED = false;
     public final static String COLUMN_4_5_FOREIGN_KEY = null;
     public final static String COLUMN_4_5_CHECK = null;
-    public final static List<String> COLUMN_4_5_ENUM_VALUES_ARR = List.of();
-    public final static List<String> COLUMN_4_5_SET_VALUES_ARR = List.of();
+    public final static List<String> COLUMN_4_5_ENUM_VALUES_ARR = new LinkedList<>();
+    public final static List<String> COLUMN_4_5_SET_VALUES_ARR = new LinkedList<>();
     public final static List<String> COLUMN_4_5_ENUM_VALUES = null;
     public final static List<String> COLUMN_4_5_ENUM_VALUES_DTO = null;
     public final static List<String> COLUMN_4_5_SET_VALUES = null;
@@ -2149,8 +2355,8 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_4_6_AUTO_GENERATED = false;
     public final static String COLUMN_4_6_FOREIGN_KEY = null;
     public final static String COLUMN_4_6_CHECK = null;
-    public final static List<String> COLUMN_4_6_ENUM_VALUES_ARR = List.of();
-    public final static List<String> COLUMN_4_6_SET_VALUES_ARR = List.of();
+    public final static List<String> COLUMN_4_6_ENUM_VALUES_ARR = new LinkedList<>();
+    public final static List<String> COLUMN_4_6_SET_VALUES_ARR = new LinkedList<>();
     public final static List<String> COLUMN_4_6_ENUM_VALUES = null;
     public final static List<String> COLUMN_4_6_ENUM_VALUES_DTO = null;
     public final static List<String> COLUMN_4_6_SET_VALUES = null;
@@ -2168,8 +2374,8 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_4_7_AUTO_GENERATED = false;
     public final static String COLUMN_4_7_FOREIGN_KEY = null;
     public final static String COLUMN_4_7_CHECK = null;
-    public final static List<String> COLUMN_4_7_ENUM_VALUES_ARR = List.of();
-    public final static List<String> COLUMN_4_7_SET_VALUES_ARR = List.of();
+    public final static List<String> COLUMN_4_7_ENUM_VALUES_ARR = new LinkedList<>();
+    public final static List<String> COLUMN_4_7_SET_VALUES_ARR = new LinkedList<>();
     public final static List<String> COLUMN_4_7_ENUM_VALUES = null;
     public final static List<String> COLUMN_4_7_ENUM_VALUES_DTO = null;
     public final static List<String> COLUMN_4_7_SET_VALUES = null;
@@ -2187,8 +2393,8 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_4_8_AUTO_GENERATED = false;
     public final static String COLUMN_4_8_FOREIGN_KEY = null;
     public final static String COLUMN_4_8_CHECK = null;
-    public final static List<String> COLUMN_4_8_ENUM_VALUES_ARR = List.of();
-    public final static List<String> COLUMN_4_8_SET_VALUES_ARR = List.of();
+    public final static List<String> COLUMN_4_8_ENUM_VALUES_ARR = new LinkedList<>();
+    public final static List<String> COLUMN_4_8_SET_VALUES_ARR = new LinkedList<>();
     public final static List<String> COLUMN_4_8_ENUM_VALUES = null;
     public final static List<String> COLUMN_4_8_ENUM_VALUES_DTO = null;
     public final static List<String> COLUMN_4_8_SET_VALUES = null;
@@ -2206,8 +2412,8 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_4_9_AUTO_GENERATED = false;
     public final static String COLUMN_4_9_FOREIGN_KEY = null;
     public final static String COLUMN_4_9_CHECK = null;
-    public final static List<String> COLUMN_4_9_ENUM_VALUES_ARR = List.of();
-    public final static List<String> COLUMN_4_9_SET_VALUES_ARR = List.of();
+    public final static List<String> COLUMN_4_9_ENUM_VALUES_ARR = new LinkedList<>();
+    public final static List<String> COLUMN_4_9_SET_VALUES_ARR = new LinkedList<>();
     public final static List<String> COLUMN_4_9_ENUM_VALUES = null;
     public final static List<String> COLUMN_4_9_ENUM_VALUES_DTO = null;
     public final static List<String> COLUMN_4_9_SET_VALUES = null;
@@ -2225,8 +2431,8 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_4_10_AUTO_GENERATED = false;
     public final static String COLUMN_4_10_FOREIGN_KEY = null;
     public final static String COLUMN_4_10_CHECK = null;
-    public final static List<String> COLUMN_4_10_ENUM_VALUES_ARR = List.of();
-    public final static List<String> COLUMN_4_10_SET_VALUES_ARR = List.of();
+    public final static List<String> COLUMN_4_10_ENUM_VALUES_ARR = new LinkedList<>();
+    public final static List<String> COLUMN_4_10_SET_VALUES_ARR = new LinkedList<>();
     public final static List<String> COLUMN_4_10_ENUM_VALUES = null;
     public final static List<String> COLUMN_4_10_ENUM_VALUES_DTO = null;
     public final static List<String> COLUMN_4_10_SET_VALUES = null;
@@ -2244,8 +2450,8 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_4_11_AUTO_GENERATED = false;
     public final static String COLUMN_4_11_FOREIGN_KEY = null;
     public final static String COLUMN_4_11_CHECK = null;
-    public final static List<String> COLUMN_4_11_ENUM_VALUES_ARR = List.of();
-    public final static List<String> COLUMN_4_11_SET_VALUES_ARR = List.of();
+    public final static List<String> COLUMN_4_11_ENUM_VALUES_ARR = new LinkedList<>();
+    public final static List<String> COLUMN_4_11_SET_VALUES_ARR = new LinkedList<>();
     public final static List<String> COLUMN_4_11_ENUM_VALUES = null;
     public final static List<String> COLUMN_4_11_ENUM_VALUES_DTO = null;
     public final static List<String> COLUMN_4_11_SET_VALUES = null;
@@ -2263,8 +2469,8 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_4_12_AUTO_GENERATED = false;
     public final static String COLUMN_4_12_FOREIGN_KEY = null;
     public final static String COLUMN_4_12_CHECK = null;
-    public final static List<String> COLUMN_4_12_ENUM_VALUES_ARR = List.of();
-    public final static List<String> COLUMN_4_12_SET_VALUES_ARR = List.of();
+    public final static List<String> COLUMN_4_12_ENUM_VALUES_ARR = new LinkedList<>();
+    public final static List<String> COLUMN_4_12_SET_VALUES_ARR = new LinkedList<>();
     public final static List<String> COLUMN_4_12_ENUM_VALUES = null;
     public final static List<String> COLUMN_4_12_ENUM_VALUES_DTO = null;
     public final static List<String> COLUMN_4_12_SET_VALUES = null;
@@ -2282,8 +2488,8 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_4_13_AUTO_GENERATED = false;
     public final static String COLUMN_4_13_FOREIGN_KEY = null;
     public final static String COLUMN_4_13_CHECK = null;
-    public final static List<String> COLUMN_4_13_ENUM_VALUES_ARR = List.of();
-    public final static List<String> COLUMN_4_13_SET_VALUES_ARR = List.of();
+    public final static List<String> COLUMN_4_13_ENUM_VALUES_ARR = new LinkedList<>();
+    public final static List<String> COLUMN_4_13_SET_VALUES_ARR = new LinkedList<>();
     public final static List<String> COLUMN_4_13_ENUM_VALUES = null;
     public final static List<String> COLUMN_4_13_ENUM_VALUES_DTO = null;
     public final static List<String> COLUMN_4_13_SET_VALUES = null;
@@ -2301,8 +2507,8 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_4_14_AUTO_GENERATED = false;
     public final static String COLUMN_4_14_FOREIGN_KEY = null;
     public final static String COLUMN_4_14_CHECK = null;
-    public final static List<String> COLUMN_4_14_ENUM_VALUES_ARR = List.of();
-    public final static List<String> COLUMN_4_14_SET_VALUES_ARR = List.of();
+    public final static List<String> COLUMN_4_14_ENUM_VALUES_ARR = new LinkedList<>();
+    public final static List<String> COLUMN_4_14_SET_VALUES_ARR = new LinkedList<>();
     public final static List<String> COLUMN_4_14_ENUM_VALUES = null;
     public final static List<String> COLUMN_4_14_ENUM_VALUES_DTO = null;
     public final static List<String> COLUMN_4_14_SET_VALUES = null;
@@ -2320,8 +2526,8 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_4_15_AUTO_GENERATED = false;
     public final static String COLUMN_4_15_FOREIGN_KEY = null;
     public final static String COLUMN_4_15_CHECK = null;
-    public final static List<String> COLUMN_4_15_ENUM_VALUES_ARR = List.of();
-    public final static List<String> COLUMN_4_15_SET_VALUES_ARR = List.of();
+    public final static List<String> COLUMN_4_15_ENUM_VALUES_ARR = new LinkedList<>();
+    public final static List<String> COLUMN_4_15_SET_VALUES_ARR = new LinkedList<>();
     public final static List<String> COLUMN_4_15_ENUM_VALUES = null;
     public final static List<String> COLUMN_4_15_ENUM_VALUES_DTO = null;
     public final static List<String> COLUMN_4_15_SET_VALUES = null;
@@ -2339,8 +2545,8 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_4_16_AUTO_GENERATED = false;
     public final static String COLUMN_4_16_FOREIGN_KEY = null;
     public final static String COLUMN_4_16_CHECK = null;
-    public final static List<String> COLUMN_4_16_ENUM_VALUES_ARR = List.of();
-    public final static List<String> COLUMN_4_16_SET_VALUES_ARR = List.of();
+    public final static List<String> COLUMN_4_16_ENUM_VALUES_ARR = new LinkedList<>();
+    public final static List<String> COLUMN_4_16_SET_VALUES_ARR = new LinkedList<>();
     public final static List<String> COLUMN_4_16_ENUM_VALUES = null;
     public final static List<String> COLUMN_4_16_ENUM_VALUES_DTO = null;
     public final static List<String> COLUMN_4_16_SET_VALUES = null;
@@ -2358,8 +2564,8 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_4_17_AUTO_GENERATED = false;
     public final static String COLUMN_4_17_FOREIGN_KEY = null;
     public final static String COLUMN_4_17_CHECK = null;
-    public final static List<String> COLUMN_4_17_ENUM_VALUES_ARR = List.of();
-    public final static List<String> COLUMN_4_17_SET_VALUES_ARR = List.of();
+    public final static List<String> COLUMN_4_17_ENUM_VALUES_ARR = new LinkedList<>();
+    public final static List<String> COLUMN_4_17_SET_VALUES_ARR = new LinkedList<>();
     public final static List<String> COLUMN_4_17_ENUM_VALUES = null;
     public final static List<String> COLUMN_4_17_ENUM_VALUES_DTO = null;
     public final static List<String> COLUMN_4_17_SET_VALUES = null;
@@ -2377,8 +2583,8 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_4_18_AUTO_GENERATED = false;
     public final static String COLUMN_4_18_FOREIGN_KEY = null;
     public final static String COLUMN_4_18_CHECK = null;
-    public final static List<String> COLUMN_4_18_ENUM_VALUES_ARR = List.of();
-    public final static List<String> COLUMN_4_18_SET_VALUES_ARR = List.of();
+    public final static List<String> COLUMN_4_18_ENUM_VALUES_ARR = new LinkedList<>();
+    public final static List<String> COLUMN_4_18_SET_VALUES_ARR = new LinkedList<>();
     public final static List<String> COLUMN_4_18_ENUM_VALUES = null;
     public final static List<String> COLUMN_4_18_ENUM_VALUES_DTO = null;
     public final static List<String> COLUMN_4_18_SET_VALUES = null;
@@ -2396,8 +2602,8 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_4_19_AUTO_GENERATED = false;
     public final static String COLUMN_4_19_FOREIGN_KEY = null;
     public final static String COLUMN_4_19_CHECK = null;
-    public final static List<String> COLUMN_4_19_ENUM_VALUES_ARR = List.of();
-    public final static List<String> COLUMN_4_19_SET_VALUES_ARR = List.of();
+    public final static List<String> COLUMN_4_19_ENUM_VALUES_ARR = new LinkedList<>();
+    public final static List<String> COLUMN_4_19_SET_VALUES_ARR = new LinkedList<>();
     public final static List<String> COLUMN_4_19_ENUM_VALUES = null;
     public final static List<String> COLUMN_4_19_ENUM_VALUES_DTO = null;
     public final static List<String> COLUMN_4_19_SET_VALUES = null;
@@ -2415,8 +2621,8 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_4_20_AUTO_GENERATED = false;
     public final static String COLUMN_4_20_FOREIGN_KEY = null;
     public final static String COLUMN_4_20_CHECK = null;
-    public final static List<String> COLUMN_4_20_ENUM_VALUES_ARR = List.of();
-    public final static List<String> COLUMN_4_20_SET_VALUES_ARR = List.of();
+    public final static List<String> COLUMN_4_20_ENUM_VALUES_ARR = new LinkedList<>();
+    public final static List<String> COLUMN_4_20_SET_VALUES_ARR = new LinkedList<>();
     public final static List<String> COLUMN_4_20_ENUM_VALUES = null;
     public final static List<String> COLUMN_4_20_ENUM_VALUES_DTO = null;
     public final static List<String> COLUMN_4_20_SET_VALUES = null;
@@ -2434,8 +2640,8 @@ public abstract class BaseTest {
     public final static Boolean COLUMN_4_21_AUTO_GENERATED = false;
     public final static String COLUMN_4_21_FOREIGN_KEY = null;
     public final static String COLUMN_4_21_CHECK = null;
-    public final static List<String> COLUMN_4_21_ENUM_VALUES_ARR = List.of();
-    public final static List<String> COLUMN_4_21_SET_VALUES_ARR = List.of();
+    public final static List<String> COLUMN_4_21_ENUM_VALUES_ARR = new LinkedList<>();
+    public final static List<String> COLUMN_4_21_SET_VALUES_ARR = new LinkedList<>();
     public final static List<String> COLUMN_4_21_ENUM_VALUES = null;
     public final static List<String> COLUMN_4_21_ENUM_VALUES_DTO = null;
     public final static List<String> COLUMN_4_21_SET_VALUES = null;
@@ -2518,7 +2724,7 @@ public abstract class BaseTest {
     public final static String COLUMN_5_5_INTERNAL_NAME = "reminder";
     public final static TableColumnType COLUMN_5_5_TYPE = TableColumnType.TIME;
     public final static ColumnTypeDto COLUMN_5_5_TYPE_DTO = ColumnTypeDto.TIME;
-    public final static Long COLUMN_5_5_DATE_FORMAT = null;
+    public final static Long COLUMN_5_5_DATE_FORMAT = IMAGE_DATE_4_ID;
     public final static Boolean COLUMN_5_5_NULL = true;
     public final static Boolean COLUMN_5_5_AUTO_GENERATED = false;
     public final static String COLUMN_5_5_FOREIGN_KEY = null;
@@ -2588,7 +2794,6 @@ public abstract class BaseTest {
                     .columnType(COLUMN_8_1_TYPE)
                     .isNullAllowed(COLUMN_8_1_NULL)
                     .autoGenerated(COLUMN_8_1_AUTO_GENERATED)
-                    .isPrimaryKey(COLUMN_8_1_PRIMARY)
                     .build(),
             TableColumn.builder()
                     .id(COLUMN_8_2_ID)
@@ -2599,12 +2804,59 @@ public abstract class BaseTest {
                     .columnType(COLUMN_8_2_TYPE)
                     .isNullAllowed(COLUMN_8_2_NULL)
                     .autoGenerated(COLUMN_8_2_AUTO_GENERATED)
-                    .isPrimaryKey(COLUMN_8_2_PRIMARY)
                     .build());
 
+    public final static List<ColumnDto> TABLE_8_COLUMNS_DTO = List.of(ColumnDto.builder()
+                    .id(COLUMN_8_1_ID)
+                    .ordinalPosition(COLUMN_8_1_ORDINALPOS)
+                    .table(TABLE_8_DTO)
+                    .name(COLUMN_8_1_NAME)
+                    .internalName(COLUMN_8_1_INTERNAL_NAME)
+                    .columnType(COLUMN_8_1_TYPE_DTO)
+                    .isNullAllowed(COLUMN_8_1_NULL)
+                    .autoGenerated(COLUMN_8_1_AUTO_GENERATED)
+                    .build(),
+            ColumnDto.builder()
+                    .id(COLUMN_8_2_ID)
+                    .ordinalPosition(COLUMN_8_2_ORDINALPOS)
+                    .table(TABLE_8_DTO)
+                    .name(COLUMN_8_2_NAME)
+                    .internalName(COLUMN_8_2_INTERNAL_NAME)
+                    .columnType(COLUMN_8_2_TYPE_DTO)
+                    .isNullAllowed(COLUMN_8_2_NULL)
+                    .autoGenerated(COLUMN_8_2_AUTO_GENERATED)
+                    .build());
+
+    public final static Long TABLE_8_DATA_COUNT = 6L;
+    public final static QueryResultDto TABLE_8_DATA_DTO = QueryResultDto.builder()
+            .headers(new LinkedList<>(List.of(new HashMap<>() {{
+                put(COLUMN_8_1_INTERNAL_NAME, 0);
+                put(COLUMN_8_2_INTERNAL_NAME, 1);
+            }})))
+            .result(new LinkedList<>(List.of(
+                    Map.of(COLUMN_8_1_INTERNAL_NAME, BigInteger.valueOf(1L), COLUMN_8_2_INTERNAL_NAME, 11.2),
+                    Map.of(COLUMN_8_1_INTERNAL_NAME, BigInteger.valueOf(2L), COLUMN_8_2_INTERNAL_NAME, 11.3),
+                    Map.of(COLUMN_8_1_INTERNAL_NAME, BigInteger.valueOf(3L), COLUMN_8_2_INTERNAL_NAME, 11.4),
+                    Map.of(COLUMN_8_1_INTERNAL_NAME, BigInteger.valueOf(4L), COLUMN_8_2_INTERNAL_NAME, 11.9),
+                    Map.of(COLUMN_8_1_INTERNAL_NAME, BigInteger.valueOf(5L), COLUMN_8_2_INTERNAL_NAME, 12.3),
+                    Map.of(COLUMN_8_1_INTERNAL_NAME, BigInteger.valueOf(6L), COLUMN_8_2_INTERNAL_NAME, 23.1)
+            )))
+            .build();
+
+    public final static TableStatisticDto TABLE_8_STATISTIC_DTO = TableStatisticDto.builder()
+            .columns(new HashMap<>() {{
+                put(COLUMN_8_1_INTERNAL_NAME, ColumnStatisticDto.builder()
+                        .min(BigDecimal.valueOf(11.2))
+                        .max(BigDecimal.valueOf(23.1))
+                        .mean(BigDecimal.valueOf(13.5333))
+                        .median(BigDecimal.valueOf(11.4))
+                        .stdDev(BigDecimal.valueOf(4.2952))
+                        .build());
+            }})
+            .build();
+
     public final static Long QUERY_1_ID = 1L;
-    public final static String QUERY_1_STATEMENT = "SELECT `id`, `date`, `location`, `mintemp`, `rainfall` FROM " +
-            "`weather_aus`";
+    public final static String QUERY_1_STATEMENT = "SELECT `id`, `date`, `location`, `mintemp`, `rainfall` FROM `weather_aus` ORDER BY id ASC";
     public final static String QUERY_1_DOI = null;
     public final static Long QUERY_1_CONTAINER_ID = CONTAINER_1_ID;
     public final static Long QUERY_1_DATABASE_ID = DATABASE_1_ID;
@@ -2614,18 +2866,8 @@ public abstract class BaseTest {
     public final static Instant QUERY_1_CREATED = Instant.ofEpochSecond(1677648377L);
     public final static Instant QUERY_1_EXECUTION = Instant.now();
     public final static Boolean QUERY_1_PERSISTED = true;
-
-    public final static Query QUERY_1 = Query.builder()
-            .id(QUERY_1_ID)
-            .query(QUERY_1_STATEMENT)
-            .queryHash(QUERY_1_QUERY_HASH)
-            .resultHash(QUERY_1_RESULT_HASH)
-            .resultNumber(QUERY_1_RESULT_NUMBER)
-            .created(QUERY_1_CREATED)
-            .executed(QUERY_1_EXECUTION)
-            .createdBy(USER_1_ID)
-            .isPersisted(QUERY_1_PERSISTED)
-            .build();
+    public final static UserDto QUERY_1_CREATOR = USER_1_DTO;
+    public final static UUID QUERY_1_CREATED_BY = USER_1_ID;
 
     public final static QueryDto QUERY_1_DTO = QueryDto.builder()
             .id(QUERY_1_ID)
@@ -2634,9 +2876,11 @@ public abstract class BaseTest {
             .queryHash(QUERY_1_QUERY_HASH)
             .resultHash(QUERY_1_RESULT_HASH)
             .created(QUERY_1_CREATED)
-            .creator(USER_1_DTO)
             .execution(QUERY_1_EXECUTION)
-            .createdBy(USER_1_ID)
+            .creator(QUERY_1_CREATOR)
+            .createdBy(QUERY_1_CREATED_BY)
+            .isPersisted(QUERY_1_PERSISTED)
+            .resultNumber(3L)
             .build();
 
     public final static QueryBriefDto QUERY_1_BRIEF_DTO = QueryBriefDto.builder()
@@ -2649,6 +2893,8 @@ public abstract class BaseTest {
             .execution(QUERY_1_EXECUTION)
             .createdBy(USER_1_ID)
             .creator(USER_1_DTO)
+            .isPersisted(QUERY_1_PERSISTED)
+            .resultNumber(3L)
             .build();
 
     public final static Long QUERY_2_ID = 2L;
@@ -2662,18 +2908,8 @@ public abstract class BaseTest {
     public final static Instant QUERY_2_EXECUTION = Instant.now().minus(1, MINUTES);
     public final static Instant QUERY_2_LAST_MODIFIED = Instant.ofEpochSecond(1541588352L);
     public final static Boolean QUERY_2_PERSISTED = false;
-
-    public final static Query QUERY_2 = Query.builder()
-            .id(QUERY_2_ID)
-            .query(QUERY_2_STATEMENT)
-            .queryHash(QUERY_2_QUERY_HASH)
-            .resultHash(QUERY_2_RESULT_HASH)
-            .resultNumber(QUERY_2_RESULT_NUMBER)
-            .created(QUERY_2_CREATED)
-            .executed(QUERY_2_EXECUTION)
-            .createdBy(USER_1_ID)
-            .isPersisted(QUERY_2_PERSISTED)
-            .build();
+    public final static UserDto QUERY_2_CREATOR = USER_1_DTO;
+    public final static UUID QUERY_2_CREATED_BY = USER_1_ID;
 
     public final static QueryDto QUERY_2_DTO = QueryDto.builder()
             .id(QUERY_2_ID)
@@ -2684,9 +2920,12 @@ public abstract class BaseTest {
             .resultHash(QUERY_2_RESULT_HASH)
             .lastModified(QUERY_2_LAST_MODIFIED)
             .created(QUERY_2_CREATED)
-            .createdBy(USER_1_ID)
+            .creator(QUERY_2_CREATOR)
+            .createdBy(QUERY_2_CREATED_BY)
             .queryHash(QUERY_2_QUERY_HASH)
             .execution(QUERY_2_EXECUTION)
+            .isPersisted(QUERY_2_PERSISTED)
+            .resultNumber(3L)
             .build();
 
     public final static Long QUERY_3_ID = 3L;
@@ -2700,18 +2939,8 @@ public abstract class BaseTest {
     public final static Instant QUERY_3_LAST_MODIFIED = Instant.ofEpochSecond(1541588353L);
     public final static Long QUERY_3_RESULT_NUMBER = 2L;
     public final static Boolean QUERY_3_PERSISTED = true;
-
-    public final static Query QUERY_3 = Query.builder()
-            .id(QUERY_3_ID)
-            .query(QUERY_3_STATEMENT)
-            .queryHash(QUERY_3_QUERY_HASH)
-            .resultHash(QUERY_3_RESULT_HASH)
-            .created(QUERY_3_CREATED)
-            .executed(QUERY_3_EXECUTION)
-            .createdBy(USER_1_ID)
-            .resultNumber(QUERY_3_RESULT_NUMBER)
-            .isPersisted(QUERY_3_PERSISTED)
-            .build();
+    public final static UserDto QUERY_3_CREATOR = USER_1_DTO;
+    public final static UUID QUERY_3_CREATED_BY = USER_1_ID;
 
     public final static QueryDto QUERY_3_DTO = QueryDto.builder()
             .id(QUERY_3_ID)
@@ -2722,9 +2951,12 @@ public abstract class BaseTest {
             .resultHash(QUERY_3_RESULT_HASH)
             .lastModified(QUERY_3_LAST_MODIFIED)
             .created(QUERY_3_CREATED)
-            .createdBy(USER_1_ID)
+            .creator(QUERY_3_CREATOR)
+            .createdBy(QUERY_3_CREATED_BY)
             .queryHash(QUERY_3_QUERY_HASH)
             .execution(QUERY_3_EXECUTION)
+            .isPersisted(QUERY_3_PERSISTED)
+            .resultNumber(2L)
             .build();
 
     public final static Long QUERY_4_ID = 4L;
@@ -2739,18 +2971,23 @@ public abstract class BaseTest {
     public final static Long QUERY_4_RESULT_NUMBER = 6L;
     public final static Long QUERY_4_RESULT_ID = 4L;
     public final static Boolean QUERY_4_PERSISTED = false;
+    public final static UserDto QUERY_4_CREATOR = USER_1_DTO;
+    public final static UUID QUERY_4_CREATED_BY = USER_1_ID;
 
-    public final static Query QUERY_4 = Query.builder()
+    public final static QueryDto QUERY_4 = QueryDto.builder()
             .id(QUERY_4_ID)
             .query(QUERY_4_STATEMENT)
             .queryHash(QUERY_4_QUERY_HASH)
             .resultHash(QUERY_4_RESULT_HASH)
             .created(QUERY_4_CREATED)
-            .executed(QUERY_4_EXECUTION)
+            .execution(QUERY_4_EXECUTION)
             .isPersisted(QUERY_4_PERSISTED)
             .resultNumber(QUERY_4_RESULT_NUMBER)
-            .createdBy(USER_1_ID)
+            .creator(QUERY_4_CREATOR)
+            .createdBy(QUERY_4_CREATED_BY)
+            .isPersisted(QUERY_4_PERSISTED)
             .build();
+
     public final static List<Map<String, Object>> QUERY_4_RESULT_RESULT = List.of(
             new HashMap<>() {{
                 put("id", BigInteger.valueOf(1L));
@@ -2789,6 +3026,7 @@ public abstract class BaseTest {
             .createdBy(USER_1_ID)
             .queryHash(QUERY_4_QUERY_HASH)
             .execution(QUERY_4_EXECUTION)
+            .isPersisted(QUERY_4_PERSISTED)
             .build();
 
     public final static Long QUERY_5_ID = 5L;
@@ -2802,17 +3040,8 @@ public abstract class BaseTest {
     public final static Instant QUERY_5_LAST_MODIFIED = Instant.ofEpochSecond(1551588555L);
     public final static Long QUERY_5_RESULT_NUMBER = 6L;
     public final static Boolean QUERY_5_PERSISTED = true;
-
-    public final static Query QUERY_5 = Query.builder()
-            .id(QUERY_5_ID)
-            .query(QUERY_5_STATEMENT)
-            .queryHash(QUERY_5_QUERY_HASH)
-            .resultHash(QUERY_5_RESULT_HASH)
-            .created(QUERY_5_CREATED)
-            .executed(QUERY_5_EXECUTION)
-            .createdBy(USER_1_ID)
-            .isPersisted(QUERY_5_PERSISTED)
-            .build();
+    public final static UserDto QUERY_5_CREATOR = USER_1_DTO;
+    public final static UUID QUERY_5_CREATED_BY = USER_1_ID;
 
     public final static QueryDto QUERY_5_DTO = QueryDto.builder()
             .id(QUERY_5_ID)
@@ -2825,6 +3054,24 @@ public abstract class BaseTest {
             .created(QUERY_5_CREATED)
             .queryHash(QUERY_5_QUERY_HASH)
             .execution(QUERY_5_EXECUTION)
+            .isPersisted(QUERY_5_PERSISTED)
+            .creator(QUERY_5_CREATOR)
+            .createdBy(QUERY_5_CREATED_BY)
+            .build();
+
+    public final static QueryResultDto QUERY_5_RESULT_DTO = QueryResultDto.builder()
+            .headers(new LinkedList<>(List.of(new HashMap<>() {{
+                put("id", 0);
+                put("value", 1);
+            }})))
+            .result(new LinkedList<>(List.of(
+                    Map.of("id", BigInteger.valueOf(1L), "value", 11.2),
+                    Map.of("id", BigInteger.valueOf(2L), "value", 11.3),
+                    Map.of("id", BigInteger.valueOf(3L), "value", 11.4),
+                    Map.of("id", BigInteger.valueOf(4L), "value", 11.9),
+                    Map.of("id", BigInteger.valueOf(5L), "value", 12.3),
+                    Map.of("id", BigInteger.valueOf(6L), "value", 23.1)
+            )))
             .build();
 
     public final static Long QUERY_6_ID = 6L;
@@ -2838,17 +3085,8 @@ public abstract class BaseTest {
     public final static Instant QUERY_6_LAST_MODIFIED = Instant.ofEpochSecond(1551588555L);
     public final static Long QUERY_6_RESULT_NUMBER = 1L;
     public final static Boolean QUERY_6_PERSISTED = true;
-
-    public final static Query QUERY_6 = Query.builder()
-            .id(QUERY_6_ID)
-            .query(QUERY_6_STATEMENT)
-            .queryHash(QUERY_6_QUERY_HASH)
-            .resultHash(QUERY_6_RESULT_HASH)
-            .created(QUERY_6_CREATED)
-            .executed(QUERY_6_EXECUTION)
-            .createdBy(USER_1_ID)
-            .isPersisted(QUERY_6_PERSISTED)
-            .build();
+    public final static UserDto QUERY_6_CREATOR = USER_1_DTO;
+    public final static UUID QUERY_6_CREATED_BY = USER_1_ID;
 
     public final static QueryDto QUERY_6_DTO = QueryDto.builder()
             .id(QUERY_6_ID)
@@ -2859,9 +3097,11 @@ public abstract class BaseTest {
             .resultHash(QUERY_6_RESULT_HASH)
             .lastModified(QUERY_6_LAST_MODIFIED)
             .created(QUERY_6_CREATED)
-            .createdBy(USER_1_ID)
+            .creator(QUERY_6_CREATOR)
+            .createdBy(QUERY_6_CREATED_BY)
             .queryHash(QUERY_6_QUERY_HASH)
             .execution(QUERY_6_EXECUTION)
+            .isPersisted(QUERY_6_PERSISTED)
             .build();
 
     public final static List<TableColumn> TABLE_1_COLUMNS = List.of(TableColumn.builder()
@@ -2873,7 +3113,6 @@ public abstract class BaseTest {
                     .columnType(TableColumnType.BIGINT)
                     .isNullAllowed(false)
                     .autoGenerated(false)
-                    .isPrimaryKey(true)
                     .enums(null)
                     .sets(null)
                     .build(),
@@ -2887,7 +3126,6 @@ public abstract class BaseTest {
                     .dateFormat(IMAGE_DATE_1)
                     .isNullAllowed(true)
                     .autoGenerated(false)
-                    .isPrimaryKey(false)
                     .enums(null)
                     .sets(null)
                     .build(),
@@ -2901,7 +3139,6 @@ public abstract class BaseTest {
                     .size(255L)
                     .isNullAllowed(true)
                     .autoGenerated(false)
-                    .isPrimaryKey(false)
                     .enums(null)
                     .sets(null)
                     .build(),
@@ -2916,7 +3153,6 @@ public abstract class BaseTest {
                     .d(0L)
                     .isNullAllowed(true)
                     .autoGenerated(false)
-                    .isPrimaryKey(false)
                     .enums(null)
                     .sets(null)
                     .build(),
@@ -2929,75 +3165,10 @@ public abstract class BaseTest {
                     .columnType(TableColumnType.DECIMAL)
                     .size(10L)
                     .d(0L)
-                    .concept(COLUMN_CONCEPT_PRECIPITATION)
-                    .unit(UNIT_MILLIMETRE)
+                    .concept(CONCEPT_1)
+                    .unit(UNIT_1)
                     .isNullAllowed(true)
                     .autoGenerated(false)
-                    .isPrimaryKey(false)
-                    .enums(null)
-                    .sets(null)
-                    .build());
-
-    public final static List<ColumnDto> TABLE_1_COLUMNS_DTO = List.of(ColumnDto.builder()
-                    .id(1L)
-                    .name("id")
-                    .internalName("id")
-                    .columnType(ColumnTypeDto.BIGINT)
-                    .isNullAllowed(false)
-                    .autoGenerated(false)
-                    .isPrimaryKey(true)
-                    .enums(null)
-                    .sets(null)
-                    .build(),
-            ColumnDto.builder()
-                    .id(2L)
-                    .name("Date")
-                    .internalName("date")
-                    .columnType(ColumnTypeDto.DATE)
-                    .dateFormat(IMAGE_DATE_1_DTO)
-                    .isNullAllowed(true)
-                    .autoGenerated(false)
-                    .isPrimaryKey(false)
-                    .enums(null)
-                    .sets(null)
-                    .build(),
-            ColumnDto.builder()
-                    .id(3L)
-                    .name("Location")
-                    .internalName("location")
-                    .columnType(ColumnTypeDto.VARCHAR)
-                    .size(255L)
-                    .isNullAllowed(true)
-                    .autoGenerated(false)
-                    .isPrimaryKey(false)
-                    .enums(null)
-                    .sets(null)
-                    .build(),
-            ColumnDto.builder()
-                    .id(4L)
-                    .name("MinTemp")
-                    .internalName("mintemp")
-                    .columnType(ColumnTypeDto.DECIMAL)
-                    .size(10L)
-                    .d(0L)
-                    .isNullAllowed(true)
-                    .autoGenerated(false)
-                    .isPrimaryKey(false)
-                    .enums(null)
-                    .sets(null)
-                    .build(),
-            ColumnDto.builder()
-                    .id(5L)
-                    .name("Rainfall")
-                    .internalName("rainfall")
-                    .columnType(ColumnTypeDto.DECIMAL)
-                    .size(10L)
-                    .d(0L)
-                    .concept(COLUMN_CONCEPT_PRECIPITATION_DTO)
-                    .unit(UNIT_MILLIMETRE_DTO)
-                    .isNullAllowed(true)
-                    .autoGenerated(false)
-                    .isPrimaryKey(false)
                     .enums(null)
                     .sets(null)
                     .build());
@@ -3008,11 +3179,11 @@ public abstract class BaseTest {
                     .table(TABLE_2)
                     .name("location")
                     .internalName("location")
+                    .ordinalPosition(0)
                     .columnType(TableColumnType.VARCHAR)
                     .size(255L)
                     .isNullAllowed(false)
                     .autoGenerated(false)
-                    .isPrimaryKey(true)
                     .enums(null)
                     .sets(null)
                     .build(),
@@ -3022,12 +3193,12 @@ public abstract class BaseTest {
                     .table(TABLE_2)
                     .name("lat")
                     .internalName("lat")
+                    .ordinalPosition(1)
                     .columnType(TableColumnType.DECIMAL)
                     .size(10L)
                     .d(0L)
                     .isNullAllowed(true)
                     .autoGenerated(false)
-                    .isPrimaryKey(false)
                     .enums(null)
                     .sets(null)
                     .build(),
@@ -3037,88 +3208,57 @@ public abstract class BaseTest {
                     .table(TABLE_2)
                     .name("lng")
                     .internalName("lng")
+                    .ordinalPosition(2)
                     .columnType(TableColumnType.DECIMAL)
                     .size(10L)
                     .d(0L)
                     .isNullAllowed(true)
                     .autoGenerated(false)
-                    .isPrimaryKey(false)
                     .enums(null)
                     .sets(null)
                     .build());
 
     public final static List<ColumnDto> TABLE_2_COLUMNS_DTO = List.of(ColumnDto.builder()
                     .id(6L)
+                    .table(TABLE_2_DTO)
                     .name("location")
                     .internalName("location")
+                    .ordinalPosition(0)
                     .columnType(ColumnTypeDto.VARCHAR)
                     .size(255L)
                     .isNullAllowed(false)
                     .autoGenerated(false)
-                    .isPrimaryKey(true)
                     .enums(null)
                     .sets(null)
                     .build(),
             ColumnDto.builder()
                     .id(7L)
+                    .table(TABLE_2_DTO)
                     .name("lat")
                     .internalName("lat")
+                    .ordinalPosition(1)
                     .columnType(ColumnTypeDto.DECIMAL)
                     .size(10L)
                     .d(0L)
                     .isNullAllowed(true)
                     .autoGenerated(false)
-                    .isPrimaryKey(false)
                     .enums(null)
                     .sets(null)
                     .build(),
             ColumnDto.builder()
                     .id(8L)
+                    .table(TABLE_2_DTO)
                     .name("lng")
                     .internalName("lng")
+                    .ordinalPosition(2)
                     .columnType(ColumnTypeDto.DECIMAL)
                     .size(10L)
                     .d(0L)
                     .isNullAllowed(true)
                     .autoGenerated(false)
-                    .isPrimaryKey(false)
                     .enums(null)
                     .sets(null)
                     .build());
-
-    public final static Long TABLE_1_FOREIGN_KEY_1_ID = 1L;
-    public final static String TABLE_1_FOREIGN_KEY_1_NAME = "FK_JUNIT_1";
-
-    public final static ForeignKey TABLE_1_FOREIGN_KEY_1 = ForeignKey.builder()
-            .fkid(TABLE_1_FOREIGN_KEY_1_ID)
-            .name(TABLE_1_FOREIGN_KEY_1_NAME)
-            .referencedTable(TABLE_2)
-            .table(TABLE_1)
-            .references(new LinkedList<>()) /* TABLE_1_FOREIGN_KEY_REFERENCE */
-            .build();
-
-    public final static Long TABLE_1_FOREIGN_KEY_REFERENCE_ID = 1L;
-
-    public final static ForeignKeyReference TABLE_1_FOREIGN_KEY_REFERENCE = ForeignKeyReference.builder()
-            .id(TABLE_1_FOREIGN_KEY_REFERENCE_ID)
-            .foreignKey(TABLE_1_FOREIGN_KEY_1)
-            .column(TABLE_1_COLUMNS.get(2))
-            .referencedColumn(TABLE_1_COLUMNS.get(0))
-            .build();
-
-    public final static Unique TABLE_1_UNIQUE_CONSTRAINT_1 = Unique.builder()
-            .name("UK_1")
-            .columns(new LinkedList<>())
-            .table(TABLE_1)
-            .build();
-
-    public final static String TABLE_1_CHECK_1 = "`mintemp` > 0";
-
-    public final static Unique TABLE_2_UNIQUE_CONSTRAINT_1 = Unique.builder()
-            .name("UK_1")
-            .columns(List.of(TABLE_2_COLUMNS.get(0)))
-            .table(TABLE_2)
-            .build();
 
     public final static List<TableColumn> TABLE_3_COLUMNS = List.of(TableColumn.builder()
                     .id(9L)
@@ -3129,10 +3269,9 @@ public abstract class BaseTest {
                     .name("id")
                     .internalName("id")
                     .isNullAllowed(false)
-                    .isPrimaryKey(true)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(10L)
@@ -3143,10 +3282,9 @@ public abstract class BaseTest {
                     .name("linie")
                     .internalName("linie")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(11L)
@@ -3157,10 +3295,9 @@ public abstract class BaseTest {
                     .name("richtung")
                     .internalName("richtung")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(12L)
@@ -3171,9 +3308,8 @@ public abstract class BaseTest {
                     .name("betriebsdatum")
                     .internalName("betriebsdatum")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(13L)
@@ -3184,10 +3320,9 @@ public abstract class BaseTest {
                     .name("fahrzeug")
                     .internalName("fahrzeug")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(14L)
@@ -3198,10 +3333,9 @@ public abstract class BaseTest {
                     .name("kurs")
                     .internalName("kurs")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(15L)
@@ -3212,10 +3346,9 @@ public abstract class BaseTest {
                     .name("seq_von")
                     .internalName("seq_von")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(16L)
@@ -3226,10 +3359,9 @@ public abstract class BaseTest {
                     .name("halt_diva_von")
                     .internalName("halt_diva_von")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(17L)
@@ -3240,10 +3372,9 @@ public abstract class BaseTest {
                     .name("halt_punkt_diva_von")
                     .internalName("halt_punkt_diva_von")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(18L)
@@ -3254,10 +3385,9 @@ public abstract class BaseTest {
                     .name("halt_kurz_von1")
                     .internalName("halt_kurz_von1")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(19L)
@@ -3268,9 +3398,8 @@ public abstract class BaseTest {
                     .name("datum_von")
                     .internalName("datum_von")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(20L)
@@ -3281,10 +3410,9 @@ public abstract class BaseTest {
                     .name("soll_an_von")
                     .internalName("soll_an_von")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(21L)
@@ -3295,10 +3423,9 @@ public abstract class BaseTest {
                     .name("ist_an_von")
                     .internalName("ist_an_von")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(22L)
@@ -3309,10 +3436,9 @@ public abstract class BaseTest {
                     .name("soll_ab_von")
                     .internalName("soll_ab_von")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(23L)
@@ -3323,10 +3449,9 @@ public abstract class BaseTest {
                     .name("ist_ab_von")
                     .internalName("ist_ab_von")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(24L)
@@ -3337,10 +3462,9 @@ public abstract class BaseTest {
                     .name("seq_nach")
                     .internalName("seq_nach")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(25L)
@@ -3351,10 +3475,9 @@ public abstract class BaseTest {
                     .name("halt_diva_nach")
                     .internalName("halt_diva_nach")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(26L)
@@ -3365,10 +3488,9 @@ public abstract class BaseTest {
                     .name("halt_punkt_diva_nach")
                     .internalName("halt_punkt_diva_nach")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(27L)
@@ -3379,10 +3501,9 @@ public abstract class BaseTest {
                     .name("halt_kurz_nach1")
                     .internalName("halt_kurz_nach1")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(28L)
@@ -3393,9 +3514,8 @@ public abstract class BaseTest {
                     .name("datum_nach")
                     .internalName("datum_nach")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(29L)
@@ -3406,10 +3526,9 @@ public abstract class BaseTest {
                     .name("soll_an_nach")
                     .internalName("soll_an_nach")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(30L)
@@ -3420,10 +3539,9 @@ public abstract class BaseTest {
                     .name("ist_an_nach1")
                     .internalName("ist_an_nach1")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(31L)
@@ -3434,10 +3552,9 @@ public abstract class BaseTest {
                     .name("soll_ab_nach")
                     .internalName("soll_ab_nach")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(32L)
@@ -3448,10 +3565,9 @@ public abstract class BaseTest {
                     .name("ist_ab_nach")
                     .internalName("ist_ab_nach")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(33L)
@@ -3462,10 +3578,9 @@ public abstract class BaseTest {
                     .name("fahrt_id")
                     .internalName("fahrt_id")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(34L)
@@ -3476,10 +3591,9 @@ public abstract class BaseTest {
                     .name("fahrweg_id")
                     .internalName("fahrweg_id")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(35L)
@@ -3490,10 +3604,9 @@ public abstract class BaseTest {
                     .name("fw_no")
                     .internalName("fw_no")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(36L)
@@ -3504,10 +3617,9 @@ public abstract class BaseTest {
                     .name("fw_typ")
                     .internalName("fw_typ")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(37L)
@@ -3518,10 +3630,9 @@ public abstract class BaseTest {
                     .name("fw_kurz")
                     .internalName("fw_kurz")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(38L)
@@ -3532,10 +3643,9 @@ public abstract class BaseTest {
                     .name("fw_lang")
                     .internalName("fw_lang")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(39L)
@@ -3546,10 +3656,9 @@ public abstract class BaseTest {
                     .name("umlauf_von")
                     .internalName("umlauf_von")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(40L)
@@ -3560,10 +3669,9 @@ public abstract class BaseTest {
                     .name("halt_id_von")
                     .internalName("halt_id_von")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(41L)
@@ -3574,10 +3682,9 @@ public abstract class BaseTest {
                     .name("halt_id_nach")
                     .internalName("halt_id_nach")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(42L)
@@ -3588,10 +3695,9 @@ public abstract class BaseTest {
                     .name("halt_punkt_id_von")
                     .internalName("halt_punkt_id_von")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             TableColumn.builder()
                     .id(43L)
@@ -3602,10 +3708,9 @@ public abstract class BaseTest {
                     .name("halt_punkt_id_nach")
                     .internalName("halt_punkt_id_nach")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build());
 
     public final static List<ColumnDto> TABLE_3_COLUMNS_DTO = List.of(ColumnDto.builder()
@@ -3617,10 +3722,9 @@ public abstract class BaseTest {
                     .name("id")
                     .internalName("id")
                     .isNullAllowed(false)
-                    .isPrimaryKey(true)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(10L)
@@ -3631,10 +3735,9 @@ public abstract class BaseTest {
                     .name("linie")
                     .internalName("linie")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(11L)
@@ -3645,10 +3748,9 @@ public abstract class BaseTest {
                     .name("richtung")
                     .internalName("richtung")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(12L)
@@ -3659,10 +3761,9 @@ public abstract class BaseTest {
                     .name("betriebsdatum")
                     .internalName("betriebsdatum")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(IMAGE_DATE_2_DTO)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(13L)
@@ -3673,10 +3774,9 @@ public abstract class BaseTest {
                     .name("fahrzeug")
                     .internalName("fahrzeug")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(14L)
@@ -3687,10 +3787,9 @@ public abstract class BaseTest {
                     .name("kurs")
                     .internalName("kurs")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(15L)
@@ -3701,10 +3800,9 @@ public abstract class BaseTest {
                     .name("seq_von")
                     .internalName("seq_von")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(16L)
@@ -3715,10 +3813,9 @@ public abstract class BaseTest {
                     .name("halt_diva_von")
                     .internalName("halt_diva_von")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(17L)
@@ -3729,10 +3826,9 @@ public abstract class BaseTest {
                     .name("halt_punkt_diva_von")
                     .internalName("halt_punkt_diva_von")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(18L)
@@ -3743,10 +3839,9 @@ public abstract class BaseTest {
                     .name("halt_kurz_von1")
                     .internalName("halt_kurz_von1")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(19L)
@@ -3757,10 +3852,9 @@ public abstract class BaseTest {
                     .name("datum_von")
                     .internalName("datum_von")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(IMAGE_DATE_2_DTO)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(20L)
@@ -3771,10 +3865,9 @@ public abstract class BaseTest {
                     .name("soll_an_von")
                     .internalName("soll_an_von")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(21L)
@@ -3785,10 +3878,9 @@ public abstract class BaseTest {
                     .name("ist_an_von")
                     .internalName("ist_an_von")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(22L)
@@ -3799,10 +3891,9 @@ public abstract class BaseTest {
                     .name("soll_ab_von")
                     .internalName("soll_ab_von")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(23L)
@@ -3813,10 +3904,9 @@ public abstract class BaseTest {
                     .name("ist_ab_von")
                     .internalName("ist_ab_von")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(24L)
@@ -3827,10 +3917,9 @@ public abstract class BaseTest {
                     .name("seq_nach")
                     .internalName("seq_nach")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(25L)
@@ -3841,10 +3930,9 @@ public abstract class BaseTest {
                     .name("halt_diva_nach")
                     .internalName("halt_diva_nach")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(26L)
@@ -3855,10 +3943,9 @@ public abstract class BaseTest {
                     .name("halt_punkt_diva_nach")
                     .internalName("halt_punkt_diva_nach")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(27L)
@@ -3869,10 +3956,9 @@ public abstract class BaseTest {
                     .name("halt_kurz_nach1")
                     .internalName("halt_kurz_nach1")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(28L)
@@ -3883,10 +3969,9 @@ public abstract class BaseTest {
                     .name("datum_nach")
                     .internalName("datum_nach")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(IMAGE_DATE_2_DTO)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(29L)
@@ -3897,10 +3982,9 @@ public abstract class BaseTest {
                     .name("soll_an_nach")
                     .internalName("soll_an_nach")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(30L)
@@ -3911,10 +3995,9 @@ public abstract class BaseTest {
                     .name("ist_an_nach1")
                     .internalName("ist_an_nach1")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(31L)
@@ -3925,10 +4008,9 @@ public abstract class BaseTest {
                     .name("soll_ab_nach")
                     .internalName("soll_ab_nach")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(32L)
@@ -3939,10 +4021,9 @@ public abstract class BaseTest {
                     .name("ist_ab_nach")
                     .internalName("ist_ab_nach")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(33L)
@@ -3953,10 +4034,9 @@ public abstract class BaseTest {
                     .name("fahrt_id")
                     .internalName("fahrt_id")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(34L)
@@ -3967,10 +4047,9 @@ public abstract class BaseTest {
                     .name("fahrweg_id")
                     .internalName("fahrweg_id")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(35L)
@@ -3981,10 +4060,9 @@ public abstract class BaseTest {
                     .name("fw_no")
                     .internalName("fw_no")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(36L)
@@ -3995,10 +4073,9 @@ public abstract class BaseTest {
                     .name("fw_typ")
                     .internalName("fw_typ")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(37L)
@@ -4009,10 +4086,9 @@ public abstract class BaseTest {
                     .name("fw_kurz")
                     .internalName("fw_kurz")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(38L)
@@ -4023,10 +4099,9 @@ public abstract class BaseTest {
                     .name("fw_lang")
                     .internalName("fw_lang")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(39L)
@@ -4037,10 +4112,9 @@ public abstract class BaseTest {
                     .name("umlauf_von")
                     .internalName("umlauf_von")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(40L)
@@ -4051,10 +4125,9 @@ public abstract class BaseTest {
                     .name("halt_id_von")
                     .internalName("halt_id_von")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(41L)
@@ -4065,10 +4138,9 @@ public abstract class BaseTest {
                     .name("halt_id_nach")
                     .internalName("halt_id_nach")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(42L)
@@ -4079,10 +4151,9 @@ public abstract class BaseTest {
                     .name("halt_punkt_id_von")
                     .internalName("halt_punkt_id_von")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build(),
             ColumnDto.builder()
                     .id(43L)
@@ -4093,21 +4164,14 @@ public abstract class BaseTest {
                     .name("halt_punkt_id_nach")
                     .internalName("halt_punkt_id_nach")
                     .isNullAllowed(true)
-                    .isPrimaryKey(false)
                     .dateFormat(null)
-                    .enums(List.of())
-                    .sets(List.of())
+                    .enums(new LinkedList<>())
+                    .sets(new LinkedList<>())
                     .build());
-
-    public final static Unique TABLE_3_UNIQUE_CONSTRAINT_1 = Unique.builder()
-            .name("UK_1")
-            .columns(List.of(TABLE_3_COLUMNS.get(0)))
-            .table(TABLE_3)
-            .build();
 
     public final static ConstraintsDto TABLE_3_CONSTRAINTS_DTO = ConstraintsDto.builder()
             .uniques(List.of(UniqueDto.builder().columns(List.of(TABLE_3_COLUMNS_DTO.get(0))).build()))
-            .foreignKeys(List.of())
+            .foreignKeys(new LinkedList<>())
             .checks(Set.of())
             .build();
 
@@ -4120,7 +4184,6 @@ public abstract class BaseTest {
                     .columnType(COLUMN_4_1_TYPE)
                     .isNullAllowed(COLUMN_4_1_NULL)
                     .autoGenerated(COLUMN_4_1_AUTO_GENERATED)
-                    .isPrimaryKey(COLUMN_4_1_PRIMARY)
                     .enums(COLUMN_4_1_ENUM_VALUES)
                     .sets(COLUMN_4_1_SET_VALUES)
                     .build(),
@@ -4133,7 +4196,6 @@ public abstract class BaseTest {
                     .columnType(COLUMN_4_2_TYPE)
                     .isNullAllowed(COLUMN_4_2_NULL)
                     .autoGenerated(COLUMN_4_2_AUTO_GENERATED)
-                    .isPrimaryKey(COLUMN_4_2_PRIMARY)
                     .enums(COLUMN_4_2_ENUM_VALUES)
                     .sets(COLUMN_4_2_SET_VALUES)
                     .build(),
@@ -4146,7 +4208,6 @@ public abstract class BaseTest {
                     .columnType(COLUMN_4_3_TYPE)
                     .isNullAllowed(COLUMN_4_3_NULL)
                     .autoGenerated(COLUMN_4_3_AUTO_GENERATED)
-                    .isPrimaryKey(COLUMN_4_3_PRIMARY)
                     .enums(COLUMN_4_3_ENUM_VALUES)
                     .sets(COLUMN_4_3_SET_VALUES)
                     .build(),
@@ -4159,7 +4220,6 @@ public abstract class BaseTest {
                     .columnType(COLUMN_4_4_TYPE)
                     .isNullAllowed(COLUMN_4_4_NULL)
                     .autoGenerated(COLUMN_4_4_AUTO_GENERATED)
-                    .isPrimaryKey(COLUMN_4_4_PRIMARY)
                     .enums(COLUMN_4_4_ENUM_VALUES)
                     .sets(COLUMN_4_4_SET_VALUES)
                     .build(),
@@ -4172,7 +4232,6 @@ public abstract class BaseTest {
                     .columnType(COLUMN_4_5_TYPE)
                     .isNullAllowed(COLUMN_4_5_NULL)
                     .autoGenerated(COLUMN_4_5_AUTO_GENERATED)
-                    .isPrimaryKey(COLUMN_4_5_PRIMARY)
                     .enums(COLUMN_4_5_ENUM_VALUES)
                     .sets(COLUMN_4_5_SET_VALUES)
                     .build(),
@@ -4185,7 +4244,6 @@ public abstract class BaseTest {
                     .columnType(COLUMN_4_6_TYPE)
                     .isNullAllowed(COLUMN_4_6_NULL)
                     .autoGenerated(COLUMN_4_6_AUTO_GENERATED)
-                    .isPrimaryKey(COLUMN_4_6_PRIMARY)
                     .enums(COLUMN_4_6_ENUM_VALUES)
                     .sets(COLUMN_4_6_SET_VALUES)
                     .build(),
@@ -4198,7 +4256,6 @@ public abstract class BaseTest {
                     .columnType(COLUMN_4_7_TYPE)
                     .isNullAllowed(COLUMN_4_7_NULL)
                     .autoGenerated(COLUMN_4_7_AUTO_GENERATED)
-                    .isPrimaryKey(COLUMN_4_7_PRIMARY)
                     .enums(COLUMN_4_7_ENUM_VALUES)
                     .sets(COLUMN_4_7_SET_VALUES)
                     .build(),
@@ -4211,7 +4268,6 @@ public abstract class BaseTest {
                     .columnType(COLUMN_4_8_TYPE)
                     .isNullAllowed(COLUMN_4_8_NULL)
                     .autoGenerated(COLUMN_4_8_AUTO_GENERATED)
-                    .isPrimaryKey(COLUMN_4_8_PRIMARY)
                     .enums(COLUMN_4_8_ENUM_VALUES)
                     .sets(COLUMN_4_8_SET_VALUES)
                     .build(),
@@ -4224,7 +4280,6 @@ public abstract class BaseTest {
                     .columnType(COLUMN_4_9_TYPE)
                     .isNullAllowed(COLUMN_4_9_NULL)
                     .autoGenerated(COLUMN_4_9_AUTO_GENERATED)
-                    .isPrimaryKey(COLUMN_4_9_PRIMARY)
                     .enums(COLUMN_4_9_ENUM_VALUES)
                     .sets(COLUMN_4_9_SET_VALUES)
                     .build(),
@@ -4237,7 +4292,6 @@ public abstract class BaseTest {
                     .columnType(COLUMN_4_10_TYPE)
                     .isNullAllowed(COLUMN_4_10_NULL)
                     .autoGenerated(COLUMN_4_10_AUTO_GENERATED)
-                    .isPrimaryKey(COLUMN_4_10_PRIMARY)
                     .enums(COLUMN_4_10_ENUM_VALUES)
                     .sets(COLUMN_4_10_SET_VALUES)
                     .build(),
@@ -4250,7 +4304,6 @@ public abstract class BaseTest {
                     .columnType(COLUMN_4_11_TYPE)
                     .isNullAllowed(COLUMN_4_11_NULL)
                     .autoGenerated(COLUMN_4_11_AUTO_GENERATED)
-                    .isPrimaryKey(COLUMN_4_11_PRIMARY)
                     .enums(COLUMN_4_11_ENUM_VALUES)
                     .sets(COLUMN_4_11_SET_VALUES)
                     .build(),
@@ -4263,7 +4316,6 @@ public abstract class BaseTest {
                     .columnType(COLUMN_4_12_TYPE)
                     .isNullAllowed(COLUMN_4_12_NULL)
                     .autoGenerated(COLUMN_4_12_AUTO_GENERATED)
-                    .isPrimaryKey(COLUMN_4_12_PRIMARY)
                     .enums(COLUMN_4_12_ENUM_VALUES)
                     .sets(COLUMN_4_12_SET_VALUES)
                     .build(),
@@ -4276,7 +4328,6 @@ public abstract class BaseTest {
                     .columnType(COLUMN_4_13_TYPE)
                     .isNullAllowed(COLUMN_4_13_NULL)
                     .autoGenerated(COLUMN_4_13_AUTO_GENERATED)
-                    .isPrimaryKey(COLUMN_4_13_PRIMARY)
                     .enums(COLUMN_4_13_ENUM_VALUES)
                     .sets(COLUMN_4_13_SET_VALUES)
                     .build(),
@@ -4289,7 +4340,6 @@ public abstract class BaseTest {
                     .columnType(COLUMN_4_14_TYPE)
                     .isNullAllowed(COLUMN_4_14_NULL)
                     .autoGenerated(COLUMN_4_14_AUTO_GENERATED)
-                    .isPrimaryKey(COLUMN_4_14_PRIMARY)
                     .enums(COLUMN_4_14_ENUM_VALUES)
                     .sets(COLUMN_4_14_SET_VALUES)
                     .build(),
@@ -4302,7 +4352,6 @@ public abstract class BaseTest {
                     .columnType(COLUMN_4_15_TYPE)
                     .isNullAllowed(COLUMN_4_15_NULL)
                     .autoGenerated(COLUMN_4_15_AUTO_GENERATED)
-                    .isPrimaryKey(COLUMN_4_15_PRIMARY)
                     .enums(COLUMN_4_15_ENUM_VALUES)
                     .sets(COLUMN_4_15_SET_VALUES)
                     .build(),
@@ -4315,7 +4364,6 @@ public abstract class BaseTest {
                     .columnType(COLUMN_4_16_TYPE)
                     .isNullAllowed(COLUMN_4_16_NULL)
                     .autoGenerated(COLUMN_4_16_AUTO_GENERATED)
-                    .isPrimaryKey(COLUMN_4_16_PRIMARY)
                     .enums(COLUMN_4_16_ENUM_VALUES)
                     .sets(COLUMN_4_16_SET_VALUES)
                     .build(),
@@ -4328,7 +4376,6 @@ public abstract class BaseTest {
                     .columnType(COLUMN_4_17_TYPE)
                     .isNullAllowed(COLUMN_4_17_NULL)
                     .autoGenerated(COLUMN_4_17_AUTO_GENERATED)
-                    .isPrimaryKey(COLUMN_4_17_PRIMARY)
                     .enums(COLUMN_4_17_ENUM_VALUES)
                     .sets(COLUMN_4_17_SET_VALUES)
                     .build(),
@@ -4341,7 +4388,6 @@ public abstract class BaseTest {
                     .columnType(COLUMN_4_18_TYPE)
                     .isNullAllowed(COLUMN_4_18_NULL)
                     .autoGenerated(COLUMN_4_18_AUTO_GENERATED)
-                    .isPrimaryKey(COLUMN_4_18_PRIMARY)
                     .enums(COLUMN_4_18_ENUM_VALUES)
                     .sets(COLUMN_4_18_SET_VALUES)
                     .build(),
@@ -4354,7 +4400,6 @@ public abstract class BaseTest {
                     .columnType(COLUMN_4_19_TYPE)
                     .isNullAllowed(COLUMN_4_19_NULL)
                     .autoGenerated(COLUMN_4_19_AUTO_GENERATED)
-                    .isPrimaryKey(COLUMN_4_19_PRIMARY)
                     .enums(COLUMN_4_19_ENUM_VALUES)
                     .sets(COLUMN_4_19_SET_VALUES)
                     .build(),
@@ -4367,7 +4412,6 @@ public abstract class BaseTest {
                     .columnType(COLUMN_4_20_TYPE)
                     .isNullAllowed(COLUMN_4_20_NULL)
                     .autoGenerated(COLUMN_4_20_AUTO_GENERATED)
-                    .isPrimaryKey(COLUMN_4_20_PRIMARY)
                     .enums(COLUMN_4_20_ENUM_VALUES)
                     .sets(COLUMN_4_20_SET_VALUES)
                     .build(),
@@ -4380,7 +4424,6 @@ public abstract class BaseTest {
                     .columnType(COLUMN_4_21_TYPE)
                     .isNullAllowed(COLUMN_4_21_NULL)
                     .autoGenerated(COLUMN_4_21_AUTO_GENERATED)
-                    .isPrimaryKey(COLUMN_4_21_PRIMARY)
                     .enums(COLUMN_4_21_ENUM_VALUES)
                     .sets(COLUMN_4_21_SET_VALUES)
                     .build());
@@ -4392,7 +4435,6 @@ public abstract class BaseTest {
                     .columnType(COLUMN_4_1_TYPE_DTO)
                     .isNullAllowed(COLUMN_4_1_NULL)
                     .autoGenerated(COLUMN_4_1_AUTO_GENERATED)
-                    .isPrimaryKey(COLUMN_4_1_PRIMARY)
                     .enums(COLUMN_4_1_ENUM_VALUES)
                     .sets(COLUMN_4_1_SET_VALUES)
                     .build(),
@@ -4403,7 +4445,6 @@ public abstract class BaseTest {
                     .columnType(COLUMN_4_2_TYPE_DTO)
                     .isNullAllowed(COLUMN_4_2_NULL)
                     .autoGenerated(COLUMN_4_2_AUTO_GENERATED)
-                    .isPrimaryKey(COLUMN_4_2_PRIMARY)
                     .enums(COLUMN_4_2_ENUM_VALUES)
                     .sets(COLUMN_4_2_SET_VALUES)
                     .build(),
@@ -4414,7 +4455,6 @@ public abstract class BaseTest {
                     .columnType(COLUMN_4_3_TYPE_DTO)
                     .isNullAllowed(COLUMN_4_3_NULL)
                     .autoGenerated(COLUMN_4_3_AUTO_GENERATED)
-                    .isPrimaryKey(COLUMN_4_3_PRIMARY)
                     .enums(COLUMN_4_3_ENUM_VALUES)
                     .sets(COLUMN_4_3_SET_VALUES)
                     .build(),
@@ -4425,7 +4465,6 @@ public abstract class BaseTest {
                     .columnType(COLUMN_4_4_TYPE_DTO)
                     .isNullAllowed(COLUMN_4_4_NULL)
                     .autoGenerated(COLUMN_4_4_AUTO_GENERATED)
-                    .isPrimaryKey(COLUMN_4_4_PRIMARY)
                     .enums(COLUMN_4_4_ENUM_VALUES)
                     .sets(COLUMN_4_4_SET_VALUES)
                     .build(),
@@ -4436,7 +4475,6 @@ public abstract class BaseTest {
                     .columnType(COLUMN_4_5_TYPE_DTO)
                     .isNullAllowed(COLUMN_4_5_NULL)
                     .autoGenerated(COLUMN_4_5_AUTO_GENERATED)
-                    .isPrimaryKey(COLUMN_4_5_PRIMARY)
                     .enums(COLUMN_4_5_ENUM_VALUES)
                     .sets(COLUMN_4_5_SET_VALUES)
                     .build(),
@@ -4447,7 +4485,6 @@ public abstract class BaseTest {
                     .columnType(COLUMN_4_6_TYPE_DTO)
                     .isNullAllowed(COLUMN_4_6_NULL)
                     .autoGenerated(COLUMN_4_6_AUTO_GENERATED)
-                    .isPrimaryKey(COLUMN_4_6_PRIMARY)
                     .enums(COLUMN_4_6_ENUM_VALUES)
                     .sets(COLUMN_4_6_SET_VALUES)
                     .build(),
@@ -4458,7 +4495,6 @@ public abstract class BaseTest {
                     .columnType(COLUMN_4_7_TYPE_DTO)
                     .isNullAllowed(COLUMN_4_7_NULL)
                     .autoGenerated(COLUMN_4_7_AUTO_GENERATED)
-                    .isPrimaryKey(COLUMN_4_7_PRIMARY)
                     .enums(COLUMN_4_7_ENUM_VALUES)
                     .sets(COLUMN_4_7_SET_VALUES)
                     .build(),
@@ -4469,7 +4505,6 @@ public abstract class BaseTest {
                     .columnType(COLUMN_4_8_TYPE_DTO)
                     .isNullAllowed(COLUMN_4_8_NULL)
                     .autoGenerated(COLUMN_4_8_AUTO_GENERATED)
-                    .isPrimaryKey(COLUMN_4_8_PRIMARY)
                     .enums(COLUMN_4_8_ENUM_VALUES)
                     .sets(COLUMN_4_8_SET_VALUES)
                     .build(),
@@ -4480,7 +4515,6 @@ public abstract class BaseTest {
                     .columnType(COLUMN_4_9_TYPE_DTO)
                     .isNullAllowed(COLUMN_4_9_NULL)
                     .autoGenerated(COLUMN_4_9_AUTO_GENERATED)
-                    .isPrimaryKey(COLUMN_4_9_PRIMARY)
                     .enums(COLUMN_4_9_ENUM_VALUES)
                     .sets(COLUMN_4_9_SET_VALUES)
                     .build(),
@@ -4491,7 +4525,6 @@ public abstract class BaseTest {
                     .columnType(COLUMN_4_10_TYPE_DTO)
                     .isNullAllowed(COLUMN_4_10_NULL)
                     .autoGenerated(COLUMN_4_10_AUTO_GENERATED)
-                    .isPrimaryKey(COLUMN_4_10_PRIMARY)
                     .enums(COLUMN_4_10_ENUM_VALUES)
                     .sets(COLUMN_4_10_SET_VALUES)
                     .build(),
@@ -4502,7 +4535,6 @@ public abstract class BaseTest {
                     .columnType(COLUMN_4_11_TYPE_DTO)
                     .isNullAllowed(COLUMN_4_11_NULL)
                     .autoGenerated(COLUMN_4_11_AUTO_GENERATED)
-                    .isPrimaryKey(COLUMN_4_11_PRIMARY)
                     .enums(COLUMN_4_11_ENUM_VALUES)
                     .sets(COLUMN_4_11_SET_VALUES)
                     .build(),
@@ -4513,7 +4545,6 @@ public abstract class BaseTest {
                     .columnType(COLUMN_4_12_TYPE_DTO)
                     .isNullAllowed(COLUMN_4_12_NULL)
                     .autoGenerated(COLUMN_4_12_AUTO_GENERATED)
-                    .isPrimaryKey(COLUMN_4_12_PRIMARY)
                     .enums(COLUMN_4_12_ENUM_VALUES)
                     .sets(COLUMN_4_12_SET_VALUES)
                     .build(),
@@ -4524,7 +4555,6 @@ public abstract class BaseTest {
                     .columnType(COLUMN_4_13_TYPE_DTO)
                     .isNullAllowed(COLUMN_4_13_NULL)
                     .autoGenerated(COLUMN_4_13_AUTO_GENERATED)
-                    .isPrimaryKey(COLUMN_4_13_PRIMARY)
                     .enums(COLUMN_4_13_ENUM_VALUES)
                     .sets(COLUMN_4_13_SET_VALUES)
                     .build(),
@@ -4535,7 +4565,6 @@ public abstract class BaseTest {
                     .columnType(COLUMN_4_14_TYPE_DTO)
                     .isNullAllowed(COLUMN_4_14_NULL)
                     .autoGenerated(COLUMN_4_14_AUTO_GENERATED)
-                    .isPrimaryKey(COLUMN_4_14_PRIMARY)
                     .enums(COLUMN_4_14_ENUM_VALUES)
                     .sets(COLUMN_4_14_SET_VALUES)
                     .build(),
@@ -4546,7 +4575,6 @@ public abstract class BaseTest {
                     .columnType(COLUMN_4_15_TYPE_DTO)
                     .isNullAllowed(COLUMN_4_15_NULL)
                     .autoGenerated(COLUMN_4_15_AUTO_GENERATED)
-                    .isPrimaryKey(COLUMN_4_15_PRIMARY)
                     .enums(COLUMN_4_15_ENUM_VALUES)
                     .sets(COLUMN_4_15_SET_VALUES)
                     .build(),
@@ -4557,7 +4585,6 @@ public abstract class BaseTest {
                     .columnType(COLUMN_4_16_TYPE_DTO)
                     .isNullAllowed(COLUMN_4_16_NULL)
                     .autoGenerated(COLUMN_4_16_AUTO_GENERATED)
-                    .isPrimaryKey(COLUMN_4_16_PRIMARY)
                     .enums(COLUMN_4_16_ENUM_VALUES)
                     .sets(COLUMN_4_16_SET_VALUES)
                     .build(),
@@ -4568,7 +4595,6 @@ public abstract class BaseTest {
                     .columnType(COLUMN_4_17_TYPE_DTO)
                     .isNullAllowed(COLUMN_4_17_NULL)
                     .autoGenerated(COLUMN_4_17_AUTO_GENERATED)
-                    .isPrimaryKey(COLUMN_4_17_PRIMARY)
                     .enums(COLUMN_4_17_ENUM_VALUES)
                     .sets(COLUMN_4_17_SET_VALUES)
                     .build(),
@@ -4579,7 +4605,6 @@ public abstract class BaseTest {
                     .columnType(COLUMN_4_18_TYPE_DTO)
                     .isNullAllowed(COLUMN_4_18_NULL)
                     .autoGenerated(COLUMN_4_18_AUTO_GENERATED)
-                    .isPrimaryKey(COLUMN_4_18_PRIMARY)
                     .enums(COLUMN_4_18_ENUM_VALUES)
                     .sets(COLUMN_4_18_SET_VALUES)
                     .build(),
@@ -4590,7 +4615,6 @@ public abstract class BaseTest {
                     .columnType(COLUMN_4_19_TYPE_DTO)
                     .isNullAllowed(COLUMN_4_19_NULL)
                     .autoGenerated(COLUMN_4_19_AUTO_GENERATED)
-                    .isPrimaryKey(COLUMN_4_19_PRIMARY)
                     .enums(COLUMN_4_19_ENUM_VALUES)
                     .sets(COLUMN_4_19_SET_VALUES)
                     .build(),
@@ -4601,7 +4625,6 @@ public abstract class BaseTest {
                     .columnType(COLUMN_4_20_TYPE_DTO)
                     .isNullAllowed(COLUMN_4_20_NULL)
                     .autoGenerated(COLUMN_4_20_AUTO_GENERATED)
-                    .isPrimaryKey(COLUMN_4_20_PRIMARY)
                     .enums(COLUMN_4_20_ENUM_VALUES)
                     .sets(COLUMN_4_20_SET_VALUES)
                     .build(),
@@ -4612,17 +4635,9 @@ public abstract class BaseTest {
                     .columnType(COLUMN_4_21_TYPE_DTO)
                     .isNullAllowed(COLUMN_4_21_NULL)
                     .autoGenerated(COLUMN_4_21_AUTO_GENERATED)
-                    .isPrimaryKey(COLUMN_4_21_PRIMARY)
                     .enums(COLUMN_4_21_ENUM_VALUES)
                     .sets(COLUMN_4_21_SET_VALUES)
                     .build());
-
-    public final static Constraints TABLE_5_CONSTRAINTS = Constraints.builder()
-            .uniques(List.of(Unique.builder()
-                    .name("UK_1")
-                    .columns(List.of(TABLE_5_COLUMNS.get(0)))
-                    .build()))
-            .build();
 
     public final static List<ForeignKeyCreateDto> TABLE_5_FOREIGN_KEYS_INVALID_CREATE = List.of(ForeignKeyCreateDto.builder()
             .columns(List.of("somecolumn"))
@@ -4638,30 +4653,59 @@ public abstract class BaseTest {
             .name(COLUMN_4_2_NAME)
             .type(COLUMN_4_2_TYPE_DTO)
             .nullAllowed(COLUMN_4_2_NULL)
-            .primaryKey(COLUMN_4_2_PRIMARY)
             .enums(COLUMN_4_2_ENUM_VALUES_ARR)
             .build());
 
     public final static List<ColumnCreateDto> TABLE_5_COLUMNS_CREATE = List.of(ColumnCreateDto.builder()
-                    .name(COLUMN_4_1_NAME)
-                    .type(COLUMN_4_1_TYPE_DTO)
-                    .nullAllowed(COLUMN_4_1_NULL)
-                    .primaryKey(COLUMN_4_1_PRIMARY)
-                    .enums(COLUMN_4_2_ENUM_VALUES_ARR)
+                    .name(COLUMN_5_1_NAME)
+                    .type(COLUMN_5_1_TYPE_DTO)
+                    .nullAllowed(COLUMN_5_1_NULL)
+                    .enums(COLUMN_5_1_ENUM_VALUES_DTO)
                     .build(),
             ColumnCreateDto.builder()
-                    .name(COLUMN_4_2_NAME)
-                    .type(COLUMN_4_2_TYPE_DTO)
-                    .nullAllowed(COLUMN_4_2_NULL)
-                    .primaryKey(COLUMN_4_2_PRIMARY)
-                    .enums(COLUMN_4_2_ENUM_VALUES_ARR)
+                    .name(COLUMN_5_2_NAME)
+                    .type(COLUMN_5_2_TYPE_DTO)
+                    .nullAllowed(COLUMN_5_2_NULL)
+                    .enums(COLUMN_5_2_ENUM_VALUES_DTO)
+                    .build(),
+            ColumnCreateDto.builder()
+                    .name(COLUMN_5_3_NAME)
+                    .type(COLUMN_5_3_TYPE_DTO)
+                    .nullAllowed(COLUMN_5_3_NULL)
+                    .enums(COLUMN_5_3_ENUM_VALUES_DTO)
+                    .build(),
+            ColumnCreateDto.builder()
+                    .name(COLUMN_5_4_NAME)
+                    .type(COLUMN_5_4_TYPE_DTO)
+                    .nullAllowed(COLUMN_5_4_NULL)
+                    .enums(COLUMN_5_4_ENUM_VALUES_DTO)
+                    .build(),
+            ColumnCreateDto.builder()
+                    .name(COLUMN_5_5_NAME)
+                    .type(COLUMN_5_5_TYPE_DTO)
+                    .dfid(COLUMN_5_5_DATE_FORMAT)
+                    .nullAllowed(COLUMN_5_5_NULL)
+                    .enums(COLUMN_5_5_ENUM_VALUES_DTO)
+                    .build(),
+            ColumnCreateDto.builder()
+                    .name(COLUMN_5_6_NAME)
+                    .type(COLUMN_5_6_TYPE_DTO)
+                    .nullAllowed(COLUMN_5_6_NULL)
+                    .enums(COLUMN_5_6_ENUM_VALUES_DTO)
                     .build());
+
+    public final static ConstraintsCreateDto TABLE_5_CREATE_CONSTRAINTS_DTO = ConstraintsCreateDto.builder()
+            .primaryKey(Set.of(COLUMN_5_1_NAME))
+            .uniques(List.of(List.of(COLUMN_5_1_NAME)))
+            .checks(new LinkedHashSet<>())
+            .foreignKeys(new LinkedList<>())
+            .build();
 
     public final static TableCreateDto TABLE_5_CREATE_DTO = TableCreateDto.builder()
             .name(TABLE_5_NAME)
             .description(TABLE_5_DESCRIPTION)
             .columns(TABLE_5_COLUMNS_CREATE)
-            .constraints(null)
+            .constraints(TABLE_5_CREATE_CONSTRAINTS_DTO)
             .build();
 
     public final static TableCreateDto TABLE_5_INVALID_CREATE_DTO = TableCreateDto.builder()
@@ -4680,7 +4724,6 @@ public abstract class BaseTest {
                     .columnType(COLUMN_5_1_TYPE)
                     .isNullAllowed(COLUMN_5_1_NULL)
                     .autoGenerated(COLUMN_5_1_AUTO_GENERATED)
-                    .isPrimaryKey(COLUMN_5_1_PRIMARY)
                     .enums(COLUMN_5_1_ENUM_VALUES)
                     .sets(COLUMN_5_1_SET_VALUES)
                     .build(),
@@ -4693,7 +4736,6 @@ public abstract class BaseTest {
                     .columnType(COLUMN_5_2_TYPE)
                     .isNullAllowed(COLUMN_5_2_NULL)
                     .autoGenerated(COLUMN_5_2_AUTO_GENERATED)
-                    .isPrimaryKey(COLUMN_5_2_PRIMARY)
                     .enums(COLUMN_5_2_ENUM_VALUES)
                     .sets(COLUMN_5_2_SET_VALUES)
                     .build(),
@@ -4706,7 +4748,6 @@ public abstract class BaseTest {
                     .columnType(COLUMN_5_3_TYPE)
                     .isNullAllowed(COLUMN_5_3_NULL)
                     .autoGenerated(COLUMN_5_3_AUTO_GENERATED)
-                    .isPrimaryKey(COLUMN_5_3_PRIMARY)
                     .enums(COLUMN_5_3_ENUM_VALUES)
                     .sets(COLUMN_5_3_SET_VALUES)
                     .build(),
@@ -4719,7 +4760,6 @@ public abstract class BaseTest {
                     .columnType(COLUMN_5_4_TYPE)
                     .isNullAllowed(COLUMN_5_4_NULL)
                     .autoGenerated(COLUMN_5_4_AUTO_GENERATED)
-                    .isPrimaryKey(COLUMN_5_4_PRIMARY)
                     .enums(COLUMN_5_4_ENUM_VALUES)
                     .sets(COLUMN_5_4_SET_VALUES)
                     .build(),
@@ -4732,7 +4772,6 @@ public abstract class BaseTest {
                     .columnType(COLUMN_5_5_TYPE)
                     .isNullAllowed(COLUMN_5_5_NULL)
                     .autoGenerated(COLUMN_5_5_AUTO_GENERATED)
-                    .isPrimaryKey(COLUMN_5_5_PRIMARY)
                     .enums(COLUMN_5_5_ENUM_VALUES)
                     .sets(COLUMN_5_5_SET_VALUES)
                     .build(),
@@ -4745,56 +4784,8 @@ public abstract class BaseTest {
                     .columnType(COLUMN_5_6_TYPE)
                     .isNullAllowed(COLUMN_5_6_NULL)
                     .autoGenerated(COLUMN_5_6_AUTO_GENERATED)
-                    .isPrimaryKey(COLUMN_5_6_PRIMARY)
                     .enums(COLUMN_5_6_ENUM_VALUES)
                     .sets(COLUMN_5_6_SET_VALUES)
-                    .build());
-
-    public final static Constraints TABLE_6_CONSTRAINTS = Constraints.builder()
-            .uniques(List.of(Unique.builder()
-                    .name("UK_1")
-                    .columns(List.of(TABLE_6_COLUMNS.get(0)))
-                    .build()))
-            .build();
-
-    public final static List<ColumnCreateDto> TABLE_6_COLUMNS_CREATE = List.of(
-            ColumnCreateDto.builder()
-                    .name(COLUMN_5_1_NAME)
-                    .type(COLUMN_5_1_TYPE_DTO)
-                    .nullAllowed(COLUMN_5_1_NULL)
-                    .primaryKey(COLUMN_5_1_PRIMARY)
-                    .build(),
-            ColumnCreateDto.builder()
-                    .name(COLUMN_5_2_NAME)
-                    .type(COLUMN_5_2_TYPE_DTO)
-                    .size(COLUMN_5_2_SIZE)
-                    .nullAllowed(COLUMN_5_2_NULL)
-                    .primaryKey(COLUMN_5_2_PRIMARY)
-                    .build(),
-            ColumnCreateDto.builder()
-                    .name(COLUMN_5_3_NAME)
-                    .type(COLUMN_5_3_TYPE_DTO)
-                    .size(COLUMN_5_3_SIZE)
-                    .nullAllowed(COLUMN_5_3_NULL)
-                    .primaryKey(COLUMN_5_3_PRIMARY)
-                    .build(),
-            ColumnCreateDto.builder()
-                    .name(COLUMN_5_4_NAME)
-                    .type(COLUMN_5_4_TYPE_DTO)
-                    .nullAllowed(COLUMN_5_4_NULL)
-                    .primaryKey(COLUMN_5_4_PRIMARY)
-                    .build(),
-            ColumnCreateDto.builder()
-                    .name(COLUMN_5_5_NAME)
-                    .type(COLUMN_5_5_TYPE_DTO)
-                    .nullAllowed(COLUMN_5_5_NULL)
-                    .primaryKey(COLUMN_5_5_PRIMARY)
-                    .build(),
-            ColumnCreateDto.builder()
-                    .name(COLUMN_5_6_NAME)
-                    .type(COLUMN_5_6_TYPE_DTO)
-                    .nullAllowed(COLUMN_5_6_NULL)
-                    .primaryKey(COLUMN_5_6_PRIMARY)
                     .build());
 
     public final static List<List<String>> TABLE_6_UNIQUES_CREATE = List.of(
@@ -4814,13 +4805,7 @@ public abstract class BaseTest {
             .uniques(TABLE_6_UNIQUES_CREATE)
             .foreignKeys(TABLE_6_FOREIGN_KEYS_CREATE)
             .checks(TABLE_6_CHECKS_CREATE)
-            .build();
-
-    public final static TableCreateDto TABLE_6_CREATE_DTO = TableCreateDto.builder()
-            .name(TABLE_6_NAME)
-            .description(TABLE_6_DESCRIPTION)
-            .columns(TABLE_6_COLUMNS_CREATE)
-            .constraints(TABLE_6_CONSTRAINTS_CREATE)
+            .primaryKey(Set.of("id"))
             .build();
 
     public final static Long COLUMN_6_1_ID = 26L;
@@ -4829,6 +4814,7 @@ public abstract class BaseTest {
     public final static String COLUMN_6_1_NAME = "name_id";
     public final static String COLUMN_6_1_INTERNAL_NAME = "name_id";
     public final static TableColumnType COLUMN_6_1_TYPE = TableColumnType.BIGINT;
+    public final static ColumnTypeDto COLUMN_6_1_TYPE_DTO = ColumnTypeDto.BIGINT;
     public final static Long COLUMN_6_1_DATE_FORMAT = null;
     public final static Boolean COLUMN_6_1_NULL = false;
     public final static Boolean COLUMN_6_1_AUTO_GENERATED = false;
@@ -4845,7 +4831,9 @@ public abstract class BaseTest {
     public final static String COLUMN_6_2_NAME = "zoo_id";
     public final static String COLUMN_6_2_INTERNAL_NAME = "zoo_id";
     public final static TableColumnType COLUMN_6_2_TYPE = TableColumnType.BIGINT;
+    public final static ColumnTypeDto COLUMN_6_2_TYPE_DTO = ColumnTypeDto.BIGINT;
     public final static Long COLUMN_6_2_DATE_FORMAT = null;
+    public final static Long COLUMN_6_2_SIZE = 255L;
     public final static Boolean COLUMN_6_2_NULL = false;
     public final static Boolean COLUMN_6_2_AUTO_GENERATED = false;
     public final static String COLUMN_6_2_FOREIGN_KEY = null;
@@ -4854,6 +4842,26 @@ public abstract class BaseTest {
     public final static List<String> COLUMN_6_2_ENUM_VALUES_DTO = null;
     public final static List<String> COLUMN_6_2_SET_VALUES = null;
     public final static List<String> COLUMN_6_2_SET_VALUES_DTO = null;
+
+    public final static List<ColumnCreateDto> TABLE_6_COLUMNS_CREATE = List.of(
+            ColumnCreateDto.builder()
+                    .name(COLUMN_6_1_NAME)
+                    .type(COLUMN_6_1_TYPE_DTO)
+                    .nullAllowed(COLUMN_6_1_NULL)
+                    .build(),
+            ColumnCreateDto.builder()
+                    .name(COLUMN_6_2_NAME)
+                    .type(COLUMN_6_2_TYPE_DTO)
+                    .size(COLUMN_6_2_SIZE)
+                    .nullAllowed(COLUMN_6_2_NULL)
+                    .build());
+
+    public final static TableCreateDto TABLE_6_CREATE_DTO = TableCreateDto.builder()
+            .name(TABLE_6_NAME)
+            .description(TABLE_6_DESCRIPTION)
+            .columns(TABLE_6_COLUMNS_CREATE)
+            .constraints(TABLE_6_CONSTRAINTS_CREATE)
+            .build();
 
     public final static List<TableColumn> TABLE_7_COLUMNS = List.of(TableColumn.builder()
                     .id(COLUMN_6_1_ID)
@@ -4864,7 +4872,6 @@ public abstract class BaseTest {
                     .columnType(COLUMN_6_1_TYPE)
                     .isNullAllowed(COLUMN_6_1_NULL)
                     .autoGenerated(COLUMN_6_1_AUTO_GENERATED)
-                    .isPrimaryKey(COLUMN_6_1_PRIMARY)
                     .enums(COLUMN_6_1_ENUM_VALUES)
                     .sets(COLUMN_6_1_SET_VALUES)
                     .build(),
@@ -4877,7 +4884,6 @@ public abstract class BaseTest {
                     .columnType(COLUMN_6_2_TYPE)
                     .isNullAllowed(COLUMN_6_2_NULL)
                     .autoGenerated(COLUMN_6_2_AUTO_GENERATED)
-                    .isPrimaryKey(COLUMN_6_2_PRIMARY)
                     .enums(COLUMN_6_2_ENUM_VALUES)
                     .sets(COLUMN_6_2_SET_VALUES)
                     .build());
@@ -4911,6 +4917,32 @@ public abstract class BaseTest {
             .columns(null) /* VIEW_1_COLUMNS */
             .build();
 
+    public final static Long VIEW_1_DATA_COUNT = 3L;
+    public final static QueryResultDto VIEW_1_DATA_DTO = QueryResultDto.builder()
+            .headers(new LinkedList<>(List.of(new HashMap<>() {{
+                put("location", 0);
+                put("lat", 1);
+                put("lng", 2);
+            }})))
+            .result(new LinkedList<>(List.of(
+                    new HashMap<>() {{
+                        put("location", "Albury");
+                        put("lat", -36.0653583);
+                        put("lng", 146.9112214);
+                    }},
+                    new HashMap<>() {{
+                        put("location", "Sydney");
+                        put("lat", -33.847927);
+                        put("lng", 150.6517942);
+                    }},
+                    new HashMap<>() {{
+                        put("location", "Vienna");
+                        put("lat", null);
+                        put("lng", null);
+                    }}
+            )))
+            .build();
+
     public final static List<ViewColumn> VIEW_1_COLUMNS = List.of(
             ViewColumn.builder()
                     .id(1L)
@@ -4935,6 +4967,20 @@ public abstract class BaseTest {
     public final static ViewDto VIEW_1_DTO = ViewDto.builder()
             .id(VIEW_1_ID)
             .isInitialView(VIEW_1_INITIAL_VIEW)
+            .name(VIEW_1_NAME)
+            .internalName(VIEW_1_INTERNAL_NAME)
+            .vdbid(VIEW_1_DATABASE_ID)
+            .isPublic(VIEW_1_PUBLIC)
+            .createdBy(USER_1_ID)
+            .query(VIEW_1_QUERY)
+            .queryHash(VIEW_1_QUERY_HASH)
+            .columns(VIEW_1_COLUMNS_DTO)
+            .build();
+
+    public final static PrivilegedViewDto VIEW_1_PRIVILEGED_DTO = PrivilegedViewDto.builder()
+            .id(VIEW_1_ID)
+            .isInitialView(VIEW_1_INITIAL_VIEW)
+            .database(null) /* DATABASE_1_PRIVILEGED_DTO */
             .name(VIEW_1_NAME)
             .internalName(VIEW_1_INTERNAL_NAME)
             .vdbid(VIEW_1_DATABASE_ID)
@@ -5032,6 +5078,20 @@ public abstract class BaseTest {
             .query(VIEW_2_QUERY)
             .queryHash(VIEW_2_QUERY_HASH)
             .createdBy(USER_1_ID)
+            .build();
+
+    public final static PrivilegedViewDto VIEW_2_PRIVILEGED_DTO = PrivilegedViewDto.builder()
+            .id(VIEW_2_ID)
+            .isInitialView(VIEW_2_INITIAL_VIEW)
+            .database(null) /* DATABASE_1_PRIVILEGED_DTO */
+            .name(VIEW_2_NAME)
+            .internalName(VIEW_2_INTERNAL_NAME)
+            .vdbid(VIEW_2_DATABASE_ID)
+            .isPublic(VIEW_2_PUBLIC)
+            .createdBy(USER_2_ID)
+            .query(VIEW_2_QUERY)
+            .queryHash(VIEW_2_QUERY_HASH)
+            .columns(VIEW_2_COLUMNS_DTO)
             .build();
 
     public final static ViewBriefDto VIEW_2_BRIEF_DTO = ViewBriefDto.builder()
@@ -5314,6 +5374,19 @@ public abstract class BaseTest {
             .columns(null)
             .build();
 
+    public final static ViewDto VIEW_5_DTO = ViewDto.builder()
+            .id(VIEW_5_ID)
+            .isInitialView(VIEW_5_INITIAL_VIEW)
+            .name(VIEW_5_NAME)
+            .internalName(VIEW_5_INTERNAL_NAME)
+            .vdbid(VIEW_5_DATABASE_ID)
+            .isPublic(VIEW_5_PUBLIC)
+            .query(VIEW_5_QUERY)
+            .queryHash(VIEW_5_QUERY_HASH)
+            .createdBy(USER_1_ID)
+            .columns(null)
+            .build();
+
     public final static List<ViewColumn> VIEW_5_COLUMNS = List.of(
             ViewColumn.builder()
                     .id(29L)
@@ -5349,16 +5422,6 @@ public abstract class BaseTest {
     public final static QueryResultDto QUERY_1_RESULT_DTO = QueryResultDto.builder()
             .id(QUERY_1_RESULT_ID)
             .result(QUERY_1_RESULT_RESULT)
-            .build();
-
-    public final static TableCsvDto TABLE_1_CSV_DTO = TableCsvDto.builder()
-            .data(new HashMap<>() {{
-                put("id", 1);
-                put("date", "2022-12-20");
-                put("location", "Vienna");
-                put("mintemp", -2.3);
-                put("rainfall", 34.3);
-            }})
             .build();
 
     public final static String LICENSE_1_IDENTIFIER = "MIT";
@@ -5459,7 +5522,7 @@ public abstract class BaseTest {
     public final static Long IDENTIFIER_1_CONTAINER_ID = CONTAINER_1_ID;
     public final static Long IDENTIFIER_1_DATABASE_ID = DATABASE_1_ID;
     public final static String IDENTIFIER_1_DOI = null;
-    public final static String IDENTIFIER_1_DOI_NOT_NULL = "10.1000/183";
+    public final static String IDENTIFIER_1_DOI_NOT_NULL = "10.12345/183";
     public final static Instant IDENTIFIER_1_CREATED = Instant.ofEpochSecond(1641588352L) /* 2022-01-07 20:45:52 */;
     public final static Instant IDENTIFIER_1_MODIFIED = Instant.ofEpochSecond(1541588352L) /* 2022-01-07 20:45:52 */;
     public final static Instant IDENTIFIER_1_EXECUTION = Instant.ofEpochSecond(1541588352L) /* 2022-01-07 20:45:52 */;
@@ -5475,6 +5538,8 @@ public abstract class BaseTest {
     public final static IdentifierType IDENTIFIER_1_TYPE = IdentifierType.DATABASE;
     public final static IdentifierTypeDto IDENTIFIER_1_TYPE_DTO = IdentifierTypeDto.DATABASE;
     public final static UUID IDENTIFIER_1_CREATED_BY = USER_1_ID;
+    public final static IdentifierStatusType IDENTIFIER_1_STATUS_TYPE = IdentifierStatusType.PUBLISHED;
+    public final static IdentifierStatusTypeDto IDENTIFIER_1_STATUS_TYPE_DTO = IdentifierStatusTypeDto.PUBLISHED;
 
     public final static Long IDENTIFIER_1_TITLE_1_ID = 1L;
     public final static Long IDENTIFIER_1_TITLE_1_IDENTIFIER_ID = IDENTIFIER_1_ID;
@@ -5596,52 +5661,54 @@ public abstract class BaseTest {
             .language(IDENTIFIER_1_DESCRIPTION_1_LANG_DTO)
             .build();
 
+    public final static Long IDENTIFIER_1_CREATOR_1_ID = 1L;
+    public final static String IDENTIFIER_1_CREATOR_1_FIRSTNAME = CREATOR_1_FIRSTNAME;
+    public final static String IDENTIFIER_1_CREATOR_1_LASTNAME = CREATOR_1_LASTNAME;
+    public final static String IDENTIFIER_1_CREATOR_1_NAME = CREATOR_1_NAME;
+    public final static String IDENTIFIER_1_CREATOR_1_ORCID = CREATOR_1_ORCID;
+    public final static NameIdentifierSchemeType IDENTIFIER_1_CREATOR_1_IDENTIFIER_SCHEME_TYPE = NameIdentifierSchemeType.ORCID;
+    public final static NameIdentifierSchemeTypeDto IDENTIFIER_1_CREATOR_1_IDENTIFIER_SCHEME_TYPE_DTO = NameIdentifierSchemeTypeDto.ORCID;
+    public final static String IDENTIFIER_1_CREATOR_1_AFFILIATION = CREATOR_1_AFFIL;
+    public final static String IDENTIFIER_1_CREATOR_1_AFFILIATION_IDENTIFIER = CREATOR_1_AFFIL_ROR;
+    public final static AffiliationIdentifierSchemeType IDENTIFIER_1_CREATOR_1_AFFILIATION_IDENTIFIER_SCHEME = CREATOR_1_AFFIL_TYPE;
+    public final static AffiliationIdentifierSchemeTypeDto IDENTIFIER_1_CREATOR_1_AFFILIATION_IDENTIFIER_SCHEME_DTO = CREATOR_1_AFFIL_TYPE_DTO;
+    public final static String IDENTIFIER_1_CREATOR_1_AFFILIATION_IDENTIFIER_SCHEME_URI = CREATOR_1_AFFIL_URI;
+
     public final static Creator IDENTIFIER_1_CREATOR_1 = Creator.builder()
-            .id(CREATOR_1_ID)
-            .firstname(CREATOR_1_FIRSTNAME)
-            .lastname(CREATOR_1_LASTNAME)
-            .creatorName(CREATOR_1_NAME)
-            .nameIdentifier(CREATOR_1_ORCID)
-            .nameIdentifierScheme(NameIdentifierSchemeType.ORCID)
-            .affiliation(CREATOR_1_AFFIL)
-            .affiliationIdentifier(CREATOR_1_AFFIL_ROR)
-            .affiliationIdentifierScheme(CREATOR_1_AFFIL_TYPE)
-            .affiliationIdentifierSchemeUri(CREATOR_1_AFFIL_URI)
+            .id(IDENTIFIER_1_CREATOR_1_ID)
+            .firstname(IDENTIFIER_1_CREATOR_1_FIRSTNAME)
+            .lastname(IDENTIFIER_1_CREATOR_1_LASTNAME)
+            .creatorName(IDENTIFIER_1_CREATOR_1_NAME)
+            .nameIdentifier(IDENTIFIER_1_CREATOR_1_ORCID)
+            .nameIdentifierScheme(IDENTIFIER_1_CREATOR_1_IDENTIFIER_SCHEME_TYPE)
+            .affiliation(IDENTIFIER_1_CREATOR_1_AFFILIATION)
+            .affiliationIdentifier(IDENTIFIER_1_CREATOR_1_AFFILIATION_IDENTIFIER)
+            .affiliationIdentifierScheme(IDENTIFIER_1_CREATOR_1_AFFILIATION_IDENTIFIER_SCHEME)
+            .affiliationIdentifierSchemeUri(IDENTIFIER_1_CREATOR_1_AFFILIATION_IDENTIFIER_SCHEME_URI)
             .build();
 
     public final static CreatorDto IDENTIFIER_1_CREATOR_1_DTO = CreatorDto.builder()
-            .id(CREATOR_1_ID)
-            .firstname(CREATOR_1_FIRSTNAME)
-            .lastname(CREATOR_1_LASTNAME)
-            .creatorName(CREATOR_1_NAME)
-            .nameIdentifier(CREATOR_1_ORCID)
-            .nameIdentifierScheme(NameIdentifierSchemeTypeDto.ORCID)
-            .affiliation(CREATOR_1_AFFIL)
-            .affiliationIdentifier(CREATOR_1_AFFIL_ROR)
-            .affiliationIdentifierScheme(CREATOR_1_AFFIL_TYPE_DTO)
-            .affiliationIdentifierSchemeUri(CREATOR_1_AFFIL_URI)
+            .id(IDENTIFIER_1_CREATOR_1_ID)
+            .firstname(IDENTIFIER_1_CREATOR_1_FIRSTNAME)
+            .lastname(IDENTIFIER_1_CREATOR_1_LASTNAME)
+            .creatorName(IDENTIFIER_1_CREATOR_1_NAME)
+            .nameIdentifier(IDENTIFIER_1_CREATOR_1_ORCID)
+            .nameIdentifierScheme(IDENTIFIER_1_CREATOR_1_IDENTIFIER_SCHEME_TYPE_DTO)
+            .affiliation(IDENTIFIER_1_CREATOR_1_AFFILIATION)
+            .affiliationIdentifier(IDENTIFIER_1_CREATOR_1_AFFILIATION_IDENTIFIER)
+            .affiliationIdentifierScheme(IDENTIFIER_1_CREATOR_1_AFFILIATION_IDENTIFIER_SCHEME_DTO)
+            .affiliationIdentifierSchemeUri(IDENTIFIER_1_CREATOR_1_AFFILIATION_IDENTIFIER_SCHEME_URI)
             .build();
 
     public final static CreatorSaveDto IDENTIFIER_1_CREATOR_1_CREATE_DTO = CreatorSaveDto.builder()
-            .firstname(CREATOR_1_FIRSTNAME)
-            .lastname(CREATOR_1_LASTNAME)
-            .creatorName(CREATOR_1_NAME)
-            .nameIdentifier(CREATOR_1_ORCID)
-            .nameIdentifierScheme(NameIdentifierSchemeTypeDto.ORCID)
-            .affiliation(CREATOR_1_AFFIL)
-            .affiliationIdentifier(CREATOR_1_AFFIL_ROR)
-            .affiliationIdentifierScheme(CREATOR_1_AFFIL_TYPE_DTO)
-            .build();
-
-    public final static CreatorSaveDto IDENTIFIER_1_CREATOR_1_MODIFY_DTO = CreatorSaveDto.builder()
-            .firstname(CREATOR_1_FIRSTNAME)
-            .lastname(CREATOR_1_LASTNAME)
-            .creatorName(CREATOR_1_NAME)
-            .nameIdentifier(CREATOR_1_ORCID)
-            .nameIdentifierScheme(NameIdentifierSchemeTypeDto.ORCID)
-            .affiliation("JKU Linz")
-            .affiliationIdentifier(CREATOR_1_AFFIL_ROR)
-            .affiliationIdentifierScheme(CREATOR_1_AFFIL_TYPE_DTO)
+            .firstname(IDENTIFIER_1_CREATOR_1_FIRSTNAME)
+            .lastname(IDENTIFIER_1_CREATOR_1_LASTNAME)
+            .creatorName(IDENTIFIER_1_CREATOR_1_NAME)
+            .nameIdentifier(IDENTIFIER_1_CREATOR_1_ORCID)
+            .nameIdentifierScheme(IDENTIFIER_1_CREATOR_1_IDENTIFIER_SCHEME_TYPE_DTO)
+            .affiliation(IDENTIFIER_1_CREATOR_1_AFFILIATION)
+            .affiliationIdentifier(IDENTIFIER_1_CREATOR_1_AFFILIATION_IDENTIFIER)
+            .affiliationIdentifierScheme(IDENTIFIER_1_CREATOR_1_AFFILIATION_IDENTIFIER_SCHEME_DTO)
             .build();
 
     public final static Long FUNDER_1_ID = 1L;
@@ -5675,12 +5742,20 @@ public abstract class BaseTest {
             .awardTitle(FUNDER_1_AWARD_TITLE)
             .build();
 
+    public final static DataCiteBody<DataCiteDoi> IDENTIFIER_1_DATA_CITE = DataCiteBody.<DataCiteDoi>builder()
+            .data(DataCiteData.<DataCiteDoi>builder()
+                    .type("dois")
+                    .attributes(DataCiteDoi.builder()
+                            .doi(IDENTIFIER_1_DOI_NOT_NULL)
+                            .build())
+                    .build())
+            .build();
+
     public final static Identifier IDENTIFIER_1 = Identifier.builder()
             .id(IDENTIFIER_1_ID)
-            .databaseId(DATABASE_1_ID)
             .queryId(IDENTIFIER_1_QUERY_ID)
-            .titles(List.of(IDENTIFIER_1_TITLE_1, IDENTIFIER_1_TITLE_2))
-            .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1))
+            .titles(new LinkedList<>(List.of(IDENTIFIER_1_TITLE_1, IDENTIFIER_1_TITLE_2)))
+            .descriptions(new LinkedList<>(List.of(IDENTIFIER_1_DESCRIPTION_1)))
             .doi(IDENTIFIER_1_DOI)
             .database(null /* DATABASE_1 */)
             .created(IDENTIFIER_1_CREATED)
@@ -5696,14 +5771,15 @@ public abstract class BaseTest {
             .publisher(IDENTIFIER_1_PUBLISHER)
             .type(IDENTIFIER_1_TYPE)
             .createdBy(USER_1_ID)
-            .licenses(List.of(LICENSE_1))
-            .creators(List.of(IDENTIFIER_1_CREATOR_1))
-            .funders(List.of(IDENTIFIER_1_FUNDER_1))
+            .creator(USER_1)
+            .licenses(new LinkedList<>(List.of(LICENSE_1)))
+            .creators(new LinkedList<>(List.of(IDENTIFIER_1_CREATOR_1)))
+            .funders(new LinkedList<>(List.of(IDENTIFIER_1_FUNDER_1)))
+            .status(IDENTIFIER_1_STATUS_TYPE)
             .build();
 
     public final static Identifier IDENTIFIER_1_WITH_DOI = Identifier.builder()
             .id(IDENTIFIER_1_ID)
-            .databaseId(DATABASE_1_ID)
             .queryId(IDENTIFIER_1_QUERY_ID)
             .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1))
             .titles(List.of(IDENTIFIER_1_TITLE_1, IDENTIFIER_1_TITLE_2))
@@ -5725,6 +5801,7 @@ public abstract class BaseTest {
             .licenses(List.of(LICENSE_1))
             .creators(List.of(IDENTIFIER_1_CREATOR_1))
             .funders(List.of(IDENTIFIER_1_FUNDER_1))
+            .status(IDENTIFIER_1_STATUS_TYPE)
             .build();
 
     public final static IdentifierDto IDENTIFIER_1_DTO = IdentifierDto.builder()
@@ -5750,6 +5827,7 @@ public abstract class BaseTest {
             .licenses(List.of(LICENSE_1_DTO))
             .creators(List.of(IDENTIFIER_1_CREATOR_1_DTO))
             .funders(List.of(IDENTIFIER_1_FUNDER_1_DTO))
+            .status(IDENTIFIER_1_STATUS_TYPE_DTO)
             .build();
 
     public final static IdentifierDto IDENTIFIER_1_WITH_DOI_DTO = IdentifierDto.builder()
@@ -5775,13 +5853,12 @@ public abstract class BaseTest {
             .licenses(List.of(LICENSE_1_DTO))
             .creators(List.of(IDENTIFIER_1_CREATOR_1_DTO))
             .funders(List.of(IDENTIFIER_1_FUNDER_1_DTO))
+            .status(IDENTIFIER_1_STATUS_TYPE_DTO)
             .build();
-
 
     public final static IdentifierDto IDENTIFIER_1_MODIFY_DTO = IdentifierDto.builder()
             .id(IDENTIFIER_1_ID)
             .databaseId(DATABASE_2_ID)
-            .queryId(IDENTIFIER_1_QUERY_ID)
             .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_DTO_MODIFY))
             .titles(List.of(IDENTIFIER_1_TITLE_1_DTO_MODIFY, IDENTIFIER_1_TITLE_2_DTO))
             .doi(IDENTIFIER_1_DOI)
@@ -5793,13 +5870,48 @@ public abstract class BaseTest {
             .lastModified(IDENTIFIER_1_MODIFIED)
             .licenses(List.of(LICENSE_1_DTO))
             .creators(List.of(IDENTIFIER_1_CREATOR_1_DTO))
+            .status(IDENTIFIER_1_STATUS_TYPE_DTO)
             .build();
 
-    public final static IdentifierSaveDto IDENTIFIER_1_DTO_REQUEST = IdentifierSaveDto.builder()
+    public final static IdentifierCreateDto IDENTIFIER_1_CREATE_DTO = IdentifierCreateDto.builder()
+            .databaseId(IDENTIFIER_1_DATABASE_ID)
+            .type(IDENTIFIER_1_TYPE_DTO)
+            .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
+            .publisher(IDENTIFIER_1_PUBLISHER)
+            .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_CREATE_DTO))
+            .titles(List.of(IDENTIFIER_1_TITLE_1_CREATE_DTO, IDENTIFIER_1_TITLE_2_CREATE_DTO))
+            .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
+            .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
+            .publisher(IDENTIFIER_1_PUBLISHER)
+            .type(IDENTIFIER_1_TYPE_DTO)
+            .licenses(List.of(LICENSE_1_DTO))
+            .creators(List.of(IDENTIFIER_1_CREATOR_1_CREATE_DTO))
+            .funders(List.of(IDENTIFIER_1_FUNDER_1_CREATE_DTO))
+            .build();
+
+    public final static IdentifierCreateDto IDENTIFIER_1_CREATE_WITH_DOI_DTO = IdentifierCreateDto.builder()
+            .databaseId(IDENTIFIER_1_DATABASE_ID)
+            .type(IDENTIFIER_1_TYPE_DTO)
+            .doi(IDENTIFIER_1_DOI_NOT_NULL)
+            .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
+            .publisher(IDENTIFIER_1_PUBLISHER)
+            .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_CREATE_DTO))
+            .titles(List.of(IDENTIFIER_1_TITLE_1_CREATE_DTO, IDENTIFIER_1_TITLE_2_CREATE_DTO))
+            .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
+            .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
+            .publisher(IDENTIFIER_1_PUBLISHER)
+            .type(IDENTIFIER_1_TYPE_DTO)
+            .licenses(List.of(LICENSE_1_DTO))
+            .creators(List.of(IDENTIFIER_1_CREATOR_1_CREATE_DTO))
+            .funders(List.of(IDENTIFIER_1_FUNDER_1_CREATE_DTO))
+            .build();
+
+    public final static IdentifierSaveDto IDENTIFIER_1_SAVE_DTO = IdentifierSaveDto.builder()
+            .id(IDENTIFIER_1_ID)
             .databaseId(IDENTIFIER_1_DATABASE_ID)
             .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_CREATE_DTO))
             .titles(List.of(IDENTIFIER_1_TITLE_1_CREATE_DTO, IDENTIFIER_1_TITLE_2_CREATE_DTO))
-            .relatedIdentifiers(List.of())
+            .relatedIdentifiers(new LinkedList<>())
             .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
             .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
             .creators(List.of(IDENTIFIER_1_CREATOR_1_CREATE_DTO))
@@ -5809,24 +5921,26 @@ public abstract class BaseTest {
             .licenses(List.of(LICENSE_1_DTO))
             .build();
 
-    public final static IdentifierSaveDto IDENTIFIER_1_DTO_UPDATE_REQUEST = IdentifierSaveDto.builder()
+    public final static IdentifierSaveDto IDENTIFIER_1_SAVE_MODIFY_DTO = IdentifierSaveDto.builder()
+            .id(IDENTIFIER_1_ID)
             .databaseId(IDENTIFIER_1_DATABASE_ID)
-            .descriptions(List.of(IDENTIFIER_1_DESCRIPTION_1_CREATE_DTO))
-            .titles(List.of(IDENTIFIER_1_TITLE_1_UPDATE_DTO, IDENTIFIER_1_TITLE_2_UPDATE_DTO))
-            .relatedIdentifiers(List.of())
+            .descriptions(List.of()) // <<<
+            .titles(List.of(IDENTIFIER_1_TITLE_1_CREATE_DTO)) // <<<
+            .relatedIdentifiers(new LinkedList<>())
             .publicationMonth(IDENTIFIER_1_PUBLICATION_MONTH)
             .publicationYear(IDENTIFIER_1_PUBLICATION_YEAR)
-            .creators(List.of(IDENTIFIER_1_CREATOR_1_MODIFY_DTO)) /* <<<< */
+            .creators(List.of()) // <<<
+            .funders(List.of()) // <<<
             .publisher(IDENTIFIER_1_PUBLISHER)
             .type(IDENTIFIER_1_TYPE_DTO)
-            .licenses(List.of(LICENSE_1_DTO))
+            .licenses(List.of()) // <<<
             .build();
 
     public final static Long IDENTIFIER_5_ID = 5L;
     public final static Long IDENTIFIER_5_QUERY_ID = QUERY_2_ID;
     public final static Long IDENTIFIER_5_CONTAINER_ID = CONTAINER_2_ID;
     public final static Long IDENTIFIER_5_DATABASE_ID = DATABASE_2_ID;
-    public final static String IDENTIFIER_5_DOI = "10.4225/13/50BBFCFE08A12";
+    public final static String IDENTIFIER_5_DOI = "10.12345/13/50BBFCFE08A12";
     public final static Instant IDENTIFIER_5_CREATED = Instant.ofEpochSecond(1641588352L);
     public final static Instant IDENTIFIER_5_MODIFIED = Instant.ofEpochSecond(1541588352L);
     public final static Instant IDENTIFIER_5_EXECUTION = Instant.ofEpochSecond(1541588352L);
@@ -5841,6 +5955,9 @@ public abstract class BaseTest {
     public final static String IDENTIFIER_5_PUBLISHER = "Australian Government";
     public final static IdentifierType IDENTIFIER_5_TYPE = IdentifierType.SUBSET;
     public final static IdentifierTypeDto IDENTIFIER_5_TYPE_DTO = IdentifierTypeDto.SUBSET;
+    public final static IdentifierStatusType IDENTIFIER_5_STATUS_TYPE = IdentifierStatusType.DRAFT;
+    public final static IdentifierStatusTypeDto IDENTIFIER_5_STATUS_TYPE_DTO = IdentifierStatusTypeDto.DRAFT;
+    public final static UUID IDENTIFIER_5_CREATED_BY = USER_2_ID;
 
     public final static Long IDENTIFIER_5_TITLE_1_ID = 3L;
     public final static Long IDENTIFIER_5_TITLE_1_IDENTIFIER_ID = IDENTIFIER_5_ID;
@@ -5983,10 +6100,9 @@ public abstract class BaseTest {
 
     public final static Identifier IDENTIFIER_5 = Identifier.builder()
             .id(IDENTIFIER_5_ID)
-            .databaseId(DATABASE_2_ID)
             .queryId(IDENTIFIER_5_QUERY_ID)
-            .descriptions(List.of(IDENTIFIER_5_DESCRIPTION_1))
-            .titles(List.of(IDENTIFIER_5_TITLE_1))
+            .descriptions(new LinkedList<>(List.of(IDENTIFIER_5_DESCRIPTION_1)))
+            .titles(new LinkedList<>(List.of(IDENTIFIER_5_TITLE_1)))
             .doi(IDENTIFIER_5_DOI)
             .created(IDENTIFIER_5_CREATED)
             .lastModified(IDENTIFIER_5_MODIFIED)
@@ -6002,7 +6118,9 @@ public abstract class BaseTest {
             .publisher(IDENTIFIER_5_PUBLISHER)
             .type(IDENTIFIER_5_TYPE)
             .createdBy(USER_2_ID)
-            .creators(List.of(IDENTIFIER_5_CREATOR_1, IDENTIFIER_5_CREATOR_2))
+            .creator(USER_2)
+            .creators(new LinkedList<>(List.of(IDENTIFIER_5_CREATOR_1, IDENTIFIER_5_CREATOR_2)))
+            .status(IDENTIFIER_5_STATUS_TYPE)
             .build();
 
     public final static IdentifierDto IDENTIFIER_5_DTO = IdentifierDto.builder()
@@ -6051,7 +6169,14 @@ public abstract class BaseTest {
             .relation(RELATED_IDENTIFIER_5_RELATION_TYPE_DTO)
             .build();
 
-    public final static IdentifierSaveDto IDENTIFIER_5_DTO_REQUEST = IdentifierSaveDto.builder()
+    public final static IdentifierCreateDto IDENTIFIER_5_CREATE_DTO = IdentifierCreateDto.builder()
+            .databaseId(IDENTIFIER_5_DATABASE_ID)
+            .publicationYear(IDENTIFIER_5_PUBLICATION_YEAR)
+            .publisher(IDENTIFIER_5_PUBLISHER)
+            .build();
+
+    public final static IdentifierSaveDto IDENTIFIER_5_SAVE_DTO = IdentifierSaveDto.builder()
+            .id(IDENTIFIER_5_ID)
             .queryId(IDENTIFIER_5_QUERY_ID)
             .databaseId(IDENTIFIER_5_DATABASE_ID)
             .descriptions(List.of(IDENTIFIER_5_DESCRIPTION_1_CREATE_DTO))
@@ -6061,21 +6186,6 @@ public abstract class BaseTest {
             .publicationMonth(IDENTIFIER_5_PUBLICATION_MONTH)
             .publicationYear(IDENTIFIER_5_PUBLICATION_YEAR)
             .creators(List.of(IDENTIFIER_5_CREATOR_1_CREATE_DTO, IDENTIFIER_5_CREATOR_2_CREATE_DTO))
-            .publisher(IDENTIFIER_5_PUBLISHER)
-            .licenses(List.of(LICENSE_1_DTO))
-            .type(IDENTIFIER_5_TYPE_DTO)
-            .build();
-
-    public final static IdentifierSaveDto IDENTIFIER_5_DTO_UPDATE_REQUEST = IdentifierSaveDto.builder()
-            .queryId(IDENTIFIER_5_QUERY_ID)
-            .databaseId(IDENTIFIER_5_DATABASE_ID)
-            .descriptions(List.of(IDENTIFIER_5_DESCRIPTION_1_CREATE_DTO))
-            .titles(List.of(IDENTIFIER_5_TITLE_1_CREATE_DTO))
-            .relatedIdentifiers(List.of(IDENTIFIER_1_RELATED_IDENTIFIER_5_CREATE_DTO))
-            .publicationDay(IDENTIFIER_5_PUBLICATION_DAY)
-            .publicationMonth(IDENTIFIER_5_PUBLICATION_MONTH)
-            .publicationYear(IDENTIFIER_5_PUBLICATION_YEAR)
-            .creators(List.of(IDENTIFIER_5_CREATOR_1_MODIFY_DTO, IDENTIFIER_5_CREATOR_2_MODIFY_DTO))
             .publisher(IDENTIFIER_5_PUBLISHER)
             .licenses(List.of(LICENSE_1_DTO))
             .type(IDENTIFIER_5_TYPE_DTO)
@@ -6100,6 +6210,8 @@ public abstract class BaseTest {
     public final static String IDENTIFIER_6_PUBLISHER = "Norwegian Government";
     public final static IdentifierType IDENTIFIER_6_TYPE = IdentifierType.SUBSET;
     public final static IdentifierTypeDto IDENTIFIER_6_TYPE_DTO = IdentifierTypeDto.SUBSET;
+    public final static IdentifierStatusType IDENTIFIER_6_STATUS_TYPE = IdentifierStatusType.PUBLISHED;
+    public final static IdentifierStatusTypeDto IDENTIFIER_6_STATUS_TYPE_DTO = IdentifierStatusTypeDto.PUBLISHED;
 
     public final static Long IDENTIFIER_6_TITLE_1_ID = 4L;
     public final static Long IDENTIFIER_6_TITLE_1_IDENTIFIER_ID = IDENTIFIER_6_ID;
@@ -6257,10 +6369,9 @@ public abstract class BaseTest {
 
     public final static Identifier IDENTIFIER_6 = Identifier.builder()
             .id(IDENTIFIER_6_ID)
-            .databaseId(IDENTIFIER_6_DATABASE_ID)
             .queryId(IDENTIFIER_6_QUERY_ID)
-            .descriptions(List.of(IDENTIFIER_6_DESCRIPTION_1))
-            .titles(List.of(IDENTIFIER_6_TITLE_1))
+            .descriptions(new LinkedList<>(List.of(IDENTIFIER_6_DESCRIPTION_1)))
+            .titles(new LinkedList<>(List.of(IDENTIFIER_6_TITLE_1)))
             .doi(IDENTIFIER_6_DOI)
             .created(IDENTIFIER_6_CREATED)
             .lastModified(IDENTIFIER_6_MODIFIED)
@@ -6276,8 +6387,10 @@ public abstract class BaseTest {
             .publisher(IDENTIFIER_6_PUBLISHER)
             .type(IDENTIFIER_6_TYPE)
             .createdBy(USER_3_ID)
-            .licenses(List.of(LICENSE_1))
-            .creators(List.of(IDENTIFIER_6_CREATOR_1, IDENTIFIER_6_CREATOR_2, IDENTIFIER_6_CREATOR_3))
+            .creator(USER_3)
+            .licenses(new LinkedList<>(List.of(LICENSE_1)))
+            .creators(new LinkedList<>(List.of(IDENTIFIER_6_CREATOR_1, IDENTIFIER_6_CREATOR_2, IDENTIFIER_6_CREATOR_3)))
+            .status(IDENTIFIER_6_STATUS_TYPE)
             .build();
 
     public final static IdentifierDto IDENTIFIER_6_DTO = IdentifierDto.builder()
@@ -6301,36 +6414,30 @@ public abstract class BaseTest {
             .publisher(IDENTIFIER_6_PUBLISHER)
             .type(IDENTIFIER_6_TYPE_DTO)
             .creator(USER_3_DTO)
-            .licenses(List.of(LICENSE_1_DTO))
-            .creators(List.of(IDENTIFIER_6_CREATOR_1_DTO, IDENTIFIER_6_CREATOR_2_DTO, IDENTIFIER_6_CREATOR_3_DTO))
+            .licenses(new LinkedList<>(List.of(LICENSE_1_DTO)))
+            .creators(new LinkedList<>(List.of(IDENTIFIER_6_CREATOR_1_DTO, IDENTIFIER_6_CREATOR_2_DTO, IDENTIFIER_6_CREATOR_3_DTO)))
+            .status(IDENTIFIER_6_STATUS_TYPE_DTO)
             .build();
 
-    public final static IdentifierSaveDto IDENTIFIER_6_DTO_REQUEST = IdentifierSaveDto.builder()
+    public final static IdentifierCreateDto IDENTIFIER_6_CREATE_DTO = IdentifierCreateDto.builder()
             .databaseId(IDENTIFIER_6_DATABASE_ID)
-            .queryId(IDENTIFIER_6_QUERY_ID)
-            .descriptions(List.of(IDENTIFIER_6_DESCRIPTION_1_CREATE_DTO))
-            .titles(List.of(IDENTIFIER_6_TITLE_1_CREATE_DTO))
-            .relatedIdentifiers(List.of())
-            .publicationMonth(IDENTIFIER_6_PUBLICATION_MONTH)
             .publicationYear(IDENTIFIER_6_PUBLICATION_YEAR)
-            .creators(List.of(IDENTIFIER_6_CREATOR_1_CREATE_DTO))
             .publisher(IDENTIFIER_6_PUBLISHER)
-            .type(IDENTIFIER_6_TYPE_DTO)
-            .licenses(List.of(LICENSE_1_DTO))
             .build();
 
-    public final static IdentifierSaveDto IDENTIFIER_6_DTO_UPDATE_REQUEST = IdentifierSaveDto.builder()
+    public final static IdentifierSaveDto IDENTIFIER_6_SAVE_DTO = IdentifierSaveDto.builder()
+            .id(IDENTIFIER_6_ID)
             .databaseId(IDENTIFIER_6_DATABASE_ID)
             .queryId(IDENTIFIER_6_QUERY_ID)
-            .descriptions(List.of(IDENTIFIER_6_DESCRIPTION_1_CREATE_DTO))
-            .titles(List.of(IDENTIFIER_6_TITLE_1_CREATE_DTO))
-            .relatedIdentifiers(List.of())
+            .descriptions(new LinkedList<>(List.of(IDENTIFIER_6_DESCRIPTION_1_CREATE_DTO)))
+            .titles(new LinkedList<>(List.of(IDENTIFIER_6_TITLE_1_CREATE_DTO)))
+            .relatedIdentifiers(new LinkedList<>())
             .publicationMonth(IDENTIFIER_6_PUBLICATION_MONTH)
             .publicationYear(IDENTIFIER_6_PUBLICATION_YEAR)
-            .creators(List.of(IDENTIFIER_6_CREATOR_1_MODIFY_DTO))
+            .creators(new LinkedList<>(List.of(IDENTIFIER_6_CREATOR_1_CREATE_DTO)))
             .publisher(IDENTIFIER_6_PUBLISHER)
             .type(IDENTIFIER_6_TYPE_DTO)
-            .licenses(List.of(LICENSE_1_DTO))
+            .licenses(new LinkedList<>(List.of(LICENSE_1_DTO)))
             .build();
 
     public final static Long IDENTIFIER_7_ID = 7L;
@@ -6342,14 +6449,12 @@ public abstract class BaseTest {
     public final static Integer IDENTIFIER_7_PUBLICATION_DAY = 14;
     public final static Integer IDENTIFIER_7_PUBLICATION_MONTH = 7;
     public final static Integer IDENTIFIER_7_PUBLICATION_YEAR = 2022;
-    public final static String IDENTIFIER_7_QUERY_HASH = "abc";
-    public final static String IDENTIFIER_7_RESULT_HASH = "def";
-    public final static String IDENTIFIER_7_QUERY = "SELECT `id` FROM `foobar`";
-    public final static String IDENTIFIER_7_NORMALIZED = "SELECT `id` FROM `foobar`";
     public final static Long IDENTIFIER_7_RESULT_NUMBER = 2L;
     public final static String IDENTIFIER_7_PUBLISHER = "Swedish Government";
     public final static IdentifierType IDENTIFIER_7_TYPE = IdentifierType.DATABASE;
     public final static IdentifierTypeDto IDENTIFIER_7_TYPE_DTO = IdentifierTypeDto.DATABASE;
+    public final static IdentifierStatusType IDENTIFIER_7_STATUS_TYPE = IdentifierStatusType.DRAFT;
+    public final static IdentifierStatusTypeDto IDENTIFIER_7_STATUS_TYPE_DTO = IdentifierStatusTypeDto.DRAFT;
 
     private final static Long IDENTIFIER_7_CREATOR_1_ID = 6L;
 
@@ -6382,8 +6487,8 @@ public abstract class BaseTest {
     public final static IdentifierDto IDENTIFIER_7_DTO = IdentifierDto.builder()
             .id(IDENTIFIER_7_ID)
             .databaseId(DATABASE_4_ID)
-            .descriptions(List.of())
-            .titles(List.of())
+            .descriptions(new LinkedList<>())
+            .titles(new LinkedList<>())
             .doi(IDENTIFIER_7_DOI)
             .created(IDENTIFIER_7_CREATED)
             .lastModified(IDENTIFIER_7_MODIFIED)
@@ -6391,17 +6496,14 @@ public abstract class BaseTest {
             .publicationDay(IDENTIFIER_7_PUBLICATION_DAY)
             .publicationMonth(IDENTIFIER_7_PUBLICATION_MONTH)
             .publicationYear(IDENTIFIER_7_PUBLICATION_YEAR)
-            .queryHash(IDENTIFIER_7_QUERY_HASH)
-            .resultHash(IDENTIFIER_7_RESULT_HASH)
-            .query(IDENTIFIER_7_QUERY)
-            .queryNormalized(IDENTIFIER_7_NORMALIZED)
             .resultNumber(IDENTIFIER_7_RESULT_NUMBER)
             .publisher(IDENTIFIER_7_PUBLISHER)
             .type(IDENTIFIER_7_TYPE_DTO)
             .creator(USER_4_DTO)
-            .licenses(List.of())
-            .funders(List.of())
-            .creators(List.of())
+            .licenses(new LinkedList<>())
+            .funders(new LinkedList<>())
+            .creators(new LinkedList<>())
+            .status(IDENTIFIER_7_STATUS_TYPE_DTO)
             .build();
 
     public final static CreatorSaveDto IDENTIFIER_7_CREATOR_1_CREATE_DTO = CreatorSaveDto.builder()
@@ -6414,16 +6516,23 @@ public abstract class BaseTest {
             .affiliationIdentifier(CREATOR_1_AFFIL_ROR)
             .build();
 
-    public final static IdentifierSaveDto IDENTIFIER_7_DTO_REQUEST = IdentifierSaveDto.builder()
+    public final static IdentifierCreateDto IDENTIFIER_7_CREATE_DTO = IdentifierCreateDto.builder()
             .databaseId(IDENTIFIER_7_DATABASE_ID)
-            .descriptions(List.of())
-            .titles(List.of())
-            .relatedIdentifiers(List.of())
+            .publicationYear(IDENTIFIER_7_PUBLICATION_YEAR)
+            .publisher(IDENTIFIER_7_PUBLISHER)
+            .build();
+
+    public final static IdentifierSaveDto IDENTIFIER_7_SAVE_DTO = IdentifierSaveDto.builder()
+            .id(IDENTIFIER_7_ID)
+            .databaseId(IDENTIFIER_7_DATABASE_ID)
+            .descriptions(new LinkedList<>())
+            .titles(new LinkedList<>())
+            .relatedIdentifiers(new LinkedList<>())
             .publicationMonth(IDENTIFIER_7_PUBLICATION_MONTH)
             .publicationYear(IDENTIFIER_7_PUBLICATION_YEAR)
             .creators(List.of(IDENTIFIER_7_CREATOR_1_CREATE_DTO))
-            .funders(List.of())
-            .licenses(List.of())
+            .funders(new LinkedList<>())
+            .licenses(new LinkedList<>())
             .publisher(IDENTIFIER_7_PUBLISHER)
             .type(IDENTIFIER_7_TYPE_DTO)
             .build();
@@ -6446,13 +6555,23 @@ public abstract class BaseTest {
     public final static String IDENTIFIER_2_PUBLISHER = "Swedish Government";
     public final static IdentifierType IDENTIFIER_2_TYPE = IdentifierType.SUBSET;
     public final static IdentifierTypeDto IDENTIFIER_2_TYPE_DTO = IdentifierTypeDto.SUBSET;
+    public final static IdentifierStatusType IDENTIFIER_2_STATUS_TYPE = IdentifierStatusType.PUBLISHED;
+    public final static IdentifierStatusTypeDto IDENTIFIER_2_STATUS_TYPE_DTO = IdentifierStatusTypeDto.PUBLISHED;
+    public final static UUID IDENTIFIER_2_CREATED_BY = USER_1_ID;
+
+    public final static IdentifierCreateDto IDENTIFIER_2_CREATE_DTO = IdentifierCreateDto.builder()
+            .databaseId(IDENTIFIER_2_DATABASE_ID)
+            .queryId(IDENTIFIER_2_QUERY_ID)
+            .type(IDENTIFIER_2_TYPE_DTO)
+            .publicationYear(IDENTIFIER_2_PUBLICATION_YEAR)
+            .publisher(IDENTIFIER_2_PUBLISHER)
+            .build();
 
     public final static Identifier IDENTIFIER_2 = Identifier.builder()
             .id(IDENTIFIER_2_ID)
             .queryId(IDENTIFIER_2_QUERY_ID)
-            .databaseId(IDENTIFIER_2_DATABASE_ID)
-            .descriptions(List.of())
-            .titles(List.of())
+            .descriptions(new LinkedList<>())
+            .titles(new LinkedList<>())
             .doi(IDENTIFIER_2_DOI)
             .database(null /* DATABASE_1 */)
             .created(IDENTIFIER_2_CREATED)
@@ -6469,16 +6588,18 @@ public abstract class BaseTest {
             .publisher(IDENTIFIER_2_PUBLISHER)
             .type(IDENTIFIER_2_TYPE)
             .createdBy(USER_1_ID)
-            .licenses(List.of(LICENSE_1))
-            .creators(List.of())
+            .creator(USER_1)
+            .licenses(new LinkedList<>(List.of(LICENSE_1)))
+            .creators(new LinkedList<>())
+            .status(IDENTIFIER_2_STATUS_TYPE)
             .build();
 
     public final static IdentifierDto IDENTIFIER_2_DTO = IdentifierDto.builder()
             .id(IDENTIFIER_2_ID)
             .queryId(IDENTIFIER_2_QUERY_ID)
             .databaseId(IDENTIFIER_2_DATABASE_ID)
-            .descriptions(List.of())
-            .titles(List.of())
+            .descriptions(new LinkedList<>())
+            .titles(new LinkedList<>())
             .doi(IDENTIFIER_2_DOI)
             .created(IDENTIFIER_2_CREATED)
             .lastModified(IDENTIFIER_2_MODIFIED)
@@ -6494,19 +6615,21 @@ public abstract class BaseTest {
             .publisher(IDENTIFIER_2_PUBLISHER)
             .type(IDENTIFIER_2_TYPE_DTO)
             .creator(USER_1_DTO)
-            .licenses(List.of(LICENSE_1_DTO))
-            .creators(List.of())
+            .licenses(new LinkedList<>(List.of(LICENSE_1_DTO)))
+            .creators(new LinkedList<>())
+            .status(IDENTIFIER_2_STATUS_TYPE_DTO)
             .build();
 
-    public final static IdentifierSaveDto IDENTIFIER_2_DTO_REQUEST = IdentifierSaveDto.builder()
+    public final static IdentifierSaveDto IDENTIFIER_2_SAVE_DTO = IdentifierSaveDto.builder()
+            .id(IDENTIFIER_2_ID)
             .databaseId(IDENTIFIER_2_DATABASE_ID)
             .queryId(IDENTIFIER_2_QUERY_ID)
-            .descriptions(List.of())
-            .titles(List.of())
-            .relatedIdentifiers(List.of())
+            .descriptions(new LinkedList<>())
+            .titles(new LinkedList<>())
+            .relatedIdentifiers(new LinkedList<>())
             .publicationMonth(IDENTIFIER_2_PUBLICATION_MONTH)
             .publicationYear(IDENTIFIER_2_PUBLICATION_YEAR)
-            .creators(List.of())
+            .creators(new LinkedList<>())
             .publisher(IDENTIFIER_2_PUBLISHER)
             .type(IDENTIFIER_2_TYPE_DTO)
             .licenses(List.of(LICENSE_1_DTO))
@@ -6531,13 +6654,15 @@ public abstract class BaseTest {
     public final static String IDENTIFIER_3_PUBLISHER = "Polish Government";
     public final static IdentifierType IDENTIFIER_3_TYPE = IdentifierType.VIEW;
     public final static IdentifierTypeDto IDENTIFIER_3_TYPE_DTO = IdentifierTypeDto.VIEW;
+    public final static IdentifierStatusType IDENTIFIER_3_STATUS_TYPE = IdentifierStatusType.PUBLISHED;
+    public final static IdentifierStatusTypeDto IDENTIFIER_3_STATUS_TYPE_DTO = IdentifierStatusTypeDto.PUBLISHED;
+    public final static UUID IDENTIFIER_3_CREATED_BY = USER_1_ID;
 
     public final static Identifier IDENTIFIER_3 = Identifier.builder()
             .id(IDENTIFIER_3_ID)
-            .databaseId(IDENTIFIER_3_DATABASE_ID)
             .viewId(IDENTIFIER_3_VIEW_ID)
-            .descriptions(List.of())
-            .titles(List.of())
+            .descriptions(new LinkedList<>())
+            .titles(new LinkedList<>())
             .doi(IDENTIFIER_3_DOI)
             .database(null /* DATABASE_1 */)
             .created(IDENTIFIER_3_CREATED)
@@ -6554,16 +6679,18 @@ public abstract class BaseTest {
             .publisher(IDENTIFIER_3_PUBLISHER)
             .type(IDENTIFIER_3_TYPE)
             .createdBy(USER_1_ID)
-            .licenses(List.of(LICENSE_1))
-            .creators(List.of())
+            .creator(USER_1)
+            .licenses(new LinkedList<>(List.of(LICENSE_1)))
+            .creators(new LinkedList<>())
+            .status(IDENTIFIER_3_STATUS_TYPE)
             .build();
 
     public final static IdentifierDto IDENTIFIER_3_DTO = IdentifierDto.builder()
             .id(IDENTIFIER_3_ID)
             .databaseId(IDENTIFIER_3_DATABASE_ID)
             .viewId(IDENTIFIER_3_VIEW_ID)
-            .descriptions(List.of())
-            .titles(List.of())
+            .descriptions(new LinkedList<>())
+            .titles(new LinkedList<>())
             .doi(IDENTIFIER_3_DOI)
             .created(IDENTIFIER_3_CREATED)
             .lastModified(IDENTIFIER_3_MODIFIED)
@@ -6579,22 +6706,32 @@ public abstract class BaseTest {
             .publisher(IDENTIFIER_3_PUBLISHER)
             .type(IDENTIFIER_3_TYPE_DTO)
             .creator(USER_1_DTO)
-            .licenses(List.of(LICENSE_1_DTO))
-            .creators(List.of())
+            .licenses(new LinkedList<>(List.of(LICENSE_1_DTO)))
+            .creators(new LinkedList<>())
+            .status(IDENTIFIER_3_STATUS_TYPE_DTO)
             .build();
 
-    public final static IdentifierSaveDto IDENTIFIER_3_DTO_REQUEST = IdentifierSaveDto.builder()
+    public final static IdentifierCreateDto IDENTIFIER_3_CREATE_DTO = IdentifierCreateDto.builder()
             .databaseId(IDENTIFIER_3_DATABASE_ID)
             .viewId(IDENTIFIER_3_VIEW_ID)
-            .descriptions(List.of())
-            .titles(List.of())
-            .relatedIdentifiers(List.of())
+            .type(IDENTIFIER_3_TYPE_DTO)
+            .publicationYear(IDENTIFIER_3_PUBLICATION_YEAR)
+            .publisher(IDENTIFIER_3_PUBLISHER)
+            .build();
+
+    public final static IdentifierSaveDto IDENTIFIER_3_SAVE_DTO = IdentifierSaveDto.builder()
+            .id(IDENTIFIER_3_ID)
+            .databaseId(IDENTIFIER_3_DATABASE_ID)
+            .viewId(IDENTIFIER_3_VIEW_ID)
+            .descriptions(new LinkedList<>())
+            .titles(new LinkedList<>())
+            .relatedIdentifiers(new LinkedList<>())
             .publicationMonth(IDENTIFIER_3_PUBLICATION_MONTH)
             .publicationYear(IDENTIFIER_3_PUBLICATION_YEAR)
-            .creators(List.of())
+            .creators(new LinkedList<>())
             .publisher(IDENTIFIER_3_PUBLISHER)
             .type(IDENTIFIER_3_TYPE_DTO)
-            .licenses(List.of(LICENSE_1_DTO))
+            .licenses(new LinkedList<>(List.of(LICENSE_1_DTO)))
             .build();
 
     public final static Long IDENTIFIER_4_ID = 4L;
@@ -6612,13 +6749,15 @@ public abstract class BaseTest {
     public final static String IDENTIFIER_4_PUBLISHER = "Example Publisher";
     public final static IdentifierType IDENTIFIER_4_TYPE = IdentifierType.TABLE;
     public final static IdentifierTypeDto IDENTIFIER_4_TYPE_DTO = IdentifierTypeDto.TABLE;
+    public final static IdentifierStatusType IDENTIFIER_4_STATUS_TYPE = IdentifierStatusType.PUBLISHED;
+    public final static IdentifierStatusTypeDto IDENTIFIER_4_STATUS_TYPE_DTO = IdentifierStatusTypeDto.PUBLISHED;
+    public final static UUID IDENTIFIER_4_CREATED_BY = USER_1_ID;
 
     public final static Identifier IDENTIFIER_4 = Identifier.builder()
             .id(IDENTIFIER_4_ID)
-            .databaseId(IDENTIFIER_4_DATABASE_ID)
             .tableId(IDENTIFIER_4_TABLE_ID)
-            .descriptions(List.of())
-            .titles(List.of())
+            .descriptions(new LinkedList<>())
+            .titles(new LinkedList<>())
             .doi(IDENTIFIER_4_DOI)
             .database(null /* DATABASE_1 */)
             .created(IDENTIFIER_4_CREATED)
@@ -6632,16 +6771,18 @@ public abstract class BaseTest {
             .publisher(IDENTIFIER_4_PUBLISHER)
             .type(IDENTIFIER_4_TYPE)
             .createdBy(USER_1_ID)
-            .licenses(List.of(LICENSE_1))
-            .creators(List.of())
+            .creator(USER_1)
+            .licenses(new LinkedList<>(List.of(LICENSE_1)))
+            .creators(new LinkedList<>())
+            .status(IDENTIFIER_4_STATUS_TYPE)
             .build();
 
     public final static IdentifierDto IDENTIFIER_4_DTO = IdentifierDto.builder()
             .id(IDENTIFIER_4_ID)
             .databaseId(IDENTIFIER_4_DATABASE_ID)
             .tableId(IDENTIFIER_4_TABLE_ID)
-            .descriptions(List.of())
-            .titles(List.of())
+            .descriptions(new LinkedList<>())
+            .titles(new LinkedList<>())
             .doi(IDENTIFIER_4_DOI)
             .created(IDENTIFIER_4_CREATED)
             .lastModified(IDENTIFIER_4_MODIFIED)
@@ -6654,22 +6795,30 @@ public abstract class BaseTest {
             .publisher(IDENTIFIER_4_PUBLISHER)
             .type(IDENTIFIER_4_TYPE_DTO)
             .creator(USER_1_DTO)
-            .licenses(List.of(LICENSE_1_DTO))
-            .creators(List.of())
+            .licenses(new LinkedList<>(List.of(LICENSE_1_DTO)))
+            .creators(new LinkedList<>())
+            .status(IDENTIFIER_4_STATUS_TYPE_DTO)
             .build();
 
-    public final static IdentifierSaveDto IDENTIFIER_4_DTO_REQUEST = IdentifierSaveDto.builder()
+    public final static IdentifierCreateDto IDENTIFIER_4_CREATE_DTO = IdentifierCreateDto.builder()
+            .databaseId(IDENTIFIER_4_DATABASE_ID)
+            .publicationYear(IDENTIFIER_4_PUBLICATION_YEAR)
+            .publisher(IDENTIFIER_4_PUBLISHER)
+            .build();
+
+    public final static IdentifierSaveDto IDENTIFIER_4_SAVE_DTO = IdentifierSaveDto.builder()
+            .id(IDENTIFIER_4_ID)
             .databaseId(IDENTIFIER_4_DATABASE_ID)
             .tableId(IDENTIFIER_4_TABLE_ID)
-            .descriptions(List.of())
-            .titles(List.of())
-            .relatedIdentifiers(List.of())
+            .descriptions(new LinkedList<>())
+            .titles(new LinkedList<>())
+            .relatedIdentifiers(new LinkedList<>())
             .publicationMonth(IDENTIFIER_4_PUBLICATION_MONTH)
             .publicationYear(IDENTIFIER_4_PUBLICATION_YEAR)
-            .creators(List.of())
+            .creators(new LinkedList<>())
             .publisher(IDENTIFIER_4_PUBLISHER)
             .type(IDENTIFIER_4_TYPE_DTO)
-            .licenses(List.of(LICENSE_1_DTO))
+            .licenses(new LinkedList<>(List.of(LICENSE_1_DTO)))
             .build();
 
     public final static String VIRTUAL_HOST_NAME = "fda";
@@ -6759,15 +6908,16 @@ public abstract class BaseTest {
             .exchangeName(DATABASE_1_EXCHANGE)
             .created(DATABASE_1_CREATED)
             .lastModified(DATABASE_1_LAST_MODIFIED)
-            .createdBy(DATABASE_1_CREATOR)
+            .createdBy(DATABASE_1_CREATED_BY)
             .creator(USER_1)
             .ownedBy(DATABASE_1_OWNER)
             .owner(USER_1)
             .contactPerson(USER_1_ID)
             .contact(USER_1)
-            .tables(List.of(TABLE_1, TABLE_2, TABLE_3, TABLE_4))
-            .views(List.of(VIEW_1, VIEW_2, VIEW_3))
-            .accesses(List.of() /* set in junit tests */)
+            .tables(new LinkedList<>())
+            .views(new LinkedList<>())
+            .accesses(new LinkedList<>())
+            .identifiers(new LinkedList<>())
             .build();
 
     public final static DatabaseDto DATABASE_1_DTO = DatabaseDto.builder()
@@ -6775,11 +6925,28 @@ public abstract class BaseTest {
             .created(Instant.now().minus(1, HOURS))
             .isPublic(DATABASE_1_PUBLIC)
             .name(DATABASE_1_NAME)
+            .container(CONTAINER_1_DTO)
             .internalName(DATABASE_1_INTERNALNAME)
             .exchangeName(DATABASE_1_EXCHANGE)
             .identifiers(List.of(IDENTIFIER_1_DTO, IDENTIFIER_2_DTO, IDENTIFIER_3_DTO, IDENTIFIER_4_DTO))
             .tables(List.of(TABLE_1_DTO, TABLE_2_DTO, TABLE_3_DTO, TABLE_4_DTO))
             .views(List.of(VIEW_1_DTO, VIEW_2_DTO, VIEW_3_DTO))
+            .build();
+
+    public final static PrivilegedDatabaseDto DATABASE_1_PRIVILEGED_DTO = PrivilegedDatabaseDto.builder()
+            .id(DATABASE_1_ID)
+            .created(Instant.now().minus(1, HOURS))
+            .isPublic(DATABASE_1_PUBLIC)
+            .name(DATABASE_1_NAME)
+            .container(CONTAINER_1_PRIVILEGED_DTO)
+            .internalName(DATABASE_1_INTERNALNAME)
+            .exchangeName(DATABASE_1_EXCHANGE)
+            .identifiers(List.of(IDENTIFIER_1_DTO, IDENTIFIER_2_DTO, IDENTIFIER_3_DTO, IDENTIFIER_4_DTO))
+            .tables(List.of(TABLE_1_DTO, TABLE_2_DTO, TABLE_3_DTO, TABLE_4_DTO))
+            .views(List.of(VIEW_1_DTO, VIEW_2_DTO, VIEW_3_DTO))
+            .created(DATABASE_1_CREATED)
+            .creator(DATABASE_1_CREATOR_DTO)
+            .owner(DATABASE_1_OWNER_DTO)
             .build();
 
     public final static DatabaseAccess DATABASE_1_USER_1_READ_ACCESS = DatabaseAccess.builder()
@@ -6788,6 +6955,13 @@ public abstract class BaseTest {
             .database(DATABASE_1)
             .huserid(USER_1_ID)
             .user(USER_1)
+            .build();
+
+    public final static DatabaseAccessDto DATABASE_1_USER_1_READ_ACCESS_DTO = DatabaseAccessDto.builder()
+            .type(AccessTypeDto.READ)
+            .hdbid(DATABASE_1_ID)
+            .huserid(USER_1_ID)
+            .user(USER_1_DTO)
             .build();
 
     public final static DatabaseAccess DATABASE_1_USER_1_WRITE_OWN_ACCESS = DatabaseAccess.builder()
@@ -6822,6 +6996,13 @@ public abstract class BaseTest {
             .user(USER_2)
             .build();
 
+    public final static DatabaseAccessDto DATABASE_1_USER_2_WRITE_OWN_ACCESS_DTO = DatabaseAccessDto.builder()
+            .type(AccessTypeDto.WRITE_OWN)
+            .hdbid(DATABASE_1_ID)
+            .huserid(USER_2_ID)
+            .user(USER_2_DTO)
+            .build();
+
     public final static DatabaseAccess DATABASE_1_USER_2_WRITE_ALL_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_ALL)
             .hdbid(DATABASE_1_ID)
@@ -6854,6 +7035,13 @@ public abstract class BaseTest {
             .user(USER_3)
             .build();
 
+    public final static DatabaseAccessDto DATABASE_1_USER_3_WRITE_ALL_ACCESS_DTO = DatabaseAccessDto.builder()
+            .type(AccessTypeDto.WRITE_ALL)
+            .hdbid(DATABASE_1_ID)
+            .huserid(USER_3_ID)
+            .user(USER_3_DTO)
+            .build();
+
     public final static Database DATABASE_2 = Database.builder()
             .id(DATABASE_2_ID)
             .created(DATABASE_2_CREATED)
@@ -6862,7 +7050,6 @@ public abstract class BaseTest {
             .name(DATABASE_2_NAME)
             .description(DATABASE_2_DESCRIPTION)
             .cid(CONTAINER_1_ID)
-            .identifiers(List.of(IDENTIFIER_5))
             .container(CONTAINER_1)
             .internalName(DATABASE_2_INTERNALNAME)
             .exchangeName(DATABASE_2_EXCHANGE)
@@ -6874,9 +7061,10 @@ public abstract class BaseTest {
             .owner(USER_2)
             .contactPerson(USER_2_ID)
             .contact(USER_2)
-            .tables(List.of(TABLE_5, TABLE_6, TABLE_7))
-            .views(List.of(VIEW_4))
-            .accesses(List.of() /* set in junit tests */)
+            .tables(new LinkedList<>())
+            .views(new LinkedList<>())
+            .accesses(new LinkedList<>())
+            .identifiers(new LinkedList<>())
             .build();
 
     public final static DatabaseDto DATABASE_2_DTO = DatabaseDto.builder()
@@ -6884,11 +7072,13 @@ public abstract class BaseTest {
             .created(DATABASE_2_CREATED)
             .isPublic(DATABASE_2_PUBLIC)
             .name(DATABASE_2_NAME)
+            .container(CONTAINER_1_DTO)
             .internalName(DATABASE_2_INTERNALNAME)
             .exchangeName(DATABASE_2_EXCHANGE)
             .identifiers(List.of(IDENTIFIER_5_DTO))
             .tables(List.of(TABLE_5_DTO, TABLE_6_DTO, TABLE_7_DTO))
             .views(List.of(VIEW_4_DTO))
+            .identifiers(new LinkedList<>())
             .build();
 
     public final static DatabaseAccess DATABASE_2_USER_1_READ_ACCESS = DatabaseAccess.builder()
@@ -6970,22 +7160,22 @@ public abstract class BaseTest {
             .isPublic(DATABASE_3_PUBLIC)
             .name(DATABASE_3_NAME)
             .description(DATABASE_3_DESCRIPTION)
-            .identifiers(List.of(IDENTIFIER_6))
             .cid(CONTAINER_1_ID)
             .container(CONTAINER_1)
             .internalName(DATABASE_3_INTERNALNAME)
             .exchangeName(DATABASE_3_EXCHANGE)
             .created(DATABASE_3_CREATED)
             .lastModified(DATABASE_3_LAST_MODIFIED)
-            .createdBy(DATABASE_3_CREATOR)
+            .createdBy(DATABASE_3_CREATOR_ID)
             .creator(USER_3)
             .ownedBy(DATABASE_3_OWNER)
             .owner(USER_3)
             .contactPerson(USER_3_ID)
             .contact(USER_3)
-            .tables(List.of(TABLE_8))
-            .views(List.of(VIEW_5))
-            .accesses(List.of() /* set in junit tests */)
+            .tables(new LinkedList<>())
+            .views(new LinkedList<>())
+            .accesses(new LinkedList<>()) /* DATABASE_3_USER_1_WRITE_ALL_ACCESS */
+            .identifiers(new LinkedList<>())
             .build();
 
     public final static DatabaseAccess DATABASE_3_USER_1_READ_ACCESS = DatabaseAccess.builder()
@@ -6996,12 +7186,26 @@ public abstract class BaseTest {
             .user(USER_1)
             .build();
 
+    public final static DatabaseAccessDto DATABASE_3_USER_1_READ_ACCESS_DTO = DatabaseAccessDto.builder()
+            .type(AccessTypeDto.READ)
+            .hdbid(DATABASE_3_ID)
+            .huserid(USER_1_ID)
+            .user(USER_1_DTO)
+            .build();
+
     public final static DatabaseAccess DATABASE_3_USER_1_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_3_ID)
             .database(DATABASE_3)
             .huserid(USER_1_ID)
             .user(USER_1)
+            .build();
+
+    public final static DatabaseAccessDto DATABASE_3_USER_1_WRITE_OWN_ACCESS_DTO = DatabaseAccessDto.builder()
+            .type(AccessTypeDto.WRITE_OWN)
+            .hdbid(DATABASE_3_ID)
+            .huserid(USER_1_ID)
+            .user(USER_1_DTO)
             .build();
 
     public final static DatabaseAccess DATABASE_3_USER_1_WRITE_ALL_ACCESS = DatabaseAccess.builder()
@@ -7044,12 +7248,26 @@ public abstract class BaseTest {
             .user(USER_3)
             .build();
 
+    public final static DatabaseAccessDto DATABASE_3_USER_3_READ_ACCESS_DTO = DatabaseAccessDto.builder()
+            .type(AccessTypeDto.READ)
+            .hdbid(DATABASE_3_ID)
+            .huserid(USER_3_ID)
+            .user(USER_3_DTO)
+            .build();
+
     public final static DatabaseAccess DATABASE_3_USER_3_WRITE_OWN_ACCESS = DatabaseAccess.builder()
             .type(AccessType.WRITE_OWN)
             .hdbid(DATABASE_3_ID)
             .database(DATABASE_3)
             .huserid(USER_3_ID)
             .user(USER_3)
+            .build();
+
+    public final static DatabaseAccessDto DATABASE_3_USER_3_WRITE_OWN_ACCESS_DTO = DatabaseAccessDto.builder()
+            .type(AccessTypeDto.WRITE_OWN)
+            .hdbid(DATABASE_3_ID)
+            .huserid(USER_3_ID)
+            .user(USER_3_DTO)
             .build();
 
     public final static DatabaseAccess DATABASE_3_USER_3_WRITE_ALL_ACCESS = DatabaseAccess.builder()
@@ -7060,11 +7278,33 @@ public abstract class BaseTest {
             .user(USER_3)
             .build();
 
+    public final static DatabaseAccessDto DATABASE_3_USER_3_WRITE_ALL_ACCESS_DTO = DatabaseAccessDto.builder()
+            .type(AccessTypeDto.WRITE_ALL)
+            .hdbid(DATABASE_3_ID)
+            .huserid(USER_3_ID)
+            .user(USER_3_DTO)
+            .build();
+
+    public final static PrivilegedDatabaseDto DATABASE_3_PRIVILEGED_DTO = PrivilegedDatabaseDto.builder()
+            .id(DATABASE_3_ID)
+            .created(Instant.now().minus(1, HOURS))
+            .isPublic(DATABASE_3_PUBLIC)
+            .name(DATABASE_3_NAME)
+            .container(CONTAINER_1_PRIVILEGED_DTO)
+            .internalName(DATABASE_3_INTERNALNAME)
+            .exchangeName(DATABASE_3_EXCHANGE)
+            .identifiers(List.of(IDENTIFIER_6_DTO))
+            .tables(List.of(TABLE_8_DTO))
+            .views(List.of(VIEW_5_DTO))
+            .created(DATABASE_3_CREATED)
+            .creator(DATABASE_3_CREATOR_DTO)
+            .owner(DATABASE_3_OWNER_DTO)
+            .build();
+
     public final static Identifier IDENTIFIER_7 = Identifier.builder()
             .id(IDENTIFIER_7_ID)
-            .databaseId(DATABASE_4_ID)
-            .descriptions(List.of())
-            .titles(List.of())
+            .descriptions(new LinkedList<>())
+            .titles(new LinkedList<>())
             .doi(IDENTIFIER_7_DOI)
             .created(IDENTIFIER_7_CREATED)
             .lastModified(IDENTIFIER_7_MODIFIED)
@@ -7072,17 +7312,16 @@ public abstract class BaseTest {
             .publicationDay(IDENTIFIER_7_PUBLICATION_DAY)
             .publicationMonth(IDENTIFIER_7_PUBLICATION_MONTH)
             .publicationYear(IDENTIFIER_7_PUBLICATION_YEAR)
-            .queryHash(IDENTIFIER_7_QUERY_HASH)
-            .resultHash(IDENTIFIER_7_RESULT_HASH)
-            .query(IDENTIFIER_7_QUERY)
-            .queryNormalized(IDENTIFIER_7_NORMALIZED)
             .resultNumber(IDENTIFIER_7_RESULT_NUMBER)
             .publisher(IDENTIFIER_7_PUBLISHER)
             .type(IDENTIFIER_7_TYPE)
             .createdBy(USER_4_ID)
-            .licenses(List.of())
-            .creators(List.of(IDENTIFIER_7_CREATOR_1))
-            .funders(List.of())
+            .creator(USER_4)
+            .licenses(new LinkedList<>())
+            .creators(new LinkedList<>(List.of(IDENTIFIER_7_CREATOR_1)))
+            .relatedIdentifiers(new LinkedList<>())
+            .funders(new LinkedList<>())
+            .status(IDENTIFIER_7_STATUS_TYPE)
             .build();
 
     public final static Database DATABASE_4 = Database.builder()
@@ -7092,7 +7331,6 @@ public abstract class BaseTest {
             .isPublic(DATABASE_4_PUBLIC)
             .name(DATABASE_4_NAME)
             .description(DATABASE_4_DESCRIPTION)
-            .identifiers(List.of(IDENTIFIER_7))
             .cid(CONTAINER_4_ID)
             .container(CONTAINER_4)
             .internalName(DATABASE_4_INTERNALNAME)
@@ -7105,8 +7343,9 @@ public abstract class BaseTest {
             .owner(USER_4)
             .contactPerson(USER_4_ID)
             .contact(USER_4)
-            .tables(List.of())
-            .views(List.of())
+            .tables(new LinkedList<>())
+            .views(new LinkedList<>())
+            .identifiers(new LinkedList<>())
             .build();
 
     public final static DatabaseAccess DATABASE_4_USER_1_READ_ACCESS = DatabaseAccess.builder()

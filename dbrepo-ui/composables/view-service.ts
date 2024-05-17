@@ -1,3 +1,5 @@
+import {axiosErrorToApiError} from '@/utils'
+
 export const useViewService = (): any => {
   async function remove(databaseId: number, viewId: number): Promise<void> {
     const axios = useAxiosInstance()
@@ -10,7 +12,7 @@ export const useViewService = (): any => {
         })
         .catch((error) => {
           console.error('Failed to delete view', error)
-          reject(error)
+          reject(axiosErrorToApiError(error))
         })
     })
   }
@@ -26,7 +28,7 @@ export const useViewService = (): any => {
         })
         .catch((error) => {
           console.error('Failed to create view', error)
-          reject(error)
+          reject(axiosErrorToApiError(error))
         })
     })
   }
@@ -42,7 +44,7 @@ export const useViewService = (): any => {
         })
         .catch((error) => {
           console.error('Failed to re-execute view', error)
-          reject(error)
+          reject(axiosErrorToApiError(error))
         })
     })
   }
@@ -53,13 +55,13 @@ export const useViewService = (): any => {
     return new Promise<number>((resolve, reject) => {
       axios.head<number>(`/api/database/${databaseId}/view/${viewId}/data`)
         .then((response) => {
-          const count: number = Number(response.headers['X-Count'])
-          console.info('Re-executed view with id', viewId, 'in database with id', databaseId)
+          const count: number = Number(response.headers['x-count'])
+          console.info('Found', count, 'tuples for view with id', viewId, 'in database with id', databaseId)
           resolve(count)
         })
         .catch((error) => {
           console.error('Failed to re-execute view', error)
-          reject(error)
+          reject(axiosErrorToApiError(error))
         })
     })
   }

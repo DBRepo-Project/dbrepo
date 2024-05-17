@@ -1,3 +1,5 @@
+import {axiosErrorToApiError} from '@/utils'
+
 export const useAnalyseService = (): any => {
   async function suggest (data: DetermineDataTypesDto): Promise<DataTypesDto[]> {
     const axios = useAxiosInstance()
@@ -10,7 +12,7 @@ export const useAnalyseService = (): any => {
         })
         .catch((error) => {
           console.error('Failed to suggest data types for columns', error)
-          reject(error)
+          reject(axiosErrorToApiError(error))
         })
     })
   }

@@ -35,6 +35,7 @@
                 persistent-hint
                 :variant="inputVariant"
                 :items="engines"
+                :loading="loadingContainers"
                 item-title="name"
                 item-value="id"
                 :rules="[v => !!v || $t('validation.required')]"
@@ -71,10 +72,8 @@ export default {
     return {
       valid: false,
       loading: false,
-      engine: {
-        repository: null,
-        tag: null
-      },
+      loadingContainers: false,
+      engine: null,
       engines: [],
       createDatabaseDto: {
         name: null,
@@ -93,7 +92,7 @@ export default {
     }
   },
   mounted () {
-    this.getEngines()
+    this.fetchContainers()
   },
   methods: {
     submit () {
@@ -102,35 +101,33 @@ export default {
     cancel () {
       this.$emit('close', { success: false })
     },
-    getEngines () {
-      this.loading = true
+    fetchContainers () {
       const containerService = useContainerService()
+      this.loadingContainers = true
       containerService.findAll()
         .then((containers) => {
           this.engines = containers
           if (this.engines.length > 0) {
             this.engine = this.engines[0]
           }
-          this.loading = false
+          this.loadingContainers = false
         })
-        .finally(() => {
-          this.loading = false
+        .catch(({code}) => {
+          this.$toast.error(this.$t(code))
+          this.loadingContainers = false
         })
     },
     create () {
-      this.loading = true
       const payload = { container_id: this.engine.id, name: this.createDatabaseDto.name, is_public: true }
       const databaseService = useDatabaseService()
+      this.loading = true
       databaseService.create(payload)
-        .then((database) => {
+        .then(async (database) => {
+          await this.$router.push(`/database/${database.id}/info`)
           this.loading = false
-          this.$emit('close', { success: true, database_id: database.id })
         })
-        .catch(() => {
-          this.loading = false
-          this.$toast.error(this.$t('errors.database.create'))
-        })
-        .finally(() => {
+        .catch(({code}) => {
+          this.$toast.error(this.$t(code))
           this.loading = false
         })
     },

@@ -1,0 +1,150 @@
+{{- if .Values.ui.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ui
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: ui
+    service: ui
+spec:
+  replicas: {{ .Values.ui.replicaCount }}
+  strategy:
+    type: {{ .Values.strategyType }}
+  selector:
+    matchLabels:
+      app: ui
+      service: ui
+  template:
+    metadata:
+      labels:
+        app: ui
+        service: ui
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        fsGroup: 1000
+        runAsUser: 1000
+        runAsGroup: 1000
+      containers:
+        - name: ui
+          image: {{ .Values.ui.image.name }}
+          imagePullPolicy: {{ .Values.ui.image.pullPolicy | default "IfNotPresent" }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            seccompProfile:
+              type: {{ .Values.ui.profileType | default "RuntimeDefault" }}
+            capabilities:
+              drop:
+                - ALL
+          ports:
+            - containerPort: 3000
+              protocol: TCP
+          env:
+            - name: NUXT_PUBLIC_API_SERVER
+              valueFrom:
+                secretKeyRef:
+                  name: ui-secret
+                  key: public-api-server
+            - name: NUXT_PUBLIC_API_CLIENT
+              valueFrom:
+                secretKeyRef:
+                  name: ui-secret
+                  key: public-api-server
+            - name: NUXT_PUBLIC_TITLE
+              valueFrom:
+                secretKeyRef:
+                  name: ui-secret
+                  key: public-title
+            - name: NUXT_PUBLIC_LOGO
+              valueFrom:
+                secretKeyRef:
+                  name: ui-secret
+                  key: public-logo
+            - name: NUXT_PUBLIC_ICON
+              valueFrom:
+                secretKeyRef:
+                  name: ui-secret
+                  key: public-icon
+            - name: NUXT_PUBLIC_TOUCH
+              valueFrom:
+                secretKeyRef:
+                  name: ui-secret
+                  key: public-touch
+            - name: NUXT_PUBLIC_BROKER_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: ui-secret
+                  key: public-broker-host
+            - name: NUXT_PUBLIC_BROKER_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: ui-secret
+                  key: public-broker-port
+            - name: NUXT_PUBLIC_BROKER_EXTRA
+              valueFrom:
+                secretKeyRef:
+                  name: ui-secret
+                  key: public-broker-extra
+            - name: NUXT_PUBLIC_DATABASE_EXTRA
+              valueFrom:
+                secretKeyRef:
+                  name: ui-secret
+                  key: public-database-extra
+            - name: NUXT_PUBLIC_LINKS_KEYCLOAK_HREF
+              valueFrom:
+                secretKeyRef:
+                  name: ui-secret
+                  key: public-links-keycloak-href
+            - name: NUXT_PUBLIC_LINKS_KEYCLOAK_TEXT
+              valueFrom:
+                secretKeyRef:
+                  name: ui-secret
+                  key: public-links-keycloak-text
+            - name: NUXT_PUBLIC_LINKS_RABBITMQ_HREF
+              valueFrom:
+                secretKeyRef:
+                  name: ui-secret
+                  key: public-links-rabbitmq-href
+            - name: NUXT_PUBLIC_LINKS_RABBITMQ_TEXT
+              valueFrom:
+                secretKeyRef:
+                  name: ui-secret
+                  key: public-links-rabbitmq-text
+            - name: NUXT_PUBLIC_PID_DEFAULT_PUBLISHER
+              valueFrom:
+                secretKeyRef:
+                  name: ui-secret
+                  key: public-pid-default-publisher
+            - name: NUXT_PUBLIC_DOI_ENABLED
+              valueFrom:
+                secretKeyRef:
+                  name: ui-secret
+                  key: public-doi-enabled
+            - name: NUXT_PUBLIC_DOI_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: ui-secret
+                  key: public-doi-endpoint
+          volumeMounts:
+            {{- if .Values.ui.extraVolumeMounts }}
+            {{- .Values.ui.extraVolumeMounts | toYaml | nindent 12 }}
+            {{- end }}
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 120
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 30
+      volumes:
+        {{- if .Values.ui.extraVolumes }}
+        {{- .Values.ui.extraVolumes | toYaml | nindent 8 }}
+        {{- end }}
+{{- end }}

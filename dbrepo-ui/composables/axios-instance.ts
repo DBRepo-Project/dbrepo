@@ -1,5 +1,6 @@
 import axios, {AxiosError, type AxiosInstance} from 'axios'
 import {useUserStore} from '@/stores/user'
+import {axiosErrorToApiError} from '@/utils'
 
 let instance: AxiosInstance | null = null;
 
@@ -8,11 +9,12 @@ export const useAxiosInstance = () => {
   const userStore = useUserStore()
   if (!instance) {
     instance = axios.create({
-      timeout: 3000,
+      timeout: 10000,
       params: {},
       headers: {
         Accept: 'application/json',
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
       },
       baseURL: config.public.api.client
     });
@@ -33,7 +35,8 @@ export const useAxiosInstance = () => {
         return config
       }
       console.warn('Access token expired: request a new one')
-      return authenticationService.authenticateToken(refreshToken)
+      const userService = useUserService()
+      return userService.refreshToken(refreshToken)
         .then((response: KeycloakOpenIdTokenDto) => {
           userStore.setToken(response.access_token)
           userStore.setRefreshToken(response.refresh_token)
@@ -42,7 +45,7 @@ export const useAxiosInstance = () => {
           return config
         })
         .catch((error: AxiosError) => {
-          if (parseKeycloakError(error)?.error == 'invalid_grant') {
+          if (axiosErrorToApiError(error).code === 'error.user.credentials') {
             console.error('Invalid user credentials: perform logout')
             userStore.logout()
           }
@@ -52,10 +55,3 @@ export const useAxiosInstance = () => {
   }
   return instance;
 };
-
-function parseKeycloakError(error: AxiosError): KeycloakErrorDto | null {
-  if (!error || !error.response || !error.response.data) {
-    return null
-  }
-  return (error.response.data as KeycloakErrorDto)
-}

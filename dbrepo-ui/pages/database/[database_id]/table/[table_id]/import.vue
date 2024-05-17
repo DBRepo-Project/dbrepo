@@ -28,7 +28,7 @@
 </template>
 
 <script>
-import TableImport from '@/components/table/TableImport'
+import TableImport from '@/components/table/TableImport.vue'
 import { useUserStore } from '@/stores/user'
 import { useCacheStore } from '@/stores/cache'
 

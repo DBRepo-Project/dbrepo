@@ -1,24 +1,23 @@
 package at.tuwien.service.impl;
 
-import at.tuwien.ExportResource;
-import at.tuwien.api.database.DatabaseDto;
+import at.tuwien.ExportResourceDto;
+import at.tuwien.api.database.query.QueryDto;
 import at.tuwien.api.identifier.*;
 import at.tuwien.config.MetadataConfig;
 import at.tuwien.entities.database.Database;
 import at.tuwien.entities.database.LanguageType;
 import at.tuwien.entities.database.View;
 import at.tuwien.entities.identifier.Identifier;
+import at.tuwien.entities.identifier.IdentifierStatusType;
 import at.tuwien.entities.identifier.IdentifierTitle;
-import at.tuwien.entities.identifier.IdentifierType;
+import at.tuwien.entities.user.User;
 import at.tuwien.exception.*;
-import at.tuwien.mapper.DatabaseMapper;
+import at.tuwien.gateway.DataServiceGateway;
+import at.tuwien.gateway.SearchServiceGateway;
 import at.tuwien.mapper.IdentifierMapper;
 import at.tuwien.mapper.MetadataMapper;
-import at.tuwien.querystore.Query;
-import at.tuwien.repository.mdb.IdentifierRepository;
-import at.tuwien.repository.sdb.DatabaseIdxRepository;
+import at.tuwien.repository.IdentifierRepository;
 import at.tuwien.service.*;
-import at.tuwien.utils.UserUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.springframework.core.io.InputStreamResource;
@@ -29,7 +28,6 @@ import org.thymeleaf.context.Context;
 import org.thymeleaf.exceptions.TemplateInputException;
 
 import java.nio.charset.Charset;
-import java.security.Principal;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -38,34 +36,27 @@ import java.util.stream.Stream;
 public class IdentifierServiceImpl implements IdentifierService {
 
     private final ViewService viewService;
-    private final QueryService queryService;
-    private final StoreService storeService;
-    private final DatabaseMapper databaseMapper;
     private final MetadataConfig metadataConfig;
     private final MetadataMapper metadataMapper;
     private final TemplateEngine templateEngine;
-    private final DatabaseService databaseService;
     private final IdentifierMapper identifierMapper;
+    private final DataServiceGateway dataServiceGateway;
     private final IdentifierRepository identifierRepository;
-    private final DatabaseIdxRepository databaseIdxRepository;
+    private final SearchServiceGateway searchServiceGateway;
 
-    public IdentifierServiceImpl(ViewService viewService, TemplateEngine templateEngine,
-                                 DatabaseService databaseService, IdentifierMapper identifierMapper,
-                                 QueryService queryService, StoreService storeService, DatabaseMapper databaseMapper,
-                                 MetadataConfig metadataConfig, MetadataMapper metadataMapper,
-                                 IdentifierRepository identifierRepository,
-                                 DatabaseIdxRepository databaseIdxRepository) {
+
+    public IdentifierServiceImpl(ViewService viewService, TemplateEngine templateEngine, MetadataMapper metadataMapper,
+                                 IdentifierMapper identifierMapper, MetadataConfig metadataConfig,
+                                 DataServiceGateway dataServiceGateway, IdentifierRepository identifierRepository,
+                                 SearchServiceGateway searchServiceGateway) {
         this.viewService = viewService;
-        this.queryService = queryService;
-        this.storeService = storeService;
-        this.databaseMapper = databaseMapper;
         this.metadataConfig = metadataConfig;
         this.metadataMapper = metadataMapper;
         this.templateEngine = templateEngine;
-        this.databaseService = databaseService;
         this.identifierMapper = identifierMapper;
+        this.dataServiceGateway = dataServiceGateway;
         this.identifierRepository = identifierRepository;
-        this.databaseIdxRepository = databaseIdxRepository;
+        this.searchServiceGateway = searchServiceGateway;
     }
 
     @Override
@@ -130,8 +121,8 @@ public class IdentifierServiceImpl implements IdentifierService {
         }
         if (databaseId != null) {
             log.trace("filter by database id: {}", databaseId);
-            stream = stream.filter(i -> Objects.nonNull(i.getDatabaseId()))
-                    .filter(i -> i.getDatabaseId().equals(databaseId));
+            stream = stream.filter(i -> Objects.nonNull(i.getDatabase().getId()))
+                    .filter(i -> databaseId.equals(i.getDatabase().getId()));
         }
         if (queryId != null) {
             log.trace("filter by query id: {}", queryId);
@@ -153,53 +144,182 @@ public class IdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional
-    public Identifier create(IdentifierSaveDto data, Principal principal) throws QueryNotFoundException,
-            IdentifierRequestException, UserNotFoundException, DatabaseNotFoundException,
-            ViewNotFoundException, QueryStoreException, ImageNotSupportedException {
-        /* create identifier */
-        final Identifier entity = identifierMapper.identifierCreateDtoToIdentifier(data);
-        entity.setCreatedBy(UserUtil.getId(principal));
-        entity.setDatabaseId(data.getDatabaseId());
-        final Database database = databaseService.find(data.getDatabaseId());
-        entity.setDatabase(database);
-        switch (data.getType()) {
-            case SUBSET -> {
-                log.debug("identifier type: subset with id {} and database with id {}", data.getQueryId(), data.getDatabaseId());
-                final Query query = storeService.findOne(data.getDatabaseId(), data.getQueryId(), principal);
-                entity.setQuery(query.getQuery());
-                entity.setQueryId(query.getId());
-                entity.setQueryNormalized(query.getQueryNormalized());
-                entity.setQueryHash(query.getQueryHash());
-                entity.setExecution(query.getExecuted());
-                entity.setResultNumber(query.getResultNumber());
-                entity.setResultHash(query.getResultHash());
-            }
-            case VIEW -> {
-                log.debug("identifier type: view with id {} and database with id {}", data.getViewId(), data.getDatabaseId());
-                final View view = viewService.findById(data.getDatabaseId(), data.getViewId());
-                entity.setViewId(view.getId());
-                entity.setQuery(view.getQuery());
-                entity.setQueryNormalized(view.getQuery());
-                entity.setQueryHash(view.getQueryHash());
-            }
-            case DATABASE -> log.debug("identifier type: database with id {}", data.getDatabaseId());
-            case TABLE -> log.debug("identifier type: table with id {}", data.getTableId());
-        }
-        /* create in metadata database */
-        final Identifier identifier = saveIdentifier(database, entity, data.getCreators(), data.getRelatedIdentifiers(),
-                data.getTitles(), data.getDescriptions(), data.getFunders());
-        /* create in search database */
-        final DatabaseDto dto = databaseMapper.databaseToDatabaseDto(database);
-        databaseIdxRepository.save(dto);
-        log.info("Created identifier with id {} in metadata database & search database", identifier.getId());
+    public Identifier publish(Long identifierId) throws SearchServiceException, DatabaseNotFoundException,
+            SearchServiceConnectionException, IdentifierNotFoundException {
+        Identifier identifier = find(identifierId);
+        /* publish identifier */
+        identifier.setStatus(IdentifierStatusType.PUBLISHED);
+        identifier = identifierRepository.save(identifier);
+        /* update in search service */
+        searchServiceGateway.update(identifier.getDatabase());
+        log.info("Published identifier with id {}", identifier.getId());
         return identifier;
     }
 
     @Override
+    @Transactional
+    public Identifier save(Database database, User user, IdentifierSaveDto data) throws SearchServiceException,
+            ServiceException, QueryNotFoundException, ServiceConnectionException, DatabaseNotFoundException,
+            SearchServiceConnectionException, IdentifierNotFoundException, ViewNotFoundException {
+        final Identifier identifier = find(data.getId());
+        identifier.setDatabase(database);
+        identifier.setCreatedBy(user.getId());
+        identifier.setCreator(user);
+        identifier.setStatus(IdentifierStatusType.DRAFT);
+        /* set from data */
+        identifier.setTableId(data.getTableId());
+        identifier.setQueryId(data.getQueryId());
+        identifier.setViewId(data.getViewId());
+        identifier.setDoi(data.getDoi());
+        identifier.setLanguage(identifierMapper.languageTypeDtoToLanguageType(data.getLanguage()));
+        identifier.setLicenses(new LinkedList<>(data.getLicenses()
+                .stream()
+                .map(identifierMapper::licenseDtoToLicense)
+                .toList()));
+        identifier.setPublicationDay(data.getPublicationDay());
+        identifier.setPublicationMonth(data.getPublicationMonth());
+        identifier.setPublicationYear(data.getPublicationYear());
+        identifier.setType(identifierMapper.identifierTypeDtoToIdentifierType(data.getType()));
+        /* create in metadata database */
+        if (data.getCreators() != null) {
+            identifier.setCreators(new LinkedList<>(data.getCreators()
+                    .stream()
+                    .map(identifierMapper::creatorCreateDtoToCreator)
+                    .peek(c -> c.setIdentifier(identifier))
+                    .toList()));
+            log.debug("set {} creator(s)", identifier.getCreators().size());
+        }
+        if (data.getRelatedIdentifiers() != null) {
+            identifier.setRelatedIdentifiers(new LinkedList<>(data.getRelatedIdentifiers()
+                    .stream()
+                    .map(identifierMapper::relatedIdentifierCreateDtoToRelatedIdentifier)
+                    .peek(r -> r.setIdentifier(identifier))
+                    .toList()));
+            log.debug("set {} related identifier(s)", identifier.getRelatedIdentifiers().size());
+        }
+        if (data.getTitles() != null) {
+            identifier.setTitles(new LinkedList<>(data.getTitles()
+                    .stream()
+                    .map(identifierMapper::identifierCreateTitleDtoToIdentifierTitle)
+                    .peek(t -> t.setIdentifier(identifier))
+                    .toList()));
+            log.debug("set {} title(s)", identifier.getTitles().size());
+        }
+        if (data.getDescriptions() != null) {
+            identifier.setDescriptions(new LinkedList<>(data.getDescriptions()
+                    .stream()
+                    .map(identifierMapper::identifierCreateDescriptionDtoToIdentifierDescription)
+                    .peek(d -> d.setIdentifier(identifier))
+                    .toList()));
+            log.debug("set {} description(s)", identifier.getDescriptions().size());
+        }
+        if (data.getFunders() != null) {
+            identifier.setFunders(new LinkedList<>(data.getFunders()
+                    .stream()
+                    .map(identifierMapper::identifierFunderSaveDtoToIdentifierFunder)
+                    .peek(d -> d.setIdentifier(identifier))
+                    .toList()));
+            log.debug("set {} funder(s)", identifier.getFunders().size());
+        }
+        return save(identifier);
+    }
+
+    @Override
+    @Transactional
+    public Identifier create(Database database, User user, IdentifierCreateDto data) throws SearchServiceException,
+            ServiceException, QueryNotFoundException, ServiceConnectionException, DatabaseNotFoundException,
+            SearchServiceConnectionException, IdentifierNotFoundException, ViewNotFoundException {
+        final Identifier identifier = identifierMapper.identifierCreateDtoToIdentifier(data);
+        identifier.setDatabase(database);
+        identifier.setCreatedBy(user.getId());
+        identifier.setCreator(user);
+        identifier.setStatus(IdentifierStatusType.DRAFT);
+        /* create in metadata database */
+        if (data.getCreators() != null) {
+            identifier.setCreators(new LinkedList<>(data.getCreators()
+                    .stream()
+                    .map(identifierMapper::creatorCreateDtoToCreator)
+                    .peek(c -> c.setIdentifier(identifier))
+                    .toList()));
+            log.debug("set {} creator(s)", identifier.getCreators().size());
+        }
+        if (data.getRelatedIdentifiers() != null) {
+            identifier.setRelatedIdentifiers(new LinkedList<>(data.getRelatedIdentifiers()
+                    .stream()
+                    .map(identifierMapper::relatedIdentifierCreateDtoToRelatedIdentifier)
+                    .peek(r -> r.setIdentifier(identifier))
+                    .toList()));
+            log.debug("set {} related identifier(s)", identifier.getRelatedIdentifiers().size());
+        }
+        if (data.getTitles() != null) {
+            identifier.setTitles(null);
+            identifier.setTitles(new LinkedList<>(data.getTitles()
+                    .stream()
+                    .map(identifierMapper::identifierCreateTitleDtoToIdentifierTitle)
+                    .peek(t -> t.setIdentifier(identifier))
+                    .toList()));
+            log.debug("set {} title(s)", identifier.getTitles().size());
+        }
+        if (data.getDescriptions() != null) {
+            identifier.setDescriptions(new LinkedList<>(data.getDescriptions()
+                    .stream()
+                    .map(identifierMapper::identifierCreateDescriptionDtoToIdentifierDescription)
+                    .peek(d -> d.setIdentifier(identifier))
+                    .toList()));
+            log.debug("set {} description(s)", identifier.getDescriptions().size());
+        }
+        if (data.getFunders() != null) {
+            identifier.setFunders(new LinkedList<>(data.getFunders()
+                    .stream()
+                    .map(identifierMapper::identifierFunderSaveDtoToIdentifierFunder)
+                    .peek(d -> d.setIdentifier(identifier))
+                    .toList()));
+            log.debug("set {} funder(s)", identifier.getFunders().size());
+        }
+        return save(identifier);
+    }
+
+    @Transactional
+    public Identifier save(Identifier identifier) throws ServiceException,
+            ServiceConnectionException, IdentifierNotFoundException, ViewNotFoundException, DatabaseNotFoundException,
+            QueryNotFoundException, SearchServiceException, SearchServiceConnectionException {
+        /* save identifier */
+        switch (identifier.getType()) {
+            case SUBSET -> {
+                log.debug("identifier type: subset with id {} and database with id {}", identifier.getQueryId(), identifier.getDatabase().getId());
+                final QueryDto query = dataServiceGateway.findQuery(identifier.getDatabase().getId(), identifier.getQueryId());
+                identifier.setQuery(query.getQuery());
+                identifier.setQueryId(query.getId());
+                identifier.setQueryNormalized(query.getQueryNormalized());
+                identifier.setQueryHash(query.getQueryHash());
+                identifier.setExecution(query.getExecution());
+                identifier.setResultNumber(query.getResultNumber());
+                identifier.setResultHash(query.getResultHash());
+            }
+            case VIEW -> {
+                log.debug("identifier type: view with id {} and database with id {}", identifier.getViewId(), identifier.getDatabase().getId());
+                final View view = viewService.findById(identifier.getDatabase(), identifier.getViewId());
+                identifier.setViewId(view.getId());
+                identifier.setQuery(view.getQuery());
+                identifier.setQueryNormalized(view.getQuery());
+                identifier.setQueryHash(view.getQueryHash());
+            }
+            case DATABASE -> log.debug("identifier type: database with id {}", identifier.getDatabase());
+            case TABLE -> log.debug("identifier type: table with id {}", identifier.getTableId());
+        }
+        /* save identifier in metadata database */
+        final Identifier out = identifierRepository.save(identifier);
+        /* update in search database */
+        identifier.getDatabase()
+                .getIdentifiers()
+                .add(out);
+        searchServiceGateway.update(identifier.getDatabase());
+        return out;
+    }
+
+    @Override
     @Transactional(readOnly = true)
-    public InputStreamResource exportMetadata(Long id) throws IdentifierNotFoundException {
-        /* check */
-        final Identifier identifier = find(id);
+    public InputStreamResource exportMetadata(Identifier identifier) {
         /* context */
         final Context context = new Context();
         context.setVariable("identifier", identifier);
@@ -216,10 +336,7 @@ public class IdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional(readOnly = true)
-    public String exportBibliography(Long id, BibliographyTypeDto style) throws IdentifierNotFoundException,
-            IdentifierRequestException {
-        /* check */
-        final Identifier identifier = find(id);
+    public String exportBibliography(Identifier identifier, BibliographyTypeDto style) throws MalformedException {
         /* context */
         final Context context = new Context();
         context.setVariable("identifier", identifier);
@@ -234,8 +351,8 @@ public class IdentifierServiceImpl implements IdentifierService {
         try {
             body = templateEngine.process(template, context);
         } catch (TemplateInputException e) {
-            log.error("Failed to load template: {}", e.getMessage());
-            throw new IdentifierRequestException("Failed to load template: " + e.getMessage(), e);
+            log.error("Failed export bibliography: template error: {}", e.getMessage());
+            throw new MalformedException("Failed export bibliography: template error: " + e.getMessage(), e);
         }
         log.trace("mapped bibliography {}", body);
         return body;
@@ -243,32 +360,25 @@ public class IdentifierServiceImpl implements IdentifierService {
 
     @Override
     @Transactional(readOnly = true)
-    public InputStreamResource exportResource(Long identifierId, Principal principal) throws IdentifierNotFoundException,
-            QueryNotFoundException, IdentifierRequestException, QueryStoreException, QueryMalformedException,
-            DatabaseNotFoundException, ImageNotSupportedException, FileStorageException, DataDbSidecarException,
-            DataProcessingException {
-        /* check */
-        final Identifier identifier = find(identifierId);
-        if (identifier.getType().equals(IdentifierType.DATABASE)) {
-            log.error("Failed to find identifier with id {} as it refers to a database and not a query", identifierId);
-            throw new IdentifierRequestException("Failed to find identifier");
-        }
-        /* subset */
-        ExportResource exportResource = queryService.findOne(identifier.getDatabase().getId(), identifier.getQueryId(), null);
-        final InputStreamResource resource = exportResource.getResource();
-        log.trace("found resource {}", resource);
-        return resource;
+    public InputStreamResource exportResource(Identifier identifier) throws ServiceException,
+            ServiceConnectionException, QueryNotFoundException {
+        final ExportResourceDto exportResource = dataServiceGateway.exportQuery(identifier.getDatabase().getId(), identifier.getQueryId());
+        return exportResource.getResource();
     }
 
     @Override
     @Transactional
-    public void delete(Long identifierId) throws IdentifierNotFoundException, DatabaseNotFoundException {
+    public void delete(Identifier identifier) throws ServiceException, ServiceConnectionException,
+            IdentifierNotFoundException, DatabaseNotFoundException, SearchServiceException,
+            SearchServiceConnectionException {
         /* delete in metadata database */
-        final Identifier identifier = find(identifierId);
-        identifierRepository.deleteById(identifierId);
-        /* delete in opensearch database */
-        databaseIdxRepository.save(databaseMapper.databaseToDatabaseDto(databaseService.find(identifier.getDatabaseId())));
-        log.info("Deleted identifier with id {} in metadata database & search database", identifierId);
+        identifierRepository.deleteById(identifier.getId());
+        /* delete in search database */
+        identifier.getDatabase()
+                .getIdentifiers()
+                .remove(identifier);
+        searchServiceGateway.update(identifier.getDatabase());
+        log.info("Deleted identifier with id {}", identifier.getId());
     }
 
     public IdentifierTitle preferTitle(List<IdentifierTitle> titles) {
@@ -277,55 +387,6 @@ public class IdentifierServiceImpl implements IdentifierService {
                 .filter(t -> t.getLanguage().equals(LanguageType.EN))
                 .findFirst();
         return optional.orElseGet(() -> titles.get(0));
-    }
-
-    public Identifier saveIdentifier(Database database, Identifier entity, List<CreatorSaveDto> creators,
-                                     List<RelatedIdentifierSaveDto> relatedIdentifiers,
-                                     List<IdentifierSaveTitleDto> titles,
-                                     List<IdentifierSaveDescriptionDto> descriptions,
-                                     List<IdentifierFunderSaveDto> funders) {
-        /* create in metadata database */
-        if (creators != null) {
-            entity.setCreators(creators.stream()
-                    .map(identifierMapper::creatorCreateDtoToCreator)
-                    .peek(c -> c.setIdentifier(entity))
-                    .toList());
-            log.debug("set {} creator(s)", entity.getCreators().size());
-        }
-        if (relatedIdentifiers != null) {
-            entity.setRelatedIdentifiers(relatedIdentifiers.stream()
-                    .map(identifierMapper::relatedIdentifierCreateDtoToRelatedIdentifier)
-                    .peek(r -> r.setIdentifier(entity))
-                    .toList());
-            log.debug("set {} related identifier(s)", entity.getRelatedIdentifiers().size());
-        }
-        if (titles != null) {
-            entity.setTitles(null);
-            entity.setTitles(titles.stream()
-                    .map(identifierMapper::identifierCreateTitleDtoToIdentifierTitle)
-                    .peek(t -> t.setIdentifier(entity))
-                    .toList());
-            log.debug("set {} title(s)", entity.getTitles().size());
-        }
-        if (descriptions != null) {
-            entity.setDescriptions(descriptions.stream()
-                    .map(identifierMapper::identifierCreateDescriptionDtoToIdentifierDescription)
-                    .peek(d -> d.setIdentifier(entity))
-                    .toList());
-            log.debug("set {} description(s)", entity.getDescriptions().size());
-        }
-        if (funders != null) {
-            entity.setFunders(funders.stream()
-                    .map(identifierMapper::identifierFunderSaveDtoToIdentifierFunder)
-                    .peek(d -> d.setIdentifier(entity))
-                    .toList());
-            log.debug("set {} funder(s)", entity.getFunders().size());
-        }
-        /* create new identifier */
-        final Identifier identifier = identifierRepository.save(entity);
-        database.setIdentifiers(new ArrayList<>(database.getIdentifiers()));
-        database.getIdentifiers().add(identifier);
-        return identifier;
     }
 
 }

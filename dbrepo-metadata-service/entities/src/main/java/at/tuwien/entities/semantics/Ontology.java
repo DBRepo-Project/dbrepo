@@ -22,6 +22,7 @@ import java.util.UUID;
 @NamedQueries({
         @NamedQuery(name = "Ontology.findAll", query = "select o from Ontology o order by sparqlEndpoint desc"),
         @NamedQuery(name = "Ontology.findAllProcessable", query = "select o from Ontology o where o.sparqlEndpoint != null or o.rdfPath != null order by sparqlEndpoint desc"),
+        @NamedQuery(name = "Ontology.findByUriPattern", query = "select o from Ontology o where o.uriPattern like ?1"),
 })
 public class Ontology {
 

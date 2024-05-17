@@ -1,43 +1,31 @@
-app.version: '@project.version@'
+application:
+  title: DBRepo
+  version: '@project.version@'
 spring:
-  main.banner-mode: off
-  autoconfigure:
-    exclude: org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchRestClientAutoConfiguration, org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration
   datasource:
-    url: "jdbc:mariadb://${METADATA_HOST}:3306/${METADATA_DB}${METADATA_JDBC_EXTRA_ARGS}"
+    url: "jdbc:mariadb://${METADATA_HOST:metadata-db}:3306/${METADATA_DB:dbrepo}${METADATA_JDBC_EXTRA_ARGS}"
     driver-class-name: org.mariadb.jdbc.Driver
-    username: "${METADATA_USERNAME}"
-    password: "${METADATA_PASSWORD}"
+    username: "${METADATA_USERNAME:root}"
+    password: "${METADATA_PASSWORD:dbrepo}"
   jpa:
     show-sql: false
     database-platform: org.hibernate.dialect.MariaDBDialect
-    hibernate:
-      search:
-        default:
-          elasticsearch:
-            host: search-db
-      ddl-auto: validate
-      use-new-id-generator-mappings: false
     open-in-view: false
     properties:
       hibernate:
-        default_schema: "${METADATA_DB}"
+        default_schema: "${METADATA_DB:fda}"
         jdbc:
           time_zone: UTC
   application:
     name: metadata-service
   rabbitmq:
-    host: "${BROKER_HOST}"
-    virtual-host: "${BROKER_VIRTUALHOST}"
-    password: "${BROKER_PASSWORD}"
-    username: "${BROKER_USERNAME}"
-    port: ${BROKER_PORT}
-  opensearch:
-    username: "${SEARCH_USERNAME}"
-    password: "${SEARCH_PASSWORD}"
-    host: search-db
-    port: 9200
-    protocol: http
+    host: "${BROKER_HOST:broker-service}"
+    virtual-host: "${BROKER_VIRTUALHOST:dbrepo}"
+    username: "${BROKER_USERNAME:fda}"
+    password: "${BROKER_PASSWORD:fda}"
+    port: ${BROKER_PORT:5672}
+  main:
+    banner-mode: off
 management:
   endpoints:
     web:
@@ -53,51 +41,43 @@ management:
     livenessState:
       enabled: true
 server:
-  port: 9099
+  port: 8080
 logging:
   pattern.console: "%d %highlight(%-5level) %msg%n"
   level:
     root: warn
-    at.tuwien.: "${LOG_LEVEL}"
+    at.tuwien.: "${LOG_LEVEL:info}"
     org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: debug
-fda:
-  privileges: "${GRANT_PRIVILEGES}"
-  pid:
-    base: "${PID_BASE}"
-  broker:
-    endpoint: "${BROKER_ENDPOINT}"
-  s3:
-    endpoint: "${S3_STORAGE_ENDPOINT}"
-    accessKeyId: "${S3_ACCESS_KEY_ID}"
-    secretAccessKey: "${S3_SECRET_ACCESS_KEY}"
-    importBucket: "${S3_IMPORT_BUCKET}"
-    exportBucket: "${S3_EXPORT_BUCKET}"
-    deleteStaleFilesRate: "${DELETE_STALE_FILES_RATE}"
-    staleSeconds: 3600
-  jwt:
-    issuer: "${JWT_ISSUER}"
-    public_key: "${JWT_PUBKEY}"
-  keycloak:
-    endpoint: "${KEYCLOAK_HOST}"
-    username: "${KEYCLOAK_ADMIN}"
-    password: "${KEYCLOAK_ADMIN_PASSWORD}"
-    clientSecret: "${KEYCLOAK_CLIENT_SECRET}"
-  unsupported: "${NOT_SUPPORTED_KEYWORDS}"
-  website: "${WEBSITE}"
-  minConcurrent: "${MIN_CONCURRENT_CONSUMERS}"
-  maxConcurrent: "${MAX_CONCURRENT_CONSUMERS}"
-  requeueRejected: ${REQUEUE_REJECTED}
-  queueName: "${QUEUE_NAME}"
-  exchangeName: "${EXCHANGE_NAME}"
-  routingKey: "${ROUTING_KEY}"
-  connectionTimeout: ${CONNECTION_TIMEOUT}
-  mirrorRate: "${MIRROR_RATE}"
-  obtainMetadataRate: "${OBTAIN_METADATA_RATE}"
-  deleteStaleQueriesRate: "${DELETE_STALE_QUERIES_RATE}"
 dbrepo:
-  repository-name: "${REPOSITORY_NAME}"
-  base-url: "${BASE_URL}"
-  admin-email: "${ADMIN_MAIL}"
-  earliest-datestamp: "${EARLIEST_DATESTAMP}"
-  deleted-record: "${DELETED_RECORD}"
-  granularity: "${GRANULARITY}"
+  repository-name: "${REPOSITORY_NAME:Database Repository}"
+  base-url: "${BASE_URL:http://localhost}"
+  admin-email: "${ADMIN_MAIL:noreply@example.com}"
+  deleted-record: "${DELETED_RECORD:persistent}"
+  granularity: "${GRANULARITY:YYYY-MM-DDThh:mm:ssZ}"
+  exchangeName: "${BROKER_EXCHANGE_NAME:dbrepo}"
+  queueName: "${BROKER_QUEUE_NAME:dbrepo}"
+  connectionTimeout: "${SPARQL_CONNECTION_TIMEOUT:10000}"
+  s3:
+    accessKeyId: "${S3_ACCESS_KEY_ID:seaweedfsadmin}"
+    secretAccessKey: "${S3_SECRET_ACCESS_KEY:seaweedfsadmin}"
+    importBucket: "${S3_IMPORT_BUCKET:dbrepo-upload}"
+    exportBucket: "${S3_EXPORT_BUCKET:dbrepo-download}"
+  admin:
+    username: "${ADMIN_USERNAME:admin}"
+    password: "${ADMIN_PASSWORD:admin}"
+  endpoints:
+    searchService: "${SEARCH_SERVICE_ENDPOINT:http://search-service:8080}"
+    dataService: "${DATA_SERVICE_ENDPOINT:http://data-service:8080}"
+    brokerService: "${BROKER_SERVICE_ENDPOINT:http://gateway-service/admin/broker}"
+    authService: "${AUTH_SERVICE_ENDPOINT:http://auth-service:8080}"
+    storageService: "${S3_ENDPOINT:http://storage-service:9000}"
+  pid:
+    base: "${PID_BASE:http://localhost/pid/}"
+  jwt:
+    public_key: "${JWT_PUBKEY:MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqnHQ2BWWW9vDNLRCcxD++xZg/16oqMo/c1l+lcFEjjAIJjJp/HqrPYU/U9GvquGE6PbVFtTzW1KcKawOW+FJNOA3CGo8Q1TFEfz43B8rZpKsFbJKvQGVv1Z4HaKPvLUm7iMm8Hv91cLduuoWx6Q3DPe2vg13GKKEZe7UFghF+0T9u8EKzA/XqQ0OiICmsmYPbwvf9N3bCKsB/Y10EYmZRb8IhCoV9mmO5TxgWgiuNeCTtNCv2ePYqL/U0WvyGFW0reasIK8eg3KrAUj8DpyOgPOVBn3lBGf+3KFSYi+0bwZbJZWqbC/Xlk20Go1YfeJPRIt7ImxD27R/lNjgDO/MwIDAQAB}"
+  keycloak:
+    username: "${AUTH_SERVICE_ADMIN:fda}"
+    password: "${AUTH_SERVICE_ADMIN_PASSWORD:fda}"
+    client: "${AUTH_SERVICE_CLIENT:dbrepo-client}"
+    clientSecret: "${AUTH_SERVICE_CLIENT_SECRET:MUwRc7yfXSJwX8AdRMWaQC3Nep1VjwgG}"
+  website: "${BASE_URL:http://localhost}"

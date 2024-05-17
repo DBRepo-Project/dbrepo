@@ -1,0 +1,52 @@
+tags:
+  - database-endpoint
+summary: Deletes a database
+operationId: delete_database
+description: Deletes a database
+consumes:
+  - application/json
+produces:
+  - application/json
+security:
+  - bearerAuth: [ ]
+  - basicAuth: [ ]
+responses:
+  202:
+    description: Deleted database successfully
+    content:
+      application/json:
+        schema:
+          required:
+            - id
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 1
+              implementation: int64
+  404:
+    description: "Database not found"
+    content:
+      application/json:
+        schema:
+          required:
+            - success
+            - message
+          type: object
+          properties:
+            success:
+              type: boolean
+              example: false
+            message:
+              type: string
+              example: Message
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+

@@ -28,8 +28,8 @@
 </template>
 
 <script>
-import DatabaseList from '@/components/database/DatabaseList'
-import DatabaseCreate from '@/components/database/DatabaseCreate'
+import DatabaseList from '@/components/database/DatabaseList.vue'
+import DatabaseCreate from '@/components/database/DatabaseCreate.vue'
 import { useUserStore } from '@/stores/user'
 
 export default {
@@ -66,11 +66,8 @@ export default {
       })
   },
   methods: {
-    closed (event) {
+    closed () {
       this.dialog = false
-      if (event.success) {
-        this.$router.push(`/database/${event.database_id}/info`)
-      }
     }
   }
 }

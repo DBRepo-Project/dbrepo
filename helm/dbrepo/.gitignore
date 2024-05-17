@@ -1,0 +1,6 @@
+# generated
+*.crt
+*.key
+*.srl
+*.csr
+build/*

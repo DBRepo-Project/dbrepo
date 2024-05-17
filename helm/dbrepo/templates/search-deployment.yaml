@@ -1,0 +1,85 @@
+{{- if .Values.searchservice.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: search-service
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: search-service
+    service: search-service
+spec:
+  replicas: {{ .Values.searchservice.replicaCount }}
+  strategy:
+    type: {{ .Values.strategyType }}
+  selector:
+    matchLabels:
+      app: search-service
+      service: search-service
+  template:
+    metadata:
+      labels:
+        app: search-service
+        service: search-service
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        fsGroup: 1001
+        runAsUser: 1001
+        runAsGroup: 1001
+      initContainers:
+        - name: init
+          image: {{ .Values.searchservice.init.image.name }}
+          imagePullPolicy: {{ .Values.searchservice.init.image.pullPolicy | default "IfNotPresent" }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 1001
+            runAsGroup: 1001
+            seccompProfile:
+              type: {{ .Values.searchservice.profileType | default "RuntimeDefault" }}
+            capabilities:
+              drop:
+                - ALL
+          envFrom:
+            - secretRef:
+                name: search-service-secret
+      containers:
+        - name: search-service
+          image: {{ .Values.searchservice.image.name }}
+          imagePullPolicy: {{ .Values.searchservice.image.pullPolicy | default "IfNotPresent" }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 1001
+            runAsGroup: 1001
+            seccompProfile:
+              type: {{ .Values.searchservice.profileType | default "RuntimeDefault" }}
+            capabilities:
+              drop:
+                - ALL
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          envFrom:
+            - secretRef:
+                name: search-service-secret
+          livenessProbe:
+            exec:
+              command:
+                - /bin/bash
+                - -ec
+                - "curl -sSL localhost:8080/health | grep 'UP' || exit 1"
+            initialDelaySeconds: 120
+            periodSeconds: 30
+          readinessProbe:
+            exec:
+              command:
+                - /bin/bash
+                - -ec
+                - "curl -sSL localhost:8080/health | grep 'UP' || exit 1"
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          volumeMounts: [ ]
+      volumes: [ ]
+{{- end }}

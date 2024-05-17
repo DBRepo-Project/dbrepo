@@ -56,7 +56,7 @@ export default defineNuxtConfig({
         port: {
           '5672': false
         },
-        extra: null
+        extra: ''
       },
       variant: {
         input: {
@@ -82,7 +82,7 @@ export default defineNuxtConfig({
           width: 400,
           height: 400
         },
-        extra: null
+        extra: ''
       },
       pid: {
         default: {
@@ -94,10 +94,6 @@ export default defineNuxtConfig({
         endpoint: 'https://doi.org'
       },
       links: {
-        opensearch: {
-          text: 'OpenSearch Admin',
-          href: '/admin/dashboard/'
-        },
         rabbitmq: {
           text: 'RabbitMQ Admin',
           href: '/admin/broker/'

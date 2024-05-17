@@ -1,91 +1,17 @@
 components:
-  schemas:
-    DataTypesDto:
-      properties:
-        columns:
-          $ref: '#/components/schemas/SuggestedColumnDto'
-        line_termination:
-          example: "\r\n"
-          type: string
-        separator:
-          example: ','
-          type: string
-      type: object
-    DetermineDataTypesDto:
-      properties:
-        enum:
-          example: false
-          type: boolean
-        enum_tol:
-          example: 0.01
-          type: double
-        filename:
-          example: s3-key-from-seaweedfs
-          type: string
-        separator:
-          example: ','
-          type: string
-      required:
-        - filename
-        - separator
-      type: object
-    ErrorDto:
-      properties:
-        message:
-          example: Message
-          type: string
-        success:
-          example: false
-          type: boolean
-      type: object
-    KeysDto:
-      properties:
-        keys:
-          items:
-            properties:
-              column_name:
-                format: int64
-                type: integer
-          type: array
-      required:
-        - keys
-      type: object
-    Stats:
-      properties:
-        mean:
-          example: '0.3'
-          type: float
-        median:
-          example: '0.45'
-          type: float
-        std_dev:
-          example: '0.12'
-          type: float
-        val_max:
-          example: '1.0'
-          type: float
-        val_min:
-          example: '0.0'
-          type: float
-      type: object
-    SuggestedColumnDto:
-      properties:
-        column_name:
-          type: string
-      type: object
-    TableStats:
-      properties:
-        columns:
-          properties:
-            column_name:
-              $ref: '#/components/schemas/Stats'
-          type: object
-      required:
-        - columns
-      type: object
+  securitySchemes:
+    basicAuth:
+      in: header
+      scheme: basic
+      type: http
+    bearerAuth:
+      bearerFormat: JWT
+      in: header
+      scheme: bearer
+      type: http
 externalDocs:
   description: Sourcecode Documentation
-  url: https://gitlab.phaidra.org/fair-data-austria-db-repository/fda-services
+  url: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/__APPVERSION__/
 info:
   contact:
     email: andreas.rauber@tuwien.ac.at
@@ -100,7 +26,7 @@ openapi: 3.0.0
 paths:
   /api/analyse/database/{database_id}/table/{table_id}/statistics:
     get:
-      operationId: determine_table_stat
+      operationId: analyse_table_stat
       parameters:
         - example: 1
           in: path
@@ -135,6 +61,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorDto'
           description: Table not found
+      security:
+        - bearerAuth: []
+        - basicAuth: []
       summary: Determine table statistics
       tags:
         - analyse-endpoint
@@ -144,6 +73,7 @@ paths:
         - application/json
       description: This is a simple API which returns the datatypes of a (path) csv
         file
+      operationId: analyse_datatypes
       parameters:
         - example: filename_s3_key
           in: query
@@ -205,6 +135,7 @@ paths:
         - application/json
       description: This is a simple API which returns the primary keys + ranking of
         a (path) csv file
+      operationId: analyse_keys
       parameters:
         - example: filename_s3_key
           in: query

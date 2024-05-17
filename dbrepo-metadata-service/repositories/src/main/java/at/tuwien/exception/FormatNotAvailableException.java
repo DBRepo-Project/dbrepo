@@ -5,8 +5,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.io.IOException;
 
-@ResponseStatus(code = HttpStatus.NOT_ACCEPTABLE)
-public class FormatNotAvailableException extends IOException {
+@ResponseStatus(code = HttpStatus.NOT_ACCEPTABLE, reason = "error.identifier.format")
+public class FormatNotAvailableException extends Exception {
 
     public FormatNotAvailableException(String msg) {
         super(msg);

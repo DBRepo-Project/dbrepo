@@ -1,0 +1,29 @@
+# Dev
+values.dev.yaml
+Chart.tpl.yaml
+hack/
+# MacOS
+.DS_Store
+# Common VCS dirs
+.git/
+.gitignore
+.bzr/
+.bzrignore
+.hg/
+.hgignore
+.svn/
+# Generated
+build/
+# Common backup files
+*.swp
+*.bak
+*.tmp
+*.orig
+*~
+# Various IDEs
+.project
+.idea/
+*.tmproj
+.vscode/
+# Make
+Makefile

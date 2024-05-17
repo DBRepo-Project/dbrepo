@@ -8,6 +8,7 @@
         <v-form
           ref="form"
           v-model="valid"
+          :disabled="loadingFields"
           autocomplete="off"
           @submit.prevent="submit">
           <v-row dense>
@@ -18,6 +19,8 @@
                 item-title="name"
                 item-value="value"
                 :variant="inputVariant"
+                :loading="loadingFields"
+                :disabled="loadingFields"
                 persistent-hint
                 :label="$t('pages.search.type.label')"
                 :hint="$t('pages.search.type.hint')" />
@@ -55,8 +58,13 @@
                 :hint="$t('pages.search.internal-name.hint')" />
             </v-col>
           </v-row>
-          <v-row v-if="!loadingFields && renderedFields" dense>
-            <v-col v-for="field in renderedFields" :key="`f-${field.attr_name}`" cols="3">
+          <v-row
+            v-if="!loading"
+            dense>
+            <v-col
+              v-for="field in renderedFields"
+              :key="`f-${field.attr_name}`"
+              cols="3">
               <v-select
                 v-if="field.type === 'boolean'"
                 v-model="advancedSearchData[field.attr_name]"
@@ -150,6 +158,7 @@
                 item-value="uri"
                 :variant="inputVariant"
                 persistent-hint
+                :loading="loadingConcepts"
                 :label="$t('pages.search.concept.label')"
                 :hint="$t('pages.search.concept.hint')" />
             </v-col>
@@ -162,6 +171,7 @@
                 item-value="uri"
                 :variant="inputVariant"
                 persistent-hint
+                :loading="loadingUnits"
                 :label="$t('pages.search.unit.label')"
                 :hint="$t('pages.search.unit.hint')" />
             </v-col>
@@ -193,7 +203,7 @@
                 color="secondary"
                 variant="flat"
                 :loading="loading"
-                :disabled="!valid"
+                :disabled="!valid || loading || loadingFields"
                 size="small"
                 :text="$t('navigation.search')"
                 @click="advancedSearch" />
@@ -212,6 +222,8 @@ export default {
       searchType: 'database',
       valid: false,
       loading: false,
+      loadingConcepts: false,
+      loadingUnits: false,
       loadingFields: false,
       showAdvancedSearch: false,
       concepts: [],
@@ -231,19 +243,21 @@ export default {
         table: [],
         column: [],
         user: ['creator.firstname', 'creator.lastname', 'creator.username', 'creator.orcid'],
-        identifier: [],
+        identifier: ['identifiers.database_id', 'identifiers.query_id', 'identifiers.view_id', 'identifiers.table_id',
+          'identifiers.publisher', 'identifiers.doi', 'identifiers.publication_year', 'identifiers.creator.username',
+          'identifiers.licenses.uri', 'identifiers.funders.funder_identifier'],
         view: [],
         concept: ['tables.columns.concept.uri'],
         unit: ['tables.columns.unit.uri']
       },
       fieldItems: [
-        { name: this.$t('pages.search.types.database'), value: 'database' },
-        { name: this.$t('pages.search.types.table'), value: 'table' },
         { name: this.$t('pages.search.types.column'), value: 'column' },
-        { name: this.$t('pages.search.types.user'), value: 'user' },
-        { name: this.$t('pages.search.types.identifier'), value: 'identifier' },
         { name: this.$t('pages.search.types.concept'), value: 'concept' },
+        { name: this.$t('pages.search.types.database'), value: 'database' },
+        { name: this.$t('pages.search.types.identifier'), value: 'identifier' },
+        { name: this.$t('pages.search.types.table'), value: 'table' },
         { name: this.$t('pages.search.types.unit'), value: 'unit' },
+        { name: this.$t('pages.search.types.user'), value: 'user' },
         { name: this.$t('pages.search.types.view'), value: 'view' }
       ],
       booleanItems: [
@@ -280,10 +294,10 @@ export default {
       return !this.$route.query.q
     },
     type () {
-      if (!this.$route.query || !this.$route.query.t) {
+      if (!this.$route.query || !this.$route.query.type) {
         return null
       }
-      return this.$route.query.t
+      return this.$route.query.type
     },
     inputVariant () {
       const runtimeConfig = useRuntimeConfig()
@@ -295,47 +309,33 @@ export default {
     }
   },
   watch: {
-    $route: {
-      handler () {
-        this.initFieldsFromRoute()
-      }
-    },
     type: {
+      /* from route */
       handler () {
-        this.initFieldsFromRoute()
+        this.initStaticFields()
+        this.initDynamicFields()
+        if (this.searchType === 'column') {
+          this.fetchConcepts()
+          this.fetchUnits()
+        }
       }
     },
     searchType: {
-      handler (newType, oldType) {
-        if (!newType) {
-          return
+      /* from selection */
+      handler () {
+        this.initStaticFields()
+        this.initDynamicFields()
+        if (this.searchType === 'column') {
+          this.fetchConcepts()
+          this.fetchUnits()
         }
-        this.initSearch(newType)
-        this.advancedSearch()
-      },
-      immediate: true
+      }
     }
   },
   mounted () {
-    this.initFieldsFromRoute()
-    this.initSearch(this.searchType)
-    this.advancedSearch()
+    this.initStaticFields()
+    this.initDynamicFields()
     this.fetchLicenses()
-    const conceptService = useConceptService()
-    conceptService.findAll()
-      .then((response) => {
-        this.concepts = conceptService.mapConcepts(response)
-      })
-    const unitService = useUnitService()
-    unitService.findAll()
-      .then((response) => {
-        this.units = unitService.mapUnits(response)
-      })
-    const queryService = useQueryService()
-    this.columnTypes = queryService.mySql8DataTypes().map((datatype) => {
-      datatype.value = datatype.value.toUpperCase()
-      return datatype
-    })
   },
   methods: {
     submit () {
@@ -366,9 +366,9 @@ export default {
       }
       this.loading = true
       const searchService = useSearchService()
-      searchService.search(this.searchType, this.advancedSearchData)
-        .then((response) => {
-          this.$emit('search-result', response)
+      searchService.general_search(this.searchType, this.advancedSearchData)
+        .then(({results, type}) => {
+          this.$emit('search-result', {results, type})
         })
         .finally(() => {
           this.loading = false
@@ -381,44 +381,81 @@ export default {
       const shouldBeRendered = possibleFields.map(tuple => tuple).includes(item.attr_name)
       if (shouldBeRendered) {
         const attr = item.attr_name.substr(item.attr_name.lastIndexOf('.'), item.attr_name.length)
-        console.debug('attribute', attr, 'should be rendered')
       }
       return shouldBeRendered
     },
-    async fetchLicenses () {
+    fetchLicenses () {
       const licenseService = useLicenseService()
-      const licenses = await licenseService.findAll()
-      this.licenses = licenses.map(l => l.identifier)
+      licenseService.findAll()
+        .then((licenses) => {
+          this.licenses = licenses.map(l => l.identifier)
+        })
     },
-    initSearch (searchType) {
-      this.resetAdvancedSearchFields()
-      this.$emit('search-result', [])
-      this.loadingFields = true
-      const searchService = useSearchService()
-      searchService.fields(searchType)
+    fetchConcepts () {
+      this.loadingConcepts = true
+      const conceptService = useConceptService()
+      conceptService.findAll()
         .then((response) => {
-          this.loadingFields = false
+          this.concepts = conceptService.mapConcepts(response)
+          this.loadingConcepts = false
+        })
+        .catch(() => {
+          this.loadingConcepts = false
+        })
+        .finally(() => {
+          this.loadingConcepts = false
+        })
+    },
+    fetchUnits () {
+      this.loadingUnits = true
+      const unitService = useUnitService()
+      unitService.findAll()
+        .then((response) => {
+          this.units = unitService.mapUnits(response)
+          this.loadingUnits = false
+        })
+        .catch(() => {
+          this.loadingUnits = false
+        })
+        .finally(() => {
+          this.loadingUnits = false
+        })
+    },
+    initDynamicFields () {
+      if (!this.searchType || this.loadingFields) {
+        return
+      }
+      this.resetAdvancedSearchFields()
+      this.$emit('search-result', { results: [], type: this.searchType })
+      const searchService = useSearchService()
+      this.loadingFields = true
+      searchService.fields(this.searchType)
+        .then((response) => {
           this.renderedFields = response.filter(field => this.shouldRenderItem(field))
+          console.debug('init dynamic attributes', this.renderedFields.map(f => f.attr_name))
           this.renderedFields.forEach((field) => {
             const filter = this.dynamicFields[this.searchType].filter(tuple => tuple.key === field.attr_name)
             if (filter.length > 0) {
               field.attr_friendly_name = filter[0].name
             }
           })
+          this.loadingFields = false
         })
-        .finally(() => {
+        .catch(() => {
           this.loadingFields = false
         })
     },
-    initFieldsFromRoute () {
+    initStaticFields () {
       if (this.type) {
+        console.debug('init search type', this.type)
         this.searchType = this.type
-        console.debug('type', this.type, 'is present: set search type to', this.searchType)
       }
-      const keys = Object.keys(this.$route.query).filter(key => key !== 't').filter(key => this.dynamicFields[this.searchType].filter(dkey => key === dkey))
+      const keys = Object.keys(this.$route.query)
+        .filter(key => key !== 'type')
+        .filter(key => this.dynamicFields[this.searchType].filter(dkey => key === dkey))
+      console.debug('init static fields', keys)
       keys.forEach((key) => {
         this.advancedSearchData[key] = this.$route.query[key]
-        console.debug('set advanced search field with key', key, 'to value', this.$route.query[key])
       })
     }
   }

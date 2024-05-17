@@ -4,6 +4,7 @@ import at.tuwien.api.database.table.columns.concepts.ConceptDto;
 import at.tuwien.api.database.table.columns.concepts.ConceptSaveDto;
 import at.tuwien.api.database.table.columns.concepts.UnitDto;
 import at.tuwien.api.database.table.columns.concepts.UnitSaveDto;
+import at.tuwien.api.semantics.EntityDto;
 import at.tuwien.api.semantics.OntologyBriefDto;
 import at.tuwien.api.semantics.OntologyCreateDto;
 import at.tuwien.api.semantics.OntologyDto;
@@ -41,6 +42,10 @@ public interface OntologyMapper {
     UnitDto tableColumnUnitToUnitDto(TableColumnUnit data);
 
     TableColumnUnit unitSaveDtoToTableColumnUnit(UnitSaveDto data);
+
+    TableColumnUnit entityDtoToTableColumnUnit(EntityDto data);
+
+    TableColumnConcept entityDtoToTableColumnConcept(EntityDto data);
 
     TableColumnConcept conceptSaveDtoToTableColumnConcept(ConceptSaveDto data);
 

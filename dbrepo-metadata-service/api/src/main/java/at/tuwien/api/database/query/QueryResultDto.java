@@ -1,7 +1,5 @@
 package at.tuwien.api.database.query;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import jakarta.validation.constraints.NotNull;
@@ -19,13 +17,13 @@ import java.util.Map;
 @ToString
 public class QueryResultDto {
 
-    @NotNull(message = "result set is required")
+    @NotNull
     private List<Map<String, Object>> result;
 
-    @NotNull(message = "headers is required")
+    @NotNull
     private List<Map<String, Integer>> headers;
 
-    @NotNull(message = "query id is required")
+    @NotNull
     private Long id;
 
 }

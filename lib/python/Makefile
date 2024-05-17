@@ -16,6 +16,8 @@ check:
 build: clean
 	python3 -m build --sdist .
 	python3 -m build --wheel .
+	cp ./dist/dbrepo-* ../../dbrepo-analyse-service/lib/
+	cp ./dist/dbrepo-* ../../dbrepo-search-service/lib/
 
 deploy: build
 	python3 -m twine upload --config-file ~/.pypirc --verbose --repository pypi ./dist/dbrepo-*

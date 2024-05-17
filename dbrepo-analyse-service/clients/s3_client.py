@@ -2,6 +2,7 @@ import os
 import boto3
 import logging
 
+from flask import current_app
 from boto3.exceptions import S3UploadFailedError
 from botocore.exceptions import ClientError
 
@@ -9,17 +10,17 @@ from botocore.exceptions import ClientError
 class S3Client:
 
     def __init__(self):
-        endpoint_url = os.getenv('S3_STORAGE_ENDPOINT', 'http://localhost:9000')
-        aws_access_key_id = os.getenv('S3_ACCESS_KEY_ID', 'seaweedfsadmin')
-        aws_secret_access_key = os.getenv('S3_SECRET_ACCESS_KEY', 'seaweedfsadmin')
+        endpoint_url = current_app.config['S3_ENDPOINT']
+        aws_access_key_id = current_app.config['S3_ACCESS_KEY_ID']
+        aws_secret_access_key = current_app.config['S3_SECRET_ACCESS_KEY']
         logging.info("retrieve file from S3, endpoint_url=%s, aws_access_key_id=%s, aws_secret_access_key=(hidden)",
                      endpoint_url, aws_access_key_id)
         self.client = boto3.client(service_name='s3', endpoint_url=endpoint_url, aws_access_key_id=aws_access_key_id,
                                    aws_secret_access_key=aws_secret_access_key)
-        self.bucket_exists_or_exit("dbrepo-upload")
-        self.bucket_exists_or_exit("dbrepo-download")
+        self.bucket_exists_or_exit(current_app.config['S3_EXPORT_BUCKET'])
+        self.bucket_exists_or_exit(current_app.config['S3_IMPORT_BUCKET'])
 
-    def upload_file(self, filename, path="/tmp/", bucket="dbrepo-download") -> bool:
+    def upload_file(self, filename: str, path: str = "/tmp/", bucket: str = "dbrepo-upload") -> bool:
         """
         Uploads a file to the blob storage.
         Follows the official API https://boto3.amazonaws.com/v1/documentation/api/latest/guide/s3-uploading-files.html.
@@ -42,7 +43,7 @@ class S3Client:
             logging.warning(f"Failed to upload file with key {filename}")
             raise ConnectionRefusedError(f"Failed to upload file with key {filename}", e)
 
-    def download_file(self, filename, bucket="dbrepo-upload"):
+    def download_file(self, filename: str, bucket: str):
         """
         Downloads a file from the blob storage.
         Follows the official API https://boto3.amazonaws.com/v1/documentation/api/latest/guide/s3-example-download-file.html

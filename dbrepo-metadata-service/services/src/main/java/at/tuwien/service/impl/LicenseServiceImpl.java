@@ -2,7 +2,7 @@ package at.tuwien.service.impl;
 
 import at.tuwien.entities.database.License;
 import at.tuwien.exception.LicenseNotFoundException;
-import at.tuwien.repository.mdb.LicenseRepository;
+import at.tuwien.repository.LicenseRepository;
 import at.tuwien.service.LicenseService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;

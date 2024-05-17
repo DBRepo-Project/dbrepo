@@ -34,10 +34,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class AuthTokenFilter extends OncePerRequestFilter {
 
-    @Value("${fda.jwt.issuer}")
-    private String issuer;
-
-    @Value("${fda.jwt.public_key}")
+    @Value("${dbrepo.jwt.public_key}")
     private String publicKey;
 
     @Override
@@ -46,7 +43,6 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         final String jwt = parseJwt(request);
         if (jwt != null) {
             final UserDetails userDetails = verifyJwt(jwt);
-            log.debug("authenticated user {}", userDetails);
             final UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                     userDetails, null, userDetails.getAuthorities());
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
@@ -57,10 +53,6 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     }
 
     public UserDetails verifyJwt(String token) throws ServletException {
-        return verifyJwt(token, true);
-    }
-
-    public UserDetails verifyJwt(String token, boolean strict) throws ServletException {
         final KeyFactory kf;
         try {
             kf = KeyFactory.getInstance("RSA");
@@ -77,11 +69,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             throw new ServletException("Provided public key is invalid", e);
         }
         final Algorithm algorithm = Algorithm.RSA256(pubKey, null);
-        Verification verification = JWT.require(algorithm)
-                .withAudience("spring");
-        if (strict) {
-            verification = verification.withIssuer(issuer);
-        }
+        final Verification verification = JWT.require(algorithm);
         final JWTVerifier verifier = verification.build();
         final DecodedJWT jwt = verifier.verify(token);
         final RealmAccessDto realmAccess = jwt.getClaim("realm_access").as(RealmAccessDto.class);

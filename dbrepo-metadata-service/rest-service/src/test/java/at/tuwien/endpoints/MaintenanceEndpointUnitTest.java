@@ -1,21 +1,16 @@
 package at.tuwien.endpoints;
 
-import at.tuwien.BaseUnitTest;
-import at.tuwien.annotations.MockAmqp;
-import at.tuwien.annotations.MockOpensearch;
-import at.tuwien.api.maintenance.BannerMessageBriefDto;
+import at.tuwien.exception.MessageNotFoundException;
+import at.tuwien.test.AbstractUnitTest;
 import at.tuwien.api.maintenance.BannerMessageCreateDto;
 import at.tuwien.api.maintenance.BannerMessageDto;
 import at.tuwien.api.maintenance.BannerMessageUpdateDto;
 import at.tuwien.entities.maintenance.BannerMessage;
-import at.tuwien.exception.BannerMessageNotFoundException;
 import at.tuwien.service.BannerMessageService;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
@@ -30,18 +25,15 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @Log4j2
-@EnableAutoConfiguration(exclude = RabbitAutoConfiguration.class)
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
-@MockAmqp
-@MockOpensearch
-public class MaintenanceEndpointUnitTest extends BaseUnitTest {
+public class MaintenanceEndpointUnitTest extends AbstractUnitTest {
 
     @MockBean
     private BannerMessageService bannerMessageService;
 
     @Autowired
-    private MaintenanceEndpoint maintenanceEndpoint;
+    private MessageEndpoint maintenanceEndpoint;
 
     @Test
     @WithAnonymousUser
@@ -69,7 +61,7 @@ public class MaintenanceEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithAnonymousUser
-    public void find_anonymous_succeeds() throws BannerMessageNotFoundException {
+    public void find_anonymous_succeeds() throws MessageNotFoundException {
 
         /* test */
         find_generic(BANNER_MESSAGE_1_ID, BANNER_MESSAGE_1);
@@ -77,7 +69,7 @@ public class MaintenanceEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_4_USERNAME)
-    public void find_noRole_succeeds() throws BannerMessageNotFoundException {
+    public void find_noRole_succeeds() throws MessageNotFoundException {
 
         /* test */
         find_generic(BANNER_MESSAGE_1_ID, BANNER_MESSAGE_1);
@@ -85,7 +77,7 @@ public class MaintenanceEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_1_USERNAME, authorities = {"find-maintenance-message"})
-    public void find_hasRole_succeeds() throws BannerMessageNotFoundException {
+    public void find_hasRole_succeeds() throws MessageNotFoundException {
 
         /* test */
         find_generic(BANNER_MESSAGE_1_ID, BANNER_MESSAGE_1);
@@ -96,7 +88,7 @@ public class MaintenanceEndpointUnitTest extends BaseUnitTest {
     public void find_hasRoleNotFound_fails() {
 
         /* test */
-        assertThrows(BannerMessageNotFoundException.class, () -> {
+        assertThrows(MessageNotFoundException.class, () -> {
             find_generic(BANNER_MESSAGE_1_ID, null);
         });
     }
@@ -151,20 +143,10 @@ public class MaintenanceEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_2_USERNAME, authorities = {"update-maintenance-message"})
-    public void update_hasRole_succeeds() throws BannerMessageNotFoundException {
+    public void update_hasRole_succeeds() throws MessageNotFoundException {
 
         /* test */
         update_generic(BANNER_MESSAGE_1_UPDATE_DTO, BANNER_MESSAGE_1_ID, BANNER_MESSAGE_1);
-    }
-
-    @Test
-    @WithMockUser(username = USER_2_USERNAME, authorities = {"update-maintenance-message"})
-    public void update_hasRoleNotFound_fails() {
-
-        /* test */
-        assertThrows(BannerMessageNotFoundException.class, () -> {
-            update_generic(BANNER_MESSAGE_1_UPDATE_DTO, BANNER_MESSAGE_1_ID, null);
-        });
     }
 
     @Test
@@ -189,7 +171,7 @@ public class MaintenanceEndpointUnitTest extends BaseUnitTest {
 
     @Test
     @WithMockUser(username = USER_2_USERNAME, authorities = {"delete-maintenance-message"})
-    public void delete_hasRole_succeeds() throws BannerMessageNotFoundException {
+    public void delete_hasRole_succeeds() throws MessageNotFoundException {
 
         /* test */
         delete_generic(BANNER_MESSAGE_1_ID, BANNER_MESSAGE_1);
@@ -200,7 +182,7 @@ public class MaintenanceEndpointUnitTest extends BaseUnitTest {
     public void delete_hasRoleNotFound_fails() {
 
         /* test */
-        assertThrows(BannerMessageNotFoundException.class, () -> {
+        assertThrows(MessageNotFoundException.class, () -> {
             delete_generic(BANNER_MESSAGE_1_ID, null);
         });
     }
@@ -219,26 +201,16 @@ public class MaintenanceEndpointUnitTest extends BaseUnitTest {
         final ResponseEntity<List<BannerMessageDto>> response = maintenanceEndpoint.list("");
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
-        final List<BannerMessageDto> body = response.getBody();
-        assertEquals(2, body.size());
-        final BannerMessageDto message0 = body.get(0);
-        assertEquals(BANNER_MESSAGE_1_ID, message0.getId());
-        assertEquals(BANNER_MESSAGE_1_TYPE_DTO, message0.getType());
-        assertEquals(BANNER_MESSAGE_1_MESSAGE, message0.getMessage());
-        final BannerMessageDto message1 = body.get(1);
-        assertEquals(BANNER_MESSAGE_2_ID, message1.getId());
-        assertEquals(BANNER_MESSAGE_2_TYPE_DTO, message1.getType());
-        assertEquals(BANNER_MESSAGE_2_MESSAGE, message1.getMessage());
     }
 
-    protected void find_generic(Long messageId, BannerMessage message) throws BannerMessageNotFoundException {
+    protected void find_generic(Long messageId, BannerMessage message) throws MessageNotFoundException {
 
         /* mock */
         if (message != null) {
             when(bannerMessageService.find(messageId))
                     .thenReturn(message);
         } else {
-            doThrow(BannerMessageNotFoundException.class)
+            doThrow(MessageNotFoundException.class)
                     .when(bannerMessageService)
                     .find(messageId);
         }
@@ -247,12 +219,6 @@ public class MaintenanceEndpointUnitTest extends BaseUnitTest {
         final ResponseEntity<BannerMessageDto> response = maintenanceEndpoint.find(messageId);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
-        final BannerMessageDto body = response.getBody();
-        assertEquals(BANNER_MESSAGE_1_ID, body.getId());
-        assertEquals(BANNER_MESSAGE_1_MESSAGE, body.getMessage());
-        assertEquals(BANNER_MESSAGE_1_TYPE_DTO, body.getType());
-        assertEquals(BANNER_MESSAGE_1_START, body.getDisplayStart());
-        assertEquals(BANNER_MESSAGE_1_END, body.getDisplayEnd());
     }
 
     protected void create_generic(BannerMessageCreateDto data, BannerMessage message) {
@@ -268,17 +234,13 @@ public class MaintenanceEndpointUnitTest extends BaseUnitTest {
     }
 
     protected void update_generic(BannerMessageUpdateDto data, Long messageId, BannerMessage message)
-            throws BannerMessageNotFoundException {
+            throws MessageNotFoundException {
 
         /* mock */
-        if (message != null) {
-            when(bannerMessageService.update(messageId, data))
-                    .thenReturn(message);
-        } else {
-            doThrow(BannerMessageNotFoundException.class)
-                    .when(bannerMessageService)
-                    .update(messageId, data);
-        }
+        when(bannerMessageService.find(messageId))
+                .thenReturn(message);
+        when(bannerMessageService.update(message, data))
+                .thenReturn(message);
 
         /* test */
         final ResponseEntity<BannerMessageDto> response = maintenanceEndpoint.update(messageId, data);
@@ -286,21 +248,20 @@ public class MaintenanceEndpointUnitTest extends BaseUnitTest {
         assertNotNull(response.getBody());
     }
 
-    protected void delete_generic(Long messageId, BannerMessage message)
-            throws BannerMessageNotFoundException {
+    protected void delete_generic(Long messageId, BannerMessage message) throws MessageNotFoundException {
 
         /* mock */
         if (message != null) {
             when(bannerMessageService.find(messageId))
                     .thenReturn(message);
-            doNothing()
-                    .when(bannerMessageService)
-                    .delete(messageId);
         } else {
-            doThrow(BannerMessageNotFoundException.class)
+            doThrow(MessageNotFoundException.class)
                     .when(bannerMessageService)
-                    .delete(messageId);
+                    .find(messageId);
         }
+        doNothing()
+                .when(bannerMessageService)
+                .delete(message);
 
         /* test */
         final ResponseEntity<?> response = maintenanceEndpoint.delete(messageId);

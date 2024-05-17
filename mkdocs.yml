@@ -11,7 +11,7 @@ nav:
     - Docker Compose: deployment-docker-compose.md
     - Kubernetes: deployment-helm.md
   - System:
-    - Overview: system.md
+    - Overview: system-overview.md
     - Services:
       - Analyse Service: system-services-analyse.md
       - Authentication Service: system-services-authentication.md
@@ -30,6 +30,9 @@ nav:
     - Other:
       - User Interface: system-other-ui.md
       - Search Database Dashboard: system-other-search-dashboard.md
+    - Operation:
+      - Actuator: operation-actuator.md
+      - Prometheus: operation-prometheus.md
   - Usage:
     - Overview: usage-overview.md
     - Python Library: usage-python.md
@@ -44,11 +47,10 @@ nav:
   - publications.md
   - contact.md
 extra_css:
-  - stylesheets/custom.css
+  - stylesheets/extra.css
 theme:
-  favicon: images/signet_white.png
+  favicon: images/favicon.ico
   custom_dir: .docs/overrides
-  logo: images/signet_white.png
   font:
     text: IBM Plex Serif
     code: IBM Plex Mono
@@ -61,6 +63,7 @@ theme:
     - content.code.copy
     - content.tooltips
   icon:
+    logo: material/database-search
     repo: fontawesome/brands/git-alt
   palette:
     # Palette toggle for light mode
@@ -104,7 +107,7 @@ markdown_extensions:
 extra:
   homepage: https://www.ifs.tuwien.ac.at/infrastructures/dbrepo/
   version:
-    default: 1.4.2
+    default: 1.4.3
     provider: mike
   social:
     - icon: simple/artifacthub

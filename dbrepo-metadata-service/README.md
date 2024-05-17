@@ -33,10 +33,6 @@ mvn -pl rest-service clean spring-boot:run -Dspring-boot.run.profiles=local
     - Liveness: http://localhost:9099/actuator/health/liveness
 - Prometheus: http://localhost:9099/actuator/prometheus
 
-#### Swagger UI
-
-- Swagger UI: http://localhost:9099/swagger-ui/index.html
-
 #### OpenAPI
 
 - OpenAPI v3 as .yaml: http://localhost:9099/v3/api-docs.yaml

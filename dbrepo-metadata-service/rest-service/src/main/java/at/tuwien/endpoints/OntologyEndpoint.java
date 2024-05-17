@@ -7,7 +7,6 @@ import at.tuwien.exception.*;
 import at.tuwien.mapper.OntologyMapper;
 import at.tuwien.service.EntityService;
 import at.tuwien.service.OntologyService;
-import at.tuwien.utils.PrincipalUtil;
 import io.micrometer.observation.annotation.Observed;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -21,7 +20,6 @@ import jakarta.validation.constraints.NotNull;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -32,9 +30,7 @@ import java.util.List;
 @Log4j2
 @CrossOrigin(origins = "*")
 @RestController
-@RequestMapping(path = "/api/semantic/ontology",
-        consumes = MediaType.ALL_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(path = "/api/ontology")
 public class OntologyEndpoint {
 
     private final OntologyMapper ontologyMapper;
@@ -49,7 +45,7 @@ public class OntologyEndpoint {
     }
 
     @GetMapping
-    @Observed(name = "dbr_ontologies_findall")
+    @Observed(name = "dbrepo_metadata_ontologies_findall")
     @Operation(summary = "List all ontologies")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -68,8 +64,8 @@ public class OntologyEndpoint {
         return ResponseEntity.ok(dtos);
     }
 
-    @GetMapping("/{id}")
-    @Observed(name = "dbr_ontologies_find")
+    @GetMapping("/{ontologyId}")
+    @Observed(name = "dbrepo_metadata_ontologies_find")
     @Operation(summary = "Find one ontology")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -83,16 +79,16 @@ public class OntologyEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<OntologyDto> find(@NotNull @PathVariable("id") Long id) throws OntologyNotFoundException {
-        log.debug("endpoint find all ontologies, id={}", id);
-        final OntologyDto dto = ontologyMapper.ontologyToOntologyDto(ontologyService.find(id));
+    public ResponseEntity<OntologyDto> find(@NotNull @PathVariable("ontologyId") Long ontologyId) throws OntologyNotFoundException {
+        log.debug("endpoint find all ontologies, ontologyId={}", ontologyId);
+        final OntologyDto dto = ontologyMapper.ontologyToOntologyDto(ontologyService.find(ontologyId));
         log.trace("create ontology resulted in dto {}", dto);
         return ResponseEntity.ok(dto);
     }
 
     @PostMapping
     @PreAuthorize("hasAuthority('create-ontology')")
-    @Observed(name = "dbr_ontologies_create")
+    @Observed(name = "dbrepo_metadata_ontologies_create")
     @Operation(summary = "Register a new ontology", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",
@@ -103,16 +99,16 @@ public class OntologyEndpoint {
     })
     public ResponseEntity<OntologyDto> create(@NotNull @Valid @RequestBody OntologyCreateDto data,
                                               @NotNull Principal principal) {
-        log.debug("endpoint create ontology, data={}, {}", data, PrincipalUtil.formatForDebug(principal));
+        log.debug("endpoint create ontology, data={}", data);
         final OntologyDto dto = ontologyMapper.ontologyToOntologyDto(ontologyService.create(data, principal));
         log.trace("create ontology resulted in dto {}", dto);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(dto);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/{ontologyId}")
     @PreAuthorize("hasAuthority('update-ontology')")
-    @Observed(name = "dbr_ontologies_update")
+    @Observed(name = "dbrepo_metadata_ontologies_update")
     @Operation(summary = "Update an ontology", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
@@ -126,19 +122,19 @@ public class OntologyEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<OntologyDto> update(@NotNull @PathVariable("id") Long id,
-                                              @NotNull @Valid @RequestBody OntologyModifyDto data,
-                                              @NotNull Principal principal) throws OntologyNotFoundException {
-        log.debug("endpoint update ontology, data={}, {}", data, PrincipalUtil.formatForDebug(principal));
-        final OntologyDto dto = ontologyMapper.ontologyToOntologyDto(ontologyService.update(id, data));
+    public ResponseEntity<OntologyDto> update(@NotNull @PathVariable("ontologyId") Long ontologyId,
+                                              @NotNull @Valid @RequestBody OntologyModifyDto data) throws OntologyNotFoundException {
+        log.debug("endpoint update ontology, data={}", data);
+        final Ontology ontology = ontologyService.find(ontologyId);
+        final OntologyDto dto = ontologyMapper.ontologyToOntologyDto(ontologyService.update(ontology, data));
         log.trace("update ontology resulted in dto {}", dto);
         return ResponseEntity.accepted()
                 .body(dto);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{ontologyId}")
     @PreAuthorize("hasAuthority('delete-ontology')")
-    @Observed(name = "dbr_ontologies_delete")
+    @Observed(name = "dbrepo_metadata_ontologies_delete")
     @Operation(summary = "Delete an ontology", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "202",
@@ -151,16 +147,17 @@ public class OntologyEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<?> delete(@NotNull @PathVariable("id") Long id) throws OntologyNotFoundException {
-        log.debug("endpoint delete ontology, id={}", id);
-        ontologyService.delete(id);
+    public ResponseEntity<?> delete(@NotNull @PathVariable("ontologyId") Long ontologyId) throws OntologyNotFoundException {
+        log.debug("endpoint delete ontology, ontologyId={}", ontologyId);
+        final Ontology ontology = ontologyService.find(ontologyId);
+        ontologyService.delete(ontology);
         return ResponseEntity.accepted()
                 .build();
     }
 
-    @GetMapping("/{id}/entity")
+    @GetMapping("/{ontologyId}/entity")
     @PreAuthorize("hasAuthority('execute-semantic-query')")
-    @Observed(name = "dbr_ontologies_entities_find")
+    @Observed(name = "dbrepo_metadata_ontologies_entities_find")
     @Operation(summary = "Find entities", security = {@SecurityRequirement(name = "bearerAuth"), @SecurityRequirement(name = "basicAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
@@ -189,11 +186,10 @@ public class OntologyEndpoint {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ApiErrorDto.class))}),
     })
-    public ResponseEntity<List<EntityDto>> find(@NotNull @PathVariable("id") Long id,
+    public ResponseEntity<List<EntityDto>> find(@NotNull @PathVariable("ontologyId") Long id,
                                                 @RequestParam(name = "label", required = false) String label,
                                                 @RequestParam(name = "uri", required = false) String uri)
-            throws OntologyNotFoundException, QueryMalformedException, UriMalformedException,
-            FilterBadRequestException, OntologyInvalidException {
+            throws OntologyNotFoundException, UriMalformedException, FilterBadRequestException, MalformedException {
         log.debug("endpoint find entities by uri, id={}, label={}, uri={}", id, label, uri);
         final Ontology ontology = ontologyService.find(id);
         /* check */
@@ -212,13 +208,11 @@ public class OntologyEndpoint {
         /* get */
         final List<EntityDto> dtos;
         if (uri != null) {
-            dtos = entityService.findByUri(ontology, uri);
-            log.trace("find entities resulted in dtos {}", dtos);
+            dtos = entityService.findByUri(uri);
             return ResponseEntity.ok()
                     .body(dtos);
         }
         dtos = entityService.findByLabel(ontology, label);
-        log.trace("find entities resulted in dtos {}", dtos);
         return ResponseEntity.ok()
                 .body(dtos);
     }
